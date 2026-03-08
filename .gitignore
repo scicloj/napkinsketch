@@ -7,3 +7,5 @@ target
 gfm
 .venv
 docs/*.qmd
+.claude
+CLAUDE.md
