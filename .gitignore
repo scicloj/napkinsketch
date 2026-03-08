@@ -1,0 +1,9 @@
+.clay-temp
+.cpcache
+.nrepl-port
+.lsp
+.clj-kondo
+target
+gfm
+.venv
+docs/*.qmd
