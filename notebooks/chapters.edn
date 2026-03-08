@@ -1,1 +1,5 @@
-{"Getting Started" ["quickstart"]}
+{"Getting Started" ["quickstart"]
+ "Gallery" ["scatter_gallery"
+            "distributions"
+            "layers"
+            "config"]}
