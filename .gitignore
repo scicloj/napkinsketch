@@ -9,3 +9,4 @@ gfm
 docs/*.qmd
 .claude
 CLAUDE.md
+dev-notes/
