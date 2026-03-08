@@ -2,4 +2,7 @@
  "Gallery" ["scatter_gallery"
             "distributions"
             "layers"
-            "config"]}
+            "config"]
+ "Advanced" ["composability"
+             "real_world"
+             "edge_cases"]}

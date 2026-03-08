@@ -145,7 +145,7 @@
   (let [{:keys [data x y group]} view
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)]
-    (if (or (< n 2)
+    (if (or (< n 3)
             (= (dfn/reduce-min (clean x)) (dfn/reduce-max (clean x))))
       {:lines []
        :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
@@ -153,7 +153,7 @@
       (let [lines (group-by-columns
                    clean (or group [])
                    (fn [ds gv]
-                     (when (and (>= (tc/row-count ds) 2)
+                     (when (and (>= (tc/row-count ds) 3)
                                 (not= (dfn/reduce-min (ds x))
                                       (dfn/reduce-max (ds x))))
                        (cond-> (fit-lm (ds x) (ds y))
