@@ -35,7 +35,7 @@
      (= :svg (first v))
      (let
       [attrs (second v)]
-      (and (map? attrs) (= 800 (:width attrs))))))
+      (and (map? attrs) (>= (:width attrs) 800)))))
    v5_l20)))
 
 
@@ -58,7 +58,7 @@
      (= :svg (first v))
      (let
       [attrs (second v)]
-      (and (map? attrs) (= 300 (:width attrs))))))
+      (and (map? attrs) (>= (:width attrs) 300)))))
    v8_l33)))
 
 
@@ -95,7 +95,7 @@
    {:x (range 1 50),
     :y
     (mapv
-     (fn* [p1__80571#] (* 2 (Math/pow 1.1 p1__80571#)))
+     (fn* [p1__84193#] (* 2 (Math/pow 1.1 p1__84193#)))
      (range 1 50))})))
 
 

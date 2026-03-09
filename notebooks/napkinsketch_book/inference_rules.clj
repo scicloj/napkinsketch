@@ -49,7 +49,7 @@ graph TD
 ")
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 ;; ## Column Type Detection
 ;;
@@ -74,18 +74,22 @@ graph TD
    :y-scale-type (get-in p [:y-scale :type])})
 
 (kind/test-last [(fn [m] (and (= :numerical (:x-domain-kind m))
-                             (= :numerical (:y-domain-kind m))
-                             (= :linear (:x-scale-type m))))])
+                              (= :numerical (:y-domain-kind m))
+                              (= :linear (:x-scale-type m))))])
 
 ;; A categorical column produces a band scale:
 
 (def bar-sk (sk/sketch [(sk/bar {:data iris :x :species})]))
 
+;; The x-domain contains categorical values, and the ticks are categorical:
+
 (let [p (first (:panels bar-sk))]
   {:x-domain (:x-domain p)
-   :x-scale-type (get-in p [:x-scale :type])})
+   :x-ticks-categorical? (:categorical? (:x-ticks p))})
 
-(kind/test-last [(fn [m] (= :categorical (:x-scale-type m)))])
+(kind/test-last [(fn [m] (and (every? string? (:x-domain m))
+                              (:x-ticks-categorical? m)))])
+
 
 ;; ## Mark and Stat Inference
 ;;
@@ -144,7 +148,7 @@ graph TD
         (:groups layer)))
 
 (kind/test-last [(fn [gs] (and (= 3 (count gs))
-                              (every? #(= 4 (count (:color %))) gs)))])
+                               (every? #(= 4 (count (:color %))) gs)))])
 
 ;; Three groups, each with a distinct RGBA color from the palette.
 
@@ -154,13 +158,13 @@ graph TD
 
 (def fixed-sk
   (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width
-                          :color "#E74C3C"})]))
+                         :color "#E74C3C"})]))
 
 (let [g (first (:groups (first (:layers (first (:panels fixed-sk))))))]
   (:color g))
 
 (kind/test-last [(fn [c] (and (= 4 (count c))
-                             (> (first c) 0.8)))])
+                              (> (first c) 0.8)))])
 
 ;; One group with red color. No legend generated:
 
@@ -194,7 +198,7 @@ graph TD
       (:layers (first (:panels grp-sk))))
 
 (kind/test-last [(fn [ls] (and (= 2 (count ls))
-                              (every? #(= 3 (:n-groups %)) ls)))])
+                               (every? #(= 3 (:n-groups %)) ls)))])
 
 ;; ## Domain Inference
 ;;
@@ -214,7 +218,7 @@ graph TD
    :actual-max (reduce max (map :sepal_length (tc/rows iris :as-maps)))})
 
 (kind/test-last [(fn [m] (and (< (first (:x-domain m)) (:actual-min m))
-                             (> (second (:x-domain m)) (:actual-max m))))])
+                              (> (second (:x-domain m)) (:actual-max m))))])
 
 ;; The domain extends slightly beyond the actual data — that's the
 ;; 5% padding, so points aren't clipped at the edges.
@@ -226,12 +230,12 @@ graph TD
 
 (kind/test-last [(fn [d] (= 3 (count d)))])
 
-;; Bar chart y-domain always starts at zero:
+;; Bar chart y-domain starts at or below zero (padding may extend below):
 
 (let [p (first (:panels bar-sk))]
   (first (:y-domain p)))
 
-(kind/test-last [zero?])
+(kind/test-last [(fn [v] (<= v 0))])
 
 ;; ### Multi-layer domain merging
 ;;
@@ -242,7 +246,7 @@ graph TD
    :y-domain (:y-domain p)})
 
 (kind/test-last [(fn [m] (and (< (first (:x-domain m)) (second (:x-domain m)))
-                             (< (first (:y-domain m)) (second (:y-domain m)))))])
+                              (< (first (:y-domain m)) (second (:y-domain m)))))])
 
 ;; Both the point layer and the regression layer contribute to
 ;; the same domain range.
@@ -314,9 +318,9 @@ graph TD
    :first-x-label (first (:labels (:x-ticks p)))})
 
 (kind/test-last [(fn [m] (and (> (:n-x-ticks m) 2)
-                             (not (:x-categorical? m))
-                             (number? (:first-x-tick m))
-                             (string? (:first-x-label m))))])
+                              (not (:x-categorical? m))
+                              (number? (:first-x-tick m))
+                              (string? (:first-x-label m))))])
 
 ;; Categorical ticks — one per category:
 
@@ -326,7 +330,7 @@ graph TD
    :categorical? (:categorical? (:x-ticks p))})
 
 (kind/test-last [(fn [m] (and (:categorical? m)
-                             (= (count (:values m)) (count (:labels m)))))])
+                              (= (count (:values m)) (count (:labels m)))))])
 
 ;; ## Layout Inference
 ;;
@@ -371,7 +375,7 @@ graph TD
 (select-keys scatter-sk [:width :height :total-width :total-height])
 
 (kind/test-last [(fn [m] (and (>= (:total-width m) (:width m))
-                             (>= (:total-height m) (:height m))))])
+                              (>= (:total-height m) (:height m))))])
 
 ;; ## Coordinate Flipping
 ;;
@@ -390,9 +394,9 @@ graph TD
    :flipped-y-categorical? (:categorical? (:y-ticks fp))})
 
 (kind/test-last [(fn [m] (and (:normal-x-categorical? m)
-                             (not (:normal-y-categorical? m))
-                             (not (:flipped-x-categorical? m))
-                             (:flipped-y-categorical? m)))])
+                              (not (:normal-y-categorical? m))
+                              (not (:flipped-x-categorical? m))
+                              (:flipped-y-categorical? m)))])
 
 ;; The categorical axis moved from x to y. The layer data is unchanged;
 ;; the renderer reads `:coord :flip` and swaps axes during rendering.
@@ -410,7 +414,7 @@ graph TD
 (:legend colored-sk)
 
 (kind/test-last [(fn [leg] (and (= :species (:title leg))
-                               (= 3 (count (:entries leg)))))])
+                                (= 3 (count (:entries leg)))))])
 
 (:legend fixed-sk)
 

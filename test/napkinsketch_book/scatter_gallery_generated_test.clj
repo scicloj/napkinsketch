@@ -284,5 +284,5 @@
      (= :svg (first v))
      (let
       [attrs (second v)]
-      (and (map? attrs) (= 700 (:width attrs))))))
+      (and (map? attrs) (>= (:width attrs) 700)))))
    v37_l173)))

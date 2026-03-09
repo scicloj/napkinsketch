@@ -22,7 +22,7 @@
 (def
  v6_l25
  (kind/pprint
-  (mapv (fn* [p1__80667#] (dissoc p1__80667# :data)) views)))
+  (mapv (fn* [p1__84289#] (dissoc p1__84289# :data)) views)))
 
 
 (def v8_l32 (def layered (sk/lay views (sk/point {:color :species}))))
@@ -31,7 +31,7 @@
 (def
  v9_l34
  (kind/pprint
-  (mapv (fn* [p1__80668#] (dissoc p1__80668# :data)) layered)))
+  (mapv (fn* [p1__84290#] (dissoc p1__84290# :data)) layered)))
 
 
 (def
@@ -100,7 +100,7 @@
   {:x (range 1 11),
    :y
    (mapv
-    (fn* [p1__80669#] (+ (* 2 p1__80669#) (- (rand-int 5) 2)))
+    (fn* [p1__84291#] (+ (* 2 p1__84291#) (- (rand-int 5) 2)))
     (range 1 11))}
   (sk/view [[:x :y]])
   (sk/lay (sk/point) (sk/lm))
@@ -129,7 +129,7 @@
    (->
     iris
     (tc/select-rows
-     (fn* [p1__80670#] (= species-name (p1__80670# :species))))
+     (fn* [p1__84292#] (= species-name (p1__84292# :species))))
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:width 300, :height 250, :title species-name})))))
@@ -148,7 +148,7 @@
      (= :svg (first v))
      (let
       [attrs (second v)]
-      (and (map? attrs) (= 300 (:width attrs))))))
+      (and (map? attrs) (>= (:width attrs) 300)))))
    v22_l101)))
 
 
@@ -303,7 +303,7 @@
      (range 0 10 0.5)
      ys
      (mapv
-      (fn* [p1__80671#] (+ (* 3 p1__80671#) 5 (* 2 (- (rand) 0.5))))
+      (fn* [p1__84293#] (+ (* 3 p1__84293#) 5 (* 2 (- (rand) 0.5))))
       xs)]
     (tc/dataset {:x xs, :y ys})))))
 

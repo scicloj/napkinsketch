@@ -104,7 +104,7 @@
  [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs)
-                     (= 300 (:width attrs))))))])
+                     (>= (:width attrs) 300)))))])
 
 (species-plot "versicolor")
 

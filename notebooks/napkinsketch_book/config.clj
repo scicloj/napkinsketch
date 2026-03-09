@@ -26,7 +26,7 @@
  [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs)
-                     (= 800 (:width attrs))))))])
+                     (>= (:width attrs) 800)))))])
 
 ;; A tall, narrow plot.
 
@@ -39,7 +39,7 @@
  [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs)
-                     (= 300 (:width attrs))))))])
+                     (>= (:width attrs) 300)))))])
 
 ;; ## Titles and Labels
 

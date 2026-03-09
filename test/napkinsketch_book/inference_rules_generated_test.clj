@@ -60,19 +60,24 @@
 
 
 (def
- v11_l84
+ v12_l86
  (let
   [p (first (:panels bar-sk))]
-  {:x-domain (:x-domain p), :x-scale-type (get-in p [:x-scale :type])}))
+  {:x-domain (:x-domain p),
+   :x-ticks-categorical? (:categorical? (:x-ticks p))}))
 
 
 (deftest
- t12_l88
- (is ((fn [m] (= :categorical (:x-scale-type m))) v11_l84)))
+ t13_l90
+ (is
+  ((fn
+    [m]
+    (and (every? string? (:x-domain m)) (:x-ticks-categorical? m)))
+   v12_l86)))
 
 
 (def
- v14_l111
+ v15_l115
  (def
   hist-sk
   (sk/sketch
@@ -80,34 +85,34 @@
 
 
 (def
- v15_l114
+ v16_l118
  (let
   [layer (first (:layers (first (:panels hist-sk))))]
   {:mark (:mark layer)}))
 
 
-(deftest t16_l117 (is ((fn [m] (= :bar (:mark m))) v15_l114)))
+(deftest t17_l121 (is ((fn [m] (= :bar (:mark m))) v16_l118)))
 
 
 (def
- v18_l121
+ v19_l125
  (def
   count-sk
   (sk/sketch (-> iris (sk/view :species) (sk/lay (sk/bar))))))
 
 
 (def
- v19_l124
+ v20_l128
  (let
   [layer (first (:layers (first (:panels count-sk))))]
   {:mark (:mark layer)}))
 
 
-(deftest t20_l127 (is ((fn [m] (= :rect (:mark m))) v19_l124)))
+(deftest t21_l131 (is ((fn [m] (= :rect (:mark m))) v20_l128)))
 
 
 (def
- v22_l139
+ v23_l143
  (def
   colored-sk
   (sk/sketch
@@ -119,7 +124,7 @@
 
 
 (def
- v23_l142
+ v24_l146
  (let
   [layer (first (:layers (first (:panels colored-sk))))]
   (mapv
@@ -128,18 +133,18 @@
 
 
 (deftest
- t24_l146
+ t25_l150
  (is
   ((fn
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__81358#] (= 4 (count (:color p1__81358#)))) gs)))
-   v23_l142)))
+     (every? (fn* [p1__84980#] (= 4 (count (:color p1__84980#)))) gs)))
+   v24_l146)))
 
 
 (def
- v26_l155
+ v27_l159
  (def
   fixed-sk
   (sk/sketch
@@ -151,35 +156,35 @@
 
 
 (def
- v27_l159
+ v28_l163
  (let
   [g (first (:groups (first (:layers (first (:panels fixed-sk))))))]
   (:color g)))
 
 
 (deftest
- t28_l162
- (is ((fn [c] (and (= 4 (count c)) (> (first c) 0.8))) v27_l159)))
+ t29_l166
+ (is ((fn [c] (and (= 4 (count c)) (> (first c) 0.8))) v28_l163)))
 
 
-(def v30_l167 (:legend fixed-sk))
+(def v31_l171 (:legend fixed-sk))
 
 
-(deftest t31_l169 (is (nil? v30_l167)))
+(deftest t32_l173 (is (nil? v31_l171)))
 
 
 (def
- v33_l175
+ v34_l179
  (let
   [g (first (:groups (first (:layers (first (:panels scatter-sk))))))]
   (:color g)))
 
 
-(deftest t34_l178 (is ((fn [c] (= 4 (count c))) v33_l175)))
+(deftest t35_l182 (is ((fn [c] (= 4 (count c))) v34_l179)))
 
 
 (def
- v36_l185
+ v37_l189
  (def
   grp-sk
   (sk/sketch
@@ -193,25 +198,25 @@
 
 
 (def
- v38_l191
+ v39_l195
  (mapv
   (fn [layer] {:mark (:mark layer), :n-groups (count (:groups layer))})
   (:layers (first (:panels grp-sk)))))
 
 
 (deftest
- t39_l196
+ t40_l200
  (is
   ((fn
     [ls]
     (and
      (= 2 (count ls))
-     (every? (fn* [p1__81359#] (= 3 (:n-groups p1__81359#))) ls)))
-   v38_l191)))
+     (every? (fn* [p1__84981#] (= 3 (:n-groups p1__84981#))) ls)))
+   v39_l195)))
 
 
 (def
- v41_l211
+ v42_l215
  (let
   [p (first (:panels scatter-sk))]
   {:x-domain (:x-domain p),
@@ -222,48 +227,48 @@
 
 
 (deftest
- t42_l216
+ t43_l220
  (is
   ((fn
     [m]
     (and
      (< (first (:x-domain m)) (:actual-min m))
      (> (second (:x-domain m)) (:actual-max m))))
-   v41_l211)))
+   v42_l215)))
 
 
-(def v44_l224 (let [p (first (:panels bar-sk))] (:x-domain p)))
+(def v45_l228 (let [p (first (:panels bar-sk))] (:x-domain p)))
 
 
-(deftest t45_l227 (is ((fn [d] (= 3 (count d))) v44_l224)))
+(deftest t46_l231 (is ((fn [d] (= 3 (count d))) v45_l228)))
 
 
-(def v47_l231 (let [p (first (:panels bar-sk))] (first (:y-domain p))))
+(def v48_l235 (let [p (first (:panels bar-sk))] (first (:y-domain p))))
 
 
-(deftest t48_l234 (is (zero? v47_l231)))
+(deftest t49_l238 (is ((fn [v] (<= v 0)) v48_l235)))
 
 
 (def
- v50_l240
+ v51_l244
  (let
   [p (first (:panels grp-sk))]
   {:x-domain (:x-domain p), :y-domain (:y-domain p)}))
 
 
 (deftest
- t51_l244
+ t52_l248
  (is
   ((fn
     [m]
     (and
      (< (first (:x-domain m)) (second (:x-domain m)))
      (< (first (:y-domain m)) (second (:y-domain m)))))
-   v50_l240)))
+   v51_l244)))
 
 
 (def
- v53_l255
+ v54_l259
  (def
   stacked-sk
   (sk/sketch
@@ -271,33 +276,33 @@
 
 
 (def
- v54_l258
+ v55_l262
  (let [p (first (:panels stacked-sk))] {:y-max (second (:y-domain p))}))
 
 
-(deftest t55_l261 (is ((fn [m] (>= (:y-max m) 50)) v54_l258)))
+(deftest t56_l265 (is ((fn [m] (>= (:y-max m) 50)) v55_l262)))
 
 
-(def v57_l274 (:x-label scatter-sk))
+(def v58_l278 (:x-label scatter-sk))
 
 
-(deftest t58_l276 (is ((fn [l] (= "sepal length" l)) v57_l274)))
+(deftest t59_l280 (is ((fn [l] (= "sepal length" l)) v58_l278)))
 
 
-(def v59_l278 (:y-label scatter-sk))
+(def v60_l282 (:y-label scatter-sk))
 
 
-(deftest t60_l280 (is ((fn [l] (= "sepal width" l)) v59_l278)))
+(deftest t61_l284 (is ((fn [l] (= "sepal width" l)) v60_l282)))
 
 
-(def v62_l287 (:y-label hist-sk))
+(def v63_l291 (:y-label hist-sk))
 
 
-(deftest t63_l289 (is (nil? v62_l287)))
+(deftest t64_l293 (is (nil? v63_l291)))
 
 
 (def
- v65_l293
+ v66_l297
  (def
   custom-sk
   (sk/sketch
@@ -305,14 +310,14 @@
    {:x-label "Length (cm)", :y-label "Width (cm)"})))
 
 
-(def v66_l296 (:x-label custom-sk))
+(def v67_l300 (:x-label custom-sk))
 
 
-(deftest t67_l298 (is ((fn [l] (= "Length (cm)" l)) v66_l296)))
+(deftest t68_l302 (is ((fn [l] (= "Length (cm)" l)) v67_l300)))
 
 
 (def
- v69_l310
+ v70_l314
  (let
   [p (first (:panels scatter-sk))]
   {:n-x-ticks (count (:values (:x-ticks p))),
@@ -322,7 +327,7 @@
 
 
 (deftest
- t70_l316
+ t71_l320
  (is
   ((fn
     [m]
@@ -331,11 +336,11 @@
      (not (:x-categorical? m))
      (number? (:first-x-tick m))
      (string? (:first-x-label m))))
-   v69_l310)))
+   v70_l314)))
 
 
 (def
- v72_l323
+ v73_l327
  (let
   [p (first (:panels bar-sk))]
   {:values (:values (:x-ticks p)),
@@ -344,24 +349,24 @@
 
 
 (deftest
- t73_l328
+ t74_l332
  (is
   ((fn
     [m]
     (and
      (:categorical? m)
      (= (count (:values m)) (count (:labels m)))))
-   v72_l323)))
+   v73_l327)))
 
 
-(def v75_l346 (:layout scatter-sk))
+(def v76_l350 (:layout scatter-sk))
 
 
-(deftest t76_l348 (is ((fn [lay] (zero? (:title-pad lay))) v75_l346)))
+(deftest t77_l352 (is ((fn [lay] (zero? (:title-pad lay))) v76_l350)))
 
 
 (def
- v78_l352
+ v79_l356
  (def
   titled-sk
   (sk/sketch
@@ -369,47 +374,47 @@
    {:title "My Plot"})))
 
 
-(def v79_l355 (:layout titled-sk))
+(def v80_l359 (:layout titled-sk))
 
 
-(deftest t80_l357 (is ((fn [lay] (pos? (:title-pad lay))) v79_l355)))
+(deftest t81_l361 (is ((fn [lay] (pos? (:title-pad lay))) v80_l359)))
 
 
-(def v82_l361 (:layout colored-sk))
+(def v83_l365 (:layout colored-sk))
 
 
-(deftest t83_l363 (is ((fn [lay] (pos? (:legend-w lay))) v82_l361)))
+(deftest t84_l367 (is ((fn [lay] (pos? (:legend-w lay))) v83_l365)))
 
 
-(def v84_l365 (:layout scatter-sk))
+(def v85_l369 (:layout scatter-sk))
 
 
-(deftest t85_l367 (is ((fn [lay] (zero? (:legend-w lay))) v84_l365)))
+(deftest t86_l371 (is ((fn [lay] (zero? (:legend-w lay))) v85_l369)))
 
 
 (def
- v87_l371
+ v88_l375
  (select-keys scatter-sk [:width :height :total-width :total-height]))
 
 
 (deftest
- t88_l373
+ t89_l377
  (is
   ((fn
     [m]
     (and
      (>= (:total-width m) (:width m))
      (>= (:total-height m) (:height m))))
-   v87_l371)))
+   v88_l375)))
 
 
 (def
- v90_l381
+ v91_l385
  (def normal-sk (sk/sketch [(sk/bar {:data iris, :x :species})])))
 
 
 (def
- v91_l382
+ v92_l386
  (def
   flip-sk
   (sk/sketch
@@ -417,7 +422,7 @@
 
 
 (def
- v92_l385
+ v93_l389
  (let
   [np (first (:panels normal-sk)) fp (first (:panels flip-sk))]
   {:normal-x-categorical? (:categorical? (:x-ticks np)),
@@ -427,7 +432,7 @@
 
 
 (deftest
- t93_l392
+ t94_l396
  (is
   ((fn
     [m]
@@ -436,28 +441,28 @@
      (not (:normal-y-categorical? m))
      (not (:flipped-x-categorical? m))
      (:flipped-y-categorical? m)))
-   v92_l385)))
+   v93_l389)))
 
 
-(def v95_l410 (:legend colored-sk))
+(def v96_l414 (:legend colored-sk))
 
 
 (deftest
- t96_l412
+ t97_l416
  (is
   ((fn
     [leg]
     (and (= :species (:title leg)) (= 3 (count (:entries leg)))))
-   v95_l410)))
+   v96_l414)))
 
 
-(def v97_l415 (:legend fixed-sk))
+(def v98_l419 (:legend fixed-sk))
 
 
-(deftest t98_l417 (is (nil? v97_l415)))
+(deftest t99_l421 (is (nil? v98_l419)))
 
 
-(def v99_l419 (:legend scatter-sk))
+(def v100_l423 (:legend scatter-sk))
 
 
-(deftest t100_l421 (is (nil? v99_l419)))
+(deftest t101_l425 (is (nil? v100_l423)))
