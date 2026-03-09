@@ -30,11 +30,11 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Colored by Species
 
@@ -46,9 +46,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Petal Dimensions
 
@@ -60,9 +60,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Scatter with Regression Lines
 
@@ -75,11 +75,11 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Tips Dataset
 
@@ -91,9 +91,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Tips with Regression
 
@@ -106,9 +106,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## MPG Dataset
 
@@ -120,9 +120,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Fixed Color
 
@@ -134,9 +134,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Small Dataset
 
@@ -148,9 +148,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Single Point
 
@@ -162,9 +162,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Custom Dimensions
 
@@ -179,7 +179,7 @@
               :y-label "Tip ($)"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs)
-                     (= 700 (:width attrs)))))))
+                     (= 700 (:width attrs))))))])

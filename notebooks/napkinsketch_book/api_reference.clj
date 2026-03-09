@@ -33,13 +33,13 @@
 
 (-> iris (sk/view [[:sepal_length :sepal_width]]) (sk/lay (sk/point)) sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Histogram view — a single keyword means x = y (diagonal):
 
 (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Multiple views — a vector of `[x y]` pairs:
 
@@ -49,7 +49,7 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Map form — explicit keys:
 
@@ -57,7 +57,7 @@
     (sk/lay (sk/point))
     sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (kind/doc #'sk/lay)
 
@@ -65,7 +65,7 @@
 
 (-> iris (sk/view [[:sepal_length :sepal_width]]) (sk/lay (sk/point)) sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Apply multiple marks — scatter with regression:
 
@@ -75,7 +75,7 @@
             (sk/lm {:color :species}))
     sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; ## Marks
 
@@ -85,26 +85,26 @@
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y})])
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Color by column:
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y :color :group})])
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Fixed color:
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y :color "#E74C3C"})])
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Size by column:
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
                       :size :petal_length :color :species})])
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (kind/doc #'sk/line)
 
@@ -115,7 +115,7 @@
 
 (sk/plot [(sk/line {:data wave :x :x :y :y})])
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Grouped lines:
 
@@ -126,7 +126,7 @@
 
 (sk/plot [(sk/line {:data waves :x :x :y :y :color :fn})])
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (kind/doc #'sk/histogram)
 
@@ -134,13 +134,13 @@
 
 (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Colored histogram — one set of bins per group:
 
 (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram {:color :species})) sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (kind/doc #'sk/bar)
 
@@ -148,13 +148,13 @@
 
 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Grouped (dodged) bars:
 
 (-> iris (sk/view :species) (sk/lay (sk/bar {:color :species})) sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (kind/doc #'sk/stacked-bar)
 
@@ -165,7 +165,7 @@
 
 (-> penguins (sk/view :island) (sk/lay (sk/stacked-bar {:color :species})) sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (kind/doc #'sk/value-bar)
 
@@ -173,7 +173,7 @@
 
 (sk/plot [(sk/value-bar {:data sales :x :product :y :revenue})])
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (kind/doc #'sk/lm)
 
@@ -184,7 +184,7 @@
     (sk/lay (sk/point) (sk/lm))
     sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Per-group regression:
 
@@ -194,7 +194,7 @@
             (sk/lm {:color :species}))
     sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; ## Rendering
 
@@ -204,7 +204,7 @@
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y})])
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; With options — title, labels, dimensions:
 
@@ -215,14 +215,14 @@
           :width 800
           :height 300})
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Config — fine-grained styling:
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width})]
          {:config {:point-radius 4 :point-opacity 0.5}})
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (kind/doc #'sk/sketch)
 
@@ -233,8 +233,8 @@
 
 (select-keys sk1 [:width :height :x-label :y-label :title])
 
-(kind/test-last (fn [m] (and (= 600 (:width m))
-                             (= "x" (:x-label m)))))
+(kind/test-last [(fn [m] (and (= 600 (:width m))
+                             (= "x" (:x-label m))))])
 
 ;; The sketch contains panels with domains and layers:
 
@@ -244,8 +244,8 @@
    :n-layers (count (:layers panel))
    :mark (:mark (first (:layers panel)))})
 
-(kind/test-last (fn [m] (and (= 1 (:n-layers m))
-                             (= :point (:mark m)))))
+(kind/test-last [(fn [m] (and (= 1 (:n-layers m))
+                             (= :point (:mark m))))])
 
 ;; Sketches are plain serializable maps — useful for debugging
 ;; and testing. See the *Exploring Sketches* chapter for a full walkthrough.
@@ -262,7 +262,7 @@
     (sk/coord :flip)
     sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (kind/doc #'sk/scale)
 
@@ -274,7 +274,7 @@
     (sk/scale :x :log)
     sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Fixed domain:
 
@@ -284,7 +284,7 @@
     (sk/scale :x {:domain [3 9]})
     sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; Custom axis label via scale:
 
@@ -294,7 +294,7 @@
     (sk/scale :x {:label "Length (cm)"})
     sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; ## Utilities
 
@@ -304,7 +304,7 @@
 
 (sk/cross [:a :b] [1 2 3])
 
-(kind/test-last (fn [v] (= [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]] v)))
+(kind/test-last [(fn [v] (= [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]] v))])
 
 ;; Use with `view` to create a grid of scatter plots:
 
@@ -314,4 +314,4 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last (fn [v] (and (vector? v) (= :svg (first v)))))
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])

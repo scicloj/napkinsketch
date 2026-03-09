@@ -27,11 +27,11 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Colored Scatter
 
@@ -43,11 +43,11 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Scatter with Regression
 
@@ -60,11 +60,11 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Histogram
 
@@ -76,11 +76,11 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Bar Chart
 
@@ -92,11 +92,11 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Flipped Bar Chart
 
@@ -109,11 +109,11 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Line Plot
 
@@ -126,11 +126,11 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Custom Options
 
@@ -145,7 +145,7 @@
               :y-label "Petal Width (cm)"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs)
-                     (= 500 (:width attrs)))))))
+                     (= 500 (:width attrs))))))])

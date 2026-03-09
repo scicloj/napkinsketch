@@ -3,7 +3,7 @@
  (:require
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.napkinsketch.api :as ns]
+  [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.impl.sketch-schema :as ss]
   [clojure.test :refer [deftest is]]))
 
@@ -39,7 +39,7 @@
  v11_l132
  (def
   views
-  [(ns/point
+  [(sk/point
     {:data iris, :x :sepal_length, :y :sepal_width, :color :species})]))
 
 
@@ -49,7 +49,7 @@
 (deftest t14_l139 (is (fn v13_l137 [v] (= :point (:mark v)))))
 
 
-(def v16_l146 (def sk (ns/sketch views)))
+(def v16_l146 (def sk (sk/sketch views)))
 
 
 (def
@@ -93,7 +93,7 @@
 (deftest t25_l174 (is (true? v24_l172)))
 
 
-(def v27_l182 (ns/plot views))
+(def v27_l182 (sk/plot views))
 
 
 (def
@@ -106,9 +106,9 @@
  v31_l225
  (def
   multi-views
-  [(ns/point
+  [(sk/point
     {:data iris, :x :petal_length, :y :petal_width, :color :species})
-   (ns/lm
+   (sk/lm
     {:data iris, :x :petal_length, :y :petal_width, :color :species})]))
 
 
@@ -116,7 +116,7 @@
  v32_l229
  (def
   multi-sk
-  (ns/sketch multi-views {:title "Iris Petals with Regression"})))
+  (sk/sketch multi-views {:title "Iris Petals with Regression"})))
 
 
 (def v34_l233 (count (:layers (first (:panels multi-sk)))))
@@ -176,4 +176,4 @@
 
 (def
  v48_l270
- (ns/plot multi-views {:title "Iris Petals with Regression"}))
+ (sk/plot multi-views {:title "Iris Petals with Regression"}))

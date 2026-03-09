@@ -23,10 +23,10 @@
     (sk/plot {:width 800 :height 250}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs)
-                     (= 800 (:width attrs)))))))
+                     (= 800 (:width attrs))))))])
 
 ;; A tall, narrow plot.
 
@@ -36,10 +36,10 @@
     (sk/plot {:width 300 :height 500}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs)
-                     (= 300 (:width attrs)))))))
+                     (= 300 (:width attrs))))))])
 
 ;; ## Titles and Labels
 
@@ -53,9 +53,9 @@
               :y-label "Width (cm)"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Log Scale
 
@@ -73,9 +73,9 @@
     (sk/plot {:title "Linear Scale"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; Log y-scale — reveals the exponential trend.
 
@@ -86,9 +86,9 @@
     (sk/plot {:title "Log Y Scale"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Fixed Scale Domain
 
@@ -101,9 +101,9 @@
     (sk/plot {:title "Fixed Y Domain [0, 6]"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Custom Config
 
@@ -116,9 +116,9 @@
                        :point-opacity 0.5}}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Value Bar
 
@@ -134,9 +134,9 @@
     (sk/plot {:title "Pre-computed Values"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Value Bars Flipped
 
@@ -147,6 +147,6 @@
     (sk/plot {:title "Horizontal Value Bars"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])

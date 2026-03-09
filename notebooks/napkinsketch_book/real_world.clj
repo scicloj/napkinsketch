@@ -22,11 +22,11 @@
     (sk/plot {:title "Palmer Penguins: Bill Dimensions"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; Per-species regression reveals different slopes.
 
@@ -37,9 +37,9 @@
     (sk/plot {:title "Bill Length vs Depth with Regression"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; Without grouping, Simpson's paradox: overall trend is negative.
 
@@ -50,9 +50,9 @@
     (sk/plot {:title "Simpson's Paradox: Overall vs Per-Group Trend"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; Species distribution across islands.
 
@@ -62,9 +62,9 @@
     (sk/plot {:title "Species by Island"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; Flipper length vs body mass — a strong positive correlation.
 
@@ -75,9 +75,9 @@
     (sk/plot {:title "Flipper Length vs Body Mass"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; Body mass distribution by species.
 
@@ -87,9 +87,9 @@
     (sk/plot {:title "Body Mass Distribution"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Tips
 
@@ -106,11 +106,11 @@
               :x-label "Total Bill ($)" :y-label "Tip ($)"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; Tip amounts by day, colored by meal time.
 
@@ -120,9 +120,9 @@
     (sk/plot {:title "Visits by Day and Meal Time"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; Stacked view of the same data.
 
@@ -132,9 +132,9 @@
     (sk/plot {:title "Visits by Day (Stacked)"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; Horizontal bar chart of party sizes.
 
@@ -145,9 +145,9 @@
     (sk/plot {:title "Day by Gender (Horizontal)"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## MPG
 
@@ -163,9 +163,9 @@
     (sk/plot {:title "Horsepower vs MPG by Origin"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; Displacement vs MPG — another negative correlation.
 
@@ -175,9 +175,9 @@
     (sk/plot {:title "Engine Displacement vs Fuel Efficiency"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; Count of cars by origin.
 
@@ -187,6 +187,6 @@
     (sk/plot {:title "Cars by Origin"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])

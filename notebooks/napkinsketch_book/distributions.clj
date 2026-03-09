@@ -27,9 +27,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Colored Histogram
 
@@ -41,9 +41,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Petal Width Histogram
 
@@ -55,9 +55,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Bar Chart
 
@@ -69,9 +69,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Colored Bar Chart
 
@@ -83,9 +83,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Stacked Bar Chart
 
@@ -97,9 +97,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Horizontal Bar Chart
 
@@ -112,9 +112,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Horizontal Colored Bars
 
@@ -127,9 +127,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Histogram with Custom Title
 
@@ -140,8 +140,8 @@
               :x-label "Amount ($)"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])

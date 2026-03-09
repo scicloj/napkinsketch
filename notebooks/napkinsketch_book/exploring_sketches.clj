@@ -35,7 +35,7 @@
 
 (select-keys tiny-sk [:width :height :margin :total-width :total-height])
 
-(kind/test-last (fn [m] (and (= 600 (:width m)) (= 400 (:height m)))))
+(kind/test-last [(fn [m] (and (= 600 (:width m)) (= 400 (:height m))))])
 
 ;; The plot area is 600×400 pixels with a 25-pixel margin inside.
 ;; `total-width` and `total-height` include extra space for axis labels.
@@ -44,15 +44,15 @@
 
 (select-keys tiny-sk [:title :x-label :y-label])
 
-(kind/test-last (fn [m] (and (nil? (:title m))
+(kind/test-last [(fn [m] (and (nil? (:title m))
                              (= "x" (:x-label m))
-                             (= "y" (:y-label m)))))
+                             (= "y" (:y-label m))))])
 
 ;; No legend, since we didn't map any column to color:
 
 (:legend tiny-sk)
 
-(kind/test-last nil?)
+(kind/test-last [nil?])
 
 ;; ### The panel
 ;;
@@ -63,31 +63,31 @@
 
 (keys tiny-panel)
 
-(kind/test-last (fn [ks] (every? (set ks) [:x-domain :y-domain :layers])))
+(kind/test-last [(fn [ks] (every? (set ks) [:x-domain :y-domain :layers]))])
 
 ;; **Domains** — the numeric range of the data, with a small padding:
 
 (:x-domain tiny-panel)
 
-(kind/test-last (fn [d] (and (<= (first d) 1) (>= (second d) 5))))
+(kind/test-last [(fn [d] (and (<= (first d) 1) (>= (second d) 5)))])
 
 (:y-domain tiny-panel)
 
-(kind/test-last (fn [d] (and (<= (first d) 1) (>= (second d) 5))))
+(kind/test-last [(fn [d] (and (<= (first d) 1) (>= (second d) 5)))])
 
 ;; **Scale specs** — what kind of scale to use:
 
 (:x-scale tiny-panel)
 
-(kind/test-last (fn [s] (= :linear (:type s))))
+(kind/test-last [(fn [s] (= :linear (:type s)))])
 
 ;; **Ticks** — pre-computed tick positions and their text labels:
 
 (:x-ticks tiny-panel)
 
-(kind/test-last (fn [t] (and (vector? (:values t))
+(kind/test-last [(fn [t] (and (vector? (:values t))
                              (vector? (:labels t))
-                             (= (count (:values t)) (count (:labels t))))))
+                             (= (count (:values t)) (count (:labels t)))))])
 
 ;; These are the actual numbers that will appear on the axis.
 ;; They are in data space — not pixel positions.
@@ -101,23 +101,23 @@
 
 (select-keys tiny-layer [:mark :style])
 
-(kind/test-last (fn [m] (= :point (:mark m))))
+(kind/test-last [(fn [m] (= :point (:mark m)))])
 
 ;; The style gives rendering hints (opacity, radius) but the geometry
 ;; is in the **groups**. Without a color mapping, there is one group:
 
 (count (:groups tiny-layer))
 
-(kind/test-last (fn [n] (= 1 n)))
+(kind/test-last [(fn [n] (= 1 n))])
 
 ;; The group contains the actual data — x/y coordinates in data space,
 ;; plus a resolved RGBA color:
 
 (first (:groups tiny-layer))
 
-(kind/test-last (fn [g] (and (= 4 (count (:color g)))
+(kind/test-last [(fn [g] (and (= 4 (count (:color g)))
                              (= [1 2 3 4 5] (mapv int (:xs g)))
-                             (= [2 4 1 5 3] (mapv int (:ys g))))))
+                             (= [2 4 1 5 3] (mapv int (:ys g)))))])
 
 ;; These are the original data values — not pixel positions.
 ;; The renderer maps them through scales to get pixel coordinates.
@@ -142,7 +142,7 @@
 
 (count (:groups iris-layer))
 
-(kind/test-last (fn [n] (= 3 n)))
+(kind/test-last [(fn [n] (= 3 n))])
 
 ;; Each group has its own resolved color and a subset of the data:
 
@@ -151,14 +151,14 @@
          :n-points (count (:xs g))})
       (:groups iris-layer))
 
-(kind/test-last (fn [gs] (and (= 3 (count gs))
-                              (every? #(= 50 (:n-points %)) gs))))
+(kind/test-last [(fn [gs] (and (= 3 (count gs))
+                              (every? #(= 50 (:n-points %)) gs)))])
 
 ;; The legend describes the color mapping:
 
 (:legend iris-sk)
 
-(kind/test-last (fn [leg] (= 3 (count (:entries leg)))))
+(kind/test-last [(fn [leg] (= 3 (count (:entries leg))))])
 
 ;; Colors are resolved to `[r g b a]` vectors — no symbolic references.
 ;; The same color appears in both the layer groups and the legend entries.
@@ -176,16 +176,16 @@
 
 (:mark hist-layer)
 
-(kind/test-last (fn [m] (= :bar m)))
+(kind/test-last [(fn [m] (= :bar m))])
 
 ;; The geometry is in `:bars` — each bin has a lo edge, hi edge, and count:
 
 (let [g (first (:groups hist-layer))]
   (:bars g))
 
-(kind/test-last (fn [bars] (and (> (count bars) 3)
+(kind/test-last [(fn [bars] (and (> (count bars) 3)
                                 (every? #(< (:lo %) (:hi %)) bars)
-                                (every? #(pos? (:count %)) bars))))
+                                (every? #(pos? (:count %)) bars)))])
 
 ;; The renderer will draw a rectangle from `(lo, 0)` to `(hi, count)`
 ;; in data space, then map through scales to pixels.
@@ -205,9 +205,9 @@
 
 (select-keys bar-layer [:mark :position :categories])
 
-(kind/test-last (fn [m] (and (= :rect (:mark m))
+(kind/test-last [(fn [m] (and (= :rect (:mark m))
                              (= :dodge (:position m))
-                             (= 3 (count (:categories m))))))
+                             (= 3 (count (:categories m)))))])
 
 ;; Each group (one per color) has counts for every category:
 
@@ -216,7 +216,7 @@
          :counts (:counts g)})
       (:groups bar-layer))
 
-(kind/test-last (fn [gs] (= 3 (count gs))))
+(kind/test-last [(fn [gs] (= 3 (count gs)))])
 
 ;; The `:position` field (`:dodge` or `:stack`) tells the renderer
 ;; how to arrange multiple groups within each category.
@@ -231,7 +231,7 @@
 
 (:position stacked-layer)
 
-(kind/test-last (fn [p] (= :stack p)))
+(kind/test-last [(fn [p] (= :stack p))])
 
 ;; The data is the same — only the rendering instruction differs.
 ;; The sketch describes *what* to draw; the renderer decides *how*.
@@ -250,7 +250,7 @@
 
 (mapv :mark (:layers (first (:panels lm-sk))))
 
-(kind/test-last (fn [marks] (= [:point :line] marks)))
+(kind/test-last [(fn [marks] (= [:point :line] marks))])
 
 ;; The line layer has `:stat-origin :lm` to record where it came from:
 
@@ -258,15 +258,15 @@
 
 (:stat-origin lm-layer)
 
-(kind/test-last (fn [s] (= :lm s)))
+(kind/test-last [(fn [s] (= :lm s))])
 
 ;; Its group has endpoints — a line segment in data space:
 
 (let [g (first (:groups lm-layer))]
   (select-keys g [:x1 :y1 :x2 :y2]))
 
-(kind/test-last (fn [m] (and (< (:x1 m) (:x2 m))
-                             (every? number? (vals m)))))
+(kind/test-last [(fn [m] (and (< (:x1 m) (:x2 m))
+                             (every? number? (vals m))))])
 
 ;; The renderer maps these two points through scales to get a
 ;; pixel-space line segment.
@@ -289,7 +289,7 @@
            :x2 (some-> (:x2 g) (Math/round) int)})
         (:groups line-layer)))
 
-(kind/test-last (fn [gs] (= 3 (count gs))))
+(kind/test-last [(fn [gs] (= 3 (count gs)))])
 
 ;; Three line segments, each with its own color — one per species.
 
@@ -310,7 +310,7 @@
  :first-x (first (:xs wave-group))
  :last-x (last (:xs wave-group))}
 
-(kind/test-last (fn [m] (= 30 (:n-points m))))
+(kind/test-last [(fn [m] (= 30 (:n-points m)))])
 
 ;; The renderer connects these points in order to draw a polyline.
 
@@ -330,7 +330,7 @@
   {:xs (:xs g)
    :ys (:ys g)})
 
-(kind/test-last (fn [m] (= 4 (count (:xs m)))))
+(kind/test-last [(fn [m] (= 4 (count (:xs m))))])
 
 ;; ## Flipped Coordinates
 ;;
@@ -341,7 +341,7 @@
 
 (:coord (first (:panels flip-sk)))
 
-(kind/test-last (fn [c] (= :flip c)))
+(kind/test-last [(fn [c] (= :flip c))])
 
 ;; The domains are swapped — the categorical axis is now y:
 
@@ -349,8 +349,8 @@
   {:x-domain-type (if (number? (first (:x-domain p))) :numeric :categorical)
    :y-domain-type (if (number? (first (:y-domain p))) :numeric :categorical)})
 
-(kind/test-last (fn [m] (and (= :numeric (:x-domain-type m))
-                             (= :categorical (:y-domain-type m)))))
+(kind/test-last [(fn [m] (and (= :numeric (:x-domain-type m))
+                             (= :categorical (:y-domain-type m))))])
 
 ;; The layer data is unchanged — the coord type tells the renderer
 ;; to swap axes during mapping.
@@ -368,17 +368,17 @@
 
 (select-keys opts-sk [:title :x-label :y-label :width :height])
 
-(kind/test-last (fn [m] (and (= "My Custom Title" (:title m))
+(kind/test-last [(fn [m] (and (= "My Custom Title" (:title m))
                              (= 800 (:width m))
-                             (= 300 (:height m)))))
+                             (= 300 (:height m))))])
 
 ;; The layout records how much space to reserve for each label:
 
 (:layout opts-sk)
 
-(kind/test-last (fn [lay] (and (pos? (:title-pad lay))
+(kind/test-last [(fn [lay] (and (pos? (:title-pad lay))
                                (pos? (:x-label-pad lay))
-                               (pos? (:y-label-pad lay)))))
+                               (pos? (:y-label-pad lay))))])
 
 ;; ## Sketch vs Plot — Side by Side
 ;;
@@ -395,7 +395,7 @@
 
 (select-keys final-sk [:title :x-label :y-label :width :height])
 
-(kind/test-last (fn [m] (= "Iris Petals" (:title m))))
+(kind/test-last [(fn [m] (= "Iris Petals" (:title m)))])
 
 ;; Layer summary:
 
@@ -405,7 +405,7 @@
          :stat-origin (:stat-origin l)})
       (:layers (first (:panels final-sk))))
 
-(kind/test-last (fn [ls] (= 2 (count ls))))
+(kind/test-last [(fn [ls] (= 2 (count ls)))])
 
 ;; The rendered plot (SVG):
 
@@ -418,33 +418,33 @@
 
 (sk/valid-sketch? tiny-sk)
 
-(kind/test-last true?)
+(kind/test-last [true?])
 
 (sk/valid-sketch? iris-sk)
 
-(kind/test-last true?)
+(kind/test-last [true?])
 
 (sk/valid-sketch? hist-sk)
 
-(kind/test-last true?)
+(kind/test-last [true?])
 
 (sk/valid-sketch? bar-sk)
 
-(kind/test-last true?)
+(kind/test-last [true?])
 
 (sk/valid-sketch? lm-sk)
 
-(kind/test-last true?)
+(kind/test-last [true?])
 
 (sk/valid-sketch? final-sk)
 
-(kind/test-last true?)
+(kind/test-last [true?])
 
 ;; When a sketch is invalid, `sk/explain-sketch` shows which part failed:
 
 (sk/explain-sketch (assoc tiny-sk :width "not-a-number"))
 
-(kind/test-last some?)
+(kind/test-last [some?])
 
 ;; ## Serialization
 ;;
@@ -456,6 +456,6 @@
       back (read-string s)]
   (= tiny-sk back))
 
-(kind/test-last true?)
+(kind/test-last [true?])
 
 ;; This makes sketches suitable for caching, logging, and snapshot testing.

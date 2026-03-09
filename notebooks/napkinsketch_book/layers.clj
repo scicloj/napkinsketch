@@ -29,9 +29,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Points + Regression
 
@@ -43,11 +43,11 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Per-Group Regression
 
@@ -60,9 +60,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Fixed Color on One Layer
 
@@ -75,9 +75,9 @@
     sk/plot)
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Multiple Column Pairs
 
@@ -91,9 +91,9 @@
     (sk/plot {:title "Sepal: Length vs Width"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 (-> iris
     (sk/view [[:petal_length :petal_width]])
@@ -102,9 +102,9 @@
     (sk/plot {:title "Petal: Length vs Width"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
-              (vector? (nth v 2)))))
+              (vector? (nth v 2))))])
 
 ;; ## Tips: Bill vs Tip with Regression
 
@@ -119,11 +119,11 @@
               :y-label "Tip ($)"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])
 
 ;; ## Line + Points with Colors
 
@@ -141,8 +141,8 @@
     (sk/plot {:title "Growth Over Time"}))
 
 (kind/test-last
- (fn [v] (and (vector? v) (= :svg (first v))
+ [(fn [v] (and (vector? v) (= :svg (first v))
               (let [attrs (second v)]
                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
               (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body)))))))
+                (and (vector? body) (= :g (first body))))))])

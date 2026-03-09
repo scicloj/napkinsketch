@@ -136,7 +136,7 @@ graph TD
 
 (dissoc (first views) :data)
 
-(kind/test-last (fn [v] (= :point (:mark v))))
+(kind/test-last [(fn [v] (= :point (:mark v)))])
 
 ;; ### Stage 2: Sketch
 ;;
@@ -157,21 +157,21 @@ graph TD
    :first-group-n-points (count (:xs group))
    :first-group-color (:color group)})
 
-(kind/test-last (fn [m] (and (= :point (:mark m))
+(kind/test-last [(fn [m] (and (= :point (:mark m))
                              (= 3 (:n-groups m))
-                             (pos? (:first-group-n-points m)))))
+                             (pos? (:first-group-n-points m))))])
 
 ;; The sketch validates against Malli:
 
 (ss/valid? sk)
 
-(kind/test-last true?)
+(kind/test-last [true?])
 
 ;; And serializes cleanly:
 
 (= sk (read-string (pr-str sk)))
 
-(kind/test-last true?)
+(kind/test-last [true?])
 
 ;; ### Stage 3: Plot (Sketch → Membrane → SVG)
 ;;
@@ -232,7 +232,7 @@ graph LR
 
 (count (:layers (first (:panels multi-sk))))
 
-(kind/test-last (fn [n] (= 2 n)))
+(kind/test-last [(fn [n] (= 2 n))])
 
 ;; Point layer:
 
@@ -240,7 +240,7 @@ graph LR
   {:mark (:mark layer)
    :n-groups (count (:groups layer))})
 
-(kind/test-last (fn [m] (and (= :point (:mark m)) (= 3 (:n-groups m)))))
+(kind/test-last [(fn [m] (and (= :point (:mark m)) (= 3 (:n-groups m))))])
 
 ;; Line layer (regression):
 
@@ -250,20 +250,20 @@ graph LR
    :n-groups (count (:groups layer))
    :first-group-keys (set (keys (first (:groups layer))))})
 
-(kind/test-last (fn [m] (and (= :line (:mark m))
+(kind/test-last [(fn [m] (and (= :line (:mark m))
                              (= :lm (:stat-origin m))
                              (= 3 (:n-groups m))
-                             (contains? (:first-group-keys m) :x1))))
+                             (contains? (:first-group-keys m) :x1)))])
 
 ;; Title and legend in the sketch:
 
 (:title multi-sk)
 
-(kind/test-last (fn [t] (= "Iris Petals with Regression" t)))
+(kind/test-last [(fn [t] (= "Iris Petals with Regression" t))])
 
 (count (:entries (:legend multi-sk)))
 
-(kind/test-last (fn [n] (= 3 n)))
+(kind/test-last [(fn [n] (= 3 n))])
 
 ;; And it renders:
 

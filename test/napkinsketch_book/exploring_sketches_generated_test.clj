@@ -181,7 +181,7 @@
    [gs]
    (and
     (= 3 (count gs))
-    (every? (fn* [p1__74211#] (= 50 (:n-points p1__74211#))) gs)))))
+    (every? (fn* [p1__77973#] (= 50 (:n-points p1__77973#))) gs)))))
 
 
 (def v54_l159 (:legend iris-sk))
@@ -223,9 +223,9 @@
    (and
     (> (count bars) 3)
     (every?
-     (fn* [p1__74212#] (< (:lo p1__74212#) (:hi p1__74212#)))
+     (fn* [p1__77974#] (< (:lo p1__77974#) (:hi p1__77974#)))
      bars)
-    (every? (fn* [p1__74213#] (pos? (:count p1__74213#))) bars)))))
+    (every? (fn* [p1__77975#] (pos? (:count p1__77975#))) bars)))))
 
 
 (def
@@ -381,7 +381,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__74214#] (Math/sin (* p1__74214# 0.3)))
+     (fn* [p1__77976#] (Math/sin (* p1__77976# 0.3)))
      (range 30))})))
 
 
@@ -559,3 +559,55 @@
 
 
 (def v134_l412 (sk/plot final-views {:title "Iris Petals"}))
+
+
+(def v136_l419 (sk/valid-sketch? tiny-sk))
+
+
+(deftest t137_l421 (is (true? v136_l419)))
+
+
+(def v138_l423 (sk/valid-sketch? iris-sk))
+
+
+(deftest t139_l425 (is (true? v138_l423)))
+
+
+(def v140_l427 (sk/valid-sketch? hist-sk))
+
+
+(deftest t141_l429 (is (true? v140_l427)))
+
+
+(def v142_l431 (sk/valid-sketch? bar-sk))
+
+
+(deftest t143_l433 (is (true? v142_l431)))
+
+
+(def v144_l435 (sk/valid-sketch? lm-sk))
+
+
+(deftest t145_l437 (is (true? v144_l435)))
+
+
+(def v146_l439 (sk/valid-sketch? final-sk))
+
+
+(deftest t147_l441 (is (true? v146_l439)))
+
+
+(def
+ v149_l445
+ (sk/explain-sketch (assoc tiny-sk :width "not-a-number")))
+
+
+(deftest t150_l447 (is (some? v149_l445)))
+
+
+(def
+ v152_l455
+ (let [s (pr-str tiny-sk) back (read-string s)] (= tiny-sk back)))
+
+
+(deftest t153_l459 (is (true? v152_l455)))

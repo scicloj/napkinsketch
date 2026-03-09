@@ -73,9 +73,9 @@ graph TD
    :x-scale-type (get-in p [:x-scale :type])
    :y-scale-type (get-in p [:y-scale :type])})
 
-(kind/test-last (fn [m] (and (= :numerical (:x-domain-kind m))
+(kind/test-last [(fn [m] (and (= :numerical (:x-domain-kind m))
                              (= :numerical (:y-domain-kind m))
-                             (= :linear (:x-scale-type m)))))
+                             (= :linear (:x-scale-type m))))])
 
 ;; A categorical column produces a band scale:
 
@@ -85,7 +85,7 @@ graph TD
   {:x-domain (:x-domain p)
    :x-scale-type (get-in p [:x-scale :type])})
 
-(kind/test-last (fn [m] (= :categorical (:x-scale-type m))))
+(kind/test-last [(fn [m] (= :categorical (:x-scale-type m)))])
 
 ;; ## Mark and Stat Inference
 ;;
@@ -114,7 +114,7 @@ graph TD
 (let [layer (first (:layers (first (:panels hist-sk))))]
   {:mark (:mark layer)})
 
-(kind/test-last (fn [m] (= :bar (:mark m))))
+(kind/test-last [(fn [m] (= :bar (:mark m)))])
 
 ;; And a categorical column with the same pattern → bar chart:
 
@@ -124,7 +124,7 @@ graph TD
 (let [layer (first (:layers (first (:panels count-sk))))]
   {:mark (:mark layer)})
 
-(kind/test-last (fn [m] (= :rect (:mark m))))
+(kind/test-last [(fn [m] (= :rect (:mark m)))])
 
 ;; ## Color Resolution
 ;;
@@ -143,8 +143,8 @@ graph TD
   (mapv (fn [g] {:color (:color g) :n (count (:xs g))})
         (:groups layer)))
 
-(kind/test-last (fn [gs] (and (= 3 (count gs))
-                              (every? #(= 4 (count (:color %))) gs))))
+(kind/test-last [(fn [gs] (and (= 3 (count gs))
+                              (every? #(= 4 (count (:color %))) gs)))])
 
 ;; Three groups, each with a distinct RGBA color from the palette.
 
@@ -159,14 +159,14 @@ graph TD
 (let [g (first (:groups (first (:layers (first (:panels fixed-sk))))))]
   (:color g))
 
-(kind/test-last (fn [c] (and (= 4 (count c))
-                             (> (first c) 0.8))))
+(kind/test-last [(fn [c] (and (= 4 (count c))
+                             (> (first c) 0.8)))])
 
 ;; One group with red color. No legend generated:
 
 (:legend fixed-sk)
 
-(kind/test-last nil?)
+(kind/test-last [nil?])
 
 ;; ### No color → default gray
 ;;
@@ -175,7 +175,7 @@ graph TD
 (let [g (first (:groups (first (:layers (first (:panels scatter-sk))))))]
   (:color g))
 
-(kind/test-last (fn [c] (= 4 (count c))))
+(kind/test-last [(fn [c] (= 4 (count c)))])
 
 ;; ## Grouping
 ;;
@@ -193,8 +193,8 @@ graph TD
          :n-groups (count (:groups layer))})
       (:layers (first (:panels grp-sk))))
 
-(kind/test-last (fn [ls] (and (= 2 (count ls))
-                              (every? #(= 3 (:n-groups %)) ls))))
+(kind/test-last [(fn [ls] (and (= 2 (count ls))
+                              (every? #(= 3 (:n-groups %)) ls)))])
 
 ;; ## Domain Inference
 ;;
@@ -213,8 +213,8 @@ graph TD
    :actual-min (reduce min (map :sepal_length (tc/rows iris :as-maps)))
    :actual-max (reduce max (map :sepal_length (tc/rows iris :as-maps)))})
 
-(kind/test-last (fn [m] (and (< (first (:x-domain m)) (:actual-min m))
-                             (> (second (:x-domain m)) (:actual-max m)))))
+(kind/test-last [(fn [m] (and (< (first (:x-domain m)) (:actual-min m))
+                             (> (second (:x-domain m)) (:actual-max m))))])
 
 ;; The domain extends slightly beyond the actual data — that's the
 ;; 5% padding, so points aren't clipped at the edges.
@@ -224,14 +224,14 @@ graph TD
 (let [p (first (:panels bar-sk))]
   (:x-domain p))
 
-(kind/test-last (fn [d] (= 3 (count d))))
+(kind/test-last [(fn [d] (= 3 (count d)))])
 
 ;; Bar chart y-domain always starts at zero:
 
 (let [p (first (:panels bar-sk))]
   (first (:y-domain p)))
 
-(kind/test-last zero?)
+(kind/test-last [zero?])
 
 ;; ### Multi-layer domain merging
 ;;
@@ -241,8 +241,8 @@ graph TD
   {:x-domain (:x-domain p)
    :y-domain (:y-domain p)})
 
-(kind/test-last (fn [m] (and (< (first (:x-domain m)) (second (:x-domain m)))
-                             (< (first (:y-domain m)) (second (:y-domain m))))))
+(kind/test-last [(fn [m] (and (< (first (:x-domain m)) (second (:x-domain m)))
+                             (< (first (:y-domain m)) (second (:y-domain m)))))])
 
 ;; Both the point layer and the regression layer contribute to
 ;; the same domain range.
@@ -258,7 +258,7 @@ graph TD
 (let [p (first (:panels stacked-sk))]
   {:y-max (second (:y-domain p))})
 
-(kind/test-last (fn [m] (>= (:y-max m) 50)))
+(kind/test-last [(fn [m] (>= (:y-max m) 50))])
 
 ;; ## Axis Label Inference
 ;;
@@ -273,11 +273,11 @@ graph TD
 
 (:x-label scatter-sk)
 
-(kind/test-last (fn [l] (= "sepal length" l)))
+(kind/test-last [(fn [l] (= "sepal length" l))])
 
 (:y-label scatter-sk)
 
-(kind/test-last (fn [l] (= "sepal width" l)))
+(kind/test-last [(fn [l] (= "sepal width" l))])
 
 ;; ### Y-label suppression
 ;;
@@ -286,7 +286,7 @@ graph TD
 
 (:y-label hist-sk)
 
-(kind/test-last nil?)
+(kind/test-last [nil?])
 
 ;; ### Explicit labels override inference
 
@@ -295,7 +295,7 @@ graph TD
 
 (:x-label custom-sk)
 
-(kind/test-last (fn [l] (= "Length (cm)" l)))
+(kind/test-last [(fn [l] (= "Length (cm)" l))])
 
 ;; ## Tick Inference
 ;;
@@ -313,10 +313,10 @@ graph TD
    :first-x-tick (first (:values (:x-ticks p)))
    :first-x-label (first (:labels (:x-ticks p)))})
 
-(kind/test-last (fn [m] (and (> (:n-x-ticks m) 2)
+(kind/test-last [(fn [m] (and (> (:n-x-ticks m) 2)
                              (not (:x-categorical? m))
                              (number? (:first-x-tick m))
-                             (string? (:first-x-label m)))))
+                             (string? (:first-x-label m))))])
 
 ;; Categorical ticks — one per category:
 
@@ -325,8 +325,8 @@ graph TD
    :labels (:labels (:x-ticks p))
    :categorical? (:categorical? (:x-ticks p))})
 
-(kind/test-last (fn [m] (and (:categorical? m)
-                             (= (count (:values m)) (count (:labels m))))))
+(kind/test-last [(fn [m] (and (:categorical? m)
+                             (= (count (:values m)) (count (:labels m)))))])
 
 ;; ## Layout Inference
 ;;
@@ -345,7 +345,7 @@ graph TD
 
 (:layout scatter-sk)
 
-(kind/test-last (fn [lay] (zero? (:title-pad lay))))
+(kind/test-last [(fn [lay] (zero? (:title-pad lay)))])
 
 ;; With title, title padding is added:
 
@@ -354,24 +354,24 @@ graph TD
 
 (:layout titled-sk)
 
-(kind/test-last (fn [lay] (pos? (:title-pad lay))))
+(kind/test-last [(fn [lay] (pos? (:title-pad lay)))])
 
 ;; Legend width is added only when color mapping is used:
 
 (:layout colored-sk)
 
-(kind/test-last (fn [lay] (pos? (:legend-w lay))))
+(kind/test-last [(fn [lay] (pos? (:legend-w lay)))])
 
 (:layout scatter-sk)
 
-(kind/test-last (fn [lay] (zero? (:legend-w lay))))
+(kind/test-last [(fn [lay] (zero? (:legend-w lay)))])
 
 ;; Total dimensions follow from the base size plus padding:
 
 (select-keys scatter-sk [:width :height :total-width :total-height])
 
-(kind/test-last (fn [m] (and (>= (:total-width m) (:width m))
-                             (>= (:total-height m) (:height m)))))
+(kind/test-last [(fn [m] (and (>= (:total-width m) (:width m))
+                             (>= (:total-height m) (:height m))))])
 
 ;; ## Coordinate Flipping
 ;;
@@ -389,10 +389,10 @@ graph TD
    :flipped-x-categorical? (:categorical? (:x-ticks fp))
    :flipped-y-categorical? (:categorical? (:y-ticks fp))})
 
-(kind/test-last (fn [m] (and (:normal-x-categorical? m)
+(kind/test-last [(fn [m] (and (:normal-x-categorical? m)
                              (not (:normal-y-categorical? m))
                              (not (:flipped-x-categorical? m))
-                             (:flipped-y-categorical? m))))
+                             (:flipped-y-categorical? m)))])
 
 ;; The categorical axis moved from x to y. The layer data is unchanged;
 ;; the renderer reads `:coord :flip` and swaps axes during rendering.
@@ -409,16 +409,16 @@ graph TD
 
 (:legend colored-sk)
 
-(kind/test-last (fn [leg] (and (= :species (:title leg))
-                               (= 3 (count (:entries leg))))))
+(kind/test-last [(fn [leg] (and (= :species (:title leg))
+                               (= 3 (count (:entries leg)))))])
 
 (:legend fixed-sk)
 
-(kind/test-last nil?)
+(kind/test-last [nil?])
 
 (:legend scatter-sk)
 
-(kind/test-last nil?)
+(kind/test-last [nil?])
 
 ;; ## Summary
 ;;
