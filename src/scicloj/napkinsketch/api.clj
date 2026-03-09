@@ -1,10 +1,10 @@
-
 (ns scicloj.napkinsketch.api
   "Public API for napkinsketch — composable plotting in Clojure."
   (:require [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.plot :as plot-impl]
             [scicloj.napkinsketch.impl.sketch :as sketch-impl]
-            [scicloj.napkinsketch.impl.sketch-schema :as ss]))
+            [scicloj.napkinsketch.impl.sketch-schema :as ss]
+            [scicloj.napkinsketch.impl.render :as render-impl]))
 
 ;; ---- Compositional API ----
 
@@ -77,18 +77,27 @@
 ;; ---- Rendering ----
 
 (def plot
-  "Render views as SVG hiccup, wrapped with kind/hiccup.
-   (plot views)              — default 600x400
-   (plot views {:width 800 :height 500 :title \"My Plot\"})"
+  "Render views as a figure (default: SVG hiccup wrapped with kind/hiccup).
+   (plot views)              — default 600×400 SVG
+   (plot views {:width 800 :height 500 :title \"My Plot\"})
+   (plot views {:format :svg})  — explicit format"
   plot-impl/plot)
 
 (def sketch
   "Resolve views into a sketch — a plain Clojure map with data-space
    geometry, domains, tick info, legend, and layout. No membrane types,
    no datasets, no scale objects in the output. Serializable data.
-   (sketch views)              — default 600x400
+   (sketch views)              — default 600×400
    (sketch views {:width 800 :title \"My Plot\"})"
   sketch-impl/resolve-sketch)
+
+(def render-figure
+  "Render a sketch into a figure for the given format.
+   Dispatches on format keyword. Each renderer is a separate namespace
+   that registers a defmethod; :svg is always available.
+   (render-figure (sketch views) :svg {})
+   (render-figure (sketch views) :plotly {})"
+  render-impl/render-figure)
 
 ;; ---- Sketch Validation ----
 
@@ -102,4 +111,3 @@
    Returns nil if valid, or a Malli explanation map if invalid.
    (explain-sketch (sketch views))"
   ss/explain)
-

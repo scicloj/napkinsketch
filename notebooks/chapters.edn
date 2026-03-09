@@ -6,7 +6,9 @@
  "Advanced" ["composability"
              "real_world"
              "edge_cases"]
- "Reference" ["api_reference"]
+ "Reference" ["api_reference"
+              "glossary"]
  "Internals" ["inference_rules"
               "exploring_sketches"
+              "extensibility"
               "architecture"]}
