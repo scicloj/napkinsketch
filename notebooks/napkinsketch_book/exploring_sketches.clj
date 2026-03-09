@@ -10,7 +10,6 @@
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
    [scicloj.napkinsketch.api :as sk]
-   [scicloj.napkinsketch.impl.sketch-schema :as ss]
    [clojure.pprint :as pp]))
 
 ;; ## A Minimal Scatter Plot
@@ -392,7 +391,6 @@
   [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
    (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
 
-
 (def final-sk (sk/sketch final-views {:title "Iris Petals"}))
 
 (select-keys final-sk [:title :x-label :y-label :width :height])
@@ -418,33 +416,33 @@
 ;; Every sketch conforms to a Malli schema. This ensures the sketch
 ;; contract is machine-checkable.
 
-(ss/valid? tiny-sk)
+(sk/valid-sketch? tiny-sk)
 
 (kind/test-last true?)
 
-(ss/valid? iris-sk)
+(sk/valid-sketch? iris-sk)
 
 (kind/test-last true?)
 
-(ss/valid? hist-sk)
+(sk/valid-sketch? hist-sk)
 
 (kind/test-last true?)
 
-(ss/valid? bar-sk)
+(sk/valid-sketch? bar-sk)
 
 (kind/test-last true?)
 
-(ss/valid? lm-sk)
+(sk/valid-sketch? lm-sk)
 
 (kind/test-last true?)
 
-(ss/valid? final-sk)
+(sk/valid-sketch? final-sk)
 
 (kind/test-last true?)
 
-;; When a sketch is invalid, `ss/explain` shows which part failed:
+;; When a sketch is invalid, `sk/explain-sketch` shows which part failed:
 
-(ss/explain (assoc tiny-sk :width "not-a-number"))
+(sk/explain-sketch (assoc tiny-sk :width "not-a-number"))
 
 (kind/test-last some?)
 

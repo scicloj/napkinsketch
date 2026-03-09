@@ -3,7 +3,8 @@
   "Public API for napkinsketch — composable plotting in Clojure."
   (:require [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.plot :as plot-impl]
-            [scicloj.napkinsketch.impl.sketch :as sketch-impl]))
+            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
 ;; ---- Compositional API ----
 
@@ -88,4 +89,17 @@
    (sketch views)              — default 600x400
    (sketch views {:width 800 :title \"My Plot\"})"
   sketch-impl/resolve-sketch)
+
+;; ---- Sketch Validation ----
+
+(def valid-sketch?
+  "Check if a sketch conforms to the Malli schema.
+   (valid-sketch? (sketch views))  — true if valid"
+  ss/valid?)
+
+(def explain-sketch
+  "Explain why a sketch does not conform to the Malli schema.
+   Returns nil if valid, or a Malli explanation map if invalid.
+   (explain-sketch (sketch views))"
+  ss/explain)
 
