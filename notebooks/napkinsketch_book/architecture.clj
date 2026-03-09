@@ -11,12 +11,18 @@
    [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
 ;; ## Pipeline Overview
-;;
-;; ```
-;; Views ──► Sketch ──► Membrane Scene ──► SVG Hiccup
-;; (API)     (data)     (drawing tree)     (output)
-;; ```
-;;
+
+(kind/mermaid "
+graph LR
+  V[\"Views<br/>(API)\"] -->|resolve| S[\"Sketch<br/>(data-space)\"]
+  S -->|scales + coords| M[\"Membrane Scene<br/>(pixel-space)\"]
+  M -->|tree walk| SVG[\"SVG Hiccup<br/>(output)\"]
+  style V fill:#e8f5e9
+  style S fill:#fff3e0
+  style M fill:#e3f2fd
+  style SVG fill:#fce4ec
+")
+
 ;; - **Views** — user-facing compositional API: `view`, `lay`, `point`, `histogram`, etc.
 ;;
 ;; - **Sketch** — fully resolved plot specification. Data-space geometry,
@@ -32,7 +38,29 @@
 ;;
 ;; The key architectural insight is that **what** to draw and **how** to
 ;; draw it are separate concerns.
-;;
+
+(kind/mermaid "
+graph TB
+  subgraph WHAT [\"What to draw\"]
+    direction TB
+    A1[\"api.clj\"]
+    A2[\"impl/view.clj\"]
+    A3[\"impl/stat.clj\"]
+    A4[\"impl/sketch.clj\"]
+  end
+  subgraph HOW [\"How to draw it\"]
+    direction TB
+    B1[\"impl/scale.clj\"]
+    B2[\"impl/mark.clj\"]
+    B3[\"impl/panel.clj\"]
+    B4[\"impl/plot.clj\"]
+    B5[\"render/svg.clj\"]
+  end
+  WHAT -->|sketch| HOW
+  style WHAT fill:#e8f5e9
+  style HOW fill:#e3f2fd
+")
+
 ;; ### The Sketch (what)
 ;;
 ;; A sketch answers: what data, what marks, what domains, what ticks,
@@ -68,32 +96,34 @@
 ;; - Converted to SVG by a context-passing tree walk
 
 ;; ## Namespace Structure
-;;
-;; ```
-;; api.clj                  Public API (view, lay, plot, sketch, ...)
-;;  │
-;;  ├── impl/view.clj       View resolution, mark constructors
-;;  ├── impl/stat.clj       Statistics: identity, bin, count, lm
-;;  ├── impl/defaults.clj   Theme, palette, color helpers
-;;  │
-;;  ├── impl/sketch.clj     Views → Sketch (data-space geometry)
-;;  ├── impl/sketch_schema.clj  Malli schemas for sketch
-;;  │
-;;  ├── impl/scale.clj      Wadogo scale builders
-;;  ├── impl/coord.clj      Coordinate system transforms
-;;  ├── impl/mark.clj       Sketch layers → membrane primitives
-;;  ├── impl/panel.clj      Panel assembly (grid, ticks, marks)
-;;  │
-;;  ├── impl/plot.clj       Orchestrator: sketch → scene → SVG
-;;  └── render/svg.clj      Membrane scene → SVG hiccup
-;; ```
+
+(kind/mermaid "
+graph TD
+  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]
+  API --> PLOT[\"impl/plot.clj\"]
+  API --> SKETCH[\"impl/sketch.clj\"]
+  SKETCH --> VIEW
+  SKETCH --> STAT[\"impl/stat.clj\"]
+  SKETCH --> SCALE[\"impl/scale.clj\"]
+  SKETCH --> DEFAULTS[\"impl/defaults.clj\"]
+  PLOT --> SKETCH
+  PLOT --> PANEL[\"impl/panel.clj\"]
+  PLOT --> SVG[\"render/svg.clj\"]
+  PANEL --> MARK[\"impl/mark.clj\"]
+  PANEL --> SCALE
+  PANEL --> COORD[\"impl/coord.clj\"]
+  style API fill:#c8e6c9
+  style SKETCH fill:#ffe0b2
+  style PLOT fill:#bbdefb
+  style SVG fill:#f8bbd0
+")
 
 ;; ## Data Flow Example
 ;;
 ;; Let's trace a scatter plot through the pipeline.
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 ;; ### Stage 1: Views
 ;;
@@ -128,8 +158,8 @@
    :first-group-color (:color group)})
 
 (kind/test-last (fn [m] (and (= :point (:mark m))
-                              (= 3 (:n-groups m))
-                              (pos? (:first-group-n-points m)))))
+                             (= 3 (:n-groups m))
+                             (pos? (:first-group-n-points m)))))
 
 ;; The sketch validates against Malli:
 
@@ -156,21 +186,26 @@
 ;; The sketch is the boundary between the "what" and the "how".
 ;; Everything above it is about data and semantics. Everything below
 ;; is about pixels and rendering.
-;;
-;; ```
-;;       WHAT                          HOW
-;;  ┌─────────────┐  sketch   ┌──────────────────┐
-;;  │ Views       │──────────►│ Scales (wadogo)   │
-;;  │ Statistics  │           │ Coord transforms  │
-;;  │ Domains     │           │ Membrane scene    │
-;;  │ Colors      │           │ SVG conversion    │
-;;  └─────────────┘           └──────────────────┘
-;;       api.clj                   impl/plot.clj
-;;       impl/sketch.clj          impl/panel.clj
-;;       impl/stat.clj            impl/mark.clj
-;;                                render/svg.clj
-;; ```
-;;
+
+(kind/mermaid "
+graph LR
+  subgraph WHAT [\"WHAT — data + semantics\"]
+    V[\"Views\"]
+    ST[\"Statistics\"]
+    D[\"Domains\"]
+    C[\"Colors\"]
+  end
+  subgraph HOW [\"HOW — pixels + rendering\"]
+    SC[\"Scales (wadogo)\"]
+    CO[\"Coord transforms\"]
+    MS[\"Membrane scene\"]
+    SV[\"SVG conversion\"]
+  end
+  WHAT -->|sketch| HOW
+  style WHAT fill:#e8f5e9
+  style HOW fill:#e3f2fd
+")
+
 ;; This separation enables:
 ;;
 ;; - Inspecting the plot specification without rendering
@@ -216,9 +251,9 @@
    :first-group-keys (set (keys (first (:groups layer))))})
 
 (kind/test-last (fn [m] (and (= :line (:mark m))
-                              (= :lm (:stat-origin m))
-                              (= 3 (:n-groups m))
-                              (contains? (:first-group-keys m) :x1))))
+                             (= :lm (:stat-origin m))
+                             (= 3 (:n-groups m))
+                             (contains? (:first-group-keys m) :x1))))
 
 ;; Title and legend in the sketch:
 
