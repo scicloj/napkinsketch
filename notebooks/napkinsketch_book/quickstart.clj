@@ -6,7 +6,7 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as ns]))
+   [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Loading Data
 
@@ -22,56 +22,56 @@
 ;; The simplest plot: map columns to x and y, then apply a point mark.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Colored Scatter
 
 ;; Bind `:color` to a column to color points by group.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point {:color :species}))
-    ns/plot)
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    sk/plot)
 
 ;; ## Scatter with Regression
 
 ;; Layer multiple marks: points and linear regression lines.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point {:color :species})
-            (ns/lm {:color :species}))
-    ns/plot)
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species})
+            (sk/lm {:color :species}))
+    sk/plot)
 
 ;; ## Histogram
 
 ;; Pass a single column to get a histogram (automatic binning).
 
 (-> iris
-    (ns/view :sepal_length)
-    (ns/lay (ns/histogram))
-    ns/plot)
+    (sk/view :sepal_length)
+    (sk/lay (sk/histogram))
+    sk/plot)
 
 ;; ## Bar Chart
 
 ;; Count occurrences of a categorical column.
 
 (-> iris
-    (ns/view :species)
-    (ns/lay (ns/bar))
-    ns/plot)
+    (sk/view :species)
+    (sk/lay (sk/bar))
+    sk/plot)
 
 ;; ## Flipped Bar Chart
 
 ;; Use `coord :flip` for horizontal bars.
 
 (-> iris
-    (ns/view :species)
-    (ns/lay (ns/bar))
-    (ns/coord :flip)
-    ns/plot)
+    (sk/view :species)
+    (sk/lay (sk/bar))
+    (sk/coord :flip)
+    sk/plot)
 
 ;; ## Line Plot
 
@@ -79,18 +79,18 @@
 
 (-> {:x [1 2 3 4 5 6 7 8]
      :y [3 5 4 7 6 8 7 9]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/line))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/line))
+    sk/plot)
 
 ;; ## Custom Options
 
 ;; Pass options to `plot` for width, height, title, and axis labels.
 
 (-> iris
-    (ns/view [[:petal_length :petal_width]])
-    (ns/lay (ns/point {:color :species}))
-    (ns/plot {:width 500 :height 350
+    (sk/view [[:petal_length :petal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:width 500 :height 350
               :title "Iris Petals"
               :x-label "Petal Length (cm)"
               :y-label "Petal Width (cm)"}))

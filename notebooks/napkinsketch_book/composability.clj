@@ -9,7 +9,7 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as ns]))
+   [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Datasets
 
@@ -20,7 +20,7 @@
 
 ;; `view` returns a vector of maps. Let's inspect one.
 
-(def views (ns/view iris [[:sepal_length :sepal_width]]))
+(def views (sk/view iris [[:sepal_length :sepal_width]]))
 
 (kind/pprint
  (mapv #(dissoc % :data) views))
@@ -29,7 +29,7 @@
 
 ;; `lay` merges layer maps into each view. The result is still a vector of maps.
 
-(def layered (ns/lay views (ns/point {:color :species})))
+(def layered (sk/lay views (sk/point {:color :species})))
 
 (kind/pprint
  (mapv #(dissoc % :data) layered))
@@ -41,24 +41,24 @@
 (def ^:private mark-for-type
   (fn [col-type]
     (case col-type
-      :scatter (ns/point)
-      :trend   (ns/lm)
-      :dist    (ns/histogram))))
+      :scatter (sk/point)
+      :trend   (sk/lm)
+      :dist    (sk/histogram))))
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (mark-for-type :scatter)
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (mark-for-type :scatter)
             (mark-for-type :trend))
-    ns/plot)
+    sk/plot)
 
 ;; ## Two-Arity View
 
 ;; `view` also accepts separate x and y arguments.
 
 (-> iris
-    (ns/view :petal_length :petal_width)
-    (ns/lay (ns/point {:color :species}))
-    ns/plot)
+    (sk/view :petal_length :petal_width)
+    (sk/lay (sk/point {:color :species}))
+    sk/plot)
 
 ;; ## Inline Datasets
 
@@ -66,9 +66,9 @@
 
 (-> {:x (range 1 11)
      :y (mapv #(+ (* 2 %) (- (rand-int 5) 2)) (range 1 11))}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point) (ns/lm))
-    (ns/plot {:title "Noisy Linear Trend"}))
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point) (sk/lm))
+    (sk/plot {:title "Noisy Linear Trend"}))
 
 ;; ## Comparing Subsets Side by Side
 
@@ -78,9 +78,9 @@
   (fn [species-name]
     (-> iris
         (tc/select-rows #(= species-name (% :species)))
-        (ns/view [[:sepal_length :sepal_width]])
-        (ns/lay (ns/point) (ns/lm))
-        (ns/plot {:width 300 :height 250
+        (sk/view [[:sepal_length :sepal_width]])
+        (sk/lay (sk/point) (sk/lm))
+        (sk/plot {:width 300 :height 250
                   :title species-name}))))
 
 (species-plot "setosa")
@@ -98,14 +98,14 @@
 ;; Pick a few interesting pairs.
 
 (-> iris
-    (ns/view [[:sepal_length :petal_length]])
-    (ns/lay (ns/point {:color :species}))
-    (ns/plot {:title "Sepal Length vs Petal Length"}))
+    (sk/view [[:sepal_length :petal_length]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:title "Sepal Length vs Petal Length"}))
 
 (-> iris
-    (ns/view [[:sepal_width :petal_width]])
-    (ns/lay (ns/point {:color :species}))
-    (ns/plot {:title "Sepal Width vs Petal Width"}))
+    (sk/view [[:sepal_width :petal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:title "Sepal Width vs Petal Width"}))
 
 ;; ## Layered Bar Charts
 
@@ -118,17 +118,17 @@
                  :year    [:2024 :2024 :2024 :2024 :2025 :2025 :2025 :2025]})))
 
 (-> (quarterly-data)
-    (ns/view [[:quarter :revenue]])
-    (ns/lay (ns/value-bar {:color :year}))
-    (ns/plot {:title "Quarterly Revenue Comparison"}))
+    (sk/view [[:quarter :revenue]])
+    (sk/lay (sk/value-bar {:color :year}))
+    (sk/plot {:title "Quarterly Revenue Comparison"}))
 
 ;; Same data, flipped.
 
 (-> (quarterly-data)
-    (ns/view [[:quarter :revenue]])
-    (ns/lay (ns/value-bar {:color :year}))
-    (ns/coord :flip)
-    (ns/plot {:title "Revenue (Horizontal)"}))
+    (sk/view [[:quarter :revenue]])
+    (sk/lay (sk/value-bar {:color :year}))
+    (sk/coord :flip)
+    (sk/plot {:title "Revenue (Horizontal)"}))
 
 ;; ## Simulated Data
 
@@ -141,6 +141,6 @@
       (tc/dataset {:x xs :y ys}))))
 
 (-> (simulated)
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point) (ns/lm))
-    (ns/plot {:title "Simulated: y = 3x + 5 + noise"}))
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point) (sk/lm))
+    (sk/plot {:title "Simulated: y = 3x + 5 + noise"}))

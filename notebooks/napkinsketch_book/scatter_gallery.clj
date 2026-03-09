@@ -7,7 +7,7 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as ns]))
+   [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Datasets
 
@@ -25,101 +25,101 @@
 ;; Sepal dimensions, no color — the default mark.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Colored by Species
 
 ;; Adding `:color :species` groups points by species with distinct colors.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point {:color :species}))
-    ns/plot)
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    sk/plot)
 
 ;; ## Petal Dimensions
 
 ;; Petal length vs width — a strongly correlated pair.
 
 (-> iris
-    (ns/view [[:petal_length :petal_width]])
-    (ns/lay (ns/point {:color :species}))
-    ns/plot)
+    (sk/view [[:petal_length :petal_width]])
+    (sk/lay (sk/point {:color :species}))
+    sk/plot)
 
 ;; ## Scatter with Regression Lines
 
 ;; Overlay per-group regression on the same data.
 
 (-> iris
-    (ns/view [[:petal_length :petal_width]])
-    (ns/lay (ns/point {:color :species})
-            (ns/lm {:color :species}))
-    ns/plot)
+    (sk/view [[:petal_length :petal_width]])
+    (sk/lay (sk/point {:color :species})
+            (sk/lm {:color :species}))
+    sk/plot)
 
 ;; ## Tips Dataset
 
 ;; Restaurant tipping data — total bill vs tip, colored by smoking status.
 
 (-> tips
-    (ns/view [[:total_bill :tip]])
-    (ns/lay (ns/point {:color :smoker}))
-    ns/plot)
+    (sk/view [[:total_bill :tip]])
+    (sk/lay (sk/point {:color :smoker}))
+    sk/plot)
 
 ;; ## Tips with Regression
 
 ;; Do smokers and non-smokers tip differently?
 
 (-> tips
-    (ns/view [[:total_bill :tip]])
-    (ns/lay (ns/point {:color :smoker})
-            (ns/lm {:color :smoker}))
-    ns/plot)
+    (sk/view [[:total_bill :tip]])
+    (sk/lay (sk/point {:color :smoker})
+            (sk/lm {:color :smoker}))
+    sk/plot)
 
 ;; ## MPG Dataset
 
 ;; Horsepower vs miles per gallon, colored by origin.
 
 (-> mpg
-    (ns/view [[:horsepower :mpg]])
-    (ns/lay (ns/point {:color :origin}))
-    ns/plot)
+    (sk/view [[:horsepower :mpg]])
+    (sk/lay (sk/point {:color :origin}))
+    sk/plot)
 
 ;; ## Fixed Color
 
 ;; A fixed color string (not a column reference) applies to all points.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point {:color "#E74C3C"}))
-    ns/plot)
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color "#E74C3C"}))
+    sk/plot)
 
 ;; ## Small Dataset
 
 ;; Even a three-point dataset should render cleanly.
 
 (-> {:x [1 5 9] :y [2 8 3]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Single Point
 
 ;; Edge case: just one data point.
 
 (-> {:x [3] :y [7]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Custom Dimensions
 
 ;; Wider plot with custom title and labels.
 
 (-> tips
-    (ns/view [[:total_bill :tip]])
-    (ns/lay (ns/point {:color :day}))
-    (ns/plot {:width 700 :height 300
+    (sk/view [[:total_bill :tip]])
+    (sk/lay (sk/point {:color :day}))
+    (sk/plot {:width 700 :height 300
               :title "Tips by Day"
               :x-label "Total Bill ($)"
               :y-label "Tip ($)"}))

@@ -14,7 +14,7 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as ns]
+   [scicloj.napkinsketch.api :as sk]
    [scicloj.napkinsketch.impl.sketch-schema :as ss]
    [clojure.pprint :as pp]))
 
@@ -33,7 +33,7 @@
 
 ;; ## Building a Sketch
 ;;
-;; The `ns/sketch` function takes views and options, just like `ns/plot`,
+;; The `sk/sketch` function takes views and options, just like `sk/plot`,
 ;; but returns the intermediate sketch instead of rendering SVG.
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
@@ -42,7 +42,7 @@
 ;; A simple scatter sketch:
 
 (def scatter-sketch
-  (ns/sketch [(ns/point {:data iris :x :sepal_length :y :sepal_width :color :species})]))
+  (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})]))
 
 ;; ## Top-Level Structure
 ;;
@@ -170,7 +170,7 @@
 ;; Histogram layers use `:bar` mark with binned data.
 
 (def hist-sketch
-  (ns/sketch [(ns/histogram {:data iris :x :sepal_length})]))
+  (sk/sketch [(sk/histogram {:data iris :x :sepal_length})]))
 
 (def hist-layer (first (:layers (first (:panels hist-sketch)))))
 
@@ -195,7 +195,7 @@
 ;; Count-based bars use `:rect` mark with categories and counts.
 
 (def bar-sketch
-  (ns/sketch [(ns/bar {:data iris :x :species})]))
+  (sk/sketch [(sk/bar {:data iris :x :species})]))
 
 (def bar-layer (first (:layers (first (:panels bar-sketch)))))
 
@@ -221,8 +221,8 @@
 ;; Regression lines produce line segments in data space.
 
 (def lm-sketch
-  (ns/sketch [(ns/point {:data iris :x :sepal_length :y :sepal_width})
-              (ns/lm {:data iris :x :sepal_length :y :sepal_width})]))
+  (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width})
+              (sk/lm {:data iris :x :sepal_length :y :sepal_width})]))
 
 (def lm-layer (second (:layers (first (:panels lm-sketch)))))
 
@@ -248,7 +248,7 @@
 (def line-data (tc/dataset {:x (range 20) :y (map #(Math/sin (* % 0.3)) (range 20))}))
 
 (def line-sketch
-  (ns/sketch [(ns/line {:data line-data :x :x :y :y})]))
+  (sk/sketch [(sk/line {:data line-data :x :x :y :y})]))
 
 (def line-layer (first (:layers (first (:panels line-sketch)))))
 
@@ -266,7 +266,7 @@
 (def vbar-data (tc/dataset {:category [:a :b :c :d] :value [10 25 15 30]}))
 
 (def vbar-sketch
-  (ns/sketch [(ns/value-bar {:data vbar-data :x :category :y :value})]))
+  (sk/sketch [(sk/value-bar {:data vbar-data :x :category :y :value})]))
 
 (def vbar-layer (first (:layers (first (:panels vbar-sketch)))))
 
@@ -319,13 +319,13 @@
 
 ;; ## Sketch → Plot
 ;;
-;; The `ns/plot` function internally calls `ns/sketch`, then renders through
+;; The `sk/plot` function internally calls `sk/sketch`, then renders through
 ;; membrane and SVG. Both functions accept the same arguments.
 
 ;; Sketch (data):
-(ns/sketch [(ns/point {:data iris :x :sepal_length :y :sepal_width :color :species})]
+(sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})]
            {:title "Iris Petals"})
 
 ;; Plot (SVG):
-(ns/plot [(ns/point {:data iris :x :sepal_length :y :sepal_width :color :species})]
+(sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})]
          {:title "Iris Petals"})

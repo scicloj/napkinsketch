@@ -6,7 +6,7 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as ns]))
+   [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Datasets
 
@@ -18,25 +18,25 @@
 ;; A wide, short plot.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point {:color :species}))
-    (ns/plot {:width 800 :height 250}))
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:width 800 :height 250}))
 
 ;; A tall, narrow plot.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point {:color :species}))
-    (ns/plot {:width 300 :height 500}))
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:width 300 :height 500}))
 
 ;; ## Titles and Labels
 
 ;; Override axis labels and add a title.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point {:color :species}))
-    (ns/plot {:title "Iris Sepal Measurements"
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:title "Iris Sepal Measurements"
               :x-label "Length (cm)"
               :y-label "Width (cm)"}))
 
@@ -51,36 +51,36 @@
 ;; Linear scale — hard to see the structure.
 
 (-> exponential-data
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    (ns/plot {:title "Linear Scale"}))
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    (sk/plot {:title "Linear Scale"}))
 
 ;; Log y-scale — reveals the exponential trend.
 
 (-> exponential-data
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    (ns/scale :y :log)
-    (ns/plot {:title "Log Y Scale"}))
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    (sk/scale :y :log)
+    (sk/plot {:title "Log Y Scale"}))
 
 ;; ## Fixed Scale Domain
 
 ;; Lock the y-axis to a specific range.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point {:color :species}))
-    (ns/scale :y {:type :linear :domain [0 6]})
-    (ns/plot {:title "Fixed Y Domain [0, 6]"}))
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/scale :y {:type :linear :domain [0 6]})
+    (sk/plot {:title "Fixed Y Domain [0, 6]"}))
 
 ;; ## Custom Config
 
 ;; Pass visual configuration overrides via `:config`.
 
 (-> iris
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point {:color :species}))
-    (ns/plot {:config {:point-radius 5
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:config {:point-radius 5
                        :point-opacity 0.5}}))
 
 ;; ## Value Bar
@@ -92,14 +92,14 @@
                :value [42 28 35 19]}))
 
 (-> summary
-    (ns/view [[:category :value]])
-    (ns/lay (ns/value-bar))
-    (ns/plot {:title "Pre-computed Values"}))
+    (sk/view [[:category :value]])
+    (sk/lay (sk/value-bar))
+    (sk/plot {:title "Pre-computed Values"}))
 
 ;; ## Value Bars Flipped
 
 (-> summary
-    (ns/view [[:category :value]])
-    (ns/lay (ns/value-bar))
-    (ns/coord :flip)
-    (ns/plot {:title "Horizontal Value Bars"}))
+    (sk/view [[:category :value]])
+    (sk/lay (sk/value-bar))
+    (sk/coord :flip)
+    (sk/plot {:title "Horizontal Value Bars"}))

@@ -7,7 +7,7 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as ns]))
+   [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Missing Data
 
@@ -18,18 +18,18 @@
                :y [3 nil 5 6 nil 8 9]}))
 
 (-> with-missing
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Single Point
 
 ;; A lone data point should render without errors.
 
 (-> {:x [3] :y [7]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Two Points with Regression
 
@@ -37,59 +37,59 @@
 ;; the line is gracefully omitted.
 
 (-> {:x [1 10] :y [5 50]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point) (ns/lm))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point) (sk/lm))
+    sk/plot)
 
 ;; ## Three Points with Regression
 
 ;; With 3 points, the regression line appears.
 
 (-> {:x [1 5 10] :y [5 25 50]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point) (ns/lm))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point) (sk/lm))
+    sk/plot)
 
 ;; ## Constant X
 
 ;; All x values are the same — the plot should still render.
 
 (-> {:x [5 5 5 5 5] :y [1 2 3 4 5]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Constant Y
 
 ;; All y values are the same.
 
 (-> {:x [1 2 3 4 5] :y [3 3 3 3 3]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Negative Values
 
 ;; Data spanning positive and negative ranges.
 
 (-> {:x [-5 -3 0 3 5] :y [-2 4 0 -4 2]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Very Large Values
 
 (-> {:x [1e6 2e6 3e6] :y [1e9 2e9 3e9]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Very Small Values
 
 (-> {:x [0.001 0.002 0.003] :y [0.0001 0.0002 0.0003]}
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 ;; ## Large Dataset
 
@@ -102,9 +102,9 @@
                  :group (repeatedly 1000 #(rand-nth [:a :b :c]))})))
 
 (-> (large-data)
-    (ns/view [[:x :y]])
-    (ns/lay (ns/point {:color :group}))
-    ns/plot)
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point {:color :group}))
+    sk/plot)
 
 ;; ## Many Categories
 
@@ -112,9 +112,9 @@
 
 (-> (tc/dataset {:category (mapv #(keyword (str "cat-" %)) (range 12))
                  :value (repeatedly 12 #(+ 10 (rand-int 90)))})
-    (ns/view [[:category :value]])
-    (ns/lay (ns/value-bar))
-    ns/plot)
+    (sk/view [[:category :value]])
+    (sk/lay (sk/value-bar))
+    sk/plot)
 
 ;; ## Computed Columns
 
@@ -125,9 +125,9 @@
 
 (-> iris
     (tc/map-columns :sepal_ratio [:sepal_length :sepal_width] /)
-    (ns/view [[:sepal_length :sepal_ratio]])
-    (ns/lay (ns/point {:color :species}))
-    (ns/plot {:title "Sepal Length/Width Ratio"}))
+    (sk/view [[:sepal_length :sepal_ratio]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:title "Sepal Length/Width Ratio"}))
 
 ;; ## Filtered Subset
 
@@ -135,6 +135,6 @@
 
 (-> iris
     (tc/select-rows #(= "setosa" (% :species)))
-    (ns/view [[:sepal_length :sepal_width]])
-    (ns/lay (ns/point) (ns/lm))
-    (ns/plot {:title "Setosa Only"}))
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point) (sk/lm))
+    (sk/plot {:title "Setosa Only"}))

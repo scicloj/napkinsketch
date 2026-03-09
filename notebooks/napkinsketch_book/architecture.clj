@@ -7,7 +7,7 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as ns]
+   [scicloj.napkinsketch.api :as sk]
    [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
 ;; ## Pipeline Overview
@@ -130,7 +130,7 @@ graph TD
 ;; Users compose views — declarative descriptions of what to plot.
 
 (def views
-  [(ns/point {:data iris :x :sepal_length :y :sepal_width :color :species})])
+  [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})])
 
 ;; A view is a plain map:
 
@@ -140,10 +140,10 @@ graph TD
 
 ;; ### Stage 2: Sketch
 ;;
-;; `ns/sketch` resolves views into a sketch: extracts data from columns,
+;; `sk/sketch` resolves views into a sketch: extracts data from columns,
 ;; computes stats, merges domains, resolves colors, computes ticks.
 
-(def sk (ns/sketch views))
+(def sk (sk/sketch views))
 
 ;; The sketch has data-space coordinates:
 
@@ -175,11 +175,11 @@ graph TD
 
 ;; ### Stage 3: Plot (Sketch → Membrane → SVG)
 ;;
-;; `ns/plot` calls `ns/sketch` internally, then maps the data-space
+;; `sk/plot` calls `sk/sketch` internally, then maps the data-space
 ;; geometry through scales to pixel space, builds a membrane scene tree,
 ;; and converts to SVG.
 
-(ns/plot views)
+(sk/plot views)
 
 ;; ## The Sketch as a Boundary
 ;;
@@ -223,10 +223,10 @@ graph LR
 ;; colored by species.
 
 (def multi-views
-  [(ns/point {:data iris :x :petal_length :y :petal_width :color :species})
-   (ns/lm {:data iris :x :petal_length :y :petal_width :color :species})])
+  [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
+   (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
 
-(def multi-sk (ns/sketch multi-views {:title "Iris Petals with Regression"}))
+(def multi-sk (sk/sketch multi-views {:title "Iris Petals with Regression"}))
 
 ;; Two layers in the sketch:
 
@@ -267,4 +267,4 @@ graph LR
 
 ;; And it renders:
 
-(ns/plot multi-views {:title "Iris Petals with Regression"})
+(sk/plot multi-views {:title "Iris Petals with Regression"})

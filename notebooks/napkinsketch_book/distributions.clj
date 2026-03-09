@@ -7,7 +7,7 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as ns]))
+   [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Datasets
 
@@ -22,79 +22,79 @@
 ;; Distribution of sepal length across all species.
 
 (-> iris
-    (ns/view :sepal_length)
-    (ns/lay (ns/histogram))
-    ns/plot)
+    (sk/view :sepal_length)
+    (sk/lay (sk/histogram))
+    sk/plot)
 
 ;; ## Colored Histogram
 
 ;; Split by species — each group gets its own color.
 
 (-> iris
-    (ns/view :sepal_length)
-    (ns/lay (ns/histogram {:color :species}))
-    ns/plot)
+    (sk/view :sepal_length)
+    (sk/lay (sk/histogram {:color :species}))
+    sk/plot)
 
 ;; ## Petal Width Histogram
 
 ;; Petal width has a bimodal distribution.
 
 (-> iris
-    (ns/view :petal_width)
-    (ns/lay (ns/histogram))
-    ns/plot)
+    (sk/view :petal_width)
+    (sk/lay (sk/histogram))
+    sk/plot)
 
 ;; ## Bar Chart
 
 ;; Count species occurrences.
 
 (-> iris
-    (ns/view :species)
-    (ns/lay (ns/bar))
-    ns/plot)
+    (sk/view :species)
+    (sk/lay (sk/bar))
+    sk/plot)
 
 ;; ## Colored Bar Chart
 
 ;; Tips dataset: count by day, colored by smoking status.
 
 (-> tips
-    (ns/view :day)
-    (ns/lay (ns/bar {:color :smoker}))
-    ns/plot)
+    (sk/view :day)
+    (sk/lay (sk/bar {:color :smoker}))
+    sk/plot)
 
 ;; ## Stacked Bar Chart
 
 ;; Same data, but stacked instead of dodged.
 
 (-> tips
-    (ns/view :day)
-    (ns/lay (ns/stacked-bar {:color :smoker}))
-    ns/plot)
+    (sk/view :day)
+    (sk/lay (sk/stacked-bar {:color :smoker}))
+    sk/plot)
 
 ;; ## Horizontal Bar Chart
 
 ;; Flip the bar chart for horizontal orientation.
 
 (-> iris
-    (ns/view :species)
-    (ns/lay (ns/bar))
-    (ns/coord :flip)
-    ns/plot)
+    (sk/view :species)
+    (sk/lay (sk/bar))
+    (sk/coord :flip)
+    sk/plot)
 
 ;; ## Horizontal Colored Bars
 
 ;; Colored bars, flipped.
 
 (-> tips
-    (ns/view :day)
-    (ns/lay (ns/bar {:color :time}))
-    (ns/coord :flip)
-    ns/plot)
+    (sk/view :day)
+    (sk/lay (sk/bar {:color :time}))
+    (sk/coord :flip)
+    sk/plot)
 
 ;; ## Histogram with Custom Title
 
 (-> tips
-    (ns/view :total_bill)
-    (ns/lay (ns/histogram))
-    (ns/plot {:title "Distribution of Total Bill"
+    (sk/view :total_bill)
+    (sk/lay (sk/histogram))
+    (sk/plot {:title "Distribution of Total Bill"
               :x-label "Amount ($)"}))

@@ -283,7 +283,7 @@
    (and
     (string? (:label m))
     (every?
-     (fn* [p1__73277#] (contains? p1__73277# :category))
+     (fn* [p1__73896#] (contains? p1__73896# :category))
      (:counts m))))))
 
 
@@ -329,7 +329,7 @@
    {:x (range 20),
     :y
     (map
-     (fn* [p1__73278#] (Math/sin (* p1__73278# 0.3)))
+     (fn* [p1__73897#] (Math/sin (* p1__73897# 0.3)))
      (range 20))})))
 
 
