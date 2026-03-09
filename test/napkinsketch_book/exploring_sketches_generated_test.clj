@@ -28,7 +28,7 @@
 
 (deftest
  t10_l38
- (is (fn v9_l36 [m] (and (= 600 (:width m)) (= 400 (:height m))))))
+ (is ((fn [m] (and (= 600 (:width m)) (= 400 (:height m)))) v9_l36)))
 
 
 (def v12_l45 (select-keys tiny-sk [:title :x-label :y-label]))
@@ -37,10 +37,10 @@
 (deftest
  t13_l47
  (is
-  (fn
-   v12_l45
-   [m]
-   (and (nil? (:title m)) (= "x" (:x-label m)) (= "y" (:y-label m))))))
+  ((fn
+    [m]
+    (and (nil? (:title m)) (= "x" (:x-label m)) (= "y" (:y-label m))))
+   v12_l45)))
 
 
 (def v15_l53 (:legend tiny-sk))
@@ -57,7 +57,8 @@
 
 (deftest
  t20_l66
- (is (fn v19_l64 [ks] (every? (set ks) [:x-domain :y-domain :layers]))))
+ (is
+  ((fn [ks] (every? (set ks) [:x-domain :y-domain :layers])) v19_l64)))
 
 
 (def v22_l70 (:x-domain tiny-panel))
@@ -65,7 +66,7 @@
 
 (deftest
  t23_l72
- (is (fn v22_l70 [d] (and (<= (first d) 1) (>= (second d) 5)))))
+ (is ((fn [d] (and (<= (first d) 1) (>= (second d) 5))) v22_l70)))
 
 
 (def v24_l74 (:y-domain tiny-panel))
@@ -73,13 +74,13 @@
 
 (deftest
  t25_l76
- (is (fn v24_l74 [d] (and (<= (first d) 1) (>= (second d) 5)))))
+ (is ((fn [d] (and (<= (first d) 1) (>= (second d) 5))) v24_l74)))
 
 
 (def v27_l80 (:x-scale tiny-panel))
 
 
-(deftest t28_l82 (is (fn v27_l80 [s] (= :linear (:type s)))))
+(deftest t28_l82 (is ((fn [s] (= :linear (:type s))) v27_l80)))
 
 
 (def v30_l86 (:x-ticks tiny-panel))
@@ -88,13 +89,13 @@
 (deftest
  t31_l88
  (is
-  (fn
-   v30_l86
-   [t]
-   (and
-    (vector? (:values t))
-    (vector? (:labels t))
-    (= (count (:values t)) (count (:labels t)))))))
+  ((fn
+    [t]
+    (and
+     (vector? (:values t))
+     (vector? (:labels t))
+     (= (count (:values t)) (count (:labels t)))))
+   v30_l86)))
 
 
 (def v33_l100 (def tiny-layer (first (:layers tiny-panel))))
@@ -103,13 +104,13 @@
 (def v34_l102 (select-keys tiny-layer [:mark :style]))
 
 
-(deftest t35_l104 (is (fn v34_l102 [m] (= :point (:mark m)))))
+(deftest t35_l104 (is ((fn [m] (= :point (:mark m))) v34_l102)))
 
 
 (def v37_l109 (count (:groups tiny-layer)))
 
 
-(deftest t38_l111 (is (fn v37_l109 [n] (= 1 n))))
+(deftest t38_l111 (is ((fn [n] (= 1 n)) v37_l109)))
 
 
 (def v40_l116 (first (:groups tiny-layer)))
@@ -118,13 +119,13 @@
 (deftest
  t41_l118
  (is
-  (fn
-   v40_l116
-   [g]
-   (and
-    (= 4 (count (:color g)))
-    (= [1 2 3 4 5] (mapv int (:xs g)))
-    (= [2 4 1 5 3] (mapv int (:ys g)))))))
+  ((fn
+    [g]
+    (and
+     (= 4 (count (:color g)))
+     (= [1 2 3 4 5] (mapv int (:xs g)))
+     (= [2 4 1 5 3] (mapv int (:ys g)))))
+   v40_l116)))
 
 
 (def
@@ -163,7 +164,7 @@
 (def v48_l143 (count (:groups iris-layer)))
 
 
-(deftest t49_l145 (is (fn v48_l143 [n] (= 3 n))))
+(deftest t49_l145 (is ((fn [n] (= 3 n)) v48_l143)))
 
 
 (def
@@ -176,18 +177,20 @@
 (deftest
  t52_l154
  (is
-  (fn
-   v51_l149
-   [gs]
-   (and
-    (= 3 (count gs))
-    (every? (fn* [p1__77973#] (= 50 (:n-points p1__77973#))) gs)))))
+  ((fn
+    [gs]
+    (and
+     (= 3 (count gs))
+     (every? (fn* [p1__81562#] (= 50 (:n-points p1__81562#))) gs)))
+   v51_l149)))
 
 
 (def v54_l159 (:legend iris-sk))
 
 
-(deftest t55_l161 (is (fn v54_l159 [leg] (= 3 (count (:entries leg))))))
+(deftest
+ t55_l161
+ (is ((fn [leg] (= 3 (count (:entries leg)))) v54_l159)))
 
 
 (def v57_l171 (sk/plot [(sk/histogram {:data iris, :x :sepal_length})]))
@@ -208,7 +211,7 @@
 (def v60_l177 (:mark hist-layer))
 
 
-(deftest t61_l179 (is (fn v60_l177 [m] (= :bar m))))
+(deftest t61_l179 (is ((fn [m] (= :bar m)) v60_l177)))
 
 
 (def v63_l183 (let [g (first (:groups hist-layer))] (:bars g)))
@@ -217,15 +220,15 @@
 (deftest
  t64_l186
  (is
-  (fn
-   v63_l183
-   [bars]
-   (and
-    (> (count bars) 3)
-    (every?
-     (fn* [p1__77974#] (< (:lo p1__77974#) (:hi p1__77974#)))
-     bars)
-    (every? (fn* [p1__77975#] (pos? (:count p1__77975#))) bars)))))
+  ((fn
+    [bars]
+    (and
+     (> (count bars) 3)
+     (every?
+      (fn* [p1__81563#] (< (:lo p1__81563#) (:hi p1__81563#)))
+      bars)
+     (every? (fn* [p1__81564#] (pos? (:count p1__81564#))) bars)))
+   v63_l183)))
 
 
 (def
@@ -251,13 +254,13 @@
 (deftest
  t71_l208
  (is
-  (fn
-   v70_l206
-   [m]
-   (and
-    (= :rect (:mark m))
-    (= :dodge (:position m))
-    (= 3 (count (:categories m)))))))
+  ((fn
+    [m]
+    (and
+     (= :rect (:mark m))
+     (= :dodge (:position m))
+     (= 3 (count (:categories m)))))
+   v70_l206)))
 
 
 (def
@@ -267,7 +270,7 @@
   (:groups bar-layer)))
 
 
-(deftest t74_l219 (is (fn v73_l214 [gs] (= 3 (count gs)))))
+(deftest t74_l219 (is ((fn [gs] (= 3 (count gs))) v73_l214)))
 
 
 (def
@@ -286,7 +289,7 @@
 (def v78_l232 (:position stacked-layer))
 
 
-(deftest t79_l234 (is (fn v78_l232 [p] (= :stack p))))
+(deftest t79_l234 (is ((fn [p] (= :stack p)) v78_l232)))
 
 
 (def
@@ -308,7 +311,7 @@
 (def v84_l251 (mapv :mark (:layers (first (:panels lm-sk)))))
 
 
-(deftest t85_l253 (is (fn v84_l251 [marks] (= [:point :line] marks))))
+(deftest t85_l253 (is ((fn [marks] (= [:point :line] marks)) v84_l251)))
 
 
 (def v87_l257 (def lm-layer (second (:layers (first (:panels lm-sk))))))
@@ -317,7 +320,7 @@
 (def v88_l259 (:stat-origin lm-layer))
 
 
-(deftest t89_l261 (is (fn v88_l259 [s] (= :lm s))))
+(deftest t89_l261 (is ((fn [s] (= :lm s)) v88_l259)))
 
 
 (def
@@ -328,10 +331,8 @@
 (deftest
  t92_l268
  (is
-  (fn
-   v91_l265
-   [m]
-   (and (< (:x1 m) (:x2 m)) (every? number? (vals m))))))
+  ((fn [m] (and (< (:x1 m) (:x2 m)) (every? number? (vals m))))
+   v91_l265)))
 
 
 (def
@@ -370,7 +371,7 @@
    (:groups line-layer))))
 
 
-(deftest t97_l292 (is (fn v96_l285 [gs] (= 3 (count gs)))))
+(deftest t97_l292 (is ((fn [gs] (= 3 (count gs))) v96_l285)))
 
 
 (def
@@ -381,7 +382,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__77976#] (Math/sin (* p1__77976# 0.3)))
+     (fn* [p1__81565#] (Math/sin (* p1__81565# 0.3)))
      (range 30))})))
 
 
@@ -407,7 +408,7 @@
   :last-x (last (:xs wave-group))})
 
 
-(deftest t104_l313 (is (fn v103_l309 [m] (= 30 (:n-points m)))))
+(deftest t104_l313 (is ((fn [m] (= 30 (:n-points m))) v103_l309)))
 
 
 (def
@@ -438,7 +439,7 @@
   {:xs (:xs g), :ys (:ys g)}))
 
 
-(deftest t110_l333 (is (fn v109_l329 [m] (= 4 (count (:xs m))))))
+(deftest t110_l333 (is ((fn [m] (= 4 (count (:xs m)))) v109_l329)))
 
 
 (def
@@ -452,7 +453,7 @@
 (def v113_l342 (:coord (first (:panels flip-sk))))
 
 
-(deftest t114_l344 (is (fn v113_l342 [c] (= :flip c))))
+(deftest t114_l344 (is ((fn [c] (= :flip c)) v113_l342)))
 
 
 (def
@@ -468,12 +469,12 @@
 (deftest
  t117_l352
  (is
-  (fn
-   v116_l348
-   [m]
-   (and
-    (= :numeric (:x-domain-type m))
-    (= :categorical (:y-domain-type m))))))
+  ((fn
+    [m]
+    (and
+     (= :numeric (:x-domain-type m))
+     (= :categorical (:y-domain-type m))))
+   v116_l348)))
 
 
 (def
@@ -497,13 +498,13 @@
 (deftest
  t121_l371
  (is
-  (fn
-   v120_l369
-   [m]
-   (and
-    (= "My Custom Title" (:title m))
-    (= 800 (:width m))
-    (= 300 (:height m))))))
+  ((fn
+    [m]
+    (and
+     (= "My Custom Title" (:title m))
+     (= 800 (:width m))
+     (= 300 (:height m))))
+   v120_l369)))
 
 
 (def v123_l377 (:layout opts-sk))
@@ -512,13 +513,13 @@
 (deftest
  t124_l379
  (is
-  (fn
-   v123_l377
-   [lay]
-   (and
-    (pos? (:title-pad lay))
-    (pos? (:x-label-pad lay))
-    (pos? (:y-label-pad lay))))))
+  ((fn
+    [lay]
+    (and
+     (pos? (:title-pad lay))
+     (pos? (:x-label-pad lay))
+     (pos? (:y-label-pad lay))))
+   v123_l377)))
 
 
 (def
@@ -541,7 +542,9 @@
  (select-keys final-sk [:title :x-label :y-label :width :height]))
 
 
-(deftest t129_l398 (is (fn v128_l396 [m] (= "Iris Petals" (:title m)))))
+(deftest
+ t129_l398
+ (is ((fn [m] (= "Iris Petals" (:title m))) v128_l396)))
 
 
 (def
@@ -555,7 +558,7 @@
   (:layers (first (:panels final-sk)))))
 
 
-(deftest t132_l408 (is (fn v131_l402 [ls] (= 2 (count ls)))))
+(deftest t132_l408 (is ((fn [ls] (= 2 (count ls))) v131_l402)))
 
 
 (def v134_l412 (sk/plot final-views {:title "Iris Petals"}))

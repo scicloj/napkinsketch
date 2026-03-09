@@ -46,7 +46,7 @@
 (def v13_l137 (dissoc (first views) :data))
 
 
-(deftest t14_l139 (is (fn v13_l137 [v] (= :point (:mark v)))))
+(deftest t14_l139 (is ((fn [v] (= :point (:mark v))) v13_l137)))
 
 
 (def v16_l146 (def sk (sk/sketch views)))
@@ -72,13 +72,13 @@
 (deftest
  t19_l160
  (is
-  (fn
-   v18_l150
-   [m]
-   (and
-    (= :point (:mark m))
-    (= 3 (:n-groups m))
-    (pos? (:first-group-n-points m))))))
+  ((fn
+    [m]
+    (and
+     (= :point (:mark m))
+     (= 3 (:n-groups m))
+     (pos? (:first-group-n-points m))))
+   v18_l150)))
 
 
 (def v21_l166 (ss/valid? sk))
@@ -122,7 +122,7 @@
 (def v34_l233 (count (:layers (first (:panels multi-sk)))))
 
 
-(deftest t35_l235 (is (fn v34_l233 [n] (= 2 n))))
+(deftest t35_l235 (is ((fn [n] (= 2 n)) v34_l233)))
 
 
 (def
@@ -134,7 +134,8 @@
 
 (deftest
  t38_l243
- (is (fn v37_l239 [m] (and (= :point (:mark m)) (= 3 (:n-groups m))))))
+ (is
+  ((fn [m] (and (= :point (:mark m)) (= 3 (:n-groups m)))) v37_l239)))
 
 
 (def
@@ -150,14 +151,14 @@
 (deftest
  t41_l253
  (is
-  (fn
-   v40_l247
-   [m]
-   (and
-    (= :line (:mark m))
-    (= :lm (:stat-origin m))
-    (= 3 (:n-groups m))
-    (contains? (:first-group-keys m) :x1)))))
+  ((fn
+    [m]
+    (and
+     (= :line (:mark m))
+     (= :lm (:stat-origin m))
+     (= 3 (:n-groups m))
+     (contains? (:first-group-keys m) :x1)))
+   v40_l247)))
 
 
 (def v43_l260 (:title multi-sk))
@@ -165,13 +166,13 @@
 
 (deftest
  t44_l262
- (is (fn v43_l260 [t] (= "Iris Petals with Regression" t))))
+ (is ((fn [t] (= "Iris Petals with Regression" t)) v43_l260)))
 
 
 (def v45_l264 (count (:entries (:legend multi-sk))))
 
 
-(deftest t46_l266 (is (fn v45_l264 [n] (= 3 n))))
+(deftest t46_l266 (is ((fn [n] (= 3 n)) v45_l264)))
 
 
 (def
