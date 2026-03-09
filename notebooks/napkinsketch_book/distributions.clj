@@ -26,6 +26,11 @@
     (sk/lay (sk/histogram))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Colored Histogram
 
 ;; Split by species — each group gets its own color.
@@ -34,6 +39,11 @@
     (sk/view :sepal_length)
     (sk/lay (sk/histogram {:color :species}))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Petal Width Histogram
 
@@ -44,6 +54,11 @@
     (sk/lay (sk/histogram))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Bar Chart
 
 ;; Count species occurrences.
@@ -52,6 +67,11 @@
     (sk/view :species)
     (sk/lay (sk/bar))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Colored Bar Chart
 
@@ -62,6 +82,11 @@
     (sk/lay (sk/bar {:color :smoker}))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Stacked Bar Chart
 
 ;; Same data, but stacked instead of dodged.
@@ -70,6 +95,11 @@
     (sk/view :day)
     (sk/lay (sk/stacked-bar {:color :smoker}))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Horizontal Bar Chart
 
@@ -81,6 +111,11 @@
     (sk/coord :flip)
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Horizontal Colored Bars
 
 ;; Colored bars, flipped.
@@ -91,6 +126,11 @@
     (sk/coord :flip)
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Histogram with Custom Title
 
 (-> tips
@@ -98,3 +138,10 @@
     (sk/lay (sk/histogram))
     (sk/plot {:title "Distribution of Total Bill"
               :x-label "Amount ($)"}))
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))

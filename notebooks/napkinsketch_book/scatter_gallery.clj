@@ -29,6 +29,13 @@
     (sk/lay (sk/point))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
+
 ;; ## Colored by Species
 
 ;; Adding `:color :species` groups points by species with distinct colors.
@@ -38,6 +45,11 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Petal Dimensions
 
 ;; Petal length vs width — a strongly correlated pair.
@@ -46,6 +58,11 @@
     (sk/view [[:petal_length :petal_width]])
     (sk/lay (sk/point {:color :species}))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Scatter with Regression Lines
 
@@ -57,6 +74,13 @@
             (sk/lm {:color :species}))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
+
 ;; ## Tips Dataset
 
 ;; Restaurant tipping data — total bill vs tip, colored by smoking status.
@@ -65,6 +89,11 @@
     (sk/view [[:total_bill :tip]])
     (sk/lay (sk/point {:color :smoker}))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Tips with Regression
 
@@ -76,6 +105,11 @@
             (sk/lm {:color :smoker}))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## MPG Dataset
 
 ;; Horsepower vs miles per gallon, colored by origin.
@@ -84,6 +118,11 @@
     (sk/view [[:horsepower :mpg]])
     (sk/lay (sk/point {:color :origin}))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Fixed Color
 
@@ -94,6 +133,11 @@
     (sk/lay (sk/point {:color "#E74C3C"}))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Small Dataset
 
 ;; Even a three-point dataset should render cleanly.
@@ -103,6 +147,11 @@
     (sk/lay (sk/point))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Single Point
 
 ;; Edge case: just one data point.
@@ -111,6 +160,11 @@
     (sk/view [[:x :y]])
     (sk/lay (sk/point))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Custom Dimensions
 
@@ -123,3 +177,9 @@
               :title "Tips by Day"
               :x-label "Total Bill ($)"
               :y-label "Tip ($)"}))
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs)
+                     (= 700 (:width attrs)))))))

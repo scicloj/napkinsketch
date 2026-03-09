@@ -51,6 +51,11 @@
             (mark-for-type :trend))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Two-Arity View
 
 ;; `view` also accepts separate x and y arguments.
@@ -59,6 +64,11 @@
     (sk/view :petal_length :petal_width)
     (sk/lay (sk/point {:color :species}))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Inline Datasets
 
@@ -69,6 +79,11 @@
     (sk/view [[:x :y]])
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:title "Noisy Linear Trend"}))
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Comparing Subsets Side by Side
 
@@ -85,9 +100,25 @@
 
 (species-plot "setosa")
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs)
+                     (= 300 (:width attrs)))))))
+
 (species-plot "versicolor")
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 (species-plot "virginica")
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Combining All Measurements
 
@@ -102,10 +133,20 @@
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:title "Sepal Length vs Petal Length"}))
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 (-> iris
     (sk/view [[:sepal_width :petal_width]])
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:title "Sepal Width vs Petal Width"}))
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Layered Bar Charts
 
@@ -122,6 +163,11 @@
     (sk/lay (sk/value-bar {:color :year}))
     (sk/plot {:title "Quarterly Revenue Comparison"}))
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; Same data, flipped.
 
 (-> (quarterly-data)
@@ -129,6 +175,11 @@
     (sk/lay (sk/value-bar {:color :year}))
     (sk/coord :flip)
     (sk/plot {:title "Revenue (Horizontal)"}))
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Simulated Data
 
@@ -144,3 +195,10 @@
     (sk/view [[:x :y]])
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:title "Simulated: y = 3x + 5 + noise"}))
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))

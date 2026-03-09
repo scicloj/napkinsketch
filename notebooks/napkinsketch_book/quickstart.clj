@@ -26,6 +26,13 @@
     (sk/lay (sk/point))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
+
 ;; ## Colored Scatter
 
 ;; Bind `:color` to a column to color points by group.
@@ -34,6 +41,13 @@
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point {:color :species}))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
 
 ;; ## Scatter with Regression
 
@@ -45,6 +59,13 @@
             (sk/lm {:color :species}))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
+
 ;; ## Histogram
 
 ;; Pass a single column to get a histogram (automatic binning).
@@ -54,6 +75,13 @@
     (sk/lay (sk/histogram))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
+
 ;; ## Bar Chart
 
 ;; Count occurrences of a categorical column.
@@ -62,6 +90,13 @@
     (sk/view :species)
     (sk/lay (sk/bar))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
 
 ;; ## Flipped Bar Chart
 
@@ -73,6 +108,13 @@
     (sk/coord :flip)
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
+
 ;; ## Line Plot
 
 ;; Connect points with lines. Here we use a simple time-series-like dataset.
@@ -82,6 +124,13 @@
     (sk/view [[:x :y]])
     (sk/lay (sk/line))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
 
 ;; ## Custom Options
 
@@ -94,3 +143,9 @@
               :title "Iris Petals"
               :x-label "Petal Length (cm)"
               :y-label "Petal Width (cm)"}))
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs)
+                     (= 500 (:width attrs)))))))

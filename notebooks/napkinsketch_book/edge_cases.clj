@@ -22,6 +22,13 @@
     (sk/lay (sk/point))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
+
 ;; ## Single Point
 
 ;; A lone data point should render without errors.
@@ -30,6 +37,11 @@
     (sk/view [[:x :y]])
     (sk/lay (sk/point))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Two Points with Regression
 
@@ -41,6 +53,11 @@
     (sk/lay (sk/point) (sk/lm))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Three Points with Regression
 
 ;; With 3 points, the regression line appears.
@@ -49,6 +66,11 @@
     (sk/view [[:x :y]])
     (sk/lay (sk/point) (sk/lm))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Constant X
 
@@ -59,6 +81,11 @@
     (sk/lay (sk/point))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Constant Y
 
 ;; All y values are the same.
@@ -67,6 +94,11 @@
     (sk/view [[:x :y]])
     (sk/lay (sk/point))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Negative Values
 
@@ -77,6 +109,11 @@
     (sk/lay (sk/point))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Very Large Values
 
 (-> {:x [1e6 2e6 3e6] :y [1e9 2e9 3e9]}
@@ -84,12 +121,22 @@
     (sk/lay (sk/point))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Very Small Values
 
 (-> {:x [0.001 0.002 0.003] :y [0.0001 0.0002 0.0003]}
     (sk/view [[:x :y]])
     (sk/lay (sk/point))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Large Dataset
 
@@ -106,6 +153,13 @@
     (sk/lay (sk/point {:color :group}))
     sk/plot)
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
+
 ;; ## Many Categories
 
 ;; A bar chart with 12 categories.
@@ -115,6 +169,11 @@
     (sk/view [[:category :value]])
     (sk/lay (sk/value-bar))
     sk/plot)
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
 
 ;; ## Computed Columns
 
@@ -129,6 +188,11 @@
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:title "Sepal Length/Width Ratio"}))
 
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2)))))
+
 ;; ## Filtered Subset
 
 ;; Plot only one species.
@@ -138,3 +202,10 @@
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:title "Setosa Only"}))
+
+(kind/test-last
+ (fn [v] (and (vector? v) (= :svg (first v))
+              (let [attrs (second v)]
+                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+              (let [body (nth v 2)]
+                (and (vector? body) (= :g (first body)))))))
