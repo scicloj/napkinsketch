@@ -6,6 +6,7 @@
  "Advanced" ["composability"
              "real_world"
              "edge_cases"]
+ "Reference" ["api_reference"]
  "Internals" ["inference_rules"
               "exploring_sketches"
               "sketch_format"
