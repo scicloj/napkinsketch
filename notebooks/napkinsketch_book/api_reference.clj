@@ -125,6 +125,13 @@
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
+;; Alpha by column — transparency varies with petal length:
+
+(sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
+                     :color :species :alpha :petal_length})])
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
 (kind/doc #'sk/line)
 
 ;; Connected line through data points:
