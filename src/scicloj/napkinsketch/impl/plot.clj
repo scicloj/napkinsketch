@@ -1,3 +1,4 @@
+
 (ns scicloj.napkinsketch.impl.plot
   (:require [membrane.ui :as ui]
             [scicloj.kindly.v4.kind :as kind]
@@ -6,6 +7,7 @@
             [scicloj.napkinsketch.impl.stat :as stat]
             [scicloj.napkinsketch.impl.scale :as scale]
             [scicloj.napkinsketch.impl.panel :as panel]
+            [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.render.svg :as svg]))
 
 ;; ---- Domain Helpers ----
@@ -62,19 +64,42 @@
      (concat
       (when title
         [(ui/translate x (- y 12)
-           (ui/with-color title-color
-             (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
+                       (ui/with-color title-color
+                         (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
       (for [[i cat] (map-indexed vector categories)
             :let [rgba (color-fn cat)
                   [cr cg cb _] rgba]]
         (ui/translate x (+ y (* i 16))
-          [(ui/translate 0 0
-             (ui/with-color [cr cg cb 1.0]
-               (ui/with-style ::ui/style-fill
-                 (ui/rounded-rectangle 8 8 4))))
-           (ui/translate 12 0
-             (ui/with-color title-color
-               (ui/label (str cat) (ui/font nil fsize))))]))))))
+                      [(ui/translate 0 0
+                                     (ui/with-color [cr cg cb 1.0]
+                                       (ui/with-style ::ui/style-fill
+                                         (ui/rounded-rectangle 8 8 4))))
+                       (ui/translate 12 0
+                                     (ui/with-color title-color
+                                       (ui/label (str cat) (ui/font nil fsize))))]))))))
+
+(defn render-legend-from-sketch
+  "Render legend from sketch legend data."
+  [legend x y]
+  (let [{:keys [title entries]} legend
+        fsize 10
+        title-color [0.2 0.2 0.2 1.0]]
+    (vec
+     (concat
+      (when title
+        [(ui/translate x (- y 12)
+                       (ui/with-color title-color
+                         (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
+      (for [[i {:keys [label color]}] (map-indexed vector entries)
+            :let [[cr cg cb _] color]]
+        (ui/translate x (+ y (* i 16))
+                      [(ui/translate 0 0
+                                     (ui/with-color [cr cg cb 1.0]
+                                       (ui/with-style ::ui/style-fill
+                                         (ui/rounded-rectangle 8 8 4))))
+                       (ui/translate 12 0
+                                     (ui/with-color title-color
+                                       (ui/label label (ui/font nil fsize))))]))))))
 
 ;; ---- Axis Labels ----
 
@@ -83,8 +108,8 @@
   [label total-w y-pos]
   (let [fsize (:label-font-size defaults/defaults)]
     (ui/translate (/ total-w 2.0) y-pos
-      (ui/with-color [0.2 0.2 0.2 1.0]
-        (ui/label label (ui/font nil fsize))))))
+                  (ui/with-color [0.2 0.2 0.2 1.0]
+                    (ui/label label (ui/font nil fsize))))))
 
 (defn render-y-label
   "Render y-axis label. Uses a Rotate to place vertically."
@@ -92,108 +117,57 @@
   (let [fsize (:label-font-size defaults/defaults)
         cy (/ total-h 2.0)]
     (ui/translate x-pos cy
-      (membrane.ui.Rotate. -90
-        (ui/with-color [0.2 0.2 0.2 1.0]
-          (ui/label label (ui/font nil fsize)))))))
+                  (membrane.ui.Rotate. -90
+                                       (ui/with-color [0.2 0.2 0.2 1.0]
+                                         (ui/label label (ui/font nil fsize)))))))
 
 (defn render-title
   "Render plot title centered above the plot area."
   [title total-w]
   (let [fsize (:title-font-size defaults/defaults)]
     (ui/translate (/ total-w 2.0) 14
-      (ui/with-color [0.2 0.2 0.2 1.0]
-        (ui/label title (ui/font nil fsize))))))
+                  (ui/with-color [0.2 0.2 0.2 1.0]
+                    (ui/label title (ui/font nil fsize))))))
 
 ;; ---- Plot ----
 
 (defn plot
-  "Render views as SVG hiccup, wrapped with kind/hiccup for Clay/Kindly."
+  "Render views as SVG hiccup, wrapped with kind/hiccup for Clay/Kindly.
+   Internally: views → sketch → membrane scene → SVG → kind/hiccup."
   ([views] (plot views {}))
-  ([views {:keys [width height config x-label y-label title] :as opts}]
-   (let [cfg (merge defaults/defaults config)
-         width (or width (:width cfg))
-         height (or height (:height cfg))
-         views (if (map? views) [views] views)
-         ann-views (filter #(view/annotation-marks (:mark %)) views)
-         non-ann-views (remove #(view/annotation-marks (:mark %)) views)
-         m (:margin cfg)
+  ([views opts]
+   (let [views (if (map? views) [views] views)
+         sk (sketch/resolve-sketch views opts)
+         {:keys [width height margin total-width total-height
+                 title x-label y-label config legend panels layout]} sk
+         {:keys [x-label-pad y-label-pad title-pad legend-w]} layout
+         cfg config
 
-         ;; Resolve views and compute stats
-         resolved (mapv view/resolve-view non-ann-views)
-         stat-results (mapv #(stat/compute-stat (assoc % :cfg cfg)) resolved)
-
-         ;; Collect colors
-         all-colors (let [color-views (filter #(and (view/column-ref? (:color %))
-                                                    (:data %)) resolved)]
-                      (when (seq color-views)
-                        (distinct (mapcat #((:data %) (:color %)) color-views))))
-         color-cols (distinct (keep #(when (view/column-ref? (:color %)) (:color %)) resolved))
-
-         ;; Scale specs
-         x-scale-spec (or (:x-scale (first non-ann-views)) {:type :linear})
-         y-scale-spec (or (:y-scale (first non-ann-views)) {:type :linear})
-
-         ;; Global domains
-         global-x-doms (or (:domain x-scale-spec)
-                           (collect-domain stat-results :x-domain x-scale-spec))
-         global-y-doms (or (:domain y-scale-spec)
-                           (compute-global-y-domain stat-results views y-scale-spec))
-
-         ;; Axis labels
-         x-vars (distinct (map :x non-ann-views))
-         y-vars (distinct (map :y non-ann-views))
-         eff-x-label (or x-label
-                         (:label x-scale-spec)
-                         (when-let [x (first x-vars)] (defaults/fmt-name x)))
-         eff-y-label (or y-label
-                         (:label y-scale-spec)
-                         (when-let [y (first y-vars)]
-                           (when (not= y (first x-vars))
-                             (defaults/fmt-name y))))
-         eff-title title
-
-         ;; Layout dimensions
-         x-label-pad (if eff-x-label (:label-offset cfg) 0)
-         y-label-pad (if eff-y-label (:label-offset cfg) 0)
-         title-pad (if eff-title (:title-offset cfg) 0)
-         legend-w (if all-colors (:legend-width cfg) 0)
-         total-w (+ y-label-pad width legend-w)
-         total-h (+ title-pad height x-label-pad)
-
-         ;; Panel views
-         panel-views (concat non-ann-views ann-views)
-
-         ;; Render the panel
-         panel-scene (panel/render-panel
-                      panel-views width height m
-                      :all-colors all-colors
-                      :x-domain global-x-doms
-                      :y-domain global-y-doms
-                      :cfg cfg)
+         ;; Render the panel from sketch
+         panel-scene (panel/render-panel-from-sketch (first panels) width height margin cfg)
 
          ;; Build full scene
          scene (vec
                 (concat
                  ;; Title
-                 (when eff-title
-                   [(render-title eff-title total-w)])
+                 (when title
+                   [(render-title title total-width)])
                  ;; Y-axis label
-                 (when eff-y-label
-                   [(render-y-label eff-y-label total-h 12)])
+                 (when y-label
+                   [(render-y-label y-label total-height 12)])
                  ;; X-axis label
-                 (when eff-x-label
-                   [(render-x-label eff-x-label total-w (- total-h 3))])
+                 (when x-label
+                   [(render-x-label x-label total-width (- total-height 3))])
                  ;; Legend
-                 (when all-colors
-                   (render-legend all-colors
-                                 #(defaults/color-for all-colors %)
-                                 (+ y-label-pad width 10)
-                                 (+ title-pad 20)
-                                 (first color-cols)))
+                 (when legend
+                   (render-legend-from-sketch legend
+                                              (+ y-label-pad width 10)
+                                              (+ title-pad 20)))
                  ;; Panel (offset by labels)
                  [(ui/translate y-label-pad title-pad panel-scene)]))
 
          ;; Convert membrane scene → SVG hiccup
          svg-body (svg/scene->svg scene)
-         svg (svg/wrap-svg total-w total-h svg-body)]
+         svg (svg/wrap-svg total-width total-height svg-body)]
      (kind/hiccup svg))))
+

@@ -1,7 +1,9 @@
+
 (ns scicloj.napkinsketch.api
   "Public API for napkinsketch — composable plotting in Clojure."
   (:require [scicloj.napkinsketch.impl.view :as view]
-            [scicloj.napkinsketch.impl.plot :as plot-impl]))
+            [scicloj.napkinsketch.impl.plot :as plot-impl]
+            [scicloj.napkinsketch.impl.sketch :as sketch-impl]))
 
 ;; ---- Compositional API ----
 
@@ -78,3 +80,12 @@
    (plot views)              — default 600x400
    (plot views {:width 800 :height 500 :title \"My Plot\"})"
   plot-impl/plot)
+
+(def sketch
+  "Resolve views into a sketch — a plain Clojure map with data-space
+   geometry, domains, tick info, legend, and layout. No membrane types,
+   no datasets, no scale objects in the output. Serializable data.
+   (sketch views)              — default 600x400
+   (sketch views {:width 800 :title \"My Plot\"})"
+  sketch-impl/resolve-sketch)
+

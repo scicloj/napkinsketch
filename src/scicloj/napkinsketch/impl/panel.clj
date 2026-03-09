@@ -201,3 +201,88 @@
     ;; Assemble scene
     (vec (concat [background] grid marks
                  (or x-ticks []) (or y-ticks [])))))
+
+;; ==== Sketch-Based Panel Rendering ====
+
+(defn render-grid-from-ticks
+  "Render grid lines using pre-computed tick values from a sketch."
+  [sx sy x-ticks y-ticks pw ph m cfg]
+  (let [{:keys [grid]} defaults/theme
+        grid-rgba (defaults/hex->rgba grid)
+        grid-w (:grid-stroke-width cfg)]
+    (vec
+     (concat
+      (for [t (:values x-ticks) :let [px (sx t)]]
+        (ui/with-color grid-rgba
+          (ui/with-stroke-width grid-w
+            (ui/with-style ::ui/style-stroke
+              (ui/path [px m] [px (- ph m)])))))
+      (for [t (:values y-ticks) :let [py (sy t)]]
+        (ui/with-color grid-rgba
+          (ui/with-stroke-width grid-w
+            (ui/with-style ::ui/style-stroke
+              (ui/path [m py] [(- pw m) py])))))))))
+
+(defn render-tick-labels
+  "Render tick labels from pre-computed tick info in a sketch."
+  [axis tick-info scale pw ph m]
+  (let [{:keys [values labels]} tick-info
+        fsize (:font-size defaults/theme)
+        tick-color [0.4 0.4 0.4 1.0]]
+    (when (seq values)
+      (vec
+       (map (fn [t label]
+              (if (= axis :x)
+                (let [px (scale t)]
+                  (ui/translate (- (double px) (* (count label) (/ fsize 3.5)))
+                                (- (double ph) (double fsize) 1)
+                                (ui/with-color tick-color
+                                  (ui/label label (ui/font nil fsize)))))
+                (let [py (scale t)
+                      lw (* (count label) (/ fsize 2.0))]
+                  (ui/translate (- (double m) lw 3)
+                                (- (double py) (/ fsize 2.0))
+                                (ui/with-color tick-color
+                                  (ui/label label (ui/font nil fsize)))))))
+            values labels)))))
+
+(defn render-panel-from-sketch
+  "Render a sketch panel as a membrane scene tree.
+   Takes a panel map from resolve-sketch and pixel dimensions."
+  [panel pw ph m cfg]
+  (let [{:keys [x-domain y-domain x-scale y-scale coord
+                x-ticks y-ticks layers]} panel
+        coord-type (or coord :cartesian)
+
+        ;; Build wadogo scales from domains + pixel ranges
+        x-px [m (- pw m)]
+        y-px [(- ph m) m]
+        sx (scale/make-scale x-domain x-px x-scale)
+        sy (scale/make-scale y-domain y-px y-scale)
+
+        ;; Coord function
+        coord-fn (coord/make-coord coord-type sx sy pw ph m)
+
+        ;; Rendering context for mark/render-layer
+        ctx {:coord-fn coord-fn :sx sx :sy sy
+             :coord-type coord-type :cfg cfg}
+
+        ;; Background
+        bg-rgba (defaults/hex->rgba (:bg defaults/theme))
+        background (ui/with-color bg-rgba
+                     (ui/with-style ::ui/style-fill
+                       (ui/rectangle pw ph)))
+
+        ;; Grid
+        grid (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m cfg)
+
+        ;; Data marks from sketch layers
+        marks (vec (mapcat #(mark/render-layer % ctx) layers))
+
+        ;; Tick labels
+        x-tick-scene (render-tick-labels :x x-ticks sx pw ph m)
+        y-tick-scene (render-tick-labels :y y-ticks sy pw ph m)]
+
+    (vec (concat [background] grid marks
+                 (or x-tick-scene []) (or y-tick-scene [])))))
+
