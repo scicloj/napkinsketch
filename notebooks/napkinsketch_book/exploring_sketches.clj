@@ -10,6 +10,7 @@
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
    [scicloj.napkinsketch.api :as sk]
+   [scicloj.napkinsketch.impl.sketch-schema :as ss]
    [clojure.pprint :as pp]))
 
 ;; ## A Minimal Scatter Plot
@@ -18,7 +19,7 @@
 ;; no title.
 
 (def tiny (tc/dataset {:x [1 2 3 4 5]
-                        :y [2 4 1 5 3]}))
+                       :y [2 4 1 5 3]}))
 
 ;; Here is the rendered plot:
 
@@ -130,7 +131,7 @@
 ;; and adds a legend.
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})])
 
@@ -244,7 +245,7 @@
           (sk/lm {:data iris :x :sepal_length :y :sepal_width})])
 
 (def lm-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width})
-                        (sk/lm {:data iris :x :sepal_length :y :sepal_width})]))
+                       (sk/lm {:data iris :x :sepal_length :y :sepal_width})]))
 
 ;; Two layers — points and line:
 
@@ -280,7 +281,7 @@
           (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
 
 (def grp-sk (sk/sketch [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
-                         (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})]))
+                        (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})]))
 
 (let [line-layer (second (:layers (first (:panels grp-sk))))]
   (mapv (fn [g]
@@ -298,7 +299,7 @@
 ;; Line marks from identity data (not regression) store xs/ys vectors:
 
 (def wave (tc/dataset {:x (range 30)
-                        :y (mapv #(Math/sin (* % 0.3)) (range 30))}))
+                       :y (mapv #(Math/sin (* % 0.3)) (range 30))}))
 
 (sk/plot [(sk/line {:data wave :x :x :y :y})])
 
@@ -320,7 +321,7 @@
 ;; The sketch stores the raw x/y pairs:
 
 (def sales (tc/dataset {:product [:widget :gadget :gizmo :doohickey]
-                         :revenue [120 340 210 95]}))
+                        :revenue [120 340 210 95]}))
 
 (sk/plot [(sk/value-bar {:data sales :x :product :y :revenue})])
 
@@ -391,6 +392,7 @@
   [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
    (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
 
+
 (def final-sk (sk/sketch final-views {:title "Iris Petals"}))
 
 (select-keys final-sk [:title :x-label :y-label :width :height])
@@ -410,3 +412,52 @@
 ;; The rendered plot (SVG):
 
 (sk/plot final-views {:title "Iris Petals"})
+
+;; ## Malli Validation
+;;
+;; Every sketch conforms to a Malli schema. This ensures the sketch
+;; contract is machine-checkable.
+
+(ss/valid? tiny-sk)
+
+(kind/test-last true?)
+
+(ss/valid? iris-sk)
+
+(kind/test-last true?)
+
+(ss/valid? hist-sk)
+
+(kind/test-last true?)
+
+(ss/valid? bar-sk)
+
+(kind/test-last true?)
+
+(ss/valid? lm-sk)
+
+(kind/test-last true?)
+
+(ss/valid? final-sk)
+
+(kind/test-last true?)
+
+;; When a sketch is invalid, `ss/explain` shows which part failed:
+
+(ss/explain (assoc tiny-sk :width "not-a-number"))
+
+(kind/test-last some?)
+
+;; ## Serialization
+;;
+;; Sketches are plain Clojure data — maps, vectors, numbers, strings,
+;; keywords. They serialize cleanly with `pr-str` and read back with
+;; `read-string`.
+
+(let [s (pr-str tiny-sk)
+      back (read-string s)]
+  (= tiny-sk back))
+
+(kind/test-last true?)
+
+;; This makes sketches suitable for caching, logging, and snapshot testing.

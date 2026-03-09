@@ -9,5 +9,4 @@
  "Reference" ["api_reference"]
  "Internals" ["inference_rules"
               "exploring_sketches"
-              "sketch_format"
               "architecture"]}
