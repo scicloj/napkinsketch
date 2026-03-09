@@ -228,15 +228,23 @@
                            lo (reduce min all-sizes)
                            hi (reduce max all-sizes)
                            span (max 1e-6 (- (double hi) (double lo)))]
-                       (fn [v] (+ 2.0 (* 6.0 (/ (- (double v) (double lo)) span))))))]
+                       (fn [v] (+ 2.0 (* 6.0 (/ (- (double v) (double lo)) span))))))
+        alpha-bufs (keep :alphas groups)
+        alpha-scale (when (seq alpha-bufs)
+                      (let [all-alphas (apply concat alpha-bufs)
+                            lo (reduce min all-alphas)
+                            hi (reduce max all-alphas)
+                            span (max 1e-6 (- (double hi) (double lo)))]
+                        (fn [v] (+ 0.2 (* 0.8 (/ (- (double v) (double lo)) span))))))]
     (vec
-     (for [{:keys [color xs ys sizes row-indices]} groups
+     (for [{:keys [color xs ys sizes alphas row-indices]} groups
            i (range (count xs))
            :let [[px py] (coord-fn (nth xs i) (nth ys i))
                  pt-r (if sizes (size-scale (nth sizes i)) radius)
+                 pt-alpha (if alphas (alpha-scale (nth alphas i)) (or opacity 1.0))
                  [cr cg cb _] color]]
        (-> (ui/translate (- (double px) pt-r) (- (double py) pt-r)
-                         (ui/with-color [cr cg cb (or opacity 1.0)]
+                         (ui/with-color [cr cg cb pt-alpha]
                            (ui/with-style ::ui/style-fill
                              (ui/rounded-rectangle (* 2 pt-r) (* 2 pt-r) pt-r))))
            (cond-> row-indices (assoc :row-idx (nth row-indices i))))))))

@@ -28,19 +28,20 @@
 (defmethod extract-layer :point [view stat all-colors cfg]
   (let [cfg (or cfg defaults/defaults)]
     {:mark :point
-     :style {:opacity (:point-opacity cfg)
+     :style {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
              :radius (or (:fixed-size view) (:point-radius cfg))}
      :groups (vec
-              (for [{:keys [color xs ys sizes row-indices]} (:points stat)]
+              (for [{:keys [color xs ys sizes alphas row-indices]} (:points stat)]
                 (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
                          :xs (vec xs) :ys (vec ys)}
                   sizes (assoc :sizes (vec sizes))
+                  alphas (assoc :alphas (vec alphas))
                   row-indices (assoc :row-indices (vec row-indices)))))}))
 
 (defmethod extract-layer :bar [view stat all-colors cfg]
   (let [cfg (or cfg defaults/defaults)]
     {:mark :bar
-     :style {:opacity (:bar-opacity cfg)}
+     :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
      :groups (vec
               (for [{:keys [color bin-maps]} (:bins stat)]
                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
@@ -50,7 +51,7 @@
 (defmethod extract-layer :line [view stat all-colors cfg]
   (let [cfg (or cfg defaults/defaults)]
     {:mark :line
-     :style {:stroke-width (:line-width cfg)}
+     :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
      :stat-origin (or (:stat view) :identity)
      :groups (vec
               (concat
@@ -70,7 +71,7 @@
     (if (:bars stat)
       ;; Categorical bars (from :count stat)
       {:mark :rect
-       :style {:opacity (:bar-opacity cfg)}
+       :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
        :position (or (:position view) :dodge)
        :categories (vec (:categories stat))
        :groups (vec
@@ -80,7 +81,7 @@
                    :counts (vec counts)}))}
       ;; Value bars (from :identity stat)
       {:mark :rect
-       :style {:opacity (:bar-opacity cfg)}
+       :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
        :position (or (:position view) :dodge)
        :groups (vec
                 (for [{:keys [color xs ys]} (:points stat)]
@@ -227,8 +228,8 @@
          legend (when all-colors
                   {:title (first color-cols)
                    :entries (vec (for [cat all-colors]
-                                  {:label (str cat)
-                                   :color (defaults/color-for all-colors cat)}))})
+                                   {:label (str cat)
+                                    :color (defaults/color-for all-colors cat)}))})
 
          ;; Layout dimensions
          x-label-pad (if eff-x-label (:label-offset cfg) 0)

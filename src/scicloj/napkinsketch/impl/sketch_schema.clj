@@ -30,6 +30,7 @@
    [:xs [:vector number?]]
    [:ys [:vector number?]]
    [:sizes {:optional true} [:vector number?]]
+   [:alphas {:optional true} [:vector number?]]
    [:row-indices {:optional true} [:vector int?]]])
 
 (def BarBin

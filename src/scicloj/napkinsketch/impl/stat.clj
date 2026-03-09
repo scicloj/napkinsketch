@@ -29,7 +29,7 @@
 (defn prepare-points
   "Clean data, compute domains, group by columns."
   [view]
-  (let [{:keys [data x y color size shape text-col x-type y-type group mark]} view
+  (let [{:keys [data x y color size alpha shape text-col x-type y-type group mark]} view
         data-idx (tc/add-column data :__row-idx (range (tc/row-count data)))
         clean (cond-> (tc/drop-missing data-idx [x y])
                 (= x-type :categorical) (tc/map-columns x [x] str))]
@@ -49,6 +49,7 @@
                                    :row-indices (ds :__row-idx)}
                             group-val (assoc :color group-val)
                             size (assoc :sizes (ds size))
+                            alpha (assoc :alphas (ds alpha))
                             shape (assoc :shapes (ds shape))
                             text-col (assoc :labels (ds text-col))))
             groups (group-by-columns clean (or group []) point-group)]

@@ -35,7 +35,7 @@
 ;; ---- Column Keys ----
 
 (def column-keys
-  #{:x :y :color :size :shape})
+  #{:x :y :color :size :alpha :shape})
 
 ;; ---- Shape Symbols ----
 

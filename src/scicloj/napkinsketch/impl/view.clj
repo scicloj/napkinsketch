@@ -147,7 +147,7 @@
 ;; ---- Resolve View ----
 
 (defn resolve-view
-  "Fill in derived properties: types, grouping, mark, stat."
+  "Resolve a single view: infer column types, mark, stat, grouping."
   [v]
   (if-not (:data v)
     v
@@ -163,6 +163,9 @@
           size-val (:size v)
           size-is-col? (and size-val (column-ref? size-val))
           fixed-size (when (and size-val (not size-is-col?)) size-val)
+          alpha-val (:alpha v)
+          alpha-is-col? (and alpha-val (column-ref? alpha-val))
+          fixed-alpha (when (and alpha-val (not alpha-is-col?)) alpha-val)
           group (or (:group v)
                     (when (= c-type :categorical) [color-val])
                     [])
@@ -180,7 +183,9 @@
              :color (when color-is-col? color-val)
              :fixed-color fixed-color
              :size (when size-is-col? size-val)
-             :fixed-size fixed-size))))
+             :fixed-size fixed-size
+             :alpha (when alpha-is-col? alpha-val)
+             :fixed-alpha fixed-alpha))))
 
 ;; ---- Scale Setter ----
 

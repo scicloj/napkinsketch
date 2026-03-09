@@ -16,14 +16,14 @@
 ;; ## Sample Data
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 (def tiny (tc/dataset {:x [1 2 3 4 5]
-                        :y [2 4 1 5 3]
-                        :group [:a :a :b :b :b]}))
+                       :y [2 4 1 5 3]
+                       :group [:a :a :b :b :b]}))
 
 (def sales (tc/dataset {:product [:widget :gadget :gizmo :doohickey]
-                         :revenue [120 340 210 95]}))
+                        :revenue [120 340 210 95]}))
 
 ;; ## Data Setup
 
@@ -102,7 +102,26 @@
 ;; Size by column:
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
-                      :size :petal_length :color :species})])
+                     :size :petal_length :color :species})])
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+;; Constant size — uniform radius for all points:
+
+(sk/plot [(sk/point {:data tiny :x :x :y :y :size 6})])
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+;; Constant alpha — uniform transparency:
+
+(sk/plot [(sk/point {:data tiny :x :x :y :y :alpha 0.3})])
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+;; Combined — large, semi-transparent, colored points:
+
+(sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
+                     :color :species :alpha 0.5 :size 5})])
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
@@ -111,7 +130,7 @@
 ;; Connected line through data points:
 
 (def wave (tc/dataset {:x (range 30)
-                        :y (mapv #(Math/sin (* % 0.3)) (range 30))}))
+                       :y (mapv #(Math/sin (* % 0.3)) (range 30))}))
 
 (sk/plot [(sk/line {:data wave :x :x :y :y})])
 
@@ -120,11 +139,17 @@
 ;; Grouped lines:
 
 (def waves (tc/dataset {:x (vec (concat (range 30) (range 30)))
-                         :y (vec (concat (mapv #(Math/sin (* % 0.3)) (range 30))
-                                         (mapv #(Math/cos (* % 0.3)) (range 30))))
-                         :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))}))
+                        :y (vec (concat (mapv #(Math/sin (* % 0.3)) (range 30))
+                                        (mapv #(Math/cos (* % 0.3)) (range 30))))
+                        :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))}))
 
 (sk/plot [(sk/line {:data waves :x :x :y :y :color :fn})])
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+;; Thick line — constant stroke width:
+
+(sk/plot [(sk/line {:data wave :x :x :y :y :size 4})])
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
@@ -156,12 +181,18 @@
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
+;; Semi-transparent bars:
+
+(-> iris (sk/view :species) (sk/lay (sk/bar {:alpha 0.4})) sk/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
 (kind/doc #'sk/stacked-bar)
 
 ;; Stacked categorical bars:
 
 (def penguins (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
-                           {:key-fn keyword}))
+                          {:key-fn keyword}))
 
 (-> penguins (sk/view :island) (sk/lay (sk/stacked-bar {:color :species})) sk/plot)
 
@@ -217,10 +248,10 @@
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
-;; Config — fine-grained styling:
+;; Direct mark styling — `:alpha` and `:size`:
 
-(sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width})]
-         {:config {:point-radius 4 :point-opacity 0.5}})
+(sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
+                     :alpha 0.5 :size 4})])
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
@@ -234,7 +265,7 @@
 (select-keys sk1 [:width :height :x-label :y-label :title])
 
 (kind/test-last [(fn [m] (and (= 600 (:width m))
-                             (= "x" (:x-label m))))])
+                              (= "x" (:x-label m))))])
 
 ;; The sketch contains panels with domains and layers:
 
@@ -245,7 +276,7 @@
    :mark (:mark (first (:layers panel)))})
 
 (kind/test-last [(fn [m] (and (= 1 (:n-layers m))
-                             (= :point (:mark m))))])
+                              (= :point (:mark m))))])
 
 ;; Sketches are plain serializable maps — useful for debugging
 ;; and testing. See the *Exploring Sketches* chapter for a full walkthrough.
@@ -310,7 +341,7 @@
 
 (-> iris
     (sk/view (sk/cross [:sepal_length :petal_length]
-                        [:sepal_width :petal_width]))
+                       [:sepal_width :petal_width]))
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 

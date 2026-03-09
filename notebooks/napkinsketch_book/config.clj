@@ -11,7 +11,7 @@
 ;; ## Datasets
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 ;; ## Custom Width and Height
 
@@ -24,9 +24,9 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs)
-                     (>= (:width attrs) 800)))))])
+               (let [attrs (second v)]
+                 (and (map? attrs)
+                      (>= (:width attrs) 800)))))])
 
 ;; A tall, narrow plot.
 
@@ -37,9 +37,9 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs)
-                     (>= (:width attrs) 300)))))])
+               (let [attrs (second v)]
+                 (and (map? attrs)
+                      (>= (:width attrs) 300)))))])
 
 ;; ## Titles and Labels
 
@@ -54,8 +54,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Log Scale
 
@@ -74,8 +74,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; Log y-scale — reveals the exponential trend.
 
@@ -87,8 +87,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Fixed Scale Domain
 
@@ -102,23 +102,22 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
-;; ## Custom Config
+;; ## Direct Mark Styling
 
-;; Pass visual configuration overrides via `:config`.
+;; Pass `:alpha` and `:size` directly to mark constructors.
+;; These map to opacity and radius (for points) or stroke-width (for lines).
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
-    (sk/plot {:config {:point-radius 5
-                       :point-opacity 0.5}}))
-
+    (sk/lay (sk/point {:color :species :alpha 0.5 :size 5}))
+    sk/plot)
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Value Bar
 
@@ -135,8 +134,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Value Bars Flipped
 
@@ -148,5 +147,5 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])

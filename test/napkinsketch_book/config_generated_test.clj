@@ -95,7 +95,7 @@
    {:x (range 1 50),
     :y
     (mapv
-     (fn* [p1__84193#] (* 2 (Math/pow 1.1 p1__84193#)))
+     (fn* [p1__281395#] (* 2 (Math/pow 1.1 p1__281395#)))
      (range 1 50))})))
 
 
@@ -168,16 +168,16 @@
 
 
 (def
- v25_l112
+ v25_l113
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point {:color :species}))
-  (sk/plot {:config {:point-radius 5, :point-opacity 0.5}})))
+  (sk/lay (sk/point {:color :species, :alpha 0.5, :size 5}))
+  sk/plot))
 
 
 (deftest
- t26_l118
+ t26_l117
  (is
   ((fn
     [v]
@@ -186,18 +186,18 @@
      (= :svg (first v))
      (map? (second v))
      (vector? (nth v 2))))
-   v25_l112)))
+   v25_l113)))
 
 
 (def
- v28_l127
+ v28_l126
  (def
   summary
   (tc/dataset {:category [:a :b :c :d], :value [42 28 35 19]})))
 
 
 (def
- v29_l131
+ v29_l130
  (->
   summary
   (sk/view [[:category :value]])
@@ -206,7 +206,7 @@
 
 
 (deftest
- t30_l136
+ t30_l135
  (is
   ((fn
     [v]
@@ -215,11 +215,11 @@
      (= :svg (first v))
      (map? (second v))
      (vector? (nth v 2))))
-   v29_l131)))
+   v29_l130)))
 
 
 (def
- v32_l143
+ v32_l142
  (->
   summary
   (sk/view [[:category :value]])
@@ -229,7 +229,7 @@
 
 
 (deftest
- t33_l149
+ t33_l148
  (is
   ((fn
     [v]
@@ -238,4 +238,4 @@
      (= :svg (first v))
      (map? (second v))
      (vector? (nth v 2))))
-   v32_l143)))
+   v32_l142)))
