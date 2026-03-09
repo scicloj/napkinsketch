@@ -1,6 +1,6 @@
 ;; # Real-World Data
 ;;
-;; Exploring classic datasets: penguins, diamonds, tips, mpg.
+;; Exploring classic datasets: penguins, tips, mpg.
 ;; Each section demonstrates a different analytical question.
 
 (ns napkinsketch-book.real-world
@@ -58,42 +58,6 @@
     (ns/view :body_mass_g)
     (ns/lay (ns/histogram {:color :species}))
     (ns/plot {:title "Body Mass Distribution"}))
-
-;; ## Diamonds
-
-(def diamonds (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/diamonds.csv"
-                           {:key-fn keyword}))
-
-;; Carat vs price — the classic non-linear relationship.
-
-(-> diamonds
-    (ns/view [[:carat :price]])
-    (ns/lay (ns/point))
-    (ns/plot {:title "Diamond Carat vs Price"
-              :config {:point-radius 1 :point-opacity 0.3}}))
-
-;; Log scale reveals the structure.
-
-(-> diamonds
-    (ns/view [[:carat :price]])
-    (ns/lay (ns/point))
-    (ns/scale :y :log)
-    (ns/plot {:title "Carat vs Price (Log Scale)"
-              :config {:point-radius 1 :point-opacity 0.3}}))
-
-;; Price distribution — highly right-skewed.
-
-(-> diamonds
-    (ns/view :price)
-    (ns/lay (ns/histogram))
-    (ns/plot {:title "Diamond Price Distribution"}))
-
-;; Clarity distribution by cut quality.
-
-(-> diamonds
-    (ns/view :clarity)
-    (ns/lay (ns/bar {:color :cut}))
-    (ns/plot {:title "Clarity by Cut Quality"}))
 
 ;; ## Tips
 

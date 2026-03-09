@@ -9,7 +9,25 @@
 
 
 (def
- v3_l95
+ v3_l15
+ (kind/mermaid
+  "\ngraph LR\n  V[\"Views<br/>(API)\"] -->|resolve| S[\"Sketch<br/>(data-space)\"]\n  S -->|scales + coords| M[\"Membrane Scene<br/>(pixel-space)\"]\n  M -->|tree walk| SVG[\"SVG Hiccup<br/>(output)\"]\n  style V fill:#e8f5e9\n  style S fill:#fff3e0\n  style M fill:#e3f2fd\n  style SVG fill:#fce4ec\n"))
+
+
+(def
+ v5_l42
+ (kind/mermaid
+  "\ngraph TB\n  subgraph WHAT [\"What to draw\"]\n    direction TB\n    A1[\"api.clj\"]\n    A2[\"impl/view.clj\"]\n    A3[\"impl/stat.clj\"]\n    A4[\"impl/sketch.clj\"]\n  end\n  subgraph HOW [\"How to draw it\"]\n    direction TB\n    B1[\"impl/scale.clj\"]\n    B2[\"impl/mark.clj\"]\n    B3[\"impl/panel.clj\"]\n    B4[\"impl/plot.clj\"]\n    B5[\"render/svg.clj\"]\n  end\n  WHAT -->|sketch| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
+
+
+(def
+ v7_l100
+ (kind/mermaid
+  "\ngraph TD\n  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]\n  API --> PLOT[\"impl/plot.clj\"]\n  API --> SKETCH[\"impl/sketch.clj\"]\n  SKETCH --> VIEW\n  SKETCH --> STAT[\"impl/stat.clj\"]\n  SKETCH --> SCALE[\"impl/scale.clj\"]\n  SKETCH --> DEFAULTS[\"impl/defaults.clj\"]\n  PLOT --> SKETCH\n  PLOT --> PANEL[\"impl/panel.clj\"]\n  PLOT --> SVG[\"render/svg.clj\"]\n  PANEL --> MARK[\"impl/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SKETCH fill:#ffe0b2\n  style PLOT fill:#bbdefb\n  style SVG fill:#f8bbd0\n"))
+
+
+(def
+ v9_l125
  (def
   iris
   (tc/dataset
@@ -18,24 +36,24 @@
 
 
 (def
- v5_l102
+ v11_l132
  (def
   views
   [(ns/point
     {:data iris, :x :sepal_length, :y :sepal_width, :color :species})]))
 
 
-(def v7_l107 (dissoc (first views) :data))
+(def v13_l137 (dissoc (first views) :data))
 
 
-(deftest t8_l109 (is (fn v7_l107 [v] (= :point (:mark v)))))
+(deftest t14_l139 (is (fn v13_l137 [v] (= :point (:mark v)))))
 
 
-(def v10_l116 (def sk (ns/sketch views)))
+(def v16_l146 (def sk (ns/sketch views)))
 
 
 (def
- v12_l120
+ v18_l150
  (let
   [panel
    (first (:panels sk))
@@ -52,10 +70,10 @@
 
 
 (deftest
- t13_l130
+ t19_l160
  (is
   (fn
-   v12_l120
+   v18_l150
    [m]
    (and
     (= :point (:mark m))
@@ -63,23 +81,29 @@
     (pos? (:first-group-n-points m))))))
 
 
-(def v15_l136 (ss/valid? sk))
+(def v21_l166 (ss/valid? sk))
 
 
-(deftest t16_l138 (is (true? v15_l136)))
+(deftest t22_l168 (is (true? v21_l166)))
 
 
-(def v18_l142 (= sk (read-string (pr-str sk))))
+(def v24_l172 (= sk (read-string (pr-str sk))))
 
 
-(deftest t19_l144 (is (true? v18_l142)))
+(deftest t25_l174 (is (true? v24_l172)))
 
 
-(def v21_l152 (ns/plot views))
+(def v27_l182 (ns/plot views))
 
 
 (def
- v23_l190
+ v29_l190
+ (kind/mermaid
+  "\ngraph LR\n  subgraph WHAT [\"WHAT — data + semantics\"]\n    V[\"Views\"]\n    ST[\"Statistics\"]\n    D[\"Domains\"]\n    C[\"Colors\"]\n  end\n  subgraph HOW [\"HOW — pixels + rendering\"]\n    SC[\"Scales (wadogo)\"]\n    CO[\"Coord transforms\"]\n    MS[\"Membrane scene\"]\n    SV[\"SVG conversion\"]\n  end\n  WHAT -->|sketch| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
+
+
+(def
+ v31_l225
  (def
   multi-views
   [(ns/point
@@ -89,32 +113,32 @@
 
 
 (def
- v24_l194
+ v32_l229
  (def
   multi-sk
   (ns/sketch multi-views {:title "Iris Petals with Regression"})))
 
 
-(def v26_l198 (count (:layers (first (:panels multi-sk)))))
+(def v34_l233 (count (:layers (first (:panels multi-sk)))))
 
 
-(deftest t27_l200 (is (fn v26_l198 [n] (= 2 n))))
+(deftest t35_l235 (is (fn v34_l233 [n] (= 2 n))))
 
 
 (def
- v29_l204
+ v37_l239
  (let
   [layer (first (:layers (first (:panels multi-sk))))]
   {:mark (:mark layer), :n-groups (count (:groups layer))}))
 
 
 (deftest
- t30_l208
- (is (fn v29_l204 [m] (and (= :point (:mark m)) (= 3 (:n-groups m))))))
+ t38_l243
+ (is (fn v37_l239 [m] (and (= :point (:mark m)) (= 3 (:n-groups m))))))
 
 
 (def
- v32_l212
+ v40_l247
  (let
   [layer (second (:layers (first (:panels multi-sk))))]
   {:mark (:mark layer),
@@ -124,10 +148,10 @@
 
 
 (deftest
- t33_l218
+ t41_l253
  (is
   (fn
-   v32_l212
+   v40_l247
    [m]
    (and
     (= :line (:mark m))
@@ -136,20 +160,20 @@
     (contains? (:first-group-keys m) :x1)))))
 
 
-(def v35_l225 (:title multi-sk))
+(def v43_l260 (:title multi-sk))
 
 
 (deftest
- t36_l227
- (is (fn v35_l225 [t] (= "Iris Petals with Regression" t))))
+ t44_l262
+ (is (fn v43_l260 [t] (= "Iris Petals with Regression" t))))
 
 
-(def v37_l229 (count (:entries (:legend multi-sk))))
+(def v45_l264 (count (:entries (:legend multi-sk))))
 
 
-(deftest t38_l231 (is (fn v37_l229 [n] (= 3 n))))
+(deftest t46_l266 (is (fn v45_l264 [n] (= 3 n))))
 
 
 (def
- v40_l235
+ v48_l270
  (ns/plot multi-views {:title "Iris Petals with Regression"}))
