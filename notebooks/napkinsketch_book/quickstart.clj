@@ -2,6 +2,16 @@
 ;;
 ;; A minimal introduction to napkinsketch — composable plotting in Clojure.
 
+;; ## Setup
+;;
+;; Add napkinsketch to your `deps.edn`:
+;;
+;; ```clojure
+;; {:deps {org.scicloj/napkinsketch {:mvn/version "..."}}}
+;; ```
+;;
+;; Then require the API:
+
 (ns napkinsketch-book.quickstart
   (:require
    [tablecloth.api :as tc]
@@ -9,13 +19,48 @@
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Loading Data
-
+;;
 ;; We use the classic iris dataset throughout these examples.
+;; Note `{:key-fn keyword}` — this converts CSV column names to
+;; keywords, which napkinsketch requires for column references.
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                        {:key-fn keyword}))
 
 (tc/head iris)
+
+;; ## Two Usage Styles
+;;
+;; napkinsketch supports two equivalent styles for building plots.
+;;
+;; **Pipeline style** — compositional, good for exploration and
+;; multi-layer plots:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (and (vector? v) (= :svg (first v))
+               (map? (second v))
+               (vector? (nth v 2))))])
+
+;; **Direct style** — compact, good for single-layer plots:
+
+(sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
+                      :color :species})])
+
+(kind/test-last
+ [(fn [v] (and (vector? v) (= :svg (first v))
+               (map? (second v))
+               (vector? (nth v 2))))])
+
+;; Both produce identical results. The pipeline style composes better
+;; when you add `coord`, `scale`, or multiple views. The direct style
+;; is shorter for one-off plots.
+;;
+;; The rest of this quickstart uses the pipeline style.
 
 ;; ## Scatter Plot
 
@@ -28,10 +73,10 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+               (let [attrs (second v)]
+                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+               (let [body (nth v 2)]
+                 (and (vector? body) (= :g (first body))))))])
 
 ;; ## Colored Scatter
 
@@ -44,10 +89,10 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+               (let [attrs (second v)]
+                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+               (let [body (nth v 2)]
+                 (and (vector? body) (= :g (first body))))))])
 
 ;; ## Scatter with Regression
 
@@ -61,10 +106,10 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+               (let [attrs (second v)]
+                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+               (let [body (nth v 2)]
+                 (and (vector? body) (= :g (first body))))))])
 
 ;; ## Histogram
 
@@ -77,10 +122,10 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+               (let [attrs (second v)]
+                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+               (let [body (nth v 2)]
+                 (and (vector? body) (= :g (first body))))))])
 
 ;; ## Bar Chart
 
@@ -93,10 +138,10 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+               (let [attrs (second v)]
+                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+               (let [body (nth v 2)]
+                 (and (vector? body) (= :g (first body))))))])
 
 ;; ## Flipped Bar Chart
 
@@ -110,10 +155,10 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+               (let [attrs (second v)]
+                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+               (let [body (nth v 2)]
+                 (and (vector? body) (= :g (first body))))))])
 
 ;; ## Line Plot
 
@@ -127,10 +172,10 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+               (let [attrs (second v)]
+                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+               (let [body (nth v 2)]
+                 (and (vector? body) (= :g (first body))))))])
 
 ;; ## Custom Options
 
@@ -146,6 +191,6 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs)
-                     (>= (:width attrs) 500)))))])
+               (let [attrs (second v)]
+                 (and (map? attrs)
+                      (>= (:width attrs) 500)))))])

@@ -8,7 +8,7 @@
 
 
 (def
- v3_l15
+ v3_l27
  (def
   iris
   (tc/dataset
@@ -16,38 +16,11 @@
    {:key-fn keyword})))
 
 
-(def v4_l18 (tc/head iris))
+(def v4_l30 (tc/head iris))
 
 
 (def
- v6_l24
- (->
-  iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point))
-  sk/plot))
-
-
-(deftest
- t7_l29
- (is
-  ((fn
-    [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v6_l24)))
-
-
-(def
- v9_l40
+ v6_l39
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -56,7 +29,49 @@
 
 
 (deftest
- t10_l45
+ t7_l44
+ (is
+  ((fn
+    [v]
+    (and
+     (vector? v)
+     (= :svg (first v))
+     (map? (second v))
+     (vector? (nth v 2))))
+   v6_l39)))
+
+
+(def
+ v9_l51
+ (sk/plot
+  [(sk/point
+    {:data iris, :x :sepal_length, :y :sepal_width, :color :species})]))
+
+
+(deftest
+ t10_l54
+ (is
+  ((fn
+    [v]
+    (and
+     (vector? v)
+     (= :svg (first v))
+     (map? (second v))
+     (vector? (nth v 2))))
+   v9_l51)))
+
+
+(def
+ v12_l69
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point))
+  sk/plot))
+
+
+(deftest
+ t13_l74
  (is
   ((fn
     [v]
@@ -70,11 +85,38 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v9_l40)))
+   v12_l69)))
 
 
 (def
- v12_l56
+ v15_l85
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :species}))
+  sk/plot))
+
+
+(deftest
+ t16_l90
+ (is
+  ((fn
+    [v]
+    (and
+     (vector? v)
+     (= :svg (first v))
+     (let
+      [attrs (second v)]
+      (and
+       (map? attrs)
+       (number? (:width attrs))
+       (number? (:height attrs))))
+     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
+   v15_l85)))
+
+
+(def
+ v18_l101
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -83,7 +125,7 @@
 
 
 (deftest
- t13_l62
+ t19_l107
  (is
   ((fn
     [v]
@@ -97,16 +139,16 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v12_l56)))
+   v18_l101)))
 
 
 (def
- v15_l73
+ v21_l118
  (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot))
 
 
 (deftest
- t16_l78
+ t22_l123
  (is
   ((fn
     [v]
@@ -120,14 +162,14 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v15_l73)))
+   v21_l118)))
 
 
-(def v18_l89 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot))
+(def v24_l134 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot))
 
 
 (deftest
- t19_l94
+ t25_l139
  (is
   ((fn
     [v]
@@ -141,11 +183,11 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v18_l89)))
+   v24_l134)))
 
 
 (def
- v21_l105
+ v27_l150
  (->
   iris
   (sk/view :species)
@@ -155,7 +197,7 @@
 
 
 (deftest
- t22_l111
+ t28_l156
  (is
   ((fn
     [v]
@@ -169,11 +211,11 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v21_l105)))
+   v27_l150)))
 
 
 (def
- v24_l122
+ v30_l167
  (->
   {:x [1 2 3 4 5 6 7 8], :y [3 5 4 7 6 8 7 9]}
   (sk/view [[:x :y]])
@@ -182,7 +224,7 @@
 
 
 (deftest
- t25_l128
+ t31_l173
  (is
   ((fn
     [v]
@@ -196,11 +238,11 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v24_l122)))
+   v30_l167)))
 
 
 (def
- v27_l139
+ v33_l184
  (->
   iris
   (sk/view [[:petal_length :petal_width]])
@@ -214,7 +256,7 @@
 
 
 (deftest
- t28_l147
+ t34_l192
  (is
   ((fn
     [v]
@@ -224,4 +266,4 @@
      (let
       [attrs (second v)]
       (and (map? attrs) (>= (:width attrs) 500)))))
-   v27_l139)))
+   v33_l184)))
