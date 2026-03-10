@@ -19,8 +19,13 @@
 (def v4_l30 (tc/head iris))
 
 
+(deftest
+ t5_l32
+ (is ((fn [v] (= 5 (count (tablecloth.api/rows v)))) v4_l30)))
+
+
 (def
- v6_l39
+ v7_l41
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -29,7 +34,7 @@
 
 
 (deftest
- t7_l44
+ t8_l46
  (is
   ((fn
     [v]
@@ -38,18 +43,18 @@
      (= :svg (first v))
      (map? (second v))
      (vector? (nth v 2))))
-   v6_l39)))
+   v7_l41)))
 
 
 (def
- v9_l51
+ v10_l53
  (sk/plot
   [(sk/point
     {:data iris, :x :sepal_length, :y :sepal_width, :color :species})]))
 
 
 (deftest
- t10_l54
+ t11_l56
  (is
   ((fn
     [v]
@@ -58,11 +63,11 @@
      (= :svg (first v))
      (map? (second v))
      (vector? (nth v 2))))
-   v9_l51)))
+   v10_l53)))
 
 
 (def
- v12_l69
+ v13_l71
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -71,7 +76,7 @@
 
 
 (deftest
- t13_l74
+ t14_l76
  (is
   ((fn
     [v]
@@ -85,11 +90,11 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v12_l69)))
+   v13_l71)))
 
 
 (def
- v15_l85
+ v16_l87
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -98,7 +103,7 @@
 
 
 (deftest
- t16_l90
+ t17_l92
  (is
   ((fn
     [v]
@@ -112,11 +117,11 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v15_l85)))
+   v16_l87)))
 
 
 (def
- v18_l101
+ v19_l103
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -125,7 +130,7 @@
 
 
 (deftest
- t19_l107
+ t20_l109
  (is
   ((fn
     [v]
@@ -139,16 +144,16 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v18_l101)))
+   v19_l103)))
 
 
 (def
- v21_l118
+ v22_l120
  (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot))
 
 
 (deftest
- t22_l123
+ t23_l125
  (is
   ((fn
     [v]
@@ -162,14 +167,14 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v21_l118)))
+   v22_l120)))
 
 
-(def v24_l134 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot))
+(def v25_l136 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot))
 
 
 (deftest
- t25_l139
+ t26_l141
  (is
   ((fn
     [v]
@@ -183,11 +188,11 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v24_l134)))
+   v25_l136)))
 
 
 (def
- v27_l150
+ v28_l152
  (->
   iris
   (sk/view :species)
@@ -197,7 +202,7 @@
 
 
 (deftest
- t28_l156
+ t29_l158
  (is
   ((fn
     [v]
@@ -211,11 +216,11 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v27_l150)))
+   v28_l152)))
 
 
 (def
- v30_l167
+ v31_l169
  (->
   {:x [1 2 3 4 5 6 7 8], :y [3 5 4 7 6 8 7 9]}
   (sk/view [[:x :y]])
@@ -224,7 +229,7 @@
 
 
 (deftest
- t31_l173
+ t32_l175
  (is
   ((fn
     [v]
@@ -238,11 +243,11 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v30_l167)))
+   v31_l169)))
 
 
 (def
- v33_l184
+ v34_l186
  (->
   iris
   (sk/view [[:petal_length :petal_width]])
@@ -256,7 +261,7 @@
 
 
 (deftest
- t34_l192
+ t35_l194
  (is
   ((fn
     [v]
@@ -266,4 +271,4 @@
      (let
       [attrs (second v)]
       (and (map? attrs) (>= (:width attrs) 500)))))
-   v33_l184)))
+   v34_l186)))

@@ -96,14 +96,19 @@
 (def v27_l182 (sk/plot views))
 
 
+(deftest
+ t28_l184
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v27_l182)))
+
+
 (def
- v29_l190
+ v30_l192
  (kind/mermaid
   "\ngraph LR\n  subgraph WHAT [\"WHAT — data + semantics\"]\n    V[\"Views\"]\n    ST[\"Statistics\"]\n    D[\"Domains\"]\n    C[\"Colors\"]\n  end\n  subgraph HOW [\"HOW — pixels + rendering\"]\n    SC[\"Scales (wadogo)\"]\n    CO[\"Coord transforms\"]\n    MS[\"Membrane scene\"]\n    SV[\"SVG conversion\"]\n  end\n  WHAT -->|sketch| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
 
 
 (def
- v31_l225
+ v32_l227
  (def
   multi-views
   [(sk/point
@@ -113,33 +118,33 @@
 
 
 (def
- v32_l229
+ v33_l231
  (def
   multi-sk
   (sk/sketch multi-views {:title "Iris Petals with Regression"})))
 
 
-(def v34_l233 (count (:layers (first (:panels multi-sk)))))
+(def v35_l235 (count (:layers (first (:panels multi-sk)))))
 
 
-(deftest t35_l235 (is ((fn [n] (= 2 n)) v34_l233)))
+(deftest t36_l237 (is ((fn [n] (= 2 n)) v35_l235)))
 
 
 (def
- v37_l239
+ v38_l241
  (let
   [layer (first (:layers (first (:panels multi-sk))))]
   {:mark (:mark layer), :n-groups (count (:groups layer))}))
 
 
 (deftest
- t38_l243
+ t39_l245
  (is
-  ((fn [m] (and (= :point (:mark m)) (= 3 (:n-groups m)))) v37_l239)))
+  ((fn [m] (and (= :point (:mark m)) (= 3 (:n-groups m)))) v38_l241)))
 
 
 (def
- v40_l247
+ v41_l249
  (let
   [layer (second (:layers (first (:panels multi-sk))))]
   {:mark (:mark layer),
@@ -149,7 +154,7 @@
 
 
 (deftest
- t41_l253
+ t42_l255
  (is
   ((fn
     [m]
@@ -158,23 +163,28 @@
      (= :lm (:stat-origin m))
      (= 3 (:n-groups m))
      (contains? (:first-group-keys m) :x1)))
-   v40_l247)))
+   v41_l249)))
 
 
-(def v43_l260 (:title multi-sk))
+(def v44_l262 (:title multi-sk))
 
 
 (deftest
- t44_l262
- (is ((fn [t] (= "Iris Petals with Regression" t)) v43_l260)))
+ t45_l264
+ (is ((fn [t] (= "Iris Petals with Regression" t)) v44_l262)))
 
 
-(def v45_l264 (count (:entries (:legend multi-sk))))
+(def v46_l266 (count (:entries (:legend multi-sk))))
 
 
-(deftest t46_l266 (is ((fn [n] (= 3 n)) v45_l264)))
+(deftest t47_l268 (is ((fn [n] (= 3 n)) v46_l266)))
 
 
 (def
- v48_l270
+ v49_l272
  (sk/plot multi-views {:title "Iris Petals with Regression"}))
+
+
+(deftest
+ t50_l274
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v49_l272)))

@@ -29,6 +29,8 @@
 
 (tc/head iris)
 
+(kind/test-last [(fn [v] (= 5 (count (tablecloth.api/rows v))))])
+
 ;; ## Two Usage Styles
 ;;
 ;; napkinsketch supports two equivalent styles for building plots.

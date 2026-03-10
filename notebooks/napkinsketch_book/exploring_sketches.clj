@@ -24,6 +24,8 @@
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y})])
 
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
 ;; And here is the sketch — the data structure that drives the rendering.
 ;; We'll use `sk/sketch` with the same arguments:
 
@@ -134,6 +136,8 @@
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})])
 
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
 (def iris-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})]))
 
 ;; Now we have three groups — one per species:
@@ -170,6 +174,8 @@
 
 (sk/plot [(sk/histogram {:data iris :x :sepal_length})])
 
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
 (def hist-sk (sk/sketch [(sk/histogram {:data iris :x :sepal_length})]))
 
 (def hist-layer (first (:layers (first (:panels hist-sk)))))
@@ -196,6 +202,8 @@
 ;; the categories and counts per group.
 
 (sk/plot [(sk/bar {:data iris :x :species :color :species})])
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (def bar-sk (sk/sketch [(sk/bar {:data iris :x :species :color :species})]))
 
@@ -243,6 +251,8 @@
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width})
           (sk/lm {:data iris :x :sepal_length :y :sepal_width})])
 
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
 (def lm-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width})
                        (sk/lm {:data iris :x :sepal_length :y :sepal_width})]))
 
@@ -279,6 +289,8 @@
 (sk/plot [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
           (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
 
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 (def grp-sk (sk/sketch [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
                         (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})]))
 
@@ -302,6 +314,8 @@
 
 (sk/plot [(sk/line {:data wave :x :x :y :y})])
 
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
 (def wave-sk (sk/sketch [(sk/line {:data wave :x :x :y :y})]))
 
 (def wave-group (first (:groups (first (:layers (first (:panels wave-sk)))))))
@@ -323,6 +337,8 @@
                         :revenue [120 340 210 95]}))
 
 (sk/plot [(sk/value-bar {:data sales :x :product :y :revenue})])
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 (def sales-sk (sk/sketch [(sk/value-bar {:data sales :x :product :y :revenue})]))
 
@@ -410,6 +426,8 @@
 ;; The rendered plot (SVG):
 
 (sk/plot final-views {:title "Iris Petals"})
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; ## Multi-Panel Sketches
 ;;

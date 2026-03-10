@@ -181,6 +181,8 @@ graph TD
 
 (sk/plot views)
 
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
 ;; ## The Sketch as a Boundary
 ;;
 ;; The sketch is the boundary between the "what" and the "how".
@@ -268,3 +270,5 @@ graph LR
 ;; And it renders:
 
 (sk/plot multi-views {:title "Iris Petals with Regression"})
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
