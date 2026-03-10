@@ -212,6 +212,22 @@
 ;; render-layer takes sketch layer descriptors (data-space geometry,
 ;; resolved colors) and renders them as membrane scene primitives.
 
+(defn- draw-shape
+  "Draw a shape symbol centered at (0,0) with given radius."
+  [shape-kw r]
+  (let [d (* 2 r)]
+    (case shape-kw
+      :square (ui/with-style ::ui/style-fill
+                (ui/rounded-rectangle d d 0))
+      :triangle (let [h (* r 1.73)] ;; equilateral triangle height
+                  (ui/with-style ::ui/style-fill
+                    (ui/path [r 0] [(+ r r) h] [(- r r) h] [r 0])))
+      :diamond (ui/with-style ::ui/style-fill
+                 (ui/path [r 0] [d r] [r d] [0 r] [r 0]))
+      ;; default: circle
+      (ui/with-style ::ui/style-fill
+        (ui/rounded-rectangle d d r)))))
+
 (defmulti render-layer
   "Render a sketch layer as membrane scene primitives.
    `layer` is a sketch layer map with data-space geometry and resolved colors.
@@ -235,18 +251,22 @@
                             lo (reduce min all-alphas)
                             hi (reduce max all-alphas)
                             span (max 1e-6 (- (double hi) (double lo)))]
-                        (fn [v] (+ 0.2 (* 0.8 (/ (- (double v) (double lo)) span))))))]
+                        (fn [v] (+ 0.2 (* 0.8 (/ (- (double v) (double lo)) span))))))
+        shape-bufs (keep :shapes groups)
+        shape-map (when (seq shape-bufs)
+                    (let [all-vals (distinct (apply concat shape-bufs))]
+                      (zipmap all-vals (cycle defaults/shape-syms))))]
     (vec
-     (for [{:keys [color xs ys sizes alphas row-indices]} groups
+     (for [{:keys [color xs ys sizes alphas shapes row-indices]} groups
            i (range (count xs))
            :let [[px py] (coord-fn (nth xs i) (nth ys i))
                  pt-r (if sizes (size-scale (nth sizes i)) radius)
                  pt-alpha (if alphas (alpha-scale (nth alphas i)) (or opacity 1.0))
+                 pt-shape (if shapes (get shape-map (nth shapes i) :circle) :circle)
                  [cr cg cb _] color]]
        (-> (ui/translate (- (double px) pt-r) (- (double py) pt-r)
                          (ui/with-color [cr cg cb pt-alpha]
-                           (ui/with-style ::ui/style-fill
-                             (ui/rounded-rectangle (* 2 pt-r) (* 2 pt-r) pt-r))))
+                           (draw-shape pt-shape pt-r)))
            (cond-> row-indices (assoc :row-idx (nth row-indices i))))))))
 
 (defmethod render-layer :default [layer ctx]

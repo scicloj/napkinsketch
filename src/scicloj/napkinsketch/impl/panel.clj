@@ -251,7 +251,7 @@
    Takes a panel map from resolve-sketch and pixel dimensions."
   [panel pw ph m cfg]
   (let [{:keys [x-domain y-domain x-scale y-scale coord
-                x-ticks y-ticks layers]} panel
+                x-ticks y-ticks layers annotations]} panel
         coord-type (or coord :cartesian)
 
         ;; Build wadogo scales from domains + pixel ranges
@@ -279,10 +279,47 @@
         ;; Data marks from sketch layers
         marks (vec (mapcat #(mark/render-layer % ctx) layers))
 
+        ;; Annotation marks
+        ann-marks
+        (when (seq annotations)
+          (let [ann-cfg (or cfg defaults/defaults)
+                ann-color (defaults/hex->rgba (:annotation-stroke ann-cfg))
+                ann-dash (:annotation-dash ann-cfg)
+                band-alpha (:band-opacity ann-cfg)]
+            (vec
+             (for [a annotations]
+               (case (:mark a)
+                 :rule-v (let [[px _] (coord-fn (:intercept a) 0)]
+                           (ui/with-color ann-color
+                             (ui/with-stroke-width 1.5
+                               (ui/with-style ::ui/style-stroke
+                                 (ui/path [px m] [px (- ph m)])))))
+                 :rule-h (let [[_ py] (coord-fn 0 (:intercept a))]
+                           (ui/with-color ann-color
+                             (ui/with-stroke-width 1.5
+                               (ui/with-style ::ui/style-stroke
+                                 (ui/path [m py] [(- pw m) py])))))
+                 :band-v (let [[px1 _] (coord-fn (:lo a) 0)
+                               [px2 _] (coord-fn (:hi a) 0)]
+                           (ui/with-color [0.5 0.5 0.5 band-alpha]
+                             (ui/with-style ::ui/style-fill
+                               (ui/path [px1 m] [px2 m]
+                                        [px2 (- ph m)] [px1 (- ph m)]
+                                        [px1 m]))))
+                 :band-h (let [[_ py1] (coord-fn 0 (:lo a))
+                               [_ py2] (coord-fn 0 (:hi a))]
+                           (ui/with-color [0.5 0.5 0.5 band-alpha]
+                             (ui/with-style ::ui/style-fill
+                               (ui/path [m py1] [(- pw m) py1]
+                                        [(- pw m) py2] [m py2]
+                                        [m py1]))))
+                 nil)))))
+
         ;; Tick labels
         x-tick-scene (render-tick-labels :x x-ticks sx pw ph m)
         y-tick-scene (render-tick-labels :y y-ticks sy pw ph m)]
 
-    (vec (concat [background] grid marks
+    (vec (concat [background] grid
+                 (or ann-marks []) marks
                  (or x-tick-scene []) (or y-tick-scene [])))))
 

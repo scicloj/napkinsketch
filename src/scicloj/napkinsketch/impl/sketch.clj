@@ -31,11 +31,12 @@
      :style {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
              :radius (or (:fixed-size view) (:point-radius cfg))}
      :groups (vec
-              (for [{:keys [color xs ys sizes alphas row-indices]} (:points stat)]
+              (for [{:keys [color xs ys sizes alphas shapes row-indices]} (:points stat)]
                 (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
                          :xs (vec xs) :ys (vec ys)}
                   sizes (assoc :sizes (vec sizes))
                   alphas (assoc :alphas (vec alphas))
+                  shapes (assoc :shapes (vec shapes))
                   row-indices (assoc :row-indices (vec row-indices)))))}))
 
 (defmethod extract-layer :bar [view stat all-colors cfg]
@@ -212,13 +213,19 @@
                         (extract-layer rv sr all-colors cfg))
                       resolved stat-results))
 
-         ;; Axis labels
+         ;; Axis labels (opts > view-level labs > scale label > auto-inferred)
+         view-title (:title (first non-ann-views))
+         view-x-label (:x-label (first non-ann-views))
+         view-y-label (:y-label (first non-ann-views))
          x-vars (distinct (map :x non-ann-views))
          y-vars (distinct (map :y non-ann-views))
+         eff-title (or title view-title)
          eff-x-label (or x-label
+                         view-x-label
                          (:label x-scale-spec)
                          (when-let [x (first x-vars)] (defaults/fmt-name x)))
          eff-y-label (or y-label
+                         view-y-label
                          (:label y-scale-spec)
                          (when-let [y (first y-vars)]
                            (when (not= y (first x-vars))
@@ -234,25 +241,30 @@
          ;; Layout dimensions
          x-label-pad (if eff-x-label (:label-offset cfg) 0)
          y-label-pad (if eff-y-label (:label-offset cfg) 0)
-         title-pad (if title (:title-offset cfg) 0)
+         title-pad (if eff-title (:title-offset cfg) 0)
          legend-w (if legend (:legend-width cfg) 0)
          total-w (+ y-label-pad width legend-w)
-         total-h (+ title-pad height x-label-pad)]
+         total-h (+ title-pad height x-label-pad)
+
+         ;; Annotations (plain data maps stored in sketch)
+         annotations (vec (for [a ann-views]
+                            (select-keys a [:mark :intercept :lo :hi])))]
 
      {:width width :height height :margin m
       :total-width total-w :total-height total-h
-      :title title
+      :title eff-title
       :x-label eff-x-label :y-label eff-y-label
       :config cfg
       :legend legend
-      :panels [{:x-domain (vec (if (sequential? x-dom') x-dom' [x-dom']))
-                :y-domain (vec (if (sequential? y-dom') y-dom' [y-dom']))
-                :x-scale x-sspec'
-                :y-scale y-sspec'
-                :coord coord-type
-                :x-ticks x-ticks
-                :y-ticks y-ticks
-                :layers layers}]
+      :panels [(cond-> {:x-domain (vec (if (sequential? x-dom') x-dom' [x-dom']))
+                        :y-domain (vec (if (sequential? y-dom') y-dom' [y-dom']))
+                        :x-scale x-sspec'
+                        :y-scale y-sspec'
+                        :coord coord-type
+                        :x-ticks x-ticks
+                        :y-ticks y-ticks
+                        :layers layers}
+                 (seq annotations) (assoc :annotations annotations))]
       ;; Layout offsets for rendering
       :layout {:x-label-pad x-label-pad
                :y-label-pad y-label-pad

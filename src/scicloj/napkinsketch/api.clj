@@ -35,6 +35,11 @@
    (scale views :y {:type :linear :domain [0 100]}) — fixed domain"
   view/scale)
 
+(def labs
+  "Set labels on views. Keys: :title, :x, :y.
+   (labs views {:title \"My Plot\" :x \"X Axis\" :y \"Y Axis\"})"
+  view/labs)
+
 ;; ---- Mark Constructors ----
 
 (def point
@@ -73,6 +78,34 @@
    (lm)                      — single regression
    (lm {:color :species})    — per-group regression"
   view/lm)
+
+(def loess
+  "LOESS smoothing line.
+   (loess)                     — default bandwidth 0.75
+   (loess {:color :species})   — per-group smoothing"
+  view/loess)
+
+;; ---- Annotations ----
+
+(def rule-v
+  "Vertical reference line at x = intercept.
+   (rule-v 5)  — line at x=5"
+  view/rule-v)
+
+(def rule-h
+  "Horizontal reference line at y = intercept.
+   (rule-h 3)  — line at y=3"
+  view/rule-h)
+
+(def band-v
+  "Vertical shaded band from x = lo to x = hi.
+   (band-v 4 6)  — shaded region between x=4 and x=6"
+  view/band-v)
+
+(def band-h
+  "Horizontal shaded band from y = lo to y = hi.
+   (band-h 2 4)  — shaded region between y=2 and y=4"
+  view/band-h)
 
 ;; ---- Rendering ----
 

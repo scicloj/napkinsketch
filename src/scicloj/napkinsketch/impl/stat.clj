@@ -5,6 +5,7 @@
             [tech.v3.datatype.functional :as dfn]
             [fastmath.ml.regression :as regr]
             [fastmath.stats :as stats]
+            [fastmath.interpolation.acm :as interp]
             [scicloj.napkinsketch.impl.defaults :as defaults]))
 
 ;; ---- Helpers ----
@@ -44,10 +45,20 @@
                     (distinct ys-col)
                     (let [[lo hi] (numeric-extent ys-col)]
                       (if (= mark :rect) [(min 0 lo) (max 0 hi)] [lo hi])))
+            ;; Extract color value from group key when color is part of group
+            color-idx (when color (.indexOf ^java.util.List (vec group) color))
+            extract-color (fn [group-val]
+                            (cond
+                              (nil? group-val) nil
+                              ;; Single group col — group-val is the value itself
+                              (= 1 (count group)) group-val
+                              ;; Multiple group cols — extract color column value
+                              (and color-idx (>= color-idx 0)) (nth group-val color-idx)
+                              :else nil))
             point-group (fn [ds group-val]
                           (cond-> {:xs (ds x) :ys (ds y)
                                    :row-indices (ds :__row-idx)}
-                            group-val (assoc :color group-val)
+                            group-val (assoc :color (extract-color group-val))
                             size (assoc :sizes (ds size))
                             alpha (assoc :alphas (ds alpha))
                             shape (assoc :shapes (ds shape))
@@ -162,3 +173,48 @@
         {:lines (remove nil? lines)
          :x-domain (numeric-extent (clean x))
          :y-domain (numeric-extent (clean y))}))))
+
+;; ---- LOESS Smoothing ----
+
+(defn fit-loess
+  "Fit a LOESS curve, return {:xs ... :ys ...} evaluated on a grid."
+  [xs-col ys-col n-grid bandwidth]
+  (let [order (dtype/->int-array (tech.v3.datatype.argops/argsort xs-col))
+        sorted-xs (dtype/indexed-buffer order xs-col)
+        sorted-ys (dtype/indexed-buffer order ys-col)
+        loess-fn (interp/loess (dtype/->double-array sorted-xs)
+                               (dtype/->double-array sorted-ys)
+                               {:bandwidth bandwidth})
+        x-min (dfn/reduce-min xs-col)
+        x-max (dfn/reduce-max xs-col)
+        step (/ (- x-max x-min) (dec (double n-grid)))
+        grid-xs (mapv #(+ x-min (* step (double %))) (range n-grid))
+        grid-ys (mapv loess-fn grid-xs)]
+    {:xs grid-xs :ys grid-ys}))
+
+(defmethod compute-stat :loess [view]
+  (let [{:keys [data x y group cfg]} view
+        clean (tc/drop-missing data [x y])
+        n (tc/row-count clean)
+        n-grid (or (:loess-n-grid (or cfg defaults/defaults)) 80)
+        bandwidth (or (:loess-bandwidth (or cfg defaults/defaults)) 0.75)]
+    (if (or (< n 4)
+            (= (dfn/reduce-min (clean x)) (dfn/reduce-max (clean x))))
+      {:points []
+       :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
+       :y-domain (if (pos? n) (numeric-extent (clean y)) [0 1])}
+      (let [curves (group-by-columns
+                    clean (or group [])
+                    (fn [ds gv]
+                      (when (and (>= (tc/row-count ds) 4)
+                                 (not= (dfn/reduce-min (ds x))
+                                       (dfn/reduce-max (ds x))))
+                        (cond-> (fit-loess (ds x) (ds y) n-grid bandwidth)
+                          gv (assoc :color gv)))))
+            curves (remove nil? curves)
+            all-ys (mapcat :ys curves)
+            y-min (if (seq all-ys) (reduce min all-ys) (dfn/reduce-min (clean y)))
+            y-max (if (seq all-ys) (reduce max all-ys) (dfn/reduce-max (clean y)))]
+        {:points curves
+         :x-domain (numeric-extent (clean x))
+         :y-domain [y-min y-max]}))))

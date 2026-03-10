@@ -68,20 +68,34 @@
   #{:rule-h :rule-v :band-h :band-v})
 
 (defn merge-layer
-  "Merge a layer into each view."
+  "Merge a layer into each view, preserving :__base for additive lay."
   [views overrides]
   (mapv (fn [v]
           (when (:data v)
             (validate-columns (:data v) overrides))
-          (merge v overrides))
+          (let [base (or (:__base v) v)]
+            (assoc (merge v overrides) :__base base)))
         views))
 
 (defn lay
-  "Apply one or more layers to views."
+  "Apply one or more layers to views. Additive: calling lay on
+   already-layered views appends new layers rather than overwriting."
   [base-views & layer-specs]
   (let [ann-specs (filter #(and (map? %) (annotation-marks (:mark %))) layer-specs)
-        data-specs (remove #(and (map? %) (annotation-marks (:mark %))) layer-specs)]
-    (vec (concat (apply concat (map #(merge-layer base-views %) data-specs))
+        data-specs (remove #(and (map? %) (annotation-marks (:mark %))) layer-specs)
+        ;; Separate existing annotations from data views
+        existing-anns (filter #(annotation-marks (:mark %)) base-views)
+        data-views (remove #(annotation-marks (:mark %)) base-views)
+        has-marks? (some :mark data-views)
+        ;; Recover unique bare bases from __base or strip mark/stat/position
+        bare-views (if has-marks?
+                     (let [bases (map #(or (:__base %) (dissoc % :mark :stat :position)) data-views)]
+                       (vec (distinct bases)))
+                     data-views)
+        new-layers (apply concat (map #(merge-layer bare-views %) data-specs))]
+    (vec (concat (when has-marks? data-views)
+                 new-layers
+                 existing-anns
                  ann-specs))))
 
 ;; ---- Coord ----
@@ -90,6 +104,16 @@
   "Set coordinate system on views."
   [views c]
   (mapv #(assoc % :coord c) views))
+
+(defn labs
+  "Set labels on views. Keys: :title, :x, :y.
+   (labs views {:title \"My Plot\" :x \"X Axis\" :y \"Y Axis\"})"
+  [views label-opts]
+  (let [m (cond-> {}
+            (:title label-opts) (assoc :title (:title label-opts))
+            (:x label-opts) (assoc :x-label (:x label-opts))
+            (:y label-opts) (assoc :y-label (:y label-opts)))]
+    (mapv #(merge % m) views)))
 
 ;; ---- Mark Constructors ----
 
@@ -124,6 +148,26 @@
 (defn loess
   ([] {:mark :line :stat :loess})
   ([opts] (merge {:mark :line :stat :loess} opts)))
+
+(defn rule-v
+  "Vertical reference line at x = intercept."
+  [intercept]
+  {:mark :rule-v :intercept intercept})
+
+(defn rule-h
+  "Horizontal reference line at y = intercept."
+  [intercept]
+  {:mark :rule-h :intercept intercept})
+
+(defn band-v
+  "Vertical shaded band from x = lo to x = hi."
+  [lo hi]
+  {:mark :band-v :lo lo :hi hi})
+
+(defn band-h
+  "Horizontal shaded band from y = lo to y = hi."
+  [lo hi]
+  {:mark :band-h :lo lo :hi hi})
 
 ;; ---- Cross ----
 
@@ -166,9 +210,15 @@
           alpha-val (:alpha v)
           alpha-is-col? (and alpha-val (column-ref? alpha-val))
           fixed-alpha (when (and alpha-val (not alpha-is-col?)) alpha-val)
-          group (or (:group v)
-                    (when (= c-type :categorical) [color-val])
-                    [])
+          ;; Group: normalize keyword to [kw], combine with color column
+          explicit-group (let [g (:group v)]
+                           (cond (nil? g) nil
+                                 (keyword? g) [g]
+                                 (sequential? g) (vec g)
+                                 :else [g]))
+          color-group (when (= c-type :categorical) [color-val])
+          group (vec (distinct (concat (or explicit-group color-group [])
+                                       (when (and color-group explicit-group) color-group))))
           diagonal? (= (:x v) (:y v))
           [default-mark default-stat]
           (cond
