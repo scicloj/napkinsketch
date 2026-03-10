@@ -66,12 +66,6 @@
   (let [idx (.indexOf ^java.util.List (vec categories) val)]
     (hex->rgba (nth ggplot-palette (mod (if (neg? idx) 0 idx) (count ggplot-palette))))))
 
-(defn color-for-hex
-  "Look up the hex color for a categorical value."
-  [categories val]
-  (let [idx (.indexOf ^java.util.List (vec categories) val)]
-    (nth ggplot-palette (mod (if (neg? idx) 0 idx) (count ggplot-palette)))))
-
 ;; ---- Name Formatting ----
 
 (defn fmt-name
