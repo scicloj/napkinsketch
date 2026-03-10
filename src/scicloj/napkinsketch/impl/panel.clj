@@ -9,23 +9,26 @@
 ;; ---- Grid Lines ----
 
 (defn render-grid-from-ticks
-  "Render grid lines using pre-computed tick values from a sketch."
+  "Render grid lines using pre-computed tick values from a sketch.
+   Skips grid lines for categorical axes (like ggplot2)."
   [sx sy x-ticks y-ticks pw ph m cfg]
   (let [{:keys [grid]} defaults/theme
         grid-rgba (defaults/hex->rgba grid)
         grid-w (:grid-stroke-width cfg)]
     (vec
      (concat
-      (for [t (:values x-ticks) :let [px (sx t)]]
-        (ui/with-color grid-rgba
-          (ui/with-stroke-width grid-w
-            (ui/with-style ::ui/style-stroke
-              (ui/path [px m] [px (- ph m)])))))
-      (for [t (:values y-ticks) :let [py (sy t)]]
-        (ui/with-color grid-rgba
-          (ui/with-stroke-width grid-w
-            (ui/with-style ::ui/style-stroke
-              (ui/path [m py] [(- pw m) py])))))))))
+      (when-not (:categorical? x-ticks)
+        (for [t (:values x-ticks) :let [px (sx t)]]
+          (ui/with-color grid-rgba
+            (ui/with-stroke-width grid-w
+              (ui/with-style ::ui/style-stroke
+                (ui/path [px m] [px (- ph m)]))))))
+      (when-not (:categorical? y-ticks)
+        (for [t (:values y-ticks) :let [py (sy t)]]
+          (ui/with-color grid-rgba
+            (ui/with-stroke-width grid-w
+              (ui/with-style ::ui/style-stroke
+                (ui/path [m py] [(- pw m) py]))))))))))
 
 ;; ---- Tick Labels ----
 

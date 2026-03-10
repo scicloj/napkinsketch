@@ -99,7 +99,9 @@
            attrs (apply-style-attrs ctx)]
        (if (= :stroke (:style ctx))
          [:polyline (assoc attrs :points (points->str pts))]
-         [:polygon (assoc attrs :points (points->str pts))]))
+         [:polygon (assoc attrs
+                          :points (points->str pts)
+                          :shape-rendering "crispEdges")]))
 
      (instance? RoundedRectangle elem)
      (let [{:keys [width height border-radius]} elem
