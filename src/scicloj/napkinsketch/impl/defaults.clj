@@ -68,6 +68,37 @@
   (let [idx (.indexOf ^java.util.List (vec categories) val)]
     (hex->rgba (nth ggplot-palette (mod (if (neg? idx) 0 idx) (count ggplot-palette))))))
 
+;; ---- Continuous Color ----
+
+(def viridis-stops
+  "Viridis colormap sampled at 5 evenly-spaced stops. Each entry is [t r g b]."
+  [[0.0 0.267 0.004 0.329]
+   [0.25 0.282 0.141 0.458]
+   [0.5 0.127 0.567 0.551]
+   [0.75 0.544 0.773 0.247]
+   [1.0 0.993 0.906 0.144]])
+
+(defn gradient-color
+  "Interpolate a color from viridis stops for t in [0,1]. Returns [r g b a]."
+  [t]
+  (let [t (max 0.0 (min 1.0 (double t)))
+        stops viridis-stops
+        n (count stops)]
+    (if (<= t 0.0)
+      (let [[_ r g b] (first stops)] [r g b 1.0])
+      (if (>= t 1.0)
+        (let [[_ r g b] (last stops)] [r g b 1.0])
+        (let [;; Find the two surrounding stops
+              idx (dec (count (take-while #(<= (first %) t) stops)))
+              idx (max 0 (min idx (- n 2)))
+              [t0 r0 g0 b0] (nth stops idx)
+              [t1 r1 g1 b1] (nth stops (inc idx))
+              f (/ (- t t0) (- t1 t0))]
+          [(+ r0 (* f (- r1 r0)))
+           (+ g0 (* f (- g1 g0)))
+           (+ b0 (* f (- b1 b0)))
+           1.0])))))
+
 ;; ---- Name Formatting ----
 
 (defn fmt-name

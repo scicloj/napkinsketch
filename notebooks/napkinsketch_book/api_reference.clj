@@ -28,6 +28,11 @@
 (def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
                       {:key-fn keyword}))
 
+(def measurements (tc/dataset {:treatment ["A" "B" "C" "D"]
+                               :mean [10.0 15.0 12.0 18.0]
+                               :ci_lo [8.0 12.0 9.5 15.5]
+                               :ci_hi [12.0 18.0 14.5 20.5]}))
+
 ;; ## Data Setup
 
 (kind/doc #'sk/view)
@@ -262,8 +267,8 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                            (and (= 1 (:panels s))
-                                 (= 1 (:polygons s)))))])
+                           (and (= 1 (:panels s))
+                                (= 1 (:polygons s)))))])
 
 ;; Per-group density:
 
@@ -273,8 +278,8 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                            (and (= 1 (:panels s))
-                                 (= 3 (:polygons s)))))])
+                           (and (= 1 (:panels s))
+                                (= 3 (:polygons s)))))])
 
 ;; Custom bandwidth:
 
@@ -284,8 +289,8 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                            (and (= 1 (:panels s))
-                                 (= 1 (:polygons s)))))])
+                           (and (= 1 (:panels s))
+                                (= 1 (:polygons s)))))])
 
 (kind/doc #'sk/area)
 
@@ -298,8 +303,8 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                            (and (= 1 (:panels s))
-                                 (= 1 (:polygons s)))))])
+                           (and (= 1 (:panels s))
+                                (= 1 (:polygons s)))))])
 
 (kind/doc #'sk/text)
 
@@ -311,8 +316,8 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                            (and (= 1 (:panels s))
-                                 (every? (set (:texts s)) ["A" "B" "C" "D"]))))])
+                           (and (= 1 (:panels s))
+                                (every? (set (:texts s)) ["A" "B" "C" "D"]))))])
 
 ;; Combine text with points for labeled scatter:
 
@@ -322,8 +327,8 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                            (and (= 1 (:panels s))
-                                 (= 4 (:points s)))))])
+                           (and (= 1 (:panels s))
+                                (= 4 (:points s)))))])
 
 (kind/doc #'sk/boxplot)
 
@@ -335,9 +340,9 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                            (and (= 1 (:panels s))
-                                 (= 3 (:polygons s))
-                                 (pos? (:lines s)))))])
+                           (and (= 1 (:panels s))
+                                (= 3 (:polygons s))
+                                (pos? (:lines s)))))])
 
 ;; Grouped boxplot with color:
 
@@ -347,10 +352,72 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                            (and (= 1 (:panels s))
-                                 (= 8 (:polygons s))
-                                 (pos? (:lines s)))))])
+                           (and (= 1 (:panels s))
+                                (= 8 (:polygons s))
+                                (pos? (:lines s)))))])
 
+(kind/doc #'sk/violin)
+
+;; Violin — mirrored density curve per category:
+
+(-> tips
+    (sk/view [[:day :total_bill]])
+    (sk/lay (sk/violin))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 4 (:polygons s)))))])
+
+;; Grouped violins with color:
+
+(-> tips
+    (sk/view [[:day :total_bill]])
+    (sk/lay (sk/violin {:color :smoker}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 8 (:polygons s)))))])
+
+(kind/doc #'sk/errorbar)
+
+;; Error bars — pre-computed confidence intervals:
+
+(-> measurements
+    (sk/view [[:treatment :mean]])
+    (sk/lay (sk/point)
+            (sk/errorbar {:ymin :ci_lo :ymax :ci_hi}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:points s))
+                                (= 12 (:lines s)))))])
+
+(kind/doc #'sk/lollipop)
+
+;; Lollipop — stem + dot (lighter alternative to bar chart):
+
+(-> sales
+    (sk/view [[:product :revenue]])
+    (sk/lay (sk/lollipop))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:points s))
+                                (= 4 (:lines s)))))])
+
+;; Horizontal lollipop:
+
+(-> sales
+    (sk/view [[:product :revenue]])
+    (sk/lay (sk/lollipop))
+    (sk/coord :flip)
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:points s))
+                                (= 4 (:lines s)))))])
 
 
 ;; ## Rendering
@@ -452,6 +519,75 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+(kind/doc #'sk/labs)
+
+;; Set title and axis labels:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/labs {:title "Iris Dimensions" :x "Sepal Length (cm)" :y "Sepal Width (cm)"})
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (some #{"Iris Dimensions"} (:texts s))
+                                (some #{"Sepal Length (cm)"} (:texts s)))))])
+
+;; ## Annotations
+
+(kind/doc #'sk/rule-v)
+
+;; Vertical reference line:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point)
+            (sk/rule-v 6.0))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (pos? (:lines s)))))])
+
+(kind/doc #'sk/rule-h)
+
+;; Horizontal reference line:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point)
+            (sk/rule-h 3.0))
+    sk/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+(kind/doc #'sk/band-v)
+
+;; Vertical shaded band — highlights a range on the x-axis:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point)
+            (sk/band-v 5.5 6.5))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (pos? (:polygons s)))))])
+
+(kind/doc #'sk/band-h)
+
+;; Horizontal shaded band — highlights a range on the y-axis:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point)
+            (sk/band-h 2.5 3.5))
+    sk/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
 
 ;; ## Utilities
 

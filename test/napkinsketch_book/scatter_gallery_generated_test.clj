@@ -326,3 +326,87 @@
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
    v43_l203)))
+
+
+(def
+ v46_l217
+ (->
+  iris
+  (sk/view [[:species :sepal_width]])
+  (sk/lay (sk/point {:jitter true}))
+  sk/plot))
+
+
+(deftest
+ t47_l222
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)))))
+   v46_l217)))
+
+
+(def
+ v49_l228
+ (->
+  iris
+  (sk/view [[:species :sepal_width]])
+  (sk/lay (sk/point {:jitter 10, :alpha 0.5}))
+  sk/plot))
+
+
+(deftest
+ t50_l233
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)))))
+   v49_l228)))
+
+
+(def
+ v52_l242
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :petal_length}))
+  sk/plot))
+
+
+(deftest
+ t53_l247
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 1 (:panels s))
+      (= 150 (:points s))
+      (some #{"petal length"} (:texts s)))))
+   v52_l242)))
+
+
+(def
+ v55_l254
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay
+   (sk/point {:color :petal_length, :size :petal_width, :alpha 0.7}))
+  sk/plot))
+
+
+(deftest
+ t56_l259
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (some #{"petal length"} (:texts s)))))
+   v55_l254)))

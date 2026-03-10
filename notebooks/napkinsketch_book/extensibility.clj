@@ -64,6 +64,7 @@
 ;; | `:loess` | LOESS local regression smoothing |
 ;; | `:kde` | Kernel density estimation |
 ;; | `:boxplot` | Five-number summary with outlier detection |
+;; | `:violin` | Kernel density estimation per category |
 ;;
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
@@ -116,6 +117,9 @@
 ;; | `:text` | Groups with `:xs`, `:ys`, `:labels` |
 ;; | `:area` | Groups with `:xs`, `:ys` for filled polygons |
 ;; | `:boxplot` | Boxes with five-number summary and outliers |
+;; | `:violin` | Violin entries with density curves |
+;; | `:errorbar` | Groups with `:xs`, `:ys`, `:ymins`, `:ymaxs` |
+;; | `:lollipop` | Groups with `:xs`, `:ys` for stems + dots |
 ;;
 ;; Dispatch function: `(fn [view stat all-colors cfg] (:mark view))`
 
@@ -145,6 +149,9 @@
 ;; | `:text` | Translated text labels |
 ;; | `:area` | Closed filled polygons with baseline |
 ;; | `:boxplot` | Box + whiskers + median line + outlier points |
+;; | `:violin` | Mirrored filled density polygon |
+;; | `:errorbar` | Vertical lines with caps |
+;; | `:lollipop` | Stems with dots at category positions |
 ;;
 ;; Dispatch function: `(fn [layer ctx] (:mark layer))`
 ;;

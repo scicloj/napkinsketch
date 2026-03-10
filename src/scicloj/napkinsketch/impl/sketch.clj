@@ -26,14 +26,29 @@
   (fn [view stat all-colors cfg] (:mark view)))
 
 (defmethod extract-layer :point [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)]
+  (let [cfg (or cfg defaults/defaults)
+        numeric-color? (= (:color-type view) :numerical)
+        ;; For numeric color: compute global min/max for normalization
+        all-color-vals (when numeric-color?
+                         (mapcat :color-values (:points stat)))
+        c-min (when (seq all-color-vals) (reduce min all-color-vals))
+        c-max (when (seq all-color-vals) (reduce max all-color-vals))
+        c-range (when (and c-min c-max) (- (double c-max) (double c-min)))]
     {:mark :point
-     :style {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
-             :radius (or (:fixed-size view) (:point-radius cfg))}
+     :style (cond-> {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
+                     :radius (or (:fixed-size view) (:point-radius cfg))}
+              (:jitter view) (assoc :jitter (:jitter view)))
      :groups (vec
-              (for [{:keys [color xs ys sizes alphas shapes row-indices]} (:points stat)]
+              (for [{:keys [color xs ys sizes alphas shapes row-indices color-values]} (:points stat)]
                 (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
                          :xs (vec xs) :ys (vec ys)}
+                  (and numeric-color? color-values)
+                  (assoc :colors (vec (map (fn [v]
+                                             (let [t (if (and c-range (pos? c-range))
+                                                       (/ (- (double v) (double c-min)) c-range)
+                                                       0.5)]
+                                               (defaults/gradient-color t)))
+                                           color-values)))
                   sizes (assoc :sizes (vec sizes))
                   alphas (assoc :alphas (vec alphas))
                   shapes (assoc :shapes (vec shapes))
@@ -108,6 +123,27 @@
                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
                  :xs (vec xs) :ys (vec ys)}))}))
 
+(defmethod extract-layer :errorbar [view stat all-colors cfg]
+  (let [cfg (or cfg defaults/defaults)]
+    {:mark :errorbar
+     :style {:stroke-width (or (:fixed-size view) 1.5)
+             :cap-width (or (:cap-width view) 6)}
+     :groups (vec
+              (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
+                {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                 :xs (vec xs) :ys (vec ys)
+                 :ymins (vec ymins) :ymaxs (vec ymaxs)}))}))
+
+(defmethod extract-layer :lollipop [view stat all-colors cfg]
+  (let [cfg (or cfg defaults/defaults)]
+    {:mark :lollipop
+     :style {:radius (or (:fixed-size view) (:point-radius cfg))
+             :stroke-width 1.5}
+     :groups (vec
+              (for [{:keys [color xs ys]} (:points stat)]
+                {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                 :xs (vec xs) :ys (vec ys)}))}))
+
 (defmethod extract-layer :boxplot [view stat all-colors cfg]
   (let [cfg (or cfg defaults/defaults)
         color-cats (:color-categories stat)]
@@ -122,6 +158,20 @@
                         :median (:median b) :q1 (:q1 b) :q3 (:q3 b)
                         :whisker-lo (:whisker-lo b) :whisker-hi (:whisker-hi b)}
                  (seq (:outliers b)) (assoc :outliers (vec (:outliers b))))))}))
+
+(defmethod extract-layer :violin [view stat all-colors cfg]
+  (let [cfg (or cfg defaults/defaults)
+        color-cats (:color-categories stat)]
+    {:mark :violin
+     :style {:opacity (or (:fixed-alpha view) 0.7)
+             :stroke-width (or (:fixed-size view) 1.0)}
+     :color-categories color-cats
+     :violins (vec
+               (for [v (:violins stat)]
+                 (cond-> {:category (:category v)
+                          :color (resolve-color all-colors (:color v) (:fixed-color view) cfg)
+                          :ys (vec (:ys v))
+                          :densities (vec (:densities v))})))}))
 
 (defmethod extract-layer :default [view stat all-colors cfg]
   (extract-layer (assoc view :mark :point) stat all-colors cfg))
@@ -234,10 +284,12 @@
 
          ;; Collect color categories across all views
          resolved-all (mapv view/resolve-view non-ann-views)
-         all-colors (let [color-views (filter #(and (view/column-ref? (:color %))
-                                                    (:data %)) resolved-all)]
-                      (when (seq color-views)
-                        (vec (distinct (mapcat #((:data %) (:color %)) color-views)))))
+         numeric-color? (some #(= :numerical (:color-type %)) resolved-all)
+         all-colors (when-not numeric-color?
+                      (let [color-views (filter #(and (view/column-ref? (:color %))
+                                                      (:data %)) resolved-all)]
+                        (when (seq color-views)
+                          (vec (distinct (mapcat #((:data %) (:color %)) color-views))))))
          color-cols (distinct (keep #(when (view/column-ref? (:color %)) (:color %)) resolved-all))
 
          ;; Scale specs (from first view)
@@ -414,7 +466,19 @@
                                (defaults/fmt-name y)))))
 
          ;; Legend
-         legend (when all-colors
+         legend (cond
+                  numeric-color?
+                  (let [color-views (filter #(and (view/column-ref? (:color %))
+                                                  (:data %)) resolved-all)
+                        all-vals (mapcat #((:data %) (:color %)) color-views)
+                        c-min (reduce min all-vals)
+                        c-max (reduce max all-vals)]
+                    {:title (first color-cols)
+                     :type :continuous
+                     :min c-min :max c-max
+                     :stops (vec (for [t (range 0.0 1.01 0.25)]
+                                   {:t t :color (defaults/gradient-color t)}))})
+                  all-colors
                   {:title (first color-cols)
                    :entries (vec (for [cat all-colors]
                                    {:label (str cat)

@@ -29,6 +29,7 @@
    [:color Color]
    [:xs [:vector number?]]
    [:ys [:vector number?]]
+   [:colors {:optional true} [:vector Color]]
    [:sizes {:optional true} [:vector number?]]
    [:alphas {:optional true} [:vector number?]]
    [:shapes {:optional true} [:vector any?]]
@@ -84,6 +85,15 @@
    [:ys [:vector number?]]
    [:labels {:optional true} [:vector string?]]])
 
+(def ErrorbarGroup
+  "Error bars at data positions."
+  [:map
+   [:color Color]
+   [:xs [:vector number?]]
+   [:ys [:vector number?]]
+   [:ymins [:vector number?]]
+   [:ymaxs [:vector number?]]])
+
 (def BoxplotBox
   "A single boxplot box with five-number summary."
   [:map
@@ -96,6 +106,14 @@
    [:whisker-hi number?]
    [:outliers {:optional true} [:vector number?]]])
 
+(def ViolinEntry
+  "A single violin curve with category and mirrored density."
+  [:map
+   [:category any?]
+   [:color Color]
+   [:ys [:vector number?]]
+   [:densities [:vector number?]]])
+
 ;; ---- Layer ----
 
 (def MarkStyle
@@ -104,18 +122,21 @@
    [:radius {:optional true} number?]
    [:stroke-width {:optional true} number?]
    [:font-size {:optional true} number?]
-   [:box-width {:optional true} number?]])
+   [:box-width {:optional true} number?]
+   [:cap-width {:optional true} number?]
+   [:jitter {:optional true} [:or boolean? number?]]])
 
 (def Layer
   "A rendered mark layer with data-space geometry."
   [:map
-   [:mark [:enum :point :bar :line :rect :text :area :boxplot]]
+   [:mark [:enum :point :bar :line :rect :text :area :errorbar :lollipop :boxplot :violin]]
    [:style MarkStyle]
    [:groups {:optional true} [:vector [:or PointGroup BarGroup RectCountGroup RectValueGroup
-                                       LineSegmentGroup PolylineGroup TextGroup]]]
+                                       LineSegmentGroup PolylineGroup TextGroup ErrorbarGroup]]]
    [:boxes {:optional true} [:vector BoxplotBox]]
+   [:violins {:optional true} [:vector ViolinEntry]]
    [:color-categories {:optional true} [:maybe [:vector any?]]]
-   [:stat-origin {:optional true} [:enum :identity :bin :count :lm :loess :kde :boxplot]]
+   [:stat-origin {:optional true} [:enum :identity :bin :count :lm :loess :kde :boxplot :violin]]
    [:position {:optional true} [:enum :dodge :stack]]
    [:categories {:optional true} [:vector any?]]])
 
@@ -144,10 +165,24 @@
    [:label string?]
    [:color Color]])
 
-(def Legend
+(def GradientStop
   [:map
-   [:title keyword?]
-   [:entries [:vector LegendEntry]]])
+   [:t number?]
+   [:color Color]])
+
+(def Legend
+  [:or
+   ;; Categorical legend
+   [:map
+    [:title keyword?]
+    [:entries [:vector LegendEntry]]]
+   ;; Continuous gradient legend
+   [:map
+    [:title keyword?]
+    [:type [:= :continuous]]
+    [:min number?]
+    [:max number?]
+    [:stops [:vector GradientStop]]]])
 
 ;; ---- Layout ----
 

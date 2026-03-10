@@ -208,3 +208,54 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:points s)))))])
+
+;; ## Jitter
+;;
+;; When plotting a numeric column against a categorical column,
+;; points overlap. Use `:jitter true` to add random pixel offsets.
+
+(-> iris
+    (sk/view [[:species :sepal_width]])
+    (sk/lay (sk/point {:jitter true}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
+
+;; Control the jitter amount in pixels:
+
+(-> iris
+    (sk/view [[:species :sepal_width]])
+    (sk/lay (sk/point {:jitter 10 :alpha 0.5}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
+
+;; ## Continuous Color
+;;
+;; When `:color` maps to a numeric column, napkinsketch uses a
+;; viridis gradient instead of discrete palette colors.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :petal_length}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s))
+                                (some #{"petal length"} (:texts s)))))])
+
+;; Continuous color with size — a color-size bubble plot:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :petal_length :size :petal_width :alpha 0.7}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"petal length"} (:texts s)))))])

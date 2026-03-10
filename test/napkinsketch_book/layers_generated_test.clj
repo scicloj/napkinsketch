@@ -39,16 +39,14 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 7 (:points s)) (= 1 (:lines s)))))
    v6_l25)))
 
 
 (def
- v9_l40
+ v9_l39
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -57,25 +55,18 @@
 
 
 (deftest
- t10_l45
+ t10_l44
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v9_l40)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 1 (:lines s)))))
+   v9_l39)))
 
 
 (def
- v12_l56
+ v12_l52
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -84,20 +75,21 @@
 
 
 (deftest
- t13_l62
+ t13_l58
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v12_l56)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 150 (:points s))
+      (= 3 (:lines s))
+      (some #{"setosa"} (:texts s)))))
+   v12_l52)))
 
 
 (def
- v15_l71
+ v15_l67
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -106,20 +98,18 @@
 
 
 (deftest
- t16_l77
+ t16_l73
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v15_l71)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 1 (:lines s)))))
+   v15_l67)))
 
 
 (def
- v18_l87
+ v18_l81
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -128,20 +118,21 @@
 
 
 (deftest
- t19_l93
+ t19_l87
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v18_l87)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 150 (:points s))
+      (= 3 (:lines s))
+      (some #{"Sepal: Length vs Width"} (:texts s)))))
+   v18_l81)))
 
 
 (def
- v20_l98
+ v20_l92
  (->
   iris
   (sk/view [[:petal_length :petal_width]])
@@ -150,20 +141,18 @@
 
 
 (deftest
- t21_l104
+ t21_l98
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v20_l98)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 3 (:lines s)))))
+   v20_l92)))
 
 
 (def
- v23_l113
+ v23_l106
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -175,25 +164,22 @@
 
 
 (deftest
- t24_l121
+ t24_l114
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v23_l113)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (pos? (:points s))
+      (= 2 (:lines s))
+      (some #{"Tipping Behavior"} (:texts s))
+      (some #{"Total Bill ($)"} (:texts s)))))
+   v23_l106)))
 
 
 (def
- v26_l132
+ v26_l124
  (def
   growth
   (tc/dataset
@@ -203,7 +189,7 @@
 
 
 (def
- v27_l137
+ v27_l129
  (->
   growth
   (sk/view [[:day :value]])
@@ -212,18 +198,87 @@
 
 
 (deftest
- t28_l143
+ t28_l135
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v27_l137)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 10 (:points s))
+      (= 2 (:lines s))
+      (some #{"Growth Over Time"} (:texts s)))))
+   v27_l129)))
+
+
+(def
+ v30_l145
+ (def
+  experiment
+  (tc/dataset
+   {:condition ["A" "B" "C" "D"],
+    :mean [10.0 15.0 12.0 18.0],
+    :ci_lo [8.0 12.0 9.5 15.5],
+    :ci_hi [12.0 18.0 14.5 20.5]})))
+
+
+(def
+ v31_l151
+ (->
+  experiment
+  (sk/view [[:condition :mean]])
+  (sk/lay
+   (sk/point {:size 5})
+   (sk/errorbar {:ymin :ci_lo, :ymax :ci_hi}))
+  sk/plot))
+
+
+(deftest
+ t32_l157
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 4 (:points s)) (= 12 (:lines s)))))
+   v31_l151)))
+
+
+(def
+ v34_l165
+ (->
+  experiment
+  (sk/view [[:condition :mean]])
+  (sk/lay (sk/lollipop))
+  sk/plot))
+
+
+(deftest
+ t35_l170
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 4 (:points s)) (= 4 (:lines s)))))
+   v34_l165)))
+
+
+(def
+ v37_l178
+ (->
+  experiment
+  (sk/view [[:condition :mean]])
+  (sk/lay (sk/lollipop) (sk/errorbar {:ymin :ci_lo, :ymax :ci_hi}))
+  sk/plot))
+
+
+(deftest
+ t38_l184
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 4 (:points s)) (= 16 (:lines s)))))
+   v37_l178)))

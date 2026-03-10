@@ -137,6 +137,27 @@
    (boxplot {:color :smoker})   — side-by-side grouped boxplots"
   view/boxplot)
 
+(def violin
+  "Violin mark — mirrored density curve per category.
+   x should be categorical, y numeric.
+   (violin)                    — single color
+   (violin {:color :smoker})   — side-by-side grouped violins"
+  view/violin)
+
+(def errorbar
+  "Errorbar mark — vertical error bars at (x, y) positions.
+   Requires :ymin and :ymax keys mapping to columns.
+   (errorbar {:ymin :ci_lo :ymax :ci_hi})
+   (errorbar {:ymin :ci_lo :ymax :ci_hi :color :group})"
+  view/errorbar)
+
+(def lollipop
+  "Lollipop mark — stem + dot at (x, y) positions.
+   Like value-bar but lighter: a line from baseline to y with a dot.
+   (lollipop)                  — default
+   (lollipop {:color :group})  — colored stems"
+  view/lollipop)
+
 ;; ---- Annotations ----
 
 (def rule-v

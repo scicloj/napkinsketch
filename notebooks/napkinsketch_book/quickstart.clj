@@ -43,20 +43,17 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (map? (second v))
-               (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"setosa"} (:texts s)))))])
 
 ;; **Direct style** — compact, good for single-layer plots:
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
                       :color :species})])
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (map? (second v))
-               (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 150 (:points s))))])
 
 ;; Both produce identical results. The pipeline style composes better
 ;; when you add `coord`, `scale`, or multiple views. The direct style
@@ -73,12 +70,9 @@
     (sk/lay (sk/point))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (let [attrs (second v)]
-                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-               (let [body (nth v 2)]
-                 (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; ## Colored Scatter
 
@@ -89,12 +83,10 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (let [attrs (second v)]
-                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-               (let [body (nth v 2)]
-                 (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"setosa"} (:texts s))
+                                (some #{"sepal length"} (:texts s)))))])
 
 ;; ## Scatter with Regression
 
@@ -106,12 +98,9 @@
             (sk/lm {:color :species}))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (let [attrs (second v)]
-                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-               (let [body (nth v 2)]
-                 (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; ## Histogram
 
@@ -122,12 +111,10 @@
     (sk/lay (sk/histogram))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (let [attrs (second v)]
-                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-               (let [body (nth v 2)]
-                 (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s))
+                                (zero? (:points s)))))])
 
 ;; ## Bar Chart
 
@@ -138,12 +125,9 @@
     (sk/lay (sk/bar))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (let [attrs (second v)]
-                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-               (let [body (nth v 2)]
-                 (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:polygons s)))))])
 
 ;; ## Flipped Bar Chart
 
@@ -155,12 +139,8 @@
     (sk/coord :flip)
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (let [attrs (second v)]
-                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-               (let [body (nth v 2)]
-                 (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 3 (:polygons s))))])
 
 ;; ## Line Plot
 
@@ -172,12 +152,9 @@
     (sk/lay (sk/line))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (let [attrs (second v)]
-                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-               (let [body (nth v 2)]
-                 (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:lines s))
+                                (zero? (:points s)))))])
 
 ;; ## Custom Options
 
@@ -191,8 +168,7 @@
               :x-label "Petal Length (cm)"
               :y-label "Petal Width (cm)"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (let [attrs (second v)]
-                 (and (map? attrs)
-                      (>= (:width attrs) 500)))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"Iris Petals"} (:texts s))
+                                (some #{"Petal Length (cm)"} (:texts s)))))])

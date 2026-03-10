@@ -151,25 +151,54 @@
 (defn- render-legend-from-sketch
   "Render legend from sketch legend data as a membrane scene."
   [legend x y]
-  (let [{:keys [title entries]} legend
+  (let [{:keys [title]} legend
         fsize 10
         title-color [0.2 0.2 0.2 1.0]]
-    (vec
-     (concat
-      (when title
-        [(ui/translate x (- y 12)
-                       (ui/with-color title-color
-                         (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
-      (for [[i {:keys [label color]}] (map-indexed vector entries)
-            :let [[cr cg cb _] color]]
-        (ui/translate x (+ y (* i 16))
-                      [(ui/translate 0 0
-                                     (ui/with-color [cr cg cb 1.0]
-                                       (ui/with-style ::ui/style-fill
-                                         (ui/rounded-rectangle 8 8 4))))
-                       (ui/translate 12 0
-                                     (ui/with-color title-color
-                                       (ui/label label (ui/font nil fsize))))]))))))
+    (if (= :continuous (:type legend))
+      ;; Continuous gradient legend
+      (let [{:keys [min max stops]} legend
+            bar-h 120 bar-w 12 n-stops 20]
+        (vec
+         (concat
+          (when title
+            [(ui/translate x (- y 12)
+                           (ui/with-color title-color
+                             (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
+          ;; Gradient bar: stack of small colored rectangles
+          (for [i (range n-stops)
+                :let [t (/ (double i) (dec n-stops))
+                      c (defaults/gradient-color t)
+                      [cr cg cb _] c
+                      ry (+ y (* (- 1.0 t) bar-h))]]
+            (ui/translate x ry
+                          (ui/with-color [cr cg cb 1.0]
+                            (ui/with-style ::ui/style-fill
+                              (ui/rectangle bar-w (/ bar-h n-stops))))))
+          ;; Min/max labels
+          [(ui/translate (+ x bar-w 4) (+ y bar-h -4)
+                         (ui/with-color title-color
+                           (ui/label (format "%.4g" (double min)) (ui/font nil 8))))
+           (ui/translate (+ x bar-w 4) (+ y 6)
+                         (ui/with-color title-color
+                           (ui/label (format "%.4g" (double max)) (ui/font nil 8))))])))
+      ;; Categorical swatch legend
+      (let [{:keys [entries]} legend]
+        (vec
+         (concat
+          (when title
+            [(ui/translate x (- y 12)
+                           (ui/with-color title-color
+                             (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
+          (for [[i {:keys [label color]}] (map-indexed vector entries)
+                :let [[cr cg cb _] color]]
+            (ui/translate x (+ y (* i 16))
+                          [(ui/translate 0 0
+                                         (ui/with-color [cr cg cb 1.0]
+                                           (ui/with-style ::ui/style-fill
+                                             (ui/rounded-rectangle 8 8 4))))
+                           (ui/translate 12 0
+                                         (ui/with-color title-color
+                                           (ui/label label (ui/font nil fsize))))]))))))))
 
 (defn- render-x-label
   "Render x-axis label centered below the plot area."
@@ -300,9 +329,12 @@
 
 (defn svg-summary
   "Extract structural summary from SVG hiccup for testing.
-   Returns a map of counts and content for quick assertions:
-   :width, :height — SVG dimensions
-   :panels  — number of panel backgrounds
+   Returns a map with :width, :height, :panels, :points, :lines,
+   :polygons, and :texts — useful for asserting plot structure.
+   (svg-summary (plot views))  — summary of rendered SVG
+
+   Counts:
+   :panels  — number of plot panels (background rectangles)
    :points  — number of data point markers (excludes legend swatches)
    :lines   — number of data polylines (excludes grid lines)
    :polygons — number of filled polygons (bars, histogram bins)
@@ -324,7 +356,13 @@
                                    (= 8 (get (second %) :height))) rects)
         legend-set (set legend-rects)
         panel-set (set panel-rects)
-        data-rects (remove #(or (panel-set %) (legend-set %)) rects)
+        ;; Data rects are rounded (rx > 0); exclude panels, legend swatches,
+        ;; and gradient bar segments (which have no rx attribute)
+        data-rects (filter #(let [a (second %)]
+                              (and (not (panel-set %))
+                                   (not (legend-set %))
+                                   (some? (:rx a))))
+                           rects)
         data-polylines (remove #(= grid-color (get (second %) :stroke)) polylines)]
     {:width (:width attrs)
      :height (:height attrs)

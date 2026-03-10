@@ -36,7 +36,11 @@
 (defmethod render-layer :point [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn]} ctx
-        {:keys [opacity radius]} style
+        {:keys [opacity radius jitter]} style
+        jitter-amount (cond (number? jitter) (double jitter)
+                            jitter 5.0
+                            :else 0.0)
+        jitter? (pos? jitter-amount)
         size-bufs (keep :sizes groups)
         size-scale (when (seq size-bufs)
                      (let [all-sizes (apply concat size-bufs)
@@ -56,13 +60,19 @@
                     (let [all-vals (distinct (apply concat shape-bufs))]
                       (zipmap all-vals (cycle defaults/shape-syms))))]
     (vec
-     (for [{:keys [color xs ys sizes alphas shapes row-indices]} groups
+     (for [{:keys [color colors xs ys sizes alphas shapes row-indices]} groups
            i (range (count xs))
            :let [[px py] (coord-fn (nth xs i) (nth ys i))
+                 ;; Apply jitter: deterministic per index using hash
+                 [px py] (if jitter?
+                           (let [rng (java.util.Random. (long (+ (* i 31) (hash (nth xs i)))))]
+                             [(+ (double px) (* jitter-amount (- (* 2.0 (.nextDouble rng)) 1.0)))
+                              (+ (double py) (* jitter-amount (- (* 2.0 (.nextDouble rng)) 1.0)))])
+                           [px py])
                  pt-r (if sizes (size-scale (nth sizes i)) radius)
                  pt-alpha (if alphas (alpha-scale (nth alphas i)) (or opacity 1.0))
                  pt-shape (if shapes (get shape-map (nth shapes i) :circle) :circle)
-                 [cr cg cb _] color]]
+                 [cr cg cb _] (if colors (nth colors i) color)]]
        (-> (ui/translate (- (double px) pt-r) (- (double py) pt-r)
                          (ui/with-color [cr cg cb pt-alpha]
                            (draw-shape pt-shape pt-r)))
@@ -106,6 +116,81 @@
        (ui/with-color [cr cg cb (or opacity 0.5)]
          (ui/with-style ::ui/style-fill
            (apply ui/path all-pts)))))))
+
+;; ---- Errorbar ----
+
+(defmethod render-layer :errorbar [layer ctx]
+  (let [{:keys [style groups]} layer
+        {:keys [coord-fn]} ctx
+        {:keys [stroke-width cap-width]} style
+        sw (or stroke-width 1.5)
+        cap-hw (/ (or cap-width 6) 2.0)]
+    (vec
+     (for [{:keys [color xs ys ymins ymaxs]} groups
+           i (range (count xs))
+           :let [x (nth xs i)
+                 ymin-val (nth ymins i)
+                 ymax-val (nth ymaxs i)
+                 [px py-min] (coord-fn x ymin-val)
+                 [_ py-max] (coord-fn x ymax-val)
+                 [cr cg cb _] color]]
+       (ui/with-color [cr cg cb 1.0]
+         [(ui/with-style ::ui/style-stroke
+            (ui/with-stroke-width sw
+              ;; Vertical line from ymin to ymax
+              (apply ui/path [[px py-min] [px py-max]])))
+          ;; Bottom cap
+          (ui/with-style ::ui/style-stroke
+            (ui/with-stroke-width sw
+              (apply ui/path [[(- (double px) cap-hw) py-min]
+                              [(+ (double px) cap-hw) py-min]])))
+          ;; Top cap
+          (ui/with-style ::ui/style-stroke
+            (ui/with-stroke-width sw
+              (apply ui/path [[(- (double px) cap-hw) py-max]
+                              [(+ (double px) cap-hw) py-max]])))])))))
+
+;; ---- Lollipop ----
+
+(defmethod render-layer :lollipop [layer ctx]
+  (let [{:keys [style groups]} layer
+        {:keys [coord-type]} ctx
+        flipped? (= coord-type :flip)
+        band-s (if flipped? (:sy ctx) (:sx ctx))
+        num-s (if flipped? (:sx ctx) (:sy ctx))
+        bw (ws/data band-s :bandwidth)
+        {:keys [radius stroke-width]} style
+        n-groups (clojure.core/count groups)
+        sub-bw (/ (* bw 0.8) (max 1 n-groups))
+        r (or radius 4)]
+    (vec
+     (for [[gi {:keys [color xs ys]}] (map-indexed vector groups)
+           i (range (clojure.core/count xs))
+           :let [[cr cg cb _] color
+                 cat (nth xs i)
+                 val (nth ys i)
+                 band-info (band-s cat true)
+                 band-start (:rstart band-info)
+                 band-end (:rend band-info)
+                 band-mid (/ (+ band-start band-end) 2.0)
+                 cat-pos (+ (- band-mid (/ (* n-groups sub-bw) 2.0))
+                            (* gi sub-bw) (/ sub-bw 2.0))
+                 val-base (num-s 0)
+                 val-top (num-s val)
+                 [x-stem y-base y-top] (if flipped?
+                                         [cat-pos val-base val-top]
+                                         [cat-pos val-base val-top])]]
+       [(ui/with-color [cr cg cb 1.0]
+          (ui/with-style ::ui/style-stroke
+            (ui/with-stroke-width (or stroke-width 1.5)
+              (if flipped?
+                (apply ui/path [[y-base x-stem] [y-top x-stem]])
+                (apply ui/path [[x-stem y-base] [x-stem y-top]])))))
+        (ui/translate (if flipped? (- (double y-top) r) (- (double x-stem) r))
+                      (if flipped? (- (double x-stem) r) (- (double y-top) r))
+                      (ui/with-color [cr cg cb 1.0]
+                        (ui/with-style ::ui/style-fill
+                          (ui/rounded-rectangle (* 2 r) (* 2 r) r))))]))))
 
 ;; ---- Boxplot ----
 
@@ -190,6 +275,71 @@
                        (+ box-mid (* sub-bw 0.15)) py-whi)]
              (for [o outliers] (mk-point box-mid (num-s o)))))))
       boxes))))
+
+;; ---- Violin ----
+
+(defmethod render-layer :violin [layer ctx]
+  (let [{:keys [style violins color-categories]} layer
+        {:keys [coord-type sx sy]} ctx
+        flipped? (= coord-type :flip)
+        band-s (if flipped? sy sx)
+        num-s (if flipped? sx sy)
+        bw (ws/data band-s :bandwidth)
+        {:keys [opacity stroke-width]} style
+        n-colors (if (seq color-categories) (count color-categories) 1)
+        ;; Each violin gets a fraction of the band
+        violin-frac 0.8
+        sub-bw (/ (* bw violin-frac) n-colors)
+        color-idx-map (when (seq color-categories)
+                        (into {} (map-indexed (fn [i c] [c i]) color-categories)))]
+    (vec
+     (mapcat
+      (fn [{:keys [category color ys densities] :as violin}]
+        (let [[cr cg cb _] color
+              band-info (band-s category true)
+              band-start (:rstart band-info)
+              band-end (:rend band-info)
+              band-mid (/ (+ band-start band-end) 2.0)
+              ;; Dodge offset
+              ci (if-let [cc (:color violin)]
+                   (get color-idx-map cc 0)
+                   0)
+              group-start (- band-mid (/ (* n-colors sub-bw) 2.0))
+              viol-lo (+ group-start (* ci sub-bw))
+              viol-hi (+ viol-lo sub-bw)
+              viol-mid (/ (+ viol-lo viol-hi) 2.0)
+              half-w (/ sub-bw 2.0)
+              ;; Normalize densities so max density fills half the band width
+              max-d (reduce max 0.001 densities)
+              norm (/ half-w max-d)
+              ;; Build mirrored polygon points
+              ;; Right side (top to bottom): viol-mid + density
+              ;; Left side (bottom to top): viol-mid - density
+              n (count ys)
+              right-pts (mapv (fn [i]
+                                (let [y-val (nth ys i)
+                                      d (nth densities i)
+                                      py (num-s y-val)
+                                      px (+ viol-mid (* d norm))]
+                                  (if flipped? [py px] [px py])))
+                              (range n))
+              left-pts (mapv (fn [i]
+                               (let [y-val (nth ys (- n 1 i))
+                                     d (nth densities (- n 1 i))
+                                     py (num-s y-val)
+                                     px (- viol-mid (* d norm))]
+                                 (if flipped? [py px] [px py])))
+                             (range n))
+              all-pts (concat right-pts left-pts)]
+          ;; Filled polygon + stroke outline
+          [(ui/with-color [cr cg cb (or opacity 0.7)]
+             (ui/with-style ::ui/style-fill
+               (apply ui/path all-pts)))
+           (ui/with-color [cr cg cb 1.0]
+             (ui/with-stroke-width (or stroke-width 1.0)
+               (ui/with-style ::ui/style-stroke
+                 (apply ui/path all-pts))))]))
+      violins))))
 
 (defmethod render-layer :default [layer ctx]
   (render-layer (assoc layer :mark :point) ctx))

@@ -30,7 +30,7 @@
 (defn prepare-points
   "Clean data, compute domains, group by columns."
   [view]
-  (let [{:keys [data x y color size alpha shape text-col x-type y-type group mark]} view
+  (let [{:keys [data x y color color-type size alpha shape text-col x-type y-type group mark ymin ymax]} view
         data-idx (tc/add-column data :__row-idx (range (tc/row-count data)))
         clean (cond-> (tc/drop-missing data-idx [x y])
                 (= x-type :categorical) (tc/map-columns x [x] str))]
@@ -44,7 +44,13 @@
             y-dom (if cat-y?
                     (distinct ys-col)
                     (let [[lo hi] (numeric-extent ys-col)]
-                      (if (= mark :rect) [(min 0 lo) (max 0 hi)] [lo hi])))
+                      (if (= mark :rect) [(min 0 lo) (max 0 hi)]
+                          ;; Extend domain to include ymin/ymax if present
+                          (if (and ymin ymax)
+                            [(min lo (reduce min (clean ymin)))
+                             (max hi (reduce max (clean ymax)))]
+                            [lo hi]))))
+            numeric-color? (and color (= color-type :numerical))
             ;; Extract color value from group key when color is part of group
             color-idx (when color (.indexOf ^java.util.List (vec group) color))
             extract-color (fn [group-val]
@@ -59,10 +65,13 @@
                           (cond-> {:xs (ds x) :ys (ds y)
                                    :row-indices (ds :__row-idx)}
                             group-val (assoc :color (extract-color group-val))
+                            numeric-color? (assoc :color-values (ds color))
                             size (assoc :sizes (ds size))
                             alpha (assoc :alphas (ds alpha))
                             shape (assoc :shapes (ds shape))
-                            text-col (assoc :labels (ds text-col))))
+                            text-col (assoc :labels (ds text-col))
+                            ymin (assoc :ymins (ds ymin))
+                            ymax (assoc :ymaxs (ds ymax))))
             groups (group-by-columns clean (or group []) point-group)]
         {:points groups :x-domain x-dom :y-domain y-dom}))))
 
@@ -321,6 +330,50 @@
             y-min (dfn/reduce-min all-ys)
             y-max (dfn/reduce-max all-ys)]
         {:boxes boxes
+         :categories categories
+         :color-categories color-cats
+         :x-domain categories
+         :y-domain [y-min y-max]}))))
+
+;; ---- Violin ----
+
+(defmethod compute-stat :violin [view]
+  (let [{:keys [data x y x-type group cfg]} view
+        clean (cond-> (tc/drop-missing data [x y])
+                (= x-type :categorical) (tc/map-columns x [x] str))
+        categories (distinct (clean x))
+        n-grid (or (:kde-n-grid (or cfg defaults/defaults)) 80)
+        bandwidth (:kde-bandwidth (or cfg defaults/defaults))]
+    (if (empty? categories)
+      {:violins [] :categories [] :x-domain ["?"] :y-domain [0 1]}
+      (let [group-cols (or group [])
+            color-col (first group-cols)
+            has-color? (and (seq group-cols) color-col)
+            clean-c (if has-color? (tc/drop-missing clean group-cols) clean)
+            color-cats (when has-color? (vec (sort (distinct (clean-c color-col)))))
+            violins (if has-color?
+                      (vec (for [cat categories
+                                 cc color-cats
+                                 :let [rows (tc/select-rows clean-c
+                                                            (fn [row] (and (= (get row x) cat)
+                                                                           (= (get row color-col) cc))))
+                                       n (tc/row-count rows)]
+                                 :when (>= n 2)]
+                             (let [kde (fit-kde (rows y) n-grid bandwidth)]
+                               {:category cat :color cc
+                                :ys (:xs kde) :densities (:ys kde)})))
+                      (vec (for [cat categories
+                                 :let [rows (tc/select-rows clean-c
+                                                            (fn [row] (= (get row x) cat)))
+                                       n (tc/row-count rows)]
+                                 :when (>= n 2)]
+                             (let [kde (fit-kde (rows y) n-grid bandwidth)]
+                               {:category cat
+                                :ys (:xs kde) :densities (:ys kde)}))))
+            all-ys (clean y)
+            y-min (dfn/reduce-min all-ys)
+            y-max (dfn/reduce-max all-ys)]
+        {:violins violins
          :categories categories
          :color-categories color-cats
          :x-domain categories

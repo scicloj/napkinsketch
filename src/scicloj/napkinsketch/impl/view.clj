@@ -141,6 +141,14 @@
   ([] {:mark :rect :stat :identity})
   ([opts] (merge {:mark :rect :stat :identity} opts)))
 
+(defn lollipop
+  "Lollipop mark — stem + dot at (x, y) positions.
+   Like value-bar but lighter: a line from baseline to y with a dot.
+   (lollipop)                  — default
+   (lollipop {:color :group})  — colored stems"
+  ([] {:mark :lollipop :stat :identity})
+  ([opts] (merge {:mark :lollipop :stat :identity} opts)))
+
 (defn lm
   ([] {:mark :line :stat :lm})
   ([opts] (merge {:mark :line :stat :lm} opts)))
@@ -184,6 +192,27 @@
    (boxplot {:color :smoker})   — side-by-side grouped boxplots"
   ([] {:mark :boxplot :stat :boxplot})
   ([opts] (merge {:mark :boxplot :stat :boxplot} opts)))
+
+(defn violin
+  "Violin mark — mirrored density curve per category.
+   x should be categorical, y numeric.
+   (violin)                    — single color
+   (violin {:color :smoker})   — side-by-side grouped violins"
+  ([] {:mark :violin :stat :violin})
+  ([opts]
+   (let [bw (:bandwidth opts)
+         base (merge {:mark :violin :stat :violin} (dissoc opts :bandwidth))]
+     (if bw
+       (assoc base :cfg {:kde-bandwidth bw})
+       base))))
+
+(defn errorbar
+  "Errorbar mark — vertical error bars at (x, y) positions.
+   Requires :ymin and :ymax keys mapping to columns.
+   (errorbar {:ymin :ci_lo :ymax :ci_hi})
+   (errorbar {:ymin :ci_lo :ymax :ci_hi :color :group})"
+  [opts]
+  (merge {:mark :errorbar :stat :identity} opts))
 
 (defn rule-v
   "Vertical reference line at x = intercept."
@@ -316,15 +345,20 @@
             :else [:point :identity])
           mark (or (:mark v) default-mark)
           stat (or (:stat v) default-stat)]
-      (assoc v :x-type x-type :y-type y-type :color-type c-type
-             :group group :mark mark :stat stat
-             :color (when color-is-col? color-val)
-             :fixed-color fixed-color
-             :size (when size-is-col? size-val)
-             :fixed-size fixed-size
-             :alpha (when alpha-is-col? alpha-val)
-             :fixed-alpha fixed-alpha
-             :text-col text-col))))
+      (cond-> (assoc v :x-type x-type :y-type y-type :color-type c-type
+                     :group group :mark mark :stat stat
+                     :color (when color-is-col? color-val)
+                     :fixed-color fixed-color
+                     :size (when size-is-col? size-val)
+                     :fixed-size fixed-size
+                     :alpha (when alpha-is-col? alpha-val)
+                     :fixed-alpha fixed-alpha
+                     :text-col text-col)
+        ;; Pass through extra column bindings (errorbar)
+        (:ymin v) (assoc :ymin (:ymin v))
+        (:ymax v) (assoc :ymax (:ymax v))
+        ;; Pass through jitter
+        (:jitter v) (assoc :jitter (:jitter v))))))
 
 ;; ---- Scale Setter ----
 

@@ -28,10 +28,9 @@
     (sk/lay (sk/point) (sk/line))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 7 (:points s))
+                                (= 1 (:lines s)))))])
 
 ;; ## Points + Regression
 
@@ -42,12 +41,9 @@
     (sk/lay (sk/point) (sk/lm))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
 
 ;; ## Per-Group Regression
 
@@ -59,10 +55,10 @@
             (sk/lm {:color :species}))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s))
+                                (some #{"setosa"} (:texts s)))))])
 
 ;; ## Fixed Color on One Layer
 
@@ -74,15 +70,13 @@
             (sk/lm))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
 
 ;; ## Multiple Column Pairs
 
 ;; Comparing sepal and petal measurements side by side.
-;; Each pair gets its own column binding.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
@@ -90,10 +84,10 @@
             (sk/lm {:color :species}))
     (sk/plot {:title "Sepal: Length vs Width"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s))
+                                (some #{"Sepal: Length vs Width"} (:texts s)))))])
 
 (-> iris
     (sk/view [[:petal_length :petal_width]])
@@ -101,10 +95,9 @@
             (sk/lm {:color :species}))
     (sk/plot {:title "Petal: Length vs Width"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; ## Tips: Bill vs Tip with Regression
 
@@ -118,12 +111,11 @@
               :x-label "Total Bill ($)"
               :y-label "Tip ($)"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (pos? (:points s))
+                                (= 2 (:lines s))
+                                (some #{"Tipping Behavior"} (:texts s))
+                                (some #{"Total Bill ($)"} (:texts s)))))])
 
 ;; ## Line + Points with Colors
 
@@ -140,9 +132,56 @@
             (sk/point {:color :group}))
     (sk/plot {:title "Growth Over Time"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 10 (:points s))
+                                (= 2 (:lines s))
+                                (some #{"Growth Over Time"} (:texts s)))))])
+
+;; ## Points with Error Bars
+;;
+;; Combining `point` and `errorbar` layers shows
+;; measurements with uncertainty.
+
+(def experiment
+  (tc/dataset {:condition ["A" "B" "C" "D"]
+               :mean [10.0 15.0 12.0 18.0]
+               :ci_lo [8.0 12.0 9.5 15.5]
+               :ci_hi [12.0 18.0 14.5 20.5]}))
+
+(-> experiment
+    (sk/view [[:condition :mean]])
+    (sk/lay (sk/point {:size 5})
+            (sk/errorbar {:ymin :ci_lo :ymax :ci_hi}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:points s))
+                                (= 12 (:lines s)))))])
+
+;; ## Lollipop Chart
+;;
+;; A lighter alternative to bar charts.
+
+(-> experiment
+    (sk/view [[:condition :mean]])
+    (sk/lay (sk/lollipop))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:points s))
+                                (= 4 (:lines s)))))])
+
+;; ## Lollipop with Error Bars
+;;
+;; Composing lollipop stems with error bars:
+
+(-> experiment
+    (sk/view [[:condition :mean]])
+    (sk/lay (sk/lollipop)
+            (sk/errorbar {:ymin :ci_lo :ymax :ci_hi}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:points s))
+                                ;; 4 stems + 12 errorbars
+                                (= 16 (:lines s)))))])

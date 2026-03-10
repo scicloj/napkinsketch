@@ -190,7 +190,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__85823#] (= "Distribution of Total Bill" p1__85823#))
+       (fn* [p1__457657#] (= "Distribution of Total Bill" p1__457657#))
        (:texts s)))))
    v30_l136)))
 
@@ -309,3 +309,60 @@
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)) (pos? (:lines s)))))
    v48_l225)))
+
+
+(def
+ v51_l241
+ (-> tips (sk/view [[:day :total_bill]]) (sk/lay (sk/violin)) sk/plot))
+
+
+(deftest
+ t52_l246
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 4 (:polygons s)))))
+   v51_l241)))
+
+
+(def
+ v54_l255
+ (->
+  tips
+  (sk/view [[:day :total_bill]])
+  (sk/lay (sk/violin {:color :smoker}))
+  sk/plot))
+
+
+(deftest
+ t55_l260
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 8 (:polygons s)))))
+   v54_l255)))
+
+
+(def
+ v57_l267
+ (->
+  iris
+  (sk/view [[:species :petal_length]])
+  (sk/lay (sk/violin))
+  (sk/coord :flip)
+  sk/plot))
+
+
+(deftest
+ t58_l273
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 3 (:polygons s)))))
+   v57_l267)))

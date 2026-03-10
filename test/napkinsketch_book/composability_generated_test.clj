@@ -16,26 +16,35 @@
    {:key-fn keyword})))
 
 
-(def v5_l23 (def views (sk/view iris [[:sepal_length :sepal_width]])))
+(def
+ v4_l19
+ (def
+  tips
+  (tc/dataset
+   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
+   {:key-fn keyword})))
+
+
+(def v6_l26 (def views (sk/view iris [[:sepal_length :sepal_width]])))
 
 
 (def
- v6_l25
+ v7_l28
  (kind/pprint
-  (mapv (fn* [p1__75822#] (dissoc p1__75822# :data)) views)))
+  (mapv (fn* [p1__457804#] (dissoc p1__457804# :data)) views)))
 
 
-(def v8_l32 (def layered (sk/lay views (sk/point {:color :species}))))
+(def v9_l35 (def layered (sk/lay views (sk/point {:color :species}))))
 
 
 (def
- v9_l34
+ v10_l37
  (kind/pprint
-  (mapv (fn* [p1__75823#] (dissoc p1__75823# :data)) layered)))
+  (mapv (fn* [p1__457805#] (dissoc p1__457805# :data)) layered)))
 
 
 (def
- v11_l41
+ v12_l44
  (def
   mark-for-type
   (fn
@@ -51,7 +60,7 @@
 
 
 (def
- v12_l48
+ v13_l51
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -60,20 +69,18 @@
 
 
 (deftest
- t13_l54
+ t14_l57
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v12_l48)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 1 (:lines s)))))
+   v13_l51)))
 
 
 (def
- v15_l63
+ v16_l65
  (->
   iris
   (sk/view :petal_length :petal_width)
@@ -82,25 +89,23 @@
 
 
 (deftest
- t16_l68
+ t17_l70
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v15_l63)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (some #{"setosa"} (:texts s)))))
+   v16_l65)))
 
 
 (def
- v18_l77
+ v19_l78
  (->
   {:x (range 1 11),
    :y
    (mapv
-    (fn* [p1__75824#] (+ (* 2 p1__75824#) (- (rand-int 5) 2)))
+    (fn* [p1__457806#] (+ (* 2 p1__457806#) (- (rand-int 5) 2)))
     (range 1 11))}
   (sk/view [[:x :y]])
   (sk/lay (sk/point) (sk/lm))
@@ -108,20 +113,21 @@
 
 
 (deftest
- t19_l83
+ t20_l84
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v18_l77)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 10 (:points s))
+      (= 1 (:lines s))
+      (some #{"Noisy Linear Trend"} (:texts s)))))
+   v19_l78)))
 
 
 (def
- v21_l92
+ v22_l93
  (def
   species-plot
   (fn
@@ -129,84 +135,87 @@
    (->
     iris
     (tc/select-rows
-     (fn* [p1__75825#] (= species-name (p1__75825# :species))))
+     (fn* [p1__457807#] (= species-name (p1__457807# :species))))
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:width 300, :height 250, :title species-name})))))
 
 
-(def v22_l101 (species-plot "setosa"))
+(def v23_l102 (species-plot "setosa"))
 
 
 (deftest
- t23_l103
+ t24_l104
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and (map? attrs) (>= (:width attrs) 300)))))
-   v22_l101)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 50 (:points s))
+      (= 1 (:lines s))
+      (some #{"setosa"} (:texts s)))))
+   v23_l102)))
 
 
-(def v24_l109 (species-plot "versicolor"))
+(def v25_l109 (species-plot "versicolor"))
 
 
 (deftest
- t25_l111
+ t26_l111
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v24_l109)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 50 (:points s)) (some #{"versicolor"} (:texts s)))))
+   v25_l109)))
 
 
-(def v26_l116 (species-plot "virginica"))
+(def v27_l115 (species-plot "virginica"))
 
 
 (deftest
- t27_l118
+ t28_l117
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (->
-      iris
-      (sk/view [[:sepal_length :sepal_width]])
-      (sk/facet :species)
-      (sk/lay (sk/point) (sk/lm))
-      sk/plot)
-     (kind/test-last
-      [(fn
-        [v]
-        (and
-         (vector? v)
-         (= :svg (first v))
-         (map? (second v))
-         (vector? (nth v 2))))])
-     (vector? (nth v 2))))
-   v26_l116)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 50 (:points s)) (some #{"virginica"} (:texts s)))))
+   v27_l115)))
 
 
 (def
- v29_l140
+ v30_l123
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/facet :species)
+  (sk/lay (sk/point) (sk/lm))
+  sk/plot))
+
+
+(deftest
+ t31_l129
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 3 (:panels s)) (= 150 (:points s)) (= 3 (:lines s)))))
+   v30_l123)))
+
+
+(def
+ v33_l138
  (def
   measurements
   [:sepal_length :sepal_width :petal_length :petal_width]))
 
 
 (def
- v31_l144
+ v35_l142
  (->
   iris
   (sk/view [[:sepal_length :petal_length]])
@@ -215,20 +224,20 @@
 
 
 (deftest
- t32_l149
+ t36_l147
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v31_l144)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 150 (:points s))
+      (some #{"Sepal Length vs Petal Length"} (:texts s)))))
+   v35_l142)))
 
 
 (def
- v33_l154
+ v37_l151
  (->
   iris
   (sk/view [[:sepal_width :petal_width]])
@@ -237,20 +246,13 @@
 
 
 (deftest
- t34_l159
+ t38_l156
  (is
-  ((fn
-    [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v33_l154)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v37_l151)))
 
 
 (def
- v36_l168
+ v40_l163
  (def
   quarterly-data
   (fn
@@ -262,7 +264,7 @@
 
 
 (def
- v37_l174
+ v41_l169
  (->
   (quarterly-data)
   (sk/view [[:quarter :revenue]])
@@ -271,20 +273,20 @@
 
 
 (deftest
- t38_l179
+ t42_l174
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v37_l174)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 8 (:polygons s))
+      (some #{"Quarterly Revenue Comparison"} (:texts s)))))
+   v41_l169)))
 
 
 (def
- v40_l186
+ v44_l180
  (->
   (quarterly-data)
   (sk/view [[:quarter :revenue]])
@@ -294,20 +296,20 @@
 
 
 (deftest
- t41_l192
+ t45_l186
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v40_l186)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 8 (:polygons s))
+      (some #{"Revenue (Horizontal)"} (:texts s)))))
+   v44_l180)))
 
 
 (def
- v43_l201
+ v47_l194
  (def
   simulated
   (fn
@@ -317,13 +319,13 @@
      (range 0 10 0.5)
      ys
      (mapv
-      (fn* [p1__75826#] (+ (* 3 p1__75826#) 5 (* 2 (- (rand) 0.5))))
+      (fn* [p1__457808#] (+ (* 3 p1__457808#) 5 (* 2 (- (rand) 0.5))))
       xs)]
     (tc/dataset {:x xs, :y ys})))))
 
 
 (def
- v44_l207
+ v48_l200
  (->
   (simulated)
   (sk/view [[:x :y]])
@@ -332,18 +334,101 @@
 
 
 (deftest
- t45_l212
+ t49_l205
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v44_l207)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 20 (:points s))
+      (= 1 (:lines s))
+      (some #{"Simulated: y = 3x + 5 + noise"} (:texts s)))))
+   v48_l200)))
+
+
+(def
+ v51_l217
+ (->
+  iris
+  (sk/view :sepal_length)
+  (sk/facet :species)
+  (sk/lay (sk/density {:color :species}))
+  sk/plot))
+
+
+(deftest
+ t52_l223
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 3 (:panels s)) (= 3 (:polygons s)))))
+   v51_l217)))
+
+
+(def
+ v54_l229
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay
+   (sk/point {:color :species, :jitter 3})
+   (sk/lm {:color :species}))
+  sk/plot))
+
+
+(deftest
+ t55_l235
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 3 (:lines s)))))
+   v54_l229)))
+
+
+(def
+ v57_l241
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :petal_length}))
+  (sk/scale :x :log)
+  (sk/labs {:title "Log-Scale with Gradient Color"})
+  sk/plot))
+
+
+(deftest
+ t58_l248
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 150 (:points s))
+      (some #{"Log-Scale with Gradient Color"} (:texts s)))))
+   v57_l241)))
+
+
+(def
+ v60_l254
+ (->
+  tips
+  (sk/view [[:day :total_bill]])
+  (sk/lay (sk/violin {:alpha 0.3}) (sk/boxplot))
+  sk/plot))
+
+
+(deftest
+ t61_l260
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 8 (:polygons s)) (pos? (:lines s)))))
+   v60_l254)))

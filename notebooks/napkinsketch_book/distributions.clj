@@ -232,3 +232,45 @@
             (and (= 1 (:panels s))
                  (= 3 (:polygons s))
                  (pos? (:lines s)))))])
+
+;; ## Violin Plot
+;;
+;; A violin shows the full density shape per category — more
+;; informative than a boxplot for multimodal distributions.
+
+(-> tips
+    (sk/view [[:day :total_bill]])
+    (sk/lay (sk/violin))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 4 (:polygons s)))))])
+
+;; ## Grouped Violin
+
+;; Color splits each category into side-by-side violins.
+
+(-> tips
+    (sk/view [[:day :total_bill]])
+    (sk/lay (sk/violin {:color :smoker}))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 8 (:polygons s)))))])
+
+;; ## Horizontal Violin
+
+(-> iris
+    (sk/view [[:species :petal_length]])
+    (sk/lay (sk/violin))
+    (sk/coord :flip)
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 3 (:polygons s)))))])
