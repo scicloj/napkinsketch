@@ -153,6 +153,34 @@
        :labels (vec labels)
        :categorical? false})))
 
+;; ---- Layout Detection ----
+
+(defn infer-layout
+  "Determine layout type from views."
+  [views]
+  (let [facet-rows (seq (remove nil? (map :facet-row views)))
+        facet-cols (seq (remove nil? (map :facet-col views)))]
+    (cond
+      (or facet-rows facet-cols) :facet-grid
+      :else (let [x-vars (distinct (map :x views))
+                  y-vars (distinct (map :y views))]
+              (if (or (> (count x-vars) 1) (> (count y-vars) 1))
+                :multi-variable
+                :single)))))
+
+;; ---- Per-Panel Resolution ----
+
+(defn resolve-panel-views
+  "Resolve views and compute stats for a group of views belonging to one panel.
+   Returns {:resolved [...] :stat-results [...] :layers [...]}."
+  [panel-views all-colors cfg]
+  (let [resolved (mapv view/resolve-view panel-views)
+        stat-results (mapv #(stat/compute-stat (assoc % :cfg cfg)) resolved)
+        layers (vec (map (fn [rv sr]
+                           (extract-layer rv sr all-colors cfg))
+                         resolved stat-results))]
+    {:resolved resolved :stat-results stat-results :layers layers}))
+
 ;; ---- Main Entry Point ----
 
 (defn resolve-sketch
@@ -160,76 +188,196 @@
    with data-space geometry, domains, ticks, legend, and layout info.
    No membrane types, no datasets in the output."
   ([views] (resolve-sketch views {}))
-  ([views {:keys [width height config x-label y-label title] :as opts}]
+  ([views {:keys [width height config x-label y-label title scales] :as opts}]
    (let [cfg (merge defaults/defaults config)
          width (or width (:width cfg))
          height (or height (:height cfg))
          views (if (map? views) [views] views)
-         m (:margin cfg)
          ann-views (filter #(view/annotation-marks (:mark %)) views)
          non-ann-views (remove #(view/annotation-marks (:mark %)) views)
+         layout-type (infer-layout non-ann-views)
+         scale-mode (or scales :shared)
 
-         ;; Resolve views and compute stats
-         resolved (mapv view/resolve-view non-ann-views)
-         stat-results (mapv #(stat/compute-stat (assoc % :cfg cfg)) resolved)
-
-         ;; Collect color categories
+         ;; Collect color categories across all views
+         resolved-all (mapv view/resolve-view non-ann-views)
          all-colors (let [color-views (filter #(and (view/column-ref? (:color %))
-                                                    (:data %)) resolved)]
+                                                    (:data %)) resolved-all)]
                       (when (seq color-views)
                         (vec (distinct (mapcat #((:data %) (:color %)) color-views)))))
-         color-cols (distinct (keep #(when (view/column-ref? (:color %)) (:color %)) resolved))
+         color-cols (distinct (keep #(when (view/column-ref? (:color %)) (:color %)) resolved-all))
 
-         ;; Scale specs
+         ;; Scale specs (from first view)
          x-scale-spec (or (:x-scale (first non-ann-views)) {:type :linear})
          y-scale-spec (or (:y-scale (first non-ann-views)) {:type :linear})
-
-         ;; Global domains
-         global-x-dom (or (:domain x-scale-spec)
-                          (collect-domain stat-results :x-domain x-scale-spec))
-         global-y-dom (or (:domain y-scale-spec)
-                          (compute-global-y-domain stat-results views y-scale-spec))
 
          ;; Coord type
          coord-type (or (:coord (first non-ann-views)) :cartesian)
 
-         ;; Swap domains for flip
-         [x-dom' y-dom'] (if (= coord-type :flip)
-                           [global-y-dom global-x-dom]
-                           [global-x-dom global-y-dom])
-         [x-sspec' y-sspec'] (if (= coord-type :flip)
-                               [y-scale-spec x-scale-spec]
-                               [x-scale-spec y-scale-spec])
+         ;; Annotations
+         annotations (vec (for [a ann-views]
+                            (select-keys a [:mark :intercept :lo :hi])))
 
-         ;; Compute ticks (using transient wadogo scales)
-         x-px [m (- width m)]
-         y-px [(- height m) m]
-         x-ticks (compute-ticks x-dom' x-px x-sspec' (:tick-spacing-x cfg))
-         y-ticks (compute-ticks y-dom' y-px y-sspec' (:tick-spacing-y cfg))
+         ;; --- Layout-specific panel grouping ---
+         x-vars (distinct (map :x non-ann-views))
+         y-vars (distinct (map :y non-ann-views))
 
-         ;; Extract layers (data-space geometry)
-         layers (vec
-                 (map (fn [rv sr]
-                        (extract-layer rv sr all-colors cfg))
-                      resolved stat-results))
+         facet-row-vals (when (= layout-type :facet-grid)
+                          (vec (distinct (remove #(= "_" %) (map :facet-row non-ann-views)))))
+         facet-col-vals (when (= layout-type :facet-grid)
+                          (vec (distinct (remove #(= "_" %) (map :facet-col non-ann-views)))))
 
-         ;; Axis labels (opts > view-level labs > scale label > auto-inferred)
+         ;; Grid dimensions
+         [grid-rows grid-cols]
+         (case layout-type
+           :single [1 1]
+           :facet-grid [(max 1 (count (or facet-row-vals ["_"])))
+                        (max 1 (count (or facet-col-vals ["_"])))]
+           :multi-variable [(count y-vars) (count x-vars)])
+
+         ;; Per-panel pixel dimensions
+         multi? (and (= layout-type :multi-variable) (> grid-cols 1) (> grid-rows 1))
+         m (if multi? (:margin-multi cfg) (:margin cfg))
+         pw (if multi?
+              (double (:panel-size cfg))
+              (double (/ width grid-cols)))
+         ph (if multi?
+              (double (:panel-size cfg))
+              (double (/ height grid-rows)))
+
+         ;; --- Group views into panels ---
+         panel-groups
+         (case layout-type
+           :single
+           [{:views non-ann-views :row 0 :col 0}]
+
+           :facet-grid
+           (let [rvs (or (seq facet-row-vals) ["_"])
+                 cvs (or (seq facet-col-vals) ["_"])]
+             (for [[ri rv] (map-indexed vector rvs)
+                   [ci cv] (map-indexed vector cvs)]
+               {:views (filterv #(and (= (or (:facet-row %) "_") (str rv))
+                                      (= (or (:facet-col %) "_") (str cv)))
+                                non-ann-views)
+                :row ri :col ci
+                :row-label (when (not= rv "_") (str rv))
+                :col-label (when (not= cv "_") (str cv))}))
+
+           :multi-variable
+           (for [[ri yv] (map-indexed vector y-vars)
+                 [ci xv] (map-indexed vector x-vars)]
+             {:views (filterv #(and (= xv (:x %)) (= yv (:y %))) non-ann-views)
+              :row ri :col ci
+              :var-x xv :var-y yv
+              :col-label (defaults/fmt-name xv)
+              :row-label (defaults/fmt-name yv)}))
+
+         ;; --- Resolve each panel ---
+         panel-data (mapv (fn [pg]
+                            (if (seq (:views pg))
+                              (merge pg (resolve-panel-views (:views pg) all-colors cfg))
+                              pg))
+                          panel-groups)
+
+         ;; --- Compute global domains (for domain sharing) ---
+         all-stat-results (mapcat :stat-results panel-data)
+
+         global-x-dom (or (:domain x-scale-spec)
+                          (collect-domain all-stat-results :x-domain x-scale-spec))
+         global-y-dom (or (:domain y-scale-spec)
+                          (compute-global-y-domain all-stat-results views y-scale-spec))
+
+         ;; For multi-variable: per-column x domain, per-row y domain
+         mv-col-x-doms (when (= layout-type :multi-variable)
+                         (into {} (for [xv x-vars]
+                                    [xv (let [pds (filter #(= xv (:var-x %)) panel-data)
+                                              scatter-pds (filter #(not= (:var-x %) (:var-y %)) pds)
+                                              srs (mapcat :stat-results scatter-pds)]
+                                          (when (seq srs)
+                                            (collect-domain srs :x-domain x-scale-spec)))])))
+         mv-row-y-doms (when (= layout-type :multi-variable)
+                         (into {} (for [yv y-vars]
+                                    [yv (let [pds (filter #(= yv (:var-y %)) panel-data)
+                                              scatter-pds (filter #(not= (:var-x %) (:var-y %)) pds)
+                                              srs (mapcat :stat-results scatter-pds)]
+                                          (when (seq srs)
+                                            (collect-domain srs :y-domain y-scale-spec)))])))
+
+         ;; --- Build panel maps with domains and ticks ---
+         panels
+         (vec
+          (for [pd panel-data
+                :when (seq (:views pd))]
+            (let [;; Per-panel domains from stats
+                  local-srs (:stat-results pd)
+                  local-x-dom (collect-domain local-srs :x-domain x-scale-spec)
+                  local-y-dom (compute-global-y-domain local-srs (:views pd) y-scale-spec)
+
+                  ;; Pick domains based on layout + scale mode
+                  [eff-x-dom eff-y-dom]
+                  (case layout-type
+                    :single
+                    [global-x-dom global-y-dom]
+
+                    :facet-grid
+                    [(case scale-mode
+                       (:shared :free-y) global-x-dom
+                       local-x-dom)
+                     (case scale-mode
+                       (:shared :free-x) global-y-dom
+                       local-y-dom)]
+
+                    :multi-variable
+                    (let [diagonal? (= (:var-x pd) (:var-y pd))]
+                      [(or (get mv-col-x-doms (:var-x pd)) local-x-dom)
+                       (if diagonal? local-y-dom
+                           (or (get mv-row-y-doms (:var-y pd)) local-y-dom))]))
+
+                  ;; Flip domains for coord flip
+                  [x-dom' y-dom'] (if (= coord-type :flip)
+                                    [eff-y-dom eff-x-dom]
+                                    [eff-x-dom eff-y-dom])
+                  [x-sspec' y-sspec'] (if (= coord-type :flip)
+                                        [y-scale-spec x-scale-spec]
+                                        [x-scale-spec y-scale-spec])
+
+                  ;; Ticks
+                  x-px [m (- pw m)]
+                  y-px [(- ph m) m]
+                  x-ticks (when x-dom' (compute-ticks x-dom' x-px x-sspec' (:tick-spacing-x cfg)))
+                  y-ticks (when y-dom' (compute-ticks y-dom' y-px y-sspec' (:tick-spacing-y cfg)))]
+
+              (cond-> {:x-domain (vec (if (sequential? x-dom') x-dom' [x-dom']))
+                       :y-domain (vec (if (sequential? y-dom') y-dom' [y-dom']))
+                       :x-scale x-sspec'
+                       :y-scale y-sspec'
+                       :coord coord-type
+                       :x-ticks (or x-ticks {:values [] :labels [] :categorical? false})
+                       :y-ticks (or y-ticks {:values [] :labels [] :categorical? false})
+                       :layers (or (:layers pd) [])
+                       :row (:row pd)
+                       :col (:col pd)}
+                (seq annotations) (assoc :annotations annotations)
+                (:row-label pd) (assoc :row-label (:row-label pd))
+                (:col-label pd) (assoc :col-label (:col-label pd))))))
+
+         ;; --- Labels ---
+         auto-label? (not multi?)
          view-title (:title (first non-ann-views))
          view-x-label (:x-label (first non-ann-views))
          view-y-label (:y-label (first non-ann-views))
-         x-vars (distinct (map :x non-ann-views))
-         y-vars (distinct (map :y non-ann-views))
          eff-title (or title view-title)
          eff-x-label (or x-label
                          view-x-label
                          (:label x-scale-spec)
-                         (when-let [x (first x-vars)] (defaults/fmt-name x)))
+                         (when auto-label?
+                           (when-let [x (first x-vars)] (defaults/fmt-name x))))
          eff-y-label (or y-label
                          view-y-label
                          (:label y-scale-spec)
-                         (when-let [y (first y-vars)]
-                           (when (not= y (first x-vars))
-                             (defaults/fmt-name y))))
+                         (when auto-label?
+                           (when-let [y (first y-vars)]
+                             (when (not= y (first x-vars))
+                               (defaults/fmt-name y)))))
 
          ;; Legend
          legend (when all-colors
@@ -243,30 +391,28 @@
          y-label-pad (if eff-y-label (:label-offset cfg) 0)
          title-pad (if eff-title (:title-offset cfg) 0)
          legend-w (if legend (:legend-width cfg) 0)
-         total-w (+ y-label-pad width legend-w)
-         total-h (+ title-pad height x-label-pad)
-
-         ;; Annotations (plain data maps stored in sketch)
-         annotations (vec (for [a ann-views]
-                            (select-keys a [:mark :intercept :lo :hi])))]
+         has-col-strips? (or (and (= layout-type :facet-grid) (seq facet-col-vals))
+                             multi?)
+         has-row-strips? (or (and (= layout-type :facet-grid) (seq facet-row-vals))
+                             multi?)
+         strip-h (if has-col-strips? (:strip-height cfg 16) 0)
+         strip-w (if has-row-strips? 60 0)
+         total-w (+ y-label-pad (* grid-cols pw) strip-w legend-w)
+         total-h (+ title-pad strip-h (* grid-rows ph) x-label-pad)]
 
      {:width width :height height :margin m
       :total-width total-w :total-height total-h
+      :panel-width pw :panel-height ph
+      :grid {:rows grid-rows :cols grid-cols}
+      :layout-type layout-type
       :title eff-title
       :x-label eff-x-label :y-label eff-y-label
       :config cfg
       :legend legend
-      :panels [(cond-> {:x-domain (vec (if (sequential? x-dom') x-dom' [x-dom']))
-                        :y-domain (vec (if (sequential? y-dom') y-dom' [y-dom']))
-                        :x-scale x-sspec'
-                        :y-scale y-sspec'
-                        :coord coord-type
-                        :x-ticks x-ticks
-                        :y-ticks y-ticks
-                        :layers layers}
-                 (seq annotations) (assoc :annotations annotations))]
-      ;; Layout offsets for rendering
+      :panels panels
       :layout {:x-label-pad x-label-pad
                :y-label-pad y-label-pad
                :title-pad title-pad
-               :legend-w legend-w}})))
+               :legend-w legend-w
+               :strip-h strip-h
+               :strip-w strip-w}})))

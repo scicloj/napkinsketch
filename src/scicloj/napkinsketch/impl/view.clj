@@ -176,6 +176,56 @@
   [xs ys]
   (for [x xs, y ys] [x y]))
 
+(defn pairs
+  "Upper-triangle pairs of columns, for pairwise scatter plots.
+   (pairs [:a :b :c]) => [[:a :b] [:a :c] [:b :c]]"
+  [cols]
+  (vec (for [i (range (count cols))
+             j (range (inc i) (count cols))]
+         [(nth cols i) (nth cols j)])))
+
+;; ---- Faceting ----
+
+(defn facet-grid
+  "Split each view by two categorical columns for a row × column grid.
+   Either column may be nil for a single-dimension facet.
+   Each resulting view gets :facet-row and :facet-col keys."
+  [views row-col col-col]
+  (vec
+   (mapcat
+    (fn [v]
+      (if-not (:data v)
+        [v]
+        (do
+          (when row-col (validate-columns (:data v) :facet-row row-col))
+          (when col-col (validate-columns (:data v) :facet-col col-col))
+          (let [group-cols (filterv some? [row-col col-col])
+                groups (tc/group-by (:data v) group-cols {:result-type :as-map})]
+            (map (fn [[gk gds]]
+                   (assoc v :data gds
+                          :facet-row (if row-col (get gk row-col) "_")
+                          :facet-col (if col-col (get gk col-col) "_")))
+                 groups)))))
+    views)))
+
+(defn facet
+  "Split each view by a categorical column.
+   Default layout is a horizontal row of panels.
+   Pass :col as direction for a vertical column of panels.
+   (facet views :species)        — horizontal row
+   (facet views :species :col)   — vertical column"
+  ([views col] (facet views col :row))
+  ([views col direction]
+   (case direction
+     :row (facet-grid views nil col)
+     :col (facet-grid views col nil))))
+
+(defn distribution
+  "Create diagonal views (x=y) for each column, used for histograms in SPLOM.
+   (distribution data :a :b :c) => views with [[:a :a] [:b :b] [:c :c]]"
+  [data & cols]
+  (view data (mapv (fn [c] [c c]) cols)))
+
 ;; ---- Column Type Detection ----
 
 (defn column-type

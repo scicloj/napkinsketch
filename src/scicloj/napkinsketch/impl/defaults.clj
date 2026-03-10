@@ -29,6 +29,8 @@
    ;; Labels and titles
    :label-font-size 11 :title-font-size 13
    :label-offset 18 :title-offset 18
+   ;; Facet strips
+   :strip-font-size 10 :strip-height 16
    ;; Fallback
    :default-color "#333"})
 

@@ -29,6 +29,30 @@
   "Cartesian product of two sequences."
   view/cross)
 
+(def facet
+  "Split views by a categorical column into separate panels.
+   Default is a horizontal row of panels.
+   (facet views :species)        — horizontal row
+   (facet views :species :col)   — vertical column"
+  view/facet)
+
+(def facet-grid
+  "Split views by two categorical columns for a row × column grid.
+   Either column may be nil for a single-dimension facet.
+   (facet-grid views :smoker :sex)   — 2D grid
+   (facet-grid views nil :species)   — same as facet"
+  view/facet-grid)
+
+(def pairs
+  "Upper-triangle pairs of columns, for pairwise scatter plots.
+   (pairs [:a :b :c]) => [[:a :b] [:a :c] [:b :c]]"
+  view/pairs)
+
+(def distribution
+  "Create diagonal views (x=y) for each column, used for histograms in SPLOM.
+   (distribution data :a :b :c) => views with [[:a :a] [:b :b] [:c :c]]"
+  view/distribution)
+
 (def scale
   "Set scale options for :x or :y across all views.
    (scale views :x :log)                — log x-axis

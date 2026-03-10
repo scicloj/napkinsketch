@@ -59,8 +59,10 @@
 
 (defn render-panel-from-sketch
   "Render a sketch panel as a membrane scene tree.
-   Takes a panel map from resolve-sketch and pixel dimensions."
-  [panel pw ph m cfg]
+   Takes a panel map from resolve-sketch and pixel dimensions.
+   show-x? and show-y? control whether tick labels are drawn
+   (grid lines always render)."
+  [panel pw ph m cfg & {:keys [show-x? show-y?] :or {show-x? true show-y? true}}]
   (let [{:keys [x-domain y-domain x-scale y-scale coord
                 x-ticks y-ticks layers annotations]} panel
         coord-type (or coord :cartesian)
@@ -125,9 +127,9 @@
                                         [m py1]))))
                  nil)))))
 
-        ;; Tick labels
-        x-tick-scene (render-tick-labels :x x-ticks sx pw ph m)
-        y-tick-scene (render-tick-labels :y y-ticks sy pw ph m)]
+        ;; Tick labels (conditional)
+        x-tick-scene (when show-x? (render-tick-labels :x x-ticks sx pw ph m))
+        y-tick-scene (when show-y? (render-tick-labels :y y-ticks sy pw ph m))]
 
     (vec (concat [background] grid
                  (or ann-marks []) marks

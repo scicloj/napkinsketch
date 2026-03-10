@@ -107,7 +107,11 @@
    [:coord [:enum :cartesian :flip]]
    [:x-ticks TickInfo]
    [:y-ticks TickInfo]
-   [:layers [:vector Layer]]])
+   [:layers [:vector Layer]]
+   [:row int?]
+   [:col int?]
+   [:row-label {:optional true} [:maybe string?]]
+   [:col-label {:optional true} [:maybe string?]]])
 
 ;; ---- Legend ----
 
@@ -128,7 +132,9 @@
    [:x-label-pad number?]
    [:y-label-pad number?]
    [:title-pad number?]
-   [:legend-w number?]])
+   [:legend-w number?]
+   [:strip-h number?]
+   [:strip-w number?]])
 
 ;; ---- Sketch (top-level) ----
 
@@ -141,6 +147,10 @@
    [:margin number?]
    [:total-width number?]
    [:total-height number?]
+   [:panel-width number?]
+   [:panel-height number?]
+   [:grid [:map [:rows pos-int?] [:cols pos-int?]]]
+   [:layout-type [:enum :single :facet-grid :multi-variable]]
    [:title {:optional true} [:maybe string?]]
    [:x-label {:optional true} [:maybe string?]]
    [:y-label {:optional true} [:maybe string?]]

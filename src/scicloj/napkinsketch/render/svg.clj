@@ -200,13 +200,56 @@
   "Build a membrane scene tree from a sketch.
    Returns a vector of membrane drawables representing the complete plot."
   [sketch]
-  (let [{:keys [width height margin total-width total-height
-                title x-label y-label config legend panels layout]} sketch
-        {:keys [x-label-pad y-label-pad title-pad legend-w]} layout
+  (let [{:keys [margin total-width total-height panel-width panel-height
+                title x-label y-label config legend panels layout grid]} sketch
+        {:keys [x-label-pad y-label-pad title-pad legend-w strip-h strip-w]} layout
         cfg config
+        grid-rows (:rows grid)
+        grid-cols (:cols grid)
+        pw panel-width
+        ph panel-height
 
-        ;; Render the panel from sketch
-        panel-scene (panel/render-panel-from-sketch (first panels) width height margin cfg)]
+        ;; Render each panel, positioned in the grid
+        panel-scenes
+        (vec
+         (for [p panels
+               :let [ri (:row p)
+                     ci (:col p)
+                     show-x? (= ri (dec grid-rows))
+                     show-y? (zero? ci)
+                     x-off (+ y-label-pad (* ci pw))
+                     y-off (+ title-pad strip-h (* ri ph))]]
+           (ui/translate x-off y-off
+                         (panel/render-panel-from-sketch p pw ph margin cfg
+                                                         :show-x? show-x?
+                                                         :show-y? show-y?))))
+
+        ;; Strip labels (column headers on top, row headers on right)
+        strip-label-color [0.2 0.2 0.2 1.0]
+        strip-fsize (or (:strip-font-size cfg) 10)
+
+        col-strips
+        (when (pos? strip-h)
+          (vec
+           (for [p panels
+                 :when (and (zero? (:row p)) (:col-label p))]
+             (let [cx (+ y-label-pad (* (:col p) pw) (/ pw 2.0))
+                   label (:col-label p)]
+               (ui/translate (- cx (* (count label) (/ strip-fsize 3.5)))
+                             (+ title-pad 2)
+                             (ui/with-color strip-label-color
+                               (ui/label label (ui/font nil strip-fsize))))))))
+
+        row-strips
+        (when (pos? strip-w)
+          (vec
+           (for [p panels
+                 :when (and (= (:col p) (dec grid-cols)) (:row-label p))]
+             (let [cy (+ title-pad strip-h (* (:row p) ph) (/ ph 2.0))]
+               (ui/translate (+ y-label-pad (* grid-cols pw) 5)
+                             (- cy 5)
+                             (ui/with-color strip-label-color
+                               (ui/label (:row-label p) (ui/font nil strip-fsize))))))))]
 
     ;; Build full scene
     (vec
@@ -223,10 +266,13 @@
       ;; Legend
       (when legend
         (render-legend-from-sketch legend
-                                   (+ y-label-pad width 10)
-                                   (+ title-pad 20)))
-      ;; Panel (offset by labels)
-      [(ui/translate y-label-pad title-pad panel-scene)]))))
+                                   (+ y-label-pad (* grid-cols pw) strip-w 10)
+                                   (+ title-pad strip-h 20)))
+      ;; Panels
+      panel-scenes
+      ;; Strip labels
+      (or col-strips [])
+      (or row-strips [])))))
 
 ;; ---- render-figure :svg ----
 
