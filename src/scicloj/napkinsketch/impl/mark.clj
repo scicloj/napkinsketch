@@ -68,6 +68,129 @@
                            (draw-shape pt-shape pt-r)))
            (cond-> row-indices (assoc :row-idx (nth row-indices i))))))))
 
+;; ---- Text ----
+
+(defmethod render-layer :text [layer ctx]
+  (let [{:keys [style groups]} layer
+        {:keys [coord-fn]} ctx
+        {:keys [font-size]} style
+        fsize (or font-size 10)]
+    (vec
+     (for [{:keys [color xs ys labels]} groups
+           i (range (count xs))
+           :let [[px py] (coord-fn (nth xs i) (nth ys i))
+                 label (if labels (nth labels i) "")
+                 [cr cg cb _] color]]
+       (ui/translate (double px) (- (double py) (/ fsize 2.0))
+                     (ui/with-color [cr cg cb 1.0]
+                       (ui/label label (ui/font nil fsize))))))))
+
+;; ---- Area ----
+
+(defmethod render-layer :area [layer ctx]
+  (let [{:keys [style groups]} layer
+        {:keys [coord-fn y-domain-min]} ctx
+        {:keys [opacity]} style
+        baseline (or y-domain-min 0)]
+    (vec
+     (for [{:keys [color xs ys]} groups
+           :let [sorted (sort-by first (map vector xs ys))
+                 top-pts (map (fn [[x y]] (coord-fn x y)) sorted)
+                 ;; Close polygon: right edge down to baseline, left edge
+                 x-first (ffirst sorted)
+                 x-last (first (last sorted))
+                 [bx-right by-right] (coord-fn x-last baseline)
+                 [bx-left by-left] (coord-fn x-first baseline)
+                 all-pts (concat top-pts [[bx-right by-right] [bx-left by-left]])
+                 [cr cg cb _] color]]
+       (ui/with-color [cr cg cb (or opacity 0.5)]
+         (ui/with-style ::ui/style-fill
+           (apply ui/path all-pts)))))))
+
+;; ---- Boxplot ----
+
+(defmethod render-layer :boxplot [layer ctx]
+  (let [{:keys [style boxes color-categories]} layer
+        {:keys [coord-type sx sy]} ctx
+        flipped? (= coord-type :flip)
+        band-s (if flipped? sy sx)
+        num-s (if flipped? sx sy)
+        bw (ws/data band-s :bandwidth)
+        {:keys [box-width stroke-width]} style
+        box-frac (or box-width 0.6)
+        sw (or stroke-width 1.5)
+        n-colors (if (seq color-categories) (count color-categories) 1)
+        ;; For dodging: divide band among color groups
+        sub-bw (/ (* bw box-frac) n-colors)
+        color-idx-map (when (seq color-categories)
+                        (into {} (map-indexed (fn [i c] [c i]) color-categories)))]
+    (vec
+     (mapcat
+      (fn [{:keys [category color median q1 q3 whisker-lo whisker-hi outliers] :as box}]
+        (let [[cr cg cb _] color
+              band-info (band-s category true)
+              band-start (:rstart band-info)
+              band-end (:rend band-info)
+              band-mid (/ (+ band-start band-end) 2.0)
+              ;; Dodge offset for grouped boxplots
+              ci (if-let [cc (:color box)]
+                   (get color-idx-map cc 0)
+                   0)
+              group-start (- band-mid (/ (* n-colors sub-bw) 2.0))
+              box-lo (+ group-start (* ci sub-bw))
+              box-hi (+ box-lo sub-bw)
+              box-mid (/ (+ box-lo box-hi) 2.0)
+              ;; Y positions via numeric scale
+              py-q1 (num-s q1)
+              py-q3 (num-s q3)
+              py-med (num-s median)
+              py-wlo (num-s whisker-lo)
+              py-whi (num-s whisker-hi)
+              ;; Build primitives depending on orientation
+              mk-box (fn [x1 y1 x2 y2 x3 y3 x4 y4]
+                       [(ui/with-color [cr cg cb 0.7]
+                          (ui/with-style ::ui/style-fill
+                            (ui/path [x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1])))
+                        (ui/with-color [cr cg cb 1.0]
+                          (ui/with-stroke-width sw
+                            (ui/with-style ::ui/style-stroke
+                              (ui/path [x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1]))))])
+              mk-line (fn [xa ya xb yb]
+                        (ui/with-color [cr cg cb 1.0]
+                          (ui/with-stroke-width sw
+                            (ui/with-style ::ui/style-stroke
+                              (ui/path [xa ya] [xb yb])))))
+              mk-point (fn [px py]
+                         (let [r 2.5 d (* 2 r)]
+                           (ui/translate (- (double px) r) (- (double py) r)
+                                         (ui/with-color [cr cg cb 1.0]
+                                           (ui/with-style ::ui/style-fill
+                                             (ui/rounded-rectangle d d r))))))]
+          (if flipped?
+            ;; Flipped: band on y, numeric on x
+            (concat
+             (mk-box py-q1 box-lo py-q3 box-lo py-q3 box-hi py-q1 box-hi)
+             [(mk-line py-med box-lo py-med box-hi) ;; median
+              (mk-line py-wlo box-mid py-q1 box-mid) ;; lower whisker
+              (mk-line py-whi box-mid py-q3 box-mid) ;; upper whisker
+              (mk-line py-wlo (- box-mid (* sub-bw 0.15)) ;; whisker cap lo
+                       py-wlo (+ box-mid (* sub-bw 0.15)))
+              (mk-line py-whi (- box-mid (* sub-bw 0.15)) ;; whisker cap hi
+                       py-whi (+ box-mid (* sub-bw 0.15)))]
+             (for [o outliers] (mk-point (num-s o) box-mid)))
+            ;; Normal: band on x, numeric on y
+            (concat
+             (mk-box box-lo py-q3 box-hi py-q3 box-hi py-q1 box-lo py-q1)
+             [(mk-line box-lo py-med box-hi py-med) ;; median
+              (mk-line box-mid py-q1 box-mid py-wlo) ;; lower whisker
+              (mk-line box-mid py-q3 box-mid py-whi) ;; upper whisker
+              (mk-line (- box-mid (* sub-bw 0.15)) py-wlo ;; whisker cap lo
+                       (+ box-mid (* sub-bw 0.15)) py-wlo)
+              (mk-line (- box-mid (* sub-bw 0.15)) py-whi ;; whisker cap hi
+                       (+ box-mid (* sub-bw 0.15)) py-whi)]
+             (for [o outliers] (mk-point box-mid (num-s o)))))))
+      boxes))))
+
 (defmethod render-layer :default [layer ctx]
   (render-layer (assoc layer :mark :point) ctx))
 

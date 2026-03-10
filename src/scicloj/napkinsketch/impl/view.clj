@@ -149,6 +149,42 @@
   ([] {:mark :line :stat :loess})
   ([opts] (merge {:mark :line :stat :loess} opts)))
 
+(defn text
+  "Text mark — data-driven labels at (x, y) positions.
+   Requires :text key mapping to a column.
+   (text {:text :name})                — label each point
+   (text {:text :name :color :species}) — colored labels"
+  ([] {:mark :text :stat :identity})
+  ([opts] (merge {:mark :text :stat :identity} opts)))
+
+(defn area
+  "Area mark — filled region under a line.
+   (area)                     — default
+   (area {:color :species})   — one area per group"
+  ([] {:mark :area :stat :identity})
+  ([opts] (merge {:mark :area :stat :identity} opts)))
+
+(defn density
+  "Density mark — kernel density estimation rendered as a filled area.
+   (density)                    — default bandwidth
+   (density {:color :species})  — per-group density curves
+   (density {:bandwidth 0.5})   — custom bandwidth"
+  ([] {:mark :area :stat :kde})
+  ([opts]
+   (let [bw (:bandwidth opts)
+         base (merge {:mark :area :stat :kde} (dissoc opts :bandwidth))]
+     (if bw
+       (assoc base :cfg {:kde-bandwidth bw})
+       base))))
+
+(defn boxplot
+  "Boxplot mark — displays median, quartiles, whiskers, and outliers.
+   x should be categorical, y numeric.
+   (boxplot)                    — single color
+   (boxplot {:color :smoker})   — side-by-side grouped boxplots"
+  ([] {:mark :boxplot :stat :boxplot})
+  ([opts] (merge {:mark :boxplot :stat :boxplot} opts)))
+
 (defn rule-v
   "Vertical reference line at x = intercept."
   [intercept]
@@ -260,6 +296,8 @@
           alpha-val (:alpha v)
           alpha-is-col? (and alpha-val (column-ref? alpha-val))
           fixed-alpha (when (and alpha-val (not alpha-is-col?)) alpha-val)
+          text-val (:text v)
+          text-col (when (and text-val (column-ref? text-val)) text-val)
           ;; Group: normalize keyword to [kw], combine with color column
           explicit-group (let [g (:group v)]
                            (cond (nil? g) nil
@@ -285,7 +323,8 @@
              :size (when size-is-col? size-val)
              :fixed-size fixed-size
              :alpha (when alpha-is-col? alpha-val)
-             :fixed-alpha fixed-alpha))))
+             :fixed-alpha fixed-alpha
+             :text-col text-col))))
 
 ;; ---- Scale Setter ----
 

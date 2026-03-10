@@ -89,6 +89,40 @@
                   {:color (resolve-color all-colors color (:fixed-color view) cfg)
                    :xs (vec xs) :ys (vec ys)}))})))
 
+(defmethod extract-layer :text [view stat all-colors cfg]
+  (let [cfg (or cfg defaults/defaults)]
+    {:mark :text
+     :style {:font-size (or (:font-size view) 10)}
+     :groups (vec
+              (for [{:keys [color xs ys labels]} (:points stat)]
+                (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                         :xs (vec xs) :ys (vec ys)}
+                  labels (assoc :labels (vec (map str labels))))))}))
+
+(defmethod extract-layer :area [view stat all-colors cfg]
+  (let [cfg (or cfg defaults/defaults)]
+    {:mark :area
+     :style {:opacity (or (:fixed-alpha view) 0.5)}
+     :groups (vec
+              (for [{:keys [color xs ys]} (:points stat)]
+                {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                 :xs (vec xs) :ys (vec ys)}))}))
+
+(defmethod extract-layer :boxplot [view stat all-colors cfg]
+  (let [cfg (or cfg defaults/defaults)
+        color-cats (:color-categories stat)]
+    {:mark :boxplot
+     :style {:box-width (or (:box-width view) 0.6)
+             :stroke-width (or (:fixed-size view) 1.5)}
+     :color-categories color-cats
+     :boxes (vec
+             (for [b (:boxes stat)]
+               (cond-> {:category (:category b)
+                        :color (resolve-color all-colors (:color b) (:fixed-color view) cfg)
+                        :median (:median b) :q1 (:q1 b) :q3 (:q3 b)
+                        :whisker-lo (:whisker-lo b) :whisker-hi (:whisker-hi b)}
+                 (seq (:outliers b)) (assoc :outliers (vec (:outliers b))))))}))
+
 (defmethod extract-layer :default [view stat all-colors cfg]
   (extract-layer (assoc view :mark :point) stat all-colors cfg))
 
@@ -175,7 +209,7 @@
    Returns {:resolved [...] :stat-results [...] :layers [...]}."
   [panel-views all-colors cfg]
   (let [resolved (mapv view/resolve-view panel-views)
-        stat-results (mapv #(stat/compute-stat (assoc % :cfg cfg)) resolved)
+        stat-results (mapv #(stat/compute-stat (assoc % :cfg (merge cfg (:cfg %)))) resolved)
         layers (vec (map (fn [rv sr]
                            (extract-layer rv sr all-colors cfg))
                          resolved stat-results))]

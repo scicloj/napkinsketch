@@ -40,7 +40,7 @@
 ;;
 ;; | Multimethod | Namespace | Dispatches on | Purpose |
 ;; |:------------|:----------|:--------------|:--------|
-;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm) |
+;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
 ;; | `extract-layer` | `impl/sketch.clj` | `:mark` key | Convert stat result → sketch layer descriptor |
 ;; | `render-layer` | `impl/mark.clj` | `:mark` key | Render sketch layer → membrane scene |
 ;; | `render-figure` | `impl/render.clj` | format keyword | Render sketch → figure (:svg, etc.) |
@@ -61,6 +61,9 @@
 ;; | `:bin` | Bin numerical data into histogram bars |
 ;; | `:count` | Count occurrences of categorical values |
 ;; | `:lm` | Linear regression (slope + intercept) |
+;; | `:loess` | LOESS local regression smoothing |
+;; | `:kde` | Kernel density estimation |
+;; | `:boxplot` | Five-number summary with outlier detection |
 ;;
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
@@ -110,6 +113,9 @@
 ;; | `:bar` | Groups with `:bars` (`:lo`, `:hi`, `:count`) |
 ;; | `:line` | Groups with `:xs`/`:ys` or line segments |
 ;; | `:rect` | Categorical bars with `:counts` or value bars |
+;; | `:text` | Groups with `:xs`, `:ys`, `:labels` |
+;; | `:area` | Groups with `:xs`, `:ys` for filled polygons |
+;; | `:boxplot` | Boxes with five-number summary and outliers |
 ;;
 ;; Dispatch function: `(fn [view stat all-colors cfg] (:mark view))`
 
@@ -136,6 +142,9 @@
 ;; | `:bar` | Filled polygons (histogram bars) |
 ;; | `:line` | Stroked polylines |
 ;; | `:rect` | Filled polygons (categorical/value bars) |
+;; | `:text` | Translated text labels |
+;; | `:area` | Closed filled polygons with baseline |
+;; | `:boxplot` | Box + whiskers + median line + outlier points |
 ;;
 ;; Dispatch function: `(fn [layer ctx] (:mark layer))`
 ;;

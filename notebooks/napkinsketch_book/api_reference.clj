@@ -237,6 +237,122 @@
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
+(kind/doc #'sk/loess)
+
+;; Smooth LOESS curve through data:
+
+(def noisy-wave (tc/dataset {:x (range 50)
+                             :y (mapv #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rand) 0.5)))
+                                      (range 50))}))
+
+(-> noisy-wave
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point) (sk/loess))
+    sk/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+(kind/doc #'sk/density)
+
+;; KDE density curve — a smooth alternative to histograms:
+
+(-> iris
+    (sk/view [[:sepal_length]])
+    (sk/lay (sk/density))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                            (and (= 1 (:panels s))
+                                 (= 1 (:polygons s)))))])
+
+;; Per-group density:
+
+(-> iris
+    (sk/view [[:sepal_length]])
+    (sk/lay (sk/density {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                            (and (= 1 (:panels s))
+                                 (= 3 (:polygons s)))))])
+
+;; Custom bandwidth:
+
+(-> iris
+    (sk/view [[:sepal_length]])
+    (sk/lay (sk/density {:bandwidth 0.3}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                            (and (= 1 (:panels s))
+                                 (= 1 (:polygons s)))))])
+
+(kind/doc #'sk/area)
+
+;; Filled area under a line:
+
+(-> (tc/dataset {:x (range 30)
+                 :y (mapv #(Math/sin (* % 0.3)) (range 30))})
+    (sk/view [[:x :y]])
+    (sk/lay (sk/area))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                            (and (= 1 (:panels s))
+                                 (= 1 (:polygons s)))))])
+
+(kind/doc #'sk/text)
+
+;; Data-driven text labels at point positions:
+
+(-> (tc/dataset {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]})
+    (sk/view [[:x :y]])
+    (sk/lay (sk/text {:text :name}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                            (and (= 1 (:panels s))
+                                 (every? (set (:texts s)) ["A" "B" "C" "D"]))))])
+
+;; Combine text with points for labeled scatter:
+
+(-> (tc/dataset {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]})
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point) (sk/text {:text :name}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                            (and (= 1 (:panels s))
+                                 (= 4 (:points s)))))])
+
+(kind/doc #'sk/boxplot)
+
+;; Boxplot — median, quartiles, whiskers, and outliers:
+
+(-> iris
+    (sk/view [[:species :sepal_width]])
+    (sk/lay (sk/boxplot))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                            (and (= 1 (:panels s))
+                                 (= 3 (:polygons s))
+                                 (pos? (:lines s)))))])
+
+;; Grouped boxplot with color:
+
+(-> tips
+    (sk/view [[:day :total_bill]])
+    (sk/lay (sk/boxplot {:color :smoker}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                            (and (= 1 (:panels s))
+                                 (= 8 (:polygons s))
+                                 (pos? (:lines s)))))])
+
+
+
 ;; ## Rendering
 
 (kind/doc #'sk/plot)

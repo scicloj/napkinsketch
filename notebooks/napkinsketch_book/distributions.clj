@@ -1,7 +1,7 @@
 ;; # Distributions
 ;;
-;; Histograms and bar charts — visualizing distributions
-;; of numerical and categorical data.
+;; Histograms, density plots, boxplots, and bar charts
+;; for exploring the shape and spread of data.
 
 (ns napkinsketch-book.distributions
   (:require
@@ -12,10 +12,10 @@
 ;; ## Datasets
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 (def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 ;; ## Histogram
 
@@ -27,9 +27,9 @@
     sk/plot)
 
 (kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (pos? (:polygons s)))))])
 
 ;; ## Colored Histogram
 
@@ -41,9 +41,9 @@
     sk/plot)
 
 (kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (pos? (:polygons s)))))])
 
 ;; ## Petal Width Histogram
 
@@ -55,9 +55,9 @@
     sk/plot)
 
 (kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (pos? (:polygons s)))))])
 
 ;; ## Bar Chart
 
@@ -69,9 +69,9 @@
     sk/plot)
 
 (kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (pos? (:polygons s)))))])
 
 ;; ## Colored Bar Chart
 
@@ -83,9 +83,9 @@
     sk/plot)
 
 (kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (pos? (:polygons s)))))])
 
 ;; ## Stacked Bar Chart
 
@@ -97,9 +97,9 @@
     sk/plot)
 
 (kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (pos? (:polygons s)))))])
 
 ;; ## Horizontal Bar Chart
 
@@ -112,9 +112,9 @@
     sk/plot)
 
 (kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (pos? (:polygons s)))))])
 
 ;; ## Horizontal Colored Bars
 
@@ -127,9 +127,9 @@
     sk/plot)
 
 (kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (pos? (:polygons s)))))])
 
 ;; ## Histogram with Custom Title
 
@@ -140,8 +140,95 @@
               :x-label "Amount ($)"}))
 
 (kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (pos? (:polygons s))
+                 (some #(= "Distribution of Total Bill" %) (:texts s)))))])
+
+;; ## Density Plot
+
+;; A smooth curve estimating the probability density function.
+;; Less sensitive to bin width than histograms.
+
+(-> iris
+    (sk/view [[:sepal_length]])
+    (sk/lay (sk/density))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 1 (:polygons s)))))])
+
+;; ## Grouped Density
+
+;; Per-species density curves with automatic color mapping.
+
+(-> iris
+    (sk/view [[:sepal_length]])
+    (sk/lay (sk/density {:color :species}))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 3 (:polygons s)))))])
+
+;; ## Density with Custom Bandwidth
+
+;; A narrow bandwidth reveals more detail; a wide bandwidth smooths more.
+
+(-> iris
+    (sk/view [[:sepal_length]])
+    (sk/lay (sk/density {:bandwidth 0.3}))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 1 (:polygons s)))))])
+
+;; ## Boxplot
+
+;; Median, quartiles, whiskers at 1.5×IQR, and outlier points.
+
+(-> iris
+    (sk/view [[:species :sepal_width]])
+    (sk/lay (sk/boxplot))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 3 (:polygons s))
+                 (pos? (:lines s)))))])
+
+;; ## Grouped Boxplot
+
+;; Side-by-side boxplots colored by a grouping variable.
+
+(-> tips
+    (sk/view [[:day :total_bill]])
+    (sk/lay (sk/boxplot {:color :smoker}))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 8 (:polygons s))
+                 (pos? (:lines s)))))])
+
+;; ## Horizontal Boxplot
+
+;; Flipped coordinate for horizontal orientation.
+
+(-> iris
+    (sk/view [[:species :sepal_width]])
+    (sk/lay (sk/boxplot))
+    (sk/plot {:coord :flip}))
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 3 (:polygons s))
+                 (pos? (:lines s)))))])

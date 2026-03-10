@@ -5,6 +5,7 @@
             [fastmath.ml.regression :as regr]
             [fastmath.stats :as stats]
             [fastmath.interpolation.acm :as interp]
+            [fastmath.kernel :as kernel]
             [scicloj.napkinsketch.impl.defaults :as defaults]))
 
 ;; ---- Helpers ----
@@ -216,4 +217,111 @@
             y-max (if (seq all-ys) (reduce max all-ys) (dfn/reduce-max (clean y)))]
         {:points curves
          :x-domain (numeric-extent (clean x))
+         :y-domain [y-min y-max]}))))
+
+;; ---- KDE (kernel density estimation) ----
+
+(defn- fit-kde
+  "Compute KDE for a numeric column. Returns {:xs [...] :ys [...]}."
+  [col n-grid bandwidth]
+  (let [xs (double-array col)
+        kd (if bandwidth
+             (kernel/kernel-density :gaussian xs bandwidth)
+             (kernel/kernel-density :gaussian xs))
+        x-min (dfn/reduce-min col)
+        x-max (dfn/reduce-max col)
+        range-w (- (double x-max) (double x-min))
+        lo (- (double x-min) (* 0.5 range-w))
+        hi (+ (double x-max) (* 0.5 range-w))
+        step (/ (- hi lo) (double (dec n-grid)))
+        grid-xs (mapv #(+ lo (* step (double %))) (range n-grid))
+        grid-ys (mapv kd grid-xs)]
+    {:xs grid-xs :ys grid-ys}))
+
+(defmethod compute-stat :kde [view]
+  (let [{:keys [data x group cfg]} view
+        clean (tc/drop-missing data [x])
+        n (tc/row-count clean)
+        n-grid (or (:kde-n-grid (or cfg defaults/defaults)) 100)
+        bandwidth (:kde-bandwidth (or cfg defaults/defaults))]
+    (if (or (< n 2)
+            (= (dfn/reduce-min (clean x)) (dfn/reduce-max (clean x))))
+      {:points []
+       :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
+       :y-domain [0 1]}
+      (let [curves (group-by-columns
+                    clean (or group [])
+                    (fn [ds gv]
+                      (when (>= (tc/row-count ds) 2)
+                        (cond-> (fit-kde (ds x) n-grid bandwidth)
+                          gv (assoc :color gv)))))
+            curves (remove nil? curves)
+            all-ys (mapcat :ys curves)
+            y-max (if (seq all-ys) (reduce max all-ys) 1)]
+        {:points curves
+         :x-domain (numeric-extent (clean x))
+         :y-domain [0 y-max]}))))
+
+;; ---- Boxplot ----
+
+(defn- five-number-summary
+  "Compute boxplot five-number summary for a numeric column.
+   Returns {:median :q1 :q3 :whisker-lo :whisker-hi :outliers}."
+  [col]
+  (let [q1 (stats/quantile col 0.25)
+        median (stats/quantile col 0.5)
+        q3 (stats/quantile col 0.75)
+        iqr (- (double q3) (double q1))
+        fence-lo (- (double q1) (* 1.5 iqr))
+        fence-hi (+ (double q3) (* 1.5 iqr))
+        sorted-vals (sort col)
+        whisker-lo (reduce (fn [best v] (if (and (>= (double v) fence-lo)
+                                                 (< (double v) (double best)))
+                                          v best))
+                           (double q1) sorted-vals)
+        whisker-hi (reduce (fn [best v] (if (and (<= (double v) fence-hi)
+                                                 (> (double v) (double best)))
+                                          v best))
+                           (double q3) sorted-vals)
+        outliers (filterv #(or (< (double %) fence-lo) (> (double %) fence-hi)) sorted-vals)]
+    {:median median :q1 q1 :q3 q3
+     :whisker-lo whisker-lo :whisker-hi whisker-hi
+     :outliers outliers}))
+
+(defmethod compute-stat :boxplot [view]
+  (let [{:keys [data x y x-type group]} view
+        clean (cond-> (tc/drop-missing data [x y])
+                (= x-type :categorical) (tc/map-columns x [x] str))
+        categories (distinct (clean x))]
+    (if (empty? categories)
+      {:boxes [] :categories [] :x-domain ["?"] :y-domain [0 1]}
+      (let [group-cols (or group [])
+            color-col (first group-cols)
+            has-color? (and (seq group-cols) color-col)
+            clean-c (if has-color? (tc/drop-missing clean group-cols) clean)
+            color-cats (when has-color? (vec (sort (distinct (clean-c color-col)))))
+            boxes (if has-color?
+                    (vec (for [cat categories
+                               cc color-cats
+                               :let [rows (tc/select-rows clean-c
+                                                          (fn [row] (and (= (get row x) cat)
+                                                                         (= (get row color-col) cc))))
+                                     n (tc/row-count rows)]
+                               :when (pos? n)]
+                           (merge (five-number-summary (rows y))
+                                  {:category cat :color cc})))
+                    (vec (for [cat categories
+                               :let [rows (tc/select-rows clean-c
+                                                          (fn [row] (= (get row x) cat)))
+                                     n (tc/row-count rows)]
+                               :when (pos? n)]
+                           (merge (five-number-summary (rows y))
+                                  {:category cat}))))
+            all-ys (clean y)
+            y-min (dfn/reduce-min all-ys)
+            y-max (dfn/reduce-max all-ys)]
+        {:boxes boxes
+         :categories categories
+         :color-categories color-cats
+         :x-domain categories
          :y-domain [y-min y-max]}))))

@@ -12,13 +12,13 @@
 ;; ## Datasets
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 (def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 (def mpg (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/mpg.csv"
-                      {:key-fn keyword}))
+                     {:key-fn keyword}))
 
 ;; ## Basic Scatter
 
@@ -31,10 +31,10 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+               (let [attrs (second v)]
+                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+               (let [body (nth v 2)]
+                 (and (vector? body) (= :g (first body))))))])
 
 ;; ## Colored by Species
 
@@ -47,8 +47,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Petal Dimensions
 
@@ -61,8 +61,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Scatter with Regression Lines
 
@@ -76,10 +76,10 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+               (let [attrs (second v)]
+                 (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
+               (let [body (nth v 2)]
+                 (and (vector? body) (= :g (first body))))))])
 
 ;; ## Tips Dataset
 
@@ -92,8 +92,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Tips with Regression
 
@@ -107,8 +107,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## MPG Dataset
 
@@ -121,8 +121,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Fixed Color
 
@@ -135,8 +135,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Small Dataset
 
@@ -149,8 +149,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Single Point
 
@@ -163,8 +163,8 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+               (map? (second v))
+               (vector? (nth v 2))))])
 
 ;; ## Custom Dimensions
 
@@ -180,6 +180,31 @@
 
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs)
-                     (>= (:width attrs) 700)))))])
+               (let [attrs (second v)]
+                 (and (map? attrs)
+                      (>= (:width attrs) 700)))))])
+
+;; ## Bubble Plot
+;;
+;; Map `:size` to a numeric column to create a bubble plot.
+;; Each point's radius reflects the column value.
+
+(-> tips
+    (sk/view [[:total_bill :tip]])
+    (sk/lay (sk/point {:color :day :size :size}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:points s)))))])
+
+;; Combine size with alpha for dense data:
+
+(-> tips
+    (sk/view [[:total_bill :tip]])
+    (sk/lay (sk/point {:color :day :size :size :alpha 0.6}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:points s)))))])

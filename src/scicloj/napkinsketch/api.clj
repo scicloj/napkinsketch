@@ -110,6 +110,33 @@
    (loess {:color :species})   — per-group smoothing"
   view/loess)
 
+(def text
+  "Text mark — data-driven labels at (x, y) positions.
+   Requires :text key mapping to a column.
+   (text {:text :name})                — label each point
+   (text {:text :name :color :species}) — colored labels"
+  view/text)
+
+(def area
+  "Area mark — filled region under a line.
+   (area)                     — default
+   (area {:color :species})   — one area per group"
+  view/area)
+
+(def density
+  "Density mark — kernel density estimation rendered as a filled area.
+   (density)                    — default bandwidth
+   (density {:color :species})  — per-group density curves
+   (density {:bandwidth 0.5})   — custom bandwidth"
+  view/density)
+
+(def boxplot
+  "Boxplot mark — displays median, quartiles, whiskers, and outliers.
+   x should be categorical, y numeric.
+   (boxplot)                    — single color
+   (boxplot {:color :smoker})   — side-by-side grouped boxplots"
+  view/boxplot)
+
 ;; ---- Annotations ----
 
 (def rule-v

@@ -286,3 +286,43 @@
       [attrs (second v)]
       (and (map? attrs) (>= (:width attrs) 700)))))
    v37_l173)))
+
+
+(def
+ v40_l192
+ (->
+  tips
+  (sk/view [[:total_bill :tip]])
+  (sk/lay (sk/point {:color :day, :size :size}))
+  sk/plot))
+
+
+(deftest
+ t41_l197
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:points s)))))
+   v40_l192)))
+
+
+(def
+ v43_l203
+ (->
+  tips
+  (sk/view [[:total_bill :tip]])
+  (sk/lay (sk/point {:color :day, :size :size, :alpha 0.6}))
+  sk/plot))
+
+
+(deftest
+ t44_l208
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:points s)))))
+   v43_l203)))

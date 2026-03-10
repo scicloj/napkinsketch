@@ -76,9 +76,15 @@
         ;; Coord function
         coord-fn (coord/make-coord coord-type sx sy pw ph m)
 
+        ;; y-domain minimum for area baseline
+        y-domain-min (if (number? (first y-domain))
+                       (first y-domain)
+                       0)
+
         ;; Rendering context for mark/render-layer
         ctx {:coord-fn coord-fn :sx sx :sy sy
-             :coord-type coord-type :cfg cfg}
+             :coord-type coord-type :cfg cfg
+             :y-domain-min y-domain-min}
 
         ;; Background
         bg-rgba (defaults/hex->rgba (:bg defaults/theme))

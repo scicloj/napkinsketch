@@ -35,11 +35,9 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v6_l24)))
 
 
@@ -57,11 +55,9 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v9_l38)))
 
 
@@ -75,11 +71,9 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v12_l52)))
 
 
@@ -91,11 +85,9 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v15_l66)))
 
 
@@ -109,11 +101,9 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v18_l80)))
 
 
@@ -131,11 +121,9 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v21_l94)))
 
 
@@ -154,11 +142,9 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v24_l108)))
 
 
@@ -177,11 +163,9 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v27_l123)))
 
 
@@ -200,14 +184,128 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 1 (:panels s))
+      (pos? (:polygons s))
+      (some
+       (fn* [p1__85823#] (= "Distribution of Total Bill" p1__85823#))
+       (:texts s)))))
    v30_l136)))
+
+
+(def
+ v33_l153
+ (-> iris (sk/view [[:sepal_length]]) (sk/lay (sk/density)) sk/plot))
+
+
+(deftest
+ t34_l158
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 1 (:polygons s)))))
+   v33_l153)))
+
+
+(def
+ v36_l167
+ (->
+  iris
+  (sk/view [[:sepal_length]])
+  (sk/lay (sk/density {:color :species}))
+  sk/plot))
+
+
+(deftest
+ t37_l172
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 3 (:polygons s)))))
+   v36_l167)))
+
+
+(def
+ v39_l181
+ (->
+  iris
+  (sk/view [[:sepal_length]])
+  (sk/lay (sk/density {:bandwidth 0.3}))
+  sk/plot))
+
+
+(deftest
+ t40_l186
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 1 (:polygons s)))))
+   v39_l181)))
+
+
+(def
+ v42_l195
+ (->
+  iris
+  (sk/view [[:species :sepal_width]])
+  (sk/lay (sk/boxplot))
+  sk/plot))
+
+
+(deftest
+ t43_l200
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 3 (:polygons s)) (pos? (:lines s)))))
+   v42_l195)))
+
+
+(def
+ v45_l210
+ (->
+  tips
+  (sk/view [[:day :total_bill]])
+  (sk/lay (sk/boxplot {:color :smoker}))
+  sk/plot))
+
+
+(deftest
+ t46_l215
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 8 (:polygons s)) (pos? (:lines s)))))
+   v45_l210)))
+
+
+(def
+ v48_l225
+ (->
+  iris
+  (sk/view [[:species :sepal_width]])
+  (sk/lay (sk/boxplot))
+  (sk/plot {:coord :flip})))
+
+
+(deftest
+ t49_l230
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 3 (:polygons s)) (pos? (:lines s)))))
+   v48_l225)))

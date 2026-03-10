@@ -76,22 +76,46 @@
    [:xs [:vector number?]]
    [:ys [:vector number?]]])
 
+(def TextGroup
+  "Text labels at data positions."
+  [:map
+   [:color Color]
+   [:xs [:vector number?]]
+   [:ys [:vector number?]]
+   [:labels {:optional true} [:vector string?]]])
+
+(def BoxplotBox
+  "A single boxplot box with five-number summary."
+  [:map
+   [:category any?]
+   [:color Color]
+   [:median number?]
+   [:q1 number?]
+   [:q3 number?]
+   [:whisker-lo number?]
+   [:whisker-hi number?]
+   [:outliers {:optional true} [:vector number?]]])
+
 ;; ---- Layer ----
 
 (def MarkStyle
   [:map
    [:opacity {:optional true} number?]
    [:radius {:optional true} number?]
-   [:stroke-width {:optional true} number?]])
+   [:stroke-width {:optional true} number?]
+   [:font-size {:optional true} number?]
+   [:box-width {:optional true} number?]])
 
 (def Layer
   "A rendered mark layer with data-space geometry."
   [:map
-   [:mark [:enum :point :bar :line :rect]]
+   [:mark [:enum :point :bar :line :rect :text :area :boxplot]]
    [:style MarkStyle]
-   [:groups [:vector [:or PointGroup BarGroup RectCountGroup RectValueGroup
-                      LineSegmentGroup PolylineGroup]]]
-   [:stat-origin {:optional true} [:enum :identity :bin :count :lm :loess]]
+   [:groups {:optional true} [:vector [:or PointGroup BarGroup RectCountGroup RectValueGroup
+                                       LineSegmentGroup PolylineGroup TextGroup]]]
+   [:boxes {:optional true} [:vector BoxplotBox]]
+   [:color-categories {:optional true} [:maybe [:vector any?]]]
+   [:stat-origin {:optional true} [:enum :identity :bin :count :lm :loess :kde :boxplot]]
    [:position {:optional true} [:enum :dodge :stack]]
    [:categories {:optional true} [:vector any?]]])
 

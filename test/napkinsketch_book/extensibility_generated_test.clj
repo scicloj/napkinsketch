@@ -23,26 +23,26 @@
    {:key-fn keyword})))
 
 
-(def v5_l70 (sk/histogram))
+(def v5_l73 (sk/histogram))
 
 
-(deftest t6_l72 (is ((fn [m] (= :bin (:stat m))) v5_l70)))
+(deftest t6_l75 (is ((fn [m] (= :bin (:stat m))) v5_l73)))
 
 
-(def v8_l76 (sk/bar))
+(def v8_l79 (sk/bar))
 
 
-(deftest t9_l78 (is ((fn [m] (= :count (:stat m))) v8_l76)))
+(deftest t9_l81 (is ((fn [m] (= :count (:stat m))) v8_l79)))
 
 
-(def v11_l82 (sk/point))
+(def v11_l85 (sk/point))
 
 
-(deftest t12_l84 (is ((fn [m] (nil? (:stat m))) v11_l82)))
+(deftest t12_l87 (is ((fn [m] (nil? (:stat m))) v11_l85)))
 
 
 (def
- v14_l118
+ v14_l124
  (let
   [s
    (sk/sketch
@@ -56,16 +56,16 @@
 
 
 (deftest
- t15_l124
+ t15_l130
  (is
   ((fn
     [m]
     (and (= :point (:mark m)) (number? (get-in m [:style :opacity]))))
-   v14_l118)))
+   v14_l124)))
 
 
 (def
- v17_l180
+ v17_l189
  (def
   my-sketch
   (sk/sketch
@@ -75,23 +75,23 @@
     (sk/lay (sk/point {:color :species}))))))
 
 
-(def v18_l185 (first (sk/render-figure my-sketch :svg {})))
+(def v18_l194 (first (sk/render-figure my-sketch :svg {})))
 
 
-(deftest t19_l187 (is ((fn [v] (= :svg v)) v18_l185)))
+(deftest t19_l196 (is ((fn [v] (= :svg v)) v18_l194)))
 
 
-(def v21_l191 (def my-figure (sk/render-figure my-sketch :svg {})))
+(def v21_l200 (def my-figure (sk/render-figure my-sketch :svg {})))
 
 
-(def v22_l193 (vector? my-figure))
+(def v22_l202 (vector? my-figure))
 
 
-(deftest t23_l195 (is ((fn [v] (true? v)) v22_l193)))
+(deftest t23_l204 (is ((fn [v] (true? v)) v22_l202)))
 
 
 (def
- v25_l251
+ v25_l260
  (->
   iris
   (sk/view :species)
@@ -101,21 +101,21 @@
 
 
 (deftest
- t26_l257
- (is ((fn [v] (and (vector? v) (= :svg (first v)))) v25_l251)))
+ t26_l266
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v25_l260)))
 
 
-(def v28_l265 (def my-scene (svg/sketch->scene my-sketch)))
+(def v28_l274 (def my-scene (svg/sketch->scene my-sketch)))
 
 
-(def v29_l267 (vector? my-scene))
+(def v29_l276 (vector? my-scene))
 
 
-(deftest t30_l269 (is ((fn [v] (true? v)) v29_l267)))
+(deftest t30_l278 (is ((fn [v] (true? v)) v29_l276)))
 
 
 (def
- v32_l275
+ v32_l284
  (let
   [svg-body
    (svg/scene->svg my-scene)
@@ -127,4 +127,4 @@
   (first svg)))
 
 
-(deftest t33_l279 (is ((fn [v] (= :svg v)) v32_l275)))
+(deftest t33_l288 (is ((fn [v] (= :svg v)) v32_l284)))
