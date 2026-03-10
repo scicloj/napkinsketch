@@ -25,6 +25,9 @@
 (def sales (tc/dataset {:product [:widget :gadget :gizmo :doohickey]
                         :revenue [120 340 210 95]}))
 
+(def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
+                      {:key-fn keyword}))
+
 ;; ## Data Setup
 
 (kind/doc #'sk/view)
@@ -351,5 +354,78 @@
                        [:sepal_width :petal_width]))
     (sk/lay (sk/point {:color :species}))
     sk/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+(kind/doc #'sk/pairs)
+
+;; Upper-triangle column pairs — no diagonal, no mirrored pairs:
+
+(sk/pairs [:a :b :c])
+
+(kind/test-last [(fn [v] (= [[:a :b] [:a :c] [:b :c]] v))])
+
+;; Use with `view` for pairwise scatter plots:
+
+(-> iris
+    (sk/view (sk/pairs [:sepal_length :sepal_width :petal_length]))
+    (sk/lay (sk/point {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+(kind/doc #'sk/distribution)
+
+;; Create diagonal views (x = y) — each column becomes a histogram:
+
+(-> (sk/distribution iris :sepal_length :sepal_width)
+    (sk/lay (sk/histogram))
+    sk/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+;; ## Faceting
+
+(kind/doc #'sk/facet)
+
+;; Split by one column — horizontal row of panels:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/facet :species)
+    (sk/lay (sk/point {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+;; Vertical column of panels:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/facet :species :col)
+    (sk/lay (sk/point {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+(kind/doc #'sk/facet-grid)
+
+;; Split by two columns — row × column grid:
+
+(-> tips
+    (sk/view [[:total_bill :tip]])
+    (sk/facet-grid :smoker :sex)
+    (sk/lay (sk/point {:color :sex}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+;; Free scales — each panel gets its own y-range:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/facet :species)
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:scales :free-y}))
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])

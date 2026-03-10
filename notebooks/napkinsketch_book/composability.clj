@@ -118,6 +118,19 @@
 (kind/test-last
  [(fn [v] (and (vector? v) (= :svg (first v))
               (map? (second v))
+
+;; With faceting, one call replaces the manual filter-per-species pattern:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/facet :species)
+    (sk/lay (sk/point) (sk/lm))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (and (vector? v) (= :svg (first v))
+              (map? (second v))
+              (vector? (nth v 2))))])
               (vector? (nth v 2))))])
 
 ;; ## Combining All Measurements

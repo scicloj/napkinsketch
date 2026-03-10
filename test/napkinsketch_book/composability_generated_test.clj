@@ -22,7 +22,7 @@
 (def
  v6_l25
  (kind/pprint
-  (mapv (fn* [p1__72472#] (dissoc p1__72472# :data)) views)))
+  (mapv (fn* [p1__78990#] (dissoc p1__78990# :data)) views)))
 
 
 (def v8_l32 (def layered (sk/lay views (sk/point {:color :species}))))
@@ -31,7 +31,7 @@
 (def
  v9_l34
  (kind/pprint
-  (mapv (fn* [p1__72473#] (dissoc p1__72473# :data)) layered)))
+  (mapv (fn* [p1__78991#] (dissoc p1__78991# :data)) layered)))
 
 
 (def
@@ -100,7 +100,7 @@
   {:x (range 1 11),
    :y
    (mapv
-    (fn* [p1__72474#] (+ (* 2 p1__72474#) (- (rand-int 5) 2)))
+    (fn* [p1__78992#] (+ (* 2 p1__78992#) (- (rand-int 5) 2)))
     (range 1 11))}
   (sk/view [[:x :y]])
   (sk/lay (sk/point) (sk/lm))
@@ -129,7 +129,7 @@
    (->
     iris
     (tc/select-rows
-     (fn* [p1__72475#] (= species-name (p1__72475# :species))))
+     (fn* [p1__78993#] (= species-name (p1__78993# :species))))
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:width 300, :height 250, :title species-name})))))
@@ -180,19 +180,33 @@
      (vector? v)
      (= :svg (first v))
      (map? (second v))
+     (->
+      iris
+      (sk/view [[:sepal_length :sepal_width]])
+      (sk/facet :species)
+      (sk/lay (sk/point) (sk/lm))
+      sk/plot)
+     (kind/test-last
+      [(fn
+        [v]
+        (and
+         (vector? v)
+         (= :svg (first v))
+         (map? (second v))
+         (vector? (nth v 2))))])
      (vector? (nth v 2))))
    v26_l116)))
 
 
 (def
- v29_l127
+ v29_l140
  (def
   measurements
   [:sepal_length :sepal_width :petal_length :petal_width]))
 
 
 (def
- v31_l131
+ v31_l144
  (->
   iris
   (sk/view [[:sepal_length :petal_length]])
@@ -201,7 +215,7 @@
 
 
 (deftest
- t32_l136
+ t32_l149
  (is
   ((fn
     [v]
@@ -210,11 +224,11 @@
      (= :svg (first v))
      (map? (second v))
      (vector? (nth v 2))))
-   v31_l131)))
+   v31_l144)))
 
 
 (def
- v33_l141
+ v33_l154
  (->
   iris
   (sk/view [[:sepal_width :petal_width]])
@@ -223,7 +237,7 @@
 
 
 (deftest
- t34_l146
+ t34_l159
  (is
   ((fn
     [v]
@@ -232,11 +246,11 @@
      (= :svg (first v))
      (map? (second v))
      (vector? (nth v 2))))
-   v33_l141)))
+   v33_l154)))
 
 
 (def
- v36_l155
+ v36_l168
  (def
   quarterly-data
   (fn
@@ -248,7 +262,7 @@
 
 
 (def
- v37_l161
+ v37_l174
  (->
   (quarterly-data)
   (sk/view [[:quarter :revenue]])
@@ -257,7 +271,7 @@
 
 
 (deftest
- t38_l166
+ t38_l179
  (is
   ((fn
     [v]
@@ -266,11 +280,11 @@
      (= :svg (first v))
      (map? (second v))
      (vector? (nth v 2))))
-   v37_l161)))
+   v37_l174)))
 
 
 (def
- v40_l173
+ v40_l186
  (->
   (quarterly-data)
   (sk/view [[:quarter :revenue]])
@@ -280,7 +294,7 @@
 
 
 (deftest
- t41_l179
+ t41_l192
  (is
   ((fn
     [v]
@@ -289,11 +303,11 @@
      (= :svg (first v))
      (map? (second v))
      (vector? (nth v 2))))
-   v40_l173)))
+   v40_l186)))
 
 
 (def
- v43_l188
+ v43_l201
  (def
   simulated
   (fn
@@ -303,13 +317,13 @@
      (range 0 10 0.5)
      ys
      (mapv
-      (fn* [p1__72476#] (+ (* 3 p1__72476#) 5 (* 2 (- (rand) 0.5))))
+      (fn* [p1__78994#] (+ (* 3 p1__78994#) 5 (* 2 (- (rand) 0.5))))
       xs)]
     (tc/dataset {:x xs, :y ys})))))
 
 
 (def
- v44_l194
+ v44_l207
  (->
   (simulated)
   (sk/view [[:x :y]])
@@ -318,7 +332,7 @@
 
 
 (deftest
- t45_l199
+ t45_l212
  (is
   ((fn
     [v]
@@ -332,4 +346,4 @@
        (number? (:width attrs))
        (number? (:height attrs))))
      (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v44_l194)))
+   v44_l207)))

@@ -45,8 +45,8 @@
 (select-keys tiny-sk [:title :x-label :y-label])
 
 (kind/test-last [(fn [m] (and (nil? (:title m))
-                             (= "x" (:x-label m))
-                             (= "y" (:y-label m))))])
+                              (= "x" (:x-label m))
+                              (= "y" (:y-label m))))])
 
 ;; No legend, since we didn't map any column to color:
 
@@ -56,8 +56,8 @@
 
 ;; ### The panel
 ;;
-;; The sketch contains one panel (napkinsketch currently always produces
-;; a single panel). The panel holds everything about the data space:
+;; The sketch contains one or more panels. A simple plot has one panel;
+;; faceting and SPLOM produce multiple. Each panel holds its own data space:
 
 (def tiny-panel (first (:panels tiny-sk)))
 
@@ -86,8 +86,8 @@
 (:x-ticks tiny-panel)
 
 (kind/test-last [(fn [t] (and (vector? (:values t))
-                             (vector? (:labels t))
-                             (= (count (:values t)) (count (:labels t)))))])
+                              (vector? (:labels t))
+                              (= (count (:values t)) (count (:labels t)))))])
 
 ;; These are the actual numbers that will appear on the axis.
 ;; They are in data space — not pixel positions.
@@ -116,8 +116,8 @@
 (first (:groups tiny-layer))
 
 (kind/test-last [(fn [g] (and (= 4 (count (:color g)))
-                             (= [1 2 3 4 5] (mapv int (:xs g)))
-                             (= [2 4 1 5 3] (mapv int (:ys g)))))])
+                              (= [1 2 3 4 5] (mapv int (:xs g)))
+                              (= [2 4 1 5 3] (mapv int (:ys g)))))])
 
 ;; These are the original data values — not pixel positions.
 ;; The renderer maps them through scales to get pixel coordinates.
@@ -152,7 +152,7 @@
       (:groups iris-layer))
 
 (kind/test-last [(fn [gs] (and (= 3 (count gs))
-                              (every? #(= 50 (:n-points %)) gs)))])
+                               (every? #(= 50 (:n-points %)) gs)))])
 
 ;; The legend describes the color mapping:
 
@@ -184,8 +184,8 @@
   (:bars g))
 
 (kind/test-last [(fn [bars] (and (> (count bars) 3)
-                                (every? #(< (:lo %) (:hi %)) bars)
-                                (every? #(pos? (:count %)) bars)))])
+                                 (every? #(< (:lo %) (:hi %)) bars)
+                                 (every? #(pos? (:count %)) bars)))])
 
 ;; The renderer will draw a rectangle from `(lo, 0)` to `(hi, count)`
 ;; in data space, then map through scales to pixels.
@@ -206,8 +206,8 @@
 (select-keys bar-layer [:mark :position :categories])
 
 (kind/test-last [(fn [m] (and (= :rect (:mark m))
-                             (= :dodge (:position m))
-                             (= 3 (count (:categories m)))))])
+                              (= :dodge (:position m))
+                              (= 3 (count (:categories m)))))])
 
 ;; Each group (one per color) has counts for every category:
 
@@ -266,7 +266,7 @@
   (select-keys g [:x1 :y1 :x2 :y2]))
 
 (kind/test-last [(fn [m] (and (< (:x1 m) (:x2 m))
-                             (every? number? (vals m))))])
+                              (every? number? (vals m))))])
 
 ;; The renderer maps these two points through scales to get a
 ;; pixel-space line segment.
@@ -350,7 +350,7 @@
    :y-domain-type (if (number? (first (:y-domain p))) :numeric :categorical)})
 
 (kind/test-last [(fn [m] (and (= :numeric (:x-domain-type m))
-                             (= :categorical (:y-domain-type m))))])
+                              (= :categorical (:y-domain-type m))))])
 
 ;; The layer data is unchanged — the coord type tells the renderer
 ;; to swap axes during mapping.
@@ -369,16 +369,16 @@
 (select-keys opts-sk [:title :x-label :y-label :width :height])
 
 (kind/test-last [(fn [m] (and (= "My Custom Title" (:title m))
-                             (= 800 (:width m))
-                             (= 300 (:height m))))])
+                              (= 800 (:width m))
+                              (= 300 (:height m))))])
 
 ;; The layout records how much space to reserve for each label:
 
 (:layout opts-sk)
 
 (kind/test-last [(fn [lay] (and (pos? (:title-pad lay))
-                               (pos? (:x-label-pad lay))
-                               (pos? (:y-label-pad lay))))])
+                                (pos? (:x-label-pad lay))
+                                (pos? (:y-label-pad lay))))])
 
 ;; ## Sketch vs Plot — Side by Side
 ;;
@@ -410,6 +410,60 @@
 ;; The rendered plot (SVG):
 
 (sk/plot final-views {:title "Iris Petals"})
+
+;; ## Multi-Panel Sketches
+;;
+;; Faceting produces sketches with multiple panels. Each panel has
+;; its own domains, ticks, and layers, plus grid positioning.
+
+(def faceted-sk
+  (-> iris
+      (sk/view [[:sepal_length :sepal_width]])
+      (sk/facet :species)
+      (sk/lay (sk/point {:color :species}))
+      sk/sketch))
+
+;; The grid tells us the layout:
+
+(:grid faceted-sk)
+
+(kind/test-last [(fn [g] (and (= 1 (:rows g)) (= 3 (:cols g))))])
+
+;; Three panels — one per species:
+
+(count (:panels faceted-sk))
+
+(kind/test-last [(fn [n] (= 3 n))])
+
+;; Each panel has a grid position and strip label:
+
+(mapv #(select-keys % [:row :col :col-label])
+      (:panels faceted-sk))
+
+(kind/test-last [(fn [ps] (and (= 3 (count ps))
+                               (every? :col-label ps)))])
+
+;; Panel-level domains show the data range for each subset:
+
+(mapv #(select-keys % [:col-label :x-domain :y-domain])
+      (:panels faceted-sk))
+
+(kind/test-last [(fn [ps] (every? :x-domain ps))])
+
+;; With shared scales (the default), all panels have the same domains.
+;; With `:scales :free-y`, each panel gets its own y-domain.
+
+;; The sketch also records per-panel pixel dimensions:
+
+(select-keys faceted-sk [:panel-width :panel-height :layout-type])
+
+(kind/test-last [(fn [m] (= :facet-grid (:layout-type m)))])
+
+;; Multi-panel sketches validate against the same Malli schema:
+
+(sk/valid-sketch? faceted-sk)
+
+(kind/test-last [true?])
 
 ;; ## Malli Validation
 ;;

@@ -85,7 +85,7 @@
 ;;
 ;; A **panel** is a single plotting area within a sketch. It contains
 ;; x/y domains, scale specs, tick info, coordinate type, and layers.
-;; Currently each sketch has one panel; faceting would add more.
+;; A simple plot has one panel; `sk/facet` and `sk/facet-grid` produce multiple.
 
 (sort (keys (first (:panels my-sketch))))
 
@@ -171,7 +171,7 @@
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Stat | Data transform: identity, bin, count, lm | Computed during sketch resolution |
 ;; | Layer | Resolved geometry + style for one mark | Lives inside sketch panels |
-;; | Panel | One plotting area (domain, ticks, layers) | Lives inside sketch |
+;; | Panel | One plotting area (domain, ticks, layers) | One or more per sketch |
 ;; | Sketch | Complete resolved plot description | Serializable, inspectable |
 ;; | Domain | Data range on an axis | Part of panel |
 ;; | Scale | Data → pixel mapping | Created at render time |
