@@ -32,7 +32,9 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; Each species gets its own panel with a strip label on top.
 ;; Scales are shared by default — all panels use the same x and y range,
@@ -48,7 +50,9 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; ## Facet Grid
 ;;
@@ -60,7 +64,9 @@
     (sk/lay (sk/point {:color :sex}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:panels s))
+                                (= 244 (:points s)))))])
 
 ;; Row labels appear on the right, column labels on top.
 
@@ -72,7 +78,9 @@
     (sk/lay (sk/histogram {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; ## Faceted Regression
 ;;
@@ -85,7 +93,10 @@
             (sk/lm {:color :sex}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:panels s))
+                                (= 244 (:points s))
+                                (= 4 (:lines s)))))])
 
 ;; ## Free Scales
 ;;
@@ -100,7 +111,9 @@
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:scales :shared}))
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; Free y — each panel has its own y-range:
 
@@ -110,7 +123,9 @@
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:scales :free-y}))
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; Other options: `:free-x`, `:free` (both axes free).
 
@@ -152,12 +167,14 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 16 (:panels s))
+                                (= 1800 (:points s)))))])
 
-;; Diagonal panels (where x = y) automatically become histograms.
-;; Off-diagonal panels share scales per column (x) and per row (y),
-;; so each column of plots has the same x-axis and each row has the
-;; same y-axis.
+;; Diagonal panels (where x = y) are empty because there is nothing
+;; to scatter. Off-diagonal panels share scales per column (x) and
+;; per row (y), so each column of plots has the same x-axis and each
+;; row has the same y-axis.
 
 ;; ## Upper-Triangle Pairs
 ;;
@@ -173,7 +190,9 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 6 (:panels s))
+                                (= 900 (:points s)))))])
 
 ;; ## Distribution Helper
 ;;
@@ -183,7 +202,9 @@
     (sk/lay (sk/histogram {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; ## Faceted Bar Chart
 
@@ -193,7 +214,9 @@
     (sk/lay (sk/bar {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 9 (:polygons s)))))])
 
 ;; ## Labels and Faceting
 ;;
@@ -208,4 +231,8 @@
               :y "Sepal Width (cm)"})
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 150 (:points s))
+                                (some #{"Iris by Species"} (:texts s))
+                                (some #{"Sepal Length (cm)"} (:texts s)))))])

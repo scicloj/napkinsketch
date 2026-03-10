@@ -4,7 +4,8 @@
             [scicloj.napkinsketch.impl.plot :as plot-impl]
             [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
-            [scicloj.napkinsketch.impl.render :as render-impl]))
+            [scicloj.napkinsketch.impl.render :as render-impl]
+            [scicloj.napkinsketch.render.svg :as svg]))
 
 ;; ---- Compositional API ----
 
@@ -168,3 +169,10 @@
    Returns nil if valid, or a Malli explanation map if invalid.
    (explain-sketch (sketch views))"
   ss/explain)
+
+(def svg-summary
+  "Extract structural summary from SVG hiccup for testing.
+   Returns a map with :width, :height, :panels, :points, :lines,
+   :polygons, and :texts — useful for asserting plot structure.
+   (svg-summary (plot views))  — summary of rendered SVG"
+  svg/svg-summary)

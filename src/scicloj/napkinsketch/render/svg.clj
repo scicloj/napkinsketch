@@ -1,5 +1,6 @@
 (ns scicloj.napkinsketch.render.svg
   (:require [clojure.string :as str]
+            [clojure.walk :as walk]
             [membrane.ui :as ui]
             [scicloj.kindly.v4.kind :as kind]
             [scicloj.napkinsketch.impl.defaults :as defaults]
@@ -282,3 +283,53 @@
         svg-body (scene->svg scene)
         svg (wrap-svg total-width total-height svg-body)]
     (kind/hiccup svg)))
+
+;; ---- SVG inspection ----
+
+(defn- collect-elements
+  "Walk SVG hiccup and collect all elements matching a tag keyword."
+  [svg tag]
+  (let [result (atom [])]
+    (walk/postwalk
+     (fn [x]
+       (when (and (vector? x) (= tag (first x)) (map? (second x)))
+         (swap! result conj x))
+       x)
+     svg)
+    @result))
+
+(defn svg-summary
+  "Extract structural summary from SVG hiccup for testing.
+   Returns a map of counts and content for quick assertions:
+   :width, :height — SVG dimensions
+   :panels  — number of panel backgrounds
+   :points  — number of data point markers (excludes legend swatches)
+   :lines   — number of data polylines (excludes grid lines)
+   :polygons — number of filled polygons (bars, histogram bins)
+   :texts   — vector of all text content strings"
+  [svg]
+  (let [attrs (when (and (vector? svg) (map? (second svg))) (second svg))
+        bg-color (str "rgb(" (clojure.string/join ","
+                                                  (mapv #(int (* 255 (double %)))
+                                                        (take 3 (defaults/hex->rgba (:bg defaults/theme))))) ")")
+        grid-color (str "rgb(" (clojure.string/join ","
+                                                    (mapv #(int (* 255 (double %)))
+                                                          (take 3 (defaults/hex->rgba (:grid defaults/theme))))) ")")
+        rects (collect-elements svg :rect)
+        polylines (collect-elements svg :polyline)
+        polygons (collect-elements svg :polygon)
+        texts (collect-elements svg :text)
+        panel-rects (filter #(= bg-color (get (second %) :fill)) rects)
+        legend-rects (filter #(and (= 8 (get (second %) :width))
+                                   (= 8 (get (second %) :height))) rects)
+        legend-set (set legend-rects)
+        panel-set (set panel-rects)
+        data-rects (remove #(or (panel-set %) (legend-set %)) rects)
+        data-polylines (remove #(= grid-color (get (second %) :stroke)) polylines)]
+    {:width (:width attrs)
+     :height (:height attrs)
+     :panels (count panel-rects)
+     :points (count data-rects)
+     :lines (count data-polylines)
+     :polygons (count polygons)
+     :texts (mapv last texts)}))
