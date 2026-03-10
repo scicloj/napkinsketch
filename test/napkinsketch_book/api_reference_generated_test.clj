@@ -238,7 +238,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__72612#] (Math/sin (* p1__72612# 0.3)))
+     (fn* [p1__74752#] (Math/sin (* p1__74752# 0.3)))
      (range 30))})))
 
 
@@ -260,10 +260,10 @@
     (vec
      (concat
       (mapv
-       (fn* [p1__72613#] (Math/sin (* p1__72613# 0.3)))
+       (fn* [p1__74753#] (Math/sin (* p1__74753# 0.3)))
        (range 30))
       (mapv
-       (fn* [p1__72614#] (Math/cos (* p1__72614# 0.3)))
+       (fn* [p1__74754#] (Math/cos (* p1__74754# 0.3)))
        (range 30)))),
     :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))})))
 
@@ -698,3 +698,86 @@
 (deftest
  t166_l431
  (is ((fn [v] (and (vector? v) (= :svg (first v)))) v165_l425)))
+
+
+(def v168_l435 (kind/doc #'sk/svg-summary))
+
+
+(def
+ v170_l439
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :species}))
+  sk/plot
+  sk/svg-summary))
+
+
+(deftest
+ t171_l445
+ (is
+  ((fn
+    [m]
+    (and
+     (= 1 (:panels m))
+     (= 150 (:points m))
+     (zero? (:lines m))
+     (zero? (:polygons m))))
+   v170_l439)))
+
+
+(def
+ v173_l452
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/facet :species)
+  (sk/lay (sk/point {:color :species}))
+  sk/plot
+  sk/svg-summary
+  (select-keys [:panels :points])))
+
+
+(deftest
+ t174_l460
+ (is ((fn [m] (and (= 3 (:panels m)) (= 150 (:points m)))) v173_l452)))
+
+
+(def
+ v176_l465
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :species}) (sk/lm {:color :species}))
+  sk/plot
+  sk/svg-summary
+  (select-keys [:points :lines])))
+
+
+(deftest
+ t177_l473
+ (is ((fn [m] (and (= 150 (:points m)) (= 3 (:lines m)))) v176_l465)))
+
+
+(def
+ v179_l479
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :species}))
+  (sk/labs {:title "Iris Scatter"})
+  sk/plot
+  sk/svg-summary
+  :texts))
+
+
+(deftest
+ t180_l487
+ (is
+  ((fn
+    [ts]
+    (and
+     (some #{"Iris Scatter"} ts)
+     (some #{"sepal length"} ts)
+     (some #{"setosa"} ts)))
+   v179_l479)))

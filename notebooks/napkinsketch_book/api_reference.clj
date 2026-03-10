@@ -429,3 +429,61 @@
     (sk/plot {:scales :free-y}))
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+;; ## Inspection
+
+(kind/doc #'sk/svg-summary)
+
+;; Pass an SVG plot to get structural counts and text content:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    sk/plot
+    sk/svg-summary)
+
+(kind/test-last [(fn [m] (and (= 1 (:panels m))
+                              (= 150 (:points m))
+                              (zero? (:lines m))
+                              (zero? (:polygons m))))])
+
+;; With faceting — the panel count reflects the number of facets:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/facet :species)
+    (sk/lay (sk/point {:color :species}))
+    sk/plot
+    sk/svg-summary
+    (select-keys [:panels :points]))
+
+(kind/test-last [(fn [m] (and (= 3 (:panels m))
+                              (= 150 (:points m))))])
+
+;; With regression lines — the `:lines` count is non-zero:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species})
+            (sk/lm {:color :species}))
+    sk/plot
+    sk/svg-summary
+    (select-keys [:points :lines]))
+
+(kind/test-last [(fn [m] (and (= 150 (:points m))
+                              (= 3 (:lines m))))])
+
+;; The `:texts` vector contains all rendered text — axis labels,
+;; tick values, legend entries, and titles:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/labs {:title "Iris Scatter"})
+    sk/plot
+    sk/svg-summary
+    :texts)
+
+(kind/test-last [(fn [ts] (and (some #{"Iris Scatter"} ts)
+                               (some #{"sepal length"} ts)
+                               (some #{"setosa"} ts)))])
