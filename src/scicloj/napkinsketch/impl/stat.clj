@@ -1,6 +1,5 @@
 (ns scicloj.napkinsketch.impl.stat
   (:require [tablecloth.api :as tc]
-            [tablecloth.column.api :as tcc]
             [tech.v3.datatype :as dtype]
             [tech.v3.datatype.functional :as dfn]
             [fastmath.ml.regression :as regr]
