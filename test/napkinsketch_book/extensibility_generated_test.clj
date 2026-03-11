@@ -6,16 +6,17 @@
   [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.impl.stat :as stat]
   [scicloj.napkinsketch.impl.sketch :as sketch]
-  [scicloj.napkinsketch.impl.mark :as mark]
+  [scicloj.napkinsketch.render.mark :as mark]
   [scicloj.napkinsketch.impl.scale :as scale]
   [scicloj.napkinsketch.impl.coord :as coord]
   [scicloj.napkinsketch.impl.render :as render]
+  [scicloj.napkinsketch.render.scene :as scene]
   [scicloj.napkinsketch.render.svg :as svg]
   [clojure.test :refer [deftest is]]))
 
 
 (def
- v3_l50
+ v3_l51
  (def
   iris
   (tc/dataset
@@ -23,26 +24,26 @@
    {:key-fn keyword})))
 
 
-(def v5_l74 (sk/histogram))
+(def v5_l75 (sk/histogram))
 
 
-(deftest t6_l76 (is ((fn [m] (= :bin (:stat m))) v5_l74)))
+(deftest t6_l77 (is ((fn [m] (= :bin (:stat m))) v5_l75)))
 
 
-(def v8_l80 (sk/bar))
+(def v8_l81 (sk/bar))
 
 
-(deftest t9_l82 (is ((fn [m] (= :count (:stat m))) v8_l80)))
+(deftest t9_l83 (is ((fn [m] (= :count (:stat m))) v8_l81)))
 
 
-(def v11_l86 (sk/point))
+(def v11_l87 (sk/point))
 
 
-(deftest t12_l88 (is ((fn [m] (nil? (:stat m))) v11_l86)))
+(deftest t12_l89 (is ((fn [m] (nil? (:stat m))) v11_l87)))
 
 
 (def
- v14_l128
+ v14_l129
  (let
   [s
    (sk/sketch
@@ -56,16 +57,16 @@
 
 
 (deftest
- t15_l134
+ t15_l135
  (is
   ((fn
     [m]
     (and (= :point (:mark m)) (number? (get-in m [:style :opacity]))))
-   v14_l128)))
+   v14_l129)))
 
 
 (def
- v17_l196
+ v17_l197
  (def
   my-sketch
   (sk/sketch
@@ -75,23 +76,23 @@
     (sk/lay (sk/point {:color :species}))))))
 
 
-(def v18_l201 (first (sk/render-figure my-sketch :svg {})))
+(def v18_l202 (first (sk/render-figure my-sketch :svg {})))
 
 
-(deftest t19_l203 (is ((fn [v] (= :svg v)) v18_l201)))
+(deftest t19_l204 (is ((fn [v] (= :svg v)) v18_l202)))
 
 
-(def v21_l207 (def my-figure (sk/render-figure my-sketch :svg {})))
+(def v21_l208 (def my-figure (sk/render-figure my-sketch :svg {})))
 
 
-(def v22_l209 (vector? my-figure))
+(def v22_l210 (vector? my-figure))
 
 
-(deftest t23_l211 (is ((fn [v] (true? v)) v22_l209)))
+(deftest t23_l212 (is ((fn [v] (true? v)) v22_l210)))
 
 
 (def
- v25_l267
+ v25_l268
  (->
   iris
   (sk/view :species)
@@ -101,21 +102,21 @@
 
 
 (deftest
- t26_l273
- (is ((fn [v] (and (vector? v) (= :svg (first v)))) v25_l267)))
+ t26_l274
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v25_l268)))
 
 
-(def v28_l281 (def my-scene (svg/sketch->scene my-sketch)))
+(def v28_l282 (def my-scene (scene/sketch->scene my-sketch)))
 
 
-(def v29_l283 (vector? my-scene))
+(def v29_l284 (vector? my-scene))
 
 
-(deftest t30_l285 (is ((fn [v] (true? v)) v29_l283)))
+(deftest t30_l286 (is ((fn [v] (true? v)) v29_l284)))
 
 
 (def
- v32_l291
+ v32_l292
  (let
   [svg-body
    (svg/scene->svg my-scene)
@@ -127,4 +128,4 @@
   (first svg)))
 
 
-(deftest t33_l295 (is ((fn [v] (= :svg v)) v32_l291)))
+(deftest t33_l296 (is ((fn [v] (= :svg v)) v32_l292)))

@@ -17,17 +17,17 @@
 (def
  v5_l42
  (kind/mermaid
-  "\ngraph TB\n  subgraph WHAT [\"What to draw\"]\n    direction TB\n    A1[\"api.clj\"]\n    A2[\"impl/view.clj\"]\n    A3[\"impl/stat.clj\"]\n    A4[\"impl/sketch.clj\"]\n  end\n  subgraph HOW [\"How to draw it\"]\n    direction TB\n    B1[\"impl/scale.clj\"]\n    B2[\"impl/mark.clj\"]\n    B3[\"impl/panel.clj\"]\n    B4[\"impl/plot.clj\"]\n    B5[\"render/svg.clj\"]\n  end\n  WHAT -->|sketch| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
+  "\ngraph TB\n  subgraph WHAT [\"What to draw\"]\n    direction TB\n    A1[\"api.clj\"]\n    A2[\"impl/view.clj\"]\n    A3[\"impl/stat.clj\"]\n    A4[\"impl/sketch.clj\"]\n  end\n  subgraph HOW [\"How to draw it\"]\n    direction TB\n    B1[\"impl/scale.clj\"]\n    B2[\"render/mark.clj\"]\n    B3[\"render/panel.clj\"]\n    B4[\"impl/plot.clj\"]\n    B5[\"render/scene.clj\"]\n    B6[\"render/svg.clj\"]\n  end\n  WHAT -->|sketch| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
 
 
 (def
- v7_l100
+ v7_l101
  (kind/mermaid
-  "\ngraph TD\n  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]\n  API --> PLOT[\"impl/plot.clj\"]\n  API --> SKETCH[\"impl/sketch.clj\"]\n  SKETCH --> VIEW\n  SKETCH --> STAT[\"impl/stat.clj\"]\n  SKETCH --> SCALE[\"impl/scale.clj\"]\n  SKETCH --> DEFAULTS[\"impl/defaults.clj\"]\n  PLOT --> SKETCH\n  PLOT --> PANEL[\"impl/panel.clj\"]\n  PLOT --> SVG[\"render/svg.clj\"]\n  PANEL --> MARK[\"impl/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SKETCH fill:#ffe0b2\n  style PLOT fill:#bbdefb\n  style SVG fill:#f8bbd0\n"))
+  "\ngraph TD\n  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]\n  API --> PLOT[\"impl/plot.clj\"]\n  API --> SKETCH[\"impl/sketch.clj\"]\n  SKETCH --> VIEW\n  SKETCH --> STAT[\"impl/stat.clj\"]\n  SKETCH --> SCALE[\"impl/scale.clj\"]\n  SKETCH --> DEFAULTS[\"impl/defaults.clj\"]\n  PLOT --> SKETCH\n  PLOT --> SVG[\"render/svg.clj\"]\n  SVG --> SCENE[\"render/scene.clj\"]\n  SCENE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SKETCH fill:#ffe0b2\n  style PLOT fill:#bbdefb\n  style SVG fill:#f8bbd0\n  style SCENE fill:#f8bbd0\n"))
 
 
 (def
- v9_l125
+ v9_l128
  (def
   iris
   (tc/dataset
@@ -36,24 +36,24 @@
 
 
 (def
- v11_l132
+ v11_l135
  (def
   views
   [(sk/point
     {:data iris, :x :sepal_length, :y :sepal_width, :color :species})]))
 
 
-(def v13_l137 (dissoc (first views) :data))
+(def v13_l140 (dissoc (first views) :data))
 
 
-(deftest t14_l139 (is ((fn [v] (= :point (:mark v))) v13_l137)))
+(deftest t14_l142 (is ((fn [v] (= :point (:mark v))) v13_l140)))
 
 
-(def v16_l146 (def sk (sk/sketch views)))
+(def v16_l149 (def sk (sk/sketch views)))
 
 
 (def
- v18_l150
+ v18_l153
  (let
   [panel
    (first (:panels sk))
@@ -70,7 +70,7 @@
 
 
 (deftest
- t19_l160
+ t19_l163
  (is
   ((fn
     [m]
@@ -78,37 +78,37 @@
      (= :point (:mark m))
      (= 3 (:n-groups m))
      (pos? (:first-group-n-points m))))
-   v18_l150)))
+   v18_l153)))
 
 
-(def v21_l166 (ss/valid? sk))
+(def v21_l169 (ss/valid? sk))
 
 
-(deftest t22_l168 (is (true? v21_l166)))
+(deftest t22_l171 (is (true? v21_l169)))
 
 
-(def v24_l172 (= sk (read-string (pr-str sk))))
+(def v24_l175 (= sk (read-string (pr-str sk))))
 
 
-(deftest t25_l174 (is (true? v24_l172)))
+(deftest t25_l177 (is (true? v24_l175)))
 
 
-(def v27_l182 (sk/plot views))
+(def v27_l185 (sk/plot views))
 
 
 (deftest
- t28_l184
- (is ((fn [v] (and (vector? v) (= :svg (first v)))) v27_l182)))
+ t28_l187
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v27_l185)))
 
 
 (def
- v30_l192
+ v30_l195
  (kind/mermaid
   "\ngraph LR\n  subgraph WHAT [\"WHAT — data + semantics\"]\n    V[\"Views\"]\n    ST[\"Statistics\"]\n    D[\"Domains\"]\n    C[\"Colors\"]\n  end\n  subgraph HOW [\"HOW — pixels + rendering\"]\n    SC[\"Scales (wadogo)\"]\n    CO[\"Coord transforms\"]\n    MS[\"Membrane scene\"]\n    SV[\"SVG conversion\"]\n  end\n  WHAT -->|sketch| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
 
 
 (def
- v32_l227
+ v32_l230
  (def
   multi-views
   [(sk/point
@@ -118,33 +118,33 @@
 
 
 (def
- v33_l231
+ v33_l234
  (def
   multi-sk
   (sk/sketch multi-views {:title "Iris Petals with Regression"})))
 
 
-(def v35_l235 (count (:layers (first (:panels multi-sk)))))
+(def v35_l238 (count (:layers (first (:panels multi-sk)))))
 
 
-(deftest t36_l237 (is ((fn [n] (= 2 n)) v35_l235)))
+(deftest t36_l240 (is ((fn [n] (= 2 n)) v35_l238)))
 
 
 (def
- v38_l241
+ v38_l244
  (let
   [layer (first (:layers (first (:panels multi-sk))))]
   {:mark (:mark layer), :n-groups (count (:groups layer))}))
 
 
 (deftest
- t39_l245
+ t39_l248
  (is
-  ((fn [m] (and (= :point (:mark m)) (= 3 (:n-groups m)))) v38_l241)))
+  ((fn [m] (and (= :point (:mark m)) (= 3 (:n-groups m)))) v38_l244)))
 
 
 (def
- v41_l249
+ v41_l252
  (let
   [layer (second (:layers (first (:panels multi-sk))))]
   {:mark (:mark layer),
@@ -154,7 +154,7 @@
 
 
 (deftest
- t42_l255
+ t42_l258
  (is
   ((fn
     [m]
@@ -163,28 +163,28 @@
      (= :lm (:stat-origin m))
      (= 3 (:n-groups m))
      (contains? (:first-group-keys m) :x1)))
-   v41_l249)))
+   v41_l252)))
 
 
-(def v44_l262 (:title multi-sk))
+(def v44_l265 (:title multi-sk))
 
 
 (deftest
- t45_l264
- (is ((fn [t] (= "Iris Petals with Regression" t)) v44_l262)))
+ t45_l267
+ (is ((fn [t] (= "Iris Petals with Regression" t)) v44_l265)))
 
 
-(def v46_l266 (count (:entries (:legend multi-sk))))
+(def v46_l269 (count (:entries (:legend multi-sk))))
 
 
-(deftest t47_l268 (is ((fn [n] (= 3 n)) v46_l266)))
+(deftest t47_l271 (is ((fn [n] (= 3 n)) v46_l269)))
 
 
 (def
- v49_l272
+ v49_l275
  (sk/plot multi-views {:title "Iris Petals with Regression"}))
 
 
 (deftest
- t50_l274
- (is ((fn [v] (and (vector? v) (= :svg (first v)))) v49_l272)))
+ t50_l277
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v49_l275)))

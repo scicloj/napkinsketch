@@ -1,10 +1,10 @@
-(ns scicloj.napkinsketch.impl.panel
+(ns scicloj.napkinsketch.render.panel
   (:require [membrane.ui :as ui]
             [wadogo.scale :as ws]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.scale :as scale]
             [scicloj.napkinsketch.impl.coord :as coord]
-            [scicloj.napkinsketch.impl.mark :as mark]))
+            [scicloj.napkinsketch.render.mark :as mark]))
 
 ;; ---- Grid Lines ----
 

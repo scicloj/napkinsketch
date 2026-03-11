@@ -1,4 +1,4 @@
-(ns scicloj.napkinsketch.impl.mark
+(ns scicloj.napkinsketch.render.mark
   (:require [membrane.ui :as ui]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [wadogo.scale :as ws]))

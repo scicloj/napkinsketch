@@ -51,10 +51,11 @@ graph TB
   subgraph HOW [\"How to draw it\"]
     direction TB
     B1[\"impl/scale.clj\"]
-    B2[\"impl/mark.clj\"]
-    B3[\"impl/panel.clj\"]
+    B2[\"render/mark.clj\"]
+    B3[\"render/panel.clj\"]
     B4[\"impl/plot.clj\"]
-    B5[\"render/svg.clj\"]
+    B5[\"render/scene.clj\"]
+    B6[\"render/svg.clj\"]
   end
   WHAT -->|sketch| HOW
   style WHAT fill:#e8f5e9
@@ -107,15 +108,17 @@ graph TD
   SKETCH --> SCALE[\"impl/scale.clj\"]
   SKETCH --> DEFAULTS[\"impl/defaults.clj\"]
   PLOT --> SKETCH
-  PLOT --> PANEL[\"impl/panel.clj\"]
   PLOT --> SVG[\"render/svg.clj\"]
-  PANEL --> MARK[\"impl/mark.clj\"]
+  SVG --> SCENE[\"render/scene.clj\"]
+  SCENE --> PANEL[\"render/panel.clj\"]
+  PANEL --> MARK[\"render/mark.clj\"]
   PANEL --> SCALE
   PANEL --> COORD[\"impl/coord.clj\"]
   style API fill:#c8e6c9
   style SKETCH fill:#ffe0b2
   style PLOT fill:#bbdefb
   style SVG fill:#f8bbd0
+  style SCENE fill:#f8bbd0
 ")
 
 ;; ## Data Flow Example

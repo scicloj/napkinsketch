@@ -4,7 +4,7 @@
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
-  [scicloj.napkinsketch.render.svg :as svg]
+  [scicloj.napkinsketch.render.scene :as scene]
   [clojure.test :refer [deftest is]]))
 
 
@@ -31,7 +31,7 @@
  v5_l27
  (kind/pprint
   (mapv
-   (fn* [p1__74679#] (select-keys p1__74679# [:x :y :mark :color]))
+   (fn* [p1__386859#] (select-keys p1__386859# [:x :y :mark :color]))
    views)))
 
 
@@ -92,7 +92,7 @@
    v21_l101)))
 
 
-(def v24_l142 (def my-scene (svg/sketch->scene my-sketch)))
+(def v24_l142 (def my-scene (scene/sketch->scene my-sketch)))
 
 
 (def v25_l144 (vector? my-scene))

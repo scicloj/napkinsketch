@@ -8,7 +8,7 @@
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
    [scicloj.napkinsketch.api :as sk]
-   [scicloj.napkinsketch.render.svg :as svg]))
+   [scicloj.napkinsketch.render.scene :as scene]))
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
@@ -139,7 +139,7 @@
 ;; sketch → scene → SVG hiccup. Direct renderers (e.g., Plotly)
 ;; skip the scene entirely.
 
-(def my-scene (svg/sketch->scene my-sketch))
+(def my-scene (scene/sketch->scene my-sketch))
 
 (vector? my-scene)
 

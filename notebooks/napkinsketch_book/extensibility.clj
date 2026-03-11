@@ -15,10 +15,11 @@
    [scicloj.napkinsketch.api :as sk]
    [scicloj.napkinsketch.impl.stat :as stat]
    [scicloj.napkinsketch.impl.sketch :as sketch]
-   [scicloj.napkinsketch.impl.mark :as mark]
+   [scicloj.napkinsketch.render.mark :as mark]
    [scicloj.napkinsketch.impl.scale :as scale]
    [scicloj.napkinsketch.impl.coord :as coord]
    [scicloj.napkinsketch.impl.render :as render]
+   [scicloj.napkinsketch.render.scene :as scene]
    [scicloj.napkinsketch.render.svg :as svg]))
 
 ;; ## Overview
@@ -276,9 +277,9 @@
 ;;
 ;; For the SVG renderer, the sketch goes through an intermediate
 ;; membrane scene before becoming SVG hiccup. The `sketch->scene`
-;; function in `render/svg.clj` builds this scene:
+;; function in `render/scene.clj` builds this scene:
 
-(def my-scene (svg/sketch->scene my-sketch))
+(def my-scene (scene/sketch->scene my-sketch))
 
 (vector? my-scene)
 

@@ -210,7 +210,7 @@
 (def
  v34_l153
  (mapv
-  (fn* [p1__73549#] (select-keys p1__73549# [:row :col :col-label]))
+  (fn* [p1__73617#] (select-keys p1__73617# [:row :col :col-label]))
   (:panels faceted-sk)))
 
 

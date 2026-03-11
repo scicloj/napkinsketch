@@ -254,7 +254,7 @@
   (tc/dataset
    {:category
     (mapv
-     (fn* [p1__73963#] (keyword (str "cat-" p1__73963#)))
+     (fn* [p1__74031#] (keyword (str "cat-" p1__74031#)))
      (range 12)),
     :value (repeatedly 12 (fn* [] (+ 10 (rand-int 90))))})
   (sk/view [[:category :value]])
@@ -312,7 +312,7 @@
  (->
   iris
   (tc/select-rows
-   (fn* [p1__73964#] (= "setosa" (p1__73964# :species))))
+   (fn* [p1__74032#] (= "setosa" (p1__74032# :species))))
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay (sk/point) (sk/lm))
   (sk/plot {:title "Setosa Only"})))
