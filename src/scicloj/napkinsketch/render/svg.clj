@@ -231,9 +231,8 @@
    Returns a vector of membrane drawables representing the complete plot."
   [sketch]
   (let [{:keys [margin total-width total-height panel-width panel-height
-                title x-label y-label config legend panels layout grid]} sketch
+                title x-label y-label legend panels layout grid]} sketch
         {:keys [x-label-pad y-label-pad title-pad legend-w strip-h strip-w]} layout
-        cfg config
         grid-rows (:rows grid)
         grid-cols (:cols grid)
         pw panel-width
@@ -250,13 +249,13 @@
                      x-off (+ y-label-pad (* ci pw))
                      y-off (+ title-pad strip-h (* ri ph))]]
            (ui/translate x-off y-off
-                         (panel/render-panel-from-sketch p pw ph margin cfg
+                         (panel/render-panel-from-sketch p pw ph margin
                                                          :show-x? show-x?
                                                          :show-y? show-y?))))
 
         ;; Strip labels (column headers on top, row headers on right)
         strip-label-color [0.2 0.2 0.2 1.0]
-        strip-fsize (or (:strip-font-size cfg) 10)
+        strip-fsize (or (:strip-font-size defaults/defaults) 10)
 
         col-strips
         (when (pos? strip-h)

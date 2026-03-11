@@ -215,7 +215,6 @@
    [:title {:optional true} [:maybe string?]]
    [:x-label {:optional true} [:maybe string?]]
    [:y-label {:optional true} [:maybe string?]]
-   [:config map?]
    [:legend {:optional true} [:maybe Legend]]
    [:panels [:vector Panel]]
    [:layout Layout]])

@@ -48,7 +48,7 @@
 (defmulti render-layer
   "Render a sketch layer as membrane scene primitives.
    `layer` is a sketch layer map with data-space geometry and resolved colors.
-   `ctx` contains :coord-fn, :sx, :sy, :coord-type, :cfg."
+   `ctx` contains :coord-fn, :sx, :sy, :coord-type."
   (fn [layer ctx] (:mark layer)))
 
 ;; ---- Point ----

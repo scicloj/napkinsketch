@@ -555,7 +555,6 @@
       :layout-type layout-type
       :title eff-title
       :x-label eff-x-label :y-label eff-y-label
-      :config cfg
       :legend legend
       :panels panels
       :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad

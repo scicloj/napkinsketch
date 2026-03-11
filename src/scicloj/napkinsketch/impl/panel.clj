@@ -11,10 +11,10 @@
 (defn render-grid-from-ticks
   "Render grid lines using pre-computed tick values from a sketch.
    Skips grid lines for categorical axes (like ggplot2)."
-  [sx sy x-ticks y-ticks pw ph m cfg]
+  [sx sy x-ticks y-ticks pw ph m]
   (let [{:keys [grid]} defaults/theme
         grid-rgba (defaults/hex->rgba grid)
-        grid-w (:grid-stroke-width cfg)]
+        grid-w (:grid-stroke-width defaults/defaults)]
     (vec
      (concat
       (when-not (:categorical? x-ticks)
@@ -62,7 +62,7 @@
    Takes a panel map from resolve-sketch and pixel dimensions.
    show-x? and show-y? control whether tick labels are drawn
    (grid lines always render)."
-  [panel pw ph m cfg & {:keys [show-x? show-y?] :or {show-x? true show-y? true}}]
+  [panel pw ph m & {:keys [show-x? show-y?] :or {show-x? true show-y? true}}]
   (let [{:keys [x-domain y-domain x-scale y-scale coord
                 x-ticks y-ticks layers annotations]} panel
         coord-type (or coord :cartesian)
@@ -83,7 +83,7 @@
 
         ;; Rendering context for mark/render-layer
         ctx {:coord-fn coord-fn :sx sx :sy sy
-             :coord-type coord-type :cfg cfg
+             :coord-type coord-type
              :y-domain-min y-domain-min}
 
         ;; Background
@@ -93,7 +93,7 @@
                        (ui/rectangle pw ph)))
 
         ;; Grid
-        grid (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m cfg)
+        grid (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m)
 
         ;; Data marks from sketch layers
         marks (vec (mapcat #(mark/render-layer % ctx) layers))
@@ -101,9 +101,8 @@
         ;; Annotation marks
         ann-marks
         (when (seq annotations)
-          (let [ann-cfg (or cfg defaults/defaults)
-                ann-color (defaults/hex->rgba (:annotation-stroke ann-cfg))
-                band-alpha (:band-opacity ann-cfg)]
+          (let [ann-color (defaults/hex->rgba (:annotation-stroke defaults/defaults))
+                band-alpha (:band-opacity defaults/defaults)]
             (vec
              (for [a annotations]
                (case (:mark a)
