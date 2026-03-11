@@ -43,7 +43,7 @@
 ;; |:------------|:----------|:--------------|:--------|
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
 ;; | `extract-layer` | `impl/sketch.clj` | `:mark` key | Convert stat result → sketch layer descriptor |
-;; | `render-layer` | `impl/mark.clj` | `:mark` key | Render sketch layer → membrane scene |
+;; | `render-layer` | `render/mark.clj` | `:mark` key | Render sketch layer → membrane scene |
 ;; | `render-figure` | `impl/render.clj` | format keyword | Render sketch → figure (:svg, etc.) |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
