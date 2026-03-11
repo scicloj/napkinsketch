@@ -218,6 +218,20 @@
                  (= 8 (:polygons s))
                  (pos? (:lines s)))))])
 
+;; Verify dodge positioning: each color group gets a distinct offset.
+
+(let [sk (sk/sketch
+          (-> tips
+              (sk/view [[:day :total_bill]])
+              (sk/lay (sk/boxplot {:color :smoker}))))
+      panel (first (:panels sk))
+      box-layer (first (filter #(= :boxplot (:mark %)) (:layers panel)))
+      cats (:color-categories box-layer)]
+  (count cats))
+
+(kind/test-last
+ [(fn [v] (= 2 v))])
+
 ;; ## Horizontal Boxplot
 
 ;; Flipped coordinate for horizontal orientation.
@@ -261,6 +275,20 @@
  [(fn [v] (let [s (sk/svg-summary v)]
             (and (= 1 (:panels s))
                  (= 8 (:polygons s)))))])
+
+;; Verify dodge positioning: each color group gets a distinct offset.
+
+(let [sk (sk/sketch
+          (-> tips
+              (sk/view [[:day :total_bill]])
+              (sk/lay (sk/violin {:color :smoker}))))
+      panel (first (:panels sk))
+      viol-layer (first (filter #(= :violin (:mark %)) (:layers panel)))
+      cats (:color-categories viol-layer)]
+  (count cats))
+
+(kind/test-last
+ [(fn [v] (= 2 v))])
 
 ;; ## Horizontal Violin
 

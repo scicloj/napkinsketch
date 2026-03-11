@@ -29,6 +29,10 @@
   "Add padding to a numeric domain."
   [[lo hi] scale-spec]
   (let [log? (= :log (:type scale-spec))
+        ;; Guard: log scale requires positive values; clamp to small positive
+        [lo hi] (if log?
+                  [(max 1e-10 (double lo)) (max 1e-10 (double hi))]
+                  [lo hi])
         [a b] (if log? [(Math/log lo) (Math/log hi)] [lo hi])
         pad (* 0.05 (max 1e-6 (- b a)))
         from (if log? #(Math/exp %) identity)]

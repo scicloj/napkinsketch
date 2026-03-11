@@ -190,7 +190,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__457657#] (= "Distribution of Total Bill" p1__457657#))
+       (fn* [p1__461558#] (= "Distribution of Total Bill" p1__461558#))
        (:texts s)))))
    v30_l136)))
 
@@ -292,7 +292,31 @@
 
 
 (def
- v48_l225
+ v48_l223
+ (let
+  [sk
+   (sk/sketch
+    (->
+     tips
+     (sk/view [[:day :total_bill]])
+     (sk/lay (sk/boxplot {:color :smoker}))))
+   panel
+   (first (:panels sk))
+   box-layer
+   (first
+    (filter
+     (fn* [p1__461559#] (= :boxplot (:mark p1__461559#)))
+     (:layers panel)))
+   cats
+   (:color-categories box-layer)]
+  (count cats)))
+
+
+(deftest t49_l232 (is ((fn [v] (= 2 v)) v48_l223)))
+
+
+(def
+ v51_l239
  (->
   iris
   (sk/view [[:species :sepal_width]])
@@ -301,39 +325,19 @@
 
 
 (deftest
- t49_l230
+ t52_l244
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)) (pos? (:lines s)))))
-   v48_l225)))
-
-
-(def
- v51_l241
- (-> tips (sk/view [[:day :total_bill]]) (sk/lay (sk/violin)) sk/plot))
-
-
-(deftest
- t52_l246
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v51_l241)))
+   v51_l239)))
 
 
 (def
  v54_l255
- (->
-  tips
-  (sk/view [[:day :total_bill]])
-  (sk/lay (sk/violin {:color :smoker}))
-  sk/plot))
+ (-> tips (sk/view [[:day :total_bill]]) (sk/lay (sk/violin)) sk/plot))
 
 
 (deftest
@@ -343,12 +347,56 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (= 8 (:polygons s)))))
+     (and (= 1 (:panels s)) (= 4 (:polygons s)))))
    v54_l255)))
 
 
 (def
- v57_l267
+ v57_l269
+ (->
+  tips
+  (sk/view [[:day :total_bill]])
+  (sk/lay (sk/violin {:color :smoker}))
+  sk/plot))
+
+
+(deftest
+ t58_l274
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 8 (:polygons s)))))
+   v57_l269)))
+
+
+(def
+ v60_l281
+ (let
+  [sk
+   (sk/sketch
+    (->
+     tips
+     (sk/view [[:day :total_bill]])
+     (sk/lay (sk/violin {:color :smoker}))))
+   panel
+   (first (:panels sk))
+   viol-layer
+   (first
+    (filter
+     (fn* [p1__461560#] (= :violin (:mark p1__461560#)))
+     (:layers panel)))
+   cats
+   (:color-categories viol-layer)]
+  (count cats)))
+
+
+(deftest t61_l290 (is ((fn [v] (= 2 v)) v60_l281)))
+
+
+(def
+ v63_l295
  (->
   iris
   (sk/view [[:species :petal_length]])
@@ -358,11 +406,11 @@
 
 
 (deftest
- t58_l273
+ t64_l301
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v57_l267)))
+   v63_l295)))

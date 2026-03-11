@@ -99,6 +99,7 @@
   [:map
    [:category any?]
    [:color Color]
+   [:color-category {:optional true} any?]
    [:median number?]
    [:q1 number?]
    [:q3 number?]
@@ -111,6 +112,7 @@
   [:map
    [:category any?]
    [:color Color]
+   [:color-category {:optional true} any?]
    [:ys [:vector number?]]
    [:densities [:vector number?]]])
 

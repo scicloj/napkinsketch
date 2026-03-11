@@ -5,6 +5,26 @@
 
 ;; ---- Helpers ----
 
+(defn band-position
+  "Compute dodged position within a categorical band.
+   Returns {:lo :hi :mid} pixel coordinates for one sub-band.
+   - band-s: wadogo band scale
+   - category: category value to look up
+   - group-idx: index of this group within n-groups
+   - n-groups: total number of dodge groups
+   - frac: fraction of band width to use (e.g. 0.8)"
+  [band-s category group-idx n-groups frac]
+  (let [bw (ws/data band-s :bandwidth)
+        band-info (band-s category true)
+        band-start (:rstart band-info)
+        band-end (:rend band-info)
+        band-mid (/ (+ band-start band-end) 2.0)
+        sub-bw (/ (* bw frac) (max 1 n-groups))
+        group-start (- band-mid (/ (* n-groups sub-bw) 2.0))
+        lo (+ group-start (* group-idx sub-bw))
+        hi (+ lo sub-bw)]
+    {:lo lo :hi hi :mid (/ (+ lo hi) 2.0) :sub-bw sub-bw}))
+
 (defn- draw-shape
   "Draw a shape symbol centered at (0,0) with given radius."
   [shape-kw r]
@@ -158,10 +178,8 @@
         flipped? (= coord-type :flip)
         band-s (if flipped? (:sy ctx) (:sx ctx))
         num-s (if flipped? (:sx ctx) (:sy ctx))
-        bw (ws/data band-s :bandwidth)
         {:keys [radius stroke-width]} style
         n-groups (clojure.core/count groups)
-        sub-bw (/ (* bw 0.8) (max 1 n-groups))
         r (or radius 4)]
     (vec
      (for [[gi {:keys [color xs ys]}] (map-indexed vector groups)
@@ -169,25 +187,18 @@
            :let [[cr cg cb _] color
                  cat (nth xs i)
                  val (nth ys i)
-                 band-info (band-s cat true)
-                 band-start (:rstart band-info)
-                 band-end (:rend band-info)
-                 band-mid (/ (+ band-start band-end) 2.0)
-                 cat-pos (+ (- band-mid (/ (* n-groups sub-bw) 2.0))
-                            (* gi sub-bw) (/ sub-bw 2.0))
+                 bp (band-position band-s cat gi n-groups 0.8)
+                 cat-pos (:mid bp)
                  val-base (num-s 0)
-                 val-top (num-s val)
-                 [x-stem y-base y-top] (if flipped?
-                                         [cat-pos val-base val-top]
-                                         [cat-pos val-base val-top])]]
+                 val-top (num-s val)]]
        [(ui/with-color [cr cg cb 1.0]
           (ui/with-style ::ui/style-stroke
             (ui/with-stroke-width (or stroke-width 1.5)
               (if flipped?
-                (apply ui/path [[y-base x-stem] [y-top x-stem]])
-                (apply ui/path [[x-stem y-base] [x-stem y-top]])))))
-        (ui/translate (if flipped? (- (double y-top) r) (- (double x-stem) r))
-                      (if flipped? (- (double x-stem) r) (- (double y-top) r))
+                (apply ui/path [[val-base cat-pos] [val-top cat-pos]])
+                (apply ui/path [[cat-pos val-base] [cat-pos val-top]])))))
+        (ui/translate (if flipped? (- (double val-top) r) (- (double cat-pos) r))
+                      (if flipped? (- (double cat-pos) r) (- (double val-top) r))
                       (ui/with-color [cr cg cb 1.0]
                         (ui/with-style ::ui/style-fill
                           (ui/rounded-rectangle (* 2 r) (* 2 r) r))))]))))
@@ -200,31 +211,24 @@
         flipped? (= coord-type :flip)
         band-s (if flipped? sy sx)
         num-s (if flipped? sx sy)
-        bw (ws/data band-s :bandwidth)
         {:keys [box-width stroke-width]} style
         box-frac (or box-width 0.6)
         sw (or stroke-width 1.5)
         n-colors (if (seq color-categories) (count color-categories) 1)
-        ;; For dodging: divide band among color groups
-        sub-bw (/ (* bw box-frac) n-colors)
         color-idx-map (when (seq color-categories)
                         (into {} (map-indexed (fn [i c] [c i]) color-categories)))]
     (vec
      (mapcat
-      (fn [{:keys [category color median q1 q3 whisker-lo whisker-hi outliers] :as box}]
+      (fn [{:keys [category color color-category median q1 q3 whisker-lo whisker-hi outliers]}]
         (let [[cr cg cb _] color
-              band-info (band-s category true)
-              band-start (:rstart band-info)
-              band-end (:rend band-info)
-              band-mid (/ (+ band-start band-end) 2.0)
-              ;; Dodge offset for grouped boxplots
-              ci (if-let [cc (:color box)]
-                   (get color-idx-map cc 0)
+              ci (if (and color-idx-map color-category)
+                   (get color-idx-map color-category 0)
                    0)
-              group-start (- band-mid (/ (* n-colors sub-bw) 2.0))
-              box-lo (+ group-start (* ci sub-bw))
-              box-hi (+ box-lo sub-bw)
-              box-mid (/ (+ box-lo box-hi) 2.0)
+              bp (band-position band-s category ci n-colors box-frac)
+              box-lo (:lo bp)
+              box-hi (:hi bp)
+              box-mid (:mid bp)
+              sub-bw (:sub-bw bp)
               ;; Y positions via numeric scale
               py-q1 (num-s q1)
               py-q3 (num-s q3)
@@ -252,26 +256,24 @@
                                            (ui/with-style ::ui/style-fill
                                              (ui/rounded-rectangle d d r))))))]
           (if flipped?
-            ;; Flipped: band on y, numeric on x
             (concat
              (mk-box py-q1 box-lo py-q3 box-lo py-q3 box-hi py-q1 box-hi)
-             [(mk-line py-med box-lo py-med box-hi) ;; median
-              (mk-line py-wlo box-mid py-q1 box-mid) ;; lower whisker
-              (mk-line py-whi box-mid py-q3 box-mid) ;; upper whisker
-              (mk-line py-wlo (- box-mid (* sub-bw 0.15)) ;; whisker cap lo
+             [(mk-line py-med box-lo py-med box-hi)
+              (mk-line py-wlo box-mid py-q1 box-mid)
+              (mk-line py-whi box-mid py-q3 box-mid)
+              (mk-line py-wlo (- box-mid (* sub-bw 0.15))
                        py-wlo (+ box-mid (* sub-bw 0.15)))
-              (mk-line py-whi (- box-mid (* sub-bw 0.15)) ;; whisker cap hi
+              (mk-line py-whi (- box-mid (* sub-bw 0.15))
                        py-whi (+ box-mid (* sub-bw 0.15)))]
              (for [o outliers] (mk-point (num-s o) box-mid)))
-            ;; Normal: band on x, numeric on y
             (concat
              (mk-box box-lo py-q3 box-hi py-q3 box-hi py-q1 box-lo py-q1)
-             [(mk-line box-lo py-med box-hi py-med) ;; median
-              (mk-line box-mid py-q1 box-mid py-wlo) ;; lower whisker
-              (mk-line box-mid py-q3 box-mid py-whi) ;; upper whisker
-              (mk-line (- box-mid (* sub-bw 0.15)) py-wlo ;; whisker cap lo
+             [(mk-line box-lo py-med box-hi py-med)
+              (mk-line box-mid py-q1 box-mid py-wlo)
+              (mk-line box-mid py-q3 box-mid py-whi)
+              (mk-line (- box-mid (* sub-bw 0.15)) py-wlo
                        (+ box-mid (* sub-bw 0.15)) py-wlo)
-              (mk-line (- box-mid (* sub-bw 0.15)) py-whi ;; whisker cap hi
+              (mk-line (- box-mid (* sub-bw 0.15)) py-whi
                        (+ box-mid (* sub-bw 0.15)) py-whi)]
              (for [o outliers] (mk-point box-mid (num-s o)))))))
       boxes))))
@@ -284,37 +286,24 @@
         flipped? (= coord-type :flip)
         band-s (if flipped? sy sx)
         num-s (if flipped? sx sy)
-        bw (ws/data band-s :bandwidth)
         {:keys [opacity stroke-width]} style
         n-colors (if (seq color-categories) (count color-categories) 1)
-        ;; Each violin gets a fraction of the band
-        violin-frac 0.8
-        sub-bw (/ (* bw violin-frac) n-colors)
         color-idx-map (when (seq color-categories)
                         (into {} (map-indexed (fn [i c] [c i]) color-categories)))]
     (vec
      (mapcat
-      (fn [{:keys [category color ys densities] :as violin}]
+      (fn [{:keys [category color color-category ys densities]}]
         (let [[cr cg cb _] color
-              band-info (band-s category true)
-              band-start (:rstart band-info)
-              band-end (:rend band-info)
-              band-mid (/ (+ band-start band-end) 2.0)
-              ;; Dodge offset
-              ci (if-let [cc (:color violin)]
-                   (get color-idx-map cc 0)
+              ci (if (and color-idx-map color-category)
+                   (get color-idx-map color-category 0)
                    0)
-              group-start (- band-mid (/ (* n-colors sub-bw) 2.0))
-              viol-lo (+ group-start (* ci sub-bw))
-              viol-hi (+ viol-lo sub-bw)
-              viol-mid (/ (+ viol-lo viol-hi) 2.0)
-              half-w (/ sub-bw 2.0)
+              bp (band-position band-s category ci n-colors 0.8)
+              viol-mid (:mid bp)
+              half-w (/ (:sub-bw bp) 2.0)
               ;; Normalize densities so max density fills half the band width
               max-d (reduce max 0.001 densities)
               norm (/ half-w max-d)
               ;; Build mirrored polygon points
-              ;; Right side (top to bottom): viol-mid + density
-              ;; Left side (bottom to top): viol-mid - density
               n (count ys)
               right-pts (mapv (fn [i]
                                 (let [y-val (nth ys i)
@@ -331,7 +320,6 @@
                                  (if flipped? [py px] [px py])))
                              (range n))
               all-pts (concat right-pts left-pts)]
-          ;; Filled polygon + stroke outline
           [(ui/with-color [cr cg cb (or opacity 0.7)]
              (ui/with-style ::ui/style-fill
                (apply ui/path all-pts)))
@@ -398,56 +386,49 @@
         flipped? (= coord-type :flip)
         band-s (if flipped? (:sy ctx) (:sx ctx))
         num-s (if flipped? (:sx ctx) (:sy ctx))
-        bw (ws/data band-s :bandwidth)
         {:keys [opacity]} style
         position (or position :dodge)
-        cum-y (atom {})
-        active-map (when (= position :dodge)
-                     (into {}
-                           (for [cat categories]
-                             [cat (keep-indexed
-                                   (fn [bi {:keys [counts]}]
-                                     (let [c (some #(when (= (:category %) cat) (:count %)) counts)]
-                                       (when (and c (pos? c)) bi)))
-                                   groups)])))]
-    (vec
-     (for [[bi {:keys [color counts]}] (map-indexed vector groups)
-           {:keys [category count]} counts
-           :when (or (= position :stack) (pos? count))
-           :let [[cr cg cb _] color
-                 band-info (band-s category true)
-                 band-start (:rstart band-info)
-                 band-end (:rend band-info)
-                 band-mid (/ (+ band-start band-end) 2.0)]]
-       (if (= position :stack)
-         (let [base (get @cum-y category 0)
-               val-lo (num-s base)
-               val-hi (num-s (+ base count))
-               cat-lo (- band-mid (* bw 0.4))
-               cat-hi (+ band-mid (* bw 0.4))
-               [x1 y1 x2 y2 x3 y3 x4 y4]
-               (if flipped?
-                 [val-lo cat-lo val-hi cat-lo val-hi cat-hi val-lo cat-hi]
-                 [cat-lo val-lo cat-hi val-lo cat-hi val-hi cat-lo val-hi])]
-           (swap! cum-y assoc category (+ base count))
-           (ui/with-color [cr cg cb (or opacity 1.0)]
-             (ui/with-style ::ui/style-fill
-               (ui/path [x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1]))))
-         (let [active (get active-map category)
-               n-active (clojure.core/count active)
-               active-idx (.indexOf ^java.util.List active bi)
-               sub-bw (/ (* bw 0.8) (max 1 n-active))
-               cat-lo (+ (- band-mid (/ (* n-active sub-bw) 2.0)) (* active-idx sub-bw))
-               cat-hi (+ cat-lo sub-bw)
-               val-lo (num-s 0)
-               val-hi (num-s count)
-               [x1 y1 x2 y2 x3 y3 x4 y4]
-               (if flipped?
-                 [val-lo cat-lo val-hi cat-lo val-hi cat-hi val-lo cat-hi]
-                 [cat-lo val-lo cat-hi val-lo cat-hi val-hi cat-lo val-hi])]
-           (ui/with-color [cr cg cb (or opacity 1.0)]
-             (ui/with-style ::ui/style-fill
-               (ui/path [x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1])))))))))
+        mk-rect (fn [[cr cg cb _] cat-lo cat-hi val-lo val-hi]
+                  (let [[x1 y1 x2 y2 x3 y3 x4 y4]
+                        (if flipped?
+                          [val-lo cat-lo val-hi cat-lo val-hi cat-hi val-lo cat-hi]
+                          [cat-lo val-lo cat-hi val-lo cat-hi val-hi cat-lo val-hi])]
+                    (ui/with-color [cr cg cb (or opacity 1.0)]
+                      (ui/with-style ::ui/style-fill
+                        (ui/path [x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1])))))]
+    (if (= position :stack)
+      ;; Stacked: accumulate base heights per category
+      (let [items (for [[_bi {:keys [color counts]}] (map-indexed vector groups)
+                        {:keys [category count]} counts]
+                    {:color color :category category :count count})
+            {:keys [elements]}
+            (reduce (fn [{:keys [elements cum-y]} {:keys [color category count]}]
+                      (let [base (get cum-y category 0)
+                            bp (band-position band-s category 0 1 0.8)
+                            elem (mk-rect color (:lo bp) (:hi bp)
+                                          (num-s base) (num-s (+ base count)))]
+                        {:elements (conj elements elem)
+                         :cum-y (assoc cum-y category (+ base count))}))
+                    {:elements [] :cum-y {}}
+                    items)]
+        elements)
+      ;; Dodged: filter to active bars per category
+      (let [active-map (into {}
+                             (for [cat categories]
+                               [cat (keep-indexed
+                                     (fn [bi {:keys [counts]}]
+                                       (let [c (some #(when (= (:category %) cat) (:count %)) counts)]
+                                         (when (and c (pos? c)) bi)))
+                                     groups)]))]
+        (vec
+         (for [[bi {:keys [color counts]}] (map-indexed vector groups)
+               {:keys [category count]} counts
+               :when (pos? count)
+               :let [active (get active-map category)
+                     n-active (clojure.core/count active)
+                     active-idx (.indexOf ^java.util.List active bi)
+                     bp (band-position band-s category active-idx n-active 0.8)]]
+           (mk-rect color (:lo bp) (:hi bp) (num-s 0) (num-s count))))))))
 
 (defn render-layer-value-bars
   "Render value bars from a sketch :rect layer."
@@ -457,22 +438,17 @@
         flipped? (= coord-type :flip)
         band-s (if flipped? (:sy ctx) (:sx ctx))
         num-s (if flipped? (:sx ctx) (:sy ctx))
-        bw (ws/data band-s :bandwidth)
         {:keys [opacity]} style
-        n-groups (clojure.core/count groups)
-        sub-bw (/ (* bw 0.8) (max 1 n-groups))]
+        n-groups (clojure.core/count groups)]
     (vec
      (for [[gi {:keys [color xs ys]}] (map-indexed vector groups)
            i (range (clojure.core/count xs))
            :let [[cr cg cb _] color
                  cat (nth xs i)
                  val (nth ys i)
-                 band-info (band-s cat true)
-                 band-start (:rstart band-info)
-                 band-end (:rend band-info)
-                 band-mid (/ (+ band-start band-end) 2.0)
-                 cat-lo (+ (- band-mid (/ (* n-groups sub-bw) 2.0)) (* gi sub-bw))
-                 cat-hi (+ cat-lo sub-bw)
+                 bp (band-position band-s cat gi n-groups 0.8)
+                 cat-lo (:lo bp)
+                 cat-hi (:hi bp)
                  val-lo (num-s 0)
                  val-hi (num-s val)
                  [x1 y1 x2 y2 x3 y3 x4 y4]

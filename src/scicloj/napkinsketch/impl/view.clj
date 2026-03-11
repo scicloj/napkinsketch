@@ -118,26 +118,44 @@
 ;; ---- Mark Constructors ----
 
 (defn point
+  "Point mark (scatter plot).
+   (point)                    — default
+   (point {:color :species})  — color by column"
   ([] {:mark :point})
   ([opts] (merge {:mark :point} opts)))
 
 (defn line
+  "Line mark (connected points).
+   (line)                    — default
+   (line {:color :group})    — one line per group"
   ([] {:mark :line :stat :identity})
   ([opts] (merge {:mark :line :stat :identity} opts)))
 
 (defn histogram
+  "Histogram mark (binned counts).
+   (histogram)                   — default Sturges binning
+   (histogram {:color :species}) — per-group histograms"
   ([] {:mark :bar :stat :bin})
   ([opts] (merge {:mark :bar :stat :bin} opts)))
 
 (defn bar
+  "Bar mark (categorical counts).
+   (bar)                     — count occurrences
+   (bar {:color :species})   — grouped bars"
   ([] {:mark :rect :stat :count})
   ([opts] (merge {:mark :rect :stat :count} opts)))
 
 (defn stacked-bar
+  "Stacked bar mark (categorical counts, stacked).
+   (stacked-bar)                     — stacked bars
+   (stacked-bar {:color :smoker})    — colored stacked bars"
   ([] {:mark :rect :stat :count :position :stack})
   ([opts] (merge {:mark :rect :stat :count :position :stack} opts)))
 
 (defn value-bar
+  "Value bar mark (categorical x, numeric y, no counting).
+   (value-bar)                    — default
+   (value-bar {:color :group})    — grouped value bars"
   ([] {:mark :rect :stat :identity})
   ([opts] (merge {:mark :rect :stat :identity} opts)))
 
@@ -150,10 +168,16 @@
   ([opts] (merge {:mark :lollipop :stat :identity} opts)))
 
 (defn lm
+  "Linear regression line.
+   (lm)                      — single regression
+   (lm {:color :species})    — per-group regression"
   ([] {:mark :line :stat :lm})
   ([opts] (merge {:mark :line :stat :lm} opts)))
 
 (defn loess
+  "LOESS smoothing line.
+   (loess)                     — default bandwidth 0.75
+   (loess {:color :species})   — per-group smoothing"
   ([] {:mark :line :stat :loess})
   ([opts] (merge {:mark :line :stat :loess} opts)))
 
@@ -211,8 +235,8 @@
    Requires :ymin and :ymax keys mapping to columns.
    (errorbar {:ymin :ci_lo :ymax :ci_hi})
    (errorbar {:ymin :ci_lo :ymax :ci_hi :color :group})"
-  [opts]
-  (merge {:mark :errorbar :stat :identity} opts))
+  ([] {:mark :errorbar :stat :identity})
+  ([opts] (merge {:mark :errorbar :stat :identity} opts)))
 
 (defn rule-v
   "Vertical reference line at x = intercept."
@@ -345,20 +369,15 @@
             :else [:point :identity])
           mark (or (:mark v) default-mark)
           stat (or (:stat v) default-stat)]
-      (cond-> (assoc v :x-type x-type :y-type y-type :color-type c-type
-                     :group group :mark mark :stat stat
-                     :color (when color-is-col? color-val)
-                     :fixed-color fixed-color
-                     :size (when size-is-col? size-val)
-                     :fixed-size fixed-size
-                     :alpha (when alpha-is-col? alpha-val)
-                     :fixed-alpha fixed-alpha
-                     :text-col text-col)
-        ;; Pass through extra column bindings (errorbar)
-        (:ymin v) (assoc :ymin (:ymin v))
-        (:ymax v) (assoc :ymax (:ymax v))
-        ;; Pass through jitter
-        (:jitter v) (assoc :jitter (:jitter v))))))
+      (assoc v :x-type x-type :y-type y-type :color-type c-type
+             :group group :mark mark :stat stat
+             :color (when color-is-col? color-val)
+             :fixed-color fixed-color
+             :size (when size-is-col? size-val)
+             :fixed-size fixed-size
+             :alpha (when alpha-is-col? alpha-val)
+             :fixed-alpha fixed-alpha
+             :text-col text-col))))
 
 ;; ---- Scale Setter ----
 
