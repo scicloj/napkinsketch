@@ -43,6 +43,10 @@
 
 (def shape-syms [:circle :square :triangle :diamond])
 
+(def legend-swatch-size
+  "Side length of legend color swatches (square, in pixels)."
+  8)
+
 ;; ---- Color Helpers ----
 
 (defn hex->rgba

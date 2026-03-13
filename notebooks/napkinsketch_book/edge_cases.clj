@@ -7,7 +7,8 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as sk]))
+   [scicloj.napkinsketch.api :as sk]
+   [fastmath.random :as rng]))
 
 ;; ## Missing Data
 
@@ -22,12 +23,9 @@
     (sk/lay (sk/point))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:points s)))))])
 
 ;; ## Single Point
 
@@ -38,10 +36,9 @@
     (sk/lay (sk/point))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 1 (:points s)))))])
 
 ;; ## Two Points with Regression
 
@@ -53,10 +50,9 @@
     (sk/lay (sk/point) (sk/lm))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:points s))
+                                (zero? (:lines s)))))])
 
 ;; ## Three Points with Regression
 
@@ -67,10 +63,9 @@
     (sk/lay (sk/point) (sk/lm))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:points s))
+                                (= 1 (:lines s)))))])
 
 ;; ## Constant X
 
@@ -81,10 +76,9 @@
     (sk/lay (sk/point))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
 
 ;; ## Constant Y
 
@@ -95,10 +89,9 @@
     (sk/lay (sk/point))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
 
 ;; ## Negative Values
 
@@ -109,10 +102,9 @@
     (sk/lay (sk/point))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
 
 ;; ## Very Large Values
 
@@ -121,10 +113,9 @@
     (sk/lay (sk/point))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:points s)))))])
 
 ;; ## Very Small Values
 
@@ -133,47 +124,43 @@
     (sk/lay (sk/point))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:points s)))))])
 
 ;; ## Large Dataset
 
 ;; 1000 random points, colored by group.
 
-(def ^:private large-data
-  (fn []
-    (tc/dataset {:x (repeatedly 1000 #(rand))
-                 :y (repeatedly 1000 #(rand))
-                 :group (repeatedly 1000 #(rand-nth [:a :b :c]))})))
+(def large-data
+  (let [r (rng/rng :jdk 42)]
+    (tc/dataset {:x (repeatedly 1000 #(rng/drandom r))
+                 :y (repeatedly 1000 #(rng/drandom r))
+                 :group (repeatedly 1000 #([:a :b :c] (rng/irandom r 3)))})))
 
-(-> (large-data)
+(-> large-data
     (sk/view [[:x :y]])
     (sk/lay (sk/point {:color :group}))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 1000 (:points s)))))])
 
 ;; ## Many Categories
 
 ;; A bar chart with 12 categories.
 
-(-> (tc/dataset {:category (mapv #(keyword (str "cat-" %)) (range 12))
-                 :value (repeatedly 12 #(+ 10 (rand-int 90)))})
+(-> (let [r (rng/rng :jdk 99)]
+      (tc/dataset {:category (mapv #(keyword (str "cat-" %)) (range 12))
+                   :value (repeatedly 12 #(+ 10 (rng/irandom r 90)))}))
     (sk/view [[:category :value]])
     (sk/lay (sk/value-bar))
     sk/plot)
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 12 (:polygons s)))))])
 
 ;; ## Computed Columns
 
@@ -188,10 +175,9 @@
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:title "Sepal Length/Width Ratio"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; ## Filtered Subset
 
@@ -203,9 +189,6 @@
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:title "Setosa Only"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 50 (:points s))
+                                (= 1 (:lines s)))))])

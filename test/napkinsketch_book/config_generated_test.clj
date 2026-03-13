@@ -30,17 +30,14 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and (map? attrs) (>= (:width attrs) 800)))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (>= (:width s) 800))))
    v5_l20)))
 
 
 (def
- v8_l33
+ v8_l31
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -49,21 +46,18 @@
 
 
 (deftest
- t9_l38
+ t9_l36
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and (map? attrs) (>= (:width attrs) 300)))))
-   v8_l33)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (>= (:width s) 300))))
+   v8_l31)))
 
 
 (def
- v11_l48
+ v11_l44
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -75,32 +69,32 @@
 
 
 (deftest
- t12_l55
+ t12_l51
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v11_l48)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 150 (:points s))
+      (some #{"Iris Sepal Measurements"} (:texts s)))))
+   v11_l44)))
 
 
 (def
- v14_l64
+ v14_l59
  (def
   exponential-data
   (tc/dataset
    {:x (range 1 50),
     :y
     (mapv
-     (fn* [p1__73521#] (* 2 (Math/pow 1.1 p1__73521#)))
+     (fn* [p1__81560#] (* 2 (Math/pow 1.1 p1__81560#)))
      (range 1 50))})))
 
 
 (def
- v16_l70
+ v16_l65
  (->
   exponential-data
   (sk/view [[:x :y]])
@@ -109,20 +103,18 @@
 
 
 (deftest
- t17_l75
+ t17_l70
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v16_l70)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 49 (:points s)))))
+   v16_l65)))
 
 
 (def
- v19_l82
+ v19_l76
  (->
   exponential-data
   (sk/view [[:x :y]])
@@ -132,20 +124,18 @@
 
 
 (deftest
- t20_l88
+ t20_l82
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v19_l82)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 49 (:points s)))))
+   v19_l76)))
 
 
 (def
- v22_l97
+ v22_l90
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -155,20 +145,18 @@
 
 
 (deftest
- t23_l103
+ t23_l96
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v22_l97)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)))))
+   v22_l90)))
 
 
 (def
- v25_l113
+ v25_l105
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -177,27 +165,25 @@
 
 
 (deftest
- t26_l117
+ t26_l109
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v25_l113)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)))))
+   v25_l105)))
 
 
 (def
- v28_l126
+ v28_l117
  (def
   summary
   (tc/dataset {:category [:a :b :c :d], :value [42 28 35 19]})))
 
 
 (def
- v29_l130
+ v29_l121
  (->
   summary
   (sk/view [[:category :value]])
@@ -206,20 +192,18 @@
 
 
 (deftest
- t30_l135
+ t30_l126
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v29_l130)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 4 (:polygons s)))))
+   v29_l121)))
 
 
 (def
- v32_l142
+ v32_l132
  (->
   summary
   (sk/view [[:category :value]])
@@ -229,13 +213,11 @@
 
 
 (deftest
- t33_l148
+ t33_l138
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v32_l142)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 4 (:polygons s)))))
+   v32_l132)))

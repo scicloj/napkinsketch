@@ -24,7 +24,9 @@
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
 
 ;; And here is the sketch — the data structure that drives the rendering.
 ;; We'll use `sk/sketch` with the same arguments:
@@ -136,7 +138,9 @@
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 (def iris-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})]))
 
@@ -174,7 +178,9 @@
 
 (sk/plot [(sk/histogram {:data iris :x :sepal_length})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 (def hist-sk (sk/sketch [(sk/histogram {:data iris :x :sepal_length})]))
 
@@ -203,7 +209,9 @@
 
 (sk/plot [(sk/bar {:data iris :x :species :color :species})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 (def bar-sk (sk/sketch [(sk/bar {:data iris :x :species :color :species})]))
 
@@ -251,7 +259,9 @@
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width})
           (sk/lm {:data iris :x :sepal_length :y :sepal_width})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
 
 (def lm-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width})
                        (sk/lm {:data iris :x :sepal_length :y :sepal_width})]))
@@ -290,7 +300,9 @@
           (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
 
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
 (def grp-sk (sk/sketch [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
                         (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})]))
 
@@ -314,7 +326,9 @@
 
 (sk/plot [(sk/line {:data wave :x :x :y :y})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 1 (:lines s)))))])
 
 (def wave-sk (sk/sketch [(sk/line {:data wave :x :x :y :y})]))
 
@@ -338,7 +352,9 @@
 
 (sk/plot [(sk/value-bar {:data sales :x :product :y :revenue})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 4 (:polygons s)))))])
 
 (def sales-sk (sk/sketch [(sk/value-bar {:data sales :x :product :y :revenue})]))
 
@@ -427,7 +443,9 @@
 
 (sk/plot final-views {:title "Iris Petals"})
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; ## Multi-Panel Sketches
 ;;

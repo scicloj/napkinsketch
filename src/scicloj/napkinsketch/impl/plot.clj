@@ -1,7 +1,10 @@
 (ns scicloj.napkinsketch.impl.plot
   (:require [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.impl.render :as render]
-            ;; Require svg renderer to register the :svg defmethod
+            ;; Side-effect require: loads the :svg defmethod on render/render-figure.
+            ;; Without this, (plot ...) would fail with "no method for :svg".
+            ;; Additional renderers (e.g., :plotly) follow the same pattern —
+            ;; require the namespace to register the defmethod.
             [scicloj.napkinsketch.render.svg]))
 
 (defn plot

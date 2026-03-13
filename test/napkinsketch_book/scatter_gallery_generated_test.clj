@@ -48,21 +48,14 @@
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
    v7_l27)))
 
 
 (def
- v10_l43
+ v10_l41
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -71,20 +64,18 @@
 
 
 (deftest
- t11_l48
+ t11_l46
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v10_l43)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
+   v10_l41)))
 
 
 (def
- v13_l57
+ v13_l55
  (->
   iris
   (sk/view [[:petal_length :petal_width]])
@@ -93,20 +84,18 @@
 
 
 (deftest
- t14_l62
+ t14_l60
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v13_l57)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
+   v13_l55)))
 
 
 (def
- v16_l71
+ v16_l69
  (->
   iris
   (sk/view [[:petal_length :petal_width]])
@@ -115,25 +104,18 @@
 
 
 (deftest
- t17_l77
+ t17_l75
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v16_l71)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)) (= 3 (:lines s)))))
+   v16_l69)))
 
 
 (def
- v19_l88
+ v19_l84
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -142,20 +124,18 @@
 
 
 (deftest
- t20_l93
+ t20_l89
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v19_l88)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 244 (:points s)) (zero? (:lines s)))))
+   v19_l84)))
 
 
 (def
- v22_l102
+ v22_l98
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -164,20 +144,18 @@
 
 
 (deftest
- t23_l108
+ t23_l104
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v22_l102)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 244 (:points s)) (= 2 (:lines s)))))
+   v22_l98)))
 
 
 (def
- v25_l117
+ v25_l113
  (->
   mpg
   (sk/view [[:horsepower :mpg]])
@@ -186,20 +164,18 @@
 
 
 (deftest
- t26_l122
+ t26_l118
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v25_l117)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 392 (:points s)) (zero? (:lines s)))))
+   v25_l113)))
 
 
 (def
- v28_l131
+ v28_l127
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -208,20 +184,18 @@
 
 
 (deftest
- t29_l136
+ t29_l132
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v28_l131)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)))))
+   v28_l127)))
 
 
 (def
- v31_l145
+ v31_l140
  (->
   {:x [1 5 9], :y [2 8 3]}
   (sk/view [[:x :y]])
@@ -230,38 +204,34 @@
 
 
 (deftest
- t32_l150
+ t32_l145
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v31_l145)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 3 (:points s)))))
+   v31_l140)))
 
 
 (def
- v34_l159
+ v34_l153
  (-> {:x [3], :y [7]} (sk/view [[:x :y]]) (sk/lay (sk/point)) sk/plot))
 
 
 (deftest
- t35_l164
+ t35_l158
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v34_l159)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 1 (:points s)))))
+   v34_l153)))
 
 
 (def
- v37_l173
+ v37_l166
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -275,21 +245,22 @@
 
 
 (deftest
- t38_l181
+ t38_l174
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and (map? attrs) (>= (:width attrs) 700)))))
-   v37_l173)))
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 1 (:panels s))
+      (= 244 (:points s))
+      (>= (:width s) 700)
+      (some #{"Tips by Day"} (:texts s)))))
+   v37_l166)))
 
 
 (def
- v40_l192
+ v40_l185
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -298,18 +269,18 @@
 
 
 (deftest
- t41_l197
+ t41_l190
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
-   v40_l192)))
+   v40_l185)))
 
 
 (def
- v43_l203
+ v43_l196
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -318,18 +289,18 @@
 
 
 (deftest
- t44_l208
+ t44_l201
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
-   v43_l203)))
+   v43_l196)))
 
 
 (def
- v46_l217
+ v46_l210
  (->
   iris
   (sk/view [[:species :sepal_width]])
@@ -338,18 +309,18 @@
 
 
 (deftest
- t47_l222
+ t47_l215
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v46_l217)))
+   v46_l210)))
 
 
 (def
- v49_l228
+ v49_l221
  (->
   iris
   (sk/view [[:species :sepal_width]])
@@ -358,18 +329,18 @@
 
 
 (deftest
- t50_l233
+ t50_l226
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v49_l228)))
+   v49_l221)))
 
 
 (def
- v52_l242
+ v52_l235
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -378,7 +349,7 @@
 
 
 (deftest
- t53_l247
+ t53_l240
  (is
   ((fn
     [v]
@@ -388,11 +359,11 @@
       (= 1 (:panels s))
       (= 150 (:points s))
       (some #{"petal length"} (:texts s)))))
-   v52_l242)))
+   v52_l235)))
 
 
 (def
- v55_l254
+ v55_l247
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -402,11 +373,11 @@
 
 
 (deftest
- t56_l259
+ t56_l252
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"petal length"} (:texts s)))))
-   v55_l254)))
+   v55_l247)))

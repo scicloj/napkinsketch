@@ -258,9 +258,10 @@
 
 (defn resolve-panel-views
   "Resolve views and compute stats for a group of views belonging to one panel.
+   If pre-resolved views are provided, skips resolve-view.
    Returns {:resolved [...] :stat-results [...] :layers [...]}."
-  [panel-views all-colors cfg]
-  (let [resolved (mapv view/resolve-view panel-views)
+  [panel-views all-colors cfg & {:keys [resolved]}]
+  (let [resolved (or resolved (mapv view/resolve-view panel-views))
         stat-results (mapv #(stat/compute-stat (assoc % :cfg (merge cfg (:cfg %)))) resolved)
         layers (vec (map (fn [rv sr]
                            (extract-layer rv sr all-colors cfg))
@@ -269,9 +270,11 @@
 
 (defn- collect-colors
   "Resolve views and collect color categories across all views.
-   Returns {:resolved-all :numeric-color? :all-colors :color-cols}."
+   Attaches :__resolved to each view for downstream re-use.
+   Returns {:resolved-all :numeric-color? :all-colors :color-cols :tagged-views}."
   [non-ann-views]
   (let [resolved-all (mapv view/resolve-view non-ann-views)
+        tagged-views (mapv (fn [v rv] (assoc v :__resolved rv)) non-ann-views resolved-all)
         numeric-color? (some #(= :numerical (:color-type %)) resolved-all)
         all-colors (when-not numeric-color?
                      (let [color-views (filter #(and (view/column-ref? (:color %))
@@ -282,7 +285,8 @@
     {:resolved-all resolved-all
      :numeric-color? numeric-color?
      :all-colors all-colors
-     :color-cols color-cols}))
+     :color-cols color-cols
+     :tagged-views tagged-views}))
 
 (defn- compute-grid
   "Compute grid dimensions and facet/variable lists from layout type.
@@ -499,8 +503,8 @@
          layout-type (infer-layout non-ann-views)
          scale-mode (or scales :shared)
 
-         ;; Colors
-         {:keys [resolved-all numeric-color? all-colors color-cols]}
+         ;; Colors (also resolves all views once — tagged for reuse)
+         {:keys [resolved-all numeric-color? all-colors color-cols tagged-views]}
          (collect-colors non-ann-views)
 
          ;; Scale & coord specs
@@ -520,12 +524,15 @@
          {:keys [m pw ph]}
          (compute-panel-dims cfg layout-type grid-rows grid-cols width height)
 
-         ;; Group views into panels and resolve stats/layers
-         panel-groups (group-panels non-ann-views layout-type
+         ;; Group tagged views into panels and resolve stats/layers
+         ;; (tagged views carry :__resolved so resolve-view isn't called again)
+         panel-groups (group-panels tagged-views layout-type
                                     facet-row-vals facet-col-vals x-vars y-vars)
          panel-data (mapv (fn [pg]
                             (if (seq (:views pg))
-                              (merge pg (resolve-panel-views (:views pg) all-colors cfg))
+                              (let [pre-resolved (mapv :__resolved (:views pg))]
+                                (merge pg (resolve-panel-views (:views pg) all-colors cfg
+                                                               :resolved pre-resolved)))
                               pg))
                           panel-groups)
 

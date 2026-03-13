@@ -198,35 +198,43 @@
    (svg-summary (plot views))  — summary of rendered SVG
 
    Counts:
-   :panels  — number of plot panels (background rectangles)
-   :points  — number of data point markers (excludes legend swatches)
-   :lines   — number of data polylines (excludes grid lines)
-   :polygons — number of filled polygons (bars, histogram bins)
+   :panels  — number of plot panels (large background rectangles)
+   :points  — number of data point markers (small rounded rects)
+   :lines   — number of non-grid polylines (data lines, annotations, whiskers)
+   :polygons — number of filled polygons (bars, histogram bins, areas, violins)
    :texts   — vector of all text content strings"
   [svg]
   (let [attrs (when (and (vector? svg) (map? (second svg))) (second svg))
-        bg-color (str "rgb(" (clojure.string/join ","
-                                                  (mapv #(int (* 255 (double %)))
-                                                        (take 3 (defaults/hex->rgba (:bg defaults/theme))))) ")")
-        grid-color (str "rgb(" (clojure.string/join ","
-                                                    (mapv #(int (* 255 (double %)))
-                                                          (take 3 (defaults/hex->rgba (:grid defaults/theme))))) ")")
+        ;; Grid color from theme — used to filter grid polylines
+        grid-color (str "rgb(" (str/join ","
+                                         (mapv #(int (* 255 (double %)))
+                                               (take 3 (defaults/hex->rgba (:grid defaults/theme))))) ")")
+        sw (double defaults/legend-swatch-size)
         rects (collect-elements svg :rect)
         polylines (collect-elements svg :polyline)
         polygons (collect-elements svg :polygon)
         texts (collect-elements svg :text)
-        panel-rects (filter #(= bg-color (get (second %) :fill)) rects)
-        legend-rects (filter #(and (= 8 (get (second %) :width))
-                                   (= 8 (get (second %) :height))) rects)
+        ;; Panels: large rects without border-radius (background fills)
+        panel-rects (filter #(let [a (second %)]
+                               (and (nil? (:rx a))
+                                    (number? (:width a))
+                                    (> (double (:width a)) 50)
+                                    (number? (:height a))
+                                    (> (double (:height a)) 50)))
+                            rects)
+        ;; Points: rects with rx > 0, excluding legend swatches (known size)
+        legend-rects (filter #(let [a (second %)]
+                                (and (= sw (double (or (:width a) 0)))
+                                     (= sw (double (or (:height a) 0)))))
+                             rects)
         legend-set (set legend-rects)
-        panel-set (set panel-rects)
-        ;; Data rects are rounded (rx > 0); exclude panels, legend swatches,
-        ;; and gradient bar segments (which have no rx attribute)
         data-rects (filter #(let [a (second %)]
-                              (and (not (panel-set %))
-                                   (not (legend-set %))
-                                   (some? (:rx a))))
+                              (and (not (legend-set %))
+                                   (some? (:rx a))
+                                   (number? (:rx a))
+                                   (pos? (double (:rx a)))))
                            rects)
+        ;; Lines: filter out grid-colored polylines (theme-derived)
         data-polylines (remove #(= grid-color (get (second %) :stroke)) polylines)]
     {:width (:width attrs)
      :height (:height attrs)

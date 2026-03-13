@@ -13,7 +13,9 @@
   [legend x y]
   (let [{:keys [title]} legend
         fsize 10
-        title-color [0.2 0.2 0.2 1.0]]
+        title-color [0.2 0.2 0.2 1.0]
+        sw defaults/legend-swatch-size
+        sw-r (/ sw 2.0)]
     (if (= :continuous (:type legend))
       ;; Continuous gradient legend
       (let [{:keys [min max stops]} legend
@@ -55,7 +57,7 @@
                           [(ui/translate 0 0
                                          (ui/with-color [cr cg cb 1.0]
                                            (ui/with-style ::ui/style-fill
-                                             (ui/rounded-rectangle 8 8 4))))
+                                             (ui/rounded-rectangle sw sw sw-r))))
                            (ui/translate 12 0
                                          (ui/with-color title-color
                                            (ui/label label (ui/font nil fsize))))]))))))))

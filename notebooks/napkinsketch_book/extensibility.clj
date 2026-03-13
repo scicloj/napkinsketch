@@ -271,7 +271,9 @@
     (sk/coord :flip)
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; ## The Scene Path
 ;;

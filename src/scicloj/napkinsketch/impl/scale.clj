@@ -1,5 +1,6 @@
 (ns scicloj.napkinsketch.impl.scale
-  (:require [wadogo.scale :as ws]))
+  (:require [wadogo.scale :as ws]
+            [scicloj.napkinsketch.impl.defaults :as defaults]))
 
 (defn numeric-domain? [dom]
   (and (sequential? dom) (seq dom) (number? (first dom))))
@@ -29,12 +30,13 @@
   "Add padding to a numeric domain."
   [[lo hi] scale-spec]
   (let [log? (= :log (:type scale-spec))
+        padding (:domain-padding defaults/defaults)
         ;; Guard: log scale requires positive values; clamp to small positive
         [lo hi] (if log?
                   [(max 1e-10 (double lo)) (max 1e-10 (double hi))]
                   [lo hi])
         [a b] (if log? [(Math/log lo) (Math/log hi)] [lo hi])
-        pad (* 0.05 (max 1e-6 (- b a)))
+        pad (* padding (max 1e-6 (- b a)))
         from (if log? #(Math/exp %) identity)]
     [(from (- a pad)) (from (+ b pad))]))
 

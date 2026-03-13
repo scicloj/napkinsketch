@@ -11,7 +11,8 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as sk]))
+   [scicloj.napkinsketch.api :as sk]
+   [fastmath.random :as rng]))
 
 ;; ## Sample Data
 
@@ -41,13 +42,17 @@
 
 (-> iris (sk/view [[:sepal_length :sepal_width]]) (sk/lay (sk/point)) sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; Histogram view — a single keyword means x = y (diagonal):
 
 (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; Multiple views — a vector of `[x y]` pairs:
 
@@ -57,7 +62,9 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 300 (:points s)))))])
 
 ;; Map form — explicit keys:
 
@@ -65,7 +72,9 @@
     (sk/lay (sk/point))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 (kind/doc #'sk/lay)
 
@@ -73,7 +82,9 @@
 
 (-> iris (sk/view [[:sepal_length :sepal_width]]) (sk/lay (sk/point)) sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; Apply multiple marks — scatter with regression:
 
@@ -83,7 +94,9 @@
             (sk/lm {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; ## Marks
 
@@ -93,52 +106,68 @@
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
 
 ;; Color by column:
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y :color :group})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
 
 ;; Fixed color:
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y :color "#E74C3C"})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
 
 ;; Size by column:
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
                      :size :petal_length :color :species})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; Constant size — uniform radius for all points:
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y :size 6})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
 
 ;; Constant alpha — uniform transparency:
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y :alpha 0.3})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
 
 ;; Combined — large, semi-transparent, colored points:
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
                      :color :species :alpha 0.5 :size 5})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; Alpha by column — transparency varies with petal length:
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
                      :color :species :alpha :petal_length})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 (kind/doc #'sk/line)
 
@@ -149,7 +178,9 @@
 
 (sk/plot [(sk/line {:data wave :x :x :y :y})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 1 (:lines s)))))])
 
 ;; Grouped lines:
 
@@ -160,13 +191,17 @@
 
 (sk/plot [(sk/line {:data waves :x :x :y :y :color :fn})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 2 (:lines s)))))])
 
 ;; Thick line — constant stroke width:
 
 (sk/plot [(sk/line {:data wave :x :x :y :y :size 4})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 1 (:lines s)))))])
 
 (kind/doc #'sk/histogram)
 
@@ -174,13 +209,17 @@
 
 (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; Colored histogram — one set of bins per group:
 
 (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram {:color :species})) sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 (kind/doc #'sk/bar)
 
@@ -188,19 +227,25 @@
 
 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:polygons s)))))])
 
 ;; Grouped (dodged) bars:
 
 (-> iris (sk/view :species) (sk/lay (sk/bar {:color :species})) sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; Semi-transparent bars:
 
 (-> iris (sk/view :species) (sk/lay (sk/bar {:alpha 0.4})) sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:polygons s)))))])
 
 (kind/doc #'sk/stacked-bar)
 
@@ -211,7 +256,9 @@
 
 (-> penguins (sk/view :island) (sk/lay (sk/stacked-bar {:color :species})) sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 (kind/doc #'sk/value-bar)
 
@@ -219,7 +266,9 @@
 
 (sk/plot [(sk/value-bar {:data sales :x :product :y :revenue})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 4 (:polygons s)))))])
 
 (kind/doc #'sk/lm)
 
@@ -230,7 +279,9 @@
     (sk/lay (sk/point) (sk/lm))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
 
 ;; Per-group regression:
 
@@ -240,22 +291,27 @@
             (sk/lm {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
 
 (kind/doc #'sk/loess)
 
 ;; Smooth LOESS curve through data:
 
-(def noisy-wave (tc/dataset {:x (range 50)
-                             :y (mapv #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rand) 0.5)))
-                                      (range 50))}))
+(def noisy-wave (let [r (rng/rng :jdk 42)]
+                  (tc/dataset {:x (range 50)
+                               :y (mapv #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rng/drandom r) 0.5)))
+                                        (range 50))})))
 
 (-> noisy-wave
     (sk/view [[:x :y]])
     (sk/lay (sk/point) (sk/loess))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 50 (:points s))
+                                (= 1 (:lines s)))))])
 
 (kind/doc #'sk/density)
 
@@ -428,7 +484,9 @@
 
 (sk/plot [(sk/point {:data tiny :x :x :y :y})])
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
 
 ;; With options — title, labels, dimensions:
 
@@ -439,7 +497,9 @@
           :width 800
           :height 300})
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (>= (:width s) 800))))])
 
 ;; Direct mark styling — `:alpha` and `:size`:
 
@@ -486,7 +546,9 @@
     (sk/coord :flip)
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:polygons s)))))])
 
 (kind/doc #'sk/scale)
 
@@ -498,7 +560,9 @@
     (sk/scale :x :log)
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; Fixed domain:
 
@@ -508,7 +572,9 @@
     (sk/scale :x {:domain [3 9]})
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; Custom axis label via scale:
 
@@ -518,7 +584,9 @@
     (sk/scale :x {:label "Length (cm)"})
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 (kind/doc #'sk/labs)
 
@@ -560,7 +628,9 @@
             (sk/rule-h 3.0))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (pos? (:lines s)))))])
 
 (kind/doc #'sk/band-v)
 
@@ -586,7 +656,9 @@
             (sk/band-h 2.5 3.5))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (pos? (:polygons s)))))])
 
 
 ;; ## Utilities
@@ -607,7 +679,9 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:panels s))
+                                (= 600 (:points s)))))])
 
 (kind/doc #'sk/pairs)
 
@@ -624,7 +698,9 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 450 (:points s)))))])
 
 (kind/doc #'sk/distribution)
 
@@ -634,7 +710,9 @@
     (sk/lay (sk/histogram))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; ## Faceting
 
@@ -648,7 +726,9 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; Vertical column of panels:
 
@@ -658,7 +738,9 @@
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 150 (:points s)))))])
 
 (kind/doc #'sk/facet-grid)
 
@@ -670,7 +752,9 @@
     (sk/lay (sk/point {:color :sex}))
     sk/plot)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:panels s))
+                                (= 244 (:points s)))))])
 
 ;; Free scales — each panel gets its own y-range:
 
@@ -680,7 +764,9 @@
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:scales :free-y}))
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; ## Inspection
 

@@ -22,11 +22,9 @@
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:width 800 :height 250}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (let [attrs (second v)]
-                 (and (map? attrs)
-                      (>= (:width attrs) 800)))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (>= (:width s) 800))))])
 
 ;; A tall, narrow plot.
 
@@ -35,11 +33,9 @@
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:width 300 :height 500}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (let [attrs (second v)]
-                 (and (map? attrs)
-                      (>= (:width attrs) 300)))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (>= (:width s) 300))))])
 
 ;; ## Titles and Labels
 
@@ -52,10 +48,9 @@
               :x-label "Length (cm)"
               :y-label "Width (cm)"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (map? (second v))
-               (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"Iris Sepal Measurements"} (:texts s)))))])
 
 ;; ## Log Scale
 
@@ -72,10 +67,9 @@
     (sk/lay (sk/point))
     (sk/plot {:title "Linear Scale"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (map? (second v))
-               (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 49 (:points s)))))])
 
 ;; Log y-scale — reveals the exponential trend.
 
@@ -85,10 +79,9 @@
     (sk/scale :y :log)
     (sk/plot {:title "Log Y Scale"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (map? (second v))
-               (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 49 (:points s)))))])
 
 ;; ## Fixed Scale Domain
 
@@ -100,10 +93,9 @@
     (sk/scale :y {:type :linear :domain [0 6]})
     (sk/plot {:title "Fixed Y Domain [0, 6]"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (map? (second v))
-               (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; ## Direct Mark Styling
 
@@ -114,10 +106,9 @@
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point {:color :species :alpha 0.5 :size 5}))
     sk/plot)
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (map? (second v))
-               (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; ## Value Bar
 
@@ -132,10 +123,9 @@
     (sk/lay (sk/value-bar))
     (sk/plot {:title "Pre-computed Values"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (map? (second v))
-               (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 4 (:polygons s)))))])
 
 ;; ## Value Bars Flipped
 
@@ -145,7 +135,6 @@
     (sk/coord :flip)
     (sk/plot {:title "Horizontal Value Bars"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-               (map? (second v))
-               (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 4 (:polygons s)))))])

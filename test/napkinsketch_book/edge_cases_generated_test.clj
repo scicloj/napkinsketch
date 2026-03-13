@@ -4,59 +4,51 @@
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
+  [fastmath.random :as rng]
   [clojure.test :refer [deftest is]]))
 
 
 (def
- v3_l16
+ v3_l17
  (def
   with-missing
   (tc/dataset {:x [1 2 nil 4 5 nil 7], :y [3 nil 5 6 nil 8 9]})))
 
 
 (def
- v4_l20
+ v4_l21
  (-> with-missing (sk/view [[:x :y]]) (sk/lay (sk/point)) sk/plot))
 
 
 (deftest
- t5_l25
+ t5_l26
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v4_l20)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 3 (:points s)))))
+   v4_l21)))
 
 
 (def
- v7_l36
+ v7_l34
  (-> {:x [3], :y [7]} (sk/view [[:x :y]]) (sk/lay (sk/point)) sk/plot))
 
 
 (deftest
- t8_l41
+ t8_l39
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v7_l36)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 1 (:points s)))))
+   v7_l34)))
 
 
 (def
- v10_l51
+ v10_l48
  (->
   {:x [1 10], :y [5 50]}
   (sk/view [[:x :y]])
@@ -65,20 +57,18 @@
 
 
 (deftest
- t11_l56
+ t11_l53
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v10_l51)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 2 (:points s)) (zero? (:lines s)))))
+   v10_l48)))
 
 
 (def
- v13_l65
+ v13_l61
  (->
   {:x [1 5 10], :y [5 25 50]}
   (sk/view [[:x :y]])
@@ -87,20 +77,18 @@
 
 
 (deftest
- t14_l70
+ t14_l66
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v13_l65)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 3 (:points s)) (= 1 (:lines s)))))
+   v13_l61)))
 
 
 (def
- v16_l79
+ v16_l74
  (->
   {:x [5 5 5 5 5], :y [1 2 3 4 5]}
   (sk/view [[:x :y]])
@@ -109,20 +97,18 @@
 
 
 (deftest
- t17_l84
+ t17_l79
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v16_l79)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 5 (:points s)))))
+   v16_l74)))
 
 
 (def
- v19_l93
+ v19_l87
  (->
   {:x [1 2 3 4 5], :y [3 3 3 3 3]}
   (sk/view [[:x :y]])
@@ -131,20 +117,18 @@
 
 
 (deftest
- t20_l98
+ t20_l92
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v19_l93)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 5 (:points s)))))
+   v19_l87)))
 
 
 (def
- v22_l107
+ v22_l100
  (->
   {:x [-5 -3 0 3 5], :y [-2 4 0 -4 2]}
   (sk/view [[:x :y]])
@@ -153,20 +137,18 @@
 
 
 (deftest
- t23_l112
+ t23_l105
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v22_l107)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 5 (:points s)))))
+   v22_l100)))
 
 
 (def
- v25_l119
+ v25_l111
  (->
   {:x [1000000.0 2000000.0 3000000.0], :y [1.0E9 2.0E9 3.0E9]}
   (sk/view [[:x :y]])
@@ -175,20 +157,18 @@
 
 
 (deftest
- t26_l124
+ t26_l116
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v25_l119)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 3 (:points s)))))
+   v25_l111)))
 
 
 (def
- v28_l131
+ v28_l122
  (->
   {:x [0.001 0.002 0.003], :y [1.0E-4 2.0E-4 3.0E-4]}
   (sk/view [[:x :y]])
@@ -197,86 +177,78 @@
 
 
 (deftest
- t29_l136
+ t29_l127
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v28_l131)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 3 (:points s)))))
+   v28_l122)))
 
 
 (def
- v31_l145
+ v31_l135
  (def
   large-data
-  (fn
-   []
+  (let
+   [r (rng/rng :jdk 42)]
    (tc/dataset
-    {:x (repeatedly 1000 (fn* [] (rand))),
-     :y (repeatedly 1000 (fn* [] (rand))),
-     :group (repeatedly 1000 (fn* [] (rand-nth [:a :b :c])))}))))
+    {:x (repeatedly 1000 (fn* [] (rng/drandom r))),
+     :y (repeatedly 1000 (fn* [] (rng/drandom r))),
+     :group
+     (repeatedly 1000 (fn* [] ([:a :b :c] (rng/irandom r 3))))}))))
 
 
 (def
- v32_l151
+ v32_l141
  (->
-  (large-data)
+  large-data
   (sk/view [[:x :y]])
   (sk/lay (sk/point {:color :group}))
   sk/plot))
 
 
 (deftest
- t33_l156
+ t33_l146
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v32_l151)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 1000 (:points s)))))
+   v32_l141)))
 
 
 (def
- v35_l167
+ v35_l154
  (->
-  (tc/dataset
-   {:category
-    (mapv
-     (fn* [p1__74031#] (keyword (str "cat-" p1__74031#)))
-     (range 12)),
-    :value (repeatedly 12 (fn* [] (+ 10 (rand-int 90))))})
+  (let
+   [r (rng/rng :jdk 99)]
+   (tc/dataset
+    {:category
+     (mapv
+      (fn* [p1__81439#] (keyword (str "cat-" p1__81439#)))
+      (range 12)),
+     :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))}))
   (sk/view [[:category :value]])
   (sk/lay (sk/value-bar))
   sk/plot))
 
 
 (deftest
- t36_l173
+ t36_l161
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v35_l167)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 12 (:polygons s)))))
+   v35_l154)))
 
 
 (def
- v38_l182
+ v38_l169
  (def
   iris
   (tc/dataset
@@ -285,7 +257,7 @@
 
 
 (def
- v39_l185
+ v39_l172
  (->
   iris
   (tc/map-columns :sepal_ratio [:sepal_length :sepal_width] /)
@@ -295,42 +267,33 @@
 
 
 (deftest
- t40_l191
+ t40_l178
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (map? (second v))
-     (vector? (nth v 2))))
-   v39_l185)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)))))
+   v39_l172)))
 
 
 (def
- v42_l200
+ v42_l186
  (->
   iris
   (tc/select-rows
-   (fn* [p1__74032#] (= "setosa" (p1__74032# :species))))
+   (fn* [p1__81440#] (= "setosa" (p1__81440# :species))))
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay (sk/point) (sk/lm))
   (sk/plot {:title "Setosa Only"})))
 
 
 (deftest
- t43_l206
+ t43_l192
  (is
   ((fn
     [v]
-    (and
-     (vector? v)
-     (= :svg (first v))
-     (let
-      [attrs (second v)]
-      (and
-       (map? attrs)
-       (number? (:width attrs))
-       (number? (:height attrs))))
-     (let [body (nth v 2)] (and (vector? body) (= :g (first body))))))
-   v42_l200)))
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 50 (:points s)) (= 1 (:lines s)))))
+   v42_l186)))

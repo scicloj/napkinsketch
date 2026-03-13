@@ -283,19 +283,21 @@
         iqr (- (double q3) (double q1))
         fence-lo (- (double q1) (* 1.5 iqr))
         fence-hi (+ (double q3) (* 1.5 iqr))
-        sorted-vals (sort col)
-        whisker-lo (reduce (fn [best v] (if (and (>= (double v) fence-lo)
-                                                 (< (double v) (double best)))
-                                          v best))
-                           (double q1) sorted-vals)
-        whisker-hi (reduce (fn [best v] (if (and (<= (double v) fence-hi)
-                                                 (> (double v) (double best)))
-                                          v best))
-                           (double q3) sorted-vals)
-        outliers (filterv #(or (< (double %) fence-lo) (> (double %) fence-hi)) sorted-vals)]
+        ;; Whiskers: closest data values within fences
+        ;; Outliers: data values outside fences
+        whisker-lo (atom (double q1))
+        whisker-hi (atom (double q3))
+        outliers (java.util.ArrayList.)]
+    (dotimes [i (count col)]
+      (let [v (double (col i))]
+        (cond
+          (< v fence-lo) (.add outliers v)
+          (> v fence-hi) (.add outliers v)
+          :else (do (when (< v @whisker-lo) (reset! whisker-lo v))
+                    (when (> v @whisker-hi) (reset! whisker-hi v))))))
     {:median median :q1 q1 :q3 q3
-     :whisker-lo whisker-lo :whisker-hi whisker-hi
-     :outliers outliers}))
+     :whisker-lo @whisker-lo :whisker-hi @whisker-hi
+     :outliers (vec outliers)}))
 
 (defmethod compute-stat :boxplot [view]
   (let [{:keys [data x y x-type group]} view

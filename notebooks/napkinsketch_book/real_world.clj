@@ -21,12 +21,10 @@
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:title "Palmer Penguins: Bill Dimensions"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 342 (:points s))
+                                (zero? (:lines s)))))])
 
 ;; Per-species regression reveals different slopes.
 
@@ -36,10 +34,9 @@
             (sk/lm {:color :species}))
     (sk/plot {:title "Bill Length vs Depth with Regression"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 342 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; Without grouping, Simpson's paradox: overall trend is negative.
 
@@ -49,10 +46,9 @@
             (sk/lm))
     (sk/plot {:title "Simpson's Paradox: Overall vs Per-Group Trend"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 342 (:points s))
+                                (= 1 (:lines s)))))])
 
 ;; Species distribution across islands.
 
@@ -61,10 +57,9 @@
     (sk/lay (sk/bar {:color :species}))
     (sk/plot {:title "Species by Island"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; Flipper length vs body mass — a strong positive correlation.
 
@@ -74,10 +69,9 @@
             (sk/lm {:color :species}))
     (sk/plot {:title "Flipper Length vs Body Mass"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 342 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; Body mass distribution by species.
 
@@ -86,10 +80,9 @@
     (sk/lay (sk/histogram {:color :species}))
     (sk/plot {:title "Body Mass Distribution"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; ## Tips
 
@@ -105,12 +98,9 @@
     (sk/plot {:title "Tipping: Smokers vs Non-Smokers"
               :x-label "Total Bill ($)" :y-label "Tip ($)"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (let [attrs (second v)]
-                (and (map? attrs) (number? (:width attrs)) (number? (:height attrs))))
-              (let [body (nth v 2)]
-                (and (vector? body) (= :g (first body))))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 244 (:points s))
+                                (= 2 (:lines s)))))])
 
 ;; Tip amounts by day, colored by meal time.
 
@@ -119,10 +109,9 @@
     (sk/lay (sk/bar {:color :time}))
     (sk/plot {:title "Visits by Day and Meal Time"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; Stacked view of the same data.
 
@@ -131,10 +120,9 @@
     (sk/lay (sk/stacked-bar {:color :time}))
     (sk/plot {:title "Visits by Day (Stacked)"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; Horizontal bar chart of party sizes.
 
@@ -144,10 +132,9 @@
     (sk/coord :flip)
     (sk/plot {:title "Day by Gender (Horizontal)"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; ## MPG
 
@@ -162,10 +149,9 @@
             (sk/lm {:color :origin}))
     (sk/plot {:title "Horsepower vs MPG by Origin"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 392 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; Displacement vs MPG — another negative correlation.
 
@@ -174,10 +160,9 @@
     (sk/lay (sk/point {:color :origin}))
     (sk/plot {:title "Engine Displacement vs Fuel Efficiency"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 398 (:points s)))))])
 
 ;; Count of cars by origin.
 
@@ -186,7 +171,6 @@
     (sk/lay (sk/bar))
     (sk/plot {:title "Cars by Origin"}))
 
-(kind/test-last
- [(fn [v] (and (vector? v) (= :svg (first v))
-              (map? (second v))
-              (vector? (nth v 2))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:polygons s)))))])

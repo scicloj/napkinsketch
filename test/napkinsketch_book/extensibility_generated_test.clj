@@ -103,20 +103,26 @@
 
 (deftest
  t26_l274
- (is ((fn [v] (and (vector? v) (= :svg (first v)))) v25_l268)))
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
+   v25_l268)))
 
 
-(def v28_l282 (def my-scene (scene/sketch->scene my-sketch)))
+(def v28_l284 (def my-scene (scene/sketch->scene my-sketch)))
 
 
-(def v29_l284 (vector? my-scene))
+(def v29_l286 (vector? my-scene))
 
 
-(deftest t30_l286 (is ((fn [v] (true? v)) v29_l284)))
+(deftest t30_l288 (is ((fn [v] (true? v)) v29_l286)))
 
 
 (def
- v32_l292
+ v32_l294
  (let
   [svg-body
    (svg/scene->svg my-scene)
@@ -128,4 +134,4 @@
   (first svg)))
 
 
-(deftest t33_l296 (is ((fn [v] (= :svg v)) v32_l292)))
+(deftest t33_l298 (is ((fn [v] (= :svg v)) v32_l294)))

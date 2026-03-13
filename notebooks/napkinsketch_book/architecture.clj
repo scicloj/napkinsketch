@@ -184,7 +184,9 @@ graph TD
 
 (sk/plot views)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 
 ;; ## The Sketch as a Boundary
 ;;
@@ -274,4 +276,6 @@ graph LR
 
 (sk/plot multi-views {:title "Iris Petals with Regression"})
 
-(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])

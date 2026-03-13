@@ -1,6 +1,7 @@
 (ns scicloj.napkinsketch.render.mark
   (:require [membrane.ui :as ui]
             [scicloj.napkinsketch.impl.defaults :as defaults]
+            [fastmath.random :as rng]
             [wadogo.scale :as ws]))
 
 ;; ---- Helpers ----
@@ -80,14 +81,14 @@
                     (let [all-vals (distinct (apply concat shape-bufs))]
                       (zipmap all-vals (cycle defaults/shape-syms))))]
     (vec
-     (for [{:keys [color colors xs ys sizes alphas shapes row-indices]} groups
+     (for [{:keys [color colors xs ys sizes alphas shapes row-indices] :as group} groups
+           :let [;; One seeded RNG per group for deterministic jitter
+                 jitter-rng (when jitter? (rng/rng :jdk (hash (:color group))))]
            i (range (count xs))
            :let [[px py] (coord-fn (nth xs i) (nth ys i))
-                 ;; Apply jitter: deterministic per index using hash
                  [px py] (if jitter?
-                           (let [rng (java.util.Random. (long (+ (* i 31) (hash (nth xs i)))))]
-                             [(+ (double px) (* jitter-amount (- (* 2.0 (.nextDouble rng)) 1.0)))
-                              (+ (double py) (* jitter-amount (- (* 2.0 (.nextDouble rng)) 1.0)))])
+                           [(+ (double px) (* jitter-amount (- (* 2.0 (rng/drandom jitter-rng)) 1.0)))
+                            (+ (double py) (* jitter-amount (- (* 2.0 (rng/drandom jitter-rng)) 1.0)))]
                            [px py])
                  pt-r (if sizes (size-scale (nth sizes i)) radius)
                  pt-alpha (if alphas (alpha-scale (nth alphas i)) (or opacity 1.0))

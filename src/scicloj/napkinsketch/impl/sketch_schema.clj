@@ -128,6 +128,14 @@
    [:cap-width {:optional true} number?]
    [:jitter {:optional true} [:or boolean? number?]]])
 
+(def Annotation
+  "A reference line or band annotation."
+  [:map
+   [:mark [:enum :rule-v :rule-h :band-v :band-h]]
+   [:intercept {:optional true} number?]
+   [:lo {:optional true} number?]
+   [:hi {:optional true} number?]])
+
 (def Layer
   "A rendered mark layer with data-space geometry."
   [:map
@@ -157,6 +165,7 @@
    [:layers [:vector Layer]]
    [:row int?]
    [:col int?]
+   [:annotations {:optional true} [:vector Annotation]]
    [:row-label {:optional true} [:maybe string?]]
    [:col-label {:optional true} [:maybe string?]]])
 
