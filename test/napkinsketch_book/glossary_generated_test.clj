@@ -31,7 +31,7 @@
  v5_l27
  (kind/pprint
   (mapv
-   (fn* [p1__248523#] (select-keys p1__248523# [:x :y :mark :color]))
+   (fn* [p1__304249#] (select-keys p1__304249# [:x :y :mark :color]))
    views)))
 
 
