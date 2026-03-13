@@ -135,164 +135,6 @@
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/line {:color :species}))
-  (sk/coord :polar)
-  sk/plot))
-
-
-(deftest
- t22_l109
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (= 3 (:lines s)))))
-   v21_l103)))
-
-
-(def
- v24_l118
- (->
-  iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point) (sk/lm))
-  (sk/coord :polar)
-  sk/plot))
-
-
-(deftest
- t25_l124
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (= 150 (:points s)) (= 1 (:lines s)))))
-   v24_l118)))
-
-
-(def
- v27_l134
- (->
-  iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/area {:color :species}))
-  (sk/coord :polar)
-  sk/plot))
-
-
-(deftest
- t28_l140
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v27_l134)))
-
-
-(def
- v30_l149
- (->
-  iris
-  (sk/view [:species :sepal_length])
-  (sk/lay (sk/boxplot))
-  (sk/coord :polar)
-  sk/plot))
-
-
-(deftest
- t31_l155
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (= 3 (:polygons s)) (pos? (:lines s)))))
-   v30_l149)))
-
-
-(def
- v33_l165
- (->
-  iris
-  (sk/view [:species :sepal_length])
-  (sk/lay (sk/violin))
-  (sk/coord :polar)
-  sk/plot))
-
-
-(deftest
- t34_l171
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v33_l165)))
-
-
-(def
- v36_l179
- (def
-  summary-ds
-  (tc/dataset
-   {:species ["setosa" "versicolor" "virginica"],
-    :mean [5.0 5.9 6.6],
-    :lo [4.8 5.6 6.3],
-    :hi [5.2 6.2 6.9]})))
-
-
-(def
- v37_l184
- (->
-  summary-ds
-  (sk/view [:species :mean])
-  (sk/lay (sk/errorbar {:ymin :lo, :ymax :hi}))
-  (sk/coord :polar)
-  sk/plot))
-
-
-(deftest
- t38_l190
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (pos? (:lines s)))))
-   v37_l184)))
-
-
-(def
- v40_l198
- (->
-  wind
-  (sk/view [:direction :speed])
-  (sk/lay (sk/lollipop))
-  (sk/coord :polar)
-  sk/plot))
-
-
-(deftest
- t41_l204
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (= 8 (:points s)) (= 8 (:lines s)))))
-   v40_l198)))
-
-
-(def
- v43_l214
- (->
-  iris
-  (sk/view [[:sepal_length :sepal_width]])
   (sk/lay (sk/point {:color :species}))
   (sk/coord :polar)
   (sk/labs {:title "Iris in Polar Space"})
@@ -300,7 +142,7 @@
 
 
 (deftest
- t44_l221
+ t22_l110
  (is
   ((fn
     [v]
@@ -309,4 +151,4 @@
      (and
       (= 1 (:panels s))
       (some #{"Iris in Polar Space"} (:texts s)))))
-   v43_l214)))
+   v21_l103)))

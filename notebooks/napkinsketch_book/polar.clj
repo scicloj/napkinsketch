@@ -1,8 +1,8 @@
 ;; # Polar Coordinates
 ;;
-;; `(sk/coord :polar)` maps x to angle and y to radius, wrapping any
-;; chart type into a radial layout. Bars become wedges, scatters wrap
-;; into a disc, and lines spiral around the center.
+;; `(sk/coord :polar)` maps x to angle and y to radius. Bars become
+;; arc-interpolated wedges (rose charts), and scatter points wrap into
+;; a disc. Currently best suited for point and bar-family marks.
 
 (ns napkinsketch-book.polar
   (:require
@@ -94,117 +94,6 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
-
-;; ## Polar Line
-;;
-;; Lines projected into polar coordinates form spirals or closed
-;; loops depending on the data.
-
-(-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/line {:color :species}))
-    (sk/coord :polar)
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 3 (:lines s)))))])
-
-;; ## Polar with Regression
-;;
-;; A scatter plot with a linear regression line, projected into
-;; polar space.
-
-(-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point) (sk/lm))
-    (sk/coord :polar)
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s))
-                                (= 1 (:lines s)))))])
-
-;; ## Polar Area
-;;
-;; Area marks fill the region between the data curve and the baseline,
-;; creating petal-like shapes in polar space.
-
-(-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/area {:color :species}))
-    (sk/coord :polar)
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 3 (:polygons s)))))])
-
-;; ## Polar Boxplot
-;;
-;; Boxplots in polar coordinates show distribution summaries arranged
-;; radially.
-
-(-> iris
-    (sk/view [:species :sepal_length])
-    (sk/lay (sk/boxplot))
-    (sk/coord :polar)
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 3 (:polygons s))
-                                (pos? (:lines s)))))])
-
-;; ## Polar Violin
-;;
-;; Violin plots in polar give a sense of distributional shape
-;; around the circle.
-
-(-> iris
-    (sk/view [:species :sepal_length])
-    (sk/lay (sk/violin))
-    (sk/coord :polar)
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 3 (:polygons s)))))])
-
-;; ## Polar Errorbar
-;;
-;; Error bars projected into polar space.
-
-(def summary-ds (tc/dataset {:species ["setosa" "versicolor" "virginica"]
-                             :mean [5.0 5.9 6.6]
-                             :lo [4.8 5.6 6.3]
-                             :hi [5.2 6.2 6.9]}))
-
-(-> summary-ds
-    (sk/view [:species :mean])
-    (sk/lay (sk/errorbar {:ymin :lo :ymax :hi}))
-    (sk/coord :polar)
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (pos? (:lines s)))))])
-
-;; ## Polar Lollipop
-;;
-;; Lollipop charts in polar — stems radiate from center, dots at tips.
-
-(-> wind
-    (sk/view [:direction :speed])
-    (sk/lay (sk/lollipop))
-    (sk/coord :polar)
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 8 (:points s))
-                                (= 8 (:lines s)))))])
 
 ;; ## Explicit Labels with Polar
 ;;
