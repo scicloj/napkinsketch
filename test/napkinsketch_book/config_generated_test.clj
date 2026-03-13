@@ -89,7 +89,7 @@
    {:x (range 1 50),
     :y
     (mapv
-     (fn* [p1__77154#] (* 2 (Math/pow 1.1 p1__77154#)))
+     (fn* [p1__243701#] (* 2 (Math/pow 1.1 p1__243701#)))
      (range 1 50))})))
 
 
@@ -261,3 +261,43 @@
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v38_l158)))
+
+
+(def
+ v41_l180
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :species}))
+  (sk/plot {:palette :set2})))
+
+
+(deftest
+ t42_l185
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)))))
+   v41_l180)))
+
+
+(def
+ v44_l191
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :species}))
+  (sk/plot {:palette :dark2})))
+
+
+(deftest
+ t45_l196
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)))))
+   v44_l191)))

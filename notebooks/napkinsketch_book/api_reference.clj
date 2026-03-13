@@ -362,6 +362,23 @@
                            (and (= 1 (:panels s))
                                 (= 1 (:polygons s)))))])
 
+(kind/doc #'sk/stacked-area)
+
+;; Stacked areas — each group fills above the previous:
+
+(-> (tc/dataset {:x (vec (concat (range 10) (range 10) (range 10)))
+                 :y (vec (concat [1 2 3 4 5 4 3 2 1 0]
+                                 [2 2 2 3 3 3 2 2 2 2]
+                                 [1 1 1 1 2 2 2 1 1 1]))
+                 :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))})
+    (sk/view [[:x :y]])
+    (sk/lay (sk/stacked-area {:color :group}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:polygons s)))))])
+
 (kind/doc #'sk/text)
 
 ;; Data-driven text labels at point positions:

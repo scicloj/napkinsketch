@@ -163,3 +163,36 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
+
+;; ## Named Palette Presets
+;;
+;; Instead of specifying hex colors, use a keyword to select a
+;; predefined palette.
+;;
+;; Available presets:
+;;
+;; - `:set1`, `:set2`, `:set3` — ColorBrewer qualitative
+;; - `:pastel1`, `:pastel2` — ColorBrewer pastel
+;; - `:dark2`, `:paired`, `:accent` — ColorBrewer
+;; - `:tableau10` — Tableau default
+;; - `:category10` — D3 default
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:palette :set2}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
+
+;; Dark, high-contrast palette:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:palette :dark2}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
