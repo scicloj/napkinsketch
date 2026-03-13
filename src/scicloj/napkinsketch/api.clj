@@ -9,233 +9,275 @@
 
 ;; ---- Compositional API ----
 
-(def view
+(defn view
   "Create views from data and column specs.
    (view data [:x :y])         — single scatter view
    (view data [[:x1 :y1] ...]) — multiple views
    (view data :x)              — histogram view (x=y)"
-  view/view)
+  ([data spec-or-x] (view/view data spec-or-x))
+  ([data x y] (view/view data x y)))
 
-(def lay
+(defn lay
   "Apply one or more layers (marks) to views.
    (lay views (point) (lm))  — scatter + regression"
-  view/lay)
+  [base-views & layer-specs]
+  (apply view/lay base-views layer-specs))
 
-(def coord
+(defn coord
   "Set coordinate system on views.
    (coord views :flip) — flipped coordinates"
-  view/coord)
+  [views c]
+  (view/coord views c))
 
-(def cross
+(defn cross
   "Cartesian product of two sequences."
-  view/cross)
+  [xs ys]
+  (view/cross xs ys))
 
-(def facet
+(defn facet
   "Split views by a categorical column into separate panels.
    Default is a horizontal row of panels.
    (facet views :species)        — horizontal row
    (facet views :species :col)   — vertical column"
-  view/facet)
+  ([views col] (view/facet views col))
+  ([views col direction] (view/facet views col direction)))
 
-(def facet-grid
+(defn facet-grid
   "Split views by two categorical columns for a row × column grid.
    Either column may be nil for a single-dimension facet.
    (facet-grid views :smoker :sex)   — 2D grid
    (facet-grid views nil :species)   — same as facet"
-  view/facet-grid)
+  [views row-col col-col]
+  (view/facet-grid views row-col col-col))
 
-(def pairs
+(defn pairs
   "Upper-triangle pairs of columns, for pairwise scatter plots.
    (pairs [:a :b :c]) => [[:a :b] [:a :c] [:b :c]]"
-  view/pairs)
+  [cols]
+  (view/pairs cols))
 
-(def distribution
+(defn distribution
   "Create diagonal views (x=y) for each column, used for histograms in SPLOM.
    (distribution data :a :b :c) => views with [[:a :a] [:b :b] [:c :c]]"
-  view/distribution)
+  [data & cols]
+  (apply view/distribution data cols))
 
-(def scale
+(defn scale
   "Set scale options for :x or :y across all views.
    (scale views :x :log)                — log x-axis
    (scale views :y {:type :linear :domain [0 100]}) — fixed domain"
-  view/scale)
+  ([views channel type-or-opts] (view/scale views channel type-or-opts))
+  ([views channel type opts] (view/scale views channel type opts)))
 
-(def labs
+(defn labs
   "Set labels on views. Keys: :title, :x, :y.
    (labs views {:title \"My Plot\" :x \"X Axis\" :y \"Y Axis\"})"
-  view/labs)
+  [views label-opts]
+  (view/labs views label-opts))
 
 ;; ---- Mark Constructors ----
 
-(def point
+(defn point
   "Point mark (scatter plot).
    (point)                    — default
    (point {:color :species})  — color by column"
-  view/point)
+  ([] (view/point))
+  ([opts] (view/point opts)))
 
-(def line
+(defn line
   "Line mark (connected points).
    (line)                    — default
    (line {:color :group})    — one line per group"
-  view/line)
+  ([] (view/line))
+  ([opts] (view/line opts)))
 
-(def histogram
+(defn histogram
   "Histogram mark (binned counts).
-   (histogram)               — default binning"
-  view/histogram)
+   (histogram)               — default binning
+   (histogram {:color :species}) — per-group histograms"
+  ([] (view/histogram))
+  ([opts] (view/histogram opts)))
 
-(def bar
+(defn bar
   "Bar mark (categorical counts).
    (bar)                     — count occurrences
    (bar {:color :species})   — grouped bars"
-  view/bar)
+  ([] (view/bar))
+  ([opts] (view/bar opts)))
 
-(def stacked-bar
-  "Stacked bar mark (categorical counts, stacked)."
-  view/stacked-bar)
+(defn stacked-bar
+  "Stacked bar mark (categorical counts, stacked).
+   (stacked-bar)                     — stacked bars
+   (stacked-bar {:color :smoker})    — colored stacked bars"
+  ([] (view/stacked-bar))
+  ([opts] (view/stacked-bar opts)))
 
-(def value-bar
-  "Value bar mark (categorical x, numeric y, no counting)."
-  view/value-bar)
+(defn value-bar
+  "Value bar mark (categorical x, numeric y, no counting).
+   (value-bar)                    — default
+   (value-bar {:color :group})    — grouped value bars"
+  ([] (view/value-bar))
+  ([opts] (view/value-bar opts)))
 
-(def lm
+(defn lm
   "Linear regression line.
    (lm)                      — single regression
    (lm {:color :species})    — per-group regression"
-  view/lm)
+  ([] (view/lm))
+  ([opts] (view/lm opts)))
 
-(def loess
+(defn loess
   "LOESS smoothing line.
    (loess)                     — default bandwidth 0.75
    (loess {:color :species})   — per-group smoothing"
-  view/loess)
+  ([] (view/loess))
+  ([opts] (view/loess opts)))
 
-(def text
+(defn text
   "Text mark — data-driven labels at (x, y) positions.
    Requires :text key mapping to a column.
    (text {:text :name})                — label each point
    (text {:text :name :color :species}) — colored labels"
-  view/text)
+  ([] (view/text))
+  ([opts] (view/text opts)))
 
-(def area
+(defn area
   "Area mark — filled region under a line.
    (area)                     — default
    (area {:color :species})   — one area per group"
-  view/area)
+  ([] (view/area))
+  ([opts] (view/area opts)))
 
-(def density
+(defn density
   "Density mark — kernel density estimation rendered as a filled area.
    (density)                    — default bandwidth
    (density {:color :species})  — per-group density curves
    (density {:bandwidth 0.5})   — custom bandwidth"
-  view/density)
+  ([] (view/density))
+  ([opts] (view/density opts)))
 
-(def tile
+(defn tile
   "Tile/heatmap mark — filled rectangles colored by a numeric value.
    With no options, bins x and y into a 2D grid (heatmap of counts).
    With :fill, uses a pre-computed numeric column for tile color.
    (tile)                          — 2D binned heatmap
    (tile {:fill :value})           — pre-computed fill values"
-  view/tile)
+  ([] (view/tile))
+  ([opts] (view/tile opts)))
 
-(def ridgeline
+(defn ridgeline
   "Ridgeline mark — vertically stacked KDE density curves per category.
    x should be categorical, y numeric.
    (ridgeline)                    — default
    (ridgeline {:color :species})  — colored ridgelines"
-  view/ridgeline)
+  ([] (view/ridgeline))
+  ([opts] (view/ridgeline opts)))
 
-(def boxplot
+(defn boxplot
   "Boxplot mark — displays median, quartiles, whiskers, and outliers.
    x should be categorical, y numeric.
    (boxplot)                    — single color
    (boxplot {:color :smoker})   — side-by-side grouped boxplots"
-  view/boxplot)
+  ([] (view/boxplot))
+  ([opts] (view/boxplot opts)))
 
-(def violin
+(defn violin
   "Violin mark — mirrored density curve per category.
    x should be categorical, y numeric.
    (violin)                    — single color
    (violin {:color :smoker})   — side-by-side grouped violins"
-  view/violin)
+  ([] (view/violin))
+  ([opts] (view/violin opts)))
 
-(def errorbar
+(defn errorbar
   "Errorbar mark — vertical error bars at (x, y) positions.
    Requires :ymin and :ymax keys mapping to columns.
    (errorbar {:ymin :ci_lo :ymax :ci_hi})
    (errorbar {:ymin :ci_lo :ymax :ci_hi :color :group})"
-  view/errorbar)
+  ([] (view/errorbar))
+  ([opts] (view/errorbar opts)))
 
-(def lollipop
+(defn lollipop
   "Lollipop mark — stem + dot at (x, y) positions.
    Like value-bar but lighter: a line from baseline to y with a dot.
    (lollipop)                  — default
    (lollipop {:color :group})  — colored stems"
-  view/lollipop)
+  ([] (view/lollipop))
+  ([opts] (view/lollipop opts)))
 
 ;; ---- Annotations ----
 
-(def rule-v
+(defn rule-v
   "Vertical reference line at x = intercept.
    (rule-v 5)  — line at x=5"
-  view/rule-v)
+  [intercept]
+  (view/rule-v intercept))
 
-(def rule-h
+(defn rule-h
   "Horizontal reference line at y = intercept.
    (rule-h 3)  — line at y=3"
-  view/rule-h)
+  [intercept]
+  (view/rule-h intercept))
 
-(def band-v
+(defn band-v
   "Vertical shaded band from x = lo to x = hi.
    (band-v 4 6)  — shaded region between x=4 and x=6"
-  view/band-v)
+  [lo hi]
+  (view/band-v lo hi))
 
-(def band-h
+(defn band-h
   "Horizontal shaded band from y = lo to y = hi.
    (band-h 2 4)  — shaded region between y=2 and y=4"
-  view/band-h)
+  [lo hi]
+  (view/band-h lo hi))
 
 ;; ---- Rendering ----
 
-(def plot
+(defn plot
   "Render views as a figure (default: SVG hiccup wrapped with kind/hiccup).
    (plot views)              — default 600×400 SVG
    (plot views {:width 800 :height 500 :title \"My Plot\"})
    (plot views {:format :svg})  — explicit format"
-  plot-impl/plot)
+  ([views] (plot-impl/plot views))
+  ([views opts] (plot-impl/plot views opts)))
 
-(def sketch
+(defn sketch
   "Resolve views into a sketch — a plain Clojure map with data-space
    geometry, domains, tick info, legend, and layout. No membrane types,
    no datasets, no scale objects in the output. Serializable data.
    (sketch views)              — default 600×400
    (sketch views {:width 800 :title \"My Plot\"})"
-  sketch-impl/resolve-sketch)
+  ([views] (sketch-impl/resolve-sketch views))
+  ([views opts] (sketch-impl/resolve-sketch views opts)))
 
-(def render-figure
+(defn render-figure
   "Render a sketch into a figure for the given format.
    Dispatches on format keyword. Each renderer is a separate namespace
    that registers a defmethod; :svg is always available.
    (render-figure (sketch views) :svg {})
    (render-figure (sketch views) :plotly {})"
-  render-impl/render-figure)
+  [sketch format opts]
+  (render-impl/render-figure sketch format opts))
 
 ;; ---- Sketch Validation ----
 
-(def valid-sketch?
+(defn valid-sketch?
   "Check if a sketch conforms to the Malli schema.
    (valid-sketch? (sketch views))  — true if valid"
-  ss/valid?)
+  [sketch]
+  (ss/valid? sketch))
 
-(def explain-sketch
+(defn explain-sketch
   "Explain why a sketch does not conform to the Malli schema.
    Returns nil if valid, or a Malli explanation map if invalid.
    (explain-sketch (sketch views))"
-  ss/explain)
+  [sketch]
+  (ss/explain sketch))
 
-(def svg-summary
+(defn svg-summary
   "Extract structural summary from SVG hiccup for testing.
    Returns a map with :width, :height, :panels, :points, :lines,
    :polygons, and :texts — useful for asserting plot structure.
    (svg-summary (plot views))  — summary of rendered SVG"
-  svg/svg-summary)
+  [svg]
+  (svg/svg-summary svg))

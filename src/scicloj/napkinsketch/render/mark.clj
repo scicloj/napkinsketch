@@ -30,6 +30,26 @@
             (coord-px px py)))
         (range (inc n-seg))))
 
+(defn bar-polygon
+  "Compute polygon points for a rectangular bar, with arc interpolation
+   when coord-px is provided (polar). In cartesian/flip, produces a
+   simple 4-corner closed polygon.
+   - coord-px: pixel-space reprojection fn, or nil for cartesian
+   - flipped?: true when axes are swapped
+   - cat-lo, cat-hi: pixel range along the categorical (band) axis
+   - val-lo, val-hi: pixel range along the numeric (value) axis"
+  [coord-px flipped? cat-lo cat-hi val-lo val-hi]
+  (if (and coord-px (not flipped?))
+    (let [arc-seg 20
+          top (arc-interpolate coord-px cat-lo val-hi cat-hi val-hi arc-seg)
+          bottom (arc-interpolate coord-px cat-hi val-lo cat-lo val-lo arc-seg)]
+      (concat top bottom))
+    (let [[x1 y1 x2 y2 x3 y3 x4 y4]
+          (if flipped?
+            [val-lo cat-lo val-hi cat-lo val-hi cat-hi val-lo cat-hi]
+            [cat-lo val-lo cat-hi val-lo cat-hi val-hi cat-lo val-hi])]
+      [[x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1]])))
+
 (defn band-position
   "Compute dodged position within a categorical band.
    Returns {:lo :hi :mid} pixel coordinates for one sub-band.
@@ -421,26 +441,13 @@
 
 (defmethod render-layer :bar [layer ctx]
   (let [{:keys [style groups]} layer
-        {:keys [coord-fn sx sy]} ctx
+        {:keys [sx sy]} ctx
         coord-px (:coord-px ctx)
-        arc-seg 20
         {:keys [opacity]} style]
     (vec
      (for [{:keys [color bars]} groups
            {:keys [lo hi count]} bars
-           :let [pts (if coord-px
-                       ;; Polar: arc-interpolated wedge
-                       (let [px-lo (sx lo) px-hi (sx hi)
-                             py-0 (sy 0) py-top (sy count)
-                             top (arc-interpolate coord-px px-lo py-top px-hi py-top arc-seg)
-                             bottom (arc-interpolate coord-px px-hi py-0 px-lo py-0 arc-seg)]
-                         (concat top bottom))
-                       ;; Cartesian: 4-corner rectangle via coord-fn
-                       (let [[x1 y1] (coord-fn lo 0)
-                             [x2 y2] (coord-fn hi 0)
-                             [x3 y3] (coord-fn hi count)
-                             [x4 y4] (coord-fn lo count)]
-                         [[x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1]]))
+           :let [pts (bar-polygon coord-px false (sx lo) (sx hi) (sy 0) (sy count))
                  [cr cg cb _] color]]
        (ui/with-color [cr cg cb (or opacity 1.0)]
          (ui/with-style ::ui/style-fill
@@ -481,22 +488,9 @@
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [opacity]} style
         coord-px (:coord-px ctx)
-        arc-seg 20
         position (or position :dodge)
         mk-rect (fn [[cr cg cb _] cat-lo cat-hi val-lo val-hi]
-                  (let [pts (if (and coord-px (not flipped?))
-                              ;; Polar: arc-interpolated wedge
-                              ;; cat-lo/cat-hi are angular pixel positions (x-axis)
-                              ;; val-lo/val-hi are radial pixel positions (y-axis)
-                              (let [top (arc-interpolate coord-px cat-lo val-hi cat-hi val-hi arc-seg)
-                                    bottom (arc-interpolate coord-px cat-hi val-lo cat-lo val-lo arc-seg)]
-                                (concat top bottom))
-                              ;; Cartesian / flip: 4-corner rectangle
-                              (let [[x1 y1 x2 y2 x3 y3 x4 y4]
-                                    (if flipped?
-                                      [val-lo cat-lo val-hi cat-lo val-hi cat-hi val-lo cat-hi]
-                                      [cat-lo val-lo cat-hi val-lo cat-hi val-hi cat-lo val-hi])]
-                                [[x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1]]))]
+                  (let [pts (bar-polygon coord-px flipped? cat-lo cat-hi val-lo val-hi)]
                     (ui/with-color [cr cg cb (or opacity 1.0)]
                       (ui/with-style ::ui/style-fill
                         (apply ui/path pts)))))]
@@ -541,7 +535,6 @@
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [opacity]} style
         coord-px (:coord-px ctx)
-        arc-seg 20
         n-groups (count groups)]
     (vec
      (for [[gi {:keys [color xs ys]}] (map-indexed vector groups)
@@ -550,19 +543,7 @@
                  cat (nth xs i)
                  val (nth ys i)
                  bp (band-position band-s cat gi n-groups 0.8)
-                 cat-lo (:lo bp)
-                 cat-hi (:hi bp)
-                 val-lo (num-s 0)
-                 val-hi (num-s val)
-                 pts (if (and coord-px (not flipped?))
-                       (let [top (arc-interpolate coord-px cat-lo val-hi cat-hi val-hi arc-seg)
-                             bottom (arc-interpolate coord-px cat-hi val-lo cat-lo val-lo arc-seg)]
-                         (concat top bottom))
-                       (let [[x1 y1 x2 y2 x3 y3 x4 y4]
-                             (if flipped?
-                               [val-lo cat-lo val-hi cat-lo val-hi cat-hi val-lo cat-hi]
-                               [cat-lo val-lo cat-hi val-lo cat-hi val-hi cat-lo val-hi])]
-                         [[x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1]]))]]
+                 pts (bar-polygon coord-px flipped? (:lo bp) (:hi bp) (num-s 0) (num-s val))]]
        (ui/with-color [cr cg cb (or opacity 1.0)]
          (ui/with-style ::ui/style-fill
            (apply ui/path pts)))))))
