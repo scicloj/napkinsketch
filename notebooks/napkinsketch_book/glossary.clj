@@ -128,6 +128,7 @@
 ;; |:-----|:---------|
 ;; | `:cartesian` | Standard x→right, y→up |
 ;; | `:flip` | Swap x and y axes |
+;; | `:polar` | Radial: x→angle, y→radius |
 
 ;; ## Membrane (drawable tree)
 ;;

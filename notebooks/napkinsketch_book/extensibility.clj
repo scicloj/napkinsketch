@@ -259,9 +259,10 @@
 ;; |:---------------|:---------|
 ;; | `:cartesian` | Standard x-right, y-up mapping |
 ;; | `:flip` | Swap x and y axes |
+;; | `:polar` | Radial mapping: x→angle, y→radius |
 ;;
-;; Both use the same scales — `:flip` simply swaps which scale
-;; maps to which pixel axis.
+;; All three use the same scales — `:flip` swaps which scale
+;; maps to which pixel axis, and `:polar` maps x to angle and y to radius.
 
 ;; A flipped bar chart uses `:flip` coordinates:
 

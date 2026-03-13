@@ -159,7 +159,7 @@
    [:y-domain [:vector any?]]
    [:x-scale ScaleSpec]
    [:y-scale ScaleSpec]
-   [:coord [:enum :cartesian :flip]]
+   [:coord [:enum :cartesian :flip :polar]]
    [:x-ticks TickInfo]
    [:y-ticks TickInfo]
    [:layers [:vector Layer]]

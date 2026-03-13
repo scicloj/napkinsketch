@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Labels**: `labs` function for composable axis/title labels with priority
   chain: opts > view-level labs > scale label > auto-inferred
 - **Scales**: `:linear`, `:log`, `:categorical`, fixed domain via `sk/scale`
-- **Coordinates**: `:cartesian`, `:flip`
+- **Coordinates**: `:cartesian`, `:flip`, `:polar` (rose charts, polar scatter)
 - **Annotations**: `rule-v`, `rule-h`, `band-v`, `band-h` as first-class
   constructors in the public API
 - **Additive `lay`**: calling `lay` multiple times appends layers rather

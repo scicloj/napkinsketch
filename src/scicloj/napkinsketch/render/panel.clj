@@ -30,6 +30,37 @@
               (ui/with-style ::ui/style-stroke
                 (ui/path [m py] [(- pw m) py]))))))))))
 
+(defn render-polar-grid
+  "Render polar grid: concentric circles and radial spokes."
+  [pw ph m]
+  (let [{:keys [grid]} defaults/theme
+        grid-rgba (defaults/hex->rgba grid)
+        grid-w (:grid-stroke-width defaults/defaults)
+        cx (/ pw 2.0) cy (/ ph 2.0)
+        r-max (- (min cx cy) (double m))
+        ;; Concentric circles (approximated as 40-segment polygons)
+        n-seg 40
+        circles (for [i (range 1 6)
+                      :let [r (* r-max (/ (double i) 5.0))]]
+                  (ui/with-color grid-rgba
+                    (ui/with-stroke-width grid-w
+                      (ui/with-style ::ui/style-stroke
+                        (apply ui/path
+                               (for [j (range (inc n-seg))
+                                     :let [a (* 2.0 Math/PI (/ (double j) n-seg))]]
+                                 [(+ cx (* r (Math/cos a)))
+                                  (+ cy (* r (Math/sin a)))]))))))
+        ;; Radial spokes (8 lines from center to edge)
+        spokes (for [i (range 8)
+                     :let [a (* (double i) (/ Math/PI 4.0))]]
+                 (ui/with-color grid-rgba
+                   (ui/with-stroke-width grid-w
+                     (ui/with-style ::ui/style-stroke
+                       (ui/path [cx cy]
+                                [(+ cx (* r-max (Math/cos a)))
+                                 (+ cy (* r-max (Math/sin a)))])))))]
+    (vec (concat circles spokes))))
+
 ;; ---- Tick Labels ----
 
 (defn render-tick-labels
@@ -76,6 +107,13 @@
         ;; Coord function
         coord-fn (coord/make-coord coord-type sx sy pw ph m)
 
+        ;; Pixel-space reprojection for arc interpolation (polar)
+        coord-px (coord/make-coord-px coord-type sx sy pw ph m)
+
+        ;; Suppress ticks for polar coordinates
+        show-x? (and show-x? (coord/show-ticks? coord-type))
+        show-y? (and show-y? (coord/show-ticks? coord-type))
+
         ;; y-domain minimum for area baseline
         y-domain-min (if (number? (first y-domain))
                        (first y-domain)
@@ -84,6 +122,7 @@
         ;; Rendering context for mark/render-layer
         ctx {:coord-fn coord-fn :sx sx :sy sy
              :coord-type coord-type
+             :coord-px coord-px
              :y-domain-min y-domain-min}
 
         ;; Background
@@ -92,8 +131,10 @@
                      (ui/with-style ::ui/style-fill
                        (ui/rectangle pw ph)))
 
-        ;; Grid
-        grid (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m)
+        ;; Grid — polar gets circles + spokes; cartesian/flip get tick-aligned lines
+        grid (if (= coord-type :polar)
+               (render-polar-grid pw ph m)
+               (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m))
 
         ;; Data marks from sketch layers
         marks (vec (mapcat #(mark/render-layer % ctx) layers))

@@ -6,7 +6,8 @@
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.stat :as stat]
-            [scicloj.napkinsketch.impl.scale :as scale]))
+            [scicloj.napkinsketch.impl.scale :as scale]
+            [scicloj.napkinsketch.impl.coord :as coord]))
 
 ;; ---- Color Resolution (data-space) ----
 
@@ -541,11 +542,12 @@
                               x-scale-spec y-scale-spec annotations
                               x-vars y-vars pw ph m cfg)
 
-         ;; Labels
+         ;; Labels — suppress auto-labels for multi-variable grids and polar coords
          multi? (and (= layout-type :multi-variable) (> grid-cols 1) (> grid-rows 1))
+         auto-label? (and (not multi?) (coord/show-ticks? coord-type))
          {:keys [eff-title eff-x-label eff-y-label]}
          (resolve-labels non-ann-views x-vars y-vars x-scale-spec y-scale-spec
-                         title x-label y-label (not multi?))
+                         title x-label y-label auto-label?)
 
          ;; Legend
          legend (build-legend resolved-all numeric-color? all-colors color-cols)

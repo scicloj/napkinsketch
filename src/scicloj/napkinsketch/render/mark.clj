@@ -6,6 +6,30 @@
 
 ;; ---- Helpers ----
 
+(defn orient-scales
+  "Extract oriented scales from rendering context.
+   For categorical marks that need band positioning, returns the
+   categorical (band) scale and numeric scale, swapped when flipped.
+   Returns {:flipped? :band-s :num-s}."
+  [ctx]
+  (let [flipped? (= (:coord-type ctx) :flip)]
+    {:flipped? flipped?
+     :band-s (if flipped? (:sy ctx) (:sx ctx))
+     :num-s (if flipped? (:sx ctx) (:sy ctx))}))
+
+(defn arc-interpolate
+  "Subdivide a line segment in pixel space through coord-px reprojection.
+   Given two pixel-space endpoints (already in Cartesian panel coords),
+   interpolates n intermediate points, projects each through coord-px,
+   and returns a seq of [x y] pairs. Used for smooth wedge edges in polar."
+  [coord-px px1 py1 px2 py2 n-seg]
+  (mapv (fn [i]
+          (let [t (/ (double i) (double n-seg))
+                px (+ px1 (* t (- px2 px1)))
+                py (+ py1 (* t (- py2 py1)))]
+            (coord-px px py)))
+        (range (inc n-seg))))
+
 (defn band-position
   "Compute dodged position within a categorical band.
    Returns {:lo :hi :mid} pixel coordinates for one sub-band.
@@ -159,32 +183,29 @@
          [(ui/with-style ::ui/style-stroke
             (ui/with-stroke-width sw
               ;; Vertical line from ymin to ymax
-              (apply ui/path [[px py-min] [px py-max]])))
+              (ui/path [px py-min] [px py-max])))
           ;; Bottom cap
           (ui/with-style ::ui/style-stroke
             (ui/with-stroke-width sw
-              (apply ui/path [[(- (double px) cap-hw) py-min]
-                              [(+ (double px) cap-hw) py-min]])))
+              (ui/path [(- (double px) cap-hw) py-min]
+                       [(+ (double px) cap-hw) py-min])))
           ;; Top cap
           (ui/with-style ::ui/style-stroke
             (ui/with-stroke-width sw
-              (apply ui/path [[(- (double px) cap-hw) py-max]
-                              [(+ (double px) cap-hw) py-max]])))])))))
+              (ui/path [(- (double px) cap-hw) py-max]
+                       [(+ (double px) cap-hw) py-max])))])))))
 
 ;; ---- Lollipop ----
 
 (defmethod render-layer :lollipop [layer ctx]
   (let [{:keys [style groups]} layer
-        {:keys [coord-type]} ctx
-        flipped? (= coord-type :flip)
-        band-s (if flipped? (:sy ctx) (:sx ctx))
-        num-s (if flipped? (:sx ctx) (:sy ctx))
+        {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [radius stroke-width]} style
-        n-groups (clojure.core/count groups)
+        n-groups (count groups)
         r (or radius 4)]
     (vec
      (for [[gi {:keys [color xs ys]}] (map-indexed vector groups)
-           i (range (clojure.core/count xs))
+           i (range (count xs))
            :let [[cr cg cb _] color
                  cat (nth xs i)
                  val (nth ys i)
@@ -196,8 +217,8 @@
           (ui/with-style ::ui/style-stroke
             (ui/with-stroke-width (or stroke-width 1.5)
               (if flipped?
-                (apply ui/path [[val-base cat-pos] [val-top cat-pos]])
-                (apply ui/path [[cat-pos val-base] [cat-pos val-top]])))))
+                (ui/path [val-base cat-pos] [val-top cat-pos])
+                (ui/path [cat-pos val-base] [cat-pos val-top])))))
         (ui/translate (if flipped? (- (double val-top) r) (- (double cat-pos) r))
                       (if flipped? (- (double cat-pos) r) (- (double val-top) r))
                       (ui/with-color [cr cg cb 1.0]
@@ -208,10 +229,7 @@
 
 (defmethod render-layer :boxplot [layer ctx]
   (let [{:keys [style boxes color-categories]} layer
-        {:keys [coord-type sx sy]} ctx
-        flipped? (= coord-type :flip)
-        band-s (if flipped? sy sx)
-        num-s (if flipped? sx sy)
+        {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [box-width stroke-width]} style
         box-frac (or box-width 0.6)
         sw (or stroke-width 1.5)
@@ -283,10 +301,7 @@
 
 (defmethod render-layer :violin [layer ctx]
   (let [{:keys [style violins color-categories]} layer
-        {:keys [coord-type sx sy]} ctx
-        flipped? (= coord-type :flip)
-        band-s (if flipped? sy sx)
-        num-s (if flipped? sx sy)
+        {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [opacity stroke-width]} style
         n-colors (if (seq color-categories) (count color-categories) 1)
         color-idx-map (when (seq color-categories)
@@ -337,19 +352,30 @@
 
 (defmethod render-layer :bar [layer ctx]
   (let [{:keys [style groups]} layer
-        {:keys [coord-fn]} ctx
+        {:keys [coord-fn sx sy]} ctx
+        coord-px (:coord-px ctx)
+        arc-seg 20
         {:keys [opacity]} style]
     (vec
      (for [{:keys [color bars]} groups
            {:keys [lo hi count]} bars
-           :let [[x1 y1] (coord-fn lo 0)
-                 [x2 y2] (coord-fn hi 0)
-                 [x3 y3] (coord-fn hi count)
-                 [x4 y4] (coord-fn lo count)
+           :let [pts (if coord-px
+                       ;; Polar: arc-interpolated wedge
+                       (let [px-lo (sx lo) px-hi (sx hi)
+                             py-0 (sy 0) py-top (sy count)
+                             top (arc-interpolate coord-px px-lo py-top px-hi py-top arc-seg)
+                             bottom (arc-interpolate coord-px px-hi py-0 px-lo py-0 arc-seg)]
+                         (concat top bottom))
+                       ;; Cartesian: 4-corner rectangle via coord-fn
+                       (let [[x1 y1] (coord-fn lo 0)
+                             [x2 y2] (coord-fn hi 0)
+                             [x3 y3] (coord-fn hi count)
+                             [x4 y4] (coord-fn lo count)]
+                         [[x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1]]))
                  [cr cg cb _] color]]
        (ui/with-color [cr cg cb (or opacity 1.0)]
          (ui/with-style ::ui/style-fill
-           (ui/path [x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1])))))))
+           (apply ui/path pts)))))))
 
 ;; ---- Line ----
 
@@ -383,20 +409,28 @@
   "Render categorical count bars from a sketch :rect layer."
   [layer ctx]
   (let [{:keys [style groups position categories]} layer
-        {:keys [coord-type]} ctx
-        flipped? (= coord-type :flip)
-        band-s (if flipped? (:sy ctx) (:sx ctx))
-        num-s (if flipped? (:sx ctx) (:sy ctx))
+        {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [opacity]} style
+        coord-px (:coord-px ctx)
+        arc-seg 20
         position (or position :dodge)
         mk-rect (fn [[cr cg cb _] cat-lo cat-hi val-lo val-hi]
-                  (let [[x1 y1 x2 y2 x3 y3 x4 y4]
-                        (if flipped?
-                          [val-lo cat-lo val-hi cat-lo val-hi cat-hi val-lo cat-hi]
-                          [cat-lo val-lo cat-hi val-lo cat-hi val-hi cat-lo val-hi])]
+                  (let [pts (if (and coord-px (not flipped?))
+                              ;; Polar: arc-interpolated wedge
+                              ;; cat-lo/cat-hi are angular pixel positions (x-axis)
+                              ;; val-lo/val-hi are radial pixel positions (y-axis)
+                              (let [top (arc-interpolate coord-px cat-lo val-hi cat-hi val-hi arc-seg)
+                                    bottom (arc-interpolate coord-px cat-hi val-lo cat-lo val-lo arc-seg)]
+                                (concat top bottom))
+                              ;; Cartesian / flip: 4-corner rectangle
+                              (let [[x1 y1 x2 y2 x3 y3 x4 y4]
+                                    (if flipped?
+                                      [val-lo cat-lo val-hi cat-lo val-hi cat-hi val-lo cat-hi]
+                                      [cat-lo val-lo cat-hi val-lo cat-hi val-hi cat-lo val-hi])]
+                                [[x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1]]))]
                     (ui/with-color [cr cg cb (or opacity 1.0)]
                       (ui/with-style ::ui/style-fill
-                        (ui/path [x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1])))))]
+                        (apply ui/path pts)))))]
     (if (= position :stack)
       ;; Stacked: accumulate base heights per category
       (let [items (for [[_bi {:keys [color counts]}] (map-indexed vector groups)
@@ -435,15 +469,14 @@
   "Render value bars from a sketch :rect layer."
   [layer ctx]
   (let [{:keys [style groups]} layer
-        {:keys [coord-type]} ctx
-        flipped? (= coord-type :flip)
-        band-s (if flipped? (:sy ctx) (:sx ctx))
-        num-s (if flipped? (:sx ctx) (:sy ctx))
+        {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [opacity]} style
-        n-groups (clojure.core/count groups)]
+        coord-px (:coord-px ctx)
+        arc-seg 20
+        n-groups (count groups)]
     (vec
      (for [[gi {:keys [color xs ys]}] (map-indexed vector groups)
-           i (range (clojure.core/count xs))
+           i (range (count xs))
            :let [[cr cg cb _] color
                  cat (nth xs i)
                  val (nth ys i)
@@ -452,13 +485,18 @@
                  cat-hi (:hi bp)
                  val-lo (num-s 0)
                  val-hi (num-s val)
-                 [x1 y1 x2 y2 x3 y3 x4 y4]
-                 (if flipped?
-                   [val-lo cat-lo val-hi cat-lo val-hi cat-hi val-lo cat-hi]
-                   [cat-lo val-lo cat-hi val-lo cat-hi val-hi cat-lo val-hi])]]
+                 pts (if (and coord-px (not flipped?))
+                       (let [top (arc-interpolate coord-px cat-lo val-hi cat-hi val-hi arc-seg)
+                             bottom (arc-interpolate coord-px cat-hi val-lo cat-lo val-lo arc-seg)]
+                         (concat top bottom))
+                       (let [[x1 y1 x2 y2 x3 y3 x4 y4]
+                             (if flipped?
+                               [val-lo cat-lo val-hi cat-lo val-hi cat-hi val-lo cat-hi]
+                               [cat-lo val-lo cat-hi val-lo cat-hi val-hi cat-lo val-hi])]
+                         [[x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1]]))]]
        (ui/with-color [cr cg cb (or opacity 1.0)]
          (ui/with-style ::ui/style-fill
-           (ui/path [x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1])))))))
+           (apply ui/path pts)))))))
 
 (defmethod render-layer :rect [layer ctx]
   (if (:categories layer)

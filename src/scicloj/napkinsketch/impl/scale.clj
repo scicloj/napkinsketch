@@ -2,9 +2,6 @@
   (:require [wadogo.scale :as ws]
             [scicloj.napkinsketch.impl.defaults :as defaults]))
 
-(defn numeric-domain? [dom]
-  (and (sequential? dom) (seq dom) (number? (first dom))))
-
 (defn categorical-domain? [dom]
   (and (sequential? dom) (seq dom) (not (number? (first dom)))))
 
