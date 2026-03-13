@@ -1,6 +1,6 @@
 # napkinsketch
 
-Composable plotting in Clojure.
+Simple and easy plotting
 
 ## General info
 |||
