@@ -1,4 +1,4 @@
-# napkinsketch
+# Napkinsketch
 
 Simple and easy plotting
 
@@ -13,11 +13,15 @@ Simple and easy plotting
 
 ## Quick Example
 
+Napkinsketch is intended to be used with data-visualization tools
+that support the [Kindly](https://scicloj.github.io/kindly) convention
+such as [Clay](https://scicloj.github.io/clay/).
+
 ```clojure
 (require '[tablecloth.api :as tc]
          '[scicloj.napkinsketch.api :as sk])
 
-(def iris (tc/dataset "https://...iris.csv" {:key-fn keyword}))
+(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv" {:key-fn keyword}))
 
 ;; Scatter plot with color grouping and regression lines
 (-> iris
