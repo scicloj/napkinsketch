@@ -12,13 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `render-figure`, `point`, `line`, `histogram`, `bar`, `stacked-bar`,
   `value-bar`, `lm`, `loess`, `labs`, `coord`, `scale`, `cross`,
   `valid-sketch?`, `explain-sketch`
-- **Marks**: point, line, histogram (stat :bin), bar (stat :count), stacked-bar,
+- **Marks**: point, line, histogram, tile (heatmap), ridgeline (stat :bin), bar (stat :count), stacked-bar,
   value-bar (stat :identity), lm (stat :lm), loess (stat :loess)
 - **Aesthetics**: `:color` (column), `:alpha` (constant or column),
-  `:size` (constant or column), `:shape` (column), `:group` (column)
+  `:size` (constant or column), `:shape` (column), `:group` (column) , `:palette` (custom color cycle)
 - **Labels**: `labs` function for composable axis/title labels with priority
   chain: opts > view-level labs > scale label > auto-inferred
-- **Scales**: `:linear`, `:log`, `:categorical`, fixed domain via `sk/scale`
+- **Scales**: `:linear`, `:log`, `:categorical`, fixed domain via `sk/scale` ; automatic date axis for temporal columns
 - **Coordinates**: `:cartesian`, `:flip`, `:polar` (rose charts, polar scatter)
 - **Annotations**: `rule-v`, `rule-h`, `band-v`, `band-h` as first-class
   constructors in the public API

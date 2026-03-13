@@ -67,10 +67,13 @@
 
 (defn color-for
   "Look up the color for a categorical value from the palette.
-  Returns [r g b a] vector."
-  [categories val]
-  (let [idx (.indexOf ^java.util.List (vec categories) val)]
-    (hex->rgba (nth ggplot-palette (mod (if (neg? idx) 0 idx) (count ggplot-palette))))))
+  Returns [r g b a] vector. Accepts an optional custom palette (vector of hex strings)."
+  ([categories val]
+   (color-for categories val nil))
+  ([categories val palette]
+   (let [pal (or palette ggplot-palette)
+         idx (.indexOf ^java.util.List (vec categories) val)]
+     (hex->rgba (nth pal (mod (if (neg? idx) 0 idx) (count pal)))))))
 
 ;; ---- Continuous Color ----
 

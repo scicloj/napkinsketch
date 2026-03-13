@@ -345,6 +345,75 @@
                  (apply ui/path all-pts))))]))
       violins))))
 
+;; ---- Tile (heatmap) ----
+
+(defmethod render-layer :tile [layer ctx]
+  (let [{:keys [style tiles]} layer
+        {:keys [coord-fn]} ctx
+        {:keys [opacity]} style]
+    (vec
+     (for [{:keys [x-lo x-hi y-lo y-hi color]} tiles
+           :let [[px1 py1] (coord-fn x-lo y-lo)
+                 [px2 py2] (coord-fn x-hi y-hi)
+                 x-min (min px1 px2)
+                 y-min (min py1 py2)
+                 w (Math/abs (- (double px2) (double px1)))
+                 h (Math/abs (- (double py2) (double py1)))
+                 [cr cg cb _] color]]
+       (ui/translate x-min y-min
+                     (ui/with-color [cr cg cb (or opacity 1.0)]
+                       (ui/with-style ::ui/style-fill
+                         (ui/rectangle w h))))))))
+
+;; ---- Ridgeline ----
+
+(defmethod render-layer :ridgeline [layer ctx]
+  (let [{:keys [style ridges categories]} layer
+        {:keys [sx sy]} ctx
+        {:keys [opacity]} style
+        n-cats (count categories)
+        ;; Each ridge occupies a band in the categorical (x) scale
+        ;; but the density curve spans the numeric (y) axis
+        ;; The band scale gives us the vertical position per category
+        cat-positions (into {} (map-indexed
+                                (fn [i cat]
+                                  (let [info (sx cat true)]
+                                    [cat {:mid (/ (+ (:rstart info) (:rend info)) 2.0)
+                                          :bw (- (:rend info) (:rstart info))}]))
+                                categories))
+        ;; Max density across all ridges for normalization
+        max-d (reduce max 0.001 (mapcat :densities ridges))
+        ;; Overlap factor: each ridge can extend 1.5× the band width
+        overlap 1.5]
+    (vec
+     ;; Render from back (last category) to front (first category)
+     ;; so that front ridges overlap back ones
+     (for [ridge (reverse ridges)
+           :let [{:keys [category color ys densities]} ridge
+                 {:keys [mid bw]} (get cat-positions category)
+                 norm (* bw overlap (/ 1.0 max-d))
+                 n (count ys)
+                 [cr cg cb _] color
+                 ;; Build polygon: baseline at mid, curve goes upward (toward lower px)
+                 curve-pts (mapv (fn [i]
+                                   (let [y-val (nth ys i)
+                                         d (nth densities i)
+                                         py (sy y-val)
+                                         px (- (double mid) (* d norm))]
+                                     [py px]))
+                                 (range n))
+                 ;; Baseline points (flat line at mid)
+                 base-pts [(let [py (sy (nth ys (dec n)))] [py mid])
+                           (let [py (sy (nth ys 0))] [py mid])]
+                 all-pts (concat curve-pts base-pts)]]
+       [(ui/with-color [cr cg cb (or opacity 0.7)]
+          (ui/with-style ::ui/style-fill
+            (apply ui/path all-pts)))
+        (ui/with-color [cr cg cb 1.0]
+          (ui/with-stroke-width 1.0
+            (ui/with-style ::ui/style-stroke
+              (apply ui/path curve-pts))))]))))
+
 (defmethod render-layer :default [layer ctx]
   (render-layer (assoc layer :mark :point) ctx))
 

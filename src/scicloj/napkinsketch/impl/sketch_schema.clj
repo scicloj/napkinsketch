@@ -116,6 +116,15 @@
    [:ys [:vector number?]]
    [:densities [:vector number?]]])
 
+(def TileEntry
+  "A single tile (heatmap cell) with bounds and fill color."
+  [:map
+   [:x-lo number?]
+   [:x-hi number?]
+   [:y-lo number?]
+   [:y-hi number?]
+   [:color Color]])
+
 ;; ---- Layer ----
 
 (def MarkStyle
@@ -139,14 +148,16 @@
 (def Layer
   "A rendered mark layer with data-space geometry."
   [:map
-   [:mark [:enum :point :bar :line :rect :text :area :errorbar :lollipop :boxplot :violin]]
+   [:mark [:enum :point :bar :line :rect :text :area :errorbar :lollipop :boxplot :violin :tile :ridgeline]]
    [:style MarkStyle]
    [:groups {:optional true} [:vector [:or PointGroup BarGroup RectCountGroup RectValueGroup
                                        LineSegmentGroup PolylineGroup TextGroup ErrorbarGroup]]]
    [:boxes {:optional true} [:vector BoxplotBox]]
    [:violins {:optional true} [:vector ViolinEntry]]
+   [:tiles {:optional true} [:vector TileEntry]]
+   [:ridges {:optional true} [:vector [:map [:category any?] [:color Color] [:ys [:vector number?]] [:densities [:vector number?]]]]]
    [:color-categories {:optional true} [:maybe [:vector any?]]]
-   [:stat-origin {:optional true} [:enum :identity :bin :count :lm :loess :kde :boxplot :violin]]
+   [:stat-origin {:optional true} [:enum :identity :bin :count :lm :loess :kde :boxplot :violin :bin2d]]
    [:position {:optional true} [:enum :dodge :stack]]
    [:categories {:optional true} [:vector any?]]])
 

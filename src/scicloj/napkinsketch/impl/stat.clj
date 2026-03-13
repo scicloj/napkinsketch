@@ -380,3 +380,42 @@
          :color-categories color-cats
          :x-domain categories
          :y-domain [y-min y-max]}))))
+
+;; ---- 2D Binning (for heatmap/tile) ----
+
+(defmethod compute-stat :bin2d [{:keys [data x y cfg] :as view}]
+  (let [cfg (or cfg defaults/defaults)
+        clean (tc/drop-missing data [x y])
+        n (tc/row-count clean)]
+    (if (zero? n)
+      {:tiles [] :x-domain [0 1] :y-domain [0 1] :fill-range [0 1]}
+      (let [xs-col (clean x)
+            ys-col (clean y)
+            [x-min x-max] (numeric-extent xs-col)
+            [y-min y-max] (numeric-extent ys-col)
+            n-bins (or (:tile-bins cfg) 15)
+            x-step (/ (- (double x-max) (double x-min)) n-bins)
+            y-step (/ (- (double y-max) (double y-min)) n-bins)
+            ;; Count points in each bin
+            counts (reduce (fn [acc i]
+                             (let [xv (double (xs-col i))
+                                   yv (double (ys-col i))
+                                   xi (min (int (/ (- xv x-min) (max 1e-10 x-step)))
+                                           (dec n-bins))
+                                   yi (min (int (/ (- yv y-min) (max 1e-10 y-step)))
+                                           (dec n-bins))
+                                   k [xi yi]]
+                               (assoc acc k (inc (get acc k 0)))))
+                           {}
+                           (range n))
+            max-count (reduce max 1 (vals counts))
+            tiles (vec (for [[[xi yi] cnt] counts]
+                         {:x-lo (+ x-min (* xi x-step))
+                          :x-hi (+ x-min (* (inc xi) x-step))
+                          :y-lo (+ y-min (* yi y-step))
+                          :y-hi (+ y-min (* (inc yi) y-step))
+                          :fill cnt}))]
+        {:tiles tiles
+         :x-domain [x-min x-max]
+         :y-domain [y-min y-max]
+         :fill-range [0 max-count]}))))

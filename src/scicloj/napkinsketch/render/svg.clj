@@ -194,7 +194,7 @@
 (defn svg-summary
   "Extract structural summary from SVG hiccup for testing.
    Returns a map with :width, :height, :panels, :points, :lines,
-   :polygons, and :texts — useful for asserting plot structure.
+   :polygons, :tiles, and :texts — useful for asserting plot structure.
    (svg-summary (plot views))  — summary of rendered SVG
 
    Counts:
@@ -202,6 +202,7 @@
    :points  — number of data point markers (small rounded rects)
    :lines   — number of non-grid polylines (data lines, annotations, whiskers)
    :polygons — number of filled polygons (bars, histogram bins, areas, violins)
+   :tiles   — number of heatmap tile rectangles (small rects without border-radius)
    :texts   — vector of all text content strings"
   [svg]
   (let [attrs (when (and (vector? svg) (map? (second svg))) (second svg))
@@ -222,6 +223,7 @@
                                     (number? (:height a))
                                     (> (double (:height a)) 50)))
                             rects)
+        panel-set (set panel-rects)
         ;; Points: rects with rx > 0, excluding legend swatches (known size)
         legend-rects (filter #(let [a (second %)]
                                 (and (= sw (double (or (:width a) 0)))
@@ -234,6 +236,14 @@
                                    (number? (:rx a))
                                    (pos? (double (:rx a)))))
                            rects)
+        ;; Tiles: small rects without rx that are not panels or legend swatches
+        tile-rects (filter #(let [a (second %)]
+                              (and (not (panel-set %))
+                                   (not (legend-set %))
+                                   (nil? (:rx a))
+                                   (number? (:width a))
+                                   (number? (:height a))))
+                           rects)
         ;; Lines: filter out grid-colored polylines (theme-derived)
         data-polylines (remove #(= grid-color (get (second %) :stroke)) polylines)]
     {:width (:width attrs)
@@ -242,4 +252,5 @@
      :points (count data-rects)
      :lines (count data-polylines)
      :polygons (count polygons)
+     :tiles (count tile-rects)
      :texts (mapv last texts)}))

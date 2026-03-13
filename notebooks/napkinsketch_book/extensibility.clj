@@ -66,6 +66,7 @@
 ;; | `:kde` | Kernel density estimation |
 ;; | `:boxplot` | Five-number summary with outlier detection |
 ;; | `:violin` | Kernel density estimation per category |
+;; | `:bin2d` | 2D binning for heatmap tiles |
 ;;
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
@@ -121,6 +122,7 @@
 ;; | `:violin` | Violin entries with density curves |
 ;; | `:errorbar` | Groups with `:xs`, `:ys`, `:ymins`, `:ymaxs` |
 ;; | `:lollipop` | Groups with `:xs`, `:ys` for stems + dots |
+;; | `:tile` | Tiles with `:x-lo`, `:x-hi`, `:y-lo`, `:y-hi`, `:color` |
 ;;
 ;; Dispatch function: `(fn [view stat all-colors cfg] (:mark view))`
 
@@ -153,6 +155,7 @@
 ;; | `:violin` | Mirrored filled density polygon |
 ;; | `:errorbar` | Vertical lines with caps |
 ;; | `:lollipop` | Stems with dots at category positions |
+;; | `:tile` | Translated colored rectangles (heatmap cells) |
 ;;
 ;; Dispatch function: `(fn [layer ctx] (:mark layer))`
 ;;

@@ -31,7 +31,7 @@
  v5_l27
  (kind/pprint
   (mapv
-   (fn* [p1__84212#] (select-keys p1__84212# [:x :y :mark :color]))
+   (fn* [p1__96824#] (select-keys p1__96824# [:x :y :mark :color]))
    views)))
 
 
@@ -92,25 +92,25 @@
    v21_l101)))
 
 
-(def v24_l142 (def my-membrane (membrane/sketch->membrane my-sketch)))
+(def v24_l147 (def my-membrane (membrane/sketch->membrane my-sketch)))
 
 
-(def v25_l144 (vector? my-membrane))
+(def v25_l149 (vector? my-membrane))
 
 
-(deftest t26_l146 (is ((fn [v] (true? v)) v25_l144)))
+(deftest t26_l151 (is ((fn [v] (true? v)) v25_l149)))
 
 
-(def v27_l148 (count my-membrane))
+(def v27_l153 (count my-membrane))
 
 
-(deftest t28_l150 (is ((fn [n] (pos? n)) v27_l148)))
+(deftest t28_l155 (is ((fn [n] (pos? n)) v27_l153)))
 
 
-(def v30_l160 (def my-figure (sk/render-figure my-sketch :svg {})))
+(def v30_l165 (def my-figure (sk/render-figure my-sketch :svg {})))
 
 
-(def v31_l162 (first my-figure))
+(def v31_l167 (first my-figure))
 
 
-(deftest t32_l164 (is ((fn [v] (= :svg v)) v31_l162)))
+(deftest t32_l169 (is ((fn [v] (= :svg v)) v31_l167)))

@@ -118,6 +118,10 @@
 ;;
 ;; Scales are created at render time, not stored in the sketch.
 ;; The sketch stores scale *specs* (`:type`, `:domain`).
+;;
+;; **Temporal columns** (`LocalDate`, `LocalDateTime`, `Instant`,
+;; `java.util.Date`) are automatically detected and converted to
+;; epoch-day numbers. Tick labels display as date strings (e.g. `2024-01-15`).
 
 ;; ## Coord
 ;;

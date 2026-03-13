@@ -15,7 +15,7 @@
   "Resolve a color value to [r g b a]. Handles column values, fixed colors, and defaults."
   [all-colors color-val fixed-color cfg]
   (cond
-    color-val (defaults/color-for all-colors color-val)
+    color-val (defaults/color-for all-colors color-val (:palette cfg))
     fixed-color (if (string? fixed-color) (defaults/hex->rgba fixed-color) fixed-color)
     :else (defaults/hex->rgba (:default-color (or cfg defaults/defaults)))))
 
@@ -176,6 +176,60 @@
                           :densities (vec (:densities v))}
                    (:color v) (assoc :color-category (:color v)))))}))
 
+(defmethod extract-layer :tile [view stat all-colors cfg]
+  (let [cfg (or cfg defaults/defaults)
+        fill-col (:fill view)
+        ;; Two paths: bin2d stat produces :tiles directly;
+        ;; identity stat with :fill uses point groups
+        tiles (if (:tiles stat)
+                ;; bin2d path
+                (let [[f-lo f-hi] (:fill-range stat)
+                      f-span (max 1e-10 (- (double f-hi) (double f-lo)))]
+                  (vec (for [{:keys [x-lo x-hi y-lo y-hi fill]} (:tiles stat)
+                             :let [t (/ (- (double fill) (double f-lo)) f-span)]]
+                         {:x-lo x-lo :x-hi x-hi :y-lo y-lo :y-hi y-hi
+                          :color (defaults/gradient-color t)})))
+                ;; identity path — each point is a tile at (x, y) with fill value
+                (let [all-fills (mapcat (fn [{:keys [xs ys] :as g}]
+                                          (when fill-col
+                                            ((:data view) fill-col)))
+                                        (:points stat))
+                      ;; Get fill values from the raw data
+                      data (:data view)
+                      fill-vals (when fill-col (data fill-col))
+                      f-lo (when (seq fill-vals) (reduce min fill-vals))
+                      f-hi (when (seq fill-vals) (reduce max fill-vals))
+                      f-span (max 1e-10 (- (double (or f-hi 1)) (double (or f-lo 0))))]
+                  (vec (for [{:keys [xs ys]} (:points stat)
+                             i (range (count xs))
+                             :let [xv (nth xs i)
+                                   yv (nth ys i)]]
+                         {:x-lo xv :x-hi xv :y-lo yv :y-hi yv
+                          :color (if fill-vals
+                                   (let [;; Find matching fill value by index
+                                         ;; Since identity stat preserves order, use i
+                                         fv (nth fill-vals i)
+                                         t (/ (- (double fv) (double f-lo)) f-span)]
+                                     (defaults/gradient-color t))
+                                   (defaults/gradient-color 0.5))}))))]
+    {:mark :tile
+     :style {:opacity (or (:fixed-alpha view) 1.0)}
+     :tiles tiles}))
+
+(defmethod extract-layer :ridgeline [view stat all-colors cfg]
+  (let [cfg (or cfg defaults/defaults)
+        violins (:violins stat)
+        categories (:categories stat)]
+    {:mark :ridgeline
+     :style {:opacity (or (:fixed-alpha view) 0.7)}
+     :ridges (vec (for [v violins]
+                    (cond-> {:category (:category v)
+                             :color (resolve-color all-colors (:color v) (:fixed-color view) cfg)
+                             :ys (vec (:ys v))
+                             :densities (vec (:densities v))}
+                      (:color v) (assoc :color-category (:color v)))))
+     :categories (vec categories)}))
+
 (defmethod extract-layer :default [view stat all-colors cfg]
   (extract-layer (assoc view :mark :point) stat all-colors cfg))
 
@@ -225,20 +279,27 @@
 ;; ---- Tick Computation ----
 
 (defn compute-ticks
-  "Compute tick values and labels for a domain+pixel range, using wadogo transiently."
-  [domain pixel-range scale-spec spacing]
-  (if (scale/categorical-domain? domain)
-    (let [s (scale/make-scale domain pixel-range scale-spec)]
-      {:values (vec (ws/ticks s))
-       :labels (mapv str (ws/ticks s))
-       :categorical? true})
-    (let [s (scale/make-scale domain pixel-range scale-spec)
-          n (scale/tick-count (Math/abs (double (- (second pixel-range) (first pixel-range)))) spacing)
-          ticks (ws/ticks s n)
-          labels (scale/format-ticks s ticks)]
-      {:values (vec ticks)
-       :labels (vec labels)
-       :categorical? false})))
+  "Compute tick values and labels for a domain+pixel range, using wadogo transiently.
+   When temporal? is true, tick values are epoch-days and labels are date strings."
+  ([domain pixel-range scale-spec spacing]
+   (compute-ticks domain pixel-range scale-spec spacing false))
+  ([domain pixel-range scale-spec spacing temporal?]
+   (if (scale/categorical-domain? domain)
+     (let [s (scale/make-scale domain pixel-range scale-spec)]
+       {:values (vec (ws/ticks s))
+        :labels (mapv str (ws/ticks s))
+        :categorical? true})
+     (let [s (scale/make-scale domain pixel-range scale-spec)
+           n (scale/tick-count (Math/abs (double (- (second pixel-range) (first pixel-range)))) spacing)
+           ticks (ws/ticks s n)
+           labels (if temporal?
+                    (mapv (fn [epoch-day]
+                            (str (java.time.LocalDate/ofEpochDay (long epoch-day))))
+                          ticks)
+                    (scale/format-ticks s ticks))]
+       {:values (vec ticks)
+        :labels (vec labels)
+        :categorical? false}))))
 
 ;; ---- Layout Detection ----
 
@@ -403,10 +464,17 @@
              [x-sspec' y-sspec'] (if (= coord-type :flip)
                                    [y-scale-spec x-scale-spec]
                                    [x-scale-spec y-scale-spec])
+             ;; Detect temporal axes from view flags
+             resolved-views (:resolved pd)
+             x-temporal? (some :x-temporal? resolved-views)
+             y-temporal? (some :y-temporal? resolved-views)
+             [x-temp? y-temp?] (if (= coord-type :flip)
+                                 [y-temporal? x-temporal?]
+                                 [x-temporal? y-temporal?])
              x-px [m (- pw m)]
              y-px [(- ph m) m]
-             x-ticks (when x-dom' (compute-ticks x-dom' x-px x-sspec' (:tick-spacing-x cfg)))
-             y-ticks (when y-dom' (compute-ticks y-dom' y-px y-sspec' (:tick-spacing-y cfg)))]
+             x-ticks (when x-dom' (compute-ticks x-dom' x-px x-sspec' (:tick-spacing-x cfg) x-temp?))
+             y-ticks (when y-dom' (compute-ticks y-dom' y-px y-sspec' (:tick-spacing-y cfg) y-temp?))]
          (cond-> {:x-domain (vec (if (sequential? x-dom') x-dom' [x-dom']))
                   :y-domain (vec (if (sequential? y-dom') y-dom' [y-dom']))
                   :x-scale x-sspec'
@@ -444,7 +512,7 @@
 
 (defn- build-legend
   "Build legend from resolved views and color info."
-  [resolved-all numeric-color? all-colors color-cols]
+  [resolved-all numeric-color? all-colors color-cols cfg]
   (cond
     numeric-color?
     (let [color-views (filter #(and (view/column-ref? (:color %))
@@ -461,7 +529,7 @@
     {:title (first color-cols)
      :entries (vec (for [cat all-colors]
                      {:label (str cat)
-                      :color (defaults/color-for all-colors cat)}))}))
+                      :color (defaults/color-for all-colors cat (:palette cfg))}))}))
 
 (defn- compute-layout-dims
   "Compute layout dimensions: padding, legend width, total size."
@@ -494,8 +562,8 @@
    with data-space geometry, domains, ticks, legend, and layout info.
    No membrane types, no datasets in the output."
   ([views] (resolve-sketch views {}))
-  ([views {:keys [width height config x-label y-label title scales] :as opts}]
-   (let [cfg (merge defaults/defaults config)
+  ([views {:keys [width height config x-label y-label title scales palette] :as opts}]
+   (let [cfg (cond-> (merge defaults/defaults config) palette (assoc :palette palette))
          width (or width (:width cfg))
          height (or height (:height cfg))
          views (if (map? views) [views] views)
@@ -550,7 +618,7 @@
                          title x-label y-label auto-label?)
 
          ;; Legend
-         legend (build-legend resolved-all numeric-color? all-colors color-cols)
+         legend (build-legend resolved-all numeric-color? all-colors color-cols cfg)
 
          ;; Layout dimensions
          layout-dims (compute-layout-dims cfg layout-type eff-title eff-x-label eff-y-label

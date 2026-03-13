@@ -1,6 +1,7 @@
 {"Getting Started" ["quickstart"]
  "Gallery" ["scatter_gallery"
             "distributions"
+            "polar"
             "layers"
             "config"
             "faceting"]

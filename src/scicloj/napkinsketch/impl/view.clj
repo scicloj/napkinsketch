@@ -1,7 +1,8 @@
 (ns scicloj.napkinsketch.impl.view
   (:require [tablecloth.api :as tc]
             [tablecloth.column.api :as tcc]
-            [scicloj.napkinsketch.impl.defaults :as defaults]))
+            [scicloj.napkinsketch.impl.defaults :as defaults])
+  (:import [java.time LocalDate LocalDateTime Instant ZoneOffset]))
 
 ;; ---- Helpers ----
 
@@ -230,6 +231,27 @@
        (assoc base :cfg {:kde-bandwidth bw})
        base))))
 
+(defn tile
+  "Tile/heatmap mark — filled rectangles colored by a numeric value.
+   With no options, bins x and y into a 2D grid (heatmap of counts).
+   With :fill, uses a pre-computed numeric column for tile color.
+   (tile)                          — 2D binned heatmap
+   (tile {:fill :value})           — pre-computed fill values"
+  ([] {:mark :tile :stat :bin2d})
+  ([opts]
+   (if (:fill opts)
+     (merge {:mark :tile :stat :identity} opts)
+     (merge {:mark :tile :stat :bin2d} opts))))
+
+(defn ridgeline
+  "Ridgeline mark — vertically stacked KDE density curves per category.
+   x should be categorical, y numeric. Each category gets an overlapping
+   density curve, stacked from bottom to top.
+   (ridgeline)                    — default
+   (ridgeline {:color :species})  — colored ridgelines"
+  ([] {:mark :ridgeline :stat :violin})
+  ([opts] (merge {:mark :ridgeline :stat :violin} opts)))
+
 (defn errorbar
   "Errorbar mark — vertical error bars at (x, y) positions.
    Requires :ymin and :ymax keys mapping to columns.
@@ -318,14 +340,35 @@
 ;; ---- Column Type Detection ----
 
 (defn column-type
-  "Classify a dataset column as :categorical or :numerical."
+  "Classify a dataset column as :categorical, :numerical, or :temporal."
   [ds col]
   (let [t (try (tcc/typeof (ds col)) (catch Exception _ nil))]
     (cond
       (#{:string :keyword :boolean :symbol :text} t) :categorical
       (#{:float32 :float64 :int8 :int16 :int32 :int64} t) :numerical
+      ;; Check for temporal types by sampling first value
+      (let [v (first (ds col))]
+        (or (instance? LocalDate v)
+            (instance? LocalDateTime v)
+            (instance? Instant v)
+            (instance? java.util.Date v))) :temporal
       (every? number? (take 100 (ds col))) :numerical
       :else :categorical)))
+
+(defn- to-epoch-day
+  "Convert a temporal value to epoch-day (double)."
+  [v]
+  (cond
+    (instance? LocalDate v) (double (.toEpochDay ^LocalDate v))
+    (instance? LocalDateTime v) (double (.toEpochDay (.toLocalDate ^LocalDateTime v)))
+    (instance? Instant v) (double (.toEpochDay (.toLocalDate (.atZone ^Instant v ZoneOffset/UTC))))
+    (instance? java.util.Date v) (double (.toEpochDay (.toLocalDate (.atZone (.toInstant ^java.util.Date v) ZoneOffset/UTC))))
+    :else (double v)))
+
+(defn- temporalize-column
+  "Replace a temporal column in a dataset with its epoch-day numeric equivalent."
+  [ds col]
+  (tc/map-columns ds col [col] to-epoch-day))
 
 ;; ---- Resolve View ----
 
@@ -338,6 +381,15 @@
           x-type (or (:x-type v) (column-type ds (:x v)))
           y-type (or (:y-type v) (when (and (:y v) (not= (:x v) (:y v)))
                                    (column-type ds (:y v))))
+          ;; Convert temporal columns to epoch-day numbers
+          x-temporal? (= x-type :temporal)
+          y-temporal? (= y-type :temporal)
+          ds (cond-> ds
+               x-temporal? (temporalize-column (:x v))
+               y-temporal? (temporalize-column (:y v)))
+          ;; Temporal columns become numerical after conversion
+          x-type (if x-temporal? :numerical x-type)
+          y-type (if y-temporal? :numerical y-type)
           color-val (:color v)
           color-is-col? (and color-val (column-ref? color-val))
           c-type (when color-is-col?
@@ -369,15 +421,17 @@
             :else [:point :identity])
           mark (or (:mark v) default-mark)
           stat (or (:stat v) default-stat)]
-      (assoc v :x-type x-type :y-type y-type :color-type c-type
-             :group group :mark mark :stat stat
-             :color (when color-is-col? color-val)
-             :fixed-color fixed-color
-             :size (when size-is-col? size-val)
-             :fixed-size fixed-size
-             :alpha (when alpha-is-col? alpha-val)
-             :fixed-alpha fixed-alpha
-             :text-col text-col))))
+      (cond-> (assoc v :data ds :x-type x-type :y-type y-type :color-type c-type
+                     :group group :mark mark :stat stat
+                     :color (when color-is-col? color-val)
+                     :fixed-color fixed-color
+                     :size (when size-is-col? size-val)
+                     :fixed-size fixed-size
+                     :alpha (when alpha-is-col? alpha-val)
+                     :fixed-alpha fixed-alpha
+                     :text-col text-col)
+        x-temporal? (assoc :x-temporal? true)
+        y-temporal? (assoc :y-temporal? true)))))
 
 ;; ---- Scale Setter ----
 

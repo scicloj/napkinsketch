@@ -138,3 +138,28 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 4 (:polygons s)))))])
+
+;; ## Custom Palette
+;;
+;; Pass `:palette` to override the default color cycle.
+;; Values are hex color strings.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
+
+;; The palette applies to all color-mapped marks — bars, lines, etc.
+
+(-> iris
+    (sk/view :species)
+    (sk/lay (sk/stacked-bar {:color :species}))
+    (sk/plot {:palette ["#8B5CF6" "#F59E0B" "#10B981"]}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])

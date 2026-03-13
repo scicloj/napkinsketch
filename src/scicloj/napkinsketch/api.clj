@@ -130,6 +130,21 @@
    (density {:bandwidth 0.5})   — custom bandwidth"
   view/density)
 
+(def tile
+  "Tile/heatmap mark — filled rectangles colored by a numeric value.
+   With no options, bins x and y into a 2D grid (heatmap of counts).
+   With :fill, uses a pre-computed numeric column for tile color.
+   (tile)                          — 2D binned heatmap
+   (tile {:fill :value})           — pre-computed fill values"
+  view/tile)
+
+(def ridgeline
+  "Ridgeline mark — vertically stacked KDE density curves per category.
+   x should be categorical, y numeric.
+   (ridgeline)                    — default
+   (ridgeline {:color :species})  — colored ridgelines"
+  view/ridgeline)
+
 (def boxplot
   "Boxplot mark — displays median, quartiles, whiskers, and outliers.
    x should be categorical, y numeric.

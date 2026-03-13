@@ -24,26 +24,26 @@
    {:key-fn keyword})))
 
 
-(def v5_l75 (sk/histogram))
+(def v5_l76 (sk/histogram))
 
 
-(deftest t6_l77 (is ((fn [m] (= :bin (:stat m))) v5_l75)))
+(deftest t6_l78 (is ((fn [m] (= :bin (:stat m))) v5_l76)))
 
 
-(def v8_l81 (sk/bar))
+(def v8_l82 (sk/bar))
 
 
-(deftest t9_l83 (is ((fn [m] (= :count (:stat m))) v8_l81)))
+(deftest t9_l84 (is ((fn [m] (= :count (:stat m))) v8_l82)))
 
 
-(def v11_l87 (sk/point))
+(def v11_l88 (sk/point))
 
 
-(deftest t12_l89 (is ((fn [m] (nil? (:stat m))) v11_l87)))
+(deftest t12_l90 (is ((fn [m] (nil? (:stat m))) v11_l88)))
 
 
 (def
- v14_l129
+ v14_l131
  (let
   [s
    (sk/sketch
@@ -57,16 +57,16 @@
 
 
 (deftest
- t15_l135
+ t15_l137
  (is
   ((fn
     [m]
     (and (= :point (:mark m)) (number? (get-in m [:style :opacity]))))
-   v14_l129)))
+   v14_l131)))
 
 
 (def
- v17_l197
+ v17_l200
  (def
   my-sketch
   (sk/sketch
@@ -76,23 +76,23 @@
     (sk/lay (sk/point {:color :species}))))))
 
 
-(def v18_l202 (first (sk/render-figure my-sketch :svg {})))
+(def v18_l205 (first (sk/render-figure my-sketch :svg {})))
 
 
-(deftest t19_l204 (is ((fn [v] (= :svg v)) v18_l202)))
+(deftest t19_l207 (is ((fn [v] (= :svg v)) v18_l205)))
 
 
-(def v21_l208 (def my-figure (sk/render-figure my-sketch :svg {})))
+(def v21_l211 (def my-figure (sk/render-figure my-sketch :svg {})))
 
 
-(def v22_l210 (vector? my-figure))
+(def v22_l213 (vector? my-figure))
 
 
-(deftest t23_l212 (is ((fn [v] (true? v)) v22_l210)))
+(deftest t23_l215 (is ((fn [v] (true? v)) v22_l213)))
 
 
 (def
- v25_l268
+ v25_l272
  (->
   iris
   (sk/view :species)
@@ -102,27 +102,27 @@
 
 
 (deftest
- t26_l274
+ t26_l278
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v25_l268)))
+   v25_l272)))
 
 
-(def v28_l284 (def my-membrane (membrane/sketch->membrane my-sketch)))
+(def v28_l288 (def my-membrane (membrane/sketch->membrane my-sketch)))
 
 
-(def v29_l286 (vector? my-membrane))
+(def v29_l290 (vector? my-membrane))
 
 
-(deftest t30_l288 (is ((fn [v] (true? v)) v29_l286)))
+(deftest t30_l292 (is ((fn [v] (true? v)) v29_l290)))
 
 
 (def
- v32_l294
+ v32_l298
  (let
   [svg-body
    (svg/membrane->svg my-membrane)
@@ -134,4 +134,4 @@
   (first svg)))
 
 
-(deftest t33_l298 (is ((fn [v] (= :svg v)) v32_l294)))
+(deftest t33_l302 (is ((fn [v] (= :svg v)) v32_l298)))
