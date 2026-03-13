@@ -253,12 +253,10 @@ graph LR
 
 (let [layer (second (:layers (first (:panels multi-sk))))]
   {:mark (:mark layer)
-   :stat-origin (:stat-origin layer)
    :n-groups (count (:groups layer))
    :first-group-keys (set (keys (first (:groups layer))))})
 
 (kind/test-last [(fn [m] (and (= :line (:mark m))
-                             (= :lm (:stat-origin m))
                              (= 3 (:n-groups m))
                              (contains? (:first-group-keys m) :x1)))])
 

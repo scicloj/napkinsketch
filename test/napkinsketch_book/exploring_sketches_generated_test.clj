@@ -203,7 +203,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__78677#] (= 50 (:n-points p1__78677#))) gs)))
+     (every? (fn* [p1__83149#] (= 50 (:n-points p1__83149#))) gs)))
    v53_l157)))
 
 
@@ -258,9 +258,9 @@
     (and
      (> (count bars) 3)
      (every?
-      (fn* [p1__78678#] (< (:lo p1__78678#) (:hi p1__78678#)))
+      (fn* [p1__83150#] (< (:lo p1__83150#) (:hi p1__83150#)))
       bars)
-     (every? (fn* [p1__78679#] (pos? (:count p1__78679#))) bars)))
+     (every? (fn* [p1__83151#] (pos? (:count p1__83151#))) bars)))
    v66_l195)))
 
 
@@ -366,32 +366,26 @@
 (def v89_l271 (mapv :mark (:layers (first (:panels lm-sk)))))
 
 
-(deftest t90_l273 (is ((fn [marks] (= [:point :line] marks)) v89_l271)))
+(deftest t90_l272 (is ((fn [marks] (= [:point :line] marks)) v89_l271)))
 
 
-(def v92_l277 (def lm-layer (second (:layers (first (:panels lm-sk))))))
-
-
-(def v93_l279 (:stat-origin lm-layer))
-
-
-(deftest t94_l281 (is ((fn [s] (= :lm s)) v93_l279)))
+(def v91_l273 (def lm-layer (second (:layers (first (:panels lm-sk))))))
 
 
 (def
- v96_l285
+ v93_l278
  (let [g (first (:groups lm-layer))] (select-keys g [:x1 :y1 :x2 :y2])))
 
 
 (deftest
- t97_l288
+ t94_l281
  (is
   ((fn [m] (and (< (:x1 m) (:x2 m)) (every? number? (vals m))))
-   v96_l285)))
+   v93_l278)))
 
 
 (def
- v99_l299
+ v96_l292
  (sk/plot
   [(sk/point
     {:data iris, :x :petal_length, :y :petal_width, :color :species})
@@ -400,18 +394,18 @@
 
 
 (deftest
- t100_l303
+ t97_l296
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v99_l299)))
+   v96_l292)))
 
 
 (def
- v101_l306
+ v98_l299
  (def
   grp-sk
   (sk/sketch
@@ -425,7 +419,7 @@
 
 
 (def
- v102_l309
+ v99_l302
  (let
   [line-layer (second (:layers (first (:panels grp-sk))))]
   (mapv
@@ -437,59 +431,59 @@
    (:groups line-layer))))
 
 
-(deftest t103_l316 (is ((fn [gs] (= 3 (count gs))) v102_l309)))
+(deftest t100_l309 (is ((fn [gs] (= 3 (count gs))) v99_l302)))
 
 
 (def
- v105_l324
+ v102_l317
  (def
   wave
   (tc/dataset
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__78680#] (Math/sin (* p1__78680# 0.3)))
+     (fn* [p1__83152#] (Math/sin (* p1__83152# 0.3)))
      (range 30))})))
 
 
-(def v106_l327 (sk/plot [(sk/line {:data wave, :x :x, :y :y})]))
+(def v103_l320 (sk/plot [(sk/line {:data wave, :x :x, :y :y})]))
 
 
 (deftest
- t107_l329
+ t104_l322
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:lines s)))))
-   v106_l327)))
+   v103_l320)))
 
 
 (def
- v108_l333
+ v105_l326
  (def wave-sk (sk/sketch [(sk/line {:data wave, :x :x, :y :y})])))
 
 
 (def
- v109_l335
+ v106_l328
  (def
   wave-group
   (first (:groups (first (:layers (first (:panels wave-sk))))))))
 
 
 (def
- v110_l337
+ v107_l330
  {:n-points (count (:xs wave-group)),
   :first-x (first (:xs wave-group)),
   :last-x (last (:xs wave-group))})
 
 
-(deftest t111_l341 (is ((fn [m] (= 30 (:n-points m))) v110_l337)))
+(deftest t108_l334 (is ((fn [m] (= 30 (:n-points m))) v107_l330)))
 
 
 (def
- v113_l350
+ v110_l343
  (def
   sales
   (tc/dataset
@@ -498,54 +492,54 @@
 
 
 (def
- v114_l353
+ v111_l346
  (sk/plot [(sk/value-bar {:data sales, :x :product, :y :revenue})]))
 
 
 (deftest
- t115_l355
+ t112_l348
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v114_l353)))
+   v111_l346)))
 
 
 (def
- v116_l359
+ v113_l352
  (def
   sales-sk
   (sk/sketch [(sk/value-bar {:data sales, :x :product, :y :revenue})])))
 
 
 (def
- v117_l361
+ v114_l354
  (let
   [g (first (:groups (first (:layers (first (:panels sales-sk))))))]
   {:xs (:xs g), :ys (:ys g)}))
 
 
-(deftest t118_l365 (is ((fn [m] (= 4 (count (:xs m)))) v117_l361)))
+(deftest t115_l358 (is ((fn [m] (= 4 (count (:xs m)))) v114_l354)))
 
 
 (def
- v120_l371
+ v117_l364
  (def
   flip-sk
   (sk/sketch
    [(-> (sk/bar {:data iris, :x :species}) (assoc :coord :flip))])))
 
 
-(def v121_l374 (:coord (first (:panels flip-sk))))
+(def v118_l367 (:coord (first (:panels flip-sk))))
 
 
-(deftest t122_l376 (is ((fn [c] (= :flip c)) v121_l374)))
+(deftest t119_l369 (is ((fn [c] (= :flip c)) v118_l367)))
 
 
 (def
- v124_l380
+ v121_l373
  (let
   [p (first (:panels flip-sk))]
   {:x-domain-type
@@ -555,18 +549,18 @@
 
 
 (deftest
- t125_l384
+ t122_l377
  (is
   ((fn
     [m]
     (and
      (= :numeric (:x-domain-type m))
      (= :categorical (:y-domain-type m))))
-   v124_l380)))
+   v121_l373)))
 
 
 (def
- v127_l394
+ v124_l387
  (def
   opts-sk
   (sk/sketch
@@ -579,12 +573,12 @@
 
 
 (def
- v128_l401
+ v125_l394
  (select-keys opts-sk [:title :x-label :y-label :width :height]))
 
 
 (deftest
- t129_l403
+ t126_l396
  (is
   ((fn
     [m]
@@ -592,14 +586,14 @@
      (= "My Custom Title" (:title m))
      (= 800 (:width m))
      (= 300 (:height m))))
-   v128_l401)))
+   v125_l394)))
 
 
-(def v131_l409 (:layout opts-sk))
+(def v128_l402 (:layout opts-sk))
 
 
 (deftest
- t132_l411
+ t129_l404
  (is
   ((fn
     [lay]
@@ -607,11 +601,11 @@
      (pos? (:title-pad lay))
      (pos? (:x-label-pad lay))
      (pos? (:y-label-pad lay))))
-   v131_l409)))
+   v128_l402)))
 
 
 (def
- v134_l422
+ v131_l415
  (def
   final-views
   [(sk/point
@@ -621,50 +615,46 @@
 
 
 (def
- v135_l426
+ v132_l419
  (def final-sk (sk/sketch final-views {:title "Iris Petals"})))
 
 
 (def
- v136_l428
+ v133_l421
  (select-keys final-sk [:title :x-label :y-label :width :height]))
 
 
 (deftest
- t137_l430
- (is ((fn [m] (= "Iris Petals" (:title m))) v136_l428)))
+ t134_l423
+ (is ((fn [m] (= "Iris Petals" (:title m))) v133_l421)))
 
 
 (def
- v139_l434
+ v136_l427
  (mapv
-  (fn
-   [l]
-   {:mark (:mark l),
-    :n-groups (count (:groups l)),
-    :stat-origin (:stat-origin l)})
+  (fn [l] {:mark (:mark l), :n-groups (count (:groups l))})
   (:layers (first (:panels final-sk)))))
 
 
-(deftest t140_l440 (is ((fn [ls] (= 2 (count ls))) v139_l434)))
+(deftest t137_l432 (is ((fn [ls] (= 2 (count ls))) v136_l427)))
 
 
-(def v142_l444 (sk/plot final-views {:title "Iris Petals"}))
+(def v139_l436 (sk/plot final-views {:title "Iris Petals"}))
 
 
 (deftest
- t143_l446
+ t140_l438
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v142_l444)))
+   v139_l436)))
 
 
 (def
- v145_l455
+ v142_l447
  (def
   faceted-sk
   (->
@@ -675,108 +665,108 @@
    sk/sketch)))
 
 
-(def v147_l464 (:grid faceted-sk))
+(def v144_l456 (:grid faceted-sk))
 
 
 (deftest
- t148_l466
- (is ((fn [g] (and (= 1 (:rows g)) (= 3 (:cols g)))) v147_l464)))
+ t145_l458
+ (is ((fn [g] (and (= 1 (:rows g)) (= 3 (:cols g)))) v144_l456)))
 
 
-(def v150_l470 (count (:panels faceted-sk)))
+(def v147_l462 (count (:panels faceted-sk)))
 
 
-(deftest t151_l472 (is ((fn [n] (= 3 n)) v150_l470)))
+(deftest t148_l464 (is ((fn [n] (= 3 n)) v147_l462)))
+
+
+(def
+ v150_l468
+ (mapv
+  (fn* [p1__83153#] (select-keys p1__83153# [:row :col :col-label]))
+  (:panels faceted-sk)))
+
+
+(deftest
+ t151_l471
+ (is
+  ((fn [ps] (and (= 3 (count ps)) (every? :col-label ps))) v150_l468)))
 
 
 (def
  v153_l476
  (mapv
-  (fn* [p1__78681#] (select-keys p1__78681# [:row :col :col-label]))
-  (:panels faceted-sk)))
-
-
-(deftest
- t154_l479
- (is
-  ((fn [ps] (and (= 3 (count ps)) (every? :col-label ps))) v153_l476)))
-
-
-(def
- v156_l484
- (mapv
   (fn*
-   [p1__78682#]
-   (select-keys p1__78682# [:col-label :x-domain :y-domain]))
+   [p1__83154#]
+   (select-keys p1__83154# [:col-label :x-domain :y-domain]))
   (:panels faceted-sk)))
 
 
-(deftest t157_l487 (is ((fn [ps] (every? :x-domain ps)) v156_l484)))
+(deftest t154_l479 (is ((fn [ps] (every? :x-domain ps)) v153_l476)))
 
 
 (def
- v159_l494
+ v156_l486
  (select-keys faceted-sk [:panel-width :panel-height :layout-type]))
 
 
 (deftest
- t160_l496
- (is ((fn [m] (= :facet-grid (:layout-type m))) v159_l494)))
+ t157_l488
+ (is ((fn [m] (= :facet-grid (:layout-type m))) v156_l486)))
 
 
-(def v162_l500 (sk/valid-sketch? faceted-sk))
+(def v159_l492 (sk/valid-sketch? faceted-sk))
 
 
-(deftest t163_l502 (is (true? v162_l500)))
+(deftest t160_l494 (is (true? v159_l492)))
 
 
-(def v165_l509 (sk/valid-sketch? tiny-sk))
+(def v162_l501 (sk/valid-sketch? tiny-sk))
 
 
-(deftest t166_l511 (is (true? v165_l509)))
+(deftest t163_l503 (is (true? v162_l501)))
 
 
-(def v167_l513 (sk/valid-sketch? iris-sk))
+(def v164_l505 (sk/valid-sketch? iris-sk))
 
 
-(deftest t168_l515 (is (true? v167_l513)))
+(deftest t165_l507 (is (true? v164_l505)))
 
 
-(def v169_l517 (sk/valid-sketch? hist-sk))
+(def v166_l509 (sk/valid-sketch? hist-sk))
 
 
-(deftest t170_l519 (is (true? v169_l517)))
+(deftest t167_l511 (is (true? v166_l509)))
 
 
-(def v171_l521 (sk/valid-sketch? bar-sk))
+(def v168_l513 (sk/valid-sketch? bar-sk))
 
 
-(deftest t172_l523 (is (true? v171_l521)))
+(deftest t169_l515 (is (true? v168_l513)))
 
 
-(def v173_l525 (sk/valid-sketch? lm-sk))
+(def v170_l517 (sk/valid-sketch? lm-sk))
 
 
-(deftest t174_l527 (is (true? v173_l525)))
+(deftest t171_l519 (is (true? v170_l517)))
 
 
-(def v175_l529 (sk/valid-sketch? final-sk))
+(def v172_l521 (sk/valid-sketch? final-sk))
 
 
-(deftest t176_l531 (is (true? v175_l529)))
+(deftest t173_l523 (is (true? v172_l521)))
 
 
 (def
- v178_l535
+ v175_l527
  (sk/explain-sketch (assoc tiny-sk :width "not-a-number")))
 
 
-(deftest t179_l537 (is (some? v178_l535)))
+(deftest t176_l529 (is (some? v175_l527)))
 
 
 (def
- v181_l545
+ v178_l537
  (let [s (pr-str tiny-sk) back (read-string s)] (= tiny-sk back)))
 
 
-(deftest t182_l549 (is (true? v181_l545)))
+(deftest t179_l541 (is (true? v178_l537)))

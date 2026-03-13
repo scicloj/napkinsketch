@@ -157,7 +157,6 @@
    [:tiles {:optional true} [:vector TileEntry]]
    [:ridges {:optional true} [:vector [:map [:category any?] [:color Color] [:ys [:vector number?]] [:densities [:vector number?]]]]]
    [:color-categories {:optional true} [:maybe [:vector any?]]]
-   [:stat-origin {:optional true} [:enum :identity :bin :count :lm :loess :kde :boxplot :violin :bin2d]]
    [:position {:optional true} [:enum :dodge :stack]]
    [:categories {:optional true} [:vector any?]]])
 

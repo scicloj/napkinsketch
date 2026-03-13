@@ -269,16 +269,9 @@
 ;; Two layers — points and line:
 
 (mapv :mark (:layers (first (:panels lm-sk))))
-
 (kind/test-last [(fn [marks] (= [:point :line] marks))])
-
-;; The line layer has `:stat-origin :lm` to record where it came from:
-
 (def lm-layer (second (:layers (first (:panels lm-sk)))))
 
-(:stat-origin lm-layer)
-
-(kind/test-last [(fn [s] (= :lm s))])
 
 ;; Its group has endpoints — a line segment in data space:
 
@@ -433,8 +426,7 @@
 
 (mapv (fn [l]
         {:mark (:mark l)
-         :n-groups (count (:groups l))
-         :stat-origin (:stat-origin l)})
+         :n-groups (count (:groups l))})
       (:layers (first (:panels final-sk))))
 
 (kind/test-last [(fn [ls] (= 2 (count ls)))])

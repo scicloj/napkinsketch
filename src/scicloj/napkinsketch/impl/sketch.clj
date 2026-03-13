@@ -66,7 +66,6 @@
 (defmethod extract-layer :line [view stat all-colors cfg]
   {:mark :line
    :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
-   :stat-origin (or (:stat view) :identity)
    :groups (vec
             (concat
              ;; Regression lines

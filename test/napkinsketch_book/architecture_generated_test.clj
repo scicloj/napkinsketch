@@ -154,49 +154,47 @@
  (let
   [layer (second (:layers (first (:panels multi-sk))))]
   {:mark (:mark layer),
-   :stat-origin (:stat-origin layer),
    :n-groups (count (:groups layer)),
    :first-group-keys (set (keys (first (:groups layer))))}))
 
 
 (deftest
- t42_l260
+ t42_l259
  (is
   ((fn
     [m]
     (and
      (= :line (:mark m))
-     (= :lm (:stat-origin m))
      (= 3 (:n-groups m))
      (contains? (:first-group-keys m) :x1)))
    v41_l254)))
 
 
-(def v44_l267 (:title multi-sk))
+(def v44_l265 (:title multi-sk))
 
 
 (deftest
- t45_l269
- (is ((fn [t] (= "Iris Petals with Regression" t)) v44_l267)))
+ t45_l267
+ (is ((fn [t] (= "Iris Petals with Regression" t)) v44_l265)))
 
 
-(def v46_l271 (count (:entries (:legend multi-sk))))
+(def v46_l269 (count (:entries (:legend multi-sk))))
 
 
-(deftest t47_l273 (is ((fn [n] (= 3 n)) v46_l271)))
+(deftest t47_l271 (is ((fn [n] (= 3 n)) v46_l269)))
 
 
 (def
- v49_l277
+ v49_l275
  (sk/plot multi-views {:title "Iris Petals with Regression"}))
 
 
 (deftest
- t50_l279
+ t50_l277
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v49_l277)))
+   v49_l275)))
