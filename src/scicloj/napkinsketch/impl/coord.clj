@@ -1,5 +1,16 @@
 (ns scicloj.napkinsketch.impl.coord)
 
+(defn- polar-project
+  "Project pixel-space (px, py) to polar coordinates.
+   Shared core for make-coord :polar and make-coord-px :polar."
+  [cx cy r-max x-lo x-span y-lo y-span px py]
+  (let [t-angle (/ (- px x-lo) (max 1.0 x-span))
+        t-radius (/ (- (+ y-lo y-span) py) (max 1.0 y-span))
+        angle (* 2.0 Math/PI t-angle)
+        radius (* r-max t-radius)]
+    [(+ cx (* radius (Math/cos (- angle (/ Math/PI 2.0)))))
+     (+ cy (* radius (Math/sin (- angle (/ Math/PI 2.0)))))]))
+
 (defmulti make-coord
   "Build a coordinate function: (coord data-x data-y) -> [pixel-x pixel-y]."
   (fn [coord-type sx sy pw ph m] coord-type))
@@ -16,13 +27,7 @@
         x-lo (double m) x-span (double (- pw m m))
         y-lo (double m) y-span (double (- ph m m))]
     (fn [dx dy]
-      (let [px (sx dx) py (sy dy)
-            t-angle (/ (- px x-lo) (max 1.0 x-span))
-            t-radius (/ (- (+ y-lo y-span) py) (max 1.0 y-span))
-            angle (* 2.0 Math/PI t-angle)
-            radius (* r-max t-radius)]
-        [(+ cx (* radius (Math/cos (- angle (/ Math/PI 2.0)))))
-         (+ cy (* radius (Math/sin (- angle (/ Math/PI 2.0)))))]))))
+      (polar-project cx cy r-max x-lo x-span y-lo y-span (sx dx) (sy dy)))))
 
 ;; ---- Pixel-space reprojection (for arc interpolation) ----
 
@@ -40,12 +45,7 @@
         x-lo (double m) x-span (double (- pw m m))
         y-lo (double m) y-span (double (- ph m m))]
     (fn [px py]
-      (let [t-angle (/ (- px x-lo) (max 1.0 x-span))
-            t-radius (/ (- (+ y-lo y-span) py) (max 1.0 y-span))
-            angle (* 2.0 Math/PI t-angle)
-            radius (* r-max t-radius)]
-        [(+ cx (* radius (Math/cos (- angle (/ Math/PI 2.0)))))
-         (+ cy (* radius (Math/sin (- angle (/ Math/PI 2.0)))))]))))
+      (polar-project cx cy r-max x-lo x-span y-lo y-span px py))))
 
 ;; ---- Tick visibility ----
 

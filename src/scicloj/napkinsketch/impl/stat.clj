@@ -273,6 +273,48 @@
 
 ;; ---- Boxplot ----
 
+(defn- per-category-stat
+  "Shared iteration for boxplot/violin: clean data, group by category and
+   optional color, apply per-group-fn to each subset's y-column.
+   per-group-fn: (fn [y-col category color-or-nil]) -> map
+   min-n: minimum row count to include a group."
+  [view min-n per-group-fn]
+  (let [{:keys [data x y x-type group]} view
+        clean (cond-> (tc/drop-missing data [x y])
+                (= x-type :categorical) (tc/map-columns x [x] str))
+        categories (distinct (clean x))]
+    (if (empty? categories)
+      {:items [] :categories [] :color-categories nil
+       :x-domain ["?"] :y-domain [0 1]}
+      (let [group-cols (or group [])
+            color-col (first group-cols)
+            has-color? (and (seq group-cols) color-col)
+            clean-c (if has-color? (tc/drop-missing clean group-cols) clean)
+            color-cats (when has-color? (vec (sort (distinct (clean-c color-col)))))
+            items (if has-color?
+                    (vec (for [cat categories
+                               cc color-cats
+                               :let [rows (tc/select-rows clean-c
+                                                          (fn [row] (and (= (get row x) cat)
+                                                                         (= (get row color-col) cc))))
+                                     n (tc/row-count rows)]
+                               :when (>= n min-n)]
+                           (per-group-fn (rows y) cat cc)))
+                    (vec (for [cat categories
+                               :let [rows (tc/select-rows clean-c
+                                                          (fn [row] (= (get row x) cat)))
+                                     n (tc/row-count rows)]
+                               :when (>= n min-n)]
+                           (per-group-fn (rows y) cat nil))))
+            all-ys (clean y)
+            y-min (dfn/reduce-min all-ys)
+            y-max (dfn/reduce-max all-ys)]
+        {:items items
+         :categories categories
+         :color-categories color-cats
+         :x-domain categories
+         :y-domain [y-min y-max]}))))
+
 (defn- five-number-summary
   "Compute boxplot five-number summary for a numeric column.
    Returns {:median :q1 :q3 :whisker-lo :whisker-hi :outliers}."
@@ -300,86 +342,34 @@
      :outliers (vec outliers)}))
 
 (defmethod compute-stat :boxplot [view]
-  (let [{:keys [data x y x-type group]} view
-        clean (cond-> (tc/drop-missing data [x y])
-                (= x-type :categorical) (tc/map-columns x [x] str))
-        categories (distinct (clean x))]
-    (if (empty? categories)
-      {:boxes [] :categories [] :x-domain ["?"] :y-domain [0 1]}
-      (let [group-cols (or group [])
-            color-col (first group-cols)
-            has-color? (and (seq group-cols) color-col)
-            clean-c (if has-color? (tc/drop-missing clean group-cols) clean)
-            color-cats (when has-color? (vec (sort (distinct (clean-c color-col)))))
-            boxes (if has-color?
-                    (vec (for [cat categories
-                               cc color-cats
-                               :let [rows (tc/select-rows clean-c
-                                                          (fn [row] (and (= (get row x) cat)
-                                                                         (= (get row color-col) cc))))
-                                     n (tc/row-count rows)]
-                               :when (pos? n)]
-                           (merge (five-number-summary (rows y))
-                                  {:category cat :color cc})))
-                    (vec (for [cat categories
-                               :let [rows (tc/select-rows clean-c
-                                                          (fn [row] (= (get row x) cat)))
-                                     n (tc/row-count rows)]
-                               :when (pos? n)]
-                           (merge (five-number-summary (rows y))
-                                  {:category cat}))))
-            all-ys (clean y)
-            y-min (dfn/reduce-min all-ys)
-            y-max (dfn/reduce-max all-ys)]
-        {:boxes boxes
-         :categories categories
-         :color-categories color-cats
-         :x-domain categories
-         :y-domain [y-min y-max]}))))
+  (let [result (per-category-stat view 1
+                                  (fn [y-col cat cc]
+                                    (cond-> (merge (five-number-summary y-col)
+                                                   {:category cat})
+                                      cc (assoc :color cc))))]
+    {:boxes (:items result)
+     :categories (:categories result)
+     :color-categories (:color-categories result)
+     :x-domain (:x-domain result)
+     :y-domain (:y-domain result)}))
 
 ;; ---- Violin ----
 
 (defmethod compute-stat :violin [view]
-  (let [{:keys [data x y x-type group cfg]} view
-        clean (cond-> (tc/drop-missing data [x y])
-                (= x-type :categorical) (tc/map-columns x [x] str))
-        categories (distinct (clean x))
+  (let [{:keys [cfg]} view
         n-grid (or (:kde-n-grid (or cfg defaults/defaults)) 80)
-        bandwidth (:kde-bandwidth (or cfg defaults/defaults))]
-    (if (empty? categories)
-      {:violins [] :categories [] :x-domain ["?"] :y-domain [0 1]}
-      (let [group-cols (or group [])
-            color-col (first group-cols)
-            has-color? (and (seq group-cols) color-col)
-            clean-c (if has-color? (tc/drop-missing clean group-cols) clean)
-            color-cats (when has-color? (vec (sort (distinct (clean-c color-col)))))
-            violins (if has-color?
-                      (vec (for [cat categories
-                                 cc color-cats
-                                 :let [rows (tc/select-rows clean-c
-                                                            (fn [row] (and (= (get row x) cat)
-                                                                           (= (get row color-col) cc))))
-                                       n (tc/row-count rows)]
-                                 :when (>= n 2)]
-                             (let [kde (fit-kde (rows y) n-grid bandwidth)]
-                               {:category cat :color cc
-                                :ys (:xs kde) :densities (:ys kde)})))
-                      (vec (for [cat categories
-                                 :let [rows (tc/select-rows clean-c
-                                                            (fn [row] (= (get row x) cat)))
-                                       n (tc/row-count rows)]
-                                 :when (>= n 2)]
-                             (let [kde (fit-kde (rows y) n-grid bandwidth)]
-                               {:category cat
-                                :ys (:xs kde) :densities (:ys kde)}))))
-            all-ys (clean y)
-            y-min (dfn/reduce-min all-ys)
-            y-max (dfn/reduce-max all-ys)]
-        {:violins violins
-         :categories categories
-         :color-categories color-cats
-         :x-domain categories
-         :y-domain [y-min y-max]}))))
+        bandwidth (:kde-bandwidth (or cfg defaults/defaults))
+        result (per-category-stat view 2
+                                  (fn [y-col cat cc]
+                                    (let [kde (fit-kde y-col n-grid bandwidth)]
+                                      (cond-> {:category cat
+                                               :ys (:xs kde) :densities (:ys kde)}
+                                        cc (assoc :color cc)))))]
+    {:violins (:items result)
+     :categories (:categories result)
+     :color-categories (:color-categories result)
+     :x-domain (:x-domain result)
+     :y-domain (:y-domain result)}))
 
 ;; ---- 2D Binning (for heatmap/tile) ----
 

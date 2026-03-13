@@ -17,7 +17,7 @@
   (cond
     color-val (defaults/color-for all-colors color-val (:palette cfg))
     fixed-color (if (string? fixed-color) (defaults/hex->rgba fixed-color) fixed-color)
-    :else (defaults/hex->rgba (:default-color (or cfg defaults/defaults)))))
+    :else (defaults/hex->rgba (:default-color cfg))))
 
 ;; ---- Geometry Extraction (stat → layer descriptors) ----
 
@@ -27,8 +27,7 @@
   (fn [view stat all-colors cfg] (:mark view)))
 
 (defmethod extract-layer :point [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)
-        numeric-color? (= (:color-type view) :numerical)
+  (let [numeric-color? (= (:color-type view) :numerical)
         ;; For numeric color: compute global min/max for normalization
         all-color-vals (when numeric-color?
                          (mapcat :color-values (:points stat)))
@@ -56,98 +55,90 @@
                   row-indices (assoc :row-indices (vec row-indices)))))}))
 
 (defmethod extract-layer :bar [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)]
-    {:mark :bar
-     :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
-     :groups (vec
-              (for [{:keys [color bin-maps]} (:bins stat)]
-                {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                 :bars (vec (for [{:keys [min max count]} bin-maps]
-                              {:lo min :hi max :count count}))}))}))
+  {:mark :bar
+   :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
+   :groups (vec
+            (for [{:keys [color bin-maps]} (:bins stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :bars (vec (for [{:keys [min max count]} bin-maps]
+                            {:lo min :hi max :count count}))}))})
 
 (defmethod extract-layer :line [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)]
-    {:mark :line
-     :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
-     :stat-origin (or (:stat view) :identity)
-     :groups (vec
-              (concat
-               ;; Regression lines
-               (when-let [lines (:lines stat)]
-                 (for [{:keys [color x1 y1 x2 y2]} lines]
-                   {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                    :x1 x1 :y1 y1 :x2 x2 :y2 y2}))
-               ;; Polylines
-               (when-let [pts (:points stat)]
-                 (for [{:keys [color xs ys]} pts]
-                   {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                    :xs (vec xs) :ys (vec ys)}))))}))
+  {:mark :line
+   :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
+   :stat-origin (or (:stat view) :identity)
+   :groups (vec
+            (concat
+             ;; Regression lines
+             (when-let [lines (:lines stat)]
+               (for [{:keys [color x1 y1 x2 y2]} lines]
+                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                  :x1 x1 :y1 y1 :x2 x2 :y2 y2}))
+             ;; Polylines
+             (when-let [pts (:points stat)]
+               (for [{:keys [color xs ys]} pts]
+                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                  :xs (vec xs) :ys (vec ys)}))))})
 
 (defmethod extract-layer :rect [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)]
-    (if (:bars stat)
-      ;; Categorical bars (from :count stat)
-      {:mark :rect
-       :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
-       :position (or (:position view) :dodge)
-       :categories (vec (:categories stat))
-       :groups (vec
-                (for [{:keys [color counts]} (:bars stat)]
-                  {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                   :label (str color)
-                   :counts (vec counts)}))}
-      ;; Value bars (from :identity stat)
-      {:mark :rect
-       :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
-       :position (or (:position view) :dodge)
-       :groups (vec
-                (for [{:keys [color xs ys]} (:points stat)]
-                  {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                   :xs (vec xs) :ys (vec ys)}))})))
+  (if (:bars stat)
+    ;; Categorical bars (from :count stat)
+    {:mark :rect
+     :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
+     :position (or (:position view) :dodge)
+     :categories (vec (:categories stat))
+     :groups (vec
+              (for [{:keys [color counts]} (:bars stat)]
+                {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                 :label (str color)
+                 :counts (vec counts)}))}
+    ;; Value bars (from :identity stat)
+    {:mark :rect
+     :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
+     :position (or (:position view) :dodge)
+     :groups (vec
+              (for [{:keys [color xs ys]} (:points stat)]
+                {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                 :xs (vec xs) :ys (vec ys)}))}))
 
 (defmethod extract-layer :text [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)]
-    {:mark :text
-     :style {:font-size (or (:font-size view) 10)}
-     :groups (vec
-              (for [{:keys [color xs ys labels]} (:points stat)]
-                (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                         :xs (vec xs) :ys (vec ys)}
-                  labels (assoc :labels (vec (map str labels))))))}))
+  {:mark :text
+   :style {:font-size (or (:font-size view) 10)}
+   :groups (vec
+            (for [{:keys [color xs ys labels]} (:points stat)]
+              (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                       :xs (vec xs) :ys (vec ys)}
+                labels (assoc :labels (vec (map str labels))))))})
 
 (defmethod extract-layer :area [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)]
-    {:mark :area
-     :style {:opacity (or (:fixed-alpha view) 0.5)}
-     :groups (vec
-              (for [{:keys [color xs ys]} (:points stat)]
-                {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                 :xs (vec xs) :ys (vec ys)}))}))
+  {:mark :area
+   :style {:opacity (or (:fixed-alpha view) 0.5)}
+   :groups (vec
+            (for [{:keys [color xs ys]} (:points stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :xs (vec xs) :ys (vec ys)}))})
 
 (defmethod extract-layer :errorbar [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)]
-    {:mark :errorbar
-     :style {:stroke-width (or (:fixed-size view) 1.5)
-             :cap-width (or (:cap-width view) 6)}
-     :groups (vec
-              (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
-                {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                 :xs (vec xs) :ys (vec ys)
-                 :ymins (vec ymins) :ymaxs (vec ymaxs)}))}))
+  {:mark :errorbar
+   :style {:stroke-width (or (:fixed-size view) 1.5)
+           :cap-width (or (:cap-width view) 6)}
+   :groups (vec
+            (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :xs (vec xs) :ys (vec ys)
+               :ymins (vec ymins) :ymaxs (vec ymaxs)}))})
 
 (defmethod extract-layer :lollipop [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)]
-    {:mark :lollipop
-     :style {:radius (or (:fixed-size view) (:point-radius cfg))
-             :stroke-width 1.5}
-     :groups (vec
-              (for [{:keys [color xs ys]} (:points stat)]
-                {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                 :xs (vec xs) :ys (vec ys)}))}))
+  {:mark :lollipop
+   :style {:radius (or (:fixed-size view) (:point-radius cfg))
+           :stroke-width 1.5}
+   :groups (vec
+            (for [{:keys [color xs ys]} (:points stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :xs (vec xs) :ys (vec ys)}))})
 
 (defmethod extract-layer :boxplot [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)
-        color-cats (:color-categories stat)]
+  (let [color-cats (:color-categories stat)]
     {:mark :boxplot
      :style {:box-width (or (:box-width view) 0.6)
              :stroke-width (or (:fixed-size view) 1.5)}
@@ -162,8 +153,7 @@
                  (seq (:outliers b)) (assoc :outliers (vec (:outliers b))))))}))
 
 (defmethod extract-layer :violin [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)
-        color-cats (:color-categories stat)]
+  (let [color-cats (:color-categories stat)]
     {:mark :violin
      :style {:opacity (or (:fixed-alpha view) 0.7)
              :stroke-width (or (:fixed-size view) 1.0)}
@@ -177,8 +167,7 @@
                    (:color v) (assoc :color-category (:color v)))))}))
 
 (defmethod extract-layer :tile [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)
-        fill-col (:fill view)
+  (let [fill-col (:fill view)
         ;; Two paths: bin2d stat produces :tiles directly;
         ;; identity stat with :fill uses point groups
         tiles (if (:tiles stat)
@@ -190,12 +179,7 @@
                          {:x-lo x-lo :x-hi x-hi :y-lo y-lo :y-hi y-hi
                           :color (defaults/gradient-color t)})))
                 ;; identity path — each point is a tile at (x, y) with fill value
-                (let [all-fills (mapcat (fn [{:keys [xs ys] :as g}]
-                                          (when fill-col
-                                            ((:data view) fill-col)))
-                                        (:points stat))
-                      ;; Get fill values from the raw data
-                      data (:data view)
+                (let [data (:data view)
                       fill-vals (when fill-col (data fill-col))
                       f-lo (when (seq fill-vals) (reduce min fill-vals))
                       f-hi (when (seq fill-vals) (reduce max fill-vals))
@@ -206,9 +190,7 @@
                                    yv (nth ys i)]]
                          {:x-lo xv :x-hi xv :y-lo yv :y-hi yv
                           :color (if fill-vals
-                                   (let [;; Find matching fill value by index
-                                         ;; Since identity stat preserves order, use i
-                                         fv (nth fill-vals i)
+                                   (let [fv (nth fill-vals i)
                                          t (/ (- (double fv) (double f-lo)) f-span)]
                                      (defaults/gradient-color t))
                                    (defaults/gradient-color 0.5))}))))]
@@ -217,8 +199,7 @@
      :tiles tiles}))
 
 (defmethod extract-layer :ridgeline [view stat all-colors cfg]
-  (let [cfg (or cfg defaults/defaults)
-        violins (:violins stat)
+  (let [violins (:violins stat)
         categories (:categories stat)]
     {:mark :ridgeline
      :style {:opacity (or (:fixed-alpha view) 0.7)}
