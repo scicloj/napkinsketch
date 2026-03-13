@@ -163,24 +163,48 @@
 ;; ---- Area ----
 
 (defmethod render-layer :area [layer ctx]
-  (let [{:keys [style groups]} layer
+  (let [{:keys [style groups position]} layer
         {:keys [coord-fn y-domain-min]} ctx
         {:keys [opacity]} style
         baseline (or y-domain-min 0)]
-    (vec
-     (for [{:keys [color xs ys]} groups
-           :let [sorted (sort-by first (map vector xs ys))
-                 top-pts (map (fn [[x y]] (coord-fn x y)) sorted)
-                 ;; Close polygon: right edge down to baseline, left edge
-                 x-first (ffirst sorted)
-                 x-last (first (last sorted))
-                 [bx-right by-right] (coord-fn x-last baseline)
-                 [bx-left by-left] (coord-fn x-first baseline)
-                 all-pts (concat top-pts [[bx-right by-right] [bx-left by-left]])
-                 [cr cg cb _] color]]
-       (ui/with-color [cr cg cb (or opacity 0.5)]
-         (ui/with-style ::ui/style-fill
-           (apply ui/path all-pts)))))))
+    (if (= position :stack)
+      ;; Stacked: each group's baseline is the cumulative sum of previous groups
+      (let [group-maps (mapv (fn [{:keys [xs ys]}]
+                               (into (sorted-map) (map vector xs ys)))
+                             groups)
+            all-xs (sort (distinct (mapcat keys group-maps)))
+            {:keys [elements]}
+            (reduce
+             (fn [{:keys [elements cum]} [group gm]]
+               (let [base-vals (mapv #(get cum % 0.0) all-xs)
+                     top-vals (mapv #(+ (get cum % 0.0) (get gm % 0.0)) all-xs)
+                     top-pts (map (fn [x tv] (coord-fn x tv)) all-xs top-vals)
+                     base-pts (reverse (map (fn [x bv] (coord-fn x bv)) all-xs base-vals))
+                     all-pts (concat top-pts base-pts)
+                     [cr cg cb _] (:color group)
+                     new-cum (into cum (map vector all-xs top-vals))]
+                 {:elements (conj elements
+                                  (ui/with-color [cr cg cb (or opacity 0.5)]
+                                    (ui/with-style ::ui/style-fill
+                                      (apply ui/path all-pts))))
+                  :cum new-cum}))
+             {:elements [] :cum {}}
+             (map vector groups group-maps))]
+        elements)
+      ;; Non-stacked: each group has baseline at y-domain-min
+      (vec
+       (for [{:keys [color xs ys]} groups
+             :let [sorted (sort-by first (map vector xs ys))
+                   top-pts (map (fn [[x y]] (coord-fn x y)) sorted)
+                   x-first (ffirst sorted)
+                   x-last (first (last sorted))
+                   [bx-right by-right] (coord-fn x-last baseline)
+                   [bx-left by-left] (coord-fn x-first baseline)
+                   all-pts (concat top-pts [[bx-right by-right] [bx-left by-left]])
+                   [cr cg cb _] color]]
+         (ui/with-color [cr cg cb (or opacity 0.5)]
+           (ui/with-style ::ui/style-fill
+             (apply ui/path all-pts))))))))
 
 ;; ---- Errorbar ----
 

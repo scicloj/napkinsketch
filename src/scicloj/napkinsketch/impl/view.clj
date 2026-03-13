@@ -197,6 +197,13 @@
   ([] {:mark :area :stat :identity})
   ([opts] (merge {:mark :area :stat :identity} opts)))
 
+(defn stacked-area
+  "Stacked area mark — filled regions stacked on top of each other.
+   (stacked-area)                     — stacked areas
+   (stacked-area {:color :group})     — colored stacked areas"
+  ([] {:mark :area :stat :identity :position :stack})
+  ([opts] (merge {:mark :area :stat :identity :position :stack} opts)))
+
 (defn density
   "Density mark — kernel density estimation rendered as a filled area.
    (density)                    — default bandwidth

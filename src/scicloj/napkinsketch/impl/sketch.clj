@@ -110,12 +110,13 @@
                 labels (assoc :labels (vec (map str labels))))))})
 
 (defmethod extract-layer :area [view stat all-colors cfg]
-  {:mark :area
-   :style {:opacity (or (:fixed-alpha view) 0.5)}
-   :groups (vec
-            (for [{:keys [color xs ys]} (:points stat)]
-              {:color (resolve-color all-colors color (:fixed-color view) cfg)
-               :xs (vec xs) :ys (vec ys)}))})
+  (cond-> {:mark :area
+           :style {:opacity (or (:fixed-alpha view) 0.5)}
+           :groups (vec
+                    (for [{:keys [color xs ys]} (:points stat)]
+                      {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                       :xs (vec xs) :ys (vec ys)}))}
+    (:position view) (assoc :position (:position view))))
 
 (defmethod extract-layer :errorbar [view stat all-colors cfg]
   {:mark :errorbar
@@ -229,28 +230,47 @@
         (distinct vals)))))
 
 (defn compute-global-y-domain
-  "Compute global y-domain, handling stacked bar accumulation."
+  "Compute global y-domain, handling stacked bar/area accumulation."
   [stat-results views scale-spec]
-  (let [has-stacked? (some #(= :stack (:position %)) views)]
+  (let [stacked-views (filter #(= :stack (:position %)) views)
+        has-stacked? (seq stacked-views)]
     (if has-stacked?
-      (let [count-stats (filter :categories stat-results)
+      (let [;; Stacked bars: accumulate counts per category
+            count-stats (filter :categories stat-results)
             all-cats (distinct (mapcat :categories count-stats))
-            max-stack (if (seq all-cats)
-                        (reduce max 0
-                                (for [cat all-cats]
-                                  (reduce + (for [sr count-stats
-                                                  {:keys [counts]} (:bars sr)
-                                                  {:keys [category count]} counts
-                                                  :when (= category cat)]
-                                              count))))
-                        0)
+            max-bar-stack (if (seq all-cats)
+                            (reduce max 0
+                                    (for [cat all-cats]
+                                      (reduce + (for [sr count-stats
+                                                      {:keys [counts]} (:bars sr)
+                                                      {:keys [category count]} counts
+                                                      :when (= category cat)]
+                                                  count))))
+                            0)
+            ;; Stacked area: accumulate y-values per x across groups
+            area-views (filter #(and (= :stack (:position %)) (= :area (:mark %))) views)
+            area-stats (mapv (fn [v] (nth stat-results (.indexOf ^java.util.List (vec views) v)))
+                             area-views)
+            max-area-stack (if (seq area-stats)
+                             (let [all-groups (mapcat :points area-stats)
+                                   x->y-sum (reduce (fn [acc {:keys [xs ys]}]
+                                                      (reduce (fn [a [x y]]
+                                                                (update a x (fnil + 0) y))
+                                                              acc
+                                                              (map vector xs ys)))
+                                                    {}
+                                                    all-groups)]
+                               (if (seq x->y-sum)
+                                 (reduce max 0 (vals x->y-sum))
+                                 0))
+                             0)
             other-yd (mapcat (fn [sr]
-                               (when-not (:categories sr)
+                               (when-not (or (:categories sr)
+                                             (some #{sr} area-stats))
                                  (:y-domain sr)))
                              stat-results)
-            hi (if (seq other-yd)
-                 (max max-stack (reduce max other-yd))
-                 max-stack)]
+            hi (max max-bar-stack max-area-stack
+                    (if (seq other-yd) (reduce max 0 other-yd) 0))]
         (if (pos? hi)
           (scale/pad-domain [0 hi] scale-spec)
           [0 1]))

@@ -148,6 +148,13 @@
   ([] (view/area))
   ([opts] (view/area opts)))
 
+(defn stacked-area
+  "Stacked area mark — filled regions stacked on top of each other.
+   (stacked-area)                     — stacked areas
+   (stacked-area {:color :group})     — colored stacked areas"
+  ([] (view/stacked-area))
+  ([opts] (view/stacked-area opts)))
+
 (defn density
   "Density mark — kernel density estimation rendered as a filled area.
    (density)                    — default bandwidth
