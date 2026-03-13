@@ -190,7 +190,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__75912#] (= "Distribution of Total Bill" p1__75912#))
+       (fn* [p1__98624#] (= "Distribution of Total Bill" p1__98624#))
        (:texts s)))))
    v30_l136)))
 
@@ -305,7 +305,7 @@
    box-layer
    (first
     (filter
-     (fn* [p1__75913#] (= :boxplot (:mark p1__75913#)))
+     (fn* [p1__98625#] (= :boxplot (:mark p1__98625#)))
      (:layers panel)))
    cats
    (:color-categories box-layer)]
@@ -385,7 +385,7 @@
    viol-layer
    (first
     (filter
-     (fn* [p1__75914#] (= :violin (:mark p1__75914#)))
+     (fn* [p1__98626#] (= :violin (:mark p1__98626#)))
      (:layers panel)))
    cats
    (:color-categories viol-layer)]
@@ -414,3 +414,43 @@
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
    v63_l295)))
+
+
+(def
+ v66_l311
+ (->
+  iris
+  (sk/view [[:species :sepal_length]])
+  (sk/lay (sk/ridgeline))
+  sk/plot))
+
+
+(deftest
+ t67_l316
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
+   v66_l311)))
+
+
+(def
+ v69_l325
+ (->
+  iris
+  (sk/view [[:species :petal_length]])
+  (sk/lay (sk/ridgeline {:color :species}))
+  sk/plot))
+
+
+(deftest
+ t70_l330
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 3 (:polygons s)))))
+   v69_l325)))

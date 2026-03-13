@@ -32,8 +32,8 @@
 ;; ## Mark
 ;;
 ;; A **mark** is the visual representation of data: points, lines,
-;; bars, rectangles. Mark constructors (`sk/point`, `sk/line`,
-;; `sk/bar`, `sk/histogram`, `sk/lm`) return maps that are merged
+;; bars, rectangles. Mark constructors (`sk/point`, `sk/line`, `sk/tile`,
+;; `sk/bar`, `sk/histogram`, `sk/boxplot`, `sk/violin`, `sk/ridgeline`, etc.) return maps that are merged
 ;; into views by `sk/lay`.
 
 (sk/point {:color :species :alpha 0.5})
@@ -53,6 +53,11 @@
 ;; | `histogram` | `:bin` | Bin into ranges |
 ;; | `bar` | `:count` | Count categories |
 ;; | `lm` | `:lm` | Linear regression |
+;; | `loess` | `:loess` | LOESS local regression |
+;; | `density` | `:kde` | Kernel density estimation |
+;; | `boxplot` | `:boxplot` | Five-number summary + outliers |
+;; | `violin` / `ridgeline` | `:violin` | KDE per category |
+;; | `tile` | `:bin2d` | 2D grid binning (heatmap) |
 
 ;; ## Layer
 ;;
@@ -174,12 +179,12 @@
 ;; |:-----|:-----|:---------|
 ;; | View | Map: data + column mappings + mark | User builds, consumed by `sketch` |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
-;; | Stat | Data transform: identity, bin, count, lm | Computed during sketch resolution |
+;; | Stat | Data transform: identity, bin, count, lm, kde, etc. | Computed during sketch resolution |
 ;; | Layer | Resolved geometry + style for one mark | Lives inside sketch panels |
 ;; | Panel | One plotting area (domain, ticks, layers) | One or more per sketch |
 ;; | Sketch | Complete resolved plot description | Serializable, inspectable |
 ;; | Domain | Data range on an axis | Part of panel |
 ;; | Scale | Data → pixel mapping | Created at render time |
-;; | Coord | Coordinate system (cartesian, flip) | Applied at render time |
+;; | Coord | Coordinate system (cartesian, flip, polar) | Applied at render time |
 ;; | Membrane | Drawable tree (membrane library) | Intermediate (SVG path only) |
 ;; | Figure | Final output (SVG hiccup, Plotly spec, ...) | Returned to user |

@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Rendering extensibility**: `render-figure` defmulti dispatching on format
   keyword; `:svg` renderer via membrane path
 - **Sketch validation**: Malli schema with `valid-sketch?` and `explain-sketch`
-- **Notebooks** (14): quickstart, scatter_gallery, distributions, layers, config,
+- **Notebooks** (16): quickstart, scatter_gallery, distributions, layers, config,
   composability, real_world, edge_cases, api_reference, glossary,
-  inference_rules, exploring_sketches, extensibility, architecture
-- **216 tests** across all notebooks
+  inference_rules, exploring_sketches, extensibility, architecture, polar
+- **325 tests** across all notebooks

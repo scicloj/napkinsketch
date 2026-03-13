@@ -476,6 +476,46 @@
                                 (= 4 (:lines s)))))])
 
 
+(kind/doc #'sk/tile)
+
+;; Auto-binned heatmap — bin x and y into a grid, count points per cell:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/tile))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:tiles s)))))])
+
+;; Pre-computed fill — use a numeric column for tile color:
+
+(def grid-data
+  (tc/dataset {:x (for [i (range 5) j (range 5)] i)
+               :y (for [i (range 5) j (range 5)] j)
+               :value (vec (repeatedly 25 #(rand-int 100)))}))
+
+(sk/plot [(sk/tile {:data grid-data :x :x :y :y :fill :value})])
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:tiles s)))))])
+
+(kind/doc #'sk/ridgeline)
+
+;; Stacked density curves per category — good for comparing distributions:
+
+(-> iris
+    (sk/view [[:species :sepal_length]])
+    (sk/lay (sk/ridgeline))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
+
+
 ;; ## Rendering
 
 (kind/doc #'sk/plot)
@@ -548,6 +588,19 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
+
+;; Polar coordinates — rose chart (bar chart in polar space):
+
+(-> iris
+    (sk/view :species)
+    (sk/lay (sk/bar))
+    (sk/coord :polar)
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
+
                                 (= 3 (:polygons s)))))])
 
 (kind/doc #'sk/scale)

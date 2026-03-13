@@ -302,3 +302,32 @@
  [(fn [v] (let [s (sk/svg-summary v)]
             (and (= 1 (:panels s))
                  (= 3 (:polygons s)))))])
+
+;; ## Ridgeline Plot
+;;
+;; Overlapping density curves stacked vertically by category — good
+;; for comparing distribution shapes across many groups.
+
+(-> iris
+    (sk/view [[:species :sepal_length]])
+    (sk/lay (sk/ridgeline))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (pos? (:polygons s)))))])
+
+;; ## Colored Ridgeline
+
+;; Map color to the same categorical column for distinct curves.
+
+(-> iris
+    (sk/view [[:species :petal_length]])
+    (sk/lay (sk/ridgeline {:color :species}))
+    sk/plot)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 3 (:polygons s)))))])
