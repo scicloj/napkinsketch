@@ -8,7 +8,7 @@
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
    [scicloj.napkinsketch.api :as sk]
-   [scicloj.napkinsketch.render.scene :as scene]))
+   [scicloj.napkinsketch.render.membrane :as membrane]))
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
@@ -129,23 +129,23 @@
 ;; | `:cartesian` | Standard x→right, y→up |
 ;; | `:flip` | Swap x and y axes |
 
-;; ## Scene
+;; ## Membrane (drawable tree)
 ;;
-;; A **scene** is a membrane drawable tree — a tree of layout and
+;; A **membrane** (drawable tree) is a tree of layout and
 ;; drawing primitives (`Translate`, `WithColor`, `RoundedRectangle`,
 ;; `Label`, etc.) that represents a complete plot.
 ;;
-;; Scenes are an intermediate step in the SVG rendering path:
-;; sketch → scene → SVG hiccup. Direct renderers (e.g., Plotly)
-;; skip the scene entirely.
+;; The membrane is an intermediate step in the SVG rendering path:
+;; sketch → membrane → SVG hiccup. Direct renderers (e.g., Plotly)
+;; skip the membrane entirely.
 
-(def my-scene (scene/sketch->scene my-sketch))
+(def my-membrane (membrane/sketch->membrane my-sketch))
 
-(vector? my-scene)
+(vector? my-membrane)
 
 (kind/test-last [(fn [v] (true? v))])
 
-(count my-scene)
+(count my-membrane)
 
 (kind/test-last [(fn [n] (pos? n))])
 
@@ -176,5 +176,5 @@
 ;; | Domain | Data range on an axis | Part of panel |
 ;; | Scale | Data → pixel mapping | Created at render time |
 ;; | Coord | Coordinate system (cartesian, flip) | Applied at render time |
-;; | Scene | Membrane drawable tree | Intermediate (SVG path only) |
+;; | Membrane | Drawable tree (membrane library) | Intermediate (SVG path only) |
 ;; | Figure | Final output (SVG hiccup, Plotly spec, ...) | Returned to user |

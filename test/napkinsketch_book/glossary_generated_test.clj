@@ -4,7 +4,7 @@
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
-  [scicloj.napkinsketch.render.scene :as scene]
+  [scicloj.napkinsketch.render.membrane :as membrane]
   [clojure.test :refer [deftest is]]))
 
 
@@ -31,7 +31,7 @@
  v5_l27
  (kind/pprint
   (mapv
-   (fn* [p1__77395#] (select-keys p1__77395# [:x :y :mark :color]))
+   (fn* [p1__84212#] (select-keys p1__84212# [:x :y :mark :color]))
    views)))
 
 
@@ -92,16 +92,16 @@
    v21_l101)))
 
 
-(def v24_l142 (def my-scene (scene/sketch->scene my-sketch)))
+(def v24_l142 (def my-membrane (membrane/sketch->membrane my-sketch)))
 
 
-(def v25_l144 (vector? my-scene))
+(def v25_l144 (vector? my-membrane))
 
 
 (deftest t26_l146 (is ((fn [v] (true? v)) v25_l144)))
 
 
-(def v27_l148 (count my-scene))
+(def v27_l148 (count my-membrane))
 
 
 (deftest t28_l150 (is ((fn [n] (pos? n)) v27_l148)))

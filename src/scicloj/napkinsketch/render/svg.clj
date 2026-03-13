@@ -1,11 +1,11 @@
 (ns scicloj.napkinsketch.render.svg
-  "Convert membrane scene trees to SVG hiccup."
+  "Convert membrane drawable trees to SVG hiccup."
   (:require [clojure.string :as str]
             [clojure.walk :as walk]
             [membrane.ui :as ui]
             [scicloj.kindly.v4.kind :as kind]
             [scicloj.napkinsketch.impl.defaults :as defaults]
-            [scicloj.napkinsketch.render.scene :as scene]
+            [scicloj.napkinsketch.render.membrane :as membrane]
             [scicloj.napkinsketch.impl.render :as render])
   (:import [membrane.ui Translate WithColor WithStyle WithStrokeWidth
             Path RoundedRectangle Rectangle Label Rotate]))
@@ -27,7 +27,7 @@
    :style :fill
    :stroke-width 1})
 
-;; ---- Scene → SVG conversion ----
+;; ---- Membrane → SVG conversion ----
 
 (defn- points->str
   "Convert a seq of [x y] pairs to SVG points attribute string."
@@ -48,17 +48,17 @@
                         :stroke-width (:stroke-width ctx)}
       {:fill color :fill-opacity opacity :stroke "none"})))
 
-(declare scene->svg)
+(declare membrane->svg)
 
 (defprotocol ToSVG
-  "Convert a membrane scene element to SVG hiccup."
+  "Convert a membrane drawable element to SVG hiccup."
   (-to-svg [elem ctx]))
 
 (extend-protocol ToSVG
   Translate
   (-to-svg [elem ctx]
     (let [{:keys [x y drawable]} elem
-          inner (scene->svg drawable ctx)]
+          inner (membrane->svg drawable ctx)]
       (when inner
         [:g {:transform (str "translate(" (double x) "," (double y) ")")}
          inner])))
@@ -66,7 +66,7 @@
   Rotate
   (-to-svg [elem ctx]
     (let [{:keys [degrees drawable]} elem
-          inner (scene->svg drawable ctx)]
+          inner (membrane->svg drawable ctx)]
       (when inner
         [:g {:transform (str "rotate(" (double degrees) ")")}
          inner])))
@@ -75,7 +75,7 @@
   (-to-svg [elem ctx]
     (let [{:keys [color drawables]} elem
           ctx' (assoc ctx :color color)
-          children (keep #(scene->svg % ctx') drawables)]
+          children (keep #(membrane->svg % ctx') drawables)]
       (when (seq children)
         (into [:g] children))))
 
@@ -88,7 +88,7 @@
                       :membrane.ui/style-stroke-and-fill :stroke-and-fill
                       :fill)
           ctx' (assoc ctx :style style-key)
-          children (keep #(scene->svg % ctx') drawables)]
+          children (keep #(membrane->svg % ctx') drawables)]
       (when (seq children)
         (into [:g] children))))
 
@@ -96,7 +96,7 @@
   (-to-svg [elem ctx]
     (let [{:keys [stroke-width drawables]} elem
           ctx' (assoc ctx :stroke-width stroke-width)
-          children (keep #(scene->svg % ctx') drawables)]
+          children (keep #(membrane->svg % ctx') drawables)]
       (when (seq children)
         (into [:g] children))))
 
@@ -138,15 +138,15 @@
   Object
   (-to-svg [_ _ctx] nil))
 
-(defn scene->svg
-  "Convert a membrane scene element to SVG hiccup.
+(defn membrane->svg
+  "Convert a membrane drawable element to SVG hiccup.
    ctx tracks inherited drawing state (color, style, stroke-width)."
-  ([elem] (scene->svg elem default-ctx))
+  ([elem] (membrane->svg elem default-ctx))
   ([elem ctx]
    (cond
      (nil? elem) nil
      (sequential? elem)
-     (let [children (keep #(scene->svg % ctx) elem)]
+     (let [children (keep #(membrane->svg % ctx) elem)]
        (when (seq children)
          (if (= 1 (count children))
            (first children)
@@ -163,17 +163,17 @@
          :viewBox (str "0 0 " width " " height)}
    body])
 
-;; ---- Sketch → Scene (membrane scene tree) ----
+;; ---- Sketch → Membrane (drawable tree) ----
 
-;; Scene-building code lives in render/scene.clj.
-;; This namespace handles scene → SVG conversion only.
+;; Membrane-building code lives in render/membrane.clj.
+;; This namespace handles membrane → SVG conversion only.
 
 ;; ---- render-figure :svg ----
 
 (defmethod render/render-figure :svg [sketch _ _opts]
   (let [{:keys [total-width total-height]} sketch
-        scene-tree (scene/sketch->scene sketch)
-        svg-body (scene->svg scene-tree)
+        membrane-tree (membrane/sketch->membrane sketch)
+        svg-body (membrane->svg membrane-tree)
         svg (wrap-svg total-width total-height svg-body)]
     (kind/hiccup svg)))
 

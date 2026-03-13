@@ -44,10 +44,10 @@
 
 ;; ---- render-layer multimethod ----
 ;; render-layer takes sketch layer descriptors (data-space geometry,
-;; resolved colors) and renders them as membrane scene primitives.
+;; resolved colors) and renders them as membrane drawable primitives.
 
 (defmulti render-layer
-  "Render a sketch layer as membrane scene primitives.
+  "Render a sketch layer as membrane drawable primitives.
    `layer` is a sketch layer map with data-space geometry and resolved colors.
    `ctx` contains :coord-fn, :sx, :sy, :coord-type."
   (fn [layer ctx] (:mark layer)))

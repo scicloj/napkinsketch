@@ -19,7 +19,7 @@
    [scicloj.napkinsketch.impl.scale :as scale]
    [scicloj.napkinsketch.impl.coord :as coord]
    [scicloj.napkinsketch.impl.render :as render]
-   [scicloj.napkinsketch.render.scene :as scene]
+   [scicloj.napkinsketch.render.membrane :as membrane]
    [scicloj.napkinsketch.render.svg :as svg]))
 
 ;; ## Overview
@@ -32,7 +32,7 @@
 ;;                                              ↓
 ;;                                           sketch
 ;;                                              ↓
-;;                               render-layer (scene path)
+;;                               render-layer (membrane path)
 ;;                                    or
 ;;                               render-figure (direct path)
 ;;                                              ↓
@@ -43,7 +43,7 @@
 ;; |:------------|:----------|:--------------|:--------|
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
 ;; | `extract-layer` | `impl/sketch.clj` | `:mark` key | Convert stat result → sketch layer descriptor |
-;; | `render-layer` | `render/mark.clj` | `:mark` key | Render sketch layer → membrane scene |
+;; | `render-layer` | `render/mark.clj` | `:mark` key | Render sketch layer → membrane drawables |
 ;; | `render-figure` | `impl/render.clj` | format keyword | Render sketch → figure (:svg, etc.) |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
@@ -137,11 +137,11 @@
 
 ;; ## `render-layer`
 ;;
-;; Renders a sketch layer descriptor into membrane scene primitives.
-;; This is the "scene path" — used when the target format goes through
+;; Renders a sketch layer descriptor into membrane drawable primitives.
+;; This is the "membrane path" — used when the target format goes through
 ;; membrane (e.g., SVG).
 ;;
-;; | Dispatch value | Scene output |
+;; | Dispatch value | Membrane output |
 ;; |:---------------|:-------------|
 ;; | `:point` | Translated colored rounded-rectangles |
 ;; | `:bar` | Filled polygons (histogram bars) |
@@ -170,7 +170,7 @@
 ;;                   {:color (sketch/resolve-color ...)
 ;;                    :xs (vec xs) :ys (vec ys)}))})
 ;;
-;; ;; 2. Render to membrane scene
+;; ;; 2. Render to membrane drawables
 ;; (defmethod mark/render-layer :area [layer ctx]
 ;;   ;; Build filled polygon from xs/ys + baseline
 ;;   ...)
@@ -187,8 +187,8 @@
 ;;
 ;; Dispatch function: `(fn [sketch format opts] format)`
 ;;
-;; The `:svg` renderer goes through the membrane scene path:
-;; `sketch → scene → SVG hiccup`.
+;; The `:svg` renderer goes through the membrane path:
+;; `sketch → membrane → SVG hiccup`.
 ;; Other renderers can skip membrane and go directly from sketch
 ;; to their target format.
 
@@ -275,31 +275,31 @@
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-;; ## The Scene Path
+;; ## The Membrane Path
 ;;
 ;; For the SVG renderer, the sketch goes through an intermediate
-;; membrane scene before becoming SVG hiccup. The `sketch->scene`
-;; function in `render/scene.clj` builds this scene:
+;; membrane drawable tree before becoming SVG hiccup. The `sketch->membrane`
+;; function in `render/membrane.clj` builds this tree:
 
-(def my-scene (scene/sketch->scene my-sketch))
+(def my-membrane (membrane/sketch->membrane my-sketch))
 
-(vector? my-scene)
+(vector? my-membrane)
 
 (kind/test-last [(fn [v] (true? v))])
 
-;; The scene is a tree of membrane drawables — `Translate`,
-;; `WithColor`, `RoundedRectangle`, `Label`, etc. The `scene->svg`
+;; The membrane is a tree of drawables — `Translate`,
+;; `WithColor`, `RoundedRectangle`, `Label`, etc. The `membrane->svg`
 ;; function walks this tree and emits SVG hiccup:
 
-(let [svg-body (svg/scene->svg my-scene)
+(let [svg-body (svg/membrane->svg my-membrane)
       svg (svg/wrap-svg (:total-width my-sketch) (:total-height my-sketch) svg-body)]
   (first svg))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
-;; This two-step process (sketch → scene → SVG) means that adding
-;; a new scene-based target (e.g., Canvas, PDF) only requires writing
-;; a new scene walker — the scene construction is shared.
+;; This two-step process (sketch → membrane → SVG) means that adding
+;; a new membrane-based target (e.g., Canvas, PDF) only requires writing
+;; a new membrane walker — the membrane construction is shared.
 
 ;; ## Summary
 ;;
@@ -308,6 +308,6 @@
 ;; | A new statistical transform | `compute-stat` |
 ;; | A new mark type | `extract-layer` + `render-layer` |
 ;; | A new output format (direct) | `render-figure` |
-;; | A new output format (scene-based) | `render-figure` + scene walker |
+;; | A new output format (membrane-based) | `render-figure` + membrane walker |
 ;; | A new scale type | `make-scale` |
 ;; | A new coordinate system | `make-coord` |

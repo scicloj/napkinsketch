@@ -1,6 +1,6 @@
-(ns scicloj.napkinsketch.render.scene
-  "Build a membrane scene tree from a sketch.
-   Sketch → scene is format-agnostic: the scene tree can be rendered
+(ns scicloj.napkinsketch.render.membrane
+  "Build a membrane drawable tree from a sketch.
+   Sketch → membrane is format-agnostic: the drawable tree can be converted
    to SVG, PNG, or any other format membrane supports."
   (:require [membrane.ui :as ui]
             [scicloj.napkinsketch.impl.defaults :as defaults]
@@ -9,7 +9,7 @@
 ;; ---- Legend ----
 
 (defn- render-legend-from-sketch
-  "Render legend from sketch legend data as a membrane scene."
+  "Render legend from sketch legend data as membrane drawables."
   [legend x y]
   (let [{:keys [title]} legend
         fsize 10
@@ -90,10 +90,10 @@
                   (ui/with-color [0.2 0.2 0.2 1.0]
                     (ui/label title (ui/font nil fsize))))))
 
-;; ---- Sketch → Scene ----
+;; ---- Sketch → Membrane ----
 
-(defn sketch->scene
-  "Build a membrane scene tree from a sketch.
+(defn sketch->membrane
+  "Build a membrane drawable tree from a sketch.
    Returns a vector of membrane drawables representing the complete plot."
   [sketch]
   (let [{:keys [margin total-width total-height panel-width panel-height
@@ -105,7 +105,7 @@
         ph panel-height
 
         ;; Render each panel, positioned in the grid
-        panel-scenes
+        panel-elems
         (vec
          (for [p panels
                :let [ri (:row p)
@@ -146,7 +146,7 @@
                              (ui/with-color strip-label-color
                                (ui/label (:row-label p) (ui/font nil strip-fsize))))))))]
 
-    ;; Build full scene
+    ;; Build full membrane tree
     (vec
      (concat
       ;; Title
@@ -164,7 +164,7 @@
                                    (+ y-label-pad (* grid-cols pw) strip-w 10)
                                    (+ title-pad strip-h 20)))
       ;; Panels
-      panel-scenes
+      panel-elems
       ;; Strip labels
       (or col-strips [])
       (or row-strips [])))))

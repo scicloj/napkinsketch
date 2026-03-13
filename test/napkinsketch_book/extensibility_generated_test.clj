@@ -10,7 +10,7 @@
   [scicloj.napkinsketch.impl.scale :as scale]
   [scicloj.napkinsketch.impl.coord :as coord]
   [scicloj.napkinsketch.impl.render :as render]
-  [scicloj.napkinsketch.render.scene :as scene]
+  [scicloj.napkinsketch.render.membrane :as membrane]
   [scicloj.napkinsketch.render.svg :as svg]
   [clojure.test :refer [deftest is]]))
 
@@ -112,10 +112,10 @@
    v25_l268)))
 
 
-(def v28_l284 (def my-scene (scene/sketch->scene my-sketch)))
+(def v28_l284 (def my-membrane (membrane/sketch->membrane my-sketch)))
 
 
-(def v29_l286 (vector? my-scene))
+(def v29_l286 (vector? my-membrane))
 
 
 (deftest t30_l288 (is ((fn [v] (true? v)) v29_l286)))
@@ -125,7 +125,7 @@
  v32_l294
  (let
   [svg-body
-   (svg/scene->svg my-scene)
+   (svg/membrane->svg my-membrane)
    svg
    (svg/wrap-svg
     (:total-width my-sketch)

@@ -15,7 +15,7 @@
 (kind/mermaid "
 graph LR
   V[\"Views<br/>(API)\"] -->|resolve| S[\"Sketch<br/>(data-space)\"]
-  S -->|scales + coords| M[\"Membrane Scene<br/>(pixel-space)\"]
+  S -->|scales + coords| M[\"Membrane Tree<br/>(pixel-space)\"]
   M -->|tree walk| SVG[\"SVG Hiccup<br/>(output)\"]
   style V fill:#e8f5e9
   style S fill:#fff3e0
@@ -28,7 +28,7 @@ graph LR
 ;; - **Sketch** — fully resolved plot specification. Data-space geometry,
 ;;   domains, tick info, legend. Plain Clojure maps. No rendering primitives.
 ;;
-;; - **Membrane Scene** — positioned drawing primitives in pixel space.
+;; - **Membrane** — positioned drawing primitives in pixel space.
 ;;   Translate, WithColor, Path, Label, etc.
 ;;
 ;; - **SVG Hiccup** — final output. A tree walk converts membrane records
@@ -54,7 +54,7 @@ graph TB
     B2[\"render/mark.clj\"]
     B3[\"render/panel.clj\"]
     B4[\"impl/plot.clj\"]
-    B5[\"render/scene.clj\"]
+    B5[\"render/membrane.clj\"]
     B6[\"render/svg.clj\"]
   end
   WHAT -->|sketch| HOW
@@ -80,19 +80,19 @@ graph TB
 ;;
 ;; - Backend-independent — could drive Plotly, Canvas, or any renderer
 ;;
-;; ### The Membrane Scene (how)
+;; ### The Membrane Tree (how)
 ;;
-;; A membrane scene answers: what pixel coordinates, what colors at
+;; A membrane tree answers: what pixel coordinates, what colors at
 ;; what positions, what font sizes for labels. It's a tree of
 ;; defrecords that membrane knows how to render.
 ;;
 ;; Properties:
 ;;
-;; - Membrane-specific types: Translate, WithColor, Path, Label, etc.
+;; - Uses membrane-specific types: Translate, WithColor, Path, Label, etc.
 ;;
 ;; - Pixel-space coordinates — all positions are resolved
 ;;
-;; - Not serializable — contains Java objects (fonts, etc.)
+;; - Not serializable — contains Java objects (membrane records, (fonts, etc.)
 ;;
 ;; - Converted to SVG by a context-passing tree walk
 
@@ -109,8 +109,8 @@ graph TD
   SKETCH --> DEFAULTS[\"impl/defaults.clj\"]
   PLOT --> SKETCH
   PLOT --> SVG[\"render/svg.clj\"]
-  SVG --> SCENE[\"render/scene.clj\"]
-  SCENE --> PANEL[\"render/panel.clj\"]
+  SVG --> MEMBRANE[\"render/membrane.clj\"]
+  MEMBRANE --> PANEL[\"render/panel.clj\"]
   PANEL --> MARK[\"render/mark.clj\"]
   PANEL --> SCALE
   PANEL --> COORD[\"impl/coord.clj\"]
@@ -118,7 +118,7 @@ graph TD
   style SKETCH fill:#ffe0b2
   style PLOT fill:#bbdefb
   style SVG fill:#f8bbd0
-  style SCENE fill:#f8bbd0
+  style MEMBRANE fill:#f8bbd0
 ")
 
 ;; ## Data Flow Example
@@ -179,7 +179,7 @@ graph TD
 ;; ### Stage 3: Plot (Sketch → Membrane → SVG)
 ;;
 ;; `sk/plot` calls `sk/sketch` internally, then maps the data-space
-;; geometry through scales to pixel space, builds a membrane scene tree,
+;; geometry through scales to pixel space, builds a membrane drawable tree,
 ;; and converts to SVG.
 
 (sk/plot views)
@@ -205,7 +205,7 @@ graph LR
   subgraph HOW [\"HOW — pixels + rendering\"]
     SC[\"Scales (wadogo)\"]
     CO[\"Coord transforms\"]
-    MS[\"Membrane scene\"]
+    MS[\"Membrane tree\"]
     SV[\"SVG conversion\"]
   end
   WHAT -->|sketch| HOW
