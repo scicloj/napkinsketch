@@ -23,6 +23,7 @@
 ;; What domains? What axis labels? What colors? These are
 ;; **inference rules** — defaults derived from the data and context.
 
+^:kindly/hide-code
 (kind/mermaid "
 graph TD
   INPUT[\"User Input<br/>(data + columns + mark)\"] --> CT[\"Column Types<br/>numerical / categorical\"]

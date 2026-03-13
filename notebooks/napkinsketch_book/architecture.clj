@@ -12,6 +12,7 @@
 
 ;; ## Pipeline Overview
 
+^:kindly/hide-code
 (kind/mermaid "
 graph LR
   V[\"Views<br/>(API)\"] -->|resolve| S[\"Sketch<br/>(data-space)\"]
@@ -39,6 +40,7 @@ graph LR
 ;; The key architectural insight is that **what** to draw and **how** to
 ;; draw it are separate concerns.
 
+^:kindly/hide-code
 (kind/mermaid "
 graph TB
   subgraph WHAT [\"What to draw\"]
@@ -98,6 +100,7 @@ graph TB
 
 ;; ## Namespace Structure
 
+^:kindly/hide-code
 (kind/mermaid "
 graph TD
   API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]
@@ -194,6 +197,7 @@ graph TD
 ;; Everything above it is about data and semantics. Everything below
 ;; is about pixels and rendering.
 
+^:kindly/hide-code
 (kind/mermaid "
 graph LR
   subgraph WHAT [\"WHAT — data + semantics\"]
