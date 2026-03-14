@@ -136,11 +136,13 @@
     (let [{:keys [text font]} elem
           {:keys [color opacity]} (rgba->css (:color ctx))
           font-size (if font (:size font) 14)
-          font-name (when font (:name font))]
+          font-name (when font (:name font))
+          text-anchor (:text-anchor elem)]
       [:text (cond-> {:fill color :fill-opacity opacity
                       :font-size font-size
                       :dominant-baseline "hanging"}
-               font-name (assoc :font-family font-name))
+               font-name (assoc :font-family font-name)
+               text-anchor (assoc :text-anchor text-anchor))
        text]))
 
   Object

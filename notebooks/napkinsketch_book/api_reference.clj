@@ -519,6 +519,31 @@
                            (and (= 1 (:panels s))
                                 (pos? (:tiles s)))))])
 
+(kind/doc #'sk/density2d)
+
+;; KDE-smoothed 2D density heatmap — smoother alternative to binned tiles:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/density2d))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:tiles s)))))])
+
+;; Overlay density with scatter points:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/density2d))
+    (sk/lay (sk/point {:alpha 0.5}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (pos? (:tiles s)))))])
+
 (kind/doc #'sk/ridgeline)
 
 ;; Stacked density curves per category — good for comparing distributions:

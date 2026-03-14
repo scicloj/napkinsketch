@@ -72,6 +72,7 @@
 ;; | `:boxplot` | Five-number summary with outlier detection |
 ;; | `:violin` | Kernel density estimation per category |
 ;; | `:bin2d` | 2D binning for heatmap tiles |
+;; | `:kde2d` | 2D Gaussian KDE for smooth density heatmap |
 ;; | `:summary` | Mean ± standard error per category |
 ;;
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`

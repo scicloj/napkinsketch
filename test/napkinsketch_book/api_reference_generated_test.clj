@@ -334,7 +334,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__91566#] (Math/sin (* p1__91566# 0.3)))
+     (fn* [p1__76394#] (Math/sin (* p1__76394# 0.3)))
      (range 30))})))
 
 
@@ -362,10 +362,10 @@
     (vec
      (concat
       (mapv
-       (fn* [p1__91567#] (Math/sin (* p1__91567# 0.3)))
+       (fn* [p1__76395#] (Math/sin (* p1__76395# 0.3)))
        (range 30))
       (mapv
-       (fn* [p1__91568#] (Math/cos (* p1__91568# 0.3)))
+       (fn* [p1__76396#] (Math/cos (* p1__76396# 0.3)))
        (range 30)))),
     :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))})))
 
@@ -600,9 +600,9 @@
      :y
      (mapv
       (fn*
-       [p1__91569#]
+       [p1__76397#]
        (+
-        (Math/sin (* p1__91569# 0.2))
+        (Math/sin (* p1__76397# 0.2))
         (* 0.3 (- (rng/drandom r) 0.5))))
       (range 50))}))))
 
@@ -696,7 +696,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__91570#] (Math/sin (* p1__91570# 0.3)))
+     (fn* [p1__76398#] (Math/sin (* p1__76398# 0.3)))
      (range 30))})
   (sk/view [[:x :y]])
   (sk/lay (sk/area))
@@ -989,15 +989,15 @@
    v161_l516)))
 
 
-(def v163_l522 (kind/doc #'sk/ridgeline))
+(def v163_l522 (kind/doc #'sk/density2d))
 
 
 (def
  v165_l526
  (->
   iris
-  (sk/view [[:species :sepal_length]])
-  (sk/lay (sk/ridgeline))
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/density2d))
   sk/plot))
 
 
@@ -1008,54 +1008,64 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (pos? (:polygons s)))))
+     (and (= 1 (:panels s)) (pos? (:tiles s)))))
    v165_l526)))
 
 
-(def v167_l535 (kind/doc #'sk/rug))
-
-
 (def
- v169_l539
+ v168_l537
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point {:color :species}) (sk/rug {:color :species}))
+  (sk/lay (sk/density2d))
+  (sk/lay (sk/point {:alpha 0.5}))
   sk/plot))
 
 
 (deftest
- t170_l544
+ t169_l543
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 150 (:points s)) (= 150 (:lines s)))))
-   v169_l539)))
+     (and (= 150 (:points s)) (pos? (:tiles s)))))
+   v168_l537)))
+
+
+(def v170_l547 (kind/doc #'sk/ridgeline))
 
 
 (def
- v172_l550
+ v172_l551
  (->
   iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point) (sk/rug {:side :both}))
+  (sk/view [[:species :sepal_length]])
+  (sk/lay (sk/ridgeline))
   sk/plot))
 
 
 (deftest
- t173_l555
+ t173_l556
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 300 (:lines s)))) v172_l550)))
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
+   v172_l551)))
 
 
-(def v174_l560 (kind/doc #'sk/step))
+(def v174_l560 (kind/doc #'sk/rug))
 
 
 (def
  v176_l564
- (-> tiny (sk/view [[:x :y]]) (sk/lay (sk/step) (sk/point)) sk/plot))
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :species}) (sk/rug {:color :species}))
+  sk/plot))
 
 
 (deftest
@@ -1065,12 +1075,46 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 5 (:points s)) (= 1 (:lines s)))))
+     (and (= 150 (:points s)) (= 150 (:lines s)))))
    v176_l564)))
 
 
 (def
  v179_l575
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point) (sk/rug {:side :both}))
+  sk/plot))
+
+
+(deftest
+ t180_l580
+ (is
+  ((fn [v] (let [s (sk/svg-summary v)] (= 300 (:lines s)))) v179_l575)))
+
+
+(def v181_l585 (kind/doc #'sk/step))
+
+
+(def
+ v183_l589
+ (-> tiny (sk/view [[:x :y]]) (sk/lay (sk/step) (sk/point)) sk/plot))
+
+
+(deftest
+ t184_l594
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 5 (:points s)) (= 1 (:lines s)))))
+   v183_l589)))
+
+
+(def
+ v186_l600
  (->
   tiny
   (sk/view [[:x :y]])
@@ -1079,21 +1123,21 @@
 
 
 (deftest
- t180_l580
+ t187_l605
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 5 (:points s)) (= 2 (:lines s)))))
-   v179_l575)))
+   v186_l600)))
 
 
-(def v181_l584 (kind/doc #'sk/summary))
+(def v188_l609 (kind/doc #'sk/summary))
 
 
 (def
- v183_l588
+ v190_l613
  (->
   iris
   (sk/view [[:species :sepal_length]])
@@ -1102,18 +1146,18 @@
 
 
 (deftest
- t184_l593
+ t191_l618
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:points s)) (= 3 (:lines s)))))
-   v183_l588)))
+   v190_l613)))
 
 
 (def
- v186_l599
+ v193_l624
  (->
   iris
   (sk/view [[:species :sepal_length]])
@@ -1122,35 +1166,35 @@
 
 
 (deftest
- t187_l604
+ t194_l629
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:points s)) (= 3 (:lines s)))))
-   v186_l599)))
+   v193_l624)))
 
 
-(def v189_l610 (kind/doc #'sk/plot))
+(def v196_l635 (kind/doc #'sk/plot))
 
 
-(def v191_l614 (sk/plot [(sk/point {:data tiny, :x :x, :y :y})]))
+(def v198_l639 (sk/plot [(sk/point {:data tiny, :x :x, :y :y})]))
 
 
 (deftest
- t192_l616
+ t199_l641
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 5 (:points s)))))
-   v191_l614)))
+   v198_l639)))
 
 
 (def
- v194_l622
+ v201_l647
  (sk/plot
   [(sk/point
     {:data iris, :x :sepal_length, :y :sepal_width, :color :species})]
@@ -1162,18 +1206,18 @@
 
 
 (deftest
- t195_l629
+ t202_l654
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (>= (:width s) 800))))
-   v194_l622)))
+   v201_l647)))
 
 
 (def
- v197_l635
+ v204_l660
  (sk/plot
   [(sk/point
     {:data iris,
@@ -1184,12 +1228,12 @@
 
 
 (deftest
- t198_l638
- (is ((fn [v] (and (vector? v) (= :svg (first v)))) v197_l635)))
+ t205_l663
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v204_l660)))
 
 
 (def
- v200_l643
+ v207_l668
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1197,30 +1241,30 @@
   (sk/plot {:tooltip true})))
 
 
-(deftest t201_l648 (is ((fn [v] (= :div (first v))) v200_l643)))
+(deftest t208_l673 (is ((fn [v] (= :div (first v))) v207_l668)))
 
 
-(def v202_l649 (kind/doc #'sk/sketch))
+(def v209_l674 (kind/doc #'sk/sketch))
 
 
 (def
- v204_l654
+ v211_l679
  (def sk1 (sk/sketch [(sk/point {:data tiny, :x :x, :y :y})])))
 
 
 (def
- v205_l656
+ v212_l681
  (select-keys sk1 [:width :height :x-label :y-label :title]))
 
 
 (deftest
- t206_l658
+ t213_l683
  (is
-  ((fn [m] (and (= 600 (:width m)) (= "x" (:x-label m)))) v205_l656)))
+  ((fn [m] (and (= 600 (:width m)) (= "x" (:x-label m)))) v212_l681)))
 
 
 (def
- v208_l663
+ v215_l688
  (let
   [panel (first (:panels sk1))]
   {:x-domain (:x-domain panel),
@@ -1230,42 +1274,42 @@
 
 
 (deftest
- t209_l669
+ t216_l694
  (is
-  ((fn [m] (and (= 1 (:n-layers m)) (= :point (:mark m)))) v208_l663)))
+  ((fn [m] (and (= 1 (:n-layers m)) (= :point (:mark m)))) v215_l688)))
 
 
-(def v211_l677 (kind/doc #'sk/views->sketch))
+(def v218_l702 (kind/doc #'sk/views->sketch))
 
 
 (def
- v213_l681
+ v220_l706
  (def sk2 (sk/views->sketch [(sk/point {:data tiny, :x :x, :y :y})])))
 
 
-(def v214_l683 (= (keys sk1) (keys sk2)))
+(def v221_l708 (= (keys sk1) (keys sk2)))
 
 
-(deftest t215_l685 (is (true? v214_l683)))
+(deftest t222_l710 (is (true? v221_l708)))
 
 
-(def v216_l687 (kind/doc #'sk/sketch->membrane))
+(def v223_l712 (kind/doc #'sk/sketch->membrane))
 
 
-(def v218_l691 (def m1 (sk/sketch->membrane sk1)))
+(def v225_l716 (def m1 (sk/sketch->membrane sk1)))
 
 
-(def v219_l693 (vector? m1))
+(def v226_l718 (vector? m1))
 
 
-(deftest t220_l695 (is (true? v219_l693)))
+(deftest t227_l720 (is (true? v226_l718)))
 
 
-(def v221_l697 (kind/doc #'sk/membrane->figure))
+(def v228_l722 (kind/doc #'sk/membrane->figure))
 
 
 (def
- v223_l701
+ v230_l726
  (first
   (sk/membrane->figure
    m1
@@ -1274,23 +1318,23 @@
     :total-height (:total-height sk1)})))
 
 
-(deftest t224_l705 (is ((fn [v] (= :svg v)) v223_l701)))
+(deftest t231_l730 (is ((fn [v] (= :svg v)) v230_l726)))
 
 
-(def v225_l707 (kind/doc #'sk/sketch->figure))
+(def v232_l732 (kind/doc #'sk/sketch->figure))
 
 
-(def v227_l711 (first (sk/sketch->figure sk1 :svg {})))
+(def v234_l736 (first (sk/sketch->figure sk1 :svg {})))
 
 
-(deftest t228_l713 (is ((fn [v] (= :svg v)) v227_l711)))
+(deftest t235_l738 (is ((fn [v] (= :svg v)) v234_l736)))
 
 
-(def v230_l718 (kind/doc #'sk/coord))
+(def v237_l743 (kind/doc #'sk/coord))
 
 
 (def
- v232_l722
+ v239_l747
  (->
   iris
   (sk/view :species)
@@ -1300,7 +1344,7 @@
 
 
 (deftest
- t233_l728
+ t240_l753
  (is
   ((fn
     [v]
@@ -1321,14 +1365,14 @@
           [s (sk/svg-summary v)]
           (and (= 1 (:panels s)) (pos? (:polygons s)))))])
       (= 3 (:polygons s)))))
-   v232_l722)))
+   v239_l747)))
 
 
-(def v234_l745 (kind/doc #'sk/scale))
+(def v241_l770 (kind/doc #'sk/scale))
 
 
 (def
- v236_l749
+ v243_l774
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1338,18 +1382,18 @@
 
 
 (deftest
- t237_l755
+ t244_l780
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v236_l749)))
+   v243_l774)))
 
 
 (def
- v239_l761
+ v246_l786
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1359,18 +1403,18 @@
 
 
 (deftest
- t240_l767
+ t247_l792
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v239_l761)))
+   v246_l786)))
 
 
 (def
- v242_l773
+ v249_l798
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1380,21 +1424,21 @@
 
 
 (deftest
- t243_l779
+ t250_l804
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v242_l773)))
+   v249_l798)))
 
 
-(def v244_l783 (kind/doc #'sk/labs))
+(def v251_l808 (kind/doc #'sk/labs))
 
 
 (def
- v246_l787
+ v253_l812
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1407,7 +1451,7 @@
 
 
 (deftest
- t247_l793
+ t254_l818
  (is
   ((fn
     [v]
@@ -1416,14 +1460,14 @@
      (and
       (some #{"Iris Dimensions"} (:texts s))
       (some #{"Sepal Length (cm)"} (:texts s)))))
-   v246_l787)))
+   v253_l812)))
 
 
-(def v249_l799 (kind/doc #'sk/rule-v))
+(def v256_l824 (kind/doc #'sk/rule-v))
 
 
 (def
- v251_l803
+ v258_l828
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1432,21 +1476,21 @@
 
 
 (deftest
- t252_l809
+ t259_l834
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:lines s)))))
-   v251_l803)))
+   v258_l828)))
 
 
-(def v253_l813 (kind/doc #'sk/rule-h))
+(def v260_l838 (kind/doc #'sk/rule-h))
 
 
 (def
- v255_l817
+ v262_l842
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1455,21 +1499,21 @@
 
 
 (deftest
- t256_l823
+ t263_l848
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:lines s)))))
-   v255_l817)))
+   v262_l842)))
 
 
-(def v257_l827 (kind/doc #'sk/band-v))
+(def v264_l852 (kind/doc #'sk/band-v))
 
 
 (def
- v259_l831
+ v266_l856
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1478,21 +1522,21 @@
 
 
 (deftest
- t260_l837
+ t267_l862
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:polygons s)))))
-   v259_l831)))
+   v266_l856)))
 
 
-(def v261_l841 (kind/doc #'sk/band-h))
+(def v268_l866 (kind/doc #'sk/band-h))
 
 
 (def
- v263_l845
+ v270_l870
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1501,31 +1545,31 @@
 
 
 (deftest
- t264_l851
+ t271_l876
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:polygons s)))))
-   v263_l845)))
+   v270_l870)))
 
 
-(def v266_l858 (kind/doc #'sk/cross))
+(def v273_l883 (kind/doc #'sk/cross))
 
 
-(def v268_l862 (sk/cross [:a :b] [1 2 3]))
+(def v275_l887 (sk/cross [:a :b] [1 2 3]))
 
 
 (deftest
- t269_l864
+ t276_l889
  (is
   ((fn [v] (= [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]] v))
-   v268_l862)))
+   v275_l887)))
 
 
 (def
- v271_l868
+ v278_l893
  (->
   iris
   (sk/view
@@ -1537,29 +1581,29 @@
 
 
 (deftest
- t272_l874
+ t279_l899
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:panels s)) (= 600 (:points s)))))
-   v271_l868)))
+   v278_l893)))
 
 
-(def v273_l878 (kind/doc #'sk/pairs))
+(def v280_l903 (kind/doc #'sk/pairs))
 
 
-(def v275_l882 (sk/pairs [:a :b :c]))
+(def v282_l907 (sk/pairs [:a :b :c]))
 
 
 (deftest
- t276_l884
- (is ((fn [v] (= [[:a :b] [:a :c] [:b :c]] v)) v275_l882)))
+ t283_l909
+ (is ((fn [v] (= [[:a :b] [:a :c] [:b :c]] v)) v282_l907)))
 
 
 (def
- v278_l888
+ v285_l913
  (->
   iris
   (sk/view (sk/pairs [:sepal_length :sepal_width :petal_length]))
@@ -1568,21 +1612,21 @@
 
 
 (deftest
- t279_l893
+ t286_l918
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 450 (:points s)))))
-   v278_l888)))
+   v285_l913)))
 
 
-(def v280_l897 (kind/doc #'sk/distribution))
+(def v287_l922 (kind/doc #'sk/distribution))
 
 
 (def
- v282_l901
+ v289_l926
  (->
   (sk/distribution iris :sepal_length :sepal_width)
   (sk/lay (sk/histogram))
@@ -1590,21 +1634,21 @@
 
 
 (deftest
- t283_l905
+ t290_l930
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (pos? (:polygons s)))))
-   v282_l901)))
+   v289_l926)))
 
 
-(def v285_l911 (kind/doc #'sk/facet))
+(def v292_l936 (kind/doc #'sk/facet))
 
 
 (def
- v287_l915
+ v294_l940
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1614,18 +1658,18 @@
 
 
 (deftest
- t288_l921
+ t295_l946
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v287_l915)))
+   v294_l940)))
 
 
 (def
- v290_l927
+ v297_l952
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1635,21 +1679,21 @@
 
 
 (deftest
- t291_l933
+ t298_l958
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v290_l927)))
+   v297_l952)))
 
 
-(def v292_l937 (kind/doc #'sk/facet-grid))
+(def v299_l962 (kind/doc #'sk/facet-grid))
 
 
 (def
- v294_l941
+ v301_l966
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -1659,18 +1703,18 @@
 
 
 (deftest
- t295_l947
+ t302_l972
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:panels s)) (= 244 (:points s)))))
-   v294_l941)))
+   v301_l966)))
 
 
 (def
- v297_l953
+ v304_l978
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1680,21 +1724,21 @@
 
 
 (deftest
- t298_l959
+ t305_l984
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v297_l953)))
+   v304_l978)))
 
 
-(def v300_l965 (kind/doc #'sk/svg-summary))
+(def v307_l990 (kind/doc #'sk/svg-summary))
 
 
 (def
- v302_l969
+ v309_l994
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1704,7 +1748,7 @@
 
 
 (deftest
- t303_l975
+ t310_l1000
  (is
   ((fn
     [m]
@@ -1713,11 +1757,11 @@
      (= 150 (:points m))
      (zero? (:lines m))
      (zero? (:polygons m))))
-   v302_l969)))
+   v309_l994)))
 
 
 (def
- v305_l982
+ v312_l1007
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1729,12 +1773,12 @@
 
 
 (deftest
- t306_l990
- (is ((fn [m] (and (= 3 (:panels m)) (= 150 (:points m)))) v305_l982)))
+ t313_l1015
+ (is ((fn [m] (and (= 3 (:panels m)) (= 150 (:points m)))) v312_l1007)))
 
 
 (def
- v308_l995
+ v315_l1020
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1745,12 +1789,12 @@
 
 
 (deftest
- t309_l1003
- (is ((fn [m] (and (= 150 (:points m)) (= 3 (:lines m)))) v308_l995)))
+ t316_l1028
+ (is ((fn [m] (and (= 150 (:points m)) (= 3 (:lines m)))) v315_l1020)))
 
 
 (def
- v311_l1009
+ v318_l1034
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1762,7 +1806,7 @@
 
 
 (deftest
- t312_l1017
+ t319_l1042
  (is
   ((fn
     [ts]
@@ -1770,22 +1814,22 @@
      (some #{"Iris Scatter"} ts)
      (some #{"sepal length"} ts)
      (some #{"setosa"} ts)))
-   v311_l1009)))
+   v318_l1034)))
 
 
-(def v313_l1021 (kind/doc #'sk/valid-sketch?))
+(def v320_l1046 (kind/doc #'sk/valid-sketch?))
 
 
-(def v314_l1023 (sk/valid-sketch? sk1))
+(def v321_l1048 (sk/valid-sketch? sk1))
 
 
-(deftest t315_l1025 (is (true? v314_l1023)))
+(deftest t322_l1050 (is (true? v321_l1048)))
 
 
-(def v316_l1027 (kind/doc #'sk/explain-sketch))
+(def v323_l1052 (kind/doc #'sk/explain-sketch))
 
 
-(def v318_l1031 (sk/explain-sketch sk1))
+(def v325_l1056 (sk/explain-sketch sk1))
 
 
-(deftest t319_l1033 (is (nil? v318_l1031)))
+(deftest t326_l1058 (is (nil? v325_l1056)))

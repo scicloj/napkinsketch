@@ -68,27 +68,29 @@
   "Render x-axis label centered below the plot area."
   [label center-x y-pos]
   (let [fsize (:label-font-size defaults/defaults)]
-    (ui/translate (- center-x (/ (* (count label) fsize) 7.0)) y-pos
+    (ui/translate center-x y-pos
                   (ui/with-color [0.2 0.2 0.2 1.0]
-                    (ui/label label (ui/font nil fsize))))))
+                    (assoc (ui/label label (ui/font nil fsize))
+                           :text-anchor "middle")))))
 
 (defn- render-y-label
   "Render y-axis label. Uses a Rotate to place vertically."
   [label center-y x-pos]
-  (let [fsize (:label-font-size defaults/defaults)
-        cy center-y]
-    (ui/translate x-pos cy
+  (let [fsize (:label-font-size defaults/defaults)]
+    (ui/translate x-pos center-y
                   (membrane.ui.Rotate. -90
                                        (ui/with-color [0.2 0.2 0.2 1.0]
-                                         (ui/label label (ui/font nil fsize)))))))
+                                         (assoc (ui/label label (ui/font nil fsize))
+                                                :text-anchor "middle"))))))
 
 (defn- render-title
   "Render plot title centered above the plot area."
-  [title total-w]
+  [title center-x]
   (let [fsize (:title-font-size defaults/defaults)]
-    (ui/translate (/ total-w 2.0) 14
+    (ui/translate center-x 14
                   (ui/with-color [0.2 0.2 0.2 1.0]
-                    (ui/label title (ui/font nil fsize))))))
+                    (assoc (ui/label title (ui/font nil fsize))
+                           :text-anchor "middle")))))
 
 ;; ---- Sketch → Membrane ----
 
@@ -135,10 +137,11 @@
                  :when (and (zero? (:row p)) (:col-label p))]
              (let [cx (+ y-label-pad (* (:col p) pw) (/ pw 2.0))
                    label (:col-label p)]
-               (ui/translate (- cx (* (count label) (/ strip-fsize 3.5)))
+               (ui/translate cx
                              (+ title-pad 2)
                              (ui/with-color strip-label-color
-                               (ui/label label (ui/font nil strip-fsize))))))))
+                               (assoc (ui/label label (ui/font nil strip-fsize))
+                                      :text-anchor "middle")))))))
 
         row-strips
         (when (pos? strip-w)
@@ -156,13 +159,13 @@
      (concat
       ;; Title
       (when title
-        [(render-title title total-width)])
+        [(render-title title (+ y-label-pad (/ (* grid-cols pw) 2.0)))])
       ;; Y-axis label
       (when y-label
-        [(render-y-label y-label (+ title-pad strip-h (/ ph 2.0)) 12)])
+        [(render-y-label y-label (+ title-pad strip-h (/ (* grid-rows ph) 2.0)) 12)])
       ;; X-axis label
       (when x-label
-        [(render-x-label x-label (+ y-label-pad (/ pw 2.0)) (- total-height x-label-pad -2))])
+        [(render-x-label x-label (+ y-label-pad (/ (* grid-cols pw) 2.0)) (- total-height x-label-pad -2))])
       ;; Legend
       (when legend
         (render-legend-from-sketch legend

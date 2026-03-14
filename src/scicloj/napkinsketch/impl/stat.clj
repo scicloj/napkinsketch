@@ -443,3 +443,66 @@
          :x-domain [x-min x-max]
          :y-domain [y-min y-max]
          :fill-range [0 max-count]}))))
+
+(defmethod compute-stat :kde2d [{:keys [data x y cfg] :as view}]
+  (let [cfg (or cfg defaults/defaults)
+        clean (tc/drop-missing data [x y])
+        n (tc/row-count clean)]
+    (if (< n 2)
+      {:tiles [] :x-domain [0 1] :y-domain [0 1] :fill-range [0 1]}
+      (let [xs-col (clean x)
+            ys-col (clean y)
+            xs (double-array xs-col)
+            ys (double-array ys-col)
+            [x-min x-max] (numeric-extent xs-col)
+            [y-min y-max] (numeric-extent ys-col)
+            x-range (- (double x-max) (double x-min))
+            y-range (- (double y-max) (double y-min))
+            ;; Extend domain by 30% for smooth falloff at edges
+            x-lo (- (double x-min) (* 0.3 x-range))
+            x-hi (+ (double x-max) (* 0.3 x-range))
+            y-lo (- (double y-min) (* 0.3 y-range))
+            y-hi (+ (double y-max) (* 0.3 y-range))
+            ;; Grid resolution
+            n-grid (or (:kde2d-grid cfg) 25)
+            x-step (/ (- x-hi x-lo) n-grid)
+            y-step (/ (- y-hi y-lo) n-grid)
+            ;; Bandwidth: Silverman's rule per axis
+            bw-cfg (:kde2d-bandwidth cfg)
+            x-std (stats/stddev (seq xs))
+            y-std (stats/stddev (seq ys))
+            n-pow (Math/pow (double n) -0.2)
+            bw-x (if bw-cfg (first bw-cfg) (* 1.06 x-std n-pow))
+            bw-y (if bw-cfg (second bw-cfg) (* 1.06 y-std n-pow))
+            inv-bwx2 (/ 1.0 (* 2.0 bw-x bw-x))
+            inv-bwy2 (/ 1.0 (* 2.0 bw-y bw-y))
+            ;; Compute density at each grid cell center
+            densities (double-array (* n-grid n-grid))
+            _ (dotimes [gi n-grid]
+                (dotimes [gj n-grid]
+                  (let [gx (+ x-lo (* (+ gi 0.5) x-step))
+                        gy (+ y-lo (* (+ gj 0.5) y-step))
+                        d (loop [k 0 acc 0.0]
+                            (if (< k n)
+                              (let [dx (- gx (aget xs k))
+                                    dy (- gy (aget ys k))
+                                    w (Math/exp (- (+ (* dx dx inv-bwx2)
+                                                      (* dy dy inv-bwy2))))]
+                                (recur (inc k) (+ acc w)))
+                              acc))]
+                    (aset densities (+ (* gi n-grid) gj) d))))
+            max-d (reduce max 0.0 (seq densities))
+            ;; Build tiles with density as fill value
+            tiles (vec (for [gi (range n-grid)
+                             gj (range n-grid)
+                             :let [d (aget densities (+ (* gi n-grid) gj))]
+                             :when (> d (* 0.01 max-d))]
+                         {:x-lo (+ x-lo (* gi x-step))
+                          :x-hi (+ x-lo (* (inc gi) x-step))
+                          :y-lo (+ y-lo (* gj y-step))
+                          :y-hi (+ y-lo (* (inc gj) y-step))
+                          :fill d}))]
+        {:tiles tiles
+         :x-domain [x-lo x-hi]
+         :y-domain [y-lo y-hi]
+         :fill-range [0 max-d]}))))

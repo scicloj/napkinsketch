@@ -258,6 +258,15 @@
      (merge {:mark :tile :stat :identity} opts)
      (merge {:mark :tile :stat :bin2d} opts))))
 
+(defn density2d
+  "2D density estimate — KDE-smoothed heatmap.
+   Computes a 2D Gaussian kernel density estimate on a grid and renders
+   as filled tiles colored by density (viridis gradient).
+   (density2d)                     — default bandwidth and grid
+   (density2d {:kde2d-grid 40})    — finer grid resolution"
+  ([] {:mark :tile :stat :kde2d})
+  ([opts] (merge {:mark :tile :stat :kde2d} opts)))
+
 (defn ridgeline
   "Ridgeline mark — vertically stacked KDE density curves per category.
    x should be categorical, y numeric. Each category gets an overlapping
