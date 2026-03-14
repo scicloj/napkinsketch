@@ -26,7 +26,7 @@
                :base-source-path "notebooks"
                :source-path (into ["index.clj"] (chapters->parts (read-chapters)))
                :base-target-path "docs"
-               :book {:title "napkinsketch"}
+               :book {:title "Napkinsketch"}
                :clean-up-target-dir true}))
 
 (defn make-gfm!

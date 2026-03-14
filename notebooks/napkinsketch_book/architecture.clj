@@ -1,14 +1,17 @@
 ;; # Architecture
 ;;
-;; napkinsketch is built around two data models separated by a clean boundary.
-;; This notebook documents the pipeline, the data models, and how they connect.
+;; napkinsketch transforms data into plots through a four-stage pipeline.
+;; This notebook documents the pipeline, the key data models, and
+;; how the codebase is organized.
 
 (ns napkinsketch-book.architecture
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
    [scicloj.napkinsketch.api :as sk]
-   [scicloj.napkinsketch.impl.sketch-schema :as ss]))
+   [scicloj.napkinsketch.impl.sketch-schema :as ss]
+   [scicloj.napkinsketch.render.membrane :as membrane]
+   [scicloj.napkinsketch.render.svg :as svg]))
 
 ;; ## Pipeline Overview
 
@@ -16,12 +19,12 @@
 (kind/mermaid "
 graph LR
   V[\"Views<br/>(API)\"] -->|resolve| S[\"Sketch<br/>(data-space)\"]
-  S -->|scales + coords| M[\"Membrane Tree<br/>(pixel-space)\"]
-  M -->|tree walk| SVG[\"SVG Hiccup<br/>(output)\"]
+  S -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]
+  M -->|tree walk| F[\"Figure<br/>(output)\"]
   style V fill:#e8f5e9
   style S fill:#fff3e0
   style M fill:#e3f2fd
-  style SVG fill:#fce4ec
+  style F fill:#fce4ec
 ")
 
 ;; - **Views** — user-facing compositional API: `view`, `lay`, `point`, `histogram`, etc.
@@ -32,71 +35,186 @@ graph LR
 ;; - **Membrane** — positioned drawing primitives in pixel space.
 ;;   Translate, WithColor, Path, Label, etc.
 ;;
-;; - **SVG Hiccup** — final output. A tree walk converts membrane records
-;;   to SVG elements, which Clay/Kindly renders in notebooks.
+;; - **Figure** — final output. A tree walk converts membrane records
+;;   to SVG hiccup, which Clay/Kindly renders in notebooks.
 
-;; ## Two Data Models
+;; ## Pipeline Trace
+;;
+;; Let's trace a small example through all four stages,
+;; inspecting the intermediate values at each step.
+
+(def trace-data
+  (tc/dataset {:x [1 2 3 4 5]
+               :y [2 4 3 5 4]
+               :g [:a :a :b :b :b]}))
+
+;; ### Views
+;;
+;; The user composes views — a vector of plain maps describing
+;; what data to plot and how. No computation has happened yet.
+
+(def trace-views
+  (-> trace-data
+      (sk/view [[:x :y]])
+      (sk/lay (sk/point {:color :g}))))
+
+(kind/pprint trace-views)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :point (:mark (first v)))))])
+
+;; ### Sketch
+;;
+;; `sk/sketch` resolves the views into a sketch — a pure-data map with
+;; data-space geometry, resolved colors, computed domains, and tick info.
+;; The values are still in data space — `x=1` means the original data
+;; value 1, not a pixel position.
+
+(def trace-sketch (sk/sketch trace-views))
+
+(kind/pprint trace-sketch)
+
+(kind/test-last [(fn [v] (and (map? v) (contains? v :panels)))])
+
+;; The sketch validates against a Malli schema:
+
+(ss/valid? trace-sketch)
+
+(kind/test-last [true?])
+
+;; And serializes cleanly — it's plain Clojure data:
+
+(= trace-sketch (read-string (pr-str trace-sketch)))
+
+(kind/test-last [true?])
+
+;; ### Membrane
+;;
+;; `sketch->membrane` converts the sketch into a tree of membrane
+;; drawing primitives positioned in pixel space. This is the
+;; format-agnostic intermediate representation — `Translate`,
+;; `WithColor`, `WithStyle`, `RoundedRectangle`, `Label`, `Path`, etc.
+
+(def trace-membrane (membrane/sketch->membrane trace-sketch))
+
+(kind/pprint trace-membrane)
+
+(kind/test-last [(fn [v] (and (vector? v) (pos? (count v))))])
+
+;; ### Figure
+;;
+;; `membrane->svg` walks the membrane tree and emits SVG hiccup.
+;; `wrap-svg` adds the root `<svg>` element.
+
+(def trace-figure
+  (let [body (svg/membrane->svg trace-membrane)]
+    (svg/wrap-svg (:total-width trace-sketch)
+                  (:total-height trace-sketch)
+                  body)))
+
+(kind/pprint trace-figure)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+;; And this is what it looks like when rendered:
+
+(kind/hiccup trace-figure)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s)))))])
+
+;; ### Pipeline Summary
+;;
+;; | Stage | Type | Coordinates | Serializable? |
+;; |:------|:-----|:------------|:--------------|
+;; | Views | Clojure maps | N/A (declarative) | No (contains dataset) |
+;; | Sketch | Clojure maps | Data space | Yes (`pr-str` roundtrips) |
+;; | Membrane | Record tree | Pixel space | No (Java objects) |
+;; | Figure | Hiccup vectors | Pixel space | Yes (EDN vectors) |
+
+;; ## The Sketch Boundary
 ;;
 ;; The key architectural insight is that **what** to draw and **how** to
-;; draw it are separate concerns.
+;; draw it are separate concerns. The sketch sits between them.
 
 ^:kindly/hide-code
 (kind/mermaid "
-graph TB
-  subgraph WHAT [\"What to draw\"]
-    direction TB
-    A1[\"api.clj\"]
-    A2[\"impl/view.clj\"]
-    A3[\"impl/stat.clj\"]
-    A4[\"impl/sketch.clj\"]
+graph LR
+  subgraph WHAT [\"WHAT — data + semantics\"]
+    V[\"Views\"]
+    ST[\"Statistics\"]
+    D[\"Domains\"]
+    C[\"Colors\"]
   end
-  subgraph HOW [\"How to draw it\"]
-    direction TB
-    B1[\"impl/scale.clj\"]
-    B2[\"render/mark.clj\"]
-    B3[\"render/panel.clj\"]
-    B4[\"impl/plot.clj\"]
-    B5[\"render/membrane.clj\"]
-    B6[\"render/svg.clj\"]
+  subgraph HOW [\"HOW — pixels + rendering\"]
+    SC[\"Scales (wadogo)\"]
+    CO[\"Coord transforms\"]
+    MS[\"Membrane tree\"]
+    SV[\"SVG conversion\"]
   end
   WHAT -->|sketch| HOW
   style WHAT fill:#e8f5e9
   style HOW fill:#e3f2fd
 ")
 
-;; ### The Sketch (what)
+;; The sketch is **plain Clojure data** — maps, vectors, numbers, strings,
+;; keywords. No membrane types, no datasets, no scale objects.
+;; It validates against a Malli schema and roundtrips through
+;; `pr-str` / `read-string`.
 ;;
-;; A sketch answers: what data, what marks, what domains, what ticks,
-;; what legend entries. It uses data-space coordinates — the numbers are
-;; the actual data values, not pixel positions.
+;; The membrane tree is **Java objects** — `Translate`, `WithColor`,
+;; `RoundedRectangle`, `Label`, etc. All positions are resolved to
+;; pixel coordinates. Not serializable.
 ;;
-;; Properties:
+;; This separation enables:
 ;;
-;; - Plain Clojure maps, vectors, numbers, strings, keywords
+;; - Inspecting the plot specification without rendering
 ;;
-;; - No membrane types, no datasets, no scale objects
+;; - Validating plot structure with Malli
 ;;
-;; - Fully serializable: `pr-str` / `read-string` roundtrips
+;; - Serializing plots for storage or transmission
 ;;
-;; - Validates against a Malli schema
+;; - Adding other backends (Canvas, Plotly, Vega-Lite) that consume sketches
+
+;; ## Multi-Layer Example
 ;;
-;; - Backend-independent — could drive Plotly, Canvas, or any renderer
-;;
-;; ### The Membrane Tree (how)
-;;
-;; A membrane tree answers: what pixel coordinates, what colors at
-;; what positions, what font sizes for labels. It's a tree of
-;; defrecords that membrane knows how to render.
-;;
-;; Properties:
-;;
-;; - Uses membrane-specific types: Translate, WithColor, Path, Label, etc.
-;;
-;; - Pixel-space coordinates — all positions are resolved
-;;
-;; - Not serializable — contains Java objects (membrane records, (fonts, etc.)
-;;
-;; - Converted to SVG by a context-passing tree walk
+;; A sketch can hold multiple layers. Here, scatter points and
+;; per-species regression lines share the same panel.
+
+(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+                      {:key-fn keyword}))
+
+(def multi-views
+  [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
+   (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
+
+(def multi-sketch (sk/sketch multi-views {:title "Iris Petals with Regression"}))
+
+;; Two layers in the sketch — point and line:
+
+(mapv (fn [layer]
+        {:mark (:mark layer)
+         :n-groups (count (:groups layer))})
+      (:layers (first (:panels multi-sketch))))
+
+(kind/test-last [(fn [v] (and (= :point (:mark (first v)))
+                              (= :line (:mark (second v)))
+                              (= 3 (:n-groups (first v)))))])
+
+;; Title and legend are top-level sketch keys:
+
+(select-keys multi-sketch [:title :legend])
+
+(kind/test-last [(fn [m] (and (= "Iris Petals with Regression" (:title m))
+                              (= 3 (count (get-in m [:legend :entries])))))])
+
+;; And it renders:
+
+(sk/plot multi-views {:title "Iris Petals with Regression"})
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; ## Namespace Structure
 
@@ -123,6 +241,10 @@ graph TD
   style SVG fill:#f8bbd0
   style MEMBRANE fill:#f8bbd0
 ")
+
+;; The `impl/` directory is pure data — no membrane dependency.
+;; The `render/` directory uses membrane for pixel-space layout and
+;; SVG conversion.
 
 ;; ## Sketch Resolution DAG
 ;;
@@ -165,161 +287,3 @@ graph TD
   style RPV fill:#e3f2fd
   style BUILD fill:#e3f2fd
 ")
-
-;; ## Data Flow Example
-;;
-;; Let's trace a scatter plot through the pipeline.
-
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
-
-;; ### Stage 1: Views
-;;
-;; Users compose views — declarative descriptions of what to plot.
-
-(def views
-  [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})])
-
-;; A view is a plain map:
-
-(dissoc (first views) :data)
-
-(kind/test-last [(fn [v] (= :point (:mark v)))])
-
-;; ### Stage 2: Sketch
-;;
-;; `sk/sketch` resolves views into a sketch: extracts data from columns,
-;; computes stats, merges domains, resolves colors, computes ticks.
-
-(def sk (sk/sketch views))
-
-;; The sketch has data-space coordinates:
-
-(let [panel (first (:panels sk))
-      layer (first (:layers panel))
-      group (first (:groups layer))]
-  {:mark (:mark layer)
-   :x-domain (:x-domain panel)
-   :y-domain (:y-domain panel)
-   :n-groups (count (:groups layer))
-   :first-group-n-points (count (:xs group))
-   :first-group-color (:color group)})
-
-(kind/test-last [(fn [m] (and (= :point (:mark m))
-                             (= 3 (:n-groups m))
-                             (pos? (:first-group-n-points m))))])
-
-;; The sketch validates against Malli:
-
-(ss/valid? sk)
-
-(kind/test-last [true?])
-
-;; And serializes cleanly:
-
-(= sk (read-string (pr-str sk)))
-
-(kind/test-last [true?])
-
-;; ### Stage 3: Plot (Sketch → Membrane → SVG)
-;;
-;; `sk/plot` calls `sk/sketch` internally, then maps the data-space
-;; geometry through scales to pixel space, builds a membrane drawable tree,
-;; and converts to SVG.
-
-(sk/plot views)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
-
-;; ## The Sketch as a Boundary
-;;
-;; The sketch is the boundary between the "what" and the "how".
-;; Everything above it is about data and semantics. Everything below
-;; is about pixels and rendering.
-
-^:kindly/hide-code
-(kind/mermaid "
-graph LR
-  subgraph WHAT [\"WHAT — data + semantics\"]
-    V[\"Views\"]
-    ST[\"Statistics\"]
-    D[\"Domains\"]
-    C[\"Colors\"]
-  end
-  subgraph HOW [\"HOW — pixels + rendering\"]
-    SC[\"Scales (wadogo)\"]
-    CO[\"Coord transforms\"]
-    MS[\"Membrane tree\"]
-    SV[\"SVG conversion\"]
-  end
-  WHAT -->|sketch| HOW
-  style WHAT fill:#e8f5e9
-  style HOW fill:#e3f2fd
-")
-
-;; This separation enables:
-;;
-;; - Inspecting the plot specification without rendering
-;;
-;; - Validating plot structure with Malli
-;;
-;; - Serializing plots for storage or transmission
-;;
-;; - Potentially adding other backends (Canvas, Plotly, Vega-Lite)
-;;   that consume sketches
-
-;; ## Multi-Layer Example
-;;
-;; Let's trace a more complex example: scatter points with regression lines,
-;; colored by species.
-
-(def multi-views
-  [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
-   (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
-
-(def multi-sk (sk/sketch multi-views {:title "Iris Petals with Regression"}))
-
-;; Two layers in the sketch:
-
-(count (:layers (first (:panels multi-sk))))
-
-(kind/test-last [(fn [n] (= 2 n))])
-
-;; Point layer:
-
-(let [layer (first (:layers (first (:panels multi-sk))))]
-  {:mark (:mark layer)
-   :n-groups (count (:groups layer))})
-
-(kind/test-last [(fn [m] (and (= :point (:mark m)) (= 3 (:n-groups m))))])
-
-;; Line layer (regression):
-
-(let [layer (second (:layers (first (:panels multi-sk))))]
-  {:mark (:mark layer)
-   :n-groups (count (:groups layer))
-   :first-group-keys (set (keys (first (:groups layer))))})
-
-(kind/test-last [(fn [m] (and (= :line (:mark m))
-                             (= 3 (:n-groups m))
-                             (contains? (:first-group-keys m) :x1)))])
-
-;; Title and legend in the sketch:
-
-(:title multi-sk)
-
-(kind/test-last [(fn [t] (= "Iris Petals with Regression" t))])
-
-(count (:entries (:legend multi-sk)))
-
-(kind/test-last [(fn [n] (= 3 n))])
-
-;; And it renders:
-
-(sk/plot multi-views {:title "Iris Petals with Regression"})
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s)))))])

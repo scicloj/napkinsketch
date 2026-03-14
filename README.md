@@ -1,5 +1,4 @@
 # Napkinsketch
-
 Simple and easy plotting
 
 ## General info

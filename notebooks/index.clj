@@ -1,5 +1,6 @@
-;; # Preface
-;;
+;; Simple and easy plotting
+
+;; ## Preface
 
 ^{:clay {:hide-code true}}
 (ns index
@@ -12,7 +13,7 @@
 (->> "README.md"
      slurp
      str/split-lines
-     (drop 1)
+     (drop 2)
      (str/join "\n"))
 
 ;; ## Chapters in this book
