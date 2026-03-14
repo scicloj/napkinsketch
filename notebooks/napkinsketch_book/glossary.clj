@@ -32,7 +32,7 @@
 ;;
 ;; A **mark** is the visual representation of data: points, lines,
 ;; bars, rectangles. Mark constructors (`sk/point`, `sk/line`, `sk/tile`,
-;; `sk/bar`, `sk/histogram`, `sk/boxplot`, `sk/violin`, `sk/ridgeline`, etc.) return maps that are merged
+;; `sk/bar`, `sk/histogram`, `sk/boxplot`, `sk/violin`, `sk/ridgeline`, `sk/density2d`, etc.) return maps that are merged
 ;; into views by `sk/lay`.
 
 (sk/point {:color :species :alpha 0.5})
@@ -57,6 +57,7 @@
 ;; | `boxplot` | `:boxplot` | Five-number summary + outliers |
 ;; | `violin` / `ridgeline` | `:violin` | KDE per category |
 ;; | `tile` | `:bin2d` | 2D grid binning (heatmap) |
+;; | `density2d` | `:kde2d` | 2D Gaussian KDE (smooth heatmap) |
 
 ;; ## Layer
 ;;

@@ -203,7 +203,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__82400#] (= 50 (:n-points p1__82400#))) gs)))
+     (every? (fn* [p1__75933#] (= 50 (:n-points p1__75933#))) gs)))
    v53_l157)))
 
 
@@ -258,9 +258,9 @@
     (and
      (> (count bars) 3)
      (every?
-      (fn* [p1__82401#] (< (:lo p1__82401#) (:hi p1__82401#)))
+      (fn* [p1__75934#] (< (:lo p1__75934#) (:hi p1__75934#)))
       bars)
-     (every? (fn* [p1__82402#] (pos? (:count p1__82402#))) bars)))
+     (every? (fn* [p1__75935#] (pos? (:count p1__75935#))) bars)))
    v66_l195)))
 
 
@@ -442,7 +442,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__82403#] (Math/sin (* p1__82403# 0.3)))
+     (fn* [p1__75936#] (Math/sin (* p1__75936# 0.3)))
      (range 30))})))
 
 
@@ -682,7 +682,7 @@
 (def
  v150_l468
  (mapv
-  (fn* [p1__82404#] (select-keys p1__82404# [:row :col :col-label]))
+  (fn* [p1__75937#] (select-keys p1__75937# [:row :col :col-label]))
   (:panels faceted-sk)))
 
 
@@ -696,8 +696,8 @@
  v153_l476
  (mapv
   (fn*
-   [p1__82405#]
-   (select-keys p1__82405# [:col-label :x-domain :y-domain]))
+   [p1__75938#]
+   (select-keys p1__75938# [:col-label :x-domain :y-domain]))
   (:panels faceted-sk)))
 
 
