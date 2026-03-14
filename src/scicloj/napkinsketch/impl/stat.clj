@@ -266,9 +266,12 @@
                           gv (assoc :color gv)))))
             curves (remove nil? curves)
             all-ys (mapcat :ys curves)
-            y-max (if (seq all-ys) (reduce max all-ys) 1)]
+            y-max (if (seq all-ys) (reduce max all-ys) 1)
+            all-xs (mapcat :xs curves)
+            x-lo (reduce min all-xs)
+            x-hi (reduce max all-xs)]
         {:points curves
-         :x-domain (numeric-extent (clean x))
+         :x-domain [x-lo x-hi]
          :y-domain [0 y-max]}))))
 
 ;; ---- Boxplot ----
@@ -364,12 +367,17 @@
                                     (let [kde (fit-kde y-col n-grid bandwidth)]
                                       (cond-> {:category cat
                                                :ys (:xs kde) :densities (:ys kde)}
-                                        cc (assoc :color cc)))))]
+                                        cc (assoc :color cc)))))
+        ;; Expand y-domain to cover full KDE curve extent (tails beyond raw data)
+        all-kde-ys (mapcat :ys (:items result))
+        y-domain (if (seq all-kde-ys)
+                   [(reduce min all-kde-ys) (reduce max all-kde-ys)]
+                   (:y-domain result))]
     {:violins (:items result)
      :categories (:categories result)
      :color-categories (:color-categories result)
      :x-domain (:x-domain result)
-     :y-domain (:y-domain result)}))
+     :y-domain y-domain}))
 
 ;; ---- 2D Binning (for heatmap/tile) ----
 

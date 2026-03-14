@@ -433,7 +433,7 @@
 
 (defmethod layer->membrane :ridgeline [layer ctx]
   (let [{:keys [style ridges categories]} layer
-        {:keys [sx sy]} ctx
+        {:keys [sx sy margin]} ctx
         {:keys [opacity]} style
         n-cats (count categories)
         ;; Each ridge occupies a band in the categorical (x) scale
@@ -448,14 +448,21 @@
         ;; Max density across all ridges for normalization
         max-d (reduce max 0.001 (mapcat :densities ridges))
         ;; Overlap factor: each ridge can extend 1.5× the band width
-        overlap 1.5]
+        overlap 1.5
+        first-bw (:bw (get cat-positions (first categories)))
+        desired-norm (* first-bw overlap (/ 1.0 max-d))
+        ;; Cap norm so the tallest peak stays within the data area.
+        ;; The first category's mid is closest to the left edge (margin).
+        ;; Curve extends leftward from mid by (max-d * norm).
+        first-mid (:mid (get cat-positions (first categories)))
+        max-norm (/ (- (double first-mid) (double (or margin 25))) max-d)
+        norm (min desired-norm max-norm)]
     (vec
      ;; Render from back (last category) to front (first category)
      ;; so that front ridges overlap back ones
      (for [ridge (reverse ridges)
            :let [{:keys [category color ys densities]} ridge
-                 {:keys [mid bw]} (get cat-positions category)
-                 norm (* bw overlap (/ 1.0 max-d))
+                 {:keys [mid]} (get cat-positions category)
                  n (count ys)
                  [cr cg cb _] color
                  ;; Build polygon: baseline at mid, curve goes upward (toward lower px)
