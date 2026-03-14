@@ -565,9 +565,19 @@
   "Compute layout dimensions: padding, legend width, total size."
   [cfg layout-type eff-title eff-x-label eff-y-label
    legend facet-row-vals facet-col-vals
-   grid-rows grid-cols pw ph multi?]
+   grid-rows grid-cols pw ph multi? panels]
   (let [x-label-pad (if eff-x-label (:label-offset cfg) 0)
-        y-label-pad (if eff-y-label (:label-offset cfg) 0)
+        ;; y-label-pad must account for y-tick label width (e.g. category names)
+        tick-fsize (:font-size defaults/theme)
+        max-y-tick-len (reduce max 0
+                               (for [p panels
+                                     :let [labels (get-in p [:y-ticks :labels])]
+                                     label (or labels [])]
+                                 (count label)))
+        y-tick-width (* max-y-tick-len (/ (double tick-fsize) 2.0))
+        y-label-pad (if eff-y-label
+                      (+ (:label-offset cfg) (max 0.0 (- y-tick-width 12.0)))
+                      0)
         title-pad (if eff-title (:title-offset cfg) 0)
         legend-w (if legend (:legend-width cfg) 0)
         has-col-strips? (or (and (= layout-type :facet-grid) (seq facet-col-vals))
@@ -658,6 +668,23 @@
                               x-scale-spec y-scale-spec annotations
                               x-vars y-vars pw ph m cfg)
 
+         ;; Ridgeline renders categories vertically and numeric horizontally
+         ;; (manual axis transposition). Swap domains, ticks, and scale specs in
+         ;; the panel so that sx becomes numeric (for bottom ticks) and sy becomes
+         ;; categorical (for left ticks), matching the visual layout.
+         has-ridgeline? (some #(= :ridgeline (:mark %)) non-ann-views)
+         panels (if has-ridgeline?
+                  (mapv (fn [p]
+                          (-> p
+                              (assoc :x-domain (:y-domain p)
+                                     :y-domain (:x-domain p)
+                                     :x-ticks (:y-ticks p)
+                                     :y-ticks (:x-ticks p)
+                                     :x-scale (:y-scale p)
+                                     :y-scale (:x-scale p))))
+                        panels)
+                  panels)
+
          ;; Labels — suppress auto-labels for multi-variable grids and polar coords
          multi? (and (= layout-type :multi-variable) (> grid-cols 1) (> grid-rows 1))
          auto-label? (and (not multi?) (coord/show-ticks? coord-type))
@@ -665,13 +692,20 @@
          (resolve-labels non-ann-views x-vars y-vars x-scale-spec y-scale-spec
                          title x-label y-label auto-label?)
 
+         ;; Swap labels when axes are visually transposed
+         swap-labels? (or (= coord-type :flip)
+                          has-ridgeline?)
+         [eff-x-label eff-y-label] (if swap-labels?
+                                     [eff-y-label eff-x-label]
+                                     [eff-x-label eff-y-label])
+
          ;; Legend
          legend (build-legend resolved-all numeric-color? all-colors color-cols cfg)
 
          ;; Layout dimensions
          layout-dims (compute-layout-dims cfg layout-type eff-title eff-x-label eff-y-label
                                           legend facet-row-vals facet-col-vals
-                                          grid-rows grid-cols pw ph multi?)]
+                                          grid-rows grid-cols pw ph multi? panels)]
 
      {:width width :height height :margin m
       :total-width (:total-w layout-dims) :total-height (:total-h layout-dims)

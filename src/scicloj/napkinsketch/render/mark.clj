@@ -433,30 +433,33 @@
 
 (defmethod layer->membrane :ridgeline [layer ctx]
   (let [{:keys [style ridges categories]} layer
-        {:keys [sx sy margin]} ctx
+        {:keys [sx sy margin panel-height]} ctx
         {:keys [opacity]} style
         n-cats (count categories)
-        ;; Each ridge occupies a band in the categorical (x) scale
-        ;; but the density curve spans the numeric (y) axis
-        ;; The band scale gives us the vertical position per category
+        m (or margin 25)
+        ;; Band positions use panel-height because the categorical axis
+        ;; maps to SVG y-space (points are [py, px] — px is the y-coordinate).
+        ph (or panel-height 400)
+        ;; Overlap factor: each ridge can extend this × band width
+        overlap 1.5
+        ;; Compute band positions with padding for curve amplitude.
+        ;; Padding = bw * (overlap - 0.5) on each side ensures the peak
+        ;; of the tallest curve exactly reaches the data area edge.
+        ;; Total = n*bw + 2*bw*(overlap-0.5) = bw*(n + 2*overlap - 1)
+        usable (- (double ph) (* 2.0 m))
+        bw (/ usable (+ (double n-cats) (* 2.0 overlap) -1.0))
+        pad (* bw (- overlap 0.5))
         cat-positions (into {} (map-indexed
                                 (fn [i cat]
-                                  (let [info (sx cat true)]
-                                    [cat {:mid (/ (+ (:rstart info) (:rend info)) 2.0)
-                                          :bw (- (:rend info) (:rstart info))}]))
+                                  [cat {:mid (+ m pad (* bw (+ (double i) 0.5)))
+                                        :bw bw}])
                                 categories))
         ;; Max density across all ridges for normalization
         max-d (reduce max 0.001 (mapcat :densities ridges))
-        ;; Overlap factor: each ridge can extend 1.5× the band width
-        overlap 1.5
-        first-bw (:bw (get cat-positions (first categories)))
-        desired-norm (* first-bw overlap (/ 1.0 max-d))
-        ;; Cap norm so the tallest peak stays within the data area.
-        ;; The first category's mid is closest to the left edge (margin).
-        ;; Curve extends leftward from mid by (max-d * norm).
-        first-mid (:mid (get cat-positions (first categories)))
-        max-norm (/ (- (double first-mid) (double (or margin 25))) max-d)
-        norm (min desired-norm max-norm)]
+        norm (* bw overlap (/ 1.0 max-d))
+        ;; After domain swap in sketch, sx is the numeric scale (maps to x-pixels)
+        ;; and sy is categorical. Use sx for numeric value → pixel mapping.
+        num-scale sx]
     (vec
      ;; Render from back (last category) to front (first category)
      ;; so that front ridges overlap back ones
@@ -469,13 +472,13 @@
                  curve-pts (mapv (fn [i]
                                    (let [y-val (nth ys i)
                                          d (nth densities i)
-                                         py (sy y-val)
+                                         py (num-scale y-val)
                                          px (- (double mid) (* d norm))]
                                      [py px]))
                                  (range n))
                  ;; Baseline points (flat line at mid)
-                 base-pts [(let [py (sy (nth ys (dec n)))] [py mid])
-                           (let [py (sy (nth ys 0))] [py mid])]
+                 base-pts [(let [py (num-scale (nth ys (dec n)))] [py mid])
+                           (let [py (num-scale (nth ys 0))] [py mid])]
                  all-pts (concat curve-pts base-pts)]]
        [(ui/with-color [cr cg cb (or opacity 0.7)]
           (ui/with-style ::ui/style-fill
