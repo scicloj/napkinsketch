@@ -281,8 +281,18 @@
    no datasets, no scale objects in the output. Serializable data.
    (sketch views)              — default 600×400
    (sketch views {:width 800 :title \"My Plot\"})"
-  ([views] (sketch-impl/resolve-sketch views))
-  ([views opts] (sketch-impl/resolve-sketch views opts)))
+  ([views] (sketch-impl/views->sketch views))
+  ([views opts] (sketch-impl/views->sketch views opts)))
+
+(defn views->sketch
+  "Convert views into a sketch — a plain Clojure map with data-space
+   geometry, domains, tick info, legend, and layout. No membrane types,
+   no datasets, no scale objects in the output. Serializable data.
+   Same as `sketch` but with an explicit pipeline-style name.
+   (views->sketch views)              — default 600×400
+   (views->sketch views {:width 800 :title \"My Plot\"})"
+  ([views] (sketch-impl/views->sketch views))
+  ([views opts] (sketch-impl/views->sketch views opts)))
 
 (defn sketch->membrane
   "Convert a sketch into a membrane drawable tree.
@@ -297,14 +307,14 @@
   [membrane-tree format opts]
   (render-impl/membrane->figure membrane-tree format opts))
 
-(defn render-figure
-  "Render a sketch into a figure for the given format.
+(defn sketch->figure
+  "Convert a sketch into a figure for the given format.
    Dispatches on format keyword. Each renderer is a separate namespace
    that registers a defmethod; :svg is always available.
-   (render-figure (sketch views) :svg {})
-   (render-figure (sketch views) :plotly {})"
+   (sketch->figure (sketch views) :svg {})
+   (sketch->figure (sketch views) :plotly {})"
   [sketch format opts]
-  (render-impl/render-figure sketch format opts))
+  (render-impl/sketch->figure sketch format opts))
 
 ;; ---- Sketch Validation ----
 

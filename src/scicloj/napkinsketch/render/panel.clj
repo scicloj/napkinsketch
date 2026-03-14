@@ -88,9 +88,9 @@
 
 ;; ---- Panel Rendering ----
 
-(defn render-panel-from-sketch
-  "Render a sketch panel as a membrane drawable tree.
-   Takes a panel map from resolve-sketch and pixel dimensions.
+(defn panel->membrane
+  "Convert a sketch panel into a membrane drawable tree.
+   Takes a panel map from views->sketch and pixel dimensions.
    show-x? and show-y? control whether tick labels are drawn
    (grid lines always render)."
   [panel pw ph m & {:keys [show-x? show-y? tooltip x-col-name y-col-name]
@@ -120,7 +120,7 @@
                        (first y-domain)
                        0)
 
-        ;; Rendering context for mark/render-layer
+        ;; Rendering context for mark/layer->membrane
         ctx (cond-> {:coord-fn coord-fn :sx sx :sy sy
                      :coord-type coord-type
                      :coord-px coord-px
@@ -142,7 +142,7 @@
                (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m))
 
         ;; Data marks from sketch layers
-        marks (vec (mapcat #(mark/render-layer % ctx) layers))
+        marks (vec (mapcat #(mark/layer->membrane % ctx) layers))
 
         ;; Annotation marks
         ann-marks

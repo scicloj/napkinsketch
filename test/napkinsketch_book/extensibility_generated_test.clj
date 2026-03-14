@@ -74,13 +74,13 @@
     (sk/lay (sk/point {:color :species}))))))
 
 
-(def v18_l217 (first (sk/render-figure my-sketch :svg {})))
+(def v18_l217 (first (sk/sketch->figure my-sketch :svg {})))
 
 
 (deftest t19_l219 (is ((fn [v] (= :svg v)) v18_l217)))
 
 
-(def v21_l223 (def my-figure (sk/render-figure my-sketch :svg {})))
+(def v21_l223 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
 (def v22_l225 (vector? my-figure))

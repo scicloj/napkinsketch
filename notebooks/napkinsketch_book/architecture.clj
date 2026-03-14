@@ -245,7 +245,7 @@ graph TD
 
 ;; ## Sketch Resolution DAG
 ;;
-;; `resolve-sketch` orchestrates a DAG of helper functions. Each node
+;; `views->sketch` orchestrates a DAG of helper functions. Each node
 ;; computes a piece of the sketch; arrows show data dependencies.
 
 ^:kindly/hide-code

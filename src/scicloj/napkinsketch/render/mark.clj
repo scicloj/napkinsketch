@@ -104,19 +104,20 @@
                 color-label (conj (str "color: " color-label)))]
     (str/join ", " parts)))
 
-;; ---- render-layer multimethod ----
-;; render-layer takes sketch layer descriptors (data-space geometry,
+;; ---- layer->membrane multimethod ----
+;; layer->membrane takes sketch layer descriptors (data-space geometry,
 ;; resolved colors) and renders them as membrane drawable primitives.
 
-(defmulti render-layer
-  "Render a sketch layer as membrane drawable primitives.
+(defmulti layer->membrane
+  "Convert a sketch layer into membrane drawable primitives.
    `layer` is a sketch layer map with data-space geometry and resolved colors.
-   `ctx` contains :coord-fn, :sx, :sy, :coord-type."
+   `ctx` contains :coord-fn, :sx, :sy, :coord-type.
+   Dispatches on (:mark layer)."
   (fn [layer ctx] (:mark layer)))
 
 ;; ---- Point ----
 
-(defmethod render-layer :point [layer ctx]
+(defmethod layer->membrane :point [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn tooltip]} ctx
         {:keys [opacity radius jitter]} style
@@ -164,7 +165,7 @@
 
 ;; ---- Text ----
 
-(defmethod render-layer :text [layer ctx]
+(defmethod layer->membrane :text [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn]} ctx
         {:keys [font-size]} style
@@ -181,7 +182,7 @@
 
 ;; ---- Area ----
 
-(defmethod render-layer :area [layer ctx]
+(defmethod layer->membrane :area [layer ctx]
   (let [{:keys [style groups position]} layer
         {:keys [coord-fn y-domain-min]} ctx
         {:keys [opacity]} style
@@ -227,7 +228,7 @@
 
 ;; ---- Errorbar ----
 
-(defmethod render-layer :errorbar [layer ctx]
+(defmethod layer->membrane :errorbar [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn]} ctx
         {:keys [stroke-width cap-width]} style
@@ -260,7 +261,7 @@
 
 ;; ---- Lollipop ----
 
-(defmethod render-layer :lollipop [layer ctx]
+(defmethod layer->membrane :lollipop [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [radius stroke-width]} style
@@ -290,7 +291,7 @@
 
 ;; ---- Boxplot ----
 
-(defmethod render-layer :boxplot [layer ctx]
+(defmethod layer->membrane :boxplot [layer ctx]
   (let [{:keys [style boxes color-categories]} layer
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [box-width stroke-width]} style
@@ -362,7 +363,7 @@
 
 ;; ---- Violin ----
 
-(defmethod render-layer :violin [layer ctx]
+(defmethod layer->membrane :violin [layer ctx]
   (let [{:keys [style violins color-categories]} layer
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [opacity stroke-width]} style
@@ -410,7 +411,7 @@
 
 ;; ---- Tile (heatmap) ----
 
-(defmethod render-layer :tile [layer ctx]
+(defmethod layer->membrane :tile [layer ctx]
   (let [{:keys [style tiles]} layer
         {:keys [coord-fn]} ctx
         {:keys [opacity]} style]
@@ -430,7 +431,7 @@
 
 ;; ---- Ridgeline ----
 
-(defmethod render-layer :ridgeline [layer ctx]
+(defmethod layer->membrane :ridgeline [layer ctx]
   (let [{:keys [style ridges categories]} layer
         {:keys [sx sy]} ctx
         {:keys [opacity]} style
@@ -479,7 +480,7 @@
 
 ;; ---- Rug ----
 
-(defmethod render-layer :rug [layer ctx]
+(defmethod layer->membrane :rug [layer ctx]
   (let [{:keys [style groups side]} layer
         {:keys [coord-fn panel-width panel-height margin]} ctx
         {:keys [length stroke-width opacity]} style
@@ -506,7 +507,7 @@
 
 ;; ---- Pointrange (dot + vertical line from ymin to ymax) ----
 
-(defmethod render-layer :pointrange [layer ctx]
+(defmethod layer->membrane :pointrange [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn]} ctx
         {:keys [radius stroke-width]} style
@@ -532,12 +533,12 @@
                         (ui/with-style ::ui/style-fill
                           (ui/rounded-rectangle (* 2 r) (* 2 r) r))))]))))
 
-(defmethod render-layer :default [layer ctx]
-  (render-layer (assoc layer :mark :point) ctx))
+(defmethod layer->membrane :default [layer ctx]
+  (layer->membrane (assoc layer :mark :point) ctx))
 
 ;; ---- Bar (histogram) ----
 
-(defmethod render-layer :bar [layer ctx]
+(defmethod layer->membrane :bar [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [sx sy]} ctx
         coord-px (:coord-px ctx)
@@ -553,7 +554,7 @@
 
 ;; ---- Line ----
 
-(defmethod render-layer :line [layer ctx]
+(defmethod layer->membrane :line [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn]} ctx
         {:keys [stroke-width]} style]
@@ -579,7 +580,7 @@
 
 ;; ---- Step Line ----
 
-(defmethod render-layer :step [layer ctx]
+(defmethod layer->membrane :step [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn]} ctx
         {:keys [stroke-width]} style]
@@ -609,7 +610,7 @@
 
 ;; ---- Rect (categorical bars / value bars) ----
 
-(defn render-layer-categorical-bars
+(defn layer->membrane-categorical-bars
   "Render categorical count bars from a sketch :rect layer."
   [layer ctx]
   (let [{:keys [style groups position categories]} layer
@@ -656,7 +657,7 @@
                      bp (band-position band-s category active-idx n-active 0.8)]]
            (mk-rect color (:lo bp) (:hi bp) (num-s 0) (num-s count))))))))
 
-(defn render-layer-value-bars
+(defn layer->membrane-value-bars
   "Render value bars from a sketch :rect layer."
   [layer ctx]
   (let [{:keys [style groups]} layer
@@ -676,7 +677,7 @@
          (ui/with-style ::ui/style-fill
            (apply ui/path pts)))))))
 
-(defmethod render-layer :rect [layer ctx]
+(defmethod layer->membrane :rect [layer ctx]
   (if (:categories layer)
-    (render-layer-categorical-bars layer ctx)
-    (render-layer-value-bars layer ctx)))
+    (layer->membrane-categorical-bars layer ctx)
+    (layer->membrane-value-bars layer ctx)))

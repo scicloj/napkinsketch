@@ -176,7 +176,7 @@
 ;; Membrane-building code lives in render/membrane.clj.
 ;; This namespace handles membrane → SVG conversion only.
 
-;; ---- render-figure :svg ----
+;; ---- sketch->figure :svg ----
 
 ;; ---- Tooltip interactivity ----
 
@@ -224,7 +224,7 @@
           (tooltip-script div-id)]))
       (kind/hiccup svg))))
 
-(defmethod render/render-figure :svg [sketch _ opts]
+(defmethod render/sketch->figure :svg [sketch _ opts]
   (let [membrane-tree (membrane/sketch->membrane sketch
                                                  :tooltip (:tooltip opts))]
     (render/membrane->figure membrane-tree :svg

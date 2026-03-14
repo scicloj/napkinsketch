@@ -672,6 +672,47 @@
 ;; Sketches are plain serializable maps — useful for debugging
 ;; and testing. See the *Exploring Sketches* chapter for a full walkthrough.
 
+;; ## Pipeline
+
+(kind/doc #'sk/views->sketch)
+
+;; Same as `sk/sketch` but with an explicit pipeline-style name:
+
+(def sk2 (sk/views->sketch [(sk/point {:data tiny :x :x :y :y})]))
+
+(= (keys sk1) (keys sk2))
+
+(kind/test-last [true?])
+
+(kind/doc #'sk/sketch->membrane)
+
+;; Convert a sketch to a membrane drawable tree:
+
+(def m1 (sk/sketch->membrane sk1))
+
+(vector? m1)
+
+(kind/test-last [true?])
+
+(kind/doc #'sk/membrane->figure)
+
+;; Convert a membrane tree to a figure:
+
+(first (sk/membrane->figure m1 :svg
+                             {:total-width (:total-width sk1)
+                              :total-height (:total-height sk1)}))
+
+(kind/test-last [(fn [v] (= :svg v))])
+
+(kind/doc #'sk/sketch->figure)
+
+;; Convert a sketch directly to a figure (orchestrates the full path):
+
+(first (sk/sketch->figure sk1 :svg {}))
+
+(kind/test-last [(fn [v] (= :svg v))])
+
+
 ;; ## Transforms
 
 (kind/doc #'sk/coord)
@@ -976,3 +1017,17 @@
 (kind/test-last [(fn [ts] (and (some #{"Iris Scatter"} ts)
                                (some #{"sepal length"} ts)
                                (some #{"setosa"} ts)))])
+
+(kind/doc #'sk/valid-sketch?)
+
+(sk/valid-sketch? sk1)
+
+(kind/test-last [true?])
+
+(kind/doc #'sk/explain-sketch)
+
+;; Returns nil for valid sketches, a Malli explanation map for invalid ones:
+
+(sk/explain-sketch sk1)
+
+(kind/test-last [nil?])

@@ -30,7 +30,7 @@
  v5_l26
  (kind/pprint
   (mapv
-   (fn* [p1__87777#] (select-keys p1__87777# [:x :y :mark :color]))
+   (fn* [p1__90652#] (select-keys p1__90652# [:x :y :mark :color]))
    views)))
 
 
@@ -106,7 +106,7 @@
 (deftest t28_l159 (is ((fn [n] (pos? n)) v27_l157)))
 
 
-(def v30_l169 (def my-figure (sk/render-figure my-sketch :svg {})))
+(def v30_l169 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
 (def v31_l171 (first my-figure))

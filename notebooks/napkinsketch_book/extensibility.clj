@@ -27,11 +27,11 @@
 ;; by a multimethod:
 ;;
 ;; ```
-;; views → compute-stat → extract-layer → resolve-sketch
+;; views → views->sketch (compute-stat, extract-layer, ...)
 ;;                                              ↓
 ;;                                           sketch
 ;;                                              ↓
-;;                          render-figure (orchestrates full path)
+;;                          sketch->figure (orchestrates full path)
 ;;                                              ↓
 ;;                              ┌───────────────┴───────────────┐
 ;;                     membrane path                     direct path
@@ -46,8 +46,8 @@
 ;; |:------------|:----------|:--------------|:--------|
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
 ;; | `extract-layer` | `impl/sketch.clj` | `:mark` key | Convert stat result → sketch layer descriptor |
-;; | `render-layer` | `render/mark.clj` | `:mark` key | Render sketch layer → membrane drawables |
-;; | `render-figure` | `impl/render.clj` | format keyword | Orchestrate sketch → figure (full path) |
+;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render sketch layer → membrane drawables |
+;; | `sketch->figure` | `impl/render.clj` | format keyword | Orchestrate sketch → figure (full path) |
 ;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert membrane tree → figure |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
@@ -147,7 +147,7 @@
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (number? (get-in m [:style :opacity]))))])
 
-;; ## `render-layer`
+;; ## `layer->membrane`
 ;;
 ;; Renders a sketch layer descriptor into membrane drawable primitives.
 ;; This is the "membrane path" — used when the target format goes through
@@ -176,7 +176,7 @@
 ;; ### How to extend: add a new mark type
 ;;
 ;; Adding a new mark (e.g., `:area` for area charts) requires methods
-;; on both `extract-layer` and `render-layer`:
+;; on both `extract-layer` and `layer->membrane`:
 ;;
 ;; ```clojure
 ;; ;; 1. Extract geometry from stat result
@@ -188,13 +188,13 @@
 ;;                    :xs (vec xs) :ys (vec ys)}))})
 ;;
 ;; ;; 2. Render to membrane drawables
-;; (defmethod mark/render-layer :area [layer ctx]
+;; (defmethod mark/layer->membrane :area [layer ctx]
 ;;   ;; Build filled polygon from xs/ys + baseline
 ;;   ...)
 ;; ```
 
 
-;; ## `render-figure`
+;; ## `sketch->figure`
 ;;
 ;; Orchestrates the full sketch → figure path. The `:svg` implementation
 ;; goes through the membrane path: `sketch → membrane → figure`.
@@ -207,20 +207,20 @@
 ;;
 ;; Dispatch function: `(fn [sketch format opts] format)`
 
-;; Using `render-figure` directly:
+;; Using `sketch->figure` directly:
 
 (def my-sketch
   (sk/sketch (-> iris
                  (sk/view [[:sepal_length :sepal_width]])
                  (sk/lay (sk/point {:color :species})))))
 
-(first (sk/render-figure my-sketch :svg {}))
+(first (sk/sketch->figure my-sketch :svg {}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
 ;; The same sketch can be rendered to different formats:
 
-(def my-figure (sk/render-figure my-sketch :svg {}))
+(def my-figure (sk/sketch->figure my-sketch :svg {}))
 
 (vector? my-figure)
 
@@ -229,13 +229,13 @@
 ;; ### How to extend: add a new direct format
 ;;
 ;; To add a Plotly renderer that reads sketch data directly
-;; (no membrane needed), register a `render-figure` defmethod:
+;; (no membrane needed), register a `sketch->figure` defmethod:
 ;;
 ;; ```clojure
 ;; (ns mylib.render.plotly
 ;;   (:require [scicloj.napkinsketch.impl.render :as render]))
 ;;
-;; (defmethod render/render-figure :plotly [sketch _ opts]
+;; (defmethod render/sketch->figure :plotly [sketch _ opts]
 ;;   ;; Read sketch domains, layers, legend, layout
 ;;   ;; Build a Plotly.js spec directly — no membrane needed
 ;;   {:data (mapcat sketch-layer->plotly-traces
@@ -291,8 +291,8 @@
 ;;   ;; Walk the same drawable tree, emit canvas draw calls
 ;;   (canvas-walk membrane-tree))
 ;;
-;; ;; Also register render-figure to orchestrate the full path:
-;; (defmethod render/render-figure :canvas [sketch _ opts]
+;; ;; Also register sketch->figure to orchestrate the full path:
+;; (defmethod render/sketch->figure :canvas [sketch _ opts]
 ;;   (let [mt (membrane/sketch->membrane sketch)]
 ;;     (render/membrane->figure mt :canvas
 ;;                               {:total-width (:total-width sketch)
@@ -344,8 +344,8 @@
 ;; | To add... | Extend... |
 ;; |:----------|:----------|
 ;; | A new statistical transform | `compute-stat` |
-;; | A new mark type | `extract-layer` + `render-layer` |
-;; | A new output format (direct) | `render-figure` |
-;; | A new output format (membrane-based) | `membrane->figure` + `render-figure` |
+;; | A new mark type | `extract-layer` + `layer->membrane` |
+;; | A new output format (direct) | `sketch->figure` |
+;; | A new output format (membrane-based) | `membrane->figure` + `sketch->figure` |
 ;; | A new scale type | `make-scale` |
 ;; | A new coordinate system | `make-coord` |

@@ -603,11 +603,11 @@
                            "Supported polar marks: " (sort polar-supported-marks))
                       {:mark m :supported polar-supported-marks})))))
 
-(defn resolve-sketch
+(defn views->sketch
   "Resolve views + options into a sketch — a fully resolved plot specification
    with data-space geometry, domains, ticks, legend, and layout info.
    No membrane types, no datasets in the output."
-  ([views] (resolve-sketch views {}))
+  ([views] (views->sketch views {}))
   ([views {:keys [width height config x-label y-label title scales palette] :as opts}]
    (let [cfg (cond-> (merge defaults/defaults config) palette (assoc :palette palette))
          width (or width (:width cfg))

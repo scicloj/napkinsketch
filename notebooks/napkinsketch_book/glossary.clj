@@ -164,9 +164,9 @@
 ;; a sketch to a specific format. For SVG, the figure is hiccup markup
 ;; wrapped in `kind/hiccup`.
 ;;
-;; Created by `sk/plot` (which calls `sk/render-figure` internally).
+;; Created by `sk/plot` (which calls `sk/sketch->figure` internally).
 
-(def my-figure (sk/render-figure my-sketch :svg {}))
+(def my-figure (sk/sketch->figure my-sketch :svg {}))
 
 (first my-figure)
 

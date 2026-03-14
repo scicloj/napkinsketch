@@ -117,7 +117,7 @@
                      x-off (+ y-label-pad (* ci pw))
                      y-off (+ title-pad strip-h (* ri ph))]]
            (ui/translate x-off y-off
-                         (panel/render-panel-from-sketch p pw ph margin
+                         (panel/panel->membrane p pw ph margin
                                                          :show-x? show-x?
                                                          :show-y? show-y?
                                                          :tooltip tooltip
