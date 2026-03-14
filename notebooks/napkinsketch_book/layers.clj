@@ -185,3 +185,31 @@
                            (and (= 4 (:points s))
                                 ;; 4 stems + 12 errorbars
                                 (= 16 (:lines s)))))])
+
+;; ## Step Line with Points
+;;
+;; Step lines show discrete changes (e.g., piecewise constant signals).
+
+(-> growth
+    (sk/view [[:day :value]])
+    (sk/lay (sk/step {:color :group})
+            (sk/point {:color :group}))
+    (sk/plot {:title "Step Growth"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 10 (:points s))
+                                (= 2 (:lines s)))))])
+
+;; ## Summary (Mean ± SE)
+;;
+;; The `summary` mark computes mean and standard error per category.
+
+(-> iris
+    (sk/view [[:species :sepal_length]])
+    (sk/lay (sk/point {:alpha 0.3 :jitter 5})
+            (sk/summary {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 153 (:points s))
+                                (= 3 (:lines s)))))])
