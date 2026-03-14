@@ -110,6 +110,16 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
+
+;; Alpha works on bars and polygons too:
+
+(-> iris
+    (sk/view :species)
+    (sk/lay (sk/bar {:alpha 0.4}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 3 (:polygons s))))])
 ;; ## Value Bar
 
 ;; Pre-computed values (no counting), using `value-bar`.

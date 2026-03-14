@@ -89,7 +89,7 @@
    {:x (range 1 50),
     :y
     (mapv
-     (fn* [p1__302982#] (* 2 (Math/pow 1.1 p1__302982#)))
+     (fn* [p1__316997#] (* 2 (Math/pow 1.1 p1__316997#)))
      (range 1 50))})))
 
 
@@ -176,14 +176,25 @@
 
 
 (def
- v28_l117
+ v28_l116
+ (-> iris (sk/view :species) (sk/lay (sk/bar {:alpha 0.4})) sk/plot))
+
+
+(deftest
+ t29_l121
+ (is
+  ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:polygons s)))) v28_l116)))
+
+
+(def
+ v31_l127
  (def
   summary
   (tc/dataset {:category [:a :b :c :d], :value [42 28 35 19]})))
 
 
 (def
- v29_l121
+ v32_l131
  (->
   summary
   (sk/view [[:category :value]])
@@ -192,18 +203,18 @@
 
 
 (deftest
- t30_l126
+ t33_l136
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v29_l121)))
+   v32_l131)))
 
 
 (def
- v32_l132
+ v35_l142
  (->
   summary
   (sk/view [[:category :value]])
@@ -213,18 +224,18 @@
 
 
 (deftest
- t33_l138
+ t36_l148
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v32_l132)))
+   v35_l142)))
 
 
 (def
- v35_l147
+ v38_l157
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -233,18 +244,18 @@
 
 
 (deftest
- t36_l152
+ t39_l162
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v35_l147)))
+   v38_l157)))
 
 
 (def
- v38_l158
+ v41_l168
  (->
   iris
   (sk/view :species)
@@ -253,18 +264,18 @@
 
 
 (deftest
- t39_l163
+ t42_l173
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v38_l158)))
+   v41_l168)))
 
 
 (def
- v41_l180
+ v44_l190
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -273,18 +284,18 @@
 
 
 (deftest
- t42_l185
+ t45_l195
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v41_l180)))
+   v44_l190)))
 
 
 (def
- v44_l191
+ v47_l201
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -293,11 +304,11 @@
 
 
 (deftest
- t45_l196
+ t48_l206
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v44_l191)))
+   v47_l201)))

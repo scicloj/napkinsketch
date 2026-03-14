@@ -135,6 +135,7 @@
    [:font-size {:optional true} number?]
    [:box-width {:optional true} number?]
    [:cap-width {:optional true} number?]
+   [:length {:optional true} number?]
    [:jitter {:optional true} [:or boolean? number?]]])
 
 (def Annotation
@@ -148,7 +149,7 @@
 (def Layer
   "A rendered mark layer with data-space geometry."
   [:map
-   [:mark [:enum :point :bar :line :rect :text :area :errorbar :lollipop :boxplot :violin :tile :ridgeline]]
+   [:mark [:enum :point :bar :line :step :rect :text :area :errorbar :lollipop :boxplot :violin :tile :ridgeline :rug :pointrange]]
    [:style MarkStyle]
    [:groups {:optional true} [:vector [:or PointGroup BarGroup RectCountGroup RectValueGroup
                                        LineSegmentGroup PolylineGroup TextGroup ErrorbarGroup]]]
@@ -158,7 +159,8 @@
    [:ridges {:optional true} [:vector [:map [:category any?] [:color Color] [:ys [:vector number?]] [:densities [:vector number?]]]]]
    [:color-categories {:optional true} [:maybe [:vector any?]]]
    [:position {:optional true} [:enum :dodge :stack]]
-   [:categories {:optional true} [:vector any?]]])
+   [:categories {:optional true} [:vector any?]]
+   [:side {:optional true} [:enum :x :y :both]]])
 
 ;; ---- Panel ----
 

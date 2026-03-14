@@ -91,6 +91,14 @@
   ([] (view/line))
   ([opts] (view/line opts)))
 
+(defn step
+  "Step line mark — connected points with horizontal-then-vertical steps.
+   Useful for time series showing discrete changes.
+   (step)                    — default
+   (step {:color :group})    — one step line per group"
+  ([] (view/step))
+  ([opts] (view/step opts)))
+
 (defn histogram
   "Histogram mark (binned counts).
    (histogram)               — default binning
@@ -195,6 +203,24 @@
    (violin {:color :smoker})   — side-by-side grouped violins"
   ([] (view/violin))
   ([opts] (view/violin opts)))
+
+(defn rug
+  "Rug mark — tick marks along axis margins showing individual observations.
+   (rug)                     — ticks on x-axis
+   (rug {:side :y})          — ticks on y-axis
+   (rug {:side :both})       — ticks on both axes
+   (rug {:color :species})   — colored ticks"
+  ([] (view/rug))
+  ([opts] (view/rug opts)))
+
+(defn summary
+  "Summary mark — mean ± standard error per category.
+   Displays as a point at the mean with a vertical line showing ±1 SE.
+   x should be categorical, y numeric.
+   (summary)                    — single summary
+   (summary {:color :species})  — per-group summary"
+  ([] (view/summary))
+  ([opts] (view/summary opts)))
 
 (defn errorbar
   "Errorbar mark — vertical error bars at (x, y) positions.

@@ -532,6 +532,78 @@
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
+(kind/doc #'sk/rug)
+
+;; Tick marks along axis margins showing individual observations:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}) (sk/rug {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 150 (:lines s)))))])
+
+;; Rug ticks on both axes:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point) (sk/rug {:side :both}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 300 (:lines s))))])
+
+
+
+(kind/doc #'sk/step)
+
+;; Step lines connect points with horizontal-then-vertical segments:
+
+(-> tiny
+    (sk/view [[:x :y]])
+    (sk/lay (sk/step) (sk/point))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 5 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; Step lines by group:
+
+(-> tiny
+    (sk/view [[:x :y]])
+    (sk/lay (sk/step {:color :group}) (sk/point {:color :group}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 5 (:points s))
+                                (= 2 (:lines s)))))])
+
+(kind/doc #'sk/summary)
+
+;; Mean ± SE per category:
+
+(-> iris
+    (sk/view [[:species :sepal_length]])
+    (sk/lay (sk/summary))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:points s))
+                                (= 3 (:lines s)))))])
+
+;; Summary by group:
+
+(-> iris
+    (sk/view [[:species :sepal_length]])
+    (sk/lay (sk/summary {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; ## Rendering
 
@@ -565,6 +637,15 @@
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
+
+;; Tooltip on hover — shows data values on mouseover:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:tooltip true}))
+
+(kind/test-last [(fn [v] (= :div (first v)))])
 (kind/doc #'sk/sketch)
 
 ;; Returns the intermediate data structure instead of SVG.

@@ -67,6 +67,7 @@
 ;; | `:boxplot` | Five-number summary with outlier detection |
 ;; | `:violin` | Kernel density estimation per category |
 ;; | `:bin2d` | 2D binning for heatmap tiles |
+;; | `:summary` | Mean ± standard error per category |
 ;;
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
@@ -123,6 +124,10 @@
 ;; | `:errorbar` | Groups with `:xs`, `:ys`, `:ymins`, `:ymaxs` |
 ;; | `:lollipop` | Groups with `:xs`, `:ys` for stems + dots |
 ;; | `:tile` | Tiles with `:x-lo`, `:x-hi`, `:y-lo`, `:y-hi`, `:color` |
+;; | `:ridgeline` | Ridges with density curves per category |
+;; | `:rug` | Groups with `:xs`, `:ys` for axis tick marks |
+;; | `:step` | Groups with `:xs`, `:ys` for step lines |
+;; | `:pointrange` | Groups with `:xs`, `:ys`, `:ymins`, `:ymaxs` for mean ± SE |
 ;;
 ;; Dispatch function: `(fn [view stat all-colors cfg] (:mark view))`
 
@@ -156,6 +161,10 @@
 ;; | `:errorbar` | Vertical lines with caps |
 ;; | `:lollipop` | Stems with dots at category positions |
 ;; | `:tile` | Translated colored rectangles (heatmap cells) |
+;; | `:ridgeline` | Overlapping filled density curves |
+;; | `:rug` | Short stroked tick marks at axis margins |
+;; | `:step` | Stroked step polylines |
+;; | `:pointrange` | Point at mean + vertical SE line |
 ;;
 ;; Dispatch function: `(fn [layer ctx] (:mark layer))`
 ;;

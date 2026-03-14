@@ -373,6 +373,40 @@
 
 ;; ---- 2D Binning (for heatmap/tile) ----
 
+;; ---- Summary (mean ± SE per category) ----
+
+(defmethod compute-stat :summary [{:keys [data x y x-type group] :as view}]
+  (let [clean (cond-> (tc/drop-missing data [x y])
+                (= x-type :categorical) (tc/map-columns x [x] str))
+        categories (distinct (clean x))]
+    (if (empty? categories)
+      {:points [] :x-domain ["?"] :y-domain [0 1]}
+      (let [group-cols (or group [])
+            all-groups (group-by-columns
+                        clean group-cols
+                        (fn [ds gv]
+                          (let [per-cat (for [cat categories
+                                              :let [rows (tc/select-rows ds (fn [row] (= (get row x) cat)))
+                                                    n (tc/row-count rows)]
+                                              :when (pos? n)
+                                              :let [ys-col (rows y)
+                                                    mean-val (stats/mean ys-col)
+                                                    se (if (>= n 2)
+                                                         (/ (stats/stddev ys-col) (Math/sqrt (double n)))
+                                                         0.0)]]
+                                          {:cat cat :mean mean-val :se se})]
+                            (cond-> {:xs (mapv :cat per-cat)
+                                     :ys (mapv :mean per-cat)
+                                     :ymins (mapv #(- (:mean %) (:se %)) per-cat)
+                                     :ymaxs (mapv #(+ (:mean %) (:se %)) per-cat)}
+                              gv (assoc :color gv)))))
+            all-ys (mapcat (fn [g] (concat (:ymins g) (:ymaxs g))) all-groups)
+            y-min (if (seq all-ys) (reduce min all-ys) 0)
+            y-max (if (seq all-ys) (reduce max all-ys) 1)]
+        {:points all-groups
+         :x-domain categories
+         :y-domain [y-min y-max]}))))
+
 (defmethod compute-stat :bin2d [{:keys [data x y cfg] :as view}]
   (let [cfg (or cfg defaults/defaults)
         clean (tc/drop-missing data [x y])

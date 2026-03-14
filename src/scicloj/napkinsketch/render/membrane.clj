@@ -94,8 +94,10 @@
 
 (defn sketch->membrane
   "Build a membrane drawable tree from a sketch.
-   Returns a vector of membrane drawables representing the complete plot."
-  [sketch]
+   Returns a vector of membrane drawables representing the complete plot.
+   Optional kwargs:
+     :tooltip — when truthy, enables tooltip text generation on data marks."
+  [sketch & {:keys [tooltip]}]
   (let [{:keys [margin total-width total-height panel-width panel-height
                 title x-label y-label legend panels layout grid]} sketch
         {:keys [x-label-pad y-label-pad title-pad legend-w strip-h strip-w]} layout
@@ -117,7 +119,10 @@
            (ui/translate x-off y-off
                          (panel/render-panel-from-sketch p pw ph margin
                                                          :show-x? show-x?
-                                                         :show-y? show-y?))))
+                                                         :show-y? show-y?
+                                                         :tooltip tooltip
+                                                         :x-col-name (or x-label "x")
+                                                         :y-col-name (or y-label "y")))))
 
         ;; Strip labels (column headers on top, row headers on right)
         strip-label-color [0.2 0.2 0.2 1.0]

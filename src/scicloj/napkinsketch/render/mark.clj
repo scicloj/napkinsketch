@@ -1,5 +1,6 @@
 (ns scicloj.napkinsketch.render.mark
-  (:require [membrane.ui :as ui]
+  (:require [clojure.string :as str]
+            [membrane.ui :as ui]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [fastmath.random :as rng]
             [wadogo.scale :as ws]))
@@ -86,6 +87,23 @@
       (ui/with-style ::ui/style-fill
         (ui/rounded-rectangle d d r)))))
 
+(defn- fmt-val
+  "Format a value for tooltip display."
+  [v]
+  (cond
+    (float? v) (format "%.4g" (double v))
+    (double? v) (format "%.4g" (double v))
+    :else (str v)))
+
+(defn- make-tooltip
+  "Build a tooltip text string from context and point data."
+  [ctx x-val y-val color-label]
+  (let [{:keys [x-col-name y-col-name]} ctx
+        parts (cond-> [(str x-col-name ": " (fmt-val x-val))
+                       (str y-col-name ": " (fmt-val y-val))]
+                color-label (conj (str "color: " color-label)))]
+    (str/join ", " parts)))
+
 ;; ---- render-layer multimethod ----
 ;; render-layer takes sketch layer descriptors (data-space geometry,
 ;; resolved colors) and renders them as membrane drawable primitives.
@@ -100,7 +118,7 @@
 
 (defmethod render-layer :point [layer ctx]
   (let [{:keys [style groups]} layer
-        {:keys [coord-fn]} ctx
+        {:keys [coord-fn tooltip]} ctx
         {:keys [opacity radius jitter]} style
         jitter-amount (cond (number? jitter) (double jitter)
                             jitter 5.0
@@ -125,7 +143,7 @@
                     (let [all-vals (distinct (apply concat shape-bufs))]
                       (zipmap all-vals (cycle defaults/shape-syms))))]
     (vec
-     (for [{:keys [color colors xs ys sizes alphas shapes row-indices] :as group} groups
+     (for [{:keys [color colors xs ys sizes alphas shapes row-indices color-label] :as group} groups
            :let [;; One seeded RNG per group for deterministic jitter
                  jitter-rng (when jitter? (rng/rng :jdk (hash (:color group))))]
            i (range (count xs))
@@ -141,7 +159,8 @@
        (-> (ui/translate (- (double px) pt-r) (- (double py) pt-r)
                          (ui/with-color [cr cg cb pt-alpha]
                            (draw-shape pt-shape pt-r)))
-           (cond-> row-indices (assoc :row-idx (nth row-indices i))))))))
+           (cond-> row-indices (assoc :row-idx (nth row-indices i))
+                   tooltip (assoc :tooltip (make-tooltip ctx (nth xs i) (nth ys i) color-label))))))))
 
 ;; ---- Text ----
 
@@ -458,6 +477,61 @@
             (ui/with-style ::ui/style-stroke
               (apply ui/path curve-pts))))]))))
 
+;; ---- Rug ----
+
+(defmethod render-layer :rug [layer ctx]
+  (let [{:keys [style groups side]} layer
+        {:keys [coord-fn panel-width panel-height margin]} ctx
+        {:keys [length stroke-width opacity]} style
+        len (or length 6)]
+    (vec
+     (for [{:keys [color xs ys]} groups
+           i (range (count xs))
+           :let [[cr cg cb _] color
+                 [px py] (coord-fn (nth xs i) (nth ys i))]
+           tick (cond-> []
+                  (#{:x :both} (or side :x))
+                  (conj (ui/with-color [cr cg cb (or opacity 0.5)]
+                          (ui/with-stroke-width (or stroke-width 1.0)
+                            (ui/with-style ::ui/style-stroke
+                              (ui/path [px (- (double panel-height) (double margin))]
+                                       [px (- (double panel-height) (double margin) (- len))])))))
+                  (#{:y :both} (or side :x))
+                  (conj (ui/with-color [cr cg cb (or opacity 0.5)]
+                          (ui/with-stroke-width (or stroke-width 1.0)
+                            (ui/with-style ::ui/style-stroke
+                              (ui/path [(double margin) py]
+                                       [(+ (double margin) len) py]))))))]
+       tick))))
+
+;; ---- Pointrange (dot + vertical line from ymin to ymax) ----
+
+(defmethod render-layer :pointrange [layer ctx]
+  (let [{:keys [style groups]} layer
+        {:keys [coord-fn]} ctx
+        {:keys [radius stroke-width]} style
+        r (or radius 3.5)
+        sw (or stroke-width 1.5)]
+    (vec
+     (for [{:keys [color xs ys ymins ymaxs]} groups
+           i (range (count xs))
+           :let [[cr cg cb _] color
+                 x (nth xs i)
+                 y (nth ys i)
+                 ymin-val (nth ymins i)
+                 ymax-val (nth ymaxs i)
+                 [px py] (coord-fn x y)
+                 [_ py-min] (coord-fn x ymin-val)
+                 [_ py-max] (coord-fn x ymax-val)]]
+       [(ui/with-color [cr cg cb 1.0]
+          (ui/with-stroke-width sw
+            (ui/with-style ::ui/style-stroke
+              (ui/path [px py-min] [px py-max]))))
+        (ui/translate (- (double px) r) (- (double py) r)
+                      (ui/with-color [cr cg cb 1.0]
+                        (ui/with-style ::ui/style-fill
+                          (ui/rounded-rectangle (* 2 r) (* 2 r) r))))]))))
+
 (defmethod render-layer :default [layer ctx]
   (render-layer (assoc layer :mark :point) ctx))
 
@@ -502,6 +576,36 @@
              (ui/with-stroke-width (or stroke-width 2)
                (ui/with-style ::ui/style-stroke
                  (apply ui/path projected))))))))))
+
+;; ---- Step Line ----
+
+(defmethod render-layer :step [layer ctx]
+  (let [{:keys [style groups]} layer
+        {:keys [coord-fn]} ctx
+        {:keys [stroke-width]} style]
+    (vec
+     (for [{:keys [color xs ys]} groups
+           :let [[cr cg cb _] color
+                 sorted (sort-by first (map vector xs ys))
+                 ;; Build step path: for each pair of consecutive points,
+                 ;; go horizontal first, then vertical
+                 step-pts (loop [pts []
+                                 remaining sorted]
+                            (if (empty? remaining)
+                              pts
+                              (let [[x y] (first remaining)
+                                    [px py] (coord-fn x y)]
+                                (if (empty? pts)
+                                  (recur [[px py]] (rest remaining))
+                                  (let [[prev-px _prev-py] (last pts)]
+                                    ;; Horizontal to new x at old y, then vertical to new y
+                                    (recur (conj pts [px (second (last pts))] [px py])
+                                           (rest remaining)))))))]]
+       (when (>= (count step-pts) 2)
+         (ui/with-color [cr cg cb 1.0]
+           (ui/with-stroke-width (or stroke-width 2)
+             (ui/with-style ::ui/style-stroke
+               (apply ui/path step-pts)))))))))
 
 ;; ---- Rect (categorical bars / value bars) ----
 

@@ -93,7 +93,8 @@
    Takes a panel map from resolve-sketch and pixel dimensions.
    show-x? and show-y? control whether tick labels are drawn
    (grid lines always render)."
-  [panel pw ph m & {:keys [show-x? show-y?] :or {show-x? true show-y? true}}]
+  [panel pw ph m & {:keys [show-x? show-y? tooltip x-col-name y-col-name]
+                    :or {show-x? true show-y? true}}]
   (let [{:keys [x-domain y-domain x-scale y-scale coord
                 x-ticks y-ticks layers annotations]} panel
         coord-type (or coord :cartesian)
@@ -120,10 +121,14 @@
                        0)
 
         ;; Rendering context for mark/render-layer
-        ctx {:coord-fn coord-fn :sx sx :sy sy
-             :coord-type coord-type
-             :coord-px coord-px
-             :y-domain-min y-domain-min}
+        ctx (cond-> {:coord-fn coord-fn :sx sx :sy sy
+                     :coord-type coord-type
+                     :coord-px coord-px
+                     :y-domain-min y-domain-min
+                     :panel-width pw :panel-height ph :margin m}
+              tooltip (assoc :tooltip true
+                             :x-col-name x-col-name
+                             :y-col-name y-col-name))
 
         ;; Background
         bg-rgba (defaults/hex->rgba (:bg defaults/theme))

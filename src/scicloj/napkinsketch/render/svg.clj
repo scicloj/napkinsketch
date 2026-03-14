@@ -54,14 +54,22 @@
   "Convert a membrane drawable element to SVG hiccup."
   (-to-svg [elem ctx]))
 
+(defn- data-attrs
+  "Extract data-* attributes from extra keys on a membrane element."
+  [elem]
+  (cond-> {}
+    (:row-idx elem) (assoc :data-row-idx (:row-idx elem))
+    (:tooltip elem) (assoc :data-tooltip (:tooltip elem))))
+
 (extend-protocol ToSVG
   Translate
   (-to-svg [elem ctx]
     (let [{:keys [x y drawable]} elem
-          inner (membrane->svg drawable ctx)]
+          inner (membrane->svg drawable ctx)
+          attrs (merge {:transform (str "translate(" (double x) "," (double y) ")")}
+                       (data-attrs elem))]
       (when inner
-        [:g {:transform (str "translate(" (double x) "," (double y) ")")}
-         inner])))
+        [:g attrs inner])))
 
   Rotate
   (-to-svg [elem ctx]
@@ -170,12 +178,54 @@
 
 ;; ---- render-figure :svg ----
 
-(defmethod render/render-figure :svg [sketch _ _opts]
+;; ---- Tooltip interactivity ----
+
+(def ^:private tooltip-css
+  ".nsk-tooltip { display:none; position:absolute; pointer-events:none; background:rgba(0,0,0,0.8); color:#fff; padding:6px 10px; border-radius:4px; font-family:sans-serif; font-size:13px; white-space:nowrap; z-index:10; }")
+
+(defn- tooltip-script
+  "Scittle script for tooltips on elements with data-tooltip attribute.
+   Uses .closest() to walk up the DOM from the event target."
+  [div-id]
+  (list 'let ['container (list '.getElementById 'js/document div-id)
+              'svg '(.querySelector container "svg")
+              'tip-el '(.createElement js/document "div")]
+        '(set! (.-className tip-el) "nsk-tooltip")
+        '(.appendChild container tip-el)
+        '(let [show! (fn [e]
+                       (when-let [el (.closest (.-target e) "[data-tooltip]")]
+                         (let [text (.getAttribute el "data-tooltip")]
+                           (when text
+                             (set! (.-textContent tip-el) text)
+                             (set! (.. tip-el -style -display) "block")))))
+               hide! (fn [_]
+                       (set! (.. tip-el -style -display) "none"))
+               move! (fn [e]
+                       (let [r (.getBoundingClientRect container)
+                             x (+ (- (.-clientX e) (.-left r)) 12)
+                             y (+ (- (.-clientY e) (.-top r)) 12)]
+                         (set! (.. tip-el -style -left) (str x "px"))
+                         (set! (.. tip-el -style -top) (str y "px"))))]
+           (.addEventListener svg "mouseover" show!)
+           (.addEventListener svg "mouseout" hide!)
+           (.addEventListener svg "mousemove" move!))))
+
+(defmethod render/render-figure :svg [sketch _ opts]
   (let [{:keys [total-width total-height]} sketch
-        membrane-tree (membrane/sketch->membrane sketch)
+        tooltip? (:tooltip opts)
+        membrane-tree (membrane/sketch->membrane sketch
+                                                 :tooltip tooltip?)
         svg-body (membrane->svg membrane-tree)
         svg (wrap-svg total-width total-height svg-body)]
-    (kind/hiccup svg)))
+    (if tooltip?
+      (let [div-id (str "nsk-" (random-uuid))]
+        (kind/hiccup
+         [:div {:id div-id
+                :style {:position "relative" :display "inline-block"}}
+          [:style tooltip-css]
+          svg
+          (tooltip-script div-id)]))
+      (kind/hiccup svg))))
 
 ;; ---- SVG inspection ----
 

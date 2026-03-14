@@ -132,6 +132,14 @@
   ([] {:mark :line :stat :identity})
   ([opts] (merge {:mark :line :stat :identity} opts)))
 
+(defn step
+  "Step line mark — connected points with horizontal-then-vertical steps.
+   Useful for time series showing discrete changes.
+   (step)                    — default
+   (step {:color :group})    — one step line per group"
+  ([] {:mark :step :stat :identity})
+  ([opts] (merge {:mark :step :stat :identity} opts)))
+
 (defn histogram
   "Histogram mark (binned counts).
    (histogram)                   — default Sturges binning
@@ -258,6 +266,24 @@
    (ridgeline {:color :species})  — colored ridgelines"
   ([] {:mark :ridgeline :stat :violin})
   ([opts] (merge {:mark :ridgeline :stat :violin} opts)))
+
+(defn rug
+  "Rug mark — tick marks along axis margins showing individual observations.
+   (rug)                     — ticks on x-axis
+   (rug {:side :y})          — ticks on y-axis
+   (rug {:side :both})       — ticks on both axes
+   (rug {:color :species})   — colored ticks"
+  ([] {:mark :rug :stat :identity})
+  ([opts] (merge {:mark :rug :stat :identity} opts)))
+
+(defn summary
+  "Summary mark — mean ± standard error per category.
+   Displays as a point at the mean with a vertical line showing ±1 SE.
+   x should be categorical, y numeric.
+   (summary)                    — single summary
+   (summary {:color :species})  — per-group summary"
+  ([] {:mark :pointrange :stat :summary})
+  ([opts] (merge {:mark :pointrange :stat :summary} opts)))
 
 (defn errorbar
   "Errorbar mark — vertical error bars at (x, y) positions.

@@ -42,6 +42,7 @@
               (for [{:keys [color xs ys sizes alphas shapes row-indices color-values]} (:points stat)]
                 (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
                          :xs (vec xs) :ys (vec ys)}
+                  color (assoc :color-label (str color))
                   (and numeric-color? color-values)
                   (assoc :colors (vec (map (fn [v]
                                              (let [t (if (and c-range (pos? c-range))
@@ -78,6 +79,14 @@
                (for [{:keys [color xs ys]} pts]
                  {:color (resolve-color all-colors color (:fixed-color view) cfg)
                   :xs (vec xs) :ys (vec ys)}))))})
+
+(defmethod extract-layer :step [view stat all-colors cfg]
+  {:mark :step
+   :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
+   :groups (vec
+            (for [{:keys [color xs ys]} (:points stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :xs (vec xs) :ys (vec ys)}))})
 
 (defmethod extract-layer :rect [view stat all-colors cfg]
   (if (:bars stat)
@@ -210,6 +219,27 @@
                              :densities (vec (:densities v))}
                       (:color v) (assoc :color-category (:color v)))))
      :categories (vec categories)}))
+
+(defmethod extract-layer :rug [view stat all-colors cfg]
+  {:mark :rug
+   :style {:length (or (:length view) 6)
+           :stroke-width (or (:fixed-size view) 1.0)
+           :opacity (or (:fixed-alpha view) 0.5)}
+   :side (or (:side view) :x)
+   :groups (vec
+            (for [{:keys [color xs ys]} (:points stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :xs (vec xs) :ys (vec ys)}))})
+
+(defmethod extract-layer :pointrange [view stat all-colors cfg]
+  {:mark :pointrange
+   :style {:radius (or (:fixed-size view) 3.5)
+           :stroke-width 1.5}
+   :groups (vec
+            (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :xs (vec xs) :ys (vec ys)
+               :ymins (vec ymins) :ymaxs (vec ymaxs)}))})
 
 (defmethod extract-layer :default [view stat all-colors cfg]
   (extract-layer (assoc view :mark :point) stat all-colors cfg))
@@ -557,6 +587,22 @@
 
 ;; ---- Main Entry Point ----
 
+(def ^:private polar-supported-marks
+  "Marks that render correctly under polar coordinates."
+  #{:point :bar :rect :text :rug})
+
+(defn- validate-polar-marks
+  "Check that all resolved views use marks compatible with polar coordinates.
+   Throws an ex-info with details when an unsupported mark is found."
+  [resolved-views coord-type]
+  (when (= coord-type :polar)
+    (doseq [v resolved-views
+            :let [m (:mark v)]
+            :when (and m (not (polar-supported-marks m)))]
+      (throw (ex-info (str "Mark :" (name m) " is not supported with polar coordinates. "
+                           "Supported polar marks: " (sort polar-supported-marks))
+                      {:mark m :supported polar-supported-marks})))))
+
 (defn resolve-sketch
   "Resolve views + options into a sketch — a fully resolved plot specification
    with data-space geometry, domains, ticks, legend, and layout info.
@@ -580,6 +626,8 @@
          x-scale-spec (or (:x-scale (first non-ann-views)) {:type :linear})
          y-scale-spec (or (:y-scale (first non-ann-views)) {:type :linear})
          coord-type (or (:coord (first non-ann-views)) :cartesian)
+         ;; Polar+mark compatibility check
+         _ (validate-polar-marks resolved-all coord-type)
 
          ;; Annotations
          annotations (vec (for [a ann-views]
