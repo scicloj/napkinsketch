@@ -229,7 +229,7 @@
 
 ;; ## Continuous Color
 ;;
-;; When `:color` maps to a numeric column, napkinsketch uses a
+;; When `:color` maps to a numeric column, Napkinsketch uses a
 ;; viridis gradient instead of discrete palette colors.
 
 (-> iris

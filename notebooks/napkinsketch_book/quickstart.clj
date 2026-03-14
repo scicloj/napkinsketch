@@ -1,10 +1,10 @@
 ;; # Quickstart
 ;;
-;; A minimal introduction to napkinsketch — composable plotting in Clojure.
+;; A minimal introduction to Napkinsketch — composable plotting in Clojure.
 
 ;; ## Setup
 ;;
-;; Add napkinsketch to your `deps.edn`:
+;; Add Napkinsketch to your `deps.edn`:
 ;;
 ;; ```clojure
 ;; {:deps {org.scicloj/napkinsketch {:mvn/version "..."}}}
@@ -22,7 +22,7 @@
 ;;
 ;; We use the classic iris dataset throughout these examples.
 ;; Note `{:key-fn keyword}` — this converts CSV column names to
-;; keywords, which napkinsketch requires for column references.
+;; keywords, which Napkinsketch requires for column references.
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                        {:key-fn keyword}))
@@ -33,7 +33,7 @@
 
 ;; ## Two Usage Styles
 ;;
-;; napkinsketch supports two equivalent styles for building plots.
+;; Napkinsketch supports two equivalent styles for building plots.
 ;;
 ;; **Pipeline style** — compositional, good for exploration and
 ;; multi-layer plots:

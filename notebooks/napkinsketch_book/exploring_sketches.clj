@@ -1,6 +1,6 @@
 ;; # Exploring Sketches
 ;;
-;; When you call `sk/plot`, napkinsketch builds an intermediate data
+;; When you call `sk/plot`, Napkinsketch builds an intermediate data
 ;; structure called a **sketch** before rendering anything. This notebook
 ;; walks through the sketch step by step, building intuition for the
 ;; data model by looking at what `sk/sketch` produces for different plots.

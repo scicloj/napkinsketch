@@ -1,6 +1,6 @@
 ;; # Glossary
 ;;
-;; Key terms used throughout napkinsketch, with brief definitions
+;; Key terms used throughout Napkinsketch, with brief definitions
 ;; and code examples.
 
 (ns napkinsketch-book.glossary

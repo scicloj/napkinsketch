@@ -1,6 +1,6 @@
 ;; # Inference Rules
 ;;
-;; napkinsketch infers many parameters automatically so you can write
+;; Napkinsketch infers many parameters automatically so you can write
 ;; less and get reasonable defaults. This notebook catalogs every
 ;; inference rule, shows what triggers it, and demonstrates the
 ;; before/after with concrete examples.
@@ -19,7 +19,7 @@
 ;; (-> iris (sk/view :sepal_length) (sk/lay (sk/point)) sk/plot)
 ;; ```
 ;;
-;; napkinsketch fills in many blanks: What mark? What statistic?
+;; Napkinsketch fills in many blanks: What mark? What statistic?
 ;; What domains? What axis labels? What colors? These are
 ;; **inference rules** — defaults derived from the data and context.
 
@@ -94,7 +94,7 @@ graph TD
 
 ;; ## Mark and Stat Inference
 ;;
-;; When you don't specify a mark, napkinsketch infers one from
+;; When you don't specify a mark, Napkinsketch infers one from
 ;; the column types and structure.
 ;;
 ;; | x column | y column | Inferred mark | Inferred stat |

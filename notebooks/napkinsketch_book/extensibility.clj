@@ -1,6 +1,6 @@
 ;; # Extensibility
 ;;
-;; napkinsketch is built on multimethods — open dispatch points that let
+;; Napkinsketch is built on multimethods — open dispatch points that let
 ;; you add new marks, statistics, scales, coordinate systems, and
 ;; output formats without modifying the core library.
 ;;

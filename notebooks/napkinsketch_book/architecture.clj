@@ -1,6 +1,6 @@
 ;; # Architecture
 ;;
-;; napkinsketch transforms data into plots through a four-stage pipeline.
+;; Napkinsketch transforms data into plots through a four-stage pipeline.
 ;; This notebook documents the pipeline, the key data models, and
 ;; how the codebase is organized.
 
