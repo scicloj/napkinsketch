@@ -5,6 +5,7 @@
             [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
             [scicloj.napkinsketch.impl.render :as render-impl]
+            [scicloj.napkinsketch.render.membrane :as membrane]
             [scicloj.napkinsketch.render.svg :as svg]))
 
 ;; ---- Compositional API ----
@@ -282,6 +283,19 @@
    (sketch views {:width 800 :title \"My Plot\"})"
   ([views] (sketch-impl/resolve-sketch views))
   ([views opts] (sketch-impl/resolve-sketch views opts)))
+
+(defn sketch->membrane
+  "Convert a sketch into a membrane drawable tree.
+   (sketch->membrane (sketch views))"
+  [sketch & {:as opts}]
+  (membrane/sketch->membrane sketch opts))
+
+(defn membrane->figure
+  "Convert a membrane drawable tree into a figure for the given format.
+   Dispatches on format keyword; :svg is always available.
+   (membrane->figure (sketch->membrane (sketch views)) :svg {})"
+  [membrane-tree format opts]
+  (render-impl/membrane->figure membrane-tree format opts))
 
 (defn render-figure
   "Render a sketch into a figure for the given format.

@@ -9,9 +9,7 @@
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
    [scicloj.napkinsketch.api :as sk]
-   [scicloj.napkinsketch.impl.sketch-schema :as ss]
-   [scicloj.napkinsketch.render.membrane :as membrane]
-   [scicloj.napkinsketch.render.svg :as svg]))
+   [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
 ;; ## Pipeline Overview
 
@@ -89,27 +87,26 @@ graph LR
 
 ;; ### Membrane
 ;;
-;; `sketch->membrane` converts the sketch into a tree of membrane
+;; `sk/sketch->membrane` converts the sketch into a tree of membrane
 ;; drawing primitives positioned in pixel space. This is the
 ;; format-agnostic intermediate representation — `Translate`,
 ;; `WithColor`, `WithStyle`, `RoundedRectangle`, `Label`, `Path`, etc.
 
-(def trace-membrane (membrane/sketch->membrane trace-sketch))
+(def trace-membrane (sk/sketch->membrane trace-sketch))
 
 (kind/pprint trace-membrane)
 
 (kind/test-last [(fn [v] (and (vector? v) (pos? (count v))))])
 
 ;; ### Figure
-;;
-;; `membrane->svg` walks the membrane tree and emits SVG hiccup.
+;; `sk/membrane->figure` converts the membrane tree into a figure.
+;; The `:svg` format produces SVG hiccup.
 ;; `wrap-svg` adds the root `<svg>` element.
 
 (def trace-figure
-  (let [body (svg/membrane->svg trace-membrane)]
-    (svg/wrap-svg (:total-width trace-sketch)
-                  (:total-height trace-sketch)
-                  body)))
+  (sk/membrane->figure trace-membrane :svg
+                       {:total-width (:total-width trace-sketch)
+                        :total-height (:total-height trace-sketch)}))
 
 (kind/pprint trace-figure)
 

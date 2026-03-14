@@ -4,12 +4,11 @@
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
-  [scicloj.napkinsketch.render.membrane :as membrane]
   [clojure.test :refer [deftest is]]))
 
 
 (def
- v2_l13
+ v2_l12
  (def
   iris
   (tc/dataset
@@ -18,7 +17,7 @@
 
 
 (def
- v4_l22
+ v4_l21
  (def
   views
   (->
@@ -28,89 +27,89 @@
 
 
 (def
- v5_l27
+ v5_l26
  (kind/pprint
   (mapv
-   (fn* [p1__82121#] (select-keys p1__82121# [:x :y :mark :color]))
+   (fn* [p1__87777#] (select-keys p1__87777# [:x :y :mark :color]))
    views)))
 
 
 (deftest
- t6_l30
- (is ((fn [v] (and (vector? v) (= 1 (count v)))) v5_l27)))
+ t6_l29
+ (is ((fn [v] (and (vector? v) (= 1 (count v)))) v5_l26)))
 
 
-(def v8_l39 (sk/point {:color :species, :alpha 0.5}))
+(def v8_l38 (sk/point {:color :species, :alpha 0.5}))
 
 
 (deftest
- t9_l41
+ t9_l40
  (is
-  ((fn [m] (and (= :point (:mark m)) (= :species (:color m)))) v8_l39)))
+  ((fn [m] (and (= :point (:mark m)) (= :species (:color m)))) v8_l38)))
 
 
 (def
- v11_l68
+ v11_l67
  (let
   [s (sk/sketch views) layer (first (:layers (first (:panels s))))]
   (select-keys layer [:mark :style])))
 
 
-(deftest t12_l72 (is ((fn [m] (= :point (:mark m))) v11_l68)))
+(deftest t12_l71 (is ((fn [m] (= :point (:mark m))) v11_l67)))
 
 
-(def v14_l83 (def my-sketch (sk/sketch views)))
+(def v14_l82 (def my-sketch (sk/sketch views)))
 
 
-(def v15_l85 (sort (keys my-sketch)))
+(def v15_l84 (sort (keys my-sketch)))
 
 
-(deftest t16_l87 (is ((fn [ks] (every? keyword? ks)) v15_l85)))
+(deftest t16_l86 (is ((fn [ks] (every? keyword? ks)) v15_l84)))
 
 
-(def v18_l95 (sort (keys (first (:panels my-sketch)))))
+(def v18_l94 (sort (keys (first (:panels my-sketch)))))
 
 
 (deftest
- t19_l97
- (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v18_l95)))
+ t19_l96
+ (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v18_l94)))
 
 
 (def
- v21_l106
+ v21_l105
  (let
   [p (first (:panels my-sketch))]
   {:x-domain (:x-domain p), :y-domain (:y-domain p)}))
 
 
 (deftest
- t22_l110
+ t22_l109
  (is
   ((fn
     [m]
     (and (= 2 (count (:x-domain m))) (number? (first (:x-domain m)))))
-   v21_l106)))
+   v21_l105)))
 
 
-(def v24_l152 (def my-membrane (membrane/sketch->membrane my-sketch)))
+(def v24_l151 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v25_l154 (vector? my-membrane))
+(def v25_l153 (vector? my-membrane))
 
 
-(deftest t26_l156 (is ((fn [v] (true? v)) v25_l154)))
+(deftest t26_l155 (is ((fn [v] (true? v)) v25_l153)))
 
 
-(def v27_l158 (count my-membrane))
+(def v27_l157 (count my-membrane))
 
 
-(deftest t28_l160 (is ((fn [n] (pos? n)) v27_l158)))
+(deftest t28_l159 (is ((fn [n] (pos? n)) v27_l157)))
 
 
-(def v30_l170 (def my-figure (sk/render-figure my-sketch :svg {})))
+(def v30_l169 (def my-figure (sk/render-figure my-sketch :svg {})))
 
 
-(def v31_l172 (first my-figure))
+(def v31_l171 (first my-figure))
 
 
-(deftest t32_l174 (is ((fn [v] (= :svg v)) v31_l172)))
+(deftest t32_l173 (is ((fn [v] (= :svg v)) v31_l171)))

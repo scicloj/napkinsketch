@@ -210,14 +210,11 @@
            (.addEventListener svg "mouseout" hide!)
            (.addEventListener svg "mousemove" move!))))
 
-(defmethod render/render-figure :svg [sketch _ opts]
-  (let [{:keys [total-width total-height]} sketch
-        tooltip? (:tooltip opts)
-        membrane-tree (membrane/sketch->membrane sketch
-                                                 :tooltip tooltip?)
+(defmethod render/membrane->figure :svg [membrane-tree _ opts]
+  (let [{:keys [total-width total-height tooltip]} opts
         svg-body (membrane->svg membrane-tree)
         svg (wrap-svg total-width total-height svg-body)]
-    (if tooltip?
+    (if tooltip
       (let [div-id (str "nsk-" (random-uuid))]
         (kind/hiccup
          [:div {:id div-id
@@ -226,6 +223,14 @@
           svg
           (tooltip-script div-id)]))
       (kind/hiccup svg))))
+
+(defmethod render/render-figure :svg [sketch _ opts]
+  (let [membrane-tree (membrane/sketch->membrane sketch
+                                                 :tooltip (:tooltip opts))]
+    (render/membrane->figure membrane-tree :svg
+                             (assoc opts
+                                    :total-width (:total-width sketch)
+                                    :total-height (:total-height sketch)))))
 
 ;; ---- SVG inspection ----
 

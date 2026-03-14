@@ -18,9 +18,8 @@
    [scicloj.napkinsketch.render.mark :as mark]
    [scicloj.napkinsketch.impl.scale :as scale]
    [scicloj.napkinsketch.impl.coord :as coord]
-   [scicloj.napkinsketch.impl.render :as render]
-   [scicloj.napkinsketch.render.membrane :as membrane]
-   [scicloj.napkinsketch.render.svg :as svg]))
+   [scicloj.napkinsketch.impl.render :as render]))
+
 
 ;; ## Overview
 ;;
@@ -32,11 +31,15 @@
 ;;                                              ↓
 ;;                                           sketch
 ;;                                              ↓
-;;                               render-layer (membrane path)
-;;                                    or
-;;                               render-figure (direct path)
+;;                          render-figure (orchestrates full path)
 ;;                                              ↓
-;;                                           figure
+;;                              ┌───────────────┴───────────────┐
+;;                     membrane path                     direct path
+;;                  sketch→membrane                   sketch→figure
+;;                        ↓
+;;                  membrane→figure
+;;                        ↓
+;;                      figure                           figure
 ;; ```
 ;;
 ;; | Multimethod | Namespace | Dispatches on | Purpose |
@@ -44,9 +47,11 @@
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
 ;; | `extract-layer` | `impl/sketch.clj` | `:mark` key | Convert stat result → sketch layer descriptor |
 ;; | `render-layer` | `render/mark.clj` | `:mark` key | Render sketch layer → membrane drawables |
-;; | `render-figure` | `impl/render.clj` | format keyword | Render sketch → figure (:svg, etc.) |
+;; | `render-figure` | `impl/render.clj` | format keyword | Orchestrate sketch → figure (full path) |
+;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert membrane tree → figure |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
+
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
@@ -188,21 +193,19 @@
 ;;   ...)
 ;; ```
 
+
 ;; ## `render-figure`
 ;;
-;; Renders a sketch into a final figure. This is the top-level
-;; extensibility point for output formats.
-;;
-;; | Dispatch value | Output |
-;; |:---------------|:-------|
-;; | `:svg` | SVG hiccup wrapped in `kind/hiccup` |
-;;
-;; Dispatch function: `(fn [sketch format opts] format)`
-;;
-;; The `:svg` renderer goes through the membrane path:
-;; `sketch → membrane → SVG hiccup`.
+;; Orchestrates the full sketch → figure path. The `:svg` implementation
+;; goes through the membrane path: `sketch → membrane → figure`.
 ;; Other renderers can skip membrane and go directly from sketch
 ;; to their target format.
+;;
+;; | Dispatch value | Path |
+;; |:---------------|:-----|
+;; | `:svg` | sketch → membrane → `membrane->figure :svg` |
+;;
+;; Dispatch function: `(fn [sketch format opts] format)`
 
 ;; Using `render-figure` directly:
 
@@ -223,10 +226,10 @@
 
 (kind/test-last [(fn [v] (true? v))])
 
-;; ### How to extend: add a new output format
+;; ### How to extend: add a new direct format
 ;;
-;; To add a Plotly renderer, create a new namespace and register
-;; a `defmethod`:
+;; To add a Plotly renderer that reads sketch data directly
+;; (no membrane needed), register a `render-figure` defmethod:
 ;;
 ;; ```clojure
 ;; (ns mylib.render.plotly
@@ -246,6 +249,54 @@
 ;; ```clojure
 ;; (require '[mylib.render.plotly])
 ;; (sk/plot views {:format :plotly})
+;; ```
+
+;; ## `membrane->figure`
+;;
+;; Converts a membrane drawable tree into a figure for a given format.
+;; This is the extensibility point for membrane-based output formats —
+;; formats that share the same drawable tree but walk it differently.
+;;
+;; | Dispatch value | Output |
+;; |:---------------|:-------|
+;; | `:svg` | SVG hiccup wrapped in `kind/hiccup` |
+;;
+;; Dispatch function: `(fn [membrane-tree format opts] format)`
+
+;; `sk/sketch->membrane` builds the tree, `sk/membrane->figure` converts it:
+
+(def my-membrane (sk/sketch->membrane my-sketch))
+
+(vector? my-membrane)
+
+(kind/test-last [(fn [v] (true? v))])
+
+(first (sk/membrane->figure my-membrane :svg
+                             {:total-width (:total-width my-sketch)
+                              :total-height (:total-height my-sketch)}))
+
+(kind/test-last [(fn [v] (= :svg v))])
+
+;; ### How to extend: add a new membrane-based format
+;;
+;; To add a format that reuses the membrane tree (e.g., Canvas, PDF),
+;; register a `membrane->figure` defmethod:
+;;
+;; ```clojure
+;; (ns mylib.render.canvas
+;;   (:require [scicloj.napkinsketch.impl.render :as render]
+;;             [scicloj.napkinsketch.render.membrane :as membrane]))
+;;
+;; (defmethod render/membrane->figure :canvas [membrane-tree _ opts]
+;;   ;; Walk the same drawable tree, emit canvas draw calls
+;;   (canvas-walk membrane-tree))
+;;
+;; ;; Also register render-figure to orchestrate the full path:
+;; (defmethod render/render-figure :canvas [sketch _ opts]
+;;   (let [mt (membrane/sketch->membrane sketch)]
+;;     (render/membrane->figure mt :canvas
+;;                               {:total-width (:total-width sketch)
+;;                                :total-height (:total-height sketch)})))
 ;; ```
 
 ;; ## `make-scale`
@@ -288,32 +339,6 @@
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-;; ## The Membrane Path
-;;
-;; For the SVG renderer, the sketch goes through an intermediate
-;; membrane drawable tree before becoming SVG hiccup. The `sketch->membrane`
-;; function in `render/membrane.clj` builds this tree:
-
-(def my-membrane (membrane/sketch->membrane my-sketch))
-
-(vector? my-membrane)
-
-(kind/test-last [(fn [v] (true? v))])
-
-;; The membrane is a tree of drawables — `Translate`,
-;; `WithColor`, `RoundedRectangle`, `Label`, etc. The `membrane->svg`
-;; function walks this tree and emits SVG hiccup:
-
-(let [svg-body (svg/membrane->svg my-membrane)
-      svg (svg/wrap-svg (:total-width my-sketch) (:total-height my-sketch) svg-body)]
-  (first svg))
-
-(kind/test-last [(fn [v] (= :svg v))])
-
-;; This two-step process (sketch → membrane → SVG) means that adding
-;; a new membrane-based target (e.g., Canvas, PDF) only requires writing
-;; a new membrane walker — the membrane construction is shared.
-
 ;; ## Summary
 ;;
 ;; | To add... | Extend... |
@@ -321,6 +346,6 @@
 ;; | A new statistical transform | `compute-stat` |
 ;; | A new mark type | `extract-layer` + `render-layer` |
 ;; | A new output format (direct) | `render-figure` |
-;; | A new output format (membrane-based) | `render-figure` + membrane walker |
+;; | A new output format (membrane-based) | `membrane->figure` + `render-figure` |
 ;; | A new scale type | `make-scale` |
 ;; | A new coordinate system | `make-coord` |

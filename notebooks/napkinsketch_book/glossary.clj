@@ -7,8 +7,7 @@
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
-   [scicloj.napkinsketch.api :as sk]
-   [scicloj.napkinsketch.render.membrane :as membrane]))
+   [scicloj.napkinsketch.api :as sk]))
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
@@ -149,7 +148,7 @@
 ;; sketch → membrane → SVG hiccup. Direct renderers (e.g., Plotly)
 ;; skip the membrane entirely.
 
-(def my-membrane (membrane/sketch->membrane my-sketch))
+(def my-membrane (sk/sketch->membrane my-sketch))
 
 (vector? my-membrane)
 
