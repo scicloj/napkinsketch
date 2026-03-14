@@ -134,7 +134,7 @@
         bg-rgba (defaults/hex->rgba (:bg defaults/theme))
         background (ui/with-color bg-rgba
                      (ui/with-style ::ui/style-fill
-                       (ui/rectangle pw ph)))
+                       (ui/translate m m (ui/rectangle (- pw m m) (- ph m m)))))
 
         ;; Grid — polar gets circles + spokes; cartesian/flip get tick-aligned lines
         grid (if (= coord-type :polar)

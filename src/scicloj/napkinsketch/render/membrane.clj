@@ -66,17 +66,17 @@
 
 (defn- render-x-label
   "Render x-axis label centered below the plot area."
-  [label total-w y-pos]
+  [label center-x y-pos]
   (let [fsize (:label-font-size defaults/defaults)]
-    (ui/translate (/ total-w 2.0) y-pos
+    (ui/translate (- center-x (/ (* (count label) fsize) 7.0)) y-pos
                   (ui/with-color [0.2 0.2 0.2 1.0]
                     (ui/label label (ui/font nil fsize))))))
 
 (defn- render-y-label
   "Render y-axis label. Uses a Rotate to place vertically."
-  [label total-h x-pos]
+  [label center-y x-pos]
   (let [fsize (:label-font-size defaults/defaults)
-        cy (/ total-h 2.0)]
+        cy center-y]
     (ui/translate x-pos cy
                   (membrane.ui.Rotate. -90
                                        (ui/with-color [0.2 0.2 0.2 1.0]
@@ -159,10 +159,10 @@
         [(render-title title total-width)])
       ;; Y-axis label
       (when y-label
-        [(render-y-label y-label total-height 12)])
+        [(render-y-label y-label (+ title-pad strip-h (/ ph 2.0)) 12)])
       ;; X-axis label
       (when x-label
-        [(render-x-label x-label total-width (- total-height 3))])
+        [(render-x-label x-label (+ y-label-pad (/ pw 2.0)) (- total-height x-label-pad -2))])
       ;; Legend
       (when legend
         (render-legend-from-sketch legend
