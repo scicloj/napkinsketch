@@ -1,18 +1,18 @@
-{"Tutorials" ["quickstart"]
- "How-to Guides" ["cookbook"
-                   "customization"
-                   "faceting"]
- "Reference" ["scatter"
-               "distributions"
-               "ranking"
-               "evolution"
-               "relationships"
-               "polar"
-               "api_reference"
-               "glossary"]
- "Explanation" ["composability"
-                "inference_rules"
-                "exploring_sketches"
-                "architecture"
-                "extensibility"
-                "edge_cases"]}
+{"🚀 Getting Started" ["quickstart"]
+ "💡 Core Concepts" ["composability"
+                      "inference_rules"
+                      "glossary"]
+ "📊 Chart Types" ["scatter"
+                    "distributions"
+                    "ranking"
+                    "evolution"
+                    "relationships"
+                    "polar"]
+ "🍳 How-to Guides" ["cookbook"
+                      "customization"
+                      "faceting"]
+ "📖 Reference" ["api_reference"]
+ "🔬 Internals" ["exploring_sketches"
+                  "architecture"
+                  "extensibility"
+                  "edge_cases"]}
