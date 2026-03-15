@@ -1,7 +1,7 @@
 ;; # Customization
 ;;
-;; How to customize plots: dimensions, labels, titles, scales,
-;; palettes, themes, interactivity, and legend placement.
+;; How to customize plots: dimensions, labels, scales, mark styling,
+;; annotations, palettes, themes, legend placement, and interactivity.
 
 (ns napkinsketch-book.customization
   (:require
@@ -12,7 +12,7 @@
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
 
-;; ## Custom Width and Height
+;; ## Dimensions
 
 ;; A wide, short plot.
 
@@ -51,7 +51,20 @@
                            (and (= 150 (:points s))
                                 (some #{"Iris Sepal Measurements"} (:texts s)))))])
 
-;; ## Log Scale
+;; `sk/labs` sets labels in the pipeline — equivalent to passing
+;; `:title`, `:x-label`, `:y-label` in `sk/plot` opts.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/labs {:title "Pipeline Labels" :x "Length" :y "Width"})
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"Pipeline Labels"} (:texts s)))))])
+
+;; ## Scales
 
 ;; Use a log scale for data spanning orders of magnitude.
 
@@ -82,8 +95,6 @@
                            (and (= 1 (:panels s))
                                 (= 49 (:points s)))))])
 
-;; ## Fixed Scale Domain
-
 ;; Lock the y-axis to a specific range.
 
 (-> iris
@@ -96,7 +107,7 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-;; ## Direct Mark Styling
+;; ## Mark Styling
 
 ;; Pass `:alpha` and `:size` directly to mark constructors.
 
@@ -119,34 +130,35 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:polygons s))))])
 
-;; ## Value Bar
+;; ## Annotations
 
-;; Pre-computed values (no counting), using `value-bar`.
+;; Add reference lines and shaded bands to highlight regions of interest.
 
-(def summary
-  (tc/dataset {:category [:a :b :c :d]
-               :value [42 28 35 19]}))
+;; Horizontal and vertical reference lines.
 
-(-> summary
-    (sk/view [[:category :value]])
-    (sk/lay (sk/value-bar))
-    (sk/plot {:title "Pre-computed Values"}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 4 (:polygons s)))))])
-
-;; ## Value Bars Flipped
-
-(-> summary
-    (sk/view [[:category :value]])
-    (sk/lay (sk/value-bar))
-    (sk/coord :flip)
-    (sk/plot {:title "Horizontal Value Bars"}))
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species})
+            (sk/rule-h 3.0)
+            (sk/rule-v 6.0))
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 4 (:polygons s)))))])
+                           (and (= 150 (:points s))
+                                (= 2 (:lines s)))))])
+
+;; Shaded bands use a default opacity of 0.15.
+;; Pass `{:alpha …}` to override.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species})
+            (sk/band-v 5.5 6.5)
+            (sk/band-h 3.0 3.5 {:alpha 0.3}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 150 (:points s))))])
 
 ;; ## Custom Palette
 ;;
