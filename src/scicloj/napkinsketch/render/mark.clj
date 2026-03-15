@@ -448,29 +448,34 @@
 
 ;; ---- Ridgeline ----
 
+(defn ridgeline-positions
+  "Compute ridgeline band positions for a list of categories.
+   Returns {category-name -> {:mid pixel-y :bw band-width}}.
+   Used by both the ridgeline renderer and panel tick label placement."
+  [categories panel-height margin]
+  (let [n-cats (count categories)
+        m (or margin 25)
+        ph (or panel-height 400)
+        overlap 1.5
+        usable (- (double ph) (* 2.0 m))
+        bw (/ usable (+ (double n-cats) (* 2.0 overlap) -1.0))
+        pad (* bw (- overlap 0.5))]
+    (into {} (map-indexed
+              (fn [i cat]
+                [cat {:mid (+ m pad (* bw (+ (double i) 0.5)))
+                      :bw bw}])
+              categories))))
+
 (defmethod layer->membrane :ridgeline [layer ctx]
   (let [{:keys [style ridges categories]} layer
         {:keys [sx sy margin panel-height]} ctx
         {:keys [opacity]} style
-        n-cats (count categories)
         m (or margin 25)
-        ;; Band positions use panel-height because the categorical axis
-        ;; maps to SVG y-space (points are [py, px] — px is the y-coordinate).
         ph (or panel-height 400)
-        ;; Overlap factor: each ridge can extend this × band width
+        cat-positions (ridgeline-positions categories ph m)
+        ;; Overlap factor and normalization
         overlap 1.5
-        ;; Compute band positions with padding for curve amplitude.
-        ;; Padding = bw * (overlap - 0.5) on each side ensures the peak
-        ;; of the tallest curve exactly reaches the data area edge.
-        ;; Total = n*bw + 2*bw*(overlap-0.5) = bw*(n + 2*overlap - 1)
-        usable (- (double ph) (* 2.0 m))
-        bw (/ usable (+ (double n-cats) (* 2.0 overlap) -1.0))
-        pad (* bw (- overlap 0.5))
-        cat-positions (into {} (map-indexed
-                                (fn [i cat]
-                                  [cat {:mid (+ m pad (* bw (+ (double i) 0.5)))
-                                        :bw bw}])
-                                categories))
+        bw (:bw (first (vals cat-positions)))
         ;; Max density across all ridges for normalization
         max-d (reduce max 0.001 (mapcat :densities ridges))
         norm (* bw overlap (/ 1.0 max-d))

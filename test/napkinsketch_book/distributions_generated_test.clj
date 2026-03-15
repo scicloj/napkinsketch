@@ -190,7 +190,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__75654#] (= "Distribution of Total Bill" p1__75654#))
+       (fn* [p1__96120#] (= "Distribution of Total Bill" p1__96120#))
        (:texts s)))))
    v30_l136)))
 
@@ -305,7 +305,7 @@
    box-layer
    (first
     (filter
-     (fn* [p1__75655#] (= :boxplot (:mark p1__75655#)))
+     (fn* [p1__96121#] (= :boxplot (:mark p1__96121#)))
      (:layers panel)))
    cats
    (:color-categories box-layer)]
@@ -385,7 +385,7 @@
    viol-layer
    (first
     (filter
-     (fn* [p1__75656#] (= :violin (:mark p1__75656#)))
+     (fn* [p1__96122#] (= :violin (:mark p1__96122#)))
      (:layers panel)))
    cats
    (:color-categories viol-layer)]
@@ -440,7 +440,7 @@
  v69_l325
  (->
   iris
-  (sk/view [[:species :petal_length]])
+  (sk/view [[:species :sepal_length]])
   (sk/lay (sk/ridgeline {:color :species}))
   sk/plot))
 

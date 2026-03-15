@@ -323,7 +323,7 @@
 ;; Map color to the same categorical column for distinct curves.
 
 (-> iris
-    (sk/view [[:species :petal_length]])
+    (sk/view [[:species :sepal_length]])
     (sk/lay (sk/ridgeline {:color :species}))
     sk/plot)
 
