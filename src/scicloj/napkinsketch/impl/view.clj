@@ -161,6 +161,14 @@
   ([] {:mark :rect :stat :count :position :stack})
   ([opts] (merge {:mark :rect :stat :count :position :stack} opts)))
 
+(defn stacked-bar-fill
+  "Percentage stacked bar mark (100% stacked bars).
+   Each category sums to 1.0, showing proportions instead of counts.
+   (stacked-bar-fill)                     — 100% stacked bars
+   (stacked-bar-fill {:color :smoker})    — colored 100% stacked bars"
+  ([] {:mark :rect :stat :count :position :fill})
+  ([opts] (merge {:mark :rect :stat :count :position :fill} opts)))
+
 (defn value-bar
   "Value bar mark (categorical x, numeric y, no counting).
    (value-bar)                    — default
@@ -266,6 +274,15 @@
    (density2d {:kde2d-grid 40})    — finer grid resolution"
   ([] {:mark :tile :stat :kde2d})
   ([opts] (merge {:mark :tile :stat :kde2d} opts)))
+
+(defn contour
+  "Contour mark — iso-density contour lines from 2D KDE.
+   Uses marching squares on the KDE2D grid to trace iso-level polylines.
+   (contour)                       — default 5 levels
+   (contour {:levels 8})           — custom number of iso-levels
+   (contour {:kde2d-grid 40})      — finer grid resolution"
+  ([] {:mark :contour :stat :kde2d})
+  ([opts] (merge {:mark :contour :stat :kde2d} opts)))
 
 (defn ridgeline
   "Ridgeline mark — vertically stacked KDE density curves per category.

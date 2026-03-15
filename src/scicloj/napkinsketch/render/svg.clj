@@ -212,18 +212,86 @@
            (.addEventListener svg "mouseout" hide!)
            (.addEventListener svg "mousemove" move!))))
 
+(def ^:private brush-css
+  ".nsk-brush-sel { fill: rgba(100,100,255,0.2); stroke: #66f; stroke-width: 1; }")
+
+(defn- brush-script
+  "Scittle script for drag-to-select brush interaction on data points.
+   Drag creates a selection rectangle; points inside are highlighted,
+   others dimmed. Tiny drag (< 3px) resets all to default opacity.
+   Cross-panel: selection by data-row-idx works across all panels."
+  [div-id]
+  (list 'let ['svg (list '.querySelector (list '.getElementById 'js/document div-id) "svg")
+              'pts '(.querySelectorAll svg "[data-row-idx]")
+              'state '(atom {:drag false :x0 0 :y0 0 :sel nil})]
+        '(.addEventListener svg "mousedown"
+                            (fn [e]
+                              (let [r (.getBoundingClientRect svg)
+                                    x0 (- (.-clientX e) (.-left r))
+                                    y0 (- (.-clientY e) (.-top r))
+                                    sel (.createElementNS js/document "http://www.w3.org/2000/svg" "rect")]
+                                (.setAttribute sel "class" "nsk-brush-sel")
+                                (.appendChild svg sel)
+                                (reset! state {:drag true :x0 x0 :y0 y0 :sel sel}))))
+        '(.addEventListener svg "mousemove"
+                            (fn [e]
+                              (when (:drag @state)
+                                (let [{:keys [x0 y0 sel]} @state
+                                      r (.getBoundingClientRect svg)
+                                      x1 (- (.-clientX e) (.-left r))
+                                      y1 (- (.-clientY e) (.-top r))]
+                                  (.setAttribute sel "x" (min x0 x1))
+                                  (.setAttribute sel "y" (min y0 y1))
+                                  (.setAttribute sel "width" (js/Math.abs (- x1 x0)))
+                                  (.setAttribute sel "height" (js/Math.abs (- y1 y0)))))))
+        '(.addEventListener svg "mouseup"
+                            (fn [e]
+                              (when (:drag @state)
+                                (let [{:keys [sel]} @state
+                                      _ (swap! state assoc :drag false)
+                                      bx (js/parseFloat (.getAttribute sel "x"))
+                                      by (js/parseFloat (.getAttribute sel "y"))
+                                      bw (js/parseFloat (.getAttribute sel "width"))
+                                      bh (js/parseFloat (.getAttribute sel "height"))]
+                                  (.removeChild svg sel)
+                                  (if (and (< bw 3) (< bh 3))
+                                    (.forEach pts (fn [p] (.setAttribute p "opacity" "0.7")))
+                                    (let [sr (.getBoundingClientRect svg)
+                                          selected (atom #{})]
+                                      (.forEach pts
+                                                (fn [p]
+                                                  (let [pr (.getBoundingClientRect p)
+                                                        cx (- (+ (.-left pr) (/ (.-width pr) 2)) (.-left sr))
+                                                        cy (- (+ (.-top pr) (/ (.-height pr) 2)) (.-top sr))]
+                                                    (when (and (>= cx bx) (<= cx (+ bx bw))
+                                                               (>= cy by) (<= cy (+ by bh)))
+                                                      (swap! selected conj (.getAttribute p "data-row-idx"))))))
+                                      (if (zero? (count @selected))
+                                        (.forEach pts (fn [p] (.setAttribute p "opacity" "0.7")))
+                                        (.forEach pts
+                                                  (fn [p]
+                                                    (if (contains? @selected (.getAttribute p "data-row-idx"))
+                                                      (.setAttribute p "opacity" "1.0")
+                                                      (.setAttribute p "opacity" "0.15")))))))))))))
+
 (defmethod render/membrane->figure :svg [membrane-tree _ opts]
-  (let [{:keys [total-width total-height tooltip]} opts
+  (let [{:keys [total-width total-height tooltip brush]} opts
         svg-body (membrane->svg membrane-tree)
-        svg (wrap-svg total-width total-height svg-body)]
-    (if tooltip
-      (let [div-id (str "nsk-" (random-uuid))]
+        svg (wrap-svg total-width total-height svg-body)
+        interactive? (or tooltip brush)]
+    (if interactive?
+      (let [div-id (str "nsk-" (random-uuid))
+            css-parts (cond-> []
+                        tooltip (conj tooltip-css)
+                        brush (conj brush-css))]
         (kind/hiccup
-         [:div {:id div-id
-                :style {:position "relative" :display "inline-block"}}
-          [:style tooltip-css]
-          svg
-          (tooltip-script div-id)]))
+         (into [:div {:id div-id
+                      :style {:position "relative" :display "inline-block"}}
+                [:style (apply str css-parts)]
+                svg]
+               (cond-> []
+                 tooltip (conj (tooltip-script div-id))
+                 brush (conj (brush-script div-id))))))
       (kind/hiccup svg))))
 
 (defmethod render/sketch->figure :svg [sketch _ opts]
@@ -260,54 +328,59 @@
    :lines   — number of non-grid polylines (data lines, annotations, whiskers)
    :polygons — number of filled polygons (bars, histogram bins, areas, violins)
    :tiles   — number of heatmap tile rectangles (small rects without border-radius)
-   :texts   — vector of all text content strings"
-  [svg]
-  (let [attrs (when (and (vector? svg) (map? (second svg))) (second svg))
-        ;; Grid color from theme — used to filter grid polylines
-        grid-color (str "rgb(" (str/join ","
-                                         (mapv #(int (* 255 (double %)))
-                                               (take 3 (defaults/hex->rgba (:grid defaults/theme))))) ")")
-        sw (double defaults/legend-swatch-size)
-        rects (collect-elements svg :rect)
-        polylines (collect-elements svg :polyline)
-        polygons (collect-elements svg :polygon)
-        texts (collect-elements svg :text)
-        ;; Panels: large rects without border-radius (background fills)
-        panel-rects (filter #(let [a (second %)]
-                               (and (nil? (:rx a))
-                                    (number? (:width a))
-                                    (> (double (:width a)) 50)
-                                    (number? (:height a))
-                                    (> (double (:height a)) 50)))
-                            rects)
-        panel-set (set panel-rects)
-        ;; Points: rects with rx > 0, excluding legend swatches (known size)
-        legend-rects (filter #(let [a (second %)]
-                                (and (= sw (double (or (:width a) 0)))
-                                     (= sw (double (or (:height a) 0)))))
+   :texts   — vector of all text content strings
+
+   Accepts an optional theme map to detect grid-colored polylines correctly
+   when a custom theme is used."
+  ([svg] (svg-summary svg nil))
+  ([svg theme]
+   (let [attrs (when (and (vector? svg) (map? (second svg))) (second svg))
+         ;; Grid color from theme — used to filter grid polylines
+         grid-hex (:grid (or theme defaults/theme))
+         grid-color (str "rgb(" (str/join ","
+                                          (mapv #(int (* 255 (double %)))
+                                                (take 3 (defaults/hex->rgba grid-hex)))) ")")
+         sw (double defaults/legend-swatch-size)
+         rects (collect-elements svg :rect)
+         polylines (collect-elements svg :polyline)
+         polygons (collect-elements svg :polygon)
+         texts (collect-elements svg :text)
+         ;; Panels: large rects without border-radius (background fills)
+         panel-rects (filter #(let [a (second %)]
+                                (and (nil? (:rx a))
+                                     (number? (:width a))
+                                     (> (double (:width a)) 50)
+                                     (number? (:height a))
+                                     (> (double (:height a)) 50)))
                              rects)
-        legend-set (set legend-rects)
-        data-rects (filter #(let [a (second %)]
-                              (and (not (legend-set %))
-                                   (some? (:rx a))
-                                   (number? (:rx a))
-                                   (pos? (double (:rx a)))))
-                           rects)
-        ;; Tiles: small rects without rx that are not panels or legend swatches
-        tile-rects (filter #(let [a (second %)]
-                              (and (not (panel-set %))
-                                   (not (legend-set %))
-                                   (nil? (:rx a))
-                                   (number? (:width a))
-                                   (number? (:height a))))
-                           rects)
-        ;; Lines: filter out grid-colored polylines (theme-derived)
-        data-polylines (remove #(= grid-color (get (second %) :stroke)) polylines)]
-    {:width (:width attrs)
-     :height (:height attrs)
-     :panels (count panel-rects)
-     :points (count data-rects)
-     :lines (count data-polylines)
-     :polygons (count polygons)
-     :tiles (count tile-rects)
-     :texts (mapv last texts)}))
+         panel-set (set panel-rects)
+         ;; Points: rects with rx > 0, excluding legend swatches (known size)
+         legend-rects (filter #(let [a (second %)]
+                                 (and (= sw (double (or (:width a) 0)))
+                                      (= sw (double (or (:height a) 0)))))
+                              rects)
+         legend-set (set legend-rects)
+         data-rects (filter #(let [a (second %)]
+                               (and (not (legend-set %))
+                                    (some? (:rx a))
+                                    (number? (:rx a))
+                                    (pos? (double (:rx a)))))
+                            rects)
+         ;; Tiles: small rects without rx that are not panels or legend swatches
+         tile-rects (filter #(let [a (second %)]
+                               (and (not (panel-set %))
+                                    (not (legend-set %))
+                                    (nil? (:rx a))
+                                    (number? (:width a))
+                                    (number? (:height a))))
+                            rects)
+         ;; Lines: filter out grid-colored polylines (theme-derived)
+         data-polylines (remove #(= grid-color (get (second %) :stroke)) polylines)]
+     {:width (:width attrs)
+      :height (:height attrs)
+      :panels (count panel-rects)
+      :points (count data-rects)
+      :lines (count data-polylines)
+      :polygons (count polygons)
+      :tiles (count tile-rects)
+      :texts (mapv last texts)})))

@@ -260,6 +260,17 @@
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
+
+(kind/doc #'sk/stacked-bar-fill)
+
+;; 100% stacked bars — shows proportions instead of counts:
+
+(-> penguins (sk/view :island) (sk/lay (sk/stacked-bar-fill {:color :species})) sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
+
 (kind/doc #'sk/value-bar)
 
 ;; Categorical x, numeric y — no counting:
@@ -544,6 +555,30 @@
                            (and (= 150 (:points s))
                                 (pos? (:tiles s)))))])
 
+
+(kind/doc #'sk/contour)
+
+;; Iso-density contour lines from 2D KDE — shows density structure:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/contour))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:lines s)))))])
+
+;; Contour lines overlaid on scatter points:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:alpha 0.3}) (sk/contour {:levels 8}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (pos? (:lines s)))))])
 (kind/doc #'sk/ridgeline)
 
 ;; Stacked density curves per category — good for comparing distributions:
@@ -671,6 +706,38 @@
     (sk/plot {:tooltip true}))
 
 (kind/test-last [(fn [v] (= :div (first v)))])
+
+;; Brush selection — drag to highlight, click to reset:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:brush true}))
+
+(kind/test-last [(fn [v] (= :div (first v)))])
+
+;; Theme — customize background, grid color, font size:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:title "White Theme"
+              :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 10}}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 150 (:points s))))])
+
+;; Legend position — `:right` (default), `:bottom`, `:top`, `:none`:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:legend-position :bottom}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (< (:width s) 700))))])
+
 (kind/doc #'sk/sketch)
 
 ;; Returns the intermediate data structure instead of SVG.
@@ -861,7 +928,7 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
-                                (pos? (:polygons s)))))])
+                                (= 2 (:panels s)))))])
 
 (kind/doc #'sk/band-h)
 
@@ -875,7 +942,7 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
-                                (pos? (:polygons s)))))])
+                                (= 2 (:panels s)))))])
 
 
 ;; ## Utilities

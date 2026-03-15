@@ -62,6 +62,44 @@
                                          (ui/with-color title-color
                                            (ui/label label (ui/font nil fsize))))]))))))))
 
+(defn- render-legend-horizontal
+  "Render a horizontal legend (for :top or :bottom positioning).
+   Swatches and labels laid out left to right in a single row."
+  [legend x y]
+  (let [{:keys [title entries]} legend
+        fsize 10
+        title-color [0.2 0.2 0.2 1.0]
+        sw defaults/legend-swatch-size
+        sw-r (/ sw 2.0)]
+    (if (= :continuous (:type legend))
+      ;; For continuous legends, fall back to vertical rendering
+      (render-legend-from-sketch legend x y)
+      ;; Horizontal categorical swatches
+      (let [title-w (if title (* (count (defaults/fmt-name title)) 6) 0)
+            start-x (if title (+ title-w 8) 0)]
+        (vec
+         (concat
+          (when title
+            [(ui/translate x (- y 1)
+                           (ui/with-color title-color
+                             (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
+          (let [{:keys [elems]}
+                (reduce (fn [{:keys [elems cur-x]} {:keys [label color]}]
+                          (let [[cr cg cb _] color
+                                label-w (* (count label) 6)
+                                elem [(ui/translate (+ x cur-x) (- y 1)
+                                                    (ui/with-color [cr cg cb 1.0]
+                                                      (ui/with-style ::ui/style-fill
+                                                        (ui/rounded-rectangle sw sw sw-r))))
+                                      (ui/translate (+ x cur-x 10) (- y 1)
+                                                    (ui/with-color title-color
+                                                      (ui/label label (ui/font nil fsize))))]]
+                            {:elems (into elems elem)
+                             :cur-x (+ cur-x 10 label-w 12)}))
+                        {:elems [] :cur-x start-x}
+                        entries)]
+            elems)))))))
+
 ;; ---- Labels ----
 
 (defn- render-x-label
@@ -101,12 +139,22 @@
      :tooltip — when truthy, enables tooltip text generation on data marks."
   [sketch & {:keys [tooltip]}]
   (let [{:keys [margin total-width total-height panel-width panel-height
-                title x-label y-label legend panels layout grid]} sketch
-        {:keys [x-label-pad y-label-pad title-pad legend-w strip-h strip-w]} layout
+                title x-label y-label legend legend-position panels layout grid theme]} sketch
+        {:keys [x-label-pad y-label-pad title-pad legend-w legend-h strip-h strip-w]} layout
+        theme (or theme defaults/theme)
+        legend-pos (or legend-position :right)
         grid-rows (:rows grid)
         grid-cols (:cols grid)
         pw panel-width
         ph panel-height
+
+        ;; Font sizes from theme or defaults
+        label-fsize (or (:label-font-size theme) (:label-font-size defaults/defaults))
+        title-fsize (or (:title-font-size theme) (:title-font-size defaults/defaults))
+        strip-fsize (or (:strip-font-size theme) (:strip-font-size defaults/defaults) 10)
+        text-color (if-let [tc (:text-color theme)]
+                     (defaults/hex->rgba tc)
+                     [0.2 0.2 0.2 1.0])
 
         ;; Render each panel, positioned in the grid
         panel-elems
@@ -120,15 +168,15 @@
                      y-off (+ title-pad strip-h (* ri ph))]]
            (ui/translate x-off y-off
                          (panel/panel->membrane p pw ph margin
-                                                         :show-x? show-x?
-                                                         :show-y? show-y?
-                                                         :tooltip tooltip
-                                                         :x-col-name (or x-label "x")
-                                                         :y-col-name (or y-label "y")))))
+                                                :show-x? show-x?
+                                                :show-y? show-y?
+                                                :tooltip tooltip
+                                                :x-col-name (or x-label "x")
+                                                :y-col-name (or y-label "y")
+                                                :theme theme))))
 
         ;; Strip labels (column headers on top, row headers on right)
-        strip-label-color [0.2 0.2 0.2 1.0]
-        strip-fsize (or (:strip-font-size defaults/defaults) 10)
+        strip-label-color text-color
 
         col-strips
         (when (pos? strip-h)
@@ -159,18 +207,48 @@
      (concat
       ;; Title
       (when title
-        [(render-title title (+ y-label-pad (/ (* grid-cols pw) 2.0)))])
+        (let [fsize title-fsize]
+          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) 14
+                         (ui/with-color text-color
+                           (assoc (ui/label title (ui/font nil fsize))
+                                  :text-anchor "middle")))]))
       ;; Y-axis label
       (when y-label
-        [(render-y-label y-label (+ title-pad strip-h (/ (* grid-rows ph) 2.0)) 12)])
+        (let [fsize label-fsize]
+          [(ui/translate 12 (+ title-pad strip-h (/ (* grid-rows ph) 2.0))
+                         (membrane.ui.Rotate. -90
+                                              (ui/with-color text-color
+                                                (assoc (ui/label y-label (ui/font nil fsize))
+                                                       :text-anchor "middle"))))]))
       ;; X-axis label
       (when x-label
-        [(render-x-label x-label (+ y-label-pad (/ (* grid-cols pw) 2.0)) (- total-height x-label-pad -2))])
-      ;; Legend
-      (when legend
-        (render-legend-from-sketch legend
-                                   (+ y-label-pad (* grid-cols pw) strip-w 10)
-                                   (+ title-pad strip-h 20)))
+        (let [fsize label-fsize]
+          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) (- total-height x-label-pad -2)
+                         (ui/with-color text-color
+                           (assoc (ui/label x-label (ui/font nil fsize))
+                                  :text-anchor "middle")))]))
+      ;; Legend — positioned based on legend-position
+      (when (and legend (not= legend-pos :none))
+        (case legend-pos
+          :right
+          (render-legend-from-sketch legend
+                                     (+ y-label-pad (* grid-cols pw) strip-w 10)
+                                     (+ title-pad strip-h 20))
+          :top
+          (let [plots-start-y title-pad
+                legend-y (- plots-start-y (or legend-h 30) -5)]
+            (render-legend-horizontal legend
+                                      (+ y-label-pad 10)
+                                      legend-y))
+          :bottom
+          (let [bottom-y (- total-height (or legend-h 30) -8)]
+            (render-legend-horizontal legend
+                                      (+ y-label-pad 10)
+                                      bottom-y))
+          ;; Fallback to right
+          (render-legend-from-sketch legend
+                                     (+ y-label-pad (* grid-cols pw) strip-w 10)
+                                     (+ title-pad strip-h 20))))
       ;; Panels
       panel-elems
       ;; Strip labels

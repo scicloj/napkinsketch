@@ -27,6 +27,17 @@
 
 ;; ---- Prepare Points ----
 
+(defn- validate-numeric-column
+  "Throw a clear error if the column referenced by `col-key` in `view` is categorical
+   but the stat requires numeric data."
+  [view col-key stat-name]
+  (let [type-key (keyword (str (name col-key) "-type"))
+        col-type (get view type-key)]
+    (when (= col-type :categorical)
+      (throw (ex-info (str "Stat :" (name stat-name) " requires a numeric column for :" (name col-key)
+                           ", but :" (name (get view col-key)) " is categorical.")
+                      {:stat stat-name :column (get view col-key) :column-type col-type})))))
+
 (defn prepare-points
   "Clean data, compute domains, group by columns."
   [view]
@@ -81,7 +92,12 @@
   "Compute a statistical transform for a view."
   (fn [view] (or (:stat view) :identity)))
 
-(defmethod compute-stat :identity [view]
+(defmethod compute-stat :identity [{:keys [mark x y x-type] :as view}]
+  (when (and (#{:lollipop :errorbar :pointrange} mark)
+             (or (nil? y) (= x y))
+             (= x-type :categorical))
+    (throw (ex-info (str "Mark :" (name mark) " requires both :x and :y columns with numeric :y.")
+                    {:mark mark :x x :y y})))
   (prepare-points view))
 
 ;; ---- Binning ----
@@ -248,6 +264,7 @@
     {:xs grid-xs :ys grid-ys}))
 
 (defmethod compute-stat :kde [view]
+  (validate-numeric-column view :x :kde)
   (let [{:keys [data x group cfg]} view
         clean (tc/drop-missing data [x])
         n (tc/row-count clean)
@@ -359,6 +376,7 @@
 ;; ---- Violin ----
 
 (defmethod compute-stat :violin [view]
+  (validate-numeric-column view :y :violin)
   (let [{:keys [cfg]} view
         n-grid (or (:kde-n-grid (or cfg defaults/defaults)) 80)
         bandwidth (:kde-bandwidth (or cfg defaults/defaults))
@@ -453,6 +471,8 @@
          :fill-range [0 max-count]}))))
 
 (defmethod compute-stat :kde2d [{:keys [data x y cfg] :as view}]
+  (validate-numeric-column view :x :kde2d)
+  (validate-numeric-column view :y :kde2d)
   (let [cfg (or cfg defaults/defaults)
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)]
@@ -513,4 +533,11 @@
         {:tiles tiles
          :x-domain [x-lo x-hi]
          :y-domain [y-lo y-hi]
-         :fill-range [0 max-d]}))))
+         :fill-range [0 max-d]
+         ;; Raw grid data for contour extraction
+         :grid {:densities (vec (seq densities))
+                :n-grid n-grid
+                :x-lo x-lo :x-hi x-hi
+                :y-lo y-lo :y-hi y-hi
+                :x-step x-step :y-step y-step
+                :max-d max-d}}))))

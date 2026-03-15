@@ -30,7 +30,7 @@
  v5_l26
  (kind/pprint
   (mapv
-   (fn* [p1__76659#] (select-keys p1__76659# [:x :y :mark :color]))
+   (fn* [p1__91591#] (select-keys p1__91591# [:x :y :mark :color]))
    views)))
 
 
@@ -49,67 +49,67 @@
 
 
 (def
- v11_l68
+ v11_l69
  (let
   [s (sk/sketch views) layer (first (:layers (first (:panels s))))]
   (select-keys layer [:mark :style])))
 
 
-(deftest t12_l72 (is ((fn [m] (= :point (:mark m))) v11_l68)))
+(deftest t12_l73 (is ((fn [m] (= :point (:mark m))) v11_l69)))
 
 
-(def v14_l83 (def my-sketch (sk/sketch views)))
+(def v14_l84 (def my-sketch (sk/sketch views)))
 
 
-(def v15_l85 (sort (keys my-sketch)))
+(def v15_l86 (sort (keys my-sketch)))
 
 
-(deftest t16_l87 (is ((fn [ks] (every? keyword? ks)) v15_l85)))
+(deftest t16_l88 (is ((fn [ks] (every? keyword? ks)) v15_l86)))
 
 
-(def v18_l95 (sort (keys (first (:panels my-sketch)))))
+(def v18_l96 (sort (keys (first (:panels my-sketch)))))
 
 
 (deftest
- t19_l97
- (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v18_l95)))
+ t19_l98
+ (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v18_l96)))
 
 
 (def
- v21_l106
+ v21_l107
  (let
   [p (first (:panels my-sketch))]
   {:x-domain (:x-domain p), :y-domain (:y-domain p)}))
 
 
 (deftest
- t22_l110
+ t22_l111
  (is
   ((fn
     [m]
     (and (= 2 (count (:x-domain m))) (number? (first (:x-domain m)))))
-   v21_l106)))
+   v21_l107)))
 
 
-(def v24_l152 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v24_l153 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v25_l154 (vector? my-membrane))
+(def v25_l155 (vector? my-membrane))
 
 
-(deftest t26_l156 (is ((fn [v] (true? v)) v25_l154)))
+(deftest t26_l157 (is ((fn [v] (true? v)) v25_l155)))
 
 
-(def v27_l158 (count my-membrane))
+(def v27_l159 (count my-membrane))
 
 
-(deftest t28_l160 (is ((fn [n] (pos? n)) v27_l158)))
+(deftest t28_l161 (is ((fn [n] (pos? n)) v27_l159)))
 
 
-(def v30_l170 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v30_l171 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
-(def v31_l172 (first my-figure))
+(def v31_l173 (first my-figure))
 
 
-(deftest t32_l174 (is ((fn [v] (= :svg v)) v31_l172)))
+(deftest t32_l175 (is ((fn [v] (= :svg v)) v31_l173)))

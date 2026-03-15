@@ -91,15 +91,38 @@
 (defmethod extract-layer :rect [view stat all-colors cfg]
   (if (:bars stat)
     ;; Categorical bars (from :count stat)
-    {:mark :rect
-     :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
-     :position (or (:position view) :dodge)
-     :categories (vec (:categories stat))
-     :groups (vec
-              (for [{:keys [color counts]} (:bars stat)]
-                {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                 :label (str color)
-                 :counts (vec counts)}))}
+    (let [position (or (:position view) :dodge)
+          raw-groups (vec
+                      (for [{:keys [color counts]} (:bars stat)]
+                        {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                         :label (str color)
+                         :counts (vec counts)}))
+          ;; For :fill position, normalize counts per category to sum to 1.0
+          groups (if (= position :fill)
+                   (let [cat-totals (reduce (fn [acc g]
+                                              (reduce (fn [a {:keys [category count]}]
+                                                        (update a category (fnil + 0) count))
+                                                      acc
+                                                      (:counts g)))
+                                            {}
+                                            raw-groups)]
+                     (mapv (fn [g]
+                             (update g :counts
+                                     (fn [counts]
+                                       (mapv (fn [{:keys [category count]}]
+                                               (let [total (get cat-totals category 1)]
+                                                 {:category category
+                                                  :count (if (pos? total)
+                                                           (/ (double count) (double total))
+                                                           0.0)}))
+                                             counts))))
+                           raw-groups))
+                   raw-groups)]
+      {:mark :rect
+       :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
+       :position position
+       :categories (vec (:categories stat))
+       :groups groups})
     ;; Value bars (from :identity stat)
     {:mark :rect
      :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
@@ -207,6 +230,88 @@
      :style {:opacity (or (:fixed-alpha view) 1.0)}
      :tiles tiles}))
 
+(defn- marching-squares-segments
+  "Apply marching squares to a density grid for a given threshold.
+   Returns a sequence of line segments [[x1 y1] [x2 y2]] in data coordinates.
+   Grid is n×n with densities[i*n+j] at cell (i,j)."
+  [densities n-grid threshold x-lo y-lo x-step y-step]
+  (let [grid-val (fn [i j]
+                   (if (and (< i n-grid) (< j n-grid) (>= i 0) (>= j 0))
+                     (nth densities (+ (* i n-grid) j))
+                     0.0))
+        ;; Corner positions: use cell centers (i+0.5, j+0.5) in grid units
+        ;; For corners, we use the grid values at (i,j), (i+1,j), (i+1,j+1), (i,j+1)
+        interp (fn [v1 v2 p1 p2]
+                 ;; Linear interpolation between two points based on threshold
+                 (let [t (/ (- threshold v1) (max 1e-15 (- v2 v1)))]
+                   (+ p1 (* t (- p2 p1)))))]
+    (loop [i 0 segments (transient [])]
+      (if (>= i (dec n-grid))
+        (persistent! segments)
+        (let [segs (loop [j 0 segs segments]
+                     (if (>= j (dec n-grid))
+                       segs
+                       ;; Four corners of the cell: TL(i,j) TR(i+1,j) BR(i+1,j+1) BL(i,j+1)
+                       (let [tl (grid-val i j)
+                             tr (grid-val (inc i) j)
+                             br (grid-val (inc i) (inc j))
+                             bl (grid-val i (inc j))
+                             ;; Corner coordinates in data space (cell center positions)
+                             x0 (+ x-lo (* (+ i 0.5) x-step))
+                             x1 (+ x-lo (* (+ i 1.5) x-step))
+                             y0 (+ y-lo (* (+ j 0.5) y-step))
+                             y1 (+ y-lo (* (+ j 1.5) y-step))
+                             ;; Cell index (4 bits: TL TR BR BL)
+                             idx (bit-or (if (>= tl threshold) 8 0)
+                                         (if (>= tr threshold) 4 0)
+                                         (if (>= br threshold) 2 0)
+                                         (if (>= bl threshold) 1 0))
+                             ;; Edge midpoints with interpolation
+                             top [(interp tl tr x0 x1) y0]
+                             right [x1 (interp tr br y0 y1)]
+                             bottom [(interp bl br x0 x1) y1]
+                             left [x0 (interp tl bl y0 y1)]]
+                         (recur (inc j)
+                                (case (int idx)
+                                  (0 15) segs
+                                  (1 14) (conj! segs [left bottom])
+                                  (2 13) (conj! segs [bottom right])
+                                  (3 12) (conj! segs [left right])
+                                  (4 11) (conj! segs [top right])
+                                  5 (-> segs (conj! [left top]) (conj! [bottom right]))
+                                  (6 9) (conj! segs [top bottom])
+                                  (7 8) (conj! segs [left top])
+                                  10 (-> segs (conj! [top right]) (conj! [left bottom]))
+                                  segs)))))]
+          (recur (inc i) segs))))))
+
+(defmethod extract-layer :contour [view stat all-colors cfg]
+  (let [{:keys [grid fill-range]} stat]
+    (if (nil? grid)
+      {:mark :contour :levels []}
+      (let [{:keys [densities n-grid x-lo x-hi y-lo y-hi x-step y-step max-d]} grid
+            n-levels (or (:levels view) 5)
+            ;; Threshold levels at evenly spaced fractions of max density
+            ;; Skip very low (< 10%) to avoid noise contours
+            thresholds (vec (for [i (range 1 (inc n-levels))]
+                              (* max-d (/ (double i) (inc n-levels)))))
+            levels (vec (for [threshold thresholds
+                              :let [t (/ threshold max-d)
+                                    segments (marching-squares-segments
+                                              densities n-grid threshold
+                                              x-lo y-lo x-step y-step)]
+                              :when (seq segments)]
+                          {:threshold threshold
+                           :t t
+                           :color (defaults/gradient-color t)
+                           :segments (vec segments)}))]
+        {:mark :contour
+         :levels levels
+         :style {:stroke-width (or (:fixed-size view) 1.5)
+                 :opacity (or (:fixed-alpha view) 0.8)}
+         :x-domain [x-lo x-hi]
+         :y-domain [y-lo y-hi]}))))
+
 (defmethod extract-layer :ridgeline [view stat all-colors cfg]
   (let [violins (:violins stat)
         categories (:categories stat)]
@@ -262,9 +367,16 @@
 (defn compute-global-y-domain
   "Compute global y-domain, handling stacked bar/area accumulation."
   [stat-results views scale-spec]
-  (let [stacked-views (filter #(= :stack (:position %)) views)
+  (let [fill-views (filter #(= :fill (:position %)) views)
+        stacked-views (filter #(= :stack (:position %)) views)
+        has-fill? (seq fill-views)
         has-stacked? (seq stacked-views)]
-    (if has-stacked?
+    (cond
+      ;; Fill mode: counts are normalized to [0, 1]
+      has-fill?
+      [0.0 1.0]
+
+      has-stacked?
       (let [;; Stacked bars: accumulate counts per category
             count-stats (filter :categories stat-results)
             all-cats (distinct (mapcat :categories count-stats))
@@ -304,6 +416,8 @@
         (if (pos? hi)
           (scale/pad-domain [0 hi] scale-spec)
           [0 1]))
+
+      :else
       (collect-domain stat-results :y-domain scale-spec))))
 
 ;; ---- Tick Computation ----
@@ -565,7 +679,7 @@
   "Compute layout dimensions: padding, legend width, total size."
   [cfg layout-type eff-title eff-x-label eff-y-label
    legend facet-row-vals facet-col-vals
-   grid-rows grid-cols pw ph multi? panels]
+   grid-rows grid-cols pw ph multi? panels legend-position]
   (let [x-label-pad (if eff-x-label (:label-offset cfg) 0)
         ;; y-label-pad must account for y-tick label width (e.g. category names)
         tick-fsize (:font-size defaults/theme)
@@ -579,21 +693,26 @@
                       (+ (:label-offset cfg) (max 0.0 (- y-tick-width 12.0)))
                       0)
         title-pad (if eff-title (:title-offset cfg) 0)
-        legend-w (if legend (:legend-width cfg) 0)
+        legend-pos (or legend-position :right)
+        legend-w (if (and legend (= legend-pos :right)) (:legend-width cfg) 0)
+        legend-h (if (and legend (#{:bottom :top} legend-pos)) 30 0)
         has-col-strips? (or (and (= layout-type :facet-grid) (seq facet-col-vals))
                             multi?)
         has-row-strips? (or (and (= layout-type :facet-grid) (seq facet-row-vals))
                             multi?)
         strip-h (if has-col-strips? (:strip-height cfg 16) 0)
-        strip-w (if has-row-strips? 60 0)]
+        strip-w (if has-row-strips? 60 0)
+        top-legend-pad (if (= legend-pos :top) legend-h 0)]
     {:x-label-pad x-label-pad
      :y-label-pad y-label-pad
-     :title-pad title-pad
+     :title-pad (+ title-pad top-legend-pad)
      :legend-w legend-w
+     :legend-h legend-h
      :strip-h strip-h
      :strip-w strip-w
      :total-w (+ y-label-pad (* grid-cols pw) strip-w legend-w)
-     :total-h (+ title-pad strip-h (* grid-rows ph) x-label-pad)}))
+     :total-h (+ title-pad top-legend-pad strip-h (* grid-rows ph) x-label-pad
+                 (if (= legend-pos :bottom) legend-h 0))}))
 
 ;; ---- Main Entry Point ----
 
@@ -618,8 +737,9 @@
    with data-space geometry, domains, ticks, legend, and layout info.
    No membrane types, no datasets in the output."
   ([views] (views->sketch views {}))
-  ([views {:keys [width height config x-label y-label title scales palette] :as opts}]
+  ([views {:keys [width height config x-label y-label title scales palette theme legend-position] :as opts}]
    (let [cfg (cond-> (merge defaults/defaults config) palette (assoc :palette palette))
+         resolved-theme (merge defaults/theme theme)
          width (or width (:width cfg))
          height (or height (:height cfg))
          views (if (map? views) [views] views)
@@ -705,7 +825,7 @@
          ;; Layout dimensions
          layout-dims (compute-layout-dims cfg layout-type eff-title eff-x-label eff-y-label
                                           legend facet-row-vals facet-col-vals
-                                          grid-rows grid-cols pw ph multi? panels)]
+                                          grid-rows grid-cols pw ph multi? panels legend-position)]
 
      {:width width :height height :margin m
       :total-width (:total-w layout-dims) :total-height (:total-h layout-dims)
@@ -715,6 +835,8 @@
       :title eff-title
       :x-label eff-x-label :y-label eff-y-label
       :legend legend
+      :legend-position (or legend-position :right)
       :panels panels
+      :theme resolved-theme
       :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad
-                                        :legend-w :strip-h :strip-w])})))
+                                        :legend-w :legend-h :strip-h :strip-w])})))

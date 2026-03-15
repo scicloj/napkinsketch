@@ -11,9 +11,9 @@
 (defn render-grid-from-ticks
   "Render grid lines using pre-computed tick values from a sketch.
    Skips grid lines for categorical axes (like ggplot2)."
-  [sx sy x-ticks y-ticks pw ph m]
-  (let [{:keys [grid]} defaults/theme
-        grid-rgba (defaults/hex->rgba grid)
+  [sx sy x-ticks y-ticks pw ph m & {:keys [theme]}]
+  (let [theme (or theme defaults/theme)
+        grid-rgba (defaults/hex->rgba (:grid theme))
         grid-w (:grid-stroke-width defaults/defaults)]
     (vec
      (concat
@@ -32,9 +32,9 @@
 
 (defn render-polar-grid
   "Render polar grid: concentric circles and radial spokes."
-  [pw ph m]
-  (let [{:keys [grid]} defaults/theme
-        grid-rgba (defaults/hex->rgba grid)
+  [pw ph m & {:keys [theme]}]
+  (let [theme (or theme defaults/theme)
+        grid-rgba (defaults/hex->rgba (:grid theme))
         grid-w (:grid-stroke-width defaults/defaults)
         cx (/ pw 2.0) cy (/ ph 2.0)
         r-max (- (min cx cy) (double m))
@@ -65,9 +65,9 @@
 
 (defn render-tick-labels
   "Render tick labels from pre-computed tick info in a sketch."
-  [axis tick-info scale pw ph m]
+  [axis tick-info scale pw ph m & {:keys [theme]}]
   (let [{:keys [values labels]} tick-info
-        fsize (:font-size defaults/theme)
+        fsize (:font-size (or theme defaults/theme))
         tick-color [0.4 0.4 0.4 1.0]]
     (when (seq values)
       (vec
@@ -93,11 +93,12 @@
    Takes a panel map from views->sketch and pixel dimensions.
    show-x? and show-y? control whether tick labels are drawn
    (grid lines always render)."
-  [panel pw ph m & {:keys [show-x? show-y? tooltip x-col-name y-col-name]
+  [panel pw ph m & {:keys [show-x? show-y? tooltip x-col-name y-col-name theme]
                     :or {show-x? true show-y? true}}]
   (let [{:keys [x-domain y-domain x-scale y-scale coord
                 x-ticks y-ticks layers annotations]} panel
         coord-type (or coord :cartesian)
+        theme (or theme defaults/theme)
 
         ;; Build wadogo scales from domains + pixel ranges
         x-px [m (- pw m)]
@@ -131,15 +132,15 @@
                              :y-col-name y-col-name))
 
         ;; Background
-        bg-rgba (defaults/hex->rgba (:bg defaults/theme))
+        bg-rgba (defaults/hex->rgba (:bg theme))
         background (ui/with-color bg-rgba
                      (ui/with-style ::ui/style-fill
                        (ui/translate m m (ui/rectangle (- pw m m) (- ph m m)))))
 
         ;; Grid — polar gets circles + spokes; cartesian/flip get tick-aligned lines
         grid (if (= coord-type :polar)
-               (render-polar-grid pw ph m)
-               (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m))
+               (render-polar-grid pw ph m :theme theme)
+               (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m :theme theme))
 
         ;; Data marks from sketch layers
         marks (vec (mapcat #(mark/layer->membrane % ctx) layers))
@@ -166,21 +167,21 @@
                                [px2 _] (coord-fn (:hi a) 0)]
                            (ui/with-color [0.5 0.5 0.5 band-alpha]
                              (ui/with-style ::ui/style-fill
-                               (ui/path [px1 m] [px2 m]
-                                        [px2 (- ph m)] [px1 (- ph m)]
-                                        [px1 m]))))
+                               (ui/translate (min px1 px2) m
+                                             (ui/rectangle (Math/abs (double (- px2 px1)))
+                                                           (- ph m m))))))
                  :band-h (let [[_ py1] (coord-fn 0 (:lo a))
                                [_ py2] (coord-fn 0 (:hi a))]
                            (ui/with-color [0.5 0.5 0.5 band-alpha]
                              (ui/with-style ::ui/style-fill
-                               (ui/path [m py1] [(- pw m) py1]
-                                        [(- pw m) py2] [m py2]
-                                        [m py1]))))
+                               (ui/translate m (min py1 py2)
+                                             (ui/rectangle (- pw m m)
+                                                           (Math/abs (double (- py2 py1))))))))
                  nil)))))
 
         ;; Tick labels (conditional)
-        x-tick-elems (when show-x? (render-tick-labels :x x-ticks sx pw ph m))
-        y-tick-elems (when show-y? (render-tick-labels :y y-ticks sy pw ph m))]
+        x-tick-elems (when show-x? (render-tick-labels :x x-ticks sx pw ph m :theme theme))
+        y-tick-elems (when show-y? (render-tick-labels :y y-ticks sy pw ph m :theme theme))]
 
     (vec (concat [background] grid
                  (or ann-marks []) marks

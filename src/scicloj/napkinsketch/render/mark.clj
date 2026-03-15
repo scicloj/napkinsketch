@@ -187,7 +187,7 @@
         {:keys [coord-fn y-domain-min]} ctx
         {:keys [opacity]} style
         baseline (or y-domain-min 0)]
-    (if (= position :stack)
+    (if (#{:stack :fill} position)
       ;; Stacked: each group's baseline is the cumulative sum of previous groups
       (let [group-maps (mapv (fn [{:keys [xs ys]}]
                                (into (sorted-map) (map vector xs ys)))
@@ -429,6 +429,23 @@
                        (ui/with-style ::ui/style-fill
                          (ui/rectangle w h))))))))
 
+(defmethod layer->membrane :contour [layer ctx]
+  (let [{:keys [levels style]} layer
+        {:keys [coord-fn]} ctx
+        {:keys [stroke-width opacity]} style]
+    (vec
+     (for [{:keys [color segments]} levels
+           :let [[cr cg cb _] color]
+           [p1 p2] segments
+           :let [[x1 y1] p1
+                 [x2 y2] p2
+                 [px1 py1] (coord-fn x1 y1)
+                 [px2 py2] (coord-fn x2 y2)]]
+       (ui/with-color [cr cg cb (or opacity 0.8)]
+         (ui/with-stroke-width (or stroke-width 1.5)
+           (ui/with-style ::ui/style-stroke
+             (ui/path [px1 py1] [px2 py2]))))))))
+
 ;; ---- Ridgeline ----
 
 (defmethod layer->membrane :ridgeline [layer ctx]
@@ -633,7 +650,7 @@
                     (ui/with-color [cr cg cb (or opacity 1.0)]
                       (ui/with-style ::ui/style-fill
                         (apply ui/path pts)))))]
-    (if (= position :stack)
+    (if (#{:stack :fill} position)
       ;; Stacked: accumulate base heights per category
       (let [items (for [[_bi {:keys [color counts]}] (map-indexed vector groups)
                         {:keys [category count]} counts]
