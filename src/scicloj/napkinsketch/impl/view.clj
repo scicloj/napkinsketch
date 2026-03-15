@@ -330,14 +330,16 @@
   {:mark :rule-h :intercept intercept})
 
 (defn band-v
-  "Vertical shaded band from x = lo to x = hi."
-  [lo hi]
-  {:mark :band-v :lo lo :hi hi})
+  "Vertical shaded band from x = lo to x = hi.
+  Optional opts map: {:alpha 0.3} overrides band opacity."
+  ([lo hi] (band-v lo hi {}))
+  ([lo hi opts] (merge {:mark :band-v :lo lo :hi hi} opts)))
 
 (defn band-h
-  "Horizontal shaded band from y = lo to y = hi."
-  [lo hi]
-  {:mark :band-h :lo lo :hi hi})
+  "Horizontal shaded band from y = lo to y = hi.
+  Optional opts map: {:alpha 0.3} overrides band opacity."
+  ([lo hi] (band-h lo hi {}))
+  ([lo hi opts] (merge {:mark :band-h :lo lo :hi hi} opts)))
 
 ;; ---- Cross ----
 

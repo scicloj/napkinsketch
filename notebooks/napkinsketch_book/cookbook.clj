@@ -115,12 +115,13 @@
 ;; ### Annotated chart
 ;;
 ;; Add reference lines and shaded bands to highlight regions of interest.
+;; Pass `{:alpha …}` to control band opacity.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point {:color :species})
             (sk/rule-h 3.0)
-            (sk/band-v 5.5 6.5))
+            (sk/band-v 5.5 6.5 {:alpha 0.3}))
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -220,31 +221,6 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 153 (:points s))
-                                (= 3 (:lines s)))))])
-
-;; ### Comparing column pairs
-;;
-;; Show sepal and petal measurements side by side.
-
-(-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species})
-            (sk/lm {:color :species}))
-    (sk/plot {:title "Sepal: Length vs Width"}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s))
-                                (some #{"Sepal: Length vs Width"} (:texts s)))))])
-
-(-> iris
-    (sk/view [[:petal_length :petal_width]])
-    (sk/lay (sk/point {:color :species})
-            (sk/lm {:color :species}))
-    (sk/plot {:title "Petal: Length vs Width"}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
 ;; ### Tipping behavior

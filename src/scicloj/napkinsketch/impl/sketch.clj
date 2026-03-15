@@ -365,12 +365,16 @@
         (distinct vals)))))
 
 (defn compute-global-y-domain
-  "Compute global y-domain, handling stacked bar/area accumulation."
+  "Compute global y-domain, handling stacked bar/area accumulation.
+  Extends domain to include 0 for marks that draw stems from baseline
+  (lollipop, value-bar)."
   [stat-results views scale-spec]
   (let [fill-views (filter #(= :fill (:position %)) views)
         stacked-views (filter #(= :stack (:position %)) views)
         has-fill? (seq fill-views)
-        has-stacked? (seq stacked-views)]
+        has-stacked? (seq stacked-views)
+        zero-baseline-marks #{:lollipop :value-bar}
+        needs-zero? (some #(zero-baseline-marks (:mark %)) views)]
     (cond
       ;; Fill mode: counts are normalized to [0, 1]
       has-fill?
@@ -418,7 +422,12 @@
           [0 1]))
 
       :else
-      (collect-domain stat-results :y-domain scale-spec))))
+      (let [dom (collect-domain stat-results :y-domain scale-spec)]
+        (if (and needs-zero? (sequential? dom) (number? (first dom)))
+          (scale/pad-domain [(min 0.0 (double (first dom)))
+                             (max 0.0 (double (second dom)))]
+                            scale-spec)
+          dom)))))
 
 ;; ---- Tick Computation ----
 

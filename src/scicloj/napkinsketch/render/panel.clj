@@ -180,15 +180,17 @@
                                (ui/with-style ::ui/style-stroke
                                  (ui/path [m py] [(- pw m) py])))))
                  :band-v (let [[px1 _] (coord-fn (:lo a) 0)
-                               [px2 _] (coord-fn (:hi a) 0)]
-                           (ui/with-color [0.5 0.5 0.5 band-alpha]
+                               [px2 _] (coord-fn (:hi a) 0)
+                               alpha (or (:alpha a) band-alpha)]
+                           (ui/with-color [0.5 0.5 0.5 alpha]
                              (ui/with-style ::ui/style-fill
                                (ui/translate (min px1 px2) m
                                              (ui/rectangle (Math/abs (double (- px2 px1)))
                                                            (- ph m m))))))
                  :band-h (let [[_ py1] (coord-fn 0 (:lo a))
-                               [_ py2] (coord-fn 0 (:hi a))]
-                           (ui/with-color [0.5 0.5 0.5 band-alpha]
+                               [_ py2] (coord-fn 0 (:hi a))
+                               alpha (or (:alpha a) band-alpha)]
+                           (ui/with-color [0.5 0.5 0.5 alpha]
                              (ui/with-style ::ui/style-fill
                                (ui/translate m (min py1 py2)
                                              (ui/rectangle (- pw m m)
@@ -198,26 +200,19 @@
         ;; Tick labels (conditional)
         ;; For ridgeline panels, y-tick labels must use ridgeline band positions
         ;; (with overlap padding) instead of the categorical scale positions.
-        x-tick-elems (when show-x? (render-tick-labels :x x-ticks sx pw ph m :theme theme))
-        y-tick-elems (if (and has-ridgeline? show-y?)
-                       (let [{:keys [values labels]} y-ticks
-                             fsize (:font-size theme)
-                             tick-color [0.4 0.4 0.4 1.0]
-                             ridge-cats (:categories (first (filter #(= :ridgeline (:mark %)) layers)))
-                             ridge-pos (mark/ridgeline-positions ridge-cats ph m)]
-                         (when (seq values)
-                           (vec
-                            (map (fn [t label]
-                                   (let [pos (get ridge-pos t)
-                                         py (if pos (:mid pos) (sy t))
+        x-tick-labels (when show-x? (render-tick-labels :x x-ticks sx pw ph m :theme theme))
+        y-tick-labels (when show-y?
+                        (if has-ridgeline?
+                          (let [ridge-cats (:categories (first (filter #(= :ridgeline (:mark %)) layers)))
+                                ridge-pos (mark/ridgeline-positions ridge-cats ph m)
+                                fsize (:font-size theme)
+                                tick-color [0.4 0.4 0.4 1.0]]
+                            (vec (for [[cat {:keys [mid]}] ridge-pos]
+                                   (let [label (str cat)
                                          lw (* (count label) (/ fsize 2.0))]
                                      (ui/translate (- (double m) lw 3)
-                                                   (- (double py) (/ fsize 2.0))
+                                                   (- (double mid) (/ fsize 2.0))
                                                    (ui/with-color tick-color
-                                                     (ui/label label (ui/font nil fsize))))))
-                                 values labels))))
-                       (when show-y? (render-tick-labels :y y-ticks sy pw ph m :theme theme)))]
-
-    (vec (concat [background] grid
-                 (or ann-marks []) marks
-                 (or x-tick-elems []) (or y-tick-elems [])))))
+                                                     (ui/label label (ui/font nil fsize))))))))
+                          (render-tick-labels :y y-ticks sy pw ph m :theme theme)))]
+    (vec (concat [background] grid marks ann-marks x-tick-labels y-tick-labels))))

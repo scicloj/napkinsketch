@@ -35,7 +35,7 @@
    ;; Bars and lines
    :bar-opacity 0.7 :line-width 2 :grid-stroke-width 1.5
    ;; Annotations
-   :annotation-stroke "#333" :annotation-dash [4 3] :band-opacity 0.08
+   :annotation-stroke "#333" :annotation-dash [4 3] :band-opacity 0.15
    ;; Statistics
    :bin-method :sturges
    :domain-padding 0.05

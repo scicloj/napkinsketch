@@ -281,15 +281,17 @@
 
 (defn band-v
   "Vertical shaded band from x = lo to x = hi.
-   (band-v 4 6)  — shaded region between x=4 and x=6"
-  [lo hi]
-  (view/band-v lo hi))
+   (band-v 4 6)              — shaded region between x=4 and x=6
+   (band-v 4 6 {:alpha 0.3}) — with custom opacity"
+  ([lo hi] (view/band-v lo hi))
+  ([lo hi opts] (view/band-v lo hi opts)))
 
 (defn band-h
   "Horizontal shaded band from y = lo to y = hi.
-   (band-h 2 4)  — shaded region between y=2 and y=4"
-  [lo hi]
-  (view/band-h lo hi))
+   (band-h 2 4)              — shaded region between y=2 and y=4
+   (band-h 2 4 {:alpha 0.3}) — with custom opacity"
+  ([lo hi] (view/band-h lo hi))
+  ([lo hi opts] (view/band-h lo hi opts)))
 
 ;; ---- Rendering ----
 
