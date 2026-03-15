@@ -1,14 +1,13 @@
-;; # Configuration
+;; # Customization
 ;;
-;; Customizing plots: dimensions, labels, titles, scales, and visual options.
+;; How to customize plots: dimensions, labels, titles, scales,
+;; palettes, themes, interactivity, and legend placement.
 
-(ns napkinsketch-book.config
+(ns napkinsketch-book.customization
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
    [scicloj.napkinsketch.api :as sk]))
-
-;; ## Datasets
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
@@ -100,18 +99,17 @@
 ;; ## Direct Mark Styling
 
 ;; Pass `:alpha` and `:size` directly to mark constructors.
-;; These map to opacity and radius (for points) or stroke-width (for lines).
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point {:color :species :alpha 0.5 :size 5}))
     sk/plot)
+
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-
-;; Alpha works on bars and polygons too:
+;; Alpha works on bars and polygons too.
 
 (-> iris
     (sk/view :species)
@@ -120,6 +118,7 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:polygons s))))])
+
 ;; ## Value Bar
 
 ;; Pre-computed values (no counting), using `value-bar`.
@@ -152,7 +151,6 @@
 ;; ## Custom Palette
 ;;
 ;; Pass `:palette` to override the default color cycle.
-;; Values are hex color strings.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
@@ -163,7 +161,7 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-;; The palette applies to all color-mapped marks — bars, lines, etc.
+;; The palette applies to all color-mapped marks.
 
 (-> iris
     (sk/view :species)
@@ -176,8 +174,7 @@
 
 ;; ## Named Palette Presets
 ;;
-;; Instead of specifying hex colors, use a keyword to select a
-;; predefined palette.
+;; Use a keyword to select a predefined palette.
 ;;
 ;; Available presets:
 ;;
@@ -196,7 +193,7 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-;; Dark, high-contrast palette:
+;; Dark, high-contrast palette.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
@@ -206,3 +203,52 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
+
+;; ## Theme
+;;
+;; Customize background color, grid color, and font size.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:title "White Theme"
+              :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 10}}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 150 (:points s))))])
+
+;; ## Legend Position
+;;
+;; Control where the legend appears: `:right` (default), `:bottom`,
+;; `:top`, or `:none`.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:legend-position :bottom}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (< (:width s) 700))))])
+
+;; ## Tooltip
+;;
+;; Enable mouseover data values with `{:tooltip true}`.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:tooltip true}))
+
+(kind/test-last [(fn [v] (= :div (first v)))])
+
+;; ## Brush Selection
+;;
+;; Enable drag-to-select with `{:brush true}`. Click to reset.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:brush true}))
+
+(kind/test-last [(fn [v] (= :div (first v)))])

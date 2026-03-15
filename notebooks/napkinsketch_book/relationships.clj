@@ -1,0 +1,158 @@
+;; # Relationships
+;;
+;; Regression, smoothing, density estimation, and heatmaps —
+;; revealing structure between two variables.
+
+(ns napkinsketch-book.relationships
+  (:require
+   [tablecloth.api :as tc]
+   [scicloj.kindly.v4.kind :as kind]
+   [scicloj.napkinsketch.api :as sk]
+   [fastmath.random :as rng]))
+
+(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+                      {:key-fn keyword}))
+
+(def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
+                      {:key-fn keyword}))
+
+;; ## Linear Regression
+
+;; A single regression line through all data.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point) (sk/lm))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; ## Per-Group Regression
+
+;; Fit a regression line per group.
+
+(-> iris
+    (sk/view [[:petal_length :petal_width]])
+    (sk/lay (sk/point {:color :species})
+            (sk/lm {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
+
+;; ## Tips with Regression
+
+;; Do smokers and non-smokers tip differently?
+
+(-> tips
+    (sk/view [[:total_bill :tip]])
+    (sk/lay (sk/point {:color :smoker})
+            (sk/lm {:color :smoker}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 244 (:points s))
+                                (= 2 (:lines s)))))])
+
+;; ## LOESS Smoothing
+
+;; A smooth curve through noisy data.
+
+(def noisy-wave (let [r (rng/rng :jdk 42)]
+                  (tc/dataset {:x (range 50)
+                               :y (mapv #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rng/drandom r) 0.5)))
+                                        (range 50))})))
+
+(-> noisy-wave
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point) (sk/loess))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 50 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; ## Heatmap (Auto-Binned)
+
+;; Bin x and y into a grid, count points per cell.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/tile))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:tiles s)))))])
+
+;; ## Heatmap (Pre-Computed)
+
+;; Use a numeric column for tile color.
+
+(def grid-data
+  (let [r (rng/rng :jdk 99)]
+    (tc/dataset {:x (for [i (range 5) _j (range 5)] i)
+                 :y (for [_i (range 5) j (range 5)] j)
+                 :value (vec (repeatedly 25 #(rng/irandom r 100)))})))
+
+(sk/plot [(sk/tile {:data grid-data :x :x :y :y :fill :value})])
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:tiles s)))))])
+
+;; ## Density 2D
+
+;; KDE-smoothed 2D density heatmap.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/density2d))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:tiles s)))))])
+
+;; ## Density 2D with Points
+
+;; Overlay scatter points on the density heatmap.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/density2d))
+    (sk/lay (sk/point {:alpha 0.5}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (pos? (:tiles s)))))])
+
+;; ## Contour Lines
+
+;; Iso-density contour lines from 2D KDE.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/contour))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:lines s)))))])
+
+;; ## Contour with Points
+
+;; Contour lines overlaid on scatter points.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:alpha 0.3}) (sk/contour {:levels 8}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (pos? (:lines s)))))])

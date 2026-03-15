@@ -1,17 +1,18 @@
-{"Getting Started" ["quickstart"]
- "Gallery" ["scatter_gallery"
-            "distributions"
-            "polar"
-            "layers"
-            "config"
-            "faceting"
-            "cookbook"]
- "Advanced" ["composability"
-             "real_world"
-             "edge_cases"]
- "Reference" ["api_reference"
-              "glossary"]
- "Internals" ["inference_rules"
-              "exploring_sketches"
-              "extensibility"
-              "architecture"]}
+{"Tutorials" ["quickstart"]
+ "How-to Guides" ["cookbook"
+                   "customization"
+                   "faceting"]
+ "Reference" ["scatter"
+               "distributions"
+               "ranking"
+               "evolution"
+               "relationships"
+               "polar"
+               "api_reference"
+               "glossary"]
+ "Explanation" ["composability"
+                "inference_rules"
+                "exploring_sketches"
+                "architecture"
+                "extensibility"
+                "edge_cases"]}

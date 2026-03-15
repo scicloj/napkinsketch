@@ -1,6 +1,6 @@
 ;; # Distributions
 ;;
-;; Histograms, density plots, boxplots, and bar charts
+;; Histograms, density plots, boxplots, violins, and ridgelines
 ;; for exploring the shape and spread of data.
 
 (ns napkinsketch-book.distributions
@@ -52,78 +52,6 @@
 (-> iris
     (sk/view :petal_width)
     (sk/lay (sk/histogram))
-    sk/plot)
-
-(kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
-            (and (= 1 (:panels s))
-                 (pos? (:polygons s)))))])
-
-;; ## Bar Chart
-
-;; Count species occurrences.
-
-(-> iris
-    (sk/view :species)
-    (sk/lay (sk/bar))
-    sk/plot)
-
-(kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
-            (and (= 1 (:panels s))
-                 (pos? (:polygons s)))))])
-
-;; ## Colored Bar Chart
-
-;; Tips dataset: count by day, colored by smoking status.
-
-(-> tips
-    (sk/view :day)
-    (sk/lay (sk/bar {:color :smoker}))
-    sk/plot)
-
-(kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
-            (and (= 1 (:panels s))
-                 (pos? (:polygons s)))))])
-
-;; ## Stacked Bar Chart
-
-;; Same data, but stacked instead of dodged.
-
-(-> tips
-    (sk/view :day)
-    (sk/lay (sk/stacked-bar {:color :smoker}))
-    sk/plot)
-
-(kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
-            (and (= 1 (:panels s))
-                 (pos? (:polygons s)))))])
-
-;; ## Horizontal Bar Chart
-
-;; Flip the bar chart for horizontal orientation.
-
-(-> iris
-    (sk/view :species)
-    (sk/lay (sk/bar))
-    (sk/coord :flip)
-    sk/plot)
-
-(kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
-            (and (= 1 (:panels s))
-                 (pos? (:polygons s)))))])
-
-;; ## Horizontal Colored Bars
-
-;; Colored bars, flipped.
-
-(-> tips
-    (sk/view :day)
-    (sk/lay (sk/bar {:color :time}))
-    (sk/coord :flip)
     sk/plot)
 
 (kind/test-last

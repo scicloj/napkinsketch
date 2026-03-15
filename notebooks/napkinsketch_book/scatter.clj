@@ -1,24 +1,19 @@
-;; # Scatter Gallery
+;; # Scatter
 ;;
-;; Diverse scatter plot examples that challenge the API
-;; with different data shapes, aesthetics, and edge cases.
+;; Point mark variations — color, size, alpha, shape, jitter,
+;; and continuous color scale.
 
-(ns napkinsketch-book.scatter-gallery
+(ns napkinsketch-book.scatter
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
    [scicloj.napkinsketch.api :as sk]))
-
-;; ## Datasets
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
 
 (def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
                       {:key-fn keyword}))
-
-(def mpg (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/mpg.csv"
-                     {:key-fn keyword}))
 
 ;; ## Basic Scatter
 
@@ -62,64 +57,6 @@
                                 (= 150 (:points s))
                                 (zero? (:lines s)))))])
 
-;; ## Scatter with Regression Lines
-
-;; Overlay per-group regression on the same data.
-
-(-> iris
-    (sk/view [[:petal_length :petal_width]])
-    (sk/lay (sk/point {:color :species})
-            (sk/lm {:color :species}))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s))
-                                (= 3 (:lines s)))))])
-
-;; ## Tips Dataset
-
-;; Restaurant tipping data — total bill vs tip, colored by smoking status.
-
-(-> tips
-    (sk/view [[:total_bill :tip]])
-    (sk/lay (sk/point {:color :smoker}))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 244 (:points s))
-                                (zero? (:lines s)))))])
-
-;; ## Tips with Regression
-
-;; Do smokers and non-smokers tip differently?
-
-(-> tips
-    (sk/view [[:total_bill :tip]])
-    (sk/lay (sk/point {:color :smoker})
-            (sk/lm {:color :smoker}))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 244 (:points s))
-                                (= 2 (:lines s)))))])
-
-;; ## MPG Dataset
-
-;; Horsepower vs miles per gallon, colored by origin.
-
-(-> mpg
-    (sk/view [[:horsepower :mpg]])
-    (sk/lay (sk/point {:color :origin}))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 392 (:points s))
-                                (zero? (:lines s)))))])
-
 ;; ## Fixed Color
 
 ;; A fixed color string (not a column reference) applies to all points.
@@ -132,32 +69,6 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
-
-;; ## Small Dataset
-
-;; Even a three-point dataset should render cleanly.
-
-(-> {:x [1 5 9] :y [2 8 3]}
-    (sk/view [[:x :y]])
-    (sk/lay (sk/point))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 3 (:points s)))))])
-
-;; ## Single Point
-
-;; Edge case: just one data point.
-
-(-> {:x [3] :y [7]}
-    (sk/view [[:x :y]])
-    (sk/lay (sk/point))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 1 (:points s)))))])
 
 ;; ## Custom Dimensions
 
@@ -191,7 +102,7 @@
                            (and (= 1 (:panels s))
                                 (pos? (:points s)))))])
 
-;; Combine size with alpha for dense data:
+;; Combine size with alpha for dense data.
 
 (-> tips
     (sk/view [[:total_bill :tip]])
@@ -216,7 +127,7 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-;; Control the jitter amount in pixels:
+;; Control the jitter amount in pixels.
 
 (-> iris
     (sk/view [[:species :sepal_width]])
@@ -242,7 +153,7 @@
                                 (= 150 (:points s))
                                 (some #{"petal length"} (:texts s)))))])
 
-;; Continuous color with size — a color-size bubble plot:
+;; Continuous color with size — a color-size bubble plot.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
