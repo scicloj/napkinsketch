@@ -119,9 +119,13 @@
 
 (defmethod layer->membrane :point [layer ctx]
   (let [{:keys [style groups]} layer
-        {:keys [coord-fn tooltip]} ctx
+        {:keys [coord-fn tooltip sx sy]} ctx
         {:keys [opacity radius jitter]} style
-        jitter-amount (cond (number? jitter) (double jitter)
+        ;; Detect if x-axis is categorical (band scale) for smarter jitter
+        x-bandwidth (try (ws/data sx :bandwidth) (catch Exception _ nil))
+        cat-jitter? (and jitter x-bandwidth)
+        jitter-amount (cond cat-jitter? (/ (double x-bandwidth) 3.0)
+                            (number? jitter) (double jitter)
                             jitter 5.0
                             :else 0.0)
         jitter? (pos? jitter-amount)
@@ -150,8 +154,13 @@
            i (range (count xs))
            :let [[px py] (coord-fn (nth xs i) (nth ys i))
                  [px py] (if jitter?
-                           [(+ (double px) (* jitter-amount (- (* 2.0 (rng/drandom jitter-rng)) 1.0)))
-                            (+ (double py) (* jitter-amount (- (* 2.0 (rng/drandom jitter-rng)) 1.0)))]
+                           (if cat-jitter?
+                             ;; Categorical: jitter along band axis only
+                             [(+ (double px) (* jitter-amount (- (* 2.0 (rng/drandom jitter-rng)) 1.0)))
+                              py]
+                             ;; Numeric: jitter both axes
+                             [(+ (double px) (* jitter-amount (- (* 2.0 (rng/drandom jitter-rng)) 1.0)))
+                              (+ (double py) (* jitter-amount (- (* 2.0 (rng/drandom jitter-rng)) 1.0)))])
                            [px py])
                  pt-r (if sizes (size-scale (nth sizes i)) radius)
                  pt-alpha (if alphas (alpha-scale (nth alphas i)) (or opacity 1.0))

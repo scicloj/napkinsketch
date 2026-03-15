@@ -422,6 +422,26 @@
 
 ;; ---- Tick Computation ----
 
+(def ^:private date-fmt-year
+  (java.time.format.DateTimeFormatter/ofPattern "yyyy"))
+
+(def ^:private date-fmt-month-year
+  (java.time.format.DateTimeFormatter/ofPattern "MMM yyyy"))
+
+(def ^:private date-fmt-month-day
+  (java.time.format.DateTimeFormatter/ofPattern "MMM d"))
+
+(defn- format-date-tick
+  "Format an epoch-day as a date string, choosing granularity based on
+   the total span of the domain (in days)."
+  [epoch-day span-days]
+  (let [d (java.time.LocalDate/ofEpochDay (long epoch-day))]
+    (cond
+      (> span-days 1500) (.format d date-fmt-year)
+      (> span-days 180) (.format d date-fmt-month-year)
+      (> span-days 30) (.format d date-fmt-month-day)
+      :else (str d))))
+
 (defn compute-ticks
   "Compute tick values and labels for a domain+pixel range, using wadogo transiently.
    When temporal? is true, tick values are epoch-days and labels are date strings."
@@ -437,9 +457,8 @@
            n (scale/tick-count (Math/abs (double (- (second pixel-range) (first pixel-range)))) spacing)
            ticks (ws/ticks s n)
            labels (if temporal?
-                    (mapv (fn [epoch-day]
-                            (str (java.time.LocalDate/ofEpochDay (long epoch-day))))
-                          ticks)
+                    (let [span-days (- (double (second domain)) (double (first domain)))]
+                      (mapv #(format-date-tick % span-days) ticks))
                     (scale/format-ticks s ticks))]
        {:values (vec ticks)
         :labels (vec labels)

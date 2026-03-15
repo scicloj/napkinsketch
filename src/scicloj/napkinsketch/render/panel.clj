@@ -121,6 +121,9 @@
                        (first y-domain)
                        0)
 
+        ;; Detect ridgeline layers (used for grid and tick overrides)
+        has-ridgeline? (some #(= :ridgeline (:mark %)) layers)
+
         ;; Rendering context for mark/layer->membrane
         ctx (cond-> {:coord-fn coord-fn :sx sx :sy sy
                      :coord-type coord-type
@@ -138,9 +141,22 @@
                        (ui/translate m m (ui/rectangle (- pw m m) (- ph m m)))))
 
         ;; Grid — polar gets circles + spokes; cartesian/flip get tick-aligned lines
+        ;; For ridgeline panels, add horizontal guide lines at baseline positions
         grid (if (= coord-type :polar)
                (render-polar-grid pw ph m :theme theme)
-               (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m :theme theme))
+               (let [base-grid (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m :theme theme)]
+                 (if has-ridgeline?
+                   (let [grid-rgba (defaults/hex->rgba (:grid theme))
+                         grid-w (:grid-stroke-width defaults/defaults)
+                         ridge-cats (:categories (first (filter #(= :ridgeline (:mark %)) layers)))
+                         ridge-pos (mark/ridgeline-positions ridge-cats ph m)
+                         ridge-lines (vec (for [[_ {:keys [mid]}] ridge-pos]
+                                            (ui/with-color grid-rgba
+                                              (ui/with-stroke-width grid-w
+                                                (ui/with-style ::ui/style-stroke
+                                                  (ui/path [m mid] [(- pw m) mid]))))))]
+                     (vec (concat base-grid ridge-lines)))
+                   base-grid)))
 
         ;; Data marks from sketch layers
         marks (vec (mapcat #(mark/layer->membrane % ctx) layers))
@@ -182,7 +198,6 @@
         ;; Tick labels (conditional)
         ;; For ridgeline panels, y-tick labels must use ridgeline band positions
         ;; (with overlap padding) instead of the categorical scale positions.
-        has-ridgeline? (some #(= :ridgeline (:mark %)) layers)
         x-tick-elems (when show-x? (render-tick-labels :x x-ticks sx pw ph m :theme theme))
         y-tick-elems (if (and has-ridgeline? show-y?)
                        (let [{:keys [values labels]} y-ticks

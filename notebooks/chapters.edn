@@ -4,7 +4,8 @@
             "polar"
             "layers"
             "config"
-            "faceting"]
+            "faceting"
+            "cookbook"]
  "Advanced" ["composability"
              "real_world"
              "edge_cases"]
