@@ -12,9 +12,13 @@
 
 (defn view
   "Create views from data and column specs.
-   (view data [:x :y])         — single scatter view
-   (view data [[:x1 :y1] ...]) — multiple views
-   (view data :x)              — histogram view (x=y)"
+   Data can be a Tablecloth dataset, a map of columns ({:x [1 2 3]}),
+   a sequence of row maps ([{:x 1 :y 2} ...]), or a CSV path/URL.
+   Column references must be keywords.
+   (view data :x :y)            — two keywords, one scatter view
+   (view data [:x :y])          — pair as vector, same result
+   (view data [[:x1 :y1] ...])  — multiple views
+   (view data :x)               — histogram view (x=y)"
   ([data spec-or-x] (view/view data spec-or-x))
   ([data x y] (view/view data x y)))
 

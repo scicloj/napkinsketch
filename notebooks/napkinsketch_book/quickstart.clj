@@ -25,11 +25,47 @@
 ;; keywords, which Napkinsketch requires for column references.
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 (tc/head iris)
 
 (kind/test-last [(fn [v] (= 5 (count (tablecloth.api/rows v))))])
+
+;; ## Input Data
+;;
+;; `view` coerces its first argument to a
+;; [Tablecloth](https://scicloj.github.io/tablecloth/) dataset.
+;; You can pass a Clojure map of columns, a sequence of row maps,
+;; a CSV path or URL, or an existing dataset.
+;;
+;; A map of columns (keyword → vector) — the simplest inline form:
+
+(-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
+    (sk/view :x :y)
+    (sk/lay (sk/point))
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
+;; A sequence of row maps — Tablecloth pivots rows into columns:
+
+(-> [{:x 1 :y 2 :g "a"} {:x 3 :y 4 :g "a"} {:x 5 :y 6 :g "b"}]
+    (sk/view :x :y)
+    (sk/lay (sk/point {:color :g}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+
+;; A CSV URL works directly — `{:key-fn keyword}` converts string
+;; column names to keywords:
+
+(-> (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
+                {:key-fn keyword})
+    (sk/view :total_bill :tip)
+    (sk/lay (sk/point))
+    sk/plot)
+
+(kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
 
 ;; ## Two Usage Styles
 ;;
@@ -50,7 +86,7 @@
 ;; **Direct style** — compact, good for single-layer plots:
 
 (sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
-                      :color :species})])
+                     :color :species})])
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])
