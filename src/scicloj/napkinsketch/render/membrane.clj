@@ -139,8 +139,8 @@
      :tooltip — when truthy, enables tooltip text generation on data marks."
   [sketch & {:keys [tooltip]}]
   (let [{:keys [margin total-width total-height panel-width panel-height
-                title x-label y-label legend legend-position panels layout grid theme]} sketch
-        {:keys [x-label-pad y-label-pad title-pad legend-w legend-h strip-h strip-w]} layout
+                title subtitle caption x-label y-label legend legend-position panels layout grid theme]} sketch
+        {:keys [x-label-pad y-label-pad title-pad subtitle-pad caption-pad legend-w legend-h strip-h strip-w]} layout
         theme (or theme defaults/theme)
         legend-pos (or legend-position :right)
         grid-rows (:rows grid)
@@ -212,6 +212,12 @@
                          (ui/with-color text-color
                            (assoc (ui/label title (ui/font nil fsize))
                                   :text-anchor "middle")))]))
+      ;; Subtitle
+      (when subtitle
+        [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) 30
+                       (ui/with-color [0.4 0.4 0.4 1.0]
+                         (assoc (ui/label subtitle (ui/font nil (- title-fsize 2)))
+                                :text-anchor "middle")))])
       ;; Y-axis label
       (when y-label
         (let [fsize label-fsize]
@@ -253,4 +259,11 @@
       panel-elems
       ;; Strip labels
       (or col-strips [])
-      (or row-strips [])))))
+      (or row-strips [])
+      ;; Caption
+      (when caption
+        [(ui/translate (+ y-label-pad (* grid-cols pw) -10)
+                       (- total-height 6)
+                       (ui/with-color [0.5 0.5 0.5 1.0]
+                         (assoc (ui/label caption (ui/font nil 9))
+                                :text-anchor "end")))])))))

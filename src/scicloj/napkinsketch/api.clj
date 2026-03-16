@@ -71,8 +71,9 @@
   ([views channel type opts] (view/scale views channel type opts)))
 
 (defn labs
-  "Set labels on views. Keys: :title, :x, :y.
-   (labs views {:title \"My Plot\" :x \"X Axis\" :y \"Y Axis\"})"
+  "Set labels on views. Keys: :title, :subtitle, :caption, :x, :y.
+   (labs views {:title \"My Plot\" :x \"X Axis\" :y \"Y Axis\"})
+   (labs views {:title \"Title\" :subtitle \"Detail\" :caption \"Source: ...\"})"
   [views label-opts]
   (view/labs views label-opts))
 
@@ -138,8 +139,10 @@
 
 (defn lm
   "Linear regression line.
-   (lm)                      — single regression
-   (lm {:color :species})    — per-group regression"
+   (lm)                              — single regression
+   (lm {:color :species})            — per-group regression
+   (lm {:se true})                   — with 95% confidence ribbon
+   (lm {:se true :level 0.99})       — with 99% confidence ribbon"
   ([] (view/lm))
   ([opts] (view/lm opts)))
 
@@ -157,6 +160,15 @@
    (text {:text :name :color :species}) — colored labels"
   ([] (view/text))
   ([opts] (view/text opts)))
+
+(defn label
+  "Label mark — text with a filled background box at (x, y) positions.
+   Like text but with a white background rectangle for readability.
+   Requires :text key mapping to a column.
+   (label {:text :name})                — labeled points with background
+   (label {:text :name :color :species}) — colored labels with background"
+  ([] (view/label))
+  ([opts] (view/label opts)))
 
 (defn area
   "Area mark — filled region under a line.

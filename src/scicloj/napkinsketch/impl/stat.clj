@@ -6,6 +6,7 @@
             [fastmath.stats :as stats]
             [fastmath.interpolation.acm :as interp]
             [fastmath.kernel :as kernel]
+            [fastmath.random :as frand]
             [scicloj.napkinsketch.impl.defaults :as defaults]))
 
 ;; ---- Helpers ----
@@ -102,7 +103,7 @@
 
 ;; ---- Binning ----
 
-(defmethod compute-stat :bin [{:keys [data x x-type group cfg] :as view}]
+(defmethod compute-stat :bin [{:keys [data x x-type group cfg normalize] :as view}]
   (let [clean (cond-> (tc/drop-missing data [x])
                 (= x-type :categorical) (tc/map-columns x [x] str))
         xs-col (clean x)]
@@ -114,6 +115,20 @@
                             (let [hist (stats/histogram (ds x) (:bin-method (or cfg defaults/defaults)))]
                               (cond-> {:bin-maps (:bins-maps hist)}
                                 gv (assoc :color gv)))))
+            ;; When normalize=:density, convert counts to density (area integrates to 1)
+            all-bin-data (if (= normalize :density)
+                           (mapv (fn [bd]
+                                   (let [n (reduce + 0 (map :count (:bin-maps bd)))
+                                         bin-maps' (mapv (fn [b]
+                                                           (let [bw (- (double (:max b)) (double (:min b)))
+                                                                 density (if (and (pos? n) (pos? bw))
+                                                                           (/ (double (:count b)) (* n bw))
+                                                                           0.0)]
+                                                             (assoc b :count density)))
+                                                         (:bin-maps bd))]
+                                     (assoc bd :bin-maps bin-maps')))
+                                 all-bin-data)
+                           all-bin-data)
             max-count (reduce max 1 (for [{:keys [bin-maps]} all-bin-data
                                           b bin-maps]
                                       (:count b)))]
@@ -178,8 +193,46 @@
     {:x1 x-min :y1 (regr/predict model [x-min])
      :x2 x-max :y2 (regr/predict model [x-max])}))
 
+(defn fit-lm-with-se
+  "Fit a linear model and compute confidence band on a grid of x-values.
+   Returns {:xs [...] :ys [...] :ymins [...] :ymaxs [...] :x1 :y1 :x2 :y2}."
+  [xs-col ys-col n-grid level]
+  (let [model (regr/lm ys-col xs-col)
+        sigma (double (:sigma model))
+        xtxinv (:xtxinv model)
+        df-resid (long (get-in model [:df :residual]))
+        ;; t critical value for confidence level
+        t-dist (frand/distribution :t {:degrees-of-freedom df-resid})
+        t-val (frand/icdf t-dist (+ 0.5 (/ (double level) 2.0)))
+        ;; Matrix entries for se computation: [1, x] * xtxinv * [1, x]^T
+        a00 (.getEntry xtxinv 0 0)
+        a01 (.getEntry xtxinv 0 1)
+        a11 (.getEntry xtxinv 1 1)
+        x-min (dfn/reduce-min xs-col)
+        x-max (dfn/reduce-max xs-col)
+        step (/ (- x-max x-min) (dec (double n-grid)))
+        grid-xs (mapv #(+ x-min (* step (double %))) (range n-grid))
+        grid-ys (mapv #(regr/predict model [%]) grid-xs)
+        grid-ymins (mapv (fn [xi yi]
+                           (let [h (+ a00 (* 2.0 a01 xi) (* a11 xi xi))
+                                 se (* sigma (Math/sqrt h))]
+                             (- (double yi) (* t-val se))))
+                         grid-xs grid-ys)
+        grid-ymaxs (mapv (fn [xi yi]
+                           (let [h (+ a00 (* 2.0 a01 xi) (* a11 xi xi))
+                                 se (* sigma (Math/sqrt h))]
+                             (+ (double yi) (* t-val se))))
+                         grid-xs grid-ys)]
+    {:xs grid-xs :ys grid-ys
+     :ymins grid-ymins :ymaxs grid-ymaxs
+     :x1 x-min :y1 (regr/predict model [x-min])
+     :x2 x-max :y2 (regr/predict model [x-max])}))
+
 (defmethod compute-stat :lm [view]
-  (let [{:keys [data x y group]} view
+  (let [{:keys [data x y group cfg]} view
+        se (:se view)
+        level (or (:level view) 0.95)
+        n-grid (or (:se-n-grid (or cfg defaults/defaults)) 80)
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)]
     (if (or (< n 3)
@@ -187,17 +240,46 @@
       {:lines []
        :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
        :y-domain (if (pos? n) (numeric-extent (clean y)) [0 1])}
-      (let [lines (group-by-columns
-                   clean (or group [])
-                   (fn [ds gv]
-                     (when (and (>= (tc/row-count ds) 3)
-                                (not= (dfn/reduce-min (ds x))
-                                      (dfn/reduce-max (ds x))))
-                       (cond-> (fit-lm (ds x) (ds y))
-                         gv (assoc :color gv)))))]
-        {:lines (remove nil? lines)
-         :x-domain (numeric-extent (clean x))
-         :y-domain (numeric-extent (clean y))}))))
+      (if se
+        ;; With confidence band
+        (let [results (group-by-columns
+                       clean (or group [])
+                       (fn [ds gv]
+                         (when (and (>= (tc/row-count ds) 3)
+                                    (not= (dfn/reduce-min (ds x))
+                                          (dfn/reduce-max (ds x))))
+                           (cond-> (fit-lm-with-se (ds x) (ds y) n-grid level)
+                             gv (assoc :color gv)))))
+              results (remove nil? results)
+              lines (mapv (fn [{:keys [x1 y1 x2 y2 color]}]
+                            (cond-> {:x1 x1 :y1 y1 :x2 x2 :y2 y2}
+                              color (assoc :color color)))
+                          results)
+              ribbons (mapv (fn [{:keys [xs ys ymins ymaxs color]}]
+                              (cond-> {:xs xs :ys ys :ymins ymins :ymaxs ymaxs}
+                                color (assoc :color color)))
+                            results)
+              all-ymins (mapcat :ymins results)
+              all-ymaxs (mapcat :ymaxs results)
+              y-ext (numeric-extent (clean y))
+              y-lo (min (first y-ext) (reduce min all-ymins))
+              y-hi (max (second y-ext) (reduce max all-ymaxs))]
+          {:lines lines
+           :ribbons ribbons
+           :x-domain (numeric-extent (clean x))
+           :y-domain [y-lo y-hi]})
+        ;; Without confidence band (original behavior)
+        (let [lines (group-by-columns
+                     clean (or group [])
+                     (fn [ds gv]
+                       (when (and (>= (tc/row-count ds) 3)
+                                  (not= (dfn/reduce-min (ds x))
+                                        (dfn/reduce-max (ds x))))
+                         (cond-> (fit-lm (ds x) (ds y))
+                           gv (assoc :color gv)))))]
+          {:lines (remove nil? lines)
+           :x-domain (numeric-extent (clean x))
+           :y-domain (numeric-extent (clean y))})))))
 
 ;; ---- LOESS Smoothing ----
 

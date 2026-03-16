@@ -107,11 +107,14 @@
   (mapv #(assoc % :coord c) views))
 
 (defn labs
-  "Set labels on views. Keys: :title, :x, :y.
-   (labs views {:title \"My Plot\" :x \"X Axis\" :y \"Y Axis\"})"
+  "Set labels on views. Keys: :title, :subtitle, :caption, :x, :y.
+   (labs views {:title \"My Plot\" :x \"X Axis\" :y \"Y Axis\"})
+   (labs views {:title \"Title\" :subtitle \"More detail\" :caption \"Source: ...\"})"
   [views label-opts]
   (let [m (cond-> {}
             (:title label-opts) (assoc :title (:title label-opts))
+            (:subtitle label-opts) (assoc :subtitle (:subtitle label-opts))
+            (:caption label-opts) (assoc :caption (:caption label-opts))
             (:x label-opts) (assoc :x-label (:x label-opts))
             (:y label-opts) (assoc :y-label (:y label-opts)))]
     (mapv #(merge % m) views)))
@@ -186,8 +189,10 @@
 
 (defn lm
   "Linear regression line.
-   (lm)                      — single regression
-   (lm {:color :species})    — per-group regression"
+   (lm)                              — single regression
+   (lm {:color :species})            — per-group regression
+   (lm {:se true})                   — with 95% confidence ribbon
+   (lm {:se true :level 0.99})       — with 99% confidence ribbon"
   ([] {:mark :line :stat :lm})
   ([opts] (merge {:mark :line :stat :lm} opts)))
 
@@ -205,6 +210,15 @@
    (text {:text :name :color :species}) — colored labels"
   ([] {:mark :text :stat :identity})
   ([opts] (merge {:mark :text :stat :identity} opts)))
+
+(defn label
+  "Label mark — text with a filled background box at (x, y) positions.
+   Like text but with a white background rectangle for readability.
+   Requires :text key mapping to a column.
+   (label {:text :name})                — labeled points with background
+   (label {:text :name :color :species}) — colored labels with background"
+  ([] {:mark :label :stat :identity})
+  ([opts] (merge {:mark :label :stat :identity} opts)))
 
 (defn area
   "Area mark — filled region under a line.

@@ -73,6 +73,21 @@
                  (pos? (:polygons s))
                  (some #(= "Distribution of Total Bill" %) (:texts s)))))])
 
+;; ## Density-Normalized Histogram
+;;
+;; Pass `{:normalize :density}` so the y-axis shows probability
+;; density instead of raw counts. This makes the histogram directly
+;; comparable with a density curve overlay.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_length]])
+    (sk/lay (sk/histogram {:normalize :density :alpha 0.5})
+            (sk/density))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
 ;; ## Density Plot
 
 ;; A smooth curve estimating the probability density function.

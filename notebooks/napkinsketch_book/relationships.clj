@@ -43,6 +43,20 @@
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
+;; ## Regression with Confidence Ribbon
+
+;; Pass `{:se true}` to show a 95% confidence band around the line.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species})
+            (sk/lm {:se true :color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s))
+                                (= 3 (:polygons s)))))])
 ;; ## Tips with Regression
 
 ;; Do smokers and non-smokers tip differently?

@@ -65,20 +65,26 @@
                             {:lo min :hi max :count count}))}))})
 
 (defmethod extract-layer :line [view stat all-colors cfg]
-  {:mark :line
-   :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
-   :groups (vec
-            (concat
-             ;; Regression lines
-             (when-let [lines (:lines stat)]
-               (for [{:keys [color x1 y1 x2 y2]} lines]
-                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                  :x1 x1 :y1 y1 :x2 x2 :y2 y2}))
-             ;; Polylines
-             (when-let [pts (:points stat)]
-               (for [{:keys [color xs ys]} pts]
-                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                  :xs (vec xs) :ys (vec ys)}))))})
+  (cond-> {:mark :line
+           :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
+           :groups (vec
+                    (concat
+                     ;; Regression lines
+                     (when-let [lines (:lines stat)]
+                       (for [{:keys [color x1 y1 x2 y2]} lines]
+                         {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                          :x1 x1 :y1 y1 :x2 x2 :y2 y2}))
+                     ;; Polylines
+                     (when-let [pts (:points stat)]
+                       (for [{:keys [color xs ys]} pts]
+                         {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                          :xs (vec xs) :ys (vec ys)}))))}
+    ;; Confidence ribbons from :lm {:se true}
+    (:ribbons stat)
+    (assoc :ribbons (vec
+                     (for [{:keys [color xs ymins ymaxs]} (:ribbons stat)]
+                       {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                        :xs (vec xs) :ymins (vec ymins) :ymaxs (vec ymaxs)})))))
 
 (defmethod extract-layer :step [view stat all-colors cfg]
   {:mark :step
@@ -134,6 +140,15 @@
 
 (defmethod extract-layer :text [view stat all-colors cfg]
   {:mark :text
+   :style {:font-size (or (:font-size view) 10)}
+   :groups (vec
+            (for [{:keys [color xs ys labels]} (:points stat)]
+              (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                       :xs (vec xs) :ys (vec ys)}
+                labels (assoc :labels (vec (map str labels))))))})
+
+(defmethod extract-layer :label [view stat all-colors cfg]
+  {:mark :label
    :style {:font-size (or (:font-size view) 10)}
    :groups (vec
             (for [{:keys [color xs ys labels]} (:points stat)]
@@ -239,11 +254,11 @@
                    (if (and (< i n-grid) (< j n-grid) (>= i 0) (>= j 0))
                      (nth densities (+ (* i n-grid) j))
                      0.0))
-        ;; Corner positions: use cell centers (i+0.5, j+0.5) in grid units
-        ;; For corners, we use the grid values at (i,j), (i+1,j), (i+1,j+1), (i,j+1)
         interp (fn [v1 v2 p1 p2]
-                 ;; Linear interpolation between two points based on threshold
-                 (let [t (/ (- threshold v1) (max 1e-15 (- v2 v1)))]
+                 ;; Linear interpolation between two points based on threshold.
+                 ;; Clamp t to [0,1] to prevent numerical blowup when v1 ≈ v2.
+                 (let [t (/ (- threshold v1) (max 1e-15 (- v2 v1)))
+                       t (max 0.0 (min 1.0 t))]
                    (+ p1 (* t (- p2 p1)))))]
     (loop [i 0 segments (transient [])]
       (if (>= i (dec n-grid))
@@ -285,6 +300,63 @@
                                   segs)))))]
           (recur (inc i) segs))))))
 
+(defn- join-segments
+  "Join line segments into polylines by connecting shared endpoints.
+   Segments are [[x1 y1] [x2 y2]] pairs. Uses tolerance-based matching
+   for floating-point coordinates. Returns a sequence of polylines,
+   each a vector of [x y] points."
+  [segments]
+  (if (empty? segments)
+    []
+    (let [;; Round coords to 6 decimal places for matching
+          round6 (fn [v] (/ (Math/round (* v 1e6)) 1e6))
+          snap (fn [[x y]] [(round6 x) (round6 y)])
+          ;; Build adjacency: endpoint -> list of (other-endpoint, segment-index)
+          adj (reduce
+               (fn [m [idx [p1 p2]]]
+                 (let [k1 (snap p1) k2 (snap p2)]
+                   (-> m
+                       (update k1 (fnil conj []) {:other p2 :other-key k2 :idx idx})
+                       (update k2 (fnil conj []) {:other p1 :other-key k1 :idx idx}))))
+               {}
+               (map-indexed vector segments))
+          ;; Walk chains greedily
+          used (boolean-array (count segments))]
+      (loop [remaining (range (count segments))
+             polylines []]
+        (let [start-idx (first (drop-while #(aget used %) remaining))]
+          (if (nil? start-idx)
+            polylines
+            (do
+              (aset used start-idx true)
+              (let [[p1 p2] (nth segments start-idx)
+                    ;; Walk forward from p2
+                    forward
+                    (loop [chain [p2]
+                           cur-key (snap p2)]
+                      (let [neighbors (get adj cur-key [])
+                            next-seg (first (filter #(not (aget used (:idx %))) neighbors))]
+                        (if next-seg
+                          (do
+                            (aset used (:idx next-seg) true)
+                            (recur (conj chain (:other next-seg))
+                                   (:other-key next-seg)))
+                          chain)))
+                    ;; Walk backward from p1
+                    backward
+                    (loop [chain []
+                           cur-key (snap p1)]
+                      (let [neighbors (get adj cur-key [])
+                            next-seg (first (filter #(not (aget used (:idx %))) neighbors))]
+                        (if next-seg
+                          (do
+                            (aset used (:idx next-seg) true)
+                            (recur (conj chain (:other next-seg))
+                                   (:other-key next-seg)))
+                          chain)))
+                    polyline (vec (concat (rseq backward) [p1] forward))]
+                (recur remaining (conj polylines polyline))))))))))
+
 (defmethod extract-layer :contour [view stat all-colors cfg]
   (let [{:keys [grid fill-range]} stat]
     (if (nil? grid)
@@ -299,12 +371,13 @@
                               :let [t (/ threshold max-d)
                                     segments (marching-squares-segments
                                               densities n-grid threshold
-                                              x-lo y-lo x-step y-step)]
-                              :when (seq segments)]
+                                              x-lo y-lo x-step y-step)
+                                    polylines (join-segments segments)]
+                              :when (seq polylines)]
                           {:threshold threshold
                            :t t
                            :color (defaults/gradient-color t)
-                           :segments (vec segments)}))]
+                           :polylines (vec polylines)}))]
         {:mark :contour
          :levels levels
          :style {:stroke-width (or (:fixed-size view) 1.5)
@@ -706,6 +779,7 @@
 (defn- compute-layout-dims
   "Compute layout dimensions: padding, legend width, total size."
   [cfg layout-type eff-title eff-x-label eff-y-label
+   subtitle caption
    legend facet-row-vals facet-col-vals
    grid-rows grid-cols pw ph multi? panels legend-position]
   (let [x-label-pad (if eff-x-label (:label-offset cfg) 0)
@@ -721,6 +795,8 @@
                       (+ (:label-offset cfg) (max 0.0 (- y-tick-width 12.0)))
                       0)
         title-pad (if eff-title (:title-offset cfg) 0)
+        subtitle-pad (if subtitle 16 0)
+        caption-pad (if caption 18 0)
         legend-pos (or legend-position :right)
         legend-w (if (and legend (= legend-pos :right)) (:legend-width cfg) 0)
         legend-h (if (and legend (#{:bottom :top} legend-pos)) 30 0)
@@ -733,13 +809,16 @@
         top-legend-pad (if (= legend-pos :top) legend-h 0)]
     {:x-label-pad x-label-pad
      :y-label-pad y-label-pad
-     :title-pad (+ title-pad top-legend-pad)
+     :title-pad (+ title-pad subtitle-pad top-legend-pad)
+     :subtitle-pad subtitle-pad
+     :caption-pad caption-pad
      :legend-w legend-w
      :legend-h legend-h
      :strip-h strip-h
      :strip-w strip-w
      :total-w (+ y-label-pad (* grid-cols pw) strip-w legend-w)
-     :total-h (+ title-pad top-legend-pad strip-h (* grid-rows ph) x-label-pad
+     :total-h (+ title-pad subtitle-pad top-legend-pad strip-h (* grid-rows ph) x-label-pad
+                 caption-pad
                  (if (= legend-pos :bottom) legend-h 0))}))
 
 ;; ---- Main Entry Point ----
@@ -765,7 +844,8 @@
    with data-space geometry, domains, ticks, legend, and layout info.
    No membrane types, no datasets in the output."
   ([views] (views->sketch views {}))
-  ([views {:keys [width height config x-label y-label title scales palette theme legend-position] :as opts}]
+  ([views {:keys [width height config x-label y-label title subtitle caption
+                  scales palette theme legend-position] :as opts}]
    (let [cfg (cond-> (merge defaults/defaults config) palette (assoc :palette palette))
          resolved-theme (merge defaults/theme theme)
          width (or width (:width cfg))
@@ -789,7 +869,7 @@
 
          ;; Annotations
          annotations (vec (for [a ann-views]
-                            (select-keys a [:mark :intercept :lo :hi])))
+                            (select-keys a [:mark :intercept :lo :hi :alpha])))
 
          ;; Grid
          {:keys [grid-rows grid-cols facet-row-vals facet-col-vals x-vars y-vars]}
@@ -840,6 +920,9 @@
          (resolve-labels non-ann-views x-vars y-vars x-scale-spec y-scale-spec
                          title x-label y-label auto-label?)
 
+;; Subtitle and caption — opts override view-level
+         subtitle (or subtitle (:subtitle (first non-ann-views)))
+         caption (or caption (:caption (first non-ann-views)))
          ;; Swap labels when axes are visually transposed
          swap-labels? (or (= coord-type :flip)
                           has-ridgeline?)
@@ -852,6 +935,7 @@
 
          ;; Layout dimensions
          layout-dims (compute-layout-dims cfg layout-type eff-title eff-x-label eff-y-label
+                                          subtitle caption
                                           legend facet-row-vals facet-col-vals
                                           grid-rows grid-cols pw ph multi? panels legend-position)]
 
@@ -861,10 +945,13 @@
       :grid {:rows grid-rows :cols grid-cols}
       :layout-type layout-type
       :title eff-title
+      :subtitle subtitle
+      :caption caption
       :x-label eff-x-label :y-label eff-y-label
       :legend legend
       :legend-position (or legend-position :right)
       :panels panels
       :theme resolved-theme
       :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad
+                                        :subtitle-pad :caption-pad
                                         :legend-w :legend-h :strip-h :strip-w])})))

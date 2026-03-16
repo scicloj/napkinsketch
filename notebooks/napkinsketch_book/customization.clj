@@ -64,6 +64,20 @@
                            (and (= 150 (:points s))
                                 (some #{"Pipeline Labels"} (:texts s)))))])
 
+;; Add a subtitle and caption for context.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:title "Iris Measurements"
+              :subtitle "Sepal dimensions across three species"
+              :caption "Source: Fisher's Iris dataset (1936)"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"Iris Measurements"} (:texts s))
+                                (some (fn [t] (.contains ^String t "Sepal dimensions")) (:texts s)))))])
+
 ;; ## Scales
 
 ;; Use a log scale for data spanning orders of magnitude.
@@ -184,6 +198,18 @@
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
+;; Pass a map to assign specific colors to specific categories.
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:palette {:setosa "#E74C3C"
+                        :versicolor "#3498DB"
+                        :virginica "#2ECC71"}}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
 ;; ## Named Palette Presets
 ;;
 ;; Use a keyword to select a predefined palette.

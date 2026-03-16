@@ -189,6 +189,32 @@
                      (ui/with-color [cr cg cb 1.0]
                        (ui/label label (ui/font nil fsize))))))))
 
+(defmethod layer->membrane :label [layer ctx]
+  (let [{:keys [style groups]} layer
+        {:keys [coord-fn]} ctx
+        {:keys [font-size]} style
+        fsize (or font-size 10)
+        pad-x 3 pad-y 2
+        char-w (* fsize 0.6)]
+    (vec
+     (for [{:keys [color xs ys labels]} groups
+           i (range (count xs))
+           :let [[px py] (coord-fn (nth xs i) (nth ys i))
+                 label (if labels (nth labels i) "")
+                 [cr cg cb _] color
+                 text-y (- (double py) (/ fsize 2.0))
+                 text-w (* (count label) char-w)
+                 rect-w (+ text-w (* 2 pad-x))
+                 rect-h (+ fsize (* 2 pad-y))]]
+       (ui/translate (double px) text-y
+                     [(ui/translate (- pad-x) (- pad-y)
+                                    (ui/filled-rectangle [1.0 1.0 1.0 0.85] rect-w rect-h))
+                      (ui/translate (- pad-x) (- pad-y)
+                                    (ui/with-color [0.7 0.7 0.7 0.5]
+                                      (ui/rectangle rect-w rect-h)))
+                      (ui/with-color [cr cg cb 1.0]
+                        (ui/label label (ui/font nil fsize)))])))))
+
 ;; ---- Area ----
 
 (defmethod layer->membrane :area [layer ctx]
@@ -443,17 +469,15 @@
         {:keys [coord-fn]} ctx
         {:keys [stroke-width opacity]} style]
     (vec
-     (for [{:keys [color segments]} levels
+     (for [{:keys [color polylines]} levels
            :let [[cr cg cb _] color]
-           [p1 p2] segments
-           :let [[x1 y1] p1
-                 [x2 y2] p2
-                 [px1 py1] (coord-fn x1 y1)
-                 [px2 py2] (coord-fn x2 y2)]]
+           polyline polylines
+           :let [pts (mapv (fn [[x y]] (coord-fn x y)) polyline)]
+           :when (>= (count pts) 2)]
        (ui/with-color [cr cg cb (or opacity 0.8)]
          (ui/with-stroke-width (or stroke-width 1.5)
            (ui/with-style ::ui/style-stroke
-             (ui/path [px1 py1] [px2 py2]))))))))
+             (apply ui/path pts))))))))
 
 ;; ---- Ridgeline ----
 
@@ -596,28 +620,41 @@
 ;; ---- Line ----
 
 (defmethod layer->membrane :line [layer ctx]
-  (let [{:keys [style groups]} layer
+  (let [{:keys [style groups ribbons]} layer
         {:keys [coord-fn]} ctx
-        {:keys [stroke-width]} style]
-    (vec
-     (for [group groups
-           :let [[cr cg cb _] (:color group)]]
-       (if (:x1 group)
-         ;; Regression line segment
-         (let [{:keys [x1 y1 x2 y2]} group
-               [px1 py1] (coord-fn x1 y1)
-               [px2 py2] (coord-fn x2 y2)]
-           (ui/with-color [cr cg cb 1.0]
-             (ui/with-stroke-width (or stroke-width 2)
-               (ui/with-style ::ui/style-stroke
-                 (ui/path [px1 py1] [px2 py2])))))
-         ;; Polyline (connected points)
-         (let [{:keys [xs ys]} group
-               projected (sort-by first (map coord-fn xs ys))]
-           (ui/with-color [cr cg cb 1.0]
-             (ui/with-stroke-width (or stroke-width 2)
-               (ui/with-style ::ui/style-stroke
-                 (apply ui/path projected))))))))))
+        {:keys [stroke-width]} style
+        ;; Render ribbons first (behind lines)
+        ribbon-elems
+        (when ribbons
+          (for [{:keys [color xs ymins ymaxs]} ribbons
+                :let [[cr cg cb _] color
+                      top-pts (mapv (fn [x y] (coord-fn x y)) xs ymaxs)
+                      bot-pts (reverse (mapv (fn [x y] (coord-fn x y)) xs ymins))
+                      all-pts (concat top-pts bot-pts)]]
+            (ui/with-color [cr cg cb 0.2]
+              (ui/with-style ::ui/style-fill
+                (apply ui/path all-pts)))))
+        ;; Render lines on top
+        line-elems
+        (for [group groups
+              :let [[cr cg cb _] (:color group)]]
+          (if (:x1 group)
+            ;; Regression line segment
+            (let [{:keys [x1 y1 x2 y2]} group
+                  [px1 py1] (coord-fn x1 y1)
+                  [px2 py2] (coord-fn x2 y2)]
+              (ui/with-color [cr cg cb 1.0]
+                (ui/with-stroke-width (or stroke-width 2)
+                  (ui/with-style ::ui/style-stroke
+                    (ui/path [px1 py1] [px2 py2])))))
+            ;; Polyline (connected points)
+            (let [{:keys [xs ys]} group
+                  projected (sort-by first (map coord-fn xs ys))]
+              (ui/with-color [cr cg cb 1.0]
+                (ui/with-stroke-width (or stroke-width 2)
+                  (ui/with-style ::ui/style-stroke
+                    (apply ui/path projected)))))))]
+    (vec (concat ribbon-elems line-elems))))
 
 ;; ---- Step Line ----
 

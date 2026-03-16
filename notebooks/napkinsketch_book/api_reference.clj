@@ -217,6 +217,17 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (every? (set (:texts s)) ["A" "B" "C" "D"])))])
 
+(kind/doc #'sk/label)
+
+(-> (tc/dataset {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]})
+    (sk/view [[:x :y]])
+    (sk/lay (sk/point {:size 5})
+            (sk/label {:text :name}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:points s))
+                                (every? (set (:texts s)) ["A" "B" "C" "D"]))))])
 (kind/doc #'sk/boxplot)
 
 (-> iris

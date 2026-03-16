@@ -115,8 +115,9 @@
   ts-dates
   (mapv
    (fn*
-    [p1__79416#]
-    (java.time.LocalDate/ofEpochDay (+ 18262 (* (long p1__79416#) 7))))
+    [p1__198362#]
+    (java.time.LocalDate/ofEpochDay
+     (+ 18262 (* (long p1__198362#) 7))))
    (range 52))))
 
 
@@ -129,8 +130,8 @@
     :value
     (mapv
      (fn*
-      [p1__79417#]
-      (+ 100.0 (* 30.0 (Math/sin (* (double p1__79417#) 0.12)))))
+      [p1__198363#]
+      (+ 100.0 (* 30.0 (Math/sin (* (double p1__198363#) 0.12)))))
      (range 52))}
    {:key-fn keyword})))
 

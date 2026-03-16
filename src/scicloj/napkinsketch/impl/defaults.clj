@@ -81,16 +81,25 @@
 (defn color-for
   "Look up the color for a categorical value from the palette.
   Returns [r g b a] vector. Accepts an optional custom palette —
-  a keyword (named preset) or a vector of hex strings."
+  a keyword (named preset), a vector of hex strings, or a map
+  of {category-value \"#hex\"} for explicit color mapping."
   ([categories val]
    (color-for categories val nil))
   ([categories val palette]
-   (let [pal (cond
-               (keyword? palette) (get named-palettes palette ggplot-palette)
-               (sequential? palette) palette
-               :else ggplot-palette)
-         idx (.indexOf ^java.util.List (vec categories) val)]
-     (hex->rgba (nth pal (mod (if (neg? idx) 0 idx) (count pal)))))))
+   (if (map? palette)
+     ;; Explicit color mapping: look up value directly, fall back to index
+     (if-let [hex (get palette val)]
+       (hex->rgba hex)
+       (let [idx (.indexOf ^java.util.List (vec categories) val)
+             fallback-pal ggplot-palette]
+         (hex->rgba (nth fallback-pal (mod (if (neg? idx) 0 idx) (count fallback-pal))))))
+     ;; Index-based: keyword preset, vector, or default
+     (let [pal (cond
+                 (keyword? palette) (get named-palettes palette ggplot-palette)
+                 (sequential? palette) palette
+                 :else ggplot-palette)
+           idx (.indexOf ^java.util.List (vec categories) val)]
+       (hex->rgba (nth pal (mod (if (neg? idx) 0 idx) (count pal))))))))
 
 ;; ---- Continuous Color ----
 
