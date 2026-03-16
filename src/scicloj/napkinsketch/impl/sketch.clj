@@ -7,7 +7,8 @@
             [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.stat :as stat]
             [scicloj.napkinsketch.impl.scale :as scale]
-            [scicloj.napkinsketch.impl.coord :as coord]))
+            [scicloj.napkinsketch.impl.coord :as coord]
+            [scicloj.napkinsketch.impl.position :as position]))
 
 ;; ---- Color Resolution (data-space) ----
 
@@ -18,6 +19,28 @@
     color-val (defaults/color-for all-colors color-val (:palette cfg))
     fixed-color (if (string? fixed-color) (defaults/hex->rgba fixed-color) fixed-color)
     :else (defaults/hex->rgba (:default-color cfg))))
+
+(defn- apply-nudge
+  "Apply nudge-x/nudge-y offsets to a layer's groups.
+   Nudge shifts data coordinates by a constant amount — orthogonal to
+   position adjustment (dodge/stack). Works on any layer with groups
+   containing :xs/:ys vectors."
+  [layer {:keys [nudge-x nudge-y]}]
+  (if (or nudge-x nudge-y)
+    (update layer :groups
+            (fn [gs]
+              (mapv (fn [g]
+                      (cond-> g
+                        (and nudge-x (:xs g))
+                        (update :xs (fn [xs] (mapv #(+ (double %) (double nudge-x)) xs)))
+                        (and nudge-y (:ys g))
+                        (update :ys (fn [ys] (mapv #(+ (double %) (double nudge-y)) ys)))
+                        (and nudge-y (:ymins g))
+                        (update :ymins (fn [ys] (mapv #(+ (double %) (double nudge-y)) ys)))
+                        (and nudge-y (:ymaxs g))
+                        (update :ymaxs (fn [ys] (mapv #(+ (double %) (double nudge-y)) ys)))))
+                    gs)))
+    layer))
 
 ;; ---- Geometry Extraction (stat → layer descriptors) ----
 
@@ -34,26 +57,28 @@
         c-min (when (seq all-color-vals) (reduce min all-color-vals))
         c-max (when (seq all-color-vals) (reduce max all-color-vals))
         c-range (when (and c-min c-max) (- (double c-max) (double c-min)))]
-    {:mark :point
-     :style (cond-> {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
-                     :radius (or (:fixed-size view) (:point-radius cfg))}
-              (:jitter view) (assoc :jitter (:jitter view)))
-     :groups (vec
-              (for [{:keys [color xs ys sizes alphas shapes row-indices color-values]} (:points stat)]
-                (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                         :xs (vec xs) :ys (vec ys)}
-                  color (assoc :color-label (str color))
-                  (and numeric-color? color-values)
-                  (assoc :colors (vec (map (fn [v]
-                                             (let [t (if (and c-range (pos? c-range))
-                                                       (/ (- (double v) (double c-min)) c-range)
-                                                       0.5)]
-                                               (defaults/gradient-color t)))
-                                           color-values)))
-                  sizes (assoc :sizes (vec sizes))
-                  alphas (assoc :alphas (vec alphas))
-                  shapes (assoc :shapes (vec shapes))
-                  row-indices (assoc :row-indices (vec row-indices)))))}))
+    (-> {:mark :point
+         :style (cond-> {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
+                         :radius (or (:fixed-size view) (:point-radius cfg))}
+                  (:jitter view) (assoc :jitter (:jitter view)))
+         :groups (vec
+                  (for [{:keys [color xs ys sizes alphas shapes row-indices color-values]} (:points stat)]
+                    (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                             :xs (vec xs) :ys (vec ys)}
+                      color (assoc :label (str color))
+                      (and numeric-color? color-values)
+                      (assoc :colors (vec (map (fn [v]
+                                                 (let [t (if (and c-range (pos? c-range))
+                                                           (/ (- (double v) (double c-min)) c-range)
+                                                           0.5)]
+                                                   (defaults/gradient-color t)))
+                                               color-values)))
+                      sizes (assoc :sizes (vec sizes))
+                      alphas (assoc :alphas (vec alphas))
+                      shapes (assoc :shapes (vec shapes))
+                      row-indices (assoc :row-indices (vec row-indices)))))}
+        (cond-> (:position view) (assoc :position (:position view)))
+        (apply-nudge view))))
 
 (defmethod extract-layer :bar [view stat all-colors cfg]
   {:mark :bar
@@ -65,26 +90,31 @@
                             {:lo min :hi max :count count}))}))})
 
 (defmethod extract-layer :line [view stat all-colors cfg]
-  (cond-> {:mark :line
-           :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
-           :groups (vec
-                    (concat
-                     ;; Regression lines
-                     (when-let [lines (:lines stat)]
-                       (for [{:keys [color x1 y1 x2 y2]} lines]
-                         {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                          :x1 x1 :y1 y1 :x2 x2 :y2 y2}))
-                     ;; Polylines
-                     (when-let [pts (:points stat)]
-                       (for [{:keys [color xs ys]} pts]
-                         {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                          :xs (vec xs) :ys (vec ys)}))))}
-    ;; Confidence ribbons from :lm {:se true}
-    (:ribbons stat)
-    (assoc :ribbons (vec
-                     (for [{:keys [color xs ymins ymaxs]} (:ribbons stat)]
-                       {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                        :xs (vec xs) :ymins (vec ymins) :ymaxs (vec ymaxs)})))))
+  (-> (cond-> {:mark :line
+               :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
+               :groups (vec
+                        (concat
+                         ;; Regression lines
+                         (when-let [lines (:lines stat)]
+                           (for [{:keys [color x1 y1 x2 y2]} lines]
+                             {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                              :label (str color)
+                              :x1 x1 :y1 y1 :x2 x2 :y2 y2}))
+                         ;; Polylines
+                         (when-let [pts (:points stat)]
+                           (for [{:keys [color xs ys]} pts]
+                             {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                              :label (str color)
+                              :xs (vec xs) :ys (vec ys)}))))}
+        ;; Confidence ribbons from :lm {:se true}
+        (:ribbons stat)
+        (assoc :ribbons (vec
+                         (for [{:keys [color xs ymins ymaxs]} (:ribbons stat)]
+                           {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                            :xs (vec xs) :ymins (vec ymins) :ymaxs (vec ymaxs)})))
+        (:position view)
+        (assoc :position (:position view)))
+      (apply-nudge view)))
 
 (defmethod extract-layer :step [view stat all-colors cfg]
   {:mark :step
@@ -92,43 +122,21 @@
    :groups (vec
             (for [{:keys [color xs ys]} (:points stat)]
               {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :label (str color)
                :xs (vec xs) :ys (vec ys)}))})
 
 (defmethod extract-layer :rect [view stat all-colors cfg]
   (if (:bars stat)
     ;; Categorical bars (from :count stat)
-    (let [position (or (:position view) :dodge)
-          raw-groups (vec
-                      (for [{:keys [color counts]} (:bars stat)]
-                        {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                         :label (str color)
-                         :counts (vec counts)}))
-          ;; For :fill position, normalize counts per category to sum to 1.0
-          groups (if (= position :fill)
-                   (let [cat-totals (reduce (fn [acc g]
-                                              (reduce (fn [a {:keys [category count]}]
-                                                        (update a category (fnil + 0) count))
-                                                      acc
-                                                      (:counts g)))
-                                            {}
-                                            raw-groups)]
-                     (mapv (fn [g]
-                             (update g :counts
-                                     (fn [counts]
-                                       (mapv (fn [{:keys [category count]}]
-                                               (let [total (get cat-totals category 1)]
-                                                 {:category category
-                                                  :count (if (pos? total)
-                                                           (/ (double count) (double total))
-                                                           0.0)}))
-                                             counts))))
-                           raw-groups))
-                   raw-groups)]
-      {:mark :rect
-       :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
-       :position position
-       :categories (vec (:categories stat))
-       :groups groups})
+    {:mark :rect
+     :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
+     :position (or (:position view) :dodge)
+     :categories (vec (:categories stat))
+     :groups (vec
+              (for [{:keys [color counts]} (:bars stat)]
+                {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                 :label (str color)
+                 :counts (vec counts)}))}
     ;; Value bars (from :identity stat)
     {:mark :rect
      :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
@@ -136,6 +144,7 @@
      :groups (vec
               (for [{:keys [color xs ys]} (:points stat)]
                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                 :label (str color)
                  :xs (vec xs) :ys (vec ys)}))}))
 
 (defmethod extract-layer :text [view stat all-colors cfg]
@@ -162,26 +171,32 @@
            :groups (vec
                     (for [{:keys [color xs ys]} (:points stat)]
                       {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                       :label (str color)
                        :xs (vec xs) :ys (vec ys)}))}
     (:position view) (assoc :position (:position view))))
 
 (defmethod extract-layer :errorbar [view stat all-colors cfg]
-  {:mark :errorbar
-   :style {:stroke-width (or (:fixed-size view) 1.5)
-           :cap-width (or (:cap-width view) 6)}
-   :groups (vec
-            (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
-              {:color (resolve-color all-colors color (:fixed-color view) cfg)
-               :xs (vec xs) :ys (vec ys)
-               :ymins (vec ymins) :ymaxs (vec ymaxs)}))})
+  (-> {:mark :errorbar
+       :style {:stroke-width (or (:fixed-size view) 1.5)
+               :cap-width (or (:cap-width view) 6)}
+       :groups (vec
+                (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
+                  {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                   :label (str color)
+                   :xs (vec xs) :ys (vec ys)
+                   :ymins (vec ymins) :ymaxs (vec ymaxs)}))}
+      (cond-> (:position view) (assoc :position (:position view)))
+      (apply-nudge view)))
 
 (defmethod extract-layer :lollipop [view stat all-colors cfg]
   {:mark :lollipop
    :style {:radius (or (:fixed-size view) (:point-radius cfg))
            :stroke-width 1.5}
+   :position (or (:position view) :dodge)
    :groups (vec
             (for [{:keys [color xs ys]} (:points stat)]
               {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :label (str color)
                :xs (vec xs) :ys (vec ys)}))})
 
 (defmethod extract-layer :boxplot [view stat all-colors cfg]
@@ -189,6 +204,7 @@
     {:mark :boxplot
      :style {:box-width (or (:box-width view) 0.6)
              :stroke-width (or (:fixed-size view) 1.5)}
+     :position (or (:position view) :dodge)
      :color-categories color-cats
      :boxes (vec
              (for [b (:boxes stat)]
@@ -204,6 +220,7 @@
     {:mark :violin
      :style {:opacity (or (:fixed-alpha view) 0.7)
              :stroke-width (or (:fixed-size view) 1.0)}
+     :position (or (:position view) :dodge)
      :color-categories color-cats
      :violins (vec
                (for [v (:violins stat)]
@@ -416,6 +433,7 @@
    :groups (vec
             (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
               {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :label (str color)
                :xs (vec xs) :ys (vec ys)
                :ymins (vec ymins) :ymaxs (vec ymaxs)}))})
 
@@ -438,64 +456,58 @@
         (distinct vals)))))
 
 (defn compute-global-y-domain
-  "Compute global y-domain, handling stacked bar/area accumulation.
-  Extends domain to include 0 for marks that draw stems from baseline
-  (lollipop, value-bar)."
-  [stat-results views scale-spec]
-  (let [fill-views (filter #(= :fill (:position %)) views)
-        stacked-views (filter #(= :stack (:position %)) views)
-        has-fill? (seq fill-views)
-        has-stacked? (seq stacked-views)
+  "Compute global y-domain from position-adjusted layers.
+   Reads pre-computed :y0/:y1 from stacked layers. Extends domain to
+   include 0 for marks that draw stems from baseline (lollipop, value-bar)."
+  [layers scale-spec]
+  (let [fill-layers (filter #(= :fill (:position %)) layers)
+        stack-layers (filter #(= :stack (:position %)) layers)
         zero-baseline-marks #{:lollipop :value-bar}
-        needs-zero? (some #(zero-baseline-marks (:mark %)) views)]
+        needs-zero? (some #(zero-baseline-marks (:mark %)) layers)]
     (cond
-      ;; Fill mode: counts are normalized to [0, 1]
-      has-fill?
+      ;; Fill mode: normalized to [0, 1]
+      (seq fill-layers)
       [0.0 1.0]
 
-      has-stacked?
-      (let [;; Stacked bars: accumulate counts per category
-            count-stats (filter :categories stat-results)
-            all-cats (distinct (mapcat :categories count-stats))
-            max-bar-stack (if (seq all-cats)
-                            (reduce max 0
-                                    (for [cat all-cats]
-                                      (reduce + (for [sr count-stats
-                                                      {:keys [counts]} (:bars sr)
-                                                      {:keys [category count]} counts
-                                                      :when (= category cat)]
-                                                  count))))
-                            0)
-            ;; Stacked area: accumulate y-values per x across groups
-            area-views (filter #(and (= :stack (:position %)) (= :area (:mark %))) views)
-            area-stats (mapv (fn [v] (nth stat-results (.indexOf ^java.util.List (vec views) v)))
-                             area-views)
-            max-area-stack (if (seq area-stats)
-                             (let [all-groups (mapcat :points area-stats)
-                                   x->y-sum (reduce (fn [acc {:keys [xs ys]}]
-                                                      (reduce (fn [a [x y]]
-                                                                (update a x (fnil + 0) y))
-                                                              acc
-                                                              (map vector xs ys)))
-                                                    {}
-                                                    all-groups)]
-                               (if (seq x->y-sum)
-                                 (reduce max 0 (vals x->y-sum))
-                                 0))
-                             0)
-            other-yd (mapcat (fn [sr]
-                               (when-not (or (:categories sr)
-                                             (some #{sr} area-stats))
-                                 (:y-domain sr)))
-                             stat-results)
-            hi (max max-bar-stack max-area-stack
+      ;; Stack mode: read pre-computed y1 values from adjusted layers
+      (seq stack-layers)
+      (let [;; Stacked rect: max y1 across all groups and categories
+            max-rect-y1 (reduce max 0
+                                (for [l stack-layers
+                                      :when (:categories l)
+                                      g (:groups l)
+                                      {:keys [y1]} (:counts g)
+                                      :when y1]
+                                  y1))
+            ;; Stacked area: max ys (already accumulated)
+            max-area-y (reduce max 0
+                               (for [l stack-layers
+                                     :when (and (not (:categories l)) (:groups l))
+                                     g (:groups l)
+                                     y (:ys g)]
+                                 y))
+            ;; Other (non-stacked) layers: use their y-domain
+            other-yd (mapcat (fn [l]
+                               (when-not (#{:stack :fill} (:position l))
+                                 (:y-domain l)))
+                             layers)
+            hi (max max-rect-y1 max-area-y
                     (if (seq other-yd) (reduce max 0 other-yd) 0))]
         (if (pos? hi)
           (scale/pad-domain [0 hi] scale-spec)
           [0 1]))
 
+      ;; Normal: collect y-domains from layers
       :else
-      (let [dom (collect-domain stat-results :y-domain scale-spec)]
+      (let [all-yds (keep :y-domain layers)
+            vals (mapcat (fn [d]
+                           (if (and (= 2 (count d)) (number? (first d)))
+                             d (map str d)))
+                         all-yds)
+            dom (when (seq vals)
+                  (if (number? (first vals))
+                    (scale/pad-domain [(reduce min vals) (reduce max vals)] scale-spec)
+                    (distinct vals)))]
         (if (and needs-zero? (sequential? dom) (number? (first dom)))
           (scale/pad-domain [(min 0.0 (double (first dom)))
                              (max 0.0 (double (second dom)))]
@@ -570,9 +582,12 @@
   [panel-views all-colors cfg & {:keys [resolved]}]
   (let [resolved (or resolved (mapv view/resolve-view panel-views))
         stat-results (mapv #(stat/compute-stat (assoc % :cfg (merge cfg (:cfg %)))) resolved)
-        layers (vec (map (fn [rv sr]
-                           (extract-layer rv sr all-colors cfg))
-                         resolved stat-results))]
+        raw-layers (vec (map (fn [rv sr]
+                               (-> (extract-layer rv sr all-colors cfg)
+                                   (assoc :y-domain (:y-domain sr)
+                                          :x-domain (:x-domain sr))))
+                             resolved stat-results))
+        layers (position/apply-positions raw-layers)]
     {:resolved resolved :stat-results stat-results :layers layers}))
 
 (defn- collect-colors
@@ -662,11 +677,11 @@
    x-scale-spec y-scale-spec annotations
    x-vars y-vars pw ph m cfg]
   (let [all-stat-results (mapcat :stat-results panel-data)
+        all-layers (mapcat :layers panel-data)
         global-x-dom (or (:domain x-scale-spec)
                          (collect-domain all-stat-results :x-domain x-scale-spec))
         global-y-dom (or (:domain y-scale-spec)
-                         (compute-global-y-domain all-stat-results
-                                                  (mapcat :views panel-data) y-scale-spec))
+                         (compute-global-y-domain all-layers y-scale-spec))
         mv-col-x-doms (when (= layout-type :multi-variable)
                         (into {} (for [xv x-vars]
                                    [xv (let [pds (filter #(= xv (:var-x %)) panel-data)
@@ -686,7 +701,7 @@
            :when (seq (:views pd))]
        (let [local-srs (:stat-results pd)
              local-x-dom (collect-domain local-srs :x-domain x-scale-spec)
-             local-y-dom (compute-global-y-domain local-srs (:views pd) y-scale-spec)
+             local-y-dom (compute-global-y-domain (:layers pd) y-scale-spec)
              [eff-x-dom eff-y-dom]
              (case layout-type
                :single

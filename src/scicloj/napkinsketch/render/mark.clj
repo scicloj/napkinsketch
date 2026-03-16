@@ -129,6 +129,9 @@
                             jitter 5.0
                             :else 0.0)
         jitter? (pos? jitter-amount)
+        ;; Dodge support: when dodge-ctx present and x is categorical band scale
+        {:keys [n-groups]} (:dodge-ctx layer)
+        dodge? (and n-groups x-bandwidth)
         size-bufs (keep :sizes groups)
         size-scale (when (seq size-bufs)
                      (let [all-sizes (apply concat size-bufs)
@@ -148,11 +151,15 @@
                     (let [all-vals (distinct (apply concat shape-bufs))]
                       (zipmap all-vals (cycle defaults/shape-syms))))]
     (vec
-     (for [{:keys [color colors xs ys sizes alphas shapes row-indices color-label] :as group} groups
+     (for [{:keys [color colors xs ys sizes alphas shapes row-indices label dodge-idx] :as group} groups
            :let [;; One seeded RNG per group for deterministic jitter
                  jitter-rng (when jitter? (rng/rng :jdk (hash (:color group))))]
-           i (range (count xs))
+           i (range (clojure.core/count xs))
            :let [[px py] (coord-fn (nth xs i) (nth ys i))
+                 ;; For dodged points on categorical axis, override px
+                 px (if dodge?
+                      (:mid (band-position sx (nth xs i) (or dodge-idx 0) n-groups 0.8))
+                      px)
                  [px py] (if jitter?
                            (if cat-jitter?
                              ;; Categorical: jitter along band axis only
@@ -170,7 +177,7 @@
                          (ui/with-color [cr cg cb pt-alpha]
                            (draw-shape pt-shape pt-r)))
            (cond-> row-indices (assoc :row-idx (nth row-indices i))
-                   tooltip (assoc :tooltip (make-tooltip ctx (nth xs i) (nth ys i) color-label))))))))
+                   tooltip (assoc :tooltip (make-tooltip ctx (nth xs i) (nth ys i) label))))))))
 
 ;; ---- Text ----
 
@@ -222,30 +229,17 @@
         {:keys [coord-fn y-domain-min]} ctx
         {:keys [opacity]} style
         baseline (or y-domain-min 0)]
-    (if (#{:stack :fill} position)
-      ;; Stacked: each group's baseline is the cumulative sum of previous groups
-      (let [group-maps (mapv (fn [{:keys [xs ys]}]
-                               (into (sorted-map) (map vector xs ys)))
-                             groups)
-            all-xs (sort (distinct (mapcat keys group-maps)))
-            {:keys [elements]}
-            (reduce
-             (fn [{:keys [elements cum]} [group gm]]
-               (let [base-vals (mapv #(get cum % 0.0) all-xs)
-                     top-vals (mapv #(+ (get cum % 0.0) (get gm % 0.0)) all-xs)
-                     top-pts (map (fn [x tv] (coord-fn x tv)) all-xs top-vals)
-                     base-pts (reverse (map (fn [x bv] (coord-fn x bv)) all-xs base-vals))
-                     all-pts (concat top-pts base-pts)
-                     [cr cg cb _] (:color group)
-                     new-cum (into cum (map vector all-xs top-vals))]
-                 {:elements (conj elements
-                                  (ui/with-color [cr cg cb (or opacity 0.5)]
-                                    (ui/with-style ::ui/style-fill
-                                      (apply ui/path all-pts))))
-                  :cum new-cum}))
-             {:elements [] :cum {}}
-             (map vector groups group-maps))]
-        elements)
+    (if (and (#{:stack :fill} position) (some :y0s groups))
+      ;; Stacked: use pre-computed y0s from position/apply-positions
+      (vec
+       (for [{:keys [color xs ys y0s]} groups]
+         (let [top-pts (map (fn [x y] (coord-fn x y)) xs ys)
+               base-pts (reverse (map (fn [x y0] (coord-fn x y0)) xs y0s))
+               all-pts (concat top-pts base-pts)
+               [cr cg cb _] color]
+           (ui/with-color [cr cg cb (or opacity 0.5)]
+             (ui/with-style ::ui/style-fill
+               (apply ui/path all-pts))))))
       ;; Non-stacked: each group has baseline at y-domain-min
       (vec
        (for [{:keys [color xs ys]} groups
@@ -265,17 +259,24 @@
 
 (defmethod layer->membrane :errorbar [layer ctx]
   (let [{:keys [style groups]} layer
-        {:keys [coord-fn]} ctx
+        {:keys [coord-fn sx]} ctx
         {:keys [stroke-width cap-width]} style
         sw (or stroke-width 1.5)
-        cap-hw (/ (or cap-width 6) 2.0)]
+        cap-hw (/ (or cap-width 6) 2.0)
+        ;; Dodge support: when dodge-ctx is present, use band-position
+        {:keys [n-groups]} (:dodge-ctx layer)
+        band-scale? (and n-groups (try (ws/data sx :bandwidth) (catch Exception _ nil)))]
     (vec
-     (for [{:keys [color xs ys ymins ymaxs]} groups
-           i (range (count xs))
+     (for [{:keys [color xs ys ymins ymaxs dodge-idx]} groups
+           i (range (clojure.core/count xs))
            :let [x (nth xs i)
                  ymin-val (nth ymins i)
                  ymax-val (nth ymaxs i)
-                 [px py-min] (coord-fn x ymin-val)
+                 ;; For dodged errorbars on categorical axis, use band-position
+                 px (if band-scale?
+                      (:mid (band-position sx x (or dodge-idx 0) n-groups 0.8))
+                      (first (coord-fn x ymin-val)))
+                 [_ py-min] (coord-fn x ymin-val)
                  [_ py-max] (coord-fn x ymax-val)
                  [cr cg cb _] color]]
        (ui/with-color [cr cg cb 1.0]
@@ -300,15 +301,16 @@
   (let [{:keys [style groups]} layer
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [radius stroke-width]} style
-        n-groups (count groups)
+        {:keys [n-groups] :or {n-groups (clojure.core/count groups)}} (:dodge-ctx layer)
         r (or radius 4)]
     (vec
-     (for [[gi {:keys [color xs ys]}] (map-indexed vector groups)
-           i (range (count xs))
-           :let [[cr cg cb _] color
-                 cat (nth xs i)
-                 val (nth ys i)
-                 bp (band-position band-s cat gi n-groups 0.8)
+     (for [group groups
+           i (range (clojure.core/count (:xs group)))
+           :let [[cr cg cb _] (:color group)
+                 cat (nth (:xs group) i)
+                 val (nth (:ys group) i)
+                 dodge-idx (or (:dodge-idx group) 0)
+                 bp (band-position band-s cat dodge-idx n-groups 0.8)
                  cat-pos (:mid bp)
                  val-base (num-s 0)
                  val-top (num-s val)]]
@@ -332,17 +334,15 @@
         {:keys [box-width stroke-width]} style
         box-frac (or box-width 0.6)
         sw (or stroke-width 1.5)
-        n-colors (if (seq color-categories) (count color-categories) 1)
-        color-idx-map (when (seq color-categories)
-                        (into {} (map-indexed (fn [i c] [c i]) color-categories)))]
+        {:keys [n-groups] :or {n-groups (if (seq color-categories)
+                                          (clojure.core/count color-categories) 1)}}
+        (:dodge-ctx layer)]
     (vec
      (mapcat
-      (fn [{:keys [category color color-category median q1 q3 whisker-lo whisker-hi outliers]}]
+      (fn [{:keys [category color dodge-idx color-category median q1 q3 whisker-lo whisker-hi outliers]}]
         (let [[cr cg cb _] color
-              ci (if (and color-idx-map color-category)
-                   (get color-idx-map color-category 0)
-                   0)
-              bp (band-position band-s category ci n-colors box-frac)
+              ci (or dodge-idx 0)
+              bp (band-position band-s category ci n-groups box-frac)
               box-lo (:lo bp)
               box-hi (:hi bp)
               box-mid (:mid bp)
@@ -402,17 +402,15 @@
   (let [{:keys [style violins color-categories]} layer
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [opacity stroke-width]} style
-        n-colors (if (seq color-categories) (count color-categories) 1)
-        color-idx-map (when (seq color-categories)
-                        (into {} (map-indexed (fn [i c] [c i]) color-categories)))]
+        {:keys [n-groups] :or {n-groups (if (seq color-categories)
+                                          (clojure.core/count color-categories) 1)}}
+        (:dodge-ctx layer)]
     (vec
      (mapcat
-      (fn [{:keys [category color color-category ys densities]}]
+      (fn [{:keys [category color dodge-idx color-category ys densities]}]
         (let [[cr cg cb _] color
-              ci (if (and color-idx-map color-category)
-                   (get color-idx-map color-category 0)
-                   0)
-              bp (band-position band-s category ci n-colors 0.8)
+              ci (or dodge-idx 0)
+              bp (band-position band-s category ci n-groups 0.8)
               viol-mid (:mid bp)
               half-w (/ (:sub-bw bp) 2.0)
               ;; Normalize densities so max density fills half the band width
@@ -620,7 +618,7 @@
 ;; ---- Line ----
 
 (defmethod layer->membrane :line [layer ctx]
-  (let [{:keys [style groups ribbons]} layer
+  (let [{:keys [style groups ribbons position]} layer
         {:keys [coord-fn]} ctx
         {:keys [stroke-width]} style
         ;; Render ribbons first (behind lines)
@@ -632,6 +630,17 @@
                       bot-pts (reverse (mapv (fn [x y] (coord-fn x y)) xs ymins))
                       all-pts (concat top-pts bot-pts)]]
             (ui/with-color [cr cg cb 0.2]
+              (ui/with-style ::ui/style-fill
+                (apply ui/path all-pts)))))
+        ;; Stacked fill areas (behind lines, when position is :stack/:fill)
+        stack-fill-elems
+        (when (and (#{:stack :fill} position) (some :y0s groups))
+          (for [{:keys [color xs ys y0s]} groups
+                :let [top-pts (map (fn [x y] (coord-fn x y)) xs ys)
+                      base-pts (reverse (map (fn [x y0] (coord-fn x y0)) xs y0s))
+                      all-pts (concat top-pts base-pts)
+                      [cr cg cb _] color]]
+            (ui/with-color [cr cg cb 0.3]
               (ui/with-style ::ui/style-fill
                 (apply ui/path all-pts)))))
         ;; Render lines on top
@@ -654,7 +663,7 @@
                 (ui/with-stroke-width (or stroke-width 2)
                   (ui/with-style ::ui/style-stroke
                     (apply ui/path projected)))))))]
-    (vec (concat ribbon-elems line-elems))))
+    (vec (concat ribbon-elems stack-fill-elems line-elems))))
 
 ;; ---- Step Line ----
 
@@ -689,7 +698,9 @@
 ;; ---- Rect (categorical bars / value bars) ----
 
 (defn layer->membrane-categorical-bars
-  "Render categorical count bars from a sketch :rect layer."
+  "Render categorical count bars from a sketch :rect layer.
+   Stack: reads pre-computed :y0/:y1 from position adjustment.
+   Dodge: reads :dodge-idx/:dodge-ctx from position adjustment."
   [layer ctx]
   (let [{:keys [style groups position categories]} layer
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
@@ -702,38 +713,25 @@
                       (ui/with-style ::ui/style-fill
                         (apply ui/path pts)))))]
     (if (#{:stack :fill} position)
-      ;; Stacked: accumulate base heights per category
-      (let [items (for [[_bi {:keys [color counts]}] (map-indexed vector groups)
-                        {:keys [category count]} counts]
-                    {:color color :category category :count count})
-            {:keys [elements]}
-            (reduce (fn [{:keys [elements cum-y]} {:keys [color category count]}]
-                      (let [base (get cum-y category 0)
-                            bp (band-position band-s category 0 1 0.8)
-                            elem (mk-rect color (:lo bp) (:hi bp)
-                                          (num-s base) (num-s (+ base count)))]
-                        {:elements (conj elements elem)
-                         :cum-y (assoc cum-y category (+ base count))}))
-                    {:elements [] :cum-y {}}
-                    items)]
-        elements)
-      ;; Dodged: filter to active bars per category
-      (let [active-map (into {}
-                             (for [cat categories]
-                               [cat (keep-indexed
-                                     (fn [bi {:keys [counts]}]
-                                       (let [c (some #(when (= (:category %) cat) (:count %)) counts)]
-                                         (when (and c (pos? c)) bi)))
-                                     groups)]))]
+      ;; Stacked: positions pre-computed by position/apply-positions
+      (vec
+       (for [group groups
+             {:keys [category y0 y1]} (:counts group)
+             :when (and y0 y1)]
+         (let [bp (band-position band-s category 0 1 0.8)]
+           (mk-rect (:color group) (:lo bp) (:hi bp)
+                    (num-s y0) (num-s y1)))))
+      ;; Dodged: use dodge-ctx annotations from position/apply-positions
+      (let [{:keys [n-groups] :or {n-groups 1}} (:dodge-ctx layer)
+            frac 0.8]
         (vec
-         (for [[bi {:keys [color counts]}] (map-indexed vector groups)
-               {:keys [category count]} counts
-               :when (pos? count)
-               :let [active (get active-map category)
-                     n-active (clojure.core/count active)
-                     active-idx (.indexOf ^java.util.List active bi)
-                     bp (band-position band-s category active-idx n-active 0.8)]]
-           (mk-rect color (:lo bp) (:hi bp) (num-s 0) (num-s count))))))))
+         (for [group groups
+               {:keys [category count]} (:counts group)
+               :when (pos? count)]
+           (let [dodge-idx (or (:dodge-idx group) 0)
+                 bp (band-position band-s category dodge-idx n-groups frac)]
+             (mk-rect (:color group) (:lo bp) (:hi bp)
+                      (num-s 0) (num-s count)))))))))
 
 (defn layer->membrane-value-bars
   "Render value bars from a sketch :rect layer."
@@ -742,14 +740,16 @@
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [opacity]} style
         coord-px (:coord-px ctx)
-        n-groups (count groups)]
+        {:keys [n-groups] :or {n-groups (clojure.core/count groups)}} (:dodge-ctx layer)
+        frac 0.8]
     (vec
-     (for [[gi {:keys [color xs ys]}] (map-indexed vector groups)
-           i (range (count xs))
-           :let [[cr cg cb _] color
-                 cat (nth xs i)
-                 val (nth ys i)
-                 bp (band-position band-s cat gi n-groups 0.8)
+     (for [group groups
+           i (range (clojure.core/count (:xs group)))
+           :let [[cr cg cb _] (:color group)
+                 cat (nth (:xs group) i)
+                 val (nth (:ys group) i)
+                 dodge-idx (or (:dodge-idx group) 0)
+                 bp (band-position band-s cat dodge-idx n-groups frac)
                  pts (bar-polygon coord-px flipped? (:lo bp) (:hi bp) (num-s 0) (num-s val))]]
        (ui/with-color [cr cg cb (or opacity 1.0)]
          (ui/with-style ::ui/style-fill

@@ -32,7 +32,7 @@
 (def
  v7_l29
  (kind/pprint
-  (mapv (fn* [p1__197323#] (dissoc p1__197323# :data)) views)))
+  (mapv (fn* [p1__77966#] (dissoc p1__77966# :data)) views)))
 
 
 (def v9_l36 (def layered (sk/lay views (sk/point {:color :species}))))
@@ -41,7 +41,7 @@
 (def
  v10_l38
  (kind/pprint
-  (mapv (fn* [p1__197324#] (dissoc p1__197324# :data)) layered)))
+  (mapv (fn* [p1__77967#] (dissoc p1__77967# :data)) layered)))
 
 
 (def
@@ -108,7 +108,7 @@
    {:x (range 1 11),
     :y
     (mapv
-     (fn* [p1__197325#] (+ (* 2 p1__197325#) (- (rng/irandom r 5) 2)))
+     (fn* [p1__77968#] (+ (* 2 p1__77968#) (- (rng/irandom r 5) 2)))
      (range 1 11))})
   (sk/view [[:x :y]])
   (sk/lay (sk/point) (sk/lm))
@@ -138,7 +138,7 @@
    (->
     iris
     (tc/select-rows
-     (fn* [p1__197326#] (= species-name (p1__197326# :species))))
+     (fn* [p1__77969#] (= species-name (p1__77969# :species))))
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:width 300, :height 250, :title species-name})))))
@@ -323,8 +323,8 @@
     ys
     (mapv
      (fn*
-      [p1__197327#]
-      (+ (* 3 p1__197327#) 5 (* 2 (- (rng/drandom r) 0.5))))
+      [p1__77970#]
+      (+ (* 3 p1__77970#) 5 (* 2 (- (rng/drandom r) 0.5))))
      xs)]
    (tc/dataset {:x xs, :y ys}))))
 
