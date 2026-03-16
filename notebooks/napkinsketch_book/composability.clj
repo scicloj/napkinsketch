@@ -30,17 +30,14 @@
 
 (def views (sk/view iris [[:sepal_length :sepal_width]]))
 
-(kind/pprint
- (mapv #(dissoc % :data) views))
-
+(kind/pprint views)
 ;; ## Layers Merge Into Views
 
 ;; `lay` merges layer maps into each view. The result is still a vector of maps.
 
 (def layered (sk/lay views (sk/point {:color :species})))
 
-(kind/pprint
- (mapv #(dissoc % :data) layered))
+(kind/pprint layered)
 
 ;; ## Building Layers Programmatically
 

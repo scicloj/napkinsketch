@@ -30,9 +30,9 @@
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
 
-(tc/head iris)
+iris
 
-(kind/test-last [(fn [v] (= 5 (count (tablecloth.api/rows v))))])
+(kind/test-last [(fn [v] (= 150 (count (tablecloth.api/rows v))))])
 
 ;; ## Input Data
 ;;

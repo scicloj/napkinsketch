@@ -26,8 +26,7 @@
       (sk/view [[:sepal_length :sepal_width]])
       (sk/lay (sk/point {:color :species}))))
 
-(kind/pprint
- (mapv #(select-keys % [:x :y :mark :color]) views))
+(kind/pprint views)
 
 (kind/test-last [(fn [v] (and (vector? v) (= 1 (count v))))])
 
