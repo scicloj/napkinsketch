@@ -1,6 +1,6 @@
 ;; # Quickstart
 ;;
-;; A minimal introduction to Napkinsketch — composable plotting in Clojure.
+;; A minimal introduction to Napkinsketch — simple and easy plotting.
 
 ;; ## Setup
 ;;
