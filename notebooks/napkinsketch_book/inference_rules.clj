@@ -7,8 +7,11 @@
 
 (ns napkinsketch-book.inference-rules
   (:require
+   ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
+   ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Overview
@@ -90,7 +93,6 @@ graph TD
 
 (kind/test-last [(fn [m] (and (every? string? (:x-domain m))
                               (:x-ticks-categorical? m)))])
-
 
 ;; ## Mark and Stat Inference
 ;;

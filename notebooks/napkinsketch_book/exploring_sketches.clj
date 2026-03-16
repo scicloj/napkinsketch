@@ -7,9 +7,13 @@
 
 (ns napkinsketch-book.exploring-sketches
   (:require
+   ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
+   ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
+   ;; Pretty-printing — for inspecting data structures
    [clojure.pprint :as pp]))
 
 ;; ## A Minimal Scatter Plot
@@ -272,7 +276,6 @@
 (kind/test-last [(fn [marks] (= [:point :line] marks))])
 (def lm-layer (second (:layers (first (:panels lm-sk)))))
 
-
 ;; Its group has endpoints — a line segment in data space:
 
 (let [g (first (:groups lm-layer))]
@@ -291,7 +294,6 @@
 
 (sk/plot [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
           (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
-
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

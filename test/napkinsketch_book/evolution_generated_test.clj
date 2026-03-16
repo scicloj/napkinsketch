@@ -8,33 +8,33 @@
 
 
 (def
- v3_l15
+ v3_l18
  (def
   wave
   (tc/dataset
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__78724#] (Math/sin (* p1__78724# 0.3)))
+     (fn* [p1__78215#] (Math/sin (* p1__78215# 0.3)))
      (range 30))})))
 
 
-(def v4_l18 (-> wave (sk/view [[:x :y]]) (sk/lay (sk/line)) sk/plot))
+(def v4_l21 (-> wave (sk/view [[:x :y]]) (sk/lay (sk/line)) sk/plot))
 
 
 (deftest
- t5_l23
+ t5_l26
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:lines s)))))
-   v4_l18)))
+   v4_l21)))
 
 
 (def
- v7_l31
+ v7_l34
  (def
   waves
   (tc/dataset
@@ -43,48 +43,48 @@
     (vec
      (concat
       (mapv
-       (fn* [p1__78725#] (Math/sin (* p1__78725# 0.3)))
+       (fn* [p1__78216#] (Math/sin (* p1__78216# 0.3)))
        (range 30))
       (mapv
-       (fn* [p1__78726#] (Math/cos (* p1__78726# 0.3)))
+       (fn* [p1__78217#] (Math/cos (* p1__78217# 0.3)))
        (range 30)))),
     :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))})))
 
 
 (def
- v8_l36
+ v8_l39
  (-> waves (sk/view [[:x :y]]) (sk/lay (sk/line {:color :fn})) sk/plot))
 
 
 (deftest
- t9_l41
+ t9_l44
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 2 (:lines s)))))
-   v8_l36)))
+   v8_l39)))
 
 
 (def
- v11_l49
+ v11_l52
  (-> wave (sk/view [[:x :y]]) (sk/lay (sk/line {:size 4})) sk/plot))
 
 
 (deftest
- t12_l54
+ t12_l57
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:lines s)))))
-   v11_l49)))
+   v11_l52)))
 
 
 (def
- v14_l62
+ v14_l65
  (def
   growth
   (tc/dataset
@@ -94,7 +94,7 @@
 
 
 (def
- v15_l67
+ v15_l70
  (->
   growth
   (sk/view [[:day :value]])
@@ -103,18 +103,18 @@
 
 
 (deftest
- t16_l73
+ t16_l76
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 10 (:points s)) (= 2 (:lines s)))))
-   v15_l67)))
+   v15_l70)))
 
 
 (def
- v18_l81
+ v18_l84
  (->
   {:x [1 2 3 4 5], :y [2 4 1 5 3]}
   (sk/view [[:x :y]])
@@ -123,18 +123,18 @@
 
 
 (deftest
- t19_l87
+ t19_l90
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 5 (:points s)) (= 1 (:lines s)))))
-   v18_l81)))
+   v18_l84)))
 
 
 (def
- v21_l95
+ v21_l98
  (->
   growth
   (sk/view [[:day :value]])
@@ -143,24 +143,24 @@
 
 
 (deftest
- t22_l101
+ t22_l104
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 10 (:points s)) (= 2 (:lines s)))))
-   v21_l95)))
+   v21_l98)))
 
 
 (def
- v24_l109
+ v24_l112
  (->
   (tc/dataset
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__78727#] (Math/sin (* p1__78727# 0.3)))
+     (fn* [p1__78218#] (Math/sin (* p1__78218# 0.3)))
      (range 30))})
   (sk/view [[:x :y]])
   (sk/lay (sk/area))
@@ -168,18 +168,18 @@
 
 
 (deftest
- t25_l115
+ t25_l118
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:polygons s)))))
-   v24_l109)))
+   v24_l112)))
 
 
 (def
- v27_l123
+ v27_l126
  (->
   (tc/dataset
    {:x (vec (concat (range 10) (range 10) (range 10))),
@@ -197,11 +197,11 @@
 
 
 (deftest
- t28_l132
+ t28_l135
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v27_l123)))
+   v27_l126)))

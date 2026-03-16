@@ -8,7 +8,7 @@
 
 
 (def
- v2_l11
+ v2_l14
  (def
   iris
   (tc/dataset
@@ -17,7 +17,7 @@
 
 
 (def
- v3_l14
+ v3_l17
  (def
   tips
   (tc/dataset
@@ -26,7 +26,7 @@
 
 
 (def
- v4_l17
+ v4_l20
  (def
   penguins
   (tc/dataset
@@ -35,7 +35,7 @@
 
 
 (def
- v5_l20
+ v5_l23
  (def
   sales
   (tc/dataset
@@ -43,38 +43,38 @@
     :revenue [120 340 210 95]})))
 
 
-(def v7_l27 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot))
+(def v7_l30 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot))
 
 
 (deftest
- t8_l32
+ t8_l35
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v7_l27)))
+   v7_l30)))
 
 
 (def
- v10_l41
+ v10_l44
  (-> tips (sk/view :day) (sk/lay (sk/bar {:color :smoker})) sk/plot))
 
 
 (deftest
- t11_l46
+ t11_l49
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v10_l41)))
+   v10_l44)))
 
 
 (def
- v13_l55
+ v13_l58
  (->
   tips
   (sk/view :day)
@@ -83,18 +83,18 @@
 
 
 (deftest
- t14_l60
+ t14_l63
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v13_l55)))
+   v13_l58)))
 
 
 (def
- v16_l69
+ v16_l72
  (->
   penguins
   (sk/view :island)
@@ -103,18 +103,18 @@
 
 
 (deftest
- t17_l74
+ t17_l77
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v16_l69)))
+   v16_l72)))
 
 
 (def
- v19_l82
+ v19_l85
  (->
   iris
   (sk/view :species)
@@ -124,18 +124,18 @@
 
 
 (deftest
- t20_l88
+ t20_l91
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v19_l82)))
+   v19_l85)))
 
 
 (def
- v22_l97
+ v22_l100
  (->
   tips
   (sk/view :day)
@@ -145,34 +145,34 @@
 
 
 (deftest
- t23_l103
+ t23_l106
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v22_l97)))
+   v22_l100)))
 
 
 (def
- v25_l112
+ v25_l115
  (sk/plot [(sk/value-bar {:data sales, :x :product, :y :revenue})]))
 
 
 (deftest
- t26_l114
+ t26_l117
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v25_l112)))
+   v25_l115)))
 
 
 (def
- v28_l122
+ v28_l125
  (->
   sales
   (sk/view [[:product :revenue]])
@@ -182,18 +182,18 @@
 
 
 (deftest
- t29_l128
+ t29_l131
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v28_l122)))
+   v28_l125)))
 
 
 (def
- v31_l136
+ v31_l139
  (->
   sales
   (sk/view [[:product :revenue]])
@@ -202,18 +202,18 @@
 
 
 (deftest
- t32_l141
+ t32_l144
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
-   v31_l136)))
+   v31_l139)))
 
 
 (def
- v34_l149
+ v34_l152
  (->
   sales
   (sk/view [[:product :revenue]])
@@ -223,11 +223,11 @@
 
 
 (deftest
- t35_l155
+ t35_l158
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
-   v34_l149)))
+   v34_l152)))

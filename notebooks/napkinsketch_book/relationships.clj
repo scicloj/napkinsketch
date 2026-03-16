@@ -5,9 +5,13 @@
 
 (ns napkinsketch-book.relationships
   (:require
+   ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
+   ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
+   ;; Fastmath — random number generation (for synthetic data)
    [fastmath.random :as rng]))
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"

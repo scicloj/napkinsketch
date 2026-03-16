@@ -5,9 +5,13 @@
 
 (ns napkinsketch-book.edge-cases
   (:require
+   ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
+   ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
+   ;; Fastmath — random number generation (for synthetic data)
    [fastmath.random :as rng]))
 
 ;; ## Missing Data
@@ -167,7 +171,7 @@
 ;; Derive a new column and plot it.
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                       {:key-fn keyword}))
+                      {:key-fn keyword}))
 
 (-> iris
     (tc/map-columns :sepal_ratio [:sepal_length :sepal_width] /)

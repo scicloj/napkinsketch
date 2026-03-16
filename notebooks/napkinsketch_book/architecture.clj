@@ -6,9 +6,13 @@
 
 (ns napkinsketch-book.architecture
   (:require
+   ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
+   ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
+   ;; Sketch schema — Malli validation for sketch maps
    [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
 ;; ## Pipeline Overview

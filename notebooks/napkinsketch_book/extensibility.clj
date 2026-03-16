@@ -10,16 +10,19 @@
 
 (ns napkinsketch-book.extensibility
   (:require
+   ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
+   ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
+   ;; Napkinsketch internals — for extending the pipeline
    [scicloj.napkinsketch.impl.stat :as stat]
    [scicloj.napkinsketch.impl.sketch :as sketch]
    [scicloj.napkinsketch.render.mark :as mark]
    [scicloj.napkinsketch.impl.scale :as scale]
    [scicloj.napkinsketch.impl.coord :as coord]
    [scicloj.napkinsketch.impl.render :as render]))
-
 
 ;; ## Overview
 ;;
@@ -51,7 +54,6 @@
 ;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert membrane tree → figure |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
-
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
@@ -194,7 +196,6 @@
 ;;   ...)
 ;; ```
 
-
 ;; ## `sketch->figure`
 ;;
 ;; Orchestrates the full sketch → figure path. The `:svg` implementation
@@ -273,8 +274,8 @@
 (kind/test-last [(fn [v] (true? v))])
 
 (first (sk/membrane->figure my-membrane :svg
-                             {:total-width (:total-width my-sketch)
-                              :total-height (:total-height my-sketch)}))
+                            {:total-width (:total-width my-sketch)
+                             :total-height (:total-height my-sketch)}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 

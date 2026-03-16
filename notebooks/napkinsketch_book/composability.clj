@@ -7,9 +7,13 @@
 
 (ns napkinsketch-book.composability
   (:require
+   ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
+   ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
+   ;; Fastmath — random number generation (for synthetic data)
    [fastmath.random :as rng]))
 
 ;; ## Datasets

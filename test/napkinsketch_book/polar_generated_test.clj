@@ -8,7 +8,7 @@
 
 
 (def
- v3_l15
+ v3_l18
  (def
   iris
   (tc/dataset
@@ -17,7 +17,7 @@
 
 
 (def
- v4_l18
+ v4_l21
  (def
   wind
   (tc/dataset
@@ -26,7 +26,7 @@
 
 
 (def
- v6_l27
+ v6_l30
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -36,18 +36,18 @@
 
 
 (deftest
- t7_l33
+ t7_l36
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v6_l27)))
+   v6_l30)))
 
 
 (def
- v9_l44
+ v9_l47
  (->
   iris
   (sk/view :species)
@@ -57,18 +57,18 @@
 
 
 (deftest
- t10_l50
+ t10_l53
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v9_l44)))
+   v9_l47)))
 
 
 (def
- v12_l59
+ v12_l62
  (->
   wind
   (sk/view [:direction :speed])
@@ -78,18 +78,18 @@
 
 
 (deftest
- t13_l65
+ t13_l68
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)))))
-   v12_l59)))
+   v12_l62)))
 
 
 (def
- v15_l73
+ v15_l76
  (->
   iris
   (sk/view :species)
@@ -99,18 +99,18 @@
 
 
 (deftest
- t16_l79
+ t16_l82
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v15_l73)))
+   v15_l76)))
 
 
 (def
- v18_l88
+ v18_l91
  (->
   iris
   (sk/view :sepal_length)
@@ -120,18 +120,18 @@
 
 
 (deftest
- t19_l94
+ t19_l97
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v18_l88)))
+   v18_l91)))
 
 
 (def
- v21_l103
+ v21_l106
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -142,7 +142,7 @@
 
 
 (deftest
- t22_l110
+ t22_l113
  (is
   ((fn
     [v]
@@ -151,4 +151,4 @@
      (and
       (= 1 (:panels s))
       (some #{"Iris in Polar Space"} (:texts s)))))
-   v21_l103)))
+   v21_l106)))

@@ -9,7 +9,7 @@
 
 
 (def
- v2_l13
+ v2_l17
  (def
   iris
   (tc/dataset
@@ -18,7 +18,7 @@
 
 
 (def
- v3_l16
+ v3_l20
  (def
   tips
   (tc/dataset
@@ -27,7 +27,7 @@
 
 
 (def
- v5_l23
+ v5_l27
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -36,18 +36,18 @@
 
 
 (deftest
- t6_l28
+ t6_l32
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v5_l23)))
+   v5_l27)))
 
 
 (def
- v8_l36
+ v8_l40
  (->
   iris
   (sk/view [[:petal_length :petal_width]])
@@ -56,18 +56,18 @@
 
 
 (deftest
- t9_l42
+ t9_l46
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v8_l36)))
+   v8_l40)))
 
 
 (def
- v11_l50
+ v11_l54
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -78,18 +78,18 @@
 
 
 (deftest
- t12_l56
+ t12_l60
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)) (= 3 (:polygons s)))))
-   v11_l50)))
+   v11_l54)))
 
 
 (def
- v14_l64
+ v14_l68
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -98,18 +98,18 @@
 
 
 (deftest
- t15_l70
+ t15_l74
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 244 (:points s)) (= 2 (:lines s)))))
-   v14_l64)))
+   v14_l68)))
 
 
 (def
- v17_l78
+ v17_l82
  (def
   noisy-wave
   (let
@@ -119,15 +119,15 @@
      :y
      (mapv
       (fn*
-       [p1__78804#]
+       [p1__78297#]
        (+
-        (Math/sin (* p1__78804# 0.2))
+        (Math/sin (* p1__78297# 0.2))
         (* 0.3 (- (rng/drandom r) 0.5))))
       (range 50))}))))
 
 
 (def
- v18_l83
+ v18_l87
  (->
   noisy-wave
   (sk/view [[:x :y]])
@@ -136,18 +136,18 @@
 
 
 (deftest
- t19_l88
+ t19_l92
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 50 (:points s)) (= 1 (:lines s)))))
-   v18_l83)))
+   v18_l87)))
 
 
 (def
- v21_l96
+ v21_l100
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -156,18 +156,18 @@
 
 
 (deftest
- t22_l101
+ t22_l105
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v21_l96)))
+   v21_l100)))
 
 
 (def
- v24_l109
+ v24_l113
  (def
   grid-data
   (let
@@ -179,23 +179,23 @@
 
 
 (def
- v25_l115
+ v25_l119
  (sk/plot [(sk/tile {:data grid-data, :x :x, :y :y, :fill :value})]))
 
 
 (deftest
- t26_l117
+ t26_l121
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v25_l115)))
+   v25_l119)))
 
 
 (def
- v28_l125
+ v28_l129
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -204,18 +204,18 @@
 
 
 (deftest
- t29_l130
+ t29_l134
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v28_l125)))
+   v28_l129)))
 
 
 (def
- v31_l138
+ v31_l142
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -225,18 +225,18 @@
 
 
 (deftest
- t32_l144
+ t32_l148
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:tiles s)))))
-   v31_l138)))
+   v31_l142)))
 
 
 (def
- v34_l152
+ v34_l156
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -245,18 +245,18 @@
 
 
 (deftest
- t35_l157
+ t35_l161
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:lines s)))))
-   v34_l152)))
+   v34_l156)))
 
 
 (def
- v37_l165
+ v37_l169
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -265,11 +265,11 @@
 
 
 (deftest
- t38_l170
+ t38_l174
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:lines s)))))
-   v37_l165)))
+   v37_l169)))

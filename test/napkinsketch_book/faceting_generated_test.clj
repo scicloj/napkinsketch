@@ -8,7 +8,7 @@
 
 
 (def
- v3_l15
+ v3_l18
  (def
   iris
   (tc/dataset
@@ -17,7 +17,7 @@
 
 
 (def
- v4_l18
+ v4_l21
  (def
   tips
   (tc/dataset
@@ -26,7 +26,7 @@
 
 
 (def
- v5_l21
+ v5_l24
  (def
   penguins
   (tc/dataset
@@ -35,7 +35,7 @@
 
 
 (def
- v7_l29
+ v7_l32
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -45,18 +45,18 @@
 
 
 (deftest
- t8_l35
+ t8_l38
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v7_l29)))
+   v7_l32)))
 
 
 (def
- v10_l47
+ v10_l50
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -66,18 +66,18 @@
 
 
 (deftest
- t11_l53
+ t11_l56
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v10_l47)))
+   v10_l50)))
 
 
 (def
- v13_l61
+ v13_l64
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -87,18 +87,18 @@
 
 
 (deftest
- t14_l67
+ t14_l70
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:panels s)) (= 244 (:points s)))))
-   v13_l61)))
+   v13_l64)))
 
 
 (def
- v16_l75
+ v16_l78
  (->
   iris
   (sk/view :sepal_length)
@@ -108,18 +108,18 @@
 
 
 (deftest
- t17_l81
+ t17_l84
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (pos? (:polygons s)))))
-   v16_l75)))
+   v16_l78)))
 
 
 (def
- v19_l89
+ v19_l92
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -129,18 +129,18 @@
 
 
 (deftest
- t20_l96
+ t20_l99
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:panels s)) (= 244 (:points s)) (= 4 (:lines s)))))
-   v19_l89)))
+   v19_l92)))
 
 
 (def
- v22_l108
+ v22_l111
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -150,18 +150,18 @@
 
 
 (deftest
- t23_l114
+ t23_l117
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v22_l108)))
+   v22_l111)))
 
 
 (def
- v25_l120
+ v25_l123
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -171,18 +171,18 @@
 
 
 (deftest
- t26_l126
+ t26_l129
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v25_l120)))
+   v25_l123)))
 
 
 (def
- v28_l136
+ v28_l139
  (def
   faceted-sk
   (->
@@ -193,37 +193,37 @@
    sk/sketch)))
 
 
-(def v29_l143 (:grid faceted-sk))
+(def v29_l146 (:grid faceted-sk))
 
 
 (deftest
- t30_l145
- (is ((fn [g] (and (= 1 (:rows g)) (= 3 (:cols g)))) v29_l143)))
+ t30_l148
+ (is ((fn [g] (and (= 1 (:rows g)) (= 3 (:cols g)))) v29_l146)))
 
 
-(def v31_l147 (count (:panels faceted-sk)))
+(def v31_l150 (count (:panels faceted-sk)))
 
 
-(deftest t32_l149 (is ((fn [n] (= 3 n)) v31_l147)))
+(deftest t32_l152 (is ((fn [n] (= 3 n)) v31_l150)))
 
 
 (def
- v34_l153
+ v34_l156
  (mapv
-  (fn* [p1__79374#] (select-keys p1__79374# [:row :col :col-label]))
+  (fn* [p1__78875#] (select-keys p1__78875# [:row :col :col-label]))
   (:panels faceted-sk)))
 
 
-(deftest t35_l156 (is ((fn [ps] (= 3 (count ps))) v34_l153)))
+(deftest t35_l159 (is ((fn [ps] (= 3 (count ps))) v34_l156)))
 
 
 (def
- v37_l163
+ v37_l166
  (def cols [:sepal_length :sepal_width :petal_length :petal_width]))
 
 
 (def
- v38_l165
+ v38_l168
  (->
   iris
   (sk/view (sk/cross cols cols))
@@ -232,28 +232,28 @@
 
 
 (deftest
- t39_l170
+ t39_l173
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 16 (:panels s)) (= 1800 (:points s)))))
-   v38_l165)))
+   v38_l168)))
 
 
-(def v41_l184 (sk/pairs [:a :b :c :d]))
+(def v41_l187 (sk/pairs [:a :b :c :d]))
 
 
 (deftest
- t42_l186
+ t42_l189
  (is
   ((fn [v] (= [[:a :b] [:a :c] [:a :d] [:b :c] [:b :d] [:c :d]] v))
-   v41_l184)))
+   v41_l187)))
 
 
 (def
- v43_l188
+ v43_l191
  (->
   iris
   (sk/view (sk/pairs cols))
@@ -262,18 +262,18 @@
 
 
 (deftest
- t44_l193
+ t44_l196
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 6 (:panels s)) (= 900 (:points s)))))
-   v43_l188)))
+   v43_l191)))
 
 
 (def
- v46_l201
+ v46_l204
  (->
   (sk/distribution iris :sepal_length :sepal_width :petal_length)
   (sk/lay (sk/histogram {:color :species}))
@@ -281,18 +281,18 @@
 
 
 (deftest
- t47_l205
+ t47_l208
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (pos? (:polygons s)))))
-   v46_l201)))
+   v46_l204)))
 
 
 (def
- v49_l211
+ v49_l214
  (->
   penguins
   (sk/view :species)
@@ -302,18 +302,18 @@
 
 
 (deftest
- t50_l217
+ t50_l220
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 9 (:polygons s)))))
-   v49_l211)))
+   v49_l214)))
 
 
 (def
- v52_l225
+ v52_l228
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -327,7 +327,7 @@
 
 
 (deftest
- t53_l234
+ t53_l237
  (is
   ((fn
     [v]
@@ -338,4 +338,4 @@
       (= 150 (:points s))
       (some #{"Iris by Species"} (:texts s))
       (some #{"Sepal Length (cm)"} (:texts s)))))
-   v52_l225)))
+   v52_l228)))

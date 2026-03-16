@@ -4,8 +4,11 @@
 
 (ns napkinsketch-book.evolution
   (:require
+   ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
+   ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Line
@@ -60,7 +63,7 @@
 ;; Overlay points on a grouped line plot.
 
 (def growth
-  (tc/dataset {:day   [1 2 3 4 5 1 2 3 4 5]
+  (tc/dataset {:day [1 2 3 4 5 1 2 3 4 5]
                :value [10 15 13 18 22 8 12 11 16 19]
                :group [:a :a :a :a :a :b :b :b :b :b]}))
 
