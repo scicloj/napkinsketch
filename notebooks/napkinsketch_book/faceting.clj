@@ -153,8 +153,7 @@
 
 ;; Each panel has a grid position and a strip label:
 
-(mapv #(select-keys % [:row :col :col-label])
-      (:panels faceted-sk))
+(:panels faceted-sk)
 
 (kind/test-last [(fn [ps] (= 3 (count ps)))])
 

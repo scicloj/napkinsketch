@@ -181,11 +181,11 @@
 
 (defn lollipop
   "Lollipop mark — stem + dot at (x, y) positions.
-   Like value-bar but lighter: a line from baseline to y with a dot.
+   Options: :color, :alpha, :position, :nudge-x, :nudge-y, :group.
    (lollipop)                  — default
    (lollipop {:color :group})  — colored stems"
   ([] {:mark :lollipop :stat :identity})
-  ([opts] (merge {:mark :lollipop :stat :identity} opts)))
+  ([opts] (merge (lollipop) opts)))
 
 (defn lm
   "Linear regression line.
@@ -205,20 +205,19 @@
 
 (defn text
   "Text mark — data-driven labels at (x, y) positions.
-   Requires :text key mapping to a column.
+   Options: :text (required), :color, :alpha, :group, :nudge-x, :nudge-y.
    (text {:text :name})                — label each point
    (text {:text :name :color :species}) — colored labels"
   ([] {:mark :text :stat :identity})
-  ([opts] (merge {:mark :text :stat :identity} opts)))
+  ([opts] (merge (text) opts)))
 
 (defn label
   "Label mark — text with a filled background box at (x, y) positions.
-   Like text but with a white background rectangle for readability.
-   Requires :text key mapping to a column.
+   Options: :text (required), :color, :alpha, :group, :nudge-x, :nudge-y.
    (label {:text :name})                — labeled points with background
    (label {:text :name :color :species}) — colored labels with background"
   ([] {:mark :label :stat :identity})
-  ([opts] (merge {:mark :label :stat :identity} opts)))
+  ([opts] (merge (label) opts)))
 
 (defn area
   "Area mark — filled region under a line.
@@ -249,15 +248,15 @@
 
 (defn boxplot
   "Boxplot mark — displays median, quartiles, whiskers, and outliers.
-   x should be categorical, y numeric.
+   Options: :color, :alpha, :position, :group.
    (boxplot)                    — single color
    (boxplot {:color :smoker})   — side-by-side grouped boxplots"
   ([] {:mark :boxplot :stat :boxplot})
-  ([opts] (merge {:mark :boxplot :stat :boxplot} opts)))
+  ([opts] (merge (boxplot) opts)))
 
 (defn violin
   "Violin mark — mirrored density curve per category.
-   x should be categorical, y numeric.
+   Options: :color, :alpha, :bandwidth, :position, :group.
    (violin)                    — single color
    (violin {:color :smoker})   — side-by-side grouped violins"
   ([] {:mark :violin :stat :violin})
@@ -270,8 +269,7 @@
 
 (defn tile
   "Tile/heatmap mark — filled rectangles colored by a numeric value.
-   With no options, bins x and y into a 2D grid (heatmap of counts).
-   With :fill, uses a pre-computed numeric column for tile color.
+   Options: :fill, :kde2d-grid, :color, :alpha.
    (tile)                          — 2D binned heatmap
    (tile {:fill :value})           — pre-computed fill values"
   ([] {:mark :tile :stat :bin2d})
@@ -282,26 +280,24 @@
 
 (defn density2d
   "2D density estimate — KDE-smoothed heatmap.
-   Computes a 2D Gaussian kernel density estimate on a grid and renders
-   as filled tiles colored by density (viridis gradient).
+   Options: :kde2d-grid, :bandwidth, :alpha.
    (density2d)                     — default bandwidth and grid
    (density2d {:kde2d-grid 40})    — finer grid resolution"
   ([] {:mark :tile :stat :kde2d})
-  ([opts] (merge {:mark :tile :stat :kde2d} opts)))
+  ([opts] (merge (density2d) opts)))
 
 (defn contour
   "Contour mark — iso-density contour lines from 2D KDE.
-   Uses marching squares on the KDE2D grid to trace iso-level polylines.
+   Options: :levels, :kde2d-grid, :bandwidth, :alpha.
    (contour)                       — default 5 levels
    (contour {:levels 8})           — custom number of iso-levels
    (contour {:kde2d-grid 40})      — finer grid resolution"
   ([] {:mark :contour :stat :kde2d})
-  ([opts] (merge {:mark :contour :stat :kde2d} opts)))
+  ([opts] (merge (contour) opts)))
 
 (defn ridgeline
   "Ridgeline mark — vertically stacked KDE density curves per category.
-   x should be categorical, y numeric. Each category gets an overlapping
-   density curve, stacked from bottom to top.
+   Options: :color, :alpha, :bandwidth, :group.
    (ridgeline)                    — default
    (ridgeline {:color :species})  — colored ridgelines"
   ([] {:mark :ridgeline :stat :violin})
@@ -309,29 +305,29 @@
 
 (defn rug
   "Rug mark — tick marks along axis margins showing individual observations.
+   Options: :side (:x, :y, :both), :color, :alpha, :group.
    (rug)                     — ticks on x-axis
    (rug {:side :y})          — ticks on y-axis
-   (rug {:side :both})       — ticks on both axes
-   (rug {:color :species})   — colored ticks"
+   (rug {:side :both})       — ticks on both axes"
   ([] {:mark :rug :stat :identity})
-  ([opts] (merge {:mark :rug :stat :identity} opts)))
+  ([opts] (merge (rug) opts)))
 
 (defn summary
   "Summary mark — mean ± standard error per category.
-   Displays as a point at the mean with a vertical line showing ±1 SE.
-   x should be categorical, y numeric.
+   Options: :color, :alpha, :position, :nudge-x, :nudge-y, :group.
    (summary)                    — single summary
    (summary {:color :species})  — per-group summary"
   ([] {:mark :pointrange :stat :summary})
-  ([opts] (merge {:mark :pointrange :stat :summary} opts)))
+  ([opts] (merge (summary) opts)))
 
 (defn errorbar
   "Errorbar mark — vertical error bars at (x, y) positions.
-   Requires :ymin and :ymax keys mapping to columns.
+   Options: :ymin (required), :ymax (required), :color, :alpha,
+   :position, :nudge-x, :nudge-y, :group.
    (errorbar {:ymin :ci_lo :ymax :ci_hi})
    (errorbar {:ymin :ci_lo :ymax :ci_hi :color :group})"
   ([] {:mark :errorbar :stat :identity})
-  ([opts] (merge {:mark :errorbar :stat :identity} opts)))
+  ([opts] (merge (errorbar) opts)))
 
 (defn rule-v
   "Vertical reference line at x = intercept."

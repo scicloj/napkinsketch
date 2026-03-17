@@ -366,7 +366,7 @@
 
 (def sk1 (sk/sketch [(sk/point {:data tiny :x :x :y :y})]))
 
-(select-keys sk1 [:width :height :x-label :y-label :title])
+sk1
 
 (kind/test-last [(fn [m] (and (= 600 (:width m))
                               (= "x" (:x-label m))))])

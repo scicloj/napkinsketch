@@ -16,12 +16,12 @@
    {:key-fn keyword})))
 
 
-(def v4_l33 (tc/head iris))
+(def v4_l33 iris)
 
 
 (deftest
  t5_l35
- (is ((fn [v] (= 5 (count (tablecloth.api/rows v)))) v4_l33)))
+ (is ((fn [v] (= 150 (count (tablecloth.api/rows v)))) v4_l33)))
 
 
 (def

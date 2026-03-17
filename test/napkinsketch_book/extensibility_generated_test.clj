@@ -51,7 +51,7 @@
      (sk/lay (sk/point {:color :species}))))
    layer
    (first (:layers (first (:panels s))))]
-  (select-keys layer [:mark :style])))
+  layer))
 
 
 (deftest

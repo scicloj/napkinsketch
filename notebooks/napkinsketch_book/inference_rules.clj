@@ -375,7 +375,7 @@ graph TD
 
 ;; Total dimensions follow from the base size plus padding:
 
-(select-keys scatter-sk [:width :height :total-width :total-height])
+scatter-sk
 
 (kind/test-last [(fn [m] (and (>= (:total-width m) (:width m))
                               (>= (:total-height m) (:height m))))])

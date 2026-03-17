@@ -139,7 +139,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__77674#] (= 4 (count (:color p1__77674#)))) gs)))
+     (every? (fn* [p1__92379#] (= 4 (count (:color p1__92379#)))) gs)))
    v24_l149)))
 
 
@@ -211,7 +211,7 @@
     [ls]
     (and
      (= 2 (count ls))
-     (every? (fn* [p1__77675#] (= 3 (:n-groups p1__77675#))) ls)))
+     (every? (fn* [p1__92380#] (= 3 (:n-groups p1__92380#))) ls)))
    v39_l198)))
 
 
@@ -392,9 +392,7 @@
 (deftest t86_l374 (is ((fn [lay] (zero? (:legend-w lay))) v85_l372)))
 
 
-(def
- v88_l378
- (select-keys scatter-sk [:width :height :total-width :total-height]))
+(def v88_l378 scatter-sk)
 
 
 (deftest

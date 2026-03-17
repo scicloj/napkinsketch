@@ -1,23 +1,22 @@
 (ns dev
   (:require [scicloj.clay.v2.api :as clay]))
 
-(defn- read-chapters []
-  (-> "notebooks/chapters.edn" slurp clojure.edn/read-string))
+(def ^:private read-chapters
+  (fn []
+    (-> "notebooks/chapters.edn" slurp clojure.edn/read-string)))
 
-(defn- chapters->source-paths
-  "Convert chapters map to flat vector of source paths."
-  [chapters]
-  (into [] (mapcat (fn [[_part names]]
-                     (map #(format "napkinsketch_book/%s.clj" %) names)))
-        chapters))
+(def ^:private chapters->source-paths
+  (fn [chapters]
+    (into [] (mapcat (fn [[_part names]]
+                       (map #(format "napkinsketch_book/%s.clj" %) names)))
+          chapters)))
 
-(defn- chapters->parts
-  "Convert chapters map to Clay's :source-path part structure."
-  [chapters]
-  (mapv (fn [[part names]]
-          {:part part
-           :chapters (mapv #(format "napkinsketch_book/%s.clj" %) names)})
-        chapters))
+(def ^:private chapters->parts
+  (fn [chapters]
+    (mapv (fn [[part names]]
+            {:part part
+             :chapters (mapv #(format "napkinsketch_book/%s.clj" %) names)})
+          chapters)))
 
 (defn make-book!
   "Render book HTML through Quarto."

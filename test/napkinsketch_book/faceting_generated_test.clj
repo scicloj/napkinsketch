@@ -207,23 +207,19 @@
 (deftest t32_l152 (is ((fn [n] (= 3 n)) v31_l150)))
 
 
-(def
- v34_l156
- (mapv
-  (fn* [p1__78875#] (select-keys p1__78875# [:row :col :col-label]))
-  (:panels faceted-sk)))
+(def v34_l156 (:panels faceted-sk))
 
 
-(deftest t35_l159 (is ((fn [ps] (= 3 (count ps))) v34_l156)))
+(deftest t35_l158 (is ((fn [ps] (= 3 (count ps))) v34_l156)))
 
 
 (def
- v37_l166
+ v37_l165
  (def cols [:sepal_length :sepal_width :petal_length :petal_width]))
 
 
 (def
- v38_l168
+ v38_l167
  (->
   iris
   (sk/view (sk/cross cols cols))
@@ -232,28 +228,28 @@
 
 
 (deftest
- t39_l173
+ t39_l172
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 16 (:panels s)) (= 1800 (:points s)))))
-   v38_l168)))
+   v38_l167)))
 
 
-(def v41_l187 (sk/pairs [:a :b :c :d]))
+(def v41_l186 (sk/pairs [:a :b :c :d]))
 
 
 (deftest
- t42_l189
+ t42_l188
  (is
   ((fn [v] (= [[:a :b] [:a :c] [:a :d] [:b :c] [:b :d] [:c :d]] v))
-   v41_l187)))
+   v41_l186)))
 
 
 (def
- v43_l191
+ v43_l190
  (->
   iris
   (sk/view (sk/pairs cols))
@@ -262,18 +258,18 @@
 
 
 (deftest
- t44_l196
+ t44_l195
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 6 (:panels s)) (= 900 (:points s)))))
-   v43_l191)))
+   v43_l190)))
 
 
 (def
- v46_l204
+ v46_l203
  (->
   (sk/distribution iris :sepal_length :sepal_width :petal_length)
   (sk/lay (sk/histogram {:color :species}))
@@ -281,18 +277,18 @@
 
 
 (deftest
- t47_l208
+ t47_l207
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (pos? (:polygons s)))))
-   v46_l204)))
+   v46_l203)))
 
 
 (def
- v49_l214
+ v49_l213
  (->
   penguins
   (sk/view :species)
@@ -302,18 +298,18 @@
 
 
 (deftest
- t50_l220
+ t50_l219
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 9 (:polygons s)))))
-   v49_l214)))
+   v49_l213)))
 
 
 (def
- v52_l228
+ v52_l227
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -327,7 +323,7 @@
 
 
 (deftest
- t53_l237
+ t53_l236
  (is
   ((fn
     [v]
@@ -338,4 +334,4 @@
       (= 150 (:points s))
       (some #{"Iris by Species"} (:texts s))
       (some #{"Sepal Length (cm)"} (:texts s)))))
-   v52_l228)))
+   v52_l227)))

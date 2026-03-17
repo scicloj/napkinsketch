@@ -204,7 +204,7 @@ graph LR
 
 ;; Title and legend are top-level sketch keys:
 
-(select-keys multi-sketch [:title :legend])
+multi-sketch
 
 (kind/test-last [(fn [m] (and (= "Iris Petals with Regression" (:title m))
                               (= 3 (count (get-in m [:legend :entries])))))])

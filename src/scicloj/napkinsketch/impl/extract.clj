@@ -1,0 +1,435 @@
+(ns scicloj.napkinsketch.impl.extract
+  "Extract data-space geometry from resolved views and stat results.
+   Produces layer descriptor maps — plain Clojure maps with mark type,
+   style, and groups of data-space coordinates."
+  (:require [scicloj.napkinsketch.impl.defaults :as defaults]))
+
+;; ---- Color Resolution (data-space) ----
+
+(defn resolve-color
+  "Resolve a color value to [r g b a]. Handles column values, fixed colors, and defaults."
+  [all-colors color-val fixed-color cfg]
+  (cond
+    color-val (defaults/color-for all-colors color-val (:palette cfg))
+    fixed-color (if (string? fixed-color) (defaults/hex->rgba fixed-color) fixed-color)
+    :else (defaults/hex->rgba (:default-color cfg))))
+
+(defn- apply-nudge
+  "Apply nudge-x/nudge-y offsets to a layer's groups.
+   Nudge shifts data coordinates by a constant amount — orthogonal to
+   position adjustment (dodge/stack). Works on any layer with groups
+   containing :xs/:ys vectors."
+  [layer {:keys [nudge-x nudge-y]}]
+  (if (or nudge-x nudge-y)
+    (update layer :groups
+            (fn [gs]
+              (mapv (fn [g]
+                      (cond-> g
+                        (and nudge-x (:xs g))
+                        (update :xs (fn [xs] (mapv #(+ (double %) (double nudge-x)) xs)))
+                        (and nudge-y (:ys g))
+                        (update :ys (fn [ys] (mapv #(+ (double %) (double nudge-y)) ys)))
+                        (and nudge-y (:ymins g))
+                        (update :ymins (fn [ys] (mapv #(+ (double %) (double nudge-y)) ys)))
+                        (and nudge-y (:ymaxs g))
+                        (update :ymaxs (fn [ys] (mapv #(+ (double %) (double nudge-y)) ys)))))
+                    gs)))
+    layer))
+
+;; ---- Geometry Extraction (stat → layer descriptors) ----
+
+(defmulti extract-layer
+  "Extract data-space geometry from a resolved view and its stat result.
+   Returns a layer descriptor map."
+  (fn [view stat all-colors cfg] (:mark view)))
+(defmethod extract-layer :point [view stat all-colors cfg]
+  (let [numeric-color? (= (:color-type view) :numerical)
+        ;; For numeric color: compute global min/max for normalization
+        all-color-vals (when numeric-color?
+                         (mapcat :color-values (:points stat)))
+        c-min (when (seq all-color-vals) (reduce min all-color-vals))
+        c-max (when (seq all-color-vals) (reduce max all-color-vals))
+        c-range (when (and c-min c-max) (- (double c-max) (double c-min)))]
+    (-> {:mark :point
+         :style (cond-> {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
+                         :radius (or (:fixed-size view) (:point-radius cfg))}
+                  (:jitter view) (assoc :jitter (:jitter view)))
+         :groups (vec
+                  (for [{:keys [color xs ys sizes alphas shapes row-indices color-values]} (:points stat)]
+                    (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                             :xs (vec xs) :ys (vec ys)}
+                      color (assoc :label (str color))
+                      (and numeric-color? color-values)
+                      (assoc :colors (vec (map (fn [v]
+                                                 (let [t (if (and c-range (pos? c-range))
+                                                           (/ (- (double v) (double c-min)) c-range)
+                                                           0.5)]
+                                                   (defaults/gradient-color t)))
+                                               color-values)))
+                      sizes (assoc :sizes (vec sizes))
+                      alphas (assoc :alphas (vec alphas))
+                      shapes (assoc :shapes (vec shapes))
+                      row-indices (assoc :row-indices (vec row-indices)))))}
+        (cond-> (:position view) (assoc :position (:position view)))
+        (apply-nudge view))))
+
+(defmethod extract-layer :bar [view stat all-colors cfg]
+  {:mark :bar
+   :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
+   :groups (vec
+            (for [{:keys [color bin-maps]} (:bins stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :bars (vec (for [{:keys [min max count]} bin-maps]
+                            {:lo min :hi max :count count}))}))})
+
+(defmethod extract-layer :line [view stat all-colors cfg]
+  (-> (cond-> {:mark :line
+               :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
+               :groups (vec
+                        (concat
+                         ;; Regression lines
+                         (when-let [lines (:lines stat)]
+                           (for [{:keys [color x1 y1 x2 y2]} lines]
+                             {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                              :label (str color)
+                              :x1 x1 :y1 y1 :x2 x2 :y2 y2}))
+                         ;; Polylines
+                         (when-let [pts (:points stat)]
+                           (for [{:keys [color xs ys]} pts]
+                             {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                              :label (str color)
+                              :xs (vec xs) :ys (vec ys)}))))}
+        ;; Confidence ribbons from :lm {:se true}
+        (:ribbons stat)
+        (assoc :ribbons (vec
+                         (for [{:keys [color xs ymins ymaxs]} (:ribbons stat)]
+                           {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                            :xs (vec xs) :ymins (vec ymins) :ymaxs (vec ymaxs)})))
+        (:position view)
+        (assoc :position (:position view)))
+      (apply-nudge view)))
+
+(defmethod extract-layer :step [view stat all-colors cfg]
+  {:mark :step
+   :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
+   :groups (vec
+            (for [{:keys [color xs ys]} (:points stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :label (str color)
+               :xs (vec xs) :ys (vec ys)}))})
+
+(defmethod extract-layer :rect [view stat all-colors cfg]
+  (if (:bars stat)
+    ;; Categorical bars (from :count stat)
+    {:mark :rect
+     :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
+     :position (or (:position view) :dodge)
+     :categories (vec (:categories stat))
+     :groups (vec
+              (for [{:keys [color counts]} (:bars stat)]
+                {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                 :label (str color)
+                 :counts (vec counts)}))}
+    ;; Value bars (from :identity stat)
+    {:mark :rect
+     :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
+     :position (or (:position view) :dodge)
+     :groups (vec
+              (for [{:keys [color xs ys]} (:points stat)]
+                {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                 :label (str color)
+                 :xs (vec xs) :ys (vec ys)}))}))
+
+(defmethod extract-layer :text [view stat all-colors cfg]
+  {:mark :text
+   :style {:font-size (or (:font-size view) 10)}
+   :groups (vec
+            (for [{:keys [color xs ys labels]} (:points stat)]
+              (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                       :xs (vec xs) :ys (vec ys)}
+                labels (assoc :labels (vec (map str labels))))))})
+
+(defmethod extract-layer :label [view stat all-colors cfg]
+  {:mark :label
+   :style {:font-size (or (:font-size view) 10)}
+   :groups (vec
+            (for [{:keys [color xs ys labels]} (:points stat)]
+              (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                       :xs (vec xs) :ys (vec ys)}
+                labels (assoc :labels (vec (map str labels))))))})
+
+(defmethod extract-layer :area [view stat all-colors cfg]
+  (cond-> {:mark :area
+           :style {:opacity (or (:fixed-alpha view) 0.5)}
+           :groups (vec
+                    (for [{:keys [color xs ys]} (:points stat)]
+                      {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                       :label (str color)
+                       :xs (vec xs) :ys (vec ys)}))}
+    (:position view) (assoc :position (:position view))))
+
+(defmethod extract-layer :errorbar [view stat all-colors cfg]
+  (-> {:mark :errorbar
+       :style {:stroke-width (or (:fixed-size view) 1.5)
+               :cap-width (or (:cap-width view) 6)}
+       :groups (vec
+                (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
+                  {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                   :label (str color)
+                   :xs (vec xs) :ys (vec ys)
+                   :ymins (vec ymins) :ymaxs (vec ymaxs)}))}
+      (cond-> (:position view) (assoc :position (:position view)))
+      (apply-nudge view)))
+
+(defmethod extract-layer :lollipop [view stat all-colors cfg]
+  {:mark :lollipop
+   :style {:radius (or (:fixed-size view) (:point-radius cfg))
+           :stroke-width 1.5}
+   :position (or (:position view) :dodge)
+   :groups (vec
+            (for [{:keys [color xs ys]} (:points stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :label (str color)
+               :xs (vec xs) :ys (vec ys)}))})
+
+(defmethod extract-layer :boxplot [view stat all-colors cfg]
+  (let [color-cats (:color-categories stat)]
+    {:mark :boxplot
+     :style {:box-width (or (:box-width view) 0.6)
+             :stroke-width (or (:fixed-size view) 1.5)}
+     :position (or (:position view) :dodge)
+     :color-categories color-cats
+     :boxes (vec
+             (for [b (:boxes stat)]
+               (cond-> {:category (:category b)
+                        :color (resolve-color all-colors (:color b) (:fixed-color view) cfg)
+                        :median (:median b) :q1 (:q1 b) :q3 (:q3 b)
+                        :whisker-lo (:whisker-lo b) :whisker-hi (:whisker-hi b)}
+                 (:color b) (assoc :color-category (:color b))
+                 (seq (:outliers b)) (assoc :outliers (vec (:outliers b))))))}))
+
+(defmethod extract-layer :violin [view stat all-colors cfg]
+  (let [color-cats (:color-categories stat)]
+    {:mark :violin
+     :style {:opacity (or (:fixed-alpha view) 0.7)
+             :stroke-width (or (:fixed-size view) 1.0)}
+     :position (or (:position view) :dodge)
+     :color-categories color-cats
+     :violins (vec
+               (for [v (:violins stat)]
+                 (cond-> {:category (:category v)
+                          :color (resolve-color all-colors (:color v) (:fixed-color view) cfg)
+                          :ys (vec (:ys v))
+                          :densities (vec (:densities v))}
+                   (:color v) (assoc :color-category (:color v)))))}))
+
+(defmethod extract-layer :tile [view stat all-colors cfg]
+  (let [fill-col (:fill view)
+        ;; Two paths: bin2d stat produces :tiles directly;
+        ;; identity stat with :fill uses point groups
+        tiles (if (:tiles stat)
+                ;; bin2d path
+                (let [[f-lo f-hi] (:fill-range stat)
+                      f-span (max 1e-10 (- (double f-hi) (double f-lo)))]
+                  (vec (for [{:keys [x-lo x-hi y-lo y-hi fill]} (:tiles stat)
+                             :let [t (/ (- (double fill) (double f-lo)) f-span)]]
+                         {:x-lo x-lo :x-hi x-hi :y-lo y-lo :y-hi y-hi
+                          :color (defaults/gradient-color t)})))
+                ;; identity path — each point is a tile at (x, y) with fill value
+                (let [data (:data view)
+                      fill-vals (when fill-col (data fill-col))
+                      f-lo (when (seq fill-vals) (reduce min fill-vals))
+                      f-hi (when (seq fill-vals) (reduce max fill-vals))
+                      f-span (max 1e-10 (- (double (or f-hi 1)) (double (or f-lo 0))))]
+                  (vec (for [{:keys [xs ys]} (:points stat)
+                             i (range (count xs))
+                             :let [xv (nth xs i)
+                                   yv (nth ys i)]]
+                         {:x-lo xv :x-hi xv :y-lo yv :y-hi yv
+                          :color (if fill-vals
+                                   (let [fv (nth fill-vals i)
+                                         t (/ (- (double fv) (double f-lo)) f-span)]
+                                     (defaults/gradient-color t))
+                                   (defaults/gradient-color 0.5))}))))]
+    {:mark :tile
+     :style {:opacity (or (:fixed-alpha view) 1.0)}
+     :tiles tiles}))
+
+(defn- marching-squares-segments
+  "Apply marching squares to a density grid for a given threshold.
+   Returns a sequence of line segments [[x1 y1] [x2 y2]] in data coordinates.
+   Grid is n×n with densities[i*n+j] at cell (i,j)."
+  [densities n-grid threshold x-lo y-lo x-step y-step]
+  (let [grid-val (fn [i j]
+                   (if (and (< i n-grid) (< j n-grid) (>= i 0) (>= j 0))
+                     (nth densities (+ (* i n-grid) j))
+                     0.0))
+        interp (fn [v1 v2 p1 p2]
+                 ;; Linear interpolation between two points based on threshold.
+                 ;; Clamp t to [0,1] to prevent numerical blowup when v1 ≈ v2.
+                 (let [t (/ (- threshold v1) (max 1e-15 (- v2 v1)))
+                       t (max 0.0 (min 1.0 t))]
+                   (+ p1 (* t (- p2 p1)))))]
+    (loop [i 0 segments (transient [])]
+      (if (>= i (dec n-grid))
+        (persistent! segments)
+        (let [segs (loop [j 0 segs segments]
+                     (if (>= j (dec n-grid))
+                       segs
+                       ;; Four corners of the cell: TL(i,j) TR(i+1,j) BR(i+1,j+1) BL(i,j+1)
+                       (let [tl (grid-val i j)
+                             tr (grid-val (inc i) j)
+                             br (grid-val (inc i) (inc j))
+                             bl (grid-val i (inc j))
+                             ;; Corner coordinates in data space (cell center positions)
+                             x0 (+ x-lo (* (+ i 0.5) x-step))
+                             x1 (+ x-lo (* (+ i 1.5) x-step))
+                             y0 (+ y-lo (* (+ j 0.5) y-step))
+                             y1 (+ y-lo (* (+ j 1.5) y-step))
+                             ;; Cell index (4 bits: TL TR BR BL)
+                             idx (bit-or (if (>= tl threshold) 8 0)
+                                         (if (>= tr threshold) 4 0)
+                                         (if (>= br threshold) 2 0)
+                                         (if (>= bl threshold) 1 0))
+                             ;; Edge midpoints with interpolation
+                             top [(interp tl tr x0 x1) y0]
+                             right [x1 (interp tr br y0 y1)]
+                             bottom [(interp bl br x0 x1) y1]
+                             left [x0 (interp tl bl y0 y1)]]
+                         (recur (inc j)
+                                (case (int idx)
+                                  (0 15) segs
+                                  (1 14) (conj! segs [left bottom])
+                                  (2 13) (conj! segs [bottom right])
+                                  (3 12) (conj! segs [left right])
+                                  (4 11) (conj! segs [top right])
+                                  5 (-> segs (conj! [left top]) (conj! [bottom right]))
+                                  (6 9) (conj! segs [top bottom])
+                                  (7 8) (conj! segs [left top])
+                                  10 (-> segs (conj! [top right]) (conj! [left bottom]))
+                                  segs)))))]
+          (recur (inc i) segs))))))
+
+(defn- join-segments
+  "Join line segments into polylines by connecting shared endpoints.
+   Segments are [[x1 y1] [x2 y2]] pairs. Uses tolerance-based matching
+   for floating-point coordinates. Returns a sequence of polylines,
+   each a vector of [x y] points."
+  [segments]
+  (if (empty? segments)
+    []
+    (let [;; Round coords to 6 decimal places for matching
+          round6 (fn [v] (/ (Math/round (* v 1e6)) 1e6))
+          snap (fn [[x y]] [(round6 x) (round6 y)])
+          ;; Build adjacency: endpoint -> list of (other-endpoint, segment-index)
+          adj (reduce
+               (fn [m [idx [p1 p2]]]
+                 (let [k1 (snap p1) k2 (snap p2)]
+                   (-> m
+                       (update k1 (fnil conj []) {:other p2 :other-key k2 :idx idx})
+                       (update k2 (fnil conj []) {:other p1 :other-key k1 :idx idx}))))
+               {}
+               (map-indexed vector segments))
+          ;; Walk chains greedily
+          used (boolean-array (count segments))]
+      (loop [remaining (range (count segments))
+             polylines []]
+        (let [start-idx (first (drop-while #(aget used %) remaining))]
+          (if (nil? start-idx)
+            polylines
+            (do
+              (aset used start-idx true)
+              (let [[p1 p2] (nth segments start-idx)
+                    ;; Walk forward from p2
+                    forward
+                    (loop [chain [p2]
+                           cur-key (snap p2)]
+                      (let [neighbors (get adj cur-key [])
+                            next-seg (first (filter #(not (aget used (:idx %))) neighbors))]
+                        (if next-seg
+                          (do
+                            (aset used (:idx next-seg) true)
+                            (recur (conj chain (:other next-seg))
+                                   (:other-key next-seg)))
+                          chain)))
+                    ;; Walk backward from p1
+                    backward
+                    (loop [chain []
+                           cur-key (snap p1)]
+                      (let [neighbors (get adj cur-key [])
+                            next-seg (first (filter #(not (aget used (:idx %))) neighbors))]
+                        (if next-seg
+                          (do
+                            (aset used (:idx next-seg) true)
+                            (recur (conj chain (:other next-seg))
+                                   (:other-key next-seg)))
+                          chain)))
+                    polyline (vec (concat (rseq backward) [p1] forward))]
+                (recur remaining (conj polylines polyline))))))))))
+
+(defmethod extract-layer :contour [view stat all-colors cfg]
+  (let [{:keys [grid fill-range]} stat]
+    (if (nil? grid)
+      {:mark :contour :levels []}
+      (let [{:keys [densities n-grid x-lo x-hi y-lo y-hi x-step y-step max-d]} grid
+            n-levels (or (:levels view) 5)
+            ;; Threshold levels at evenly spaced fractions of max density
+            ;; Skip very low (< 10%) to avoid noise contours
+            thresholds (vec (for [i (range 1 (inc n-levels))]
+                              (* max-d (/ (double i) (inc n-levels)))))
+            levels (vec (for [threshold thresholds
+                              :let [t (/ threshold max-d)
+                                    segments (marching-squares-segments
+                                              densities n-grid threshold
+                                              x-lo y-lo x-step y-step)
+                                    polylines (join-segments segments)]
+                              :when (seq polylines)]
+                          {:threshold threshold
+                           :t t
+                           :color (defaults/gradient-color t)
+                           :polylines (vec polylines)}))]
+        {:mark :contour
+         :levels levels
+         :style {:stroke-width (or (:fixed-size view) 1.5)
+                 :opacity (or (:fixed-alpha view) 0.8)}
+         :x-domain [x-lo x-hi]
+         :y-domain [y-lo y-hi]}))))
+
+(defmethod extract-layer :ridgeline [view stat all-colors cfg]
+  (let [violins (:violins stat)
+        categories (:categories stat)]
+    {:mark :ridgeline
+     :style {:opacity (or (:fixed-alpha view) 0.7)}
+     :ridges (vec (for [v violins]
+                    (cond-> {:category (:category v)
+                             :color (resolve-color all-colors (:color v) (:fixed-color view) cfg)
+                             :ys (vec (:ys v))
+                             :densities (vec (:densities v))}
+                      (:color v) (assoc :color-category (:color v)))))
+     :categories (vec categories)}))
+
+(defmethod extract-layer :rug [view stat all-colors cfg]
+  {:mark :rug
+   :style {:length (or (:length view) 6)
+           :stroke-width (or (:fixed-size view) 1.0)
+           :opacity (or (:fixed-alpha view) 0.5)}
+   :side (or (:side view) :x)
+   :groups (vec
+            (for [{:keys [color xs ys]} (:points stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :xs (vec xs) :ys (vec ys)}))})
+
+(defmethod extract-layer :pointrange [view stat all-colors cfg]
+  {:mark :pointrange
+   :style {:radius (or (:fixed-size view) 3.5)
+           :stroke-width 1.5}
+   :groups (vec
+            (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
+              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+               :label (str color)
+               :xs (vec xs) :ys (vec ys)
+               :ymins (vec ymins) :ymaxs (vec ymaxs)}))})
+
+(defmethod extract-layer :default [view stat all-colors cfg]
+  (extract-layer (assoc view :mark :point) stat all-colors cfg))
+

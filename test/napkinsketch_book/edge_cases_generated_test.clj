@@ -228,7 +228,7 @@
    (tc/dataset
     {:category
      (mapv
-      (fn* [p1__79996#] (keyword (str "cat-" p1__79996#)))
+      (fn* [p1__94566#] (keyword (str "cat-" p1__94566#)))
       (range 12)),
      :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))}))
   (sk/view [[:category :value]])
@@ -282,7 +282,7 @@
  (->
   iris
   (tc/select-rows
-   (fn* [p1__79997#] (= "setosa" (p1__79997# :species))))
+   (fn* [p1__94567#] (= "setosa" (p1__94567# :species))))
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay (sk/point) (sk/lm))
   (sk/plot {:title "Setosa Only"})))
@@ -297,3 +297,95 @@
      [s (sk/svg-summary v)]
      (and (= 50 (:points s)) (= 1 (:lines s)))))
    v42_l190)))
+
+
+(def
+ v45_l206
+ (->
+  (tc/dataset {:category ["a" "b" "c"], :count [10 20 15]})
+  (sk/view :category :count)
+  (sk/lay (sk/value-bar {:position :stack}))
+  sk/plot))
+
+
+(deftest
+ t46_l212
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v45_l206)))
+
+
+(def
+ v48_l219
+ (->
+  (tc/dataset {:x ["a" "b" "a"], :g ["g1" "g1" "g2"]})
+  (sk/view :x)
+  (sk/lay (sk/bar {:color :g}))
+  sk/plot))
+
+
+(deftest
+ t49_l225
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v48_l219)))
+
+
+(def
+ v51_l232
+ (->
+  (tc/dataset
+   {:x ["a" "a" "b" "b" "b"], :g ["g1" "g2" "g1" "g1" "g1"]})
+  (sk/view :x)
+  (sk/lay (sk/stacked-bar-fill {:color :g}))
+  sk/plot))
+
+
+(deftest
+ t52_l238
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v51_l232)))
+
+
+(def
+ v54_l244
+ (->
+  iris
+  (sk/view :sepal_length :sepal_width)
+  (sk/lay (sk/point {:nudge-x 0.1, :nudge-y -0.05}))
+  sk/plot))
+
+
+(deftest
+ t55_l249
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v54_l244)))
+
+
+(def
+ v57_l256
+ (->
+  (tc/dataset {:x [1 2 3], :y [2 4 5]})
+  (sk/view :x :y)
+  (sk/lay (sk/point) (sk/lm {:se true}))
+  sk/plot))
+
+
+(deftest
+ t58_l261
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 3 (:points s)) (= 1 (:lines s)))))
+   v57_l256)))
+
+
+(def
+ v60_l269
+ (->
+  (tc/dataset
+   {:x (range 10), :y (repeatedly 10 (fn* [] (rand-int 20)))})
+  (sk/view :x :y)
+  (sk/lay (sk/stacked-area))
+  sk/plot))
+
+
+(deftest
+ t61_l275
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v60_l269)))

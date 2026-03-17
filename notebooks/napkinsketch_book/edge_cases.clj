@@ -196,3 +196,81 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 50 (:points s))
                                 (= 1 (:lines s)))))])
+
+;; ## Position Edge Cases
+
+;; ### Stacked bar — single group
+
+;; Stack with only one color value — no actual stacking needed.
+
+(-> (tc/dataset {:category ["a" "b" "c"]
+                 :count [10 20 15]})
+    (sk/view :category :count)
+    (sk/lay (sk/value-bar {:position :stack}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; ### Dodge — missing category in one group
+
+;; Group "g1" has data for "a" and "b", but "g2" only has "a".
+;; Dodge should still align correctly.
+
+(-> (tc/dataset {:x ["a" "b" "a"]
+                 :g ["g1" "g1" "g2"]})
+    (sk/view :x)
+    (sk/lay (sk/bar {:color :g}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; ### Fill — zero count category
+
+;; One group has zero count for a category.
+;; Fill should handle the zero gracefully.
+
+(-> (tc/dataset {:x ["a" "a" "b" "b" "b"]
+                 :g ["g1" "g2" "g1" "g1" "g1"]})
+    (sk/view :x)
+    (sk/lay (sk/stacked-bar-fill {:color :g}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; ### Nudge on scatter
+
+;; Nudge-x on continuous data — shifts points without error.
+
+(-> iris
+    (sk/view :sepal_length :sepal_width)
+    (sk/lay (sk/point {:nudge-x 0.1 :nudge-y -0.05}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; ### Confidence ribbon — small n
+
+;; Linear regression with se=true on exactly 3 points
+;; (minimum for lm).
+
+(-> (tc/dataset {:x [1 2 3] :y [2 4 5]})
+    (sk/view :x :y)
+    (sk/lay (sk/point) (sk/lm {:se true}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; ### Stacked area — single series
+
+;; Stack with a single color group — should render as a plain area.
+
+(-> (tc/dataset {:x (range 10)
+                 :y (repeatedly 10 #(rand-int 20))})
+    (sk/view :x :y)
+    (sk/lay (sk/stacked-area))
+    sk/plot)
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+

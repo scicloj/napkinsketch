@@ -48,7 +48,7 @@
 ;; | Multimethod | Namespace | Dispatches on | Purpose |
 ;; |:------------|:----------|:--------------|:--------|
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
-;; | `extract-layer` | `impl/sketch.clj` | `:mark` key | Convert stat result → sketch layer descriptor |
+;; | `extract-layer` | `impl/extract.clj` | `:mark` key | Convert stat result → sketch layer descriptor |
 ;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render sketch layer → membrane drawables |
 ;; | `sketch->figure` | `impl/render.clj` | format keyword | Orchestrate sketch → figure (full path) |
 ;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert membrane tree → figure |
@@ -145,7 +145,7 @@
                        (sk/view [[:sepal_length :sepal_width]])
                        (sk/lay (sk/point {:color :species}))))
       layer (first (:layers (first (:panels s))))]
-  (select-keys layer [:mark :style]))
+  layer)
 
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (number? (get-in m [:style :opacity]))))])
@@ -183,11 +183,11 @@
 ;;
 ;; ```clojure
 ;; ;; 1. Extract geometry from stat result
-;; (defmethod sketch/extract-layer :area [view stat all-colors cfg]
+;; (defmethod extract/extract-layer :area [view stat all-colors cfg]
 ;;   {:mark :area
 ;;    :style {:opacity 0.5}
 ;;    :groups (vec (for [{:keys [color xs ys]} (:points stat)]
-;;                   {:color (sketch/resolve-color ...)
+;;                   {:color (extract/resolve-color ...)
 ;;                    :xs (vec xs) :ys (vec ys)}))})
 ;;
 ;; ;; 2. Render to membrane drawables

@@ -164,7 +164,7 @@
 
 (let [s (sk/sketch views)
       layer (first (:layers (first (:panels s))))]
-  (select-keys layer [:mark :style]))
+  layer)
 
 (kind/test-last [(fn [m] (= :point (:mark m)))])
 

@@ -85,6 +85,8 @@
 
 (defn point
   "Point mark (scatter plot).
+   Options: :color, :alpha, :size, :shape, :jitter, :group,
+   :position, :nudge-x, :nudge-y.
    (point)                    — default
    (point {:color :species})  — color by column"
   ([] (view/point))
@@ -92,14 +94,16 @@
 
 (defn line
   "Line mark (connected points).
+   Options: :color, :alpha, :size (stroke width), :group,
+   :position, :nudge-x, :nudge-y.
    (line)                    — default
    (line {:color :group})    — one line per group"
   ([] (view/line))
   ([opts] (view/line opts)))
 
 (defn step
-  "Step line mark — connected points with horizontal-then-vertical steps.
-   Useful for time series showing discrete changes.
+  "Step line mark — horizontal-then-vertical connected points.
+   Options: :color, :alpha, :size (stroke width), :group.
    (step)                    — default
    (step {:color :group})    — one step line per group"
   ([] (view/step))
@@ -107,35 +111,40 @@
 
 (defn histogram
   "Histogram mark (binned counts).
-   (histogram)               — default binning
-   (histogram {:color :species}) — per-group histograms"
+   Options: :color, :alpha, :group, :normalize (:density).
+   (histogram)                       — default Sturges binning
+   (histogram {:color :species})     — per-group histograms
+   (histogram {:normalize :density}) — probability density axis"
   ([] (view/histogram))
   ([opts] (view/histogram opts)))
 
 (defn bar
-  "Bar mark (categorical counts).
+  "Bar mark (categorical counts, dodged by default).
+   Options: :color, :alpha, :group, :position.
    (bar)                     — count occurrences
-   (bar {:color :species})   — grouped bars"
+   (bar {:color :species})   — grouped (dodged) bars"
   ([] (view/bar))
   ([opts] (view/bar opts)))
 
 (defn stacked-bar
-  "Stacked bar mark (categorical counts, stacked).
+  "Stacked bar mark (categorical counts, position :stack).
+   Options: :color, :alpha, :group.
    (stacked-bar)                     — stacked bars
    (stacked-bar {:color :smoker})    — colored stacked bars"
   ([] (view/stacked-bar))
   ([opts] (view/stacked-bar opts)))
 
 (defn stacked-bar-fill
-  "Percentage stacked bar mark (100% stacked bars).
-   Each category sums to 1.0, showing proportions instead of counts.
+  "100% stacked bar mark (position :fill, proportions sum to 1.0).
+   Options: :color, :alpha, :group.
    (stacked-bar-fill)                     — 100% stacked bars
    (stacked-bar-fill {:color :smoker})    — colored 100% stacked bars"
   ([] (view/stacked-bar-fill))
   ([opts] (view/stacked-bar-fill opts)))
 
 (defn value-bar
-  "Value bar mark (categorical x, numeric y, no counting).
+  "Value bar mark (categorical x, pre-computed numeric y).
+   Options: :color, :alpha, :group, :position.
    (value-bar)                    — default
    (value-bar {:color :group})    — grouped value bars"
   ([] (view/value-bar))
@@ -143,6 +152,7 @@
 
 (defn lm
   "Linear regression line.
+   Options: :color, :alpha, :group, :se, :level, :nudge-x, :nudge-y.
    (lm)                              — single regression
    (lm {:color :species})            — per-group regression
    (lm {:se true})                   — with 95% confidence ribbon
@@ -151,7 +161,8 @@
   ([opts] (view/lm opts)))
 
 (defn loess
-  "LOESS smoothing line.
+  "LOESS smoothing line (requires n >= 4, strictly increasing x).
+   Options: :color, :alpha, :group.
    (loess)                     — default bandwidth 0.75
    (loess {:color :species})   — per-group smoothing"
   ([] (view/loess))
@@ -159,7 +170,7 @@
 
 (defn text
   "Text mark — data-driven labels at (x, y) positions.
-   Requires :text key mapping to a column.
+   Options: :text (required), :color, :alpha, :group, :nudge-x, :nudge-y.
    (text {:text :name})                — label each point
    (text {:text :name :color :species}) — colored labels"
   ([] (view/text))
@@ -167,8 +178,7 @@
 
 (defn label
   "Label mark — text with a filled background box at (x, y) positions.
-   Like text but with a white background rectangle for readability.
-   Requires :text key mapping to a column.
+   Options: :text (required), :color, :alpha, :group, :nudge-x, :nudge-y.
    (label {:text :name})                — labeled points with background
    (label {:text :name :color :species}) — colored labels with background"
   ([] (view/label))
@@ -176,20 +186,23 @@
 
 (defn area
   "Area mark — filled region under a line.
+   Options: :color, :alpha, :group, :position.
    (area)                     — default
    (area {:color :species})   — one area per group"
   ([] (view/area))
   ([opts] (view/area opts)))
 
 (defn stacked-area
-  "Stacked area mark — filled regions stacked on top of each other.
+  "Stacked area mark (position :stack, cumulative fill).
+   Options: :color, :alpha, :group.
    (stacked-area)                     — stacked areas
    (stacked-area {:color :group})     — colored stacked areas"
   ([] (view/stacked-area))
   ([opts] (view/stacked-area opts)))
 
 (defn density
-  "Density mark — kernel density estimation rendered as a filled area.
+  "Density mark — kernel density estimation rendered as filled area.
+   Options: :color, :alpha, :group, :bandwidth.
    (density)                    — default bandwidth
    (density {:color :species})  — per-group density curves
    (density {:bandwidth 0.5})   — custom bandwidth"
@@ -198,8 +211,7 @@
 
 (defn tile
   "Tile/heatmap mark — filled rectangles colored by a numeric value.
-   With no options, bins x and y into a 2D grid (heatmap of counts).
-   With :fill, uses a pre-computed numeric column for tile color.
+   Options: :fill, :kde2d-grid, :color, :alpha.
    (tile)                          — 2D binned heatmap
    (tile {:fill :value})           — pre-computed fill values"
   ([] (view/tile))
@@ -207,8 +219,7 @@
 
 (defn density2d
   "2D density estimate — KDE-smoothed heatmap.
-   Computes a 2D Gaussian kernel density estimate on a grid and renders
-   as filled tiles colored by density (viridis gradient).
+   Options: :kde2d-grid, :bandwidth, :alpha.
    (density2d)                     — default bandwidth and grid
    (density2d {:kde2d-grid 40})    — finer grid resolution"
   ([] (view/density2d))
@@ -216,7 +227,7 @@
 
 (defn contour
   "Contour mark — iso-density contour lines from 2D KDE.
-   Uses marching squares on the KDE2D grid to trace iso-level polylines.
+   Options: :levels, :kde2d-grid, :bandwidth, :alpha.
    (contour)                       — default 5 levels
    (contour {:levels 8})           — custom number of iso-levels
    (contour {:kde2d-grid 40})      — finer grid resolution"
@@ -225,7 +236,7 @@
 
 (defn ridgeline
   "Ridgeline mark — vertically stacked KDE density curves per category.
-   x should be categorical, y numeric.
+   Options: :color, :alpha, :bandwidth, :group.
    (ridgeline)                    — default
    (ridgeline {:color :species})  — colored ridgelines"
   ([] (view/ridgeline))
@@ -233,7 +244,7 @@
 
 (defn boxplot
   "Boxplot mark — displays median, quartiles, whiskers, and outliers.
-   x should be categorical, y numeric.
+   Options: :color, :alpha, :position, :group.
    (boxplot)                    — single color
    (boxplot {:color :smoker})   — side-by-side grouped boxplots"
   ([] (view/boxplot))
@@ -241,7 +252,7 @@
 
 (defn violin
   "Violin mark — mirrored density curve per category.
-   x should be categorical, y numeric.
+   Options: :color, :alpha, :bandwidth, :position, :group.
    (violin)                    — single color
    (violin {:color :smoker})   — side-by-side grouped violins"
   ([] (view/violin))
@@ -249,17 +260,16 @@
 
 (defn rug
   "Rug mark — tick marks along axis margins showing individual observations.
+   Options: :side (:x, :y, :both), :color, :alpha, :group.
    (rug)                     — ticks on x-axis
    (rug {:side :y})          — ticks on y-axis
-   (rug {:side :both})       — ticks on both axes
-   (rug {:color :species})   — colored ticks"
+   (rug {:side :both})       — ticks on both axes"
   ([] (view/rug))
   ([opts] (view/rug opts)))
 
 (defn summary
   "Summary mark — mean ± standard error per category.
-   Displays as a point at the mean with a vertical line showing ±1 SE.
-   x should be categorical, y numeric.
+   Options: :color, :alpha, :position, :nudge-x, :nudge-y, :group.
    (summary)                    — single summary
    (summary {:color :species})  — per-group summary"
   ([] (view/summary))
@@ -267,7 +277,8 @@
 
 (defn errorbar
   "Errorbar mark — vertical error bars at (x, y) positions.
-   Requires :ymin and :ymax keys mapping to columns.
+   Options: :ymin (required), :ymax (required), :color, :alpha,
+   :position, :nudge-x, :nudge-y, :group.
    (errorbar {:ymin :ci_lo :ymax :ci_hi})
    (errorbar {:ymin :ci_lo :ymax :ci_hi :color :group})"
   ([] (view/errorbar))
@@ -275,7 +286,7 @@
 
 (defn lollipop
   "Lollipop mark — stem + dot at (x, y) positions.
-   Like value-bar but lighter: a line from baseline to y with a dot.
+   Options: :color, :alpha, :position, :nudge-x, :nudge-y, :group.
    (lollipop)                  — default
    (lollipop {:color :group})  — colored stems"
   ([] (view/lollipop))

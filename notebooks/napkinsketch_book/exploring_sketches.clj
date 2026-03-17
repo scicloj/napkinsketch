@@ -41,7 +41,7 @@
 ;;
 ;; At the top level, a sketch describes dimensions and layout:
 
-(select-keys tiny-sk [:width :height :margin :total-width :total-height])
+tiny-sk
 
 (kind/test-last [(fn [m] (and (= 600 (:width m)) (= 400 (:height m))))])
 
@@ -50,7 +50,7 @@
 ;;
 ;; Labels are inferred from column names:
 
-(select-keys tiny-sk [:title :x-label :y-label])
+tiny-sk
 
 (kind/test-last [(fn [m] (and (nil? (:title m))
                               (= "x" (:x-label m))
@@ -107,7 +107,7 @@
 
 (def tiny-layer (first (:layers tiny-panel)))
 
-(select-keys tiny-layer [:mark :style])
+tiny-layer
 
 (kind/test-last [(fn [m] (= :point (:mark m)))])
 
@@ -223,7 +223,7 @@
 
 ;; The mark type is `:rect` and the layer knows the categories:
 
-(select-keys bar-layer [:mark :position :categories])
+bar-layer
 
 (kind/test-last [(fn [m] (and (= :rect (:mark m))
                               (= :dodge (:position m))
@@ -278,11 +278,11 @@
 
 ;; Its group has endpoints — a line segment in data space:
 
-(let [g (first (:groups lm-layer))]
-  (select-keys g [:x1 :y1 :x2 :y2]))
+(first (:groups lm-layer))
 
 (kind/test-last [(fn [m] (and (< (:x1 m) (:x2 m))
-                              (every? number? (vals m))))])
+                              (number? (:x1 m))
+                              (number? (:y2 m))))])
 
 ;; The renderer maps these two points through scales to get a
 ;; pixel-space line segment.
@@ -393,7 +393,7 @@
                          :width 800
                          :height 300}))
 
-(select-keys opts-sk [:title :x-label :y-label :width :height])
+opts-sk
 
 (kind/test-last [(fn [m] (and (= "My Custom Title" (:title m))
                               (= 800 (:width m))
@@ -420,7 +420,7 @@
 
 (def final-sk (sk/sketch final-views {:title "Iris Petals"}))
 
-(select-keys final-sk [:title :x-label :y-label :width :height])
+final-sk
 
 (kind/test-last [(fn [m] (= "Iris Petals" (:title m)))])
 
@@ -467,16 +467,14 @@
 
 ;; Each panel has a grid position and strip label:
 
-(mapv #(select-keys % [:row :col :col-label])
-      (:panels faceted-sk))
+(:panels faceted-sk)
 
 (kind/test-last [(fn [ps] (and (= 3 (count ps))
                                (every? :col-label ps)))])
 
 ;; Panel-level domains show the data range for each subset:
 
-(mapv #(select-keys % [:col-label :x-domain :y-domain])
-      (:panels faceted-sk))
+(:panels faceted-sk)
 
 (kind/test-last [(fn [ps] (every? :x-domain ps))])
 
@@ -485,7 +483,7 @@
 
 ;; The sketch also records per-panel pixel dimensions:
 
-(select-keys faceted-sk [:panel-width :panel-height :layout-type])
+faceted-sk
 
 (kind/test-last [(fn [m] (= :facet-grid (:layout-type m)))])
 

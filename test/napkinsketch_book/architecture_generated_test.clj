@@ -154,7 +154,7 @@
    v38_l196)))
 
 
-(def v41_l207 (select-keys multi-sketch [:title :legend]))
+(def v41_l207 multi-sketch)
 
 
 (deftest

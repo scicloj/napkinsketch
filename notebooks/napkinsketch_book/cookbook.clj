@@ -243,6 +243,122 @@
                                 (= 2 (:lines s))
                                 (some #{"Tipping Behavior"} (:texts s)))))])
 
+;; ## More Recipes
+
+;; ### Confidence ribbon
+
+;; A scatter plot with per-group linear regressions and 95%
+;; confidence ribbons.
+
+(-> iris
+    (sk/view :sepal_length :sepal_width)
+    (sk/lay (sk/point {:color :species :alpha 0.5})
+            (sk/lm {:color :species :se true}))
+    (sk/plot {:title "Sepal Regression with Confidence Bands"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:points s))
+                                (pos? (:lines s)))))])
+
+;; ### Stacked vs grouped bars
+
+;; Side-by-side comparison: default dodged bars vs stacked bars.
+
+(-> tips
+    (sk/view :day)
+    (sk/lay (sk/bar {:color :sex}))
+    (sk/plot {:title "Dodged Bars (default)"}))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+(-> tips
+    (sk/view :day)
+    (sk/lay (sk/stacked-bar {:color :sex}))
+    (sk/plot {:title "Stacked Bars"}))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; ### Step line
+
+;; A step plot for discrete time series data — useful when values
+;; hold constant between observations.
+
+(def daily-temps
+  (tc/dataset {:day (range 1 15)
+               :temp [12 14 14 16 18 17 15 13 14 16 19 21 20 18]}))
+
+(-> daily-temps
+    (sk/view :day :temp)
+    (sk/lay (sk/step {:color "#2196F3"})
+            (sk/point {:color "#2196F3" :size 3}))
+    (sk/plot {:title "Daily Temperature (Step)"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (pos? (:lines s))
+                                (pos? (:points s)))))])
+
+;; ### Density histogram
+
+;; Overlay a kernel density curve on a normalized histogram —
+;; useful for checking distributional assumptions.
+
+(-> iris
+    (sk/view :sepal_length)
+    (sk/lay (sk/histogram {:normalize :density :alpha 0.4})
+            (sk/density))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (> (:polygons s) 1)))])
+
+;; ### Contour + scatter
+
+;; Density contour lines overlaid on a scatter plot — reveals
+;; high-density regions in a point cloud.
+
+(-> iris
+    (sk/view :sepal_length :sepal_width)
+    (sk/lay (sk/point {:color :species :alpha 0.4})
+            (sk/contour {:levels 5}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (pos? (:points s))
+                                (pos? (:lines s)))))])
+
+;; ### Label marks
+
+;; Annotate specific data points with text labels.
+
+(def top5 (-> iris (tc/order-by :sepal_length :desc) (tc/head 5)))
+
+(-> top5
+    (sk/view :sepal_length :sepal_width)
+    (sk/lay (sk/point {:size 5})
+            (sk/label {:text :species :nudge-y 0.15}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (pos? (:points s))
+                                (some #(= "virginica" %) (:texts s)))))])
+
+;; ### Custom palette map
+
+;; Assign specific colors to each category using a palette map.
+
+(-> iris
+    (sk/view :sepal_length :sepal_width)
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:palette {:setosa "#E91E63"
+                        :versicolor "#4CAF50"
+                        :virginica "#2196F3"}
+              :title "Custom Palette Map"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:points s)))))])
+
 ;; ## Analytical Walkthroughs
 
 ;; ### Palmer Penguins

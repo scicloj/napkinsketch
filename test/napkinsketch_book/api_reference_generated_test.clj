@@ -182,7 +182,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__79004#] (Math/sin (* p1__79004# 0.3)))
+     (fn* [p1__92586#] (Math/sin (* p1__92586# 0.3)))
      (range 30))})))
 
 
@@ -319,9 +319,9 @@
      :y
      (mapv
       (fn*
-       [p1__79005#]
+       [p1__92587#]
        (+
-        (Math/sin (* p1__79005# 0.2))
+        (Math/sin (* p1__92587# 0.2))
         (* 0.3 (- (rng/drandom r) 0.5))))
       (range 50))}))))
 
@@ -683,9 +683,7 @@
  (def sk1 (sk/sketch [(sk/point {:data tiny, :x :x, :y :y})])))
 
 
-(def
- v113_l369
- (select-keys sk1 [:width :height :x-label :y-label :title]))
+(def v113_l369 sk1)
 
 
 (deftest
