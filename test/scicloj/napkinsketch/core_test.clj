@@ -514,3 +514,231 @@
   (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay (sk/point)))
         sk (sk/sketch views)]
     (is (sk/valid-sketch? sk))))
+
+;; ============================================================
+;; Configuration System
+;; ============================================================
+
+(deftest config-returns-defaults-test
+  (testing "config returns a map with all expected keys"
+    (let [cfg (defaults/config)]
+      (is (map? cfg))
+      (is (= 600 (:width cfg)))
+      (is (= 400 (:height cfg)))
+      (is (= 25 (:margin cfg)))
+      (is (= 2.5 (:point-radius cfg)))
+      (is (= 0.7 (:point-opacity cfg)))
+      (is (= 0.7 (:bar-opacity cfg)))
+      (is (= 2 (:line-width cfg)))
+      (is (= 1.5 (:grid-stroke-width cfg)))
+      (is (string? (:annotation-stroke cfg)))
+      (is (= 0.15 (:band-opacity cfg)))
+      (is (= 60 (:tick-spacing-x cfg)))
+      (is (= 40 (:tick-spacing-y cfg)))
+      (is (= :sturges (:bin-method cfg)))
+      (is (= 0.05 (:domain-padding cfg)))
+      (is (= 11 (:label-font-size cfg)))
+      (is (= 13 (:title-font-size cfg)))
+      (is (= 10 (:strip-font-size cfg)))
+      (is (= 18 (:label-offset cfg)))
+      (is (= 18 (:title-offset cfg)))
+      (is (= 16 (:strip-height cfg)))
+      (is (true? (:validate cfg)))))
+  (testing "config includes theme nested map"
+    (let [theme (:theme (defaults/config))]
+      (is (map? theme))
+      (is (string? (:bg theme)))
+      (is (string? (:grid theme)))
+      (is (number? (:font-size theme))))))
+
+(deftest set-config!-test
+  (testing "set-config! overrides specific keys"
+    (try
+      (defaults/set-config! {:width 800})
+      (is (= 800 (:width (defaults/config))))
+      ;; Other keys remain at defaults
+      (is (= 400 (:height (defaults/config))))
+      (finally
+        (defaults/set-config! nil))))
+  (testing "set-config! nil resets to defaults"
+    (try
+      (defaults/set-config! {:width 999})
+      (is (= 999 (:width (defaults/config))))
+      (defaults/set-config! nil)
+      (is (= 600 (:width (defaults/config))))
+      (finally
+        (defaults/set-config! nil))))
+  (testing "set-config! overrides theme with merge at top level"
+    (try
+      (defaults/set-config! {:theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 12}})
+      (let [theme (:theme (defaults/config))]
+        (is (= "#FFFFFF" (:bg theme)))
+        (is (= "#EEEEEE" (:grid theme)))
+        (is (= 12 (:font-size theme))))
+      (finally
+        (defaults/set-config! nil)))))
+
+(deftest dynamic-binding-test
+  (testing "binding *config* overrides set-config!"
+    (try
+      (defaults/set-config! {:width 800})
+      (binding [defaults/*config* {:width 1200}]
+        (is (= 1200 (:width (defaults/config)))))
+      ;; Outside binding, set-config! still applies
+      (is (= 800 (:width (defaults/config))))
+      (finally
+        (defaults/set-config! nil))))
+  (testing "binding *config* overrides defaults"
+    (binding [defaults/*config* {:point-radius 5.0}]
+      (is (= 5.0 (:point-radius (defaults/config)))))
+    ;; Outside binding, back to defaults
+    (is (= 2.5 (:point-radius (defaults/config))))))
+
+(deftest resolve-config-test
+  (testing "per-call opts override everything"
+    (try
+      (defaults/set-config! {:width 800})
+      (binding [defaults/*config* {:width 1200}]
+        (let [cfg (defaults/resolve-config {:width 900})]
+          (is (= 900 (:width cfg)))))
+      (finally
+        (defaults/set-config! nil))))
+  (testing "per-call opts with no overrides returns config"
+    (let [cfg (defaults/resolve-config {})]
+      (is (= 600 (:width cfg)))))
+  (testing "per-call theme merges into default theme"
+    (let [cfg (defaults/resolve-config {:theme {:bg "#FFF"}})]
+      (is (= "#FFF" (get-in cfg [:theme :bg])))
+      ;; grid and font-size preserved from defaults
+      (is (= "#FFFFFF" (get-in cfg [:theme :grid])))
+      (is (= 8 (get-in cfg [:theme :font-size])))))
+  (testing "per-call palette"
+    (let [cfg (defaults/resolve-config {:palette :dark2})]
+      (is (= :dark2 (:palette cfg)))))
+  (testing "per-call color-scale"
+    (let [cfg (defaults/resolve-config {:color-scale :diverging})]
+      (is (= :diverging (:color-scale cfg)))))
+  (testing "per-call validate false"
+    (let [cfg (defaults/resolve-config {:validate false})]
+      (is (false? (:validate cfg))))))
+
+(deftest precedence-chain-test
+  (testing "full precedence: per-call > binding > set-config! > defaults"
+    (try
+      (defaults/set-config! {:width 800 :height 300})
+      (binding [defaults/*config* {:width 1200 :height 500}]
+        ;; per-call wins for width; binding wins for height
+        (let [cfg (defaults/resolve-config {:width 900})]
+          (is (= 900 (:width cfg)))
+          (is (= 500 (:height cfg)))
+          ;; margin untouched by any override → from defaults
+          (is (= 25 (:margin cfg)))))
+      (finally
+        (defaults/set-config! nil)))))
+
+;; ---- Public API config functions ----
+
+(deftest api-config-test
+  (testing "sk/config returns resolved config"
+    (let [cfg (sk/config)]
+      (is (map? cfg))
+      (is (= 600 (:width cfg)))))
+  (testing "sk/set-config! and reset"
+    (try
+      (sk/set-config! {:width 777})
+      (is (= 777 (:width (sk/config))))
+      (sk/set-config! nil)
+      (is (= 600 (:width (sk/config))))
+      (finally
+        (sk/set-config! nil))))
+  (testing "sk/with-config overrides for body"
+    (sk/with-config {:width 1234}
+      (is (= 1234 (:width (sk/config)))))
+    (is (= 600 (:width (sk/config))))))
+
+;; ---- Config affects sketch output ----
+
+(deftest config-affects-sketch-test
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay (sk/point)))]
+    (testing "default width/height in sketch"
+      (let [s (sk/sketch views)]
+        (is (= 600 (:width s)))
+        (is (= 400 (:height s)))))
+    (testing "per-call opts change sketch dimensions"
+      (let [s (sk/sketch views {:width 800 :height 300})]
+        (is (= 800 (:width s)))
+        (is (= 300 (:height s)))))
+    (testing "set-config! changes sketch dimensions"
+      (try
+        (sk/set-config! {:width 700})
+        (let [s (sk/sketch views)]
+          (is (= 700 (:width s))))
+        (finally
+          (sk/set-config! nil))))
+    (testing "with-config changes sketch dimensions"
+      (sk/with-config {:height 500}
+        (let [s (sk/sketch views)]
+          (is (= 500 (:height s)))))
+      ;; After with-config, back to default
+      (let [s (sk/sketch views)]
+        (is (= 400 (:height s)))))
+    (testing "sketch does NOT contain :theme key"
+      (let [s (sk/sketch views)]
+        (is (not (contains? s :theme)))))))
+
+;; ---- Config affects rendered SVG ----
+
+(deftest config-affects-render-test
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay (sk/point)))]
+    (testing "default theme bg appears in SVG"
+      (let [svg (sk/plot views)
+            summary (sk/svg-summary svg)]
+        (is (= 1 (:panels summary)))
+        (is (= 5 (:points summary)))))
+    (testing "per-call theme overrides bg in SVG"
+      (let [svg (sk/plot views {:theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}})
+            s (str svg)]
+        ;; Default bg is rgb(235,235,235); custom is rgb(255,255,255)
+        (is (clojure.string/includes? s "rgb(255,255,255)"))))
+    (testing "with-config theme overrides bg in SVG"
+      (let [svg (sk/with-config {:theme {:bg "#FF0000" :grid "#FFFFFF" :font-size 8}}
+                  (sk/plot views))
+            s (str svg)]
+        (is (clojure.string/includes? s "rgb(255,0,0)"))))
+    (testing "per-call width changes SVG viewBox"
+      (let [svg (sk/plot views {:width 800})
+            attrs (second svg)]
+        (is (> (:width attrs) 800))))))
+
+;; ---- Config with palette ----
+
+(deftest config-palette-test
+  (let [ds (tc/dataset {:x [1 2 3 4 5 6]
+                        :y [10 20 30 15 25 35]
+                        :g ["a" "a" "a" "b" "b" "b"]})
+        views (-> ds (sk/view [[:x :y]]) (sk/lay (sk/point {:color :g})))]
+    (testing "default palette produces colored points"
+      (let [svg (sk/plot views)
+            summary (sk/svg-summary svg)]
+        (is (= 6 (:points summary)))))
+    (testing "per-call palette :dark2 works"
+      (let [svg (sk/plot views {:palette :dark2})
+            summary (sk/svg-summary svg)]
+        (is (= 6 (:points summary)))))
+    (testing "set-config! palette works"
+      (try
+        (sk/set-config! {:palette :set2})
+        (let [svg (sk/plot views)
+              summary (sk/svg-summary svg)]
+          (is (= 6 (:points summary))))
+        (finally
+          (sk/set-config! nil))))))
+
+;; ---- Config validation flag ----
+
+(deftest config-validate-flag-test
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay (sk/point)))]
+    (testing "validate true (default) — valid sketch passes"
+      (is (some? (sk/sketch views))))
+    (testing "validate false skips schema check"
+      (is (some? (sk/sketch views {:validate false}))))))
