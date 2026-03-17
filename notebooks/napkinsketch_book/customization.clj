@@ -10,7 +10,9 @@
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
-   [scicloj.napkinsketch.api :as sk]))
+   [scicloj.napkinsketch.api :as sk]
+   ;; clojure2d color — palette and gradient discovery
+   [clojure2d.color :as c2d]))
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
@@ -251,6 +253,39 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
+
+;; ## Discovering Palettes and Gradients
+;;
+;; napkinsketch delegates color to the
+;; [clojure2d](https://github.com/Clojure2D/clojure2d) library, which
+;; bundles thousands of named palettes and gradients.  Use
+;; `clojure2d.color/find-palette` and `clojure2d.color/find-gradient`
+;; to search by regex pattern.
+
+;; Find palettes whose name contains "budapest".
+
+(c2d/find-palette #"budapest")
+
+(kind/test-last [(fn [v] (and (sequential? v) (some #{:grand-budapest-1} v)))])
+
+;; Find palettes whose name contains "set".
+
+(c2d/find-palette #"^:set")
+
+(kind/test-last [(fn [v] (and (sequential? v) (some #{:set1} v)))])
+
+;; Find gradients related to "viridis".
+
+(c2d/find-gradient #"viridis")
+
+(kind/test-last [(fn [v] (and (sequential? v) (some #{:viridis/viridis} v)))])
+
+;; `c2d/palette` returns the colors for a given name.
+;; Each color is a clojure2d `Vec4` (RGBA, 0–255 range).
+
+(c2d/palette :grand-budapest-1)
+
+(kind/test-last [(fn [v] (and (sequential? v) (pos? (count v))))])
 
 ;; ## Theme
 ;;
