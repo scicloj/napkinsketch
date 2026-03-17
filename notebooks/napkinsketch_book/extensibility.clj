@@ -18,6 +18,7 @@
    [scicloj.napkinsketch.api :as sk]
    ;; Napkinsketch internals — for extending the pipeline
    [scicloj.napkinsketch.impl.stat :as stat]
+   [scicloj.napkinsketch.impl.extract :as extract]
    [scicloj.napkinsketch.impl.sketch :as sketch]
    [scicloj.napkinsketch.render.mark :as mark]
    [scicloj.napkinsketch.impl.scale :as scale]

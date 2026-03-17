@@ -62,7 +62,7 @@
                       (and numeric-color? color-values)
                       (assoc :colors (vec (map (fn [v]
                                                  (let [t (defaults/normalize-midpoint v (or c-min 0) (or c-max 1) (:color-midpoint cfg))
-                                                       grad-fn (or (:gradient-fn cfg) defaults/gradient-color)]
+                                                       grad-fn (:gradient-fn cfg)]
                                                    (grad-fn t)))
                                                color-values)))
                       sizes (assoc :sizes (vec sizes))
@@ -233,7 +233,7 @@
                   (vec (for [{:keys [x-lo x-hi y-lo y-hi fill]} (:tiles stat)
                              :let [t (defaults/normalize-midpoint fill f-lo f-hi (:color-midpoint cfg))]]
                          {:x-lo x-lo :x-hi x-hi :y-lo y-lo :y-hi y-hi
-                          :color ((or (:gradient-fn cfg) defaults/gradient-color) t)})))
+                          :color ((:gradient-fn cfg) t)})))
                 ;; identity path — each point is a tile at (x, y) with fill value
                 (let [data (:data view)
                       fill-vals (when fill-col (data fill-col))
@@ -248,8 +248,8 @@
                           :color (if fill-vals
                                    (let [fv (nth fill-vals i)
                                          t (defaults/normalize-midpoint fv (or f-lo 0) (or f-hi 1) (:color-midpoint cfg))]
-                                     ((or (:gradient-fn cfg) defaults/gradient-color) t))
-                                   ((or (:gradient-fn cfg) defaults/gradient-color) 0.5))}))))]
+                                     ((:gradient-fn cfg) t))
+                                   ((:gradient-fn cfg) 0.5))}))))]
     {:mark :tile
      :style {:opacity (or (:fixed-alpha view) 1.0)}
      :tiles tiles}))
@@ -385,7 +385,7 @@
                               :when (seq polylines)]
                           {:threshold threshold
                            :t t
-                           :color ((or (:gradient-fn cfg) defaults/gradient-color) t)
+                           :color ((:gradient-fn cfg) t)
                            :polylines (vec polylines)}))]
         {:mark :contour
          :levels levels

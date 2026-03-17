@@ -149,7 +149,7 @@
 (def Layer
   "A rendered mark layer with data-space geometry."
   [:map
-   [:mark [:enum :point :bar :line :step :rect :text :area :errorbar :lollipop :boxplot :violin :tile :ridgeline :rug :pointrange]]
+   [:mark [:enum :point :bar :line :step :rect :text :label :area :errorbar :lollipop :boxplot :violin :tile :ridgeline :rug :pointrange :contour]]
    [:style MarkStyle]
    [:groups {:optional true} [:vector [:or PointGroup BarGroup RectCountGroup RectValueGroup
                                        LineSegmentGroup PolylineGroup TextGroup ErrorbarGroup]]]
@@ -171,7 +171,7 @@
    [:y-domain [:vector any?]]
    [:x-scale ScaleSpec]
    [:y-scale ScaleSpec]
-   [:coord [:enum :cartesian :flip :polar]]
+   [:coord [:enum :cartesian :flip :polar :fixed]]
    [:x-ticks TickInfo]
    [:y-ticks TickInfo]
    [:layers [:vector Layer]]

@@ -5,6 +5,7 @@
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.impl.stat :as stat]
+  [scicloj.napkinsketch.impl.extract :as extract]
   [scicloj.napkinsketch.impl.sketch :as sketch]
   [scicloj.napkinsketch.render.mark :as mark]
   [scicloj.napkinsketch.impl.scale :as scale]
@@ -14,7 +15,7 @@
 
 
 (def
- v3_l58
+ v3_l59
  (def
   iris
   (tc/dataset
@@ -22,26 +23,26 @@
    {:key-fn keyword})))
 
 
-(def v5_l85 (sk/histogram))
+(def v5_l86 (sk/histogram))
 
 
-(deftest t6_l87 (is ((fn [m] (= :bin (:stat m))) v5_l85)))
+(deftest t6_l88 (is ((fn [m] (= :bin (:stat m))) v5_l86)))
 
 
-(def v8_l91 (sk/bar))
+(def v8_l92 (sk/bar))
 
 
-(deftest t9_l93 (is ((fn [m] (= :count (:stat m))) v8_l91)))
+(deftest t9_l94 (is ((fn [m] (= :count (:stat m))) v8_l92)))
 
 
-(def v11_l97 (sk/point))
+(def v11_l98 (sk/point))
 
 
-(deftest t12_l99 (is ((fn [m] (nil? (:stat m))) v11_l97)))
+(deftest t12_l100 (is ((fn [m] (nil? (:stat m))) v11_l98)))
 
 
 (def
- v14_l144
+ v14_l145
  (let
   [s
    (sk/sketch
@@ -55,16 +56,16 @@
 
 
 (deftest
- t15_l150
+ t15_l151
  (is
   ((fn
     [m]
     (and (= :point (:mark m)) (number? (get-in m [:style :opacity]))))
-   v14_l144)))
+   v14_l145)))
 
 
 (def
- v17_l214
+ v17_l215
  (def
   my-sketch
   (sk/sketch
@@ -74,32 +75,32 @@
     (sk/lay (sk/point {:color :species}))))))
 
 
-(def v18_l219 (first (sk/sketch->figure my-sketch :svg {})))
+(def v18_l220 (first (sk/sketch->figure my-sketch :svg {})))
 
 
-(deftest t19_l221 (is ((fn [v] (= :svg v)) v18_l219)))
+(deftest t19_l222 (is ((fn [v] (= :svg v)) v18_l220)))
 
 
-(def v21_l225 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v21_l226 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
-(def v22_l227 (vector? my-figure))
+(def v22_l228 (vector? my-figure))
 
 
-(deftest t23_l229 (is ((fn [v] (true? v)) v22_l227)))
+(deftest t23_l230 (is ((fn [v] (true? v)) v22_l228)))
 
 
-(def v25_l270 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v25_l271 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v26_l272 (vector? my-membrane))
+(def v26_l273 (vector? my-membrane))
 
 
-(deftest t27_l274 (is ((fn [v] (true? v)) v26_l272)))
+(deftest t27_l275 (is ((fn [v] (true? v)) v26_l273)))
 
 
 (def
- v28_l276
+ v28_l277
  (first
   (sk/membrane->figure
    my-membrane
@@ -108,11 +109,11 @@
     :total-height (:total-height my-sketch)})))
 
 
-(deftest t29_l280 (is ((fn [v] (= :svg v)) v28_l276)))
+(deftest t29_l281 (is ((fn [v] (= :svg v)) v28_l277)))
 
 
 (def
- v31_l334
+ v31_l335
  (->
   iris
   (sk/view :species)
@@ -122,11 +123,11 @@
 
 
 (deftest
- t32_l340
+ t32_l341
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v31_l334)))
+   v31_l335)))

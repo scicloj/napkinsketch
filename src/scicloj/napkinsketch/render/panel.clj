@@ -121,8 +121,11 @@
                        (first y-domain)
                        0)
 
-        ;; Detect ridgeline layers (used for grid and tick overrides)
-        has-ridgeline? (some #(= :ridgeline (:mark %)) layers)
+        ;; Detect ridgeline layers and pre-compute positions (used for grid and ticks)
+        ridgeline-layer (first (filter #(= :ridgeline (:mark %)) layers))
+        has-ridgeline? (some? ridgeline-layer)
+        ridge-pos (when has-ridgeline?
+                    (mark/ridgeline-positions (:categories ridgeline-layer) ph m))
 
         ;; Rendering context for mark/layer->membrane
         ctx (cond-> {:coord-fn coord-fn :sx sx :sy sy
@@ -148,8 +151,6 @@
                  (if has-ridgeline?
                    (let [grid-rgba (defaults/hex->rgba (:grid theme))
                          grid-w (:grid-stroke-width defaults/defaults)
-                         ridge-cats (:categories (first (filter #(= :ridgeline (:mark %)) layers)))
-                         ridge-pos (mark/ridgeline-positions ridge-cats ph m)
                          ridge-lines (vec (for [[_ {:keys [mid]}] ridge-pos]
                                             (ui/with-color grid-rgba
                                               (ui/with-stroke-width grid-w
@@ -203,9 +204,7 @@
         x-tick-labels (when show-x? (render-tick-labels :x x-ticks sx pw ph m :theme theme))
         y-tick-labels (when show-y?
                         (if has-ridgeline?
-                          (let [ridge-cats (:categories (first (filter #(= :ridgeline (:mark %)) layers)))
-                                ridge-pos (mark/ridgeline-positions ridge-cats ph m)
-                                fsize (:font-size theme)
+                          (let [fsize (:font-size theme)
                                 tick-color [0.4 0.4 0.4 1.0]]
                             (vec (for [[cat {:keys [mid]}] ridge-pos]
                                    (let [label (str cat)

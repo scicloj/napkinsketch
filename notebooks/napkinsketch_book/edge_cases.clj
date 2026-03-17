@@ -266,8 +266,9 @@
 
 ;; Stack with a single color group — should render as a plain area.
 
-(-> (tc/dataset {:x (range 10)
-                 :y (repeatedly 10 #(rand-int 20))})
+(-> (let [r (rng/rng :jdk 55)]
+      (tc/dataset {:x (range 10)
+                   :y (repeatedly 10 #(rng/irandom r 20))}))
     (sk/view :x :y)
     (sk/lay (sk/stacked-area))
     sk/plot)

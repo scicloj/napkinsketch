@@ -228,7 +228,7 @@
    (tc/dataset
     {:category
      (mapv
-      (fn* [p1__94566#] (keyword (str "cat-" p1__94566#)))
+      (fn* [p1__101792#] (keyword (str "cat-" p1__101792#)))
       (range 12)),
      :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))}))
   (sk/view [[:category :value]])
@@ -282,7 +282,7 @@
  (->
   iris
   (tc/select-rows
-   (fn* [p1__94567#] (= "setosa" (p1__94567# :species))))
+   (fn* [p1__101793#] (= "setosa" (p1__101793# :species))))
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay (sk/point) (sk/lm))
   (sk/plot {:title "Setosa Only"})))
@@ -379,13 +379,15 @@
 (def
  v60_l269
  (->
-  (tc/dataset
-   {:x (range 10), :y (repeatedly 10 (fn* [] (rand-int 20)))})
+  (let
+   [r (rng/rng :jdk 55)]
+   (tc/dataset
+    {:x (range 10), :y (repeatedly 10 (fn* [] (rng/irandom r 20)))}))
   (sk/view :x :y)
   (sk/lay (sk/stacked-area))
   sk/plot))
 
 
 (deftest
- t61_l275
+ t61_l276
  (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v60_l269)))

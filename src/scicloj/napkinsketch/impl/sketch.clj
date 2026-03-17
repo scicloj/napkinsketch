@@ -360,7 +360,7 @@
 (defn- build-legend
   "Build legend from resolved views and color info."
   [resolved-all numeric-color? all-colors color-cols cfg]
-  (let [grad-fn (or (:gradient-fn cfg) defaults/gradient-color)]
+  (let [grad-fn (:gradient-fn cfg)]
     (cond
       numeric-color?
       (let [color-views (filter #(and (view/column-ref? (:color %))
