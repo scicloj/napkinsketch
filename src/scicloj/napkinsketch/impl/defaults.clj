@@ -1,5 +1,7 @@
 (ns scicloj.napkinsketch.impl.defaults
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]))
 
 ;; ---- Palette and Theme ----
 
@@ -188,3 +190,90 @@
   "Format a keyword as a readable name: :sepal-length -> \"sepal length\"."
   [k]
   (str/replace (name k) #"[-_]" " "))
+
+;; ---- Configuration Precedence Chain ----
+;;
+;; Resolved with precedence (highest to lowest):
+;;   1. per-call opts (passed to sk/plot, sk/sketch, etc.)
+;;   2. binding *config* (thread-local override)
+;;   3. set-config! (global mutable state)
+;;   4. napkinsketch.edn (project root or classpath)
+;;   5. library defaults (napkinsketch-defaults.edn)
+
+(def ^:private library-defaults
+  "Library defaults loaded from napkinsketch-defaults.edn on classpath.
+   Falls back to the static `defaults` and `theme` maps if the resource is missing."
+  (delay
+    (if-let [r (io/resource "napkinsketch-defaults.edn")]
+      (edn/read-string (slurp r))
+      (merge defaults {:theme theme}))))
+
+(def ^:dynamic *config*
+  "Dynamic var for thread-local config overrides.
+   Bind to a map to override any config keys for the current thread.
+   (binding [defaults/*config* {:theme {:bg \"#FFF\"}}] ...)"
+  nil)
+
+(defonce ^:private config-atom
+  (atom nil))
+
+(defn set-config!
+  "Set global config overrides. Persists across calls until reset.
+   (set-config! {:palette :dark2 :theme {:bg \"#FFFFFF\"}})
+   (set-config! nil)  — reset to defaults"
+  [m]
+  (reset! config-atom m))
+
+(def ^:private edn-cache
+  "TTL cache for napkinsketch.edn (1 second)."
+  (atom {:value nil :timestamp 0}))
+
+(defn- read-napkinsketch-edn
+  "Read napkinsketch.edn from classpath or the current working directory.
+   Returns nil if the file does not exist. Cached with 1-second TTL."
+  []
+  (let [{:keys [value timestamp]} @edn-cache
+        now (System/currentTimeMillis)]
+    (if (< (- now timestamp) 1000)
+      value
+      (let [from-cp (io/resource "napkinsketch.edn")
+            from-cwd (let [f (io/file "napkinsketch.edn")]
+                       (when (.exists f) f))
+            source (or from-cp from-cwd)
+            v (when source (edn/read-string (slurp source)))]
+        (reset! edn-cache {:value v :timestamp now})
+        v))))
+
+(defn config
+  "Return the effective resolved configuration as a map.
+   Merges: library defaults < napkinsketch.edn < set-config! < *config*.
+   Useful for inspecting which values are in effect."
+  []
+  (let [base @library-defaults
+        from-edn (read-napkinsketch-edn)
+        from-atom @config-atom
+        from-binding *config*]
+    (cond-> base
+      from-edn (merge from-edn)
+      from-atom (merge from-atom)
+      from-binding (merge from-binding))))
+
+(defn resolve-config
+  "Resolve config with per-call opts merged on top of the precedence chain.
+   Per-call opts have the highest priority. Keys relevant to config are
+   extracted; unknown keys are ignored."
+  [per-call-opts]
+  (let [cfg (config)]
+    (if (seq per-call-opts)
+      (let [{:keys [config width height palette theme
+                    color-scale color-midpoint validate]} per-call-opts]
+        (cond-> cfg
+          config (merge config)
+          width (assoc :width width)
+          height (assoc :height height)
+          palette (assoc :palette palette)
+          theme (update :theme merge theme)
+          (some? color-scale) (assoc :color-scale color-scale)
+          (some? color-midpoint) (assoc :color-midpoint color-midpoint)
+          (some? validate) (assoc :validate validate)))
+      cfg)))

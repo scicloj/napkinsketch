@@ -295,8 +295,10 @@
       (kind/hiccup svg))))
 
 (defmethod render/sketch->figure :svg [sketch _ opts]
-  (let [membrane-tree (membrane/sketch->membrane sketch
-                                                 :tooltip (:tooltip opts))]
+  (let [render-opts (select-keys opts [:tooltip :width :height :theme :palette
+                                       :color-scale :color-midpoint])
+        membrane-tree (apply membrane/sketch->membrane sketch
+                             (mapcat identity render-opts))]
     (render/membrane->figure membrane-tree :svg
                              (assoc opts
                                     :total-width (:total-width sketch)

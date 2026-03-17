@@ -244,10 +244,6 @@
    [:legend {:optional true} [:maybe Legend]]
    [:legend-position [:enum :right :bottom :top :none]]
    [:panels [:vector Panel]]
-   [:theme [:map
-            [:bg string?]
-            [:grid string?]
-            [:font-size number?]]]
    [:layout Layout]])
 
 ;; ---- Validation Helpers ----

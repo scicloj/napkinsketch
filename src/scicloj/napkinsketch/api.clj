@@ -4,6 +4,7 @@
             [scicloj.napkinsketch.impl.plot :as plot-impl]
             [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
+            [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.render :as render-impl]
             [scicloj.napkinsketch.render.membrane :as membrane]
             [scicloj.napkinsketch.render.svg :as svg]
@@ -83,6 +84,32 @@
    (labs views {:title \"Title\" :subtitle \"Detail\" :caption \"Source: ...\"})"
   [views label-opts]
   (view/labs views label-opts))
+
+;; ---- Configuration ----
+
+(defmacro with-config
+  "Execute body with thread-local config overrides.
+   Overrides take precedence over set-config! and defaults,
+   but per-call opts still win.
+   (with-config {:theme {:bg \"#FFF\"}} (plot ...))"
+  [config-map & body]
+  `(binding [defaults/*config* ~config-map]
+     ~@body))
+
+(defn config
+  "Return the effective resolved configuration as a map.
+   Merges: library defaults < napkinsketch.edn < set-config! < *config*.
+   Useful for inspecting which values are in effect.
+   (config)  — show current resolved config"
+  []
+  (defaults/config))
+
+(defn set-config!
+  "Set global config overrides. Persists across calls until reset.
+   (set-config! {:palette :dark2 :theme {:bg \"#FFFFFF\"}})
+   (set-config! nil)  — reset to defaults"
+  [m]
+  (defaults/set-config! m))
 
 ;; ---- Mark Constructors ----
 

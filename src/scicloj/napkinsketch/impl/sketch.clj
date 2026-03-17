@@ -389,7 +389,7 @@
    grid-rows grid-cols pw ph multi? panels legend-position]
   (let [x-label-pad (if eff-x-label (:label-offset cfg) 0)
         ;; y-label-pad must account for y-tick label width (e.g. category names)
-        tick-fsize (:font-size defaults/theme)
+        tick-fsize (get-in cfg [:theme :font-size] 8)
         max-y-tick-len (reduce max 0
                                (for [p panels
                                      :let [labels (get-in p [:y-ticks :labels])]
@@ -451,17 +451,13 @@
    Options include :validate (default true) — when true, validates the
    resulting sketch against the Malli schema and throws on failure."
   ([views] (views->sketch views {}))
-  ([views {:keys [width height config x-label y-label title subtitle caption
-                  scales palette theme legend-position color-scale color-midpoint
-                  validate] :as opts}]
-   (let [validate? (if (some? validate) validate true)
-         cfg (cond-> (merge defaults/defaults config)
-               palette (assoc :palette palette)
-               true (assoc :gradient-fn (defaults/resolve-gradient-fn color-scale))
-               color-midpoint (assoc :color-midpoint color-midpoint))
-         resolved-theme (merge defaults/theme theme)
-         width (or width (:width cfg))
-         height (or height (:height cfg))
+  ([views {:keys [x-label y-label title subtitle caption
+                  scales legend-position] :as opts}]
+   (let [cfg (-> (defaults/resolve-config opts)
+                 (assoc :gradient-fn (defaults/resolve-gradient-fn (:color-scale opts))))
+         validate? (:validate cfg true)
+         width (:width cfg)
+         height (:height cfg)
          views (if (map? views) [views] views)
          ann-views (filter #(view/annotation-marks (:mark %)) views)
          non-ann-views (remove #(view/annotation-marks (:mark %)) views)
@@ -579,7 +575,6 @@
           :legend legend
           :legend-position (or legend-position :right)
           :panels panels
-          :theme resolved-theme
           :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad
                                             :subtitle-pad :caption-pad
                                             :legend-w :legend-h :strip-h :strip-w])}]

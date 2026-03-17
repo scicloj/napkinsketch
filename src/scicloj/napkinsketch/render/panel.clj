@@ -11,10 +11,10 @@
 (defn render-grid-from-ticks
   "Render grid lines using pre-computed tick values from a sketch.
    Skips grid lines for categorical axes (like ggplot2)."
-  [sx sy x-ticks y-ticks pw ph m & {:keys [theme]}]
-  (let [theme (or theme defaults/theme)
+  [sx sy x-ticks y-ticks pw ph m cfg]
+  (let [theme (:theme cfg)
         grid-rgba (defaults/hex->rgba (:grid theme))
-        grid-w (:grid-stroke-width defaults/defaults)]
+        grid-w (:grid-stroke-width cfg)]
     (vec
      (concat
       (when-not (:categorical? x-ticks)
@@ -32,10 +32,10 @@
 
 (defn render-polar-grid
   "Render polar grid: concentric circles and radial spokes."
-  [pw ph m & {:keys [theme]}]
-  (let [theme (or theme defaults/theme)
+  [pw ph m cfg]
+  (let [theme (:theme cfg)
         grid-rgba (defaults/hex->rgba (:grid theme))
-        grid-w (:grid-stroke-width defaults/defaults)
+        grid-w (:grid-stroke-width cfg)
         cx (/ pw 2.0) cy (/ ph 2.0)
         r-max (- (min cx cy) (double m))
         ;; Concentric circles (approximated as 40-segment polygons)
@@ -65,9 +65,9 @@
 
 (defn render-tick-labels
   "Render tick labels from pre-computed tick info in a sketch."
-  [axis tick-info scale pw ph m & {:keys [theme]}]
+  [axis tick-info scale pw ph m cfg]
   (let [{:keys [values labels]} tick-info
-        fsize (:font-size (or theme defaults/theme))
+        fsize (get-in cfg [:theme :font-size] 8)
         tick-color [0.4 0.4 0.4 1.0]]
     (when (seq values)
       (vec
@@ -92,13 +92,13 @@
   "Convert a sketch panel into a membrane drawable tree.
    Takes a panel map from views->sketch and pixel dimensions.
    show-x? and show-y? control whether tick labels are drawn
-   (grid lines always render)."
-  [panel pw ph m & {:keys [show-x? show-y? tooltip x-col-name y-col-name theme]
-                    :or {show-x? true show-y? true}}]
+   (grid lines always render). cfg is the resolved config map."
+  [panel pw ph m cfg & {:keys [show-x? show-y? tooltip x-col-name y-col-name]
+                        :or {show-x? true show-y? true}}]
   (let [{:keys [x-domain y-domain x-scale y-scale coord
                 x-ticks y-ticks layers annotations]} panel
         coord-type (or coord :cartesian)
-        theme (or theme defaults/theme)
+        theme (:theme cfg)
 
         ;; Build wadogo scales from domains + pixel ranges
         x-px [m (- pw m)]
@@ -146,11 +146,11 @@
         ;; Grid — polar gets circles + spokes; cartesian/flip get tick-aligned lines
         ;; For ridgeline panels, add horizontal guide lines at baseline positions
         grid (if (= coord-type :polar)
-               (render-polar-grid pw ph m :theme theme)
-               (let [base-grid (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m :theme theme)]
+               (render-polar-grid pw ph m cfg)
+               (let [base-grid (render-grid-from-ticks sx sy x-ticks y-ticks pw ph m cfg)]
                  (if has-ridgeline?
                    (let [grid-rgba (defaults/hex->rgba (:grid theme))
-                         grid-w (:grid-stroke-width defaults/defaults)
+                         grid-w (:grid-stroke-width cfg)
                          ridge-lines (vec (for [[_ {:keys [mid]}] ridge-pos]
                                             (ui/with-color grid-rgba
                                               (ui/with-stroke-width grid-w
@@ -165,8 +165,8 @@
         ;; Annotation marks
         ann-marks
         (when (seq annotations)
-          (let [ann-color (defaults/hex->rgba (:annotation-stroke defaults/defaults))
-                band-alpha (:band-opacity defaults/defaults)]
+          (let [ann-color (defaults/hex->rgba (:annotation-stroke cfg))
+                band-alpha (:band-opacity cfg)]
             (vec
              (for [a annotations]
                (case (:mark a)
@@ -201,10 +201,10 @@
         ;; Tick labels (conditional)
         ;; For ridgeline panels, y-tick labels must use ridgeline band positions
         ;; (with overlap padding) instead of the categorical scale positions.
-        x-tick-labels (when show-x? (render-tick-labels :x x-ticks sx pw ph m :theme theme))
+        x-tick-labels (when show-x? (render-tick-labels :x x-ticks sx pw ph m cfg))
         y-tick-labels (when show-y?
                         (if has-ridgeline?
-                          (let [fsize (:font-size theme)
+                          (let [fsize (get-in cfg [:theme :font-size] 8)
                                 tick-color [0.4 0.4 0.4 1.0]]
                             (vec (for [[cat {:keys [mid]}] ridge-pos]
                                    (let [label (str cat)
@@ -213,5 +213,5 @@
                                                    (- (double mid) (/ fsize 2.0))
                                                    (ui/with-color tick-color
                                                      (ui/label label (ui/font nil fsize))))))))
-                          (render-tick-labels :y y-ticks sy pw ph m :theme theme)))]
+                          (render-tick-labels :y y-ticks sy pw ph m cfg)))]
     (vec (concat [background] grid marks ann-marks x-tick-labels y-tick-labels))))

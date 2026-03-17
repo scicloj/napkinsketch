@@ -104,8 +104,8 @@
 
 (defn- render-x-label
   "Render x-axis label centered below the plot area."
-  [label center-x y-pos]
-  (let [fsize (:label-font-size defaults/defaults)]
+  [label center-x y-pos cfg]
+  (let [fsize (:label-font-size cfg)]
     (ui/translate center-x y-pos
                   (ui/with-color [0.2 0.2 0.2 1.0]
                     (assoc (ui/label label (ui/font nil fsize))
@@ -113,8 +113,8 @@
 
 (defn- render-y-label
   "Render y-axis label. Uses a Rotate to place vertically."
-  [label center-y x-pos]
-  (let [fsize (:label-font-size defaults/defaults)]
+  [label center-y x-pos cfg]
+  (let [fsize (:label-font-size cfg)]
     (ui/translate x-pos center-y
                   (membrane.ui.Rotate. -90
                                        (ui/with-color [0.2 0.2 0.2 1.0]
@@ -123,8 +123,8 @@
 
 (defn- render-title
   "Render plot title centered above the plot area."
-  [title center-x]
-  (let [fsize (:title-font-size defaults/defaults)]
+  [title center-x cfg]
+  (let [fsize (:title-font-size cfg)]
     (ui/translate center-x 14
                   (ui/with-color [0.2 0.2 0.2 1.0]
                     (assoc (ui/label title (ui/font nil fsize))
@@ -137,22 +137,23 @@
    Returns a vector of membrane drawables representing the complete plot.
    Optional kwargs:
      :tooltip — when truthy, enables tooltip text generation on data marks."
-  [sketch & {:keys [tooltip]}]
-  (let [{:keys [margin total-width total-height panel-width panel-height
-                title subtitle caption x-label y-label legend legend-position panels layout grid theme]} sketch
+  [sketch & {:keys [tooltip] :as opts}]
+  (let [cfg (defaults/resolve-config opts)
+        {:keys [margin total-width total-height panel-width panel-height
+                title subtitle caption x-label y-label legend legend-position panels layout grid]} sketch
         {:keys [x-label-pad y-label-pad title-pad subtitle-pad caption-pad legend-w legend-h strip-h strip-w]} layout
-        theme (or theme defaults/theme)
+        theme (:theme cfg)
         legend-pos (or legend-position :right)
         grid-rows (:rows grid)
         grid-cols (:cols grid)
         pw panel-width
         ph panel-height
 
-        ;; Font sizes from theme or defaults
-        label-fsize (or (:label-font-size theme) (:label-font-size defaults/defaults))
-        title-fsize (or (:title-font-size theme) (:title-font-size defaults/defaults))
-        strip-fsize (or (:strip-font-size theme) (:strip-font-size defaults/defaults) 10)
-        text-color (if-let [tc (:text-color theme)]
+        ;; Font sizes from config
+        label-fsize (:label-font-size cfg)
+        title-fsize (:title-font-size cfg)
+        strip-fsize (:strip-font-size cfg 10)
+        text-color (if-let [tc (:text-color cfg)]
                      (defaults/hex->rgba tc)
                      [0.2 0.2 0.2 1.0])
 
@@ -167,13 +168,12 @@
                      x-off (+ y-label-pad (* ci pw))
                      y-off (+ title-pad strip-h (* ri ph))]]
            (ui/translate x-off y-off
-                         (panel/panel->membrane p pw ph margin
+                         (panel/panel->membrane p pw ph margin cfg
                                                 :show-x? show-x?
                                                 :show-y? show-y?
                                                 :tooltip tooltip
                                                 :x-col-name (or x-label "x")
-                                                :y-col-name (or y-label "y")
-                                                :theme theme))))
+                                                :y-col-name (or y-label "y")))))
 
         ;; Strip labels (column headers on top, row headers on right)
         strip-label-color text-color
