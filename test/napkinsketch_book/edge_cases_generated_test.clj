@@ -228,7 +228,7 @@
    (tc/dataset
     {:category
      (mapv
-      (fn* [p1__81704#] (keyword (str "cat-" p1__81704#)))
+      (fn* [p1__91512#] (keyword (str "cat-" p1__91512#)))
       (range 12)),
      :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))}))
   (sk/view [[:category :value]])
@@ -282,7 +282,7 @@
  (->
   iris
   (tc/select-rows
-   (fn* [p1__81705#] (= "setosa" (p1__81705# :species))))
+   (fn* [p1__91513#] (= "setosa" (p1__91513# :species))))
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay (sk/point) (sk/lm))
   (sk/plot {:title "Setosa Only"})))
@@ -391,3 +391,80 @@
 (deftest
  t61_l276
  (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v60_l269)))
+
+
+(def
+ v63_l286
+ (->
+  (tc/dataset {:x [1 2 3], :y [4 5 6], :c [5 5 5]})
+  (sk/view :x :y)
+  (sk/lay (sk/point {:color :c}))
+  sk/plot))
+
+
+(deftest
+ t64_l291
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v63_l286)))
+
+
+(def
+ v66_l295
+ (->
+  (tc/dataset
+   {:x (range 20),
+    :y (map (fn* [p1__91514#] (- p1__91514# 10)) (range 20)),
+    :val (map (fn* [p1__91515#] (- p1__91515# 10.0)) (range 20))})
+  (sk/view :x :y)
+  (sk/lay (sk/point {:color :val}))
+  (sk/plot {:color-scale :diverging, :color-midpoint 0})))
+
+
+(deftest
+ t67_l302
+ (is ((fn [v] (= 20 (:points (sk/svg-summary v)))) v66_l295)))
+
+
+(def
+ v69_l308
+ (->
+  (tc/dataset {:date ["2025-01-01" "2025-01-02"], :val [10 20]})
+  (sk/view :date :val)
+  (sk/lay (sk/point))
+  sk/plot))
+
+
+(deftest
+ t70_l314
+ (is ((fn [v] (= 2 (:points (sk/svg-summary v)))) v69_l308)))
+
+
+(def
+ v72_l320
+ (->
+  (tc/dataset
+   {:cat (map (fn* [p1__91516#] (str "cat-" p1__91516#)) (range 12)),
+    :val (repeatedly 12 (fn* [] (rand-int 100)))})
+  (sk/view :cat :val)
+  (sk/lay (sk/bar))
+  (sk/coord :polar)
+  sk/plot))
+
+
+(deftest
+ t73_l327
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v72_l320)))
+
+
+(def
+ v75_l331
+ (->
+  (tc/dataset {:x (range 100), :y (range 0 10 0.1)})
+  (sk/view :x :y)
+  (sk/lay (sk/point))
+  (sk/coord :fixed)
+  sk/plot))
+
+
+(deftest
+ t76_l337
+ (is ((fn [v] (= 100 (:points (sk/svg-summary v)))) v75_l331)))

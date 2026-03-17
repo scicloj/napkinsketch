@@ -376,47 +376,112 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v93_l408)))
 
 
-(def v96_l427 (sk/sketch (base-views)))
+(def
+ v96_l423
+ (->
+  (tc/dataset {:x (range 50), :y (range 50), :c (range 50)})
+  (sk/view :x :y)
+  (sk/lay (sk/point {:color :c}))
+  (sk/plot)))
 
 
 (deftest
- t97_l429
- (is
-  ((fn [sketch] (and (map? sketch) (= 600 (:width sketch)))) v96_l427)))
-
-
-(def v99_l436 (-> (base-views) (sk/plot)))
-
-
-(deftest
- t100_l438
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v99_l436)))
+ t97_l428
+ (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v96_l423)))
 
 
 (def
- v102_l447
+ v99_l432
+ (->
+  (tc/dataset {:x (range 50), :y (range 50), :c (range 50)})
+  (sk/view :x :y)
+  (sk/lay (sk/point {:color :c}))
+  (sk/plot {:color-scale :inferno})))
+
+
+(deftest
+ t100_l437
+ (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v99_l432)))
+
+
+(def
+ v102_l441
+ (sk/with-config
+  {:color-scale :plasma}
+  (->
+   (tc/dataset {:x (range 50), :y (range 50), :c (range 50)})
+   (sk/view :x :y)
+   (sk/lay (sk/point {:color :c}))
+   (sk/plot))))
+
+
+(deftest
+ t103_l447
+ (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v102_l441)))
+
+
+(def
+ v105_l453
+ (->
+  (tc/dataset {:x (range 50), :y (range 50), :c (range 50)})
+  (sk/view :x :y)
+  (sk/lay (sk/point {:color :c}))
+  (sk/sketch {:color-scale :inferno})
+  :legend
+  (select-keys [:color-scale :type])))
+
+
+(deftest
+ t106_l460
+ (is
+  ((fn
+    [m]
+    (and (= :inferno (:color-scale m)) (= :continuous (:type m))))
+   v105_l453)))
+
+
+(def v108_l476 (sk/sketch (base-views)))
+
+
+(deftest
+ t109_l478
+ (is
+  ((fn [sketch] (and (map? sketch) (= 600 (:width sketch))))
+   v108_l476)))
+
+
+(def v111_l485 (-> (base-views) (sk/plot)))
+
+
+(deftest
+ t112_l487
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v111_l485)))
+
+
+(def
+ v114_l496
  (def good-sketch (sk/sketch (base-views) {:validate false})))
 
 
-(def v103_l449 (sk/valid-sketch? good-sketch))
+(def v115_l498 (sk/valid-sketch? good-sketch))
 
 
-(deftest t104_l451 (is ((fn [v] (true? v)) v103_l449)))
+(deftest t116_l500 (is ((fn [v] (true? v)) v115_l498)))
 
 
 (def
- v106_l456
+ v118_l505
  (def bad-sketch (assoc good-sketch :width "not-a-number")))
 
 
-(def v107_l458 (sk/valid-sketch? bad-sketch))
+(def v119_l507 (sk/valid-sketch? bad-sketch))
 
 
-(deftest t108_l460 (is ((fn [v] (false? v)) v107_l458)))
+(deftest t120_l509 (is ((fn [v] (false? v)) v119_l507)))
 
 
 (def
- v110_l465
+ v122_l514
  (->
   (sk/explain-sketch bad-sketch)
   :errors
@@ -425,14 +490,14 @@
 
 
 (deftest
- t111_l470
+ t123_l519
  (is
   ((fn [m] (and (= [:width] (:path m)) (= "not-a-number" (:value m))))
-   v110_l465)))
+   v122_l514)))
 
 
 (def
- v113_l479
+ v125_l528
  (try
   (let
    [sketch
@@ -450,21 +515,21 @@
 
 
 (deftest
- t114_l490
+ t126_l539
  (is
   ((fn
     [m]
     (and
      (:caught m)
      (= "Sketch does not conform to schema" (:message m))))
-   v113_l479)))
+   v125_l528)))
 
 
-(def v116_l499 (sk/sketch (base-views) {:validate false}))
+(def v128_l548 (sk/sketch (base-views) {:validate false}))
 
 
 (deftest
- t117_l501
+ t129_l550
  (is
   ((fn [sketch] (and (map? sketch) (= 600 (:width sketch))))
-   v116_l499)))
+   v128_l548)))

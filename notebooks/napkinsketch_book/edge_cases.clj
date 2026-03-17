@@ -275,3 +275,63 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
+
+;; ## Continuous Color Edge Cases
+
+;; ### Continuous color — constant value
+;;
+;; All points have the same numeric color value. The gradient
+;; should still render and not divide by zero.
+
+(-> (tc/dataset {:x [1 2 3] :y [4 5 6] :c [5 5 5]})
+    (sk/view :x :y)
+    (sk/lay (sk/point {:color :c}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+
+;; ### Diverging color with midpoint at zero
+
+(-> (tc/dataset {:x (range 20)
+                 :y (map #(- % 10) (range 20))
+                 :val (map #(- % 10.0) (range 20))})
+    (sk/view :x :y)
+    (sk/lay (sk/point {:color :val}))
+    (sk/plot {:color-scale :diverging :color-midpoint 0}))
+
+(kind/test-last [(fn [v] (= 20 (:points (sk/svg-summary v))))])
+
+;; ## Date Scale Edge Cases
+
+;; ### Dates with very narrow range (one day apart)
+
+(-> (tc/dataset {:date ["2025-01-01" "2025-01-02"]
+                 :val [10 20]})
+    (sk/view :date :val)
+    (sk/lay (sk/point))
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 2 (:points (sk/svg-summary v))))])
+
+;; ## Coordinate Edge Cases
+
+;; ### Polar with many categories
+
+(-> (tc/dataset {:cat (map #(str "cat-" %) (range 12))
+                 :val (repeatedly 12 #(rand-int 100))})
+    (sk/view :cat :val)
+    (sk/lay (sk/bar))
+    (sk/coord :polar)
+    sk/plot)
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; ### Fixed aspect ratio with extreme domain ratio
+
+(-> (tc/dataset {:x (range 100) :y (range 0 10 0.1)})
+    (sk/view :x :y)
+    (sk/lay (sk/point))
+    (sk/coord :fixed)
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 100 (:points (sk/svg-summary v))))])

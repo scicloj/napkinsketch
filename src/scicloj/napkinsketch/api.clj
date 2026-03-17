@@ -358,7 +358,10 @@
    (plot views)              — default 600×400 SVG
    (plot views {:width 800 :height 500 :title \"My Plot\"})
    (plot views {:format :svg})  — explicit format
-   Options: :color-scale (:sequential, :diverging, or {:low :mid :high} map),
+   Options: :width, :height, :title, :subtitle, :caption, :x-label, :y-label,
+   :palette (keyword, vector, or map), :theme {:bg :grid :font-size},
+   :legend-position (:right :bottom :top :none), :tooltip, :brush,
+   :color-scale (:sequential, :diverging, or {:low :mid :high} map),
    :color-midpoint (number — centers diverging gradient on this value),
    :validate (default true — validates sketch against Malli schema)."
   ([views] (plot-impl/plot views))

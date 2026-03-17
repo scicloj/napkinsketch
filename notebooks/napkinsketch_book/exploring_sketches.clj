@@ -175,6 +175,28 @@ tiny-layer
 ;; Colors are resolved to `[r g b a]` vectors — no symbolic references.
 ;; The same color appears in both the layer groups and the legend entries.
 
+
+;; ### Continuous Color
+;;
+;; When `:color` maps to a **numeric** column, the sketch stores
+;; per-point colors and a continuous gradient legend.
+
+(def cont-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width
+                                    :color :petal_length})]))
+
+;; The legend has pre-computed gradient stops — no functions, fully serializable:
+
+(select-keys (:legend cont-sk) [:title :type :min :max :color-scale])
+
+(kind/test-last [(fn [m] (and (= :continuous (:type m))
+                              (not (contains? m :gradient-fn))))])
+
+;; Twenty evenly spaced stops store the gradient colors:
+
+(count (:stops (:legend cont-sk)))
+
+(kind/test-last [(fn [n] (= 20 n))])
+
 ;; ## Histograms
 ;;
 ;; A histogram computes bins from the data. The sketch stores the

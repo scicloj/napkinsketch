@@ -411,6 +411,55 @@ precedence-plot
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
+
+;; ## Color Scale Configuration
+;;
+;; When a numeric column is mapped to `:color`, napkinsketch uses a
+;; continuous gradient (viridis by default). The `:color-scale` option
+;; controls which gradient is used.
+
+;; Default (viridis) continuous color:
+
+(-> (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+    (sk/view :x :y)
+    (sk/lay (sk/point {:color :c}))
+    (sk/plot))
+
+(kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
+
+;; Per-call color scale override — inferno gradient:
+
+(-> (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+    (sk/view :x :y)
+    (sk/lay (sk/point {:color :c}))
+    (sk/plot {:color-scale :inferno}))
+
+(kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
+
+;; Thread-local color scale via `with-config`:
+
+(sk/with-config {:color-scale :plasma}
+  (-> (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+      (sk/view :x :y)
+      (sk/lay (sk/point {:color :c}))
+      (sk/plot)))
+
+(kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
+
+;; The sketch records `:color-scale` in its legend. The renderer
+;; uses the pre-computed gradient stops, or resolves a fresh gradient
+;; if the render-time configuration specifies a different color scale.
+
+(-> (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+    (sk/view :x :y)
+    (sk/lay (sk/point {:color :c}))
+    (sk/sketch {:color-scale :inferno})
+    :legend
+    (select-keys [:color-scale :type]))
+
+(kind/test-last [(fn [m] (and (= :inferno (:color-scale m))
+                              (= :continuous (:type m))))])
+
 ;; ## Validation Control
 ;;
 ;; By default, `sk/sketch` validates the output against a Malli

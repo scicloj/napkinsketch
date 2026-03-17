@@ -274,7 +274,7 @@
 ;; A **legend** is generated automatically when a color (or shape)
 ;; aesthetic maps to a data column. It appears in the sketch as a
 ;; `:legend` key containing entries with labels and colors.
-;; Position is controlled via `{:legend-position :bottom}` in opts.
+;; Position is controlled via `{:legend-position :bottom}` in options.
 
 (:legend my-sketch)
 
@@ -285,7 +285,7 @@
 ;;
 ;; A **theme** controls the visual appearance of non-data elements:
 ;; background color, grid lines, font sizes, margins.
-;; Passed as `{:theme {...}}` in the opts map to `sk/plot` or `sk/sketch`.
+;; Passed as `{:theme {...}}` in the options map to `sk/plot` or `sk/sketch`.
 
 (-> iris (sk/view :sepal_length :sepal_width)
     (sk/lay (sk/point {:color :species}))
@@ -350,6 +350,6 @@
 ;; | Coord | Coordinate system (cartesian, flip, polar) | Applied at render time |
 ;; | Annotation | Non-data reference marks (rules, bands) | Overlay on panels |
 ;; | Legend | Color/shape key generated from aesthetic mappings | Part of sketch |
-;; | Theme | Visual styling: background, grid, fonts, margins | Passed in opts, merged with defaults |
+;; | Theme | Visual styling: background, grid, fonts, margins | Passed in options, merged with defaults |
 ;; | Membrane | Drawable tree (membrane library) | Intermediate (SVG path only) |
 ;; | Figure | Final output (SVG hiccup, Plotly spec, ...) | Returned to user |

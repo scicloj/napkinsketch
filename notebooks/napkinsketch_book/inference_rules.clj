@@ -435,8 +435,8 @@ scatter-sk
 ;; |:-------------|:-------------|
 ;; | Column dtype → scale type | `(sk/scale views :x :log)` |
 ;; | Data extent → domain | `(sk/scale views :x {:domain [0 10]})` |
-;; | Column name → axis label | `{:x-label "Custom Label"}` in opts |
-;; | No title → no padding | `{:title "My Plot"}` in opts |
+;; | Column name → axis label | `{:x-label "Custom Label"}` in options |
+;; | No title → no padding | `{:title "My Plot"}` in options |
 ;; | Column → mark type | explicit mark constructor: `(sk/histogram)` |
 ;;
 ;; The design principle: **sensible defaults, explicit overrides**.

@@ -412,13 +412,13 @@
 ;;
 ;; Use `sk/arrange` to combine independent plots into a grid layout.
 
-(def ^:private iris-sepal
+(def iris-sepal
   (-> iris
       (sk/view :sepal_length :sepal_width)
       (sk/lay (sk/point {:color :species}))
       (sk/plot {:title "Sepal" :width 300 :height 250})))
 
-(def ^:private iris-petal
+(def iris-petal
   (-> iris
       (sk/view :petal_length :petal_width)
       (sk/lay (sk/point {:color :species}))

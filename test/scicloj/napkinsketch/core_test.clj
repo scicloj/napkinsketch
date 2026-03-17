@@ -768,3 +768,110 @@
       (is (some? (sk/sketch views))))
     (testing "validate false skips schema check"
       (is (some? (sk/sketch views {:validate false}))))))
+
+;; ---- Edge case tests ----
+
+(deftest single-point-dataset-test
+  (testing "sketch with a single data point does not throw"
+    (let [ds (tc/dataset {:x [5] :y [10]})
+          sk (sk/sketch [(sk/point {:data ds :x :x :y :y})])]
+      (is (= 1 (count (:panels sk))))
+      (is (some? (sk/plot [(sk/point {:data ds :x :x :y :y})]))))))
+
+(deftest two-point-dataset-test
+  (testing "regression with exactly 2 points — lm needs n>=3 so falls back gracefully"
+    (let [ds (tc/dataset {:x [1 2] :y [3 4]})
+          views (-> ds (sk/view :x :y) (sk/lay (sk/point)))]
+      (is (some? (sk/sketch views))))))
+
+(deftest all-same-values-test
+  (testing "scatter where all x values are identical"
+    (let [ds (tc/dataset {:x [5 5 5 5] :y [1 2 3 4]})
+          sk (sk/sketch [(sk/point {:data ds :x :x :y :y})])]
+      (is (some? sk))
+      (is (= 1 (count (:panels sk))))))
+  (testing "scatter where all y values are identical"
+    (let [ds (tc/dataset {:x [1 2 3 4] :y [5 5 5 5]})
+          sk (sk/sketch [(sk/point {:data ds :x :x :y :y})])]
+      (is (some? sk)))))
+
+(deftest categorical-single-category-test
+  (testing "bar chart with only one category"
+    (let [ds (tc/dataset {:cat ["a" "a" "a"] :val [1 2 3]})
+          sk (sk/sketch [(sk/bar {:data ds :x :cat :y :val})])]
+      (is (= 1 (count (:panels sk)))))))
+
+(deftest histogram-uniform-data-test
+  (testing "histogram with all identical values"
+    (let [ds (tc/dataset {:x [5 5 5 5 5]})
+          sk (sk/sketch [(sk/histogram {:data ds :x :x :y :x})])]
+      (is (some? sk)))))
+
+(deftest polar-coord-test
+  (testing "polar coordinate sketch structure"
+    (let [ds (tc/dataset {:cat ["A" "B" "C"] :val [10 20 30]})
+          views (-> ds
+                    (sk/view :cat :val)
+                    (sk/lay (sk/bar))
+                    (sk/coord :polar))
+          sk (sk/sketch views)]
+      (is (= :polar (get-in sk [:panels 0 :coord]))))))
+
+(deftest flip-coord-test
+  (testing "flipped coordinates swap x/y domains"
+    (let [views (-> cat-ds
+                    (sk/view :cat :val)
+                    (sk/lay (sk/bar))
+                    (sk/coord :flip))
+          sk (sk/sketch views)
+          panel (first (:panels sk))]
+      (is (= :flip (:coord panel))))))
+
+(deftest labs-test
+  (testing "labels propagate to sketch"
+    (let [views (-> tiny-ds
+                    (sk/view :x :y)
+                    (sk/lay (sk/point))
+                    (sk/labs {:title "T" :subtitle "ST" :caption "C"
+                              :x "X Axis" :y "Y Axis"}))
+          sk (sk/sketch views)]
+      (is (= "T" (:title sk)))
+      (is (= "ST" (:subtitle sk)))
+      (is (= "C" (:caption sk)))
+      (is (= "X Axis" (:x-label sk)))
+      (is (= "Y Axis" (:y-label sk))))))
+
+(deftest log-scale-test
+  (testing "log scale is recorded in sketch"
+    (let [ds (tc/dataset {:x [1 10 100 1000] :y [1 2 3 4]})
+          views (-> ds
+                    (sk/view :x :y)
+                    (sk/lay (sk/point))
+                    (sk/scale :x :log))
+          sk (sk/sketch views)
+          panel (first (:panels sk))]
+      (is (= :log (get-in panel [:x-scale :type]))))))
+
+(deftest multiple-layers-test
+  (testing "sketch with point + line layers"
+    (let [views (-> tiny-ds
+                    (sk/view :x :y)
+                    (sk/lay (sk/point) (sk/line)))
+          sk (sk/sketch views)
+          layers (get-in sk [:panels 0 :layers])]
+      (is (= 2 (count layers))))))
+
+(deftest color-groups-test
+  (testing "color mapping with string values produces legend"
+    (let [ds (tc/dataset {:x [1 2 3] :y [4 5 6] :g ["a" "b" "a"]})
+          sk (sk/sketch [(sk/point {:data ds :x :x :y :y :color :g})])]
+      (is (some? (:legend sk)))
+      (is (= 2 (count (get-in sk [:legend :entries])))))))
+
+(deftest sketch-dimensions-test
+  (testing "custom width and height"
+    (let [views (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)))
+          sk (sk/sketch views {:width 800 :height 300})]
+      (is (= 800 (:width sk)))
+      (is (= 300 (:height sk))))))
+

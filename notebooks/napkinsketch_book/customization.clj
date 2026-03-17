@@ -57,7 +57,7 @@
                                 (some #{"Iris Sepal Measurements"} (:texts s)))))])
 
 ;; `sk/labs` sets labels in the pipeline — equivalent to passing
-;; `:title`, `:x-label`, `:y-label` in `sk/plot` opts.
+;; `:title`, `:x-label`, `:y-label` in `sk/plot` options.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
