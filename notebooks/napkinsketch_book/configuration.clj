@@ -14,20 +14,20 @@
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
-;; We'll use the iris dataset throughout.
+;; We use the iris dataset throughout.
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
 
-(def ^:private base-views
+(def base-views
   (fn [] (-> iris
              (sk/view [[:sepal_length :sepal_width]])
              (sk/lay (sk/point {:color :species})))))
 
-;; ## Inspecting the Current Config
+;; ## Inspecting the Current Configuration
 ;;
 ;; `sk/config` returns the resolved configuration as a plain map.
-;; It merges all active config layers into one map.
+;; It merges all active configuration layers into one map.
 
 (sk/config)
 
@@ -39,7 +39,7 @@
          (= 25 (:margin cfg))
          (map? (:theme cfg))))])
 
-;; The config contains keys grouped by purpose.
+;; The configuration contains keys grouped by purpose.
 ;;
 ;; **Layout:** `:width`, `:height`, `:margin`, `:margin-multi`, `:panel-size`, `:legend-width`
 ;;
@@ -63,10 +63,10 @@
 
 ;; ## Per-Call Options
 ;;
-;; The highest-priority mechanism. Pass an opts map to `sk/plot`
-;; (or `sk/sketch`). Per-call opts override everything else.
+;; The highest-priority mechanism. Pass an options map to `sk/plot`
+;; (or `sk/sketch`). Per-call options override everything else.
 
-;; Default 600×400:
+;; The default plot uses the library defaults (600×400):
 
 (-> (base-views) (sk/plot))
 
@@ -76,7 +76,13 @@
       (and (= 150 (:points s))
            (< (:width s) 800))))])
 
-;; Wide plot via per-call opts:
+;; The sketch confirms the default dimensions:
+
+(-> (base-views) sk/sketch :width)
+
+(kind/test-last [(fn [v] (= 600 v))])
+
+;; A wide, short plot via per-call options:
 
 (-> (base-views) (sk/plot {:width 900 :height 250}))
 
@@ -85,6 +91,15 @@
     (let [s (sk/svg-summary v)]
       (and (= 150 (:points s))
            (> (:width s) 800))))])
+
+;; The sketch confirms the override:
+
+(-> (base-views)
+    (sk/sketch {:width 900 :height 250})
+    (select-keys [:width :height]))
+
+(kind/test-last
+ [(fn [m] (and (= 900 (:width m)) (= 250 (:height m))))])
 
 ;; Theme override — only the specified keys are changed.
 ;; Here we set a white background; `:grid` and `:font-size` are
@@ -117,17 +132,27 @@
 
 (sk/set-config! {:width 800})
 
+;; The configuration reflects it:
+
 (:width (sk/config))
 
 (kind/test-last [(fn [v] (= 800 v))])
 
-;; All subsequent plots pick it up automatically:
+;; The sketch picks it up:
 
-(-> (base-views) (sk/sketch))
+(-> (base-views) sk/sketch :width)
+
+(kind/test-last [(fn [v] (= 800 v))])
+
+;; And the rendered plot uses it:
+
+(-> (base-views) (sk/plot))
 
 (kind/test-last
- [(fn [sketch]
-    (= 800 (:width sketch)))])
+ [(fn [v]
+    (let [s (sk/svg-summary v)]
+      (and (= 150 (:points s))
+           (> (:width s) 800))))])
 
 ;; Reset to library defaults by passing `nil`:
 
@@ -139,10 +164,12 @@
 
 ;; ## Thread-Local Overrides with with-config
 ;;
-;; `sk/with-config` is a macro that binds config overrides for the
+;; `sk/with-config` is a macro that binds configuration overrides for the
 ;; duration of its body, then automatically reverts.  This is ideal
 ;; for one-off experiments or when different sections of a notebook
 ;; need different settings.
+
+;; Inside the body, the configuration reflects the override:
 
 (sk/with-config {:width 1000 :height 300}
   (:width (sk/config)))
@@ -155,7 +182,14 @@
 
 (kind/test-last [(fn [v] (= 600 v))])
 
-;; `with-config` works on the rendered plot too:
+;; The sketch inside `with-config` uses the overridden dimensions:
+
+(sk/with-config {:width 1000 :height 300}
+  (-> (base-views) sk/sketch :width))
+
+(kind/test-last [(fn [v] (= 1000 v))])
+
+;; And the rendered plot shows it too:
 
 (sk/with-config {:theme {:bg "#1a1a2e" :grid "#16213e" :font-size 8}}
   (-> (base-views)
@@ -169,24 +203,26 @@
 
 ;; ## The Precedence Chain
 ;;
-;; When multiple config layers are active, the highest-priority
+;; When multiple configuration layers are active, the highest-priority
 ;; layer wins for each key.  The chain from highest to lowest:
 ;;
 ;; ```
-;; per-call opts  >  with-config  >  set-config!  >  napkinsketch.edn  >  library defaults
+;; per-call options  >  with-config  >  set-config!  >  napkinsketch.edn  >  library defaults
 ;; ```
 ;;
-;; Let's demonstrate all three programmatic levels at once.
+;; Let's demonstrate all three programmatic levels at once, using a
+;; different key at each level so we can see each one win.
 
-;; Set a global override:
+;; Set a global override for width, height, and point-radius:
 
-(sk/set-config! {:width 800 :height 350})
+(sk/set-config! {:width 800 :height 350 :point-radius 5.0})
 
-;; Layer a thread-local override on top:
+;; Layer a thread-local override on top for width and height
+;; (but not point-radius):
 
-(def ^:private precedence-result
-  (sk/with-config {:width 1200}
-    ;; per-call opts win for :width; with-config wins for :height
+(def precedence-result
+  (sk/with-config {:width 1200 :height 500}
+    ;; Pass per-call options for width only:
     (let [sketch (sk/sketch (base-views) {:width 900})]
       {:sketch-width (:width sketch)
        :sketch-height (:height sketch)})))
@@ -195,9 +231,36 @@ precedence-result
 
 (kind/test-last
  [(fn [m]
-    (and (= 900 (:sketch-width m))    ;; per-call wins
-         (= 350 (:sketch-height m)))  ;; set-config! wins (with-config didn't set :height)
+    (and (= 900 (:sketch-width m))    ;; per-call wins over with-config (1200) and set-config! (800)
+         (= 500 (:sketch-height m)))  ;; with-config wins over set-config! (350)
   )])
+
+;; We can verify point-radius too — only set-config! touched it,
+;; so it wins over the library default (2.5):
+
+(def precedence-point-radius
+  (sk/with-config {:width 1200 :height 500}
+    (:point-radius (sk/config))))
+
+precedence-point-radius
+
+(kind/test-last [(fn [v] (= 5.0 v))])
+
+;; The rendered plot reflects the same precedence:
+
+(def precedence-plot
+  (sk/with-config {:width 1200 :height 500}
+    (-> (base-views) (sk/plot {:width 900}))))
+
+precedence-plot
+
+(kind/test-last
+ [(fn [v]
+    (let [s (sk/svg-summary v)]
+      (and (= 150 (:points s))
+           ;; width = 900 + legend padding, not 1200
+           (> (:width s) 900)
+           (< (:width s) 1100))))])
 
 ;; Clean up the global override.
 
@@ -208,7 +271,8 @@ precedence-result
 ;; | Key | Library default | set-config! | with-config | per-call | Winner |
 ;; |:----|:---------------|:------------|:------------|:---------|:-------|
 ;; | `:width` | 600 | 800 | 1200 | 900 | **900** (per-call) |
-;; | `:height` | 400 | 350 | — | — | **350** (set-config!) |
+;; | `:height` | 400 | 350 | 500 | — | **500** (with-config) |
+;; | `:point-radius` | 2.5 | 5.0 | — | — | **5.0** (set-config!) |
 
 ;; ## Project-Level Defaults with napkinsketch.edn
 ;;
@@ -228,7 +292,7 @@ precedence-result
 ;;
 ;; This layer sits between library defaults and `set-config!` in the
 ;; precedence chain — it overrides defaults but is overridden by any
-;; programmatic config.
+;; programmatic configuration.
 
 ;; ## Theme Customization
 ;;
@@ -294,7 +358,7 @@ precedence-result
 ;; - a vector of hex strings: `["#E74C3C" "#3498DB" "#2ECC71"]`
 ;; - a map of `{category-value "#hex"}` for explicit assignment
 ;;
-;; Palette works at every config level.
+;; Palette works at every configuration level.
 
 ;; Per-call named palette:
 
@@ -356,6 +420,13 @@ precedence-result
     (and (map? sketch)
          (= 600 (:width sketch))))])
 
+;; The rendered plot works normally:
+
+(-> (base-views) (sk/plot))
+
+(kind/test-last
+ [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
 ;; Disable validation with `:validate false`:
 
 (sk/sketch (base-views) {:validate false})
@@ -377,7 +448,7 @@ precedence-result
 ;;
 ;; | Mechanism | Scope | Persistence | Example |
 ;; |:----------|:------|:------------|:--------|
-;; | per-call opts | single call | none | `(sk/plot views {:width 800})` |
+;; | per-call options | single call | none | `(sk/plot views {:width 800})` |
 ;; | `with-config` | lexical body | until body exits | `(sk/with-config {:width 800} ...)` |
 ;; | `set-config!` | global | until reset | `(sk/set-config! {:width 800})` |
 ;; | `napkinsketch.edn` | project | file on disk | `{:width 800}` in project root |
