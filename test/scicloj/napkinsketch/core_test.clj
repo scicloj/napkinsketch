@@ -73,6 +73,29 @@
     (is (= (defaults/gradient-color -1.0) (defaults/gradient-color 0.0)))
     (is (= (defaults/gradient-color 2.0) (defaults/gradient-color 1.0)))))
 
+(deftest legend-serializable-test
+  (testing "continuous legend has :color-scale keyword, no :gradient-fn"
+    (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+          sk (sk/sketch [(sk/point {:data ds :x :x :y :y :color :c})])
+          legend (:legend sk)]
+      (is (= :continuous (:type legend)))
+      (is (contains? legend :color-scale))
+      (is (not (contains? legend :gradient-fn)))
+      (is (nil? (:color-scale legend)) "default color-scale is nil")))
+  (testing "explicit :color-scale is stored as keyword"
+    (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+          sk (sk/sketch [(sk/point {:data ds :x :x :y :y :color :c})]
+                        {:color-scale :inferno})
+          legend (:legend sk)]
+      (is (= :inferno (:color-scale legend)))))
+  (testing "legend has 20 pre-computed stops"
+    (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+          sk (sk/sketch [(sk/point {:data ds :x :x :y :y :color :c})])
+          legend (:legend sk)]
+      (is (= 20 (count (:stops legend))))
+      (is (== 0.0 (:t (first (:stops legend)))))
+      (is (== 1.0 (:t (last (:stops legend))))))))
+
 (deftest fmt-name-test
   (is (= "sepal length" (defaults/fmt-name :sepal_length)))
   (is (= "sepal length" (defaults/fmt-name :sepal-length)))

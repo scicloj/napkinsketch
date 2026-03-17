@@ -231,8 +231,8 @@
 ;; - `:tableau10` — Tableau default
 ;; - `:category10` — D3 default
 ;;
-;; Use `(require '[clojure2d.color :as c])` and `(c/find-palette #"pattern")`
-;; to discover all available names.
+;; See the Discovering Palettes and Gradients section below for how to
+;; search all available names.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])

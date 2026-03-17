@@ -368,12 +368,14 @@
                                       (:data %)) resolved-all)
             all-vals (mapcat #((:data %) (:color %)) color-views)
             c-min (reduce min all-vals)
-            c-max (reduce max all-vals)]
+            c-max (reduce max all-vals)
+            n-stops 20]
         {:title (first color-cols)
          :type :continuous
          :min c-min :max c-max
-         :gradient-fn grad-fn
-         :stops (vec (for [t (range 0.0 1.01 0.25)]
+         :color-scale (:color-scale cfg)
+         :stops (vec (for [i (range n-stops)
+                           :let [t (/ (double i) (dec n-stops))]]
                        {:t t :color (grad-fn t)}))})
       all-colors
       {:title (first color-cols)

@@ -10,7 +10,7 @@
 
 (defn- render-legend-from-sketch
   "Render legend from sketch legend data as membrane drawables."
-  [legend x y]
+  [legend x y cfg]
   (let [{:keys [title]} legend
         fsize 10
         title-color [0.2 0.2 0.2 1.0]
@@ -18,8 +18,14 @@
         sw-r (/ sw 2.0)]
     (if (= :continuous (:type legend))
       ;; Continuous gradient legend
-      (let [{:keys [min max stops]} legend
-            bar-h 120 bar-w 12 n-stops 20]
+      (let [{:keys [min max stops color-scale]} legend
+            ;; If render-time config overrides the color-scale, resolve fresh
+            render-cs (:color-scale cfg)
+            override? (and render-cs (not= render-cs color-scale))
+            grad-fn (when override?
+                      (defaults/resolve-gradient-fn render-cs))
+            bar-h 120 bar-w 12
+            n-stops (count stops)]
         (vec
          (concat
           (when title
@@ -28,8 +34,8 @@
                              (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
           ;; Gradient bar: stack of small colored rectangles
           (for [i (range n-stops)
-                :let [t (/ (double i) (dec n-stops))
-                      c (if-let [gf (:gradient-fn legend)] (gf t) (defaults/gradient-color t))
+                :let [{:keys [t color]} (nth stops i)
+                      c (if override? (grad-fn t) color)
                       [cr cg cb _] c
                       ry (+ y (* (- 1.0 t) bar-h))]]
             (ui/translate x ry
@@ -65,7 +71,7 @@
 (defn- render-legend-horizontal
   "Render a horizontal legend (for :top or :bottom positioning).
    Swatches and labels laid out left to right in a single row."
-  [legend x y]
+  [legend x y cfg]
   (let [{:keys [title entries]} legend
         fsize 10
         title-color [0.2 0.2 0.2 1.0]
@@ -73,7 +79,7 @@
         sw-r (/ sw 2.0)]
     (if (= :continuous (:type legend))
       ;; For continuous legends, fall back to vertical rendering
-      (render-legend-from-sketch legend x y)
+      (render-legend-from-sketch legend x y cfg)
       ;; Horizontal categorical swatches
       (let [title-w (if title (* (count (defaults/fmt-name title)) 6) 0)
             start-x (if title (+ title-w 8) 0)]
@@ -239,22 +245,22 @@
           :right
           (render-legend-from-sketch legend
                                      (+ y-label-pad (* grid-cols pw) strip-w 10)
-                                     (+ title-pad strip-h 20))
+                                     (+ title-pad strip-h 20) cfg)
           :top
           (let [plots-start-y title-pad
                 legend-y (- plots-start-y (or legend-h 30) -5)]
             (render-legend-horizontal legend
                                       (+ y-label-pad 10)
-                                      legend-y))
+                                      legend-y cfg))
           :bottom
           (let [bottom-y (- total-height (or legend-h 30) -8)]
             (render-legend-horizontal legend
                                       (+ y-label-pad 10)
-                                      bottom-y))
+                                      bottom-y cfg))
           ;; Fallback to right
           (render-legend-from-sketch legend
                                      (+ y-label-pad (* grid-cols pw) strip-w 10)
-                                     (+ title-pad strip-h 20))))
+                                     (+ title-pad strip-h 20) cfg)))
       ;; Panels
       panel-elems
       ;; Strip labels

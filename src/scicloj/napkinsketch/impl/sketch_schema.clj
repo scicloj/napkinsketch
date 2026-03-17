@@ -205,6 +205,7 @@
     [:type [:= :continuous]]
     [:min number?]
     [:max number?]
+    [:color-scale {:optional true} [:maybe keyword?]]
     [:stops [:vector GradientStop]]]])
 
 ;; ---- Layout ----
