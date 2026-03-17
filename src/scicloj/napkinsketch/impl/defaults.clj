@@ -1,25 +1,34 @@
 (ns scicloj.napkinsketch.impl.defaults
   (:require [clojure.string :as str]
             [clojure.edn :as edn]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure2d.color :as c]))
 
 ;; ---- Palette and Theme ----
 
-(def ggplot-palette
-  ["#F8766D" "#00BA38" "#619CFF" "#A855F7" "#F97316" "#14B8A6" "#EF4444" "#6B7280"])
+(defn c2d->rgba
+  "Convert a clojure2d color (Vec4, 0-255 channels) to [r g b a] in 0-1 range."
+  [color]
+  (let [cc (c/to-color color)]
+    [(/ (double (c/red cc)) 255.0)
+     (/ (double (c/green cc)) 255.0)
+     (/ (double (c/blue cc)) 255.0)
+     (/ (double (c/alpha cc)) 255.0)]))
 
-(def named-palettes
-  "Predefined color palettes indexed by keyword."
-  {:set1 ["#E41A1C" "#377EB8" "#4DAF4A" "#984EA3" "#FF7F00" "#FFFF33" "#A65628" "#F781BF" "#999999"]
-   :set2 ["#66C2A5" "#FC8D62" "#8DA0CB" "#E78AC3" "#A6D854" "#FFD92F" "#E5C494" "#B3B3B3"]
-   :set3 ["#8DD3C7" "#FFFFB3" "#BEBADA" "#FB8072" "#80B1D3" "#FDB462" "#B3DE69" "#FCCDE5" "#D9D9D9" "#BC80BD" "#CCEBC5" "#FFED6F"]
-   :pastel1 ["#FBB4AE" "#B3CDE3" "#CCEBC5" "#DECBE4" "#FED9A6" "#FFFFCC" "#E5D8BD" "#FDDAEC" "#F2F2F2"]
-   :pastel2 ["#B3E2CD" "#FDCDAC" "#CBD5E8" "#F4CAE4" "#E6F5C9" "#FFF2AE" "#F1E2CC" "#CCCCCC"]
-   :dark2 ["#1B9E77" "#D95F02" "#7570B3" "#E7298A" "#66A61E" "#E6AB02" "#A6761D" "#666666"]
-   :paired ["#A6CEE3" "#1F78B4" "#B2DF8A" "#33A02C" "#FB9A99" "#E31A1C" "#FDBF6F" "#FF7F00" "#CAB2D6" "#6A3D9A" "#FFFF99" "#B15928"]
-   :accent ["#7FC97F" "#BEAED4" "#FDC086" "#FFFF99" "#386CB0" "#F0027F" "#BF5B17" "#666666"]
-   :tableau10 ["#4E79A7" "#F28E2B" "#E15759" "#76B7B2" "#59A14F" "#EDC948" "#B07AA1" "#FF9DA7" "#9C755F" "#BAB0AC"]
-   :category10 ["#1F77B4" "#FF7F0E" "#2CA02C" "#D62728" "#9467BD" "#8C564B" "#E377C2" "#7F7F7F" "#BCBD22" "#17BECF"]})
+(def default-palette-name
+  "Default categorical palette name (clojure2d palette keyword)."
+  :set1)
+
+(def ^:private palette-aliases
+  "Short aliases for clojure2d palette names that differ from our old naming."
+  {:tableau10 :tableau-10})
+
+(defn- resolve-palette
+  "Resolve a keyword to a clojure2d palette, trying aliases.
+   Returns a non-empty palette vector, falling back to the default palette."
+  [k]
+  (let [pal (c/palette (get palette-aliases k k))]
+    (if (seq pal) pal (c/palette default-palette-name))))
 
 (def theme {:bg "#EBEBEB" :grid "#FFFFFF" :font-size 8})
 
@@ -65,108 +74,91 @@
 ;; ---- Color Helpers ----
 
 (defn hex->rgba
-  "Convert hex color string to [r g b a] vector with values 0-1.
-  Supports #RGB, #RRGGBB, and #RRGGBBAA."
-  [hex]
-  (let [hex (if (str/starts-with? hex "#") (subs hex 1) hex)
-        hex (if (= 3 (count hex))
-              (apply str (mapcat #(vector % %) hex))
-              hex)
-        r (/ (Integer/parseInt (subs hex 0 2) 16) 255.0)
-        g (/ (Integer/parseInt (subs hex 2 4) 16) 255.0)
-        b (/ (Integer/parseInt (subs hex 4 6) 16) 255.0)
-        a (if (>= (count hex) 8)
-            (/ (Integer/parseInt (subs hex 6 8) 16) 255.0)
-            1.0)]
-    [r g b a]))
+  "Convert any color representation to [r g b a] in 0-1 range.
+   Accepts hex strings (#RGB, #RRGGBB, #RRGGBBAA), keywords (:red, :darkblue),
+   or any value that clojure2d.color/to-color understands."
+  [color]
+  (c2d->rgba color))
 
 (defn color-for
   "Look up the color for a categorical value from the palette.
-  Returns [r g b a] vector. Accepts an optional custom palette —
-  a keyword (named preset), a vector of hex strings, or a map
-  of {category-value \"#hex\"} for explicit color mapping."
+   Returns [r g b a] in 0-1 range.
+   palette can be: nil (default), a keyword (any clojure2d palette name),
+   a vector of hex strings, or a map of {category-value color}."
   ([categories val]
    (color-for categories val nil))
   ([categories val palette]
-   (if (map? palette)
-     ;; Explicit color mapping: look up value directly, fall back to index
-     (if-let [hex (get palette val)]
-       (hex->rgba hex)
-       (let [idx (.indexOf ^java.util.List (vec categories) val)
-             fallback-pal ggplot-palette]
-         (hex->rgba (nth fallback-pal (mod (if (neg? idx) 0 idx) (count fallback-pal))))))
-     ;; Index-based: keyword preset, vector, or default
-     (let [pal (cond
-                 (keyword? palette) (get named-palettes palette ggplot-palette)
-                 (sequential? palette) palette
-                 :else ggplot-palette)
-           idx (.indexOf ^java.util.List (vec categories) val)]
-       (hex->rgba (nth pal (mod (if (neg? idx) 0 idx) (count pal))))))))
+   (let [idx (.indexOf ^java.util.List (vec categories) val)
+         idx (if (neg? idx) 0 idx)]
+     (if (map? palette)
+       ;; Explicit mapping: look up value, fall back to index in default palette
+       (if-let [cv (get palette val)]
+         (hex->rgba cv)
+         (let [pal (resolve-palette default-palette-name)]
+           (c2d->rgba (nth pal (mod idx (count pal))))))
+       ;; Index-based: keyword → c/palette, vector → use directly, nil → default
+       (cond
+         (keyword? palette)
+         (let [pal (resolve-palette palette)]
+           (c2d->rgba (nth pal (mod idx (count pal)))))
+         (sequential? palette)
+         (hex->rgba (nth palette (mod idx (count palette))))
+         :else
+         (let [pal (resolve-palette default-palette-name)]
+           (c2d->rgba (nth pal (mod idx (count pal))))))))))
 
 ;; ---- Continuous Color ----
 
-(def viridis-stops
-  "Viridis colormap sampled at 5 evenly-spaced stops. Each entry is [t r g b]."
-  [[0.0 0.267 0.004 0.329]
-   [0.25 0.282 0.141 0.458]
-   [0.5 0.127 0.567 0.551]
-   [0.75 0.544 0.773 0.247]
-   [1.0 0.993 0.906 0.144]])
+(defn- wrap-gradient
+  "Wrap a clojure2d gradient function to return [r g b a] in 0-1 range."
+  [g]
+  (fn [t] (c2d->rgba (g t))))
 
-(defn interpolate-stops
-  "Interpolate a color from stops (vec of [t r g b]) for t in [0,1].
-   Returns [r g b a]."
-  [stops t]
-  (let [t (max 0.0 (min 1.0 (double t)))
-        n (count stops)
-        idx (-> (dec (count (take-while #(<= (first %) t) stops)))
-                (max 0) (min (- n 2)))
-        [t0 r0 g0 b0] (nth stops idx)
-        [t1 r1 g1 b1] (nth stops (inc idx))
-        f (/ (- t t0) (max 1e-10 (- t1 t0)))]
-    [(+ r0 (* f (- r1 r0)))
-     (+ g0 (* f (- g1 g0)))
-     (+ b0 (* f (- b1 b0)))
-     1.0]))
+(def gradient-color
+  "Default gradient function (viridis). Takes t in [0,1], returns [r g b a] 0-1."
+  (wrap-gradient (c/gradient :viridis/viridis)))
 
-(defn gradient-color
-  "Interpolate a color from viridis stops for t in [0,1]. Returns [r g b a]."
-  [t]
-  (interpolate-stops viridis-stops t))
+(def diverging-color
+  "Diverging gradient function (RdBu). Takes t in [0,1], returns [r g b a] 0-1."
+  (wrap-gradient (c/gradient :grDevices/RdBu)))
 
-(def diverging-stops
-  "RdBu diverging colormap: red → white → blue (5 stops)."
-  [[0.0 0.698 0.094 0.169]
-   [0.25 0.890 0.529 0.400]
-   [0.5 0.969 0.969 0.969]
-   [0.75 0.400 0.663 0.827]
-   [1.0 0.133 0.400 0.675]])
+(def ^:private gradient-aliases
+  "Short aliases for common clojure2d gradient names."
+  {:viridis :viridis/viridis :inferno :viridis/inferno
+   :plasma :viridis/plasma :magma :viridis/magma
+   :cividis :viridis/cividis :turbo :viridis/turbo
+   :rocket :viridis/rocket :mako :viridis/mako
+   :RdBu :grDevices/RdBu :RdYlBu :grDevices/RdYlBu
+   :BrBG :grDevices/BrBG :coolwarm :pals/coolwarm})
 
-(defn diverging-color
-  "Interpolate a color from diverging (RdBu) stops for t in [0,1]. Returns [r g b a]."
-  [t]
-  (interpolate-stops diverging-stops t))
+(defn- resolve-gradient-name
+  "Resolve a keyword to a clojure2d gradient, trying aliases then direct lookup."
+  [k]
+  (or (c/gradient (get gradient-aliases k k))
+      (c/gradient k)))
 
 (defn resolve-gradient-fn
-  "Resolve a :color-scale option to a gradient function.
-   nil or :sequential → gradient-color (viridis).
-   :diverging → diverging-color.
-   {:type :diverging :low \"#hex\" :mid \"#hex\" :high \"#hex\"} → custom stops.
-   A function → used directly."
+  "Resolve a :color-scale option to a gradient function t→[r g b a] (0-1 range).
+   nil or :sequential → viridis.
+   :diverging → RdBu.
+   keyword → clojure2d gradient name (:inferno, :viridis/plasma, etc.).
+   map {:low hex :mid hex :high hex} → custom 3-stop gradient.
+   function → used directly."
   [color-scale]
   (cond
     (nil? color-scale) gradient-color
     (= :sequential color-scale) gradient-color
     (= :diverging color-scale) diverging-color
     (fn? color-scale) color-scale
+    (keyword? color-scale)
+    (if-let [g (resolve-gradient-name color-scale)]
+      (wrap-gradient g)
+      gradient-color)
     (map? color-scale)
     (let [{:keys [low mid high]
            :or {low "#B2182B" mid "#F7F7F7" high "#2166AC"}} color-scale
-          [lr lg lb] (hex->rgba low)
-          [mr mg mb] (hex->rgba mid)
-          [hr hg hb] (hex->rgba high)
-          stops [[0.0 lr lg lb] [0.5 mr mg mb] [1.0 hr hg hb]]]
-      (fn [t] (interpolate-stops stops t)))
+          g (c/gradient [(c/to-color low) (c/to-color mid) (c/to-color high)])]
+      (wrap-gradient g))
     :else gradient-color))
 
 (defn normalize-midpoint

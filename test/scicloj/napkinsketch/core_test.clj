@@ -440,10 +440,12 @@
 
 (deftest diverging-color-test
   (testing "diverging-color endpoints"
-    (let [[r _ _ _] (defaults/diverging-color 0.0)]
-      (is (> r 0.5) "t=0 is reddish"))
-    (let [[_ _ b _] (defaults/diverging-color 1.0)]
-      (is (> b 0.5) "t=1 is bluish"))
+    (let [[r g b _] (defaults/diverging-color 0.0)]
+      (is (> r g) "t=0 red > green")
+      (is (> r b) "t=0 red > blue"))
+    (let [[r g b _] (defaults/diverging-color 1.0)]
+      (is (> b r) "t=1 blue > red")
+      (is (> b g) "t=1 blue > green"))
     (let [[r g b _] (defaults/diverging-color 0.5)]
       (is (> r 0.9) "t=0.5 is whitish (r)")
       (is (> g 0.9) "t=0.5 is whitish (g)")
@@ -458,6 +460,7 @@
   (testing "resolve-gradient-fn"
     (is (fn? (defaults/resolve-gradient-fn nil)))
     (is (fn? (defaults/resolve-gradient-fn :diverging)))
+    (is (fn? (defaults/resolve-gradient-fn :inferno)))
     (is (fn? (defaults/resolve-gradient-fn {:low "#FF0000" :mid "#FFFFFF" :high "#0000FF"}))))
   (testing "diverging end-to-end"
     (let [ds (tc/dataset {:x (range 10) :y (range 10) :z (map #(- % 5) (range 10))})

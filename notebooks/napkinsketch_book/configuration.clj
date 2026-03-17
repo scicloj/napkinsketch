@@ -282,7 +282,7 @@ precedence-plot
 ;;
 ;; Example `napkinsketch.edn`:
 ;;
-;; ```edn
+;; ```clojure
 ;; {:width 800
 ;;  :height 500
 ;;  :theme {:bg "#FFFFFF" :grid "#F0F0F0" :font-size 10}
@@ -410,6 +410,11 @@ precedence-plot
 ;; By default, `sk/sketch` validates the output against a Malli
 ;; schema and throws if the sketch is malformed.  This is controlled
 ;; by the `:validate` key.
+;;
+;; Two helper functions let you inspect sketches manually:
+;;
+;; - `sk/valid-sketch?` — returns true or false
+;; - `sk/explain-sketch` — returns nil if valid, or a Malli explanation map
 
 ;; Default behavior (validate = true) — a valid sketch passes silently:
 
@@ -427,6 +432,62 @@ precedence-plot
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
+;; ### What Validation Catches
+;;
+;; To see what happens when a sketch is malformed, we can build one
+;; with validation disabled, then corrupt it.  First, create a valid
+;; sketch and confirm it passes:
+
+(def good-sketch (sk/sketch (base-views) {:validate false}))
+
+(sk/valid-sketch? good-sketch)
+
+(kind/test-last [(fn [v] (true? v))])
+
+;; Now corrupt the `:width` to a string — this violates the schema,
+;; which requires a positive integer:
+
+(def bad-sketch (assoc good-sketch :width "not-a-number"))
+
+(sk/valid-sketch? bad-sketch)
+
+(kind/test-last [(fn [v] (false? v))])
+
+;; `sk/explain-sketch` pinpoints the problem.  The `:errors` key in
+;; the returned map shows exactly which path failed and why:
+
+(-> (sk/explain-sketch bad-sketch)
+    :errors
+    first
+    (select-keys [:path :in :value]))
+
+(kind/test-last
+ [(fn [m]
+    (and (= [:width] (:path m))
+         (= "not-a-number" (:value m))))])
+
+;; With validation enabled (the default), `sk/sketch` would throw
+;; an exception for such a malformed sketch.  We can verify this
+;; by catching the exception:
+
+(try
+  (let [sketch (sk/sketch (base-views) {:validate false})
+        bad (assoc sketch :width "not-a-number")]
+    (when-let [explanation (sk/explain-sketch bad)]
+      (throw (ex-info "Sketch does not conform to schema"
+                      {:explanation explanation})))
+    :no-error)
+  (catch Exception e
+    {:caught true
+     :message (.getMessage e)}))
+
+(kind/test-last
+ [(fn [m]
+    (and (:caught m)
+         (= "Sketch does not conform to schema" (:message m))))])
+
+;; ### Disabling Validation
+;;
 ;; Disable validation with `:validate false`:
 
 (sk/sketch (base-views) {:validate false})
