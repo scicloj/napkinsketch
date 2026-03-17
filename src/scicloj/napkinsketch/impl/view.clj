@@ -198,8 +198,10 @@
 
 (defn loess
   "LOESS smoothing line.
+   Options: :color, :group, :se (boolean), :level (default 0.95), :se-boot (default 200).
    (loess)                     — default bandwidth 0.75
-   (loess {:color :species})   — per-group smoothing"
+   (loess {:color :species})   — per-group smoothing
+   (loess {:se true})          — with 95% confidence ribbon"
   ([] {:mark :line :stat :loess})
   ([opts] (merge {:mark :line :stat :loess} opts)))
 

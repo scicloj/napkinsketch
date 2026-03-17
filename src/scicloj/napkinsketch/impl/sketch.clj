@@ -214,6 +214,22 @@
              (double (/ height grid-rows)))]
     {:m m :pw pw :ph ph}))
 
+(defn- adjust-fixed-aspect
+  "Adjust panel dimensions for coord :fixed so that 1 data unit = 1 data unit
+   on both axes. Shrinks the larger dimension to match the data aspect ratio."
+  [pw ph x-domain y-domain]
+  (let [x-range (- (double (second x-domain)) (double (first x-domain)))
+        y-range (- (double (second y-domain)) (double (first y-domain)))]
+    (if (or (<= x-range 0) (<= y-range 0))
+      {:pw pw :ph ph}
+      (let [data-ratio (/ x-range y-range)
+            panel-ratio (/ pw ph)]
+        (if (> panel-ratio data-ratio)
+          ;; Panel is wider than data — shrink pw
+          {:pw (* ph data-ratio) :ph ph}
+          ;; Panel is taller than data — shrink ph
+          {:pw pw :ph (/ pw data-ratio)})))))
+
 (defn- group-panels
   "Group views into panel descriptors by layout type."
   [non-ann-views layout-type facet-row-vals facet-col-vals x-vars y-vars]
@@ -344,23 +360,25 @@
 (defn- build-legend
   "Build legend from resolved views and color info."
   [resolved-all numeric-color? all-colors color-cols cfg]
-  (cond
-    numeric-color?
-    (let [color-views (filter #(and (view/column-ref? (:color %))
-                                    (:data %)) resolved-all)
-          all-vals (mapcat #((:data %) (:color %)) color-views)
-          c-min (reduce min all-vals)
-          c-max (reduce max all-vals)]
+  (let [grad-fn (or (:gradient-fn cfg) defaults/gradient-color)]
+    (cond
+      numeric-color?
+      (let [color-views (filter #(and (view/column-ref? (:color %))
+                                      (:data %)) resolved-all)
+            all-vals (mapcat #((:data %) (:color %)) color-views)
+            c-min (reduce min all-vals)
+            c-max (reduce max all-vals)]
+        {:title (first color-cols)
+         :type :continuous
+         :min c-min :max c-max
+         :gradient-fn grad-fn
+         :stops (vec (for [t (range 0.0 1.01 0.25)]
+                       {:t t :color (grad-fn t)}))})
+      all-colors
       {:title (first color-cols)
-       :type :continuous
-       :min c-min :max c-max
-       :stops (vec (for [t (range 0.0 1.01 0.25)]
-                     {:t t :color (defaults/gradient-color t)}))})
-    all-colors
-    {:title (first color-cols)
-     :entries (vec (for [cat all-colors]
-                     {:label (str cat)
-                      :color (defaults/color-for all-colors cat (:palette cfg))}))}))
+       :entries (vec (for [cat all-colors]
+                       {:label (str cat)
+                        :color (defaults/color-for all-colors cat (:palette cfg))}))})))
 
 (defn- compute-layout-dims
   "Compute layout dimensions: padding, legend width, total size."
@@ -431,8 +449,11 @@
    No membrane types, no datasets in the output."
   ([views] (views->sketch views {}))
   ([views {:keys [width height config x-label y-label title subtitle caption
-                  scales palette theme legend-position] :as opts}]
-   (let [cfg (cond-> (merge defaults/defaults config) palette (assoc :palette palette))
+                  scales palette theme legend-position color-scale color-midpoint] :as opts}]
+   (let [cfg (cond-> (merge defaults/defaults config)
+               palette (assoc :palette palette)
+               true (assoc :gradient-fn (defaults/resolve-gradient-fn color-scale))
+               color-midpoint (assoc :color-midpoint color-midpoint))
          resolved-theme (merge defaults/theme theme)
          width (or width (:width cfg))
          height (or height (:height cfg))
@@ -476,6 +497,21 @@
                                                                :resolved pre-resolved)))
                               pg))
                           panel-groups)
+
+         ;; Adjust panel dimensions for coord :fixed
+         [pw ph] (if (= coord-type :fixed)
+                   (let [all-srs (mapcat :stat-results panel-data)
+                         all-lrs (mapcat :layers panel-data)
+                         gx (or (:domain x-scale-spec)
+                                (collect-domain all-srs :x-domain x-scale-spec))
+                         gy (or (:domain y-scale-spec)
+                                (compute-global-y-domain all-lrs y-scale-spec))]
+                     (if (and (sequential? gx) (= 2 (count gx)) (number? (first gx))
+                              (sequential? gy) (= 2 (count gy)) (number? (first gy)))
+                       (let [{pw' :pw ph' :ph} (adjust-fixed-aspect pw ph gx gy)]
+                         [pw' ph'])
+                       [pw ph]))
+                   [pw ph])
 
          ;; Build panel specs with domains, ticks, annotations
          panels (build-panels panel-data layout-type scale-mode coord-type

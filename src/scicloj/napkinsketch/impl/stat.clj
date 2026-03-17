@@ -4,6 +4,7 @@
             [tech.v3.datatype.functional :as dfn]
             [fastmath.ml.regression :as regr]
             [fastmath.stats :as stats]
+            [fastmath.stats.bootstrap :as boot]
             [fastmath.interpolation.acm :as interp]
             [fastmath.kernel :as kernel]
             [fastmath.random :as frand]
@@ -283,15 +284,28 @@
 
 ;; ---- LOESS Smoothing ----
 
+(defn- dedup-xy
+  "Average y-values for duplicate x-values in sorted arrays.
+   Returns [unique-xs averaged-ys] as double arrays."
+  [xs ys]
+  (let [pairs (map vector (seq xs) (seq ys))
+        grouped (group-by first pairs)
+        sorted-keys (sort (keys grouped))
+        deduped (mapv (fn [x]
+                        (let [yvals (map second (grouped x))]
+                          [x (/ (reduce + yvals) (count yvals))]))
+                      sorted-keys)]
+    [(double-array (map first deduped))
+     (double-array (map second deduped))]))
+
 (defn fit-loess
   "Fit a LOESS curve, return {:xs ... :ys ...} evaluated on a grid."
   [xs-col ys-col n-grid bandwidth]
   (let [order (dtype/->int-array (tech.v3.datatype.argops/argsort xs-col))
-        sorted-xs (dtype/indexed-buffer order xs-col)
-        sorted-ys (dtype/indexed-buffer order ys-col)
-        loess-fn (interp/loess (dtype/->double-array sorted-xs)
-                               (dtype/->double-array sorted-ys)
-                               {:bandwidth bandwidth})
+        sorted-xs (dtype/->double-array (dtype/indexed-buffer order xs-col))
+        sorted-ys (dtype/->double-array (dtype/indexed-buffer order ys-col))
+        [uxs uys] (dedup-xy sorted-xs sorted-ys)
+        loess-fn (interp/loess uxs uys {:bandwidth bandwidth})
         x-min (dfn/reduce-min xs-col)
         x-max (dfn/reduce-max xs-col)
         step (/ (- x-max x-min) (dec (double n-grid)))
@@ -299,8 +313,57 @@
         grid-ys (mapv loess-fn grid-xs)]
     {:xs grid-xs :ys grid-ys}))
 
+(defn fit-loess-with-se
+  "Fit LOESS with bootstrap confidence band. Returns
+   {:xs :ys :ymins :ymaxs} evaluated on a grid."
+  [xs-col ys-col n-grid bandwidth level n-boot]
+  (let [;; Original fit (with dedup for duplicate x-values)
+        order (dtype/->int-array (tech.v3.datatype.argops/argsort xs-col))
+        sorted-xs (dtype/->double-array (dtype/indexed-buffer order xs-col))
+        sorted-ys (dtype/->double-array (dtype/indexed-buffer order ys-col))
+        [uxs uys] (dedup-xy sorted-xs sorted-ys)
+        loess-fn (interp/loess uxs uys {:bandwidth bandwidth})
+        x-min (dfn/reduce-min xs-col)
+        x-max (dfn/reduce-max xs-col)
+        step (/ (- x-max x-min) (dec (double n-grid)))
+        grid-xs (mapv #(+ x-min (* step (double %))) (range n-grid))
+        grid-ys (mapv loess-fn grid-xs)
+
+        ;; Bootstrap: resample (x,y) pairs, fit LOESS, evaluate on grid
+        pairs (mapv vector (seq (dtype/->double-array xs-col))
+                    (seq (dtype/->double-array ys-col)))
+        rng-inst (frand/rng :jdk 42)
+        boot-result (boot/bootstrap {:data pairs} nil
+                                    {:samples n-boot :rng rng-inst})
+        boot-grid-ys (for [sample (:samples boot-result)]
+                       (let [[bsx bsy] (dedup-xy (map first sample)
+                                                 (map second sample))]
+                         (when (>= (alength bsx) 4)
+                           (try
+                             (let [bfn (interp/loess bsx bsy {:bandwidth bandwidth})]
+                               (mapv bfn grid-xs))
+                             (catch Exception _ nil)))))
+        valid-boots (vec (remove nil? boot-grid-ys))
+        n-valid (count valid-boots)
+        alpha (- 1.0 (double level))
+        lo-idx (max 0 (long (* (/ alpha 2.0) n-valid)))
+        hi-idx (min (dec (max 1 n-valid))
+                    (long (* (- 1.0 (/ alpha 2.0)) n-valid)))
+        ymins (mapv (fn [i]
+                      (let [vals (sort (map #(nth % i) valid-boots))]
+                        (nth vals lo-idx)))
+                    (range n-grid))
+        ymaxs (mapv (fn [i]
+                      (let [vals (sort (map #(nth % i) valid-boots))]
+                        (nth vals hi-idx)))
+                    (range n-grid))]
+    {:xs grid-xs :ys grid-ys :ymins ymins :ymaxs ymaxs}))
+
 (defmethod compute-stat :loess [view]
   (let [{:keys [data x y group cfg]} view
+        se (:se view)
+        level (or (:level view) 0.95)
+        n-boot (or (:se-boot view) 200)
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)
         n-grid (or (:loess-n-grid (or cfg defaults/defaults)) 80)
@@ -310,21 +373,51 @@
       {:points []
        :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
        :y-domain (if (pos? n) (numeric-extent (clean y)) [0 1])}
-      (let [curves (group-by-columns
-                    clean (or group [])
-                    (fn [ds gv]
-                      (when (and (>= (tc/row-count ds) 4)
-                                 (not= (dfn/reduce-min (ds x))
-                                       (dfn/reduce-max (ds x))))
-                        (cond-> (fit-loess (ds x) (ds y) n-grid bandwidth)
-                          gv (assoc :color gv)))))
-            curves (remove nil? curves)
-            all-ys (mapcat :ys curves)
-            y-min (if (seq all-ys) (reduce min all-ys) (dfn/reduce-min (clean y)))
-            y-max (if (seq all-ys) (reduce max all-ys) (dfn/reduce-max (clean y)))]
-        {:points curves
-         :x-domain (numeric-extent (clean x))
-         :y-domain [y-min y-max]}))))
+      (if se
+        ;; With confidence band (bootstrap)
+        (let [results (group-by-columns
+                       clean (or group [])
+                       (fn [ds gv]
+                         (when (and (>= (tc/row-count ds) 4)
+                                    (not= (dfn/reduce-min (ds x))
+                                          (dfn/reduce-max (ds x))))
+                           (cond-> (fit-loess-with-se (ds x) (ds y)
+                                                      n-grid bandwidth level n-boot)
+                             gv (assoc :color gv)))))
+              results (remove nil? results)
+              curves (mapv (fn [{:keys [xs ys color]}]
+                             (cond-> {:xs xs :ys ys}
+                               color (assoc :color color)))
+                           results)
+              ribbons (mapv (fn [{:keys [xs ys ymins ymaxs color]}]
+                              (cond-> {:xs xs :ys ys :ymins ymins :ymaxs ymaxs}
+                                color (assoc :color color)))
+                            results)
+              all-ymins (mapcat :ymins results)
+              all-ymaxs (mapcat :ymaxs results)
+              y-ext (numeric-extent (clean y))
+              y-lo (min (first y-ext) (if (seq all-ymins) (reduce min all-ymins) (first y-ext)))
+              y-hi (max (second y-ext) (if (seq all-ymaxs) (reduce max all-ymaxs) (second y-ext)))]
+          {:points curves
+           :ribbons ribbons
+           :x-domain (numeric-extent (clean x))
+           :y-domain [y-lo y-hi]})
+        ;; Without confidence band (original behavior)
+        (let [curves (group-by-columns
+                      clean (or group [])
+                      (fn [ds gv]
+                        (when (and (>= (tc/row-count ds) 4)
+                                   (not= (dfn/reduce-min (ds x))
+                                         (dfn/reduce-max (ds x))))
+                          (cond-> (fit-loess (ds x) (ds y) n-grid bandwidth)
+                            gv (assoc :color gv)))))
+              curves (remove nil? curves)
+              all-ys (mapcat :ys curves)
+              y-min (if (seq all-ys) (reduce min all-ys) (dfn/reduce-min (clean y)))
+              y-max (if (seq all-ys) (reduce max all-ys) (dfn/reduce-max (clean y)))]
+          {:points curves
+           :x-domain (numeric-extent (clean x))
+           :y-domain [y-min y-max]})))))
 
 ;; ---- KDE (kernel density estimation) ----
 

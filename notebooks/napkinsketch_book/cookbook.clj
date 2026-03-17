@@ -359,6 +359,78 @@
                            (and (= 1 (:panels s))
                                 (pos? (:points s)))))])
 
+;; ### Fixed aspect ratio
+;;
+;; Use `sk/coord :fixed` so one unit on x equals one unit on y.
+;; This makes the plot square when x and y have equal ranges.
+
+(-> iris
+    (sk/view :sepal_length :sepal_width)
+    (sk/lay (sk/point {:color :species}) (sk/lm {:color :species}))
+    (sk/coord :fixed)
+    (sk/plot {:title "Fixed Aspect Ratio"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (pos? (:points s))
+                                (= 3 (:lines s)))))])
+
+;; ### Diverging color scale
+;;
+;; Use `:color-scale :diverging` with `:color-midpoint` to center
+;; a red-white-blue gradient on a meaningful value (e.g., zero).
+
+(-> (tc/dataset {:x (range 20)
+                 :y (map #(Math/sin (/ % 3.0)) (range 20))
+                 :change (map #(- % 10) (range 20))})
+    (sk/view :x :y)
+    (sk/lay (sk/point {:color :change}))
+    (sk/plot {:color-scale :diverging
+              :color-midpoint 0
+              :title "Diverging Color Scale"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 20 (:points s)))))])
+
+;; ### LOESS confidence ribbon
+;;
+;; Add `{:se true}` to a LOESS smoother for a bootstrap confidence band.
+
+(-> iris
+    (sk/view :sepal_length :sepal_width)
+    (sk/lay (sk/point {:color :species})
+            (sk/loess {:se true :color :species}))
+    (sk/plot {:title "LOESS with 95% CI"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s))
+                                (= 3 (:polygons s)))))])
+
+
+;; ### Multi-plot dashboard
+;;
+;; Use `sk/arrange` to combine independent plots into a grid layout.
+
+(def ^:private iris-sepal
+  (-> iris
+      (sk/view :sepal_length :sepal_width)
+      (sk/lay (sk/point {:color :species}))
+      (sk/plot {:title "Sepal" :width 300 :height 250})))
+
+(def ^:private iris-petal
+  (-> iris
+      (sk/view :petal_length :petal_width)
+      (sk/lay (sk/point {:color :species}))
+      (sk/plot {:title "Petal" :width 300 :height 250})))
+
+(sk/arrange [iris-sepal iris-petal]
+            {:title "Iris Dashboard" :cols 2})
+
+(kind/test-last [(fn [v] (and (= :div (first v))
+                              (= :kind/hiccup (:kindly/kind (meta v)))))])
+
+
 ;; ## Analytical Walkthroughs
 
 ;; ### Palmer Penguins

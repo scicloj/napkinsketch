@@ -408,6 +408,108 @@
         sk (sk/sketch views)]
     (is (= 3 (count (:panels sk))))))
 
+(deftest coord-fixed-test
+  (testing "adjust-fixed-aspect: equal ranges → square panel"
+    (let [{:keys [pw ph]} (#'scicloj.napkinsketch.impl.sketch/adjust-fixed-aspect 500 300 [0 10] [0 10])]
+      (is (== pw ph) "Equal data ranges should produce equal panel dims")
+      (is (== ph 300) "Shrinks pw to match ph for equal ranges")))
+  (testing "adjust-fixed-aspect: wide data → wide panel"
+    (let [{:keys [pw ph]} (#'scicloj.napkinsketch.impl.sketch/adjust-fixed-aspect 500 300 [0 100] [0 10])]
+      (is (== pw 500) "pw stays at max")
+      (is (< ph 300) "ph shrinks for wide data")))
+  (testing "adjust-fixed-aspect: tall data → tall panel"
+    (let [{:keys [pw ph]} (#'scicloj.napkinsketch.impl.sketch/adjust-fixed-aspect 500 300 [0 10] [0 100])]
+      (is (< pw 500) "pw shrinks for tall data")
+      (is (== ph 300) "ph stays at max")))
+  (testing "adjust-fixed-aspect: degenerate domain → no change"
+    (let [{:keys [pw ph]} (#'scicloj.napkinsketch.impl.sketch/adjust-fixed-aspect 500 300 [5 5] [0 10])]
+      (is (== pw 500))
+      (is (== ph 300))))
+  (testing "coord :fixed end-to-end — equal ranges produce square SVG"
+    (let [ds (tc/dataset {:x [0 10 5] :y [0 10 5]})
+          fig (-> ds (sk/view :x :y) (sk/coord :fixed) (sk/lay (sk/point)) sk/plot)
+          svg (if (= :svg (first fig)) fig (second fig))
+          {:keys [width height]} (second svg)]
+      (is (== width height) "Equal data ranges → square SVG")))
+  (testing "coord :fixed end-to-end — asymmetric ranges"
+    (let [ds (tc/dataset {:x [0 100 50] :y [0 10 5]})
+          fig (-> ds (sk/view :x :y) (sk/coord :fixed) (sk/lay (sk/point)) sk/plot)
+          svg (if (= :svg (first fig)) fig (second fig))
+          {:keys [width height]} (second svg)]
+      (is (> width height) "Wide data → wider SVG"))))
+
+(deftest diverging-color-test
+  (testing "diverging-color endpoints"
+    (let [[r _ _ _] (defaults/diverging-color 0.0)]
+      (is (> r 0.5) "t=0 is reddish"))
+    (let [[_ _ b _] (defaults/diverging-color 1.0)]
+      (is (> b 0.5) "t=1 is bluish"))
+    (let [[r g b _] (defaults/diverging-color 0.5)]
+      (is (> r 0.9) "t=0.5 is whitish (r)")
+      (is (> g 0.9) "t=0.5 is whitish (g)")
+      (is (> b 0.9) "t=0.5 is whitish (b)")))
+  (testing "normalize-midpoint"
+    (is (== 0.0 (defaults/normalize-midpoint -5 -5 5 0)))
+    (is (== 0.5 (defaults/normalize-midpoint 0 -5 5 0)))
+    (is (== 1.0 (defaults/normalize-midpoint 5 -5 5 0)))
+    (is (== 0.25 (defaults/normalize-midpoint -2.5 -5 5 0)))
+    (is (== 0.75 (defaults/normalize-midpoint 2.5 -5 5 0)))
+    (is (== 0.5 (defaults/normalize-midpoint 5 0 10 nil))))
+  (testing "resolve-gradient-fn"
+    (is (fn? (defaults/resolve-gradient-fn nil)))
+    (is (fn? (defaults/resolve-gradient-fn :diverging)))
+    (is (fn? (defaults/resolve-gradient-fn {:low "#FF0000" :mid "#FFFFFF" :high "#0000FF"}))))
+  (testing "diverging end-to-end"
+    (let [ds (tc/dataset {:x (range 10) :y (range 10) :z (map #(- % 5) (range 10))})
+          fig (-> ds (sk/view :x :y)
+                  (sk/lay (sk/point {:color :z}))
+                  (sk/plot {:color-scale :diverging :color-midpoint 0}))
+          s (sk/svg-summary fig)]
+      (is (= 10 (:points s))))))
+
+(deftest loess-se-test
+  (testing "LOESS with SE produces ribbon"
+    (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
+          fig (-> ds (sk/view :x :y)
+                  (sk/lay (sk/point) (sk/loess {:se true :se-boot 50}))
+                  sk/plot)
+          s (sk/svg-summary fig)]
+      (is (= 20 (:points s)))
+      (is (= 1 (:lines s)))
+      (is (= 1 (:polygons s)) "confidence ribbon polygon")))
+  (testing "LOESS without SE has no ribbon"
+    (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
+          fig (-> ds (sk/view :x :y)
+                  (sk/lay (sk/point) (sk/loess))
+                  sk/plot)
+          s (sk/svg-summary fig)]
+      (is (= 1 (:lines s)))
+      (is (zero? (:polygons s)))))
+  (testing "LOESS dedup handles duplicate x values"
+    (let [ds (tc/dataset {:x [1 1 2 2 3 3 4 4 5 5] :y [2 3 4 5 6 7 8 9 10 11]})
+          fig (-> ds (sk/view :x :y) (sk/lay (sk/loess)) sk/plot)
+          s (sk/svg-summary fig)]
+      (is (= 1 (:lines s))))))
+
+(deftest arrange-test
+  (testing "flat plots → CSS grid"
+    (let [p1 (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)) sk/plot)
+          p2 (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)) sk/plot)
+          result (sk/arrange [p1 p2])]
+      (is (= :div (first result)))
+      (is (= :kind/hiccup (:kindly/kind (meta result))))))
+  (testing "nested rows → correct cols"
+    (let [p (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)) sk/plot)
+          result (sk/arrange [[p p] [p p]])]
+      (is (= "repeat(2, 1fr)"
+             (-> result second :style :grid-template-columns)))))
+  (testing "title appears as first child"
+    (let [p (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)) sk/plot)
+          result (sk/arrange [p p] {:title "Test" :cols 2})
+          title-div (nth result 2)]
+      (is (= :div (first title-div)))
+      (is (= "Test" (last title-div))))))
+
 (deftest valid-sketch-test
   (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay (sk/point)))
         sk (sk/sketch views)]

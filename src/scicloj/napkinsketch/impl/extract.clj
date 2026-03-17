@@ -61,10 +61,9 @@
                       color (assoc :label (str color))
                       (and numeric-color? color-values)
                       (assoc :colors (vec (map (fn [v]
-                                                 (let [t (if (and c-range (pos? c-range))
-                                                           (/ (- (double v) (double c-min)) c-range)
-                                                           0.5)]
-                                                   (defaults/gradient-color t)))
+                                                 (let [t (defaults/normalize-midpoint v (or c-min 0) (or c-max 1) (:color-midpoint cfg))
+                                                       grad-fn (or (:gradient-fn cfg) defaults/gradient-color)]
+                                                   (grad-fn t)))
                                                color-values)))
                       sizes (assoc :sizes (vec sizes))
                       alphas (assoc :alphas (vec alphas))
@@ -232,9 +231,9 @@
                 (let [[f-lo f-hi] (:fill-range stat)
                       f-span (max 1e-10 (- (double f-hi) (double f-lo)))]
                   (vec (for [{:keys [x-lo x-hi y-lo y-hi fill]} (:tiles stat)
-                             :let [t (/ (- (double fill) (double f-lo)) f-span)]]
+                             :let [t (defaults/normalize-midpoint fill f-lo f-hi (:color-midpoint cfg))]]
                          {:x-lo x-lo :x-hi x-hi :y-lo y-lo :y-hi y-hi
-                          :color (defaults/gradient-color t)})))
+                          :color ((or (:gradient-fn cfg) defaults/gradient-color) t)})))
                 ;; identity path — each point is a tile at (x, y) with fill value
                 (let [data (:data view)
                       fill-vals (when fill-col (data fill-col))
@@ -248,9 +247,9 @@
                          {:x-lo xv :x-hi xv :y-lo yv :y-hi yv
                           :color (if fill-vals
                                    (let [fv (nth fill-vals i)
-                                         t (/ (- (double fv) (double f-lo)) f-span)]
-                                     (defaults/gradient-color t))
-                                   (defaults/gradient-color 0.5))}))))]
+                                         t (defaults/normalize-midpoint fv (or f-lo 0) (or f-hi 1) (:color-midpoint cfg))]
+                                     ((or (:gradient-fn cfg) defaults/gradient-color) t))
+                                   ((or (:gradient-fn cfg) defaults/gradient-color) 0.5))}))))]
     {:mark :tile
      :style {:opacity (or (:fixed-alpha view) 1.0)}
      :tiles tiles}))
@@ -386,7 +385,7 @@
                               :when (seq polylines)]
                           {:threshold threshold
                            :t t
-                           :color (defaults/gradient-color t)
+                           :color ((or (:gradient-fn cfg) defaults/gradient-color) t)
                            :polylines (vec polylines)}))]
         {:mark :contour
          :levels levels

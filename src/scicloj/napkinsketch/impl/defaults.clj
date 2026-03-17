@@ -111,20 +111,76 @@
    [0.75 0.544 0.773 0.247]
    [1.0 0.993 0.906 0.144]])
 
-(defn gradient-color
-  "Interpolate a color from viridis stops for t in [0,1]. Returns [r g b a]."
-  [t]
+(defn interpolate-stops
+  "Interpolate a color from stops (vec of [t r g b]) for t in [0,1].
+   Returns [r g b a]."
+  [stops t]
   (let [t (max 0.0 (min 1.0 (double t)))
-        n (count viridis-stops)
-        idx (-> (dec (count (take-while #(<= (first %) t) viridis-stops)))
+        n (count stops)
+        idx (-> (dec (count (take-while #(<= (first %) t) stops)))
                 (max 0) (min (- n 2)))
-        [t0 r0 g0 b0] (nth viridis-stops idx)
-        [t1 r1 g1 b1] (nth viridis-stops (inc idx))
+        [t0 r0 g0 b0] (nth stops idx)
+        [t1 r1 g1 b1] (nth stops (inc idx))
         f (/ (- t t0) (max 1e-10 (- t1 t0)))]
     [(+ r0 (* f (- r1 r0)))
      (+ g0 (* f (- g1 g0)))
      (+ b0 (* f (- b1 b0)))
      1.0]))
+
+(defn gradient-color
+  "Interpolate a color from viridis stops for t in [0,1]. Returns [r g b a]."
+  [t]
+  (interpolate-stops viridis-stops t))
+
+(def diverging-stops
+  "RdBu diverging colormap: red → white → blue (5 stops)."
+  [[0.0 0.698 0.094 0.169]
+   [0.25 0.890 0.529 0.400]
+   [0.5 0.969 0.969 0.969]
+   [0.75 0.400 0.663 0.827]
+   [1.0 0.133 0.400 0.675]])
+
+(defn diverging-color
+  "Interpolate a color from diverging (RdBu) stops for t in [0,1]. Returns [r g b a]."
+  [t]
+  (interpolate-stops diverging-stops t))
+
+(defn resolve-gradient-fn
+  "Resolve a :color-scale option to a gradient function.
+   nil or :sequential → gradient-color (viridis).
+   :diverging → diverging-color.
+   {:type :diverging :low \"#hex\" :mid \"#hex\" :high \"#hex\"} → custom stops.
+   A function → used directly."
+  [color-scale]
+  (cond
+    (nil? color-scale) gradient-color
+    (= :sequential color-scale) gradient-color
+    (= :diverging color-scale) diverging-color
+    (fn? color-scale) color-scale
+    (map? color-scale)
+    (let [{:keys [low mid high]
+           :or {low "#B2182B" mid "#F7F7F7" high "#2166AC"}} color-scale
+          [lr lg lb] (hex->rgba low)
+          [mr mg mb] (hex->rgba mid)
+          [hr hg hb] (hex->rgba high)
+          stops [[0.0 lr lg lb] [0.5 mr mg mb] [1.0 hr hg hb]]]
+      (fn [t] (interpolate-stops stops t)))
+    :else gradient-color))
+
+(defn normalize-midpoint
+  "Remap a value v from [vmin, vmax] to [0,1] with optional midpoint.
+   Without midpoint: linear (v-vmin)/(vmax-vmin).
+   With midpoint: values below midpoint → [0, 0.5], above → [0.5, 1.0]."
+  [v vmin vmax midpoint]
+  (if midpoint
+    (let [v (double v) vmin (double vmin) vmax (double vmax) mid (double midpoint)]
+      (cond
+        (<= v vmin) 0.0
+        (>= v vmax) 1.0
+        (<= v mid) (if (<= mid vmin) 0.5 (* 0.5 (/ (- v vmin) (- mid vmin))))
+        :else (if (>= mid vmax) 0.5 (+ 0.5 (* 0.5 (/ (- v mid) (- vmax mid)))))))
+    (let [span (- (double vmax) (double vmin))]
+      (if (<= span 0) 0.5 (/ (- (double v) (double vmin)) span)))))
 
 ;; ---- Name Formatting ----
 

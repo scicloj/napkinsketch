@@ -115,8 +115,8 @@
   ts-dates
   (mapv
    (fn*
-    [p1__94298#]
-    (java.time.LocalDate/ofEpochDay (+ 18262 (* (long p1__94298#) 7))))
+    [p1__99998#]
+    (java.time.LocalDate/ofEpochDay (+ 18262 (* (long p1__99998#) 7))))
    (range 52))))
 
 
@@ -129,8 +129,8 @@
     :value
     (mapv
      (fn*
-      [p1__94299#]
-      (+ 100.0 (* 30.0 (Math/sin (* (double p1__94299#) 0.12)))))
+      [p1__99999#]
+      (+ 100.0 (* 30.0 (Math/sin (* (double p1__99999#) 0.12)))))
      (range 52))}
    {:key-fn keyword})))
 
@@ -510,7 +510,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__94300#] (= "virginica" p1__94300#))
+       (fn* [p1__100000#] (= "virginica" p1__100000#))
        (:texts s)))))
    v70_l336)))
 
@@ -539,12 +539,13 @@
 
 
 (def
- v76_l368
+ v76_l367
  (->
-  penguins
-  (sk/view [[:bill_length_mm :bill_depth_mm]])
-  (sk/lay (sk/point {:color :species}))
-  (sk/plot {:title "Palmer Penguins: Bill Dimensions"})))
+  iris
+  (sk/view :sepal_length :sepal_width)
+  (sk/lay (sk/point {:color :species}) (sk/lm {:color :species}))
+  (sk/coord :fixed)
+  (sk/plot {:title "Fixed Aspect Ratio"})))
 
 
 (deftest
@@ -554,12 +555,121 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (= 342 (:points s)))))
-   v76_l368)))
+     (and (pos? (:points s)) (= 3 (:lines s)))))
+   v76_l367)))
 
 
 (def
- v79_l379
+ v79_l382
+ (->
+  (tc/dataset
+   {:x (range 20),
+    :y
+    (map
+     (fn* [p1__100001#] (Math/sin (/ p1__100001# 3.0)))
+     (range 20)),
+    :change (map (fn* [p1__100002#] (- p1__100002# 10)) (range 20))})
+  (sk/view :x :y)
+  (sk/lay (sk/point {:color :change}))
+  (sk/plot
+   {:color-scale :diverging,
+    :color-midpoint 0,
+    :title "Diverging Color Scale"})))
+
+
+(deftest
+ t80_l391
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 20 (:points s)))))
+   v79_l382)))
+
+
+(def
+ v82_l399
+ (->
+  iris
+  (sk/view :sepal_length :sepal_width)
+  (sk/lay
+   (sk/point {:color :species})
+   (sk/loess {:se true, :color :species}))
+  (sk/plot {:title "LOESS with 95% CI"})))
+
+
+(deftest
+ t83_l405
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 3 (:lines s)) (= 3 (:polygons s)))))
+   v82_l399)))
+
+
+(def
+ v85_l415
+ (def
+  iris-sepal
+  (->
+   iris
+   (sk/view :sepal_length :sepal_width)
+   (sk/lay (sk/point {:color :species}))
+   (sk/plot {:title "Sepal", :width 300, :height 250}))))
+
+
+(def
+ v86_l421
+ (def
+  iris-petal
+  (->
+   iris
+   (sk/view :petal_length :petal_width)
+   (sk/lay (sk/point {:color :species}))
+   (sk/plot {:title "Petal", :width 300, :height 250}))))
+
+
+(def
+ v87_l427
+ (sk/arrange
+  [iris-sepal iris-petal]
+  {:title "Iris Dashboard", :cols 2}))
+
+
+(deftest
+ t88_l430
+ (is
+  ((fn
+    [v]
+    (and (= :div (first v)) (= :kind/hiccup (:kindly/kind (meta v)))))
+   v87_l427)))
+
+
+(def
+ v90_l440
+ (->
+  penguins
+  (sk/view [[:bill_length_mm :bill_depth_mm]])
+  (sk/lay (sk/point {:color :species}))
+  (sk/plot {:title "Palmer Penguins: Bill Dimensions"})))
+
+
+(deftest
+ t91_l445
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 342 (:points s)))))
+   v90_l440)))
+
+
+(def
+ v93_l451
  (->
   penguins
   (sk/view [[:bill_length_mm :bill_depth_mm]])
@@ -568,18 +678,18 @@
 
 
 (deftest
- t80_l385
+ t94_l457
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 342 (:points s)) (= 3 (:lines s)))))
-   v79_l379)))
+   v93_l451)))
 
 
 (def
- v82_l391
+ v96_l463
  (->
   penguins
   (sk/view [[:bill_length_mm :bill_depth_mm]])
@@ -588,18 +698,18 @@
 
 
 (deftest
- t83_l397
+ t97_l469
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 342 (:points s)) (= 1 (:lines s)))))
-   v82_l391)))
+   v96_l463)))
 
 
 (def
- v85_l403
+ v99_l475
  (->
   penguins
   (sk/view :island)
@@ -608,18 +718,18 @@
 
 
 (deftest
- t86_l408
+ t100_l480
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v85_l403)))
+   v99_l475)))
 
 
 (def
- v88_l414
+ v102_l486
  (->
   penguins
   (sk/view [[:flipper_length_mm :body_mass_g]])
@@ -628,18 +738,18 @@
 
 
 (deftest
- t89_l420
+ t103_l492
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 342 (:points s)) (= 3 (:lines s)))))
-   v88_l414)))
+   v102_l486)))
 
 
 (def
- v91_l426
+ v105_l498
  (->
   penguins
   (sk/view :body_mass_g)
@@ -648,18 +758,18 @@
 
 
 (deftest
- t92_l431
+ t106_l503
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v91_l426)))
+   v105_l498)))
 
 
 (def
- v94_l439
+ v108_l511
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -671,18 +781,18 @@
 
 
 (deftest
- t95_l446
+ t109_l518
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 244 (:points s)) (= 2 (:lines s)))))
-   v94_l439)))
+   v108_l511)))
 
 
 (def
- v97_l452
+ v111_l524
  (->
   tips
   (sk/view :day)
@@ -691,18 +801,18 @@
 
 
 (deftest
- t98_l457
+ t112_l529
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v97_l452)))
+   v111_l524)))
 
 
 (def
- v100_l463
+ v114_l535
  (->
   tips
   (sk/view :day)
@@ -711,18 +821,18 @@
 
 
 (deftest
- t101_l468
+ t115_l540
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v100_l463)))
+   v114_l535)))
 
 
 (def
- v103_l474
+ v117_l546
  (->
   tips
   (sk/view :day)
@@ -732,18 +842,18 @@
 
 
 (deftest
- t104_l480
+ t118_l552
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v103_l474)))
+   v117_l546)))
 
 
 (def
- v106_l486
+ v120_l558
  (def
   mpg
   (tc/dataset
@@ -752,7 +862,7 @@
 
 
 (def
- v108_l491
+ v122_l563
  (->
   mpg
   (sk/view [[:horsepower :mpg]])
@@ -761,18 +871,18 @@
 
 
 (deftest
- t109_l497
+ t123_l569
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 392 (:points s)) (= 3 (:lines s)))))
-   v108_l491)))
+   v122_l563)))
 
 
 (def
- v111_l503
+ v125_l575
  (->
   mpg
   (sk/view [[:displacement :mpg]])
@@ -781,18 +891,18 @@
 
 
 (deftest
- t112_l508
+ t126_l580
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 398 (:points s)))))
-   v111_l503)))
+   v125_l575)))
 
 
 (def
- v114_l514
+ v128_l586
  (->
   mpg
   (sk/view :origin)
@@ -801,11 +911,11 @@
 
 
 (deftest
- t115_l519
+ t129_l591
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v114_l514)))
+   v128_l586)))

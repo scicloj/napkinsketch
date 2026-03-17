@@ -29,7 +29,7 @@
           ;; Gradient bar: stack of small colored rectangles
           (for [i (range n-stops)
                 :let [t (/ (double i) (dec n-stops))
-                      c (defaults/gradient-color t)
+                      c (if-let [gf (:gradient-fn legend)] (gf t) (defaults/gradient-color t))
                       [cr cg cb _] c
                       ry (+ y (* (- 1.0 t) bar-h))]]
             (ui/translate x ry

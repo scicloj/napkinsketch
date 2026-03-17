@@ -6,7 +6,8 @@
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
             [scicloj.napkinsketch.impl.render :as render-impl]
             [scicloj.napkinsketch.render.membrane :as membrane]
-            [scicloj.napkinsketch.render.svg :as svg]))
+            [scicloj.napkinsketch.render.svg :as svg]
+            [scicloj.kindly.v4.kind :as kind]))
 
 ;; ---- Compositional API ----
 
@@ -30,7 +31,9 @@
 
 (defn coord
   "Set coordinate system on views.
-   (coord views :flip) — flipped coordinates"
+   Options: :cartesian (default), :flip, :polar, :fixed.
+   (coord views :flip)   — flipped coordinates
+   (coord views :fixed)  — fixed 1:1 aspect ratio"
   [views c]
   (view/coord views c))
 
@@ -162,9 +165,10 @@
 
 (defn loess
   "LOESS smoothing line (requires n >= 4, strictly increasing x).
-   Options: :color, :alpha, :group.
+   Options: :color, :alpha, :group, :se (boolean), :level (default 0.95), :se-boot (default 200).
    (loess)                     — default bandwidth 0.75
-   (loess {:color :species})   — per-group smoothing"
+   (loess {:color :species})   — per-group smoothing
+   (loess {:se true})          — with 95% confidence ribbon"
   ([] (view/loess))
   ([opts] (view/loess opts)))
 
@@ -326,7 +330,9 @@
   "Render views as a figure (default: SVG hiccup wrapped with kind/hiccup).
    (plot views)              — default 600×400 SVG
    (plot views {:width 800 :height 500 :title \"My Plot\"})
-   (plot views {:format :svg})  — explicit format"
+   (plot views {:format :svg})  — explicit format
+   Options: :color-scale (:sequential, :diverging, or {:low :mid :high} map),
+   :color-midpoint (number — centers diverging gradient on this value)."
   ([views] (plot-impl/plot views))
   ([views opts] (plot-impl/plot views opts)))
 
@@ -394,3 +400,37 @@
    (svg-summary (plot views) {:grid \"#EEE\"}) — with custom theme"
   ([svg] (svg/svg-summary svg))
   ([svg theme] (svg/svg-summary svg theme)))
+
+;; ---- Multi-Plot Composition ----
+
+(defn arrange
+  "Arrange multiple plots in a CSS grid layout.
+   plots: a flat vector of plots, or a vector of vectors (explicit rows).
+   opts:  {:cols N, :title \"...\", :gap \"8px\"}.
+   (arrange [plot-a plot-b])                — 1×2 row
+   (arrange [plot-a plot-b plot-c] {:cols 2}) — 2-column grid, wraps
+   (arrange [[plot-a plot-b] [plot-c plot-d]]) — explicit 2×2 grid"
+  ([plots] (arrange plots {}))
+  ([plots opts]
+   (let [{:keys [cols title gap]} opts
+         ;; Detect explicit rows: [[a b] [c d]]
+         nested? (and (sequential? (first plots))
+                      (not (keyword? (ffirst plots))))
+         flat-plots (if nested? (vec (apply concat plots)) (vec plots))
+         n-cols (or cols
+                    (if nested? (count (first plots)) (count flat-plots)))
+         grid-style {:display "grid"
+                     :grid-template-columns (str "repeat(" n-cols ", 1fr)")
+                     :gap (or gap "8px")}
+         title-div (when title
+                     [:div {:style {:grid-column "1 / -1"
+                                    :text-align "center"
+                                    :font-weight "bold"
+                                    :font-size "16px"
+                                    :padding "4px 0"}}
+                      title])]
+     (kind/hiccup
+      (into [:div {:style grid-style}]
+            (cond-> []
+              title (conj title-div)
+              true (into flat-plots)))))))

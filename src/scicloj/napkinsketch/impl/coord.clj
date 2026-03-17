@@ -18,6 +18,9 @@
 (defmethod make-coord :cartesian [_ sx sy pw ph m]
   (fn [dx dy] [(sx dx) (sy dy)]))
 
+(defmethod make-coord :fixed [_ sx sy pw ph m]
+  (fn [dx dy] [(sx dx) (sy dy)]))
+
 (defmethod make-coord :flip [_ sx sy pw ph m]
   (fn [dx dy] [(sx dy) (sy dx)]))
 
@@ -54,4 +57,6 @@
   (fn [coord-type] coord-type))
 
 (defmethod show-ticks? :default [_] true)
+
+(defmethod show-ticks? :fixed [_] true)
 (defmethod show-ticks? :polar [_] false)
