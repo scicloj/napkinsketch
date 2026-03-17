@@ -199,7 +199,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__93610#] (= 50 (:n-points p1__93610#))) gs)))
+     (every? (fn* [p1__103260#] (= 50 (:n-points p1__103260#))) gs)))
    v53_l161)))
 
 
@@ -254,9 +254,9 @@
     (and
      (> (count bars) 3)
      (every?
-      (fn* [p1__93611#] (< (:lo p1__93611#) (:hi p1__93611#)))
+      (fn* [p1__103261#] (< (:lo p1__103261#) (:hi p1__103261#)))
       bars)
-     (every? (fn* [p1__93612#] (pos? (:count p1__93612#))) bars)))
+     (every? (fn* [p1__103262#] (pos? (:count p1__103262#))) bars)))
    v66_l199)))
 
 
@@ -438,7 +438,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__93613#] (Math/sin (* p1__93613# 0.3)))
+     (fn* [p1__103263#] (Math/sin (* p1__103263# 0.3)))
      (range 30))})))
 
 
@@ -700,53 +700,53 @@
 (deftest t160_l494 (is (true? v159_l492)))
 
 
-(def v162_l501 (sk/valid-sketch? tiny-sk))
+(def v162_l504 (sk/valid-sketch? tiny-sk))
 
 
-(deftest t163_l503 (is (true? v162_l501)))
+(deftest t163_l506 (is (true? v162_l504)))
 
 
-(def v164_l505 (sk/valid-sketch? iris-sk))
+(def v164_l508 (sk/valid-sketch? iris-sk))
 
 
-(deftest t165_l507 (is (true? v164_l505)))
+(deftest t165_l510 (is (true? v164_l508)))
 
 
-(def v166_l509 (sk/valid-sketch? hist-sk))
+(def v166_l512 (sk/valid-sketch? hist-sk))
 
 
-(deftest t167_l511 (is (true? v166_l509)))
+(deftest t167_l514 (is (true? v166_l512)))
 
 
-(def v168_l513 (sk/valid-sketch? bar-sk))
+(def v168_l516 (sk/valid-sketch? bar-sk))
 
 
-(deftest t169_l515 (is (true? v168_l513)))
+(deftest t169_l518 (is (true? v168_l516)))
 
 
-(def v170_l517 (sk/valid-sketch? lm-sk))
+(def v170_l520 (sk/valid-sketch? lm-sk))
 
 
-(deftest t171_l519 (is (true? v170_l517)))
+(deftest t171_l522 (is (true? v170_l520)))
 
 
-(def v172_l521 (sk/valid-sketch? final-sk))
+(def v172_l524 (sk/valid-sketch? final-sk))
 
 
-(deftest t173_l523 (is (true? v172_l521)))
+(deftest t173_l526 (is (true? v172_l524)))
 
 
 (def
- v175_l527
+ v175_l530
  (sk/explain-sketch (assoc tiny-sk :width "not-a-number")))
 
 
-(deftest t176_l529 (is (some? v175_l527)))
+(deftest t176_l532 (is (some? v175_l530)))
 
 
 (def
- v178_l537
+ v178_l540
  (let [s (pr-str tiny-sk) back (read-string s)] (= tiny-sk back)))
 
 
-(deftest t179_l541 (is (true? v178_l537)))
+(deftest t179_l544 (is (true? v178_l540)))

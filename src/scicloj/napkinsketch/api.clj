@@ -332,7 +332,8 @@
    (plot views {:width 800 :height 500 :title \"My Plot\"})
    (plot views {:format :svg})  — explicit format
    Options: :color-scale (:sequential, :diverging, or {:low :mid :high} map),
-   :color-midpoint (number — centers diverging gradient on this value)."
+   :color-midpoint (number — centers diverging gradient on this value),
+   :validate (default true — validates sketch against Malli schema)."
   ([views] (plot-impl/plot views))
   ([views opts] (plot-impl/plot views opts)))
 
@@ -341,7 +342,8 @@
    geometry, domains, tick info, legend, and layout. No membrane types,
    no datasets, no scale objects in the output. Serializable data.
    (sketch views)              — default 600×400
-   (sketch views {:width 800 :title \"My Plot\"})"
+   (sketch views {:width 800 :title \"My Plot\"})
+   Pass {:validate false} to skip Malli schema validation."
   ([views] (sketch-impl/views->sketch views))
   ([views opts] (sketch-impl/views->sketch views opts)))
 
@@ -351,7 +353,8 @@
    no datasets, no scale objects in the output. Serializable data.
    Same as `sketch` but with an explicit pipeline-style name.
    (views->sketch views)              — default 600×400
-   (views->sketch views {:width 800 :title \"My Plot\"})"
+   (views->sketch views {:width 800 :title \"My Plot\"})
+   Pass {:validate false} to skip Malli schema validation."
   ([views] (sketch-impl/views->sketch views))
   ([views opts] (sketch-impl/views->sketch views opts)))
 

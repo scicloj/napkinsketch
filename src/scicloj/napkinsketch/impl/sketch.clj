@@ -9,7 +9,8 @@
             [scicloj.napkinsketch.impl.scale :as scale]
             [scicloj.napkinsketch.impl.coord :as coord]
             [scicloj.napkinsketch.impl.position :as position]
-            [scicloj.napkinsketch.impl.extract :as extract]))
+            [scicloj.napkinsketch.impl.extract :as extract]
+            [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
 ;; ---- Domain Helpers ----
 
@@ -446,11 +447,15 @@
 (defn views->sketch
   "Resolve views + options into a sketch — a fully resolved plot specification
    with data-space geometry, domains, ticks, legend, and layout info.
-   No membrane types, no datasets in the output."
+   No membrane types, no datasets in the output.
+   Options include :validate (default true) — when true, validates the
+   resulting sketch against the Malli schema and throws on failure."
   ([views] (views->sketch views {}))
   ([views {:keys [width height config x-label y-label title subtitle caption
-                  scales palette theme legend-position color-scale color-midpoint] :as opts}]
-   (let [cfg (cond-> (merge defaults/defaults config)
+                  scales palette theme legend-position color-scale color-midpoint
+                  validate] :as opts}]
+   (let [validate? (if (some? validate) validate true)
+         cfg (cond-> (merge defaults/defaults config)
                palette (assoc :palette palette)
                true (assoc :gradient-fn (defaults/resolve-gradient-fn color-scale))
                color-midpoint (assoc :color-midpoint color-midpoint))
@@ -542,7 +547,7 @@
          (resolve-labels non-ann-views x-vars y-vars x-scale-spec y-scale-spec
                          title x-label y-label auto-label?)
 
-;; Subtitle and caption — opts override view-level
+         ;; Subtitle and caption — opts override view-level
          subtitle (or subtitle (:subtitle (first non-ann-views)))
          caption (or caption (:caption (first non-ann-views)))
          ;; Swap labels when axes are visually transposed
@@ -559,21 +564,26 @@
          layout-dims (compute-layout-dims cfg layout-type eff-title eff-x-label eff-y-label
                                           subtitle caption
                                           legend facet-row-vals facet-col-vals
-                                          grid-rows grid-cols pw ph multi? panels legend-position)]
+                                          grid-rows grid-cols pw ph multi? panels legend-position)
 
-     {:width width :height height :margin m
-      :total-width (:total-w layout-dims) :total-height (:total-h layout-dims)
-      :panel-width pw :panel-height ph
-      :grid {:rows grid-rows :cols grid-cols}
-      :layout-type layout-type
-      :title eff-title
-      :subtitle subtitle
-      :caption caption
-      :x-label eff-x-label :y-label eff-y-label
-      :legend legend
-      :legend-position (or legend-position :right)
-      :panels panels
-      :theme resolved-theme
-      :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad
-                                        :subtitle-pad :caption-pad
-                                        :legend-w :legend-h :strip-h :strip-w])})))
+         sketch
+         {:width width :height height :margin m
+          :total-width (:total-w layout-dims) :total-height (:total-h layout-dims)
+          :panel-width pw :panel-height ph
+          :grid {:rows grid-rows :cols grid-cols}
+          :layout-type layout-type
+          :title eff-title
+          :subtitle subtitle
+          :caption caption
+          :x-label eff-x-label :y-label eff-y-label
+          :legend legend
+          :legend-position (or legend-position :right)
+          :panels panels
+          :theme resolved-theme
+          :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad
+                                            :subtitle-pad :caption-pad
+                                            :legend-w :legend-h :strip-h :strip-w])}]
+     (when validate?
+       (when-let [explanation (ss/explain sketch)]
+         (throw (ex-info "Sketch does not conform to schema" {:explanation explanation}))))
+     sketch)))

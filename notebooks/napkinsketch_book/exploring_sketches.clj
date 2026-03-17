@@ -495,8 +495,11 @@ faceted-sk
 
 ;; ## Malli Validation
 ;;
-;; Every sketch conforms to a Malli schema. This ensures the sketch
-;; contract is machine-checkable.
+;; Every sketch conforms to a Malli schema. Validation runs automatically
+;; when `sk/sketch` or `sk/plot` is called (default `:validate true`).
+;; Pass `{:validate false}` to skip it.
+;;
+;; You can also check manually with `sk/valid-sketch?`:
 
 (sk/valid-sketch? tiny-sk)
 

@@ -158,7 +158,7 @@
    [:tiles {:optional true} [:vector TileEntry]]
    [:ridges {:optional true} [:vector [:map [:category any?] [:color Color] [:ys [:vector number?]] [:densities [:vector number?]]]]]
    [:color-categories {:optional true} [:maybe [:vector any?]]]
-   [:position {:optional true} [:enum :dodge :stack]]
+   [:position {:optional true} [:enum :dodge :stack :fill]]
    [:categories {:optional true} [:vector any?]]
    [:side {:optional true} [:enum :x :y :both]]])
 
@@ -214,7 +214,10 @@
    [:x-label-pad number?]
    [:y-label-pad number?]
    [:title-pad number?]
+   [:subtitle-pad number?]
+   [:caption-pad number?]
    [:legend-w number?]
+   [:legend-h number?]
    [:strip-h number?]
    [:strip-w number?]])
 
@@ -234,10 +237,17 @@
    [:grid [:map [:rows pos-int?] [:cols pos-int?]]]
    [:layout-type [:enum :single :facet-grid :multi-variable]]
    [:title {:optional true} [:maybe string?]]
+   [:subtitle {:optional true} [:maybe string?]]
+   [:caption {:optional true} [:maybe string?]]
    [:x-label {:optional true} [:maybe string?]]
    [:y-label {:optional true} [:maybe string?]]
    [:legend {:optional true} [:maybe Legend]]
+   [:legend-position [:enum :right :bottom :top :none]]
    [:panels [:vector Panel]]
+   [:theme [:map
+            [:bg string?]
+            [:grid string?]
+            [:font-size number?]]]
    [:layout Layout]])
 
 ;; ---- Validation Helpers ----
