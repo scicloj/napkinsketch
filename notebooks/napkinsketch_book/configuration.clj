@@ -354,9 +354,15 @@ precedence-plot
 ;; The `:palette` key controls the color cycle for categorical
 ;; color mappings.  It accepts:
 ;;
-;; - a keyword (named preset): `:set1`, `:set2`, `:dark2`, `:tableau10`, etc.
+;; - a keyword — any palette name from the
+;;   [clojure2d](https://github.com/Clojure2D/clojure2d) color library
+;;   (hundreds available: ColorBrewer, Wes Anderson, thi.ng, paletteer, etc.)
 ;; - a vector of hex strings: `["#E74C3C" "#3498DB" "#2ECC71"]`
 ;; - a map of `{category-value "#hex"}` for explicit assignment
+;;
+;; Common palette names: `:set1`, `:set2`, `:dark2`, `:tableau10`,
+;; `:category10`, `:pastel1`, `:accent`, `:paired`.
+;; Use `(clojure2d.color/find-palette #"pattern")` to discover more.
 ;;
 ;; Palette works at every configuration level.
 

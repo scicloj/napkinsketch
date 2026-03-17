@@ -215,15 +215,22 @@
                                 (= 150 (:points s)))))])
 ;; ## Named Palette Presets
 ;;
-;; Use a keyword to select a predefined palette.
+;; Use a keyword to select a predefined palette.  napkinsketch accepts
+;; any palette name from the
+;; [clojure2d](https://github.com/Clojure2D/clojure2d) color library,
+;; which includes hundreds of palettes from ColorBrewer, Wes Anderson,
+;; thi.ng, paletteer (R packages), and more.
 ;;
-;; Available presets:
+;; Common examples:
 ;;
 ;; - `:set1`, `:set2`, `:set3` — ColorBrewer qualitative
 ;; - `:pastel1`, `:pastel2` — ColorBrewer pastel
 ;; - `:dark2`, `:paired`, `:accent` — ColorBrewer
 ;; - `:tableau10` — Tableau default
 ;; - `:category10` — D3 default
+;;
+;; Use `(require '[clojure2d.color :as c])` and `(c/find-palette #"pattern")`
+;; to discover all available names.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
