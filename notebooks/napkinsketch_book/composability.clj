@@ -120,15 +120,14 @@
 
 ;; ## Layered Bar Charts
 
-;; Programmatically build a comparison chart.
+;; Value bars with color grouping and coordinate flipping.
 
 (def quarterly-data
-  (fn []
-    (tc/dataset {:quarter [:Q1 :Q2 :Q3 :Q4 :Q1 :Q2 :Q3 :Q4]
-                 :revenue [100 120 90 140 80 95 110 130]
-                 :year [:2024 :2024 :2024 :2024 :2025 :2025 :2025 :2025]})))
+  {:quarter [:Q1 :Q2 :Q3 :Q4 :Q1 :Q2 :Q3 :Q4]
+   :revenue [100 120 90 140 80 95 110 130]
+   :year [:2024 :2024 :2024 :2024 :2025 :2025 :2025 :2025]})
 
-(-> (quarterly-data)
+(-> quarterly-data
     (sk/view [[:quarter :revenue]])
     (sk/lay (sk/value-bar {:color :year}))
     (sk/plot {:title "Quarterly Revenue Comparison"}))
@@ -139,7 +138,7 @@
 
 ;; Same data, flipped.
 
-(-> (quarterly-data)
+(-> quarterly-data
     (sk/view [[:quarter :revenue]])
     (sk/lay (sk/value-bar {:color :year}))
     (sk/coord :flip)
@@ -153,16 +152,16 @@
 
 ;; Generate data from a known model and verify the regression recovers it.
 
-(def simulated
-  (let [r (rng/rng :jdk 77)
-        xs (range 0 10 0.5)
-        ys (mapv #(+ (* 3 %) 5 (* 2 (- (rng/drandom r) 0.5))) xs)]
-    (tc/dataset {:x xs :y ys})))
-
-(-> simulated
-    (sk/view [[:x :y]])
-    (sk/lay (sk/point) (sk/lm))
-    (sk/plot {:title "Simulated: y = 3x + 5 + noise"}))
+(let [r (rng/rng :jdk 77)
+      xs (range 0 10 0.5)
+      ys (mapv #(+ (* 3 %)
+                   5
+                   (* 2 (- (rng/drandom r) 0.5)))
+               xs)]
+  (-> {:x xs :y ys}
+      (sk/view [[:x :y]])
+      (sk/lay (sk/point) (sk/lm))
+      (sk/plot {:title "Simulated: y = 3x + 5 + noise"})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 20 (:points s))

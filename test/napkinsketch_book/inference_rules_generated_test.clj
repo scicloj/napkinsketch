@@ -139,7 +139,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__96531#] (= 4 (count (:color p1__96531#)))) gs)))
+     (every? (fn* [p1__77305#] (= 4 (count (:color p1__77305#)))) gs)))
    v24_l149)))
 
 
@@ -211,7 +211,7 @@
     [ls]
     (and
      (= 2 (count ls))
-     (every? (fn* [p1__96532#] (= 3 (:n-groups p1__96532#))) ls)))
+     (every? (fn* [p1__77306#] (= 3 (:n-groups p1__77306#))) ls)))
    v39_l198)))
 
 
