@@ -2,7 +2,7 @@
 Simple and easy plotting
 
 NapkinSketch is a Clojure library for composable plotting, inspired by 
-the grammar-of-graphics.
+the Grammar of Graphics.
 
 ## General info
 
