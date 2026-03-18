@@ -1,7 +1,10 @@
 # Napkinsketch
-Simple and easy plotting
+
+Composable plotting in Clojure — a grammar-of-graphics-inspired library
+that owns its rendering pipeline.
 
 ## General info
+
 |||
 |-|-|
 |Website | [https://scicloj.github.io/napkinsketch/](https://scicloj.github.io/napkinsketch/)
@@ -28,7 +31,8 @@ such as [Clay](https://scicloj.github.io/clay/).
 (require '[tablecloth.api :as tc]
          '[scicloj.napkinsketch.api :as sk])
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv" {:key-fn keyword}))
+(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+                      {:key-fn keyword}))
 
 ;; Scatter plot with color grouping and regression lines
 (-> iris
@@ -38,12 +42,28 @@ such as [Clay](https://scicloj.github.io/clay/).
     sk/plot)
 ```
 
+## Documentation
+
+See the [book](https://scicloj.github.io/napkinsketch/) for a full guide
+covering chart types, configuration, faceting, and API reference.
+
 ## Development
 
 ```bash
 clojure -M:dev -m nrepl.cmdline   # start REPL
 ./run_tests.sh                    # run tests
 ```
+
+## Acknowledgments
+
+Napkinsketch builds on several excellent Clojure libraries:
+
+- [Tablecloth](https://scicloj.github.io/tablecloth/) — dataset manipulation
+- [membrane](https://github.com/phronmophobic/membrane) — rendering and layout
+- [Wadogo](https://github.com/scicloj/wadogo) — scales
+- [clojure2d](https://github.com/Clojure2D/clojure2d) — color palettes and gradients
+- [Fastmath](https://github.com/generateme/fastmath) — statistics
+- [Tableplot](https://scicloj.github.io/tableplot/) — predecessor and inspiration
 
 ## License
 
