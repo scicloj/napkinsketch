@@ -102,7 +102,7 @@
    {:x (range 1 11),
     :y
     (mapv
-     (fn* [p1__83536#] (+ (* 2 p1__83536#) (- (rng/irandom r 5) 2)))
+     (fn* [p1__92230#] (+ (* 2 p1__92230#) (- (rng/irandom r 5) 2)))
      (range 1 11))})
   (sk/view [[:x :y]])
   (sk/lay (sk/point) (sk/lm))
@@ -132,7 +132,7 @@
    (->
     iris
     (tc/select-rows
-     (fn* [p1__83537#] (= species-name (p1__83537# :species))))
+     (fn* [p1__92231#] (= species-name (p1__92231# :species))))
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:width 300, :height 250, :title species-name})))))
@@ -317,8 +317,8 @@
     ys
     (mapv
      (fn*
-      [p1__83538#]
-      (+ (* 3 p1__83538#) 5 (* 2 (- (rng/drandom r) 0.5))))
+      [p1__92232#]
+      (+ (* 3 p1__92232#) 5 (* 2 (- (rng/drandom r) 0.5))))
      xs)]
    (tc/dataset {:x xs, :y ys}))))
 
