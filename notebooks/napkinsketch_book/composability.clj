@@ -39,27 +39,6 @@
 
 (kind/pprint layered)
 
-;; ## Building Layers Programmatically
-
-;; Since mark constructors return maps, you can compose them dynamically.
-
-(def mark-for-type
-  (fn [col-type]
-    (case col-type
-      :scatter (sk/point)
-      :trend (sk/lm)
-      :dist (sk/histogram))))
-
-(-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (mark-for-type :scatter)
-            (mark-for-type :trend))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
-
 ;; ## Two-Arity View
 
 ;; `view` also accepts separate x and y arguments.
@@ -102,24 +81,10 @@
         (sk/plot {:width 300 :height 250
                   :title species-name}))))
 
-(species-plot "setosa")
+(sk/arrange (mapv species-plot ["setosa" "versicolor" "virginica"])
+            {:cols 3})
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 50 (:points s))
-                                (= 1 (:lines s))
-                                (some #{"setosa"} (:texts s)))))])
-
-(species-plot "versicolor")
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 50 (:points s))
-                                (some #{"versicolor"} (:texts s)))))])
-
-(species-plot "virginica")
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 50 (:points s))
-                                (some #{"virginica"} (:texts s)))))])
+(kind/test-last [(fn [v] (= :div (first v)))])
 
 ;; With faceting, one call replaces the manual filter-per-species pattern:
 
@@ -136,28 +101,22 @@
 
 ;; ## Combining All Measurements
 
-;; Use `cross` to generate all pairs of measurements.
+;; `pairs` generates all unique pairs from a list of columns.
+;; Pass the result to `view` for a multi-panel scatter plot matrix.
 
 (def measurements [:sepal_length :sepal_width :petal_length :petal_width])
 
-;; Pick a few interesting pairs.
+(sk/pairs measurements)
+
+(kind/test-last [(fn [v] (= 6 (count v)))])
 
 (-> iris
-    (sk/view [[:sepal_length :petal_length]])
+    (sk/view (sk/pairs measurements))
     (sk/lay (sk/point {:color :species}))
-    (sk/plot {:title "Sepal Length vs Petal Length"}))
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (some #{"Sepal Length vs Petal Length"} (:texts s)))))])
-
-(-> iris
-    (sk/view [[:sepal_width :petal_width]])
-    (sk/lay (sk/point {:color :species}))
-    (sk/plot {:title "Sepal Width vs Petal Width"}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (= 150 (:points s))))])
+                           (= 6 (:panels s))))])
 
 ;; ## Layered Bar Charts
 

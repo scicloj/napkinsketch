@@ -1,6 +1,6 @@
 ;; # Quickstart
 ;;
-;; A minimal introduction to Napkinsketch — simple and easy plotting.
+;; A minimal introduction to Napkinsketch
 
 ;; ## Setup
 ;;
@@ -20,6 +20,10 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
+
+;; Use [Clay](https://scicloj.github.io/clay/) or other
+;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible tools
+;; to visualize the examples below.
 
 ;; ## Loading Data
 ;;
@@ -59,8 +63,7 @@ iris
 
 (kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
 
-;; A CSV URL works directly — `{:key-fn keyword}` converts string
-;; column names to keywords:
+;; A Tablecloth dataset from a CSV file:
 
 (-> (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
                 {:key-fn keyword})
