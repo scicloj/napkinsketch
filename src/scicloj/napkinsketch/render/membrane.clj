@@ -182,31 +182,41 @@
                                                 :y-col-name (or y-label "y")))))
 
         ;; Strip labels (column headers on top, row headers on right)
+        ;; Use first panel found per column/row — handles triangular grids
+        ;; where the expected corner panel may not exist.
         strip-label-color text-color
 
         col-strips
         (when (pos? strip-h)
-          (vec
-           (for [p panels
-                 :when (and (zero? (:row p)) (:col-label p))]
-             (let [cx (+ y-label-pad (* (:col p) pw) (/ pw 2.0))
-                   label (:col-label p)]
-               (ui/translate cx
-                             (+ title-pad 2)
-                             (ui/with-color strip-label-color
-                               (assoc (ui/label label (ui/font nil strip-fsize))
-                                      :text-anchor "middle")))))))
+          (let [by-col (->> panels
+                            (filter :col-label)
+                            (group-by :col))]
+            (vec
+             (for [ci (range grid-cols)
+                   :let [p (first (get by-col ci))]
+                   :when p]
+               (let [cx (+ y-label-pad (* ci pw) (/ pw 2.0))
+                     label (:col-label p)]
+                 (ui/translate cx
+                               (+ title-pad 2)
+                               (ui/with-color strip-label-color
+                                 (assoc (ui/label label (ui/font nil strip-fsize))
+                                        :text-anchor "middle"))))))))
 
         row-strips
         (when (pos? strip-w)
-          (vec
-           (for [p panels
-                 :when (and (= (:col p) (dec grid-cols)) (:row-label p))]
-             (let [cy (+ title-pad strip-h (* (:row p) ph) (/ ph 2.0))]
-               (ui/translate (+ y-label-pad (* grid-cols pw) 5)
-                             (- cy 5)
-                             (ui/with-color strip-label-color
-                               (ui/label (:row-label p) (ui/font nil strip-fsize))))))))]
+          (let [by-row (->> panels
+                            (filter :row-label)
+                            (group-by :row))]
+            (vec
+             (for [ri (range grid-rows)
+                   :let [p (first (get by-row ri))]
+                   :when p]
+               (let [cy (+ title-pad strip-h (* ri ph) (/ ph 2.0))]
+                 (ui/translate (+ y-label-pad (* grid-cols pw) 5)
+                               (- cy 5)
+                               (ui/with-color strip-label-color
+                                 (ui/label (:row-label p) (ui/font nil strip-fsize)))))))))]
 
     ;; Build full membrane tree
     (vec
