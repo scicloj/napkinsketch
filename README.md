@@ -60,9 +60,9 @@ clojure -M:dev -m nrepl.cmdline   # start REPL
 Napkinsketch builds on several Clojure libraries:
 
 - [Tablecloth](https://scicloj.github.io/tablecloth/) — dataset manipulation
-- [membrane](https://github.com/phronmophobic/membrane) — rendering and layout
+- [Membrane](https://github.com/phronmophobic/membrane) — rendering and layout
 - [Wadogo](https://github.com/scicloj/wadogo) — scales
-- [clojure2d](https://github.com/Clojure2D/clojure2d) — color palettes and gradients
+- [Clojure2d](https://github.com/Clojure2D/clojure2d) — color palettes and gradients
 - [Fastmath](https://github.com/generateme/fastmath) — statistics
 
 ## License
