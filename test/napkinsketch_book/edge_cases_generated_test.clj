@@ -228,7 +228,7 @@
    (tc/dataset
     {:category
      (mapv
-      (fn* [p1__95168#] (keyword (str "cat-" p1__95168#)))
+      (fn* [p1__99348#] (keyword (str "cat-" p1__99348#)))
       (range 12)),
      :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))}))
   (sk/view [[:category :value]])
@@ -282,7 +282,7 @@
  (->
   iris
   (tc/select-rows
-   (fn* [p1__95169#] (= "setosa" (p1__95169# :species))))
+   (fn* [p1__99349#] (= "setosa" (p1__99349# :species))))
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay (sk/point) (sk/lm))
   (sk/plot {:title "Setosa Only"})))
@@ -412,8 +412,8 @@
  (->
   (tc/dataset
    {:x (range 20),
-    :y (map (fn* [p1__95170#] (- p1__95170# 10)) (range 20)),
-    :val (map (fn* [p1__95171#] (- p1__95171# 10.0)) (range 20))})
+    :y (map (fn* [p1__99350#] (- p1__99350# 10)) (range 20)),
+    :val (map (fn* [p1__99351#] (- p1__99351# 10.0)) (range 20))})
   (sk/view :x :y)
   (sk/lay (sk/point {:color :val}))
   (sk/plot {:color-scale :diverging, :color-midpoint 0})))
@@ -442,7 +442,7 @@
  v72_l320
  (->
   (tc/dataset
-   {:cat (map (fn* [p1__95172#] (str "cat-" p1__95172#)) (range 12)),
+   {:cat (map (fn* [p1__99352#] (str "cat-" p1__99352#)) (range 12)),
     :val (repeatedly 12 (fn* [] (rand-int 100)))})
   (sk/view :cat :val)
   (sk/lay (sk/bar))

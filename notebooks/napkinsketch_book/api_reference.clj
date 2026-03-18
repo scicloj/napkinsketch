@@ -601,3 +601,36 @@ sk1
 (sk/explain-sketch sk1)
 
 (kind/test-last [nil?])
+
+;; ## Configuration
+
+(kind/doc #'sk/config)
+
+(sk/config)
+
+(kind/test-last [(fn [m] (map? m))])
+
+(kind/doc #'sk/set-config!)
+
+(kind/doc #'sk/with-config)
+
+(sk/with-config {:palette :pastel1}
+  (:palette (sk/config)))
+
+(kind/test-last [(fn [p] (= :pastel1 p))])
+
+;; ## Composition
+
+(kind/doc #'sk/arrange)
+
+(sk/arrange [(-> iris
+                 (sk/view :sepal_length :sepal_width)
+                 (sk/lay (sk/point {:color :species}))
+                 (sk/plot {:width 250 :height 200}))
+             (-> iris
+                 (sk/view :petal_length :petal_width)
+                 (sk/lay (sk/point {:color :species}))
+                 (sk/plot {:width 250 :height 200}))]
+            {:cols 2})
+
+(kind/test-last [(fn [v] (= :div (first v)))])

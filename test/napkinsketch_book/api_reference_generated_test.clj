@@ -182,7 +182,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__94194#] (Math/sin (* p1__94194# 0.3)))
+     (fn* [p1__98348#] (Math/sin (* p1__98348# 0.3)))
      (range 30))})))
 
 
@@ -319,9 +319,9 @@
      :y
      (mapv
       (fn*
-       [p1__94195#]
+       [p1__98349#]
        (+
-        (Math/sin (* p1__94195# 0.2))
+        (Math/sin (* p1__98349# 0.2))
         (* 0.3 (- (rng/drandom r) 0.5))))
       (range 50))}))))
 
@@ -1099,3 +1099,48 @@
 
 
 (deftest t191_l603 (is (nil? v190_l601)))
+
+
+(def v193_l607 (kind/doc #'sk/config))
+
+
+(def v194_l609 (sk/config))
+
+
+(deftest t195_l611 (is ((fn [m] (map? m)) v194_l609)))
+
+
+(def v196_l613 (kind/doc #'sk/set-config!))
+
+
+(def v197_l615 (kind/doc #'sk/with-config))
+
+
+(def
+ v198_l617
+ (sk/with-config {:palette :pastel1} (:palette (sk/config))))
+
+
+(deftest t199_l620 (is ((fn [p] (= :pastel1 p)) v198_l617)))
+
+
+(def v201_l624 (kind/doc #'sk/arrange))
+
+
+(def
+ v202_l626
+ (sk/arrange
+  [(->
+    iris
+    (sk/view :sepal_length :sepal_width)
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:width 250, :height 200}))
+   (->
+    iris
+    (sk/view :petal_length :petal_width)
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:width 250, :height 200}))]
+  {:cols 2}))
+
+
+(deftest t203_l636 (is ((fn [v] (= :div (first v))) v202_l626)))

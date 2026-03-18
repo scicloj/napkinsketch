@@ -329,6 +329,44 @@
 
 (kind/test-last [(fn [v] (= :svg v))])
 
+;; ## Palette
+;;
+;; A **palette** is an ordered set of colors used for categorical
+;; aesthetics. When `:color` maps to a categorical column, colors
+;; are assigned from the active palette in order.
+;;
+;; Napkinsketch uses clojure2d for palettes — over 7,000 named palettes
+;; are available. Set via `{:palette :set2}` in options.
+
+;; ## Gradient
+;;
+;; A **gradient** (or color scale) maps a continuous numeric range
+;; to a smooth color ramp. Used when `:color` maps to a numerical
+;; column.
+;;
+;; Common gradients: `:viridis` (default), `:inferno`, `:plasma`,
+;; `:magma`. Diverging gradients center on a midpoint value.
+;; Set via `{:color-scale :inferno}` in options.
+
+;; ## Configuration
+;;
+;; **Configuration** controls rendering behavior — dimensions, theme,
+;; palette, color scale, margins, and more. Configuration follows a
+;; precedence chain:
+;;
+;; per-call options > `sk/with-config` > `sk/set-config!` > `napkinsketch.edn` > library defaults
+;;
+;; See the Configuration chapter for details.
+
+;; ## Tooltip and Brush
+;;
+;; A **tooltip** shows data values on hover. A **brush** enables
+;; click-and-drag selection that highlights a rectangular region.
+;; Both are JavaScript-based interactions added to the SVG output.
+;;
+;; Enabled via `{:tooltip true}` and `{:brush true}` in options.
+
+
 ;; ## Summary Table
 ;;
 ;; | Term | What | Lifetime |
@@ -353,3 +391,7 @@
 ;; | Theme | Visual styling: background, grid, fonts, margins | Passed in options, merged with defaults |
 ;; | Membrane | Drawable tree (membrane library) | Intermediate (SVG path only) |
 ;; | Figure | Final output (SVG hiccup, Plotly spec, ...) | Returned to user |
+;; | Palette | Ordered color set for categorical aesthetics | Resolved at render time |
+;; | Gradient | Continuous color ramp for numerical color mappings | Resolved at render time |
+;; | Configuration | Rendering options: dimensions, theme, palette, etc. | Layered precedence chain |
+;; | Tooltip / Brush | JavaScript hover and selection interactions | Added to SVG output |
