@@ -1,7 +1,8 @@
 # Napkinsketch
+Simple and easy plotting
 
-Composable plotting in Clojure — a grammar-of-graphics-inspired library
-that owns its rendering pipeline.
+NapkinSketch is a Clojure library for composable plotting, inspired by 
+the grammar-of-graphics.
 
 ## General info
 
@@ -56,14 +57,13 @@ clojure -M:dev -m nrepl.cmdline   # start REPL
 
 ## Acknowledgments
 
-Napkinsketch builds on several excellent Clojure libraries:
+Napkinsketch builds on several Clojure libraries:
 
 - [Tablecloth](https://scicloj.github.io/tablecloth/) — dataset manipulation
 - [membrane](https://github.com/phronmophobic/membrane) — rendering and layout
 - [Wadogo](https://github.com/scicloj/wadogo) — scales
 - [clojure2d](https://github.com/Clojure2D/clojure2d) — color palettes and gradients
 - [Fastmath](https://github.com/generateme/fastmath) — statistics
-- [Tableplot](https://scicloj.github.io/tableplot/) — predecessor and inspiration
 
 ## License
 

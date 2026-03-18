@@ -1,6 +1,6 @@
 ;; Simple and easy plotting
 
-;; ## Preface
+;; # Preface
 
 ^{:clay {:hide-code true}}
 (ns index
@@ -16,4 +16,3 @@
      (drop 2)
      (str/join "\n"))
 
-;; ## Chapters in this book
