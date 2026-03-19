@@ -88,47 +88,39 @@
 
 ;; ---- Tick Computation ----
 
-(def ^:private date-fmt-year
-  (java.time.format.DateTimeFormatter/ofPattern "yyyy"))
-
-(def ^:private date-fmt-month-year
-  (java.time.format.DateTimeFormatter/ofPattern "MMM yyyy"))
-
-(def ^:private date-fmt-month-day
-  (java.time.format.DateTimeFormatter/ofPattern "MMM d"))
-
-(defn- format-date-tick
-  "Format an epoch-day as a date string, choosing granularity based on
-   the total span of the domain (in days)."
-  [epoch-day span-days]
-  (let [d (java.time.LocalDate/ofEpochDay (long epoch-day))]
-    (cond
-      (> span-days 1500) (.format d date-fmt-year)
-      (> span-days 180) (.format d date-fmt-month-year)
-      (> span-days 30) (.format d date-fmt-month-day)
-      :else (str d))))
+(defn- merge-temporal-extents
+  "Merge temporal extents from multiple views into a single [min max] pair."
+  [extents]
+  (let [extents (remove nil? extents)]
+    (when (seq extents)
+      [(reduce #(if (neg? (.compareTo ^Comparable %1 %2)) %1 %2) (map first extents))
+       (reduce #(if (pos? (.compareTo ^Comparable %1 %2)) %1 %2) (map second extents))])))
 
 (defn compute-ticks
   "Compute tick values and labels for a domain+pixel range, using wadogo transiently.
-   When temporal? is true, tick values are epoch-days and labels are date strings."
+   When temporal-extent is provided (a [min max] pair of temporal objects),
+   uses wadogo :datetime scale for calendar-aware ticks and formatting."
   ([domain pixel-range scale-spec spacing]
-   (compute-ticks domain pixel-range scale-spec spacing false))
-  ([domain pixel-range scale-spec spacing temporal?]
+   (compute-ticks domain pixel-range scale-spec spacing nil))
+  ([domain pixel-range scale-spec spacing temporal-extent]
    (if (scale/categorical-domain? domain)
      (let [s (scale/make-scale domain pixel-range scale-spec)]
        {:values (vec (ws/ticks s))
         :labels (mapv str (ws/ticks s))
         :categorical? true})
-     (let [s (scale/make-scale domain pixel-range scale-spec)
-           n (scale/tick-count (Math/abs (double (- (second pixel-range) (first pixel-range)))) spacing)
-           ticks (ws/ticks s n)
-           labels (if temporal?
-                    (let [span-days (- (double (second domain)) (double (first domain)))]
-                      (mapv #(format-date-tick % span-days) ticks))
-                    (scale/format-ticks s ticks))]
-       {:values (vec ticks)
-        :labels (vec labels)
-        :categorical? false}))))
+     (let [n (scale/tick-count (Math/abs (double (- (second pixel-range) (first pixel-range)))) spacing)]
+       (if temporal-extent
+         ;; Temporal: use wadogo :datetime scale for calendar-aware ticks
+         (let [dt-scale (ws/scale :datetime {:domain temporal-extent :range [0.0 1.0]})
+               dt-ticks (ws/ticks dt-scale n)
+               labels (vec (ws/format dt-scale dt-ticks))
+               values (mapv view/temporal->epoch-ms dt-ticks)]
+           {:values values :labels labels :categorical? false})
+         ;; Numeric: use linear/log scale
+         (let [s (scale/make-scale domain pixel-range scale-spec)
+               ticks (ws/ticks s n)
+               labels (scale/format-ticks s ticks)]
+           {:values (vec ticks) :labels (vec labels) :categorical? false}))))))
 
 ;; ---- Layout Detection ----
 
@@ -312,17 +304,17 @@
              [x-sspec' y-sspec'] (if (= coord-type :flip)
                                    [y-scale-spec x-scale-spec]
                                    [x-scale-spec y-scale-spec])
-             ;; Detect temporal axes from view flags
+             ;; Collect temporal extents from resolved views
              resolved-views (:resolved pd)
-             x-temporal? (some :x-temporal? resolved-views)
-             y-temporal? (some :y-temporal? resolved-views)
-             [x-temp? y-temp?] (if (= coord-type :flip)
-                                 [y-temporal? x-temporal?]
-                                 [x-temporal? y-temporal?])
+             x-temp-ext (merge-temporal-extents (map :x-temporal-extent resolved-views))
+             y-temp-ext (merge-temporal-extents (map :y-temporal-extent resolved-views))
+             [x-te y-te] (if (= coord-type :flip)
+                           [y-temp-ext x-temp-ext]
+                           [x-temp-ext y-temp-ext])
              x-px [m (- pw m)]
              y-px [(- ph m) m]
-             x-ticks (when x-dom' (compute-ticks x-dom' x-px x-sspec' (:tick-spacing-x cfg) x-temp?))
-             y-ticks (when y-dom' (compute-ticks y-dom' y-px y-sspec' (:tick-spacing-y cfg) y-temp?))]
+             x-ticks (when x-dom' (compute-ticks x-dom' x-px x-sspec' (:tick-spacing-x cfg) x-te))
+             y-ticks (when y-dom' (compute-ticks y-dom' y-px y-sspec' (:tick-spacing-y cfg) y-te))]
          (cond-> {:x-domain (vec (if (sequential? x-dom') x-dom' [x-dom']))
                   :y-domain (vec (if (sequential? y-dom') y-dom' [y-dom']))
                   :x-scale x-sspec'

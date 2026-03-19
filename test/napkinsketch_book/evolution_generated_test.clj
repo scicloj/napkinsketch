@@ -15,7 +15,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__90739#] (Math/sin (* p1__90739# 0.3)))
+     (fn* [p1__94004#] (Math/sin (* p1__94004# 0.3)))
      (range 30))})))
 
 
@@ -43,10 +43,10 @@
     (vec
      (concat
       (mapv
-       (fn* [p1__90740#] (Math/sin (* p1__90740# 0.3)))
+       (fn* [p1__94005#] (Math/sin (* p1__94005# 0.3)))
        (range 30))
       (mapv
-       (fn* [p1__90741#] (Math/cos (* p1__90741# 0.3)))
+       (fn* [p1__94006#] (Math/cos (* p1__94006# 0.3)))
        (range 30)))),
     :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))})))
 
@@ -160,7 +160,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__90742#] (Math/sin (* p1__90742# 0.3)))
+     (fn* [p1__94007#] (Math/sin (* p1__94007# 0.3)))
      (range 30))})
   (sk/view [[:x :y]])
   (sk/lay (sk/area))

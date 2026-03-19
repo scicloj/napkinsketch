@@ -242,7 +242,7 @@
 ;;
 ;; **Temporal columns** (`LocalDate`, `LocalDateTime`, `Instant`,
 ;; `java.util.Date`) are automatically detected and converted to
-;; epoch-day numbers. Tick labels display as date strings (e.g. `2024-01-15`).
+;; epoch milliseconds. Tick labels are calendar-aware (snapped to year, month, day, or hour boundaries).
 
 ;; ## Coord
 ;;

@@ -68,7 +68,7 @@ graph TD
 ;; |:-------------|:--------------|
 ;; | float32, float64, int8–int64 | `:numerical` |
 ;; | string, keyword, boolean | `:categorical` |
-;; | LocalDate, LocalDateTime, Instant | `:numerical` (values become epoch days) |
+;; | LocalDate, LocalDateTime, Instant | `:numerical` (values become epoch milliseconds) |
 ;; | other (sampled) | whichever fits the first 100 values |
 ;;
 ;; For iris, `:sepal_length` is numerical and `:species` is categorical:

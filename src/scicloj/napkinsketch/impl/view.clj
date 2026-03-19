@@ -428,20 +428,32 @@
       (every? number? (take 100 (ds col))) :numerical
       :else :categorical)))
 
-(defn- to-epoch-day
-  "Convert a temporal value to epoch-day (double)."
+(defn temporal->epoch-ms
+  "Convert a temporal value to epoch-milliseconds (double)."
   [v]
   (cond
-    (instance? LocalDate v) (double (.toEpochDay ^LocalDate v))
-    (instance? LocalDateTime v) (double (.toEpochDay (.toLocalDate ^LocalDateTime v)))
-    (instance? Instant v) (double (.toEpochDay (.toLocalDate (.atZone ^Instant v ZoneOffset/UTC))))
-    (instance? java.util.Date v) (double (.toEpochDay (.toLocalDate (.atZone (.toInstant ^java.util.Date v) ZoneOffset/UTC))))
+    (instance? LocalDate v)
+    (double (* (.toEpochDay ^LocalDate v) 86400000))
+    (instance? LocalDateTime v)
+    (double (.toEpochMilli (.toInstant ^LocalDateTime v ZoneOffset/UTC)))
+    (instance? Instant v)
+    (double (.toEpochMilli ^Instant v))
+    (instance? java.util.Date v)
+    (double (.getTime ^java.util.Date v))
     :else (double v)))
 
 (defn- temporalize-column
-  "Replace a temporal column in a dataset with its epoch-day numeric equivalent."
+  "Replace a temporal column in a dataset with its epoch-ms numeric equivalent."
   [ds col]
-  (tc/map-columns ds col [col] to-epoch-day))
+  (tc/map-columns ds col [col] temporal->epoch-ms))
+
+(defn- temporal-extent
+  "Return [min max] of original temporal values in a column, before conversion."
+  [ds col]
+  (let [vals (vec (remove nil? (ds col)))]
+    (when (seq vals)
+      [(reduce #(if (neg? (.compareTo ^Comparable %1 %2)) %1 %2) vals)
+       (reduce #(if (pos? (.compareTo ^Comparable %1 %2)) %1 %2) vals)])))
 
 ;; ---- Resolve View ----
 
@@ -454,9 +466,12 @@
           x-type (or (:x-type v) (column-type ds (:x v)))
           y-type (or (:y-type v) (when (and (:y v) (not= (:x v) (:y v)))
                                    (column-type ds (:y v))))
-          ;; Convert temporal columns to epoch-day numbers
+          ;; Capture temporal extents before conversion
           x-temporal? (= x-type :temporal)
           y-temporal? (= y-type :temporal)
+          x-temp-extent (when x-temporal? (temporal-extent ds (:x v)))
+          y-temp-extent (when y-temporal? (temporal-extent ds (:y v)))
+          ;; Convert temporal columns to epoch-ms numbers
           ds (cond-> ds
                x-temporal? (temporalize-column (:x v))
                y-temporal? (temporalize-column (:y v)))
@@ -504,7 +519,9 @@
                      :fixed-alpha fixed-alpha
                      :text-col text-col)
         x-temporal? (assoc :x-temporal? true)
-        y-temporal? (assoc :y-temporal? true)))))
+        y-temporal? (assoc :y-temporal? true)
+        x-temp-extent (assoc :x-temporal-extent x-temp-extent)
+        y-temp-extent (assoc :y-temporal-extent y-temp-extent)))))
 
 ;; ---- Scale Setter ----
 
