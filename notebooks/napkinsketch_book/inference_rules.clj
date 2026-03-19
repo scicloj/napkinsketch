@@ -16,15 +16,19 @@
 
 ;; ## Overview
 ;;
-;; When you write a plotting expression like:
+;; When you write a plotting expression, you provide only
+;; the essential information — data and a column:
 ;;
 ;; ```clojure
-;; (-> iris (sk/view :sepal_length) (sk/lay (sk/point)) sk/plot)
+;; (-> iris
+;;     (sk/view :sepal_width)
+;;     sk/plot)
 ;; ```
 ;;
-;; Napkinsketch fills in many blanks: What mark? What statistic?
-;; What domains? What axis labels? What colors? These are
-;; **inference rules** — defaults derived from the data and context.
+;; From this, Napkinsketch infers: column type (numerical), mark
+;; (bar), stat (bin), scale type (linear), domains, axis labels,
+;; tick values, and layout spacing. These are **inference rules** —
+;; defaults derived from the data and context.
 
 ^:kindly/hide-code
 (kind/mermaid "
@@ -64,6 +68,7 @@ graph TD
 ;; |:-------------|:--------------|
 ;; | float32, float64, int8–int64 | `:numerical` |
 ;; | string, keyword, boolean | `:categorical` |
+;; | LocalDate, LocalDateTime, Instant | `:temporal` (converted to `:numerical`) |
 ;; | other (sampled) | whichever fits the first 100 values |
 ;;
 ;; For iris, `:sepal_length` is numerical and `:species` is categorical:
@@ -102,35 +107,32 @@ graph TD
 ;; | x column | y column | Inferred mark | Inferred stat |
 ;; |:---------|:---------|:--------------|:--------------|
 ;; | numerical | numerical | `:point` | `:identity` |
-;; | numerical | (same as x) | `:bar` | `:bin` (histogram) |
+;; | numerical | (same as x) | `:bar` | `:bin` |
 ;; | categorical | (same as x) | `:rect` | `:count` |
-;; | numerical | categorical | `:point` | `:identity` |
+;; | other combinations | | `:point` | `:identity` |
 ;;
 ;; The mark constructors override these defaults. For example,
 ;; `(sk/histogram)` forces `:mark :bar, :stat :bin` regardless
 ;; of column types.
 ;;
-;; Here's the inference in action — a single keyword becomes a histogram:
-
-;; Passing just `:sepal_length` means x = y = :sepal_length (diagonal).
-;; Diagonal + numerical → histogram:
+;; Here is the inference in action — no mark constructor, just data
+;; and a column. A single numerical column means x = y (diagonal),
+;; so the inferred mark is `:bar` with stat `:bin`:
 
 (def hist-sk (sk/sketch
               (-> iris
-                  (sk/view :sepal_length)
-                  (sk/lay (sk/histogram)))))
+                  (sk/view :sepal_length))))
 
 (let [layer (first (:layers (first (:panels hist-sk))))]
   {:mark (:mark layer)})
 
 (kind/test-last [(fn [m] (= :bar (:mark m)))])
 
-;; And a categorical column with the same pattern → bar chart:
+;; And a categorical column infers `:rect` with stat `:count`:
 
 (def count-sk (sk/sketch
                (-> iris
-                   (sk/view :species)
-                   (sk/lay (sk/bar)))))
+                   (sk/view :species))))
 
 (let [layer (first (:layers (first (:panels count-sk))))]
   {:mark (:mark layer)})
@@ -215,7 +217,7 @@ graph TD
 ;; |:----------|:-------|
 ;; | Numerical | `[min - pad, max + pad]` where pad = 5% of range |
 ;; | Categorical | distinct values in order of appearance |
-;; | Bar/rect y-axis | always starts at 0 |
+;; | Bar/rect y-axis | anchored at 0 (padding may extend below) |
 ;;
 ;; Numerical domain with padding:
 
