@@ -68,13 +68,16 @@ graph TD
 ;; |:-------------|:--------------|
 ;; | float32, float64, int8–int64 | `:numerical` |
 ;; | string, keyword, boolean | `:categorical` |
-;; | LocalDate, LocalDateTime, Instant | `:temporal` (converted to `:numerical`) |
+;; | LocalDate, LocalDateTime, Instant | `:numerical` (values become epoch days) |
 ;; | other (sampled) | whichever fits the first 100 values |
 ;;
 ;; For iris, `:sepal_length` is numerical and `:species` is categorical:
 
 (def scatter-sk
-  (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width})]))
+  (sk/sketch
+   (-> iris
+       (sk/view :sepal_length :sepal_width)
+       (sk/lay (sk/point)))))
 
 (let [p (first (:panels scatter-sk))]
   {:x-domain-kind (if (number? (first (:x-domain p))) :numerical :categorical)
@@ -88,7 +91,11 @@ graph TD
 
 ;; A categorical column produces a band scale:
 
-(def bar-sk (sk/sketch [(sk/bar {:data iris :x :species})]))
+(def bar-sk
+  (sk/sketch
+   (-> iris
+       (sk/view :species)
+       (sk/lay (sk/bar)))))
 
 ;; The x-domain contains categorical values, and the ticks are categorical:
 
@@ -150,7 +157,10 @@ graph TD
 ;; a color from the palette.
 
 (def colored-sk
-  (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})]))
+  (sk/sketch
+   (-> iris
+       (sk/view :sepal_length :sepal_width)
+       (sk/lay (sk/point {:color :species})))))
 
 (let [layer (first (:layers (first (:panels colored-sk))))]
   (mapv (fn [g] {:color (:color g) :n (count (:xs g))})
@@ -166,8 +176,10 @@ graph TD
 ;; A hex string is converted to RGBA and applied to all points.
 
 (def fixed-sk
-  (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width
-                         :color "#E74C3C"})]))
+  (sk/sketch
+   (-> iris
+       (sk/view :sepal_length :sepal_width)
+       (sk/lay (sk/point {:color "#E74C3C"})))))
 
 (let [g (first (:groups (first (:layers (first (:panels fixed-sk))))))]
   (:color g))
@@ -196,8 +208,11 @@ graph TD
 ;; a categorical column, data is split by its distinct values.
 
 (def grp-sk
-  (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})
-              (sk/lm {:data iris :x :sepal_length :y :sepal_width :color :species})]))
+  (sk/sketch
+   (-> iris
+       (sk/view :sepal_length :sepal_width)
+       (sk/lay (sk/point {:color :species})
+               (sk/lm {:color :species})))))
 
 ;; Both layers get 3 groups (one per species):
 
