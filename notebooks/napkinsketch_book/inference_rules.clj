@@ -281,7 +281,10 @@ graph TD
 ;; (sum of counts), not the maximum single count:
 
 (def stacked-sk
-  (sk/sketch [(sk/stacked-bar {:data iris :x :species :color :species})]))
+  (sk/sketch
+   (-> iris
+       (sk/view :species)
+       (sk/lay (sk/stacked-bar {:color :species})))))
 
 (let [p (first (:panels stacked-sk))]
   {:y-max (second (:y-domain p))})
@@ -318,8 +321,12 @@ graph TD
 
 ;; ### Explicit labels override inference
 
-(def custom-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width})]
-                          {:x-label "Length (cm)" :y-label "Width (cm)"}))
+(def custom-sk
+  (sk/sketch
+   (-> iris
+       (sk/view :sepal_length :sepal_width)
+       (sk/lay (sk/point))
+       (sk/labs {:x "Length (cm)" :y "Width (cm)"}))))
 
 (:x-label custom-sk)
 
@@ -377,8 +384,12 @@ graph TD
 
 ;; With title, title padding is added:
 
-(def titled-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width})]
-                          {:title "My Plot"}))
+(def titled-sk
+  (sk/sketch
+   (-> iris
+       (sk/view :sepal_length :sepal_width)
+       (sk/lay (sk/point))
+       (sk/labs {:title "My Plot"}))))
 
 (:layout titled-sk)
 
@@ -406,9 +417,17 @@ scatter-sk
 ;; Setting `:coord :flip` swaps the x and y domains and scale specs.
 ;; The layer data stays the same — only the panel-level mapping changes.
 
-(def normal-sk (sk/sketch [(sk/bar {:data iris :x :species})]))
-(def flip-sk (sk/sketch [(-> (sk/bar {:data iris :x :species})
-                             (assoc :coord :flip))]))
+(def normal-sk
+  (sk/sketch
+   (-> iris
+       (sk/view :species)
+       (sk/lay (sk/bar)))))
+(def flip-sk
+  (sk/sketch
+   (-> iris
+       (sk/view :species)
+       (sk/lay (sk/bar))
+       (sk/coord :flip))))
 
 (let [np (first (:panels normal-sk))
       fp (first (:panels flip-sk))]
