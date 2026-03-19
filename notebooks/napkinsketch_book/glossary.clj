@@ -73,7 +73,8 @@
 ;; creates groups — one per unique value. You can also create groups
 ;; without color using the `:group` key.
 
-(-> iris (sk/view :sepal_length :sepal_width)
+(-> iris
+    (sk/view :sepal_length :sepal_width)
     (sk/lay (sk/line {:group :species}))
     sk/sketch
     (get-in [:panels 0 :layers 0 :groups])
@@ -121,7 +122,8 @@
                        :count [30 20 45 15]
                        :meal ["lunch" "dinner" "lunch" "dinner"]}))
 
-(-> tips (sk/view :day :count)
+(-> tips
+    (sk/view :day :count)
     (sk/lay (sk/value-bar {:color :meal :position :stack}))
     sk/sketch
     (get-in [:panels 0 :layers 0 :groups 1 :y0s]))
@@ -202,7 +204,8 @@
 ;; - `sk/facet` creates a row or column of panels
 ;; - `sk/facet-grid` creates a row × column grid from two columns
 
-(-> iris (sk/view :sepal_length :sepal_width)
+(-> iris
+    (sk/view :sepal_length :sepal_width)
     (sk/lay (sk/point))
     (sk/facet :species)
     sk/sketch :panels count)
@@ -287,7 +290,8 @@
 ;; background color, grid lines, font sizes, margins.
 ;; Passed as `{:theme {...}}` in the options map to `sk/plot` or `sk/sketch`.
 
-(-> iris (sk/view :sepal_length :sepal_width)
+(-> iris
+    (sk/view :sepal_length :sepal_width)
     (sk/lay (sk/point {:color :species}))
     (sk/plot {:theme {:background "#2d2d2d" :grid "#444444"
                       :text "#cccccc" :tick "#999999"}})

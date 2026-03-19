@@ -116,7 +116,9 @@ graph TD
 ;; Diagonal + numerical → histogram:
 
 (def hist-sk (sk/sketch
-              (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)))))
+              (-> iris
+                  (sk/view :sepal_length)
+                  (sk/lay (sk/histogram)))))
 
 (let [layer (first (:layers (first (:panels hist-sk))))]
   {:mark (:mark layer)})
@@ -126,7 +128,9 @@ graph TD
 ;; And a categorical column with the same pattern → bar chart:
 
 (def count-sk (sk/sketch
-               (-> iris (sk/view :species) (sk/lay (sk/bar)))))
+               (-> iris
+                   (sk/view :species)
+                   (sk/lay (sk/bar)))))
 
 (let [layer (first (:layers (first (:panels count-sk))))]
   {:mark (:mark layer)})

@@ -68,7 +68,8 @@
 
 ;; The default plot uses the library defaults (600×400):
 
-(-> (base-views) (sk/plot))
+(-> (base-views)
+    (sk/plot))
 
 (kind/test-last
  [(fn [v]
@@ -78,13 +79,16 @@
 
 ;; The sketch confirms the default dimensions:
 
-(-> (base-views) sk/sketch :width)
+(-> (base-views)
+    sk/sketch
+    :width)
 
 (kind/test-last [(fn [v] (= 600 v))])
 
 ;; A wide, short plot via per-call options:
 
-(-> (base-views) (sk/plot {:width 900 :height 250}))
+(-> (base-views)
+    (sk/plot {:width 900 :height 250}))
 
 (kind/test-last
  [(fn [v]
@@ -140,13 +144,16 @@
 
 ;; The sketch picks it up:
 
-(-> (base-views) sk/sketch :width)
+(-> (base-views)
+    sk/sketch
+    :width)
 
 (kind/test-last [(fn [v] (= 800 v))])
 
 ;; And the rendered plot uses it:
 
-(-> (base-views) (sk/plot))
+(-> (base-views)
+    (sk/plot))
 
 (kind/test-last
  [(fn [v]
@@ -185,7 +192,9 @@
 ;; The sketch inside `with-config` uses the overridden dimensions:
 
 (sk/with-config {:width 1000 :height 300}
-  (-> (base-views) sk/sketch :width))
+  (-> (base-views)
+      sk/sketch
+      :width))
 
 (kind/test-last [(fn [v] (= 1000 v))])
 
@@ -250,7 +259,8 @@ precedence-point-radius
 
 (def precedence-plot
   (sk/with-config {:width 1200 :height 500}
-    (-> (base-views) (sk/plot {:width 900}))))
+    (-> (base-views)
+        (sk/plot {:width 900}))))
 
 precedence-plot
 
@@ -396,7 +406,8 @@ precedence-plot
 
 (sk/set-config! {:palette :pastel1})
 
-(-> (base-views) (sk/plot))
+(-> (base-views)
+    (sk/plot))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -406,7 +417,8 @@ precedence-plot
 ;; Thread-local palette via with-config:
 
 (sk/with-config {:palette :accent}
-  (-> (base-views) (sk/plot)))
+  (-> (base-views)
+      (sk/plot)))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -482,7 +494,8 @@ precedence-plot
 
 ;; The rendered plot works normally:
 
-(-> (base-views) (sk/plot))
+(-> (base-views)
+    (sk/plot))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])

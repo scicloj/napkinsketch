@@ -46,7 +46,10 @@
 
 ;; Single scatter view — two columns as `[x y]`:
 
-(-> iris (sk/view [[:sepal_length :sepal_width]]) (sk/lay (sk/point)) sk/plot)
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point))
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -54,7 +57,10 @@
 
 ;; Histogram view — a single keyword means x = y (diagonal):
 
-(-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot)
+(-> iris
+    (sk/view :sepal_length)
+    (sk/lay (sk/histogram))
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -117,14 +123,20 @@
 
 (kind/doc #'sk/histogram)
 
-(-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot)
+(-> iris
+    (sk/view :sepal_length)
+    (sk/lay (sk/histogram))
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:polygons s))))])
 
 (kind/doc #'sk/bar)
 
-(-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot)
+(-> iris
+    (sk/view :species)
+    (sk/lay (sk/bar))
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:polygons s))))])
@@ -134,14 +146,20 @@
 (def penguins (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
                           {:key-fn keyword}))
 
-(-> penguins (sk/view :island) (sk/lay (sk/stacked-bar {:color :species})) sk/plot)
+(-> penguins
+    (sk/view :island)
+    (sk/lay (sk/stacked-bar {:color :species}))
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:polygons s))))])
 
 (kind/doc #'sk/stacked-bar-fill)
 
-(-> penguins (sk/view :island) (sk/lay (sk/stacked-bar-fill {:color :species})) sk/plot)
+(-> penguins
+    (sk/view :island)
+    (sk/lay (sk/stacked-bar-fill {:color :species}))
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:polygons s))))])
@@ -192,7 +210,10 @@
 
 (kind/doc #'sk/area)
 
-(-> wave (sk/view [[:x :y]]) (sk/lay (sk/area)) sk/plot)
+(-> wave
+    (sk/view [[:x :y]])
+    (sk/lay (sk/area))
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 1 (:polygons s))))])
