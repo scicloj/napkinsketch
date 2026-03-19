@@ -875,3 +875,19 @@
       (is (= 800 (:width sk)))
       (is (= 300 (:height sk))))))
 
+(deftest triangular-grid-strip-labels-test
+  (testing "pairs plot (triangular grid) shows all strip labels"
+    (let [ds (tc/dataset {:a [1 2 3 4 5] :b [5 4 3 2 1] :c [2 4 6 8 10]})
+          views (-> ds
+                    (sk/view (sk/pairs [:a :b :c]))
+                    (sk/lay (sk/point)))
+          svg (sk/plot views)
+          s (sk/svg-summary svg)
+          texts (:texts s)]
+      (is (= 3 (:panels s)))
+      (is (= 15 (:points s)))
+      ;; 2 col-strips (a, b) + 2 row-strips (b, c) = 4 strip labels
+      (is (some #{"a"} texts))
+      (is (some #{"b"} texts))
+      (is (some #{"c"} texts)))))
+
