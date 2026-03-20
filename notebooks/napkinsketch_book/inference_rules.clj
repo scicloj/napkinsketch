@@ -22,7 +22,6 @@
 ;; Every call to `sk/sketch` returns a plain Clojure map: the **sketch**.
 ;; It contains everything needed to render a plot — domains, ticks,
 ;; scales, layers with positioned data, legend, layout dimensions.
-;; No functions, no datasets, no opaque objects.
 ;;
 ;; To understand what napkinsketch inferred, look at the sketch.
 
