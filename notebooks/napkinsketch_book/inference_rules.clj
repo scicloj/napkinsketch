@@ -58,7 +58,7 @@
 ;; - `:x-label` is `"x"` — derived from the column keyword
 ;; - `:legend` is `nil` — no color mapping
 ;; - `:layout` has `:legend-w 0` — no space reserved for a legend
-;; - The single layer has `:mark :point` and one group with all 5 data
+;; - The single layer has `:mark :point` and a single `:groups` entry with all 5 data
 ;;   points, colored in default gray `[0.2 0.2 0.2 1.0]`
 
 ;; ## Column Types Drive Everything
@@ -147,10 +147,10 @@
 
 ;; ## Color Resolution
 ;;
-;; The `:color` parameter triggers three different behaviors.
-;; Compare the sketches:
+;; The `:color` parameter triggers three different behaviors
+;; depending on what you pass. Compare the sketches:
 
-;; ### Column reference → grouped by palette
+;; ### Column reference → colored by palette
 
 (def colored-views
   (-> {:x [1 2 3 4 5 6]
@@ -169,11 +169,14 @@
 
 (kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
 
-;; Two groups under `:groups`, each with its own `:color` (RGBA),
+;; Two entries in `:groups`, each with its own `:color` (RGBA),
 ;; `:xs`, `:ys`, and `:label`. A `:legend` appeared with two entries.
 ;; The `:layout` now has `:legend-w 100` — space reserved on the right.
+;;
+;; Why two entries? Because `:g` is a categorical column. The next
+;; section explores this mechanism in detail.
 
-;; ### Fixed color string → no grouping, no legend
+;; ### Fixed color string → single color, no legend
 
 (def fixed-color-views
   (-> five-points
@@ -190,39 +193,33 @@
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; One group with red RGBA values. No `:legend`, `:legend-w` is 0.
-;; The hex string was converted to `[0.906 0.298 0.235 1.0]`.
+;; A single `:groups` entry with red RGBA values. No `:legend`,
+;; `:legend-w` is 0. The hex string was converted to
+;; `[0.906 0.298 0.235 1.0]`.
 
 ;; ### No color → default gray
 
-;; Look back at the first scatter sketch above — the single group
-;; has `:color [0.2 0.2 0.2 1.0]` (dark gray). No legend.
+;; Look back at the first scatter sketch above — its single `:groups`
+;; entry has `:color [0.2 0.2 0.2 1.0]` (dark gray). No legend.
 
 ;; ## Grouping
 ;;
-;; Grouping is a key concept: it controls how data is split into
-;; independent subsets. Each group gets its own visual elements —
-;; its own set of points, its own regression line, its own density
-;; curve, its own bar in a dodged layout.
+;; The `:groups` entries you saw above reflect a key concept:
+;; **grouping** controls how data is split into independent subsets.
+;; Each group gets its own visual elements — its own set of points,
+;; its own regression line, its own density curve, its own bar in a
+;; dodged layout.
 ;;
 ;; Grouping can be **derived** (from a categorical `:color` mapping)
 ;; or **explicit** (via the `:group` aesthetic).
 
 ;; ### Categorical color implies grouping
 ;;
-;; When `:color` maps to a categorical column, data is split into
-;; one group per category. Each group gets a distinct palette color
-;; and a legend entry.
+;; When `:color` maps to a categorical column (as with `colored-views`
+;; above), the data is split into one group per category. Each group
+;; gets a distinct palette color and a legend entry:
 
-(def grouped-data
-  {:x [1 2 3 4 5 6]
-   :y [3 5 4 7 6 8]
-   :g ["a" "a" "a" "b" "b" "b"]})
-
-(let [sk (-> grouped-data
-             (sk/view :x :y)
-             (sk/lay (sk/point {:color :g}))
-             sk/sketch)
+(let [sk (sk/sketch colored-views)
       layer (first (:layers (first (:panels sk))))]
   {:group-count (count (:groups layer))
    :group-labels (mapv :label (:groups layer))
@@ -254,14 +251,19 @@
 (kind/test-last [(fn [m] (and (= 1 (:group-count m))
                               (= :continuous (:legend-type m))))])
 
-;; One group, continuous legend. No grouping occurred — the color
-;; is an encoding, not a grouping variable.
+;; One group, continuous legend. No splitting occurred — the color
+;; is a visual encoding, not a grouping variable.
 
 ;; ### Explicit grouping with `:group`
 ;;
 ;; The `:group` aesthetic splits data into groups without
 ;; assigning distinct colors or creating a legend. This is useful
 ;; when you want per-group statistics but uniform appearance.
+
+(def grouped-data
+  {:x [1 2 3 4 5 6]
+   :y [3 5 4 7 6 8]
+   :g ["a" "a" "a" "b" "b" "b"]})
 
 (let [sk (-> grouped-data
              (sk/view :x :y)
