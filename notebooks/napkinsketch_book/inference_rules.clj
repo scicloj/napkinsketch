@@ -37,7 +37,7 @@
 
 ;; Here is the full sketch:
 
-(kind/pprint (sk/sketch scatter-views))
+(sk/sketch scatter-views)
 
 (kind/test-last [(fn [sk] (and (= :single (:layout-type sk))
                                (= 1 (count (:panels sk)))
@@ -85,7 +85,7 @@
       (sk/view :animal :count)
       (sk/lay (sk/value-bar))))
 
-(kind/pprint (sk/sketch bar-views))
+(sk/sketch bar-views)
 
 (kind/test-last [(fn [sk] (let [p (first (:panels sk))]
                             (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
@@ -116,7 +116,7 @@
   (-> five-points
       (sk/view :x)))
 
-(kind/pprint (sk/sketch hist-views))
+(sk/sketch hist-views)
 
 (kind/test-last [(fn [sk] (let [layer (first (:layers (first (:panels sk))))]
                             (= :bar (:mark layer))))])
@@ -135,7 +135,7 @@
   (-> animals
       (sk/view :animal)))
 
-(kind/pprint (sk/sketch count-views))
+(sk/sketch count-views)
 
 (kind/test-last [(fn [sk] (let [layer (first (:layers (first (:panels sk))))]
                             (= :rect (:mark layer))))])
@@ -160,7 +160,7 @@
       (sk/view :x :y)
       (sk/lay (sk/point {:color :g}))))
 
-(kind/pprint (sk/sketch colored-views))
+(sk/sketch colored-views)
 
 (kind/test-last [(fn [sk] (let [layer (first (:layers (first (:panels sk))))]
                             (and (= 2 (count (:groups layer)))
@@ -181,7 +181,7 @@
       (sk/view :x :y)
       (sk/lay (sk/point {:color "#E74C3C"}))))
 
-(kind/pprint (sk/sketch fixed-color-views))
+(sk/sketch fixed-color-views)
 
 (kind/test-last [(fn [sk] (and (nil? (:legend sk))
                                (let [c (:color (first (:groups (first (:layers (first (:panels sk)))))))]
@@ -204,12 +204,11 @@
 ;; Numerical domains extend 5% beyond the data range so points
 ;; aren't clipped at the edges:
 
-(kind/pprint
- (let [sk (sk/sketch scatter-views)
-       p (first (:panels sk))]
-   {:x-domain (:x-domain p)
-    :data-range [1.0 5.0]
-    :padding-each-side (* 0.05 (- 5.0 1.0))}))
+(let [sk (sk/sketch scatter-views)
+      p (first (:panels sk))]
+  {:x-domain (:x-domain p)
+   :data-range [1.0 5.0]
+   :padding-each-side (* 0.05 (- 5.0 1.0))})
 
 (kind/test-last [(fn [m] (and (< (first (:x-domain m)) 1.0)
                               (> (second (:x-domain m)) 5.0)))])
@@ -218,10 +217,9 @@
 ;;
 ;; Bar chart y-domains always include zero:
 
-(kind/pprint
- (let [sk (sk/sketch bar-views)
-       p (first (:panels sk))]
-   {:y-domain (:y-domain p)}))
+(let [sk (sk/sketch bar-views)
+      p (first (:panels sk))]
+  {:y-domain (:y-domain p)})
 
 (kind/test-last [(fn [m] (<= (first (:y-domain m)) 0))])
 
@@ -232,13 +230,12 @@
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
 
-(kind/pprint
- (let [sk (-> iris
-              (sk/view :sepal_length :sepal_width)
-              (sk/lay (sk/point))
-              sk/sketch)]
-   {:x-label (:x-label sk)
-    :y-label (:y-label sk)}))
+(let [sk (-> iris
+             (sk/view :sepal_length :sepal_width)
+             (sk/lay (sk/point))
+             sk/sketch)]
+  {:x-label (:x-label sk)
+   :y-label (:y-label sk)})
 
 (kind/test-last [(fn [m] (and (= "sepal length" (:x-label m))
                               (= "sepal width" (:y-label m))))])
@@ -246,24 +243,22 @@
 ;; Histograms suppress the y-label to avoid redundancy (x and y
 ;; reference the same column):
 
-(kind/pprint
- (let [sk (-> five-points (sk/view :x) sk/sketch)]
-   {:x-label (:x-label sk)
-    :y-label (:y-label sk)}))
+(let [sk (-> five-points (sk/view :x) sk/sketch)]
+  {:x-label (:x-label sk)
+   :y-label (:y-label sk)})
 
 (kind/test-last [(fn [m] (and (= "x" (:x-label m))
                               (nil? (:y-label m))))])
 
 ;; Explicit labels override inference:
 
-(kind/pprint
- (let [sk (-> five-points
-              (sk/view :x :y)
-              (sk/lay (sk/point))
-              (sk/labs {:x "Length (cm)" :y "Width (cm)"})
-              sk/sketch)]
-   {:x-label (:x-label sk)
-    :y-label (:y-label sk)}))
+(let [sk (-> five-points
+             (sk/view :x :y)
+             (sk/lay (sk/point))
+             (sk/labs {:x "Length (cm)" :y "Width (cm)"})
+             sk/sketch)]
+  {:x-label (:x-label sk)
+   :y-label (:y-label sk)})
 
 (kind/test-last [(fn [m] (= "Length (cm)" (:x-label m)))])
 
@@ -272,19 +267,18 @@
 ;; The `:layout` map adjusts padding based on what elements are
 ;; present. Compare a bare plot to one with title, labels, and legend:
 
-(kind/pprint
- (let [bare (sk/sketch scatter-views)
-       full (-> {:x [1 2 3 4 5 6]
-                 :y [3 5 4 7 6 8]
-                 :g ["a" "a" "a" "b" "b" "b"]}
-                (sk/view :x :y)
-                (sk/lay (sk/point {:color :g}))
-                (sk/labs {:title "My Plot"})
-                sk/sketch)]
-   {:bare-layout (:layout bare)
-    :bare-total-width (:total-width bare)
-    :full-layout (:layout full)
-    :full-total-width (:total-width full)}))
+(let [bare (sk/sketch scatter-views)
+      full (-> {:x [1 2 3 4 5 6]
+                :y [3 5 4 7 6 8]
+                :g ["a" "a" "a" "b" "b" "b"]}
+               (sk/view :x :y)
+               (sk/lay (sk/point {:color :g}))
+               (sk/labs {:title "My Plot"})
+               sk/sketch)]
+  {:bare-layout (:layout bare)
+   :bare-total-width (:total-width bare)
+   :full-layout (:layout full)
+   :full-total-width (:total-width full)})
 
 (kind/test-last [(fn [m] (and (zero? (get-in m [:bare-layout :title-pad]))
                               (pos? (get-in m [:full-layout :title-pad]))
@@ -314,13 +308,12 @@
       (sk/coord :flip)
       sk/sketch))
 
-(kind/pprint
- (let [np (first (:panels normal-sk))
-       fp (first (:panels flip-sk))]
-   {:normal {:x-categorical? (:categorical? (:x-ticks np))
-             :y-categorical? (:categorical? (:y-ticks np))}
-    :flipped {:x-categorical? (:categorical? (:x-ticks fp))
-              :y-categorical? (:categorical? (:y-ticks fp))}}))
+(let [np (first (:panels normal-sk))
+      fp (first (:panels flip-sk))]
+  {:normal {:x-categorical? (:categorical? (:x-ticks np))
+            :y-categorical? (:categorical? (:y-ticks np))}
+   :flipped {:x-categorical? (:categorical? (:x-ticks fp))
+             :y-categorical? (:categorical? (:y-ticks fp))}})
 
 (kind/test-last [(fn [m] (and (get-in m [:normal :x-categorical?])
                               (not (get-in m [:normal :y-categorical?]))
@@ -342,8 +335,6 @@
 ;; A legend appears when a column is mapped to color. Examine the
 ;; legend in a colored sketch:
 
-(kind/pprint (:legend (sk/sketch colored-views)))
-
 (kind/test-last [(fn [leg] (and (= :g (:title leg))
                                 (= 2 (count (:entries leg)))))])
 
@@ -351,15 +342,11 @@
 ;;
 ;; No color mapping → no legend:
 
-(kind/pprint (:legend (sk/sketch scatter-views)))
-
 (:legend (sk/sketch scatter-views))
 
 (kind/test-last [nil?])
 
 ;; Fixed color string → no legend:
-
-(kind/pprint (:legend (sk/sketch fixed-color-views)))
 
 (:legend (sk/sketch fixed-color-views))
 
@@ -374,7 +361,7 @@
       (sk/view :x :y)
       (sk/lay (sk/point) (sk/lm))))
 
-(kind/pprint (sk/sketch multi-views))
+(sk/sketch multi-views)
 
 (kind/test-last [(fn [sk] (let [p (first (:panels sk))]
                             (= 2 (count (:layers p)))))])

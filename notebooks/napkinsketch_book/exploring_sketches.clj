@@ -42,7 +42,7 @@
 ;; At the top level, a sketch describes dimensions and layout.
 ;; Here is the entire sketch — a plain Clojure map:
 
-(kind/pprint tiny-sk)
+tiny-sk
 
 (kind/test-last [(fn [m] (and (= 600 (:width m))
                               (= 400 (:height m))
@@ -146,7 +146,7 @@ tiny-layer
 
 ;; Here is the full sketch — notice the legend and three groups:
 
-(kind/pprint iris-sk)
+iris-sk
 
 (kind/test-last [(fn [m] (and (= 3 (count (:entries (:legend m))))
                               (= 1 (count (:panels m)))))])
@@ -186,7 +186,7 @@ tiny-layer
 (def cont-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width
                                     :color :petal_length})]))
 
-(kind/pprint (:legend cont-sk))
+(:legend cont-sk)
 
 (kind/test-last [(fn [m] (= :continuous (:type m)))])
 
@@ -216,7 +216,7 @@ tiny-layer
 
 (def hist-sk (sk/sketch [(sk/histogram {:data iris :x :sepal_length})]))
 
-(kind/pprint hist-sk)
+hist-sk
 
 (kind/test-last [(fn [m] (= 1 (count (:panels m))))])
 
@@ -255,7 +255,7 @@ tiny-layer
 
 ;; The mark type is `:rect` and the layer knows the categories:
 
-(kind/pprint bar-layer)
+bar-layer
 
 (kind/test-last [(fn [m] (and (= :rect (:mark m))
                               (= :dodge (:position m))
@@ -425,7 +425,7 @@ tiny-layer
                          :width 800
                          :height 300}))
 
-(kind/pprint opts-sk)
+opts-sk
 
 (kind/test-last [(fn [m] (and (= "My Custom Title" (:title m))
                               (= 800 (:width m))
@@ -452,7 +452,7 @@ tiny-layer
 
 (def final-sk (sk/sketch final-views {:title "Iris Petals"}))
 
-(kind/pprint final-sk)
+final-sk
 
 (kind/test-last [(fn [m] (= "Iris Petals" (:title m)))])
 
@@ -515,7 +515,7 @@ tiny-layer
 
 ;; The sketch also records per-panel pixel dimensions:
 
-(kind/pprint (select-keys faceted-sk [:layout-type :grid :total-width :total-height]))
+(select-keys faceted-sk [:layout-type :grid :total-width :total-height])
 
 (kind/test-last [(fn [m] (= :facet-grid (:layout-type m)))])
 

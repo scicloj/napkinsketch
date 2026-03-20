@@ -73,7 +73,7 @@ graph LR
 
 (def trace-sketch (sk/sketch trace-views))
 
-(kind/pprint trace-sketch)
+trace-sketch
 
 (kind/test-last [(fn [v] (and (map? v) (contains? v :panels)))])
 
@@ -98,7 +98,7 @@ graph LR
 
 (def trace-membrane (sk/sketch->membrane trace-sketch))
 
-(kind/pprint trace-membrane)
+trace-membrane
 
 (kind/test-last [(fn [v] (and (vector? v) (pos? (count v))))])
 
