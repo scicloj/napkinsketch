@@ -197,6 +197,55 @@
 ;; `:legend-w` is 0. The hex string was converted to
 ;; `[0.906 0.298 0.235 1.0]`.
 
+;; ### Named colors and string disambiguation
+;;
+;; CSS color names like `"red"` and `"steelblue"` also work as
+;; fixed colors:
+
+(-> five-points
+    (sk/view :x :y)
+    (sk/lay (sk/point {:color "steelblue"}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
+;; This raises a question: since `:color` also accepts column names
+;; as strings (like `"species"`), how does the system decide whether
+;; `"red"` means the column `:red` or the color red?
+;;
+;; The rule is: **check the dataset first**. If the string matches
+;; a column name in the dataset, it is treated as a column reference.
+;; Otherwise, it is treated as a color value — first trying hex
+;; parsing, then CSS color name lookup.
+;;
+;; Here is the full resolution order for a string `:color` value:
+;;
+;; 1. If the string matches a dataset column → column reference (grouping)
+;; 2. If it starts with `#` → hex color (`"#E74C3C"`, `"#F00"`)
+;; 3. If it parses as hex without `#` → hex color (`"00FF00"`)
+;; 4. If it matches a CSS color name → named color (`"red"`, `"steelblue"`)
+;; 5. Otherwise → error with a helpful message
+;;
+;; In practice, ambiguity is rare. Column names like `"species"` or
+;; `"temperature"` are not valid CSS colors, and color names like
+;; `"red"` are unlikely column names. When true ambiguity exists,
+;; use a keyword for the column (`:red`) or a hex string for the
+;; color (`"#FF0000"`).
+
+;; Verify: `"red"` is a fixed color when the dataset has no `red` column:
+
+(let [sk (-> five-points
+             (sk/view :x :y)
+             (sk/lay (sk/point {:color "red"}))
+             sk/sketch)]
+  {:legend (:legend sk)
+   :color (:color (first (:groups (first (:layers (first (:panels sk)))))))})
+
+(kind/test-last [(fn [m] (and (nil? (:legend m))
+                              (> (first (:color m)) 0.9)))])
+
+;; No legend, red RGBA — treated as a fixed color, not a column.
+
 ;; ### No color → default gray
 
 ;; Look back at the first scatter sketch above — its single `:groups`

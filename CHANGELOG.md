@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   errorbar, lollipop, rule-v, rule-h, band-v, band-h
 - **String column names accepted**: column references can be keywords or strings;
   datasets with string column names are auto-normalized to keywords
+- **Named CSS colors**: `"red"`, `"steelblue"`, and other CSS color names
+  accepted as fixed colors alongside hex strings like `"#FF0000"`
 - **Aesthetics**: `:color` (column or numeric for continuous), `:alpha`,
   `:size`, `:shape`, `:group`, `:text`, `:ymin`, `:ymax`
 - **Stats**: identity, bin, count, lm, loess, kde, boxplot, violin, bin2d,
