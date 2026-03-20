@@ -980,6 +980,28 @@
                             (-> iris (sk/view :sepl_length :sepal_width)
                                 (sk/lay (sk/point)) sk/plot))))))
 
+(deftest named-color-test
+  (testing "Named color strings work as fixed colors"
+    (let [s (-> {:x [1 2 3] :y [4 5 6]}
+                (sk/view :x :y)
+                (sk/lay (sk/point {:color "red"}))
+                sk/plot sk/svg-summary)]
+      (is (= 3 (:points s)))))
+  (testing "Named color produces correct RGBA"
+    (let [sk (-> {:x [1 2 3] :y [4 5 6]}
+                 (sk/view :x :y)
+                 (sk/lay (sk/point {:color "steelblue"}))
+                 sk/sketch)
+          c (:color (first (:groups (first (:layers (first (:panels sk)))))))]
+      (is (> (nth c 2) 0.5) "steelblue should have high blue channel")))
+  (testing "Unknown color string gives helpful error"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"Unknown color"
+                          (-> {:x [1 2 3] :y [4 5 6]}
+                              (sk/view :x :y)
+                              (sk/lay (sk/point {:color "notacolor"}))
+                              sk/plot)))))
+
 (deftest schema-all-marks-test
   (testing "Every mark type produces a valid sketch"
     (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"

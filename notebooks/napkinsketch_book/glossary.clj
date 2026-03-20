@@ -57,7 +57,7 @@
 ;; | `:text` | Label content | Any |
 ;;
 ;; When a keyword is passed, it maps to a dataset column.
-;; A literal value (e.g., `"red"`, `0.5`) sets a fixed aesthetic
+;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed aesthetic
 ;; for all points.
 
 (sk/point {:color :species :size :petal_length :alpha 0.7})

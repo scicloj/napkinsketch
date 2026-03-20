@@ -28,8 +28,9 @@
 ;; ## Loading Data
 ;;
 ;; We use the classic iris dataset throughout these examples.
-;; Note `{:key-fn keyword}` — this converts CSV column names to
-;; keywords, which Napkinsketch requires for column references.
+;; `{:key-fn keyword}` converts CSV string column names to keywords,
+;; which is conventional in Clojure. (Napkinsketch also accepts string
+;; column names, but keywords are idiomatic.)
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))

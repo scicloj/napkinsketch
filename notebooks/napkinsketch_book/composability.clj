@@ -223,7 +223,7 @@
 
 ;; ## Composing Diverse Features
 ;;
-;; Napkinsketch's composability means every feature works with every
+;; Napkinsketch's composability means most features compose freely with each
 ;; other. Here are a few combinations that exercise many features at once.
 
 ;; Faceted density — one density curve per species in each panel:

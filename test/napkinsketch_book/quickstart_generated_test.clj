@@ -8,7 +8,7 @@
 
 
 (def
- v3_l34
+ v3_l35
  (def
   iris
   (tc/dataset
@@ -16,16 +16,16 @@
    {:key-fn keyword})))
 
 
-(def v4_l37 iris)
+(def v4_l38 iris)
 
 
 (deftest
- t5_l39
- (is ((fn [v] (= 150 (count (tablecloth.api/rows v)))) v4_l37)))
+ t5_l40
+ (is ((fn [v] (= 150 (count (tablecloth.api/rows v)))) v4_l38)))
 
 
 (def
- v7_l50
+ v7_l51
  (->
   {:x [1 2 3 4 5], :y [2 4 3 5 4]}
   (sk/view :x :y)
@@ -34,12 +34,12 @@
 
 
 (deftest
- t8_l55
- (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v7_l50)))
+ t8_l56
+ (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v7_l51)))
 
 
 (def
- v10_l59
+ v10_l60
  (->
   [{:x 1, :y 2, :g "a"} {:x 3, :y 4, :g "a"} {:x 5, :y 6, :g "b"}]
   (sk/view :x :y)
@@ -48,12 +48,12 @@
 
 
 (deftest
- t11_l64
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v10_l59)))
+ t11_l65
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v10_l60)))
 
 
 (def
- v13_l68
+ v13_l69
  (->
   (tc/dataset
    "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
@@ -64,12 +64,12 @@
 
 
 (deftest
- t14_l74
- (is ((fn [v] (pos? (:points (sk/svg-summary v)))) v13_l68)))
+ t14_l75
+ (is ((fn [v] (pos? (:points (sk/svg-summary v)))) v13_l69)))
 
 
 (def
- v16_l91
+ v16_l92
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -78,31 +78,31 @@
 
 
 (deftest
- t17_l96
+ t17_l97
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"setosa"} (:texts s)))))
-   v16_l91)))
+   v16_l92)))
 
 
 (def
- v19_l102
+ v19_l103
  (sk/plot
   [(sk/point
     {:data iris, :x :sepal_length, :y :sepal_width, :color :species})]))
 
 
 (deftest
- t20_l105
+ t20_l106
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v19_l102)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v19_l103)))
 
 
 (def
- v22_l118
+ v22_l119
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -111,18 +111,18 @@
 
 
 (deftest
- t23_l123
+ t23_l124
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v22_l118)))
+   v22_l119)))
 
 
 (def
- v25_l131
+ v25_l132
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -131,7 +131,7 @@
 
 
 (deftest
- t26_l136
+ t26_l137
  (is
   ((fn
     [v]
@@ -141,11 +141,11 @@
       (= 150 (:points s))
       (some #{"setosa"} (:texts s))
       (some #{"sepal length"} (:texts s)))))
-   v25_l131)))
+   v25_l132)))
 
 
 (def
- v28_l145
+ v28_l146
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -154,48 +154,48 @@
 
 
 (deftest
- t29_l151
+ t29_l152
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v28_l145)))
+   v28_l146)))
 
 
 (def
- v31_l159
+ v31_l160
  (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot))
 
 
 (deftest
- t32_l164
+ t32_l165
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)) (zero? (:points s)))))
-   v31_l159)))
+   v31_l160)))
 
 
-(def v34_l173 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot))
+(def v34_l174 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot))
 
 
 (deftest
- t35_l178
+ t35_l179
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v34_l173)))
+   v34_l174)))
 
 
 (def
- v37_l186
+ v37_l187
  (->
   iris
   (sk/view :species)
@@ -205,13 +205,13 @@
 
 
 (deftest
- t38_l192
+ t38_l193
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:polygons s)))) v37_l186)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:polygons s)))) v37_l187)))
 
 
 (def
- v40_l199
+ v40_l200
  (->
   {:x [1 2 3 4 5 6 7 8], :y [3 5 4 7 6 8 7 9]}
   (sk/view [[:x :y]])
@@ -220,18 +220,18 @@
 
 
 (deftest
- t41_l205
+ t41_l206
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:lines s)) (zero? (:points s)))))
-   v40_l199)))
+   v40_l200)))
 
 
 (def
- v43_l213
+ v43_l214
  (->
   iris
   (sk/view [[:petal_length :petal_width]])
@@ -245,7 +245,7 @@
 
 
 (deftest
- t44_l221
+ t44_l222
  (is
   ((fn
     [v]
@@ -255,4 +255,4 @@
       (= 150 (:points s))
       (some #{"Iris Petals"} (:texts s))
       (some #{"Petal Length (cm)"} (:texts s)))))
-   v43_l213)))
+   v43_l214)))

@@ -38,11 +38,11 @@
 
 ;; ### Histogram with density overlay
 ;;
-;; Compare the empirical histogram with a smooth KDE curve.
+;; Normalize the histogram to density scale so it is comparable with the KDE curve.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_length]])
-    (sk/lay (sk/histogram {:alpha 0.5})
+    (sk/lay (sk/histogram {:normalize :density :alpha 0.5})
             (sk/density))
     sk/plot)
 
@@ -296,20 +296,6 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:lines s))
                                 (pos? (:points s)))))])
-
-;; ### Density histogram
-
-;; Overlay a kernel density curve on a normalized histogram —
-;; useful for checking distributional assumptions.
-
-(-> iris
-    (sk/view :sepal_length)
-    (sk/lay (sk/histogram {:normalize :density :alpha 0.4})
-            (sk/density))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (> (:polygons s) 1)))])
 
 ;; ### Contour + scatter
 

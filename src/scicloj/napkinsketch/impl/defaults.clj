@@ -81,10 +81,23 @@
 
 (defn hex->rgba
   "Convert any color representation to [r g b a] in 0-1 range.
-   Accepts hex strings (#RGB, #RRGGBB, #RRGGBBAA), keywords (:red, :darkblue),
+   Accepts hex strings (#RGB, #RRGGBB, #RRGGBBAA, or without #),
+   named color strings (\"red\", \"steelblue\"), keywords (:red, :darkblue),
    or any value that clojure2d.color/to-color understands."
   [color]
-  (c2d->rgba color))
+  (if (and (string? color) (not (.startsWith ^String color "#")))
+    ;; Non-# string: try as hex first, then as named color keyword
+    (let [cc (try (c/to-color color)
+                  (catch NumberFormatException _ nil))]
+      (if cc
+        (c2d->rgba cc)
+        (let [cc (c/to-color (keyword color))]
+          (if cc
+            (c2d->rgba cc)
+            (throw (ex-info (str "Unknown color: \"" color
+                                 "\". Use a hex string like \"#FF0000\" or a CSS color name like \"red\".")
+                            {:color color}))))))
+    (c2d->rgba color)))
 
 (defn color-for
   "Look up the color for a categorical value from the palette.

@@ -124,12 +124,12 @@ trace-membrane
 
 ;; ### Pipeline Summary
 ;;
-;; | Stage | Type | Coordinates | Serializable? |
-;; |:------|:-----|:------------|:--------------|
-;; | Views | Clojure maps | N/A (declarative) | No (contains dataset) |
-;; | Sketch | Clojure maps + dtype buffers | Data space | No (dtype buffers) |
-;; | Membrane | Record tree | Pixel space | No (Java objects) |
-;; | Figure | Hiccup vectors | Pixel space | Yes (EDN vectors) |
+;; | Stage | Type | Coordinates |
+;; |:------|:-----|:------------|
+;; | Views | Clojure maps | N/A (declarative) |
+;; | Sketch | Clojure maps + dtype buffers | Data space |
+;; | Membrane | Record tree | Pixel space |
+;; | Figure | Hiccup vectors | Pixel space |
 
 ;; ## The Sketch Boundary
 ;;

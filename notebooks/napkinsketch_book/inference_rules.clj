@@ -354,8 +354,8 @@
 (kind/test-last [(fn [m] (and (= "sepal length" (:x-label m))
                               (= "sepal width" (:y-label m))))])
 
-;; Histograms suppress the y-label to avoid redundancy (x and y
-;; reference the same column):
+;; When only one column is specified, the y-axis shows computed counts.
+;; The system omits the y-label since it would repeat the column name:
 
 (let [sk (-> five-points (sk/view :x) sk/sketch)]
   {:x-label (:x-label sk)
