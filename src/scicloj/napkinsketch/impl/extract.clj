@@ -36,6 +36,21 @@
                     gs)))
     layer))
 
+(defn- extract-xy-groups
+  "Extract groups from stat :points, resolving colors. Common to most mark types.
+   Options:
+     :with-range? — include :ymins/:ymaxs (errorbar, pointrange)
+     :with-labels? — include :labels from :labels key (text, label marks)"
+  [view stat all-colors cfg & {:keys [with-range? with-labels?]}]
+  (vec
+   (for [{:keys [color xs ys ymins ymaxs labels]} (:points stat)]
+     (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+              :xs (vec xs) :ys (vec ys)}
+       color (assoc :label (str color))
+       (and with-range? ymins) (assoc :ymins (vec ymins))
+       (and with-range? ymaxs) (assoc :ymaxs (vec ymaxs))
+       (and with-labels? labels) (assoc :labels (vec (map str labels)))))))
+
 ;; ---- Geometry Extraction (stat → layer descriptors) ----
 
 (defmulti extract-layer
@@ -111,11 +126,7 @@
 (defmethod extract-layer :step [view stat all-colors cfg]
   {:mark :step
    :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
-   :groups (vec
-            (for [{:keys [color xs ys]} (:points stat)]
-              {:color (resolve-color all-colors color (:fixed-color view) cfg)
-               :label (str color)
-               :xs (vec xs) :ys (vec ys)}))})
+   :groups (extract-xy-groups view stat all-colors cfg)})
 
 (defmethod extract-layer :rect [view stat all-colors cfg]
   (if (:bars stat)
@@ -142,41 +153,24 @@
 (defmethod extract-layer :text [view stat all-colors cfg]
   {:mark :text
    :style {:font-size (or (:font-size view) 10)}
-   :groups (vec
-            (for [{:keys [color xs ys labels]} (:points stat)]
-              (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                       :xs (vec xs) :ys (vec ys)}
-                labels (assoc :labels (vec (map str labels))))))})
+   :groups (extract-xy-groups view stat all-colors cfg :with-labels? true)})
 
 (defmethod extract-layer :label [view stat all-colors cfg]
   {:mark :label
    :style {:font-size (or (:font-size view) 10)}
-   :groups (vec
-            (for [{:keys [color xs ys labels]} (:points stat)]
-              (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                       :xs (vec xs) :ys (vec ys)}
-                labels (assoc :labels (vec (map str labels))))))})
+   :groups (extract-xy-groups view stat all-colors cfg :with-labels? true)})
 
 (defmethod extract-layer :area [view stat all-colors cfg]
   (cond-> {:mark :area
            :style {:opacity (or (:fixed-alpha view) 0.5)}
-           :groups (vec
-                    (for [{:keys [color xs ys]} (:points stat)]
-                      {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                       :label (str color)
-                       :xs (vec xs) :ys (vec ys)}))}
+           :groups (extract-xy-groups view stat all-colors cfg)}
     (:position view) (assoc :position (:position view))))
 
 (defmethod extract-layer :errorbar [view stat all-colors cfg]
   (-> {:mark :errorbar
        :style {:stroke-width (or (:fixed-size view) 1.5)
                :cap-width (or (:cap-width view) 6)}
-       :groups (vec
-                (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
-                  {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                   :label (str color)
-                   :xs (vec xs) :ys (vec ys)
-                   :ymins (vec ymins) :ymaxs (vec ymaxs)}))}
+       :groups (extract-xy-groups view stat all-colors cfg :with-range? true)}
       (cond-> (:position view) (assoc :position (:position view)))
       (apply-nudge view)))
 
@@ -185,11 +179,7 @@
    :style {:radius (or (:fixed-size view) (:point-radius cfg))
            :stroke-width 1.5}
    :position (or (:position view) :dodge)
-   :groups (vec
-            (for [{:keys [color xs ys]} (:points stat)]
-              {:color (resolve-color all-colors color (:fixed-color view) cfg)
-               :label (str color)
-               :xs (vec xs) :ys (vec ys)}))})
+   :groups (extract-xy-groups view stat all-colors cfg)})
 
 (defmethod extract-layer :boxplot [view stat all-colors cfg]
   (let [color-cats (:color-categories stat)]
@@ -413,21 +403,13 @@
            :stroke-width (or (:fixed-size view) 1.0)
            :opacity (or (:fixed-alpha view) 0.5)}
    :side (or (:side view) :x)
-   :groups (vec
-            (for [{:keys [color xs ys]} (:points stat)]
-              {:color (resolve-color all-colors color (:fixed-color view) cfg)
-               :xs (vec xs) :ys (vec ys)}))})
+   :groups (extract-xy-groups view stat all-colors cfg)})
 
 (defmethod extract-layer :pointrange [view stat all-colors cfg]
   {:mark :pointrange
    :style {:radius (or (:fixed-size view) 3.5)
            :stroke-width 1.5}
-   :groups (vec
-            (for [{:keys [color xs ys ymins ymaxs]} (:points stat)]
-              {:color (resolve-color all-colors color (:fixed-color view) cfg)
-               :label (str color)
-               :xs (vec xs) :ys (vec ys)
-               :ymins (vec ymins) :ymaxs (vec ymaxs)}))})
+   :groups (extract-xy-groups view stat all-colors cfg :with-range? true)})
 
 (defmethod extract-layer :default [view stat all-colors cfg]
   (extract-layer (assoc view :mark :point) stat all-colors cfg))

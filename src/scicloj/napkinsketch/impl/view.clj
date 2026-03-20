@@ -73,6 +73,7 @@
 ;; ---- Layer ----
 
 (def annotation-marks
+  "Mark types that render as annotations (rules, bands) rather than data layers."
   #{:rule-h :rule-v :band-h :band-v})
 
 (defn merge-layer

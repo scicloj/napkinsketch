@@ -2,16 +2,21 @@
   (:require [wadogo.scale :as ws]
             [scicloj.napkinsketch.impl.defaults :as defaults]))
 
-(defn categorical-domain? [dom]
+(defn categorical-domain?
+  "True if domain is a sequence of non-numeric values (categorical)."
+  [dom]
   (and (sequential? dom) (seq dom) (not (number? (first dom)))))
 
-(defn scale-kind [domain scale-spec]
+(defn scale-kind
+  "Determine the wadogo scale type (:categorical, :log, or :linear) from domain and spec."
+  [domain scale-spec]
   (cond
     (categorical-domain? domain) :categorical
     (= :log (:type scale-spec)) :log
     :else :linear))
 
 (defmulti make-scale
+  "Create a wadogo scale mapping domain values to a pixel range."
   (fn [domain pixel-range scale-spec] (scale-kind domain scale-spec)))
 
 (defmethod make-scale :categorical [domain pixel-range _]

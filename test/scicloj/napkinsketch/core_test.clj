@@ -960,3 +960,32 @@
                 sk/plot)]
       (is (= 3 (:points (sk/svg-summary v)))))))
 
+(deftest schema-all-marks-test
+  (testing "Every mark type produces a valid sketch"
+    (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+                           {:key-fn keyword})
+          xy-ds (tc/dataset {:x (range 10) :y (range 10)})
+          eb-ds (tc/dataset {:x ["a" "b"] :y [10 20] :ymin [8 17] :ymax [12 23]})
+          txt-ds (tc/dataset {:x [1 2] :y [3 4] :n ["a" "b"]})
+          cases [["point" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay (sk/point {:color :species})))]
+                 ["bar" (-> iris (sk/view :species) (sk/lay (sk/bar)))]
+                 ["histogram" (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)))]
+                 ["line" (-> xy-ds (sk/view :x :y) (sk/lay (sk/line)))]
+                 ["step" (-> xy-ds (sk/view :x :y) (sk/lay (sk/step)))]
+                 ["lm" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay (sk/lm {:se true})))]
+                 ["loess" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay (sk/loess)))]
+                 ["area" (-> xy-ds (sk/view :x :y) (sk/lay (sk/area)))]
+                 ["boxplot" (-> iris (sk/view :species :sepal_width) (sk/lay (sk/boxplot)))]
+                 ["violin" (-> iris (sk/view :species :sepal_width) (sk/lay (sk/violin)))]
+                 ["density" (-> iris (sk/view :sepal_length) (sk/lay (sk/density)))]
+                 ["ridgeline" (-> iris (sk/view :species :sepal_width) (sk/lay (sk/ridgeline)))]
+                 ["text" (-> txt-ds (sk/view :x :y) (sk/lay (sk/text {:text :n})))]
+                 ["tile" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay (sk/tile)))]
+                 ["contour" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay (sk/contour)))]
+                 ["errorbar" (-> eb-ds (sk/view :x :y) (sk/lay (sk/errorbar {:ymin :ymin :ymax :ymax})))]
+                 ["lollipop" (-> eb-ds (sk/view :x :y) (sk/lay (sk/lollipop)))]
+                 ["summary" (-> iris (sk/view :species :sepal_width) (sk/lay (sk/summary)))]]]
+      (doseq [[mark-name views] cases]
+        (testing mark-name
+          (is (sk/valid-sketch? (sk/sketch views {:validate false}))))))))
+

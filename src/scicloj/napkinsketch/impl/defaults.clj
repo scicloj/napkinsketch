@@ -30,11 +30,14 @@
   (let [pal (c/palette (get palette-aliases k k))]
     (if (seq pal) pal (c/palette default-palette-name))))
 
-(def theme {:bg "#EBEBEB" :grid "#FFFFFF" :font-size 8})
+(def theme
+  "Default theme: background color, grid color, and font size."
+  {:bg "#EBEBEB" :grid "#FFFFFF" :font-size 8})
 
 ;; ---- Visual Defaults ----
 
 (def defaults
+  "Default configuration: layout dimensions, spacing, visual properties."
   {;; Layout
    :width 600 :height 400
    :margin 25 :margin-multi 30 :panel-size 200 :legend-width 100
@@ -61,11 +64,14 @@
 ;; ---- Column Keys ----
 
 (def column-keys
+  "Set of keywords that can reference dataset columns in view maps."
   #{:x :y :color :size :alpha :shape :group :text :ymin :ymax})
 
 ;; ---- Shape Symbols ----
 
-(def shape-syms [:circle :square :triangle :diamond])
+(def shape-syms
+  "Available shape symbols for categorical shape mapping."
+  [:circle :square :triangle :diamond])
 
 (def legend-swatch-size
   "Side length of legend color swatches (square, in pixels)."

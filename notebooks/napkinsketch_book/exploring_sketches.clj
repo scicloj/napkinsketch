@@ -39,28 +39,24 @@
 
 ;; ### What's in a sketch?
 ;;
-;; At the top level, a sketch describes dimensions and layout:
+;; At the top level, a sketch describes dimensions and layout.
+;; Here is the entire sketch — a plain Clojure map:
 
-tiny-sk
+(kind/pprint tiny-sk)
 
-(kind/test-last [(fn [m] (and (= 600 (:width m)) (= 400 (:height m))))])
+(kind/test-last [(fn [m] (and (= 600 (:width m))
+                                (= 400 (:height m))
+                                (nil? (:title m))
+                                (= "x" (:x-label m))
+                                (= "y" (:y-label m))
+                                (nil? (:legend m))))])
 
-;; The plot area is 600×400 pixels with a 25-pixel margin inside.
-;; `total-width` and `total-height` include extra space for axis labels.
+;; Notice:
 ;;
-;; Labels are inferred from column names:
-
-tiny-sk
-
-(kind/test-last [(fn [m] (and (nil? (:title m))
-                              (= "x" (:x-label m))
-                              (= "y" (:y-label m))))])
-
-;; No legend, since we didn't map any column to color:
-
-(:legend tiny-sk)
-
-(kind/test-last [nil?])
+;; - Dimensions are 600×400 with a 25-pixel margin
+;; - Labels `"x"` and `"y"` are inferred from column names
+;; - No legend (we didn't map a column to color)
+;; - One panel with `:x-domain`, `:y-domain`, ticks, and layers
 
 ;; ### The panel
 ;;
@@ -148,6 +144,13 @@ tiny-layer
 
 (def iris-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})]))
 
+;; Here is the full sketch — notice the legend and three groups:
+
+(kind/pprint iris-sk)
+
+(kind/test-last [(fn [m] (and (= 3 (count (:entries (:legend m))))
+                                (= 1 (count (:panels m)))))])
+
 ;; Now we have three groups — one per species:
 
 (def iris-layer (first (:layers (first (:panels iris-sk)))))
@@ -184,6 +187,10 @@ tiny-layer
 (def cont-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width
                                     :color :petal_length})]))
 
+(kind/pprint (:legend cont-sk))
+
+(kind/test-last [(fn [m] (= :continuous (:type m)))])
+
 ;; The legend has pre-computed gradient stops — no functions, fully serializable:
 
 (select-keys (:legend cont-sk) [:title :type :min :max :color-scale])
@@ -209,6 +216,10 @@ tiny-layer
                                 (pos? (:polygons s)))))])
 
 (def hist-sk (sk/sketch [(sk/histogram {:data iris :x :sepal_length})]))
+
+(kind/pprint hist-sk)
+
+(kind/test-last [(fn [m] (= 1 (count (:panels m))))])
 
 (def hist-layer (first (:layers (first (:panels hist-sk)))))
 
@@ -245,11 +256,11 @@ tiny-layer
 
 ;; The mark type is `:rect` and the layer knows the categories:
 
-bar-layer
+(kind/pprint bar-layer)
 
 (kind/test-last [(fn [m] (and (= :rect (:mark m))
-                              (= :dodge (:position m))
-                              (= 3 (count (:categories m)))))])
+                                (= :dodge (:position m))
+                                (= 3 (count (:categories m)))))])
 
 ;; Each group (one per color) has counts for every category:
 
@@ -415,11 +426,11 @@ bar-layer
                          :width 800
                          :height 300}))
 
-opts-sk
+(kind/pprint opts-sk)
 
 (kind/test-last [(fn [m] (and (= "My Custom Title" (:title m))
-                              (= 800 (:width m))
-                              (= 300 (:height m))))])
+                                (= 800 (:width m))
+                                (= 300 (:height m))))])
 
 ;; The layout records how much space to reserve for each label:
 
@@ -442,7 +453,7 @@ opts-sk
 
 (def final-sk (sk/sketch final-views {:title "Iris Petals"}))
 
-final-sk
+(kind/pprint final-sk)
 
 (kind/test-last [(fn [m] (= "Iris Petals" (:title m)))])
 
@@ -505,7 +516,7 @@ final-sk
 
 ;; The sketch also records per-panel pixel dimensions:
 
-faceted-sk
+(kind/pprint (select-keys faceted-sk [:layout-type :grid :total-width :total-height]))
 
 (kind/test-last [(fn [m] (= :facet-grid (:layout-type m)))])
 

@@ -77,6 +77,14 @@ iris
 ;;
 ;; Napkinsketch supports two equivalent styles for building plots.
 ;;
+;; `view` accepts column arguments in two forms:
+;;
+;; - `(sk/view ds :x :y)` — two keyword arguments, for a single panel
+;; - `(sk/view ds [[:x :y]])` — a vector of column pairs; multiple pairs
+;;   produce multiple panels (see the Composability chapter)
+;;
+;; Both forms are equivalent for single-panel plots.
+;;
 ;; **Pipeline style** — compositional, good for exploration and
 ;; multi-layer plots:
 
