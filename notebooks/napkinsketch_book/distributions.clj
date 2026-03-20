@@ -166,10 +166,10 @@
 
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
-(let [sk (sk/sketch
-          (-> tips
-              (sk/view [[:day :total_bill]])
-              (sk/lay (sk/boxplot {:color :smoker}))))
+(let [sk (-> tips
+             (sk/view [[:day :total_bill]])
+             (sk/lay (sk/boxplot {:color :smoker}))
+             sk/sketch)
       panel (first (:panels sk))
       box-layer (first (filter #(= :boxplot (:mark %)) (:layers panel)))
       cats (:color-categories box-layer)]
@@ -224,10 +224,10 @@
 
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
-(let [sk (sk/sketch
-          (-> tips
-              (sk/view [[:day :total_bill]])
-              (sk/lay (sk/violin {:color :smoker}))))
+(let [sk (-> tips
+             (sk/view [[:day :total_bill]])
+             (sk/lay (sk/violin {:color :smoker}))
+             sk/sketch)
       panel (first (:panels sk))
       viol-layer (first (filter #(= :violin (:mark %)) (:layers panel)))
       cats (:color-categories viol-layer)]

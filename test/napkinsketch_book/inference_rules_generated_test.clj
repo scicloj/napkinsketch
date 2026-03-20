@@ -47,8 +47,7 @@
  v12_l79
  (def
   animals
-  (tc/dataset
-   {:animal ["cat" "dog" "bird" "fish"], :count [12 8 15 5]})))
+  {:animal ["cat" "dog" "bird" "fish"], :count [12 8 15 5]}))
 
 
 (def
@@ -137,8 +136,7 @@
  (def
   colored-views
   (->
-   (tc/dataset
-    {:x [1 2 3 4 5 6], :y [3 5 4 7 6 8], :g ["a" "a" "a" "b" "b" "b"]})
+   {:x [1 2 3 4 5 6], :y [3 5 4 7 6 8], :g ["a" "a" "a" "b" "b" "b"]}
    (sk/view :x :y)
    (sk/lay (sk/point {:color :g})))))
 
@@ -305,10 +303,7 @@
     (sk/sketch scatter-views)
     full
     (->
-     (tc/dataset
-      {:x [1 2 3 4 5 6],
-       :y [3 5 4 7 6 8],
-       :g ["a" "a" "a" "b" "b" "b"]})
+     {:x [1 2 3 4 5 6], :y [3 5 4 7 6 8], :g ["a" "a" "a" "b" "b" "b"]}
      (sk/view :x :y)
      (sk/lay (sk/point {:color :g}))
      (sk/labs {:title "My Plot"})

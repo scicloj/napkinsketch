@@ -247,7 +247,7 @@
 ;; reference the same column):
 
 (kind/pprint
- (let [sk (sk/sketch (-> five-points (sk/view :x)))]
+ (let [sk (-> five-points (sk/view :x) sk/sketch)]
    {:x-label (:x-label sk)
     :y-label (:y-label sk)}))
 
@@ -302,17 +302,17 @@
 ;; stays the same — the panel-level domains and ticks are swapped.
 
 (def normal-sk
-  (sk/sketch
-   (-> animals
-       (sk/view :animal :count)
-       (sk/lay (sk/value-bar)))))
+  (-> animals
+      (sk/view :animal :count)
+      (sk/lay (sk/value-bar))
+      sk/sketch))
 
 (def flip-sk
-  (sk/sketch
-   (-> animals
-       (sk/view :animal :count)
-       (sk/lay (sk/value-bar))
-       (sk/coord :flip))))
+  (-> animals
+      (sk/view :animal :count)
+      (sk/lay (sk/value-bar))
+      (sk/coord :flip)
+      sk/sketch))
 
 (kind/pprint
  (let [np (first (:panels normal-sk))
@@ -327,10 +327,11 @@
                               (not (get-in m [:flipped :x-categorical?]))
                               (get-in m [:flipped :y-categorical?])))])
 
-(sk/plot (-> animals
-             (sk/view :animal :count)
-             (sk/lay (sk/value-bar))
-             (sk/coord :flip)))
+(-> animals
+    (sk/view :animal :count)
+    (sk/lay (sk/value-bar))
+    (sk/coord :flip)
+    sk/plot)
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 

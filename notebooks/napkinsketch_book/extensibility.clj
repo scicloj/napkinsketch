@@ -142,9 +142,10 @@
 
 ;; A sketch layer looks like this:
 
-(let [s (sk/sketch (-> iris
-                       (sk/view [[:sepal_length :sepal_width]])
-                       (sk/lay (sk/point {:color :species}))))
+(let [s (-> iris
+            (sk/view [[:sepal_length :sepal_width]])
+            (sk/lay (sk/point {:color :species}))
+            sk/sketch)
       layer (first (:layers (first (:panels s))))]
   layer)
 
@@ -213,9 +214,10 @@
 ;; Using `sketch->figure` directly:
 
 (def my-sketch
-  (sk/sketch (-> iris
-                 (sk/view [[:sepal_length :sepal_width]])
-                 (sk/lay (sk/point {:color :species})))))
+  (-> iris
+      (sk/view [[:sepal_length :sepal_width]])
+      (sk/lay (sk/point {:color :species}))
+      sk/sketch))
 
 (first (sk/sketch->figure my-sketch :svg {}))
 
