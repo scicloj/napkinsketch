@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Public API** (`scicloj.napkinsketch.api`): `view`, `lay`, `plot`, `sketch`,
   `views->sketch`, `sketch->membrane`, `membrane->figure`, `sketch->figure`,
   `svg-summary`, `valid-sketch?`, `explain-sketch`, `config`, `set-config!`,
-  `with-config`, `arrange`
+  `with-config`, `arrange`, `save`
 - **28 mark constructors**: point, line, step, histogram, bar, stacked-bar,
   stacked-bar-fill, value-bar, lm, loess, text, label, area, stacked-area,
   density, tile, density2d, contour, ridgeline, boxplot, violin, rug, summary,
   errorbar, lollipop, rule-v, rule-h, band-v, band-h
+- **String column names accepted**: column references can be keywords or strings;
+  datasets with string column names are auto-normalized to keywords
 - **Aesthetics**: `:color` (column or numeric for continuous), `:alpha`,
   `:size`, `:shape`, `:group`, `:text`, `:ymin`, `:ymax`
 - **Stats**: identity, bin, count, lm, loess, kde, boxplot, violin, bin2d,
@@ -38,14 +40,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Annotations**: `rule-v`, `rule-h`, `band-v`, `band-h`
 - **Interactivity**: tooltip and brush selection via Scittle scripts
 - **Sketch validation**: Malli schema with `valid-sketch?` and `explain-sketch`
-- **19 notebooks** (471 tests, 685 assertions): quickstart, composability,
+- **dtype-next integration**: numeric arrays (xs, ys, sizes, etc.) stored as
+  dtype-next buffers at the sketch boundary for efficiency
+- **19 notebooks** (~500 tests, ~750 assertions): quickstart, composability,
   inference_rules, glossary, scatter, distributions, ranking, evolution,
   relationships, polar, cookbook, configuration, customization, faceting,
   api_reference, exploring_sketches, architecture, extensibility, edge_cases
 
 ### Architecture
 - **Four-stage pipeline**: views → sketch → membrane → figure
-- **Sketch is serializable**: plain Clojure maps, no functions/datasets/membrane types
+- **Sketch is plain data**: Clojure maps with dtype-next buffers, no functions/datasets/membrane types
 - **`impl/` vs `render/` boundary**: pure data transformations vs membrane-dependent rendering
 - **Multimethod extensibility**: `compute-stat`, `extract-layer`, `layer->membrane`,
   `sketch->figure`, `membrane->figure`
