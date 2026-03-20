@@ -242,7 +242,7 @@ precedence-result
  [(fn [m]
     (and (= 900 (:sketch-width m))    ;; per-call wins over with-config (1200) and set-config! (800)
          (= 500 (:sketch-height m)))  ;; with-config wins over set-config! (350)
-  )])
+    )])
 
 ;; We can verify point-radius too — only set-config! touched it,
 ;; so it wins over the library default (2.5):
@@ -423,7 +423,6 @@ precedence-plot
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-
 ;; ## Color Scale Configuration
 ;;
 ;; When a numeric column is mapped to `:color`, napkinsketch uses a
@@ -432,7 +431,7 @@ precedence-plot
 
 ;; Default (viridis) continuous color:
 
-(-> (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+(-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/view :x :y)
     (sk/lay (sk/point {:color :c}))
     (sk/plot))
@@ -441,7 +440,7 @@ precedence-plot
 
 ;; Per-call color scale override — inferno gradient:
 
-(-> (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+(-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/view :x :y)
     (sk/lay (sk/point {:color :c}))
     (sk/plot {:color-scale :inferno}))
@@ -451,7 +450,7 @@ precedence-plot
 ;; Thread-local color scale via `with-config`:
 
 (sk/with-config {:color-scale :plasma}
-  (-> (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+  (-> {:x (range 50) :y (range 50) :c (range 50)}
       (sk/view :x :y)
       (sk/lay (sk/point {:color :c}))
       (sk/plot)))
@@ -462,7 +461,7 @@ precedence-plot
 ;; uses the pre-computed gradient stops, or resolves a fresh gradient
 ;; if the render-time configuration specifies a different color scale.
 
-(-> (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
+(-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/view :x :y)
     (sk/lay (sk/point {:color :c}))
     (sk/sketch {:color-scale :inferno})

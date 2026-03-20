@@ -80,9 +80,9 @@
 ;; A smooth curve through noisy data.
 
 (def noisy-wave (let [r (rng/rng :jdk 42)]
-                  (tc/dataset {:x (range 50)
-                               :y (mapv #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rng/drandom r) 0.5)))
-                                        (range 50))})))
+                  {:x (range 50)
+                   :y (mapv #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rng/drandom r) 0.5)))
+                            (range 50))}))
 
 (-> noisy-wave
     (sk/view [[:x :y]])
@@ -112,9 +112,9 @@
 
 (def grid-data
   (let [r (rng/rng :jdk 99)]
-    (tc/dataset {:x (for [i (range 5) _j (range 5)] i)
-                 :y (for [_i (range 5) j (range 5)] j)
-                 :value (vec (repeatedly 25 #(rng/irandom r 100)))})))
+    {:x (for [i (range 5) _j (range 5)] i)
+     :y (for [_i (range 5) j (range 5)] j)
+     :value (vec (repeatedly 25 #(rng/irandom r 100)))}))
 
 (sk/plot [(sk/tile {:data grid-data :x :x :y :y :fill :value})])
 

@@ -20,8 +20,8 @@
 (def penguins (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
                           {:key-fn keyword}))
 
-(def sales (tc/dataset {:product [:widget :gadget :gizmo :doohickey]
-                        :revenue [120 340 210 95]}))
+(def sales {:product [:widget :gadget :gizmo :doohickey]
+            :revenue [120 340 210 95]})
 
 ;; ## Bar Chart
 

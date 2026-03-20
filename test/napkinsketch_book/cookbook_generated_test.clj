@@ -115,9 +115,9 @@
   ts-dates
   (mapv
    (fn*
-    [p1__119361#]
+    [p1__132016#]
     (java.time.LocalDate/ofEpochDay
-     (+ 18262 (* (long p1__119361#) 7))))
+     (+ 18262 (* (long p1__132016#) 7))))
    (range 52))))
 
 
@@ -130,8 +130,8 @@
     :value
     (mapv
      (fn*
-      [p1__119362#]
-      (+ 100.0 (* 30.0 (Math/sin (* (double p1__119362#) 0.12)))))
+      [p1__132017#]
+      (+ 100.0 (* 30.0 (Math/sin (* (double p1__132017#) 0.12)))))
      (range 52))}
    {:key-fn keyword})))
 
@@ -511,7 +511,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__119363#] (= "virginica" p1__119363#))
+       (fn* [p1__132018#] (= "virginica" p1__132018#))
        (:texts s)))))
    v70_l336)))
 
@@ -567,9 +567,9 @@
    {:x (range 20),
     :y
     (map
-     (fn* [p1__119364#] (Math/sin (/ p1__119364# 3.0)))
+     (fn* [p1__132019#] (Math/sin (/ p1__132019# 3.0)))
      (range 20)),
-    :change (map (fn* [p1__119365#] (- p1__119365# 10)) (range 20))})
+    :change (map (fn* [p1__132020#] (- p1__132020# 10)) (range 20))})
   (sk/view :x :y)
   (sk/lay (sk/point {:color :change}))
   (sk/plot

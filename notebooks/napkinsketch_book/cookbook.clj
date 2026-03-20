@@ -85,10 +85,9 @@
 
 (def ts-dates (mapv #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 7))) (range 52)))
 
-(def ts-ds (tc/dataset {:date ts-dates
-                        :value (mapv #(+ 100.0 (* 30.0 (Math/sin (* (double %) 0.12))))
-                                     (range 52))}
-                       {:key-fn keyword}))
+(def ts-ds {:date ts-dates
+            :value (mapv #(+ 100.0 (* 30.0 (Math/sin (* (double %) 0.12))))
+                         (range 52))})
 
 (-> ts-ds
     (sk/view [[:date :value]])
@@ -183,10 +182,10 @@
 ;; with uncertainty.
 
 (def experiment
-  (tc/dataset {:condition ["A" "B" "C" "D"]
-               :mean [10.0 15.0 12.0 18.0]
-               :ci_lo [8.0 12.0 9.5 15.5]
-               :ci_hi [12.0 18.0 14.5 20.5]}))
+  {:condition ["A" "B" "C" "D"]
+   :mean [10.0 15.0 12.0 18.0]
+   :ci_lo [8.0 12.0 9.5 15.5]
+   :ci_hi [12.0 18.0 14.5 20.5]})
 
 (-> experiment
     (sk/view [[:condition :mean]])
@@ -285,8 +284,8 @@
 ;; hold constant between observations.
 
 (def daily-temps
-  (tc/dataset {:day (range 1 15)
-               :temp [12 14 14 16 18 17 15 13 14 16 19 21 20 18]}))
+  {:day (range 1 15)
+   :temp [12 14 14 16 18 17 15 13 14 16 19 21 20 18]})
 
 (-> daily-temps
     (sk/view :day :temp)
@@ -379,9 +378,9 @@
 ;; Use `:color-scale :diverging` with `:color-midpoint` to center
 ;; a red-white-blue gradient on a meaningful value (e.g., zero).
 
-(-> (tc/dataset {:x (range 20)
-                 :y (map #(Math/sin (/ % 3.0)) (range 20))
-                 :change (map #(- % 10) (range 20))})
+(-> {:x (range 20)
+     :y (map #(Math/sin (/ % 3.0)) (range 20))
+     :change (map #(- % 10) (range 20))}
     (sk/view :x :y)
     (sk/lay (sk/point {:color :change}))
     (sk/plot {:color-scale :diverging
@@ -407,7 +406,6 @@
                                 (= 3 (:lines s))
                                 (= 3 (:polygons s)))))])
 
-
 ;; ### Multi-plot dashboard
 ;;
 ;; Use `sk/arrange` to combine independent plots into a grid layout.
@@ -430,15 +428,14 @@
 (kind/test-last [(fn [v] (and (= :div (first v))
                               (= :kind/hiccup (:kindly/kind (meta v)))))])
 
-
 ;; ### Labeled scatter
 
 ;; Combine points with text labels, using nudge to offset text from data points.
 
 (def top-cities
-  (tc/dataset {:city ["Tokyo" "Delhi" "Shanghai" "São Paulo" "Mumbai"]
-               :population [37.4 32.9 29.2 22.4 21.7]
-               :area [2194 1484 6341 1521 603]}))
+  {:city ["Tokyo" "Delhi" "Shanghai" "São Paulo" "Mumbai"]
+   :population [37.4 32.9 29.2 22.4 21.7]
+   :area [2194 1484 6341 1521 603]})
 
 (-> top-cities
     (sk/view :area :population)
@@ -448,7 +445,6 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 5 (:points s))
                                 (every? (set (:texts s)) ["Tokyo" "Delhi"]))))])
-
 
 ;; ## Analytical Walkthroughs
 

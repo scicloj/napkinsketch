@@ -25,20 +25,20 @@
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
 
-(def tiny (tc/dataset {:x [1 2 3 4 5]
-                       :y [2 4 1 5 3]
-                       :group [:a :a :b :b :b]}))
+(def tiny {:x [1 2 3 4 5]
+           :y [2 4 1 5 3]
+           :group [:a :a :b :b :b]})
 
-(def sales (tc/dataset {:product [:widget :gadget :gizmo :doohickey]
-                        :revenue [120 340 210 95]}))
+(def sales {:product [:widget :gadget :gizmo :doohickey]
+            :revenue [120 340 210 95]})
 
 (def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
                       {:key-fn keyword}))
 
-(def measurements (tc/dataset {:treatment ["A" "B" "C" "D"]
-                               :mean [10.0 15.0 12.0 18.0]
-                               :ci_lo [8.0 12.0 9.5 15.5]
-                               :ci_hi [12.0 18.0 14.5 20.5]}))
+(def measurements {:treatment ["A" "B" "C" "D"]
+                   :mean [10.0 15.0 12.0 18.0]
+                   :ci_lo [8.0 12.0 9.5 15.5]
+                   :ci_hi [12.0 18.0 14.5 20.5]})
 
 ;; ## Data Setup
 
@@ -113,8 +113,8 @@
 
 (kind/doc #'sk/line)
 
-(def wave (tc/dataset {:x (range 30)
-                       :y (mapv #(Math/sin (* % 0.3)) (range 30))}))
+(def wave {:x (range 30)
+           :y (mapv #(Math/sin (* % 0.3)) (range 30))})
 
 (sk/plot [(sk/line {:data wave :x :x :y :y})])
 
@@ -185,9 +185,9 @@
 (kind/doc #'sk/loess)
 
 (def noisy-wave (let [r (rng/rng :jdk 42)]
-                  (tc/dataset {:x (range 50)
-                               :y (mapv #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rng/drandom r) 0.5)))
-                                        (range 50))})))
+                  {:x (range 50)
+                   :y (mapv #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rng/drandom r) 0.5)))
+                            (range 50))}))
 
 (-> noisy-wave
     (sk/view [[:x :y]])
@@ -220,11 +220,11 @@
 
 (kind/doc #'sk/stacked-area)
 
-(-> (tc/dataset {:x (vec (concat (range 10) (range 10) (range 10)))
-                 :y (vec (concat [1 2 3 4 5 4 3 2 1 0]
-                                 [2 2 2 3 3 3 2 2 2 2]
-                                 [1 1 1 1 2 2 2 1 1 1]))
-                 :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))})
+(-> {:x (vec (concat (range 10) (range 10) (range 10)))
+     :y (vec (concat [1 2 3 4 5 4 3 2 1 0]
+                     [2 2 2 3 3 3 2 2 2 2]
+                     [1 1 1 1 2 2 2 1 1 1]))
+     :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
     (sk/view [[:x :y]])
     (sk/lay (sk/stacked-area {:color :group}))
     sk/plot)
@@ -234,7 +234,7 @@
 
 (kind/doc #'sk/text)
 
-(-> (tc/dataset {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]})
+(-> {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]}
     (sk/view [[:x :y]])
     (sk/lay (sk/text {:text :name}))
     sk/plot)
@@ -244,7 +244,7 @@
 
 (kind/doc #'sk/label)
 
-(-> (tc/dataset {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]})
+(-> {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]}
     (sk/view [[:x :y]])
     (sk/lay (sk/point {:size 5})
             (sk/label {:text :name}))

@@ -118,9 +118,9 @@
 ;; When multiple layers share `:position :dodge`, they are coordinated
 ;; together — errorbars automatically align with bars.
 
-(def tips (tc/dataset {:day ["Mon" "Mon" "Tue" "Tue"]
-                       :count [30 20 45 15]
-                       :meal ["lunch" "dinner" "lunch" "dinner"]}))
+(def tips {:day ["Mon" "Mon" "Tue" "Tue"]
+           :count [30 20 45 15]
+           :meal ["lunch" "dinner" "lunch" "dinner"]})
 
 (-> tips
     (sk/view :day :count)
@@ -370,7 +370,6 @@
 ;; Both are JavaScript-based interactions added to the SVG output.
 ;;
 ;; Enabled via `{:tooltip true}` and `{:brush true}` in options.
-
 
 ;; ## Summary Table
 ;;

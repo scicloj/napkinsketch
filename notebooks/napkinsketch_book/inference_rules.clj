@@ -27,8 +27,8 @@
 ;; To understand what napkinsketch inferred, look at the sketch.
 
 (def five-points
-  (tc/dataset {:x [1.0 2.0 3.0 4.0 5.0]
-               :y [2.1 4.3 3.0 5.2 4.8]}))
+  {:x [1.0 2.0 3.0 4.0 5.0]
+   :y [2.1 4.3 3.0 5.2 4.8]})
 
 (def scatter-views
   (-> five-points
@@ -77,8 +77,8 @@
 ;; Compare:
 
 (def animals
-  (tc/dataset {:animal ["cat" "dog" "bird" "fish"]
-               :count [12 8 15 5]}))
+  {:animal ["cat" "dog" "bird" "fish"]
+   :count [12 8 15 5]})
 
 (def bar-views
   (-> animals
@@ -154,9 +154,9 @@
 ;; ### Column reference → grouped by palette
 
 (def colored-views
-  (-> (tc/dataset {:x [1 2 3 4 5 6]
-                   :y [3 5 4 7 6 8]
-                   :g ["a" "a" "a" "b" "b" "b"]})
+  (-> {:x [1 2 3 4 5 6]
+       :y [3 5 4 7 6 8]
+       :g ["a" "a" "a" "b" "b" "b"]}
       (sk/view :x :y)
       (sk/lay (sk/point {:color :g}))))
 
@@ -274,9 +274,9 @@
 
 (kind/pprint
  (let [bare (sk/sketch scatter-views)
-       full (-> (tc/dataset {:x [1 2 3 4 5 6]
-                             :y [3 5 4 7 6 8]
-                             :g ["a" "a" "a" "b" "b" "b"]})
+       full (-> {:x [1 2 3 4 5 6]
+                 :y [3 5 4 7 6 8]
+                 :g ["a" "a" "a" "b" "b" "b"]}
                 (sk/view :x :y)
                 (sk/lay (sk/point {:color :g}))
                 (sk/labs {:title "My Plot"})

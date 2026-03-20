@@ -18,8 +18,8 @@
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
 
-(def wind (tc/dataset {:direction ["N" "NE" "E" "SE" "S" "SW" "W" "NW"]
-                       :speed [12 8 15 10 7 13 9 11]}))
+(def wind {:direction ["N" "NE" "E" "SE" "S" "SW" "W" "NW"]
+           :speed [12 8 15 10 7 13 9 11]})
 
 ;; ## Polar Scatter
 ;;

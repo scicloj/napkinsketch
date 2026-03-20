@@ -21,8 +21,8 @@
 ;; Let's start with the simplest possible plot: 5 points, no color,
 ;; no title.
 
-(def tiny (tc/dataset {:x [1 2 3 4 5]
-                       :y [2 4 1 5 3]}))
+(def tiny {:x [1 2 3 4 5]
+           :y [2 4 1 5 3]})
 
 ;; Here is the rendered plot:
 
@@ -45,11 +45,11 @@
 (kind/pprint tiny-sk)
 
 (kind/test-last [(fn [m] (and (= 600 (:width m))
-                                (= 400 (:height m))
-                                (nil? (:title m))
-                                (= "x" (:x-label m))
-                                (= "y" (:y-label m))
-                                (nil? (:legend m))))])
+                              (= 400 (:height m))
+                              (nil? (:title m))
+                              (= "x" (:x-label m))
+                              (= "y" (:y-label m))
+                              (nil? (:legend m))))])
 
 ;; Notice:
 ;;
@@ -149,7 +149,7 @@ tiny-layer
 (kind/pprint iris-sk)
 
 (kind/test-last [(fn [m] (and (= 3 (count (:entries (:legend m))))
-                                (= 1 (count (:panels m)))))])
+                              (= 1 (count (:panels m)))))])
 
 ;; Now we have three groups — one per species:
 
@@ -177,7 +177,6 @@ tiny-layer
 
 ;; Colors are resolved to `[r g b a]` vectors — no symbolic references.
 ;; The same color appears in both the layer groups and the legend entries.
-
 
 ;; ### Continuous Color
 ;;
@@ -259,8 +258,8 @@ tiny-layer
 (kind/pprint bar-layer)
 
 (kind/test-last [(fn [m] (and (= :rect (:mark m))
-                                (= :dodge (:position m))
-                                (= 3 (count (:categories m)))))])
+                              (= :dodge (:position m))
+                              (= 3 (count (:categories m)))))])
 
 ;; Each group (one per color) has counts for every category:
 
@@ -349,8 +348,8 @@ tiny-layer
 ;;
 ;; Line marks from identity data (not regression) store xs/ys vectors:
 
-(def wave (tc/dataset {:x (range 30)
-                       :y (mapv #(Math/sin (* % 0.3)) (range 30))}))
+(def wave {:x (range 30)
+           :y (mapv #(Math/sin (* % 0.3)) (range 30))})
 
 (sk/plot [(sk/line {:data wave :x :x :y :y})])
 
@@ -375,8 +374,8 @@ tiny-layer
 ;; Value bars map categorical x to numeric y without any counting.
 ;; The sketch stores the raw x/y pairs:
 
-(def sales (tc/dataset {:product [:widget :gadget :gizmo :doohickey]
-                        :revenue [120 340 210 95]}))
+(def sales {:product [:widget :gadget :gizmo :doohickey]
+            :revenue [120 340 210 95]})
 
 (sk/plot [(sk/value-bar {:data sales :x :product :y :revenue})])
 
@@ -429,8 +428,8 @@ tiny-layer
 (kind/pprint opts-sk)
 
 (kind/test-last [(fn [m] (and (= "My Custom Title" (:title m))
-                                (= 800 (:width m))
-                                (= 300 (:height m))))])
+                              (= 800 (:width m))
+                              (= 300 (:height m))))])
 
 ;; The layout records how much space to reserve for each label:
 

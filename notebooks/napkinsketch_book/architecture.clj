@@ -46,9 +46,9 @@ graph LR
 ;; inspecting the intermediate values at each step.
 
 (def trace-data
-  (tc/dataset {:x [1 2 3 4 5]
-               :y [2 4 3 5 4]
-               :g [:a :a :b :b :b]}))
+  {:x [1 2 3 4 5]
+   :y [2 4 3 5 4]
+   :g [:a :a :b :b :b]})
 
 ;; ### Views
 ;;

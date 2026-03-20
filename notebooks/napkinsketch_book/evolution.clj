@@ -15,8 +15,8 @@
 
 ;; Connected line through data points.
 
-(def wave (tc/dataset {:x (range 30)
-                       :y (mapv #(Math/sin (* % 0.3)) (range 30))}))
+(def wave {:x (range 30)
+           :y (mapv #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
     (sk/view [[:x :y]])
@@ -31,10 +31,10 @@
 
 ;; Color separates multiple series.
 
-(def waves (tc/dataset {:x (vec (concat (range 30) (range 30)))
-                        :y (vec (concat (mapv #(Math/sin (* % 0.3)) (range 30))
-                                        (mapv #(Math/cos (* % 0.3)) (range 30))))
-                        :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))}))
+(def waves {:x (vec (concat (range 30) (range 30)))
+            :y (vec (concat (mapv #(Math/sin (* % 0.3)) (range 30))
+                            (mapv #(Math/cos (* % 0.3)) (range 30))))
+            :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))})
 
 (-> waves
     (sk/view [[:x :y]])
@@ -63,9 +63,9 @@
 ;; Overlay points on a grouped line plot.
 
 (def growth
-  (tc/dataset {:day [1 2 3 4 5 1 2 3 4 5]
-               :value [10 15 13 18 22 8 12 11 16 19]
-               :group [:a :a :a :a :a :b :b :b :b :b]}))
+  {:day [1 2 3 4 5 1 2 3 4 5]
+   :value [10 15 13 18 22 8 12 11 16 19]
+   :group [:a :a :a :a :a :b :b :b :b :b]})
 
 (-> growth
     (sk/view [[:day :value]])
@@ -109,8 +109,8 @@
 
 ;; Filled area under a line.
 
-(-> (tc/dataset {:x (range 30)
-                 :y (mapv #(Math/sin (* % 0.3)) (range 30))})
+(-> {:x (range 30)
+     :y (mapv #(Math/sin (* % 0.3)) (range 30))}
     (sk/view [[:x :y]])
     (sk/lay (sk/area))
     sk/plot)
@@ -123,11 +123,11 @@
 
 ;; Each group fills above the previous.
 
-(-> (tc/dataset {:x (vec (concat (range 10) (range 10) (range 10)))
-                 :y (vec (concat [1 2 3 4 5 4 3 2 1 0]
-                                 [2 2 2 3 3 3 2 2 2 2]
-                                 [1 1 1 1 2 2 2 1 1 1]))
-                 :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))})
+(-> {:x (vec (concat (range 10) (range 10) (range 10)))
+     :y (vec (concat [1 2 3 4 5 4 3 2 1 0]
+                     [2 2 2 3 3 3 2 2 2 2]
+                     [1 1 1 1 2 2 2 1 1 1]))
+     :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
     (sk/view [[:x :y]])
     (sk/lay (sk/stacked-area {:color :group}))
     sk/plot)

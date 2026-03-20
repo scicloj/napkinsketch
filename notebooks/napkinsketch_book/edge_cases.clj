@@ -19,8 +19,8 @@
 ;; Rows with `nil` values are dropped gracefully.
 
 (def with-missing
-  (tc/dataset {:x [1 2 nil 4 5 nil 7]
-               :y [3 nil 5 6 nil 8 9]}))
+  {:x [1 2 nil 4 5 nil 7]
+   :y [3 nil 5 6 nil 8 9]})
 
 (-> with-missing
     (sk/view [[:x :y]])
@@ -138,9 +138,9 @@
 
 (def large-data
   (let [r (rng/rng :jdk 42)]
-    (tc/dataset {:x (repeatedly 1000 #(rng/drandom r))
-                 :y (repeatedly 1000 #(rng/drandom r))
-                 :group (repeatedly 1000 #([:a :b :c] (rng/irandom r 3)))})))
+    {:x (repeatedly 1000 #(rng/drandom r))
+     :y (repeatedly 1000 #(rng/drandom r))
+     :group (repeatedly 1000 #([:a :b :c] (rng/irandom r 3)))}))
 
 (-> large-data
     (sk/view [[:x :y]])
@@ -156,8 +156,8 @@
 ;; A bar chart with 12 categories.
 
 (-> (let [r (rng/rng :jdk 99)]
-      (tc/dataset {:category (mapv #(keyword (str "cat-" %)) (range 12))
-                   :value (repeatedly 12 #(+ 10 (rng/irandom r 90)))}))
+      {:category (mapv #(keyword (str "cat-" %)) (range 12))
+       :value (repeatedly 12 #(+ 10 (rng/irandom r 90)))})
     (sk/view [[:category :value]])
     (sk/lay (sk/value-bar))
     sk/plot)
@@ -203,8 +203,8 @@
 
 ;; Stack with only one color value — no actual stacking needed.
 
-(-> (tc/dataset {:category ["a" "b" "c"]
-                 :count [10 20 15]})
+(-> {:category ["a" "b" "c"]
+     :count [10 20 15]}
     (sk/view :category :count)
     (sk/lay (sk/value-bar {:position :stack}))
     sk/plot)
@@ -216,8 +216,8 @@
 ;; Group "g1" has data for "a" and "b", but "g2" only has "a".
 ;; Dodge should still align correctly.
 
-(-> (tc/dataset {:x ["a" "b" "a"]
-                 :g ["g1" "g1" "g2"]})
+(-> {:x ["a" "b" "a"]
+     :g ["g1" "g1" "g2"]}
     (sk/view :x)
     (sk/lay (sk/bar {:color :g}))
     sk/plot)
@@ -229,8 +229,8 @@
 ;; One group has zero count for a category.
 ;; Fill should handle the zero gracefully.
 
-(-> (tc/dataset {:x ["a" "a" "b" "b" "b"]
-                 :g ["g1" "g2" "g1" "g1" "g1"]})
+(-> {:x ["a" "a" "b" "b" "b"]
+     :g ["g1" "g2" "g1" "g1" "g1"]}
     (sk/view :x)
     (sk/lay (sk/stacked-bar-fill {:color :g}))
     sk/plot)
@@ -253,7 +253,7 @@
 ;; Linear regression with se=true on exactly 3 points
 ;; (minimum for lm).
 
-(-> (tc/dataset {:x [1 2 3] :y [2 4 5]})
+(-> {:x [1 2 3] :y [2 4 5]}
     (sk/view :x :y)
     (sk/lay (sk/point) (sk/lm {:se true}))
     sk/plot)
@@ -267,21 +267,20 @@
 ;; Stack with a single color group — should render as a plain area.
 
 (-> (let [r (rng/rng :jdk 55)]
-      (tc/dataset {:x (range 10)
-                   :y (repeatedly 10 #(rng/irandom r 20))}))
+      {:x (range 10)
+       :y (repeatedly 10 #(rng/irandom r 20))})
     (sk/view :x :y)
     (sk/lay (sk/stacked-area))
     sk/plot)
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-
 ;; ## Log Scale Edge Cases
 
 ;; ### Log scale with clean powers of 10
 
-(-> (tc/dataset {:x [1 10 100 1000 10000]
-                 :y [2 20 200 2000 20000]})
+(-> {:x [1 10 100 1000 10000]
+     :y [2 20 200 2000 20000]}
     (sk/view :x :y)
     (sk/lay (sk/point))
     (sk/scale :x :log)
@@ -294,15 +293,14 @@
 
 ;; ### Log scale spanning decimals to large values
 
-(-> (tc/dataset {:x [0.001 0.01 0.1 1 10 100]
-                 :y [1 2 3 4 5 6]})
+(-> {:x [0.001 0.01 0.1 1 10 100]
+     :y [1 2 3 4 5 6]}
     (sk/view :x :y)
     (sk/lay (sk/point))
     (sk/scale :x :log)
     sk/plot)
 
 (kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
-
 
 ;; ## Continuous Color Edge Cases
 
@@ -311,7 +309,7 @@
 ;; All points have the same numeric color value. The gradient
 ;; should still render and not divide by zero.
 
-(-> (tc/dataset {:x [1 2 3] :y [4 5 6] :c [5 5 5]})
+(-> {:x [1 2 3] :y [4 5 6] :c [5 5 5]}
     (sk/view :x :y)
     (sk/lay (sk/point {:color :c}))
     sk/plot)
@@ -320,9 +318,9 @@
 
 ;; ### Diverging color with midpoint at zero
 
-(-> (tc/dataset {:x (range 20)
-                 :y (map #(- % 10) (range 20))
-                 :val (map #(- % 10.0) (range 20))})
+(-> {:x (range 20)
+     :y (map #(- % 10) (range 20))
+     :val (map #(- % 10.0) (range 20))}
     (sk/view :x :y)
     (sk/lay (sk/point {:color :val}))
     (sk/plot {:color-scale :diverging :color-midpoint 0}))
@@ -333,9 +331,9 @@
 
 ;; ### Dates with very narrow range (two days apart)
 
-(-> (tc/dataset {:date [(java.time.LocalDate/of 2025 1 1)
-                         (java.time.LocalDate/of 2025 1 2)]
-                 :val [10 20]})
+(-> {:date [(java.time.LocalDate/of 2025 1 1)
+            (java.time.LocalDate/of 2025 1 2)]
+     :val [10 20]}
     (sk/view :date :val)
     (sk/lay (sk/point))
     sk/plot)
@@ -347,12 +345,12 @@
 ;; `LocalDateTime` values preserve sub-day precision. Tick labels
 ;; show `HH:MM` format when the range is less than a day.
 
-(-> (tc/dataset {:time (mapv #(java.time.LocalDateTime/of 2025 3 15
-                                                          (+ 8 (int (/ % 4)))
-                                                          (* 15 (mod (int %) 4))
-                                                          0)
-                             (range 24))
-                 :value (mapv #(+ 18.0 (* 4.0 (Math/sin (* % 0.3)))) (range 24))})
+(-> {:time (mapv #(java.time.LocalDateTime/of 2025 3 15
+                                              (+ 8 (int (/ % 4)))
+                                              (* 15 (mod (int %) 4))
+                                              0)
+                 (range 24))
+     :value (mapv #(+ 18.0 (* 4.0 (Math/sin (* % 0.3)))) (range 24))}
     (sk/view :time :value)
     (sk/lay (sk/line) (sk/point))
     sk/plot)
@@ -365,9 +363,9 @@
 ;;
 ;; With a date range spanning several years, tick labels show year values.
 
-(-> (tc/dataset {:date (mapv #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 120)))
-                             (range 20))
-                 :value (mapv #(+ 100 (* 50 (Math/sin (* % 0.4)))) (range 20))})
+(-> {:date (mapv #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 120)))
+                 (range 20))
+     :value (mapv #(+ 100 (* 50 (Math/sin (* % 0.4)))) (range 20))}
     (sk/view :date :value)
     (sk/lay (sk/line) (sk/point))
     sk/plot)
@@ -380,8 +378,8 @@
 
 ;; ### Polar with many categories
 
-(-> (tc/dataset {:cat (map #(str "cat-" %) (range 12))
-                 :val (repeatedly 12 #(rand-int 100))})
+(-> {:cat (map #(str "cat-" %) (range 12))
+     :val (repeatedly 12 #(rand-int 100))}
     (sk/view :cat :val)
     (sk/lay (sk/bar))
     (sk/coord :polar)
@@ -391,7 +389,7 @@
 
 ;; ### Fixed aspect ratio with extreme domain ratio
 
-(-> (tc/dataset {:x (range 100) :y (range 0 10 0.1)})
+(-> {:x (range 100) :y (range 0 10 0.1)}
     (sk/view :x :y)
     (sk/lay (sk/point))
     (sk/coord :fixed)
@@ -412,7 +410,7 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
-                                texts (:texts s)
-                                strip-labels (filter #(re-find #"sepal|petal" %) texts)]
+                               texts (:texts s)
+                               strip-labels (filter #(re-find #"sepal|petal" %) texts)]
                            (and (= 6 (:panels s))
                                 (= 6 (count strip-labels)))))])

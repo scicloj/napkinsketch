@@ -88,8 +88,8 @@
 ;; Use a log scale for data spanning orders of magnitude.
 
 (def exponential-data
-  (tc/dataset {:x (range 1 50)
-               :y (mapv #(* 2 (Math/pow 1.1 %)) (range 1 50))}))
+  {:x (range 1 50)
+   :y (mapv #(* 2 (Math/pow 1.1 %)) (range 1 50))})
 
 ;; Linear scale — hard to see the structure.
 

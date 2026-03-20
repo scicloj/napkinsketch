@@ -470,7 +470,7 @@
   [v]
   (if-not (:data v)
     v
-    (let [ds (:data v)
+    (let [ds (let [d (:data v)] (if (tc/dataset? d) d (tc/dataset d)))
           x-type (or (:x-type v) (column-type ds (:x v)))
           y-type (or (:y-type v) (when (and (:y v) (not= (:x v) (:y v)))
                                    (column-type ds (:y v))))
