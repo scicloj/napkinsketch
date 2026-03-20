@@ -50,7 +50,7 @@
        color (assoc :label (str color))
        (and with-range? ymins) (assoc :ymins ymins)
        (and with-range? ymaxs) (assoc :ymaxs ymaxs)
-       (and with-labels? labels) (assoc :labels (vec (map str labels)))))))
+       (and with-labels? labels) (assoc :labels (mapv str labels))))))
 
 ;; ---- Geometry Extraction (stat → layer descriptors) ----
 

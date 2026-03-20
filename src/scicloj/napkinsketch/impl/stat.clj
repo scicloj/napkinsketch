@@ -65,7 +65,7 @@
                             [lo hi]))))
             numeric-color? (and color (= color-type :numerical))
             ;; Extract color value from group key when color is part of group
-            color-idx (when color (.indexOf ^java.util.List (vec group) color))
+            color-idx (when color (.indexOf ^java.util.List group color))
             extract-color (fn [group-val]
                             (cond
                               (nil? group-val) nil
@@ -282,7 +282,7 @@
   "Average y-values for duplicate x-values in sorted arrays.
    Returns [unique-xs averaged-ys] as double arrays."
   [xs ys]
-  (let [pairs (map vector (seq xs) (seq ys))
+  (let [pairs (map vector xs ys)
         grouped (group-by first pairs)
         sorted-keys (sort (keys grouped))
         deduped (mapv (fn [x]
@@ -324,8 +324,8 @@
         grid-ys (dtype/emap loess-fn :float64 grid-xs)
 
         ;; Bootstrap: resample (x,y) pairs, fit LOESS, evaluate on grid
-        pairs (mapv vector (seq (dtype/->double-array xs-col))
-                    (seq (dtype/->double-array ys-col)))
+        pairs (mapv vector (dtype/->double-array xs-col)
+                    (dtype/->double-array ys-col))
         rng-inst (frand/rng :jdk 42)
         boot-result (boot/bootstrap {:data pairs} nil
                                     {:samples n-boot :rng rng-inst})
@@ -335,7 +335,7 @@
                          (when (>= (alength bsx) 4)
                            (try
                              (let [bfn (interp/loess bsx bsy {:bandwidth bandwidth})]
-                               (mapv bfn grid-xs))
+                               (dtype/emap bfn :float64 grid-xs))
                              (catch Exception _ nil)))))
         valid-boots (vec (remove nil? boot-grid-ys))
         n-valid (count valid-boots)
@@ -666,8 +666,8 @@
             y-step (/ (- y-hi y-lo) n-grid)
             ;; Bandwidth: Silverman's rule per axis
             bw-cfg (:kde2d-bandwidth cfg)
-            x-std (stats/stddev (seq xs))
-            y-std (stats/stddev (seq ys))
+            x-std (stats/stddev xs)
+            y-std (stats/stddev ys)
             n-pow (Math/pow (double n) -0.2)
             bw-x (if bw-cfg (first bw-cfg) (* 1.06 x-std n-pow))
             bw-y (if bw-cfg (second bw-cfg) (* 1.06 y-std n-pow))
@@ -688,7 +688,7 @@
                                 (recur (inc k) (+ acc w)))
                               acc))]
                     (aset densities (+ (* gi n-grid) gj) d))))
-            max-d (reduce max 0.0 (seq densities))
+            max-d (reduce max 0.0 densities)
             ;; Build tiles with density as fill value
             tiles (vec (for [gi (range n-grid)
                              gj (range n-grid)
@@ -704,7 +704,7 @@
          :y-domain [y-lo y-hi]
          :fill-range [0 max-d]
          ;; Raw grid data for contour extraction
-         :grid {:densities (vec (seq densities))
+         :grid {:densities densities
                 :n-grid n-grid
                 :x-lo x-lo :x-hi x-hi
                 :y-lo y-lo :y-hi y-hi

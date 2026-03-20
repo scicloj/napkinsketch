@@ -94,7 +94,7 @@
   ([categories val]
    (color-for categories val nil))
   ([categories val palette]
-   (let [idx (.indexOf ^java.util.List (vec categories) val)
+   (let [idx (if categories (.indexOf ^java.util.List categories val) -1)
          idx (if (neg? idx) 0 idx)]
      (if (map? palette)
        ;; Explicit mapping: look up value, fall back to index in default palette
