@@ -177,7 +177,8 @@
 ;; data-space geometry, domains, tick info, legend, layout dimensions.
 ;; No membrane types, no datasets, no scale objects.
 ;;
-;; Created with `sk/sketch`. Serializable and inspectable.
+;; Created with `sk/sketch`. Numeric arrays (`:xs`, `:ys`, etc.) are
+;; dtype-next buffers for efficiency.
 
 (def my-sketch (sk/sketch views))
 
@@ -384,7 +385,7 @@
 ;; | Nudge | Constant data-space offset (`:nudge-x`, `:nudge-y`) | Applied during layer extraction |
 ;; | Jitter | Random pixel offset to reduce overplotting | Applied at render time |
 ;; | Layer | Resolved geometry + style for one mark | Lives inside sketch panels |
-;; | Sketch | Complete resolved plot description | Serializable, inspectable |
+;; | Sketch | Complete resolved plot description | Inspectable (dtype-next buffers for numerics) |
 ;; | Panel | One plotting area (domain, ticks, layers) | One or more per sketch |
 ;; | Facet | Split data into panels by a categorical column | Configured on views, realized in sketch |
 ;; | Domain | Data range on an axis | Part of panel |

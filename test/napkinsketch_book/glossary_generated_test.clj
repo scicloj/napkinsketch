@@ -78,10 +78,9 @@
  v17_l121
  (def
   tips
-  (tc/dataset
-   {:day ["Mon" "Mon" "Tue" "Tue"],
-    :count [30 20 45 15],
-    :meal ["lunch" "dinner" "lunch" "dinner"]})))
+  {:day ["Mon" "Mon" "Tue" "Tue"],
+   :count [30 20 45 15],
+   :meal ["lunch" "dinner" "lunch" "dinner"]}))
 
 
 (def
@@ -126,25 +125,25 @@
 (deftest t28_l171 (is ((fn [m] (= :point (:mark m))) v27_l167)))
 
 
-(def v30_l182 (def my-sketch (sk/sketch views)))
+(def v30_l183 (def my-sketch (sk/sketch views)))
 
 
-(def v31_l184 (sort (keys my-sketch)))
+(def v31_l185 (sort (keys my-sketch)))
 
 
-(deftest t32_l186 (is ((fn [ks] (every? keyword? ks)) v31_l184)))
+(deftest t32_l187 (is ((fn [ks] (every? keyword? ks)) v31_l185)))
 
 
-(def v34_l194 (sort (keys (first (:panels my-sketch)))))
+(def v34_l195 (sort (keys (first (:panels my-sketch)))))
 
 
 (deftest
- t35_l196
- (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v34_l194)))
+ t35_l197
+ (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v34_l195)))
 
 
 (def
- v37_l207
+ v37_l208
  (->
   iris
   (sk/view :sepal_length :sepal_width)
@@ -155,41 +154,41 @@
   count))
 
 
-(deftest t38_l213 (is ((fn [n] (= 3 n)) v37_l207)))
+(deftest t38_l214 (is ((fn [n] (= 3 n)) v37_l208)))
 
 
 (def
- v40_l222
+ v40_l223
  (let
   [p (first (:panels my-sketch))]
   {:x-domain (:x-domain p), :y-domain (:y-domain p)}))
 
 
 (deftest
- t41_l226
+ t41_l227
  (is
   ((fn
     [m]
     (and (= 2 (count (:x-domain m))) (number? (first (:x-domain m)))))
-   v40_l222)))
+   v40_l223)))
 
 
-(def v43_l272 (:mark (sk/rule-h 5)))
+(def v43_l273 (:mark (sk/rule-h 5)))
 
 
-(deftest t44_l274 (is ((fn [m] (= :rule-h m)) v43_l272)))
+(deftest t44_l275 (is ((fn [m] (= :rule-h m)) v43_l273)))
 
 
-(def v46_l283 (:legend my-sketch))
+(def v46_l284 (:legend my-sketch))
 
 
 (deftest
- t47_l285
- (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v46_l283)))
+ t47_l286
+ (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v46_l284)))
 
 
 (def
- v49_l294
+ v49_l295
  (->
   iris
   (sk/view :sepal_length :sepal_width)
@@ -204,28 +203,28 @@
   :panels))
 
 
-(deftest t50_l301 (is ((fn [n] (= 1 n)) v49_l294)))
+(deftest t50_l302 (is ((fn [n] (= 1 n)) v49_l295)))
 
 
-(def v52_l313 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v52_l314 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v53_l315 (vector? my-membrane))
+(def v53_l316 (vector? my-membrane))
 
 
-(deftest t54_l317 (is ((fn [v] (true? v)) v53_l315)))
+(deftest t54_l318 (is ((fn [v] (true? v)) v53_l316)))
 
 
-(def v55_l319 (count my-membrane))
+(def v55_l320 (count my-membrane))
 
 
-(deftest t56_l321 (is ((fn [n] (pos? n)) v55_l319)))
+(deftest t56_l322 (is ((fn [n] (pos? n)) v55_l320)))
 
 
-(def v58_l331 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v58_l332 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
-(def v59_l333 (first my-figure))
+(def v59_l334 (first my-figure))
 
 
-(deftest t60_l335 (is ((fn [v] (= :svg v)) v59_l333)))
+(deftest t60_l336 (is ((fn [v] (= :svg v)) v59_l334)))

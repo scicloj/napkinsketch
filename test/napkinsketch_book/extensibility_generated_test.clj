@@ -45,18 +45,18 @@
  v14_l145
  (let
   [s
-   (sk/sketch
-    (->
-     iris
-     (sk/view [[:sepal_length :sepal_width]])
-     (sk/lay (sk/point {:color :species}))))
+   (->
+    iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    sk/sketch)
    layer
    (first (:layers (first (:panels s))))]
   layer))
 
 
 (deftest
- t15_l151
+ t15_l152
  (is
   ((fn
     [m]
@@ -65,42 +65,42 @@
 
 
 (def
- v17_l215
+ v17_l216
  (def
   my-sketch
-  (sk/sketch
-   (->
-    iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))))))
+  (->
+   iris
+   (sk/view [[:sepal_length :sepal_width]])
+   (sk/lay (sk/point {:color :species}))
+   sk/sketch)))
 
 
-(def v18_l220 (first (sk/sketch->figure my-sketch :svg {})))
+(def v18_l222 (first (sk/sketch->figure my-sketch :svg {})))
 
 
-(deftest t19_l222 (is ((fn [v] (= :svg v)) v18_l220)))
+(deftest t19_l224 (is ((fn [v] (= :svg v)) v18_l222)))
 
 
-(def v21_l226 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v21_l228 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
-(def v22_l228 (vector? my-figure))
+(def v22_l230 (vector? my-figure))
 
 
-(deftest t23_l230 (is ((fn [v] (true? v)) v22_l228)))
+(deftest t23_l232 (is ((fn [v] (true? v)) v22_l230)))
 
 
-(def v25_l271 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v25_l273 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v26_l273 (vector? my-membrane))
+(def v26_l275 (vector? my-membrane))
 
 
-(deftest t27_l275 (is ((fn [v] (true? v)) v26_l273)))
+(deftest t27_l277 (is ((fn [v] (true? v)) v26_l275)))
 
 
 (def
- v28_l277
+ v28_l279
  (first
   (sk/membrane->figure
    my-membrane
@@ -109,11 +109,11 @@
     :total-height (:total-height my-sketch)})))
 
 
-(deftest t29_l281 (is ((fn [v] (= :svg v)) v28_l277)))
+(deftest t29_l283 (is ((fn [v] (= :svg v)) v28_l279)))
 
 
 (def
- v31_l335
+ v31_l337
  (->
   iris
   (sk/view :species)
@@ -123,11 +123,11 @@
 
 
 (deftest
- t32_l341
+ t32_l343
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v31_l335)))
+   v31_l337)))

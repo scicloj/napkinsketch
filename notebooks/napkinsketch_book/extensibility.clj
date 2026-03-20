@@ -190,7 +190,7 @@
 ;;    :style {:opacity 0.5}
 ;;    :groups (vec (for [{:keys [color xs ys]} (:points stat)]
 ;;                   {:color (extract/resolve-color ...)
-;;                    :xs (vec xs) :ys (vec ys)}))})
+;;                    :xs xs :ys ys}))})
 ;;
 ;; ;; 2. Render to membrane drawables
 ;; (defmethod mark/layer->membrane :area [layer ctx]
