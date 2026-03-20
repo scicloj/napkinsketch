@@ -335,6 +335,7 @@
 ;; A legend appears when a column is mapped to color. Examine the
 ;; legend in a colored sketch:
 
+(:legend (sk/sketch colored-views))
 (kind/test-last [(fn [leg] (and (= :g (:title leg))
                                 (= 2 (count (:entries leg)))))])
 

@@ -190,7 +190,7 @@ iris-sk
 
 (kind/test-last [(fn [m] (= :continuous (:type m)))])
 
-;; The legend has pre-computed gradient stops — no functions, fully serializable:
+;; The legend has pre-computed gradient stops — no functions:
 
 (select-keys (:legend cont-sk) [:title :type :min :max :color-scale])
 
@@ -563,16 +563,19 @@ final-sk
 
 (kind/test-last [some?])
 
-;; ## Serialization
+;; ## Data Types
 ;;
-;; Sketches are plain Clojure data — maps, vectors, numbers, strings,
-;; keywords. They serialize cleanly with `pr-str` and read back with
-;; `read-string`.
+;; Sketches are plain inspectable data — maps, numbers, strings,
+;; keywords, and dtype-next buffers for numeric arrays (`:xs`, `:ys`,
+;; etc.). The buffers support `nth`, `count`, `seq`, and all standard
+;; sequence operations.
 
-(let [s (pr-str tiny-sk)
-      back (read-string s)]
-  (= tiny-sk back))
+(type (:xs (first (:groups (first (:layers (first (:panels tiny-sk))))))))
 
-(kind/test-last [true?])
+(kind/test-last [(fn [t] (not= clojure.lang.PersistentVector t))])
 
-;; This makes sketches suitable for caching, logging, and snapshot testing.
+;; You can convert any numeric buffer to a plain vector with `vec`:
+
+(vec (:xs (first (:groups (first (:layers (first (:panels tiny-sk))))))))
+
+(kind/test-last [(fn [v] (and (vector? v) (number? (first v))))])

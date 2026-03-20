@@ -83,11 +83,9 @@ trace-sketch
 
 (kind/test-last [true?])
 
-;; And serializes cleanly — it's plain Clojure data:
-
-(= trace-sketch (read-string (pr-str trace-sketch)))
-
-(kind/test-last [true?])
+;; Numeric arrays (`:xs`, `:ys`, etc.) are dtype-next buffers — efficient
+;; primitive-backed arrays that work with `nth`, `count`, and all standard
+;; sequence operations.
 
 ;; ### Membrane
 ;;
@@ -129,7 +127,7 @@ trace-membrane
 ;; | Stage | Type | Coordinates | Serializable? |
 ;; |:------|:-----|:------------|:--------------|
 ;; | Views | Clojure maps | N/A (declarative) | No (contains dataset) |
-;; | Sketch | Clojure maps | Data space | Yes (`pr-str` roundtrips) |
+;; | Sketch | Clojure maps + dtype buffers | Data space | No (dtype buffers) |
 ;; | Membrane | Record tree | Pixel space | No (Java objects) |
 ;; | Figure | Hiccup vectors | Pixel space | Yes (EDN vectors) |
 
@@ -158,10 +156,10 @@ graph LR
   style HOW fill:#e3f2fd
 ")
 
-;; The sketch is **plain Clojure data** — maps, vectors, numbers, strings,
-;; keywords. No membrane types, no datasets, no scale objects.
-;; It validates against a Malli schema and roundtrips through
-;; `pr-str` / `read-string`.
+;; The sketch is **plain inspectable data** — maps, numbers, strings,
+;; keywords, and dtype-next buffers for numeric arrays. No membrane
+;; types, no datasets, no scale objects. It validates against a Malli
+;; schema.
 ;;
 ;; The membrane tree is **Java objects** — `Translate`, `WithColor`,
 ;; `RoundedRectangle`, `Label`, etc. All positions are resolved to
@@ -172,8 +170,6 @@ graph LR
 ;; - Inspecting the plot specification without rendering
 ;;
 ;; - Validating plot structure with Malli
-;;
-;; - Serializing plots for storage or transmission
 ;;
 ;; - Adding other backends (Canvas, Plotly, Vega-Lite) that consume sketches
 

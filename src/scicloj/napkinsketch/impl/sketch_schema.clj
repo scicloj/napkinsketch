@@ -27,13 +27,13 @@
 (def PointGroup
   [:map
    [:color Color]
-   [:xs [:vector number?]]
-   [:ys [:vector number?]]
-   [:colors {:optional true} [:vector Color]]
-   [:sizes {:optional true} [:vector number?]]
-   [:alphas {:optional true} [:vector number?]]
+   [:xs [:sequential number?]]
+   [:ys [:sequential number?]]
+   [:colors {:optional true} [:sequential Color]]
+   [:sizes {:optional true} [:sequential number?]]
+   [:alphas {:optional true} [:sequential number?]]
    [:shapes {:optional true} [:vector any?]]
-   [:row-indices {:optional true} [:vector int?]]])
+   [:row-indices {:optional true} [:sequential int?]]])
 
 (def BarBin
   [:map
@@ -60,8 +60,8 @@
 (def RectValueGroup
   [:map
    [:color Color]
-   [:xs [:vector any?]]
-   [:ys [:vector number?]]])
+   [:xs [:sequential any?]]
+   [:ys [:sequential number?]]])
 
 (def LineSegmentGroup
   "Regression line segment."
@@ -74,25 +74,25 @@
   "Connected points."
   [:map
    [:color Color]
-   [:xs [:vector number?]]
-   [:ys [:vector number?]]])
+   [:xs [:sequential number?]]
+   [:ys [:sequential number?]]])
 
 (def TextGroup
   "Text labels at data positions."
   [:map
    [:color Color]
-   [:xs [:vector number?]]
-   [:ys [:vector number?]]
+   [:xs [:sequential number?]]
+   [:ys [:sequential number?]]
    [:labels {:optional true} [:vector string?]]])
 
 (def ErrorbarGroup
   "Error bars at data positions."
   [:map
    [:color Color]
-   [:xs [:vector number?]]
-   [:ys [:vector number?]]
-   [:ymins [:vector number?]]
-   [:ymaxs [:vector number?]]])
+   [:xs [:sequential number?]]
+   [:ys [:sequential number?]]
+   [:ymins [:sequential number?]]
+   [:ymaxs [:sequential number?]]])
 
 (def BoxplotBox
   "A single boxplot box with five-number summary."
@@ -105,7 +105,7 @@
    [:q3 number?]
    [:whisker-lo number?]
    [:whisker-hi number?]
-   [:outliers {:optional true} [:vector number?]]])
+   [:outliers {:optional true} [:sequential number?]]])
 
 (def ViolinEntry
   "A single violin curve with category and mirrored density."
@@ -113,8 +113,8 @@
    [:category any?]
    [:color Color]
    [:color-category {:optional true} any?]
-   [:ys [:vector number?]]
-   [:densities [:vector number?]]])
+   [:ys [:sequential number?]]
+   [:densities [:sequential number?]]])
 
 (def TileEntry
   "A single tile (heatmap cell) with bounds and fill color."
@@ -156,7 +156,7 @@
    [:boxes {:optional true} [:vector BoxplotBox]]
    [:violins {:optional true} [:vector ViolinEntry]]
    [:tiles {:optional true} [:vector TileEntry]]
-   [:ridges {:optional true} [:vector [:map [:category any?] [:color Color] [:ys [:vector number?]] [:densities [:vector number?]]]]]
+   [:ridges {:optional true} [:vector [:map [:category any?] [:color Color] [:ys [:sequential number?]] [:densities [:sequential number?]]]]]
    [:color-categories {:optional true} [:maybe [:vector any?]]]
    [:position {:optional true} [:enum :dodge :stack :fill]]
    [:categories {:optional true} [:vector any?]]
@@ -226,7 +226,8 @@
 
 (def Sketch
   "A fully resolved plot specification.
-   Data-space geometry, no membrane types, no datasets."
+   Data-space geometry, no membrane types, no datasets.
+   Numeric arrays (xs, ys, etc.) may be dtype-next buffers."
   [:map
    [:width pos-int?]
    [:height pos-int?]

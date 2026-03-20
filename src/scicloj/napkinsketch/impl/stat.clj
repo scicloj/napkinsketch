@@ -212,18 +212,12 @@
         x-min (dfn/reduce-min xs-col)
         x-max (dfn/reduce-max xs-col)
         step (/ (- x-max x-min) (dec (double n-grid)))
-        grid-xs (mapv #(+ x-min (* step (double %))) (range n-grid))
-        grid-ys (mapv #(regr/predict model [%]) grid-xs)
-        grid-ymins (mapv (fn [xi yi]
-                           (let [h (+ a00 (* 2.0 a01 xi) (* a11 xi xi))
-                                 se (* sigma (Math/sqrt h))]
-                             (- (double yi) (* t-val se))))
-                         grid-xs grid-ys)
-        grid-ymaxs (mapv (fn [xi yi]
-                           (let [h (+ a00 (* 2.0 a01 xi) (* a11 xi xi))
-                                 se (* sigma (Math/sqrt h))]
-                             (+ (double yi) (* t-val se))))
-                         grid-xs grid-ys)]
+        grid-xs (dfn/+ x-min (dfn/* step (range n-grid)))
+        grid-ys (dtype/emap #(regr/predict model [%]) :float64 grid-xs)
+        h (dfn/+ a00 (dfn/* 2.0 a01 grid-xs) (dfn/* a11 grid-xs grid-xs))
+        se (dfn/* sigma (dfn/sqrt h))
+        grid-ymins (dfn/- grid-ys (dfn/* t-val se))
+        grid-ymaxs (dfn/+ grid-ys (dfn/* t-val se))]
     {:xs grid-xs :ys grid-ys
      :ymins grid-ymins :ymaxs grid-ymaxs
      :x1 x-min :y1 (regr/predict model [x-min])
@@ -309,8 +303,8 @@
         x-min (dfn/reduce-min xs-col)
         x-max (dfn/reduce-max xs-col)
         step (/ (- x-max x-min) (dec (double n-grid)))
-        grid-xs (mapv #(+ x-min (* step (double %))) (range n-grid))
-        grid-ys (mapv loess-fn grid-xs)]
+        grid-xs (dfn/+ x-min (dfn/* step (range n-grid)))
+        grid-ys (dtype/emap loess-fn :float64 grid-xs)]
     {:xs grid-xs :ys grid-ys}))
 
 (defn fit-loess-with-se
@@ -326,8 +320,8 @@
         x-min (dfn/reduce-min xs-col)
         x-max (dfn/reduce-max xs-col)
         step (/ (- x-max x-min) (dec (double n-grid)))
-        grid-xs (mapv #(+ x-min (* step (double %))) (range n-grid))
-        grid-ys (mapv loess-fn grid-xs)
+        grid-xs (dfn/+ x-min (dfn/* step (range n-grid)))
+        grid-ys (dtype/emap loess-fn :float64 grid-xs)
 
         ;; Bootstrap: resample (x,y) pairs, fit LOESS, evaluate on grid
         pairs (mapv vector (seq (dtype/->double-array xs-col))
@@ -434,8 +428,8 @@
         lo (- (double x-min) (* 0.5 range-w))
         hi (+ (double x-max) (* 0.5 range-w))
         step (/ (- hi lo) (double (dec n-grid)))
-        grid-xs (mapv #(+ lo (* step (double %))) (range n-grid))
-        grid-ys (mapv kd grid-xs)]
+        grid-xs (dfn/+ lo (dfn/* step (range n-grid)))
+        grid-ys (dtype/emap kd :float64 grid-xs)]
     {:xs grid-xs :ys grid-ys}))
 
 (defmethod compute-stat :kde [view]

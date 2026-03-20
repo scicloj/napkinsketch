@@ -2,7 +2,8 @@
   "Extract data-space geometry from resolved views and stat results.
    Produces layer descriptor maps — plain Clojure maps with mark type,
    style, and groups of data-space coordinates."
-  (:require [scicloj.napkinsketch.impl.defaults :as defaults]))
+  (:require [scicloj.napkinsketch.impl.defaults :as defaults]
+            [tech.v3.datatype.functional :as dfn]))
 
 ;; ---- Color Resolution (data-space) ----
 
@@ -18,7 +19,7 @@
   "Apply nudge-x/nudge-y offsets to a layer's groups.
    Nudge shifts data coordinates by a constant amount — orthogonal to
    position adjustment (dodge/stack). Works on any layer with groups
-   containing :xs/:ys vectors."
+   containing :xs/:ys numeric buffers."
   [layer {:keys [nudge-x nudge-y]}]
   (if (or nudge-x nudge-y)
     (update layer :groups
@@ -26,13 +27,13 @@
               (mapv (fn [g]
                       (cond-> g
                         (and nudge-x (:xs g))
-                        (update :xs (fn [xs] (mapv #(+ (double %) (double nudge-x)) xs)))
+                        (update :xs dfn/+ (double nudge-x))
                         (and nudge-y (:ys g))
-                        (update :ys (fn [ys] (mapv #(+ (double %) (double nudge-y)) ys)))
+                        (update :ys dfn/+ (double nudge-y))
                         (and nudge-y (:ymins g))
-                        (update :ymins (fn [ys] (mapv #(+ (double %) (double nudge-y)) ys)))
+                        (update :ymins dfn/+ (double nudge-y))
                         (and nudge-y (:ymaxs g))
-                        (update :ymaxs (fn [ys] (mapv #(+ (double %) (double nudge-y)) ys)))))
+                        (update :ymaxs dfn/+ (double nudge-y))))
                     gs)))
     layer))
 
@@ -45,10 +46,10 @@
   (vec
    (for [{:keys [color xs ys ymins ymaxs labels]} (:points stat)]
      (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
-              :xs (vec xs) :ys (vec ys)}
+              :xs xs :ys ys}
        color (assoc :label (str color))
-       (and with-range? ymins) (assoc :ymins (vec ymins))
-       (and with-range? ymaxs) (assoc :ymaxs (vec ymaxs))
+       (and with-range? ymins) (assoc :ymins ymins)
+       (and with-range? ymaxs) (assoc :ymaxs ymaxs)
        (and with-labels? labels) (assoc :labels (vec (map str labels)))))))
 
 ;; ---- Geometry Extraction (stat → layer descriptors) ----
@@ -72,7 +73,7 @@
          :groups (vec
                   (for [{:keys [color xs ys sizes alphas shapes row-indices color-values]} (:points stat)]
                     (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                             :xs (vec xs) :ys (vec ys)}
+                             :xs xs :ys ys}
                       color (assoc :label (str color))
                       (and numeric-color? color-values)
                       (assoc :colors (vec (map (fn [v]
@@ -80,10 +81,10 @@
                                                        grad-fn (:gradient-fn cfg)]
                                                    (grad-fn t)))
                                                color-values)))
-                      sizes (assoc :sizes (vec sizes))
-                      alphas (assoc :alphas (vec alphas))
+                      sizes (assoc :sizes sizes)
+                      alphas (assoc :alphas alphas)
                       shapes (assoc :shapes (vec shapes))
-                      row-indices (assoc :row-indices (vec row-indices)))))}
+                      row-indices (assoc :row-indices row-indices))))}
         (cond-> (:position view) (assoc :position (:position view)))
         (apply-nudge view))))
 
@@ -112,13 +113,13 @@
                            (for [{:keys [color xs ys]} pts]
                              {:color (resolve-color all-colors color (:fixed-color view) cfg)
                               :label (str color)
-                              :xs (vec xs) :ys (vec ys)}))))}
+                              :xs xs :ys ys}))))}
         ;; Confidence ribbons from :lm {:se true}
         (:ribbons stat)
         (assoc :ribbons (vec
                          (for [{:keys [color xs ymins ymaxs]} (:ribbons stat)]
                            {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                            :xs (vec xs) :ymins (vec ymins) :ymaxs (vec ymaxs)})))
+                            :xs xs :ymins ymins :ymaxs ymaxs})))
         (:position view)
         (assoc :position (:position view)))
       (apply-nudge view)))
@@ -148,7 +149,7 @@
               (for [{:keys [color xs ys]} (:points stat)]
                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
                  :label (str color)
-                 :xs (vec xs) :ys (vec ys)}))}))
+                 :xs xs :ys ys}))}))
 
 (defmethod extract-layer :text [view stat all-colors cfg]
   {:mark :text
@@ -195,7 +196,7 @@
                         :median (:median b) :q1 (:q1 b) :q3 (:q3 b)
                         :whisker-lo (:whisker-lo b) :whisker-hi (:whisker-hi b)}
                  (:color b) (assoc :color-category (:color b))
-                 (seq (:outliers b)) (assoc :outliers (vec (:outliers b))))))}))
+                 (seq (:outliers b)) (assoc :outliers (:outliers b)))))}))
 
 (defmethod extract-layer :violin [view stat all-colors cfg]
   (let [color-cats (:color-categories stat)]
@@ -208,8 +209,8 @@
                (for [v (:violins stat)]
                  (cond-> {:category (:category v)
                           :color (resolve-color all-colors (:color v) (:fixed-color view) cfg)
-                          :ys (vec (:ys v))
-                          :densities (vec (:densities v))}
+                          :ys (:ys v)
+                          :densities (:densities v)}
                    (:color v) (assoc :color-category (:color v)))))}))
 
 (defmethod extract-layer :tile [view stat all-colors cfg]
@@ -392,8 +393,8 @@
      :ridges (vec (for [v violins]
                     (cond-> {:category (:category v)
                              :color (resolve-color all-colors (:color v) (:fixed-color view) cfg)
-                             :ys (vec (:ys v))
-                             :densities (vec (:densities v))}
+                             :ys (:ys v)
+                             :densities (:densities v)}
                       (:color v) (assoc :color-category (:color v)))))
      :categories (vec categories)}))
 
