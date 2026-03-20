@@ -169,6 +169,10 @@
 ;; Shaded bands use a default opacity of 0.15.
 ;; Pass `{:alpha …}` to override.
 
+(:band-opacity (sk/config))
+
+(kind/test-last [(fn [v] (= 0.15 v))])
+
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point {:color :species})

@@ -41,7 +41,14 @@
 (kind/test-last [(fn [sk] (and (= :single (:layout-type sk))
                                (= 1 (count (:panels sk)))
                                (= "x" (:x-label sk))
-                               (= "y" (:y-label sk))))])
+                               (= "y" (:y-label sk))
+                               (nil? (:legend sk))
+                               (zero? (get-in sk [:layout :legend-w]))
+                               (let [p (first (:panels sk))
+                                     g (first (:groups (first (:layers p))))]
+                                 (and (= :linear (get-in p [:x-scale :type]))
+                                      (= 1 (count (:groups (first (:layers p)))))
+                                      (= [0.2 0.2 0.2 1.0] (:color g))))))])
 
 ;; And the resulting plot:
 
@@ -195,7 +202,8 @@
 
 (kind/test-last [(fn [sk] (let [layer (first (:layers (first (:panels sk))))]
                             (and (= 2 (count (:groups layer)))
-                                 (some? (:legend sk)))))])
+                                 (some? (:legend sk))
+                                 (= 100 (get-in sk [:layout :legend-w])))))])
 
 (sk/plot colored-views)
 
@@ -218,8 +226,14 @@
 (sk/sketch fixed-color-views)
 
 (kind/test-last [(fn [sk] (and (nil? (:legend sk))
-                               (let [c (:color (first (:groups (first (:layers (first (:panels sk)))))))]
-                                 (> (first c) 0.8))))])
+                               (zero? (get-in sk [:layout :legend-w]))
+                               (let [layer (first (:layers (first (:panels sk))))
+                                     c (:color (first (:groups layer)))]
+                                 (and (= 1 (count (:groups layer)))
+                                      (> (nth c 0) 0.85)
+                                      (< (nth c 1) 0.35)
+                                      (< (nth c 2) 0.30)
+                                      (== 1.0 (nth c 3))))))])
 
 (sk/plot fixed-color-views)
 
@@ -405,8 +419,9 @@
    :data-range [1.0 5.0]
    :padding-each-side (* 0.05 (- 5.0 1.0))})
 
-(kind/test-last [(fn [m] (and (< (first (:x-domain m)) 1.0)
-                              (> (second (:x-domain m)) 5.0)))])
+(kind/test-last [(fn [m] (and (== 0.8 (first (:x-domain m)))
+                              (== 5.2 (second (:x-domain m)))
+                              (== 0.2 (:padding-each-side m))))])
 
 ;; The domain `[0.8, 5.2]` = data range `[1.0, 5.0]` ± 0.2 (5% of 4.0).
 ;;
@@ -493,7 +508,7 @@
 (kind/test-last [(fn [m] (and (zero? (get-in m [:bare-layout :title-pad]))
                               (pos? (get-in m [:full-layout :title-pad]))
                               (zero? (get-in m [:bare-layout :legend-w]))
-                              (pos? (get-in m [:full-layout :legend-w]))
+                              (= 100 (get-in m [:full-layout :legend-w]))
                               (> (:full-total-width m) (:bare-total-width m))))])
 
 ;; The bare plot has zero title padding and zero legend width.
