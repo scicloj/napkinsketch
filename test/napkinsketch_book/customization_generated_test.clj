@@ -137,7 +137,7 @@
    {:x (range 1 50),
     :y
     (mapv
-     (fn* [p1__94852#] (* 2 (Math/pow 1.1 p1__94852#)))
+     (fn* [p1__117940#] (* 2 (Math/pow 1.1 p1__117940#)))
      (range 1 50))})))
 
 
@@ -411,7 +411,21 @@
 
 
 (def
- v69_l294
+ v69_l300
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :species}))
+  (sk/plot {:palette :khroma/okabeito})))
+
+
+(deftest
+ t70_l305
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v69_l300)))
+
+
+(def
+ v72_l311
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -422,13 +436,13 @@
 
 
 (deftest
- t70_l300
+ t73_l317
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v69_l294)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v72_l311)))
 
 
 (def
- v72_l308
+ v75_l325
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -437,18 +451,18 @@
 
 
 (deftest
- t73_l313
+ t76_l330
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (< (:width s) 700))))
-   v72_l308)))
+   v75_l325)))
 
 
 (def
- v75_l321
+ v78_l338
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -456,11 +470,11 @@
   (sk/plot {:tooltip true})))
 
 
-(deftest t76_l326 (is ((fn [v] (= :div (first v))) v75_l321)))
+(deftest t79_l343 (is ((fn [v] (= :div (first v))) v78_l338)))
 
 
 (def
- v78_l332
+ v81_l349
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -468,4 +482,4 @@
   (sk/plot {:brush true})))
 
 
-(deftest t79_l337 (is ((fn [v] (= :div (first v))) v78_l332)))
+(deftest t82_l354 (is ((fn [v] (= :div (first v))) v81_l349)))

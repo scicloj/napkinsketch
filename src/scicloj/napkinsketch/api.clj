@@ -467,3 +467,15 @@
             (cond-> []
               title (conj title-div)
               true (into flat-plots)))))))
+
+(defn save
+  "Save a plot to an SVG file.
+   views — a vector of view maps (same as `plot` accepts).
+   path  — file path (string or java.io.File).
+   opts  — same options as `plot` (:width, :height, :title, :theme, etc.).
+   Tooltip and brush interactivity are not included in saved files.
+   Returns the path.
+   (save views \"plot.svg\")
+   (save views \"plot.svg\" {:width 800 :height 600})"
+  ([views path] (svg/save views path))
+  ([views path opts] (svg/save views path opts)))

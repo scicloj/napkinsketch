@@ -655,3 +655,16 @@ sk1
             {:cols 2})
 
 (kind/test-last [(fn [v] (= :div (first v)))])
+;; ## Export
+
+(kind/doc #'sk/save)
+
+;; Save a plot to an SVG file:
+
+(let [path (str (java.io.File/createTempFile "napkinsketch-example" ".svg"))]
+  (sk/save [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})]
+           path
+           {:title "Iris Export"})
+  (.contains (slurp path) "<svg"))
+
+(kind/test-last [true?])

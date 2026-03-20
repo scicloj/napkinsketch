@@ -228,7 +228,7 @@
    (tc/dataset
     {:category
      (mapv
-      (fn* [p1__102278#] (keyword (str "cat-" p1__102278#)))
+      (fn* [p1__116434#] (keyword (str "cat-" p1__116434#)))
       (range 12)),
      :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))}))
   (sk/view [[:category :value]])
@@ -282,7 +282,7 @@
  (->
   iris
   (tc/select-rows
-   (fn* [p1__102279#] (= "setosa" (p1__102279# :species))))
+   (fn* [p1__116435#] (= "setosa" (p1__116435# :species))))
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay (sk/point) (sk/lm))
   (sk/plot {:title "Setosa Only"})))
@@ -394,7 +394,44 @@
 
 
 (def
- v63_l286
+ v63_l283
+ (->
+  (tc/dataset {:x [1 10 100 1000 10000], :y [2 20 200 2000 20000]})
+  (sk/view :x :y)
+  (sk/lay (sk/point))
+  (sk/scale :x :log)
+  (sk/scale :y :log)
+  sk/plot))
+
+
+(deftest
+ t64_l291
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 5 (:points s)) (= 1 (:panels s)))))
+   v63_l283)))
+
+
+(def
+ v66_l297
+ (->
+  (tc/dataset {:x [0.001 0.01 0.1 1 10 100], :y [1 2 3 4 5 6]})
+  (sk/view :x :y)
+  (sk/lay (sk/point))
+  (sk/scale :x :log)
+  sk/plot))
+
+
+(deftest
+ t67_l304
+ (is ((fn [v] (= 6 (:points (sk/svg-summary v)))) v66_l297)))
+
+
+(def
+ v69_l314
  (->
   (tc/dataset {:x [1 2 3], :y [4 5 6], :c [5 5 5]})
   (sk/view :x :y)
@@ -403,46 +440,119 @@
 
 
 (deftest
- t64_l291
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v63_l286)))
+ t70_l319
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v69_l314)))
 
 
 (def
- v66_l295
+ v72_l323
  (->
   (tc/dataset
    {:x (range 20),
-    :y (map (fn* [p1__102280#] (- p1__102280# 10)) (range 20)),
-    :val (map (fn* [p1__102281#] (- p1__102281# 10.0)) (range 20))})
+    :y (map (fn* [p1__116436#] (- p1__116436# 10)) (range 20)),
+    :val (map (fn* [p1__116437#] (- p1__116437# 10.0)) (range 20))})
   (sk/view :x :y)
   (sk/lay (sk/point {:color :val}))
   (sk/plot {:color-scale :diverging, :color-midpoint 0})))
 
 
 (deftest
- t67_l302
- (is ((fn [v] (= 20 (:points (sk/svg-summary v)))) v66_l295)))
+ t73_l330
+ (is ((fn [v] (= 20 (:points (sk/svg-summary v)))) v72_l323)))
 
 
 (def
- v69_l308
+ v75_l336
  (->
-  (tc/dataset {:date ["2025-01-01" "2025-01-02"], :val [10 20]})
+  (tc/dataset
+   {:date
+    [(java.time.LocalDate/of 2025 1 1)
+     (java.time.LocalDate/of 2025 1 2)],
+    :val [10 20]})
   (sk/view :date :val)
   (sk/lay (sk/point))
   sk/plot))
 
 
 (deftest
- t70_l314
- (is ((fn [v] (= 2 (:points (sk/svg-summary v)))) v69_l308)))
+ t76_l343
+ (is ((fn [v] (= 2 (:points (sk/svg-summary v)))) v75_l336)))
 
 
 (def
- v72_l320
+ v78_l350
  (->
   (tc/dataset
-   {:cat (map (fn* [p1__102282#] (str "cat-" p1__102282#)) (range 12)),
+   {:time
+    (mapv
+     (fn*
+      [p1__116438#]
+      (java.time.LocalDateTime/of
+       2025
+       3
+       15
+       (+ 8 (int (/ p1__116438# 4)))
+       (* 15 (mod (int p1__116438#) 4))
+       0))
+     (range 24)),
+    :value
+    (mapv
+     (fn*
+      [p1__116439#]
+      (+ 18.0 (* 4.0 (Math/sin (* p1__116439# 0.3)))))
+     (range 24))})
+  (sk/view :time :value)
+  (sk/lay (sk/line) (sk/point))
+  sk/plot))
+
+
+(deftest
+ t79_l360
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 24 (:points s)) (= 1 (:lines s)))))
+   v78_l350)))
+
+
+(def
+ v81_l368
+ (->
+  (tc/dataset
+   {:date
+    (mapv
+     (fn*
+      [p1__116440#]
+      (java.time.LocalDate/ofEpochDay
+       (+ 18262 (* (long p1__116440#) 120))))
+     (range 20)),
+    :value
+    (mapv
+     (fn* [p1__116441#] (+ 100 (* 50 (Math/sin (* p1__116441# 0.4)))))
+     (range 20))})
+  (sk/view :date :value)
+  (sk/lay (sk/line) (sk/point))
+  sk/plot))
+
+
+(deftest
+ t82_l375
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 20 (:points s)) (= 1 (:lines s)))))
+   v81_l368)))
+
+
+(def
+ v84_l383
+ (->
+  (tc/dataset
+   {:cat (map (fn* [p1__116442#] (str "cat-" p1__116442#)) (range 12)),
     :val (repeatedly 12 (fn* [] (rand-int 100)))})
   (sk/view :cat :val)
   (sk/lay (sk/bar))
@@ -451,12 +561,12 @@
 
 
 (deftest
- t73_l327
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v72_l320)))
+ t85_l390
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v84_l383)))
 
 
 (def
- v75_l331
+ v87_l394
  (->
   (tc/dataset {:x (range 100), :y (range 0 10 0.1)})
   (sk/view :x :y)
@@ -466,12 +576,12 @@
 
 
 (deftest
- t76_l337
- (is ((fn [v] (= 100 (:points (sk/svg-summary v)))) v75_l331)))
+ t88_l400
+ (is ((fn [v] (= 100 (:points (sk/svg-summary v)))) v87_l394)))
 
 
 (def
- v78_l346
+ v90_l409
  (->
   iris
   (sk/view
@@ -481,7 +591,7 @@
 
 
 (deftest
- t79_l351
+ t91_l414
  (is
   ((fn
     [v]
@@ -492,7 +602,7 @@
       (:texts s)
       strip-labels
       (filter
-       (fn* [p1__102283#] (re-find #"sepal|petal" p1__102283#))
+       (fn* [p1__116443#] (re-find #"sepal|petal" p1__116443#))
        texts)]
      (and (= 6 (:panels s)) (= 6 (count strip-labels)))))
-   v78_l346)))
+   v90_l409)))

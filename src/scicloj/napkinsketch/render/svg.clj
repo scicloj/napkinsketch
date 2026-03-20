@@ -5,6 +5,7 @@
             [membrane.ui :as ui]
             [scicloj.kindly.v4.kind :as kind]
             [scicloj.napkinsketch.impl.defaults :as defaults]
+            [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.render.membrane :as membrane]
             [scicloj.napkinsketch.impl.render :as render])
   (:import [membrane.ui Translate WithColor WithStyle WithStrokeWidth
@@ -167,11 +168,15 @@
 
 (defn wrap-svg
   "Wrap SVG hiccup body in an <svg> root element."
-  [width height body]
-  [:svg {:xmlns "http://www.w3.org/2000/svg"
-         :width width :height height
-         :viewBox (str "0 0 " width " " height)}
-   body])
+  ([width height body]
+   (wrap-svg width height body nil))
+  ([width height body title]
+   (let [attrs (cond-> {:xmlns "http://www.w3.org/2000/svg"
+                        :width width :height height
+                        :viewBox (str "0 0 " width " " height)
+                        :role "img"}
+                 title (assoc :aria-label title))]
+     [:svg attrs body])))
 
 ;; ---- Sketch → Membrane (drawable tree) ----
 
@@ -275,9 +280,9 @@
                                                       (.setAttribute p "opacity" "0.15")))))))))))))
 
 (defmethod render/membrane->figure :svg [membrane-tree _ opts]
-  (let [{:keys [total-width total-height tooltip brush]} opts
+  (let [{:keys [total-width total-height tooltip brush title]} opts
         svg-body (membrane->svg membrane-tree)
-        svg (wrap-svg total-width total-height svg-body)
+        svg (wrap-svg total-width total-height svg-body title)
         interactive? (or tooltip brush)]
     (if interactive?
       (let [div-id (str "nsk-" (random-uuid))
@@ -302,7 +307,8 @@
     (render/membrane->figure membrane-tree :svg
                              (assoc opts
                                     :total-width (:total-width sketch)
-                                    :total-height (:total-height sketch)))))
+                                    :total-height (:total-height sketch)
+                                    :title (:title sketch)))))
 
 ;; ---- SVG inspection ----
 
@@ -317,6 +323,70 @@
        x)
      svg)
     @result))
+
+(defn- escape-xml
+  "Escape special characters for XML/SVG content."
+  [s]
+  (-> (str s)
+      (str/replace "&" "&amp;")
+      (str/replace "<" "&lt;")
+      (str/replace ">" "&gt;")
+      (str/replace "\"" "&quot;")))
+
+(defn- attrs->str
+  "Convert a map of attributes to an SVG attribute string."
+  [attrs]
+  (when (seq attrs)
+    (str/join " " (for [[k v] attrs
+                        :when (some? v)]
+                    (str (name k) "=\"" (if (string? v) (escape-xml v) v) "\"")))))
+
+(defn hiccup->svg-str
+  "Convert SVG hiccup to an SVG string.
+   Handles the subset of hiccup used by napkinsketch:
+   vectors with tag + optional attrs map + children."
+  [elem]
+  (cond
+    (nil? elem) ""
+    (string? elem) (escape-xml elem)
+    (number? elem) (str elem)
+    (and (vector? elem) (keyword? (first elem)))
+    (let [tag (name (first elem))
+          has-attrs? (map? (second elem))
+          attrs (when has-attrs? (second elem))
+          children (if has-attrs? (drop 2 elem) (rest elem))
+          attrs-s (attrs->str attrs)]
+      (if (seq children)
+        (str "<" tag (when attrs-s (str " " attrs-s)) ">"
+             (str/join "" (map hiccup->svg-str children))
+             "</" tag ">")
+        (str "<" tag (when attrs-s (str " " attrs-s)) "/>")))
+    (sequential? elem)
+    (str/join "" (map hiccup->svg-str elem))
+    :else (str elem)))
+
+(defn save
+  "Write a plot to an SVG file.
+   views — a vector of view maps (same as sk/plot accepts).
+   path  — file path (string or java.io.File).
+   opts  — same options as sk/plot (:width, :height, :title, :theme, etc.).
+   Tooltip and brush interactivity are not included in saved files.
+   (save views \"plot.svg\")
+   (save views \"plot.svg\" {:width 800 :height 600})"
+  ([views path] (save views path {}))
+  ([views path opts]
+   (let [views (if (map? views) [views] views)
+         sk (sketch/views->sketch views opts)
+         membrane-tree (apply membrane/sketch->membrane sk
+                              (mapcat identity
+                                      (select-keys opts [:width :height :theme :palette
+                                                         :color-scale :color-midpoint])))
+         svg-body (membrane->svg membrane-tree)
+         svg (wrap-svg (:total-width sk) (:total-height sk) svg-body (:title sk))
+         xml-header "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+         svg-str (str xml-header (hiccup->svg-str svg))]
+     (spit (str path) svg-str)
+     path)))
 
 (defn svg-summary
   "Extract structural summary from SVG hiccup for testing.

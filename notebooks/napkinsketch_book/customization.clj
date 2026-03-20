@@ -287,6 +287,23 @@
 
 (kind/test-last [(fn [v] (and (sequential? v) (pos? (count v))))])
 
+;; ### Colorblind-friendly palettes
+;;
+;; For presentations and publications, consider palettes designed for
+;; colorblind readers. Several good options are built in:
+;;
+;; - `:set2` — muted qualitative, 8 colors
+;; - `:dark2` — dark qualitative, 8 colors
+;; - `:khroma/okabeito` — designed specifically for color vision deficiency
+;; - `:tableau-10` — Tableau default, high contrast
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/plot {:palette :khroma/okabeito}))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
 ;; ## Theme
 ;;
 ;; Customize background color, grid color, and font size.

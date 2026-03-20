@@ -24,6 +24,13 @@
   "Check that every column-referencing key in view-map names a real column in ds."
   ([ds view-map]
    (let [col-names (set (tc/column-names ds))]
+     ;; :x and :y must be keywords — catch string column names early
+     (doseq [k [:x :y]
+             :let [col (get view-map k)]
+             :when (and col (string? col))]
+       (throw (ex-info (str "Column names must be keywords, got string " (pr-str col)
+                            " for " k ". Use :" col " instead.")
+                       {:key k :column col})))
      (doseq [k defaults/column-keys
              :let [col (get view-map k)]
              :when (and col (column-ref? col) (not (col-names col)))]

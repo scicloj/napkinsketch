@@ -891,3 +891,72 @@
       (is (some #{"b"} texts))
       (is (some #{"c"} texts)))))
 
+(deftest save-test
+  (testing "save writes a valid SVG file"
+    (let [views (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)))
+          path (str (java.io.File/createTempFile "napkinsketch-test" ".svg"))
+          result (sk/save views path {:title "Test Save"})]
+      (is (= path result))
+      (let [content (slurp path)]
+        (is (.startsWith content "<?xml"))
+        (is (.contains content "<svg"))
+        (is (.contains content "Test Save"))
+        (is (.contains content "<rect")))
+      (.delete (java.io.File. path))))
+  (testing "save with custom dimensions"
+    (let [views (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)))
+          path (str (java.io.File/createTempFile "napkinsketch-test" ".svg"))
+          _ (sk/save views path {:width 900 :height 300})
+          content (slurp path)]
+      ;; total-width > 900 due to margins/labels
+      (is (.contains content "width=\"9"))
+      (is (.contains content "height=\"3"))
+      (.delete (java.io.File. path)))))
+
+(deftest temporal-epoch-ms-test
+  (testing "LocalDate converts to epoch-ms"
+    (let [d (java.time.LocalDate/of 2025 1 1)
+          ms (view/temporal->epoch-ms d)]
+      (is (double? ms))
+      (is (== ms (* (.toEpochDay d) 86400000)))))
+  (testing "LocalDateTime preserves sub-day precision"
+    (let [dt (java.time.LocalDateTime/of 2025 3 15 12 30 0)
+          ms (view/temporal->epoch-ms dt)]
+      (is (double? ms))
+      ;; Should differ from midnight by 12.5 hours in ms
+      (let [midnight-ms (view/temporal->epoch-ms (java.time.LocalDate/of 2025 3 15))]
+        (is (== (- ms midnight-ms) (* 12.5 3600000))))))
+  (testing "Temporal sketch has datetime ticks"
+    (let [sk (-> (tc/dataset {:date [(java.time.LocalDate/of 2025 1 1)
+                                     (java.time.LocalDate/of 2025 6 1)
+                                     (java.time.LocalDate/of 2025 12 1)]
+                              :val [10 20 30]})
+                 (sk/view :date :val)
+                 (sk/lay (sk/point))
+                 sk/sketch)]
+      (is (= 1 (count (:panels sk))))
+      (is (seq (get-in sk [:panels 0 :x-ticks :labels]))))))
+
+(deftest format-log-ticks-test
+  (testing "Powers of 10 >= 1 render as integers"
+    (is (= ["1" "10" "100" "1000"]
+           (scale/format-log-ticks [1.0 10.0 100.0 1000.0]))))
+  (testing "Decimal powers keep decimal form"
+    (is (= ["0.001" "0.01" "0.1" "1" "10"]
+           (scale/format-log-ticks [0.001 0.01 0.1 1.0 10.0])))))
+
+(deftest string-column-error-test
+  (testing "String x column gives helpful error"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"Column names must be keywords"
+                          (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
+                              (sk/view "x" "y")
+                              (sk/lay (sk/point))
+                              sk/plot))))
+  (testing "Literal color string still works"
+    (let [v (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
+                (sk/view :x :y)
+                (sk/lay (sk/point {:color "#FF0000"}))
+                sk/plot)]
+      (is (= 3 (:points (sk/svg-summary v)))))))
+

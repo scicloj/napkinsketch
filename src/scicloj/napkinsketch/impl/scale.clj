@@ -45,6 +45,20 @@
       (mapv #(str (long %)) ticks)
       labels)))
 
+(defn format-log-ticks
+  "Format log scale tick values. Powers of 10 that are whole numbers
+   are shown as integers (e.g., 1, 10, 100). Small decimals keep
+   their decimal form (e.g., 0.001, 0.01)."
+  [ticks]
+  (mapv (fn [v]
+          (if (and (>= v 1.0) (== v (Math/floor v)))
+            (str (long v))
+            (let [s (str v)]
+              (if (.endsWith s ".0")
+                (subs s 0 (- (count s) 2))
+                s))))
+        ticks))
+
 (defn tick-count
   "Suggested tick count based on available pixel range."
   [pixel-range spacing]

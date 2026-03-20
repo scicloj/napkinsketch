@@ -174,22 +174,22 @@
    v40_l222)))
 
 
-(def v43_l271 (:mark (sk/rule-h 5)))
+(def v43_l272 (:mark (sk/rule-h 5)))
 
 
-(deftest t44_l273 (is ((fn [m] (= :rule-h m)) v43_l271)))
+(deftest t44_l274 (is ((fn [m] (= :rule-h m)) v43_l272)))
 
 
-(def v46_l282 (:legend my-sketch))
+(def v46_l283 (:legend my-sketch))
 
 
 (deftest
- t47_l284
- (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v46_l282)))
+ t47_l285
+ (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v46_l283)))
 
 
 (def
- v49_l293
+ v49_l294
  (->
   iris
   (sk/view :sepal_length :sepal_width)
@@ -204,28 +204,28 @@
   :panels))
 
 
-(deftest t50_l300 (is ((fn [n] (= 1 n)) v49_l293)))
+(deftest t50_l301 (is ((fn [n] (= 1 n)) v49_l294)))
 
 
-(def v52_l312 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v52_l313 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v53_l314 (vector? my-membrane))
+(def v53_l315 (vector? my-membrane))
 
 
-(deftest t54_l316 (is ((fn [v] (true? v)) v53_l314)))
+(deftest t54_l317 (is ((fn [v] (true? v)) v53_l315)))
 
 
-(def v55_l318 (count my-membrane))
+(def v55_l319 (count my-membrane))
 
 
-(deftest t56_l320 (is ((fn [n] (pos? n)) v55_l318)))
+(deftest t56_l321 (is ((fn [n] (pos? n)) v55_l319)))
 
 
-(def v58_l330 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v58_l331 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
-(def v59_l332 (first my-figure))
+(def v59_l333 (first my-figure))
 
 
-(deftest t60_l334 (is ((fn [v] (= :svg v)) v59_l332)))
+(deftest t60_l335 (is ((fn [v] (= :svg v)) v59_l333)))

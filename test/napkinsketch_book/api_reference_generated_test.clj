@@ -182,7 +182,7 @@
    {:x (range 30),
     :y
     (mapv
-     (fn* [p1__95164#] (Math/sin (* p1__95164# 0.3)))
+     (fn* [p1__114874#] (Math/sin (* p1__114874# 0.3)))
      (range 30))})))
 
 
@@ -319,9 +319,9 @@
      :y
      (mapv
       (fn*
-       [p1__95165#]
+       [p1__114875#]
        (+
-        (Math/sin (* p1__95165# 0.2))
+        (Math/sin (* p1__114875# 0.2))
         (* 0.3 (- (rng/drandom r) 0.5))))
       (range 50))}))))
 
@@ -1144,3 +1144,22 @@
 
 
 (deftest t203_l657 (is ((fn [v] (= :div (first v))) v202_l647)))
+
+
+(def v205_l660 (kind/doc #'sk/save))
+
+
+(def
+ v207_l664
+ (let
+  [path
+   (str (java.io.File/createTempFile "napkinsketch-example" ".svg"))]
+  (sk/save
+   [(sk/point
+     {:data iris, :x :sepal_length, :y :sepal_width, :color :species})]
+   path
+   {:title "Iris Export"})
+  (.contains (slurp path) "<svg")))
+
+
+(deftest t208_l670 (is (true? v207_l664)))

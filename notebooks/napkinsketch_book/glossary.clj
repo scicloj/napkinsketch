@@ -241,8 +241,9 @@
 ;; The sketch stores scale *specs* (`:type`, `:domain`).
 ;;
 ;; **Temporal columns** (`LocalDate`, `LocalDateTime`, `Instant`,
-;; `java.util.Date`) are automatically detected and converted to
-;; epoch milliseconds. Tick labels are calendar-aware (snapped to year, month, day, or hour boundaries).
+;; `java.util.Date`) are automatically detected and treated as
+;; numerical. Tick labels are calendar-aware — snapped to year,
+;; month, day, or hour boundaries depending on the time span.
 
 ;; ## Coord
 ;;

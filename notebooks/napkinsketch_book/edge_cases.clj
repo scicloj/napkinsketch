@@ -276,6 +276,34 @@
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 
+;; ## Log Scale Edge Cases
+
+;; ### Log scale with clean powers of 10
+
+(-> (tc/dataset {:x [1 10 100 1000 10000]
+                 :y [2 20 200 2000 20000]})
+    (sk/view :x :y)
+    (sk/lay (sk/point))
+    (sk/scale :x :log)
+    (sk/scale :y :log)
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 5 (:points s))
+                                (= 1 (:panels s)))))])
+
+;; ### Log scale spanning decimals to large values
+
+(-> (tc/dataset {:x [0.001 0.01 0.1 1 10 100]
+                 :y [1 2 3 4 5 6]})
+    (sk/view :x :y)
+    (sk/lay (sk/point))
+    (sk/scale :x :log)
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
+
+
 ;; ## Continuous Color Edge Cases
 
 ;; ### Continuous color — constant value
@@ -301,17 +329,52 @@
 
 (kind/test-last [(fn [v] (= 20 (:points (sk/svg-summary v))))])
 
-;; ## Date Scale Edge Cases
+;; ## Temporal Scale Edge Cases
 
-;; ### Dates with very narrow range (one day apart)
+;; ### Dates with very narrow range (two days apart)
 
-(-> (tc/dataset {:date ["2025-01-01" "2025-01-02"]
+(-> (tc/dataset {:date [(java.time.LocalDate/of 2025 1 1)
+                         (java.time.LocalDate/of 2025 1 2)]
                  :val [10 20]})
     (sk/view :date :val)
     (sk/lay (sk/point))
     sk/plot)
 
 (kind/test-last [(fn [v] (= 2 (:points (sk/svg-summary v))))])
+
+;; ### Sub-day precision (LocalDateTime spanning hours)
+;;
+;; `LocalDateTime` values preserve sub-day precision. Tick labels
+;; show `HH:MM` format when the range is less than a day.
+
+(-> (tc/dataset {:time (mapv #(java.time.LocalDateTime/of 2025 3 15
+                                                          (+ 8 (int (/ % 4)))
+                                                          (* 15 (mod (int %) 4))
+                                                          0)
+                             (range 24))
+                 :value (mapv #(+ 18.0 (* 4.0 (Math/sin (* % 0.3)))) (range 24))})
+    (sk/view :time :value)
+    (sk/lay (sk/line) (sk/point))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 24 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; ### Multi-year date range
+;;
+;; With a date range spanning several years, tick labels show year values.
+
+(-> (tc/dataset {:date (mapv #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 120)))
+                             (range 20))
+                 :value (mapv #(+ 100 (* 50 (Math/sin (* % 0.4)))) (range 20))})
+    (sk/view :date :value)
+    (sk/lay (sk/line) (sk/point))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 20 (:points s))
+                                (= 1 (:lines s)))))])
 
 ;; ## Coordinate Edge Cases
 

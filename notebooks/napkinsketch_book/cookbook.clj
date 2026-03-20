@@ -80,8 +80,8 @@
 
 ;; ### Time series with multiple layers
 ;;
-;; Combine area, line, and points. The date axis automatically
-;; adapts its tick labels to the time span.
+;; Combine area, line, and points. Date columns are detected
+;; automatically — ticks snap to calendar boundaries.
 
 (def ts-dates (mapv #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 7))) (range 52)))
 
@@ -429,6 +429,25 @@
 
 (kind/test-last [(fn [v] (and (= :div (first v))
                               (= :kind/hiccup (:kindly/kind (meta v)))))])
+
+
+;; ### Labeled scatter
+
+;; Combine points with text labels, using nudge to offset text from data points.
+
+(def top-cities
+  (tc/dataset {:city ["Tokyo" "Delhi" "Shanghai" "São Paulo" "Mumbai"]
+               :population [37.4 32.9 29.2 22.4 21.7]
+               :area [2194 1484 6341 1521 603]}))
+
+(-> top-cities
+    (sk/view :area :population)
+    (sk/lay (sk/point) (sk/text {:text :city :nudge-y 1.0}))
+    (sk/plot {:title "Population vs Area"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 5 (:points s))
+                                (every? (set (:texts s)) ["Tokyo" "Delhi"]))))])
 
 
 ;; ## Analytical Walkthroughs

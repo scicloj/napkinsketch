@@ -61,50 +61,57 @@ graph TD
 
 ;; ## Column Type Detection
 ;;
-;; The first inference: is each column **numerical** or **categorical**?
-;; This drives almost every other decision.
+;; The first inference: is each column **numerical**, **categorical**,
+;; or **temporal**? This drives almost every other decision.
 ;;
 ;; | Column dtype | Inferred type |
 ;; |:-------------|:--------------|
 ;; | float32, float64, int8–int64 | `:numerical` |
 ;; | string, keyword, boolean | `:categorical` |
-;; | LocalDate, LocalDateTime, Instant | `:numerical` (values become epoch milliseconds) |
+;; | LocalDate, LocalDateTime, Instant | `:temporal` → treated as numerical with calendar-aware ticks |
 ;; | other (sampled) | whichever fits the first 100 values |
 ;;
-;; For iris, `:sepal_length` is numerical and `:species` is categorical:
+;; Two numerical columns produce a numeric domain and a linear scale:
 
-(def scatter-sk
-  (sk/sketch
-   (-> iris
-       (sk/view :sepal_length :sepal_width)
-       (sk/lay (sk/point)))))
+(def scatter-views
+  (-> iris
+      (sk/view :sepal_length :sepal_width)
+      (sk/lay (sk/point))))
 
-(let [p (first (:panels scatter-sk))]
-  {:x-domain-kind (if (number? (first (:x-domain p))) :numerical :categorical)
-   :y-domain-kind (if (number? (first (:y-domain p))) :numerical :categorical)
-   :x-scale-type (get-in p [:x-scale :type])
-   :y-scale-type (get-in p [:y-scale :type])})
+(sk/plot scatter-views)
 
-(kind/test-last [(fn [m] (and (= :numerical (:x-domain-kind m))
-                              (= :numerical (:y-domain-kind m))
-                              (= :linear (:x-scale-type m))))])
+(def scatter-sk (sk/sketch scatter-views))
 
-;; A categorical column produces a band scale:
+;; Inside the sketch, the domain is numeric and the scale is linear:
 
-(def bar-sk
-  (sk/sketch
-   (-> iris
-       (sk/view :species)
-       (sk/lay (sk/bar)))))
+(-> scatter-sk :panels first :x-scale)
 
-;; The x-domain contains categorical values, and the ticks are categorical:
+(kind/test-last [(fn [s] (= :linear (:type s)))])
 
-(let [p (first (:panels bar-sk))]
-  {:x-domain (:x-domain p)
-   :x-ticks-categorical? (:categorical? (:x-ticks p))})
+(-> scatter-sk :panels first :x-domain)
 
-(kind/test-last [(fn [m] (and (every? string? (:x-domain m))
-                              (:x-ticks-categorical? m)))])
+(kind/test-last [(fn [d] (every? number? d))])
+
+;; A categorical column produces a band scale with string domain values:
+
+(def bar-views
+  (-> iris
+      (sk/view :species)
+      (sk/lay (sk/bar))))
+
+(sk/plot bar-views)
+
+(def bar-sk (sk/sketch bar-views))
+
+;; The domain contains string values and the ticks are categorical:
+
+(-> bar-sk :panels first :x-domain)
+
+(kind/test-last [(fn [d] (every? string? d))])
+
+(-> bar-sk :panels first :x-ticks :categorical?)
+
+(kind/test-last [(fn [v] (true? v))])
 
 ;; ## Mark and Stat Inference
 ;;
