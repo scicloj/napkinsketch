@@ -198,6 +198,119 @@
 ;; Look back at the first scatter sketch above — the single group
 ;; has `:color [0.2 0.2 0.2 1.0]` (dark gray). No legend.
 
+;; ## Grouping
+;;
+;; Grouping is a key concept: it controls how data is split into
+;; independent subsets. Each group gets its own visual elements —
+;; its own set of points, its own regression line, its own density
+;; curve, its own bar in a dodged layout.
+;;
+;; Grouping can be **derived** (from a categorical `:color` mapping)
+;; or **explicit** (via the `:group` aesthetic).
+
+;; ### Categorical color implies grouping
+;;
+;; When `:color` maps to a categorical column, data is split into
+;; one group per category. Each group gets a distinct palette color
+;; and a legend entry.
+
+(def grouped-data
+  {:x [1 2 3 4 5 6]
+   :y [3 5 4 7 6 8]
+   :g ["a" "a" "a" "b" "b" "b"]})
+
+(let [sk (-> grouped-data
+             (sk/view :x :y)
+             (sk/lay (sk/point {:color :g}))
+             sk/sketch)
+      layer (first (:layers (first (:panels sk))))]
+  {:group-count (count (:groups layer))
+   :group-labels (mapv :label (:groups layer))
+   :has-legend? (some? (:legend sk))})
+
+(kind/test-last [(fn [m] (and (= 2 (:group-count m))
+                              (= ["a" "b"] (:group-labels m))
+                              (true? (:has-legend? m))))])
+
+;; Two groups, two legend entries. Each group has its own `:xs`,
+;; `:ys`, and `:color`.
+
+;; ### Numeric color does not create groups
+;;
+;; When `:color` maps to a numerical column, data is NOT split.
+;; Instead, each point gets an individual color from a continuous
+;; gradient. There is one group, and the legend is continuous.
+
+(let [sk (-> {:x [1 2 3 4 5]
+              :y [2 4 3 5 4]
+              :val [10 20 30 40 50]}
+             (sk/view :x :y)
+             (sk/lay (sk/point {:color :val}))
+             sk/sketch)
+      layer (first (:layers (first (:panels sk))))]
+  {:group-count (count (:groups layer))
+   :legend-type (:type (:legend sk))})
+
+(kind/test-last [(fn [m] (and (= 1 (:group-count m))
+                              (= :continuous (:legend-type m))))])
+
+;; One group, continuous legend. No grouping occurred — the color
+;; is an encoding, not a grouping variable.
+
+;; ### Explicit grouping with `:group`
+;;
+;; The `:group` aesthetic splits data into groups without
+;; assigning distinct colors or creating a legend. This is useful
+;; when you want per-group statistics but uniform appearance.
+
+(let [sk (-> grouped-data
+             (sk/view :x :y)
+             (sk/lay (sk/point {:group :g}))
+             sk/sketch)
+      layer (first (:layers (first (:panels sk))))]
+  {:group-count (count (:groups layer))
+   :has-legend? (some? (:legend sk))})
+
+(kind/test-last [(fn [m] (and (= 2 (:group-count m))
+                              (false? (:has-legend? m))))])
+
+;; Two groups, but no legend and no color differentiation.
+;; Use `:group` when you need separate statistical fits but
+;; want a uniform visual style.
+
+;; ### What grouping affects
+;;
+;; Grouping determines how statistical transformations operate.
+;; Without grouping, `sk/lm` fits one regression line through
+;; all the data. With grouping, it fits one line per group.
+
+;; One regression line — no grouping:
+
+(-> grouped-data
+    (sk/view :x :y)
+    (sk/lay (sk/point) (sk/lm))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 6 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; Two regression lines — grouped by color:
+
+(-> grouped-data
+    (sk/view :x :y)
+    (sk/lay (sk/point {:color :g})
+            (sk/lm {:color :g}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 6 (:points s))
+                                (= 2 (:lines s)))))])
+
+;; The same applies to other statistics: density curves, LOESS
+;; smoothers, boxplots, and dodge/stack positioning all operate
+;; per group.
+
 ;; ## Domain Padding
 ;;
 ;; Numerical domains extend 5% beyond the data range so points
