@@ -114,16 +114,15 @@
   noisy-wave
   (let
    [r (rng/rng :jdk 42)]
-   (tc/dataset
-    {:x (range 50),
-     :y
-     (mapv
-      (fn*
-       [p1__131815#]
-       (+
-        (Math/sin (* p1__131815# 0.2))
-        (* 0.3 (- (rng/drandom r) 0.5))))
-      (range 50))}))))
+   {:x (range 50),
+    :y
+    (mapv
+     (fn*
+      [p1__147524#]
+      (+
+       (Math/sin (* p1__147524# 0.2))
+       (* 0.3 (- (rng/drandom r) 0.5))))
+     (range 50))})))
 
 
 (def
@@ -172,10 +171,9 @@
   grid-data
   (let
    [r (rng/rng :jdk 99)]
-   (tc/dataset
-    {:x (for [i (range 5) _j (range 5)] i),
-     :y (for [_i (range 5) j (range 5)] j),
-     :value (vec (repeatedly 25 (fn* [] (rng/irandom r 100))))}))))
+   {:x (for [i (range 5) _j (range 5)] i),
+    :y (for [_i (range 5) j (range 5)] j),
+    :value (vec (repeatedly 25 (fn* [] (rng/irandom r 100))))})))
 
 
 (def

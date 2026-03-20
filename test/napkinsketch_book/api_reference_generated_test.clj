@@ -19,19 +19,15 @@
 
 (def
  v4_l28
- (def
-  tiny
-  (tc/dataset
-   {:x [1 2 3 4 5], :y [2 4 1 5 3], :group [:a :a :b :b :b]})))
+ (def tiny {:x [1 2 3 4 5], :y [2 4 1 5 3], :group [:a :a :b :b :b]}))
 
 
 (def
  v5_l32
  (def
   sales
-  (tc/dataset
-   {:product [:widget :gadget :gizmo :doohickey],
-    :revenue [120 340 210 95]})))
+  {:product [:widget :gadget :gizmo :doohickey],
+   :revenue [120 340 210 95]}))
 
 
 (def
@@ -47,11 +43,10 @@
  v7_l38
  (def
   measurements
-  (tc/dataset
-   {:treatment ["A" "B" "C" "D"],
-    :mean [10.0 15.0 12.0 18.0],
-    :ci_lo [8.0 12.0 9.5 15.5],
-    :ci_hi [12.0 18.0 14.5 20.5]})))
+  {:treatment ["A" "B" "C" "D"],
+   :mean [10.0 15.0 12.0 18.0],
+   :ci_lo [8.0 12.0 9.5 15.5],
+   :ci_hi [12.0 18.0 14.5 20.5]}))
 
 
 (def v9_l45 (kind/doc #'sk/view))
@@ -178,12 +173,11 @@
  v31_l116
  (def
   wave
-  (tc/dataset
-   {:x (range 30),
-    :y
-    (mapv
-     (fn* [p1__132908#] (Math/sin (* p1__132908# 0.3)))
-     (range 30))})))
+  {:x (range 30),
+   :y
+   (mapv
+    (fn* [p1__148617#] (Math/sin (* p1__148617# 0.3)))
+    (range 30))}))
 
 
 (def v32_l119 (sk/plot [(sk/line {:data wave, :x :x, :y :y})]))
@@ -314,16 +308,15 @@
   noisy-wave
   (let
    [r (rng/rng :jdk 42)]
-   (tc/dataset
-    {:x (range 50),
-     :y
-     (mapv
-      (fn*
-       [p1__132909#]
-       (+
-        (Math/sin (* p1__132909# 0.2))
-        (* 0.3 (- (rng/drandom r) 0.5))))
-      (range 50))}))))
+   {:x (range 50),
+    :y
+    (mapv
+     (fn*
+      [p1__148618#]
+      (+
+       (Math/sin (* p1__148618# 0.2))
+       (* 0.3 (- (rng/drandom r) 0.5))))
+     (range 50))})))
 
 
 (def
@@ -378,16 +371,15 @@
 (def
  v64_l223
  (->
-  (tc/dataset
-   {:x (vec (concat (range 10) (range 10) (range 10))),
-    :y
-    (vec
-     (concat
-      [1 2 3 4 5 4 3 2 1 0]
-      [2 2 2 3 3 3 2 2 2 2]
-      [1 1 1 1 2 2 2 1 1 1])),
-    :group
-    (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))})
+  {:x (vec (concat (range 10) (range 10) (range 10))),
+   :y
+   (vec
+    (concat
+     [1 2 3 4 5 4 3 2 1 0]
+     [2 2 2 3 3 3 2 2 2 2]
+     [1 1 1 1 2 2 2 1 1 1])),
+   :group
+   (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
   (sk/view [[:x :y]])
   (sk/lay (sk/stacked-area {:color :group}))
   sk/plot))
@@ -405,7 +397,7 @@
 (def
  v67_l237
  (->
-  (tc/dataset {:x [1 2 3 4], :y [4 7 5 8], :name ["A" "B" "C" "D"]})
+  {:x [1 2 3 4], :y [4 7 5 8], :name ["A" "B" "C" "D"]}
   (sk/view [[:x :y]])
   (sk/lay (sk/text {:text :name}))
   sk/plot))
@@ -428,7 +420,7 @@
 (def
  v70_l247
  (->
-  (tc/dataset {:x [1 2 3 4], :y [4 7 5 8], :name ["A" "B" "C" "D"]})
+  {:x [1 2 3 4], :y [4 7 5 8], :name ["A" "B" "C" "D"]}
   (sk/view [[:x :y]])
   (sk/lay (sk/point {:size 5}) (sk/label {:text :name}))
   sk/plot))

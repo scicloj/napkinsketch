@@ -39,7 +39,90 @@
 
 
 (def
- v12_l46
+ v12_l47
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :species}) (sk/lm {:color :species}))
+  sk/plot))
+
+
+(deftest
+ t13_l53
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 3 (:lines s)))))
+   v12_l47)))
+
+
+(def
+ v14_l57
+ (->
+  iris
+  (sk/view [[:sepal_length :sepal_width]])
+  (sk/lay (sk/point {:color :species}))
+  (sk/lay (sk/lm {:color :species}))
+  sk/plot))
+
+
+(deftest
+ t15_l63
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 3 (:lines s)))))
+   v14_l57)))
+
+
+(def
+ v17_l70
+ (def
+  scatter-base
+  (->
+   iris
+   (sk/view [[:sepal_length :sepal_width]])
+   (sk/lay (sk/point {:color :species})))))
+
+
+(def
+ v19_l77
+ (-> scatter-base (sk/lay (sk/lm {:color :species})) sk/plot))
+
+
+(deftest
+ t20_l81
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 3 (:lines s)))))
+   v19_l77)))
+
+
+(def
+ v22_l87
+ (-> scatter-base (sk/lay (sk/loess {:color :species})) sk/plot))
+
+
+(deftest
+ t23_l91
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 3 (:lines s)))))
+   v22_l87)))
+
+
+(def
+ v25_l99
  (->
   iris
   (sk/view :petal_length :petal_width)
@@ -48,25 +131,25 @@
 
 
 (deftest
- t13_l51
+ t26_l104
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"setosa"} (:texts s)))))
-   v12_l46)))
+   v25_l99)))
 
 
 (def
- v15_l59
+ v28_l112
  (->
   (let
    [r (rng/rng :jdk 42)]
    {:x (range 1 11),
     :y
     (mapv
-     (fn* [p1__130985#] (+ (* 2 p1__130985#) (- (rng/irandom r 5) 2)))
+     (fn* [p1__150225#] (+ (* 2 p1__150225#) (- (rng/irandom r 5) 2)))
      (range 1 11))})
   (sk/view [[:x :y]])
   (sk/lay (sk/point) (sk/lm))
@@ -74,7 +157,7 @@
 
 
 (deftest
- t16_l66
+ t29_l119
  (is
   ((fn
     [v]
@@ -84,11 +167,11 @@
       (= 10 (:points s))
       (= 1 (:lines s))
       (some #{"Noisy Linear Trend"} (:texts s)))))
-   v15_l59)))
+   v28_l112)))
 
 
 (def
- v18_l75
+ v31_l128
  (def
   species-plot
   (fn
@@ -96,24 +179,24 @@
    (->
     iris
     (tc/select-rows
-     (fn* [p1__130986#] (= species-name (p1__130986# :species))))
+     (fn* [p1__150226#] (= species-name (p1__150226# :species))))
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:width 300, :height 250, :title species-name})))))
 
 
 (def
- v19_l84
+ v32_l137
  (sk/arrange
   (mapv species-plot ["setosa" "versicolor" "virginica"])
   {:cols 3}))
 
 
-(deftest t20_l87 (is ((fn [v] (= :div (first v))) v19_l84)))
+(deftest t33_l140 (is ((fn [v] (= :div (first v))) v32_l137)))
 
 
 (def
- v22_l91
+ v35_l144
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -123,31 +206,31 @@
 
 
 (deftest
- t23_l97
+ t36_l150
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)) (= 3 (:lines s)))))
-   v22_l91)))
+   v35_l144)))
 
 
 (def
- v25_l107
+ v38_l160
  (def
   measurements
   [:sepal_length :sepal_width :petal_length :petal_width]))
 
 
-(def v26_l109 (sk/pairs measurements))
+(def v39_l162 (sk/pairs measurements))
 
 
-(deftest t27_l111 (is ((fn [v] (= 6 (count v))) v26_l109)))
+(deftest t40_l164 (is ((fn [v] (= 6 (count v))) v39_l162)))
 
 
 (def
- v28_l113
+ v41_l166
  (->
   iris
   (sk/view (sk/pairs measurements))
@@ -156,13 +239,13 @@
 
 
 (deftest
- t29_l118
+ t42_l171
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 6 (:panels s)))) v28_l113)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 6 (:panels s)))) v41_l166)))
 
 
 (def
- v31_l125
+ v44_l178
  (def
   quarterly-data
   {:quarter [:Q1 :Q2 :Q3 :Q4 :Q1 :Q2 :Q3 :Q4],
@@ -171,7 +254,7 @@
 
 
 (def
- v32_l130
+ v45_l183
  (->
   quarterly-data
   (sk/view [[:quarter :revenue]])
@@ -180,7 +263,7 @@
 
 
 (deftest
- t33_l135
+ t46_l188
  (is
   ((fn
     [v]
@@ -189,11 +272,11 @@
      (and
       (= 8 (:polygons s))
       (some #{"Quarterly Revenue Comparison"} (:texts s)))))
-   v32_l130)))
+   v45_l183)))
 
 
 (def
- v35_l141
+ v48_l194
  (->
   quarterly-data
   (sk/view [[:quarter :revenue]])
@@ -203,7 +286,7 @@
 
 
 (deftest
- t36_l147
+ t49_l200
  (is
   ((fn
     [v]
@@ -212,11 +295,11 @@
      (and
       (= 8 (:polygons s))
       (some #{"Revenue (Horizontal)"} (:texts s)))))
-   v35_l141)))
+   v48_l194)))
 
 
 (def
- v38_l155
+ v51_l208
  (let
   [r
    (rng/rng :jdk 77)
@@ -225,8 +308,8 @@
    ys
    (mapv
     (fn*
-     [p1__130987#]
-     (+ (* 3 p1__130987#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__150227#]
+     (+ (* 3 p1__150227#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}
@@ -236,7 +319,7 @@
 
 
 (deftest
- t39_l166
+ t52_l219
  (is
   ((fn
     [v]
@@ -246,11 +329,11 @@
       (= 20 (:points s))
       (= 1 (:lines s))
       (some #{"Simulated: y = 3x + 5 + noise"} (:texts s)))))
-   v38_l155)))
+   v51_l208)))
 
 
 (def
- v41_l178
+ v54_l231
  (->
   iris
   (sk/view :sepal_length)
@@ -260,18 +343,18 @@
 
 
 (deftest
- t42_l184
+ t55_l237
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 3 (:polygons s)))))
-   v41_l178)))
+   v54_l231)))
 
 
 (def
- v44_l190
+ v57_l243
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -282,18 +365,18 @@
 
 
 (deftest
- t45_l196
+ t58_l249
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v44_l190)))
+   v57_l243)))
 
 
 (def
- v47_l202
+ v60_l255
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -304,7 +387,7 @@
 
 
 (deftest
- t48_l209
+ t61_l262
  (is
   ((fn
     [v]
@@ -313,11 +396,11 @@
      (and
       (= 150 (:points s))
       (some #{"Log-Scale with Gradient Color"} (:texts s)))))
-   v47_l202)))
+   v60_l255)))
 
 
 (def
- v50_l215
+ v63_l268
  (->
   tips
   (sk/view [[:day :total_bill]])
@@ -326,11 +409,11 @@
 
 
 (deftest
- t51_l221
+ t64_l274
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)) (pos? (:lines s)))))
-   v50_l215)))
+   v63_l268)))

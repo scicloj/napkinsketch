@@ -20,9 +20,8 @@
  v4_l21
  (def
   wind
-  (tc/dataset
-   {:direction ["N" "NE" "E" "SE" "S" "SW" "W" "NW"],
-    :speed [12 8 15 10 7 13 9 11]})))
+  {:direction ["N" "NE" "E" "SE" "S" "SW" "W" "NW"],
+   :speed [12 8 15 10 7 13 9 11]}))
 
 
 (def

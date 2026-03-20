@@ -39,6 +39,59 @@
 
 (kind/pprint layered)
 
+;; ## Incremental Layer Building
+;;
+;; `lay` can be called multiple times — each call appends to the
+;; existing layers. These two forms produce identical plots:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species})
+            (sk/lm {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay (sk/point {:color :species}))
+    (sk/lay (sk/lm {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
+
+;; This makes it natural to build plots incrementally — save a base
+;; view and extend it later:
+
+(def scatter-base
+  (-> iris
+      (sk/view [[:sepal_length :sepal_width]])
+      (sk/lay (sk/point {:color :species}))))
+
+;; Add a regression layer:
+
+(-> scatter-base
+    (sk/lay (sk/lm {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
+
+;; Or a LOESS smoother instead:
+
+(-> scatter-base
+    (sk/lay (sk/loess {:color :species}))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
+
 ;; ## Two-Arity View
 
 ;; `view` also accepts separate x and y arguments.

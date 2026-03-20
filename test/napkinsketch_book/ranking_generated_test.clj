@@ -38,9 +38,8 @@
  v5_l23
  (def
   sales
-  (tc/dataset
-   {:product [:widget :gadget :gizmo :doohickey],
-    :revenue [120 340 210 95]})))
+  {:product [:widget :gadget :gizmo :doohickey],
+   :revenue [120 340 210 95]}))
 
 
 (def v7_l30 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot))

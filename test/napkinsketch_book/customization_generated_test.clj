@@ -133,12 +133,11 @@
  v19_l90
  (def
   exponential-data
-  (tc/dataset
-   {:x (range 1 50),
-    :y
-    (mapv
-     (fn* [p1__132590#] (* 2 (Math/pow 1.1 p1__132590#)))
-     (range 1 50))})))
+  {:x (range 1 50),
+   :y
+   (mapv
+    (fn* [p1__148299#] (* 2 (Math/pow 1.1 p1__148299#)))
+    (range 1 50))}))
 
 
 (def

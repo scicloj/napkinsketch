@@ -98,7 +98,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__131504#] (= "Distribution of Total Bill" p1__131504#))
+       (fn* [p1__147213#] (= "Distribution of Total Bill" p1__147213#))
        (:texts s)))))
    v15_l67)))
 
@@ -225,17 +225,17 @@
  v36_l169
  (let
   [sk
-   (sk/sketch
-    (->
-     tips
-     (sk/view [[:day :total_bill]])
-     (sk/lay (sk/boxplot {:color :smoker}))))
+   (->
+    tips
+    (sk/view [[:day :total_bill]])
+    (sk/lay (sk/boxplot {:color :smoker}))
+    sk/sketch)
    panel
    (first (:panels sk))
    box-layer
    (first
     (filter
-     (fn* [p1__131505#] (= :boxplot (:mark p1__131505#)))
+     (fn* [p1__147214#] (= :boxplot (:mark p1__147214#)))
      (:layers panel)))
    cats
    (:color-categories box-layer)]
@@ -305,17 +305,17 @@
  v48_l227
  (let
   [sk
-   (sk/sketch
-    (->
-     tips
-     (sk/view [[:day :total_bill]])
-     (sk/lay (sk/violin {:color :smoker}))))
+   (->
+    tips
+    (sk/view [[:day :total_bill]])
+    (sk/lay (sk/violin {:color :smoker}))
+    sk/sketch)
    panel
    (first (:panels sk))
    viol-layer
    (first
     (filter
-     (fn* [p1__131506#] (= :violin (:mark p1__131506#)))
+     (fn* [p1__147215#] (= :violin (:mark p1__147215#)))
      (:layers panel)))
    cats
    (:color-categories viol-layer)]

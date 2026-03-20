@@ -11,12 +11,11 @@
  v3_l18
  (def
   wave
-  (tc/dataset
-   {:x (range 30),
-    :y
-    (mapv
-     (fn* [p1__131735#] (Math/sin (* p1__131735# 0.3)))
-     (range 30))})))
+  {:x (range 30),
+   :y
+   (mapv
+    (fn* [p1__147444#] (Math/sin (* p1__147444# 0.3)))
+    (range 30))}))
 
 
 (def v4_l21 (-> wave (sk/view [[:x :y]]) (sk/lay (sk/line)) sk/plot))
@@ -37,18 +36,17 @@
  v7_l34
  (def
   waves
-  (tc/dataset
-   {:x (vec (concat (range 30) (range 30))),
-    :y
-    (vec
-     (concat
-      (mapv
-       (fn* [p1__131736#] (Math/sin (* p1__131736# 0.3)))
-       (range 30))
-      (mapv
-       (fn* [p1__131737#] (Math/cos (* p1__131737# 0.3)))
-       (range 30)))),
-    :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))})))
+  {:x (vec (concat (range 30) (range 30))),
+   :y
+   (vec
+    (concat
+     (mapv
+      (fn* [p1__147445#] (Math/sin (* p1__147445# 0.3)))
+      (range 30))
+     (mapv
+      (fn* [p1__147446#] (Math/cos (* p1__147446# 0.3)))
+      (range 30)))),
+   :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))}))
 
 
 (def
@@ -87,10 +85,9 @@
  v14_l65
  (def
   growth
-  (tc/dataset
-   {:day [1 2 3 4 5 1 2 3 4 5],
-    :value [10 15 13 18 22 8 12 11 16 19],
-    :group [:a :a :a :a :a :b :b :b :b :b]})))
+  {:day [1 2 3 4 5 1 2 3 4 5],
+   :value [10 15 13 18 22 8 12 11 16 19],
+   :group [:a :a :a :a :a :b :b :b :b :b]}))
 
 
 (def
@@ -156,12 +153,11 @@
 (def
  v24_l112
  (->
-  (tc/dataset
-   {:x (range 30),
-    :y
-    (mapv
-     (fn* [p1__131738#] (Math/sin (* p1__131738# 0.3)))
-     (range 30))})
+  {:x (range 30),
+   :y
+   (mapv
+    (fn* [p1__147447#] (Math/sin (* p1__147447# 0.3)))
+    (range 30))}
   (sk/view [[:x :y]])
   (sk/lay (sk/area))
   sk/plot))
@@ -181,16 +177,15 @@
 (def
  v27_l126
  (->
-  (tc/dataset
-   {:x (vec (concat (range 10) (range 10) (range 10))),
-    :y
-    (vec
-     (concat
-      [1 2 3 4 5 4 3 2 1 0]
-      [2 2 2 3 3 3 2 2 2 2]
-      [1 1 1 1 2 2 2 1 1 1])),
-    :group
-    (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))})
+  {:x (vec (concat (range 10) (range 10) (range 10))),
+   :y
+   (vec
+    (concat
+     [1 2 3 4 5 4 3 2 1 0]
+     [2 2 2 3 3 3 2 2 2 2]
+     [1 1 1 1 2 2 2 1 1 1])),
+   :group
+   (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
   (sk/view [[:x :y]])
   (sk/lay (sk/stacked-area {:color :group}))
   sk/plot))

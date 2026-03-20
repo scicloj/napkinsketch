@@ -10,9 +10,7 @@
 
 (def
  v3_l21
- (def
-  with-missing
-  (tc/dataset {:x [1 2 nil 4 5 nil 7], :y [3 nil 5 6 nil 8 9]})))
+ (def with-missing {:x [1 2 nil 4 5 nil 7], :y [3 nil 5 6 nil 8 9]}))
 
 
 (def
@@ -193,11 +191,9 @@
   large-data
   (let
    [r (rng/rng :jdk 42)]
-   (tc/dataset
-    {:x (repeatedly 1000 (fn* [] (rng/drandom r))),
-     :y (repeatedly 1000 (fn* [] (rng/drandom r))),
-     :group
-     (repeatedly 1000 (fn* [] ([:a :b :c] (rng/irandom r 3))))}))))
+   {:x (repeatedly 1000 (fn* [] (rng/drandom r))),
+    :y (repeatedly 1000 (fn* [] (rng/drandom r))),
+    :group (repeatedly 1000 (fn* [] ([:a :b :c] (rng/irandom r 3))))})))
 
 
 (def
@@ -225,12 +221,11 @@
  (->
   (let
    [r (rng/rng :jdk 99)]
-   (tc/dataset
-    {:category
-     (mapv
-      (fn* [p1__133937#] (keyword (str "cat-" p1__133937#)))
-      (range 12)),
-     :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))}))
+   {:category
+    (mapv
+     (fn* [p1__149635#] (keyword (str "cat-" p1__149635#)))
+     (range 12)),
+    :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))})
   (sk/view [[:category :value]])
   (sk/lay (sk/value-bar))
   sk/plot))
@@ -282,7 +277,7 @@
  (->
   iris
   (tc/select-rows
-   (fn* [p1__133938#] (= "setosa" (p1__133938# :species))))
+   (fn* [p1__149636#] (= "setosa" (p1__149636# :species))))
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay (sk/point) (sk/lm))
   (sk/plot {:title "Setosa Only"})))
@@ -302,7 +297,7 @@
 (def
  v45_l206
  (->
-  (tc/dataset {:category ["a" "b" "c"], :count [10 20 15]})
+  {:category ["a" "b" "c"], :count [10 20 15]}
   (sk/view :category :count)
   (sk/lay (sk/value-bar {:position :stack}))
   sk/plot))
@@ -316,7 +311,7 @@
 (def
  v48_l219
  (->
-  (tc/dataset {:x ["a" "b" "a"], :g ["g1" "g1" "g2"]})
+  {:x ["a" "b" "a"], :g ["g1" "g1" "g2"]}
   (sk/view :x)
   (sk/lay (sk/bar {:color :g}))
   sk/plot))
@@ -330,8 +325,7 @@
 (def
  v51_l232
  (->
-  (tc/dataset
-   {:x ["a" "a" "b" "b" "b"], :g ["g1" "g2" "g1" "g1" "g1"]})
+  {:x ["a" "a" "b" "b" "b"], :g ["g1" "g2" "g1" "g1" "g1"]}
   (sk/view :x)
   (sk/lay (sk/stacked-bar-fill {:color :g}))
   sk/plot))
@@ -359,7 +353,7 @@
 (def
  v57_l256
  (->
-  (tc/dataset {:x [1 2 3], :y [2 4 5]})
+  {:x [1 2 3], :y [2 4 5]}
   (sk/view :x :y)
   (sk/lay (sk/point) (sk/lm {:se true}))
   sk/plot))
@@ -381,8 +375,7 @@
  (->
   (let
    [r (rng/rng :jdk 55)]
-   (tc/dataset
-    {:x (range 10), :y (repeatedly 10 (fn* [] (rng/irandom r 20)))}))
+   {:x (range 10), :y (repeatedly 10 (fn* [] (rng/irandom r 20)))})
   (sk/view :x :y)
   (sk/lay (sk/stacked-area))
   sk/plot))
@@ -394,9 +387,9 @@
 
 
 (def
- v63_l283
+ v63_l282
  (->
-  (tc/dataset {:x [1 10 100 1000 10000], :y [2 20 200 2000 20000]})
+  {:x [1 10 100 1000 10000], :y [2 20 200 2000 20000]}
   (sk/view :x :y)
   (sk/lay (sk/point))
   (sk/scale :x :log)
@@ -405,20 +398,20 @@
 
 
 (deftest
- t64_l291
+ t64_l290
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 5 (:points s)) (= 1 (:panels s)))))
-   v63_l283)))
+   v63_l282)))
 
 
 (def
- v66_l297
+ v66_l296
  (->
-  (tc/dataset {:x [0.001 0.01 0.1 1 10 100], :y [1 2 3 4 5 6]})
+  {:x [0.001 0.01 0.1 1 10 100], :y [1 2 3 4 5 6]}
   (sk/view :x :y)
   (sk/lay (sk/point))
   (sk/scale :x :log)
@@ -426,134 +419,127 @@
 
 
 (deftest
- t67_l304
- (is ((fn [v] (= 6 (:points (sk/svg-summary v)))) v66_l297)))
+ t67_l303
+ (is ((fn [v] (= 6 (:points (sk/svg-summary v)))) v66_l296)))
 
 
 (def
- v69_l314
+ v69_l312
  (->
-  (tc/dataset {:x [1 2 3], :y [4 5 6], :c [5 5 5]})
+  {:x [1 2 3], :y [4 5 6], :c [5 5 5]}
   (sk/view :x :y)
   (sk/lay (sk/point {:color :c}))
   sk/plot))
 
 
 (deftest
- t70_l319
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v69_l314)))
+ t70_l317
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v69_l312)))
 
 
 (def
- v72_l323
+ v72_l321
  (->
-  (tc/dataset
-   {:x (range 20),
-    :y (map (fn* [p1__133939#] (- p1__133939# 10)) (range 20)),
-    :val (map (fn* [p1__133940#] (- p1__133940# 10.0)) (range 20))})
+  {:x (range 20),
+   :y (map (fn* [p1__149637#] (- p1__149637# 10)) (range 20)),
+   :val (map (fn* [p1__149638#] (- p1__149638# 10.0)) (range 20))}
   (sk/view :x :y)
   (sk/lay (sk/point {:color :val}))
   (sk/plot {:color-scale :diverging, :color-midpoint 0})))
 
 
 (deftest
- t73_l330
- (is ((fn [v] (= 20 (:points (sk/svg-summary v)))) v72_l323)))
+ t73_l328
+ (is ((fn [v] (= 20 (:points (sk/svg-summary v)))) v72_l321)))
 
 
 (def
- v75_l336
+ v75_l334
  (->
-  (tc/dataset
-   {:date
-    [(java.time.LocalDate/of 2025 1 1)
-     (java.time.LocalDate/of 2025 1 2)],
-    :val [10 20]})
+  {:date
+   [(java.time.LocalDate/of 2025 1 1)
+    (java.time.LocalDate/of 2025 1 2)],
+   :val [10 20]}
   (sk/view :date :val)
   (sk/lay (sk/point))
   sk/plot))
 
 
 (deftest
- t76_l343
- (is ((fn [v] (= 2 (:points (sk/svg-summary v)))) v75_l336)))
+ t76_l341
+ (is ((fn [v] (= 2 (:points (sk/svg-summary v)))) v75_l334)))
 
 
 (def
- v78_l350
+ v78_l348
  (->
-  (tc/dataset
-   {:time
-    (mapv
-     (fn*
-      [p1__133941#]
-      (java.time.LocalDateTime/of
-       2025
-       3
-       15
-       (+ 8 (int (/ p1__133941# 4)))
-       (* 15 (mod (int p1__133941#) 4))
-       0))
-     (range 24)),
-    :value
-    (mapv
-     (fn*
-      [p1__133942#]
-      (+ 18.0 (* 4.0 (Math/sin (* p1__133942# 0.3)))))
-     (range 24))})
+  {:time
+   (mapv
+    (fn*
+     [p1__149639#]
+     (java.time.LocalDateTime/of
+      2025
+      3
+      15
+      (+ 8 (int (/ p1__149639# 4)))
+      (* 15 (mod (int p1__149639#) 4))
+      0))
+    (range 24)),
+   :value
+   (mapv
+    (fn* [p1__149640#] (+ 18.0 (* 4.0 (Math/sin (* p1__149640# 0.3)))))
+    (range 24))}
   (sk/view :time :value)
   (sk/lay (sk/line) (sk/point))
   sk/plot))
 
 
 (deftest
- t79_l360
+ t79_l358
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 24 (:points s)) (= 1 (:lines s)))))
-   v78_l350)))
+   v78_l348)))
 
 
 (def
- v81_l368
+ v81_l366
  (->
-  (tc/dataset
-   {:date
-    (mapv
-     (fn*
-      [p1__133943#]
-      (java.time.LocalDate/ofEpochDay
-       (+ 18262 (* (long p1__133943#) 120))))
-     (range 20)),
-    :value
-    (mapv
-     (fn* [p1__133944#] (+ 100 (* 50 (Math/sin (* p1__133944# 0.4)))))
-     (range 20))})
+  {:date
+   (mapv
+    (fn*
+     [p1__149641#]
+     (java.time.LocalDate/ofEpochDay
+      (+ 18262 (* (long p1__149641#) 120))))
+    (range 20)),
+   :value
+   (mapv
+    (fn* [p1__149642#] (+ 100 (* 50 (Math/sin (* p1__149642# 0.4)))))
+    (range 20))}
   (sk/view :date :value)
   (sk/lay (sk/line) (sk/point))
   sk/plot))
 
 
 (deftest
- t82_l375
+ t82_l373
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 20 (:points s)) (= 1 (:lines s)))))
-   v81_l368)))
+   v81_l366)))
 
 
 (def
- v84_l383
+ v84_l381
  (->
-  (tc/dataset
-   {:cat (map (fn* [p1__133945#] (str "cat-" p1__133945#)) (range 12)),
-    :val (repeatedly 12 (fn* [] (rand-int 100)))})
+  {:cat (map (fn* [p1__149643#] (str "cat-" p1__149643#)) (range 12)),
+   :val (repeatedly 12 (fn* [] (rand-int 100)))}
   (sk/view :cat :val)
   (sk/lay (sk/bar))
   (sk/coord :polar)
@@ -561,14 +547,14 @@
 
 
 (deftest
- t85_l390
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v84_l383)))
+ t85_l388
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v84_l381)))
 
 
 (def
- v87_l394
+ v87_l392
  (->
-  (tc/dataset {:x (range 100), :y (range 0 10 0.1)})
+  {:x (range 100), :y (range 0 10 0.1)}
   (sk/view :x :y)
   (sk/lay (sk/point))
   (sk/coord :fixed)
@@ -576,12 +562,12 @@
 
 
 (deftest
- t88_l400
- (is ((fn [v] (= 100 (:points (sk/svg-summary v)))) v87_l394)))
+ t88_l398
+ (is ((fn [v] (= 100 (:points (sk/svg-summary v)))) v87_l392)))
 
 
 (def
- v90_l409
+ v90_l407
  (->
   iris
   (sk/view
@@ -591,7 +577,7 @@
 
 
 (deftest
- t91_l414
+ t91_l412
  (is
   ((fn
     [v]
@@ -602,7 +588,7 @@
       (:texts s)
       strip-labels
       (filter
-       (fn* [p1__133946#] (re-find #"sepal|petal" p1__133946#))
+       (fn* [p1__149644#] (re-find #"sepal|petal" p1__149644#))
        texts)]
      (and (= 6 (:panels s)) (= 6 (count strip-labels)))))
-   v90_l409)))
+   v90_l407)))
