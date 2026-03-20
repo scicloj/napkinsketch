@@ -7,38 +7,63 @@
 ;; ---- Helpers ----
 
 (defn column-ref?
-  "True if v is a column reference (keyword)."
+  "True if v is a column reference (keyword).
+   String column names are normalized to keywords at the API boundary,
+   so by the time column-ref? is called, column references are keywords."
   [v]
   (keyword? v))
 
+(defn- normalize-col-ref
+  "Convert a string column reference to a keyword. Pass through other values."
+  [v]
+  (if (string? v) (keyword v) v))
+
+(defn- normalize-col-refs
+  "Normalize string column references to keywords in a map's column-key positions.
+   Excludes :color because it can be a literal color string (e.g. \"#FF0000\").
+   Color strings are normalized later in resolve-view where dataset context is available."
+  [m]
+  (reduce (fn [acc k]
+            (let [v (get acc k)]
+              (if (and (string? v) (not= k :color))
+                (assoc acc k (keyword v))
+                acc)))
+          m
+          defaults/column-keys))
+
+(defn- ensure-keyword-columns
+  "If dataset has string column names, rename them to keywords."
+  [ds]
+  (let [renames (into {} (for [c (tc/column-names ds) :when (string? c)]
+                           [c (keyword c)]))]
+    (if (seq renames)
+      (tc/rename-columns ds renames)
+      ds)))
+
 (defn parse-view-spec
-  "Parse a view spec: a keyword becomes a histogram view (x=y),
-  a vector becomes {:x ... :y ...}, a map passes through."
+  "Parse a view spec: a keyword or string becomes a histogram view (x=y),
+  a vector becomes {:x ... :y ...}, a map passes through.
+  String column references are normalized to keywords."
   [spec]
   (cond
     (keyword? spec) {:x spec :y spec}
-    (map? spec) spec
-    :else {:x (first spec) :y (second spec)}))
+    (string? spec) (let [k (keyword spec)] {:x k :y k})
+    (map? spec) (normalize-col-refs spec)
+    :else {:x (normalize-col-ref (first spec))
+           :y (normalize-col-ref (second spec))}))
 
 (defn validate-columns
   "Check that every column-referencing key in view-map names a real column in ds."
   ([ds view-map]
    (let [col-names (set (tc/column-names ds))]
-     ;; :x and :y must be keywords — catch string column names early
-     (doseq [k [:x :y]
-             :let [col (get view-map k)]
-             :when (and col (string? col))]
-       (throw (ex-info (str "Column names must be keywords, got string " (pr-str col)
-                            " for " k ". Use :" col " instead.")
-                       {:key k :column col})))
      (doseq [k defaults/column-keys
              :let [col (get view-map k)]
-             :when (and col (column-ref? col) (not (col-names col)))]
+             :when (and col (keyword? col) (not (col-names col)))]
        (throw (ex-info (str "Column " col " (from " k ") not found in dataset. Available: " (sort col-names))
                        {:key k :column col :available (sort col-names)})))))
   ([ds role col]
    (let [col-names (set (tc/column-names ds))]
-     (when-not (col-names col)
+     (when (and (keyword? col) (not (col-names col)))
        (throw (ex-info (str "Column " col " (from " role ") not found in dataset. Available: " (sort col-names))
                        {:key role :column col :available (sort col-names)}))))))
 
@@ -54,7 +79,7 @@
 (defn view
   "Create views from data and column specs."
   ([data spec-or-x]
-   (let [ds (if (tc/dataset? data) data (tc/dataset data))]
+   (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))]
      (if (multi-spec? spec-or-x)
        (mapv (fn [spec]
                (let [parsed (parse-view-spec spec)]
@@ -65,8 +90,8 @@
          (validate-columns ds parsed)
          [(assoc parsed :data ds)]))))
   ([data x y]
-   (let [ds (if (tc/dataset? data) data (tc/dataset data))
-         v {:x x :y y}]
+   (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))
+         v {:x (normalize-col-ref x) :y (normalize-col-ref y)}]
      (validate-columns ds v)
      [(assoc v :data ds)])))
 
@@ -79,12 +104,13 @@
 (defn merge-layer
   "Merge a layer into each view, preserving :__base for additive lay."
   [views overrides]
-  (mapv (fn [v]
-          (when (:data v)
-            (validate-columns (:data v) overrides))
-          (let [base (or (:__base v) v)]
-            (assoc (merge v overrides) :__base base)))
-        views))
+  (let [overrides (normalize-col-refs overrides)]
+    (mapv (fn [v]
+            (when (:data v)
+              (validate-columns (:data v) overrides))
+            (let [base (or (:__base v) v)]
+              (assoc (merge v overrides) :__base base)))
+          views)))
 
 (defn lay
   "Apply one or more layers to views. Additive: calling lay on
@@ -372,9 +398,10 @@
   "Upper-triangle pairs of columns, for pairwise scatter plots.
    (pairs [:a :b :c]) => [[:a :b] [:a :c] [:b :c]]"
   [cols]
-  (vec (for [i (range (count cols))
-             j (range (inc i) (count cols))]
-         [(nth cols i) (nth cols j)])))
+  (let [cols (mapv normalize-col-ref cols)]
+    (vec (for [i (range (count cols))
+               j (range (inc i) (count cols))]
+           [(nth cols i) (nth cols j)]))))
 
 ;; ---- Faceting ----
 
@@ -383,22 +410,24 @@
    Either column may be nil for a single-dimension facet.
    Each resulting view gets :facet-row and :facet-col keys."
   [views row-col col-col]
-  (vec
-   (mapcat
-    (fn [v]
-      (if-not (:data v)
-        [v]
-        (do
-          (when row-col (validate-columns (:data v) :facet-row row-col))
-          (when col-col (validate-columns (:data v) :facet-col col-col))
-          (let [group-cols (filterv some? [row-col col-col])
-                groups (tc/group-by (:data v) group-cols {:result-type :as-map})]
-            (map (fn [[gk gds]]
-                   (assoc v :data gds
-                          :facet-row (if row-col (get gk row-col) "_")
-                          :facet-col (if col-col (get gk col-col) "_")))
-                 groups)))))
-    views)))
+  (let [row-col (normalize-col-ref row-col)
+        col-col (normalize-col-ref col-col)]
+    (vec
+     (mapcat
+      (fn [v]
+        (if-not (:data v)
+          [v]
+          (do
+            (when row-col (validate-columns (:data v) :facet-row row-col))
+            (when col-col (validate-columns (:data v) :facet-col col-col))
+            (let [group-cols (filterv some? [row-col col-col])
+                  groups (tc/group-by (:data v) group-cols {:result-type :as-map})]
+              (map (fn [[gk gds]]
+                     (assoc v :data gds
+                            :facet-row (if row-col (get gk row-col) "_")
+                            :facet-col (if col-col (get gk col-col) "_")))
+                   groups)))))
+      views))))
 
 (defn facet
   "Split each view by a categorical column.
@@ -408,15 +437,16 @@
    (facet views :species :col)   — vertical column"
   ([views col] (facet views col :row))
   ([views col direction]
-   (case direction
-     :row (facet-grid views nil col)
-     :col (facet-grid views col nil))))
+   (let [col (normalize-col-ref col)]
+     (case direction
+       :row (facet-grid views nil col)
+       :col (facet-grid views col nil)))))
 
 (defn distribution
   "Create diagonal views (x=y) for each column, used for histograms in SPLOM.
    (distribution data :a :b :c) => views with [[:a :a] [:b :b] [:c :c]]"
   [data & cols]
-  (view data (mapv (fn [c] [c c]) cols)))
+  (view data (mapv (fn [c] (let [c (normalize-col-ref c)] [c c])) cols)))
 
 ;; ---- Column Type Detection ----
 
@@ -486,7 +516,11 @@
           ;; Temporal columns become numerical after conversion
           x-type (if x-temporal? :numerical x-type)
           y-type (if y-temporal? :numerical y-type)
-          color-val (:color v)
+          color-val (let [cv (:color v)]
+                      (if (and (string? cv)
+                               ((set (tc/column-names ds)) (keyword cv)))
+                        (keyword cv)
+                        cv))
           color-is-col? (and color-val (column-ref? color-val))
           c-type (when color-is-col?
                    (or (:color-type v) (column-type ds color-val)))
@@ -500,10 +534,10 @@
           text-val (:text v)
           text-col (when (and text-val (column-ref? text-val)) text-val)
           ;; Group: normalize keyword to [kw], combine with color column
-          explicit-group (let [g (:group v)]
+          explicit-group (let [g (normalize-col-ref (:group v))]
                            (cond (nil? g) nil
                                  (keyword? g) [g]
-                                 (sequential? g) (vec g)
+                                 (sequential? g) (mapv normalize-col-ref g)
                                  :else [g]))
           color-group (when (= c-type :categorical) [color-val])
           group (vec (distinct (concat (or explicit-group color-group [])
