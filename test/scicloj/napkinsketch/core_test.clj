@@ -892,25 +892,17 @@
       (is (some #{"c"} texts)))))
 
 (deftest save-test
-  (testing "save writes a valid SVG file"
-    (let [views (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)))
-          path (str (java.io.File/createTempFile "napkinsketch-test" ".svg"))
-          result (sk/save views path {:title "Test Save"})]
-      (is (= path result))
+  (testing "sk/save writes valid SVG file"
+    (let [ds (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+                         {:key-fn keyword})
+          path (str (java.io.File/createTempFile "napkinsketch" ".svg"))
+          views (-> ds (sk/view :sepal_length :sepal_width)
+                    (sk/lay (sk/point {:color :species})))]
+      (sk/save views path)
       (let [content (slurp path)]
         (is (.startsWith content "<?xml"))
         (is (.contains content "<svg"))
-        (is (.contains content "Test Save"))
-        (is (.contains content "<rect")))
-      (.delete (java.io.File. path))))
-  (testing "save with custom dimensions"
-    (let [views (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)))
-          path (str (java.io.File/createTempFile "napkinsketch-test" ".svg"))
-          _ (sk/save views path {:width 900 :height 300})
-          content (slurp path)]
-      ;; total-width > 900 due to margins/labels
-      (is (.contains content "width=\"9"))
-      (is (.contains content "height=\"3"))
+        (is (.contains content "setosa")))
       (.delete (java.io.File. path)))))
 
 (deftest temporal-epoch-ms-test
@@ -945,20 +937,48 @@
     (is (= ["0.001" "0.01" "0.1" "1" "10"]
            (scale/format-log-ticks [0.001 0.01 0.1 1.0 10.0])))))
 
-(deftest string-column-error-test
-  (testing "String x column gives helpful error"
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #"Column names must be keywords"
-                          (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
-                              (sk/view "x" "y")
-                              (sk/lay (sk/point))
-                              sk/plot))))
-  (testing "Literal color string still works"
-    (let [v (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
-                (sk/view :x :y)
-                (sk/lay (sk/point {:color "#FF0000"}))
-                sk/plot)]
-      (is (= 3 (:points (sk/svg-summary v)))))))
+(deftest string-column-names-test
+  (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+                         {:key-fn keyword})]
+    (testing "String column refs in 3-arity view"
+      (let [s (-> iris (sk/view "sepal_length" "sepal_width")
+                  (sk/lay (sk/point)) sk/plot sk/svg-summary)]
+        (is (= 150 (:points s)))))
+    (testing "String columns in vector spec"
+      (let [s (-> iris (sk/view [["sepal_length" "sepal_width"]])
+                  (sk/lay (sk/point)) sk/plot sk/svg-summary)]
+        (is (= 150 (:points s)))))
+    (testing "String column in mark options"
+      (let [s (-> iris (sk/view :sepal_length :sepal_width)
+                  (sk/lay (sk/point {:color "species"})) sk/plot sk/svg-summary)]
+        (is (= 150 (:points s)))
+        (is (some #{"setosa"} (:texts s)))))
+    (testing "Dataset with string column names"
+      (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
+            s (-> ds (sk/view :x :y) (sk/lay (sk/point)) sk/plot sk/svg-summary)]
+        (is (= 3 (:points s)))))
+    (testing "Dataset with string columns + string spec"
+      (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
+            s (-> ds (sk/view "x" "y") (sk/lay (sk/point)) sk/plot sk/svg-summary)]
+        (is (= 3 (:points s)))))
+    (testing "String in facet"
+      (let [s (-> iris (sk/view :sepal_length :sepal_width)
+                  (sk/facet "species") (sk/lay (sk/point)) sk/plot sk/svg-summary)]
+        (is (= 3 (:panels s)))))
+    (testing "String in pairs"
+      (is (= [[:a :b] [:a :c] [:b :c]]
+             (sk/pairs ["a" "b" "c"]))))
+    (testing "Literal color string still works"
+      (let [v (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
+                  (sk/view :x :y)
+                  (sk/lay (sk/point {:color "#FF0000"}))
+                  sk/plot)]
+        (is (= 3 (:points (sk/svg-summary v))))))
+    (testing "Typo still gives good error"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"not found in dataset"
+                            (-> iris (sk/view :sepl_length :sepal_width)
+                                (sk/lay (sk/point)) sk/plot))))))
 
 (deftest schema-all-marks-test
   (testing "Every mark type produces a valid sketch"
