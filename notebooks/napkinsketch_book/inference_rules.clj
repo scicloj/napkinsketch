@@ -98,6 +98,28 @@
 ;; appearance. The ticks have `:categorical? true`. The y-domain starts
 ;; at zero because this is a bar chart.
 
+;; Temporal columns — dates are detected and converted to
+;; epoch-milliseconds internally, with calendar-aware tick labels:
+
+(let [sk (-> {:date [(java.time.LocalDate/of 2024 1 1)
+                     (java.time.LocalDate/of 2024 6 1)
+                     (java.time.LocalDate/of 2024 12 1)]
+              :val [10 25 18]}
+             (sk/view :date :val)
+             (sk/lay (sk/point))
+             sk/sketch)
+      p (first (:panels sk))]
+  {:x-domain-numeric? (number? (first (:x-domain p)))
+   :tick-labels (:labels (:x-ticks p))})
+
+(kind/test-last [(fn [m] (and (true? (:x-domain-numeric? m))
+                              (not-empty (:tick-labels m))))])
+
+;; The x-domain contains epoch-millisecond numbers, but the tick
+;; labels show human-readable dates. The system detected the
+;; `LocalDate` type, converted to numbers for plotting, and
+;; preserved the temporal extent for formatting.
+
 ;; ## Mark and Stat Inference
 ;;
 ;; When you provide only a column (no explicit mark), napkinsketch
@@ -144,6 +166,16 @@
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 ;; Mark is `:rect` with `:counts` — the `:count` stat tallied each category.
+
+;; Mixed column types (categorical x, numerical y) also default to `:point`:
+
+(let [sk (-> {:species ["a" "b" "c"] :val [10 20 15]}
+             (sk/view :species :val)
+             sk/sketch)
+      layer (first (:layers (first (:panels sk))))]
+  (:mark layer))
+
+(kind/test-last [(fn [m] (= :point m))])
 
 ;; ## Color Resolution
 ;;
@@ -386,6 +418,21 @@
 
 (kind/test-last [(fn [m] (<= (first (:y-domain m)) 0))])
 
+;; Percentage-filled layers normalize the y-domain to `[0.0, 1.0]`:
+
+(let [fill-sk (-> {:x ["a" "a" "b" "b"]
+                   :g ["m" "n" "m" "n"]}
+                  (sk/view :x)
+                  (sk/lay (sk/stacked-bar-fill {:color :g}))
+                  sk/sketch)
+      p (first (:panels fill-sk))]
+  (:y-domain p))
+
+(kind/test-last [(fn [d] (and (= 0.0 (first d))
+                              (= 1.0 (second d))))])
+
+;; The y-domain is exactly `[0.0, 1.0]` — each category sums to 100%.
+
 ;; ## Axis Labels
 ;;
 ;; Labels come from column names. Underscores and hyphens become spaces:
@@ -493,6 +540,23 @@
 
 ;; The categorical axis moved from x to y.
 
+;; Labels are also swapped — the x-label and y-label follow their
+;; visual axis, not the data axis:
+
+(let [sk (-> five-points
+             (sk/view :x :y)
+             (sk/lay (sk/point))
+             (sk/coord :flip)
+             sk/sketch)]
+  {:x-label (:x-label sk)
+   :y-label (:y-label sk)})
+
+(kind/test-last [(fn [m] (and (= "y" (:x-label m))
+                              (= "x" (:y-label m))))])
+
+;; After flipping, the visual x-axis shows "y" and the visual y-axis
+;; shows "x" — labels track the visual axes.
+
 ;; ## Legend Inference
 ;;
 ;; A legend appears when a column is mapped to color. Examine the
@@ -551,6 +615,9 @@
 ;; | Column name → axis label | `(sk/labs {:x "Custom Label"})` |
 ;; | No title → no padding | `:title "My Plot"` in options |
 ;; | Column types → mark | explicit mark constructor: `(sk/histogram)` |
+;; | Temporal detection → epoch-ms | `(sk/scale views :x {:domain [min max]})` |
+;; | Fill domain → [0, 1] | `(sk/scale views :y {:domain [0 2]})` |
+;; | Flip swaps labels | `(sk/labs {:x "keep-this"})` overrides |
 ;;
 ;; The sketch captures the result of all inference. When in doubt,
 ;; look at the sketch.
