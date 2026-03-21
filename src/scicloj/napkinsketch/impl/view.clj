@@ -485,13 +485,26 @@
   [ds col]
   (tc/map-columns ds col [col] temporal->epoch-ms))
 
+(defn- temporal->local-date-time
+  "Convert any supported temporal value to LocalDateTime (required by wadogo :datetime scale).
+   LocalDate gets midnight, Instant and java.util.Date get UTC conversion."
+  [v]
+  (cond
+    (instance? LocalDateTime v) v
+    (instance? LocalDate v) (.atStartOfDay ^LocalDate v)
+    (instance? Instant v) (LocalDateTime/ofInstant ^Instant v ZoneOffset/UTC)
+    (instance? java.util.Date v) (LocalDateTime/ofInstant (.toInstant ^java.util.Date v) ZoneOffset/UTC)
+    :else v))
+
 (defn- temporal-extent
-  "Return [min max] of original temporal values in a column, before conversion."
+  "Return [min max] of original temporal values in a column, as LocalDateTime.
+   All temporal types are normalized to LocalDateTime for wadogo :datetime scale."
   [ds col]
   (let [vals (vec (remove nil? (ds col)))]
     (when (seq vals)
-      [(reduce #(if (neg? (.compareTo ^Comparable %1 %2)) %1 %2) vals)
-       (reduce #(if (pos? (.compareTo ^Comparable %1 %2)) %1 %2) vals)])))
+      (let [ldts (mapv temporal->local-date-time vals)]
+        [(reduce #(if (neg? (.compareTo ^Comparable %1 %2)) %1 %2) ldts)
+         (reduce #(if (pos? (.compareTo ^Comparable %1 %2)) %1 %2) ldts)]))))
 
 ;; ---- Resolve View ----
 

@@ -4,11 +4,12 @@
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
+  [fastmath.random :as rng]
   [clojure.test :refer [deftest is]]))
 
 
 (def
- v2_l15
+ v2_l17
  (def
   iris
   (tc/dataset
@@ -17,7 +18,7 @@
 
 
 (def
- v3_l18
+ v3_l20
  (def
   tips
   (tc/dataset
@@ -26,7 +27,7 @@
 
 
 (def
- v5_l28
+ v5_l30
  (->
   iris
   (sk/view [[:species :sepal_length]])
@@ -35,18 +36,18 @@
 
 
 (deftest
- t6_l34
+ t6_l36
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)) (= 3 (:polygons s)))))
-   v5_l28)))
+   v5_l30)))
 
 
 (def
- v8_l43
+ v8_l45
  (->
   iris
   (sk/view [[:sepal_length :sepal_length]])
@@ -57,18 +58,18 @@
 
 
 (deftest
- t9_l49
+ t9_l51
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v8_l43)))
+   v8_l45)))
 
 
 (def
- v11_l57
+ v11_l59
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -79,18 +80,18 @@
 
 
 (deftest
- t12_l63
+ t12_l65
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v11_l57)))
+   v11_l59)))
 
 
 (def
- v14_l71
+ v14_l73
  (->
   iris
   (sk/view [[:species :petal_width]])
@@ -101,43 +102,43 @@
 
 
 (deftest
- t15_l77
+ t15_l79
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:polygons s)))))
-   v14_l71)))
+   v14_l73)))
 
 
 (def
- v17_l86
+ v17_l88
  (def
   ts-dates
   (mapv
    (fn*
-    [p1__158069#]
+    [p1__164492#]
     (java.time.LocalDate/ofEpochDay
-     (+ 18262 (* (long p1__158069#) 7))))
+     (+ 18262 (* (long p1__164492#) 7))))
    (range 52))))
 
 
 (def
- v18_l88
+ v18_l90
  (def
   ts-ds
   {:date ts-dates,
    :value
    (mapv
     (fn*
-     [p1__158070#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__158070#) 0.12)))))
+     [p1__164493#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__164493#) 0.12)))))
     (range 52))}))
 
 
 (def
- v19_l92
+ v19_l94
  (->
   ts-ds
   (sk/view [[:date :value]])
@@ -146,18 +147,18 @@
 
 
 (deftest
- t20_l99
+ t20_l101
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 52 (:points s)) (= 1 (:lines s)) (= 1 (:polygons s)))))
-   v19_l92)))
+   v19_l94)))
 
 
 (def
- v22_l108
+ v22_l110
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -167,13 +168,13 @@
 
 
 (deftest
- t23_l114
+ t23_l116
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:panels s)))) v22_l108)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:panels s)))) v22_l110)))
 
 
 (def
- v25_l122
+ v25_l124
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -185,18 +186,18 @@
 
 
 (deftest
- t26_l129
+ t26_l131
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v25_l122)))
+   v25_l124)))
 
 
 (def
- v28_l138
+ v28_l140
  (->
   iris
   (sk/view [[:species :sepal_length]])
@@ -205,18 +206,18 @@
 
 
 (deftest
- t29_l143
+ t29_l145
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:polygons s)) (= 3 (:lines s)))))
-   v28_l138)))
+   v28_l140)))
 
 
 (def
- v31_l151
+ v31_l153
  (def
   penguins
   (tc/dataset
@@ -225,7 +226,7 @@
 
 
 (def
- v32_l154
+ v32_l156
  (->
   penguins
   (sk/view :island)
@@ -234,18 +235,18 @@
 
 
 (deftest
- t33_l159
+ t33_l161
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v32_l154)))
+   v32_l156)))
 
 
 (def
- v35_l169
+ v35_l171
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -254,18 +255,18 @@
 
 
 (deftest
- t36_l175
+ t36_l177
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v35_l169)))
+   v35_l171)))
 
 
 (def
- v38_l184
+ v38_l186
  (def
   experiment
   {:condition ["A" "B" "C" "D"],
@@ -275,7 +276,7 @@
 
 
 (def
- v39_l190
+ v39_l192
  (->
   experiment
   (sk/view [[:condition :mean]])
@@ -286,18 +287,18 @@
 
 
 (deftest
- t40_l196
+ t40_l198
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 12 (:lines s)))))
-   v39_l190)))
+   v39_l192)))
 
 
 (def
- v42_l204
+ v42_l206
  (->
   experiment
   (sk/view [[:condition :mean]])
@@ -306,18 +307,18 @@
 
 
 (deftest
- t43_l210
+ t43_l212
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 16 (:lines s)))))
-   v42_l204)))
+   v42_l206)))
 
 
 (def
- v45_l218
+ v45_l220
  (->
   iris
   (sk/view [[:species :sepal_length]])
@@ -328,18 +329,18 @@
 
 
 (deftest
- t46_l224
+ t46_l226
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 153 (:points s)) (= 3 (:lines s)))))
-   v45_l218)))
+   v45_l220)))
 
 
 (def
- v48_l232
+ v48_l234
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -351,7 +352,7 @@
 
 
 (deftest
- t49_l240
+ t49_l242
  (is
   ((fn
     [v]
@@ -361,11 +362,11 @@
       (pos? (:points s))
       (= 2 (:lines s))
       (some #{"Tipping Behavior"} (:texts s)))))
-   v48_l232)))
+   v48_l234)))
 
 
 (def
- v51_l252
+ v51_l254
  (->
   iris
   (sk/view :sepal_length :sepal_width)
@@ -376,18 +377,18 @@
 
 
 (deftest
- t52_l258
+ t52_l260
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)) (pos? (:lines s)))))
-   v51_l252)))
+   v51_l254)))
 
 
 (def
- v54_l267
+ v54_l269
  (->
   tips
   (sk/view :day)
@@ -396,12 +397,12 @@
 
 
 (deftest
- t55_l272
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v54_l267)))
+ t55_l274
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v54_l269)))
 
 
 (def
- v56_l274
+ v56_l276
  (->
   tips
   (sk/view :day)
@@ -410,12 +411,12 @@
 
 
 (deftest
- t57_l279
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v56_l274)))
+ t57_l281
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v56_l276)))
 
 
 (def
- v59_l286
+ v59_l288
  (def
   daily-temps
   {:day (range 1 15),
@@ -423,7 +424,7 @@
 
 
 (def
- v60_l290
+ v60_l292
  (->
   daily-temps
   (sk/view :day :temp)
@@ -434,18 +435,18 @@
 
 
 (deftest
- t61_l296
+ t61_l298
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (pos? (:lines s)) (pos? (:points s)))))
-   v60_l290)))
+   v60_l292)))
 
 
 (def
- v63_l305
+ v63_l307
  (->
   iris
   (sk/view :sepal_length :sepal_width)
@@ -456,23 +457,23 @@
 
 
 (deftest
- t64_l311
+ t64_l313
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (pos? (:points s)) (pos? (:lines s)))))
-   v63_l305)))
+   v63_l307)))
 
 
 (def
- v66_l319
+ v66_l321
  (def top5 (-> iris (tc/order-by :sepal_length :desc) (tc/head 5))))
 
 
 (def
- v67_l321
+ v67_l323
  (->
   top5
   (sk/view :sepal_length :sepal_width)
@@ -483,7 +484,7 @@
 
 
 (deftest
- t68_l327
+ t68_l329
  (is
   ((fn
     [v]
@@ -492,13 +493,13 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__158071#] (= "virginica" p1__158071#))
+       (fn* [p1__164494#] (= "virginica" p1__164494#))
        (:texts s)))))
-   v67_l321)))
+   v67_l323)))
 
 
 (def
- v70_l335
+ v70_l337
  (->
   iris
   (sk/view :sepal_length :sepal_width)
@@ -510,18 +511,18 @@
 
 
 (deftest
- t71_l343
+ t71_l345
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
-   v70_l335)))
+   v70_l337)))
 
 
 (def
- v73_l352
+ v73_l354
  (->
   iris
   (sk/view :sepal_length :sepal_width)
@@ -531,23 +532,23 @@
 
 
 (deftest
- t74_l358
+ t74_l360
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (pos? (:points s)) (= 3 (:lines s)))))
-   v73_l352)))
+   v73_l354)))
 
 
 (def
- v76_l367
+ v76_l369
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__158072#] (Math/sin (/ p1__158072# 3.0))) (range 20)),
-   :change (map (fn* [p1__158073#] (- p1__158073# 10)) (range 20))}
+   (map (fn* [p1__164495#] (Math/sin (/ p1__164495# 3.0))) (range 20)),
+   :change (map (fn* [p1__164496#] (- p1__164496# 10)) (range 20))}
   (sk/view :x :y)
   (sk/lay (sk/point {:color :change}))
   (sk/plot
@@ -557,18 +558,18 @@
 
 
 (deftest
- t77_l376
+ t77_l378
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 20 (:points s)))))
-   v76_l367)))
+   v76_l369)))
 
 
 (def
- v79_l384
+ v79_l386
  (->
   iris
   (sk/view :sepal_length :sepal_width)
@@ -579,18 +580,18 @@
 
 
 (deftest
- t80_l390
+ t80_l392
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)) (= 3 (:polygons s)))))
-   v79_l384)))
+   v79_l386)))
 
 
 (def
- v82_l399
+ v82_l401
  (def
   iris-sepal
   (->
@@ -601,7 +602,7 @@
 
 
 (def
- v83_l405
+ v83_l407
  (def
   iris-petal
   (->
@@ -612,23 +613,23 @@
 
 
 (def
- v84_l411
+ v84_l413
  (sk/arrange
   [iris-sepal iris-petal]
   {:title "Iris Dashboard", :cols 2}))
 
 
 (deftest
- t85_l414
+ t85_l416
  (is
   ((fn
     [v]
     (and (= :div (first v)) (= :kind/hiccup (:kindly/kind (meta v)))))
-   v84_l411)))
+   v84_l413)))
 
 
 (def
- v87_l421
+ v87_l423
  (def
   top-cities
   {:city ["Tokyo" "Delhi" "Shanghai" "São Paulo" "Mumbai"],
@@ -637,7 +638,7 @@
 
 
 (def
- v88_l426
+ v88_l428
  (->
   top-cities
   (sk/view :area :population)
@@ -646,7 +647,7 @@
 
 
 (deftest
- t89_l431
+ t89_l433
  (is
   ((fn
     [v]
@@ -655,11 +656,45 @@
      (and
       (= 5 (:points s))
       (every? (set (:texts s)) ["Tokyo" "Delhi"]))))
-   v88_l426)))
+   v88_l428)))
 
 
 (def
  v91_l441
+ (let
+  [r
+   (rng/rng :jdk 77)
+   xs
+   (range 0 10 0.5)
+   ys
+   (mapv
+    (fn*
+     [p1__164497#]
+     (+ (* 3 p1__164497#) 5 (* 2 (- (rng/drandom r) 0.5))))
+    xs)]
+  (->
+   {:x xs, :y ys}
+   (sk/view [[:x :y]])
+   (sk/lay (sk/point) (sk/lm))
+   (sk/plot {:title "Simulated: y = 3x + 5 + noise"}))))
+
+
+(deftest
+ t92_l452
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 20 (:points s))
+      (= 1 (:lines s))
+      (some #{"Simulated: y = 3x + 5 + noise"} (:texts s)))))
+   v91_l441)))
+
+
+(def
+ v94_l463
  (->
   penguins
   (sk/view [[:bill_length_mm :bill_depth_mm]])
@@ -668,18 +703,18 @@
 
 
 (deftest
- t92_l446
+ t95_l468
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 342 (:points s)))))
-   v91_l441)))
+   v94_l463)))
 
 
 (def
- v94_l452
+ v97_l474
  (->
   penguins
   (sk/view [[:bill_length_mm :bill_depth_mm]])
@@ -688,18 +723,18 @@
 
 
 (deftest
- t95_l458
+ t98_l480
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 342 (:points s)) (= 3 (:lines s)))))
-   v94_l452)))
+   v97_l474)))
 
 
 (def
- v97_l464
+ v100_l486
  (->
   penguins
   (sk/view [[:bill_length_mm :bill_depth_mm]])
@@ -708,18 +743,18 @@
 
 
 (deftest
- t98_l470
+ t101_l492
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 342 (:points s)) (= 1 (:lines s)))))
-   v97_l464)))
+   v100_l486)))
 
 
 (def
- v100_l476
+ v103_l498
  (->
   penguins
   (sk/view :island)
@@ -728,18 +763,18 @@
 
 
 (deftest
- t101_l481
+ t104_l503
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v100_l476)))
+   v103_l498)))
 
 
 (def
- v103_l487
+ v106_l509
  (->
   penguins
   (sk/view [[:flipper_length_mm :body_mass_g]])
@@ -748,18 +783,18 @@
 
 
 (deftest
- t104_l493
+ t107_l515
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 342 (:points s)) (= 3 (:lines s)))))
-   v103_l487)))
+   v106_l509)))
 
 
 (def
- v106_l499
+ v109_l521
  (->
   penguins
   (sk/view :body_mass_g)
@@ -768,18 +803,18 @@
 
 
 (deftest
- t107_l504
+ t110_l526
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v106_l499)))
+   v109_l521)))
 
 
 (def
- v109_l512
+ v112_l534
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -791,18 +826,18 @@
 
 
 (deftest
- t110_l519
+ t113_l541
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 244 (:points s)) (= 2 (:lines s)))))
-   v109_l512)))
+   v112_l534)))
 
 
 (def
- v112_l525
+ v115_l547
  (->
   tips
   (sk/view :day)
@@ -811,18 +846,18 @@
 
 
 (deftest
- t113_l530
+ t116_l552
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v112_l525)))
+   v115_l547)))
 
 
 (def
- v115_l536
+ v118_l558
  (->
   tips
   (sk/view :day)
@@ -831,18 +866,18 @@
 
 
 (deftest
- t116_l541
+ t119_l563
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v115_l536)))
+   v118_l558)))
 
 
 (def
- v118_l547
+ v121_l569
  (->
   tips
   (sk/view :day)
@@ -852,18 +887,18 @@
 
 
 (deftest
- t119_l553
+ t122_l575
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v118_l547)))
+   v121_l569)))
 
 
 (def
- v121_l559
+ v124_l581
  (def
   mpg
   (tc/dataset
@@ -872,7 +907,7 @@
 
 
 (def
- v123_l564
+ v126_l586
  (->
   mpg
   (sk/view [[:horsepower :mpg]])
@@ -881,18 +916,18 @@
 
 
 (deftest
- t124_l570
+ t127_l592
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 392 (:points s)) (= 3 (:lines s)))))
-   v123_l564)))
+   v126_l586)))
 
 
 (def
- v126_l576
+ v129_l598
  (->
   mpg
   (sk/view [[:displacement :mpg]])
@@ -901,18 +936,18 @@
 
 
 (deftest
- t127_l581
+ t130_l603
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 398 (:points s)))))
-   v126_l576)))
+   v129_l598)))
 
 
 (def
- v129_l587
+ v132_l609
  (->
   mpg
   (sk/view :origin)
@@ -921,11 +956,11 @@
 
 
 (deftest
- t130_l592
+ t133_l614
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v129_l587)))
+   v132_l609)))

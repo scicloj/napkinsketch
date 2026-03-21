@@ -37,6 +37,16 @@
                     gs)))
     layer))
 
+(defn- check-stat
+  "Assert that stat result contains expected key for the given mark.
+   Raises a clear error instead of letting nil propagate to the renderer."
+  [stat expected-key mark]
+  (when-not (contains? stat expected-key)
+    (throw (ex-info (str "Stat result for :" (name mark)
+                         " mark must contain :" (name expected-key)
+                         ", got keys: " (pr-str (keys stat)))
+                    {:mark mark :expected expected-key :stat-keys (keys stat)}))))
+
 (defn- extract-xy-groups
   "Extract groups from stat :points, resolving colors. Common to most mark types.
    Options:
@@ -89,6 +99,7 @@
         (apply-nudge view))))
 
 (defmethod extract-layer :bar [view stat all-colors cfg]
+  (check-stat stat :bins :bar)
   {:mark :bar
    :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
    :groups (vec
@@ -183,6 +194,7 @@
    :groups (extract-xy-groups view stat all-colors cfg)})
 
 (defmethod extract-layer :boxplot [view stat all-colors cfg]
+  (check-stat stat :boxes :boxplot)
   (let [color-cats (:color-categories stat)]
     {:mark :boxplot
      :style {:box-width (or (:box-width view) 0.6)
@@ -199,6 +211,7 @@
                  (seq (:outliers b)) (assoc :outliers (:outliers b)))))}))
 
 (defmethod extract-layer :violin [view stat all-colors cfg]
+  (check-stat stat :violins :violin)
   (let [color-cats (:color-categories stat)]
     {:mark :violin
      :style {:opacity (or (:fixed-alpha view) 0.7)
@@ -386,6 +399,7 @@
          :y-domain [y-lo y-hi]}))))
 
 (defmethod extract-layer :ridgeline [view stat all-colors cfg]
+  (check-stat stat :violins :ridgeline)
   (let [violins (:violins stat)
         categories (:categories stat)]
     {:mark :ridgeline

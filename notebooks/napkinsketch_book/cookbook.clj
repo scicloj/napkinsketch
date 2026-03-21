@@ -10,7 +10,9 @@
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
-   [scicloj.napkinsketch.api :as sk]))
+   [scicloj.napkinsketch.api :as sk]
+   ;; Fastmath — random number generation (for synthetic data)
+   [fastmath.random :as rng]))
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
@@ -431,6 +433,26 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 5 (:points s))
                                 (every? (set (:texts s)) ["Tokyo" "Delhi"]))))])
+
+;; ## Simulated Data
+;;
+;; Generate data from a known model and verify the regression recovers it.
+
+(let [r (rng/rng :jdk 77)
+      xs (range 0 10 0.5)
+      ys (mapv #(+ (* 3 %)
+                   5
+                   (* 2 (- (rng/drandom r) 0.5)))
+               xs)]
+  (-> {:x xs :y ys}
+      (sk/view [[:x :y]])
+      (sk/lay (sk/point) (sk/lm))
+      (sk/plot {:title "Simulated: y = 3x + 5 + noise"})))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 20 (:points s))
+                                (= 1 (:lines s))
+                                (some #{"Simulated: y = 3x + 5 + noise"} (:texts s)))))])
 
 ;; ## Analytical Walkthroughs
 

@@ -149,7 +149,7 @@
    {:x (range 1 11),
     :y
     (mapv
-     (fn* [p1__157628#] (+ (* 2 p1__157628#) (- (rng/irandom r 5) 2)))
+     (fn* [p1__164355#] (+ (* 2 p1__164355#) (- (rng/irandom r 5) 2)))
      (range 1 11))})
   (sk/view [[:x :y]])
   (sk/lay (sk/point) (sk/lm))
@@ -179,7 +179,7 @@
    (->
     iris
     (tc/select-rows
-     (fn* [p1__157629#] (= species-name (p1__157629# :species))))
+     (fn* [p1__164356#] (= species-name (p1__164356# :species))))
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay (sk/point) (sk/lm))
     (sk/plot {:width 300, :height 250, :title species-name})))))
@@ -299,41 +299,7 @@
 
 
 (def
- v51_l208
- (let
-  [r
-   (rng/rng :jdk 77)
-   xs
-   (range 0 10 0.5)
-   ys
-   (mapv
-    (fn*
-     [p1__157630#]
-     (+ (* 3 p1__157630#) 5 (* 2 (- (rng/drandom r) 0.5))))
-    xs)]
-  (->
-   {:x xs, :y ys}
-   (sk/view [[:x :y]])
-   (sk/lay (sk/point) (sk/lm))
-   (sk/plot {:title "Simulated: y = 3x + 5 + noise"}))))
-
-
-(deftest
- t52_l219
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and
-      (= 20 (:points s))
-      (= 1 (:lines s))
-      (some #{"Simulated: y = 3x + 5 + noise"} (:texts s)))))
-   v51_l208)))
-
-
-(def
- v54_l231
+ v51_l211
  (->
   iris
   (sk/view :sepal_length)
@@ -343,18 +309,18 @@
 
 
 (deftest
- t55_l237
+ t52_l217
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 3 (:polygons s)))))
-   v54_l231)))
+   v51_l211)))
 
 
 (def
- v57_l243
+ v54_l223
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -365,18 +331,18 @@
 
 
 (deftest
- t58_l249
+ t55_l229
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v57_l243)))
+   v54_l223)))
 
 
 (def
- v60_l255
+ v57_l235
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -387,7 +353,7 @@
 
 
 (deftest
- t61_l262
+ t58_l242
  (is
   ((fn
     [v]
@@ -396,11 +362,11 @@
      (and
       (= 150 (:points s))
       (some #{"Log-Scale with Gradient Color"} (:texts s)))))
-   v60_l255)))
+   v57_l235)))
 
 
 (def
- v63_l268
+ v60_l248
  (->
   tips
   (sk/view [[:day :total_bill]])
@@ -409,11 +375,11 @@
 
 
 (deftest
- t64_l274
+ t61_l254
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)) (pos? (:lines s)))))
-   v63_l268)))
+   v60_l248)))

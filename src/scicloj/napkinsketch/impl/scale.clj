@@ -29,7 +29,8 @@
   (ws/scale :log {:domain domain :range pixel-range}))
 
 (defn pad-domain
-  "Add padding to a numeric domain."
+  "Add padding to a numeric domain. When lo == hi (constant data),
+   pads by ±1 or ±5% of |lo|, whichever is larger."
   [[lo hi] scale-spec]
   (let [log? (= :log (:type scale-spec))
         padding (:domain-padding defaults/defaults)
@@ -38,7 +39,11 @@
                   [(max 1e-10 (double lo)) (max 1e-10 (double hi))]
                   [lo hi])
         [a b] (if log? [(Math/log lo) (Math/log hi)] [lo hi])
-        pad (* padding (max 1e-6 (- b a)))
+        span (- b a)
+        pad (if (<= span 0.0)
+              ;; Constant data: use ±max(1, 5% of |value|)
+              (max 1.0 (* padding (Math/abs (double a))))
+              (* padding span))
         from (if log? #(Math/exp %) identity)]
     [(from (- a pad)) (from (+ b pad))]))
 

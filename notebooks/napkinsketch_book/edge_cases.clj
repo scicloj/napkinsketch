@@ -359,6 +359,25 @@
                            (and (= 24 (:points s))
                                 (= 1 (:lines s)))))])
 
+;; ### Instant with sub-day precision
+;;
+;; `java.time.Instant` values are converted to `LocalDateTime` (UTC) for
+;; calendar-aware tick formatting. Tick labels show hours when the range
+;; spans less than a day.
+
+(-> {:time (mapv #(java.time.Instant/ofEpochSecond
+                   (+ 1750003200 (* % 3600)))
+                 (range 12))
+     :temp (mapv #(+ 20.0 (* 5.0 (Math/sin (* % 0.5)))) (range 12))}
+    (sk/view :time :temp)
+    (sk/lay (sk/line) (sk/point))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 12 (:points s))
+                                (= 1 (:lines s))
+                                (some #(re-find #":\d\d" %) (:texts s)))))])
+
 ;; ### Multi-year date range
 ;;
 ;; With a date range spanning several years, tick labels show year values.

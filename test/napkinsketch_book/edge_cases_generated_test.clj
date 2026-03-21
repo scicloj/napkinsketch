@@ -223,7 +223,7 @@
    [r (rng/rng :jdk 99)]
    {:category
     (mapv
-     (fn* [p1__153457#] (keyword (str "cat-" p1__153457#)))
+     (fn* [p1__163604#] (keyword (str "cat-" p1__163604#)))
      (range 12)),
     :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))})
   (sk/view [[:category :value]])
@@ -277,7 +277,7 @@
  (->
   iris
   (tc/select-rows
-   (fn* [p1__153458#] (= "setosa" (p1__153458# :species))))
+   (fn* [p1__163605#] (= "setosa" (p1__163605# :species))))
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay (sk/point) (sk/lm))
   (sk/plot {:title "Setosa Only"})))
@@ -441,8 +441,8 @@
  v72_l321
  (->
   {:x (range 20),
-   :y (map (fn* [p1__153459#] (- p1__153459# 10)) (range 20)),
-   :val (map (fn* [p1__153460#] (- p1__153460# 10.0)) (range 20))}
+   :y (map (fn* [p1__163606#] (- p1__163606# 10)) (range 20)),
+   :val (map (fn* [p1__163607#] (- p1__163607# 10.0)) (range 20))}
   (sk/view :x :y)
   (sk/lay (sk/point {:color :val}))
   (sk/plot {:color-scale :diverging, :color-midpoint 0})))
@@ -476,18 +476,18 @@
   {:time
    (mapv
     (fn*
-     [p1__153461#]
+     [p1__163608#]
      (java.time.LocalDateTime/of
       2025
       3
       15
-      (+ 8 (int (/ p1__153461# 4)))
-      (* 15 (mod (int p1__153461#) 4))
+      (+ 8 (int (/ p1__163608# 4)))
+      (* 15 (mod (int p1__163608#) 4))
       0))
     (range 24)),
    :value
    (mapv
-    (fn* [p1__153462#] (+ 18.0 (* 4.0 (Math/sin (* p1__153462# 0.3)))))
+    (fn* [p1__163609#] (+ 18.0 (* 4.0 (Math/sin (* p1__163609# 0.3)))))
     (range 24))}
   (sk/view :time :value)
   (sk/lay (sk/line) (sk/point))
@@ -506,18 +506,53 @@
 
 
 (def
- v81_l366
+ v81_l368
+ (->
+  {:time
+   (mapv
+    (fn*
+     [p1__163610#]
+     (java.time.Instant/ofEpochSecond
+      (+ 1750003200 (* p1__163610# 3600))))
+    (range 12)),
+   :temp
+   (mapv
+    (fn* [p1__163611#] (+ 20.0 (* 5.0 (Math/sin (* p1__163611# 0.5)))))
+    (range 12))}
+  (sk/view :time :temp)
+  (sk/lay (sk/line) (sk/point))
+  sk/plot))
+
+
+(deftest
+ t82_l376
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 12 (:points s))
+      (= 1 (:lines s))
+      (some
+       (fn* [p1__163612#] (re-find #":\d\d" p1__163612#))
+       (:texts s)))))
+   v81_l368)))
+
+
+(def
+ v84_l385
  (->
   {:date
    (mapv
     (fn*
-     [p1__153463#]
+     [p1__163613#]
      (java.time.LocalDate/ofEpochDay
-      (+ 18262 (* (long p1__153463#) 120))))
+      (+ 18262 (* (long p1__163613#) 120))))
     (range 20)),
    :value
    (mapv
-    (fn* [p1__153464#] (+ 100 (* 50 (Math/sin (* p1__153464# 0.4)))))
+    (fn* [p1__163614#] (+ 100 (* 50 (Math/sin (* p1__163614# 0.4)))))
     (range 20))}
   (sk/view :date :value)
   (sk/lay (sk/line) (sk/point))
@@ -525,20 +560,20 @@
 
 
 (deftest
- t82_l373
+ t85_l392
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 20 (:points s)) (= 1 (:lines s)))))
-   v81_l366)))
+   v84_l385)))
 
 
 (def
- v84_l381
+ v87_l400
  (->
-  {:cat (map (fn* [p1__153465#] (str "cat-" p1__153465#)) (range 12)),
+  {:cat (map (fn* [p1__163615#] (str "cat-" p1__163615#)) (range 12)),
    :val (repeatedly 12 (fn* [] (rand-int 100)))}
   (sk/view :cat :val)
   (sk/lay (sk/bar))
@@ -547,12 +582,12 @@
 
 
 (deftest
- t85_l388
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v84_l381)))
+ t88_l407
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v87_l400)))
 
 
 (def
- v87_l392
+ v90_l411
  (->
   {:x (range 100), :y (range 0 10 0.1)}
   (sk/view :x :y)
@@ -562,12 +597,12 @@
 
 
 (deftest
- t88_l398
- (is ((fn [v] (= 100 (:points (sk/svg-summary v)))) v87_l392)))
+ t91_l417
+ (is ((fn [v] (= 100 (:points (sk/svg-summary v)))) v90_l411)))
 
 
 (def
- v90_l407
+ v93_l426
  (->
   iris
   (sk/view
@@ -577,7 +612,7 @@
 
 
 (deftest
- t91_l412
+ t94_l431
  (is
   ((fn
     [v]
@@ -588,7 +623,7 @@
       (:texts s)
       strip-labels
       (filter
-       (fn* [p1__153466#] (re-find #"sepal|petal" p1__153466#))
+       (fn* [p1__163616#] (re-find #"sepal|petal" p1__163616#))
        texts)]
      (and (= 6 (:panels s)) (= 6 (count strip-labels)))))
-   v90_l407)))
+   v93_l426)))
