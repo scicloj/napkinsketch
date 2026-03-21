@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sketch validation**: Malli schema with `valid-sketch?` and `explain-sketch`
 - **dtype-next integration**: numeric arrays (xs, ys, sizes, etc.) stored as
   dtype-next buffers at the sketch boundary for efficiency
-- **19 notebooks** (~500 tests, ~750 assertions): quickstart, composability,
+- **19 notebooks** (~500 tests, ~750 assertions): quickstart, core_concepts,
   inference_rules, glossary, scatter, distributions, ranking, evolution,
   relationships, polar, cookbook, configuration, customization, faceting,
   api_reference, exploring_sketches, architecture, extensibility, edge_cases

@@ -1,7 +1,7 @@
 {"🚀 Getting Started" ["quickstart"]
- "💡 Core Concepts" ["composability"
-                      "inference_rules"
-                      "glossary"]
+ "🧱 Foundations" ["core_concepts"
+                    "inference_rules"
+                    "glossary"]
  "📊 Chart Types" ["scatter"
                     "distributions"
                     "ranking"

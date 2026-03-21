@@ -13,9 +13,7 @@
   wave
   {:x (range 30),
    :y
-   (mapv
-    (fn* [p1__165777#] (Math/sin (* p1__165777# 0.3)))
-    (range 30))}))
+   (mapv (fn* [p1__85640#] (Math/sin (* p1__85640# 0.3))) (range 30))}))
 
 
 (def v4_l21 (-> wave (sk/view [[:x :y]]) (sk/lay (sk/line)) sk/plot))
@@ -40,11 +38,9 @@
    :y
    (vec
     (concat
+     (mapv (fn* [p1__85641#] (Math/sin (* p1__85641# 0.3))) (range 30))
      (mapv
-      (fn* [p1__165778#] (Math/sin (* p1__165778# 0.3)))
-      (range 30))
-     (mapv
-      (fn* [p1__165779#] (Math/cos (* p1__165779# 0.3)))
+      (fn* [p1__85642#] (Math/cos (* p1__85642# 0.3)))
       (range 30)))),
    :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))}))
 
@@ -155,9 +151,7 @@
  (->
   {:x (range 30),
    :y
-   (mapv
-    (fn* [p1__165780#] (Math/sin (* p1__165780# 0.3)))
-    (range 30))}
+   (mapv (fn* [p1__85643#] (Math/sin (* p1__85643# 0.3))) (range 30))}
   (sk/view [[:x :y]])
   (sk/lay (sk/area))
   sk/plot))

@@ -82,7 +82,7 @@ iris
 ;;
 ;; - `(sk/view ds :x :y)` — two keyword arguments, for a single panel
 ;; - `(sk/view ds [[:x :y]])` — a vector of column pairs; multiple pairs
-;;   produce multiple panels (see the Composability chapter)
+;;   produce multiple panels (see the Core Concepts chapter)
 ;;
 ;; Both forms are equivalent for single-panel plots.
 ;;
