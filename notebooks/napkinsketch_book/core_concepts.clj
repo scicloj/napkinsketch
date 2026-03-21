@@ -36,12 +36,12 @@ iris
 ;; **numerical** (measurements in centimeters) and one is
 ;; **categorical** (the species name — one of three strings).
 ;;
-;; This distinction matters: napkinsketch treats numerical and
+;; This distinction matters: Napkinsketch treats numerical and
 ;; categorical columns differently when choosing axes, colors, and
 ;; statistical transforms.
 ;;
 ;; You can also pass data as a plain Clojure map of columns —
-;; napkinsketch coerces it to a dataset internally:
+;; Napkinsketch coerces it to a dataset internally:
 
 (-> {:x [1 2 3 4 5]
      :y [2 4 3 5 4]}
@@ -251,28 +251,28 @@ iris
 ;; Three panels, one per species. The shared axes let you compare
 ;; sepal dimensions across species at a glance.
 
-;; ## Variable Pairs
+;; ## Column Combinations
 ;;
-;; `sk/pairs` generates all unique pairs from a list of columns.
-;; Passing the result to `sk/view` creates one panel per column
-;; pair — a quick way to explore relationships across many
-;; variables at once.
+;; `sk/cross` generates all combinations of two lists. Passing
+;; column names to `sk/cross` and the result to `sk/view` creates
+;; one panel per combination — a quick way to explore relationships
+;; across many variables at once.
 
-(def measurements [:sepal_length :sepal_width :petal_length :petal_width])
+(def cols [:sepal_length :sepal_width :petal_length])
 
-(sk/pairs measurements)
+(sk/cross cols cols)
 
-(kind/test-last [(fn [v] (= 6 (count v)))])
+(kind/test-last [(fn [v] (= 9 (count v)))])
 
-;; Four columns produce six unique pairs. Each pair becomes a
-;; scatter panel:
+;; Three columns crossed with themselves produce nine panels —
+;; a full grid where each row and column corresponds to a variable:
 
 (-> iris
-    (sk/view (sk/pairs measurements))
+    (sk/view (sk/cross cols cols))
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
-(kind/test-last [(fn [v] (= 6 (:panels (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
 
 ;; ## Coordinates and Scales
 ;;
@@ -318,7 +318,7 @@ iris
 ;; This chapter covered the core building blocks. The rest of the
 ;; book builds on them:
 ;;
-;; - **Inference Rules** — how napkinsketch chooses defaults for
+;; - **Inference Rules** — how Napkinsketch chooses defaults for
 ;;   marks, stats, and domains automatically
 ;; - **Glossary** — concise definitions of every term, including
 ;;   ones not covered here (stat, position, theme, annotation,

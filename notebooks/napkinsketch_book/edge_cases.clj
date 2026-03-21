@@ -418,20 +418,20 @@
 
 ;; ## Multi-Panel Edge Cases
 
-;; ### Triangular grid — pairs plot
+;; ### Full grid — cross plot
 ;;
-;; `sk/pairs` produces a triangular layout (lower triangle of an N×N grid).
-;; Strip labels must appear for every column and row, not just corners.
+;; `sk/cross` produces a full N×N grid of panels.
+;; Strip labels must appear for every column and row.
 
 (-> iris
-    (sk/view (sk/pairs [:sepal_length :sepal_width :petal_length :petal_width]))
+    (sk/view (sk/cross [:sepal_length :sepal_width :petal_length] [:sepal_length :sepal_width :petal_length]))
     (sk/lay (sk/point {:color :species}))
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
                                texts (:texts s)
                                strip-labels (filter #(re-find #"sepal|petal" %) texts)]
-                           (and (= 6 (:panels s))
+                           (and (= 9 (:panels s))
                                 (= 6 (count strip-labels)))))])
 ;; ## Error Messages
 ;;

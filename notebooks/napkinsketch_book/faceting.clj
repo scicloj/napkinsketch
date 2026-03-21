@@ -178,23 +178,7 @@
 ;; per row (y), so each column of plots has the same x-axis and each
 ;; row has the same y-axis.
 
-;; ## Upper-Triangle Pairs
-;;
-;; `sk/pairs` returns only the upper-triangle pairs — no diagonal,
-;; no mirrored pairs:
 
-(sk/pairs [:a :b :c :d])
-
-(kind/test-last [(fn [v] (= [[:a :b] [:a :c] [:a :d] [:b :c] [:b :d] [:c :d]] v))])
-
-(-> iris
-    (sk/view (sk/pairs cols))
-    (sk/lay (sk/point {:color :species}))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 6 (:panels s))
-                                (= 900 (:points s)))))])
 
 ;; ## Distribution Helper
 ;;

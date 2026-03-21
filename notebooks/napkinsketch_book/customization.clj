@@ -221,7 +221,7 @@
                                 (= 150 (:points s)))))])
 ;; ## Named Palette Presets
 ;;
-;; Use a keyword to select a predefined palette.  napkinsketch accepts
+;; Use a keyword to select a predefined palette.  Napkinsketch accepts
 ;; any palette name from the
 ;; [clojure2d](https://github.com/Clojure2D/clojure2d) color library,
 ;; which includes hundreds of palettes from ColorBrewer, Wes Anderson,
@@ -260,7 +260,7 @@
 
 ;; ## Discovering Palettes and Gradients
 ;;
-;; napkinsketch delegates color to the
+;; Napkinsketch delegates color to the
 ;; [clojure2d](https://github.com/Clojure2D/clojure2d) library, which
 ;; bundles thousands of named palettes and gradients.  Use
 ;; `clojure2d.color/find-palette` and `clojure2d.color/find-gradient`

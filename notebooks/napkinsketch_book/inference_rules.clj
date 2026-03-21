@@ -23,7 +23,7 @@
 ;; It contains everything needed to render a plot — domains, ticks,
 ;; scales, layers with positioned data, legend, layout dimensions.
 ;;
-;; To understand what napkinsketch inferred, look at the sketch.
+;; To understand what Napkinsketch inferred, look at the sketch.
 
 (def five-points
   {:x [1.0 2.0 3.0 4.0 5.0]
@@ -129,7 +129,7 @@
 
 ;; ## Mark and Stat Inference
 ;;
-;; When you provide only a column (no explicit mark), napkinsketch
+;; When you provide only a column (no explicit mark), Napkinsketch
 ;; infers the mark and stat from the column types.
 ;;
 ;; | Columns | Inferred mark | Inferred stat |

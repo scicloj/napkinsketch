@@ -1,6 +1,6 @@
 ;; # Configuration
 ;;
-;; napkinsketch uses a layered configuration system.  Every visual
+;; Napkinsketch uses a layered configuration system.  Every visual
 ;; default — dimensions, font sizes, point radius, grid stroke,
 ;; annotation colors — can be overridden at multiple levels.
 ;; This notebook explains each level and how they compose.
@@ -425,7 +425,7 @@ precedence-plot
 
 ;; ## Color Scale Configuration
 ;;
-;; When a numeric column is mapped to `:color`, napkinsketch uses a
+;; When a numeric column is mapped to `:color`, Napkinsketch uses a
 ;; continuous gradient (viridis by default). The `:color-scale` option
 ;; controls which gradient is used.
 

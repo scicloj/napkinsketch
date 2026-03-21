@@ -232,31 +232,27 @@
    v48_l240)))
 
 
-(def
- v51_l261
- (def
-  measurements
-  [:sepal_length :sepal_width :petal_length :petal_width]))
+(def v51_l261 (def cols [:sepal_length :sepal_width :petal_length]))
 
 
-(def v52_l263 (sk/pairs measurements))
+(def v52_l263 (sk/cross cols cols))
 
 
-(deftest t53_l265 (is ((fn [v] (= 6 (count v))) v52_l263)))
+(deftest t53_l265 (is ((fn [v] (= 9 (count v))) v52_l263)))
 
 
 (def
  v55_l270
  (->
   iris
-  (sk/view (sk/pairs measurements))
+  (sk/view (sk/cross cols cols))
   (sk/lay (sk/point {:color :species}))
   sk/plot))
 
 
 (deftest
  t56_l275
- (is ((fn [v] (= 6 (:panels (sk/svg-summary v)))) v55_l270)))
+ (is ((fn [v] (= 9 (:panels (sk/svg-summary v)))) v55_l270)))
 
 
 (def

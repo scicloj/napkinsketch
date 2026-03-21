@@ -59,12 +59,6 @@
   [views row-col col-col]
   (view/facet-grid views row-col col-col))
 
-(defn pairs
-  "Upper-triangle pairs of columns, for pairwise scatter plots.
-   (pairs [:a :b :c]) => [[:a :b] [:a :c] [:b :c]]"
-  [cols]
-  (view/pairs cols))
-
 (defn distribution
   "Create diagonal views (x=y) for each column, used for histograms in SPLOM.
    (distribution data :a :b :c) => views with [[:a :a] [:b :b] [:c :c]]"

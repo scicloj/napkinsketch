@@ -394,15 +394,6 @@
   [xs ys]
   (for [x xs, y ys] [x y]))
 
-(defn pairs
-  "Upper-triangle pairs of columns, for pairwise scatter plots.
-   (pairs [:a :b :c]) => [[:a :b] [:a :c] [:b :c]]"
-  [cols]
-  (let [cols (mapv normalize-col-ref cols)]
-    (vec (for [i (range (count cols))
-               j (range (inc i) (count cols))]
-           [(nth cols i) (nth cols j)]))))
-
 ;; ---- Faceting ----
 
 (defn facet-grid

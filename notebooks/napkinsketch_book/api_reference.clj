@@ -547,20 +547,7 @@ sk1
                            (and (= 4 (:panels s))
                                 (= 600 (:points s)))))])
 
-(kind/doc #'sk/pairs)
 
-(sk/pairs [:a :b :c])
-
-(kind/test-last [(fn [v] (= [[:a :b] [:a :c] [:b :c]] v))])
-
-(-> iris
-    (sk/view (sk/pairs [:sepal_length :sepal_width :petal_length]))
-    (sk/lay (sk/point {:color :species}))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 3 (:panels s))
-                                (= 450 (:points s)))))])
 
 (kind/doc #'sk/distribution)
 
