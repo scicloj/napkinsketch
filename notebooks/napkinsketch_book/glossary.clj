@@ -362,6 +362,9 @@
 ;;
 ;; per-call options > `sk/with-config` > `sk/set-config!` > `napkinsketch.edn` > library defaults
 ;;
+;; `napkinsketch.edn` is an optional file in your project root that provides
+;; project-level defaults (e.g., a consistent palette or theme across all plots).
+;;
 ;; See the Configuration chapter for details.
 
 ;; ## Tooltip and Brush

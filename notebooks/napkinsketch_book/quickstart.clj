@@ -223,3 +223,10 @@ iris
                            (and (= 150 (:points s))
                                 (some #{"Iris Petals"} (:texts s))
                                 (some #{"Petal Length (cm)"} (:texts s)))))])
+
+;; ## Next Steps
+;;
+;; - Combine multiple plots into a dashboard with `sk/arrange`
+;;   (see the Cookbook)
+;; - Explore faceting, configuration, and customization in the
+;;   How-to Guides

@@ -433,3 +433,57 @@
                                strip-labels (filter #(re-find #"sepal|petal" %) texts)]
                            (and (= 6 (:panels s))
                                 (= 6 (count strip-labels)))))])
+;; ## Error Messages
+;;
+;; Napkinsketch produces clear error messages for common mistakes.
+
+;; ### Non-existent column
+
+(try
+  (-> {:x [1 2 3] :y [4 5 6]}
+      (sk/view :nonexistent :y)
+      (sk/lay (sk/point))
+      sk/plot)
+  (catch Exception e
+    (ex-message e)))
+
+(kind/test-last [(fn [m] (and (re-find #"not found in dataset" m)
+                              (re-find #":nonexistent" m)))])
+
+;; ### Non-existent color column
+
+(try
+  (-> {:x [1 2 3] :y [4 5 6]}
+      (sk/view :x :y)
+      (sk/lay (sk/point {:color :bogus}))
+      sk/plot)
+  (catch Exception e
+    (ex-message e)))
+
+(kind/test-last [(fn [m] (and (re-find #"not found in dataset" m)
+                              (re-find #":bogus" m)))])
+
+;; ### Unsupported polar mark
+
+(try
+  (-> {:x [1 2 3] :y [4 5 6]}
+      (sk/view :x :y)
+      (sk/lay (sk/line))
+      (sk/coord :polar)
+      sk/plot)
+  (catch Exception e
+    (ex-message e)))
+
+(kind/test-last [(fn [m] (re-find #"not supported with polar" m))])
+
+;; ### Mismatched mark and stat
+
+(try
+  (-> {:x [1 2 3]}
+      (sk/view :x)
+      (sk/lay {:mark :boxplot :stat :bin})
+      sk/plot)
+  (catch Exception e
+    (ex-message e)))
+
+(kind/test-last [(fn [m] (re-find #"must contain :boxes" m))])
