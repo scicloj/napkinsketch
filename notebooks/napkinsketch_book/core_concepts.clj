@@ -39,12 +39,17 @@ iris
 ;; This distinction matters: napkinsketch treats numerical and
 ;; categorical columns differently when choosing axes, colors, and
 ;; statistical transforms.
+;;
+;; You can also pass data as a plain Clojure map of columns —
+;; napkinsketch coerces it to a dataset internally:
 
-;; You can also pass data as a plain Clojure map of columns — no
-;; `tc/dataset` call needed:
+(-> {:x [1 2 3 4 5]
+     :y [2 4 3 5 4]}
+    (sk/view :x :y)
+    (sk/lay (sk/point))
+    sk/plot)
 
-{:x [1 2 3 4 5]
- :y [2 4 3 5 4]}
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; ## Views
 ;;
@@ -72,9 +77,9 @@ iris
 
 (kind/test-last [(fn [m] (= :point (:mark m)))])
 
-;; `sk/lay` merges a mark into a view — it says "draw this data
-;; using this visual shape." The result is still a vector of maps,
-;; now with `:mark` and `:stat` keys added.
+;; `sk/lay` adds a mark to a view — it says "draw this data using
+;; this visual shape." The result is still a vector of maps, now
+;; with `:mark` and `:stat` keys added.
 
 (def view-with-mark
   (sk/lay my-view (sk/point)))
@@ -94,14 +99,14 @@ iris
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; That is the minimal pipeline: data → view → mark → plot.
+;; Those are the minimal ingredients: data, view, mark, plot.
 ;; Everything else in this chapter builds on this foundation.
 
 ;; ## Layers
 ;;
 ;; A plot can have multiple **layers** — different marks drawn on
-;; the same axes. Pass multiple marks to `sk/lay` and they stack
-;; visually.
+;; the same axes. Pass multiple marks to `sk/lay` and they are
+;; drawn together, each contributing its own visual element.
 ;;
 ;; Here we add a linear regression line (`sk/lm`) on top of the
 ;; scatter points. A regression line is a straight line fitted to
@@ -153,10 +158,10 @@ iris
 ;; The `:color` option controls point and line colors. Its behavior
 ;; depends on what you pass.
 ;;
-;; **Categorical column** — when `:color` maps to a column with
+;; **Categorical column** — when `:color` refers to a column with
 ;; text values (like `:species`), each unique value gets a distinct
 ;; color from the **palette** (an ordered set of colors). A
-;; **legend** appears, mapping labels to colors.
+;; **legend** appears alongside the plot, mapping labels to colors.
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
@@ -167,7 +172,7 @@ iris
                            (and (= 150 (:points s))
                                 (some #{"setosa"} (:texts s)))))])
 
-;; **Numeric column** — when `:color` maps to a numerical column
+;; **Numeric column** — when `:color` refers to a numerical column
 ;; (like `:petal_length`), values map to a continuous **gradient** —
 ;; a smooth color ramp from low to high. The legend shows a color
 ;; bar instead of discrete entries.
@@ -196,8 +201,20 @@ iris
 ;; **groups**. Each group is processed independently: it gets its
 ;; own regression line, density curve, or bar.
 ;;
-;; Below, `:color :species` on both the points and the regression
-;; produces three separate regression lines — one per species:
+;; Compare: without `:color`, `sk/lm` fits one line to all the data:
+
+(-> iris
+    (sk/view :sepal_length :sepal_width)
+    (sk/lay (sk/point) (sk/lm))
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; With `:color :species` on both the points and the regression,
+;; each species becomes a separate group — three lines instead of
+;; one:
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
@@ -209,15 +226,14 @@ iris
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; Three lines instead of one — grouping lets you see patterns
-;; within each species, not just the overall trend.
+;; Grouping reveals patterns within each species that the overall
+;; trend line hides.
 
 ;; ## Faceting
 ;;
-;; **Faceting** splits a plot into multiple **panels** — one per
-;; value of a column. Each panel is a separate plotting area that
-;; shares the same axes, making it easy to compare subsets
-;; side by side.
+;; **Faceting** splits a plot into multiple **panels** — separate
+;; plotting areas, one per value of a column. All panels share the
+;; same axes, making it easy to compare subsets side by side.
 ;;
 ;; `sk/facet` specifies which column to split on:
 
@@ -232,15 +248,15 @@ iris
                                 (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; Three panels, one per species. The axes are shared, so you can
-;; compare sepal dimensions across species at a glance.
+;; Three panels, one per species. The shared axes let you compare
+;; sepal dimensions across species at a glance.
 
-;; ## Multi-Panel Plots
+;; ## Variable Pairs
 ;;
 ;; `sk/pairs` generates all unique pairs from a list of columns.
-;; Passing the result to `sk/view` creates a multi-panel plot —
-;; one panel per column pair. This is useful for exploring
-;; relationships across many variables at once.
+;; Passing the result to `sk/view` creates one panel per column
+;; pair — a quick way to explore relationships across many
+;; variables at once.
 
 (def measurements [:sepal_length :sepal_width :petal_length :petal_width])
 
@@ -265,28 +281,37 @@ iris
 ;; itself.
 ;;
 ;; `sk/coord` sets the coordinate system. `:flip` swaps the x and y
-;; axes — useful for horizontal bar charts or when axis labels are
-;; long:
-
-(-> iris
-    (sk/view :species)
-    (sk/lay (sk/bar))
-    (sk/coord :flip)
-    sk/plot)
-
-(kind/test-last [(fn [v] (= 3 (:polygons (sk/svg-summary v))))])
-
-;; `sk/scale` changes how a numeric axis is drawn. `:log` applies a
-;; logarithmic transformation — useful when values span several
-;; orders of magnitude:
+;; axes — useful for horizontal layouts or when axis labels are
+;; long.
+;;
+;; Here we flip a scatter plot so sepal length runs vertically:
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
     (sk/lay (sk/point {:color :species}))
-    (sk/scale :x :log)
+    (sk/coord :flip)
     sk/plot)
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; `sk/scale` changes how a numeric axis is drawn. `:log` applies a
+;; logarithmic transformation — useful when values span a wide
+;; range, so that small and large values are both visible.
+;;
+;; Here we use a dataset where values vary by orders of magnitude:
+
+(-> {:population [1000 5000 50000 200000 1000000 5000000]
+     :area       [2     8    30    120     500     2100]}
+    (sk/view :population :area)
+    (sk/lay (sk/point))
+    (sk/scale :x :log)
+    (sk/scale :y :log)
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
+
+;; Without log scales, the small values would be crushed together
+;; near the origin. Log scales spread them out proportionally.
 
 ;; ## What's Next
 ;;
