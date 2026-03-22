@@ -67,25 +67,32 @@ iris
 ;; dataset (`:data`) and the column mappings (`:x` and `:y`).
 ;; No rendering has happened yet — it is just a description.
 
-;; ## Marks and Methods
+;; ## Methods
 ;;
-;; A **mark** is a visual shape that represents data: points, lines,
-;; bars, and others. Mark constructors like `sk/point`, `sk/line`,
-;; and `sk/histogram` return a **method** — a small map that bundles
-;; the mark with its default statistical transform.
+;; A **method** tells Napkinsketch *how* to turn data into a visual.
+;; It is a small map with up to three keys:
+;;
+;; - **mark** — what shape to draw (points, bars, lines)
+;; - **stat** — what computation to perform first (use data as-is,
+;;   bin into ranges, fit a line)
+;; - **position** — how overlapping groups share space (stack, dodge)
+;;
+;; Functions like `sk/point`, `sk/histogram`, and `sk/lm` each
+;; return a method:
 
 (sk/point)
 
-(kind/test-last [(fn [m] (= :point (:mark m)))])
+(kind/test-last [(fn [m] (and (= :point (:mark m))
+                              (= :identity (:stat m))))])
 
-;; `sk/lay` adds a mark to a view — it says "draw this data using
-;; this visual shape." The result is still a vector of maps, now
-;; with `:mark` and `:stat` keys added.
+;; `sk/lay` adds a method to a view — it says "draw this data using
+;; this approach." The result is still a vector of maps, now with
+;; the method's keys merged in.
 
-(def view-with-mark
+(def view-with-method
   (sk/lay my-view (sk/point)))
 
-(kind/pprint view-with-mark)
+(kind/pprint view-with-method)
 
 ;; ## Plotting
 ;;
@@ -100,15 +107,63 @@ iris
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; Those are the minimal ingredients: data, view, mark, plot.
-;; Everything else in this chapter builds on this foundation.
+;; Data, view, method, plot — those are the minimal ingredients.
+;; The next three sections unpack what each part of a method
+;; contributes.
+
+;; ## Mark
+;;
+;; The **mark** is the visual shape drawn on the plot. The scatter
+;; plot above used `:mark :point` — each data point became a dot.
+;;
+;; Notice that a method's name describes its *intent* while the mark
+;; describes the *shape*. `sk/histogram` uses `:mark :bar` because a
+;; histogram is drawn with bar shapes:
+
+(sk/histogram)
+
+(kind/test-last [(fn [m] (= :bar (:mark m)))])
+
+;; ## Stat
+;;
+;; The **stat** is the computation applied to data before drawing.
+;; The scatter plot used `:stat :identity` — every row became one
+;; point, unchanged.
+;;
+;; `sk/histogram` uses `:stat :bin` — it groups values into ranges
+;; and counts how many fall in each range:
+
+(-> iris
+    (sk/view :sepal_length)
+    (sk/lay (sk/histogram))
+    sk/plot)
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; The stat transforms the data; the mark renders the result.
+;; Together, `:stat :bin` and `:mark :bar` produce the familiar
+;; histogram shape.
+
+;; ## Position
+;;
+;; The **position** controls how overlapping groups share space.
+;; Most methods leave it unset — groups are drawn independently.
+;; `sk/stacked-bar` includes `:position :stack`, which places groups
+;; on top of each other:
+
+(sk/stacked-bar)
+
+(kind/test-last [(fn [m] (= :stack (:position m)))])
+
+;; You will see position in action once color introduces grouping,
+;; later in this chapter.
 
 ;; ## Inference
 ;;
-;; `sk/lay` is not always needed. When you omit it, Napkinsketch
-;; infers the mark from the column types. Two numerical columns
-;; produce a scatter plot; a single categorical column produces a
-;; bar chart.
+;; You do not always need to choose a method yourself. When you omit
+;; `sk/lay`, Napkinsketch infers the method from the column types.
+;; Two numerical columns produce a scatter plot; a single numerical
+;; column produces a histogram.
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
@@ -124,13 +179,13 @@ iris
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; Use `sk/lay` when you want to choose a specific mark, pass
+;; Use `sk/lay` when you want to choose a specific method, pass
 ;; options like `:color`, or add multiple layers.
 
 ;; ## Layers
 ;;
-;; A plot can have multiple **layers** — different marks drawn on
-;; the same axes. Pass multiple marks to `sk/lay` and they are
+;; A plot can have multiple **layers** — different methods drawn on
+;; the same axes. Pass multiple methods to `sk/lay` and they are
 ;; drawn together, each contributing its own visual element.
 ;;
 ;; Here we add a linear regression line (`sk/lm`) on top of the
@@ -300,7 +355,7 @@ iris
 
 ;; Notice the diagonal: when x and y are the same column,
 ;; Napkinsketch infers a histogram instead of a scatter plot.
-;; This is inference at work — each panel gets the mark that
+;; This is inference at work — each panel gets the method that
 ;; fits its column types.
 
 ;; ## Coordinates and Scales
@@ -350,8 +405,7 @@ iris
 ;; - **Inference Rules** — how Napkinsketch chooses defaults for
 ;;   marks, stats, and domains automatically
 ;; - **Glossary** — concise definitions of every term, including
-;;   ones not covered here (stat, position, theme, annotation,
-;;   and more)
+;;   ones not covered here (theme, annotation, and more)
 ;; - **Chart Types** — scatter plots, distributions, bar charts,
 ;;   time series, and polar charts
 ;; - **How-to Guides** — faceting, configuration, customization,

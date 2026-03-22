@@ -61,7 +61,7 @@
 
 ;; ## `compute-stat`
 ;;
-;; Transforms raw data into a statistical summary. Each mark type
+;; Transforms raw data into a statistical summary. Each method
 ;; uses a stat to prepare data for rendering.
 ;;
 ;; | Dispatch value | What it does |

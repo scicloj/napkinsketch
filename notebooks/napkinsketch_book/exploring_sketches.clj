@@ -98,7 +98,7 @@ tiny-sk
 
 ;; ### The layer
 ;;
-;; Each mark in the plot produces one layer. Our scatter has a single
+;; Each method in the plot produces one layer. Our scatter has a single
 ;; point layer:
 
 (def tiny-layer (first (:layers tiny-panel)))

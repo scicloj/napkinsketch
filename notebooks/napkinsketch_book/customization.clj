@@ -128,7 +128,7 @@
 
 ;; ## Mark Styling
 
-;; Pass `:alpha` and `:size` directly to mark constructors.
+;; Pass `:alpha` and `:size` directly to methods.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])

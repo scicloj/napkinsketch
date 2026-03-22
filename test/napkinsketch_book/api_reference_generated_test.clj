@@ -175,7 +175,7 @@
   wave
   {:x (range 30),
    :y
-   (mapv (fn* [p1__79795#] (Math/sin (* p1__79795# 0.3))) (range 30))}))
+   (mapv (fn* [p1__80138#] (Math/sin (* p1__80138# 0.3))) (range 30))}))
 
 
 (def v32_l119 (sk/plot [(sk/line {:data wave, :x :x, :y :y})]))
@@ -310,9 +310,9 @@
     :y
     (mapv
      (fn*
-      [p1__79796#]
+      [p1__80139#]
       (+
-       (Math/sin (* p1__79796# 0.2))
+       (Math/sin (* p1__80139# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -954,11 +954,11 @@
    v165_l540)))
 
 
-(def v167_l552 (kind/doc #'sk/distribution))
+(def v167_l550 (kind/doc #'sk/distribution))
 
 
 (def
- v168_l554
+ v168_l552
  (->
   (sk/distribution iris :sepal_length :sepal_width)
   (sk/lay (sk/histogram))
@@ -966,21 +966,21 @@
 
 
 (deftest
- t169_l558
+ t169_l556
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (pos? (:polygons s)))))
-   v168_l554)))
+   v168_l552)))
 
 
-(def v171_l564 (kind/doc #'sk/facet))
+(def v171_l562 (kind/doc #'sk/facet))
 
 
 (def
- v172_l566
+ v172_l564
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -990,21 +990,21 @@
 
 
 (deftest
- t173_l572
+ t173_l570
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v172_l566)))
+   v172_l564)))
 
 
-(def v174_l576 (kind/doc #'sk/facet-grid))
+(def v174_l574 (kind/doc #'sk/facet-grid))
 
 
 (def
- v175_l578
+ v175_l576
  (->
   tips
   (sk/view [[:total_bill :tip]])
@@ -1014,21 +1014,21 @@
 
 
 (deftest
- t176_l584
+ t176_l582
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:panels s)) (= 244 (:points s)))))
-   v175_l578)))
+   v175_l576)))
 
 
-(def v178_l590 (kind/doc #'sk/svg-summary))
+(def v178_l588 (kind/doc #'sk/svg-summary))
 
 
 (def
- v179_l592
+ v179_l590
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -1038,56 +1038,56 @@
 
 
 (deftest
- t180_l598
- (is ((fn [m] (and (= 1 (:panels m)) (= 150 (:points m)))) v179_l592)))
+ t180_l596
+ (is ((fn [m] (and (= 1 (:panels m)) (= 150 (:points m)))) v179_l590)))
 
 
-(def v181_l601 (kind/doc #'sk/valid-sketch?))
+(def v181_l599 (kind/doc #'sk/valid-sketch?))
 
 
-(def v182_l603 (sk/valid-sketch? sk1))
+(def v182_l601 (sk/valid-sketch? sk1))
 
 
-(deftest t183_l605 (is (true? v182_l603)))
+(deftest t183_l603 (is (true? v182_l601)))
 
 
-(def v184_l607 (kind/doc #'sk/explain-sketch))
+(def v184_l605 (kind/doc #'sk/explain-sketch))
 
 
-(def v185_l609 (sk/explain-sketch sk1))
+(def v185_l607 (sk/explain-sketch sk1))
 
 
-(deftest t186_l611 (is (nil? v185_l609)))
+(deftest t186_l609 (is (nil? v185_l607)))
 
 
-(def v188_l615 (kind/doc #'sk/config))
+(def v188_l613 (kind/doc #'sk/config))
 
 
-(def v189_l617 (sk/config))
+(def v189_l615 (sk/config))
 
 
-(deftest t190_l619 (is ((fn [m] (map? m)) v189_l617)))
+(deftest t190_l617 (is ((fn [m] (map? m)) v189_l615)))
 
 
-(def v191_l621 (kind/doc #'sk/set-config!))
+(def v191_l619 (kind/doc #'sk/set-config!))
 
 
-(def v192_l623 (kind/doc #'sk/with-config))
+(def v192_l621 (kind/doc #'sk/with-config))
 
 
 (def
- v193_l625
+ v193_l623
  (sk/with-config {:palette :pastel1} (:palette (sk/config))))
 
 
-(deftest t194_l628 (is ((fn [p] (= :pastel1 p)) v193_l625)))
+(deftest t194_l626 (is ((fn [p] (= :pastel1 p)) v193_l623)))
 
 
-(def v196_l632 (kind/doc #'sk/arrange))
+(def v196_l630 (kind/doc #'sk/arrange))
 
 
 (def
- v197_l634
+ v197_l632
  (sk/arrange
   [(->
     iris
@@ -1102,14 +1102,14 @@
   {:cols 2}))
 
 
-(deftest t198_l644 (is ((fn [v] (= :div (first v))) v197_l634)))
+(deftest t198_l642 (is ((fn [v] (= :div (first v))) v197_l632)))
 
 
-(def v200_l647 (kind/doc #'sk/save))
+(def v200_l645 (kind/doc #'sk/save))
 
 
 (def
- v202_l651
+ v202_l649
  (let
   [path
    (str (java.io.File/createTempFile "napkinsketch-example" ".svg"))]
@@ -1121,4 +1121,4 @@
   (.contains (slurp path) "<svg")))
 
 
-(deftest t203_l657 (is (true? v202_l651)))
+(deftest t203_l655 (is (true? v202_l649)))

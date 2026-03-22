@@ -129,13 +129,13 @@
 
 ;; ## Mark and Stat Inference
 ;;
-;; A mark constructor like `sk/point` or `sk/histogram` returns a
+;; `sk/point`, `sk/histogram`, and similar functions each return a
 ;; **method** — a bundle of mark, stat, and position. When you
 ;; provide a method via `sk/lay`, its stat takes precedence over
 ;; column-type inference.
 ;;
 ;; When you provide only a column (no explicit method), Napkinsketch
-;; infers the mark and stat from the column types.
+;; infers the method (mark + stat) from the column types.
 ;;
 ;; | Columns | Inferred mark | Inferred stat |
 ;; |:--------|:--------------|:--------------|
@@ -634,7 +634,7 @@
 ;; | Data extent → domain | `(sk/scale views :x {:domain [0 10]})` |
 ;; | Column name → axis label | `(sk/labs {:x "Custom Label"})` |
 ;; | No title → no padding | `:title "My Plot"` in options |
-;; | Column types → mark | explicit mark constructor: `(sk/histogram)` |
+;; | Column types → method | explicit method: `(sk/histogram)` |
 ;; | Temporal detection → epoch-ms | `(sk/scale views :x {:domain [min max]})` |
 ;; | Fill domain → [0, 1] | `(sk/scale views :y {:domain [0 2]})` |
 ;; | Flip swaps labels | `(sk/labs {:x "keep-this"})` overrides |

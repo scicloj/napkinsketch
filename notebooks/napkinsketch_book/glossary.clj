@@ -44,7 +44,7 @@
 ;; ## Method
 ;;
 ;; A **method** is the bundle of mark, stat, and position that
-;; determines how data becomes a visual element. Mark constructors
+;; determines how data becomes a visual element. Method constructors
 ;; (`sk/point`, `sk/line`, `sk/histogram`, `sk/bar`, `sk/lm`,
 ;; `sk/boxplot`, `sk/violin`, `sk/density`, etc.) each return a method.
 ;;
@@ -104,7 +104,7 @@
 ;; ## Stat
 ;;
 ;; A **stat** (statistical transform) processes raw data before
-;; rendering. Each mark has a default stat:
+;; rendering. Each method bundles a default stat:
 ;;
 ;; | Mark | Default stat | What it does |
 ;; |:-----|:-------------|:-------------|
@@ -399,7 +399,7 @@
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
 ;; | View | Map: data + column mappings + mark | User builds, consumed by `sketch` |
-;; | Method | Mark + stat + position bundle | Returned by mark constructors, merged by `sk/lay` |
+;; | Method | Mark + stat + position bundle | Returned by `sk/point`, `sk/histogram`, etc.; merged by `sk/lay` |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |
 ;; | Group | Subset of data drawn together (from `:color` or `:group`) | Created during stat computation |

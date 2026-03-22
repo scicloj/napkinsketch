@@ -118,8 +118,8 @@
   ts-dates
   (mapv
    (fn*
-    [p1__78905#]
-    (java.time.LocalDate/ofEpochDay (+ 18262 (* (long p1__78905#) 7))))
+    [p1__74922#]
+    (java.time.LocalDate/ofEpochDay (+ 18262 (* (long p1__74922#) 7))))
    (range 52))))
 
 
@@ -131,8 +131,8 @@
    :value
    (mapv
     (fn*
-     [p1__78906#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__78906#) 0.12)))))
+     [p1__74923#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__74923#) 0.12)))))
     (range 52))}))
 
 
@@ -492,7 +492,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__78907#] (= "virginica" p1__78907#))
+       (fn* [p1__74924#] (= "virginica" p1__74924#))
        (:texts s)))))
    v67_l323)))
 
@@ -546,8 +546,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__78908#] (Math/sin (/ p1__78908# 3.0))) (range 20)),
-   :change (map (fn* [p1__78909#] (- p1__78909# 10)) (range 20))}
+   (map (fn* [p1__74925#] (Math/sin (/ p1__74925# 3.0))) (range 20)),
+   :change (map (fn* [p1__74926#] (- p1__74926# 10)) (range 20))}
   (sk/view :x :y)
   (sk/lay (sk/point {:color :change}))
   (sk/plot
@@ -668,8 +668,8 @@
    ys
    (mapv
     (fn*
-     [p1__78910#]
-     (+ (* 3 p1__78910#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__74927#]
+     (+ (* 3 p1__74927#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}

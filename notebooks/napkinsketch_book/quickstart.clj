@@ -114,7 +114,7 @@ iris
 
 ;; ## Scatter Plot
 
-;; The simplest plot: map columns to x and y, then apply a point mark.
+;; The simplest plot: map columns to x and y, then apply the scatter method.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
@@ -141,7 +141,7 @@ iris
 
 ;; ## Scatter with Regression
 
-;; Layer multiple marks: points and linear regression lines.
+;; Layer multiple methods: points and linear regression.
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])

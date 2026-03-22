@@ -90,7 +90,7 @@
 
 (kind/doc #'sk/lay)
 
-;; Apply marks to views:
+;; Apply methods to views:
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
@@ -102,7 +102,7 @@
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; ## Marks
+;; ## Methods
 
 (kind/doc #'sk/point)
 
@@ -546,8 +546,6 @@ sk1
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:panels s))
                                 (= 600 (:points s)))))])
-
-
 
 (kind/doc #'sk/distribution)
 
