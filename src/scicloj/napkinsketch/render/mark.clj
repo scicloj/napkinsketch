@@ -3,6 +3,7 @@
             [membrane.ui :as ui]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [fastmath.random :as rng]
+            [tech.v3.datatype.functional :as dfn]
             [wadogo.scale :as ws]))
 
 ;; ---- Helpers ----
@@ -134,16 +135,14 @@
         dodge? (and n-groups x-bandwidth)
         size-bufs (keep :sizes groups)
         size-scale (when (seq size-bufs)
-                     (let [all-sizes (apply concat size-bufs)
-                           lo (reduce min all-sizes)
-                           hi (reduce max all-sizes)
+                     (let [lo (reduce min (map dfn/reduce-min size-bufs))
+                           hi (reduce max (map dfn/reduce-max size-bufs))
                            span (max 1e-6 (- (double hi) (double lo)))]
                        (fn [v] (+ 2.0 (* 6.0 (/ (- (double v) (double lo)) span))))))
         alpha-bufs (keep :alphas groups)
         alpha-scale (when (seq alpha-bufs)
-                      (let [all-alphas (apply concat alpha-bufs)
-                            lo (reduce min all-alphas)
-                            hi (reduce max all-alphas)
+                      (let [lo (reduce min (map dfn/reduce-min alpha-bufs))
+                            hi (reduce max (map dfn/reduce-max alpha-bufs))
                             span (max 1e-6 (- (double hi) (double lo)))]
                         (fn [v] (+ 0.2 (* 0.8 (/ (- (double v) (double lo)) span))))))
         shape-bufs (keep :shapes groups)
@@ -572,19 +571,26 @@
 
 (defmethod layer->membrane :pointrange [layer ctx]
   (let [{:keys [style groups]} layer
-        {:keys [coord-fn]} ctx
+        {:keys [coord-fn sx]} ctx
         {:keys [radius stroke-width]} style
         r (or radius 3.5)
-        sw (or stroke-width 1.5)]
+        sw (or stroke-width 1.5)
+        ;; Dodge support: when dodge-ctx is present, use band-position
+        {:keys [n-groups]} (:dodge-ctx layer)
+        band-scale? (and n-groups (try (ws/data sx :bandwidth) (catch Exception _ nil)))]
     (vec
-     (for [{:keys [color xs ys ymins ymaxs]} groups
+     (for [{:keys [color xs ys ymins ymaxs dodge-idx]} groups
            i (range (count xs))
            :let [[cr cg cb _] color
                  x (nth xs i)
                  y (nth ys i)
                  ymin-val (nth ymins i)
                  ymax-val (nth ymaxs i)
-                 [px py] (coord-fn x y)
+                 ;; For dodged pointranges on categorical axis, use band-position
+                 px (if band-scale?
+                      (:mid (band-position sx x (or dodge-idx 0) n-groups 0.8))
+                      (first (coord-fn x y)))
+                 [_ py] (coord-fn x y)
                  [_ py-min] (coord-fn x ymin-val)
                  [_ py-max] (coord-fn x ymax-val)]]
        [(ui/with-color [cr cg cb 1.0]

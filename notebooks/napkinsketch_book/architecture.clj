@@ -29,7 +29,7 @@ graph LR
   style F fill:#fce4ec
 ")
 
-;; - **Views** — user-facing compositional API: `view`, `lay`, `point`, `histogram`, etc.
+;; - **Views** — user-facing compositional API: `view`, `lay-point`, `lay-histogram`, etc.
 ;;
 ;; - **Sketch** — fully resolved plot specification. Data-space geometry,
 ;;   domains, tick info, legend. Plain Clojure maps. No rendering primitives.

@@ -280,17 +280,36 @@
 
 (defn- dedup-xy
   "Average y-values for duplicate x-values in sorted arrays.
-   Returns [unique-xs averaged-ys] as double arrays."
-  [xs ys]
-  (let [pairs (map vector xs ys)
-        grouped (group-by first pairs)
-        sorted-keys (sort (keys grouped))
-        deduped (mapv (fn [x]
-                        (let [yvals (map second (grouped x))]
-                          [x (/ (reduce + yvals) (count yvals))]))
-                      sorted-keys)]
-    [(double-array (map first deduped))
-     (double-array (map second deduped))]))
+   Returns [unique-xs averaged-ys] as double arrays.
+   Inputs must be sorted double arrays of the same length."
+  [^doubles xs ^doubles ys]
+  (let [n (alength xs)]
+    (if (zero? n)
+      [(double-array 0) (double-array 0)]
+      (let [;; worst case: all unique → n entries
+            out-x (double-array n)
+            out-y (double-array n)]
+        (loop [i 1
+               run-start 0
+               y-sum (aget xs 0) ;; will be overwritten below
+               out-idx 0]
+          (let [cur-x (aget xs run-start)
+                y-sum (if (== i 1) (aget ys 0) y-sum)]
+            (if (< i n)
+              (let [xi (aget xs i)]
+                (if (== xi cur-x)
+                  (recur (inc i) run-start (+ y-sum (aget ys i)) out-idx)
+                  (do
+                    (aset out-x out-idx cur-x)
+                    (aset out-y out-idx (/ y-sum (double (- i run-start))))
+                    (recur (inc i) i (aget ys i) (inc out-idx)))))
+              ;; flush last run
+              (let [cnt (- i run-start)]
+                (aset out-x out-idx cur-x)
+                (aset out-y out-idx (/ y-sum (double cnt)))
+                (let [total (inc out-idx)]
+                  [(java.util.Arrays/copyOf out-x total)
+                   (java.util.Arrays/copyOf out-y total)])))))))))
 
 (defn fit-loess
   "Fit a LOESS curve, return {:xs ... :ys ...} evaluated on a grid."
@@ -330,8 +349,12 @@
         boot-result (boot/bootstrap {:data pairs} nil
                                     {:samples n-boot :rng rng-inst})
         boot-grid-ys (for [sample (:samples boot-result)]
-                       (let [[bsx bsy] (dedup-xy (map first sample)
-                                                 (map second sample))]
+                       (let [sample-xs (double-array (map first sample))
+                             sample-ys (double-array (map second sample))
+                             order (dtype/->int-array (tech.v3.datatype.argops/argsort sample-xs))
+                             sxs (dtype/->double-array (dtype/indexed-buffer order sample-xs))
+                             sys (dtype/->double-array (dtype/indexed-buffer order sample-ys))
+                             [bsx bsy] (dedup-xy sxs sys)]
                          (when (>= (alength bsx) 4)
                            (try
                              (let [bfn (interp/loess bsx bsy {:bandwidth bandwidth})]

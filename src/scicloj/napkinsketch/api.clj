@@ -25,8 +25,10 @@
   ([data x y] (view/view data x y)))
 
 (defn lay
-  "Apply one or more methods to views.
-   (lay views (point) (lm))  — scatter + regression"
+  "Apply one or more methods to views. Primarily used for annotations;
+   for data layers prefer sk/lay-point, sk/lay-histogram, etc.
+   (lay views (rule-h 5))            — horizontal reference line
+   (lay views (rule-v 3) (band-h 1 2)) — multiple annotations"
   [base-views & layer-specs]
   (apply view/lay base-views layer-specs))
 
