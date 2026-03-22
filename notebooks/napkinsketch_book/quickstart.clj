@@ -125,7 +125,8 @@ iris
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; Napkinsketch infers the scatter method from the column types.
-;; You can also choose the method explicitly with `sk/lay`:
+;; You can also choose the method explicitly — `sk/lay-point` says
+;; "use a scatter plot regardless of what inference would choose":
 
 (-> iris
     (sk/view :sepal_length :sepal_width)

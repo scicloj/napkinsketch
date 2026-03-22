@@ -131,7 +131,7 @@
 ;;
 ;; `sk/lay-point`, `sk/lay-histogram`, and similar functions each add a layer with a
 ;; **method** — a bundle of mark, stat, and position. When you
-;; provide a method via `sk/lay`, its stat takes precedence over
+;; add a layer, the method's stat takes precedence over
 ;; column-type inference.
 ;;
 ;; When you provide only a column (no explicit method), Napkinsketch

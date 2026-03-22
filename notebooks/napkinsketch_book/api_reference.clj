@@ -90,7 +90,7 @@
 
 (kind/doc #'sk/lay)
 
-;; Apply methods to views:
+;; Add layers with `sk/lay-point`, `sk/lay-lm`, etc.:
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
@@ -102,7 +102,7 @@
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; ## Methods
+;; ## Layer Functions
 
 (kind/doc #'sk/lay-point)
 

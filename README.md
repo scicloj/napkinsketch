@@ -38,8 +38,8 @@ such as [Clay](https://scicloj.github.io/clay/).
 ;; Scatter plot with color grouping and regression lines
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species})
-            (sk/lm {:color :species}))
+    (sk/lay-point {:color :species})
+    (sk/lay-lm {:color :species})
     sk/plot)
 ```
 

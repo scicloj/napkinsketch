@@ -21,7 +21,8 @@
 ;;
 ;; A **view** is a map describing what to plot: data, column mappings
 ;; (`:x`, `:y`), mark type, color, and other aesthetics.
-;; Created with `sk/view` and refined with `sk/lay`.
+;; Created with `sk/view` and refined with `sk/lay-point`,
+;; `sk/lay-histogram`, and similar layer functions.
 
 (def views
   (-> iris
@@ -46,13 +47,14 @@
 ;; ## Method
 ;;
 ;; A **method** is the bundle of mark, stat, and position that
-;; determines how data becomes a visual element. Method constructors
+;; determines how data becomes a visual element. Layer functions
 ;; (`sk/lay-point`, `sk/lay-line`, `sk/lay-histogram`, `sk/lay-bar`, `sk/lay-lm`,
-;; `sk/lay-boxplot`, `sk/lay-violin`, `sk/lay-density`, etc.) each add a layer.
+;; `sk/lay-boxplot`, `sk/lay-violin`, `sk/lay-density`, etc.) each add a layer
+;; with the corresponding method.
 ;;
-;; When you provide a method via `sk/lay`, its stat takes precedence
-;; over column-type inference. When no method is provided,
-;; Napkinsketch infers one from the column types.
+;; When you add a layer, the method's stat takes precedence over
+;; column-type inference. When no layer is added, Napkinsketch
+;; infers a method from the column types.
 
 (method/histogram)
 

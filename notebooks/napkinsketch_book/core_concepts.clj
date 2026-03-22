@@ -96,6 +96,12 @@ iris
 
 (kind/pprint view-with-method)
 
+;; In practice you rarely call `sk/lay` and `method/point` separately.
+;; `sk/lay-point` combines both steps — it creates the method and adds
+;; the layer in one call. You will use `sk/lay-point`,
+;; `sk/lay-histogram`, and similar functions throughout the rest of
+;; the book.
+
 ;; ## Plotting
 ;;
 ;; `sk/plot` takes views and renders them into an SVG image.
@@ -162,8 +168,8 @@ iris
 
 ;; ## Inference
 ;;
-;; You do not always need to choose a method yourself. When you omit
-;; `sk/lay`, Napkinsketch infers the method from the column types.
+;; You do not always need to choose a method yourself. When you skip
+;; the layer step, Napkinsketch infers the method from the column types.
 ;; Two numerical columns produce a scatter plot; a single numerical
 ;; column produces a histogram.
 
