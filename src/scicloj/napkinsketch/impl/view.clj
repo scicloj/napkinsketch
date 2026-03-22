@@ -159,8 +159,8 @@
   "Point mark (scatter plot).
    (point)                    — default
    (point {:color :species})  — color by column"
-  ([] {:mark :point})
-  ([opts] (merge {:mark :point} opts)))
+  ([] {:mark :point :stat :identity})
+  ([opts] (merge {:mark :point :stat :identity} opts)))
 
 (defn line
   "Line mark (connected points).
@@ -554,7 +554,10 @@
             (not= x-type y-type) [:point :identity]
             :else [:point :identity])
           mark (or (:mark v) default-mark)
-          stat (or (:stat v) default-stat)]
+          ;; Method principle: when the user provides an explicit mark (method),
+          ;; its stat takes precedence. Only infer stat from column types when
+          ;; no mark was explicitly provided.
+          stat (or (:stat v) (if (:mark v) :identity default-stat))]
       (cond-> (assoc v :data ds :x-type x-type :y-type y-type :color-type c-type
                      :group group :mark mark :stat stat
                      :color (when color-is-col? color-val)

@@ -234,7 +234,7 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 16 (:panels s)) (= 1800 (:points s)))))
+     (and (= 16 (:panels s)) (= 2400 (:points s)))))
    v38_l167)))
 
 

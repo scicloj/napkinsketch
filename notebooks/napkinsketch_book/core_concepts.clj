@@ -67,11 +67,12 @@ iris
 ;; dataset (`:data`) and the column mappings (`:x` and `:y`).
 ;; No rendering has happened yet — it is just a description.
 
-;; ## Marks
+;; ## Marks and Methods
 ;;
 ;; A **mark** is a visual shape that represents data: points, lines,
 ;; bars, and others. Mark constructors like `sk/point`, `sk/line`,
-;; and `sk/bar` return small maps describing the mark type.
+;; and `sk/histogram` return a **method** — a small map that bundles
+;; the mark with its default statistical transform.
 
 (sk/point)
 

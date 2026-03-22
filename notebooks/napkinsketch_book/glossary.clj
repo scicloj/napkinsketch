@@ -33,15 +33,34 @@
 ;; ## Mark
 ;;
 ;; A **mark** is the visual representation of data: points, lines,
-;; bars, rectangles. Mark constructors (`sk/point`, `sk/line`, `sk/tile`,
-;; `sk/bar`, `sk/histogram`, `sk/boxplot`, `sk/violin`, `sk/ridgeline`,
-;; `sk/density2d`, `sk/contour`, `sk/stacked-bar-fill`, etc.) return maps
-;; that are merged into views by `sk/lay`.
+;; bars, rectangles. A mark is one component of a **method** — see
+;; the Method section below.
 
 (sk/point {:color :species :alpha 0.5})
 
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (= :species (:color m))))])
+
+;; ## Method
+;;
+;; A **method** is the bundle of mark, stat, and position that
+;; determines how data becomes a visual element. Mark constructors
+;; (`sk/point`, `sk/line`, `sk/histogram`, `sk/bar`, `sk/lm`,
+;; `sk/boxplot`, `sk/violin`, `sk/density`, etc.) each return a method.
+;;
+;; When you provide a method via `sk/lay`, its stat takes precedence
+;; over column-type inference. When no method is provided,
+;; Napkinsketch infers one from the column types.
+
+(sk/histogram)
+
+(kind/test-last [(fn [m] (and (= :bar (:mark m))
+                              (= :bin (:stat m))))])
+
+(sk/point)
+
+(kind/test-last [(fn [m] (and (= :point (:mark m))
+                              (= :identity (:stat m))))])
 
 ;; ## Aesthetic
 ;;
@@ -380,6 +399,7 @@
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
 ;; | View | Map: data + column mappings + mark | User builds, consumed by `sketch` |
+;; | Method | Mark + stat + position bundle | Returned by mark constructors, merged by `sk/lay` |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |
 ;; | Group | Subset of data drawn together (from `:color` or `:group`) | Created during stat computation |

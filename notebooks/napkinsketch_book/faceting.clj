@@ -171,12 +171,12 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 16 (:panels s))
-                                (= 1800 (:points s)))))])
+                                (= 2400 (:points s)))))])
 
-;; Diagonal panels (where x = y) are empty because there is nothing
-;; to scatter. Off-diagonal panels share scales per column (x) and
-;; per row (y), so each column of plots has the same x-axis and each
-;; row has the same y-axis.
+;; Diagonal panels (where x = y) show points along the identity line
+;; since every row has the same value for both axes. Off-diagonal
+;; panels share scales per column (x) and per row (y), so each column
+;; of plots has the same x-axis and each row has the same y-axis.
 
 
 

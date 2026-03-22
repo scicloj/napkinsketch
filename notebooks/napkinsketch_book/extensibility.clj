@@ -80,8 +80,9 @@
 ;;
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
-;; The stat is chosen by the mark constructor. For example,
-;; `(sk/histogram)` sets `:stat :bin`:
+;; The stat is part of the **method** returned by the mark
+;; constructor. For example, `(sk/histogram)` returns a method
+;; with `:stat :bin`:
 
 (sk/histogram)
 
@@ -93,11 +94,11 @@
 
 (kind/test-last [(fn [m] (= :count (:stat m)))])
 
-;; `(sk/point)` defaults to `:stat :identity`:
+;; `(sk/point)` returns a method with `:stat :identity`:
 
 (sk/point)
 
-(kind/test-last [(fn [m] (nil? (:stat m)))])
+(kind/test-last [(fn [m] (= :identity (:stat m)))])
 
 ;; ### How to extend: add a new stat
 ;;

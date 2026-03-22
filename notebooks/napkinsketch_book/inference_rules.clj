@@ -129,7 +129,12 @@
 
 ;; ## Mark and Stat Inference
 ;;
-;; When you provide only a column (no explicit mark), Napkinsketch
+;; A mark constructor like `sk/point` or `sk/histogram` returns a
+;; **method** — a bundle of mark, stat, and position. When you
+;; provide a method via `sk/lay`, its stat takes precedence over
+;; column-type inference.
+;;
+;; When you provide only a column (no explicit method), Napkinsketch
 ;; infers the mark and stat from the column types.
 ;;
 ;; | Columns | Inferred mark | Inferred stat |
