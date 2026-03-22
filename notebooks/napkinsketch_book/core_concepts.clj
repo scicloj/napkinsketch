@@ -102,6 +102,30 @@ iris
 ;; Those are the minimal ingredients: data, view, mark, plot.
 ;; Everything else in this chapter builds on this foundation.
 
+;; ## Inference
+;;
+;; `sk/lay` is not always needed. When you omit it, Napkinsketch
+;; infers the mark from the column types. Two numerical columns
+;; produce a scatter plot; a single categorical column produces a
+;; bar chart.
+
+(-> iris
+    (sk/view :sepal_length :sepal_width)
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; A single column produces a histogram:
+
+(-> iris
+    (sk/view :sepal_length)
+    sk/plot)
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; Use `sk/lay` when you want to choose a specific mark, pass
+;; options like `:color`, or add multiple layers.
+
 ;; ## Layers
 ;;
 ;; A plot can have multiple **layers** — different marks drawn on
@@ -269,10 +293,14 @@ iris
 
 (-> iris
     (sk/view (sk/cross cols cols))
-    (sk/lay (sk/point {:color :species}))
     sk/plot)
 
 (kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
+
+;; Notice the diagonal: when x and y are the same column,
+;; Napkinsketch infers a histogram instead of a scatter plot.
+;; This is inference at work — each panel gets the mark that
+;; fits its column types.
 
 ;; ## Coordinates and Scales
 ;;
