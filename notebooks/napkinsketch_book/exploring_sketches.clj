@@ -26,7 +26,9 @@
 
 ;; Here is the rendered plot:
 
-(sk/plot [(sk/point {:data tiny :x :x :y :y})])
+(-> tiny
+    (sk/lay-point :x :y)
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -35,7 +37,9 @@
 ;; And here is the sketch — the data structure that drives the rendering.
 ;; We'll use `sk/sketch` with the same arguments:
 
-(def tiny-sk (sk/sketch [(sk/point {:data tiny :x :x :y :y})]))
+(def tiny-sk (-> tiny
+                 (sk/lay-point :x :y)
+                 sk/sketch))
 
 ;; ### What's in a sketch?
 ;;
@@ -136,13 +140,17 @@ tiny-layer
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
 
-(sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})])
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-(def iris-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})]))
+(def iris-sk (-> iris
+                 (sk/lay-point :sepal_length :sepal_width {:color :species})
+                 sk/sketch))
 
 ;; Here is the full sketch — notice the legend and three groups:
 
@@ -183,8 +191,9 @@ iris-sk
 ;; When `:color` maps to a **numeric** column, the sketch stores
 ;; per-point colors and a continuous gradient legend.
 
-(def cont-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width
-                                    :color :petal_length})]))
+(def cont-sk (-> iris
+                 (sk/lay-point :sepal_length :sepal_width {:color :petal_length})
+                 sk/sketch))
 
 (:legend cont-sk)
 
@@ -208,13 +217,17 @@ iris-sk
 ;; A histogram computes bins from the data. The sketch stores the
 ;; bin edges and counts — still in data space.
 
-(sk/plot [(sk/histogram {:data iris :x :sepal_length})])
+(-> iris
+    (sk/lay-histogram :sepal_length)
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-(def hist-sk (sk/sketch [(sk/histogram {:data iris :x :sepal_length})]))
+(def hist-sk (-> iris
+                 (sk/lay-histogram :sepal_length)
+                 sk/sketch))
 
 hist-sk
 
@@ -243,13 +256,17 @@ hist-sk
 ;; A bar chart counts occurrences of each category. The sketch records
 ;; the categories and counts per group.
 
-(sk/plot [(sk/bar {:data iris :x :species :color :species})])
+(-> iris
+    (sk/lay-bar :species {:color :species})
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-(def bar-sk (sk/sketch [(sk/bar {:data iris :x :species :color :species})]))
+(def bar-sk (-> iris
+                (sk/lay-bar :species {:color :species})
+                sk/sketch))
 
 (def bar-layer (first (:layers (first (:panels bar-sk)))))
 
@@ -277,7 +294,9 @@ bar-layer
 ;;
 ;; Stacking changes the position field:
 
-(def stacked-sk (sk/sketch [(sk/stacked-bar {:data iris :x :species :color :species})]))
+(def stacked-sk (-> iris
+                    (sk/lay-stacked-bar :species {:color :species})
+                    sk/sketch))
 
 (def stacked-layer (first (:layers (first (:panels stacked-sk)))))
 
@@ -292,15 +311,19 @@ bar-layer
 ;;
 ;; A regression produces line segments in data space.
 
-(sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width})
-          (sk/lm {:data iris :x :sepal_length :y :sepal_width})])
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width)
+    sk/lay-lm
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-(def lm-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width})
-                       (sk/lm {:data iris :x :sepal_length :y :sepal_width})]))
+(def lm-sk (-> iris
+               (sk/lay-point :sepal_length :sepal_width)
+               sk/lay-lm
+               sk/sketch))
 
 ;; Two layers — points and line:
 
@@ -324,14 +347,18 @@ bar-layer
 ;; When both points and regression have a color mapping, the line
 ;; layer gets one segment per group:
 
-(sk/plot [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
-          (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
+(-> iris
+    (sk/lay-point :petal_length :petal_width {:color :species})
+    (sk/lay-lm {:color :species})
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
-(def grp-sk (sk/sketch [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
-                        (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})]))
+(def grp-sk (-> iris
+                (sk/lay-point :petal_length :petal_width {:color :species})
+                (sk/lay-lm {:color :species})
+                sk/sketch))
 
 (let [line-layer (second (:layers (first (:panels grp-sk))))]
   (mapv (fn [g]
@@ -351,13 +378,17 @@ bar-layer
 (def wave {:x (range 30)
            :y (mapv #(Math/sin (* % 0.3)) (range 30))})
 
-(sk/plot [(sk/line {:data wave :x :x :y :y})])
+(-> wave
+    (sk/lay-line :x :y)
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 1 (:lines s)))))])
 
-(def wave-sk (sk/sketch [(sk/line {:data wave :x :x :y :y})]))
+(def wave-sk (-> wave
+                 (sk/lay-line :x :y)
+                 sk/sketch))
 
 (def wave-group (first (:groups (first (:layers (first (:panels wave-sk)))))))
 
@@ -377,13 +408,17 @@ bar-layer
 (def sales {:product [:widget :gadget :gizmo :doohickey]
             :revenue [120 340 210 95]})
 
-(sk/plot [(sk/value-bar {:data sales :x :product :y :revenue})])
+(-> sales
+    (sk/lay-value-bar :product :revenue)
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 4 (:polygons s)))))])
 
-(def sales-sk (sk/sketch [(sk/value-bar {:data sales :x :product :y :revenue})]))
+(def sales-sk (-> sales
+                  (sk/lay-value-bar :product :revenue)
+                  sk/sketch))
 
 (let [g (first (:groups (first (:layers (first (:panels sales-sk))))))]
   {:xs (:xs g)
@@ -395,8 +430,10 @@ bar-layer
 ;;
 ;; Setting `:coord :flip` swaps x and y in the sketch's panel:
 
-(def flip-sk (sk/sketch [(-> (sk/bar {:data iris :x :species})
-                             (assoc :coord :flip))]))
+(def flip-sk (-> iris
+                 (sk/lay-bar :species)
+                 (sk/coord :flip)
+                 sk/sketch))
 
 (:coord (first (:panels flip-sk)))
 
@@ -418,12 +455,13 @@ bar-layer
 ;;
 ;; Title, labels, and dimensions are recorded in the sketch:
 
-(def opts-sk (sk/sketch [(sk/point {:data iris :x :sepal_length :y :sepal_width})]
-                        {:title "My Custom Title"
-                         :x-label "Length (cm)"
-                         :y-label "Width (cm)"
-                         :width 800
-                         :height 300}))
+(def opts-sk (-> iris
+                 (sk/lay-point :sepal_length :sepal_width)
+                 (sk/sketch {:title "My Custom Title"
+                             :x-label "Length (cm)"
+                             :y-label "Width (cm)"
+                             :width 800
+                             :height 300})))
 
 opts-sk
 
@@ -447,8 +485,9 @@ opts-sk
 ;; The sketch (a plain Clojure map):
 
 (def final-views
-  [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
-   (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
+  (-> iris
+      (sk/lay-point :petal_length :petal_width {:color :species})
+      (sk/lay-lm {:color :species})))
 
 (def final-sk (sk/sketch final-views {:title "Iris Petals"}))
 
@@ -482,7 +521,7 @@ final-sk
   (-> iris
       (sk/view [[:sepal_length :sepal_width]])
       (sk/facet :species)
-      (sk/lay (sk/point {:color :species}))
+      (sk/lay-point {:color :species})
       sk/sketch))
 
 ;; The grid tells us the layout:

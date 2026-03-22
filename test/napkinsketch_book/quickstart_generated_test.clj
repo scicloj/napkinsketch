@@ -29,7 +29,7 @@
  (->
   {:x [1 2 3 4 5], :y [2 4 3 5 4]}
   (sk/view :x :y)
-  (sk/lay (sk/point))
+  sk/lay-point
   sk/plot))
 
 
@@ -43,7 +43,7 @@
  (->
   [{:x 1, :y 2, :g "a"} {:x 3, :y 4, :g "a"} {:x 5, :y 6, :g "b"}]
   (sk/view :x :y)
-  (sk/lay (sk/point {:color :g}))
+  (sk/lay-point {:color :g})
   sk/plot))
 
 
@@ -59,7 +59,7 @@
    "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
    {:key-fn keyword})
   (sk/view :total_bill :tip)
-  (sk/lay (sk/point))
+  sk/lay-point
   sk/plot))
 
 
@@ -69,69 +69,74 @@
 
 
 (def
- v16_l92
+ v16_l84
  (->
   iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point {:color :species}))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
   sk/plot))
 
 
 (deftest
- t17_l97
+ t17_l88
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"setosa"} (:texts s)))))
-   v16_l92)))
+   v16_l84)))
 
 
 (def
- v19_l103
- (sk/plot
-  [(sk/point
-    {:data iris, :x :sepal_length, :y :sepal_width, :color :species})]))
-
-
-(deftest
- t20_l106
- (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v19_l103)))
-
-
-(def
- v22_l119
+ v19_l96
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point))
+  (sk/lay-point {:color :species})
   sk/plot))
 
 
 (deftest
- t23_l124
+ t20_l101
+ (is
+  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v19_l96)))
+
+
+(def v22_l121 (-> iris (sk/view :sepal_length :sepal_width) sk/plot))
+
+
+(deftest
+ t23_l125
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v22_l121)))
+
+
+(def
+ v25_l130
+ (-> iris (sk/view :sepal_length :sepal_width) sk/lay-point sk/plot))
+
+
+(deftest
+ t26_l135
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v22_l119)))
+   v25_l130)))
 
 
 (def
- v25_l132
+ v28_l143
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point {:color :species}))
+  (sk/lay-point {:color :species})
   sk/plot))
 
 
 (deftest
- t26_l137
+ t29_l148
  (is
   ((fn
     [v]
@@ -141,101 +146,97 @@
       (= 150 (:points s))
       (some #{"setosa"} (:texts s))
       (some #{"sepal length"} (:texts s)))))
-   v25_l132)))
+   v28_l143)))
 
 
 (def
- v28_l146
+ v31_l157
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point {:color :species}) (sk/lm {:color :species}))
+  (sk/lay-point {:color :species})
+  (sk/lay-lm {:color :species})
   sk/plot))
 
 
 (deftest
- t29_l152
+ t32_l163
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v28_l146)))
+   v31_l157)))
 
 
 (def
- v31_l160
- (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot))
+ v34_l171
+ (-> iris (sk/view :sepal_length) sk/lay-histogram sk/plot))
 
 
 (deftest
- t32_l165
+ t35_l176
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)) (zero? (:points s)))))
-   v31_l160)))
+   v34_l171)))
 
 
-(def v34_l174 (-> iris (sk/view :species) (sk/lay (sk/bar)) sk/plot))
+(def v37_l185 (-> iris (sk/view :species) sk/lay-bar sk/plot))
 
 
 (deftest
- t35_l179
+ t38_l190
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v34_l174)))
+   v37_l185)))
 
 
 (def
- v37_l187
- (->
-  iris
-  (sk/view :species)
-  (sk/lay (sk/bar))
-  (sk/coord :flip)
-  sk/plot))
+ v40_l198
+ (-> iris (sk/view :species) sk/lay-bar (sk/coord :flip) sk/plot))
 
 
 (deftest
- t38_l193
+ t41_l204
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:polygons s)))) v37_l187)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:polygons s)))) v40_l198)))
 
 
 (def
- v40_l200
+ v43_l211
  (->
   {:x [1 2 3 4 5 6 7 8], :y [3 5 4 7 6 8 7 9]}
   (sk/view [[:x :y]])
-  (sk/lay (sk/line))
+  sk/lay-line
   sk/plot))
 
 
 (deftest
- t41_l206
+ t44_l217
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:lines s)) (zero? (:points s)))))
-   v40_l200)))
+   v43_l211)))
 
 
 (def
- v43_l214
+ v46_l225
  (->
   iris
   (sk/view [[:petal_length :petal_width]])
-  (sk/lay (sk/point {:color :species}))
+  (sk/lay-point {:color :species})
   (sk/plot
    {:width 500,
     :height 350,
@@ -245,7 +246,7 @@
 
 
 (deftest
- t44_l222
+ t47_l233
  (is
   ((fn
     [v]
@@ -255,4 +256,4 @@
       (= 150 (:points s))
       (some #{"Iris Petals"} (:texts s))
       (some #{"Petal Length (cm)"} (:texts s)))))
-   v43_l214)))
+   v46_l225)))

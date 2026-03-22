@@ -23,7 +23,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:width 800 :height 250}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -34,7 +34,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:width 300 :height 500}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -47,7 +47,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:title "Iris Sepal Measurements"
               :x-label "Length (cm)"
               :y-label "Width (cm)"}))
@@ -61,7 +61,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/labs {:title "Pipeline Labels" :x "Length" :y "Width"})
     sk/plot)
 
@@ -73,7 +73,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:title "Iris Measurements"
               :subtitle "Sepal dimensions across three species"
               :caption "Source: Fisher's Iris dataset (1936)"}))
@@ -95,7 +95,7 @@
 
 (-> exponential-data
     (sk/view [[:x :y]])
-    (sk/lay (sk/point))
+    sk/lay-point
     (sk/plot {:title "Linear Scale"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -106,7 +106,7 @@
 
 (-> exponential-data
     (sk/view [[:x :y]])
-    (sk/lay (sk/point))
+    sk/lay-point
     (sk/scale :y :log)
     (sk/plot {:title "Log Y Scale"}))
 
@@ -118,7 +118,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/scale :y {:type :linear :domain [0 6]})
     (sk/plot {:title "Fixed Y Domain [0, 6]"}))
 
@@ -132,7 +132,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species :alpha 0.5 :size 5}))
+    (sk/lay-point {:color :species :alpha 0.5 :size 5})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -143,7 +143,7 @@
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/bar {:alpha 0.4}))
+    (sk/lay-bar {:alpha 0.4})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -157,9 +157,8 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species})
-            (sk/rule-h 3.0)
-            (sk/rule-v 6.0))
+    (sk/lay-point {:color :species})
+    (sk/lay (sk/rule-h 3.0) (sk/rule-v 6.0))
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -175,9 +174,8 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species})
-            (sk/band-v 5.5 6.5)
-            (sk/band-h 3.0 3.5 {:alpha 0.3}))
+    (sk/lay-point {:color :species})
+    (sk/lay (sk/band-v 5.5 6.5) (sk/band-h 3.0 3.5 {:alpha 0.3}))
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -189,7 +187,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -200,7 +198,7 @@
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/stacked-bar {:color :species}))
+    (sk/lay-stacked-bar {:color :species})
     (sk/plot {:palette ["#8B5CF6" "#F59E0B" "#10B981"]}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -211,7 +209,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:palette {:setosa "#E74C3C"
                         :versicolor "#3498DB"
                         :virginica "#2ECC71"}}))
@@ -240,7 +238,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:palette :set2}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -251,7 +249,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:palette :dark2}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -303,7 +301,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:palette :khroma/okabeito}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -314,7 +312,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:title "White Theme"
               :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 10}}))
 
@@ -328,7 +326,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:legend-position :bottom}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -341,7 +339,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:tooltip true}))
 
 (kind/test-last [(fn [v] (= :div (first v)))])
@@ -352,7 +350,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:brush true}))
 
 (kind/test-last [(fn [v] (= :div (first v)))])

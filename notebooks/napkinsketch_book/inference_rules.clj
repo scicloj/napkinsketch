@@ -32,7 +32,7 @@
 (def scatter-views
   (-> five-points
       (sk/view :x :y)
-      (sk/lay (sk/point))))
+      sk/lay-point))
 
 ;; Here is the full sketch:
 
@@ -89,7 +89,7 @@
 (def bar-views
   (-> animals
       (sk/view :animal :count)
-      (sk/lay (sk/value-bar))))
+      sk/lay-value-bar))
 
 (sk/sketch bar-views)
 
@@ -113,7 +113,7 @@
                      (java.time.LocalDate/of 2024 12 1)]
               :val [10 25 18]}
              (sk/view :date :val)
-             (sk/lay (sk/point))
+             sk/lay-point
              sk/sketch)
       p (first (:panels sk))]
   {:x-domain-numeric? (number? (first (:x-domain p)))
@@ -129,7 +129,7 @@
 
 ;; ## Mark and Stat Inference
 ;;
-;; `sk/point`, `sk/histogram`, and similar functions each return a
+;; `sk/lay-point`, `sk/lay-histogram`, and similar functions each add a layer with a
 ;; **method** — a bundle of mark, stat, and position. When you
 ;; provide a method via `sk/lay`, its stat takes precedence over
 ;; column-type inference.
@@ -201,7 +201,7 @@
        :y [3 5 4 7 6 8]
        :g ["a" "a" "a" "b" "b" "b"]}
       (sk/view :x :y)
-      (sk/lay (sk/point {:color :g}))))
+      (sk/lay-point {:color :g})))
 
 (sk/sketch colored-views)
 
@@ -226,7 +226,7 @@
 (def fixed-color-views
   (-> five-points
       (sk/view :x :y)
-      (sk/lay (sk/point {:color "#E74C3C"}))))
+      (sk/lay-point {:color "#E74C3C"})))
 
 (sk/sketch fixed-color-views)
 
@@ -255,7 +255,7 @@
 
 (-> five-points
     (sk/view :x :y)
-    (sk/lay (sk/point {:color "steelblue"}))
+    (sk/lay-point {:color "steelblue"})
     sk/plot)
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
@@ -287,7 +287,7 @@
 
 (let [sk (-> five-points
              (sk/view :x :y)
-             (sk/lay (sk/point {:color "red"}))
+             (sk/lay-point {:color "red"})
              sk/sketch)]
   {:legend (:legend sk)
    :color (:color (first (:groups (first (:layers (first (:panels sk)))))))})
@@ -342,7 +342,7 @@
               :y [2 4 3 5 4]
               :val [10 20 30 40 50]}
              (sk/view :x :y)
-             (sk/lay (sk/point {:color :val}))
+             (sk/lay-point {:color :val})
              sk/sketch)
       layer (first (:layers (first (:panels sk))))]
   {:group-count (count (:groups layer))
@@ -367,7 +367,7 @@
 
 (let [sk (-> grouped-data
              (sk/view :x :y)
-             (sk/lay (sk/point {:group :g}))
+             (sk/lay-point {:group :g})
              sk/sketch)
       layer (first (:layers (first (:panels sk))))]
   {:group-count (count (:groups layer))
@@ -383,14 +383,15 @@
 ;; ### What grouping affects
 ;;
 ;; Grouping determines how statistical transformations operate.
-;; Without grouping, `sk/lm` fits one regression line through
+;; Without grouping, `sk/lay-lm` fits one regression line through
 ;; all the data. With grouping, it fits one line per group.
 
 ;; One regression line — no grouping:
 
 (-> grouped-data
     (sk/view :x :y)
-    (sk/lay (sk/point) (sk/lm))
+    sk/lay-point
+    sk/lay-lm
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -401,8 +402,8 @@
 
 (-> grouped-data
     (sk/view :x :y)
-    (sk/lay (sk/point {:color :g})
-            (sk/lm {:color :g}))
+    (sk/lay-point {:color :g})
+    (sk/lay-lm {:color :g})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -443,7 +444,7 @@
 (let [fill-sk (-> {:x ["a" "a" "b" "b"]
                    :g ["m" "n" "m" "n"]}
                   (sk/view :x)
-                  (sk/lay (sk/stacked-bar-fill {:color :g}))
+                  (sk/lay-stacked-bar-fill {:color :g})
                   sk/sketch)
       p (first (:panels fill-sk))]
   (:y-domain p))
@@ -462,7 +463,7 @@
 
 (let [sk (-> iris
              (sk/view :sepal_length :sepal_width)
-             (sk/lay (sk/point))
+             sk/lay-point
              sk/sketch)]
   {:x-label (:x-label sk)
    :y-label (:y-label sk)})
@@ -484,7 +485,7 @@
 
 (let [sk (-> five-points
              (sk/view :x :y)
-             (sk/lay (sk/point))
+             sk/lay-point
              (sk/labs {:x "Length (cm)" :y "Width (cm)"})
              sk/sketch)]
   {:x-label (:x-label sk)
@@ -502,7 +503,7 @@
                 :y [3 5 4 7 6 8]
                 :g ["a" "a" "a" "b" "b" "b"]}
                (sk/view :x :y)
-               (sk/lay (sk/point {:color :g}))
+               (sk/lay-point {:color :g})
                (sk/labs {:title "My Plot"})
                sk/sketch)]
   {:bare-layout (:layout bare)
@@ -528,13 +529,13 @@
 (def normal-sk
   (-> animals
       (sk/view :animal :count)
-      (sk/lay (sk/value-bar))
+      sk/lay-value-bar
       sk/sketch))
 
 (def flip-sk
   (-> animals
       (sk/view :animal :count)
-      (sk/lay (sk/value-bar))
+      sk/lay-value-bar
       (sk/coord :flip)
       sk/sketch))
 
@@ -552,7 +553,7 @@
 
 (-> animals
     (sk/view :animal :count)
-    (sk/lay (sk/value-bar))
+    sk/lay-value-bar
     (sk/coord :flip)
     sk/plot)
 
@@ -565,7 +566,7 @@
 
 (let [sk (-> five-points
              (sk/view :x :y)
-             (sk/lay (sk/point))
+             sk/lay-point
              (sk/coord :flip)
              sk/sketch)]
   {:x-label (:x-label sk)
@@ -607,7 +608,8 @@
 (def multi-views
   (-> five-points
       (sk/view :x :y)
-      (sk/lay (sk/point) (sk/lm))))
+      sk/lay-point
+      sk/lay-lm))
 
 (sk/sketch multi-views)
 
@@ -634,7 +636,7 @@
 ;; | Data extent → domain | `(sk/scale views :x {:domain [0 10]})` |
 ;; | Column name → axis label | `(sk/labs {:x "Custom Label"})` |
 ;; | No title → no padding | `:title "My Plot"` in options |
-;; | Column types → method | explicit method: `(sk/histogram)` |
+;; | Column types → method | explicit method: `(method/histogram)` or `sk/lay-histogram` |
 ;; | Temporal detection → epoch-ms | `(sk/scale views :x {:domain [min max]})` |
 ;; | Fill domain → [0, 1] | `(sk/scale views :y {:domain [0 2]})` |
 ;; | Flip swaps labels | `(sk/labs {:x "keep-this"})` overrides |

@@ -8,7 +8,8 @@
             [scicloj.napkinsketch.impl.scale :as scale]
             [scicloj.napkinsketch.impl.position :as position]
             [scicloj.napkinsketch.impl.extract :as extract]
-            [scicloj.napkinsketch.impl.view :as view]))
+            [scicloj.napkinsketch.impl.view :as view]
+            [scicloj.napkinsketch.method :as method]))
 
 ;; ============================================================
 ;; defaults.clj
@@ -76,7 +77,7 @@
 (deftest legend-serializable-test
   (testing "continuous legend has :color-scale keyword, no :gradient-fn"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
-          sk (sk/sketch [(sk/point {:data ds :x :x :y :y :color :c})])
+          sk (sk/sketch (-> ds (sk/lay-point :x :y {:color :c})))
           legend (:legend sk)]
       (is (= :continuous (:type legend)))
       (is (contains? legend :color-scale))
@@ -84,13 +85,13 @@
       (is (nil? (:color-scale legend)) "default color-scale is nil")))
   (testing "explicit :color-scale is stored as keyword"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
-          sk (sk/sketch [(sk/point {:data ds :x :x :y :y :color :c})]
+          sk (sk/sketch (-> ds (sk/lay-point :x :y {:color :c}))
                         {:color-scale :inferno})
           legend (:legend sk)]
       (is (= :inferno (:color-scale legend)))))
   (testing "legend has 20 pre-computed stops"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
-          sk (sk/sketch [(sk/point {:data ds :x :x :y :y :color :c})])
+          sk (sk/sketch (-> ds (sk/lay-point :x :y {:color :c})))
           legend (:legend sk)]
       (is (= 20 (count (:stops legend))))
       (is (== 0.0 (:t (first (:stops legend)))))
@@ -338,37 +339,37 @@
       (is (= [1 2 3 4 5] (:xs (first (:groups layer))))))))
 
 ;; ============================================================
-;; view.clj (via api) — mark constructors
+;; method.clj — mark constructors
 ;; ============================================================
 
 (deftest mark-constructors-test
   (testing "marks return the correct resolved :mark key"
     (are [f mk] (= mk (:mark (f)))
-      sk/point :point
-      sk/line :line
-      sk/step :step
-      sk/histogram :bar
-      sk/bar :rect
-      sk/stacked-bar :rect
-      sk/stacked-bar-fill :rect
-      sk/value-bar :rect
-      sk/lm :line
-      sk/loess :line
-      sk/text :text
-      sk/label :label
-      sk/area :area
-      sk/stacked-area :area
-      sk/density :area
-      sk/tile :tile
-      sk/density2d :tile
-      sk/contour :contour
-      sk/ridgeline :ridgeline
-      sk/boxplot :boxplot
-      sk/violin :violin
-      sk/rug :rug
-      sk/summary :pointrange
-      sk/errorbar :errorbar
-      sk/lollipop :lollipop)))
+      method/point :point
+      method/line :line
+      method/step :step
+      method/histogram :bar
+      method/bar :rect
+      method/stacked-bar :rect
+      method/stacked-bar-fill :rect
+      method/value-bar :rect
+      method/lm :line
+      method/loess :line
+      method/text :text
+      method/label :label
+      method/area :area
+      method/stacked-area :area
+      method/density :area
+      method/tile :tile
+      method/density2d :tile
+      method/contour :contour
+      method/ridgeline :ridgeline
+      method/boxplot :boxplot
+      method/violin :violin
+      method/rug :rug
+      method/summary :pointrange
+      method/errorbar :errorbar
+      method/lollipop :lollipop)))
 
 (deftest view-arities-test
   (testing "2-arity (data, spec)"
@@ -389,14 +390,55 @@
 (deftest lay-test
   (testing "lay merges mark into views"
     (let [views (sk/view tiny-ds [[:x :y]])
-          layered (sk/lay views (sk/point {:color :x}))]
+          layered (sk/lay views (method/point {:color :x}))]
       (is (= :point (:mark (first layered))))
       (is (= :x (:color (first layered))))))
   (testing "lay is additive"
     (let [views (sk/view tiny-ds [[:x :y]])
-          l1 (sk/lay views (sk/point))
-          l2 (sk/lay l1 (sk/lm))]
+          l1 (sk/lay views (method/point))
+          l2 (sk/lay l1 (method/lm))]
       (is (= 2 (count l2))))))
+
+(deftest view-record-test
+  (testing "view returns View records"
+    (let [views (sk/view tiny-ds [[:x :y]])]
+      (is (instance? scicloj.napkinsketch.impl.view.View (first views)))
+      (is (view/views? views))))
+  (testing "views? rejects plain maps"
+    (is (not (view/views? [{:x 1 :y 2}]))))
+  (testing "views? rejects nil and empty"
+    (is (not (view/views? nil)))
+    (is (not (view/views? [])))))
+
+(deftest lay-x-test
+  (testing "1-arity: add to views"
+    (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)]
+      (is (= :point (:mark (first views))))
+      (is (= :identity (:stat (first views))))))
+  (testing "2-arity: views + opts"
+    (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay-point {:color :x}))]
+      (is (= :point (:mark (first views))))
+      (is (= :x (:color (first views))))))
+  (testing "3-arity: data + x + y"
+    (let [views (sk/lay-point tiny-ds :x :y)]
+      (is (view/views? views))
+      (is (= :point (:mark (first views))))))
+  (testing "4-arity: data + x + y + opts"
+    (let [views (sk/lay-point tiny-ds :x :y {:color :x})]
+      (is (= :point (:mark (first views))))
+      (is (= :x (:color (first views))))))
+  (testing "chaining lay-X"
+    (let [views (-> tiny-ds (sk/lay-point :x :y) (sk/lay-lm))]
+      (is (= 2 (count views)))
+      (is (= :point (:mark (first views))))
+      (is (= :line (:mark (second views))))))
+  (testing "lay-histogram 2-arity with column"
+    (let [views (sk/lay-histogram tiny-ds :x)]
+      (is (view/views? views))
+      (is (= :bar (:mark (first views))))))
+  (testing "data shortcut renders"
+    (let [fig (-> tiny-ds (sk/lay-point :x :y) sk/plot)]
+      (is (some? fig)))))
 
 ;; ============================================================
 ;; views->sketch (integration)
@@ -405,7 +447,7 @@
 (deftest views-to-sketch-test
   (let [views (-> tiny-ds
                   (sk/view [[:x :y]])
-                  (sk/lay (sk/point)))
+                  sk/lay-point)
         sk (sk/sketch views)]
     (is (map? sk))
     (is (contains? sk :panels))
@@ -419,7 +461,7 @@
 
 (deftest sketch-with-color-test
   (let [ds (tc/dataset {:x [1 2 3 4] :y [1 2 3 4] :g ["a" "a" "b" "b"]})
-        views (-> ds (sk/view [[:x :y]]) (sk/lay (sk/point {:color :g})))
+        views (-> ds (sk/view [[:x :y]]) (sk/lay-point {:color :g}))
         sk (sk/sketch views)]
     (is (:legend sk))
     (is (= 2 (count (:entries (:legend sk)))))))
@@ -427,7 +469,7 @@
 (deftest sketch-faceted-test
   (let [ds (tc/dataset {:x [1 2 3 4 5 6] :y [1 2 3 4 5 6]
                         :g ["a" "a" "b" "b" "c" "c"]})
-        views (-> ds (sk/view [[:x :y]]) (sk/facet :g) (sk/lay (sk/point)))
+        views (-> ds (sk/view [[:x :y]]) (sk/facet :g) sk/lay-point)
         sk (sk/sketch views)]
     (is (= 3 (count (:panels sk))))))
 
@@ -450,13 +492,13 @@
       (is (== ph 300))))
   (testing "coord :fixed end-to-end — equal ranges produce square SVG"
     (let [ds (tc/dataset {:x [0 10 5] :y [0 10 5]})
-          fig (-> ds (sk/view :x :y) (sk/coord :fixed) (sk/lay (sk/point)) sk/plot)
+          fig (-> ds (sk/view :x :y) (sk/coord :fixed) sk/lay-point sk/plot)
           svg (if (= :svg (first fig)) fig (second fig))
           {:keys [width height]} (second svg)]
       (is (== width height) "Equal data ranges → square SVG")))
   (testing "coord :fixed end-to-end — asymmetric ranges"
     (let [ds (tc/dataset {:x [0 100 50] :y [0 10 5]})
-          fig (-> ds (sk/view :x :y) (sk/coord :fixed) (sk/lay (sk/point)) sk/plot)
+          fig (-> ds (sk/view :x :y) (sk/coord :fixed) sk/lay-point sk/plot)
           svg (if (= :svg (first fig)) fig (second fig))
           {:keys [width height]} (second svg)]
       (is (> width height) "Wide data → wider SVG"))))
@@ -488,7 +530,7 @@
   (testing "diverging end-to-end"
     (let [ds (tc/dataset {:x (range 10) :y (range 10) :z (map #(- % 5) (range 10))})
           fig (-> ds (sk/view :x :y)
-                  (sk/lay (sk/point {:color :z}))
+                  (sk/lay-point {:color :z})
                   (sk/plot {:color-scale :diverging :color-midpoint 0}))
           s (sk/svg-summary fig)]
       (is (= 10 (:points s))))))
@@ -497,7 +539,8 @@
   (testing "LOESS with SE produces ribbon"
     (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
           fig (-> ds (sk/view :x :y)
-                  (sk/lay (sk/point) (sk/loess {:se true :se-boot 50}))
+                  sk/lay-point
+                  (sk/lay-loess {:se true :se-boot 50})
                   sk/plot)
           s (sk/svg-summary fig)]
       (is (= 20 (:points s)))
@@ -506,38 +549,39 @@
   (testing "LOESS without SE has no ribbon"
     (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
           fig (-> ds (sk/view :x :y)
-                  (sk/lay (sk/point) (sk/loess))
+                  sk/lay-point
+                  sk/lay-loess
                   sk/plot)
           s (sk/svg-summary fig)]
       (is (= 1 (:lines s)))
       (is (zero? (:polygons s)))))
   (testing "LOESS dedup handles duplicate x values"
     (let [ds (tc/dataset {:x [1 1 2 2 3 3 4 4 5 5] :y [2 3 4 5 6 7 8 9 10 11]})
-          fig (-> ds (sk/view :x :y) (sk/lay (sk/loess)) sk/plot)
+          fig (-> ds (sk/view :x :y) sk/lay-loess sk/plot)
           s (sk/svg-summary fig)]
       (is (= 1 (:lines s))))))
 
 (deftest arrange-test
   (testing "flat plots → CSS grid"
-    (let [p1 (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)) sk/plot)
-          p2 (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)) sk/plot)
+    (let [p1 (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
+          p2 (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
           result (sk/arrange [p1 p2])]
       (is (= :div (first result)))
       (is (= :kind/hiccup (:kindly/kind (meta result))))))
   (testing "nested rows → correct cols"
-    (let [p (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)) sk/plot)
+    (let [p (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
           result (sk/arrange [[p p] [p p]])]
       (is (= "repeat(2, 1fr)"
              (-> result second :style :grid-template-columns)))))
   (testing "title appears as first child"
-    (let [p (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)) sk/plot)
+    (let [p (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
           result (sk/arrange [p p] {:title "Test" :cols 2})
           title-div (nth result 2)]
       (is (= :div (first title-div)))
       (is (= "Test" (last title-div))))))
 
 (deftest valid-sketch-test
-  (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay (sk/point)))
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)
         sk (sk/sketch views)]
     (is (sk/valid-sketch? sk))))
 
@@ -685,7 +729,7 @@
 ;; ---- Config affects sketch output ----
 
 (deftest config-affects-sketch-test
-  (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay (sk/point)))]
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)]
     (testing "default width/height in sketch"
       (let [s (sk/sketch views)]
         (is (= 600 (:width s)))
@@ -715,7 +759,7 @@
 ;; ---- Config affects rendered SVG ----
 
 (deftest config-affects-render-test
-  (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay (sk/point)))]
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)]
     (testing "default theme bg appears in SVG"
       (let [svg (sk/plot views)
             summary (sk/svg-summary svg)]
@@ -742,7 +786,7 @@
   (let [ds (tc/dataset {:x [1 2 3 4 5 6]
                         :y [10 20 30 15 25 35]
                         :g ["a" "a" "a" "b" "b" "b"]})
-        views (-> ds (sk/view [[:x :y]]) (sk/lay (sk/point {:color :g})))]
+        views (-> ds (sk/view [[:x :y]]) (sk/lay-point {:color :g}))]
     (testing "default palette produces colored points"
       (let [svg (sk/plot views)
             summary (sk/svg-summary svg)]
@@ -763,7 +807,7 @@
 ;; ---- Config validation flag ----
 
 (deftest config-validate-flag-test
-  (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay (sk/point)))]
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)]
     (testing "validate true (default) — valid sketch passes"
       (is (some? (sk/sketch views))))
     (testing "validate false skips schema check"
@@ -774,37 +818,37 @@
 (deftest single-point-dataset-test
   (testing "sketch with a single data point does not throw"
     (let [ds (tc/dataset {:x [5] :y [10]})
-          sk (sk/sketch [(sk/point {:data ds :x :x :y :y})])]
+          sk (sk/sketch (-> ds (sk/lay-point :x :y)))]
       (is (= 1 (count (:panels sk))))
-      (is (some? (sk/plot [(sk/point {:data ds :x :x :y :y})]))))))
+      (is (some? (sk/plot (-> ds (sk/lay-point :x :y))))))))
 
 (deftest two-point-dataset-test
   (testing "regression with exactly 2 points — lm needs n>=3 so falls back gracefully"
     (let [ds (tc/dataset {:x [1 2] :y [3 4]})
-          views (-> ds (sk/view :x :y) (sk/lay (sk/point)))]
+          views (-> ds (sk/view :x :y) sk/lay-point)]
       (is (some? (sk/sketch views))))))
 
 (deftest all-same-values-test
   (testing "scatter where all x values are identical"
     (let [ds (tc/dataset {:x [5 5 5 5] :y [1 2 3 4]})
-          sk (sk/sketch [(sk/point {:data ds :x :x :y :y})])]
+          sk (sk/sketch (-> ds (sk/lay-point :x :y)))]
       (is (some? sk))
       (is (= 1 (count (:panels sk))))))
   (testing "scatter where all y values are identical"
     (let [ds (tc/dataset {:x [1 2 3 4] :y [5 5 5 5]})
-          sk (sk/sketch [(sk/point {:data ds :x :x :y :y})])]
+          sk (sk/sketch (-> ds (sk/lay-point :x :y)))]
       (is (some? sk)))))
 
 (deftest categorical-single-category-test
   (testing "bar chart with only one category"
     (let [ds (tc/dataset {:cat ["a" "a" "a"] :val [1 2 3]})
-          sk (sk/sketch [(sk/bar {:data ds :x :cat :y :val})])]
+          sk (sk/sketch (-> ds (sk/lay-bar :cat :val)))]
       (is (= 1 (count (:panels sk)))))))
 
 (deftest histogram-uniform-data-test
   (testing "histogram with all identical values"
     (let [ds (tc/dataset {:x [5 5 5 5 5]})
-          sk (sk/sketch [(sk/histogram {:data ds :x :x :y :x})])]
+          sk (sk/sketch (-> ds (sk/lay-histogram :x)))]
       (is (some? sk)))))
 
 (deftest polar-coord-test
@@ -812,7 +856,7 @@
     (let [ds (tc/dataset {:cat ["A" "B" "C"] :val [10 20 30]})
           views (-> ds
                     (sk/view :cat :val)
-                    (sk/lay (sk/bar))
+                    sk/lay-bar
                     (sk/coord :polar))
           sk (sk/sketch views)]
       (is (= :polar (get-in sk [:panels 0 :coord]))))))
@@ -821,7 +865,7 @@
   (testing "flipped coordinates swap x/y domains"
     (let [views (-> cat-ds
                     (sk/view :cat :val)
-                    (sk/lay (sk/bar))
+                    sk/lay-bar
                     (sk/coord :flip))
           sk (sk/sketch views)
           panel (first (:panels sk))]
@@ -831,7 +875,7 @@
   (testing "labels propagate to sketch"
     (let [views (-> tiny-ds
                     (sk/view :x :y)
-                    (sk/lay (sk/point))
+                    sk/lay-point
                     (sk/labs {:title "T" :subtitle "ST" :caption "C"
                               :x "X Axis" :y "Y Axis"}))
           sk (sk/sketch views)]
@@ -846,7 +890,7 @@
     (let [ds (tc/dataset {:x [1 10 100 1000] :y [1 2 3 4]})
           views (-> ds
                     (sk/view :x :y)
-                    (sk/lay (sk/point))
+                    sk/lay-point
                     (sk/scale :x :log))
           sk (sk/sketch views)
           panel (first (:panels sk))]
@@ -856,7 +900,8 @@
   (testing "sketch with point + line layers"
     (let [views (-> tiny-ds
                     (sk/view :x :y)
-                    (sk/lay (sk/point) (sk/line)))
+                    sk/lay-point
+                    sk/lay-line)
           sk (sk/sketch views)
           layers (get-in sk [:panels 0 :layers])]
       (is (= 2 (count layers))))))
@@ -864,13 +909,13 @@
 (deftest color-groups-test
   (testing "color mapping with string values produces legend"
     (let [ds (tc/dataset {:x [1 2 3] :y [4 5 6] :g ["a" "b" "a"]})
-          sk (sk/sketch [(sk/point {:data ds :x :x :y :y :color :g})])]
+          sk (sk/sketch (-> ds (sk/lay-point :x :y {:color :g})))]
       (is (some? (:legend sk)))
       (is (= 2 (count (get-in sk [:legend :entries])))))))
 
 (deftest sketch-dimensions-test
   (testing "custom width and height"
-    (let [views (-> tiny-ds (sk/view :x :y) (sk/lay (sk/point)))
+    (let [views (-> tiny-ds (sk/view :x :y) sk/lay-point)
           sk (sk/sketch views {:width 800 :height 300})]
       (is (= 800 (:width sk)))
       (is (= 300 (:height sk))))))
@@ -880,7 +925,7 @@
     (let [ds (tc/dataset {:a [1 2 3 4 5] :b [5 4 3 2 1] :c [2 4 6 8 10]})
           views (-> ds
                     (sk/view (sk/cross [:a :b :c] [:a :b :c]))
-                    (sk/lay (sk/point)))
+                    sk/lay-point)
           svg (sk/plot views)
           s (sk/svg-summary svg)
           texts (:texts s)]
@@ -895,7 +940,7 @@
                          {:key-fn keyword})
           path (str (java.io.File/createTempFile "napkinsketch" ".svg"))
           views (-> ds (sk/view :sepal_length :sepal_width)
-                    (sk/lay (sk/point {:color :species})))]
+                    (sk/lay-point {:color :species}))]
       (sk/save views path)
       (let [content (slurp path)]
         (is (.startsWith content "<?xml"))
@@ -922,7 +967,7 @@
                                      (java.time.LocalDate/of 2025 12 1)]
                               :val [10 20 30]})
                  (sk/view :date :val)
-                 (sk/lay (sk/point))
+                 sk/lay-point
                  sk/sketch)]
       (is (= 1 (count (:panels sk))))
       (is (seq (get-in sk [:panels 0 :x-ticks :labels]))))))
@@ -940,54 +985,54 @@
                          {:key-fn keyword})]
     (testing "String column refs in 3-arity view"
       (let [s (-> iris (sk/view "sepal_length" "sepal_width")
-                  (sk/lay (sk/point)) sk/plot sk/svg-summary)]
+                  sk/lay-point sk/plot sk/svg-summary)]
         (is (= 150 (:points s)))))
     (testing "String columns in vector spec"
       (let [s (-> iris (sk/view [["sepal_length" "sepal_width"]])
-                  (sk/lay (sk/point)) sk/plot sk/svg-summary)]
+                  sk/lay-point sk/plot sk/svg-summary)]
         (is (= 150 (:points s)))))
     (testing "String column in mark options"
       (let [s (-> iris (sk/view :sepal_length :sepal_width)
-                  (sk/lay (sk/point {:color "species"})) sk/plot sk/svg-summary)]
+                  (sk/lay-point {:color "species"}) sk/plot sk/svg-summary)]
         (is (= 150 (:points s)))
         (is (some #{"setosa"} (:texts s)))))
     (testing "Dataset with string column names"
       (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
-            s (-> ds (sk/view :x :y) (sk/lay (sk/point)) sk/plot sk/svg-summary)]
+            s (-> ds (sk/view :x :y) sk/lay-point sk/plot sk/svg-summary)]
         (is (= 3 (:points s)))))
     (testing "Dataset with string columns + string spec"
       (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
-            s (-> ds (sk/view "x" "y") (sk/lay (sk/point)) sk/plot sk/svg-summary)]
+            s (-> ds (sk/view "x" "y") sk/lay-point sk/plot sk/svg-summary)]
         (is (= 3 (:points s)))))
     (testing "String in facet"
       (let [s (-> iris (sk/view :sepal_length :sepal_width)
-                  (sk/facet "species") (sk/lay (sk/point)) sk/plot sk/svg-summary)]
+                  (sk/facet "species") sk/lay-point sk/plot sk/svg-summary)]
         (is (= 3 (:panels s)))))
     (testing "String in cross"
       (is (= 9 (count (sk/cross ["a" "b" "c"] ["a" "b" "c"])))))
     (testing "Literal color string still works"
       (let [v (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
                   (sk/view :x :y)
-                  (sk/lay (sk/point {:color "#FF0000"}))
+                  (sk/lay-point {:color "#FF0000"})
                   sk/plot)]
         (is (= 3 (:points (sk/svg-summary v))))))
     (testing "Typo still gives good error"
       (is (thrown-with-msg? clojure.lang.ExceptionInfo
                             #"not found in dataset"
                             (-> iris (sk/view :sepl_length :sepal_width)
-                                (sk/lay (sk/point)) sk/plot))))))
+                                sk/lay-point sk/plot))))))
 
 (deftest named-color-test
   (testing "Named color strings work as fixed colors"
     (let [s (-> {:x [1 2 3] :y [4 5 6]}
                 (sk/view :x :y)
-                (sk/lay (sk/point {:color "red"}))
+                (sk/lay-point {:color "red"})
                 sk/plot sk/svg-summary)]
       (is (= 3 (:points s)))))
   (testing "Named color produces correct RGBA"
     (let [sk (-> {:x [1 2 3] :y [4 5 6]}
                  (sk/view :x :y)
-                 (sk/lay (sk/point {:color "steelblue"}))
+                 (sk/lay-point {:color "steelblue"})
                  sk/sketch)
           c (:color (first (:groups (first (:layers (first (:panels sk)))))))]
       (is (> (nth c 2) 0.5) "steelblue should have high blue channel")))
@@ -996,7 +1041,7 @@
                           #"Unknown color"
                           (-> {:x [1 2 3] :y [4 5 6]}
                               (sk/view :x :y)
-                              (sk/lay (sk/point {:color "notacolor"}))
+                              (sk/lay-point {:color "notacolor"})
                               sk/plot)))))
 
 (deftest schema-all-marks-test
@@ -1006,24 +1051,24 @@
           xy-ds (tc/dataset {:x (range 10) :y (range 10)})
           eb-ds (tc/dataset {:x ["a" "b"] :y [10 20] :ymin [8 17] :ymax [12 23]})
           txt-ds (tc/dataset {:x [1 2] :y [3 4] :n ["a" "b"]})
-          cases [["point" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay (sk/point {:color :species})))]
-                 ["bar" (-> iris (sk/view :species) (sk/lay (sk/bar)))]
-                 ["histogram" (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)))]
-                 ["line" (-> xy-ds (sk/view :x :y) (sk/lay (sk/line)))]
-                 ["step" (-> xy-ds (sk/view :x :y) (sk/lay (sk/step)))]
-                 ["lm" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay (sk/lm {:se true})))]
-                 ["loess" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay (sk/loess)))]
-                 ["area" (-> xy-ds (sk/view :x :y) (sk/lay (sk/area)))]
-                 ["boxplot" (-> iris (sk/view :species :sepal_width) (sk/lay (sk/boxplot)))]
-                 ["violin" (-> iris (sk/view :species :sepal_width) (sk/lay (sk/violin)))]
-                 ["density" (-> iris (sk/view :sepal_length) (sk/lay (sk/density)))]
-                 ["ridgeline" (-> iris (sk/view :species :sepal_width) (sk/lay (sk/ridgeline)))]
-                 ["text" (-> txt-ds (sk/view :x :y) (sk/lay (sk/text {:text :n})))]
-                 ["tile" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay (sk/tile)))]
-                 ["contour" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay (sk/contour)))]
-                 ["errorbar" (-> eb-ds (sk/view :x :y) (sk/lay (sk/errorbar {:ymin :ymin :ymax :ymax})))]
-                 ["lollipop" (-> eb-ds (sk/view :x :y) (sk/lay (sk/lollipop)))]
-                 ["summary" (-> iris (sk/view :species :sepal_width) (sk/lay (sk/summary)))]]]
+          cases [["point" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay-point {:color :species}))]
+                 ["bar" (-> iris (sk/view :species) sk/lay-bar)]
+                 ["histogram" (-> iris (sk/view :sepal_length) sk/lay-histogram)]
+                 ["line" (-> xy-ds (sk/view :x :y) sk/lay-line)]
+                 ["step" (-> xy-ds (sk/view :x :y) sk/lay-step)]
+                 ["lm" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay-lm {:se true}))]
+                 ["loess" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-loess)]
+                 ["area" (-> xy-ds (sk/view :x :y) sk/lay-area)]
+                 ["boxplot" (-> iris (sk/view :species :sepal_width) sk/lay-boxplot)]
+                 ["violin" (-> iris (sk/view :species :sepal_width) sk/lay-violin)]
+                 ["density" (-> iris (sk/view :sepal_length) sk/lay-density)]
+                 ["ridgeline" (-> iris (sk/view :species :sepal_width) sk/lay-ridgeline)]
+                 ["text" (-> txt-ds (sk/view :x :y) (sk/lay-text {:text :n}))]
+                 ["tile" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-tile)]
+                 ["contour" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-contour)]
+                 ["errorbar" (-> eb-ds (sk/view :x :y) (sk/lay-errorbar {:ymin :ymin :ymax :ymax}))]
+                 ["lollipop" (-> eb-ds (sk/view :x :y) sk/lay-lollipop)]
+                 ["summary" (-> iris (sk/view :species :sepal_width) sk/lay-summary)]]]
       (doseq [[mark-name views] cases]
         (testing mark-name
           (is (sk/valid-sketch? (sk/sketch views {:validate false}))))))))

@@ -25,9 +25,7 @@
    {:key-fn keyword})))
 
 
-(def
- v6_l27
- (-> iris (sk/view :sepal_length) (sk/lay (sk/histogram)) sk/plot))
+(def v6_l27 (-> iris (sk/view :sepal_length) sk/lay-histogram sk/plot))
 
 
 (deftest
@@ -46,7 +44,7 @@
  (->
   iris
   (sk/view :sepal_length)
-  (sk/lay (sk/histogram {:color :species}))
+  (sk/lay-histogram {:color :species})
   sk/plot))
 
 
@@ -61,9 +59,7 @@
    v9_l41)))
 
 
-(def
- v12_l55
- (-> iris (sk/view :petal_width) (sk/lay (sk/histogram)) sk/plot))
+(def v12_l55 (-> iris (sk/view :petal_width) sk/lay-histogram sk/plot))
 
 
 (deftest
@@ -82,7 +78,7 @@
  (->
   tips
   (sk/view :total_bill)
-  (sk/lay (sk/histogram))
+  sk/lay-histogram
   (sk/plot
    {:title "Distribution of Total Bill", :x-label "Amount ($)"})))
 
@@ -98,7 +94,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__74410#] (= "Distribution of Total Bill" p1__74410#))
+       (fn* [p1__87172#] (= "Distribution of Total Bill" p1__87172#))
        (:texts s)))))
    v15_l67)))
 
@@ -108,9 +104,8 @@
  (->
   iris
   (sk/view [[:sepal_length :sepal_length]])
-  (sk/lay
-   (sk/histogram {:normalize :density, :alpha 0.5})
-   (sk/density))
+  (sk/lay-histogram {:normalize :density, :alpha 0.5})
+  sk/lay-density
   sk/plot))
 
 
@@ -127,7 +122,7 @@
 
 (def
  v21_l99
- (-> iris (sk/view [[:sepal_length]]) (sk/lay (sk/density)) sk/plot))
+ (-> iris (sk/view [[:sepal_length]]) sk/lay-density sk/plot))
 
 
 (deftest
@@ -146,7 +141,7 @@
  (->
   iris
   (sk/view [[:sepal_length]])
-  (sk/lay (sk/density {:color :species}))
+  (sk/lay-density {:color :species})
   sk/plot))
 
 
@@ -166,7 +161,7 @@
  (->
   iris
   (sk/view [[:sepal_length]])
-  (sk/lay (sk/density {:bandwidth 0.3}))
+  (sk/lay-density {:bandwidth 0.3})
   sk/plot))
 
 
@@ -183,11 +178,7 @@
 
 (def
  v30_l141
- (->
-  iris
-  (sk/view [[:species :sepal_width]])
-  (sk/lay (sk/boxplot))
-  sk/plot))
+ (-> iris (sk/view [[:species :sepal_width]]) sk/lay-boxplot sk/plot))
 
 
 (deftest
@@ -206,7 +197,7 @@
  (->
   tips
   (sk/view [[:day :total_bill]])
-  (sk/lay (sk/boxplot {:color :smoker}))
+  (sk/lay-boxplot {:color :smoker})
   sk/plot))
 
 
@@ -228,14 +219,14 @@
    (->
     tips
     (sk/view [[:day :total_bill]])
-    (sk/lay (sk/boxplot {:color :smoker}))
+    (sk/lay-boxplot {:color :smoker})
     sk/sketch)
    panel
    (first (:panels sk))
    box-layer
    (first
     (filter
-     (fn* [p1__74411#] (= :boxplot (:mark p1__74411#)))
+     (fn* [p1__87173#] (= :boxplot (:mark p1__87173#)))
      (:layers panel)))
    cats
    (:color-categories box-layer)]
@@ -250,7 +241,7 @@
  (->
   iris
   (sk/view [[:species :sepal_width]])
-  (sk/lay (sk/boxplot))
+  sk/lay-boxplot
   (sk/plot {:coord :flip})))
 
 
@@ -267,7 +258,7 @@
 
 (def
  v42_l201
- (-> tips (sk/view [[:day :total_bill]]) (sk/lay (sk/violin)) sk/plot))
+ (-> tips (sk/view [[:day :total_bill]]) sk/lay-violin sk/plot))
 
 
 (deftest
@@ -286,7 +277,7 @@
  (->
   tips
   (sk/view [[:day :total_bill]])
-  (sk/lay (sk/violin {:color :smoker}))
+  (sk/lay-violin {:color :smoker})
   sk/plot))
 
 
@@ -308,14 +299,14 @@
    (->
     tips
     (sk/view [[:day :total_bill]])
-    (sk/lay (sk/violin {:color :smoker}))
+    (sk/lay-violin {:color :smoker})
     sk/sketch)
    panel
    (first (:panels sk))
    viol-layer
    (first
     (filter
-     (fn* [p1__74412#] (= :violin (:mark p1__74412#)))
+     (fn* [p1__87174#] (= :violin (:mark p1__87174#)))
      (:layers panel)))
    cats
    (:color-categories viol-layer)]
@@ -330,7 +321,7 @@
  (->
   iris
   (sk/view [[:species :petal_length]])
-  (sk/lay (sk/violin))
+  sk/lay-violin
   (sk/coord :flip)
   sk/plot))
 
@@ -351,7 +342,7 @@
  (->
   iris
   (sk/view [[:species :sepal_length]])
-  (sk/lay (sk/ridgeline))
+  sk/lay-ridgeline
   sk/plot))
 
 
@@ -371,7 +362,7 @@
  (->
   iris
   (sk/view [[:species :sepal_length]])
-  (sk/lay (sk/ridgeline {:color :species}))
+  (sk/lay-ridgeline {:color :species})
   sk/plot))
 
 

@@ -22,7 +22,7 @@
 (def base-views
   (fn [] (-> iris
              (sk/view [[:sepal_length :sepal_width]])
-             (sk/lay (sk/point {:color :species})))))
+             (sk/lay-point {:color :species}))))
 
 ;; ## Inspecting the Current Configuration
 ;;
@@ -433,7 +433,7 @@ precedence-plot
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/view :x :y)
-    (sk/lay (sk/point {:color :c}))
+    (sk/lay-point {:color :c})
     (sk/plot))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
@@ -442,7 +442,7 @@ precedence-plot
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/view :x :y)
-    (sk/lay (sk/point {:color :c}))
+    (sk/lay-point {:color :c})
     (sk/plot {:color-scale :inferno}))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
@@ -452,7 +452,7 @@ precedence-plot
 (sk/with-config {:color-scale :plasma}
   (-> {:x (range 50) :y (range 50) :c (range 50)}
       (sk/view :x :y)
-      (sk/lay (sk/point {:color :c}))
+      (sk/lay-point {:color :c})
       (sk/plot)))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
@@ -463,7 +463,7 @@ precedence-plot
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/view :x :y)
-    (sk/lay (sk/point {:color :c}))
+    (sk/lay-point {:color :c})
     (sk/sketch {:color-scale :inferno})
     :legend
     (select-keys [:color-scale :type]))

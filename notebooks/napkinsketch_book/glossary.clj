@@ -10,7 +10,9 @@
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
-   [scicloj.napkinsketch.api :as sk]))
+   [scicloj.napkinsketch.api :as sk]
+   ;; Method constructors — for inspecting method maps
+   [scicloj.napkinsketch.method :as method]))
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
@@ -24,7 +26,7 @@
 (def views
   (-> iris
       (sk/view [[:sepal_length :sepal_width]])
-      (sk/lay (sk/point {:color :species}))))
+      (sk/lay-point {:color :species})))
 
 (kind/pprint views)
 
@@ -36,7 +38,7 @@
 ;; bars, rectangles. A mark is one component of a **method** — see
 ;; the Method section below.
 
-(sk/point {:color :species :alpha 0.5})
+(method/point {:color :species :alpha 0.5})
 
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (= :species (:color m))))])
@@ -45,19 +47,19 @@
 ;;
 ;; A **method** is the bundle of mark, stat, and position that
 ;; determines how data becomes a visual element. Method constructors
-;; (`sk/point`, `sk/line`, `sk/histogram`, `sk/bar`, `sk/lm`,
-;; `sk/boxplot`, `sk/violin`, `sk/density`, etc.) each return a method.
+;; (`sk/lay-point`, `sk/lay-line`, `sk/lay-histogram`, `sk/lay-bar`, `sk/lay-lm`,
+;; `sk/lay-boxplot`, `sk/lay-violin`, `sk/lay-density`, etc.) each add a layer.
 ;;
 ;; When you provide a method via `sk/lay`, its stat takes precedence
 ;; over column-type inference. When no method is provided,
 ;; Napkinsketch infers one from the column types.
 
-(sk/histogram)
+(method/histogram)
 
 (kind/test-last [(fn [m] (and (= :bar (:mark m))
                               (= :bin (:stat m))))])
 
-(sk/point)
+(method/point)
 
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (= :identity (:stat m))))])
@@ -79,7 +81,7 @@
 ;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed aesthetic
 ;; for all points.
 
-(sk/point {:color :species :size :petal_length :alpha 0.7})
+(method/point {:color :species :size :petal_length :alpha 0.7})
 
 (kind/test-last [(fn [m] (and (= :species (:color m))
                               (= :petal_length (:size m))
@@ -94,7 +96,7 @@
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/line {:group :species}))
+    (sk/lay-line {:group :species})
     sk/sketch
     (get-in [:panels 0 :layers 0 :groups])
     count)
@@ -130,8 +132,8 @@
 ;; |:---------|:---------|:------------|
 ;; | `:identity` | Plot at exact data coordinates (overlap OK) | point, line, text |
 ;; | `:dodge` | Shift groups side-by-side within a band | bar, boxplot, violin, lollipop |
-;; | `:stack` | Pile groups on top of each other (cumulative y) | `sk/stacked-bar`, `sk/stacked-area` |
-;; | `:fill` | Stack normalized to [0, 1] (proportions) | `sk/stacked-bar-fill` |
+;; | `:stack` | Pile groups on top of each other (cumulative y) | `sk/lay-stacked-bar`, `sk/lay-stacked-area` |
+;; | `:fill` | Stack normalized to [0, 1] (proportions) | `sk/lay-stacked-bar-fill` |
 ;;
 ;; Any mark can override its position via the `:position` key.
 ;; When multiple layers share `:position :dodge`, they are coordinated
@@ -143,7 +145,7 @@
 
 (-> tips
     (sk/view :day :count)
-    (sk/lay (sk/value-bar {:color :meal :position :stack}))
+    (sk/lay-value-bar {:color :meal :position :stack})
     sk/sketch
     (get-in [:panels 0 :layers 0 :groups 1 :y0s]))
 
@@ -158,7 +160,7 @@
 
 (-> {:x [1 2 3] :y [4 5 6]}
     (sk/view :x :y)
-    (sk/lay (sk/point {:nudge-x 0.5}))
+    (sk/lay-point {:nudge-x 0.5})
     sk/sketch
     (get-in [:panels 0 :layers 0 :groups 0 :xs]))
 
@@ -173,7 +175,7 @@
 ;;
 ;; On categorical x-axes, jitter is applied along the band axis only.
 
-(sk/point {:jitter true})
+(method/point {:jitter true})
 
 (kind/test-last [(fn [m] (true? (:jitter m)))])
 
@@ -226,7 +228,7 @@
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point))
+    sk/lay-point
     (sk/facet :species)
     sk/sketch :panels count)
 
@@ -313,7 +315,7 @@
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:theme {:background "#2d2d2d" :grid "#444444"
                       :text "#cccccc" :tick "#999999"}})
     sk/svg-summary :panels)
@@ -399,7 +401,7 @@
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
 ;; | View | Map: data + column mappings + mark | User builds, consumed by `sketch` |
-;; | Method | Mark + stat + position bundle | Returned by `sk/point`, `sk/histogram`, etc.; merged by `sk/lay` |
+;; | Method | Mark + stat + position bundle | Created by `method/point`, `method/histogram`, etc.; added by `sk/lay-point`, `sk/lay-histogram`, etc. |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |
 ;; | Group | Subset of data drawn together (from `:color` or `:group`) | Created during stat computation |

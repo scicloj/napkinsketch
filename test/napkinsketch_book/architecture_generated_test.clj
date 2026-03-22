@@ -23,7 +23,7 @@
  v7_l58
  (def
   trace-views
-  (-> trace-data (sk/view [[:x :y]]) (sk/lay (sk/point {:color :g})))))
+  (-> trace-data (sk/view [[:x :y]]) (sk/lay-point {:color :g}))))
 
 
 (def v8_l63 (kind/pprint trace-views))
@@ -114,28 +114,28 @@
  v32_l184
  (def
   multi-views
-  [(sk/point
-    {:data iris, :x :petal_length, :y :petal_width, :color :species})
-   (sk/lm
-    {:data iris, :x :petal_length, :y :petal_width, :color :species})]))
+  (->
+   iris
+   (sk/lay-point :petal_length :petal_width {:color :species})
+   (sk/lay-lm {:color :species}))))
 
 
 (def
- v33_l188
+ v33_l189
  (def
   multi-sketch
   (sk/sketch multi-views {:title "Iris Petals with Regression"})))
 
 
 (def
- v35_l192
+ v35_l193
  (mapv
   (fn [layer] {:mark (:mark layer), :n-groups (count (:groups layer))})
   (:layers (first (:panels multi-sketch)))))
 
 
 (deftest
- t36_l197
+ t36_l198
  (is
   ((fn
     [v]
@@ -143,46 +143,46 @@
      (= :point (:mark (first v)))
      (= :line (:mark (second v)))
      (= 3 (:n-groups (first v)))))
-   v35_l192)))
+   v35_l193)))
 
 
-(def v38_l203 multi-sketch)
+(def v38_l204 multi-sketch)
 
 
 (deftest
- t39_l205
+ t39_l206
  (is
   ((fn
     [m]
     (and
      (= "Iris Petals with Regression" (:title m))
      (= 3 (count (get-in m [:legend :entries])))))
-   v38_l203)))
+   v38_l204)))
 
 
 (def
- v41_l210
+ v41_l211
  (sk/plot multi-views {:title "Iris Petals with Regression"}))
 
 
 (deftest
- t42_l212
+ t42_l213
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v41_l210)))
+   v41_l211)))
 
 
 (def
- v44_l218
+ v44_l219
  (kind/mermaid
   "\ngraph TD\n  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]\n  API --> PLOT[\"impl/plot.clj\"]\n  API --> SKETCH[\"impl/sketch.clj\"]\n  SKETCH --> VIEW\n  SKETCH --> STAT[\"impl/stat.clj\"]\n  SKETCH --> SCALE[\"impl/scale.clj\"]\n  SKETCH --> DEFAULTS[\"impl/defaults.clj\"]\n  PLOT --> SKETCH\n  PLOT --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SKETCH fill:#ffe0b2\n  style PLOT fill:#bbdefb\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))
 
 
 (def
- v46_l251
+ v46_l252
  (kind/mermaid
   "\ngraph TD\n  VIEWS[\"views + opts\"]\n  VIEWS --> INFER[\"infer-layout\"]\n  VIEWS --> COLORS[\"collect-colors<br/>(resolve-view × N)\"]\n  VIEWS --> ANNOTS[\"annotations\"]\n\n  INFER --> GRID[\"compute-grid\"]\n  INFER --> DIMS[\"compute-panel-dims\"]\n  INFER --> GROUP[\"group-panels\"]\n\n  COLORS --> GROUP\n  GROUP --> RPV[\"resolve-panel-views<br/>(compute-stat + extract-layer)\"]\n  COLORS --> RPV\n\n  RPV --> BUILD[\"build-panels<br/>(domains, ticks)\"]\n  GRID --> BUILD\n  DIMS --> BUILD\n\n  BUILD --> LABELS[\"resolve-labels\"]\n  COLORS --> LEGEND[\"build-legend\"]\n  LABELS --> LAYOUT[\"compute-layout-dims\"]\n  LEGEND --> LAYOUT\n  DIMS --> LAYOUT\n\n  BUILD --> SKETCH[\"sketch\"]\n  LABELS --> SKETCH\n  LEGEND --> SKETCH\n  LAYOUT --> SKETCH\n\n  style VIEWS fill:#e8f5e9\n  style SKETCH fill:#fff3e0\n  style RPV fill:#e3f2fd\n  style BUILD fill:#e3f2fd\n"))

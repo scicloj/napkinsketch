@@ -16,6 +16,8 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
+   ;; Method constructors — for inspecting method maps
+   [scicloj.napkinsketch.method :as method]
    ;; Napkinsketch internals — for extending the pipeline
    [scicloj.napkinsketch.impl.stat :as stat]
    [scicloj.napkinsketch.impl.extract :as extract]
@@ -81,22 +83,22 @@
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
 ;; The stat is part of the **method** returned by the mark
-;; constructor. For example, `(sk/histogram)` returns a method
+;; constructor. For example, `(method/histogram)` returns a method
 ;; with `:stat :bin`:
 
-(sk/histogram)
+(method/histogram)
 
 (kind/test-last [(fn [m] (= :bin (:stat m)))])
 
-;; `(sk/bar)` sets `:stat :count`:
+;; `(method/bar)` sets `:stat :count`:
 
-(sk/bar)
+(method/bar)
 
 (kind/test-last [(fn [m] (= :count (:stat m)))])
 
-;; `(sk/point)` returns a method with `:stat :identity`:
+;; `(method/point)` returns a method with `:stat :identity`:
 
-(sk/point)
+(method/point)
 
 (kind/test-last [(fn [m] (= :identity (:stat m)))])
 
@@ -145,7 +147,7 @@
 
 (let [s (-> iris
             (sk/view [[:sepal_length :sepal_width]])
-            (sk/lay (sk/point {:color :species}))
+            (sk/lay-point {:color :species})
             sk/sketch)
       layer (first (:layers (first (:panels s))))]
   layer)
@@ -217,7 +219,7 @@
 (def my-sketch
   (-> iris
       (sk/view [[:sepal_length :sepal_width]])
-      (sk/lay (sk/point {:color :species}))
+      (sk/lay-point {:color :species})
       sk/sketch))
 
 (first (sk/sketch->figure my-sketch :svg {}))
@@ -337,7 +339,7 @@
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/bar))
+    sk/lay-bar
     (sk/coord :flip)
     sk/plot)
 

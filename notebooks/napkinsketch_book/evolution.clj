@@ -20,7 +20,7 @@
 
 (-> wave
     (sk/view [[:x :y]])
-    (sk/lay (sk/line))
+    sk/lay-line
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -38,7 +38,7 @@
 
 (-> waves
     (sk/view [[:x :y]])
-    (sk/lay (sk/line {:color :fn}))
+    (sk/lay-line {:color :fn})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -51,7 +51,7 @@
 
 (-> wave
     (sk/view [[:x :y]])
-    (sk/lay (sk/line {:size 4}))
+    (sk/lay-line {:size 4})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -69,8 +69,8 @@
 
 (-> growth
     (sk/view [[:day :value]])
-    (sk/lay (sk/line {:color :group})
-            (sk/point {:color :group}))
+    (sk/lay-line {:color :group})
+    (sk/lay-point {:color :group})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -84,7 +84,8 @@
 (-> {:x [1 2 3 4 5]
      :y [2 4 1 5 3]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/step) (sk/point))
+    sk/lay-step
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -97,8 +98,8 @@
 
 (-> growth
     (sk/view [[:day :value]])
-    (sk/lay (sk/step {:color :group})
-            (sk/point {:color :group}))
+    (sk/lay-step {:color :group})
+    (sk/lay-point {:color :group})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -112,7 +113,7 @@
 (-> {:x (range 30)
      :y (mapv #(Math/sin (* % 0.3)) (range 30))}
     (sk/view [[:x :y]])
-    (sk/lay (sk/area))
+    sk/lay-area
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -129,7 +130,7 @@
                      [1 1 1 1 2 2 2 1 1 1]))
      :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
     (sk/view [[:x :y]])
-    (sk/lay (sk/stacked-area {:color :group}))
+    (sk/lay-stacked-area {:color :group})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

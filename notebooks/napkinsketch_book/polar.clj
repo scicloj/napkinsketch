@@ -29,7 +29,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/coord :polar)
     sk/plot)
 
@@ -46,7 +46,7 @@
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/bar))
+    sk/lay-bar
     (sk/coord :polar)
     sk/plot)
 
@@ -61,7 +61,7 @@
 
 (-> wind
     (sk/view [:direction :speed])
-    (sk/lay (sk/value-bar))
+    sk/lay-value-bar
     (sk/coord :polar)
     sk/plot)
 
@@ -75,7 +75,7 @@
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/stacked-bar {:color :species}))
+    (sk/lay-stacked-bar {:color :species})
     (sk/coord :polar)
     sk/plot)
 
@@ -90,7 +90,7 @@
 
 (-> iris
     (sk/view :sepal_length)
-    (sk/lay (sk/histogram))
+    sk/lay-histogram
     (sk/coord :polar)
     sk/plot)
 
@@ -105,7 +105,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/coord :polar)
     (sk/labs {:title "Iris in Polar Space"})
     sk/plot)

@@ -26,7 +26,7 @@
 
 (-> iris
     (sk/view :sepal_length)
-    (sk/lay (sk/histogram))
+    sk/lay-histogram
     sk/plot)
 
 (kind/test-last
@@ -40,7 +40,7 @@
 
 (-> iris
     (sk/view :sepal_length)
-    (sk/lay (sk/histogram {:color :species}))
+    (sk/lay-histogram {:color :species})
     sk/plot)
 
 (kind/test-last
@@ -54,7 +54,7 @@
 
 (-> iris
     (sk/view :petal_width)
-    (sk/lay (sk/histogram))
+    sk/lay-histogram
     sk/plot)
 
 (kind/test-last
@@ -66,7 +66,7 @@
 
 (-> tips
     (sk/view :total_bill)
-    (sk/lay (sk/histogram))
+    sk/lay-histogram
     (sk/plot {:title "Distribution of Total Bill"
               :x-label "Amount ($)"}))
 
@@ -84,8 +84,8 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_length]])
-    (sk/lay (sk/histogram {:normalize :density :alpha 0.5})
-            (sk/density))
+    (sk/lay-histogram {:normalize :density :alpha 0.5})
+    sk/lay-density
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -98,7 +98,7 @@
 
 (-> iris
     (sk/view [[:sepal_length]])
-    (sk/lay (sk/density))
+    sk/lay-density
     sk/plot)
 
 (kind/test-last
@@ -112,7 +112,7 @@
 
 (-> iris
     (sk/view [[:sepal_length]])
-    (sk/lay (sk/density {:color :species}))
+    (sk/lay-density {:color :species})
     sk/plot)
 
 (kind/test-last
@@ -126,7 +126,7 @@
 
 (-> iris
     (sk/view [[:sepal_length]])
-    (sk/lay (sk/density {:bandwidth 0.3}))
+    (sk/lay-density {:bandwidth 0.3})
     sk/plot)
 
 (kind/test-last
@@ -140,7 +140,7 @@
 
 (-> iris
     (sk/view [[:species :sepal_width]])
-    (sk/lay (sk/boxplot))
+    sk/lay-boxplot
     sk/plot)
 
 (kind/test-last
@@ -155,7 +155,7 @@
 
 (-> tips
     (sk/view [[:day :total_bill]])
-    (sk/lay (sk/boxplot {:color :smoker}))
+    (sk/lay-boxplot {:color :smoker})
     sk/plot)
 
 (kind/test-last
@@ -168,7 +168,7 @@
 
 (let [sk (-> tips
              (sk/view [[:day :total_bill]])
-             (sk/lay (sk/boxplot {:color :smoker}))
+             (sk/lay-boxplot {:color :smoker})
              sk/sketch)
       panel (first (:panels sk))
       box-layer (first (filter #(= :boxplot (:mark %)) (:layers panel)))
@@ -184,7 +184,7 @@
 
 (-> iris
     (sk/view [[:species :sepal_width]])
-    (sk/lay (sk/boxplot))
+    sk/lay-boxplot
     (sk/plot {:coord :flip}))
 
 (kind/test-last
@@ -200,7 +200,7 @@
 
 (-> tips
     (sk/view [[:day :total_bill]])
-    (sk/lay (sk/violin))
+    sk/lay-violin
     sk/plot)
 
 (kind/test-last
@@ -214,7 +214,7 @@
 
 (-> tips
     (sk/view [[:day :total_bill]])
-    (sk/lay (sk/violin {:color :smoker}))
+    (sk/lay-violin {:color :smoker})
     sk/plot)
 
 (kind/test-last
@@ -226,7 +226,7 @@
 
 (let [sk (-> tips
              (sk/view [[:day :total_bill]])
-             (sk/lay (sk/violin {:color :smoker}))
+             (sk/lay-violin {:color :smoker})
              sk/sketch)
       panel (first (:panels sk))
       viol-layer (first (filter #(= :violin (:mark %)) (:layers panel)))
@@ -240,7 +240,7 @@
 
 (-> iris
     (sk/view [[:species :petal_length]])
-    (sk/lay (sk/violin))
+    sk/lay-violin
     (sk/coord :flip)
     sk/plot)
 
@@ -256,7 +256,7 @@
 
 (-> iris
     (sk/view [[:species :sepal_length]])
-    (sk/lay (sk/ridgeline))
+    sk/lay-ridgeline
     sk/plot)
 
 (kind/test-last
@@ -270,7 +270,7 @@
 
 (-> iris
     (sk/view [[:species :sepal_length]])
-    (sk/lay (sk/ridgeline {:color :species}))
+    (sk/lay-ridgeline {:color :species})
     sk/plot)
 
 (kind/test-last

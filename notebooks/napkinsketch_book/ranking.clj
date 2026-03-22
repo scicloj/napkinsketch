@@ -29,7 +29,7 @@
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/bar))
+    sk/lay-bar
     sk/plot)
 
 (kind/test-last
@@ -43,7 +43,7 @@
 
 (-> tips
     (sk/view :day)
-    (sk/lay (sk/bar {:color :smoker}))
+    (sk/lay-bar {:color :smoker})
     sk/plot)
 
 (kind/test-last
@@ -57,7 +57,7 @@
 
 (-> tips
     (sk/view :day)
-    (sk/lay (sk/stacked-bar {:color :smoker}))
+    (sk/lay-stacked-bar {:color :smoker})
     sk/plot)
 
 (kind/test-last
@@ -71,7 +71,7 @@
 
 (-> penguins
     (sk/view :island)
-    (sk/lay (sk/stacked-bar-fill {:color :species}))
+    (sk/lay-stacked-bar-fill {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -84,7 +84,7 @@
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/bar))
+    sk/lay-bar
     (sk/coord :flip)
     sk/plot)
 
@@ -99,7 +99,7 @@
 
 (-> tips
     (sk/view :day)
-    (sk/lay (sk/bar {:color :time}))
+    (sk/lay-bar {:color :time})
     (sk/coord :flip)
     sk/plot)
 
@@ -112,7 +112,9 @@
 
 ;; Pre-computed y values (no counting).
 
-(sk/plot [(sk/value-bar {:data sales :x :product :y :revenue})])
+(-> sales
+    (sk/lay-value-bar :product :revenue)
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -124,7 +126,7 @@
 
 (-> sales
     (sk/view [[:product :revenue]])
-    (sk/lay (sk/value-bar))
+    sk/lay-value-bar
     (sk/coord :flip)
     sk/plot)
 
@@ -138,7 +140,7 @@
 
 (-> sales
     (sk/view [[:product :revenue]])
-    (sk/lay (sk/lollipop))
+    sk/lay-lollipop
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -151,7 +153,7 @@
 
 (-> sales
     (sk/view [[:product :revenue]])
-    (sk/lay (sk/lollipop))
+    sk/lay-lollipop
     (sk/coord :flip)
     sk/plot)
 

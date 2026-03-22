@@ -24,7 +24,7 @@
 
 (-> with-missing
     (sk/view [[:x :y]])
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -37,7 +37,7 @@
 
 (-> {:x [3] :y [7]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -51,7 +51,8 @@
 
 (-> {:x [1 10] :y [5 50]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/point) (sk/lm))
+    sk/lay-point
+    sk/lay-lm
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -64,7 +65,8 @@
 
 (-> {:x [1 5 10] :y [5 25 50]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/point) (sk/lm))
+    sk/lay-point
+    sk/lay-lm
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -77,7 +79,7 @@
 
 (-> {:x [5 5 5 5 5] :y [1 2 3 4 5]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -90,7 +92,7 @@
 
 (-> {:x [1 2 3 4 5] :y [3 3 3 3 3]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -103,7 +105,7 @@
 
 (-> {:x [-5 -3 0 3 5] :y [-2 4 0 -4 2]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -114,7 +116,7 @@
 
 (-> {:x [1e6 2e6 3e6] :y [1e9 2e9 3e9]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -125,7 +127,7 @@
 
 (-> {:x [0.001 0.002 0.003] :y [0.0001 0.0002 0.0003]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -144,7 +146,7 @@
 
 (-> large-data
     (sk/view [[:x :y]])
-    (sk/lay (sk/point {:color :group}))
+    (sk/lay-point {:color :group})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -159,7 +161,7 @@
       {:category (mapv #(keyword (str "cat-" %)) (range 12))
        :value (repeatedly 12 #(+ 10 (rng/irandom r 90)))})
     (sk/view [[:category :value]])
-    (sk/lay (sk/value-bar))
+    sk/lay-value-bar
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -176,7 +178,7 @@
 (-> iris
     (tc/map-columns :sepal_ratio [:sepal_length :sepal_width] /)
     (sk/view [[:sepal_length :sepal_ratio]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:title "Sepal Length/Width Ratio"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -190,7 +192,8 @@
 (-> iris
     (tc/select-rows #(= "setosa" (% :species)))
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point) (sk/lm))
+    sk/lay-point
+    sk/lay-lm
     (sk/plot {:title "Setosa Only"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -206,7 +209,7 @@
 (-> {:category ["a" "b" "c"]
      :count [10 20 15]}
     (sk/view :category :count)
-    (sk/lay (sk/value-bar {:position :stack}))
+    (sk/lay-value-bar {:position :stack})
     sk/plot)
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
@@ -219,7 +222,7 @@
 (-> {:x ["a" "b" "a"]
      :g ["g1" "g1" "g2"]}
     (sk/view :x)
-    (sk/lay (sk/bar {:color :g}))
+    (sk/lay-bar {:color :g})
     sk/plot)
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
@@ -232,7 +235,7 @@
 (-> {:x ["a" "a" "b" "b" "b"]
      :g ["g1" "g2" "g1" "g1" "g1"]}
     (sk/view :x)
-    (sk/lay (sk/stacked-bar-fill {:color :g}))
+    (sk/lay-stacked-bar-fill {:color :g})
     sk/plot)
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
@@ -243,7 +246,7 @@
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point {:nudge-x 0.1 :nudge-y -0.05}))
+    (sk/lay-point {:nudge-x 0.1 :nudge-y -0.05})
     sk/plot)
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -255,7 +258,8 @@
 
 (-> {:x [1 2 3] :y [2 4 5]}
     (sk/view :x :y)
-    (sk/lay (sk/point) (sk/lm {:se true}))
+    sk/lay-point
+    (sk/lay-lm {:se true})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -270,7 +274,7 @@
       {:x (range 10)
        :y (repeatedly 10 #(rng/irandom r 20))})
     (sk/view :x :y)
-    (sk/lay (sk/stacked-area))
+    sk/lay-stacked-area
     sk/plot)
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
@@ -282,7 +286,7 @@
 (-> {:x [1 10 100 1000 10000]
      :y [2 20 200 2000 20000]}
     (sk/view :x :y)
-    (sk/lay (sk/point))
+    sk/lay-point
     (sk/scale :x :log)
     (sk/scale :y :log)
     sk/plot)
@@ -296,7 +300,7 @@
 (-> {:x [0.001 0.01 0.1 1 10 100]
      :y [1 2 3 4 5 6]}
     (sk/view :x :y)
-    (sk/lay (sk/point))
+    sk/lay-point
     (sk/scale :x :log)
     sk/plot)
 
@@ -311,7 +315,7 @@
 
 (-> {:x [1 2 3] :y [4 5 6] :c [5 5 5]}
     (sk/view :x :y)
-    (sk/lay (sk/point {:color :c}))
+    (sk/lay-point {:color :c})
     sk/plot)
 
 (kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
@@ -322,7 +326,7 @@
      :y (map #(- % 10) (range 20))
      :val (map #(- % 10.0) (range 20))}
     (sk/view :x :y)
-    (sk/lay (sk/point {:color :val}))
+    (sk/lay-point {:color :val})
     (sk/plot {:color-scale :diverging :color-midpoint 0}))
 
 (kind/test-last [(fn [v] (= 20 (:points (sk/svg-summary v))))])
@@ -335,7 +339,7 @@
             (java.time.LocalDate/of 2025 1 2)]
      :val [10 20]}
     (sk/view :date :val)
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (= 2 (:points (sk/svg-summary v))))])
@@ -352,7 +356,8 @@
                  (range 24))
      :value (mapv #(+ 18.0 (* 4.0 (Math/sin (* % 0.3)))) (range 24))}
     (sk/view :time :value)
-    (sk/lay (sk/line) (sk/point))
+    sk/lay-line
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -370,7 +375,8 @@
                  (range 12))
      :temp (mapv #(+ 20.0 (* 5.0 (Math/sin (* % 0.5)))) (range 12))}
     (sk/view :time :temp)
-    (sk/lay (sk/line) (sk/point))
+    sk/lay-line
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -386,7 +392,8 @@
                  (range 20))
      :value (mapv #(+ 100 (* 50 (Math/sin (* % 0.4)))) (range 20))}
     (sk/view :date :value)
-    (sk/lay (sk/line) (sk/point))
+    sk/lay-line
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -400,7 +407,7 @@
 (-> {:cat (map #(str "cat-" %) (range 12))
      :val (repeatedly 12 #(rand-int 100))}
     (sk/view :cat :val)
-    (sk/lay (sk/bar))
+    sk/lay-bar
     (sk/coord :polar)
     sk/plot)
 
@@ -410,7 +417,7 @@
 
 (-> {:x (range 100) :y (range 0 10 0.1)}
     (sk/view :x :y)
-    (sk/lay (sk/point))
+    sk/lay-point
     (sk/coord :fixed)
     sk/plot)
 
@@ -425,7 +432,7 @@
 
 (-> iris
     (sk/view (sk/cross [:sepal_length :sepal_width :petal_length] [:sepal_length :sepal_width :petal_length]))
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
@@ -442,7 +449,7 @@
 (try
   (-> {:x [1 2 3] :y [4 5 6]}
       (sk/view :nonexistent :y)
-      (sk/lay (sk/point))
+      sk/lay-point
       sk/plot)
   (catch Exception e
     (ex-message e)))
@@ -455,7 +462,7 @@
 (try
   (-> {:x [1 2 3] :y [4 5 6]}
       (sk/view :x :y)
-      (sk/lay (sk/point {:color :bogus}))
+      (sk/lay-point {:color :bogus})
       sk/plot)
   (catch Exception e
     (ex-message e)))
@@ -468,7 +475,7 @@
 (try
   (-> {:x [1 2 3] :y [4 5 6]}
       (sk/view :x :y)
-      (sk/lay (sk/line))
+      sk/lay-line
       (sk/coord :polar)
       sk/plot)
   (catch Exception e

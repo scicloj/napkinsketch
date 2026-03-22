@@ -30,7 +30,7 @@
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point))
+  sk/lay-point
   sk/plot))
 
 
@@ -50,7 +50,7 @@
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point {:color :species}))
+  (sk/lay-point {:color :species})
   sk/plot))
 
 
@@ -70,7 +70,7 @@
  (->
   iris
   (sk/view [[:petal_length :petal_width]])
-  (sk/lay (sk/point {:color :species}))
+  (sk/lay-point {:color :species})
   sk/plot))
 
 
@@ -90,7 +90,7 @@
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point {:color "#E74C3C"}))
+  (sk/lay-point {:color "#E74C3C"})
   sk/plot))
 
 
@@ -110,7 +110,7 @@
  (->
   tips
   (sk/view [[:total_bill :tip]])
-  (sk/lay (sk/point {:color :day}))
+  (sk/lay-point {:color :day})
   (sk/plot
    {:width 700,
     :height 300,
@@ -139,7 +139,7 @@
  (->
   tips
   (sk/view [[:total_bill :tip]])
-  (sk/lay (sk/point {:color :day, :size :size}))
+  (sk/lay-point {:color :day, :size :size})
   sk/plot))
 
 
@@ -159,7 +159,7 @@
  (->
   tips
   (sk/view [[:total_bill :tip]])
-  (sk/lay (sk/point {:color :day, :size :size, :alpha 0.6}))
+  (sk/lay-point {:color :day, :size :size, :alpha 0.6})
   sk/plot))
 
 
@@ -179,7 +179,7 @@
  (->
   iris
   (sk/view [[:species :sepal_width]])
-  (sk/lay (sk/point {:jitter true}))
+  (sk/lay-point {:jitter true})
   sk/plot))
 
 
@@ -199,7 +199,7 @@
  (->
   iris
   (sk/view [[:species :sepal_width]])
-  (sk/lay (sk/point {:jitter 10, :alpha 0.5}))
+  (sk/lay-point {:jitter 10, :alpha 0.5})
   sk/plot))
 
 
@@ -219,7 +219,7 @@
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay (sk/point {:color :petal_length}))
+  (sk/lay-point {:color :petal_length})
   sk/plot))
 
 
@@ -242,8 +242,7 @@
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay
-   (sk/point {:color :petal_length, :size :petal_width, :alpha 0.7}))
+  (sk/lay-point {:color :petal_length, :size :petal_width, :alpha 0.7})
   sk/plot))
 
 

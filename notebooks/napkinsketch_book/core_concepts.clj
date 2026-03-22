@@ -12,7 +12,9 @@
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
-   [scicloj.napkinsketch.api :as sk]))
+   [scicloj.napkinsketch.api :as sk]
+   ;; Method constructors — for inspecting method maps
+   [scicloj.napkinsketch.method :as method]))
 
 ;; ## Data
 ;;
@@ -46,7 +48,7 @@ iris
 (-> {:x [1 2 3 4 5]
      :y [2 4 3 5 4]}
     (sk/view :x :y)
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
@@ -77,10 +79,10 @@ iris
 ;;   bin into ranges, fit a line)
 ;; - **position** — how overlapping groups share space (stack, dodge)
 ;;
-;; Functions like `sk/point`, `sk/histogram`, and `sk/lm` each
+;; Functions like `method/point`, `method/histogram`, and `method/lm` each
 ;; return a method:
 
-(sk/point)
+(method/point)
 
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (= :identity (:stat m))))])
@@ -90,7 +92,7 @@ iris
 ;; the method's keys merged in.
 
 (def view-with-method
-  (sk/lay my-view (sk/point)))
+  (sk/lay my-view (method/point)))
 
 (kind/pprint view-with-method)
 
@@ -102,7 +104,7 @@ iris
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -117,10 +119,10 @@ iris
 ;; plot above used `:mark :point` — each data point became a dot.
 ;;
 ;; Notice that a method's name describes its *intent* while the mark
-;; describes the *shape*. `sk/histogram` uses `:mark :bar` because a
+;; describes the *shape*. `method/histogram` uses `:mark :bar` because a
 ;; histogram is drawn with bar shapes:
 
-(sk/histogram)
+(method/histogram)
 
 (kind/test-last [(fn [m] (= :bar (:mark m)))])
 
@@ -130,12 +132,12 @@ iris
 ;; The scatter plot used `:stat :identity` — every row became one
 ;; point, unchanged.
 ;;
-;; `sk/histogram` uses `:stat :bin` — it groups values into ranges
+;; `method/histogram` uses `:stat :bin` — it groups values into ranges
 ;; and counts how many fall in each range:
 
 (-> iris
     (sk/view :sepal_length)
-    (sk/lay (sk/histogram))
+    sk/lay-histogram
     sk/plot)
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
@@ -148,10 +150,10 @@ iris
 ;;
 ;; The **position** controls how overlapping groups share space.
 ;; Most methods leave it unset — groups are drawn independently.
-;; `sk/stacked-bar` includes `:position :stack`, which places groups
+;; `method/stacked-bar` includes `:position :stack`, which places groups
 ;; on top of each other:
 
-(sk/stacked-bar)
+(method/stacked-bar)
 
 (kind/test-last [(fn [m] (= :stack (:position m)))])
 
@@ -179,22 +181,23 @@ iris
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; Use `sk/lay` when you want to choose a specific method, pass
+;; Use `sk/lay-point`, `sk/lay-histogram`, etc. when you want to choose a specific method, pass
 ;; options like `:color`, or add multiple layers.
 
 ;; ## Layers
 ;;
 ;; A plot can have multiple **layers** — different methods drawn on
-;; the same axes. Pass multiple methods to `sk/lay` and they are
+;; the same axes. Each `sk/lay-X` call adds one layer; thread them and they are
 ;; drawn together, each contributing its own visual element.
 ;;
-;; Here we add a linear regression line (`sk/lm`) on top of the
+;; Here we add a linear regression line (`sk/lay-lm`) on top of the
 ;; scatter points. A regression line is a straight line fitted to
 ;; the data — it shows the overall trend.
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point) (sk/lm))
+    sk/lay-point
+    sk/lay-lm
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -204,18 +207,18 @@ iris
 ;; ## Incremental Building
 ;;
 ;; Because views are plain data, you can save a partial plot and
-;; extend it later. Each `sk/lay` call adds layers without changing
+;; extend it later. Each `sk/lay-X` call adds a layer without changing
 ;; the original.
 
 (def scatter-base
   (-> iris
       (sk/view :sepal_length :sepal_width)
-      (sk/lay (sk/point))))
+      sk/lay-point))
 
 ;; Add a regression line:
 
 (-> scatter-base
-    (sk/lay (sk/lm))
+    sk/lay-lm
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -226,7 +229,7 @@ iris
 ;; patterns in the data:
 
 (-> scatter-base
-    (sk/lay (sk/loess))
+    sk/lay-loess
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -245,7 +248,7 @@ iris
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -259,7 +262,7 @@ iris
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point {:color :petal_length}))
+    (sk/lay-point {:color :petal_length})
     sk/plot)
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -270,7 +273,7 @@ iris
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point {:color "steelblue"}))
+    (sk/lay-point {:color "steelblue"})
     sk/plot)
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -281,11 +284,12 @@ iris
 ;; **groups**. Each group is processed independently: it gets its
 ;; own regression line, density curve, or bar.
 ;;
-;; Compare: without `:color`, `sk/lm` fits one line to all the data:
+;; Compare: without `:color`, `sk/lay-lm` fits one line to all the data:
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point) (sk/lm))
+    sk/lay-point
+    sk/lay-lm
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -298,8 +302,8 @@ iris
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point {:color :species})
-            (sk/lm {:color :species}))
+    (sk/lay-point {:color :species})
+    (sk/lay-lm {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -320,7 +324,8 @@ iris
 (-> iris
     (sk/view :sepal_length :sepal_width)
     (sk/facet :species)
-    (sk/lay (sk/point) (sk/lm))
+    sk/lay-point
+    sk/lay-lm
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -372,7 +377,7 @@ iris
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/coord :flip)
     sk/plot)
 
@@ -385,9 +390,9 @@ iris
 ;; Here we use a dataset where values vary by orders of magnitude:
 
 (-> {:population [1000 5000 50000 200000 1000000 5000000]
-     :area       [2     8    30    120     500     2100]}
+     :area [2 8 30 120 500 2100]}
     (sk/view :population :area)
-    (sk/lay (sk/point))
+    sk/lay-point
     (sk/scale :x :log)
     (sk/scale :y :log)
     sk/plot)

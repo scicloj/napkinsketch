@@ -50,7 +50,7 @@ iris
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
     (sk/view :x :y)
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
@@ -59,7 +59,7 @@ iris
 
 (-> [{:x 1 :y 2 :g "a"} {:x 3 :y 4 :g "a"} {:x 5 :y 6 :g "b"}]
     (sk/view :x :y)
-    (sk/lay (sk/point {:color :g}))
+    (sk/lay-point {:color :g})
     sk/plot)
 
 (kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
@@ -69,7 +69,7 @@ iris
 (-> (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
                 {:key-fn keyword})
     (sk/view :total_bill :tip)
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
@@ -78,6 +78,33 @@ iris
 ;;
 ;; Napkinsketch supports two equivalent styles for building plots.
 ;;
+;; **Data shortcut** — compact, good for single-layer plots.
+;; `sk/lay-point` accepts raw data and column names directly:
+
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"setosa"} (:texts s)))))])
+
+;; **Pipeline style** — compositional, good for multi-layer plots
+;; and when you need `coord`, `scale`, or `facet`. Build a view
+;; first, then add layers:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay-point {:color :species})
+    sk/plot)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 150 (:points s))))])
+
+;; Both produce identical results. The pipeline style composes better
+;; when you add `coord`, `scale`, or multiple layers. The data
+;; shortcut is shorter for one-off plots.
+;;
 ;; `view` accepts column arguments in two forms:
 ;;
 ;; - `(sk/view ds :x :y)` — two keyword arguments, for a single panel
@@ -85,40 +112,24 @@ iris
 ;;   produce multiple panels (see the Core Concepts chapter)
 ;;
 ;; Both forms are equivalent for single-panel plots.
-;;
-;; **Pipeline style** — compositional, good for exploration and
-;; multi-layer plots:
-
-(-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
-    sk/plot)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (some #{"setosa"} (:texts s)))))])
-
-;; **Direct style** — compact, good for single-layer plots:
-
-(sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width
-                     :color :species})])
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (= 150 (:points s))))])
-
-;; Both produce identical results. The pipeline style composes better
-;; when you add `coord`, `scale`, or multiple views. The direct style
-;; is shorter for one-off plots.
-;;
 ;; The rest of this quickstart uses the pipeline style.
 
 ;; ## Scatter Plot
 
-;; The simplest plot: map columns to x and y, then apply the scatter method.
+;; The simplest plot: map columns to x and y.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point))
+    (sk/view :sepal_length :sepal_width)
+    sk/plot)
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; Napkinsketch infers the scatter method from the column types.
+;; You can also choose the method explicitly with `sk/lay`:
+
+(-> iris
+    (sk/view :sepal_length :sepal_width)
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -131,7 +142,7 @@ iris
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -145,8 +156,8 @@ iris
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species})
-            (sk/lm {:color :species}))
+    (sk/lay-point {:color :species})
+    (sk/lay-lm {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -159,7 +170,7 @@ iris
 
 (-> iris
     (sk/view :sepal_length)
-    (sk/lay (sk/histogram))
+    sk/lay-histogram
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -173,7 +184,7 @@ iris
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/bar))
+    sk/lay-bar
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -186,7 +197,7 @@ iris
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/bar))
+    sk/lay-bar
     (sk/coord :flip)
     sk/plot)
 
@@ -200,7 +211,7 @@ iris
 (-> {:x [1 2 3 4 5 6 7 8]
      :y [3 5 4 7 6 8 7 9]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/line))
+    sk/lay-line
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -213,7 +224,7 @@ iris
 
 (-> iris
     (sk/view [[:petal_length :petal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:width 500 :height 350
               :title "Iris Petals"
               :x-label "Petal Length (cm)"

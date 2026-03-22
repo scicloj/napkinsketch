@@ -58,7 +58,7 @@ graph LR
 (def trace-views
   (-> trace-data
       (sk/view [[:x :y]])
-      (sk/lay (sk/point {:color :g}))))
+      (sk/lay-point {:color :g})))
 
 (kind/pprint trace-views)
 
@@ -182,8 +182,9 @@ graph LR
                       {:key-fn keyword}))
 
 (def multi-views
-  [(sk/point {:data iris :x :petal_length :y :petal_width :color :species})
-   (sk/lm {:data iris :x :petal_length :y :petal_width :color :species})])
+  (-> iris
+      (sk/lay-point :petal_length :petal_width {:color :species})
+      (sk/lay-lm {:color :species})))
 
 (def multi-sketch (sk/sketch multi-views {:title "Iris Petals with Regression"}))
 

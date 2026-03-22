@@ -48,7 +48,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -59,7 +59,7 @@
 
 (-> iris
     (sk/view :sepal_length)
-    (sk/lay (sk/histogram))
+    sk/lay-histogram
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -71,7 +71,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]
               [:petal_length :petal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -81,7 +81,7 @@
 ;; Map form — explicit keys:
 
 (-> (sk/view iris {:x :sepal_length :y :sepal_width})
-    (sk/lay (sk/point))
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -94,8 +94,8 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species})
-            (sk/lm {:color :species}))
+    (sk/lay-point {:color :species})
+    (sk/lay-lm {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -104,85 +104,92 @@
 
 ;; ## Methods
 
-(kind/doc #'sk/point)
+(kind/doc #'sk/lay-point)
 
-(sk/plot [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})])
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])
 
-(kind/doc #'sk/line)
+(kind/doc #'sk/lay-line)
 
 (def wave {:x (range 30)
            :y (mapv #(Math/sin (* % 0.3)) (range 30))})
 
-(sk/plot [(sk/line {:data wave :x :x :y :y})])
+(-> wave
+    (sk/lay-line :x :y)
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 1 (:lines s))))])
 
-(kind/doc #'sk/histogram)
+(kind/doc #'sk/lay-histogram)
 
 (-> iris
     (sk/view :sepal_length)
-    (sk/lay (sk/histogram))
+    sk/lay-histogram
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:polygons s))))])
 
-(kind/doc #'sk/bar)
+(kind/doc #'sk/lay-bar)
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/bar))
+    sk/lay-bar
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:polygons s))))])
 
-(kind/doc #'sk/stacked-bar)
+(kind/doc #'sk/lay-stacked-bar)
 
 (def penguins (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
                           {:key-fn keyword}))
 
 (-> penguins
     (sk/view :island)
-    (sk/lay (sk/stacked-bar {:color :species}))
+    (sk/lay-stacked-bar {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:polygons s))))])
 
-(kind/doc #'sk/stacked-bar-fill)
+(kind/doc #'sk/lay-stacked-bar-fill)
 
 (-> penguins
     (sk/view :island)
-    (sk/lay (sk/stacked-bar-fill {:color :species}))
+    (sk/lay-stacked-bar-fill {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:polygons s))))])
 
-(kind/doc #'sk/value-bar)
+(kind/doc #'sk/lay-value-bar)
 
-(sk/plot [(sk/value-bar {:data sales :x :product :y :revenue})])
+(-> sales
+    (sk/lay-value-bar :product :revenue)
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 4 (:polygons s))))])
 
-(kind/doc #'sk/lm)
+(kind/doc #'sk/lay-lm)
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point) (sk/lm))
+    sk/lay-point
+    sk/lay-lm
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-(kind/doc #'sk/loess)
+(kind/doc #'sk/lay-loess)
 
 (def noisy-wave (let [r (rng/rng :jdk 42)]
                   {:x (range 50)
@@ -191,34 +198,35 @@
 
 (-> noisy-wave
     (sk/view [[:x :y]])
-    (sk/lay (sk/point) (sk/loess))
+    sk/lay-point
+    sk/lay-loess
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 50 (:points s))
                                 (= 1 (:lines s)))))])
 
-(kind/doc #'sk/density)
+(kind/doc #'sk/lay-density)
 
 (-> iris
     (sk/view [[:sepal_length]])
-    (sk/lay (sk/density))
+    sk/lay-density
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 1 (:polygons s))))])
 
-(kind/doc #'sk/area)
+(kind/doc #'sk/lay-area)
 
 (-> wave
     (sk/view [[:x :y]])
-    (sk/lay (sk/area))
+    sk/lay-area
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 1 (:polygons s))))])
 
-(kind/doc #'sk/stacked-area)
+(kind/doc #'sk/lay-stacked-area)
 
 (-> {:x (vec (concat (range 10) (range 10) (range 10)))
      :y (vec (concat [1 2 3 4 5 4 3 2 1 0]
@@ -226,143 +234,145 @@
                      [1 1 1 1 2 2 2 1 1 1]))
      :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
     (sk/view [[:x :y]])
-    (sk/lay (sk/stacked-area {:color :group}))
+    (sk/lay-stacked-area {:color :group})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:polygons s))))])
 
-(kind/doc #'sk/text)
+(kind/doc #'sk/lay-text)
 
 (-> {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/text {:text :name}))
+    (sk/lay-text {:text :name})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (every? (set (:texts s)) ["A" "B" "C" "D"])))])
 
-(kind/doc #'sk/label)
+(kind/doc #'sk/lay-label)
 
 (-> {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]}
     (sk/view [[:x :y]])
-    (sk/lay (sk/point {:size 5})
-            (sk/label {:text :name}))
+    (sk/lay-point {:size 5})
+    (sk/lay-label {:text :name})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
                                 (every? (set (:texts s)) ["A" "B" "C" "D"]))))])
-(kind/doc #'sk/boxplot)
+(kind/doc #'sk/lay-boxplot)
 
 (-> iris
     (sk/view [[:species :sepal_width]])
-    (sk/lay (sk/boxplot))
+    sk/lay-boxplot
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:polygons s))
                                 (pos? (:lines s)))))])
 
-(kind/doc #'sk/violin)
+(kind/doc #'sk/lay-violin)
 
 (-> tips
     (sk/view [[:day :total_bill]])
-    (sk/lay (sk/violin))
+    sk/lay-violin
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 4 (:polygons s))))])
 
-(kind/doc #'sk/errorbar)
+(kind/doc #'sk/lay-errorbar)
 
 (-> measurements
     (sk/view [[:treatment :mean]])
-    (sk/lay (sk/point)
-            (sk/errorbar {:ymin :ci_lo :ymax :ci_hi}))
+    sk/lay-point
+    (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
                                 (= 12 (:lines s)))))])
 
-(kind/doc #'sk/lollipop)
+(kind/doc #'sk/lay-lollipop)
 
 (-> sales
     (sk/view [[:product :revenue]])
-    (sk/lay (sk/lollipop))
+    sk/lay-lollipop
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
                                 (= 4 (:lines s)))))])
 
-(kind/doc #'sk/tile)
+(kind/doc #'sk/lay-tile)
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/tile))
+    sk/lay-tile
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:tiles s))))])
 
-(kind/doc #'sk/density2d)
+(kind/doc #'sk/lay-density2d)
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/density2d))
+    sk/lay-density2d
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:tiles s))))])
 
-(kind/doc #'sk/contour)
+(kind/doc #'sk/lay-contour)
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/contour))
+    sk/lay-contour
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:lines s))))])
 
-(kind/doc #'sk/ridgeline)
+(kind/doc #'sk/lay-ridgeline)
 
 (-> iris
     (sk/view [[:species :sepal_length]])
-    (sk/lay (sk/ridgeline))
+    sk/lay-ridgeline
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:polygons s))))])
 
-(kind/doc #'sk/rug)
+(kind/doc #'sk/lay-rug)
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point) (sk/rug {:side :both}))
+    sk/lay-point
+    (sk/lay-rug {:side :both})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 300 (:lines s))))])
 
-(kind/doc #'sk/step)
+(kind/doc #'sk/lay-step)
 
 (-> tiny
     (sk/view [[:x :y]])
-    (sk/lay (sk/step) (sk/point))
+    sk/lay-step
+    sk/lay-point
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 5 (:points s))
                                 (= 1 (:lines s)))))])
 
-(kind/doc #'sk/summary)
+(kind/doc #'sk/lay-summary)
 
 (-> iris
     (sk/view [[:species :sepal_length]])
-    (sk/lay (sk/summary))
+    sk/lay-summary
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -376,7 +386,9 @@
 ;; See the Customization notebook for options (title, theme,
 ;; tooltip, brush, legend position, palette).
 
-(sk/plot [(sk/point {:data tiny :x :x :y :y})])
+(-> tiny
+    (sk/lay-point :x :y)
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 5 (:points s))))])
@@ -385,7 +397,9 @@
 
 ;; Returns the intermediate sketch data structure:
 
-(def sk1 (sk/sketch [(sk/point {:data tiny :x :x :y :y})]))
+(def sk1 (-> tiny
+             (sk/lay-point :x :y)
+             sk/sketch))
 
 sk1
 
@@ -396,7 +410,9 @@ sk1
 
 (kind/doc #'sk/views->sketch)
 
-(def sk2 (sk/views->sketch [(sk/point {:data tiny :x :x :y :y})]))
+(def sk2 (-> tiny
+             (sk/lay-point :x :y)
+             sk/views->sketch))
 
 (= (keys sk1) (keys sk2))
 
@@ -432,7 +448,7 @@ sk1
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/bar))
+    sk/lay-bar
     (sk/coord :flip)
     sk/plot)
 
@@ -443,7 +459,7 @@ sk1
 
 (-> iris
     (sk/view :species)
-    (sk/lay (sk/bar))
+    sk/lay-bar
     (sk/coord :polar)
     sk/plot)
 
@@ -456,7 +472,7 @@ sk1
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point))
+    sk/lay-point
     (sk/scale :x :log)
     sk/plot)
 
@@ -467,7 +483,7 @@ sk1
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point))
+    sk/lay-point
     (sk/scale :x {:domain [3 9]})
     sk/plot)
 
@@ -478,7 +494,7 @@ sk1
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/labs {:title "Iris Dimensions" :x "Sepal Length (cm)" :y "Sepal Width (cm)"})
     sk/plot)
 
@@ -491,7 +507,8 @@ sk1
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point) (sk/rule-v 6.0))
+    sk/lay-point
+    (sk/lay (sk/rule-v 6.0))
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -502,7 +519,8 @@ sk1
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point) (sk/rule-h 3.0))
+    sk/lay-point
+    (sk/lay (sk/rule-h 3.0))
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -513,7 +531,8 @@ sk1
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point) (sk/band-v 5.5 6.5))
+    sk/lay-point
+    (sk/lay (sk/band-v 5.5 6.5))
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -523,7 +542,8 @@ sk1
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point) (sk/band-h 2.5 3.5))
+    sk/lay-point
+    (sk/lay (sk/band-h 2.5 3.5))
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -540,7 +560,7 @@ sk1
 (-> iris
     (sk/view (sk/cross [:sepal_length :petal_length]
                        [:sepal_width :petal_width]))
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -550,7 +570,7 @@ sk1
 (kind/doc #'sk/distribution)
 
 (-> (sk/distribution iris :sepal_length :sepal_width)
-    (sk/lay (sk/histogram))
+    sk/lay-histogram
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -564,7 +584,7 @@ sk1
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/facet :species)
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -576,7 +596,7 @@ sk1
 (-> tips
     (sk/view [[:total_bill :tip]])
     (sk/facet-grid :smoker :sex)
-    (sk/lay (sk/point {:color :sex}))
+    (sk/lay-point {:color :sex})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -589,7 +609,7 @@ sk1
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     sk/plot
     sk/svg-summary)
 
@@ -631,11 +651,11 @@ sk1
 
 (sk/arrange [(-> iris
                  (sk/view :sepal_length :sepal_width)
-                 (sk/lay (sk/point {:color :species}))
+                 (sk/lay-point {:color :species})
                  (sk/plot {:width 250 :height 200}))
              (-> iris
                  (sk/view :petal_length :petal_width)
-                 (sk/lay (sk/point {:color :species}))
+                 (sk/lay-point {:color :species})
                  (sk/plot {:width 250 :height 200}))]
             {:cols 2})
 
@@ -647,7 +667,7 @@ sk1
 ;; Save a plot to an SVG file:
 
 (let [path (str (java.io.File/createTempFile "napkinsketch-example" ".svg"))]
-  (sk/save [(sk/point {:data iris :x :sepal_length :y :sepal_width :color :species})]
+  (sk/save (-> iris (sk/lay-point :sepal_length :sepal_width {:color :species}))
            path
            {:title "Iris Export"})
   (.contains (slurp path) "<svg"))

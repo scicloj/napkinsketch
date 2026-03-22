@@ -105,217 +105,255 @@
   [m]
   (defaults/set-config! m))
 
-;; ---- Mark Constructors ----
+;; ---- Layer Functions ----
 
-(defn point
-  "Scatter method — shows individual data points.
-   Options: :color, :alpha, :size, :shape, :jitter, :group,
-   :position, :nudge-x, :nudge-y.
-   (point)                    — default
-   (point {:color :species})  — color by column"
-  ([] (view/point))
-  ([opts] (view/point opts)))
+(defn- lay-method
+  "Internal dispatch for lay-X functions.
+   Distinguishes views (View records) from raw data by type."
+  ([method-fn views]
+   (view/lay views (method-fn)))
+  ([method-fn views-or-data x-or-opts]
+   (if (view/views? views-or-data)
+     (view/lay views-or-data (method-fn x-or-opts))
+     (-> views-or-data (view/view x-or-opts) (view/lay (method-fn)))))
+  ([method-fn views-or-data x y-or-opts]
+   (if (keyword? y-or-opts)
+     (-> views-or-data (view/view x y-or-opts) (view/lay (method-fn)))
+     (-> views-or-data (view/view x) (view/lay (method-fn y-or-opts)))))
+  ([method-fn data x y opts]
+   (-> data (view/view x y) (view/lay (method-fn opts)))))
 
-(defn line
-  "Line method — connects data points in order.
-   Options: :color, :alpha, :size (stroke width), :group,
-   :position, :nudge-x, :nudge-y.
-   (line)                    — default
-   (line {:color :group})    — one line per group"
-  ([] (view/line))
-  ([opts] (view/line opts)))
+(defn lay-point
+  "Add a scatter layer — shows individual data points.
+   (lay-point views)                          — add to views
+   (lay-point views {:color :species})        — with options
+   (lay-point data :x :y)                    — from data
+   (lay-point data :x :y {:color :species})  — from data with options"
+  ([views] (lay-method view/point views))
+  ([views-or-data x-or-opts] (lay-method view/point views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/point data x y-or-opts))
+  ([data x y opts] (lay-method view/point data x y opts)))
 
-(defn step
-  "Step method — horizontal-then-vertical connected points.
-   Options: :color, :alpha, :size (stroke width), :group.
-   (step)                    — default
-   (step {:color :group})    — one step line per group"
-  ([] (view/step))
-  ([opts] (view/step opts)))
+(defn lay-line
+  "Add a line layer — connects data points in order.
+   (lay-line views)                          — add to views
+   (lay-line views {:color :group})          — with options
+   (lay-line data :x :y)                    — from data"
+  ([views] (lay-method view/line views))
+  ([views-or-data x-or-opts] (lay-method view/line views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/line data x y-or-opts))
+  ([data x y opts] (lay-method view/line data x y opts)))
 
-(defn histogram
-  "Histogram method — bins numerical data into counted bars.
-   Options: :color, :alpha, :group, :normalize (:density).
-   (histogram)                       — default Sturges binning
-   (histogram {:color :species})     — per-group histograms
-   (histogram {:normalize :density}) — probability density axis"
-  ([] (view/histogram))
-  ([opts] (view/histogram opts)))
+(defn lay-step
+  "Add a step layer — horizontal-then-vertical connected points.
+   (lay-step views)                          — add to views
+   (lay-step views {:color :group})          — with options
+   (lay-step data :x :y)                    — from data"
+  ([views] (lay-method view/step views))
+  ([views-or-data x-or-opts] (lay-method view/step views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/step data x y-or-opts))
+  ([data x y opts] (lay-method view/step data x y opts)))
 
-(defn bar
-  "Bar method — counts categorical values (dodged by default).
-   Options: :color, :alpha, :group, :position.
-   (bar)                     — count occurrences
-   (bar {:color :species})   — grouped (dodged) bars"
-  ([] (view/bar))
-  ([opts] (view/bar opts)))
+(defn lay-histogram
+  "Add a histogram layer — bins numerical data into counted bars.
+   (lay-histogram views)                     — add to views
+   (lay-histogram views {:color :species})   — with options
+   (lay-histogram data :x)                  — from data, single column"
+  ([views] (lay-method view/histogram views))
+  ([views-or-data x-or-opts] (lay-method view/histogram views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/histogram data x y-or-opts))
+  ([data x y opts] (lay-method view/histogram data x y opts)))
 
-(defn stacked-bar
-  "Stacked bar method — counts categorical values (position :stack).
-   Options: :color, :alpha, :group.
-   (stacked-bar)                     — stacked bars
-   (stacked-bar {:color :smoker})    — colored stacked bars"
-  ([] (view/stacked-bar))
-  ([opts] (view/stacked-bar opts)))
+(defn lay-bar
+  "Add a bar layer — counts categorical values.
+   (lay-bar views)                           — add to views
+   (lay-bar views {:color :species})         — with options
+   (lay-bar data :x)                        — from data, single column"
+  ([views] (lay-method view/bar views))
+  ([views-or-data x-or-opts] (lay-method view/bar views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/bar data x y-or-opts))
+  ([data x y opts] (lay-method view/bar data x y opts)))
 
-(defn stacked-bar-fill
-  "Percentage stacked bar method — proportions sum to 1.0 (position :fill).
-   Options: :color, :alpha, :group.
-   (stacked-bar-fill)                     — 100% stacked bars
-   (stacked-bar-fill {:color :smoker})    — colored 100% stacked bars"
-  ([] (view/stacked-bar-fill))
-  ([opts] (view/stacked-bar-fill opts)))
+(defn lay-stacked-bar
+  "Add a stacked bar layer — counts categorical values (position :stack).
+   (lay-stacked-bar views)                   — add to views
+   (lay-stacked-bar views {:color :smoker})  — with options"
+  ([views] (lay-method view/stacked-bar views))
+  ([views-or-data x-or-opts] (lay-method view/stacked-bar views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/stacked-bar data x y-or-opts))
+  ([data x y opts] (lay-method view/stacked-bar data x y opts)))
 
-(defn value-bar
-  "Value bar method — categorical x with pre-computed numeric y (no counting).
-   Options: :color, :alpha, :group, :position.
-   (value-bar)                    — default
-   (value-bar {:color :group})    — grouped value bars"
-  ([] (view/value-bar))
-  ([opts] (view/value-bar opts)))
+(defn lay-stacked-bar-fill
+  "Add a percentage stacked bar layer — proportions sum to 1.0.
+   (lay-stacked-bar-fill views)                   — add to views
+   (lay-stacked-bar-fill views {:color :smoker})  — with options"
+  ([views] (lay-method view/stacked-bar-fill views))
+  ([views-or-data x-or-opts] (lay-method view/stacked-bar-fill views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/stacked-bar-fill data x y-or-opts))
+  ([data x y opts] (lay-method view/stacked-bar-fill data x y opts)))
 
-(defn lm
-  "Linear regression method — fits a straight line to data.
-   Options: :color, :alpha, :group, :se, :level, :nudge-x, :nudge-y.
-   (lm)                              — single regression
-   (lm {:color :species})            — per-group regression
-   (lm {:se true})                   — with 95% confidence ribbon
-   (lm {:se true :level 0.99})       — with 99% confidence ribbon"
-  ([] (view/lm))
-  ([opts] (view/lm opts)))
+(defn lay-value-bar
+  "Add a value bar layer — categorical x with pre-computed numeric y.
+   (lay-value-bar views)                     — add to views
+   (lay-value-bar data :product :revenue)    — from data"
+  ([views] (lay-method view/value-bar views))
+  ([views-or-data x-or-opts] (lay-method view/value-bar views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/value-bar data x y-or-opts))
+  ([data x y opts] (lay-method view/value-bar data x y opts)))
 
-(defn loess
-  "LOESS method — local regression smoothing (requires n >= 4).
-   Options: :color, :alpha, :group, :se (boolean), :level (default 0.95), :se-boot (default 200).
-   (loess)                     — default bandwidth 0.75
-   (loess {:color :species})   — per-group smoothing
-   (loess {:se true})          — with 95% confidence ribbon"
-  ([] (view/loess))
-  ([opts] (view/loess opts)))
+(defn lay-lm
+  "Add a linear regression layer — fits a straight line to data.
+   (lay-lm views)                            — add to views
+   (lay-lm views {:color :species})          — per-group regression
+   (lay-lm views {:se true})                 — with confidence ribbon"
+  ([views] (lay-method view/lm views))
+  ([views-or-data x-or-opts] (lay-method view/lm views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/lm data x y-or-opts))
+  ([data x y opts] (lay-method view/lm data x y opts)))
 
-(defn text
-  "Text method — data-driven labels at (x, y) positions.
-   Options: :text (required), :color, :alpha, :group, :nudge-x, :nudge-y.
-   (text {:text :name})                — label each point
-   (text {:text :name :color :species}) — colored labels"
-  ([] (view/text))
-  ([opts] (view/text opts)))
+(defn lay-loess
+  "Add a LOESS layer — local regression smoothing.
+   (lay-loess views)                         — add to views
+   (lay-loess views {:color :species})       — per-group smoothing
+   (lay-loess views {:se true})              — with confidence ribbon"
+  ([views] (lay-method view/loess views))
+  ([views-or-data x-or-opts] (lay-method view/loess views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/loess data x y-or-opts))
+  ([data x y opts] (lay-method view/loess data x y opts)))
 
-(defn label
-  "Label method — text with a filled background box at (x, y) positions.
-   Options: :text (required), :color, :alpha, :group, :nudge-x, :nudge-y.
-   (label {:text :name})                — labeled points with background
-   (label {:text :name :color :species}) — colored labels with background"
-  ([] (view/label))
-  ([opts] (view/label opts)))
+(defn lay-text
+  "Add a text layer — data-driven labels at (x, y) positions.
+   (lay-text views {:text :name})            — label each point
+   (lay-text data :x :y {:text :name})       — from data"
+  ([views] (lay-method view/text views))
+  ([views-or-data x-or-opts] (lay-method view/text views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/text data x y-or-opts))
+  ([data x y opts] (lay-method view/text data x y opts)))
 
-(defn area
-  "Area method — filled region under a line.
-   Options: :color, :alpha, :group, :position.
-   (area)                     — default
-   (area {:color :species})   — one area per group"
-  ([] (view/area))
-  ([opts] (view/area opts)))
+(defn lay-label
+  "Add a label layer — text with a filled background box.
+   (lay-label views {:text :name})           — labeled points
+   (lay-label data :x :y {:text :name})      — from data"
+  ([views] (lay-method view/label views))
+  ([views-or-data x-or-opts] (lay-method view/label views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/label data x y-or-opts))
+  ([data x y opts] (lay-method view/label data x y opts)))
 
-(defn stacked-area
-  "Stacked area method — filled regions stacked cumulatively.
-   Options: :color, :alpha, :group.
-   (stacked-area)                     — stacked areas
-   (stacked-area {:color :group})     — colored stacked areas"
-  ([] (view/stacked-area))
-  ([opts] (view/stacked-area opts)))
+(defn lay-area
+  "Add an area layer — filled region under a line.
+   (lay-area views)                          — add to views
+   (lay-area views {:color :species})        — with options"
+  ([views] (lay-method view/area views))
+  ([views-or-data x-or-opts] (lay-method view/area views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/area data x y-or-opts))
+  ([data x y opts] (lay-method view/area data x y opts)))
 
-(defn density
-  "Density method — kernel density estimation rendered as filled area.
-   Options: :color, :alpha, :group, :bandwidth.
-   (density)                    — default bandwidth
-   (density {:color :species})  — per-group density curves
-   (density {:bandwidth 0.5})   — custom bandwidth"
-  ([] (view/density))
-  ([opts] (view/density opts)))
+(defn lay-stacked-area
+  "Add a stacked area layer — filled regions stacked cumulatively.
+   (lay-stacked-area views)                  — add to views
+   (lay-stacked-area views {:color :group})  — with options"
+  ([views] (lay-method view/stacked-area views))
+  ([views-or-data x-or-opts] (lay-method view/stacked-area views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/stacked-area data x y-or-opts))
+  ([data x y opts] (lay-method view/stacked-area data x y opts)))
 
-(defn tile
-  "Tile/heatmap method — filled rectangles colored by a numeric value.
-   Options: :fill, :kde2d-grid, :color, :alpha.
-   (tile)                          — 2D binned heatmap
-   (tile {:fill :value})           — pre-computed fill values"
-  ([] (view/tile))
-  ([opts] (view/tile opts)))
+(defn lay-density
+  "Add a density layer — kernel density estimation as filled area.
+   (lay-density views)                       — add to views
+   (lay-density views {:color :species})     — per-group density curves"
+  ([views] (lay-method view/density views))
+  ([views-or-data x-or-opts] (lay-method view/density views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/density data x y-or-opts))
+  ([data x y opts] (lay-method view/density data x y opts)))
 
-(defn density2d
-  "2D density method — KDE-smoothed heatmap.
-   Options: :kde2d-grid, :bandwidth, :alpha.
-   (density2d)                     — default bandwidth and grid
-   (density2d {:kde2d-grid 40})    — finer grid resolution"
-  ([] (view/density2d))
-  ([opts] (view/density2d opts)))
+(defn lay-tile
+  "Add a tile/heatmap layer — filled rectangles colored by value.
+   (lay-tile views)                          — 2D binned heatmap
+   (lay-tile views {:fill :value})           — pre-computed fill values"
+  ([views] (lay-method view/tile views))
+  ([views-or-data x-or-opts] (lay-method view/tile views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/tile data x y-or-opts))
+  ([data x y opts] (lay-method view/tile data x y opts)))
 
-(defn contour
-  "Contour method — iso-density contour lines from 2D KDE.
-   Options: :levels, :kde2d-grid, :bandwidth, :alpha.
-   (contour)                       — default 5 levels
-   (contour {:levels 8})           — custom number of iso-levels
-   (contour {:kde2d-grid 40})      — finer grid resolution"
-  ([] (view/contour))
-  ([opts] (view/contour opts)))
+(defn lay-density2d
+  "Add a 2D density layer — KDE-smoothed heatmap.
+   (lay-density2d views)                     — add to views
+   (lay-density2d views {:kde2d-grid 40})    — finer grid resolution"
+  ([views] (lay-method view/density2d views))
+  ([views-or-data x-or-opts] (lay-method view/density2d views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/density2d data x y-or-opts))
+  ([data x y opts] (lay-method view/density2d data x y opts)))
 
-(defn ridgeline
-  "Ridgeline method — vertically stacked density curves per category.
-   Options: :color, :alpha, :bandwidth, :group.
-   (ridgeline)                    — default
-   (ridgeline {:color :species})  — colored ridgelines"
-  ([] (view/ridgeline))
-  ([opts] (view/ridgeline opts)))
+(defn lay-contour
+  "Add a contour layer — iso-density contour lines from 2D KDE.
+   (lay-contour views)                       — add to views
+   (lay-contour views {:levels 8})           — custom iso-levels"
+  ([views] (lay-method view/contour views))
+  ([views-or-data x-or-opts] (lay-method view/contour views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/contour data x y-or-opts))
+  ([data x y opts] (lay-method view/contour data x y opts)))
 
-(defn boxplot
-  "Boxplot method — displays median, quartiles, whiskers, and outliers.
-   Options: :color, :alpha, :position, :group.
-   (boxplot)                    — single color
-   (boxplot {:color :smoker})   — side-by-side grouped boxplots"
-  ([] (view/boxplot))
-  ([opts] (view/boxplot opts)))
+(defn lay-ridgeline
+  "Add a ridgeline layer — vertically stacked density curves per category.
+   (lay-ridgeline views)                     — add to views
+   (lay-ridgeline views {:color :species})   — colored ridgelines"
+  ([views] (lay-method view/ridgeline views))
+  ([views-or-data x-or-opts] (lay-method view/ridgeline views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/ridgeline data x y-or-opts))
+  ([data x y opts] (lay-method view/ridgeline data x y opts)))
 
-(defn violin
-  "Violin method — mirrored density curve per category.
-   Options: :color, :alpha, :bandwidth, :position, :group.
-   (violin)                    — single color
-   (violin {:color :smoker})   — side-by-side grouped violins"
-  ([] (view/violin))
-  ([opts] (view/violin opts)))
+(defn lay-boxplot
+  "Add a boxplot layer — median, quartiles, whiskers, and outliers.
+   (lay-boxplot views)                       — add to views
+   (lay-boxplot views {:color :smoker})      — grouped boxplots"
+  ([views] (lay-method view/boxplot views))
+  ([views-or-data x-or-opts] (lay-method view/boxplot views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/boxplot data x y-or-opts))
+  ([data x y opts] (lay-method view/boxplot data x y opts)))
 
-(defn rug
-  "Rug method — tick marks along axis margins showing individual observations.
-   Options: :side (:x, :y, :both), :color, :alpha, :group.
-   (rug)                     — ticks on x-axis
-   (rug {:side :y})          — ticks on y-axis
-   (rug {:side :both})       — ticks on both axes"
-  ([] (view/rug))
-  ([opts] (view/rug opts)))
+(defn lay-violin
+  "Add a violin layer — mirrored density curve per category.
+   (lay-violin views)                        — add to views
+   (lay-violin views {:color :smoker})       — grouped violins"
+  ([views] (lay-method view/violin views))
+  ([views-or-data x-or-opts] (lay-method view/violin views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/violin data x y-or-opts))
+  ([data x y opts] (lay-method view/violin data x y opts)))
 
-(defn summary
-  "Summary method — mean ± standard error per category.
-   Options: :color, :alpha, :position, :nudge-x, :nudge-y, :group.
-   (summary)                    — single summary
-   (summary {:color :species})  — per-group summary"
-  ([] (view/summary))
-  ([opts] (view/summary opts)))
+(defn lay-rug
+  "Add a rug layer — tick marks along axis margins.
+   (lay-rug views)                           — ticks on x-axis
+   (lay-rug views {:side :both})             — ticks on both axes"
+  ([views] (lay-method view/rug views))
+  ([views-or-data x-or-opts] (lay-method view/rug views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/rug data x y-or-opts))
+  ([data x y opts] (lay-method view/rug data x y opts)))
 
-(defn errorbar
-  "Errorbar method — vertical error bars at (x, y) positions.
-   Options: :ymin (required), :ymax (required), :color, :alpha,
-   :position, :nudge-x, :nudge-y, :group.
-   (errorbar {:ymin :ci_lo :ymax :ci_hi})
-   (errorbar {:ymin :ci_lo :ymax :ci_hi :color :group})"
-  ([] (view/errorbar))
-  ([opts] (view/errorbar opts)))
+(defn lay-summary
+  "Add a summary layer — mean ± standard error per category.
+   (lay-summary views)                       — add to views
+   (lay-summary views {:color :species})     — per-group summary"
+  ([views] (lay-method view/summary views))
+  ([views-or-data x-or-opts] (lay-method view/summary views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/summary data x y-or-opts))
+  ([data x y opts] (lay-method view/summary data x y opts)))
 
-(defn lollipop
-  "Lollipop method — stem + dot at (x, y) positions.
-   Options: :color, :alpha, :position, :nudge-x, :nudge-y, :group.
-   (lollipop)                  — default
-   (lollipop {:color :group})  — colored stems"
-  ([] (view/lollipop))
-  ([opts] (view/lollipop opts)))
+(defn lay-errorbar
+  "Add an errorbar layer — vertical error bars at (x, y) positions.
+   (lay-errorbar views {:ymin :ci_lo :ymax :ci_hi})  — with error columns"
+  ([views] (lay-method view/errorbar views))
+  ([views-or-data x-or-opts] (lay-method view/errorbar views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/errorbar data x y-or-opts))
+  ([data x y opts] (lay-method view/errorbar data x y opts)))
+
+(defn lay-lollipop
+  "Add a lollipop layer — stem + dot at (x, y) positions.
+   (lay-lollipop views)                      — add to views
+   (lay-lollipop views {:color :group})      — colored stems"
+  ([views] (lay-method view/lollipop views))
+  ([views-or-data x-or-opts] (lay-method view/lollipop views-or-data x-or-opts))
+  ([data x y-or-opts] (lay-method view/lollipop data x y-or-opts))
+  ([data x y opts] (lay-method view/lollipop data x y opts)))
 
 ;; ---- Annotations ----
 

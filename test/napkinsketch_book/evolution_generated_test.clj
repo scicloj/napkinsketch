@@ -13,10 +13,10 @@
   wave
   {:x (range 30),
    :y
-   (mapv (fn* [p1__74641#] (Math/sin (* p1__74641# 0.3))) (range 30))}))
+   (mapv (fn* [p1__87407#] (Math/sin (* p1__87407# 0.3))) (range 30))}))
 
 
-(def v4_l21 (-> wave (sk/view [[:x :y]]) (sk/lay (sk/line)) sk/plot))
+(def v4_l21 (-> wave (sk/view [[:x :y]]) sk/lay-line sk/plot))
 
 
 (deftest
@@ -38,16 +38,16 @@
    :y
    (vec
     (concat
-     (mapv (fn* [p1__74642#] (Math/sin (* p1__74642# 0.3))) (range 30))
+     (mapv (fn* [p1__87408#] (Math/sin (* p1__87408# 0.3))) (range 30))
      (mapv
-      (fn* [p1__74643#] (Math/cos (* p1__74643# 0.3)))
+      (fn* [p1__87409#] (Math/cos (* p1__87409# 0.3)))
       (range 30)))),
    :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))}))
 
 
 (def
  v8_l39
- (-> waves (sk/view [[:x :y]]) (sk/lay (sk/line {:color :fn})) sk/plot))
+ (-> waves (sk/view [[:x :y]]) (sk/lay-line {:color :fn}) sk/plot))
 
 
 (deftest
@@ -63,7 +63,7 @@
 
 (def
  v11_l52
- (-> wave (sk/view [[:x :y]]) (sk/lay (sk/line {:size 4})) sk/plot))
+ (-> wave (sk/view [[:x :y]]) (sk/lay-line {:size 4}) sk/plot))
 
 
 (deftest
@@ -91,7 +91,8 @@
  (->
   growth
   (sk/view [[:day :value]])
-  (sk/lay (sk/line {:color :group}) (sk/point {:color :group}))
+  (sk/lay-line {:color :group})
+  (sk/lay-point {:color :group})
   sk/plot))
 
 
@@ -111,12 +112,13 @@
  (->
   {:x [1 2 3 4 5], :y [2 4 1 5 3]}
   (sk/view [[:x :y]])
-  (sk/lay (sk/step) (sk/point))
+  sk/lay-step
+  sk/lay-point
   sk/plot))
 
 
 (deftest
- t19_l90
+ t19_l91
  (is
   ((fn
     [v]
@@ -127,49 +129,50 @@
 
 
 (def
- v21_l98
+ v21_l99
  (->
   growth
   (sk/view [[:day :value]])
-  (sk/lay (sk/step {:color :group}) (sk/point {:color :group}))
+  (sk/lay-step {:color :group})
+  (sk/lay-point {:color :group})
   sk/plot))
 
 
 (deftest
- t22_l104
+ t22_l105
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 10 (:points s)) (= 2 (:lines s)))))
-   v21_l98)))
+   v21_l99)))
 
 
 (def
- v24_l112
+ v24_l113
  (->
   {:x (range 30),
    :y
-   (mapv (fn* [p1__74644#] (Math/sin (* p1__74644# 0.3))) (range 30))}
+   (mapv (fn* [p1__87410#] (Math/sin (* p1__87410# 0.3))) (range 30))}
   (sk/view [[:x :y]])
-  (sk/lay (sk/area))
+  sk/lay-area
   sk/plot))
 
 
 (deftest
- t25_l118
+ t25_l119
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:polygons s)))))
-   v24_l112)))
+   v24_l113)))
 
 
 (def
- v27_l126
+ v27_l127
  (->
   {:x (vec (concat (range 10) (range 10) (range 10))),
    :y
@@ -181,16 +184,16 @@
    :group
    (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
   (sk/view [[:x :y]])
-  (sk/lay (sk/stacked-area {:color :group}))
+  (sk/lay-stacked-area {:color :group})
   sk/plot))
 
 
 (deftest
- t28_l135
+ t28_l136
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v27_l126)))
+   v27_l127)))

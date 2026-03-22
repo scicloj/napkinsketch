@@ -74,6 +74,13 @@
        (let [fst (first specs)]
          (or (sequential? fst) (map? fst)))))
 
+(defrecord View [data x])
+
+(defn views?
+  "True if x is a vector of View records (i.e., output of `view` or `lay`)."
+  [x]
+  (and (sequential? x) (seq x) (instance? View (first x))))
+
 ;; ---- View ----
 
 (defn view
@@ -84,16 +91,16 @@
        (mapv (fn [spec]
                (let [parsed (parse-view-spec spec)]
                  (validate-columns ds parsed)
-                 (assoc parsed :data ds)))
+                 (map->View (assoc parsed :data ds))))
              spec-or-x)
        (let [parsed (parse-view-spec spec-or-x)]
          (validate-columns ds parsed)
-         [(assoc parsed :data ds)]))))
+         [(map->View (assoc parsed :data ds))]))))
   ([data x y]
    (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))
          v {:x (normalize-col-ref x) :y (normalize-col-ref y)}]
      (validate-columns ds v)
-     [(assoc v :data ds)])))
+     [(map->View (assoc v :data ds))])))
 
 ;; ---- Layer ----
 

@@ -32,7 +32,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/facet :species)
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -50,7 +50,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/facet :species :col)
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -64,7 +64,7 @@
 (-> tips
     (sk/view [[:total_bill :tip]])
     (sk/facet-grid :smoker :sex)
-    (sk/lay (sk/point {:color :sex}))
+    (sk/lay-point {:color :sex})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -78,7 +78,7 @@
 (-> iris
     (sk/view :sepal_length)
     (sk/facet :species)
-    (sk/lay (sk/histogram {:color :species}))
+    (sk/lay-histogram {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -92,8 +92,8 @@
 (-> tips
     (sk/view [[:total_bill :tip]])
     (sk/facet-grid :smoker :sex)
-    (sk/lay (sk/point {:color :sex})
-            (sk/lm {:color :sex}))
+    (sk/lay-point {:color :sex})
+    (sk/lay-lm {:color :sex})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -111,7 +111,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/facet :species)
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:scales :shared}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -123,7 +123,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/facet :species)
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/plot {:scales :free-y}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -140,7 +140,7 @@
   (-> iris
       (sk/view [[:sepal_length :sepal_width]])
       (sk/facet :species)
-      (sk/lay (sk/point {:color :species}))
+      (sk/lay-point {:color :species})
       sk/sketch))
 
 (:grid faceted-sk)
@@ -166,7 +166,7 @@
 
 (-> iris
     (sk/view (sk/cross cols cols))
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -178,14 +178,12 @@
 ;; panels share scales per column (x) and per row (y), so each column
 ;; of plots has the same x-axis and each row has the same y-axis.
 
-
-
 ;; ## Distribution Helper
 ;;
 ;; `sk/distribution` creates diagonal views — one histogram per column:
 
 (-> (sk/distribution iris :sepal_length :sepal_width :petal_length)
-    (sk/lay (sk/histogram {:color :species}))
+    (sk/lay-histogram {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -197,7 +195,7 @@
 (-> penguins
     (sk/view :species)
     (sk/facet :island)
-    (sk/lay (sk/bar {:color :species}))
+    (sk/lay-bar {:color :species})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -211,7 +209,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/facet :species)
-    (sk/lay (sk/point {:color :species}))
+    (sk/lay-point {:color :species})
     (sk/labs {:title "Iris by Species"
               :x "Sepal Length (cm)"
               :y "Sepal Width (cm)"})

@@ -25,7 +25,7 @@
    (->
     iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay (sk/point {:color :species}))))))
+    (sk/lay-point {:color :species})))))
 
 
 (def v6_l32 (sk/config))
@@ -381,7 +381,7 @@
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (sk/view :x :y)
-  (sk/lay (sk/point {:color :c}))
+  (sk/lay-point {:color :c})
   (sk/plot)))
 
 
@@ -395,7 +395,7 @@
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (sk/view :x :y)
-  (sk/lay (sk/point {:color :c}))
+  (sk/lay-point {:color :c})
   (sk/plot {:color-scale :inferno})))
 
 
@@ -411,7 +411,7 @@
   (->
    {:x (range 50), :y (range 50), :c (range 50)}
    (sk/view :x :y)
-   (sk/lay (sk/point {:color :c}))
+   (sk/lay-point {:color :c})
    (sk/plot))))
 
 
@@ -425,7 +425,7 @@
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (sk/view :x :y)
-  (sk/lay (sk/point {:color :c}))
+  (sk/lay-point {:color :c})
   (sk/sketch {:color-scale :inferno})
   :legend
   (select-keys [:color-scale :type])))
