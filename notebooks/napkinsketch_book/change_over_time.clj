@@ -1,8 +1,8 @@
-;; # Evolution
+;; # Change Over Time
 ;;
 ;; Line charts and their variants — showing change over a sequence.
 
-(ns napkinsketch-book.evolution
+(ns napkinsketch-book.change-over-time
   (:require
    ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]

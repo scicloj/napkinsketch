@@ -5,7 +5,7 @@
  "📊 Chart Types" ["scatter"
                     "distributions"
                     "ranking"
-                    "evolution"
+                    "change_over_time"
                     "relationships"
                     "polar"]
  "🍳 How-to Guides" ["cookbook"

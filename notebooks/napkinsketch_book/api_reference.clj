@@ -5,7 +5,7 @@
 ;;
 ;; Each entry shows the docstring, a live example, and a test.
 ;; For galleries of mark variations, see the Reference notebooks
-;; (Scatter, Distributions, Ranking, Evolution, Relationships).
+;; (Scatter, Distributions, Ranking, Change Over Time, Relationships).
 
 ^{:kindly/hide-code true
   :kindly/options {:kinds-that-hide-code #{:kind/doc}}}

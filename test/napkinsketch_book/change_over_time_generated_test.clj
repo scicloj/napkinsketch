@@ -1,5 +1,5 @@
 (ns
- napkinsketch-book.evolution-generated-test
+ napkinsketch-book.change-over-time-generated-test
  (:require
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
@@ -13,7 +13,9 @@
   wave
   {:x (range 30),
    :y
-   (mapv (fn* [p1__97774#] (Math/sin (* p1__97774# 0.3))) (range 30))}))
+   (mapv
+    (fn* [p1__115025#] (Math/sin (* p1__115025# 0.3)))
+    (range 30))}))
 
 
 (def v4_l21 (-> wave (sk/lay-line :x :y)))
@@ -38,9 +40,11 @@
    :y
    (vec
     (concat
-     (mapv (fn* [p1__97775#] (Math/sin (* p1__97775# 0.3))) (range 30))
      (mapv
-      (fn* [p1__97776#] (Math/cos (* p1__97776# 0.3)))
+      (fn* [p1__115026#] (Math/sin (* p1__115026# 0.3)))
+      (range 30))
+     (mapv
+      (fn* [p1__115027#] (Math/cos (* p1__115027# 0.3)))
       (range 30)))),
    :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))}))
 
@@ -141,7 +145,9 @@
  (->
   {:x (range 30),
    :y
-   (mapv (fn* [p1__97777#] (Math/sin (* p1__97777# 0.3))) (range 30))}
+   (mapv
+    (fn* [p1__115028#] (Math/sin (* p1__115028# 0.3)))
+    (range 30))}
   (sk/lay-area :x :y)))
 
 
