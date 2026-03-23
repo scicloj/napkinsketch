@@ -41,7 +41,7 @@ iris
 
 ;; ## Input Data
 ;;
-;; `view` coerces its first argument to a
+;; Napkinsketch coerces its data argument to a
 ;; [Tablecloth](https://scicloj.github.io/tablecloth/) dataset.
 ;; You can pass a Clojure map of columns, a sequence of row maps,
 ;; a CSV path or URL, or an existing dataset.
@@ -49,16 +49,14 @@ iris
 ;; A map of columns (keyword → vector) — the simplest inline form:
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
-    (sk/view :x :y)
-    sk/lay-point)
+    (sk/lay-point :x :y))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; A sequence of row maps — Tablecloth pivots rows into columns:
 
 (-> [{:x 1 :y 2 :g "a"} {:x 3 :y 4 :g "a"} {:x 5 :y 6 :g "b"}]
-    (sk/view :x :y)
-    (sk/lay-point {:color :g}))
+    (sk/lay-point :x :y {:color :g}))
 
 (kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
 
@@ -66,8 +64,7 @@ iris
 
 (-> (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
                 {:key-fn keyword})
-    (sk/view :total_bill :tip)
-    sk/lay-point)
+    (sk/lay-point :total_bill :tip))
 
 (kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
 
@@ -107,7 +104,8 @@ iris
 ;;   produce multiple panels (see the Core Concepts chapter)
 ;;
 ;; Both forms are equivalent for single-panel plots.
-;; The rest of this quickstart uses the pipeline style.
+;; This quickstart uses the data shortcut for single-layer plots and
+;; the pipeline style when composing multiple layers.
 
 ;; ## Scatter Plot
 
@@ -123,8 +121,7 @@ iris
 ;; "use a scatter plot regardless of what inference would choose":
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    sk/lay-point)
+    (sk/lay-point :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -135,8 +132,7 @@ iris
 ;; Bind `:color` to a column to color points by group.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -161,8 +157,7 @@ iris
 ;; Pass a single column to get a histogram (automatic binning).
 
 (-> iris
-    (sk/view :sepal_length)
-    sk/lay-histogram)
+    (sk/lay-histogram :sepal_length))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -174,8 +169,7 @@ iris
 ;; Count occurrences of a categorical column.
 
 (-> iris
-    (sk/view :species)
-    sk/lay-bar)
+    (sk/lay-bar :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -186,8 +180,7 @@ iris
 ;; Use `coord :flip` for horizontal bars.
 
 (-> iris
-    (sk/view :species)
-    sk/lay-bar
+    (sk/lay-bar :species)
     (sk/coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -199,8 +192,7 @@ iris
 
 (-> {:x [1 2 3 4 5 6 7 8]
      :y [3 5 4 7 6 8 7 9]}
-    (sk/view [[:x :y]])
-    sk/lay-line)
+    (sk/lay-line :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:lines s))
@@ -208,11 +200,10 @@ iris
 
 ;; ## Custom Options
 
-;; Pass options to `plot` for width, height, title, and axis labels.
+;; Use `sk/options` for width, height, title, and axis labels.
 
 (-> iris
-    (sk/view [[:petal_length :petal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :petal_length :petal_width {:color :species})
     (sk/options {:width 500 :height 350
                  :title "Iris Petals"
                  :x-label "Petal Length (cm)"
