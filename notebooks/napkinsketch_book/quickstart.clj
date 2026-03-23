@@ -126,14 +126,39 @@ iris
                            (and (= 1 (:lines s))
                                 (zero? (:points s)))))])
 
-;; ## Multiple Layers
+;; ## Inference
 ;;
-;; To combine several layers on the same axes, use `sk/view` to define
-;; the shared column mappings, then add each layer with `sk/lay-*`:
+;; `sk/view` can pick the chart type for you based on column types.
+;; Two numerical columns produce a scatter plot:
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/view :sepal_length :sepal_width))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; A single categorical column produces a bar chart:
+
+(-> iris
+    (sk/view :species))
+
+(kind/test-last [(fn [v] (= 3 (:polygons (sk/svg-summary v))))])
+
+;; A single numerical column produces a histogram:
+
+(-> iris
+    (sk/view :sepal_length))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; See the Inference Rules chapter for the full set of rules.
+
+;; ## Multiple Layers
+;;
+;; Thread multiple `sk/lay-*` calls to combine layers on the same axes.
+;; The first call sets the column mappings; subsequent layers inherit them:
+
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay-lm {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

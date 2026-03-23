@@ -130,28 +130,51 @@
    v28_l121)))
 
 
+(def v31_l134 (-> iris (sk/view :sepal_length :sepal_width)))
+
+
+(deftest
+ t32_l137
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v31_l134)))
+
+
+(def v34_l141 (-> iris (sk/view :species)))
+
+
+(deftest
+ t35_l144
+ (is ((fn [v] (= 3 (:polygons (sk/svg-summary v)))) v34_l141)))
+
+
+(def v37_l148 (-> iris (sk/view :sepal_length)))
+
+
+(deftest
+ t38_l151
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v37_l148)))
+
+
 (def
- v31_l134
+ v40_l160
  (->
   iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay-point {:color :species})
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
   (sk/lay-lm {:color :species})))
 
 
 (deftest
- t32_l139
+ t41_l164
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v31_l134)))
+   v40_l160)))
 
 
 (def
- v34_l147
+ v43_l172
  (->
   iris
   (sk/lay-point :petal_length :petal_width {:color :species})
@@ -164,7 +187,7 @@
 
 
 (deftest
- t35_l154
+ t44_l179
  (is
   ((fn
     [v]
@@ -174,4 +197,4 @@
       (= 150 (:points s))
       (some #{"Iris Petals"} (:texts s))
       (some #{"Petal Length (cm)"} (:texts s)))))
-   v34_l147)))
+   v43_l172)))
