@@ -29,8 +29,7 @@
 
 (-> iris
     (sk/view :species)
-    sk/lay-bar
-    sk/plot)
+    sk/lay-bar)
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -43,8 +42,7 @@
 
 (-> tips
     (sk/view :day)
-    (sk/lay-bar {:color :smoker})
-    sk/plot)
+    (sk/lay-bar {:color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -57,8 +55,7 @@
 
 (-> tips
     (sk/view :day)
-    (sk/lay-stacked-bar {:color :smoker})
-    sk/plot)
+    (sk/lay-stacked-bar {:color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -71,8 +68,7 @@
 
 (-> penguins
     (sk/view :island)
-    (sk/lay-stacked-bar-fill {:color :species})
-    sk/plot)
+    (sk/lay-stacked-bar-fill {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -85,8 +81,7 @@
 (-> iris
     (sk/view :species)
     sk/lay-bar
-    (sk/coord :flip)
-    sk/plot)
+    (sk/coord :flip))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -100,8 +95,7 @@
 (-> tips
     (sk/view :day)
     (sk/lay-bar {:color :time})
-    (sk/coord :flip)
-    sk/plot)
+    (sk/coord :flip))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -113,8 +107,7 @@
 ;; Pre-computed y values (no counting).
 
 (-> sales
-    (sk/lay-value-bar :product :revenue)
-    sk/plot)
+    (sk/lay-value-bar :product :revenue))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -127,8 +120,7 @@
 (-> sales
     (sk/view [[:product :revenue]])
     sk/lay-value-bar
-    (sk/coord :flip)
-    sk/plot)
+    (sk/coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -140,8 +132,7 @@
 
 (-> sales
     (sk/view [[:product :revenue]])
-    sk/lay-lollipop
-    sk/plot)
+    sk/lay-lollipop)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -154,8 +145,7 @@
 (-> sales
     (sk/view [[:product :revenue]])
     sk/lay-lollipop
-    (sk/coord :flip)
-    sk/plot)
+    (sk/coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))

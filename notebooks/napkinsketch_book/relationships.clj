@@ -27,8 +27,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     sk/lay-point
-    sk/lay-lm
-    sk/plot)
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -41,8 +40,7 @@
 (-> iris
     (sk/view [[:petal_length :petal_width]])
     (sk/lay-point {:color :species})
-    (sk/lay-lm {:color :species})
-    sk/plot)
+    (sk/lay-lm {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -55,8 +53,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay-point {:color :species})
-    (sk/lay-lm {:se true :color :species})
-    sk/plot)
+    (sk/lay-lm {:se true :color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -69,8 +66,7 @@
 (-> tips
     (sk/view [[:total_bill :tip]])
     (sk/lay-point {:color :smoker})
-    (sk/lay-lm {:color :smoker})
-    sk/plot)
+    (sk/lay-lm {:color :smoker}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 244 (:points s))
@@ -88,8 +84,7 @@
 (-> noisy-wave
     (sk/view [[:x :y]])
     sk/lay-point
-    sk/lay-loess
-    sk/plot)
+    sk/lay-loess)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 50 (:points s))
@@ -101,8 +96,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-tile
-    sk/plot)
+    sk/lay-tile)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -119,8 +113,7 @@
      :value (vec (repeatedly 25 #(rng/irandom r 100)))}))
 
 (-> grid-data
-    (sk/lay-tile :x :y {:fill :value})
-    sk/plot)
+    (sk/lay-tile :x :y {:fill :value}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -132,8 +125,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-density2d
-    sk/plot)
+    sk/lay-density2d)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -146,8 +138,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     sk/lay-density2d
-    (sk/lay-point {:alpha 0.5})
-    sk/plot)
+    (sk/lay-point {:alpha 0.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -159,8 +150,7 @@
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-contour
-    sk/plot)
+    sk/lay-contour)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -173,8 +163,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay-point {:alpha 0.3})
-    (sk/lay-contour {:levels 8})
-    sk/plot)
+    (sk/lay-contour {:levels 8}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

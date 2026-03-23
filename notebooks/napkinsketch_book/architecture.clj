@@ -62,7 +62,8 @@ graph LR
 
 (kind/pprint trace-views)
 
-(kind/test-last [(fn [v] (and (vector? v) (= :point (:mark (first v)))))])
+(kind/test-last [(fn [v] (and (sk/plot-spec? v)
+                              (= :point (:mark (first (sk/views-of v))))))])
 
 ;; ### Sketch
 ;;
@@ -208,7 +209,7 @@ multi-sketch
 
 ;; And it renders:
 
-(sk/plot multi-views {:title "Iris Petals with Regression"})
+(-> multi-views (sk/options {:title "Iris Petals with Regression"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

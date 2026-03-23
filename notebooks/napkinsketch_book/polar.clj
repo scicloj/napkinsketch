@@ -30,8 +30,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay-point {:color :species})
-    (sk/coord :polar)
-    sk/plot)
+    (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -47,8 +46,7 @@
 (-> iris
     (sk/view :species)
     sk/lay-bar
-    (sk/coord :polar)
-    sk/plot)
+    (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -62,8 +60,7 @@
 (-> wind
     (sk/view [:direction :speed])
     sk/lay-value-bar
-    (sk/coord :polar)
-    sk/plot)
+    (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -76,8 +73,7 @@
 (-> iris
     (sk/view :species)
     (sk/lay-stacked-bar {:color :species})
-    (sk/coord :polar)
-    sk/plot)
+    (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -91,8 +87,7 @@
 (-> iris
     (sk/view :sepal_length)
     sk/lay-histogram
-    (sk/coord :polar)
-    sk/plot)
+    (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -107,8 +102,7 @@
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay-point {:color :species})
     (sk/coord :polar)
-    (sk/labs {:title "Iris in Polar Space"})
-    sk/plot)
+    (sk/labs {:title "Iris in Polar Space"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

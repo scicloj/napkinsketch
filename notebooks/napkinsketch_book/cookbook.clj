@@ -30,8 +30,7 @@
 (-> iris
     (sk/view [[:species :sepal_length]])
     sk/lay-boxplot
-    (sk/lay-point {:jitter true :alpha 0.3})
-    sk/plot)
+    (sk/lay-point {:jitter true :alpha 0.3}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -45,8 +44,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_length]])
     (sk/lay-histogram {:normalize :density :alpha 0.5})
-    sk/lay-density
-    sk/plot)
+    sk/lay-density)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -59,8 +57,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay-point {:color :species :alpha 0.6})
-    (sk/lay-lm {:color :species})
-    sk/plot)
+    (sk/lay-lm {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -73,8 +70,7 @@
 (-> iris
     (sk/view [[:species :petal_width]])
     (sk/lay-violin {:alpha 0.3})
-    (sk/lay-point {:jitter true :alpha 0.4})
-    sk/plot)
+    (sk/lay-point {:jitter true :alpha 0.4}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -95,8 +91,7 @@
     (sk/view [[:date :value]])
     (sk/lay-area {:alpha 0.2})
     sk/lay-line
-    (sk/lay-point {:alpha 0.5})
-    sk/plot)
+    (sk/lay-point {:alpha 0.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 52 (:points s))
@@ -110,8 +105,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay-point {:color :species})
-    (sk/facet :species)
-    sk/plot)
+    (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:panels s))))])
@@ -124,8 +118,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay-point {:color :species})
-    (sk/lay (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3}))
-    sk/plot)
+    (sk/lay (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -138,8 +131,7 @@
 
 (-> iris
     (sk/view [[:species :sepal_length]])
-    (sk/lay-ridgeline {:color :species})
-    sk/plot)
+    (sk/lay-ridgeline {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:polygons s))
@@ -154,8 +146,7 @@
 
 (-> penguins
     (sk/view :island)
-    (sk/lay-stacked-bar-fill {:color :species})
-    sk/plot)
+    (sk/lay-stacked-bar-fill {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -170,8 +161,7 @@
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay-point {:color :species})
-    sk/lay-lm
-    sk/plot)
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -191,8 +181,7 @@
 (-> experiment
     (sk/view [[:condition :mean]])
     (sk/lay-point {:size 5})
-    (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi})
-    sk/plot)
+    (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -205,8 +194,7 @@
 (-> experiment
     (sk/view [[:condition :mean]])
     sk/lay-lollipop
-    (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi})
-    sk/plot)
+    (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -219,8 +207,7 @@
 (-> iris
     (sk/view [[:species :sepal_length]])
     (sk/lay-point {:alpha 0.3 :jitter 5})
-    (sk/lay-summary {:color :species})
-    sk/plot)
+    (sk/lay-summary {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 153 (:points s))
@@ -234,9 +221,9 @@
     (sk/view [[:total_bill :tip]])
     (sk/lay-point {:color :smoker})
     (sk/lay-lm {:color :smoker})
-    (sk/plot {:title "Tipping Behavior"
-              :x-label "Total Bill ($)"
-              :y-label "Tip ($)"}))
+    (sk/options {:title "Tipping Behavior"
+                 :x-label "Total Bill ($)"
+                 :y-label "Tip ($)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
@@ -254,7 +241,7 @@
     (sk/view :sepal_length :sepal_width)
     (sk/lay-point {:color :species :alpha 0.5})
     (sk/lay-lm {:color :species :se true})
-    (sk/plot {:title "Sepal Regression with Confidence Bands"}))
+    (sk/options {:title "Sepal Regression with Confidence Bands"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -268,14 +255,14 @@
 (-> tips
     (sk/view :day)
     (sk/lay-bar {:color :sex})
-    (sk/plot {:title "Dodged Bars (default)"}))
+    (sk/options {:title "Dodged Bars (default)"}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 (-> tips
     (sk/view :day)
     (sk/lay-stacked-bar {:color :sex})
-    (sk/plot {:title "Stacked Bars"}))
+    (sk/options {:title "Stacked Bars"}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -292,7 +279,7 @@
     (sk/view :day :temp)
     (sk/lay-step {:color "#2196F3"})
     (sk/lay-point {:color "#2196F3" :size 3})
-    (sk/plot {:title "Daily Temperature (Step)"}))
+    (sk/options {:title "Daily Temperature (Step)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:lines s))
@@ -306,8 +293,7 @@
 (-> iris
     (sk/view :sepal_length :sepal_width)
     (sk/lay-point {:color :species :alpha 0.4})
-    (sk/lay-contour {:levels 5})
-    sk/plot)
+    (sk/lay-contour {:levels 5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
@@ -322,8 +308,7 @@
 (-> top5
     (sk/view :sepal_length :sepal_width)
     (sk/lay-point {:size 5})
-    (sk/lay-label {:text :species :nudge-y 0.15})
-    sk/plot)
+    (sk/lay-label {:text :species :nudge-y 0.15}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
@@ -336,10 +321,10 @@
 (-> iris
     (sk/view :sepal_length :sepal_width)
     (sk/lay-point {:color :species})
-    (sk/plot {:palette {:setosa "#E91E63"
-                        :versicolor "#4CAF50"
-                        :virginica "#2196F3"}
-              :title "Custom Palette Map"}))
+    (sk/options {:palette {:setosa "#E91E63"
+                           :versicolor "#4CAF50"
+                           :virginica "#2196F3"}
+                 :title "Custom Palette Map"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -355,7 +340,7 @@
     (sk/lay-point {:color :species})
     (sk/lay-lm {:color :species})
     (sk/coord :fixed)
-    (sk/plot {:title "Fixed Aspect Ratio"}))
+    (sk/options {:title "Fixed Aspect Ratio"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
@@ -371,9 +356,9 @@
      :change (map #(- % 10) (range 20))}
     (sk/view :x :y)
     (sk/lay-point {:color :change})
-    (sk/plot {:color-scale :diverging
-              :color-midpoint 0
-              :title "Diverging Color Scale"}))
+    (sk/options {:color-scale :diverging
+                 :color-midpoint 0
+                 :title "Diverging Color Scale"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -387,7 +372,7 @@
     (sk/view :sepal_length :sepal_width)
     (sk/lay-point {:color :species})
     (sk/lay-loess {:se true :color :species})
-    (sk/plot {:title "LOESS with 95% CI"}))
+    (sk/options {:title "LOESS with 95% CI"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -402,13 +387,13 @@
   (-> iris
       (sk/view :sepal_length :sepal_width)
       (sk/lay-point {:color :species})
-      (sk/plot {:title "Sepal" :width 300 :height 250})))
+      (sk/options {:title "Sepal" :width 300 :height 250})))
 
 (def iris-petal
   (-> iris
       (sk/view :petal_length :petal_width)
       (sk/lay-point {:color :species})
-      (sk/plot {:title "Petal" :width 300 :height 250})))
+      (sk/options {:title "Petal" :width 300 :height 250})))
 
 (sk/arrange [iris-sepal iris-petal]
             {:title "Iris Dashboard" :cols 2})
@@ -429,7 +414,7 @@
     (sk/view :area :population)
     sk/lay-point
     (sk/lay-text {:text :city :nudge-y 1.0})
-    (sk/plot {:title "Population vs Area"}))
+    (sk/options {:title "Population vs Area"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 5 (:points s))
@@ -449,7 +434,7 @@
       (sk/view [[:x :y]])
       sk/lay-point
       sk/lay-lm
-      (sk/plot {:title "Simulated: y = 3x + 5 + noise"})))
+      (sk/options {:title "Simulated: y = 3x + 5 + noise"})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 20 (:points s))
@@ -465,7 +450,7 @@
 (-> penguins
     (sk/view [[:bill_length_mm :bill_depth_mm]])
     (sk/lay-point {:color :species})
-    (sk/plot {:title "Palmer Penguins: Bill Dimensions"}))
+    (sk/options {:title "Palmer Penguins: Bill Dimensions"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -477,7 +462,7 @@
     (sk/view [[:bill_length_mm :bill_depth_mm]])
     (sk/lay-point {:color :species})
     (sk/lay-lm {:color :species})
-    (sk/plot {:title "Bill Length vs Depth with Regression"}))
+    (sk/options {:title "Bill Length vs Depth with Regression"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 342 (:points s))
@@ -489,7 +474,7 @@
     (sk/view [[:bill_length_mm :bill_depth_mm]])
     (sk/lay-point {:color :species})
     sk/lay-lm
-    (sk/plot {:title "Simpson's Paradox: Overall vs Per-Group Trend"}))
+    (sk/options {:title "Simpson's Paradox: Overall vs Per-Group Trend"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 342 (:points s))
@@ -500,7 +485,7 @@
 (-> penguins
     (sk/view :island)
     (sk/lay-bar {:color :species})
-    (sk/plot {:title "Species by Island"}))
+    (sk/options {:title "Species by Island"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -512,7 +497,7 @@
     (sk/view [[:flipper_length_mm :body_mass_g]])
     (sk/lay-point {:color :species})
     (sk/lay-lm {:color :species})
-    (sk/plot {:title "Flipper Length vs Body Mass"}))
+    (sk/options {:title "Flipper Length vs Body Mass"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 342 (:points s))
@@ -523,7 +508,7 @@
 (-> penguins
     (sk/view :body_mass_g)
     (sk/lay-histogram {:color :species})
-    (sk/plot {:title "Body Mass Distribution"}))
+    (sk/options {:title "Body Mass Distribution"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -537,8 +522,8 @@
     (sk/view [[:total_bill :tip]])
     (sk/lay-point {:color :smoker})
     (sk/lay-lm {:color :smoker})
-    (sk/plot {:title "Tipping: Smokers vs Non-Smokers"
-              :x-label "Total Bill ($)" :y-label "Tip ($)"}))
+    (sk/options {:title "Tipping: Smokers vs Non-Smokers"
+                 :x-label "Total Bill ($)" :y-label "Tip ($)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 244 (:points s))
@@ -549,7 +534,7 @@
 (-> tips
     (sk/view :day)
     (sk/lay-bar {:color :time})
-    (sk/plot {:title "Visits by Day and Meal Time"}))
+    (sk/options {:title "Visits by Day and Meal Time"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -560,7 +545,7 @@
 (-> tips
     (sk/view :day)
     (sk/lay-stacked-bar {:color :time})
-    (sk/plot {:title "Visits by Day (Stacked)"}))
+    (sk/options {:title "Visits by Day (Stacked)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -572,7 +557,7 @@
     (sk/view :day)
     (sk/lay-bar {:color :sex})
     (sk/coord :flip)
-    (sk/plot {:title "Day by Gender (Horizontal)"}))
+    (sk/options {:title "Day by Gender (Horizontal)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -589,7 +574,7 @@
     (sk/view [[:horsepower :mpg]])
     (sk/lay-point {:color :origin})
     (sk/lay-lm {:color :origin})
-    (sk/plot {:title "Horsepower vs MPG by Origin"}))
+    (sk/options {:title "Horsepower vs MPG by Origin"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 392 (:points s))
@@ -600,7 +585,7 @@
 (-> mpg
     (sk/view [[:displacement :mpg]])
     (sk/lay-point {:color :origin})
-    (sk/plot {:title "Engine Displacement vs Fuel Efficiency"}))
+    (sk/options {:title "Engine Displacement vs Fuel Efficiency"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -611,7 +596,7 @@
 (-> mpg
     (sk/view :origin)
     sk/lay-bar
-    (sk/plot {:title "Cars by Origin"}))
+    (sk/options {:title "Cars by Origin"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

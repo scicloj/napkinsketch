@@ -32,7 +32,9 @@
 
 (deftest
  t6_l34
- (is ((fn [v] (and (vector? v) (= 1 (count v)))) v5_l32)))
+ (is
+  ((fn [v] (and (sk/plot-spec? v) (= 1 (count (sk/views-of v)))))
+   v5_l32)))
 
 
 (def v8_l42 (method/point {:color :species, :alpha 0.5}))
@@ -212,7 +214,7 @@
   iris
   (sk/view :sepal_length :sepal_width)
   (sk/lay-point {:color :species})
-  (sk/plot
+  (sk/options
    {:theme
     {:background "#2d2d2d",
      :grid "#444444",

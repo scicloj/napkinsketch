@@ -42,11 +42,11 @@
    :revenue [120 340 210 95]}))
 
 
-(def v7_l30 (-> iris (sk/view :species) sk/lay-bar sk/plot))
+(def v7_l30 (-> iris (sk/view :species) sk/lay-bar))
 
 
 (deftest
- t8_l35
+ t8_l34
  (is
   ((fn
     [v]
@@ -56,162 +56,150 @@
    v7_l30)))
 
 
-(def
- v10_l44
- (-> tips (sk/view :day) (sk/lay-bar {:color :smoker}) sk/plot))
+(def v10_l43 (-> tips (sk/view :day) (sk/lay-bar {:color :smoker})))
 
 
 (deftest
- t11_l49
+ t11_l47
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v10_l44)))
+   v10_l43)))
 
 
 (def
- v13_l58
- (-> tips (sk/view :day) (sk/lay-stacked-bar {:color :smoker}) sk/plot))
+ v13_l56
+ (-> tips (sk/view :day) (sk/lay-stacked-bar {:color :smoker})))
 
 
 (deftest
- t14_l63
+ t14_l60
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v13_l58)))
+   v13_l56)))
 
 
 (def
- v16_l72
+ v16_l69
  (->
   penguins
   (sk/view :island)
-  (sk/lay-stacked-bar-fill {:color :species})
-  sk/plot))
+  (sk/lay-stacked-bar-fill {:color :species})))
 
 
 (deftest
- t17_l77
+ t17_l73
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v16_l72)))
+   v16_l69)))
+
+
+(def v19_l81 (-> iris (sk/view :species) sk/lay-bar (sk/coord :flip)))
+
+
+(deftest
+ t20_l86
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:polygons s)))))
+   v19_l81)))
 
 
 (def
- v19_l85
- (-> iris (sk/view :species) sk/lay-bar (sk/coord :flip) sk/plot))
+ v22_l95
+ (-> tips (sk/view :day) (sk/lay-bar {:color :time}) (sk/coord :flip)))
 
 
 (deftest
- t20_l91
+ t23_l100
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v19_l85)))
+   v22_l95)))
 
 
-(def
- v22_l100
- (->
-  tips
-  (sk/view :day)
-  (sk/lay-bar {:color :time})
-  (sk/coord :flip)
-  sk/plot))
+(def v25_l109 (-> sales (sk/lay-value-bar :product :revenue)))
 
 
 (deftest
- t23_l106
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v22_l100)))
-
-
-(def v25_l115 (-> sales (sk/lay-value-bar :product :revenue) sk/plot))
-
-
-(deftest
- t26_l119
+ t26_l112
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v25_l115)))
+   v25_l109)))
 
 
 (def
- v28_l127
+ v28_l120
  (->
   sales
   (sk/view [[:product :revenue]])
   sk/lay-value-bar
-  (sk/coord :flip)
-  sk/plot))
+  (sk/coord :flip)))
 
 
 (deftest
- t29_l133
+ t29_l125
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v28_l127)))
+   v28_l120)))
 
 
 (def
- v31_l141
- (-> sales (sk/view [[:product :revenue]]) sk/lay-lollipop sk/plot))
+ v31_l133
+ (-> sales (sk/view [[:product :revenue]]) sk/lay-lollipop))
 
 
 (deftest
- t32_l146
+ t32_l137
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
-   v31_l141)))
+   v31_l133)))
 
 
 (def
- v34_l154
+ v34_l145
  (->
   sales
   (sk/view [[:product :revenue]])
   sk/lay-lollipop
-  (sk/coord :flip)
-  sk/plot))
+  (sk/coord :flip)))
 
 
 (deftest
- t35_l160
+ t35_l150
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
-   v34_l154)))
+   v34_l145)))

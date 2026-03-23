@@ -113,13 +113,11 @@
 (deftest t29_l286 (is ((fn [v] (= :svg v)) v28_l282)))
 
 
-(def
- v31_l340
- (-> iris (sk/view :species) sk/lay-bar (sk/coord :flip) sk/plot))
+(def v31_l340 (-> iris (sk/view :species) sk/lay-bar (sk/coord :flip)))
 
 
 (deftest
- t32_l346
+ t32_l345
  (is
   ((fn
     [v]

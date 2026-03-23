@@ -50,8 +50,7 @@ iris
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
     (sk/view :x :y)
-    sk/lay-point
-    sk/plot)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -59,8 +58,7 @@ iris
 
 (-> [{:x 1 :y 2 :g "a"} {:x 3 :y 4 :g "a"} {:x 5 :y 6 :g "b"}]
     (sk/view :x :y)
-    (sk/lay-point {:color :g})
-    sk/plot)
+    (sk/lay-point {:color :g}))
 
 (kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
 
@@ -69,8 +67,7 @@ iris
 (-> (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
                 {:key-fn keyword})
     (sk/view :total_bill :tip)
-    sk/lay-point
-    sk/plot)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
 
@@ -82,8 +79,7 @@ iris
 ;; `sk/lay-point` accepts raw data and column names directly:
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    sk/plot)
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -95,8 +91,7 @@ iris
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
-    sk/plot)
+    (sk/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])
@@ -119,8 +114,7 @@ iris
 ;; The simplest plot: map columns to x and y.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    sk/plot)
+    (sk/view :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -130,8 +124,7 @@ iris
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
-    sk/lay-point
-    sk/plot)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -143,8 +136,7 @@ iris
 
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
-    sk/plot)
+    (sk/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -158,8 +150,7 @@ iris
 (-> iris
     (sk/view [[:sepal_length :sepal_width]])
     (sk/lay-point {:color :species})
-    (sk/lay-lm {:color :species})
-    sk/plot)
+    (sk/lay-lm {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -171,8 +162,7 @@ iris
 
 (-> iris
     (sk/view :sepal_length)
-    sk/lay-histogram
-    sk/plot)
+    sk/lay-histogram)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -185,8 +175,7 @@ iris
 
 (-> iris
     (sk/view :species)
-    sk/lay-bar
-    sk/plot)
+    sk/lay-bar)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -199,8 +188,7 @@ iris
 (-> iris
     (sk/view :species)
     sk/lay-bar
-    (sk/coord :flip)
-    sk/plot)
+    (sk/coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:polygons s))))])
@@ -212,8 +200,7 @@ iris
 (-> {:x [1 2 3 4 5 6 7 8]
      :y [3 5 4 7 6 8 7 9]}
     (sk/view [[:x :y]])
-    sk/lay-line
-    sk/plot)
+    sk/lay-line)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:lines s))
@@ -226,10 +213,10 @@ iris
 (-> iris
     (sk/view [[:petal_length :petal_width]])
     (sk/lay-point {:color :species})
-    (sk/plot {:width 500 :height 350
-              :title "Iris Petals"
-              :x-label "Petal Length (cm)"
-              :y-label "Petal Width (cm)"}))
+    (sk/options {:width 500 :height 350
+                 :title "Iris Petals"
+                 :x-label "Petal Length (cm)"
+                 :y-label "Petal Width (cm)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

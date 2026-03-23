@@ -340,8 +340,7 @@
 (-> iris
     (sk/view :species)
     sk/lay-bar
-    (sk/coord :flip)
-    sk/plot)
+    (sk/coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

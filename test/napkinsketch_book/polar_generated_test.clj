@@ -30,12 +30,11 @@
   iris
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay-point {:color :species})
-  (sk/coord :polar)
-  sk/plot))
+  (sk/coord :polar)))
 
 
 (deftest
- t7_l36
+ t7_l35
  (is
   ((fn
     [v]
@@ -45,98 +44,88 @@
    v6_l30)))
 
 
-(def
- v9_l47
- (-> iris (sk/view :species) sk/lay-bar (sk/coord :polar) sk/plot))
+(def v9_l46 (-> iris (sk/view :species) sk/lay-bar (sk/coord :polar)))
 
 
 (deftest
- t10_l53
+ t10_l51
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v9_l47)))
+   v9_l46)))
 
 
 (def
- v12_l62
+ v12_l60
  (->
   wind
   (sk/view [:direction :speed])
   sk/lay-value-bar
-  (sk/coord :polar)
-  sk/plot))
+  (sk/coord :polar)))
 
 
 (deftest
- t13_l68
+ t13_l65
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)))))
-   v12_l62)))
+   v12_l60)))
 
 
 (def
- v15_l76
+ v15_l73
  (->
   iris
   (sk/view :species)
   (sk/lay-stacked-bar {:color :species})
-  (sk/coord :polar)
-  sk/plot))
+  (sk/coord :polar)))
 
 
 (deftest
- t16_l82
+ t16_l78
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v15_l76)))
+   v15_l73)))
 
 
 (def
- v18_l91
- (->
-  iris
-  (sk/view :sepal_length)
-  sk/lay-histogram
-  (sk/coord :polar)
-  sk/plot))
+ v18_l87
+ (-> iris (sk/view :sepal_length) sk/lay-histogram (sk/coord :polar)))
 
 
 (deftest
- t19_l97
+ t19_l92
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v18_l91)))
+   v18_l87)))
 
 
 (def
- v21_l106
+ v21_l101
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
   (sk/lay-point {:color :species})
   (sk/coord :polar)
-  (sk/labs {:title "Iris in Polar Space"})
-  sk/plot))
+  (sk/labs {:title "Iris in Polar Space"})))
 
 
 (deftest
- t22_l113
+ t22_l107
  (is
   ((fn
     [v]
@@ -145,4 +134,4 @@
      (and
       (= 1 (:panels s))
       (some #{"Iris in Polar Space"} (:texts s)))))
-   v21_l106)))
+   v21_l101)))

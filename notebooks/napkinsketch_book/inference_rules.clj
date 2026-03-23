@@ -52,7 +52,7 @@
 
 ;; And the resulting plot:
 
-(sk/plot scatter-views)
+scatter-views
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -97,7 +97,7 @@
                             (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
                                  (true? (:categorical? (:x-ticks p))))))])
 
-(sk/plot bar-views)
+bar-views
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
@@ -154,7 +154,7 @@
 (kind/test-last [(fn [sk] (let [layer (first (:layers (first (:panels sk))))]
                             (= :bar (:mark layer))))])
 
-(sk/plot hist-views)
+hist-views
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -173,7 +173,7 @@
 (kind/test-last [(fn [sk] (let [layer (first (:layers (first (:panels sk))))]
                             (= :rect (:mark layer))))])
 
-(sk/plot count-views)
+count-views
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -210,7 +210,7 @@
                                  (some? (:legend sk))
                                  (= 100 (get-in sk [:layout :legend-w])))))])
 
-(sk/plot colored-views)
+colored-views
 
 (kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
 
@@ -240,7 +240,7 @@
                                       (< (nth c 2) 0.30)
                                       (== 1.0 (nth c 3))))))])
 
-(sk/plot fixed-color-views)
+fixed-color-views
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -255,8 +255,7 @@
 
 (-> five-points
     (sk/view :x :y)
-    (sk/lay-point {:color "steelblue"})
-    sk/plot)
+    (sk/lay-point {:color "steelblue"}))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -391,8 +390,7 @@
 (-> grouped-data
     (sk/view :x :y)
     sk/lay-point
-    sk/lay-lm
-    sk/plot)
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 6 (:points s))
@@ -403,8 +401,7 @@
 (-> grouped-data
     (sk/view :x :y)
     (sk/lay-point {:color :g})
-    (sk/lay-lm {:color :g})
-    sk/plot)
+    (sk/lay-lm {:color :g}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 6 (:points s))
@@ -554,8 +551,7 @@
 (-> animals
     (sk/view :animal :count)
     sk/lay-value-bar
-    (sk/coord :flip)
-    sk/plot)
+    (sk/coord :flip))
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
@@ -616,7 +612,7 @@
 (kind/test-last [(fn [sk] (let [p (first (:panels sk))]
                             (= 2 (count (:layers p)))))])
 
-(sk/plot multi-views)
+multi-views
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 5 (:points s))

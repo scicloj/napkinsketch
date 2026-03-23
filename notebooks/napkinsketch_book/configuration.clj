@@ -63,13 +63,12 @@
 
 ;; ## Per-Call Options
 ;;
-;; The highest-priority mechanism. Pass an options map to `sk/plot`
-;; (or `sk/sketch`). Per-call options override everything else.
+;; The highest-priority mechanism. Pass an options map to `sk/options`
+;; (or `sk/sketch` or `sk/plot`). Per-call options override everything else.
 
 ;; The default plot uses the library defaults (600×400):
 
-(-> (base-views)
-    (sk/plot))
+(-> (base-views))
 
 (kind/test-last
  [(fn [v]
@@ -88,7 +87,7 @@
 ;; A wide, short plot via per-call options:
 
 (-> (base-views)
-    (sk/plot {:width 900 :height 250}))
+    (sk/options {:width 900 :height 250}))
 
 (kind/test-last
  [(fn [v]
@@ -110,7 +109,8 @@
 ;; preserved from the defaults.
 
 (-> (base-views)
-    (sk/plot {:theme {:bg "#FFFFFF"}}))
+    (sk/options {:theme {:bg "#FFFFFF"}})
+    sk/plot)
 
 (kind/test-last
  [(fn [v]
@@ -120,7 +120,7 @@
 ;; Palette override:
 
 (-> (base-views)
-    (sk/plot {:palette :dark2}))
+    (sk/options {:palette :dark2}))
 
 (kind/test-last
  [(fn [v]
@@ -152,8 +152,7 @@
 
 ;; And the rendered plot uses it:
 
-(-> (base-views)
-    (sk/plot))
+(-> (base-views) sk/plot)
 
 (kind/test-last
  [(fn [v]
@@ -202,7 +201,8 @@
 
 (sk/with-config {:theme {:bg "#1a1a2e" :grid "#16213e" :font-size 8}}
   (-> (base-views)
-      (sk/plot {:title "Dark Theme via with-config"})))
+      (sk/options {:title "Dark Theme via with-config"})
+      sk/plot))
 
 (kind/test-last
  [(fn [v]
@@ -260,7 +260,7 @@ precedence-point-radius
 (def precedence-plot
   (sk/with-config {:width 1200 :height 500}
     (-> (base-views)
-        (sk/plot {:width 900}))))
+        (sk/options {:width 900}))))
 
 precedence-plot
 
@@ -318,7 +318,8 @@ precedence-plot
 ;; Override only `:bg`, keep default `:grid` and `:font-size`:
 
 (-> (base-views)
-    (sk/plot {:theme {:bg "#F5F5DC"}}))
+    (sk/options {:theme {:bg "#F5F5DC"}})
+    sk/plot)
 
 (kind/test-last
  [(fn [v]
@@ -331,8 +332,9 @@ precedence-plot
 ;; Override all three for a dark theme:
 
 (-> (base-views)
-    (sk/plot {:title "Full Dark Theme"
-              :theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}}))
+    (sk/options {:title "Full Dark Theme"
+                 :theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}})
+    sk/plot)
 
 (kind/test-last
  [(fn [v]
@@ -346,13 +348,13 @@ precedence-plot
 
 (sk/arrange
  [(-> (base-views)
-      (sk/plot {:title "Light"
-                :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}
-                :width 350 :height 250}))
+      (sk/options {:title "Light"
+                   :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}
+                   :width 350 :height 250}))
   (-> (base-views)
-      (sk/plot {:title "Dark"
-                :theme {:bg "#2d2d2d" :grid "#444444" :font-size 8}
-                :width 350 :height 250}))])
+      (sk/options {:title "Dark"
+                   :theme {:bg "#2d2d2d" :grid "#444444" :font-size 8}
+                   :width 350 :height 250}))])
 
 (kind/test-last
  [(fn [v]
@@ -379,7 +381,7 @@ precedence-plot
 ;; Per-call named palette:
 
 (-> (base-views)
-    (sk/plot {:palette :tableau10}))
+    (sk/options {:palette :tableau10}))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -387,7 +389,7 @@ precedence-plot
 ;; Per-call custom vector palette:
 
 (-> (base-views)
-    (sk/plot {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
+    (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -395,9 +397,9 @@ precedence-plot
 ;; Per-call explicit map palette:
 
 (-> (base-views)
-    (sk/plot {:palette {"setosa" "#FF6B6B"
-                        "versicolor" "#4ECDC4"
-                        "virginica" "#45B7D1"}}))
+    (sk/options {:palette {"setosa" "#FF6B6B"
+                           "versicolor" "#4ECDC4"
+                           "virginica" "#45B7D1"}}))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -406,8 +408,7 @@ precedence-plot
 
 (sk/set-config! {:palette :pastel1})
 
-(-> (base-views)
-    (sk/plot))
+(-> (base-views))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -417,8 +418,7 @@ precedence-plot
 ;; Thread-local palette via with-config:
 
 (sk/with-config {:palette :accent}
-  (-> (base-views)
-      (sk/plot)))
+  (-> (base-views)))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -433,8 +433,7 @@ precedence-plot
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/view :x :y)
-    (sk/lay-point {:color :c})
-    (sk/plot))
+    (sk/lay-point {:color :c}))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
@@ -443,7 +442,7 @@ precedence-plot
 (-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/view :x :y)
     (sk/lay-point {:color :c})
-    (sk/plot {:color-scale :inferno}))
+    (sk/options {:color-scale :inferno}))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
@@ -452,8 +451,7 @@ precedence-plot
 (sk/with-config {:color-scale :plasma}
   (-> {:x (range 50) :y (range 50) :c (range 50)}
       (sk/view :x :y)
-      (sk/lay-point {:color :c})
-      (sk/plot)))
+      (sk/lay-point {:color :c})))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
@@ -493,8 +491,7 @@ precedence-plot
 
 ;; The rendered plot works normally:
 
-(-> (base-views)
-    (sk/plot))
+(-> (base-views))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -576,7 +573,7 @@ precedence-plot
 ;;
 ;; | Mechanism | Scope | Persistence | Example |
 ;; |:----------|:------|:------------|:--------|
-;; | per-call options | single call | none | `(sk/plot views {:width 800})` |
+;; | per-call options | single call | none | `(sk/options {...})` or `(sk/plot views {...})` |
 ;; | `with-config` | lexical body | until body exits | `(sk/with-config {:width 800} ...)` |
 ;; | `set-config!` | global | until reset | `(sk/set-config! {:width 800})` |
 ;; | `napkinsketch.edn` | project | file on disk | `{:width 800}` in project root |

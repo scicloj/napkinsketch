@@ -373,35 +373,37 @@
 
 (deftest view-arities-test
   (testing "2-arity (data, spec)"
-    (let [v (sk/view tiny-ds [[:x :y]])]
+    (let [v (sk/views-of (sk/view tiny-ds [[:x :y]]))]
       (is (vector? v))
       (is (= 1 (count v)))
       (is (= :x (:x (first v))))
       (is (= :y (:y (first v))))))
   (testing "3-arity (data, x, y)"
-    (let [v (sk/view tiny-ds :x :y)]
+    (let [v (sk/views-of (sk/view tiny-ds :x :y))]
       (is (= 1 (count v)))
       (is (= :x (:x (first v))))))
   (testing "histogram (1 column)"
-    (let [v (sk/view tiny-ds :x)]
+    (let [v (sk/views-of (sk/view tiny-ds :x))]
       (is (= 1 (count v)))
       (is (= :x (:x (first v)))))))
 
 (deftest lay-test
   (testing "lay merges mark into views"
-    (let [views (sk/view tiny-ds [[:x :y]])
-          layered (sk/lay views (method/point {:color :x}))]
+    (let [spec (sk/view tiny-ds [[:x :y]])
+          layered (sk/views-of (sk/lay spec (method/point {:color :x})))]
       (is (= :point (:mark (first layered))))
       (is (= :x (:color (first layered))))))
   (testing "lay is additive"
-    (let [views (sk/view tiny-ds [[:x :y]])
-          l1 (sk/lay views (method/point))
+    (let [spec (sk/view tiny-ds [[:x :y]])
+          l1 (sk/lay spec (method/point))
           l2 (sk/lay l1 (method/lm))]
-      (is (= 2 (count l2))))))
+      (is (= 2 (count (sk/views-of l2)))))))
 
 (deftest view-record-test
-  (testing "view returns View records"
-    (let [views (sk/view tiny-ds [[:x :y]])]
+  (testing "view returns PlotSpec wrapping View records"
+    (let [spec (sk/view tiny-ds [[:x :y]])
+          views (sk/views-of spec)]
+      (is (view/plot-spec? spec))
       (is (instance? scicloj.napkinsketch.impl.view.View (first views)))
       (is (view/views? views))))
   (testing "views? rejects plain maps"
@@ -412,33 +414,62 @@
 
 (deftest lay-x-test
   (testing "1-arity: add to views"
-    (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)]
+    (let [views (sk/views-of (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point))]
       (is (= :point (:mark (first views))))
       (is (= :identity (:stat (first views))))))
   (testing "2-arity: views + opts"
-    (let [views (-> tiny-ds (sk/view [[:x :y]]) (sk/lay-point {:color :x}))]
+    (let [views (sk/views-of (-> tiny-ds (sk/view [[:x :y]]) (sk/lay-point {:color :x})))]
       (is (= :point (:mark (first views))))
       (is (= :x (:color (first views))))))
   (testing "3-arity: data + x + y"
-    (let [views (sk/lay-point tiny-ds :x :y)]
-      (is (view/views? views))
+    (let [views (sk/views-of (sk/lay-point tiny-ds :x :y))]
+      (is (vector? views))
       (is (= :point (:mark (first views))))))
   (testing "4-arity: data + x + y + opts"
-    (let [views (sk/lay-point tiny-ds :x :y {:color :x})]
+    (let [views (sk/views-of (sk/lay-point tiny-ds :x :y {:color :x}))]
       (is (= :point (:mark (first views))))
       (is (= :x (:color (first views))))))
   (testing "chaining lay-X"
-    (let [views (-> tiny-ds (sk/lay-point :x :y) (sk/lay-lm))]
+    (let [views (sk/views-of (-> tiny-ds (sk/lay-point :x :y) (sk/lay-lm)))]
       (is (= 2 (count views)))
       (is (= :point (:mark (first views))))
       (is (= :line (:mark (second views))))))
   (testing "lay-histogram 2-arity with column"
-    (let [views (sk/lay-histogram tiny-ds :x)]
-      (is (view/views? views))
+    (let [views (sk/views-of (sk/lay-histogram tiny-ds :x))]
+      (is (vector? views))
       (is (= :bar (:mark (first views))))))
   (testing "data shortcut renders"
     (let [fig (-> tiny-ds (sk/lay-point :x :y) sk/plot)]
       (is (some? fig)))))
+
+(deftest plot-spec-test
+  (testing "API functions return PlotSpec"
+    (is (view/plot-spec? (sk/view tiny-ds [[:x :y]])))
+    (is (view/plot-spec? (sk/lay-point tiny-ds :x :y)))
+    (is (view/plot-spec? (-> tiny-ds (sk/lay-point :x :y) (sk/lay-lm)))))
+  (testing "views-of extracts raw views"
+    (let [views (sk/views-of (sk/lay-point tiny-ds :x :y))]
+      (is (vector? views))
+      (is (view/views? views))))
+  (testing "options stores render options"
+    (let [spec (-> tiny-ds (sk/lay-point :x :y) (sk/options {:width 800}))]
+      (is (view/plot-spec? spec))
+      (is (= 800 (:width (:opts spec))))))
+  (testing "plot accepts PlotSpec"
+    (let [fig (-> tiny-ds (sk/lay-point :x :y) sk/plot)]
+      (is (vector? fig))
+      (is (= :svg (first fig)))))
+  (testing "sketch accepts PlotSpec"
+    (let [sk (-> tiny-ds (sk/lay-point :x :y) sk/sketch)]
+      (is (map? sk))
+      (is (contains? sk :panels))))
+  (testing "svg-summary accepts PlotSpec"
+    (let [s (sk/svg-summary (sk/lay-point tiny-ds :x :y))]
+      (is (map? s))
+      (is (= 5 (:points s)))))
+  (testing "options flow through to render"
+    (let [sk (-> tiny-ds (sk/lay-point :x :y) (sk/options {:width 800}) sk/sketch)]
+      (is (= 800 (:width sk))))))
 
 ;; ============================================================
 ;; views->sketch (integration)

@@ -20,8 +20,7 @@
 
 (-> wave
     (sk/view [[:x :y]])
-    sk/lay-line
-    sk/plot)
+    sk/lay-line)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -38,8 +37,7 @@
 
 (-> waves
     (sk/view [[:x :y]])
-    (sk/lay-line {:color :fn})
-    sk/plot)
+    (sk/lay-line {:color :fn}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -51,8 +49,7 @@
 
 (-> wave
     (sk/view [[:x :y]])
-    (sk/lay-line {:size 4})
-    sk/plot)
+    (sk/lay-line {:size 4}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -70,8 +67,7 @@
 (-> growth
     (sk/view [[:day :value]])
     (sk/lay-line {:color :group})
-    (sk/lay-point {:color :group})
-    sk/plot)
+    (sk/lay-point {:color :group}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 10 (:points s))
@@ -85,8 +81,7 @@
      :y [2 4 1 5 3]}
     (sk/view [[:x :y]])
     sk/lay-step
-    sk/lay-point
-    sk/plot)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 5 (:points s))
@@ -99,8 +94,7 @@
 (-> growth
     (sk/view [[:day :value]])
     (sk/lay-step {:color :group})
-    (sk/lay-point {:color :group})
-    sk/plot)
+    (sk/lay-point {:color :group}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 10 (:points s))
@@ -113,8 +107,7 @@
 (-> {:x (range 30)
      :y (mapv #(Math/sin (* % 0.3)) (range 30))}
     (sk/view [[:x :y]])
-    sk/lay-area
-    sk/plot)
+    sk/lay-area)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -130,8 +123,7 @@
                      [1 1 1 1 2 2 2 1 1 1]))
      :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
     (sk/view [[:x :y]])
-    (sk/lay-stacked-area {:color :group})
-    sk/plot)
+    (sk/lay-stacked-area {:color :group}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

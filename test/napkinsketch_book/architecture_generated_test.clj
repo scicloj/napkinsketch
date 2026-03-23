@@ -31,39 +31,43 @@
 
 (deftest
  t9_l65
- (is ((fn [v] (and (vector? v) (= :point (:mark (first v))))) v8_l63)))
+ (is
+  ((fn
+    [v]
+    (and (sk/plot-spec? v) (= :point (:mark (first (sk/views-of v))))))
+   v8_l63)))
 
 
-(def v11_l74 (def trace-sketch (sk/sketch trace-views)))
+(def v11_l75 (def trace-sketch (sk/sketch trace-views)))
 
 
-(def v12_l76 trace-sketch)
-
-
-(deftest
- t13_l78
- (is ((fn [v] (and (map? v) (contains? v :panels))) v12_l76)))
-
-
-(def v15_l82 (ss/valid? trace-sketch))
-
-
-(deftest t16_l84 (is (true? v15_l82)))
-
-
-(def v18_l97 (def trace-membrane (sk/sketch->membrane trace-sketch)))
-
-
-(def v19_l99 trace-membrane)
+(def v12_l77 trace-sketch)
 
 
 (deftest
- t20_l101
- (is ((fn [v] (and (vector? v) (pos? (count v)))) v19_l99)))
+ t13_l79
+ (is ((fn [v] (and (map? v) (contains? v :panels))) v12_l77)))
+
+
+(def v15_l83 (ss/valid? trace-sketch))
+
+
+(deftest t16_l85 (is (true? v15_l83)))
+
+
+(def v18_l98 (def trace-membrane (sk/sketch->membrane trace-sketch)))
+
+
+(def v19_l100 trace-membrane)
+
+
+(deftest
+ t20_l102
+ (is ((fn [v] (and (vector? v) (pos? (count v)))) v19_l100)))
 
 
 (def
- v22_l108
+ v22_l109
  (def
   trace-figure
   (sk/membrane->figure
@@ -73,36 +77,36 @@
     :total-height (:total-height trace-sketch)})))
 
 
-(def v23_l113 (kind/pprint trace-figure))
+(def v23_l114 (kind/pprint trace-figure))
 
 
 (deftest
- t24_l115
- (is ((fn [v] (and (vector? v) (= :svg (first v)))) v23_l113)))
+ t24_l116
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v23_l114)))
 
 
-(def v26_l119 (kind/hiccup trace-figure))
+(def v26_l120 (kind/hiccup trace-figure))
 
 
 (deftest
- t27_l121
+ t27_l122
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 5 (:points s)))))
-   v26_l119)))
+   v26_l120)))
 
 
 (def
- v29_l139
+ v29_l140
  (kind/mermaid
   "\ngraph LR\n  subgraph WHAT [\"WHAT — data + semantics\"]\n    V[\"Views\"]\n    ST[\"Statistics\"]\n    D[\"Domains\"]\n    C[\"Colors\"]\n  end\n  subgraph HOW [\"HOW — pixels + rendering\"]\n    SC[\"Scales (wadogo)\"]\n    CO[\"Coord transforms\"]\n    MS[\"Membrane tree\"]\n    SV[\"SVG conversion\"]\n  end\n  WHAT -->|sketch| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
 
 
 (def
- v31_l181
+ v31_l182
  (def
   iris
   (tc/dataset
@@ -111,7 +115,7 @@
 
 
 (def
- v32_l184
+ v32_l185
  (def
   multi-views
   (->
@@ -121,21 +125,21 @@
 
 
 (def
- v33_l189
+ v33_l190
  (def
   multi-sketch
   (sk/sketch multi-views {:title "Iris Petals with Regression"})))
 
 
 (def
- v35_l193
+ v35_l194
  (mapv
   (fn [layer] {:mark (:mark layer), :n-groups (count (:groups layer))})
   (:layers (first (:panels multi-sketch)))))
 
 
 (deftest
- t36_l198
+ t36_l199
  (is
   ((fn
     [v]
@@ -143,46 +147,46 @@
      (= :point (:mark (first v)))
      (= :line (:mark (second v)))
      (= 3 (:n-groups (first v)))))
-   v35_l193)))
+   v35_l194)))
 
 
-(def v38_l204 multi-sketch)
+(def v38_l205 multi-sketch)
 
 
 (deftest
- t39_l206
+ t39_l207
  (is
   ((fn
     [m]
     (and
      (= "Iris Petals with Regression" (:title m))
      (= 3 (count (get-in m [:legend :entries])))))
-   v38_l204)))
+   v38_l205)))
 
 
 (def
- v41_l211
+ v41_l212
  (sk/plot multi-views {:title "Iris Petals with Regression"}))
 
 
 (deftest
- t42_l213
+ t42_l214
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v41_l211)))
+   v41_l212)))
 
 
 (def
- v44_l219
+ v44_l220
  (kind/mermaid
   "\ngraph TD\n  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]\n  API --> PLOT[\"impl/plot.clj\"]\n  API --> SKETCH[\"impl/sketch.clj\"]\n  SKETCH --> VIEW\n  SKETCH --> STAT[\"impl/stat.clj\"]\n  SKETCH --> SCALE[\"impl/scale.clj\"]\n  SKETCH --> DEFAULTS[\"impl/defaults.clj\"]\n  PLOT --> SKETCH\n  PLOT --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SKETCH fill:#ffe0b2\n  style PLOT fill:#bbdefb\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))
 
 
 (def
- v46_l252
+ v46_l253
  (kind/mermaid
   "\ngraph TD\n  VIEWS[\"views + opts\"]\n  VIEWS --> INFER[\"infer-layout\"]\n  VIEWS --> COLORS[\"collect-colors<br/>(resolve-view × N)\"]\n  VIEWS --> ANNOTS[\"annotations\"]\n\n  INFER --> GRID[\"compute-grid\"]\n  INFER --> DIMS[\"compute-panel-dims\"]\n  INFER --> GROUP[\"group-panels\"]\n\n  COLORS --> GROUP\n  GROUP --> RPV[\"resolve-panel-views<br/>(compute-stat + extract-layer)\"]\n  COLORS --> RPV\n\n  RPV --> BUILD[\"build-panels<br/>(domains, ticks)\"]\n  GRID --> BUILD\n  DIMS --> BUILD\n\n  BUILD --> LABELS[\"resolve-labels\"]\n  COLORS --> LEGEND[\"build-legend\"]\n  LABELS --> LAYOUT[\"compute-layout-dims\"]\n  LEGEND --> LAYOUT\n  DIMS --> LAYOUT\n\n  BUILD --> SKETCH[\"sketch\"]\n  LABELS --> SKETCH\n  LEGEND --> SKETCH\n  LAYOUT --> SKETCH\n\n  style VIEWS fill:#e8f5e9\n  style SKETCH fill:#fff3e0\n  style RPV fill:#e3f2fd\n  style BUILD fill:#e3f2fd\n"))

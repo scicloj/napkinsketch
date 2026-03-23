@@ -27,15 +27,11 @@
 
 (def
  v5_l25
- (->
-  iris
-  (sk/view [[:sepal_length :sepal_width]])
-  sk/lay-point
-  sk/plot))
+ (-> iris (sk/view [[:sepal_length :sepal_width]]) sk/lay-point))
 
 
 (deftest
- t6_l30
+ t6_l29
  (is
   ((fn
     [v]
@@ -46,72 +42,69 @@
 
 
 (def
- v8_l39
+ v8_l38
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay-point {:color :species})
-  sk/plot))
+  (sk/lay-point {:color :species})))
 
 
 (deftest
- t9_l44
+ t9_l42
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
-   v8_l39)))
+   v8_l38)))
 
 
 (def
- v11_l53
+ v11_l51
  (->
   iris
   (sk/view [[:petal_length :petal_width]])
-  (sk/lay-point {:color :species})
-  sk/plot))
+  (sk/lay-point {:color :species})))
 
 
 (deftest
- t12_l58
+ t12_l55
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
-   v11_l53)))
+   v11_l51)))
 
 
 (def
- v14_l67
+ v14_l64
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay-point {:color "#E74C3C"})
-  sk/plot))
+  (sk/lay-point {:color "#E74C3C"})))
 
 
 (deftest
- t15_l72
+ t15_l68
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v14_l67)))
+   v14_l64)))
 
 
 (def
- v17_l80
+ v17_l76
  (->
   tips
   (sk/view [[:total_bill :tip]])
   (sk/lay-point {:color :day})
-  (sk/plot
+  (sk/options
    {:width 700,
     :height 300,
     :title "Tips by Day",
@@ -120,7 +113,7 @@
 
 
 (deftest
- t18_l88
+ t18_l84
  (is
   ((fn
     [v]
@@ -131,100 +124,95 @@
       (= 244 (:points s))
       (>= (:width s) 700)
       (some #{"Tips by Day"} (:texts s)))))
-   v17_l80)))
+   v17_l76)))
 
 
 (def
- v20_l99
+ v20_l95
  (->
   tips
   (sk/view [[:total_bill :tip]])
-  (sk/lay-point {:color :day, :size :size})
-  sk/plot))
+  (sk/lay-point {:color :day, :size :size})))
 
 
 (deftest
- t21_l104
+ t21_l99
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
-   v20_l99)))
+   v20_l95)))
 
 
 (def
- v23_l110
+ v23_l105
  (->
   tips
   (sk/view [[:total_bill :tip]])
-  (sk/lay-point {:color :day, :size :size, :alpha 0.6})
-  sk/plot))
+  (sk/lay-point {:color :day, :size :size, :alpha 0.6})))
 
 
 (deftest
- t24_l115
+ t24_l109
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
-   v23_l110)))
+   v23_l105)))
 
 
 (def
- v26_l124
+ v26_l118
  (->
   iris
   (sk/view [[:species :sepal_width]])
-  (sk/lay-point {:jitter true})
-  sk/plot))
+  (sk/lay-point {:jitter true})))
 
 
 (deftest
- t27_l129
+ t27_l122
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v26_l124)))
+   v26_l118)))
 
 
 (def
- v29_l135
+ v29_l128
  (->
   iris
   (sk/view [[:species :sepal_width]])
-  (sk/lay-point {:jitter 10, :alpha 0.5})
-  sk/plot))
+  (sk/lay-point {:jitter 10, :alpha 0.5})))
 
 
 (deftest
- t30_l140
+ t30_l132
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v29_l135)))
+   v29_l128)))
 
 
 (def
- v32_l149
+ v32_l141
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay-point {:color :petal_length})
-  sk/plot))
+  (sk/lay-point {:color :petal_length})))
 
 
 (deftest
- t33_l154
+ t33_l145
  (is
   ((fn
     [v]
@@ -234,24 +222,24 @@
       (= 1 (:panels s))
       (= 150 (:points s))
       (some #{"petal length"} (:texts s)))))
-   v32_l149)))
+   v32_l141)))
 
 
 (def
- v35_l161
+ v35_l152
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay-point {:color :petal_length, :size :petal_width, :alpha 0.7})
-  sk/plot))
+  (sk/lay-point
+   {:color :petal_length, :size :petal_width, :alpha 0.7})))
 
 
 (deftest
- t36_l166
+ t36_l156
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"petal length"} (:texts s)))))
-   v35_l161)))
+   v35_l152)))

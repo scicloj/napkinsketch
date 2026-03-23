@@ -41,7 +41,7 @@
    v6_l39)))
 
 
-(def v9_l55 (sk/plot scatter-views))
+(def v9_l55 scatter-views)
 
 
 (deftest
@@ -77,7 +77,7 @@
    v14_l94)))
 
 
-(def v16_l100 (sk/plot bar-views))
+(def v16_l100 bar-views)
 
 
 (deftest
@@ -130,7 +130,7 @@
    v23_l152)))
 
 
-(def v25_l157 (sk/plot hist-views))
+(def v25_l157 hist-views)
 
 
 (deftest
@@ -155,7 +155,7 @@
    v29_l171)))
 
 
-(def v31_l176 (sk/plot count-views))
+(def v31_l176 count-views)
 
 
 (deftest
@@ -206,7 +206,7 @@
    v38_l206)))
 
 
-(def v40_l213 (sk/plot colored-views))
+(def v40_l213 colored-views)
 
 
 (deftest
@@ -246,7 +246,7 @@
    v44_l231)))
 
 
-(def v46_l243 (sk/plot fixed-color-views))
+(def v46_l243 fixed-color-views)
 
 
 (deftest
@@ -256,20 +256,16 @@
 
 (def
  v49_l256
- (->
-  five-points
-  (sk/view :x :y)
-  (sk/lay-point {:color "steelblue"})
-  sk/plot))
+ (-> five-points (sk/view :x :y) (sk/lay-point {:color "steelblue"})))
 
 
 (deftest
- t50_l261
+ t50_l260
  (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v49_l256)))
 
 
 (def
- v52_l288
+ v52_l287
  (let
   [sk
    (->
@@ -283,14 +279,14 @@
 
 
 (deftest
- t53_l295
+ t53_l294
  (is
   ((fn [m] (and (nil? (:legend m)) (> (first (:color m)) 0.9)))
-   v52_l288)))
+   v52_l287)))
 
 
 (def
- v55_l322
+ v55_l321
  (let
   [sk
    (sk/sketch colored-views)
@@ -302,7 +298,7 @@
 
 
 (deftest
- t56_l328
+ t56_l327
  (is
   ((fn
     [m]
@@ -310,11 +306,11 @@
      (= 2 (:group-count m))
      (= ["a" "b"] (:group-labels m))
      (true? (:has-legend? m))))
-   v55_l322)))
+   v55_l321)))
 
 
 (def
- v58_l341
+ v58_l340
  (let
   [sk
    (->
@@ -329,23 +325,23 @@
 
 
 (deftest
- t59_l351
+ t59_l350
  (is
   ((fn
     [m]
     (and (= 1 (:group-count m)) (= :continuous (:legend-type m))))
-   v58_l341)))
+   v58_l340)))
 
 
 (def
- v61_l363
+ v61_l362
  (def
   grouped-data
   {:x [1 2 3 4 5 6], :y [3 5 4 7 6 8], :g ["a" "a" "a" "b" "b" "b"]}))
 
 
 (def
- v62_l368
+ v62_l367
  (let
   [sk
    (->
@@ -360,51 +356,48 @@
 
 
 (deftest
- t63_l376
+ t63_l375
  (is
   ((fn [m] (and (= 2 (:group-count m)) (false? (:has-legend? m))))
-   v62_l368)))
+   v62_l367)))
 
 
-(def
- v65_l391
- (-> grouped-data (sk/view :x :y) sk/lay-point sk/lay-lm sk/plot))
+(def v65_l390 (-> grouped-data (sk/view :x :y) sk/lay-point sk/lay-lm))
 
 
 (deftest
- t66_l397
+ t66_l395
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 6 (:points s)) (= 1 (:lines s)))))
-   v65_l391)))
+   v65_l390)))
 
 
 (def
- v68_l403
+ v68_l401
  (->
   grouped-data
   (sk/view :x :y)
   (sk/lay-point {:color :g})
-  (sk/lay-lm {:color :g})
-  sk/plot))
+  (sk/lay-lm {:color :g})))
 
 
 (deftest
- t69_l409
+ t69_l406
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 6 (:points s)) (= 2 (:lines s)))))
-   v68_l403)))
+   v68_l401)))
 
 
 (def
- v71_l422
+ v71_l419
  (let
   [sk (sk/sketch scatter-views) p (first (:panels sk))]
   {:x-domain (:x-domain p),
@@ -413,7 +406,7 @@
 
 
 (deftest
- t72_l428
+ t72_l425
  (is
   ((fn
     [m]
@@ -421,21 +414,21 @@
      (== 0.8 (first (:x-domain m)))
      (== 5.2 (second (:x-domain m)))
      (== 0.2 (:padding-each-side m))))
-   v71_l422)))
+   v71_l419)))
 
 
 (def
- v74_l436
+ v74_l433
  (let
   [sk (sk/sketch bar-views) p (first (:panels sk))]
   {:y-domain (:y-domain p)}))
 
 
-(deftest t75_l440 (is ((fn [m] (<= (first (:y-domain m)) 0)) v74_l436)))
+(deftest t75_l437 (is ((fn [m] (<= (first (:y-domain m)) 0)) v74_l433)))
 
 
 (def
- v77_l444
+ v77_l441
  (let
   [fill-sk
    (->
@@ -449,12 +442,12 @@
 
 
 (deftest
- t78_l452
- (is ((fn [d] (and (= 0.0 (first d)) (= 1.0 (second d)))) v77_l444)))
+ t78_l449
+ (is ((fn [d] (and (= 0.0 (first d)) (= 1.0 (second d)))) v77_l441)))
 
 
 (def
- v80_l461
+ v80_l458
  (def
   iris
   (tc/dataset
@@ -463,7 +456,7 @@
 
 
 (def
- v81_l464
+ v81_l461
  (let
   [sk
    (->
@@ -475,31 +468,31 @@
 
 
 (deftest
- t82_l471
+ t82_l468
  (is
   ((fn
     [m]
     (and
      (= "sepal length" (:x-label m))
      (= "sepal width" (:y-label m))))
-   v81_l464)))
+   v81_l461)))
 
 
 (def
- v84_l477
+ v84_l474
  (let
   [sk (-> five-points (sk/view :x) sk/sketch)]
   {:x-label (:x-label sk), :y-label (:y-label sk)}))
 
 
 (deftest
- t85_l481
+ t85_l478
  (is
-  ((fn [m] (and (= "x" (:x-label m)) (nil? (:y-label m)))) v84_l477)))
+  ((fn [m] (and (= "x" (:x-label m)) (nil? (:y-label m)))) v84_l474)))
 
 
 (def
- v87_l486
+ v87_l483
  (let
   [sk
    (->
@@ -512,12 +505,12 @@
 
 
 (deftest
- t88_l494
- (is ((fn [m] (= "Length (cm)" (:x-label m))) v87_l486)))
+ t88_l491
+ (is ((fn [m] (= "Length (cm)" (:x-label m))) v87_l483)))
 
 
 (def
- v90_l501
+ v90_l498
  (let
   [bare
    (sk/sketch scatter-views)
@@ -535,7 +528,7 @@
 
 
 (deftest
- t91_l514
+ t91_l511
  (is
   ((fn
     [m]
@@ -545,18 +538,18 @@
      (zero? (get-in m [:bare-layout :legend-w]))
      (= 100 (get-in m [:full-layout :legend-w]))
      (> (:full-total-width m) (:bare-total-width m))))
-   v90_l501)))
+   v90_l498)))
 
 
 (def
- v93_l529
+ v93_l526
  (def
   normal-sk
   (-> animals (sk/view :animal :count) sk/lay-value-bar sk/sketch)))
 
 
 (def
- v94_l535
+ v94_l532
  (def
   flip-sk
   (->
@@ -568,7 +561,7 @@
 
 
 (def
- v95_l542
+ v95_l539
  (let
   [np (first (:panels normal-sk)) fp (first (:panels flip-sk))]
   {:normal
@@ -580,7 +573,7 @@
 
 
 (deftest
- t96_l549
+ t96_l546
  (is
   ((fn
     [m]
@@ -589,26 +582,25 @@
      (not (get-in m [:normal :y-categorical?]))
      (not (get-in m [:flipped :x-categorical?]))
      (get-in m [:flipped :y-categorical?])))
-   v95_l542)))
+   v95_l539)))
 
 
 (def
- v97_l554
+ v97_l551
  (->
   animals
   (sk/view :animal :count)
   sk/lay-value-bar
-  (sk/coord :flip)
-  sk/plot))
+  (sk/coord :flip)))
 
 
 (deftest
- t98_l560
- (is ((fn [v] (= 4 (:polygons (sk/svg-summary v)))) v97_l554)))
+ t98_l556
+ (is ((fn [v] (= 4 (:polygons (sk/svg-summary v)))) v97_l551)))
 
 
 (def
- v100_l567
+ v100_l563
  (let
   [sk
    (->
@@ -621,59 +613,59 @@
 
 
 (deftest
- t101_l575
+ t101_l571
  (is
-  ((fn [m] (and (= "y" (:x-label m)) (= "x" (:y-label m)))) v100_l567)))
+  ((fn [m] (and (= "y" (:x-label m)) (= "x" (:y-label m)))) v100_l563)))
 
 
-(def v103_l586 (:legend (sk/sketch colored-views)))
+(def v103_l582 (:legend (sk/sketch colored-views)))
 
 
 (deftest
- t104_l587
+ t104_l583
  (is
   ((fn [leg] (and (= :g (:title leg)) (= 2 (count (:entries leg)))))
-   v103_l586)))
+   v103_l582)))
 
 
-(def v106_l594 (:legend (sk/sketch scatter-views)))
+(def v106_l590 (:legend (sk/sketch scatter-views)))
 
 
-(deftest t107_l596 (is (nil? v106_l594)))
+(deftest t107_l592 (is (nil? v106_l590)))
 
 
-(def v109_l600 (:legend (sk/sketch fixed-color-views)))
+(def v109_l596 (:legend (sk/sketch fixed-color-views)))
 
 
-(deftest t110_l602 (is (nil? v109_l600)))
+(deftest t110_l598 (is (nil? v109_l596)))
 
 
 (def
- v112_l608
+ v112_l604
  (def
   multi-views
   (-> five-points (sk/view :x :y) sk/lay-point sk/lay-lm)))
 
 
-(def v113_l614 (sk/sketch multi-views))
+(def v113_l610 (sk/sketch multi-views))
 
 
 (deftest
- t114_l616
+ t114_l612
  (is
   ((fn [sk] (let [p (first (:panels sk))] (= 2 (count (:layers p)))))
-   v113_l614)))
+   v113_l610)))
 
 
-(def v115_l619 (sk/plot multi-views))
+(def v115_l615 multi-views)
 
 
 (deftest
- t116_l621
+ t116_l617
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 5 (:points s)) (= 1 (:lines s)))))
-   v115_l619)))
+   v115_l615)))

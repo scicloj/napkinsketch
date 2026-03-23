@@ -1,6 +1,6 @@
 ;; # Exploring Sketches
 ;;
-;; When you call `sk/plot`, Napkinsketch builds an intermediate data
+;; When Napkinsketch renders a plot, it builds an intermediate data
 ;; structure called a **sketch** before rendering anything. This notebook
 ;; walks through the sketch step by step, building intuition for the
 ;; data model by looking at what `sk/sketch` produces for different plots.
@@ -27,8 +27,7 @@
 ;; Here is the rendered plot:
 
 (-> tiny
-    (sk/lay-point :x :y)
-    sk/plot)
+    (sk/lay-point :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -141,8 +140,7 @@ tiny-layer
                       {:key-fn keyword}))
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    sk/plot)
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -218,8 +216,7 @@ iris-sk
 ;; bin edges and counts — still in data space.
 
 (-> iris
-    (sk/lay-histogram :sepal_length)
-    sk/plot)
+    (sk/lay-histogram :sepal_length))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -257,8 +254,7 @@ hist-sk
 ;; the categories and counts per group.
 
 (-> iris
-    (sk/lay-bar :species {:color :species})
-    sk/plot)
+    (sk/lay-bar :species {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -313,8 +309,7 @@ bar-layer
 
 (-> iris
     (sk/lay-point :sepal_length :sepal_width)
-    sk/lay-lm
-    sk/plot)
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -349,8 +344,7 @@ bar-layer
 
 (-> iris
     (sk/lay-point :petal_length :petal_width {:color :species})
-    (sk/lay-lm {:color :species})
-    sk/plot)
+    (sk/lay-lm {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -379,8 +373,7 @@ bar-layer
            :y (mapv #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
-    (sk/lay-line :x :y)
-    sk/plot)
+    (sk/lay-line :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -409,8 +402,7 @@ bar-layer
             :revenue [120 340 210 95]})
 
 (-> sales
-    (sk/lay-value-bar :product :revenue)
-    sk/plot)
+    (sk/lay-value-bar :product :revenue))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -480,7 +472,7 @@ opts-sk
 ;; ## Sketch vs Plot — Side by Side
 ;;
 ;; `sk/sketch` and `sk/plot` accept the same arguments.
-;; The sketch is the intermediate data; the plot is the final SVG.
+;; `sk/sketch` returns the intermediate data map; `sk/plot` returns the final SVG.
 
 ;; The sketch (a plain Clojure map):
 
@@ -506,7 +498,7 @@ final-sk
 
 ;; The rendered plot (SVG):
 
-(sk/plot final-views {:title "Iris Petals"})
+(-> final-views (sk/options {:title "Iris Petals"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -567,7 +559,7 @@ final-sk
 ;; ## Malli Validation
 ;;
 ;; Every sketch conforms to a Malli schema. Validation runs automatically
-;; when `sk/sketch` or `sk/plot` is called (default `:validate true`).
+;; when `sk/sketch` is called (default `:validate true`).
 ;; Pass `{:validate false}` to skip it.
 ;;
 ;; You can also check manually with `sk/valid-sketch?`:

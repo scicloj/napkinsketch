@@ -31,7 +31,7 @@
 
 (kind/pprint views)
 
-(kind/test-last [(fn [v] (and (vector? v) (= 1 (count v))))])
+(kind/test-last [(fn [v] (and (sk/plot-spec? v) (= 1 (count (sk/views-of v)))))])
 
 ;; ## Mark
 ;;
@@ -313,13 +313,13 @@
 ;;
 ;; A **theme** controls the visual appearance of non-data elements:
 ;; background color, grid lines, font sizes, margins.
-;; Passed as `{:theme {...}}` in the options map to `sk/plot` or `sk/sketch`.
+;; Passed as `{:theme {...}}` via `sk/options` or directly to `sk/sketch`.
 
 (-> iris
     (sk/view :sepal_length :sepal_width)
     (sk/lay-point {:color :species})
-    (sk/plot {:theme {:background "#2d2d2d" :grid "#444444"
-                      :text "#cccccc" :tick "#999999"}})
+    (sk/options {:theme {:background "#2d2d2d" :grid "#444444"
+                         :text "#cccccc" :tick "#999999"}})
     sk/svg-summary :panels)
 
 (kind/test-last [(fn [n] (= 1 n))])
@@ -350,7 +350,7 @@
 ;; a sketch to a specific format. For SVG, the figure is hiccup markup
 ;; wrapped in `kind/hiccup`.
 ;;
-;; Created by `sk/plot` (which calls `sk/sketch->figure` internally).
+;; Created by `sk/plot` or by auto-rendering a plot specification.
 
 (def my-figure (sk/sketch->figure my-sketch :svg {}))
 

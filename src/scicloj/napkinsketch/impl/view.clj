@@ -81,6 +81,13 @@
   [x]
   (and (sequential? x) (seq x) (instance? View (first x))))
 
+(defrecord PlotSpec [views opts])
+
+(defn plot-spec?
+  "True if x is a PlotSpec (auto-rendering plot specification)."
+  [x]
+  (instance? PlotSpec x))
+
 ;; ---- View ----
 
 (defn view
