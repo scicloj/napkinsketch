@@ -33,28 +33,22 @@
 
 (kind/test-last [(fn [v] (and (sk/plot-spec? v) (= 1 (count (sk/views-of v)))))])
 
-;; ## Mark
-;;
-;; A **mark** is the visual representation of data: points, lines,
-;; bars, rectangles. A mark is one component of a **method** — see
-;; the Method section below.
-
-(method/point {:color :species :alpha 0.5})
-
-(kind/test-last [(fn [m] (and (= :point (:mark m))
-                              (= :species (:color m))))])
-
 ;; ## Method
 ;;
-;; A **method** is the bundle of mark, stat, and position that
-;; determines how data becomes a visual element. Layer functions
-;; (`sk/lay-point`, `sk/lay-line`, `sk/lay-histogram`, `sk/lay-bar`, `sk/lay-lm`,
-;; `sk/lay-boxplot`, `sk/lay-violin`, `sk/lay-density`, etc.) each add a layer
-;; with the corresponding method.
+;; A **method** is the bundle of three things that determines how data
+;; becomes a visual element:
 ;;
-;; When you add a layer, the method's stat takes precedence over
-;; column-type inference. When no layer is added, Napkinsketch
-;; infers a method from the column types.
+;; - **mark** — what shape to draw (points, bars, lines)
+;; - **stat** — what computation to apply first (pass through, bin, count, regress)
+;; - **position** — how overlapping groups share space (dodge, stack)
+;;
+;; Each of these is defined in the sections that follow.
+;;
+;; Layer functions (`sk/lay-point`, `sk/lay-line`, `sk/lay-histogram`,
+;; `sk/lay-bar`, `sk/lay-lm`, `sk/lay-boxplot`, `sk/lay-violin`,
+;; `sk/lay-density`, etc.) each add a layer with the corresponding method.
+;; When no layer is added, Napkinsketch infers a method from the
+;; column types.
 
 (method/histogram)
 
@@ -66,43 +60,15 @@
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (= :identity (:stat m))))])
 
-;; ## Aesthetic
+;; ## Mark
 ;;
-;; An **aesthetic** is a visual property of a mark that can be mapped
-;; to a data column. Napkinsketch supports these aesthetic mappings:
-;;
-;; | Key | Controls | Column type |
-;; |:----|:---------|:------------|
-;; | `:color` | Fill/stroke color | Categorical or numerical |
-;; | `:size` | Point radius | Numerical |
-;; | `:alpha` | Opacity | Numerical |
-;; | `:shape` | Point shape | Categorical |
-;; | `:text` | Label content | Any |
-;;
-;; When a keyword is passed, it maps to a dataset column.
-;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed aesthetic
-;; for all points.
+;; The **mark** is the visual shape drawn on the plot: points, lines,
+;; bars, rectangles.
 
-(method/point {:color :species :size :petal_length :alpha 0.7})
+(method/point {:color :species :alpha 0.5})
 
-(kind/test-last [(fn [m] (and (= :species (:color m))
-                              (= :petal_length (:size m))
-                              (= 0.7 (:alpha m))))])
-
-;; ## Group
-;;
-;; A **group** is a subset of data that is processed and drawn
-;; together. Mapping `:color` to a categorical column automatically
-;; creates groups — one per unique value. You can also create groups
-;; without color using the `:group` key.
-
-(-> iris
-    (sk/lay-line :sepal_length :sepal_width {:group :species})
-    sk/sketch
-    (get-in [:panels 0 :layers 0 :groups])
-    count)
-
-(kind/test-last [(fn [n] (= 3 n))])
+(kind/test-last [(fn [m] (and (= :point (:mark m))
+                              (= :species (:color m))))])
 
 ;; ## Stat
 ;;
@@ -152,12 +118,50 @@
 
 (kind/test-last [(fn [y0s] (every? pos? y0s))])
 
+;; ## Aesthetic
+;;
+;; An **aesthetic** is a visual property of a mark that can be mapped
+;; to a data column. Napkinsketch supports these aesthetic mappings:
+;;
+;; | Key | Controls | Column type |
+;; |:----|:---------|:------------|
+;; | `:color` | Fill/stroke color | Categorical or numerical |
+;; | `:size` | Point radius | Numerical |
+;; | `:alpha` | Opacity | Numerical |
+;; | `:shape` | Point shape | Categorical |
+;; | `:text` | Label content | Any |
+;;
+;; When a keyword is passed, it maps to a dataset column.
+;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed aesthetic
+;; for all points.
+
+(method/point {:color :species :size :petal_length :alpha 0.7})
+
+(kind/test-last [(fn [m] (and (= :species (:color m))
+                              (= :petal_length (:size m))
+                              (= 0.7 (:alpha m))))])
+
+;; ## Group
+;;
+;; A **group** is a subset of data that is processed and drawn
+;; together. Mapping `:color` to a categorical column automatically
+;; creates groups — one per unique value. You can also create groups
+;; without color using the `:group` key.
+
+(-> iris
+    (sk/lay-line :sepal_length :sepal_width {:group :species})
+    sk/sketch
+    (get-in [:panels 0 :layers 0 :groups])
+    count)
+
+(kind/test-last [(fn [n] (= 3 n))])
+
 ;; ## Nudge
 ;;
 ;; A **nudge** shifts data coordinates by a constant offset.
 ;; It is orthogonal to position — you can nudge within a dodge,
 ;; or nudge at identity. Applied via `:nudge-x` and `:nudge-y`
-;; keys on any mark.
+;; keys in the layer options.
 
 (-> {:x [1 2 3] :y [4 5 6]}
     (sk/lay-point :x :y {:nudge-x 0.5})
@@ -178,18 +182,6 @@
 (method/point {:jitter true})
 
 (kind/test-last [(fn [m] (true? (:jitter m)))])
-
-;; ## Layer
-;;
-;; A **layer** is a sketch-level descriptor: resolved mark type,
-;; style, and groups of data-space geometry. Layers live inside
-;; panels in the sketch.
-
-(let [s (sk/sketch views)
-      layer (first (:layers (first (:panels s))))]
-  layer)
-
-(kind/test-last [(fn [m] (= :point (:mark m)))])
 
 ;; ## Sketch
 ;;
@@ -216,6 +208,18 @@
 (sort (keys (first (:panels my-sketch))))
 
 (kind/test-last [(fn [ks] (some #{:x-domain :y-domain :layers} ks))])
+
+;; ## Layer
+;;
+;; A **layer** is a sketch-level descriptor: resolved mark type,
+;; style, and groups of data-space geometry. Layers live inside
+;; panels in the sketch.
+
+(-> views
+    sk/sketch
+    (get-in [:panels 0 :layers 0]))
+
+(kind/test-last [(fn [m] (= :point (:mark m)))])
 
 ;; ## Facet
 ;;
