@@ -201,6 +201,17 @@ iris
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
+;; The same plot without `sk/view` — the first `sk/lay-X` call sets
+;; the column mappings and subsequent layers inherit them:
+
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width)
+    sk/lay-lm)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
+
 ;; ## Incremental Building
 ;;
 ;; Because views are plain data, you can save a partial plot and
