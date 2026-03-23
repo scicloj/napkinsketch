@@ -30,9 +30,8 @@
 ;; The default layout is a horizontal row of panels:
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/facet :species)
-    (sk/lay-point {:color :species}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -47,9 +46,8 @@
 ;; Pass `:col` as the direction for a vertical column of panels:
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/facet :species :col)
-    (sk/lay-point {:color :species}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/facet :species :col))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -60,9 +58,8 @@
 ;; `sk/facet-grid` splits by two columns — one for rows, one for columns:
 
 (-> tips
-    (sk/view [[:total_bill :tip]])
-    (sk/facet-grid :smoker :sex)
-    (sk/lay-point {:color :sex}))
+    (sk/lay-point :total_bill :tip {:color :sex})
+    (sk/facet-grid :smoker :sex))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:panels s))
@@ -73,9 +70,8 @@
 ;; ## Faceted Histogram
 
 (-> iris
-    (sk/view :sepal_length)
-    (sk/facet :species)
-    (sk/lay-histogram {:color :species}))
+    (sk/lay-histogram :sepal_length {:color :species})
+    (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -104,9 +100,8 @@
 ;; Shared (default) — all panels have the same y-range:
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species)
-    (sk/lay-point {:color :species})
     (sk/options {:scales :shared}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -116,9 +111,8 @@
 ;; Free y — each panel has its own y-range:
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species)
-    (sk/lay-point {:color :species})
     (sk/options {:scales :free-y}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -133,9 +127,8 @@
 
 (def faceted-sk
   (-> iris
-      (sk/view [[:sepal_length :sepal_width]])
+      (sk/lay-point :sepal_length :sepal_width {:color :species})
       (sk/facet :species)
-      (sk/lay-point {:color :species})
       sk/sketch))
 
 (:grid faceted-sk)
@@ -186,9 +179,8 @@
 ;; ## Faceted Bar Chart
 
 (-> penguins
-    (sk/view :species)
-    (sk/facet :island)
-    (sk/lay-bar {:color :species}))
+    (sk/lay-bar :species {:color :species})
+    (sk/facet :island))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -199,9 +191,8 @@
 ;; `sk/labs` works with faceted plots:
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species)
-    (sk/lay-point {:color :species})
     (sk/labs {:title "Iris by Species"
               :x "Sepal Length (cm)"
               :y "Sepal Width (cm)"}))

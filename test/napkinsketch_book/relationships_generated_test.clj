@@ -116,9 +116,9 @@
     :y
     (mapv
      (fn*
-      [p1__86189#]
+      [p1__84541#]
       (+
-       (Math/sin (* p1__86189# 0.2))
+       (Math/sin (* p1__84541# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -139,13 +139,11 @@
    v18_l84)))
 
 
-(def
- v21_l97
- (-> iris (sk/view [[:sepal_length :sepal_width]]) sk/lay-tile))
+(def v21_l97 (-> iris (sk/lay-tile :sepal_length :sepal_width)))
 
 
 (deftest
- t22_l101
+ t22_l100
  (is
   ((fn
     [v]
@@ -156,7 +154,7 @@
 
 
 (def
- v24_l109
+ v24_l108
  (def
   grid-data
   (let
@@ -166,38 +164,36 @@
     :value (vec (repeatedly 25 (fn* [] (rng/irandom r 100))))})))
 
 
-(def v25_l115 (-> grid-data (sk/lay-tile :x :y {:fill :value})))
+(def v25_l114 (-> grid-data (sk/lay-tile :x :y {:fill :value})))
 
 
 (deftest
- t26_l118
+ t26_l117
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v25_l115)))
+   v25_l114)))
 
 
-(def
- v28_l126
- (-> iris (sk/view [[:sepal_length :sepal_width]]) sk/lay-density2d))
+(def v28_l125 (-> iris (sk/lay-density2d :sepal_length :sepal_width)))
 
 
 (deftest
- t29_l130
+ t29_l128
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v28_l126)))
+   v28_l125)))
 
 
 (def
- v31_l138
+ v31_l136
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -206,34 +202,32 @@
 
 
 (deftest
- t32_l143
+ t32_l141
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:tiles s)))))
-   v31_l138)))
+   v31_l136)))
 
 
-(def
- v34_l151
- (-> iris (sk/view [[:sepal_length :sepal_width]]) sk/lay-contour))
+(def v34_l149 (-> iris (sk/lay-contour :sepal_length :sepal_width)))
 
 
 (deftest
- t35_l155
+ t35_l152
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:lines s)))))
-   v34_l151)))
+   v34_l149)))
 
 
 (def
- v37_l163
+ v37_l160
  (->
   iris
   (sk/view [[:sepal_length :sepal_width]])
@@ -242,11 +236,11 @@
 
 
 (deftest
- t38_l168
+ t38_l165
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:lines s)))))
-   v37_l163)))
+   v37_l160)))

@@ -95,8 +95,7 @@
 ;; Bin x and y into a grid, count points per cell.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-tile)
+    (sk/lay-tile :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -124,8 +123,7 @@
 ;; KDE-smoothed 2D density heatmap.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-density2d)
+    (sk/lay-density2d :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -149,8 +147,7 @@
 ;; Iso-density contour lines from 2D KDE.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-contour)
+    (sk/lay-contour :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

@@ -48,8 +48,7 @@
   [s
    (->
     iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     sk/sketch)
    layer
    (first (:layers (first (:panels s))))]
@@ -57,7 +56,7 @@
 
 
 (deftest
- t15_l155
+ t15_l154
  (is
   ((fn
     [m]
@@ -66,42 +65,41 @@
 
 
 (def
- v17_l219
+ v17_l218
  (def
   my-sketch
   (->
    iris
-   (sk/view [[:sepal_length :sepal_width]])
-   (sk/lay-point {:color :species})
+   (sk/lay-point :sepal_length :sepal_width {:color :species})
    sk/sketch)))
 
 
-(def v18_l225 (first (sk/sketch->figure my-sketch :svg {})))
+(def v18_l223 (first (sk/sketch->figure my-sketch :svg {})))
 
 
-(deftest t19_l227 (is ((fn [v] (= :svg v)) v18_l225)))
+(deftest t19_l225 (is ((fn [v] (= :svg v)) v18_l223)))
 
 
-(def v21_l231 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v21_l229 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
-(def v22_l233 (vector? my-figure))
+(def v22_l231 (vector? my-figure))
 
 
-(deftest t23_l235 (is ((fn [v] (true? v)) v22_l233)))
+(deftest t23_l233 (is ((fn [v] (true? v)) v22_l231)))
 
 
-(def v25_l276 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v25_l274 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v26_l278 (vector? my-membrane))
+(def v26_l276 (vector? my-membrane))
 
 
-(deftest t27_l280 (is ((fn [v] (true? v)) v26_l278)))
+(deftest t27_l278 (is ((fn [v] (true? v)) v26_l276)))
 
 
 (def
- v28_l282
+ v28_l280
  (first
   (sk/membrane->figure
    my-membrane
@@ -110,18 +108,18 @@
     :total-height (:total-height my-sketch)})))
 
 
-(deftest t29_l286 (is ((fn [v] (= :svg v)) v28_l282)))
+(deftest t29_l284 (is ((fn [v] (= :svg v)) v28_l280)))
 
 
-(def v31_l340 (-> iris (sk/view :species) sk/lay-bar (sk/coord :flip)))
+(def v31_l338 (-> iris (sk/lay-bar :species) (sk/coord :flip)))
 
 
 (deftest
- t32_l345
+ t32_l342
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v31_l340)))
+   v31_l338)))

@@ -146,8 +146,7 @@
 ;; A sketch layer looks like this:
 
 (let [s (-> iris
-            (sk/view [[:sepal_length :sepal_width]])
-            (sk/lay-point {:color :species})
+            (sk/lay-point :sepal_length :sepal_width {:color :species})
             sk/sketch)
       layer (first (:layers (first (:panels s))))]
   layer)
@@ -218,8 +217,7 @@
 
 (def my-sketch
   (-> iris
-      (sk/view [[:sepal_length :sepal_width]])
-      (sk/lay-point {:color :species})
+      (sk/lay-point :sepal_length :sepal_width {:color :species})
       sk/sketch))
 
 (first (sk/sketch->figure my-sketch :svg {}))
@@ -338,8 +336,7 @@
 ;; A flipped bar chart uses `:flip` coordinates:
 
 (-> iris
-    (sk/view :species)
-    sk/lay-bar
+    (sk/lay-bar :species)
     (sk/coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

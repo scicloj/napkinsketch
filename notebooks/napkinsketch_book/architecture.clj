@@ -57,8 +57,7 @@ graph LR
 
 (def trace-views
   (-> trace-data
-      (sk/view [[:x :y]])
-      (sk/lay-point {:color :g})))
+      (sk/lay-point :x :y {:color :g})))
 
 (kind/pprint trace-views)
 

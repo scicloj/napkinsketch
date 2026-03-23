@@ -28,13 +28,12 @@
  v6_l30
  (->
   iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay-point {:color :species})
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
   (sk/coord :polar)))
 
 
 (deftest
- t7_l35
+ t7_l34
  (is
   ((fn
     [v]
@@ -44,88 +43,82 @@
    v6_l30)))
 
 
-(def v9_l46 (-> iris (sk/view :species) sk/lay-bar (sk/coord :polar)))
+(def v9_l45 (-> iris (sk/lay-bar :species) (sk/coord :polar)))
 
 
 (deftest
- t10_l51
+ t10_l49
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v9_l46)))
+   v9_l45)))
 
 
 (def
- v12_l60
- (->
-  wind
-  (sk/view [:direction :speed])
-  sk/lay-value-bar
-  (sk/coord :polar)))
+ v12_l58
+ (-> wind (sk/lay-value-bar :direction :speed) (sk/coord :polar)))
 
 
 (deftest
- t13_l65
+ t13_l62
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)))))
-   v12_l60)))
+   v12_l58)))
 
 
 (def
- v15_l73
+ v15_l70
  (->
   iris
-  (sk/view :species)
-  (sk/lay-stacked-bar {:color :species})
+  (sk/lay-stacked-bar :species {:color :species})
   (sk/coord :polar)))
 
 
 (deftest
- t16_l78
+ t16_l74
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v15_l73)))
+   v15_l70)))
 
 
 (def
- v18_l87
- (-> iris (sk/view :sepal_length) sk/lay-histogram (sk/coord :polar)))
+ v18_l83
+ (-> iris (sk/lay-histogram :sepal_length) (sk/coord :polar)))
 
 
 (deftest
- t19_l92
+ t19_l87
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v18_l87)))
+   v18_l83)))
 
 
 (def
- v21_l101
+ v21_l96
  (->
   iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay-point {:color :species})
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
   (sk/coord :polar)
   (sk/labs {:title "Iris in Polar Space"})))
 
 
 (deftest
- t22_l107
+ t22_l101
  (is
   ((fn
     [v]
@@ -134,4 +127,4 @@
      (and
       (= 1 (:panels s))
       (some #{"Iris in Polar Space"} (:texts s)))))
-   v21_l101)))
+   v21_l96)))

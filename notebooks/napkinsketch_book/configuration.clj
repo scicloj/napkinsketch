@@ -21,8 +21,7 @@
 
 (def base-views
   (fn [] (-> iris
-             (sk/view [[:sepal_length :sepal_width]])
-             (sk/lay-point {:color :species}))))
+             (sk/lay-point :sepal_length :sepal_width {:color :species}))))
 
 ;; ## Inspecting the Current Configuration
 ;;
@@ -432,16 +431,14 @@ precedence-plot
 ;; Default (viridis) continuous color:
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
-    (sk/view :x :y)
-    (sk/lay-point {:color :c}))
+    (sk/lay-point :x :y {:color :c}))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
 ;; Per-call color scale override — inferno gradient:
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
-    (sk/view :x :y)
-    (sk/lay-point {:color :c})
+    (sk/lay-point :x :y {:color :c})
     (sk/options {:color-scale :inferno}))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
@@ -450,8 +447,7 @@ precedence-plot
 
 (sk/with-config {:color-scale :plasma}
   (-> {:x (range 50) :y (range 50) :c (range 50)}
-      (sk/view :x :y)
-      (sk/lay-point {:color :c})))
+      (sk/lay-point :x :y {:color :c})))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
@@ -460,8 +456,7 @@ precedence-plot
 ;; if the render-time configuration specifies a different color scale.
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
-    (sk/view :x :y)
-    (sk/lay-point {:color :c})
+    (sk/lay-point :x :y {:color :c})
     (sk/sketch {:color-scale :inferno})
     :legend
     (select-keys [:color-scale :type]))

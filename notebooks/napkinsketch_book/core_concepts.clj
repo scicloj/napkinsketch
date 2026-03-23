@@ -47,8 +47,7 @@ iris
 
 (-> {:x [1 2 3 4 5]
      :y [2 4 3 5 4]}
-    (sk/view :x :y)
-    sk/lay-point)
+    (sk/lay-point :x :y))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -108,8 +107,7 @@ iris
 ;; colors, layout — and produces a visual figure.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    sk/lay-point)
+    (sk/lay-point :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -140,8 +138,7 @@ iris
 ;; and counts how many fall in each range:
 
 (-> iris
-    (sk/view :sepal_length)
-    sk/lay-histogram)
+    (sk/lay-histogram :sepal_length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -212,8 +209,7 @@ iris
 
 (def scatter-base
   (-> iris
-      (sk/view :sepal_length :sepal_width)
-      sk/lay-point))
+      (sk/lay-point :sepal_length :sepal_width)))
 
 ;; Add a regression line:
 
@@ -245,8 +241,7 @@ iris
 ;; **legend** appears alongside the plot, mapping labels to colors.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color :species}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -258,8 +253,7 @@ iris
 ;; bar instead of discrete entries.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color :petal_length}))
+    (sk/lay-point :sepal_length :sepal_width {:color :petal_length}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -268,8 +262,7 @@ iris
 ;; nothing to distinguish.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color "steelblue"}))
+    (sk/lay-point :sepal_length :sepal_width {:color "steelblue"}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -367,8 +360,7 @@ iris
 ;; Here we flip a scatter plot so sepal length runs vertically:
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/coord :flip))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -381,8 +373,7 @@ iris
 
 (-> {:population [1000 5000 50000 200000 1000000 5000000]
      :area [2 8 30 120 500 2100]}
-    (sk/view :population :area)
-    sk/lay-point
+    (sk/lay-point :population :area)
     (sk/scale :x :log)
     (sk/scale :y :log))
 

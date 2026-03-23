@@ -25,13 +25,11 @@
    {:key-fn keyword})))
 
 
-(def
- v5_l25
- (-> iris (sk/view [[:sepal_length :sepal_width]]) sk/lay-point))
+(def v5_l25 (-> iris (sk/lay-point :sepal_length :sepal_width)))
 
 
 (deftest
- t6_l29
+ t6_l28
  (is
   ((fn
     [v]
@@ -42,68 +40,58 @@
 
 
 (def
- v8_l38
- (->
-  iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay-point {:color :species})))
+ v8_l37
+ (-> iris (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
- t9_l42
+ t9_l40
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
-   v8_l38)))
+   v8_l37)))
 
 
 (def
- v11_l51
- (->
-  iris
-  (sk/view [[:petal_length :petal_width]])
-  (sk/lay-point {:color :species})))
+ v11_l49
+ (-> iris (sk/lay-point :petal_length :petal_width {:color :species})))
 
 
 (deftest
- t12_l55
+ t12_l52
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
-   v11_l51)))
+   v11_l49)))
 
 
 (def
- v14_l64
- (->
-  iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay-point {:color "#E74C3C"})))
+ v14_l61
+ (-> iris (sk/lay-point :sepal_length :sepal_width {:color "#E74C3C"})))
 
 
 (deftest
- t15_l68
+ t15_l64
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v14_l64)))
+   v14_l61)))
 
 
 (def
- v17_l76
+ v17_l72
  (->
   tips
-  (sk/view [[:total_bill :tip]])
-  (sk/lay-point {:color :day})
+  (sk/lay-point :total_bill :tip {:color :day})
   (sk/options
    {:width 700,
     :height 300,
@@ -113,7 +101,7 @@
 
 
 (deftest
- t18_l84
+ t18_l79
  (is
   ((fn
     [v]
@@ -124,95 +112,89 @@
       (= 244 (:points s))
       (>= (:width s) 700)
       (some #{"Tips by Day"} (:texts s)))))
-   v17_l76)))
+   v17_l72)))
 
 
 (def
- v20_l95
- (->
-  tips
-  (sk/view [[:total_bill :tip]])
-  (sk/lay-point {:color :day, :size :size})))
+ v20_l90
+ (-> tips (sk/lay-point :total_bill :tip {:color :day, :size :size})))
 
 
 (deftest
- t21_l99
+ t21_l93
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
-   v20_l95)))
+   v20_l90)))
 
 
 (def
- v23_l105
+ v23_l99
  (->
   tips
-  (sk/view [[:total_bill :tip]])
-  (sk/lay-point {:color :day, :size :size, :alpha 0.6})))
+  (sk/lay-point
+   :total_bill
+   :tip
+   {:color :day, :size :size, :alpha 0.6})))
 
 
 (deftest
- t24_l109
+ t24_l102
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
-   v23_l105)))
+   v23_l99)))
 
 
 (def
- v26_l118
- (->
-  iris
-  (sk/view [[:species :sepal_width]])
-  (sk/lay-point {:jitter true})))
+ v26_l111
+ (-> iris (sk/lay-point :species :sepal_width {:jitter true})))
 
 
 (deftest
- t27_l122
+ t27_l114
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v26_l118)))
+   v26_l111)))
 
 
 (def
- v29_l128
+ v29_l120
  (->
   iris
-  (sk/view [[:species :sepal_width]])
-  (sk/lay-point {:jitter 10, :alpha 0.5})))
+  (sk/lay-point :species :sepal_width {:jitter 10, :alpha 0.5})))
 
 
 (deftest
- t30_l132
+ t30_l123
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v29_l128)))
+   v29_l120)))
 
 
 (def
- v32_l141
+ v32_l132
  (->
   iris
-  (sk/view [[:sepal_length :sepal_width]])
-  (sk/lay-point {:color :petal_length})))
+  (sk/lay-point :sepal_length :sepal_width {:color :petal_length})))
 
 
 (deftest
- t33_l145
+ t33_l135
  (is
   ((fn
     [v]
@@ -222,24 +204,25 @@
       (= 1 (:panels s))
       (= 150 (:points s))
       (some #{"petal length"} (:texts s)))))
-   v32_l141)))
+   v32_l132)))
 
 
 (def
- v35_l152
+ v35_l142
  (->
   iris
-  (sk/view [[:sepal_length :sepal_width]])
   (sk/lay-point
+   :sepal_length
+   :sepal_width
    {:color :petal_length, :size :petal_width, :alpha 0.7})))
 
 
 (deftest
- t36_l156
+ t36_l145
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"petal length"} (:texts s)))))
-   v35_l152)))
+   v35_l142)))

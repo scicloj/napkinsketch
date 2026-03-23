@@ -28,8 +28,7 @@
 ;; Count occurrences of a categorical column.
 
 (-> iris
-    (sk/view :species)
-    sk/lay-bar)
+    (sk/lay-bar :species))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -41,8 +40,7 @@
 ;; Grouped (dodged) bars — count by day, colored by smoking status.
 
 (-> tips
-    (sk/view :day)
-    (sk/lay-bar {:color :smoker}))
+    (sk/lay-bar :day {:color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -54,8 +52,7 @@
 ;; Same data, stacked instead of dodged.
 
 (-> tips
-    (sk/view :day)
-    (sk/lay-stacked-bar {:color :smoker}))
+    (sk/lay-stacked-bar :day {:color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -67,8 +64,7 @@
 ;; 100% stacked bars — shows proportions instead of counts.
 
 (-> penguins
-    (sk/view :island)
-    (sk/lay-stacked-bar-fill {:color :species}))
+    (sk/lay-stacked-bar-fill :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -79,8 +75,7 @@
 ;; Flip the bar chart for horizontal orientation.
 
 (-> iris
-    (sk/view :species)
-    sk/lay-bar
+    (sk/lay-bar :species)
     (sk/coord :flip))
 
 (kind/test-last
@@ -93,8 +88,7 @@
 ;; Colored bars, flipped.
 
 (-> tips
-    (sk/view :day)
-    (sk/lay-bar {:color :time})
+    (sk/lay-bar :day {:color :time})
     (sk/coord :flip))
 
 (kind/test-last
@@ -118,8 +112,7 @@
 ;; Flip for horizontal orientation.
 
 (-> sales
-    (sk/view [[:product :revenue]])
-    sk/lay-value-bar
+    (sk/lay-value-bar :product :revenue)
     (sk/coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -131,8 +124,7 @@
 ;; Stem + dot — a lighter alternative to bar charts.
 
 (-> sales
-    (sk/view [[:product :revenue]])
-    sk/lay-lollipop)
+    (sk/lay-lollipop :product :revenue))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -143,8 +135,7 @@
 ;; Flipped for horizontal orientation.
 
 (-> sales
-    (sk/view [[:product :revenue]])
-    sk/lay-lollipop
+    (sk/lay-lollipop :product :revenue)
     (sk/coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

@@ -31,8 +31,7 @@
 
 (def scatter-views
   (-> five-points
-      (sk/view :x :y)
-      sk/lay-point))
+      (sk/lay-point :x :y)))
 
 ;; Here is the full sketch:
 
@@ -88,8 +87,7 @@ scatter-views
 
 (def bar-views
   (-> animals
-      (sk/view :animal :count)
-      sk/lay-value-bar))
+      (sk/lay-value-bar :animal :count)))
 
 (sk/sketch bar-views)
 
@@ -112,9 +110,7 @@ bar-views
                      (java.time.LocalDate/of 2024 6 1)
                      (java.time.LocalDate/of 2024 12 1)]
               :val [10 25 18]}
-             (sk/view :date :val)
-             sk/lay-point
-             sk/sketch)
+             (sk/lay-point :date :val)             sk/sketch)
       p (first (:panels sk))]
   {:x-domain-numeric? (number? (first (:x-domain p)))
    :tick-labels (:labels (:x-ticks p))})
@@ -200,8 +196,7 @@ count-views
   (-> {:x [1 2 3 4 5 6]
        :y [3 5 4 7 6 8]
        :g ["a" "a" "a" "b" "b" "b"]}
-      (sk/view :x :y)
-      (sk/lay-point {:color :g})))
+      (sk/lay-point :x :y {:color :g})))
 
 (sk/sketch colored-views)
 
@@ -225,8 +220,7 @@ colored-views
 
 (def fixed-color-views
   (-> five-points
-      (sk/view :x :y)
-      (sk/lay-point {:color "#E74C3C"})))
+      (sk/lay-point :x :y {:color "#E74C3C"})))
 
 (sk/sketch fixed-color-views)
 
@@ -254,8 +248,7 @@ fixed-color-views
 ;; fixed colors:
 
 (-> five-points
-    (sk/view :x :y)
-    (sk/lay-point {:color "steelblue"}))
+    (sk/lay-point :x :y {:color "steelblue"}))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -285,9 +278,7 @@ fixed-color-views
 ;; Verify: `"red"` is a fixed color when the dataset has no `red` column:
 
 (let [sk (-> five-points
-             (sk/view :x :y)
-             (sk/lay-point {:color "red"})
-             sk/sketch)]
+             (sk/lay-point :x :y {:color "red"})             sk/sketch)]
   {:legend (:legend sk)
    :color (:color (first (:groups (first (:layers (first (:panels sk)))))))})
 
@@ -340,9 +331,7 @@ fixed-color-views
 (let [sk (-> {:x [1 2 3 4 5]
               :y [2 4 3 5 4]
               :val [10 20 30 40 50]}
-             (sk/view :x :y)
-             (sk/lay-point {:color :val})
-             sk/sketch)
+             (sk/lay-point :x :y {:color :val})             sk/sketch)
       layer (first (:layers (first (:panels sk))))]
   {:group-count (count (:groups layer))
    :legend-type (:type (:legend sk))})
@@ -365,9 +354,7 @@ fixed-color-views
    :g ["a" "a" "a" "b" "b" "b"]})
 
 (let [sk (-> grouped-data
-             (sk/view :x :y)
-             (sk/lay-point {:group :g})
-             sk/sketch)
+             (sk/lay-point :x :y {:group :g})             sk/sketch)
       layer (first (:layers (first (:panels sk))))]
   {:group-count (count (:groups layer))
    :has-legend? (some? (:legend sk))})
@@ -440,9 +427,7 @@ fixed-color-views
 
 (let [fill-sk (-> {:x ["a" "a" "b" "b"]
                    :g ["m" "n" "m" "n"]}
-                  (sk/view :x)
-                  (sk/lay-stacked-bar-fill {:color :g})
-                  sk/sketch)
+                  (sk/lay-stacked-bar-fill :x {:color :g})                  sk/sketch)
       p (first (:panels fill-sk))]
   (:y-domain p))
 
@@ -459,9 +444,7 @@ fixed-color-views
                       {:key-fn keyword}))
 
 (let [sk (-> iris
-             (sk/view :sepal_length :sepal_width)
-             sk/lay-point
-             sk/sketch)]
+             (sk/lay-point :sepal_length :sepal_width)             sk/sketch)]
   {:x-label (:x-label sk)
    :y-label (:y-label sk)})
 
@@ -481,9 +464,7 @@ fixed-color-views
 ;; Explicit labels override inference:
 
 (let [sk (-> five-points
-             (sk/view :x :y)
-             sk/lay-point
-             (sk/labs {:x "Length (cm)" :y "Width (cm)"})
+             (sk/lay-point :x :y)             (sk/labs {:x "Length (cm)" :y "Width (cm)"})
              sk/sketch)]
   {:x-label (:x-label sk)
    :y-label (:y-label sk)})
@@ -499,9 +480,7 @@ fixed-color-views
       full (-> {:x [1 2 3 4 5 6]
                 :y [3 5 4 7 6 8]
                 :g ["a" "a" "a" "b" "b" "b"]}
-               (sk/view :x :y)
-               (sk/lay-point {:color :g})
-               (sk/labs {:title "My Plot"})
+               (sk/lay-point :x :y {:color :g})               (sk/labs {:title "My Plot"})
                sk/sketch)]
   {:bare-layout (:layout bare)
    :bare-total-width (:total-width bare)
@@ -525,15 +504,11 @@ fixed-color-views
 
 (def normal-sk
   (-> animals
-      (sk/view :animal :count)
-      sk/lay-value-bar
-      sk/sketch))
+      (sk/lay-value-bar :animal :count)      sk/sketch))
 
 (def flip-sk
   (-> animals
-      (sk/view :animal :count)
-      sk/lay-value-bar
-      (sk/coord :flip)
+      (sk/lay-value-bar :animal :count)      (sk/coord :flip)
       sk/sketch))
 
 (let [np (first (:panels normal-sk))
@@ -549,9 +524,7 @@ fixed-color-views
                               (get-in m [:flipped :y-categorical?])))])
 
 (-> animals
-    (sk/view :animal :count)
-    sk/lay-value-bar
-    (sk/coord :flip))
+    (sk/lay-value-bar :animal :count)    (sk/coord :flip))
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
@@ -561,9 +534,7 @@ fixed-color-views
 ;; visual axis, not the data axis:
 
 (let [sk (-> five-points
-             (sk/view :x :y)
-             sk/lay-point
-             (sk/coord :flip)
+             (sk/lay-point :x :y)             (sk/coord :flip)
              sk/sketch)]
   {:x-label (:x-label sk)
    :y-label (:y-label sk)})

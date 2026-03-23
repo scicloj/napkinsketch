@@ -28,8 +28,7 @@
 ;; edge = maximum).
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -44,8 +43,7 @@
 ;; curved edges.
 
 (-> iris
-    (sk/view :species)
-    sk/lay-bar
+    (sk/lay-bar :species)
     (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -58,8 +56,7 @@
 ;; gets a wedge proportional to wind speed.
 
 (-> wind
-    (sk/view [:direction :speed])
-    sk/lay-value-bar
+    (sk/lay-value-bar :direction :speed)
     (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -71,8 +68,7 @@
 ;; Stacked bars in polar show composition within each wedge.
 
 (-> iris
-    (sk/view :species)
-    (sk/lay-stacked-bar {:color :species})
+    (sk/lay-stacked-bar :species {:color :species})
     (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -85,8 +81,7 @@
 ;; circular distributions (e.g., time of day, compass bearing).
 
 (-> iris
-    (sk/view :sepal_length)
-    sk/lay-histogram
+    (sk/lay-histogram :sepal_length)
     (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -99,8 +94,7 @@
 ;; are no rectangular axes). You can still set explicit labels with `sk/labs`:
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/coord :polar)
     (sk/labs {:title "Iris in Polar Space"}))
 

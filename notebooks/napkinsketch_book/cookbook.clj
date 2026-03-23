@@ -103,8 +103,7 @@
 ;; Split a scatter plot by species to compare patterns side by side.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -116,8 +115,7 @@
 ;; Pass `{:alpha …}` to control band opacity.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -130,8 +128,7 @@
 ;; density curves. Grid lines at each baseline aid comparison.
 
 (-> iris
-    (sk/view [[:species :sepal_length]])
-    (sk/lay-ridgeline {:color :species}))
+    (sk/lay-ridgeline :species :sepal_length {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:polygons s))
@@ -145,8 +142,7 @@
                           {:key-fn keyword}))
 
 (-> penguins
-    (sk/view :island)
-    (sk/lay-stacked-bar-fill {:color :species}))
+    (sk/lay-stacked-bar-fill :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -253,15 +249,13 @@
 ;; Side-by-side comparison: default dodged bars vs stacked bars.
 
 (-> tips
-    (sk/view :day)
-    (sk/lay-bar {:color :sex})
+    (sk/lay-bar :day {:color :sex})
     (sk/options {:title "Dodged Bars (default)"}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 (-> tips
-    (sk/view :day)
-    (sk/lay-stacked-bar {:color :sex})
+    (sk/lay-stacked-bar :day {:color :sex})
     (sk/options {:title "Stacked Bars"}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
@@ -319,8 +313,7 @@
 ;; Assign specific colors to each category using a palette map.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette {:setosa "#E91E63"
                            :versicolor "#4CAF50"
                            :virginica "#2196F3"}
@@ -354,8 +347,7 @@
 (-> {:x (range 20)
      :y (map #(Math/sin (/ % 3.0)) (range 20))
      :change (map #(- % 10) (range 20))}
-    (sk/view :x :y)
-    (sk/lay-point {:color :change})
+    (sk/lay-point :x :y {:color :change})
     (sk/options {:color-scale :diverging
                  :color-midpoint 0
                  :title "Diverging Color Scale"}))
@@ -385,14 +377,12 @@
 
 (def iris-sepal
   (-> iris
-      (sk/view :sepal_length :sepal_width)
-      (sk/lay-point {:color :species})
+      (sk/lay-point :sepal_length :sepal_width {:color :species})
       (sk/options {:title "Sepal" :width 300 :height 250})))
 
 (def iris-petal
   (-> iris
-      (sk/view :petal_length :petal_width)
-      (sk/lay-point {:color :species})
+      (sk/lay-point :petal_length :petal_width {:color :species})
       (sk/options {:title "Petal" :width 300 :height 250})))
 
 (sk/arrange [iris-sepal iris-petal]
@@ -448,8 +438,7 @@
 ;; Bill dimensions separate the three species clearly.
 
 (-> penguins
-    (sk/view [[:bill_length_mm :bill_depth_mm]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
     (sk/options {:title "Palmer Penguins: Bill Dimensions"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -483,8 +472,7 @@
 ;; Species distribution across islands.
 
 (-> penguins
-    (sk/view :island)
-    (sk/lay-bar {:color :species})
+    (sk/lay-bar :island {:color :species})
     (sk/options {:title "Species by Island"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -506,8 +494,7 @@
 ;; Body mass distribution by species.
 
 (-> penguins
-    (sk/view :body_mass_g)
-    (sk/lay-histogram {:color :species})
+    (sk/lay-histogram :body_mass_g {:color :species})
     (sk/options {:title "Body Mass Distribution"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -532,8 +519,7 @@
 ;; Tip amounts by day, colored by meal time.
 
 (-> tips
-    (sk/view :day)
-    (sk/lay-bar {:color :time})
+    (sk/lay-bar :day {:color :time})
     (sk/options {:title "Visits by Day and Meal Time"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -543,8 +529,7 @@
 ;; Stacked view of the same data.
 
 (-> tips
-    (sk/view :day)
-    (sk/lay-stacked-bar {:color :time})
+    (sk/lay-stacked-bar :day {:color :time})
     (sk/options {:title "Visits by Day (Stacked)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -554,8 +539,7 @@
 ;; Horizontal bar chart of party sizes.
 
 (-> tips
-    (sk/view :day)
-    (sk/lay-bar {:color :sex})
+    (sk/lay-bar :day {:color :sex})
     (sk/coord :flip)
     (sk/options {:title "Day by Gender (Horizontal)"}))
 
@@ -583,8 +567,7 @@
 ;; Displacement vs MPG — another negative correlation.
 
 (-> mpg
-    (sk/view [[:displacement :mpg]])
-    (sk/lay-point {:color :origin})
+    (sk/lay-point :displacement :mpg {:color :origin})
     (sk/options {:title "Engine Displacement vs Fuel Efficiency"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -594,8 +577,7 @@
 ;; Count of cars by origin.
 
 (-> mpg
-    (sk/view :origin)
-    sk/lay-bar
+    (sk/lay-bar :origin)
     (sk/options {:title "Cars by Origin"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

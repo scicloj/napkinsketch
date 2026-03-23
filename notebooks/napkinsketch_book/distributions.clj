@@ -25,8 +25,7 @@
 ;; Distribution of sepal length across all species.
 
 (-> iris
-    (sk/view :sepal_length)
-    sk/lay-histogram)
+    (sk/lay-histogram :sepal_length))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -38,8 +37,7 @@
 ;; Split by species — each group gets its own color.
 
 (-> iris
-    (sk/view :sepal_length)
-    (sk/lay-histogram {:color :species}))
+    (sk/lay-histogram :sepal_length {:color :species}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -51,8 +49,7 @@
 ;; Petal width has a bimodal distribution.
 
 (-> iris
-    (sk/view :petal_width)
-    sk/lay-histogram)
+    (sk/lay-histogram :petal_width))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -62,8 +59,7 @@
 ;; ## Histogram with Custom Title
 
 (-> tips
-    (sk/view :total_bill)
-    sk/lay-histogram
+    (sk/lay-histogram :total_bill)
     (sk/options {:title "Distribution of Total Bill"
                  :x-label "Amount ($)"}))
 
@@ -93,8 +89,7 @@
 ;; Less sensitive to bin width than histograms.
 
 (-> iris
-    (sk/view [[:sepal_length]])
-    sk/lay-density)
+    (sk/lay-density :sepal_length))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -106,8 +101,7 @@
 ;; Per-species density curves with automatic color mapping.
 
 (-> iris
-    (sk/view [[:sepal_length]])
-    (sk/lay-density {:color :species}))
+    (sk/lay-density :sepal_length {:color :species}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -119,8 +113,7 @@
 ;; A narrow bandwidth reveals more detail; a wide bandwidth smooths more.
 
 (-> iris
-    (sk/view [[:sepal_length]])
-    (sk/lay-density {:bandwidth 0.3}))
+    (sk/lay-density :sepal_length {:bandwidth 0.3}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -132,8 +125,7 @@
 ;; Median, quartiles, whiskers at 1.5×IQR, and outlier points.
 
 (-> iris
-    (sk/view [[:species :sepal_width]])
-    sk/lay-boxplot)
+    (sk/lay-boxplot :species :sepal_width))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -146,8 +138,7 @@
 ;; Side-by-side boxplots colored by a grouping variable.
 
 (-> tips
-    (sk/view [[:day :total_bill]])
-    (sk/lay-boxplot {:color :smoker}))
+    (sk/lay-boxplot :day :total_bill {:color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -158,8 +149,7 @@
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
 (let [sk (-> tips
-             (sk/view [[:day :total_bill]])
-             (sk/lay-boxplot {:color :smoker})
+             (sk/lay-boxplot :day :total_bill {:color :smoker})
              sk/sketch)
       panel (first (:panels sk))
       box-layer (first (filter #(= :boxplot (:mark %)) (:layers panel)))
@@ -174,8 +164,7 @@
 ;; Flipped coordinate for horizontal orientation.
 
 (-> iris
-    (sk/view [[:species :sepal_width]])
-    sk/lay-boxplot
+    (sk/lay-boxplot :species :sepal_width)
     (sk/options {:coord :flip}))
 
 (kind/test-last
@@ -190,8 +179,7 @@
 ;; informative than a boxplot for multimodal distributions.
 
 (-> tips
-    (sk/view [[:day :total_bill]])
-    sk/lay-violin)
+    (sk/lay-violin :day :total_bill))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -203,8 +191,7 @@
 ;; Color splits each category into side-by-side violins.
 
 (-> tips
-    (sk/view [[:day :total_bill]])
-    (sk/lay-violin {:color :smoker}))
+    (sk/lay-violin :day :total_bill {:color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -214,8 +201,7 @@
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
 (let [sk (-> tips
-             (sk/view [[:day :total_bill]])
-             (sk/lay-violin {:color :smoker})
+             (sk/lay-violin :day :total_bill {:color :smoker})
              sk/sketch)
       panel (first (:panels sk))
       viol-layer (first (filter #(= :violin (:mark %)) (:layers panel)))
@@ -228,8 +214,7 @@
 ;; ## Horizontal Violin
 
 (-> iris
-    (sk/view [[:species :petal_length]])
-    sk/lay-violin
+    (sk/lay-violin :species :petal_length)
     (sk/coord :flip))
 
 (kind/test-last
@@ -243,8 +228,7 @@
 ;; for comparing distribution shapes across many groups.
 
 (-> iris
-    (sk/view [[:species :sepal_length]])
-    sk/lay-ridgeline)
+    (sk/lay-ridgeline :species :sepal_length))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -256,8 +240,7 @@
 ;; Map color to the same categorical column for distinct curves.
 
 (-> iris
-    (sk/view [[:species :sepal_length]])
-    (sk/lay-ridgeline {:color :species}))
+    (sk/lay-ridgeline :species :sepal_length {:color :species}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]

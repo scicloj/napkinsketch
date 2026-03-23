@@ -26,8 +26,7 @@
 
 (def views
   (-> iris
-      (sk/view [[:sepal_length :sepal_width]])
-      (sk/lay-point {:color :species})))
+      (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 (kind/pprint views)
 
@@ -97,8 +96,7 @@
 ;; without color using the `:group` key.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-line {:group :species})
+    (sk/lay-line :sepal_length :sepal_width {:group :species})
     sk/sketch
     (get-in [:panels 0 :layers 0 :groups])
     count)
@@ -146,8 +144,7 @@
            :meal ["lunch" "dinner" "lunch" "dinner"]})
 
 (-> tips
-    (sk/view :day :count)
-    (sk/lay-value-bar {:color :meal :position :stack})
+    (sk/lay-value-bar :day :count {:color :meal :position :stack})
     sk/sketch
     (get-in [:panels 0 :layers 0 :groups 1 :y0s]))
 
@@ -161,8 +158,7 @@
 ;; keys on any mark.
 
 (-> {:x [1 2 3] :y [4 5 6]}
-    (sk/view :x :y)
-    (sk/lay-point {:nudge-x 0.5})
+    (sk/lay-point :x :y {:nudge-x 0.5})
     sk/sketch
     (get-in [:panels 0 :layers 0 :groups 0 :xs]))
 
@@ -229,8 +225,7 @@
 ;; - `sk/facet-grid` creates a row × column grid from two columns
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    sk/lay-point
+    (sk/lay-point :sepal_length :sepal_width)
     (sk/facet :species)
     sk/sketch :panels count)
 
@@ -316,8 +311,7 @@
 ;; Passed as `{:theme {...}}` via `sk/options` or directly to `sk/sketch`.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:theme {:background "#2d2d2d" :grid "#444444"
                          :text "#cccccc" :tick "#999999"}})
     sk/svg-summary :panels)

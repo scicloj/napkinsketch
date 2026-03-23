@@ -19,8 +19,7 @@
            :y (mapv #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
-    (sk/view [[:x :y]])
-    sk/lay-line)
+    (sk/lay-line :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -36,8 +35,7 @@
             :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))})
 
 (-> waves
-    (sk/view [[:x :y]])
-    (sk/lay-line {:color :fn}))
+    (sk/lay-line :x :y {:color :fn}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -48,8 +46,7 @@
 ;; Constant stroke width via `:size`.
 
 (-> wave
-    (sk/view [[:x :y]])
-    (sk/lay-line {:size 4}))
+    (sk/lay-line :x :y {:size 4}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -106,8 +103,7 @@
 
 (-> {:x (range 30)
      :y (mapv #(Math/sin (* % 0.3)) (range 30))}
-    (sk/view [[:x :y]])
-    sk/lay-area)
+    (sk/lay-area :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -122,8 +118,7 @@
                      [2 2 2 3 3 3 2 2 2 2]
                      [1 1 1 1 2 2 2 1 1 1]))
      :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
-    (sk/view [[:x :y]])
-    (sk/lay-stacked-area {:color :group}))
+    (sk/lay-stacked-area :x :y {:color :group}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

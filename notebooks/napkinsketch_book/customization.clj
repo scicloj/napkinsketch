@@ -22,8 +22,7 @@
 ;; A wide, short plot.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:width 800 :height 250}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -33,8 +32,7 @@
 ;; A tall, narrow plot.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:width 300 :height 500}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -46,8 +44,7 @@
 ;; Override axis labels and add a title.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:title "Iris Sepal Measurements"
                  :x-label "Length (cm)"
                  :y-label "Width (cm)"}))
@@ -60,8 +57,7 @@
 ;; `:title`, `:x-label`, `:y-label` in `sk/options`.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/labs {:title "Pipeline Labels" :x "Length" :y "Width"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -71,8 +67,7 @@
 ;; Add a subtitle and caption for context.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:title "Iris Measurements"
                  :subtitle "Sepal dimensions across three species"
                  :caption "Source: Fisher's Iris dataset (1936)"}))
@@ -93,8 +88,7 @@
 ;; Linear scale — hard to see the structure.
 
 (-> exponential-data
-    (sk/view [[:x :y]])
-    sk/lay-point
+    (sk/lay-point :x :y)
     (sk/options {:title "Linear Scale"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -104,8 +98,7 @@
 ;; Log y-scale — reveals the exponential trend.
 
 (-> exponential-data
-    (sk/view [[:x :y]])
-    sk/lay-point
+    (sk/lay-point :x :y)
     (sk/scale :y :log)
     (sk/options {:title "Log Y Scale"}))
 
@@ -116,8 +109,7 @@
 ;; Lock the y-axis to a specific range.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/scale :y {:type :linear :domain [0 6]})
     (sk/options {:title "Fixed Y Domain [0, 6]"}))
 
@@ -130,8 +122,7 @@
 ;; Pass `:alpha` and `:size` directly to methods.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species :alpha 0.5 :size 5}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.5 :size 5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -140,8 +131,7 @@
 ;; Alpha works on bars and polygons too.
 
 (-> iris
-    (sk/view :species)
-    (sk/lay-bar {:alpha 0.4}))
+    (sk/lay-bar :species {:alpha 0.4}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:polygons s))))])
@@ -153,8 +143,7 @@
 ;; Horizontal and vertical reference lines.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay (sk/rule-h 3.0) (sk/rule-v 6.0)))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -169,8 +158,7 @@
 (kind/test-last [(fn [v] (= 0.15 v))])
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay (sk/band-v 5.5 6.5) (sk/band-h 3.0 3.5 {:alpha 0.3})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -181,8 +169,7 @@
 ;; Pass `:palette` to override the default color cycle.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -192,8 +179,7 @@
 ;; The palette applies to all color-mapped marks.
 
 (-> iris
-    (sk/view :species)
-    (sk/lay-stacked-bar {:color :species})
+    (sk/lay-stacked-bar :species {:color :species})
     (sk/options {:palette ["#8B5CF6" "#F59E0B" "#10B981"]}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -203,8 +189,7 @@
 ;; Pass a map to assign specific colors to specific categories.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette {:setosa "#E74C3C"
                            :versicolor "#3498DB"
                            :virginica "#2ECC71"}}))
@@ -232,8 +217,7 @@
 ;; search all available names.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette :set2}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -243,8 +227,7 @@
 ;; Dark, high-contrast palette.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette :dark2}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -295,8 +278,7 @@
 ;; - `:tableau-10` — Tableau default, high contrast
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette :khroma/okabeito}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -306,8 +288,7 @@
 ;; Customize background color, grid color, and font size.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:title "White Theme"
                  :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 10}}))
 
@@ -320,8 +301,7 @@
 ;; `:top`, or `:none`.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:legend-position :bottom}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -333,8 +313,7 @@
 ;; Enable mouseover data values with `{:tooltip true}`.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:tooltip true})
     sk/plot)
 
@@ -345,8 +324,7 @@
 ;; Enable drag-to-select with `{:brush true}`. Click to reset.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:brush true})
     sk/plot)
 
