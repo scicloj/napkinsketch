@@ -76,7 +76,7 @@ scatter-views
 ;; |:-------------|:--------------|
 ;; | float, int | `:numerical` |
 ;; | string, keyword, boolean | `:categorical` |
-;; | LocalDate, LocalDateTime | `:temporal` → numerical with calendar-aware ticks |
+;; | LocalDate, LocalDateTime, Instant, java.util.Date | `:temporal` → numerical with calendar-aware ticks |
 ;;
 ;; A categorical column produces a band scale with string domain values.
 ;; Compare:
@@ -104,13 +104,13 @@ bar-views
 ;; at zero because this is a bar chart.
 
 ;; Temporal columns — dates are detected and converted to
-;; epoch-milliseconds internally, with calendar-aware tick labels:
+;; epoch-milliseconds internally, with calendar-aware tick labels.
+;; Clojure's `#inst` reader literal is a convenient way to write dates:
 
-(let [sk (-> {:date [(java.time.LocalDate/of 2024 1 1)
-                     (java.time.LocalDate/of 2024 6 1)
-                     (java.time.LocalDate/of 2024 12 1)]
+(let [sk (-> {:date [#inst "2024-01-01" #inst "2024-06-01" #inst "2024-12-01"]
               :val [10 25 18]}
-             (sk/lay-point :date :val)             sk/sketch)
+             (sk/lay-point :date :val)
+             sk/sketch)
       p (first (:panels sk))]
   {:x-domain-numeric? (number? (first (:x-domain p)))
    :tick-labels (:labels (:x-ticks p))})
@@ -119,9 +119,10 @@ bar-views
                               (not-empty (:tick-labels m))))])
 
 ;; The x-domain contains epoch-millisecond numbers, but the tick
-;; labels show human-readable dates. The system detected the
-;; `LocalDate` type, converted to numbers for plotting, and
-;; preserved the temporal extent for formatting.
+;; labels show human-readable dates. Napkinsketch accepts
+;; `java.util.Date` (from `#inst`), `LocalDate`, `LocalDateTime`,
+;; and `Instant` — all are converted to epoch-milliseconds for
+;; plotting, with calendar-aware tick formatting.
 
 ;; ## Mark and Stat Inference
 ;;
