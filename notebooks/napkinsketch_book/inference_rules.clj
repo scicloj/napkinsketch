@@ -17,7 +17,7 @@
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
-;; ## The Sketch Is the Answer
+;; ## Inspecting the Sketch
 ;;
 ;; Every call to `sk/sketch` returns a plain Clojure map: the **sketch**.
 ;; It contains everything needed to render a plot — domains, ticks,
@@ -67,7 +67,7 @@ scatter-views
 ;; - The single layer has `:mark :point` and a single `:groups` entry with all 5 data
 ;;   points, colored in default gray `[0.2 0.2 0.2 1.0]`
 
-;; ## Column Types Drive Everything
+;; ## Column Type Detection
 ;;
 ;; The first inference: is each column **numerical** or **categorical**?
 ;; This determines the scale type, domain, tick style, and default mark.
@@ -471,7 +471,7 @@ fixed-color-views
 
 (kind/test-last [(fn [m] (= "Length (cm)" (:x-label m)))])
 
-;; ## Layout Adapts to Content
+;; ## Automatic Layout
 ;;
 ;; The `:layout` map adjusts padding based on what elements are
 ;; present. Compare a bare plot to one with title, labels, and legend:
