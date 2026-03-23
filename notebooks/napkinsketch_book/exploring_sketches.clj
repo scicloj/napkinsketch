@@ -129,7 +129,7 @@ tiny-layer
 ;; These are the original data values — not pixel positions.
 ;; The renderer maps them through scales to get pixel coordinates.
 ;;
-;; This is the key insight: **the sketch describes geometry in data space**.
+;; In other words, the sketch describes geometry in data space.
 
 ;; ## Adding Color
 ;;

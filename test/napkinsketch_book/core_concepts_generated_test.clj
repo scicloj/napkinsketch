@@ -114,96 +114,112 @@
 
 
 (def
- v40_l210
- (def scatter-base (-> iris (sk/lay-point :sepal_length :sepal_width))))
-
-
-(def v42_l216 (-> scatter-base sk/lay-lm))
+ v40_l207
+ (-> iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
 
 
 (deftest
- t43_l219
+ t41_l211
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v42_l216)))
-
-
-(def v45_l226 (-> scatter-base sk/lay-loess))
-
-
-(deftest
- t46_l229
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v45_l226)))
+   v40_l207)))
 
 
 (def
- v48_l243
+ v43_l221
+ (def scatter-base (-> iris (sk/lay-point :sepal_length :sepal_width))))
+
+
+(def v45_l227 (-> scatter-base sk/lay-lm))
+
+
+(deftest
+ t46_l230
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 1 (:lines s)))))
+   v45_l227)))
+
+
+(def v48_l237 (-> scatter-base sk/lay-loess))
+
+
+(deftest
+ t49_l240
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 1 (:lines s)))))
+   v48_l237)))
+
+
+(def
+ v51_l254
  (-> iris (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
- t49_l246
+ t52_l257
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"setosa"} (:texts s)))))
-   v48_l243)))
+   v51_l254)))
 
 
 (def
- v51_l255
+ v54_l266
  (->
   iris
   (sk/lay-point :sepal_length :sepal_width {:color :petal_length})))
 
 
 (deftest
- t52_l258
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v51_l255)))
+ t55_l269
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v54_l266)))
 
 
 (def
- v54_l264
+ v57_l275
  (->
   iris
   (sk/lay-point :sepal_length :sepal_width {:color "steelblue"})))
 
 
 (deftest
- t55_l267
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v54_l264)))
+ t58_l278
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v57_l275)))
 
 
 (def
- v57_l277
+ v60_l288
  (-> iris (sk/view :sepal_length :sepal_width) sk/lay-point sk/lay-lm))
 
 
 (deftest
- t58_l282
+ t61_l293
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v57_l277)))
+   v60_l288)))
 
 
 (def
- v60_l290
+ v63_l301
  (->
   iris
   (sk/view :sepal_length :sepal_width)
@@ -212,18 +228,18 @@
 
 
 (deftest
- t61_l295
+ t64_l306
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v60_l290)))
+   v63_l301)))
 
 
 (def
- v63_l310
+ v66_l321
  (->
   iris
   (sk/view :sepal_length :sepal_width)
@@ -233,35 +249,35 @@
 
 
 (deftest
- t64_l316
+ t67_l327
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)) (= 3 (:lines s)))))
-   v63_l310)))
+   v66_l321)))
 
 
-(def v66_l331 (def cols [:sepal_length :sepal_width :petal_length]))
+(def v69_l342 (def cols [:sepal_length :sepal_width :petal_length]))
 
 
-(def v67_l333 (sk/cross cols cols))
+(def v70_l344 (sk/cross cols cols))
 
 
-(deftest t68_l335 (is ((fn [v] (= 9 (count v))) v67_l333)))
+(deftest t71_l346 (is ((fn [v] (= 9 (count v))) v70_l344)))
 
 
-(def v70_l340 (-> iris (sk/view (sk/cross cols cols))))
+(def v73_l351 (-> iris (sk/view (sk/cross cols cols))))
 
 
 (deftest
- t71_l343
- (is ((fn [v] (= 9 (:panels (sk/svg-summary v)))) v70_l340)))
+ t74_l354
+ (is ((fn [v] (= 9 (:panels (sk/svg-summary v)))) v73_l351)))
 
 
 (def
- v73_l362
+ v76_l373
  (->
   iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -269,12 +285,12 @@
 
 
 (deftest
- t74_l366
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v73_l362)))
+ t77_l377
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v76_l373)))
 
 
 (def
- v76_l374
+ v79_l385
  (->
   {:population [1000 5000 50000 200000 1000000 5000000],
    :area [2 8 30 120 500 2100]}
@@ -284,5 +300,5 @@
 
 
 (deftest
- t77_l380
- (is ((fn [v] (= 6 (:points (sk/svg-summary v)))) v76_l374)))
+ t80_l391
+ (is ((fn [v] (= 6 (:points (sk/svg-summary v)))) v79_l385)))

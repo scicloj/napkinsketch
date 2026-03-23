@@ -1,8 +1,8 @@
+
 ;; # Faceting
 ;;
-;; Faceting splits data into subsets and draws each in its own panel.
-;; This is one of the most powerful ways to explore relationships
-;; across groups.
+;; Faceting splits data into subsets and draws each in its own panel,
+;; making it easy to compare patterns across groups.
 
 (ns napkinsketch-book.faceting
   (:require

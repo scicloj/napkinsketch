@@ -133,8 +133,8 @@ trace-membrane
 
 ;; ## The Sketch Boundary
 ;;
-;; The key architectural insight is that **what** to draw and **how** to
-;; draw it are separate concerns. The sketch sits between them.
+;; The sketch separates **what** to draw from **how** to
+;; draw it. It sits between the two concerns.
 
 ^:kindly/hide-code
 (kind/mermaid "

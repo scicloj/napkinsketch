@@ -438,7 +438,8 @@
                            (and (= 342 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; Without grouping, Simpson's paradox: overall trend is negative.
+;; Without grouping, the overall trend appears negative — an example
+;; of Simpson's paradox.
 
 (-> penguins
     (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
