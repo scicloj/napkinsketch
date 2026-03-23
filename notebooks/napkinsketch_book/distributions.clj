@@ -76,8 +76,7 @@
 ;; comparable with a density curve overlay.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_length]])
-    (sk/lay-histogram {:normalize :density :alpha 0.5})
+    (sk/lay-histogram :sepal_length {:normalize :density :alpha 0.5})
     sk/lay-density)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

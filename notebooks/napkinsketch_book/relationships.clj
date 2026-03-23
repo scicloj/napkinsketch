@@ -25,8 +25,7 @@
 ;; A single regression line through all data.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-point
+    (sk/lay-point :sepal_length :sepal_width)
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -38,8 +37,7 @@
 ;; Fit a regression line per group.
 
 (-> iris
-    (sk/view [[:petal_length :petal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :petal_length :petal_width {:color :species})
     (sk/lay-lm {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -51,8 +49,7 @@
 ;; Pass `{:se true}` to show a 95% confidence band around the line.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay-lm {:se true :color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -64,8 +61,7 @@
 ;; Do smokers and non-smokers tip differently?
 
 (-> tips
-    (sk/view [[:total_bill :tip]])
-    (sk/lay-point {:color :smoker})
+    (sk/lay-point :total_bill :tip {:color :smoker})
     (sk/lay-lm {:color :smoker}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -82,8 +78,7 @@
                             (range 50))}))
 
 (-> noisy-wave
-    (sk/view [[:x :y]])
-    sk/lay-point
+    (sk/lay-point :x :y)
     sk/lay-loess)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -134,8 +129,7 @@
 ;; Overlay scatter points on the density heatmap.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-density2d
+    (sk/lay-density2d :sepal_length :sepal_width)
     (sk/lay-point {:alpha 0.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -158,8 +152,7 @@
 ;; Contour lines overlaid on scatter points.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:alpha 0.3})
+    (sk/lay-point :sepal_length :sepal_width {:alpha 0.3})
     (sk/lay-contour {:levels 8}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

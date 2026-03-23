@@ -82,10 +82,9 @@
 ;; Layers compose with faceting — scatter plus regression per panel:
 
 (-> tips
-    (sk/view [[:total_bill :tip]])
-    (sk/facet-grid :smoker :sex)
-    (sk/lay-point {:color :sex})
-    (sk/lay-lm {:color :sex}))
+    (sk/lay-point :total_bill :tip {:color :sex})
+    (sk/lay-lm {:color :sex})
+    (sk/facet-grid :smoker :sex))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:panels s))

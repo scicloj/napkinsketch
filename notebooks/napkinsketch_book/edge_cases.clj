@@ -46,8 +46,7 @@
 ;; the line is gracefully omitted.
 
 (-> {:x [1 10] :y [5 50]}
-    (sk/view [[:x :y]])
-    sk/lay-point
+    (sk/lay-point :x :y)
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -59,8 +58,7 @@
 ;; With 3 points, the regression line appears.
 
 (-> {:x [1 5 10] :y [5 25 50]}
-    (sk/view [[:x :y]])
-    sk/lay-point
+    (sk/lay-point :x :y)
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -170,8 +168,7 @@
 
 (-> iris
     (tc/select-rows #(= "setosa" (% :species)))
-    (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-point
+    (sk/lay-point :sepal_length :sepal_width)
     sk/lay-lm
     (sk/options {:title "Setosa Only"}))
 
@@ -228,8 +225,7 @@
 ;; (minimum for lm).
 
 (-> {:x [1 2 3] :y [2 4 5]}
-    (sk/view :x :y)
-    sk/lay-point
+    (sk/lay-point :x :y)
     (sk/lay-lm {:se true}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -314,8 +310,7 @@
                                               0)
                  (range 24))
      :value (mapv #(+ 18.0 (* 4.0 (Math/sin (* % 0.3)))) (range 24))}
-    (sk/view :time :value)
-    sk/lay-line
+    (sk/lay-line :time :value)
     sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -332,8 +327,7 @@
                    (+ 1750003200 (* % 3600)))
                  (range 12))
      :temp (mapv #(+ 20.0 (* 5.0 (Math/sin (* % 0.5)))) (range 12))}
-    (sk/view :time :temp)
-    sk/lay-line
+    (sk/lay-line :time :temp)
     sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -348,8 +342,7 @@
 (-> {:date (mapv #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 120)))
                  (range 20))
      :value (mapv #(+ 100 (* 50 (Math/sin (* % 0.4)))) (range 20))}
-    (sk/view :date :value)
-    sk/lay-line
+    (sk/lay-line :date :value)
     sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

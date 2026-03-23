@@ -13,7 +13,7 @@
   wave
   {:x (range 30),
    :y
-   (mapv (fn* [p1__84461#] (Math/sin (* p1__84461# 0.3))) (range 30))}))
+   (mapv (fn* [p1__91110#] (Math/sin (* p1__91110# 0.3))) (range 30))}))
 
 
 (def v4_l21 (-> wave (sk/lay-line :x :y)))
@@ -38,9 +38,9 @@
    :y
    (vec
     (concat
-     (mapv (fn* [p1__84462#] (Math/sin (* p1__84462# 0.3))) (range 30))
+     (mapv (fn* [p1__91111#] (Math/sin (* p1__91111# 0.3))) (range 30))
      (mapv
-      (fn* [p1__84463#] (Math/cos (* p1__84463# 0.3)))
+      (fn* [p1__91112#] (Math/cos (* p1__91112# 0.3)))
       (range 30)))),
    :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))}))
 
@@ -86,13 +86,12 @@
  v15_l64
  (->
   growth
-  (sk/view [[:day :value]])
-  (sk/lay-line {:color :group})
+  (sk/lay-line :day :value {:color :group})
   (sk/lay-point {:color :group})))
 
 
 (deftest
- t16_l69
+ t16_l68
  (is
   ((fn
     [v]
@@ -103,67 +102,62 @@
 
 
 (def
- v18_l77
- (->
-  {:x [1 2 3 4 5], :y [2 4 1 5 3]}
-  (sk/view [[:x :y]])
-  sk/lay-step
-  sk/lay-point))
+ v18_l76
+ (-> {:x [1 2 3 4 5], :y [2 4 1 5 3]} (sk/lay-step :x :y) sk/lay-point))
 
 
 (deftest
- t19_l83
+ t19_l81
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 5 (:points s)) (= 1 (:lines s)))))
-   v18_l77)))
+   v18_l76)))
 
 
 (def
- v21_l91
+ v21_l89
  (->
   growth
-  (sk/view [[:day :value]])
-  (sk/lay-step {:color :group})
+  (sk/lay-step :day :value {:color :group})
   (sk/lay-point {:color :group})))
 
 
 (deftest
- t22_l96
+ t22_l93
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 10 (:points s)) (= 2 (:lines s)))))
-   v21_l91)))
+   v21_l89)))
 
 
 (def
- v24_l104
+ v24_l101
  (->
   {:x (range 30),
    :y
-   (mapv (fn* [p1__84464#] (Math/sin (* p1__84464# 0.3))) (range 30))}
+   (mapv (fn* [p1__91113#] (Math/sin (* p1__91113# 0.3))) (range 30))}
   (sk/lay-area :x :y)))
 
 
 (deftest
- t25_l108
+ t25_l105
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:polygons s)))))
-   v24_l104)))
+   v24_l101)))
 
 
 (def
- v27_l116
+ v27_l113
  (->
   {:x (vec (concat (range 10) (range 10) (range 10))),
    :y
@@ -178,11 +172,11 @@
 
 
 (deftest
- t28_l123
+ t28_l120
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v27_l116)))
+   v27_l113)))

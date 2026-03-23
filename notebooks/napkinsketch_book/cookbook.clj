@@ -28,8 +28,7 @@
 ;; detects the categorical axis and constrains points to the band width.
 
 (-> iris
-    (sk/view [[:species :sepal_length]])
-    sk/lay-boxplot
+    (sk/lay-boxplot :species :sepal_length)
     (sk/lay-point {:jitter true :alpha 0.3}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -42,8 +41,7 @@
 ;; Normalize the histogram to density scale so it is comparable with the KDE curve.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_length]])
-    (sk/lay-histogram {:normalize :density :alpha 0.5})
+    (sk/lay-histogram :sepal_length {:normalize :density :alpha 0.5})
     sk/lay-density)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -55,8 +53,7 @@
 ;; Fit a linear regression per group to reveal trends across species.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species :alpha 0.6})
+    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.6})
     (sk/lay-lm {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -68,8 +65,7 @@
 ;; Show the density shape and every observation together.
 
 (-> iris
-    (sk/view [[:species :petal_width]])
-    (sk/lay-violin {:alpha 0.3})
+    (sk/lay-violin :species :petal_width {:alpha 0.3})
     (sk/lay-point {:jitter true :alpha 0.4}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -88,8 +84,7 @@
                          (range 52))})
 
 (-> ts-ds
-    (sk/view [[:date :value]])
-    (sk/lay-area {:alpha 0.2})
+    (sk/lay-area :date :value {:alpha 0.2})
     sk/lay-line
     (sk/lay-point {:alpha 0.5}))
 
@@ -155,8 +150,7 @@
 ;; Color points by group, but fit a single overall regression line.
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -175,8 +169,7 @@
    :ci_hi [12.0 18.0 14.5 20.5]})
 
 (-> experiment
-    (sk/view [[:condition :mean]])
-    (sk/lay-point {:size 5})
+    (sk/lay-point :condition :mean {:size 5})
     (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -188,8 +181,7 @@
 ;; Composing lollipop stems with error bars.
 
 (-> experiment
-    (sk/view [[:condition :mean]])
-    sk/lay-lollipop
+    (sk/lay-lollipop :condition :mean)
     (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -201,8 +193,7 @@
 ;; The `summary` mark computes mean and standard error per category.
 
 (-> iris
-    (sk/view [[:species :sepal_length]])
-    (sk/lay-point {:alpha 0.3 :jitter 5})
+    (sk/lay-point :species :sepal_length {:alpha 0.3 :jitter 5})
     (sk/lay-summary {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -214,8 +205,7 @@
 ;; Scatter + per-group regression to compare smoker tipping patterns.
 
 (-> tips
-    (sk/view [[:total_bill :tip]])
-    (sk/lay-point {:color :smoker})
+    (sk/lay-point :total_bill :tip {:color :smoker})
     (sk/lay-lm {:color :smoker})
     (sk/options {:title "Tipping Behavior"
                  :x-label "Total Bill ($)"
@@ -234,8 +224,7 @@
 ;; confidence ribbons.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color :species :alpha 0.5})
+    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.5})
     (sk/lay-lm {:color :species :se true})
     (sk/options {:title "Sepal Regression with Confidence Bands"}))
 
@@ -270,8 +259,7 @@
    :temp [12 14 14 16 18 17 15 13 14 16 19 21 20 18]})
 
 (-> daily-temps
-    (sk/view :day :temp)
-    (sk/lay-step {:color "#2196F3"})
+    (sk/lay-step :day :temp {:color "#2196F3"})
     (sk/lay-point {:color "#2196F3" :size 3})
     (sk/options {:title "Daily Temperature (Step)"}))
 
@@ -285,8 +273,7 @@
 ;; high-density regions in a point cloud.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color :species :alpha 0.4})
+    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.4})
     (sk/lay-contour {:levels 5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -300,8 +287,7 @@
 (def top5 (-> iris (tc/order-by :sepal_length :desc) (tc/head 5)))
 
 (-> top5
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:size 5})
+    (sk/lay-point :sepal_length :sepal_width {:size 5})
     (sk/lay-label {:text :species :nudge-y 0.15}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -329,8 +315,7 @@
 ;; This makes the plot square when x and y have equal ranges.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay-lm {:color :species})
     (sk/coord :fixed)
     (sk/options {:title "Fixed Aspect Ratio"}))
@@ -361,8 +346,7 @@
 ;; Add `{:se true}` to a LOESS smoother for a bootstrap confidence band.
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay-loess {:se true :color :species})
     (sk/options {:title "LOESS with 95% CI"}))
 
@@ -401,8 +385,7 @@
    :area [2194 1484 6341 1521 603]})
 
 (-> top-cities
-    (sk/view :area :population)
-    sk/lay-point
+    (sk/lay-point :area :population)
     (sk/lay-text {:text :city :nudge-y 1.0})
     (sk/options {:title "Population vs Area"}))
 
@@ -421,8 +404,7 @@
                    (* 2 (- (rng/drandom r) 0.5)))
                xs)]
   (-> {:x xs :y ys}
-      (sk/view [[:x :y]])
-      sk/lay-point
+      (sk/lay-point :x :y)
       sk/lay-lm
       (sk/options {:title "Simulated: y = 3x + 5 + noise"})))
 
@@ -448,8 +430,7 @@
 ;; Per-species regression reveals different slopes.
 
 (-> penguins
-    (sk/view [[:bill_length_mm :bill_depth_mm]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
     (sk/lay-lm {:color :species})
     (sk/options {:title "Bill Length vs Depth with Regression"}))
 
@@ -460,8 +441,7 @@
 ;; Without grouping, Simpson's paradox: overall trend is negative.
 
 (-> penguins
-    (sk/view [[:bill_length_mm :bill_depth_mm]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
     sk/lay-lm
     (sk/options {:title "Simpson's Paradox: Overall vs Per-Group Trend"}))
 
@@ -482,8 +462,7 @@
 ;; Flipper length vs body mass — a strong positive correlation.
 
 (-> penguins
-    (sk/view [[:flipper_length_mm :body_mass_g]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :flipper_length_mm :body_mass_g {:color :species})
     (sk/lay-lm {:color :species})
     (sk/options {:title "Flipper Length vs Body Mass"}))
 
@@ -506,8 +485,7 @@
 ;; Tipping behavior: smokers vs non-smokers.
 
 (-> tips
-    (sk/view [[:total_bill :tip]])
-    (sk/lay-point {:color :smoker})
+    (sk/lay-point :total_bill :tip {:color :smoker})
     (sk/lay-lm {:color :smoker})
     (sk/options {:title "Tipping: Smokers vs Non-Smokers"
                  :x-label "Total Bill ($)" :y-label "Tip ($)"}))
@@ -555,8 +533,7 @@
 ;; Horsepower vs fuel efficiency, colored by origin.
 
 (-> mpg
-    (sk/view [[:horsepower :mpg]])
-    (sk/lay-point {:color :origin})
+    (sk/lay-point :horsepower :mpg {:color :origin})
     (sk/lay-lm {:color :origin})
     (sk/options {:title "Horsepower vs MPG by Origin"}))
 

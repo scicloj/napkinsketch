@@ -87,8 +87,7 @@
 ;; Add layers with `sk/lay-point`, `sk/lay-lm`, etc.:
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay-lm {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -162,8 +161,7 @@
 (kind/doc #'sk/lay-lm)
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-point
+    (sk/lay-point :sepal_length :sepal_width)
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -178,8 +176,7 @@
                             (range 50))}))
 
 (-> noisy-wave
-    (sk/view [[:x :y]])
-    sk/lay-point
+    (sk/lay-point :x :y)
     sk/lay-loess)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -225,8 +222,7 @@
 (kind/doc #'sk/lay-label)
 
 (-> {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]}
-    (sk/view [[:x :y]])
-    (sk/lay-point {:size 5})
+    (sk/lay-point :x :y {:size 5})
     (sk/lay-label {:text :name}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -252,8 +248,7 @@
 (kind/doc #'sk/lay-errorbar)
 
 (-> measurements
-    (sk/view [[:treatment :mean]])
-    sk/lay-point
+    (sk/lay-point :treatment :mean)
     (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -304,8 +299,7 @@
 (kind/doc #'sk/lay-rug)
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    sk/lay-point
+    (sk/lay-point :sepal_length :sepal_width)
     (sk/lay-rug {:side :both}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -314,8 +308,7 @@
 (kind/doc #'sk/lay-step)
 
 (-> tiny
-    (sk/view [[:x :y]])
-    sk/lay-step
+    (sk/lay-step :x :y)
     sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -532,9 +525,8 @@ sk1
 (kind/doc #'sk/facet)
 
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/facet :species)
-    (sk/lay-point {:color :species}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -543,9 +535,8 @@ sk1
 (kind/doc #'sk/facet-grid)
 
 (-> tips
-    (sk/view [[:total_bill :tip]])
-    (sk/facet-grid :smoker :sex)
-    (sk/lay-point {:color :sex}))
+    (sk/lay-point :total_bill :tip {:color :sex})
+    (sk/facet-grid :smoker :sex))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:panels s))

@@ -511,9 +511,8 @@ final-sk
 
 (def faceted-sk
   (-> iris
-      (sk/view [[:sepal_length :sepal_width]])
+      (sk/lay-point :sepal_length :sepal_width {:color :species})
       (sk/facet :species)
-      (sk/lay-point {:color :species})
       sk/sketch))
 
 ;; The grid tells us the layout:
