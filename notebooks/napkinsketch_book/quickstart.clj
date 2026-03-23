@@ -68,65 +68,6 @@ iris
 
 (kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
 
-;; ## Two Usage Styles
-;;
-;; Napkinsketch supports two equivalent styles for building plots.
-;;
-;; **Data shortcut** — compact, good for single-layer plots.
-;; `sk/lay-point` accepts raw data and column names directly:
-
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (some #{"setosa"} (:texts s)))))])
-
-;; **Pipeline style** — compositional, good for multi-layer plots
-;; and when you need `coord`, `scale`, or `facet`. Build a view
-;; first, then add layers:
-
-(-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (= 150 (:points s))))])
-
-;; Both produce identical results. The pipeline style composes better
-;; when you add `coord`, `scale`, or multiple layers. The data
-;; shortcut is shorter for one-off plots.
-;;
-;; `view` accepts column arguments in two forms:
-;;
-;; - `(sk/view ds :x :y)` — two keyword arguments, for a single panel
-;; - `(sk/view ds [[:x :y]])` — a vector of column pairs; multiple pairs
-;;   produce multiple panels (see the Core Concepts chapter)
-;;
-;; Both forms are equivalent for single-panel plots.
-;; This quickstart uses the data shortcut for single-layer plots and
-;; the pipeline style when composing multiple layers.
-
-;; ## Scatter Plot
-
-;; The simplest plot: map columns to x and y.
-
-(-> iris
-    (sk/view :sepal_length :sepal_width))
-
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
-
-;; Napkinsketch infers the scatter method from the column types.
-;; You can also choose the method explicitly — `sk/lay-point` says
-;; "use a scatter plot regardless of what inference would choose":
-
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
-
 ;; ## Colored Scatter
 
 ;; Bind `:color` to a column to color points by group.
@@ -138,19 +79,6 @@ iris
                            (and (= 150 (:points s))
                                 (some #{"setosa"} (:texts s))
                                 (some #{"sepal length"} (:texts s)))))])
-
-;; ## Scatter with Regression
-
-;; Layer multiple methods: points and linear regression.
-
-(-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
-    (sk/lay-lm {:color :species}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s)))))])
 
 ;; ## Histogram
 
@@ -197,6 +125,20 @@ iris
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:lines s))
                                 (zero? (:points s)))))])
+
+;; ## Multiple Layers
+;;
+;; To combine several layers on the same axes, use `sk/view` to define
+;; the shared column mappings, then add each layer with `sk/lay-*`:
+
+(-> iris
+    (sk/view [[:sepal_length :sepal_width]])
+    (sk/lay-point {:color :species})
+    (sk/lay-lm {:color :species}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; ## Custom Options
 
