@@ -20,7 +20,8 @@
 ;; ## View
 ;;
 ;; A **view** is a map describing what to plot: data, column mappings
-;; (`:x`, `:y`), mark type, color, and other aesthetics.
+;; (`:x`, `:y`), method (mark, stat, position), and aesthetic options
+;; like color and size.
 ;; Created with `sk/view` and refined with `sk/lay-point`,
 ;; `sk/lay-histogram`, and similar layer functions.
 
@@ -108,7 +109,7 @@
 ;; A **stat** (statistical transform) processes raw data before
 ;; rendering. Each method bundles a default stat:
 ;;
-;; | Mark | Default stat | What it does |
+;; | Method | Default stat | What it does |
 ;; |:-----|:-------------|:-------------|
 ;; | `point` | `:identity` | Pass through as-is |
 ;; | `line` | `:identity` | Pass through as-is |
@@ -135,7 +136,8 @@
 ;; | `:stack` | Pile groups on top of each other (cumulative y) | `sk/lay-stacked-bar`, `sk/lay-stacked-area` |
 ;; | `:fill` | Stack normalized to [0, 1] (proportions) | `sk/lay-stacked-bar-fill` |
 ;;
-;; Any mark can override its position via the `:position` key.
+;; You can override the default position by passing `:position` in
+;; the layer options.
 ;; When multiple layers share `:position :dodge`, they are coordinated
 ;; together — errorbars automatically align with bars.
 
@@ -396,7 +398,7 @@
 ;;
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
-;; | View | Map: data + column mappings + mark | User builds, consumed by `sketch` |
+;; | View | Map: data + column mappings + method | User builds, consumed by `sketch` |
 ;; | Method | Mark + stat + position bundle | Created by `method/point`, `method/histogram`, etc.; added by `sk/lay-point`, `sk/lay-histogram`, etc. |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |
