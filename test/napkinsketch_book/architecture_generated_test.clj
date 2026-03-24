@@ -183,9 +183,3 @@
  v44_l220
  (kind/mermaid
   "\ngraph TD\n  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]\n  API --> PLOT[\"impl/plot.clj\"]\n  API --> SKETCH[\"impl/sketch.clj\"]\n  SKETCH --> VIEW\n  SKETCH --> STAT[\"impl/stat.clj\"]\n  SKETCH --> SCALE[\"impl/scale.clj\"]\n  SKETCH --> DEFAULTS[\"impl/defaults.clj\"]\n  PLOT --> SKETCH\n  PLOT --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SKETCH fill:#ffe0b2\n  style PLOT fill:#bbdefb\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))
-
-
-(def
- v46_l253
- (kind/mermaid
-  "\ngraph TD\n  VIEWS[\"views + opts\"]\n  VIEWS --> INFER[\"infer-layout\"]\n  VIEWS --> COLORS[\"collect-colors<br/>(resolve-view × N)\"]\n  VIEWS --> ANNOTS[\"annotations\"]\n\n  INFER --> GRID[\"compute-grid\"]\n  INFER --> DIMS[\"compute-panel-dims\"]\n  INFER --> GROUP[\"group-panels\"]\n\n  COLORS --> GROUP\n  GROUP --> RPV[\"resolve-panel-views<br/>(compute-stat + extract-layer)\"]\n  COLORS --> RPV\n\n  RPV --> BUILD[\"build-panels<br/>(domains, ticks)\"]\n  GRID --> BUILD\n  DIMS --> BUILD\n\n  BUILD --> LABELS[\"resolve-labels\"]\n  COLORS --> LEGEND[\"build-legend\"]\n  LABELS --> LAYOUT[\"compute-layout-dims\"]\n  LEGEND --> LAYOUT\n  DIMS --> LAYOUT\n\n  BUILD --> SKETCH[\"sketch\"]\n  LABELS --> SKETCH\n  LEGEND --> SKETCH\n  LAYOUT --> SKETCH\n\n  style VIEWS fill:#e8f5e9\n  style SKETCH fill:#fff3e0\n  style RPV fill:#e3f2fd\n  style BUILD fill:#e3f2fd\n"))

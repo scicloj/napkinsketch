@@ -529,78 +529,128 @@
 
 ;; ---- Resolve View ----
 
+(defn infer-column-types
+  "Detect x and y column types (:categorical, :numerical, :temporal).
+   Temporal columns are converted to epoch-ms numbers; their original
+   extents (as LocalDateTime) are preserved for wadogo :datetime ticks.
+   Returns a map with keys :ds, :x-type, :y-type, :x-temporal?, :y-temporal?,
+   :x-temporal-extent, :y-temporal-extent."
+  [ds v]
+  (let [x-type (or (:x-type v) (column-type ds (:x v)))
+        y-type (or (:y-type v) (when (and (:y v) (not= (:x v) (:y v)))
+                                 (column-type ds (:y v))))
+        x-temporal? (= x-type :temporal)
+        y-temporal? (= y-type :temporal)
+        x-temp-extent (when x-temporal? (temporal-extent ds (:x v)))
+        y-temp-extent (when y-temporal? (temporal-extent ds (:y v)))
+        ds (cond-> ds
+             x-temporal? (temporalize-column (:x v))
+             y-temporal? (temporalize-column (:y v)))]
+    {:ds ds
+     :x-type (if x-temporal? :numerical x-type)
+     :y-type (if y-temporal? :numerical y-type)
+     :x-temporal? x-temporal?
+     :y-temporal? y-temporal?
+     :x-temporal-extent x-temp-extent
+     :y-temporal-extent y-temp-extent}))
+
+(defn resolve-aesthetics
+  "Classify each aesthetic channel (:color, :size, :alpha, :text) as either
+   a column reference or a fixed literal value.
+   Returns a map with keys :color, :color-is-col?, :color-type, :fixed-color,
+   :size, :size-is-col?, :fixed-size, :alpha, :alpha-is-col?, :fixed-alpha,
+   :text-col."
+  [ds v]
+  (let [color-val (let [cv (:color v)]
+                    (if (and (string? cv)
+                             ((set (tc/column-names ds)) (keyword cv)))
+                      (keyword cv)
+                      cv))
+        color-is-col? (and color-val (column-ref? color-val))
+        c-type (when color-is-col?
+                 (or (:color-type v) (column-type ds color-val)))
+        fixed-color (when (and color-val (not color-is-col?)) color-val)
+        size-val (:size v)
+        size-is-col? (and size-val (column-ref? size-val))
+        fixed-size (when (and size-val (not size-is-col?)) size-val)
+        alpha-val (:alpha v)
+        alpha-is-col? (and alpha-val (column-ref? alpha-val))
+        fixed-alpha (when (and alpha-val (not alpha-is-col?)) alpha-val)
+        text-val (:text v)
+        text-col (when (and text-val (column-ref? text-val)) text-val)]
+    {:color (when color-is-col? color-val)
+     :color-is-col? color-is-col?
+     :color-type c-type
+     :fixed-color fixed-color
+     :size (when size-is-col? size-val)
+     :size-is-col? size-is-col?
+     :fixed-size fixed-size
+     :alpha (when alpha-is-col? alpha-val)
+     :alpha-is-col? alpha-is-col?
+     :fixed-alpha fixed-alpha
+     :text-col text-col}))
+
+(defn infer-grouping
+  "Build the grouping vector from explicit :group and categorical color column.
+   Explicit groups are normalized; categorical color columns are appended.
+   Returns a vector of column keywords."
+  [v color-type color-col]
+  (let [explicit-group (let [g (normalize-col-ref (:group v))]
+                         (cond (nil? g) nil
+                               (keyword? g) [g]
+                               (sequential? g) (mapv normalize-col-ref g)
+                               :else [g]))
+        color-group (when (= color-type :categorical) [color-col])
+        group (vec (distinct (concat (or explicit-group color-group [])
+                                     (when (and color-group explicit-group) color-group))))]
+    group))
+
+(defn infer-method
+  "Choose mark and stat from column types when the user hasn't specified them.
+   Rules:
+     - x only, categorical → :rect + :count (bar chart)
+     - x only, numerical   → :bar  + :bin  (histogram)
+     - x and y, mixed types → :point + :identity (scatter)
+     - x and y, same type   → :point + :identity (scatter)
+   When the user provides an explicit mark, stat defaults to :identity
+   unless they also provided an explicit stat."
+  [v x-type y-type]
+  (let [diagonal? (= (:x v) (:y v))
+        [default-mark default-stat]
+        (cond
+          (or diagonal? (nil? (:y v)))
+          (if (= x-type :categorical) [:rect :count] [:bar :bin])
+          (not= x-type y-type) [:point :identity]
+          :else [:point :identity])
+        mark (or (:mark v) default-mark)
+        stat (or (:stat v) (if (:mark v) :identity default-stat))]
+    {:mark mark :stat stat}))
+
 (defn resolve-view
-  "Resolve a single view: infer column types, method, and grouping."
+  "Resolve a single view: infer column types, aesthetics, grouping, and method.
+   Delegates to `infer-column-types`, `resolve-aesthetics`, `infer-grouping`,
+   and `infer-method` — each named for the inference step it performs."
   [v]
   (if-not (:data v)
     v
     (let [ds (let [d (:data v)] (if (tc/dataset? d) d (tc/dataset d)))
-          x-type (or (:x-type v) (column-type ds (:x v)))
-          y-type (or (:y-type v) (when (and (:y v) (not= (:x v) (:y v)))
-                                   (column-type ds (:y v))))
-          ;; Capture temporal extents before conversion
-          x-temporal? (= x-type :temporal)
-          y-temporal? (= y-type :temporal)
-          x-temp-extent (when x-temporal? (temporal-extent ds (:x v)))
-          y-temp-extent (when y-temporal? (temporal-extent ds (:y v)))
-          ;; Convert temporal columns to epoch-ms numbers
-          ds (cond-> ds
-               x-temporal? (temporalize-column (:x v))
-               y-temporal? (temporalize-column (:y v)))
-          ;; Temporal columns become numerical after conversion
-          x-type (if x-temporal? :numerical x-type)
-          y-type (if y-temporal? :numerical y-type)
-          color-val (let [cv (:color v)]
-                      (if (and (string? cv)
-                               ((set (tc/column-names ds)) (keyword cv)))
-                        (keyword cv)
-                        cv))
-          color-is-col? (and color-val (column-ref? color-val))
-          c-type (when color-is-col?
-                   (or (:color-type v) (column-type ds color-val)))
-          fixed-color (when (and color-val (not color-is-col?)) color-val)
-          size-val (:size v)
-          size-is-col? (and size-val (column-ref? size-val))
-          fixed-size (when (and size-val (not size-is-col?)) size-val)
-          alpha-val (:alpha v)
-          alpha-is-col? (and alpha-val (column-ref? alpha-val))
-          fixed-alpha (when (and alpha-val (not alpha-is-col?)) alpha-val)
-          text-val (:text v)
-          text-col (when (and text-val (column-ref? text-val)) text-val)
-          ;; Group: normalize keyword to [kw], combine with color column
-          explicit-group (let [g (normalize-col-ref (:group v))]
-                           (cond (nil? g) nil
-                                 (keyword? g) [g]
-                                 (sequential? g) (mapv normalize-col-ref g)
-                                 :else [g]))
-          color-group (when (= c-type :categorical) [color-val])
-          group (vec (distinct (concat (or explicit-group color-group [])
-                                       (when (and color-group explicit-group) color-group))))
-          diagonal? (= (:x v) (:y v))
-          [default-mark default-stat]
-          (cond
-            (or diagonal? (nil? (:y v)))
-            (if (= x-type :categorical) [:rect :count] [:bar :bin])
-            (not= x-type y-type) [:point :identity]
-            :else [:point :identity])
-          mark (or (:mark v) default-mark)
-          ;; Method principle: when the user provides an explicit mark (method),
-          ;; its stat takes precedence. Only infer stat from column types when
-          ;; no mark was explicitly provided.
-          stat (or (:stat v) (if (:mark v) :identity default-stat))]
-      (cond-> (assoc v :data ds :x-type x-type :y-type y-type :color-type c-type
-                     :group group :mark mark :stat stat
-                     :color (when color-is-col? color-val)
-                     :fixed-color fixed-color
-                     :size (when size-is-col? size-val)
-                     :fixed-size fixed-size
-                     :alpha (when alpha-is-col? alpha-val)
-                     :fixed-alpha fixed-alpha
+          {:keys [x-type y-type x-temporal? y-temporal?
+                  x-temporal-extent y-temporal-extent]
+           resolved-ds :ds} (infer-column-types ds v)
+          {:keys [color color-type fixed-color
+                  size fixed-size alpha fixed-alpha text-col]} (resolve-aesthetics resolved-ds v)
+          group (infer-grouping v color-type color)
+          {:keys [mark stat]} (infer-method v x-type y-type)]
+      (cond-> (assoc v :data resolved-ds :x-type x-type :y-type y-type
+                     :color-type color-type :group group :mark mark :stat stat
+                     :color color :fixed-color fixed-color
+                     :size size :fixed-size fixed-size
+                     :alpha alpha :fixed-alpha fixed-alpha
                      :text-col text-col)
         x-temporal? (assoc :x-temporal? true)
         y-temporal? (assoc :y-temporal? true)
-        x-temp-extent (assoc :x-temporal-extent x-temp-extent)
-        y-temp-extent (assoc :y-temporal-extent y-temp-extent)))))
+        x-temporal-extent (assoc :x-temporal-extent x-temporal-extent)
+        y-temporal-extent (assoc :y-temporal-extent y-temporal-extent)))))
 
 ;; ---- Scale Setter ----
 
