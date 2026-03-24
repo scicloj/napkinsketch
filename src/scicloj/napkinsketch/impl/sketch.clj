@@ -118,15 +118,16 @@
                values (mapv view/temporal->epoch-ms dt-ticks)]
            {:values values :labels labels :categorical? false})
          ;; Numeric: use linear/log scale
-         (let [;; For log scales, cap tick count to get clean powers of 10.
-               ;; wadogo inserts intermediate sqrt values when n >= 6.
-               n (if log? (min n 5) n)
-               s (scale/make-scale domain pixel-range scale-spec)
-               ticks (ws/ticks s n)
-               labels (if log?
-                        (scale/format-log-ticks ticks)
-                        (scale/format-ticks s ticks))]
-           {:values (vec ticks) :labels (vec labels) :categorical? false}))))))
+         (if log?
+           ;; Log: use ggplot2-style 1-2-5 nice breaks
+           (let [ticks (scale/log-ticks domain n)
+                 labels (scale/format-log-ticks ticks)]
+             {:values (vec ticks) :labels (vec labels) :categorical? false})
+           ;; Linear: use wadogo
+           (let [s (scale/make-scale domain pixel-range scale-spec)
+                 ticks (ws/ticks s n)
+                 labels (scale/format-ticks s ticks)]
+             {:values (vec ticks) :labels (vec labels) :categorical? false})))))))
 
 ;; ---- Layout Detection ----
 

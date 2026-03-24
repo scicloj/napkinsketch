@@ -56,18 +56,77 @@
       labels)))
 
 (defn format-log-ticks
-  "Format log scale tick values. Powers of 10 that are whole numbers
-   are shown as integers (e.g., 1, 10, 100). Small decimals keep
-   their decimal form (e.g., 0.001, 0.01)."
+  "Format log scale tick values. Values are always clean 1-2-3-5 multiples
+   of powers of 10, so formatting is straightforward: integers >= 1 shown
+   without decimals, sub-1 values use minimal decimal places."
   [ticks]
   (mapv (fn [v]
-          (if (and (>= v 1.0) (== v (Math/floor v)))
-            (str (long v))
-            (let [s (str v)]
-              (if (.endsWith s ".0")
-                (subs s 0 (- (count s) 2))
-                s))))
+          (let [v (double v)]
+            (if (and (>= v 1.0) (== v (Math/floor v)))
+              (str (long v))
+              (if (< v 1.0)
+                (let [exp (long (Math/ceil (- (Math/log10 v))))]
+                  (format (str "%." exp "f") v))
+                (str v)))))
         ticks))
+
+(defn log-ticks
+  "Generate clean log-scale tick values for a [lo hi] domain, targeting
+   approximately n ticks. Uses ggplot2-style 1-2-5 nice numbers instead
+   of wadogo's linear-in-log-space approach (which produces irrational
+   values like 3.162...). Returns a vector of tick values (doubles).
+
+   Strategy:
+   - Powers of 10 only when they give >= 3 ticks (strongly preferred)
+   - 1-2-5 intermediates per decade when more ticks are needed
+   - 1-2-3-5 intermediates for dense sub-decade ranges
+   - Bounding powers of 10 are included when they fall within a small
+     margin (15% of log-span) of the domain edges"
+  [[lo hi] n]
+  (let [lo (max (double lo) 1e-300)
+        hi (max (double hi) lo)
+        log-lo-f (Math/log10 lo)
+        log-hi-f (Math/log10 hi)
+        log-span (- log-hi-f log-lo-f)
+        margin (* 0.15 (max log-span 0.5))
+        log-lo-i (long (Math/floor log-lo-f))
+        log-hi-i (long (Math/ceil log-hi-f))
+        ;; Powers of 10 with margin (catches nearby bounding powers)
+        powers (vec (sort (for [exp (range log-lo-i (inc log-hi-i))
+                                :let [v (Math/pow 10.0 exp)]
+                                :when (and (>= (double exp) (- log-lo-f margin))
+                                           (<= (double exp) (+ log-hi-f margin)))]
+                            v)))]
+    ;; Strongly prefer powers of 10 — use them if >= 3 ticks
+    (if (>= (count powers) 3)
+      powers
+      ;; Need intermediates for narrow ranges (< 3 decades visible)
+      (let [make-intermediate
+            (fn [mset]
+              (let [lo-pow (Math/pow 10.0 log-lo-i)
+                    hi-pow (Math/pow 10.0 log-hi-i)]
+                (vec (sort (distinct
+                            (concat
+                             (filter #(and (>= (Math/log10 %) (- log-lo-f margin))
+                                           (<= (Math/log10 %) (+ log-hi-f margin)))
+                                     [lo-pow hi-pow])
+                             (for [exp (range log-lo-i (inc log-hi-i))
+                                   mult mset
+                                   :let [v (* (double mult) (Math/pow 10.0 exp))]
+                                   :when (and (>= v (* lo 0.9999))
+                                              (<= v (* hi 1.0001)))]
+                               v)))))))
+            breaks-125 (make-intermediate [1 2 5])
+            breaks-1235 (make-intermediate [1 2 3 5])
+            ;; Also consider powers with the bounding powers included
+            candidates [{:breaks powers :cnt (count powers)}
+                        {:breaks breaks-125 :cnt (count breaks-125)}
+                        {:breaks breaks-1235 :cnt (count breaks-1235)}]
+            score (fn [{:keys [cnt]}]
+                    (let [diff (- cnt n)]
+                      (if (neg? diff) (* 2.0 (Math/abs diff)) (double diff))))
+            best (apply min-key score candidates)]
+        (:breaks best)))))
 
 (defn tick-count
   "Suggested tick count based on available pixel range."
