@@ -91,7 +91,9 @@
 ;; ---- View ----
 
 (defn view
-  "Create views from data and column specs."
+  "Create views from data and column specs.
+   An optional opts map sets shared aesthetics (e.g. {:color :species})
+   that all layers inherit. Layer opts override view-level aesthetics."
   ([data spec-or-x]
    (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))]
      (if (multi-spec? spec-or-x)
@@ -103,9 +105,23 @@
        (let [parsed (parse-view-spec spec-or-x)]
          (validate-columns ds parsed)
          [(map->View (assoc parsed :data ds))]))))
-  ([data x y]
+  ([data x-or-spec y-or-opts]
+   (if (map? y-or-opts)
+     ;; (view data :x {:color :species}) or (view data [pairs] {:color :species})
+     (let [opts (normalize-col-refs y-or-opts)
+           base-views (view data x-or-spec)]
+       (doseq [v base-views]
+         (validate-columns (:data v) opts))
+       (mapv #(merge % opts) base-views))
+     ;; (view data :x :y) — two column refs (keywords or strings)
+     (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))
+           v {:x (normalize-col-ref x-or-spec) :y (normalize-col-ref y-or-opts)}]
+       (validate-columns ds v)
+       [(map->View (assoc v :data ds))])))
+  ([data x y opts]
    (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))
-         v {:x (normalize-col-ref x) :y (normalize-col-ref y)}]
+         v (merge {:x (normalize-col-ref x) :y (normalize-col-ref y)}
+                  (normalize-col-refs opts))]
      (validate-columns ds v)
      [(map->View (assoc v :data ds))])))
 

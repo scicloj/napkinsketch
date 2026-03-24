@@ -114,13 +114,14 @@
  v19_l84
  (->
   tips
-  (sk/lay-point :total_bill :tip {:color :sex})
-  (sk/lay-lm {:color :sex})
+  (sk/view :total_bill :tip {:color :sex})
+  sk/lay-point
+  sk/lay-lm
   (sk/facet-grid :smoker :sex)))
 
 
 (deftest
- t20_l89
+ t20_l90
  (is
   ((fn
     [v]
@@ -131,7 +132,7 @@
 
 
 (def
- v22_l101
+ v22_l102
  (->
   iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -140,18 +141,18 @@
 
 
 (deftest
- t23_l106
+ t23_l107
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v22_l101)))
+   v22_l102)))
 
 
 (def
- v25_l112
+ v25_l113
  (->
   iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -160,18 +161,18 @@
 
 
 (deftest
- t26_l117
+ t26_l118
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v25_l112)))
+   v25_l113)))
 
 
 (def
- v28_l127
+ v28_l128
  (def
   faceted-sk
   (->
@@ -181,33 +182,33 @@
    sk/sketch)))
 
 
-(def v29_l133 (:grid faceted-sk))
+(def v29_l134 (:grid faceted-sk))
 
 
 (deftest
- t30_l135
- (is ((fn [g] (and (= 1 (:rows g)) (= 3 (:cols g)))) v29_l133)))
+ t30_l136
+ (is ((fn [g] (and (= 1 (:rows g)) (= 3 (:cols g)))) v29_l134)))
 
 
-(def v31_l137 (count (:panels faceted-sk)))
+(def v31_l138 (count (:panels faceted-sk)))
 
 
-(deftest t32_l139 (is ((fn [n] (= 3 n)) v31_l137)))
+(deftest t32_l140 (is ((fn [n] (= 3 n)) v31_l138)))
 
 
-(def v34_l143 (:panels faceted-sk))
+(def v34_l144 (:panels faceted-sk))
 
 
-(deftest t35_l145 (is ((fn [ps] (= 3 (count ps))) v34_l143)))
+(deftest t35_l146 (is ((fn [ps] (= 3 (count ps))) v34_l144)))
 
 
 (def
- v37_l152
+ v37_l153
  (def cols [:sepal_length :sepal_width :petal_length :petal_width]))
 
 
 (def
- v38_l154
+ v38_l155
  (->
   iris
   (sk/view (sk/cross cols cols))
@@ -215,36 +216,36 @@
 
 
 (deftest
- t39_l158
+ t39_l159
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 16 (:panels s)) (= 2400 (:points s)))))
-   v38_l154)))
+   v38_l155)))
 
 
 (def
- v41_l171
+ v41_l172
  (->
   (sk/distribution iris :sepal_length :sepal_width :petal_length)
   (sk/lay-histogram {:color :species})))
 
 
 (deftest
- t42_l174
+ t42_l175
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (pos? (:polygons s)))))
-   v41_l171)))
+   v41_l172)))
 
 
 (def
- v44_l180
+ v44_l181
  (->
   penguins
   (sk/lay-bar :species {:color :species})
@@ -252,18 +253,18 @@
 
 
 (deftest
- t45_l184
+ t45_l185
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 9 (:polygons s)))))
-   v44_l180)))
+   v44_l181)))
 
 
 (def
- v47_l192
+ v47_l193
  (->
   iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -275,7 +276,7 @@
 
 
 (deftest
- t48_l199
+ t48_l200
  (is
   ((fn
     [v]
@@ -286,4 +287,4 @@
       (= 150 (:points s))
       (some #{"Iris by Species"} (:texts s))
       (some #{"Sepal Length (cm)"} (:texts s)))))
-   v47_l192)))
+   v47_l193)))

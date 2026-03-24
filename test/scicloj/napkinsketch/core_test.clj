@@ -387,6 +387,41 @@
       (is (= 1 (count v)))
       (is (= :x (:x (first v)))))))
 
+(deftest shared-aesthetics-test
+  (testing "view with opts sets shared aesthetics"
+    (let [v (sk/views-of (sk/view tiny-ds :x :y {:color :x}))]
+      (is (= 1 (count v)))
+      (is (= :x (:color (first v))))))
+  (testing "single column + opts"
+    (let [v (sk/views-of (sk/view tiny-ds :x {:color :x}))]
+      (is (= :x (:color (first v))))))
+  (testing "multi-spec + opts"
+    (let [v (sk/views-of (sk/view tiny-ds [[:x :y]] {:color :x}))]
+      (is (= :x (:color (first v))))))
+  (testing "shared aesthetics propagate to all layers"
+    (let [data {:x [1 2 3 4 5 6] :y [2 4 3 5 4 6] :g [:a :a :a :b :b :b]}
+          result (-> data
+                     (sk/view :x :y {:color :g})
+                     sk/lay-point
+                     sk/lay-lm)
+          s (sk/sketch result)
+          layers (:layers (first (:panels s)))]
+      (is (= 2 (count layers)))
+      (is (= 2 (count (:groups (first layers)))))
+      (is (= 2 (count (:groups (second layers)))))))
+  (testing "layer opts override view aesthetics"
+    (let [data {:x [1 2 3 4 5 6] :y [2 4 3 5 4 6]
+                :g [:a :a :a :b :b :b] :h [:x :x :x :y :y :y]}
+          result (-> data
+                     (sk/view :x :y {:color :g})
+                     sk/lay-point
+                     (sk/lay-lm {:color :h}))
+          views (sk/views-of result)
+          point-view (first (filter #(= :point (:mark %)) views))
+          lm-view (first (filter #(= :line (:mark %)) views))]
+      (is (= :g (:color point-view)))
+      (is (= :h (:color lm-view))))))
+
 (deftest lay-test
   (testing "lay merges mark into views"
     (let [spec (sk/view tiny-ds [[:x :y]])

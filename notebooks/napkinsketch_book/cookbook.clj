@@ -53,8 +53,9 @@
 ;; Fit a linear regression per group to reveal trends across species.
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.6})
-    (sk/lay-lm {:color :species}))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    (sk/lay-point {:alpha 0.6})
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -205,8 +206,9 @@
 ;; Scatter + per-group regression to compare smoker tipping patterns.
 
 (-> tips
-    (sk/lay-point :total_bill :tip {:color :smoker})
-    (sk/lay-lm {:color :smoker})
+    (sk/view :total_bill :tip {:color :smoker})
+    sk/lay-point
+    sk/lay-lm
     (sk/options {:title "Tipping Behavior"
                  :x-label "Total Bill ($)"
                  :y-label "Tip ($)"}))
@@ -224,8 +226,9 @@
 ;; confidence ribbons.
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.5})
-    (sk/lay-lm {:color :species :se true})
+    (sk/view :sepal_length :sepal_width {:color :species})
+    (sk/lay-point {:alpha 0.5})
+    (sk/lay-lm {:se true})
     (sk/options {:title "Sepal Regression with Confidence Bands"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -315,8 +318,9 @@
 ;; This makes the plot square when x and y have equal ranges.
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/lay-lm {:color :species})
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm
     (sk/coord :fixed)
     (sk/options {:title "Fixed Aspect Ratio"}))
 
@@ -346,8 +350,9 @@
 ;; Add `{:se true}` to a LOESS smoother for a bootstrap confidence band.
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/lay-loess {:se true :color :species})
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    (sk/lay-loess {:se true})
     (sk/options {:title "LOESS with 95% CI"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -430,8 +435,9 @@
 ;; Per-species regression reveals different slopes.
 
 (-> penguins
-    (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
-    (sk/lay-lm {:color :species})
+    (sk/view :bill_length_mm :bill_depth_mm {:color :species})
+    sk/lay-point
+    sk/lay-lm
     (sk/options {:title "Bill Length vs Depth with Regression"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -463,8 +469,9 @@
 ;; Flipper length vs body mass — a strong positive correlation.
 
 (-> penguins
-    (sk/lay-point :flipper_length_mm :body_mass_g {:color :species})
-    (sk/lay-lm {:color :species})
+    (sk/view :flipper_length_mm :body_mass_g {:color :species})
+    sk/lay-point
+    sk/lay-lm
     (sk/options {:title "Flipper Length vs Body Mass"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -486,8 +493,9 @@
 ;; Tipping behavior: smokers vs non-smokers.
 
 (-> tips
-    (sk/lay-point :total_bill :tip {:color :smoker})
-    (sk/lay-lm {:color :smoker})
+    (sk/view :total_bill :tip {:color :smoker})
+    sk/lay-point
+    sk/lay-lm
     (sk/options {:title "Tipping: Smokers vs Non-Smokers"
                  :x-label "Total Bill ($)" :y-label "Tip ($)"}))
 
@@ -534,8 +542,9 @@
 ;; Horsepower vs fuel efficiency, colored by origin.
 
 (-> mpg
-    (sk/lay-point :horsepower :mpg {:color :origin})
-    (sk/lay-lm {:color :origin})
+    (sk/view :horsepower :mpg {:color :origin})
+    sk/lay-point
+    sk/lay-lm
     (sk/options {:title "Horsepower vs MPG by Origin"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

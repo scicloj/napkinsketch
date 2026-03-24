@@ -154,12 +154,13 @@ iris
 
 ;; ## Multiple Layers
 ;;
-;; Thread multiple `sk/lay-*` calls to combine layers on the same axes.
-;; The first call sets the column mappings; subsequent layers inherit them:
+;; Use `sk/view` to set shared column mappings and aesthetics, then
+;; add layers with `sk/lay-*`. All layers inherit the view's mappings:
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/lay-lm {:color :species}))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

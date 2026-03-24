@@ -19,11 +19,10 @@
 
 ;; ## View
 ;;
-;; A **view** is a map describing what to plot: data, column mappings
-;; (`:x`, `:y`), method (mark, stat, position), and aesthetic options
-;; like color and size.
-;; Created with `sk/view` and refined with `sk/lay-point`,
-;; `sk/lay-histogram`, and similar layer functions.
+;; A **view** is a map describing what to plot: data and column-to-channel
+;; mappings — which columns map to `:x`, `:y`, `:color`, `:size`, and
+;; other visual channels. `sk/view` sets the shared mappings; layer
+;; functions (`sk/lay-point`, `sk/lay-lm`, etc.) add methods on top.
 
 (def views
   (-> iris
@@ -402,7 +401,7 @@
 ;;
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
-;; | View | Map: data + column mappings + method | User builds, consumed by `sketch` |
+;; | View | Map: data + column-to-channel mappings + method | User builds, consumed by `sketch` |
 ;; | Method | Mark + stat + position bundle | Created by `method/point`, `method/histogram`, etc.; added by `sk/lay-point`, `sk/lay-histogram`, etc. |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |

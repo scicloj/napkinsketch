@@ -50,9 +50,14 @@
    (view data :x :y)            — two keywords, one scatter view
    (view data [:x :y])          — pair as vector, same result
    (view data [[:x1 :y1] ...])  — multiple views
-   (view data :x)               — histogram view (x=y)"
+   (view data :x)               — histogram view (x=y)
+   An optional opts map sets shared aesthetics that all layers inherit:
+   (view data :x :y {:color :species})  — layers inherit color grouping
+   (view data :x {:color :species})     — single column + shared aesthetics
+   Layer opts override view-level aesthetics."
   ([data spec-or-x] (->plot-spec (view/view data spec-or-x)))
-  ([data x y] (->plot-spec (view/view data x y))))
+  ([data x-or-spec y-or-opts] (->plot-spec (view/view data x-or-spec y-or-opts)))
+  ([data x y opts] (->plot-spec (view/view data x y opts))))
 
 (defn lay
   "Apply one or more methods to views. Primarily used for annotations;

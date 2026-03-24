@@ -222,9 +222,9 @@
  v63_l301
  (->
   iris
-  (sk/view :sepal_length :sepal_width)
-  (sk/lay-point {:color :species})
-  (sk/lay-lm {:color :species})))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest

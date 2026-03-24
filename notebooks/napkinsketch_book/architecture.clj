@@ -183,8 +183,9 @@ graph LR
 
 (def multi-views
   (-> iris
-      (sk/lay-point :petal_length :petal_width {:color :species})
-      (sk/lay-lm {:color :species})))
+      (sk/view :petal_length :petal_width {:color :species})
+      sk/lay-point
+      sk/lay-lm))
 
 (def multi-sketch (sk/sketch multi-views {:title "Iris Petals with Regression"}))
 

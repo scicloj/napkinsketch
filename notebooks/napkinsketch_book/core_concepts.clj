@@ -294,14 +294,14 @@ iris
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; With `:color :species` on both the points and the regression,
-;; each species becomes a separate group — three lines instead of
-;; one:
+;; Passing `:color :species` in `sk/view` makes it a shared aesthetic —
+;; all layers inherit it. Each species becomes a separate group, so the
+;; regression fits three lines instead of one:
 
 (-> iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/lay-point {:color :species})
-    (sk/lay-lm {:color :species}))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

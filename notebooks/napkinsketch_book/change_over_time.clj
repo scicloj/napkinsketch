@@ -62,8 +62,9 @@
    :group [:a :a :a :a :a :b :b :b :b :b]})
 
 (-> growth
-    (sk/lay-line :day :value {:color :group})
-    (sk/lay-point {:color :group}))
+    (sk/view :day :value {:color :group})
+    sk/lay-line
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 10 (:points s))
@@ -87,8 +88,9 @@
 ;; Grouped step lines.
 
 (-> growth
-    (sk/lay-step :day :value {:color :group})
-    (sk/lay-point {:color :group}))
+    (sk/view :day :value {:color :group})
+    sk/lay-step
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 10 (:points s))

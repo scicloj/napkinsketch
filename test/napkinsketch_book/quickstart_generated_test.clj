@@ -158,12 +158,13 @@
  v40_l160
  (->
   iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
-  (sk/lay-lm {:color :species})))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
- t41_l164
+ t41_l165
  (is
   ((fn
     [v]
@@ -174,7 +175,7 @@
 
 
 (def
- v43_l172
+ v43_l173
  (->
   iris
   (sk/lay-point :petal_length :petal_width {:color :species})
@@ -187,7 +188,7 @@
 
 
 (deftest
- t44_l179
+ t44_l180
  (is
   ((fn
     [v]
@@ -197,4 +198,4 @@
       (= 150 (:points s))
       (some #{"Iris Petals"} (:texts s))
       (some #{"Petal Length (cm)"} (:texts s)))))
-   v43_l172)))
+   v43_l173)))

@@ -343,15 +343,17 @@ bar-layer
 ;; layer gets one segment per group:
 
 (-> iris
-    (sk/lay-point :petal_length :petal_width {:color :species})
-    (sk/lay-lm {:color :species}))
+    (sk/view :petal_length :petal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 (def grp-sk (-> iris
-                (sk/lay-point :petal_length :petal_width {:color :species})
-                (sk/lay-lm {:color :species})
+                (sk/view :petal_length :petal_width {:color :species})
+                sk/lay-point
+                sk/lay-lm
                 sk/sketch))
 
 (let [line-layer (second (:layers (first (:panels grp-sk))))]
@@ -478,8 +480,9 @@ opts-sk
 
 (def final-views
   (-> iris
-      (sk/lay-point :petal_length :petal_width {:color :species})
-      (sk/lay-lm {:color :species})))
+      (sk/view :petal_length :petal_width {:color :species})
+      sk/lay-point
+      sk/lay-lm))
 
 (def final-sk (sk/sketch final-views {:title "Iris Petals"}))
 

@@ -46,12 +46,13 @@
  v8_l39
  (->
   iris
-  (sk/lay-point :petal_length :petal_width {:color :species})
-  (sk/lay-lm {:color :species})))
+  (sk/view :petal_length :petal_width {:color :species})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
- t9_l43
+ t9_l44
  (is
   ((fn
     [v]
@@ -62,45 +63,47 @@
 
 
 (def
- v11_l51
+ v11_l52
  (->
   iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
-  (sk/lay-lm {:se true, :color :species})))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  (sk/lay-lm {:se true})))
 
 
 (deftest
- t12_l55
+ t12_l57
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)) (= 3 (:polygons s)))))
-   v11_l51)))
+   v11_l52)))
 
 
 (def
- v14_l63
+ v14_l65
  (->
   tips
-  (sk/lay-point :total_bill :tip {:color :smoker})
-  (sk/lay-lm {:color :smoker})))
+  (sk/view :total_bill :tip {:color :smoker})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
- t15_l67
+ t15_l70
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 244 (:points s)) (= 2 (:lines s)))))
-   v14_l63)))
+   v14_l65)))
 
 
 (def
- v17_l75
+ v17_l78
  (def
   noisy-wave
   (let
@@ -109,43 +112,43 @@
     :y
     (mapv
      (fn*
-      [p1__112533#]
+      [p1__130919#]
       (+
-       (Math/sin (* p1__112533# 0.2))
+       (Math/sin (* p1__130919# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
 
-(def v18_l80 (-> noisy-wave (sk/lay-point :x :y) sk/lay-loess))
+(def v18_l83 (-> noisy-wave (sk/lay-point :x :y) sk/lay-loess))
 
 
 (deftest
- t19_l84
+ t19_l87
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 50 (:points s)) (= 1 (:lines s)))))
-   v18_l80)))
+   v18_l83)))
 
 
-(def v21_l92 (-> iris (sk/lay-tile :sepal_length :sepal_width)))
+(def v21_l95 (-> iris (sk/lay-tile :sepal_length :sepal_width)))
 
 
 (deftest
- t22_l95
+ t22_l98
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v21_l92)))
+   v21_l95)))
 
 
 (def
- v24_l103
+ v24_l106
  (def
   grid-data
   (let
@@ -155,36 +158,36 @@
     :value (vec (repeatedly 25 (fn* [] (rng/irandom r 100))))})))
 
 
-(def v25_l109 (-> grid-data (sk/lay-tile :x :y {:fill :value})))
+(def v25_l112 (-> grid-data (sk/lay-tile :x :y {:fill :value})))
 
 
 (deftest
- t26_l112
+ t26_l115
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v25_l109)))
+   v25_l112)))
 
 
-(def v28_l120 (-> iris (sk/lay-density2d :sepal_length :sepal_width)))
+(def v28_l123 (-> iris (sk/lay-density2d :sepal_length :sepal_width)))
 
 
 (deftest
- t29_l123
+ t29_l126
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v28_l120)))
+   v28_l123)))
 
 
 (def
- v31_l131
+ v31_l134
  (->
   iris
   (sk/lay-density2d :sepal_length :sepal_width)
@@ -192,32 +195,32 @@
 
 
 (deftest
- t32_l135
+ t32_l138
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:tiles s)))))
-   v31_l131)))
+   v31_l134)))
 
 
-(def v34_l143 (-> iris (sk/lay-contour :sepal_length :sepal_width)))
+(def v34_l146 (-> iris (sk/lay-contour :sepal_length :sepal_width)))
 
 
 (deftest
- t35_l146
+ t35_l149
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:lines s)))))
-   v34_l143)))
+   v34_l146)))
 
 
 (def
- v37_l154
+ v37_l157
  (->
   iris
   (sk/lay-point :sepal_length :sepal_width {:alpha 0.3})
@@ -225,11 +228,11 @@
 
 
 (deftest
- t38_l158
+ t38_l161
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:lines s)))))
-   v37_l154)))
+   v37_l157)))

@@ -387,9 +387,9 @@ fixed-color-views
 ;; Two regression lines — grouped by color:
 
 (-> grouped-data
-    (sk/view :x :y)
-    (sk/lay-point {:color :g})
-    (sk/lay-lm {:color :g}))
+    (sk/view :x :y {:color :g})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 6 (:points s))

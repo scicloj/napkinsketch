@@ -87,8 +87,9 @@
 ;; Add layers with `sk/lay-point`, `sk/lay-lm`, etc.:
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/lay-lm {:color :species}))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

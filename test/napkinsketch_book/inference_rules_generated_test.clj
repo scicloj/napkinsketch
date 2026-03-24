@@ -364,11 +364,7 @@
 
 (def
  v68_l389
- (->
-  grouped-data
-  (sk/view :x :y)
-  (sk/lay-point {:color :g})
-  (sk/lay-lm {:color :g})))
+ (-> grouped-data (sk/view :x :y {:color :g}) sk/lay-point sk/lay-lm))
 
 
 (deftest

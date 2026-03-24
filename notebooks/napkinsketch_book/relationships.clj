@@ -37,8 +37,9 @@
 ;; Fit a regression line per group.
 
 (-> iris
-    (sk/lay-point :petal_length :petal_width {:color :species})
-    (sk/lay-lm {:color :species}))
+    (sk/view :petal_length :petal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -49,8 +50,9 @@
 ;; Pass `{:se true}` to show a 95% confidence band around the line.
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/lay-lm {:se true :color :species}))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    (sk/lay-lm {:se true}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -61,8 +63,9 @@
 ;; Do smokers and non-smokers tip differently?
 
 (-> tips
-    (sk/lay-point :total_bill :tip {:color :smoker})
-    (sk/lay-lm {:color :smoker}))
+    (sk/view :total_bill :tip {:color :smoker})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 244 (:points s))

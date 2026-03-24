@@ -39,10 +39,11 @@ such as [Clay](https://scicloj.github.io/clay/).
 (-> iris
     (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
-;; Add regression lines
+;; Multiple layers — shared aesthetics via sk/view
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/lay-lm {:color :species}))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 ```
 
 ## Documentation
