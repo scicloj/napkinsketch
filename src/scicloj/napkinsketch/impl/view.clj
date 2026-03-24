@@ -183,217 +183,7 @@
             (:y label-opts) (assoc :y-label (:y label-opts)))]
     (mapv #(merge % m) views)))
 
-;; ---- Mark Constructors ----
-
-(defn point
-  "Scatter method — shows individual data points.
-   (point)                    — default
-   (point {:color :species})  — color by column"
-  ([] {:mark :point :stat :identity})
-  ([opts] (merge {:mark :point :stat :identity} opts)))
-
-(defn line
-  "Line method — connects data points in order.
-   (line)                    — default
-   (line {:color :group})    — one line per group"
-  ([] {:mark :line :stat :identity})
-  ([opts] (merge {:mark :line :stat :identity} opts)))
-
-(defn step
-  "Step method — connects points with horizontal-then-vertical steps.
-   Useful for time series showing discrete changes.
-   (step)                    — default
-   (step {:color :group})    — one step line per group"
-  ([] {:mark :step :stat :identity})
-  ([opts] (merge {:mark :step :stat :identity} opts)))
-
-(defn histogram
-  "Histogram method — bins numerical data into counted bars.
-   (histogram)                   — default Sturges binning
-   (histogram {:color :species}) — per-group histograms"
-  ([] {:mark :bar :stat :bin})
-  ([opts] (merge {:mark :bar :stat :bin} opts)))
-
-(defn bar
-  "Bar method — counts categorical values.
-   (bar)                     — count occurrences
-   (bar {:color :species})   — grouped bars"
-  ([] {:mark :rect :stat :count})
-  ([opts] (merge {:mark :rect :stat :count} opts)))
-
-(defn stacked-bar
-  "Stacked bar method — counts categorical values (position :stack).
-   (stacked-bar)                     — stacked bars
-   (stacked-bar {:color :smoker})    — colored stacked bars"
-  ([] {:mark :rect :stat :count :position :stack})
-  ([opts] (merge {:mark :rect :stat :count :position :stack} opts)))
-
-(defn stacked-bar-fill
-  "Percentage stacked bar method — proportions sum to 1.0 (position :fill).
-   Each category sums to 1.0, showing proportions instead of counts.
-   (stacked-bar-fill)                     — 100% stacked bars
-   (stacked-bar-fill {:color :smoker})    — colored 100% stacked bars"
-  ([] {:mark :rect :stat :count :position :fill})
-  ([opts] (merge {:mark :rect :stat :count :position :fill} opts)))
-
-(defn value-bar
-  "Value bar method — categorical x with pre-computed numeric y (no counting).
-   (value-bar)                    — default
-   (value-bar {:color :group})    — grouped value bars"
-  ([] {:mark :rect :stat :identity})
-  ([opts] (merge {:mark :rect :stat :identity} opts)))
-
-(defn lollipop
-  "Lollipop method — stem + dot at (x, y) positions.
-   Options: :color, :alpha, :position, :nudge-x, :nudge-y, :group.
-   (lollipop)                  — default
-   (lollipop {:color :group})  — colored stems"
-  ([] {:mark :lollipop :stat :identity})
-  ([opts] (merge (lollipop) opts)))
-
-(defn lm
-  "Linear regression method — fits a straight line to data.
-   (lm)                              — single regression
-   (lm {:color :species})            — per-group regression
-   (lm {:se true})                   — with 95% confidence ribbon
-   (lm {:se true :level 0.99})       — with 99% confidence ribbon"
-  ([] {:mark :line :stat :lm})
-  ([opts] (merge {:mark :line :stat :lm} opts)))
-
-(defn loess
-  "LOESS method — local regression smoothing.
-   Options: :color, :group, :se (boolean), :level (default 0.95), :se-boot (default 200).
-   (loess)                     — default bandwidth 0.75
-   (loess {:color :species})   — per-group smoothing
-   (loess {:se true})          — with 95% confidence ribbon"
-  ([] {:mark :line :stat :loess})
-  ([opts] (merge {:mark :line :stat :loess} opts)))
-
-(defn text
-  "Text method — data-driven labels at (x, y) positions.
-   Options: :text (required), :color, :alpha, :group, :nudge-x, :nudge-y.
-   (text {:text :name})                — label each point
-   (text {:text :name :color :species}) — colored labels"
-  ([] {:mark :text :stat :identity})
-  ([opts] (merge (text) opts)))
-
-(defn label
-  "Label method — text with a filled background box at (x, y) positions.
-   Options: :text (required), :color, :alpha, :group, :nudge-x, :nudge-y.
-   (label {:text :name})                — labeled points with background
-   (label {:text :name :color :species}) — colored labels with background"
-  ([] {:mark :label :stat :identity})
-  ([opts] (merge (label) opts)))
-
-(defn area
-  "Area method — filled region under a line.
-   (area)                     — default
-   (area {:color :species})   — one area per group"
-  ([] {:mark :area :stat :identity})
-  ([opts] (merge {:mark :area :stat :identity} opts)))
-
-(defn stacked-area
-  "Stacked area method — filled regions stacked cumulatively.
-   (stacked-area)                     — stacked areas
-   (stacked-area {:color :group})     — colored stacked areas"
-  ([] {:mark :area :stat :identity :position :stack})
-  ([opts] (merge {:mark :area :stat :identity :position :stack} opts)))
-
-(defn density
-  "Density method — kernel density estimation rendered as filled area.
-   (density)                    — default bandwidth
-   (density {:color :species})  — per-group density curves
-   (density {:bandwidth 0.5})   — custom bandwidth"
-  ([] {:mark :area :stat :kde})
-  ([opts]
-   (let [bw (:bandwidth opts)
-         base (merge {:mark :area :stat :kde} (dissoc opts :bandwidth))]
-     (if bw
-       (assoc base :cfg {:kde-bandwidth bw})
-       base))))
-
-(defn boxplot
-  "Boxplot method — displays median, quartiles, whiskers, and outliers.
-   Options: :color, :alpha, :position, :group.
-   (boxplot)                    — single color
-   (boxplot {:color :smoker})   — side-by-side grouped boxplots"
-  ([] {:mark :boxplot :stat :boxplot})
-  ([opts] (merge (boxplot) opts)))
-
-(defn violin
-  "Violin method — mirrored density curve per category.
-   Options: :color, :alpha, :bandwidth, :position, :group.
-   (violin)                    — single color
-   (violin {:color :smoker})   — side-by-side grouped violins"
-  ([] {:mark :violin :stat :violin})
-  ([opts]
-   (let [bw (:bandwidth opts)
-         base (merge {:mark :violin :stat :violin} (dissoc opts :bandwidth))]
-     (if bw
-       (assoc base :cfg {:kde-bandwidth bw})
-       base))))
-
-(defn tile
-  "Tile/heatmap method — filled rectangles colored by a numeric value.
-   Options: :fill, :kde2d-grid, :color, :alpha.
-   (tile)                          — 2D binned heatmap
-   (tile {:fill :value})           — pre-computed fill values"
-  ([] {:mark :tile :stat :bin2d})
-  ([opts]
-   (if (:fill opts)
-     (merge {:mark :tile :stat :identity} opts)
-     (merge {:mark :tile :stat :bin2d} opts))))
-
-(defn density2d
-  "2D density method — KDE-smoothed heatmap.
-   Options: :kde2d-grid, :bandwidth, :alpha.
-   (density2d)                     — default bandwidth and grid
-   (density2d {:kde2d-grid 40})    — finer grid resolution"
-  ([] {:mark :tile :stat :kde2d})
-  ([opts] (merge (density2d) opts)))
-
-(defn contour
-  "Contour method — iso-density contour lines from 2D KDE.
-   Options: :levels, :kde2d-grid, :bandwidth, :alpha.
-   (contour)                       — default 5 levels
-   (contour {:levels 8})           — custom number of iso-levels
-   (contour {:kde2d-grid 40})      — finer grid resolution"
-  ([] {:mark :contour :stat :kde2d})
-  ([opts] (merge (contour) opts)))
-
-(defn ridgeline
-  "Ridgeline method — vertically stacked density curves per category.
-   Options: :color, :alpha, :bandwidth, :group.
-   (ridgeline)                    — default
-   (ridgeline {:color :species})  — colored ridgelines"
-  ([] {:mark :ridgeline :stat :violin})
-  ([opts] (merge {:mark :ridgeline :stat :violin} opts)))
-
-(defn rug
-  "Rug method — tick marks along axis margins showing individual observations.
-   Options: :side (:x, :y, :both), :color, :alpha, :group.
-   (rug)                     — ticks on x-axis
-   (rug {:side :y})          — ticks on y-axis
-   (rug {:side :both})       — ticks on both axes"
-  ([] {:mark :rug :stat :identity})
-  ([opts] (merge (rug) opts)))
-
-(defn summary
-  "Summary method — mean ± standard error per category.
-   Options: :color, :alpha, :position, :nudge-x, :nudge-y, :group.
-   (summary)                    — single summary
-   (summary {:color :species})  — per-group summary"
-  ([] {:mark :pointrange :stat :summary})
-  ([opts] (merge (summary) opts)))
-
-(defn errorbar
-  "Errorbar method — vertical error bars at (x, y) positions.
-   Options: :ymin (required), :ymax (required), :color, :alpha,
-   :position, :nudge-x, :nudge-y, :group.
-   (errorbar {:ymin :ci_lo :ymax :ci_hi})
-   (errorbar {:ymin :ci_lo :ymax :ci_hi :color :group})"
-  ([] {:mark :errorbar :stat :identity})
-  ([opts] (merge (errorbar) opts)))
+;; ---- Annotation Constructors ----
 
 (defn rule-v
   "Vertical reference line at x = intercept."
@@ -629,7 +419,10 @@
 (defn resolve-view
   "Resolve a single view: infer column types, aesthetics, grouping, and method.
    Delegates to `infer-column-types`, `resolve-aesthetics`, `infer-grouping`,
-   and `infer-method` — each named for the inference step it performs."
+   and `infer-method` — each named for the inference step it performs.
+   Also normalizes user-facing shorthand options:
+     - :bandwidth → :cfg {:kde-bandwidth ...}
+     - :tile with :fill → stat :identity"
   [v]
   (if-not (:data v)
     v
@@ -640,17 +433,28 @@
           {:keys [color color-type fixed-color
                   size fixed-size alpha fixed-alpha text-col]} (resolve-aesthetics resolved-ds v)
           group (infer-grouping v color-type color)
-          {:keys [mark stat]} (infer-method v x-type y-type)]
-      (cond-> (assoc v :data resolved-ds :x-type x-type :y-type y-type
-                     :color-type color-type :group group :mark mark :stat stat
-                     :color color :fixed-color fixed-color
-                     :size size :fixed-size fixed-size
-                     :alpha alpha :fixed-alpha fixed-alpha
-                     :text-col text-col)
-        x-temporal? (assoc :x-temporal? true)
-        y-temporal? (assoc :y-temporal? true)
-        x-temporal-extent (assoc :x-temporal-extent x-temporal-extent)
-        y-temporal-extent (assoc :y-temporal-extent y-temporal-extent)))))
+          {:keys [mark stat]} (infer-method v x-type y-type)
+          resolved (cond-> (assoc v :data resolved-ds :x-type x-type :y-type y-type
+                                  :color-type color-type :group group :mark mark :stat stat
+                                  :color color :fixed-color fixed-color
+                                  :size size :fixed-size fixed-size
+                                  :alpha alpha :fixed-alpha fixed-alpha
+                                  :text-col text-col)
+                     x-temporal? (assoc :x-temporal? true)
+                     y-temporal? (assoc :y-temporal? true)
+                     x-temporal-extent (assoc :x-temporal-extent x-temporal-extent)
+                     y-temporal-extent (assoc :y-temporal-extent y-temporal-extent))
+          ;; Normalize :bandwidth shorthand for KDE-based stats
+          bw (:bandwidth resolved)
+          resolved (if bw
+                     (-> resolved (dissoc :bandwidth)
+                         (assoc-in [:cfg :kde-bandwidth] bw))
+                     resolved)
+          ;; Tile with explicit :fill → override stat to :identity
+          resolved (if (and (= (:mark resolved) :tile) (:fill resolved))
+                     (assoc resolved :stat :identity)
+                     resolved)]
+      resolved)))
 
 ;; ---- Scale Setter ----
 

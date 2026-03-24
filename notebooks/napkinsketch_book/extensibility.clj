@@ -83,22 +83,22 @@
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
 ;; The stat is part of the **method** returned by the mark
-;; constructor. For example, `(method/histogram)` returns a method
+;; map. For example, `(method/lookup :histogram)` returns a method
 ;; with `:stat :bin`:
 
-(method/histogram)
+(method/lookup :histogram)
 
 (kind/test-last [(fn [m] (= :bin (:stat m)))])
 
-;; `(method/bar)` sets `:stat :count`:
+;; `(method/lookup :bar)` returns a method with `:stat :count`:
 
-(method/bar)
+(method/lookup :bar)
 
 (kind/test-last [(fn [m] (= :count (:stat m)))])
 
-;; `(method/point)` returns a method with `:stat :identity`:
+;; `(method/lookup :point)` returns a method with `:stat :identity`:
 
-(method/point)
+(method/lookup :point)
 
 (kind/test-last [(fn [m] (= :identity (:stat m)))])
 

@@ -77,12 +77,12 @@
 ;; | `label` | `:label` | `:identity` | `:identity` |
 ;; | `rug` | `:rug` | `:identity` | `:identity` |
 
-(method/histogram)
+(method/lookup :histogram)
 
 (kind/test-last [(fn [m] (and (= :bar (:mark m))
                               (= :bin (:stat m))))])
 
-(method/point)
+(method/lookup :point)
 
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (= :identity (:stat m))))])
@@ -113,7 +113,7 @@
 ;; | `:label` | Label with background box | `label` |
 ;; | `:rug` | Axis-margin tick marks | `rug` |
 
-(method/point {:color :species :alpha 0.5})
+(merge (method/lookup :point) {:color :species :alpha 0.5})
 
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (= :species (:color m))))])
@@ -182,7 +182,7 @@
 ;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed aesthetic
 ;; for all points.
 
-(method/point {:color :species :size :petal_length :alpha 0.7})
+(merge (method/lookup :point) {:color :species :size :petal_length :alpha 0.7})
 
 (kind/test-last [(fn [m] (and (= :species (:color m))
                               (= :petal_length (:size m))
@@ -226,7 +226,7 @@
 ;;
 ;; On categorical x-axes, jitter is applied along the band axis only.
 
-(method/point {:jitter true})
+(merge (method/lookup :point) {:jitter true})
 
 (kind/test-last [(fn [m] (true? (:jitter m)))])
 
@@ -450,7 +450,7 @@
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
 ;; | View | Map: data + column-to-channel mappings + method | User builds, consumed by `sketch` |
-;; | Method | Mark + stat + position bundle | Created by `method/point`, `method/histogram`, etc.; added by `sk/lay-point`, `sk/lay-histogram`, etc. |
+;; | Method | Mark + stat + position bundle | Looked up via `method/lookup`; added by `sk/lay-point`, `sk/lay-histogram`, etc. |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |
 ;; | Group | Subset of data drawn together (from `:color` or `:group`) | Created during stat computation |

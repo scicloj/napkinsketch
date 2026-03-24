@@ -1,135 +1,66 @@
 (ns scicloj.napkinsketch.method
-  "Method constructors — mark + stat + position bundles.
-   Each function returns a method map that can be passed to `sk/lay`,
-   or inspected to see the mark, stat, and position components."
+  "Method registry — keyword → method map (mark + stat + position).
+   Methods are plain data maps. The registry makes them discoverable
+   and extensible. Use `lookup` to get a method by keyword, `registered`
+   to enumerate all methods, and `register!` to add new ones."
   (:require [scicloj.napkinsketch.impl.view :as view]))
 
-(defn point
-  "Scatter method — shows individual data points."
-  ([] (view/point))
-  ([opts] (view/point opts)))
+;; ---- Registry ----
 
-(defn line
-  "Line method — connects data points in order."
-  ([] (view/line))
-  ([opts] (view/line opts)))
+(def ^:private registry*
+  "Atom holding keyword → method entry map."
+  (atom {}))
 
-(defn step
-  "Step method — horizontal-then-vertical connected points."
-  ([] (view/step))
-  ([opts] (view/step opts)))
+(defn register!
+  "Register a method. `k` is a keyword, `entry` is a map with
+   :mark, :stat, and optionally :position and :doc.
+   Position defaults to nil (identity) — only :dodge, :stack, :fill are explicit."
+  [k entry]
+  (swap! registry* assoc k entry)
+  k)
 
-(defn histogram
-  "Histogram method — bins numerical data into counted bars."
-  ([] (view/histogram))
-  ([opts] (view/histogram opts)))
+(defn lookup
+  "Look up a registered method by keyword. Returns the method map
+   (with :mark, :stat, :position, :doc), or nil if not found."
+  [k]
+  (get @registry* k))
 
-(defn bar
-  "Bar method — counts categorical values."
-  ([] (view/bar))
-  ([opts] (view/bar opts)))
+(defn registered
+  "Return all registered methods as a map of keyword → entry."
+  []
+  @registry*)
 
-(defn stacked-bar
-  "Stacked bar method — counts categorical values (position :stack)."
-  ([] (view/stacked-bar))
-  ([opts] (view/stacked-bar opts)))
+;; ---- Built-in methods ----
 
-(defn stacked-bar-fill
-  "Percentage stacked bar method — proportions sum to 1.0 (position :fill)."
-  ([] (view/stacked-bar-fill))
-  ([opts] (view/stacked-bar-fill opts)))
+(register! :point {:mark :point :stat :identity :doc "Scatter — individual data points."})
+(register! :line {:mark :line :stat :identity :doc "Line — connects data points in order."})
+(register! :step {:mark :step :stat :identity :doc "Step — horizontal-then-vertical connected points."})
+(register! :area {:mark :area :stat :identity :doc "Area — filled region under a line."})
+(register! :stacked-area {:mark :area :stat :identity :position :stack :doc "Stacked area — filled regions stacked cumulatively."})
+(register! :histogram {:mark :bar :stat :bin :doc "Histogram — bins numerical data into bars."})
+(register! :bar {:mark :rect :stat :count :doc "Bar — counts categorical values."})
+(register! :stacked-bar {:mark :rect :stat :count :position :stack :doc "Stacked bar — counts categorical values, stacked."})
+(register! :stacked-bar-fill {:mark :rect :stat :count :position :fill :doc "Percentage stacked bar — proportions sum to 1.0."})
+(register! :value-bar {:mark :rect :stat :identity :doc "Value bar — categorical x with pre-computed y."})
+(register! :lm {:mark :line :stat :lm :doc "Linear regression — OLS fit line."})
+(register! :loess {:mark :line :stat :loess :doc "LOESS — local regression smoothing."})
+(register! :density {:mark :area :stat :kde :doc "Density — kernel density estimation as filled area."})
+(register! :tile {:mark :tile :stat :bin2d :doc "Tile/heatmap — 2D grid binning."})
+(register! :density2d {:mark :tile :stat :kde2d :doc "2D density — KDE-smoothed heatmap."})
+(register! :contour {:mark :contour :stat :kde2d :doc "Contour — iso-density contour lines."})
+(register! :boxplot {:mark :boxplot :stat :boxplot :doc "Boxplot — median, quartiles, whiskers, outliers."})
+(register! :violin {:mark :violin :stat :violin :doc "Violin — mirrored density curve per category."})
+(register! :ridgeline {:mark :ridgeline :stat :violin :doc "Ridgeline — stacked density curves per category."})
+(register! :summary {:mark :pointrange :stat :summary :doc "Summary — mean ± standard error per category."})
+(register! :errorbar {:mark :errorbar :stat :identity :doc "Errorbar — vertical error bars."})
+(register! :lollipop {:mark :lollipop :stat :identity :doc "Lollipop — stem with dot."})
+(register! :text {:mark :text :stat :identity :doc "Text — data-driven labels."})
+(register! :label {:mark :label :stat :identity :doc "Label — text with background box."})
+(register! :rug {:mark :rug :stat :identity :doc "Rug — axis-margin tick marks."})
 
-(defn value-bar
-  "Value bar method — categorical x with pre-computed numeric y."
-  ([] (view/value-bar))
-  ([opts] (view/value-bar opts)))
-
-(defn lm
-  "Linear regression method — fits a straight line to data."
-  ([] (view/lm))
-  ([opts] (view/lm opts)))
-
-(defn loess
-  "LOESS method — local regression smoothing."
-  ([] (view/loess))
-  ([opts] (view/loess opts)))
-
-(defn text
-  "Text method — data-driven labels at (x, y) positions."
-  ([] (view/text))
-  ([opts] (view/text opts)))
-
-(defn label
-  "Label method — text with a filled background box."
-  ([] (view/label))
-  ([opts] (view/label opts)))
-
-(defn area
-  "Area method — filled region under a line."
-  ([] (view/area))
-  ([opts] (view/area opts)))
-
-(defn stacked-area
-  "Stacked area method — filled regions stacked cumulatively."
-  ([] (view/stacked-area))
-  ([opts] (view/stacked-area opts)))
-
-(defn density
-  "Density method — kernel density estimation rendered as filled area."
-  ([] (view/density))
-  ([opts] (view/density opts)))
-
-(defn tile
-  "Tile/heatmap method — filled rectangles colored by a numeric value."
-  ([] (view/tile))
-  ([opts] (view/tile opts)))
-
-(defn density2d
-  "2D density method — KDE-smoothed heatmap."
-  ([] (view/density2d))
-  ([opts] (view/density2d opts)))
-
-(defn contour
-  "Contour method — iso-density contour lines from 2D KDE."
-  ([] (view/contour))
-  ([opts] (view/contour opts)))
-
-(defn ridgeline
-  "Ridgeline method — vertically stacked density curves per category."
-  ([] (view/ridgeline))
-  ([opts] (view/ridgeline opts)))
-
-(defn boxplot
-  "Boxplot method — displays median, quartiles, whiskers, and outliers."
-  ([] (view/boxplot))
-  ([opts] (view/boxplot opts)))
-
-(defn violin
-  "Violin method — mirrored density curve per category."
-  ([] (view/violin))
-  ([opts] (view/violin opts)))
-
-(defn rug
-  "Rug method — tick marks along axis margins."
-  ([] (view/rug))
-  ([opts] (view/rug opts)))
-
-(defn summary
-  "Summary method — mean ± standard error per category."
-  ([] (view/summary))
-  ([opts] (view/summary opts)))
-
-(defn errorbar
-  "Errorbar method — vertical error bars at (x, y) positions."
-  ([] (view/errorbar))
-  ([opts] (view/errorbar opts)))
-
-(defn lollipop
-  "Lollipop method — stem + dot at (x, y) positions."
-  ([] (view/lollipop))
-  ([opts] (view/lollipop opts)))
-
-;; ---- Annotations ----
+;; ---- Annotation constructors ----
+;; These are not methods (no mark+stat+position). They take arguments
+;; and return annotation maps. Kept as functions.
 
 (defn rule-v
   "Vertical reference line at x = intercept."

@@ -77,10 +77,10 @@ iris
 ;;   bin into ranges, fit a line)
 ;; - **position** — how overlapping groups share space (stack, dodge)
 ;;
-;; Functions like `method/point`, `method/histogram`, and `method/lm` each
-;; return a method:
+;; `method/lookup` retrieves a method by keyword. For example, `:point`,
+;; `:histogram`, and `:lm` each resolve to a method map:
 
-(method/point)
+(method/lookup :point)
 
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (= :identity (:stat m))))])
@@ -90,11 +90,11 @@ iris
 ;; the method's keys merged in.
 
 (def view-with-method
-  (sk/lay my-view (method/point)))
+  (sk/lay my-view (method/lookup :point)))
 
 (kind/pprint view-with-method)
 
-;; In practice you rarely call `sk/lay` and `method/point` separately.
+;; In practice you rarely call `sk/lay` and `method/lookup` separately.
 ;; `sk/lay-point` combines both steps — it creates the method and adds
 ;; the layer in one call. You will use `sk/lay-point`,
 ;; `sk/lay-histogram`, and similar functions throughout the rest of
@@ -121,10 +121,10 @@ iris
 ;; plot above used `:mark :point` — each data point became a dot.
 ;;
 ;; Notice that a method's name describes its *intent* while the mark
-;; describes the *shape*. `method/histogram` uses `:mark :bar` because a
+;; describes the *shape*. The `:histogram` method uses `:mark :bar` because a
 ;; histogram is drawn with bar shapes:
 
-(method/histogram)
+(method/lookup :histogram)
 
 (kind/test-last [(fn [m] (= :bar (:mark m)))])
 
@@ -134,7 +134,7 @@ iris
 ;; The scatter plot used `:stat :identity` — every row became one
 ;; point, unchanged.
 ;;
-;; `method/histogram` uses `:stat :bin` — it groups values into ranges
+;; The `:histogram` method uses `:stat :bin` — it groups values into ranges
 ;; and counts how many fall in each range:
 
 (-> iris
@@ -150,10 +150,10 @@ iris
 ;;
 ;; The **position** controls how overlapping groups share space.
 ;; Most methods leave it unset — groups are drawn independently.
-;; `method/stacked-bar` includes `:position :stack`, which places groups
+;; The `:stacked-bar` method includes `:position :stack`, which places groups
 ;; on top of each other:
 
-(method/stacked-bar)
+(method/lookup :stacked-bar)
 
 (kind/test-last [(fn [m] (= :stack (:position m)))])
 
