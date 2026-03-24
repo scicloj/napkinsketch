@@ -35,12 +35,14 @@ such as [Clay](https://scicloj.github.io/clay/).
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
 
-;; Scatter plot with color grouping and regression lines
+;; Scatter plot with color grouping
 (-> iris
-    (sk/view [[:sepal_length :sepal_width]])
-    (sk/lay-point {:color :species})
-    (sk/lay-lm {:color :species})
-    sk/plot)
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))
+
+;; Add regression lines
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/lay-lm {:color :species}))
 ```
 
 ## Documentation
