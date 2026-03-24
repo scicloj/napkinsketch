@@ -594,6 +594,53 @@ multi-views
 ;; The `:line` layer has `:mark :line` and its groups contain
 ;; `:polyline-xs` and `:polyline-ys` — the regression curve.
 
+;; ## Resolution Overview
+;;
+;; All of the inference rules above feed into `views->sketch`, which
+;; orchestrates a DAG of helper functions. Each node computes a piece
+;; of the sketch; arrows show data dependencies.
+
+^:kindly/hide-code
+(kind/mermaid "
+graph TD
+  VIEWS[\"views + opts\"]
+  VIEWS --> INFER[\"infer-layout\"]
+  VIEWS --> COLORS[\"collect-colors<br/>(resolve-view × N)\"]
+  VIEWS --> ANNOTS[\"annotations\"]
+
+  INFER --> GRID[\"compute-grid\"]
+  INFER --> DIMS[\"compute-panel-dims\"]
+  INFER --> GROUP[\"group-panels\"]
+
+  COLORS --> GROUP
+  GROUP --> RPV[\"resolve-panel-views<br/>(compute-stat + extract-layer)\"]
+  COLORS --> RPV
+
+  RPV --> BUILD[\"build-panels<br/>(domains, ticks)\"]
+  GRID --> BUILD
+  DIMS --> BUILD
+
+  BUILD --> LABELS[\"resolve-labels\"]
+  COLORS --> LEGEND[\"build-legend\"]
+  LABELS --> LAYOUT[\"compute-layout-dims\"]
+  LEGEND --> LAYOUT
+  DIMS --> LAYOUT
+
+  BUILD --> SKETCH[\"sketch\"]
+  LABELS --> SKETCH
+  LEGEND --> SKETCH
+  LAYOUT --> SKETCH
+
+  style VIEWS fill:#e8f5e9
+  style SKETCH fill:#fff3e0
+  style RPV fill:#e3f2fd
+  style BUILD fill:#e3f2fd
+")
+
+;; Column types, marks, stats, domains, ticks, labels, legends —
+;; every inference rule from this chapter feeds into one of these
+;; nodes.
+
 ;; ## Summary
 ;;
 ;; Every inference can be overridden:
