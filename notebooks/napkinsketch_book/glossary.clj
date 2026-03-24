@@ -48,6 +48,34 @@
 ;; `sk/lay-density`, etc.) each add a layer with the corresponding method.
 ;; When no layer is added, Napkinsketch infers a method from the
 ;; column types.
+;;
+;; | Method | Mark | Stat | Position |
+;; |:-------|:-----|:-----|:---------|
+;; | `point` | `:point` | `:identity` | `:identity` |
+;; | `line` | `:line` | `:identity` | `:identity` |
+;; | `step` | `:step` | `:identity` | `:identity` |
+;; | `area` | `:area` | `:identity` | `:identity` |
+;; | `stacked-area` | `:area` | `:identity` | `:stack` |
+;; | `histogram` | `:bar` | `:bin` | `:identity` |
+;; | `bar` | `:rect` | `:count` | `:identity` |
+;; | `stacked-bar` | `:rect` | `:count` | `:stack` |
+;; | `stacked-bar-fill` | `:rect` | `:count` | `:fill` |
+;; | `value-bar` | `:rect` | `:identity` | `:identity` |
+;; | `lm` | `:line` | `:lm` | `:identity` |
+;; | `loess` | `:line` | `:loess` | `:identity` |
+;; | `density` | `:area` | `:kde` | `:identity` |
+;; | `tile` | `:tile` | `:bin2d` | `:identity` |
+;; | `density2d` | `:tile` | `:kde2d` | `:identity` |
+;; | `contour` | `:contour` | `:kde2d` | `:identity` |
+;; | `boxplot` | `:boxplot` | `:boxplot` | `:identity` |
+;; | `violin` | `:violin` | `:violin` | `:identity` |
+;; | `ridgeline` | `:ridgeline` | `:violin` | `:identity` |
+;; | `summary` | `:pointrange` | `:summary` | `:identity` |
+;; | `errorbar` | `:errorbar` | `:identity` | `:identity` |
+;; | `lollipop` | `:lollipop` | `:identity` | `:identity` |
+;; | `text` | `:text` | `:identity` | `:identity` |
+;; | `label` | `:label` | `:identity` | `:identity` |
+;; | `rug` | `:rug` | `:identity` | `:identity` |
 
 (method/histogram)
 
@@ -61,8 +89,29 @@
 
 ;; ## Mark
 ;;
-;; The **mark** is the visual shape drawn on the plot: points, lines,
-;; bars, rectangles.
+;; The **mark** is the visual shape drawn for each data point or group.
+;; Several methods may share the same mark — for instance, `histogram`
+;; and `value-bar` both draw bars, and `lm` and `loess` both draw lines.
+;;
+;; | Mark | Shape | Used by |
+;; |:-----|:------|:--------|
+;; | `:point` | Filled circle | `point` |
+;; | `:line` | Connected path | `line`, `lm`, `loess` |
+;; | `:step` | Horizontal-then-vertical path | `step` |
+;; | `:bar` | Vertical rectangles (binned) | `histogram` |
+;; | `:rect` | Positioned rectangles | `bar`, `stacked-bar`, `value-bar` |
+;; | `:area` | Filled region under a curve | `area`, `stacked-area`, `density` |
+;; | `:tile` | Grid of colored cells | `tile`, `density2d` |
+;; | `:contour` | Iso-value polylines | `contour` |
+;; | `:boxplot` | Box-and-whisker | `boxplot` |
+;; | `:violin` | Mirrored density shape | `violin` |
+;; | `:ridgeline` | Stacked density curves | `ridgeline` |
+;; | `:pointrange` | Point with error bar | `summary` |
+;; | `:errorbar` | Vertical error bar | `errorbar` |
+;; | `:lollipop` | Stem with dot | `lollipop` |
+;; | `:text` | Data-driven label | `text` |
+;; | `:label` | Label with background box | `label` |
+;; | `:rug` | Axis-margin tick marks | `rug` |
 
 (method/point {:color :species :alpha 0.5})
 
@@ -72,34 +121,34 @@
 ;; ## Stat
 ;;
 ;; A **stat** (statistical transform) processes raw data before
-;; rendering. Each method bundles a default stat:
+;; rendering. Each stat takes data-space inputs and produces
+;; the geometry that its mark will draw.
 ;;
-;; | Method | Default stat | What it does |
-;; |:-----|:-------------|:-------------|
-;; | `point` | `:identity` | Pass through as-is |
-;; | `line` | `:identity` | Pass through as-is |
-;; | `histogram` | `:bin` | Bin into ranges |
-;; | `bar` | `:count` | Count categories |
-;; | `lm` | `:lm` | Linear regression |
-;; | `loess` | `:loess` | LOESS local regression |
-;; | `density` | `:kde` | Kernel density estimation |
-;; | `boxplot` | `:boxplot` | Five-number summary + outliers |
-;; | `violin` / `ridgeline` | `:violin` | KDE per category |
-;; | `tile` | `:bin2d` | 2D grid binning (heatmap) |
-;; | `density2d` | `:kde2d` | 2D Gaussian KDE (smooth heatmap) |
-;; | `contour` | `:kde2d` | Iso-density contour lines (marching squares) |
+;; | Stat | What it computes | Used by |
+;; |:-----|:-----------------|:--------|
+;; | `:identity` | Pass-through — no transform | `point`, `line`, `step`, `area`, `value-bar`, `text`, `label`, `errorbar`, `lollipop`, `rug` |
+;; | `:bin` | Bin numerical values into ranges | `histogram` |
+;; | `:count` | Count occurrences per category | `bar`, `stacked-bar` |
+;; | `:lm` | Linear regression (OLS fit + confidence band) | `lm` |
+;; | `:loess` | LOESS local regression | `loess` |
+;; | `:kde` | 1D kernel density estimation | `density` |
+;; | `:boxplot` | Five-number summary + outliers | `boxplot` |
+;; | `:violin` | KDE per category (density profile) | `violin`, `ridgeline` |
+;; | `:summary` | Mean ± standard error per category | `summary` |
+;; | `:bin2d` | 2D grid binning (heatmap counts) | `tile` |
+;; | `:kde2d` | 2D Gaussian KDE (smooth density) | `density2d`, `contour` |
 
 ;; ## Position
 ;;
 ;; A **position** adjustment determines how groups share a categorical
-;; position. It runs between stat computation and rendering.
+;; axis slot. Position runs between stat computation and rendering.
 ;;
-;; | Position | Behavior | Default for |
-;; |:---------|:---------|:------------|
-;; | `:identity` | Plot at exact data coordinates (overlap OK) | point, line, text |
-;; | `:dodge` | Shift groups side-by-side within a band | bar, boxplot, violin, lollipop |
-;; | `:stack` | Pile groups on top of each other (cumulative y) | `sk/lay-stacked-bar`, `sk/lay-stacked-area` |
-;; | `:fill` | Stack normalized to [0, 1] (proportions) | `sk/lay-stacked-bar-fill` |
+;; | Position | What it does | Used by |
+;; |:---------|:-------------|:--------|
+;; | `:identity` | Plot at exact data coordinates (groups overlap) | Most methods (default) |
+;; | `:dodge` | Shift groups side-by-side within a band | Override for `bar`, `boxplot`, `violin`, `lollipop` |
+;; | `:stack` | Pile groups cumulatively (y₀ = previous group's y₁) | `stacked-bar`, `stacked-area` |
+;; | `:fill` | Stack normalized to [0, 1] (proportions) | `stacked-bar-fill` |
 ;;
 ;; You can override the default position by passing `:position` in
 ;; the layer options.
@@ -116,7 +165,6 @@
     (get-in [:panels 0 :layers 0 :groups 1 :y0s]))
 
 (kind/test-last [(fn [y0s] (every? pos? y0s))])
-
 ;; ## Aesthetic
 ;;
 ;; An **aesthetic** is a visual property of a mark that can be mapped
