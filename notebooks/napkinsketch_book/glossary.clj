@@ -34,126 +34,32 @@
 
 ;; ## Method
 ;;
-;; A **method** is the bundle of three things that determines how data
-;; becomes a visual element:
-;;
-;; - **mark** — what shape to draw (points, bars, lines)
-;; - **stat** — what computation to apply first (pass through, bin, count, regress)
-;; - **position** — how overlapping groups share space (dodge, stack)
-;;
-;; Each of these is defined in the sections that follow.
-;;
-;; Layer functions (`sk/lay-point`, `sk/lay-line`, `sk/lay-histogram`,
-;; `sk/lay-bar`, `sk/lay-lm`, `sk/lay-boxplot`, `sk/lay-violin`,
-;; `sk/lay-density`, etc.) each add a layer with the corresponding method.
-;; When no layer is added, Napkinsketch infers a method from the
-;; column types.
-;;
-;; | Method | Mark | Stat | Position |
-;; |:-------|:-----|:-----|:---------|
-;; | `point` | `:point` | `:identity` | `:identity` |
-;; | `line` | `:line` | `:identity` | `:identity` |
-;; | `step` | `:step` | `:identity` | `:identity` |
-;; | `area` | `:area` | `:identity` | `:identity` |
-;; | `stacked-area` | `:area` | `:identity` | `:stack` |
-;; | `histogram` | `:bar` | `:bin` | `:identity` |
-;; | `bar` | `:rect` | `:count` | `:identity` |
-;; | `stacked-bar` | `:rect` | `:count` | `:stack` |
-;; | `stacked-bar-fill` | `:rect` | `:count` | `:fill` |
-;; | `value-bar` | `:rect` | `:identity` | `:identity` |
-;; | `lm` | `:line` | `:lm` | `:identity` |
-;; | `loess` | `:line` | `:loess` | `:identity` |
-;; | `density` | `:area` | `:kde` | `:identity` |
-;; | `tile` | `:tile` | `:bin2d` | `:identity` |
-;; | `density2d` | `:tile` | `:kde2d` | `:identity` |
-;; | `contour` | `:contour` | `:kde2d` | `:identity` |
-;; | `boxplot` | `:boxplot` | `:boxplot` | `:identity` |
-;; | `violin` | `:violin` | `:violin` | `:identity` |
-;; | `ridgeline` | `:ridgeline` | `:violin` | `:identity` |
-;; | `summary` | `:pointrange` | `:summary` | `:identity` |
-;; | `errorbar` | `:errorbar` | `:identity` | `:identity` |
-;; | `lollipop` | `:lollipop` | `:identity` | `:identity` |
-;; | `text` | `:text` | `:identity` | `:identity` |
-;; | `label` | `:label` | `:identity` | `:identity` |
-;; | `rug` | `:rug` | `:identity` | `:identity` |
-
-(method/lookup :histogram)
-
-(kind/test-last [(fn [m] (and (= :bar (:mark m))
-                              (= :bin (:stat m))))])
-
-(method/lookup :point)
-
-(kind/test-last [(fn [m] (and (= :point (:mark m))
-                              (= :identity (:stat m))))])
+;; A **method** is the bundle of mark + stat + position that determines how
+;; data becomes a visual element.
+;; See the [Methods](methods.html) chapter for detailed tables of all
+;; built-in methods, marks, stats, and positions.
 
 ;; ## Mark
 ;;
 ;; The **mark** is the visual shape drawn for each data point or group.
-;; Several methods may share the same mark — for instance, `histogram`
-;; and `value-bar` both draw bars, and `lm` and `loess` both draw lines.
-;;
-;; | Mark | Shape | Used by |
-;; |:-----|:------|:--------|
-;; | `:point` | Filled circle | `point` |
-;; | `:line` | Connected path | `line`, `lm`, `loess` |
-;; | `:step` | Horizontal-then-vertical path | `step` |
-;; | `:bar` | Vertical rectangles (binned) | `histogram` |
-;; | `:rect` | Positioned rectangles | `bar`, `stacked-bar`, `value-bar` |
-;; | `:area` | Filled region under a curve | `area`, `stacked-area`, `density` |
-;; | `:tile` | Grid of colored cells | `tile`, `density2d` |
-;; | `:contour` | Iso-value polylines | `contour` |
-;; | `:boxplot` | Box-and-whisker | `boxplot` |
-;; | `:violin` | Mirrored density shape | `violin` |
-;; | `:ridgeline` | Stacked density curves | `ridgeline` |
-;; | `:pointrange` | Point with error bar | `summary` |
-;; | `:errorbar` | Vertical error bar | `errorbar` |
-;; | `:lollipop` | Stem with dot | `lollipop` |
-;; | `:text` | Data-driven label | `text` |
-;; | `:label` | Label with background box | `label` |
-;; | `:rug` | Axis-margin tick marks | `rug` |
-
-(merge (method/lookup :point) {:color :species :alpha 0.5})
-
-(kind/test-last [(fn [m] (and (= :point (:mark m))
-                              (= :species (:color m))))])
+;; Several methods may share the same mark — for instance, `lm` and `loess`
+;; both draw lines, and `area`, `stacked-area`, and `density` all draw
+;; filled regions.
 
 ;; ## Stat
 ;;
 ;; A **stat** (statistical transform) processes raw data before
 ;; rendering. Each stat takes data-space inputs and produces
 ;; the geometry that its mark will draw.
-;;
-;; | Stat | What it computes | Used by |
-;; |:-----|:-----------------|:--------|
-;; | `:identity` | Pass-through — no transform | `point`, `line`, `step`, `area`, `value-bar`, `text`, `label`, `errorbar`, `lollipop`, `rug` |
-;; | `:bin` | Bin numerical values into ranges | `histogram` |
-;; | `:count` | Count occurrences per category | `bar`, `stacked-bar` |
-;; | `:lm` | Linear regression (OLS fit + confidence band) | `lm` |
-;; | `:loess` | LOESS local regression | `loess` |
-;; | `:kde` | 1D kernel density estimation | `density` |
-;; | `:boxplot` | Five-number summary + outliers | `boxplot` |
-;; | `:violin` | KDE per category (density profile) | `violin`, `ridgeline` |
-;; | `:summary` | Mean ± standard error per category | `summary` |
-;; | `:bin2d` | 2D grid binning (heatmap counts) | `tile` |
-;; | `:kde2d` | 2D Gaussian KDE (smooth density) | `density2d`, `contour` |
 
 ;; ## Position
 ;;
 ;; A **position** adjustment determines how groups share a categorical
 ;; axis slot. Position runs between stat computation and rendering.
-;;
-;; | Position | What it does | Used by |
-;; |:---------|:-------------|:--------|
-;; | `:identity` | Plot at exact data coordinates (groups overlap) | Most methods (default) |
-;; | `:dodge` | Shift groups side-by-side within a band | Override for `bar`, `boxplot`, `violin`, `lollipop` |
-;; | `:stack` | Pile groups cumulatively (y₀ = previous group's y₁) | `stacked-bar`, `stacked-area` |
-;; | `:fill` | Stack normalized to [0, 1] (proportions) | `stacked-bar-fill` |
-;;
 ;; You can override the default position by passing `:position` in
 ;; the layer options.
 ;; When multiple layers share `:position :dodge`, they are coordinated
-;; together — errorbars automatically align with bars.
+;; together — error bars automatically align with bars.
 
 (def tips {:day ["Mon" "Mon" "Tue" "Tue"]
            :count [30 20 45 15]

@@ -30,6 +30,16 @@
   []
   @registry*)
 
+(def method-order
+  "Canonical display order for built-in methods."
+  [:point :line :step :area :stacked-area
+   :histogram :bar :stacked-bar :stacked-bar-fill :value-bar
+   :lm :loess :density
+   :tile :density2d :contour
+   :boxplot :violin :ridgeline
+   :summary :errorbar :lollipop
+   :text :label :rug])
+
 ;; ---- Built-in methods ----
 
 (register! :point {:mark :point :stat :identity :doc "Scatter — individual data points."})

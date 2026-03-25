@@ -37,7 +37,7 @@
 (def v11_l64 (kind/pprint my-view))
 
 
-(def v13_l83 (method/point))
+(def v13_l83 (method/lookup :point))
 
 
 (deftest
@@ -47,7 +47,9 @@
    v13_l83)))
 
 
-(def v16_l92 (def view-with-method (sk/lay my-view (method/point))))
+(def
+ v16_l92
+ (def view-with-method (sk/lay my-view (method/lookup :point))))
 
 
 (def v17_l95 (kind/pprint view-with-method))
@@ -61,7 +63,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v19_l109)))
 
 
-(def v22_l127 (method/histogram))
+(def v22_l127 (method/lookup :histogram))
 
 
 (deftest t23_l129 (is ((fn [m] (= :bar (:mark m))) v22_l127)))
@@ -75,7 +77,7 @@
  (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v25_l140)))
 
 
-(def v28_l156 (method/stacked-bar))
+(def v28_l156 (method/lookup :stacked-bar))
 
 
 (deftest t29_l158 (is ((fn [m] (= :stack (:position m))) v28_l156)))

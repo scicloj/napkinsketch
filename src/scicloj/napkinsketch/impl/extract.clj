@@ -68,6 +68,26 @@
   "Extract data-space geometry from a resolved view and its stat result.
    Returns a layer descriptor map."
   (fn [view stat all-colors cfg] (:mark view)))
+
+;; ---- Doc methods (dispatching on [mark-key :doc]) ----
+
+(defmethod extract-layer [:point :doc] [_ _ _ _] "Filled circle")
+(defmethod extract-layer [:line :doc] [_ _ _ _] "Connected path")
+(defmethod extract-layer [:step :doc] [_ _ _ _] "Horizontal-then-vertical path")
+(defmethod extract-layer [:bar :doc] [_ _ _ _] "Vertical rectangles (binned)")
+(defmethod extract-layer [:rect :doc] [_ _ _ _] "Positioned rectangles")
+(defmethod extract-layer [:area :doc] [_ _ _ _] "Filled region under a curve")
+(defmethod extract-layer [:tile :doc] [_ _ _ _] "Grid of colored cells")
+(defmethod extract-layer [:contour :doc] [_ _ _ _] "Iso-value polylines")
+(defmethod extract-layer [:boxplot :doc] [_ _ _ _] "Box-and-whisker")
+(defmethod extract-layer [:violin :doc] [_ _ _ _] "Mirrored density shape")
+(defmethod extract-layer [:ridgeline :doc] [_ _ _ _] "Stacked density curves")
+(defmethod extract-layer [:pointrange :doc] [_ _ _ _] "Point with error bar")
+(defmethod extract-layer [:errorbar :doc] [_ _ _ _] "Vertical error bar")
+(defmethod extract-layer [:lollipop :doc] [_ _ _ _] "Stem with dot")
+(defmethod extract-layer [:text :doc] [_ _ _ _] "Data-driven label")
+(defmethod extract-layer [:label :doc] [_ _ _ _] "Label with background box")
+(defmethod extract-layer [:rug :doc] [_ _ _ _] "Axis-margin tick marks")
 (defmethod extract-layer :point [view stat all-colors cfg]
   (let [numeric-color? (= (:color-type view) :numerical)
         ;; For numeric color: compute global min/max for normalization

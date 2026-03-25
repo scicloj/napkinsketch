@@ -343,33 +343,33 @@
 ;; ============================================================
 
 (deftest mark-constructors-test
-  (testing "marks return the correct resolved :mark key"
-    (are [f mk] (= mk (:mark (f)))
-      method/point :point
-      method/line :line
-      method/step :step
-      method/histogram :bar
-      method/bar :rect
-      method/stacked-bar :rect
-      method/stacked-bar-fill :rect
-      method/value-bar :rect
-      method/lm :line
-      method/loess :line
-      method/text :text
-      method/label :label
-      method/area :area
-      method/stacked-area :area
-      method/density :area
-      method/tile :tile
-      method/density2d :tile
-      method/contour :contour
-      method/ridgeline :ridgeline
-      method/boxplot :boxplot
-      method/violin :violin
-      method/rug :rug
-      method/summary :pointrange
-      method/errorbar :errorbar
-      method/lollipop :lollipop)))
+  (testing "registry entries have the correct :mark key"
+    (are [k mk] (= mk (:mark (method/lookup k)))
+      :point :point
+      :line :line
+      :step :step
+      :histogram :bar
+      :bar :rect
+      :stacked-bar :rect
+      :stacked-bar-fill :rect
+      :value-bar :rect
+      :lm :line
+      :loess :line
+      :text :text
+      :label :label
+      :area :area
+      :stacked-area :area
+      :density :area
+      :tile :tile
+      :density2d :tile
+      :contour :contour
+      :ridgeline :ridgeline
+      :boxplot :boxplot
+      :violin :violin
+      :rug :rug
+      :summary :pointrange
+      :errorbar :errorbar
+      :lollipop :lollipop)))
 
 (deftest view-arities-test
   (testing "2-arity (data, spec)"
@@ -425,13 +425,13 @@
 (deftest lay-test
   (testing "lay merges mark into views"
     (let [spec (sk/view tiny-ds [[:x :y]])
-          layered (sk/views-of (sk/lay spec (method/point {:color :x})))]
+          layered (sk/views-of (sk/lay spec (merge (method/lookup :point) {:color :x})))]
       (is (= :point (:mark (first layered))))
       (is (= :x (:color (first layered))))))
   (testing "lay is additive"
     (let [spec (sk/view tiny-ds [[:x :y]])
-          l1 (sk/lay spec (method/point))
-          l2 (sk/lay l1 (method/lm))]
+          l1 (sk/lay spec (method/lookup :point))
+          l2 (sk/lay l1 (method/lookup :lm))]
       (is (= 2 (count (sk/views-of l2)))))))
 
 (deftest view-record-test

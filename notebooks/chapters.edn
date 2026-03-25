@@ -1,6 +1,7 @@
 {"🚀 Getting Started" ["quickstart"]
  "🧱 Foundations" ["core_concepts"
                     "inference_rules"
+                    "methods"
                     "glossary"]
  "📊 Chart Types" ["scatter"
                     "distributions"

@@ -14,10 +14,10 @@
   "Extract group labels from a layer, regardless of structure."
   [layer]
   (cond
-    (:groups layer)  (keep :label (:groups layer))
-    (:boxes layer)   (keep (comp str :color-category) (:boxes layer))
+    (:groups layer) (keep :label (:groups layer))
+    (:boxes layer) (keep (comp str :color-category) (:boxes layer))
     (:violins layer) (keep (comp str :color-category) (:violins layer))
-    :else            nil))
+    :else nil))
 
 ;; ---- Multimethod ----
 
@@ -25,6 +25,13 @@
   "Apply position adjustment to layers sharing a position type.
    Returns a vec of adjusted layers."
   (fn [position layers] position))
+
+;; ---- Doc methods (dispatching on [position-key :doc]) ----
+
+(defmethod apply-position [:identity :doc] [_ _] "Plot at exact data coordinates (groups overlap)")
+(defmethod apply-position [:dodge :doc] [_ _] "Shift groups side-by-side within a band")
+(defmethod apply-position [:stack :doc] [_ _] "Pile groups cumulatively")
+(defmethod apply-position [:fill :doc] [_ _] "Stack normalized to [0, 1] (proportions)")
 
 (defmethod apply-position :identity [_ layers] (vec layers))
 
@@ -99,7 +106,7 @@
         (reduce
          (fn [{:keys [adjusted-groups cum]} [group gm]]
            (let [y0s (mapv #(get cum % 0.0) all-xs)
-                 ys  (mapv #(+ (get cum % 0.0) (get gm % 0.0)) all-xs)
+                 ys (mapv #(+ (get cum % 0.0) (get gm % 0.0)) all-xs)
                  new-cum (into cum (map vector all-xs ys))]
              {:adjusted-groups (conj adjusted-groups
                                      (assoc group
@@ -113,8 +120,8 @@
   (mapv (fn [layer]
           (cond
             (:categories layer) (stack-rect-layer layer)
-            (:groups layer)     (stack-area-layer layer)
-            :else               layer))
+            (:groups layer) (stack-area-layer layer)
+            :else layer))
         layers))
 
 ;; ---- Fill ----
@@ -147,8 +154,8 @@
   (mapv (fn [layer]
           (cond
             (:categories layer) (-> layer normalize-fill-rect stack-rect-layer)
-            (:groups layer)     (stack-area-layer layer)
-            :else               layer))
+            (:groups layer) (stack-area-layer layer)
+            :else layer))
         layers))
 
 ;; ---- Entry point ----

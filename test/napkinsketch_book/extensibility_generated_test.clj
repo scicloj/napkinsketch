@@ -24,19 +24,19 @@
    {:key-fn keyword})))
 
 
-(def v5_l89 (method/histogram))
+(def v5_l89 (method/lookup :histogram))
 
 
 (deftest t6_l91 (is ((fn [m] (= :bin (:stat m))) v5_l89)))
 
 
-(def v8_l95 (method/bar))
+(def v8_l95 (method/lookup :bar))
 
 
 (deftest t9_l97 (is ((fn [m] (= :count (:stat m))) v8_l95)))
 
 
-(def v11_l101 (method/point))
+(def v11_l101 (method/lookup :point))
 
 
 (deftest t12_l103 (is ((fn [m] (= :identity (:stat m))) v11_l101)))

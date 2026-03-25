@@ -6,6 +6,9 @@
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.render :as render-impl]
+            [scicloj.napkinsketch.impl.stat :as stat]
+            [scicloj.napkinsketch.impl.extract :as extract]
+            [scicloj.napkinsketch.impl.position :as position]
             [scicloj.napkinsketch.render.membrane :as membrane]
             [scicloj.napkinsketch.render.svg :as svg]
             [scicloj.napkinsketch.method :as method]
@@ -187,6 +190,24 @@
    Useful for generating documentation tables."
   []
   (method/registered))
+
+(defn mark-doc
+  "Return the prose description for a mark keyword.
+   (mark-doc :point) => \"Filled circle\""
+  [k]
+  (extract/extract-layer {:mark [k :doc]} nil nil nil))
+
+(defn stat-doc
+  "Return the prose description for a stat keyword.
+   (stat-doc :bin) => \"Bin numerical values into ranges\""
+  [k]
+  (stat/compute-stat {:stat [k :doc]}))
+
+(defn position-doc
+  "Return the prose description for a position keyword.
+   (position-doc :dodge) => \"Shift groups side-by-side within a band\""
+  [k]
+  (position/apply-position [k :doc] nil))
 
 ;; ---- Layer Functions ----
 
