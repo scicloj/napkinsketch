@@ -25,22 +25,40 @@
    ;; String utilities
    [clojure.string :as str]))
 
+;; Two helpers used by several tables below.
+
+(defn used-by
+  "Sorted comma-separated method names whose `field` equals `value`."
+  [field value]
+  (->> (method/registered)
+       (filter (fn [[_ m]] (= value (or (get m field) :identity))))
+       (map (comp name key))
+       sort
+       (str/join ", ")))
+
+(defn distinct-in-order
+  "Distinct values of `field` across methods, in first-seen order."
+  [field]
+  (let [seen (volatile! #{})]
+    (reduce (fn [acc k]
+              (let [v (get (method/lookup k) field)]
+                (if (@seen v) acc
+                    (do (vswap! seen conj v) (conj acc v)))))
+            [] method/method-order)))
+
 ;; ## Method table
 ;;
 ;; Each row is a registered method showing its mark, stat, and position.
 
-(defn method-table []
-  (kind/table
-   {:column-names ["Method" "Mark" "Stat" "Position"]
-    :row-maps
-    (for [k method/method-order
-          :let [m (method/lookup k)]]
-      {"Method" (name k)
-       "Mark" (name (:mark m))
-       "Stat" (name (:stat m))
-       "Position" (name (or (:position m) :identity))})}))
-
-(method-table)
+(kind/table
+ {:column-names ["Method" "Mark" "Stat" "Position"]
+  :row-maps
+  (for [k method/method-order
+        :let [m (method/lookup k)]]
+    {"Method" (kind/code (pr-str k))
+     "Mark" (kind/code (pr-str (:mark m)))
+     "Stat" (kind/code (pr-str (:stat m)))
+     "Position" (kind/code (pr-str (or (:position m) :identity)))})})
 
 (kind/test-last
  [(fn [t]
@@ -52,35 +70,13 @@
 ;; Several methods may share the same mark — for instance, `histogram`
 ;; and `value-bar` both draw bars, and `lm` and `loess` both draw lines.
 
-(defn- used-by-mark
-  "Return a sorted comma-separated string of method names using `mk`."
-  [mk]
-  (->> (method/registered)
-       (filter (fn [[_ m]] (= mk (:mark m))))
-       (map (comp name key))
-       sort
-       (str/join ", ")))
-
-(defn- distinct-marks-in-order
-  "Return distinct marks preserving first-seen order from method-order."
-  []
-  (let [seen (volatile! #{})]
-    (reduce (fn [acc k]
-              (let [mk (:mark (method/lookup k))]
-                (if (@seen mk) acc
-                    (do (vswap! seen conj mk) (conj acc mk)))))
-            [] method/method-order)))
-
-(defn mark-table []
-  (kind/table
-   {:column-names ["Mark" "Shape" "Used by"]
-    :row-maps
-    (for [mk (distinct-marks-in-order)]
-      {"Mark" (name mk)
-       "Shape" (sk/mark-doc mk)
-       "Used by" (used-by-mark mk)})}))
-
-(mark-table)
+(kind/table
+ {:column-names ["Mark" "Shape" "Used by"]
+  :row-maps
+  (for [mk (distinct-in-order :mark)]
+    {"Mark" (kind/code (pr-str mk))
+     "Shape" (sk/mark-doc mk)
+     "Used by" (used-by :mark mk)})})
 
 (kind/test-last
  [(fn [t]
@@ -92,35 +88,13 @@
 ;; rendering. Each stat takes data-space inputs and produces
 ;; the geometry that its mark will draw.
 
-(defn- used-by-stat
-  "Return a sorted comma-separated string of method names using `st`."
-  [st]
-  (->> (method/registered)
-       (filter (fn [[_ m]] (= st (:stat m))))
-       (map (comp name key))
-       sort
-       (str/join ", ")))
-
-(defn- distinct-stats-in-order
-  "Return distinct stats preserving first-seen order from method-order."
-  []
-  (let [seen (volatile! #{})]
-    (reduce (fn [acc k]
-              (let [st (:stat (method/lookup k))]
-                (if (@seen st) acc
-                    (do (vswap! seen conj st) (conj acc st)))))
-            [] method/method-order)))
-
-(defn stat-table []
-  (kind/table
-   {:column-names ["Stat" "What it computes" "Used by"]
-    :row-maps
-    (for [st (distinct-stats-in-order)]
-      {"Stat" (name st)
-       "What it computes" (sk/stat-doc st)
-       "Used by" (used-by-stat st)})}))
-
-(stat-table)
+(kind/table
+ {:column-names ["Stat" "What it computes" "Used by"]
+  :row-maps
+  (for [st (distinct-in-order :stat)]
+    {"Stat" (kind/code (pr-str st))
+     "What it computes" (sk/stat-doc st)
+     "Used by" (used-by :stat st)})})
 
 (kind/test-last
  [(fn [t]
@@ -131,29 +105,13 @@
 ;; A **position** adjustment determines how groups share a categorical
 ;; axis slot. Position runs between stat computation and rendering.
 
-(def position-order
-  "Canonical order for positions."
-  [:identity :dodge :stack :fill])
-
-(defn- used-by-position
-  "Return method names that default to `pos`."
-  [pos]
-  (let [methods (method/registered)
-        matches (filter (fn [[_ m]]
-                          (= pos (or (:position m) :identity)))
-                        methods)]
-    (->> matches (map (comp name key)) sort (str/join ", "))))
-
-(defn position-table []
-  (kind/table
-   {:column-names ["Position" "What it does" "Used by"]
-    :row-maps
-    (for [pos position-order]
-      {"Position" (name pos)
-       "What it does" (sk/position-doc pos)
-       "Used by" (used-by-position pos)})}))
-
-(position-table)
+(kind/table
+ {:column-names ["Position" "What it does" "Used by"]
+  :row-maps
+  (for [pos [:identity :dodge :stack :fill]]
+    {"Position" (kind/code (pr-str pos))
+     "What it does" (sk/position-doc pos)
+     "Used by" (used-by :position pos)})})
 
 (kind/test-last
  [(fn [t]
