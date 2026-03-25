@@ -70,15 +70,17 @@ iris
 ;; ## Methods
 ;;
 ;; A **method** tells Napkinsketch *how* to turn data into a visual.
-;; It is a small map with up to three keys:
+;; It combines three concepts:
 ;;
 ;; - **mark** — what shape to draw (points, bars, lines)
 ;; - **stat** — what computation to perform first (use data as-is,
 ;;   bin into ranges, fit a line)
-;; - **position** — how overlapping groups share space (stack, dodge)
+;; - **position** — how overlapping groups share space (stack, dodge);
+;;   defaults to identity (no adjustment) when omitted
 ;;
-;; `method/lookup` retrieves a method by keyword. For example, `:point`,
-;; `:histogram`, and `:lm` each resolve to a method map:
+;; `method/lookup` retrieves a method by keyword. Most methods only
+;; store `:mark` and `:stat` — when `:position` is absent, identity
+;; is assumed:
 
 (method/lookup :point)
 

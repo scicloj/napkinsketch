@@ -140,6 +140,8 @@
 ;; | `:rug` | Groups with `:xs`, `:ys` for axis tick marks |
 ;; | `:step` | Groups with `:xs`, `:ys` for step lines |
 ;; | `:pointrange` | Groups with `:xs`, `:ys`, `:ymins`, `:ymaxs` for mean ± SE |
+;; | `:label` | Groups with `:xs`, `:ys`, `:labels` with background box |
+;; | `:contour` | Iso-value polylines from 2D density |
 ;;
 ;; Dispatch function: `(fn [view stat all-colors cfg] (:mark view))`
 
@@ -177,6 +179,8 @@
 ;; | `:rug` | Short stroked tick marks at axis margins |
 ;; | `:step` | Stroked step polylines |
 ;; | `:pointrange` | Point at mean + vertical SE line |
+;; | `:label` | Text label with filled background box |
+;; | `:contour` | Stroked iso-density polylines |
 ;;
 ;; Dispatch function: `(fn [layer ctx] (:mark layer))`
 ;;
