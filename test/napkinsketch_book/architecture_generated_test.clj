@@ -1,7 +1,7 @@
 (ns
  napkinsketch-book.architecture-generated-test
  (:require
-  [tablecloth.api :as tc]
+  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.impl.sketch-schema :as ss]
@@ -106,39 +106,30 @@
 (def
  v31_l181
  (def
-  iris
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-   {:key-fn keyword})))
-
-
-(def
- v32_l184
- (def
   multi-views
   (->
-   iris
+   data/iris
    (sk/view :petal_length :petal_width {:color :species})
    sk/lay-point
    sk/lay-lm)))
 
 
 (def
- v33_l190
+ v32_l187
  (def
   multi-sketch
   (sk/sketch multi-views {:title "Iris Petals with Regression"})))
 
 
 (def
- v35_l194
+ v34_l191
  (mapv
   (fn [layer] {:mark (:mark layer), :n-groups (count (:groups layer))})
   (:layers (first (:panels multi-sketch)))))
 
 
 (deftest
- t36_l199
+ t35_l196
  (is
   ((fn
     [v]
@@ -146,40 +137,40 @@
      (= :point (:mark (first v)))
      (= :line (:mark (second v)))
      (= 3 (:n-groups (first v)))))
-   v35_l194)))
+   v34_l191)))
 
 
-(def v38_l205 multi-sketch)
+(def v37_l202 multi-sketch)
 
 
 (deftest
- t39_l207
+ t38_l204
  (is
   ((fn
     [m]
     (and
      (= "Iris Petals with Regression" (:title m))
      (= 3 (count (get-in m [:legend :entries])))))
-   v38_l205)))
+   v37_l202)))
 
 
 (def
- v41_l212
+ v40_l209
  (-> multi-views (sk/options {:title "Iris Petals with Regression"})))
 
 
 (deftest
- t42_l214
+ t41_l211
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v41_l212)))
+   v40_l209)))
 
 
 (def
- v44_l220
+ v43_l217
  (kind/mermaid
   "\ngraph TD\n  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]\n  API --> PLOT[\"impl/plot.clj\"]\n  API --> SKETCH[\"impl/sketch.clj\"]\n  SKETCH --> VIEW\n  SKETCH --> STAT[\"impl/stat.clj\"]\n  SKETCH --> SCALE[\"impl/scale.clj\"]\n  SKETCH --> DEFAULTS[\"impl/defaults.clj\"]\n  PLOT --> SKETCH\n  PLOT --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SKETCH fill:#ffe0b2\n  style PLOT fill:#bbdefb\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))

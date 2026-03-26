@@ -1,7 +1,7 @@
 (ns
  napkinsketch-book.relationships-generated-test
  (:require
-  [tablecloth.api :as tc]
+  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [fastmath.random :as rng]
@@ -9,101 +9,83 @@
 
 
 (def
- v2_l17
- (def
-  iris
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-   {:key-fn keyword})))
-
-
-(def
- v3_l20
- (def
-  tips
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-   {:key-fn keyword})))
-
-
-(def
- v5_l27
- (-> iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
+ v3_l21
+ (-> data/iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
 
 
 (deftest
- t6_l31
+ t4_l25
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v5_l27)))
+   v3_l21)))
 
 
 (def
- v8_l39
+ v6_l33
  (->
-  iris
+  data/iris
   (sk/view :petal_length :petal_width {:color :species})
   sk/lay-point
   sk/lay-lm))
 
 
 (deftest
- t9_l44
+ t7_l38
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v8_l39)))
+   v6_l33)))
 
 
 (def
- v11_l52
+ v9_l46
  (->
-  iris
+  data/iris
   (sk/view :sepal_length :sepal_width {:color :species})
   sk/lay-point
   (sk/lay-lm {:se true})))
 
 
 (deftest
- t12_l57
+ t10_l51
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)) (= 3 (:polygons s)))))
-   v11_l52)))
+   v9_l46)))
 
 
 (def
- v14_l65
+ v12_l59
  (->
-  tips
+  data/tips
   (sk/view :total_bill :tip {:color :smoker})
   sk/lay-point
   sk/lay-lm))
 
 
 (deftest
- t15_l70
+ t13_l64
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 244 (:points s)) (= 2 (:lines s)))))
-   v14_l65)))
+   v12_l59)))
 
 
 (def
- v17_l78
+ v15_l72
  (def
   noisy-wave
   (let
@@ -112,43 +94,43 @@
     :y
     (mapv
      (fn*
-      [p1__74220#]
+      [p1__101290#]
       (+
-       (Math/sin (* p1__74220# 0.2))
+       (Math/sin (* p1__101290# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
 
-(def v18_l83 (-> noisy-wave (sk/lay-point :x :y) sk/lay-loess))
+(def v16_l77 (-> noisy-wave (sk/lay-point :x :y) sk/lay-loess))
 
 
 (deftest
- t19_l87
+ t17_l81
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 50 (:points s)) (= 1 (:lines s)))))
-   v18_l83)))
+   v16_l77)))
 
 
-(def v21_l95 (-> iris (sk/lay-tile :sepal_length :sepal_width)))
+(def v19_l89 (-> data/iris (sk/lay-tile :sepal_length :sepal_width)))
 
 
 (deftest
- t22_l98
+ t20_l92
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v21_l95)))
+   v19_l89)))
 
 
 (def
- v24_l106
+ v22_l100
  (def
   grid-data
   (let
@@ -158,81 +140,85 @@
     :value (vec (repeatedly 25 (fn* [] (rng/irandom r 100))))})))
 
 
-(def v25_l112 (-> grid-data (sk/lay-tile :x :y {:fill :value})))
+(def v23_l106 (-> grid-data (sk/lay-tile :x :y {:fill :value})))
 
 
 (deftest
- t26_l115
+ t24_l109
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v25_l112)))
-
-
-(def v28_l123 (-> iris (sk/lay-density2d :sepal_length :sepal_width)))
-
-
-(deftest
- t29_l126
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (pos? (:tiles s)))))
-   v28_l123)))
+   v23_l106)))
 
 
 (def
- v31_l134
+ v26_l117
+ (-> data/iris (sk/lay-density2d :sepal_length :sepal_width)))
+
+
+(deftest
+ t27_l120
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (pos? (:tiles s)))))
+   v26_l117)))
+
+
+(def
+ v29_l128
  (->
-  iris
+  data/iris
   (sk/lay-density2d :sepal_length :sepal_width)
   (sk/lay-point {:alpha 0.5})))
 
 
 (deftest
- t32_l138
+ t30_l132
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:tiles s)))))
-   v31_l134)))
+   v29_l128)))
 
 
-(def v34_l146 (-> iris (sk/lay-contour :sepal_length :sepal_width)))
+(def
+ v32_l140
+ (-> data/iris (sk/lay-contour :sepal_length :sepal_width)))
 
 
 (deftest
- t35_l149
+ t33_l143
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:lines s)))))
-   v34_l146)))
+   v32_l140)))
 
 
 (def
- v37_l157
+ v35_l151
  (->
-  iris
+  data/iris
   (sk/lay-point :sepal_length :sepal_width {:alpha 0.3})
   (sk/lay-contour {:levels 8})))
 
 
 (deftest
- t38_l161
+ t36_l155
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:lines s)))))
-   v37_l157)))
+   v35_l151)))

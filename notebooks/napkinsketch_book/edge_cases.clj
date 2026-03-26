@@ -5,13 +5,15 @@
 
 (ns napkinsketch-book.edge-cases
   (:require
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Fastmath — random number generation (for synthetic data)
+   ;; Fastmath — random number generation
    [fastmath.random :as rng]))
 
 ;; ## Missing Data
@@ -150,10 +152,7 @@
 
 ;; Derive a new column and plot it.
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
-
-(-> iris
+(-> data/iris
     (tc/map-columns :sepal_ratio [:sepal_length :sepal_width] /)
     (sk/lay-point :sepal_length :sepal_ratio {:color :species})
     (sk/options {:title "Sepal Length/Width Ratio"}))
@@ -166,7 +165,7 @@
 
 ;; Plot only one species.
 
-(-> iris
+(-> data/iris
     (tc/select-rows #(= "setosa" (% :species)))
     (sk/lay-point :sepal_length :sepal_width)
     sk/lay-lm
@@ -214,7 +213,7 @@
 
 ;; Nudge-x on continuous data — shifts points without error.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:nudge-x 0.1 :nudge-y -0.05}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -375,7 +374,7 @@
 ;; `sk/cross` produces a full N×N grid of panels.
 ;; Strip labels must appear for every column and row.
 
-(-> iris
+(-> data/iris
     (sk/view (sk/cross [:sepal_length :sepal_width :petal_length] [:sepal_length :sepal_width :petal_length]))
     (sk/lay-point {:color :species}))
 

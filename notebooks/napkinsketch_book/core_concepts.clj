@@ -115,20 +115,26 @@ iris
 
 ;; Data, view, and method — those are the minimal ingredients.
 ;; The next three sections unpack what each part of a method
-;; contributes.
 
 ;; ## Mark
 ;;
 ;; The **mark** is the visual shape drawn on the plot. The scatter
 ;; plot above used `:mark :point` — each data point became a dot.
 ;;
-;; Notice that a method's name describes its *intent* while the mark
-;; describes the *shape*. The `:histogram` method uses `:mark :bar` because a
+;; A method's name describes its *intent* while the mark describes
+;; the *shape*. The `:histogram` method uses `:mark :bar` because a
 ;; histogram is drawn with bar shapes:
 
 (method/lookup :histogram)
 
 (kind/test-last [(fn [m] (= :bar (:mark m)))])
+
+;; A histogram draws bar shapes filled to show binned counts:
+
+(-> iris
+    (sk/lay-histogram :sepal_length))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 ;; ## Stat
 ;;
@@ -136,31 +142,47 @@ iris
 ;; The scatter plot used `:stat :identity` — every row became one
 ;; point, unchanged.
 ;;
-;; The `:histogram` method uses `:stat :bin` — it groups values into ranges
-;; and counts how many fall in each range:
+;; The `:histogram` method uses `:stat :bin` — it groups values into
+;; ranges and counts how many fall in each range. The stat transforms
+;; the data; the mark renders the result. Together, `:stat :bin` and
+;; `:mark :bar` produce the familiar histogram shape.
+;;
+;; The `:lm` method uses `:stat :lm` — it fits a straight line to
+;; the data and returns a polyline of predicted values:
+
+(method/lookup :lm)
+
+(kind/test-last [(fn [m] (= :lm (:stat m)))])
+
+;; A regression line fitted through the scatter data:
 
 (-> iris
-    (sk/lay-histogram :sepal_length))
+    (sk/lay-point :sepal_length :sepal_width)
+    sk/lay-lm)
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
-
-;; The stat transforms the data; the mark renders the result.
-;; Together, `:stat :bin` and `:mark :bar` produce the familiar
-;; histogram shape.
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
 
 ;; ## Position
 ;;
 ;; The **position** controls how overlapping groups share space.
-;; Most methods leave it unset — groups are drawn independently.
-;; The `:stacked-bar` method includes `:position :stack`, which places groups
-;; on top of each other:
+;; Most methods leave it unset — groups are drawn independently
+;; (`:position :identity`). The `:stacked-bar` method includes
+;; `:position :stack`, which places groups on top of each other:
 
 (method/lookup :stacked-bar)
 
 (kind/test-last [(fn [m] (= :stack (:position m)))])
 
-;; You will see position in action once color introduces grouping,
-;; later in this chapter.
+;; A stacked bar chart — each meal's count stacks on the previous:
+
+(-> {:day ["Mon" "Mon" "Tue" "Tue"]
+     :count [30 20 45 15]
+     :meal ["lunch" "dinner" "lunch" "dinner"]}
+    (sk/lay-value-bar :day :count {:color :meal :position :stack}))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 ;; ## Inference
 ;;
@@ -402,9 +424,11 @@ iris
 ;;
 ;; - **Inference Rules** — how Napkinsketch chooses defaults for
 ;;   marks, stats, and domains automatically
+;; - **Methods** — complete tables of every mark, stat, and position
 ;; - **Glossary** — concise definitions of every term, including
 ;;   ones not covered here (theme, annotation, and more)
 ;; - **Chart Types** — scatter plots, distributions, bar charts,
 ;;   time series, and polar charts
 ;; - **How-to Guides** — faceting, configuration, customization,
 ;;   and recipes for common tasks
+

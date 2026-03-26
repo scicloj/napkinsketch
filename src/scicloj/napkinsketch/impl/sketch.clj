@@ -382,11 +382,68 @@
                        {:label (str cat)
                         :color (defaults/color-for all-colors cat (:palette cfg))}))})))
 
+(defn- nice-legend-values
+  "Generate n nicely-spaced values spanning [lo, hi].
+   Uses enough decimal places so that adjacent values are distinct."
+  [lo hi n]
+  (let [lo (double lo) hi (double hi)
+        step (/ (- hi lo) (dec n))
+        ;; Use 1 more decimal than the step magnitude to avoid collisions
+        decimals (if (pos? step)
+                   (min 6 (max 1 (+ 1 (long (Math/ceil (- (Math/log10 step)))))))
+                   1)
+        factor (Math/pow 10.0 decimals)]
+    (mapv (fn [i]
+            (let [v (+ lo (* i step))]
+              (/ (Math/round (* v factor)) factor)))
+          (range n))))
+
+(defn- build-size-legend
+  "Build size legend when :size maps to a numerical column."
+  [resolved-all]
+  (let [size-views (filter #(and (view/column-ref? (:size %))
+                                 (nil? (:fixed-size %))
+                                 (:data %)) resolved-all)]
+    (when (seq size-views)
+      (let [size-col (:size (first size-views))
+            all-vals (mapcat #((:data %) (:size %)) size-views)
+            s-min (reduce min all-vals)
+            s-max (reduce max all-vals)
+            span (max 1e-6 (- (double s-max) (double s-min)))
+            values (nice-legend-values s-min s-max 5)]
+        {:title size-col
+         :type :size
+         :min s-min :max s-max
+         :entries (vec (for [v values]
+                         {:value v
+                          :radius (+ 2.0 (* 6.0 (/ (- (double v) (double s-min)) span)))}))}))))
+
+(defn- build-alpha-legend
+  "Build alpha legend when :alpha maps to a numerical column."
+  [resolved-all]
+  (let [alpha-views (filter #(and (view/column-ref? (:alpha %))
+                                  (nil? (:fixed-alpha %))
+                                  (:data %)) resolved-all)]
+    (when (seq alpha-views)
+      (let [alpha-col (:alpha (first alpha-views))
+            all-vals (mapcat #((:data %) (:alpha %)) alpha-views)
+            a-min (reduce min all-vals)
+            a-max (reduce max all-vals)
+            span (max 1e-6 (- (double a-max) (double a-min)))
+            values (nice-legend-values a-min a-max 5)]
+        {:title alpha-col
+         :type :alpha
+         :min a-min :max a-max
+         :entries (vec (for [v values]
+                         {:value v
+                          :alpha (+ 0.2 (* 0.8 (/ (- (double v) (double a-min)) span)))}))}))))
+
 (defn- compute-layout-dims
   "Compute layout dimensions: padding, legend width, total size."
   [cfg layout-type eff-title eff-x-label eff-y-label
    subtitle caption
-   legend facet-row-vals facet-col-vals
+   legend size-legend alpha-legend
+   facet-row-vals facet-col-vals
    grid-rows grid-cols pw ph multi? panels legend-position]
   (let [x-label-pad (if eff-x-label (:label-offset cfg) 0)
         ;; y-label-pad must account for y-tick label width (e.g. category names)
@@ -404,8 +461,9 @@
         subtitle-pad (if subtitle 16 0)
         caption-pad (if caption 18 0)
         legend-pos (or legend-position :right)
-        legend-w (if (and legend (= legend-pos :right)) (:legend-width cfg) 0)
-        legend-h (if (and legend (#{:bottom :top} legend-pos)) 30 0)
+        any-legend? (or legend size-legend alpha-legend)
+        legend-w (if (and any-legend? (= legend-pos :right)) (:legend-width cfg) 0)
+        legend-h (if (and any-legend? (#{:bottom :top} legend-pos)) 30 0)
         has-col-strips? (or (and (= layout-type :facet-grid) (seq facet-col-vals))
                             multi?)
         has-row-strips? (or (and (= layout-type :facet-grid) (seq facet-row-vals))
@@ -554,13 +612,16 @@
                                      [eff-y-label eff-x-label]
                                      [eff-x-label eff-y-label])
 
-         ;; Legend
+         ;; Legends
          legend (build-legend resolved-all numeric-color? all-colors color-cols cfg)
+         size-legend (build-size-legend resolved-all)
+         alpha-legend (build-alpha-legend resolved-all)
 
          ;; Layout dimensions
          layout-dims (compute-layout-dims cfg layout-type eff-title eff-x-label eff-y-label
                                           subtitle caption
-                                          legend facet-row-vals facet-col-vals
+                                          legend size-legend alpha-legend
+                                          facet-row-vals facet-col-vals
                                           grid-rows grid-cols pw ph multi? panels legend-position)
 
          sketch
@@ -574,6 +635,8 @@
           :caption caption
           :x-label eff-x-label :y-label eff-y-label
           :legend legend
+          :size-legend size-legend
+          :alpha-legend alpha-legend
           :legend-position (or legend-position :right)
           :panels panels
           :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad

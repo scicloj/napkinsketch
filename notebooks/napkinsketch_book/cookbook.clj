@@ -5,20 +5,16 @@
 
 (ns napkinsketch-book.cookbook
   (:require
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Fastmath — random number generation (for synthetic data)
+   ;; Fastmath — random number generation
    [fastmath.random :as rng]))
-
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
-
-(def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-                      {:key-fn keyword}))
 
 ;; ## Quick Recipes
 
@@ -27,7 +23,7 @@
 ;; Overlay raw observations on a boxplot summary. The auto-jitter
 ;; detects the categorical axis and constrains points to the band width.
 
-(-> iris
+(-> data/iris
     (sk/lay-boxplot :species :sepal_length)
     (sk/lay-point {:jitter true :alpha 0.3}))
 
@@ -40,7 +36,7 @@
 ;;
 ;; Normalize the histogram to density scale so it is comparable with the KDE curve.
 
-(-> iris
+(-> data/iris
     (sk/lay-histogram :sepal_length {:normalize :density :alpha 0.5})
     sk/lay-density)
 
@@ -52,7 +48,7 @@
 ;;
 ;; Fit a linear regression per group to reveal trends across species.
 
-(-> iris
+(-> data/iris
     (sk/view :sepal_length :sepal_width {:color :species})
     (sk/lay-point {:alpha 0.6})
     sk/lay-lm)
@@ -65,7 +61,7 @@
 ;;
 ;; Show the density shape and every observation together.
 
-(-> iris
+(-> data/iris
     (sk/lay-violin :species :petal_width {:alpha 0.3})
     (sk/lay-point {:jitter true :alpha 0.4}))
 
@@ -98,7 +94,7 @@
 ;;
 ;; Split a scatter plot by species to compare patterns side by side.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species))
 
@@ -110,7 +106,7 @@
 ;; Add reference lines and shaded bands to highlight regions of interest.
 ;; Pass `{:alpha …}` to control band opacity.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3})))
 
@@ -123,7 +119,7 @@
 ;; Compare distribution shapes across categories with overlapping
 ;; density curves. Grid lines at each baseline aid comparison.
 
-(-> iris
+(-> data/iris
     (sk/lay-ridgeline :species :sepal_length {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -134,10 +130,7 @@
 ;;
 ;; Show the proportion of each species per island using 100% stacked bars.
 
-(def penguins (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
-                          {:key-fn keyword}))
-
-(-> penguins
+(-> data/penguins
     (sk/lay-stacked-bar-fill :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -150,7 +143,7 @@
 ;;
 ;; Color points by group, but fit a single overall regression line.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     sk/lay-lm)
 
@@ -193,7 +186,7 @@
 ;;
 ;; The `summary` mark computes mean and standard error per category.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :species :sepal_length {:alpha 0.3 :jitter 5})
     (sk/lay-summary {:color :species}))
 
@@ -205,7 +198,7 @@
 ;;
 ;; Scatter + per-group regression to compare smoker tipping patterns.
 
-(-> tips
+(-> data/tips
     (sk/view :total_bill :tip {:color :smoker})
     sk/lay-point
     sk/lay-lm
@@ -225,7 +218,7 @@
 ;; A scatter plot with per-group linear regressions and 95%
 ;; confidence ribbons.
 
-(-> iris
+(-> data/iris
     (sk/view :sepal_length :sepal_width {:color :species})
     (sk/lay-point {:alpha 0.5})
     (sk/lay-lm {:se true})
@@ -240,13 +233,13 @@
 
 ;; Side-by-side comparison: default dodged bars vs stacked bars.
 
-(-> tips
+(-> data/tips
     (sk/lay-bar :day {:color :sex})
     (sk/options {:title "Dodged Bars (default)"}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-(-> tips
+(-> data/tips
     (sk/lay-stacked-bar :day {:color :sex})
     (sk/options {:title "Stacked Bars"}))
 
@@ -275,7 +268,7 @@
 ;; Density contour lines overlaid on a scatter plot — reveals
 ;; high-density regions in a point cloud.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.4})
     (sk/lay-contour {:levels 5}))
 
@@ -287,7 +280,7 @@
 
 ;; Annotate specific data points with text labels.
 
-(def top5 (-> iris (tc/order-by :sepal_length :desc) (tc/head 5)))
+(def top5 (-> data/iris (tc/order-by :sepal_length :desc) (tc/head 5)))
 
 (-> top5
     (sk/lay-point :sepal_length :sepal_width {:size 5})
@@ -301,7 +294,7 @@
 
 ;; Assign specific colors to each category using a palette map.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette {:setosa "#E91E63"
                            :versicolor "#4CAF50"
@@ -317,7 +310,7 @@
 ;; Use `sk/coord :fixed` so one unit on x equals one unit on y.
 ;; This makes the plot square when x and y have equal ranges.
 
-(-> iris
+(-> data/iris
     (sk/view :sepal_length :sepal_width {:color :species})
     sk/lay-point
     sk/lay-lm
@@ -349,7 +342,7 @@
 ;;
 ;; Add `{:se true}` to a LOESS smoother for a bootstrap confidence band.
 
-(-> iris
+(-> data/iris
     (sk/view :sepal_length :sepal_width {:color :species})
     sk/lay-point
     (sk/lay-loess {:se true})
@@ -365,12 +358,12 @@
 ;; Use `sk/arrange` to combine independent plots into a grid layout.
 
 (def iris-sepal
-  (-> iris
+  (-> data/iris
       (sk/lay-point :sepal_length :sepal_width {:color :species})
       (sk/options {:title "Sepal" :width 300 :height 250})))
 
 (def iris-petal
-  (-> iris
+  (-> data/iris
       (sk/lay-point :petal_length :petal_width {:color :species})
       (sk/options {:title "Petal" :width 300 :height 250})))
 
@@ -424,7 +417,7 @@
 
 ;; Bill dimensions separate the three species clearly.
 
-(-> penguins
+(-> data/penguins
     (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
     (sk/options {:title "Palmer Penguins: Bill Dimensions"}))
 
@@ -434,7 +427,7 @@
 
 ;; Per-species regression reveals different slopes.
 
-(-> penguins
+(-> data/penguins
     (sk/view :bill_length_mm :bill_depth_mm {:color :species})
     sk/lay-point
     sk/lay-lm
@@ -447,7 +440,7 @@
 ;; Without grouping, the overall trend appears negative — an example
 ;; of Simpson's paradox.
 
-(-> penguins
+(-> data/penguins
     (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
     sk/lay-lm
     (sk/options {:title "Simpson's Paradox: Overall vs Per-Group Trend"}))
@@ -458,7 +451,7 @@
 
 ;; Species distribution across islands.
 
-(-> penguins
+(-> data/penguins
     (sk/lay-bar :island {:color :species})
     (sk/options {:title "Species by Island"}))
 
@@ -468,7 +461,7 @@
 
 ;; Flipper length vs body mass — a strong positive correlation.
 
-(-> penguins
+(-> data/penguins
     (sk/view :flipper_length_mm :body_mass_g {:color :species})
     sk/lay-point
     sk/lay-lm
@@ -480,7 +473,7 @@
 
 ;; Body mass distribution by species.
 
-(-> penguins
+(-> data/penguins
     (sk/lay-histogram :body_mass_g {:color :species})
     (sk/options {:title "Body Mass Distribution"}))
 
@@ -492,7 +485,7 @@
 
 ;; Tipping behavior: smokers vs non-smokers.
 
-(-> tips
+(-> data/tips
     (sk/view :total_bill :tip {:color :smoker})
     sk/lay-point
     sk/lay-lm
@@ -505,7 +498,7 @@
 
 ;; Tip amounts by day, colored by meal time.
 
-(-> tips
+(-> data/tips
     (sk/lay-bar :day {:color :time})
     (sk/options {:title "Visits by Day and Meal Time"}))
 
@@ -515,7 +508,7 @@
 
 ;; Stacked view of the same data.
 
-(-> tips
+(-> data/tips
     (sk/lay-stacked-bar :day {:color :time})
     (sk/options {:title "Visits by Day (Stacked)"}))
 
@@ -525,7 +518,7 @@
 
 ;; Horizontal bar chart of party sizes.
 
-(-> tips
+(-> data/tips
     (sk/lay-bar :day {:color :sex})
     (sk/coord :flip)
     (sk/options {:title "Day by Gender (Horizontal)"}))
@@ -536,12 +529,9 @@
 
 ;; ### MPG
 
-(def mpg (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/mpg.csv"
-                     {:key-fn keyword}))
-
 ;; Horsepower vs fuel efficiency, colored by origin.
 
-(-> mpg
+(-> data/mpg
     (sk/view :horsepower :mpg {:color :origin})
     sk/lay-point
     sk/lay-lm
@@ -553,7 +543,7 @@
 
 ;; Displacement vs MPG — another negative correlation.
 
-(-> mpg
+(-> data/mpg
     (sk/lay-point :displacement :mpg {:color :origin})
     (sk/options {:title "Engine Displacement vs Fuel Efficiency"}))
 
@@ -563,7 +553,7 @@
 
 ;; Count of cars by origin.
 
-(-> mpg
+(-> data/mpg
     (sk/lay-bar :origin)
     (sk/options {:title "Cars by Origin"}))
 

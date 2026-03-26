@@ -5,17 +5,14 @@
 
 (ns napkinsketch-book.glossary
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
    ;; Method constructors — for inspecting method maps
    [scicloj.napkinsketch.method :as method]))
-
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
 
 ;; ## View
 ;;
@@ -25,7 +22,7 @@
 ;; functions (`sk/lay-point`, `sk/lay-lm`, etc.) add methods on top.
 
 (def views
-  (-> iris
+  (-> data/iris
       (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 (kind/pprint views)
@@ -86,6 +83,7 @@
 ;; | `:alpha` | Opacity | Numerical |
 ;; | `:shape` | Point shape | Categorical |
 ;; | `:text` | Label content | Any |
+;; | `:fill` | Tile gradient color | Numerical |
 ;;
 ;; When a keyword is passed, it maps to a dataset column.
 ;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed aesthetic
@@ -104,7 +102,7 @@
 ;; creates groups — one per unique value. You can also create groups
 ;; without color using the `:group` key.
 
-(-> iris
+(-> data/iris
     (sk/lay-line :sepal_length :sepal_width {:group :species})
     sk/sketch
     (get-in [:panels 0 :layers 0 :groups])
@@ -186,7 +184,7 @@
 ;; - `sk/facet` creates a row or column of panels
 ;; - `sk/facet-grid` creates a row × column grid from two columns
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width)
     (sk/facet :species)
     sk/sketch :panels count)
@@ -272,7 +270,7 @@
 ;; background color, grid lines, font sizes, margins.
 ;; Passed as `{:theme {...}}` via `sk/options` or directly to `sk/sketch`.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:theme {:background "#2d2d2d" :grid "#444444"
                          :text "#cccccc" :tick "#999999"}})

@@ -60,7 +60,8 @@
   [elem]
   (cond-> {}
     (:row-idx elem) (assoc :data-row-idx (:row-idx elem))
-    (:tooltip elem) (assoc :data-tooltip (:tooltip elem))))
+    (:tooltip elem) (assoc :data-tooltip (:tooltip elem))
+    (:legend elem) (assoc :data-legend "true")))
 
 (extend-protocol ToSVG
   Translate
@@ -324,6 +325,31 @@
      svg)
     @result))
 
+(defn- collect-elements-excluding-legend
+  "Walk SVG hiccup and collect elements matching a tag, excluding those
+   inside <g data-legend=\"true\"> groups."
+  [svg tag]
+  (let [result (atom [])]
+    (letfn [(walk-node [x in-legend?]
+              (cond
+                (and (vector? x) (= :g (first x)) (map? (second x))
+                     (= "true" (get (second x) :data-legend)))
+                nil ;; skip entire legend subtree
+
+                (and (vector? x) (= tag (first x)) (map? (second x))
+                     (not in-legend?))
+                (do (swap! result conj x)
+                    (doseq [child (rest (rest x))]
+                      (walk-node child in-legend?)))
+
+                (vector? x)
+                (doseq [child x]
+                  (walk-node child in-legend?))
+
+                :else nil))]
+      (walk-node svg false))
+    @result))
+
 (defn- escape-xml
   "Escape special characters for XML/SVG content."
   [s]
@@ -413,7 +439,8 @@
                                           (mapv #(int (* 255 (double %)))
                                                 (take 3 (defaults/hex->rgba grid-hex)))) ")")
          sw (double defaults/legend-swatch-size)
-         rects (collect-elements svg :rect)
+         ;; Collect rects excluding those inside data-legend groups
+         rects (collect-elements-excluding-legend svg :rect)
          polylines (collect-elements svg :polyline)
          polygons (collect-elements svg :polygon)
          texts (collect-elements svg :text)

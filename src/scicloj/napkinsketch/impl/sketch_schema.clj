@@ -208,6 +208,32 @@
     [:color-scale {:optional true} [:maybe keyword?]]
     [:stops [:vector GradientStop]]]])
 
+(def SizeLegendEntry
+  [:map
+   [:value number?]
+   [:radius number?]])
+
+(def SizeLegend
+  [:map
+   [:title keyword?]
+   [:type [:= :size]]
+   [:min number?]
+   [:max number?]
+   [:entries [:vector SizeLegendEntry]]])
+
+(def AlphaLegendEntry
+  [:map
+   [:value number?]
+   [:alpha number?]])
+
+(def AlphaLegend
+  [:map
+   [:title keyword?]
+   [:type [:= :alpha]]
+   [:min number?]
+   [:max number?]
+   [:entries [:vector AlphaLegendEntry]]])
+
 ;; ---- Layout ----
 
 (def Layout
@@ -244,6 +270,8 @@
    [:x-label {:optional true} [:maybe string?]]
    [:y-label {:optional true} [:maybe string?]]
    [:legend {:optional true} [:maybe Legend]]
+   [:size-legend {:optional true} [:maybe SizeLegend]]
+   [:alpha-legend {:optional true} [:maybe AlphaLegend]]
    [:legend-position [:enum :right :bottom :top :none]]
    [:panels [:vector Panel]]
    [:layout Layout]])

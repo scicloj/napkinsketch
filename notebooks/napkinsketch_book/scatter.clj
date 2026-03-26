@@ -5,24 +5,18 @@
 
 (ns napkinsketch-book.scatter
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
-
-(def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-                      {:key-fn keyword}))
-
 ;; ## Basic Scatter
 
 ;; Sepal dimensions, no color — the default mark.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -34,7 +28,7 @@
 
 ;; Adding `:color :species` groups points by species with distinct colors.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -46,7 +40,7 @@
 
 ;; Petal length vs width — a strongly correlated pair.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :petal_length :petal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -58,7 +52,7 @@
 
 ;; A fixed color string (not a column reference) applies to all points.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color "#E74C3C"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -69,7 +63,7 @@
 
 ;; Wider plot with custom title and labels.
 
-(-> tips
+(-> data/tips
     (sk/lay-point :total_bill :tip {:color :day})
     (sk/options {:width 700 :height 300
                  :title "Tips by Day"
@@ -87,7 +81,7 @@
 ;; Map `:size` to a numeric column to create a bubble plot.
 ;; Each point's radius reflects the column value.
 
-(-> tips
+(-> data/tips
     (sk/lay-point :total_bill :tip {:color :day :size :size}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -96,7 +90,7 @@
 
 ;; Combine size with alpha for dense data.
 
-(-> tips
+(-> data/tips
     (sk/lay-point :total_bill :tip {:color :day :size :size :alpha 0.6}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -108,7 +102,7 @@
 ;; When plotting a numeric column against a categorical column,
 ;; points overlap. Use `:jitter true` to add random pixel offsets.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :species :sepal_width {:jitter true}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -117,7 +111,7 @@
 
 ;; Control the jitter amount in pixels.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :species :sepal_width {:jitter 10 :alpha 0.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -129,7 +123,7 @@
 ;; When `:color` maps to a numeric column, Napkinsketch uses a
 ;; viridis gradient instead of discrete palette colors.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :petal_length}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -139,7 +133,7 @@
 
 ;; Continuous color with size — a color-size bubble plot.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :petal_length :size :petal_width :alpha 0.7}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

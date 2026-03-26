@@ -5,8 +5,8 @@
 
 (ns napkinsketch-book.distributions
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -14,17 +14,11 @@
 
 ;; ## Datasets
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
-
-(def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-                      {:key-fn keyword}))
-
 ;; ## Histogram
 
 ;; Distribution of sepal length across all species.
 
-(-> iris
+(-> data/iris
     (sk/lay-histogram :sepal_length))
 
 (kind/test-last
@@ -36,7 +30,7 @@
 
 ;; Split by species — each group gets its own color.
 
-(-> iris
+(-> data/iris
     (sk/lay-histogram :sepal_length {:color :species}))
 
 (kind/test-last
@@ -48,7 +42,7 @@
 
 ;; Petal width has a bimodal distribution.
 
-(-> iris
+(-> data/iris
     (sk/lay-histogram :petal_width))
 
 (kind/test-last
@@ -58,7 +52,7 @@
 
 ;; ## Histogram with Custom Title
 
-(-> tips
+(-> data/tips
     (sk/lay-histogram :total_bill)
     (sk/options {:title "Distribution of Total Bill"
                  :x-label "Amount ($)"}))
@@ -75,7 +69,7 @@
 ;; density instead of raw counts. This makes the histogram directly
 ;; comparable with a density curve overlay.
 
-(-> iris
+(-> data/iris
     (sk/lay-histogram :sepal_length {:normalize :density :alpha 0.5})
     sk/lay-density)
 
@@ -87,7 +81,7 @@
 ;; A smooth curve estimating the probability density function.
 ;; Less sensitive to bin width than histograms.
 
-(-> iris
+(-> data/iris
     (sk/lay-density :sepal_length))
 
 (kind/test-last
@@ -99,7 +93,7 @@
 
 ;; Per-species density curves with automatic color mapping.
 
-(-> iris
+(-> data/iris
     (sk/lay-density :sepal_length {:color :species}))
 
 (kind/test-last
@@ -111,7 +105,7 @@
 
 ;; A narrow bandwidth reveals more detail; a wide bandwidth smooths more.
 
-(-> iris
+(-> data/iris
     (sk/lay-density :sepal_length {:bandwidth 0.3}))
 
 (kind/test-last
@@ -123,7 +117,7 @@
 
 ;; Median, quartiles, whiskers at 1.5×IQR, and outlier points.
 
-(-> iris
+(-> data/iris
     (sk/lay-boxplot :species :sepal_width))
 
 (kind/test-last
@@ -136,7 +130,7 @@
 
 ;; Side-by-side boxplots colored by a grouping variable.
 
-(-> tips
+(-> data/tips
     (sk/lay-boxplot :day :total_bill {:color :smoker}))
 
 (kind/test-last
@@ -147,7 +141,7 @@
 
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
-(let [sk (-> tips
+(let [sk (-> data/tips
              (sk/lay-boxplot :day :total_bill {:color :smoker})
              sk/sketch)
       panel (first (:panels sk))
@@ -162,7 +156,7 @@
 
 ;; Flipped coordinate for horizontal orientation.
 
-(-> iris
+(-> data/iris
     (sk/lay-boxplot :species :sepal_width)
     (sk/options {:coord :flip}))
 
@@ -177,7 +171,7 @@
 ;; A violin shows the full density shape per category — more
 ;; informative than a boxplot for multimodal distributions.
 
-(-> tips
+(-> data/tips
     (sk/lay-violin :day :total_bill))
 
 (kind/test-last
@@ -189,7 +183,7 @@
 
 ;; Color splits each category into side-by-side violins.
 
-(-> tips
+(-> data/tips
     (sk/lay-violin :day :total_bill {:color :smoker}))
 
 (kind/test-last
@@ -199,7 +193,7 @@
 
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
-(let [sk (-> tips
+(let [sk (-> data/tips
              (sk/lay-violin :day :total_bill {:color :smoker})
              sk/sketch)
       panel (first (:panels sk))
@@ -212,7 +206,7 @@
 
 ;; ## Horizontal Violin
 
-(-> iris
+(-> data/iris
     (sk/lay-violin :species :petal_length)
     (sk/coord :flip))
 
@@ -226,7 +220,7 @@
 ;; Overlapping density curves stacked vertically by category — good
 ;; for comparing distribution shapes across many groups.
 
-(-> iris
+(-> data/iris
     (sk/lay-ridgeline :species :sepal_length))
 
 (kind/test-last
@@ -238,7 +232,7 @@
 
 ;; Map color to the same categorical column for distinct curves.
 
-(-> iris
+(-> data/iris
     (sk/lay-ridgeline :species :sepal_length {:color :species}))
 
 (kind/test-last

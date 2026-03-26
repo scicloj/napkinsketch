@@ -1,96 +1,84 @@
 (ns
  napkinsketch-book.scatter-generated-test
  (:require
-  [tablecloth.api :as tc]
+  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
 
 
-(def
- v2_l15
- (def
-  iris
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-   {:key-fn keyword})))
-
-
-(def
- v3_l18
- (def
-  tips
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-   {:key-fn keyword})))
-
-
-(def v5_l25 (-> iris (sk/lay-point :sepal_length :sepal_width)))
+(def v3_l19 (-> data/iris (sk/lay-point :sepal_length :sepal_width)))
 
 
 (deftest
- t6_l28
+ t4_l22
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
-   v5_l25)))
+   v3_l19)))
 
 
 (def
- v8_l37
- (-> iris (sk/lay-point :sepal_length :sepal_width {:color :species})))
+ v6_l31
+ (->
+  data/iris
+  (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
- t9_l40
+ t7_l34
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
-   v8_l37)))
+   v6_l31)))
 
 
 (def
- v11_l49
- (-> iris (sk/lay-point :petal_length :petal_width {:color :species})))
+ v9_l43
+ (->
+  data/iris
+  (sk/lay-point :petal_length :petal_width {:color :species})))
 
 
 (deftest
- t12_l52
+ t10_l46
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
-   v11_l49)))
+   v9_l43)))
 
 
 (def
- v14_l61
- (-> iris (sk/lay-point :sepal_length :sepal_width {:color "#E74C3C"})))
+ v12_l55
+ (->
+  data/iris
+  (sk/lay-point :sepal_length :sepal_width {:color "#E74C3C"})))
 
 
 (deftest
- t15_l64
+ t13_l58
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v14_l61)))
+   v12_l55)))
 
 
 (def
- v17_l72
+ v15_l66
  (->
-  tips
+  data/tips
   (sk/lay-point :total_bill :tip {:color :day})
   (sk/options
    {:width 700,
@@ -101,7 +89,7 @@
 
 
 (deftest
- t18_l79
+ t16_l73
  (is
   ((fn
     [v]
@@ -112,29 +100,31 @@
       (= 244 (:points s))
       (>= (:width s) 700)
       (some #{"Tips by Day"} (:texts s)))))
-   v17_l72)))
+   v15_l66)))
 
 
 (def
- v20_l90
- (-> tips (sk/lay-point :total_bill :tip {:color :day, :size :size})))
+ v18_l84
+ (->
+  data/tips
+  (sk/lay-point :total_bill :tip {:color :day, :size :size})))
 
 
 (deftest
- t21_l93
+ t19_l87
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
-   v20_l90)))
+   v18_l84)))
 
 
 (def
- v23_l99
+ v21_l93
  (->
-  tips
+  data/tips
   (sk/lay-point
    :total_bill
    :tip
@@ -142,59 +132,59 @@
 
 
 (deftest
- t24_l102
+ t22_l96
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
-   v23_l99)))
+   v21_l93)))
 
 
 (def
- v26_l111
- (-> iris (sk/lay-point :species :sepal_width {:jitter true})))
+ v24_l105
+ (-> data/iris (sk/lay-point :species :sepal_width {:jitter true})))
 
 
 (deftest
- t27_l114
+ t25_l108
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v26_l111)))
+   v24_l105)))
 
 
 (def
- v29_l120
+ v27_l114
  (->
-  iris
+  data/iris
   (sk/lay-point :species :sepal_width {:jitter 10, :alpha 0.5})))
 
 
 (deftest
- t30_l123
+ t28_l117
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v29_l120)))
+   v27_l114)))
 
 
 (def
- v32_l132
+ v30_l126
  (->
-  iris
+  data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :petal_length})))
 
 
 (deftest
- t33_l135
+ t31_l129
  (is
   ((fn
     [v]
@@ -204,13 +194,13 @@
       (= 1 (:panels s))
       (= 150 (:points s))
       (some #{"petal length"} (:texts s)))))
-   v32_l132)))
+   v30_l126)))
 
 
 (def
- v35_l142
+ v33_l136
  (->
-  iris
+  data/iris
   (sk/lay-point
    :sepal_length
    :sepal_width
@@ -218,11 +208,11 @@
 
 
 (deftest
- t36_l145
+ t34_l139
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"petal length"} (:texts s)))))
-   v35_l142)))
+   v33_l136)))

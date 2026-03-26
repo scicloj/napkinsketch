@@ -6,17 +6,14 @@
 
 (ns napkinsketch-book.polar
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Datasets
-
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
 
 (def wind {:direction ["N" "NE" "E" "SE" "S" "SW" "W" "NW"]
            :speed [12 8 15 10 7 13 9 11]})
@@ -27,7 +24,7 @@
 ;; (clockwise from 12 o'clock), y maps to radius (center = minimum,
 ;; edge = maximum).
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/coord :polar))
 
@@ -42,7 +39,7 @@
 ;; wedge area encodes count. Bars are arc-interpolated for smooth
 ;; curved edges.
 
-(-> iris
+(-> data/iris
     (sk/lay-bar :species)
     (sk/coord :polar))
 
@@ -67,7 +64,7 @@
 ;;
 ;; Stacked bars in polar show composition within each wedge.
 
-(-> iris
+(-> data/iris
     (sk/lay-stacked-bar :species {:color :species})
     (sk/coord :polar))
 
@@ -80,7 +77,7 @@
 ;; A histogram in polar wraps bins around the circle. Useful for
 ;; circular distributions (e.g., time of day, compass bearing).
 
-(-> iris
+(-> data/iris
     (sk/lay-histogram :sepal_length)
     (sk/coord :polar))
 
@@ -93,7 +90,7 @@
 ;; By default, polar suppresses auto-generated axis labels (since there
 ;; are no rectangular axes). You can still set explicit labels with `sk/labs`:
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/coord :polar)
     (sk/labs {:title "Iris in Polar Space"}))

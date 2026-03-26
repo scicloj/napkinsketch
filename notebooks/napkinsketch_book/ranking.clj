@@ -4,21 +4,12 @@
 
 (ns napkinsketch-book.ranking
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
-
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
-
-(def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-                      {:key-fn keyword}))
-
-(def penguins (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
-                          {:key-fn keyword}))
 
 (def sales {:product [:widget :gadget :gizmo :doohickey]
             :revenue [120 340 210 95]})
@@ -27,7 +18,7 @@
 
 ;; Count occurrences of a categorical column.
 
-(-> iris
+(-> data/iris
     (sk/lay-bar :species))
 
 (kind/test-last
@@ -39,7 +30,7 @@
 
 ;; Grouped (dodged) bars — count by day, colored by smoking status.
 
-(-> tips
+(-> data/tips
     (sk/lay-bar :day {:color :smoker}))
 
 (kind/test-last
@@ -51,7 +42,7 @@
 
 ;; Same data, stacked instead of dodged.
 
-(-> tips
+(-> data/tips
     (sk/lay-stacked-bar :day {:color :smoker}))
 
 (kind/test-last
@@ -63,7 +54,7 @@
 
 ;; 100% stacked bars — shows proportions instead of counts.
 
-(-> penguins
+(-> data/penguins
     (sk/lay-stacked-bar-fill :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -74,7 +65,7 @@
 
 ;; Flip the bar chart for horizontal orientation.
 
-(-> iris
+(-> data/iris
     (sk/lay-bar :species)
     (sk/coord :flip))
 
@@ -87,7 +78,7 @@
 
 ;; Colored bars, flipped.
 
-(-> tips
+(-> data/tips
     (sk/lay-bar :day {:color :time})
     (sk/coord :flip))
 

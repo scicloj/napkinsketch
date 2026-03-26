@@ -1,85 +1,67 @@
 (ns
  napkinsketch-book.distributions-generated-test
  (:require
-  [tablecloth.api :as tc]
+  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
 
 
-(def
- v3_l17
- (def
-  iris
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-   {:key-fn keyword})))
-
-
-(def
- v4_l20
- (def
-  tips
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-   {:key-fn keyword})))
-
-
-(def v6_l27 (-> iris (sk/lay-histogram :sepal_length)))
+(def v3_l21 (-> data/iris (sk/lay-histogram :sepal_length)))
 
 
 (deftest
- t7_l30
+ t4_l24
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v6_l27)))
+   v3_l21)))
 
 
 (def
- v9_l39
- (-> iris (sk/lay-histogram :sepal_length {:color :species})))
+ v6_l33
+ (-> data/iris (sk/lay-histogram :sepal_length {:color :species})))
 
 
 (deftest
- t10_l42
+ t7_l36
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v9_l39)))
+   v6_l33)))
 
 
-(def v12_l51 (-> iris (sk/lay-histogram :petal_width)))
+(def v9_l45 (-> data/iris (sk/lay-histogram :petal_width)))
 
 
 (deftest
- t13_l54
+ t10_l48
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v12_l51)))
+   v9_l45)))
 
 
 (def
- v15_l61
+ v12_l55
  (->
-  tips
+  data/tips
   (sk/lay-histogram :total_bill)
   (sk/options
    {:title "Distribution of Total Bill", :x-label "Amount ($)"})))
 
 
 (deftest
- t16_l66
+ t13_l60
  (is
   ((fn
     [v]
@@ -89,110 +71,112 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__73909#] (= "Distribution of Total Bill" p1__73909#))
+       (fn* [p1__101059#] (= "Distribution of Total Bill" p1__101059#))
        (:texts s)))))
-   v15_l61)))
+   v12_l55)))
 
 
 (def
- v18_l78
+ v15_l72
  (->
-  iris
+  data/iris
   (sk/lay-histogram :sepal_length {:normalize :density, :alpha 0.5})
   sk/lay-density))
 
 
 (deftest
- t19_l82
+ t16_l76
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v18_l78)))
+   v15_l72)))
 
 
-(def v21_l90 (-> iris (sk/lay-density :sepal_length)))
+(def v18_l84 (-> data/iris (sk/lay-density :sepal_length)))
 
 
 (deftest
- t22_l93
+ t19_l87
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:polygons s)))))
-   v21_l90)))
+   v18_l84)))
 
 
 (def
- v24_l102
- (-> iris (sk/lay-density :sepal_length {:color :species})))
+ v21_l96
+ (-> data/iris (sk/lay-density :sepal_length {:color :species})))
 
 
 (deftest
- t25_l105
+ t22_l99
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v24_l102)))
+   v21_l96)))
 
 
-(def v27_l114 (-> iris (sk/lay-density :sepal_length {:bandwidth 0.3})))
+(def
+ v24_l108
+ (-> data/iris (sk/lay-density :sepal_length {:bandwidth 0.3})))
 
 
 (deftest
- t28_l117
+ t25_l111
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:polygons s)))))
-   v27_l114)))
+   v24_l108)))
 
 
-(def v30_l126 (-> iris (sk/lay-boxplot :species :sepal_width)))
+(def v27_l120 (-> data/iris (sk/lay-boxplot :species :sepal_width)))
 
 
 (deftest
- t31_l129
+ t28_l123
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)) (pos? (:lines s)))))
-   v30_l126)))
+   v27_l120)))
 
 
 (def
- v33_l139
- (-> tips (sk/lay-boxplot :day :total_bill {:color :smoker})))
+ v30_l133
+ (-> data/tips (sk/lay-boxplot :day :total_bill {:color :smoker})))
 
 
 (deftest
- t34_l142
+ t31_l136
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)) (pos? (:lines s)))))
-   v33_l139)))
+   v30_l133)))
 
 
 (def
- v36_l150
+ v33_l144
  (let
   [sk
    (->
-    tips
+    data/tips
     (sk/lay-boxplot :day :total_bill {:color :smoker})
     sk/sketch)
    panel
@@ -200,71 +184,71 @@
    box-layer
    (first
     (filter
-     (fn* [p1__73910#] (= :boxplot (:mark p1__73910#)))
+     (fn* [p1__101060#] (= :boxplot (:mark p1__101060#)))
      (:layers panel)))
    cats
    (:color-categories box-layer)]
   (count cats)))
 
 
-(deftest t37_l158 (is ((fn [v] (= 2 v)) v36_l150)))
+(deftest t34_l152 (is ((fn [v] (= 2 v)) v33_l144)))
 
 
 (def
- v39_l165
+ v36_l159
  (->
-  iris
+  data/iris
   (sk/lay-boxplot :species :sepal_width)
   (sk/options {:coord :flip})))
 
 
 (deftest
- t40_l169
+ t37_l163
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)) (pos? (:lines s)))))
-   v39_l165)))
+   v36_l159)))
 
 
-(def v42_l180 (-> tips (sk/lay-violin :day :total_bill)))
+(def v39_l174 (-> data/tips (sk/lay-violin :day :total_bill)))
 
 
 (deftest
- t43_l183
+ t40_l177
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v42_l180)))
+   v39_l174)))
 
 
 (def
- v45_l192
- (-> tips (sk/lay-violin :day :total_bill {:color :smoker})))
+ v42_l186
+ (-> data/tips (sk/lay-violin :day :total_bill {:color :smoker})))
 
 
 (deftest
- t46_l195
+ t43_l189
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)))))
-   v45_l192)))
+   v42_l186)))
 
 
 (def
- v48_l202
+ v45_l196
  (let
   [sk
    (->
-    tips
+    data/tips
     (sk/lay-violin :day :total_bill {:color :smoker})
     sk/sketch)
    panel
@@ -272,57 +256,59 @@
    viol-layer
    (first
     (filter
-     (fn* [p1__73911#] (= :violin (:mark p1__73911#)))
+     (fn* [p1__101061#] (= :violin (:mark p1__101061#)))
      (:layers panel)))
    cats
    (:color-categories viol-layer)]
   (count cats)))
 
 
-(deftest t49_l210 (is ((fn [v] (= 2 v)) v48_l202)))
+(deftest t46_l204 (is ((fn [v] (= 2 v)) v45_l196)))
 
 
 (def
- v51_l215
- (-> iris (sk/lay-violin :species :petal_length) (sk/coord :flip)))
+ v48_l209
+ (-> data/iris (sk/lay-violin :species :petal_length) (sk/coord :flip)))
 
 
 (deftest
- t52_l219
+ t49_l213
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v51_l215)))
+   v48_l209)))
 
 
-(def v54_l229 (-> iris (sk/lay-ridgeline :species :sepal_length)))
+(def v51_l223 (-> data/iris (sk/lay-ridgeline :species :sepal_length)))
 
 
 (deftest
- t55_l232
+ t52_l226
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v54_l229)))
+   v51_l223)))
 
 
 (def
- v57_l241
- (-> iris (sk/lay-ridgeline :species :sepal_length {:color :species})))
+ v54_l235
+ (->
+  data/iris
+  (sk/lay-ridgeline :species :sepal_length {:color :species})))
 
 
 (deftest
- t58_l244
+ t55_l238
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v57_l241)))
+   v54_l235)))

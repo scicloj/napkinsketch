@@ -6,13 +6,13 @@
 
 (ns napkinsketch-book.architecture
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Sketch schema — Malli validation for sketch maps
+   ;; Malli schema validation
    [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
 ;; ## Pipeline Overview
@@ -178,11 +178,8 @@ graph LR
 ;; A sketch can hold multiple layers. Here, scatter points and
 ;; per-species regression lines share the same panel.
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
-
 (def multi-views
-  (-> iris
+  (-> data/iris
       (sk/view :petal_length :petal_width {:color :species})
       sk/lay-point
       sk/lay-lm))

@@ -6,8 +6,8 @@
 
 (ns napkinsketch-book.faceting
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -15,21 +15,12 @@
 
 ;; ## Sample Data
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
-
-(def tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-                      {:key-fn keyword}))
-
-(def penguins (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
-                          {:key-fn keyword}))
-
 ;; ## Facet Wrap
 ;;
 ;; `sk/facet` splits views by one categorical column.
 ;; The default layout is a horizontal row of panels:
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species))
 
@@ -45,7 +36,7 @@
 ;;
 ;; Pass `:col` as the direction for a vertical column of panels:
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species :col))
 
@@ -57,7 +48,7 @@
 ;;
 ;; `sk/facet-grid` splits by two columns — one for rows, one for columns:
 
-(-> tips
+(-> data/tips
     (sk/lay-point :total_bill :tip {:color :sex})
     (sk/facet-grid :smoker :sex))
 
@@ -69,7 +60,7 @@
 
 ;; ## Faceted Histogram
 
-(-> iris
+(-> data/iris
     (sk/lay-histogram :sepal_length {:color :species})
     (sk/facet :species))
 
@@ -81,7 +72,7 @@
 ;;
 ;; Layers compose with faceting — scatter plus regression per panel:
 
-(-> tips
+(-> data/tips
     (sk/view :total_bill :tip {:color :sex})
     sk/lay-point
     sk/lay-lm
@@ -99,7 +90,7 @@
 ;;
 ;; Shared (default) — all panels have the same y-range:
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species)
     (sk/options {:scales :shared}))
@@ -110,7 +101,7 @@
 
 ;; Free y — each panel has its own y-range:
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species)
     (sk/options {:scales :free-y}))
@@ -126,7 +117,7 @@
 ;; Under the hood, faceting produces multiple panels in the sketch:
 
 (def faceted-sk
-  (-> iris
+  (-> data/iris
       (sk/lay-point :sepal_length :sepal_width {:color :species})
       (sk/facet :species)
       sk/sketch))
@@ -152,7 +143,7 @@
 
 (def cols [:sepal_length :sepal_width :petal_length :petal_width])
 
-(-> iris
+(-> data/iris
     (sk/view (sk/cross cols cols))
     (sk/lay-point {:color :species}))
 
@@ -169,7 +160,7 @@
 ;;
 ;; `sk/distribution` creates diagonal views — one histogram per column:
 
-(-> (sk/distribution iris :sepal_length :sepal_width :petal_length)
+(-> (sk/distribution data/iris :sepal_length :sepal_width :petal_length)
     (sk/lay-histogram {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -178,7 +169,7 @@
 
 ;; ## Faceted Bar Chart
 
-(-> penguins
+(-> data/penguins
     (sk/lay-bar :species {:color :species})
     (sk/facet :island))
 
@@ -190,7 +181,7 @@
 ;;
 ;; `sk/labs` works with faceted plots:
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species)
     (sk/labs {:title "Iris by Species"

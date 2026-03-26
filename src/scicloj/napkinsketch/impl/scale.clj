@@ -1,5 +1,6 @@
 (ns scicloj.napkinsketch.impl.scale
   (:require [wadogo.scale :as ws]
+            [clojure.string :as str]
             [scicloj.napkinsketch.impl.defaults :as defaults]))
 
 (defn categorical-domain?
@@ -48,12 +49,39 @@
     [(from (- a pad)) (from (+ b pad))]))
 
 (defn format-ticks
-  "Format tick values: strip .0 when all ticks are whole numbers."
+  "Format tick values: integers shown without decimals, floats rounded to the
+   precision implied by the tick step size (avoids floating-point noise like
+   0.30000000000000004). Falls back to wadogo formatting only when the step
+   cannot be determined (< 2 ticks)."
   [sx ticks]
-  (let [labels (ws/format sx ticks)]
-    (if (every? #(== (Math/floor %) %) ticks)
-      (mapv #(str (long %)) ticks)
-      labels)))
+  (if (every? #(== (Math/floor %) %) ticks)
+    ;; All whole numbers — strip the .0
+    (mapv #(str (long %)) ticks)
+    ;; Float ticks — determine decimal places from step
+    (let [n (count ticks)]
+      (if (< n 2)
+        (ws/format sx ticks)
+        (let [step (Math/abs (- (double (nth ticks 1)) (double (nth ticks 0))))
+              ;; Number of decimal places needed: -floor(log10(step)) clamped to [0,10]
+              decimals (if (pos? step)
+                         (min 10 (max 0 (long (Math/ceil (- (Math/log10 step))))))
+                         1)
+              fmt (str "%." decimals "f")
+              neg-zero (format fmt -0.0)
+              zero (format fmt 0.0)]
+          (mapv (fn [v]
+                  (let [s (format fmt (double v))
+                        ;; Clean up -0.0 → 0.0
+                        s (if (= s neg-zero) zero s)]
+                    ;; Strip trailing zeros after decimal point, but keep at least one
+                    ;; "1.20" → "1.2", "1.00" → "1.0", "0.0010" → "0.001"
+                    (if (.contains s ".")
+                      (let [trimmed (str/replace s #"0+$" "")]
+                        (if (.endsWith trimmed ".")
+                          (str trimmed "0")
+                          trimmed))
+                      s)))
+                ticks))))))
 
 (defn format-log-ticks
   "Format log scale tick values. Values are always clean 1-2-3-5 multiples

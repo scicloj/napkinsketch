@@ -1,7 +1,7 @@
 (ns
  napkinsketch-book.ranking-generated-test
  (:require
-  [tablecloth.api :as tc]
+  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
@@ -10,181 +10,154 @@
 (def
  v2_l14
  (def
-  iris
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-   {:key-fn keyword})))
-
-
-(def
- v3_l17
- (def
-  tips
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-   {:key-fn keyword})))
-
-
-(def
- v4_l20
- (def
-  penguins
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
-   {:key-fn keyword})))
-
-
-(def
- v5_l23
- (def
   sales
   {:product [:widget :gadget :gizmo :doohickey],
    :revenue [120 340 210 95]}))
 
 
-(def v7_l30 (-> iris (sk/lay-bar :species)))
+(def v4_l21 (-> data/iris (sk/lay-bar :species)))
 
 
 (deftest
- t8_l33
+ t5_l24
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v7_l30)))
+   v4_l21)))
 
 
-(def v10_l42 (-> tips (sk/lay-bar :day {:color :smoker})))
+(def v7_l33 (-> data/tips (sk/lay-bar :day {:color :smoker})))
 
 
 (deftest
- t11_l45
+ t8_l36
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v10_l42)))
+   v7_l33)))
 
 
-(def v13_l54 (-> tips (sk/lay-stacked-bar :day {:color :smoker})))
+(def v10_l45 (-> data/tips (sk/lay-stacked-bar :day {:color :smoker})))
 
 
 (deftest
- t14_l57
+ t11_l48
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v13_l54)))
+   v10_l45)))
 
 
 (def
- v16_l66
- (-> penguins (sk/lay-stacked-bar-fill :island {:color :species})))
+ v13_l57
+ (-> data/penguins (sk/lay-stacked-bar-fill :island {:color :species})))
 
 
 (deftest
- t17_l69
+ t14_l60
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v16_l66)))
+   v13_l57)))
 
 
-(def v19_l77 (-> iris (sk/lay-bar :species) (sk/coord :flip)))
+(def v16_l68 (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
 
 
 (deftest
- t20_l81
+ t17_l72
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v19_l77)))
+   v16_l68)))
 
 
 (def
- v22_l90
- (-> tips (sk/lay-bar :day {:color :time}) (sk/coord :flip)))
+ v19_l81
+ (-> data/tips (sk/lay-bar :day {:color :time}) (sk/coord :flip)))
 
 
 (deftest
- t23_l94
+ t20_l85
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v22_l90)))
+   v19_l81)))
 
 
-(def v25_l103 (-> sales (sk/lay-value-bar :product :revenue)))
+(def v22_l94 (-> sales (sk/lay-value-bar :product :revenue)))
 
 
 (deftest
- t26_l106
+ t23_l97
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v25_l103)))
+   v22_l94)))
 
 
 (def
- v28_l114
+ v25_l105
  (-> sales (sk/lay-value-bar :product :revenue) (sk/coord :flip)))
 
 
 (deftest
- t29_l118
+ t26_l109
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v28_l114)))
+   v25_l105)))
 
 
-(def v31_l126 (-> sales (sk/lay-lollipop :product :revenue)))
+(def v28_l117 (-> sales (sk/lay-lollipop :product :revenue)))
 
 
 (deftest
- t32_l129
+ t29_l120
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
-   v31_l126)))
+   v28_l117)))
 
 
 (def
- v34_l137
+ v31_l128
  (-> sales (sk/lay-lollipop :product :revenue) (sk/coord :flip)))
 
 
 (deftest
- t35_l141
+ t32_l132
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
-   v34_l137)))
+   v31_l128)))

@@ -5,23 +5,20 @@
 
 (ns napkinsketch-book.customization
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; clojure2d color — palette and gradient discovery
+   ;; Clojure2d — palette and gradient discovery
    [clojure2d.color :as c2d]))
-
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
 
 ;; ## Dimensions
 
 ;; A wide, short plot.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:width 800 :height 250}))
 
@@ -31,7 +28,7 @@
 
 ;; A tall, narrow plot.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:width 300 :height 500}))
 
@@ -43,7 +40,7 @@
 
 ;; Override axis labels and add a title.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:title "Iris Sepal Measurements"
                  :x-label "Length (cm)"
@@ -56,7 +53,7 @@
 ;; `sk/labs` sets labels in the pipeline — equivalent to passing
 ;; `:title`, `:x-label`, `:y-label` in `sk/options`.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/labs {:title "Pipeline Labels" :x "Length" :y "Width"}))
 
@@ -66,7 +63,7 @@
 
 ;; Add a subtitle and caption for context.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:title "Iris Measurements"
                  :subtitle "Sepal dimensions across three species"
@@ -108,7 +105,7 @@
 
 ;; Lock the y-axis to a specific range.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/scale :y {:type :linear :domain [0 6]})
     (sk/options {:title "Fixed Y Domain [0, 6]"}))
@@ -121,7 +118,7 @@
 
 ;; Pass `:alpha` and `:size` directly to methods.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.5 :size 5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -130,7 +127,7 @@
 
 ;; Alpha works on bars and polygons too.
 
-(-> iris
+(-> data/iris
     (sk/lay-bar :species {:alpha 0.4}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -142,7 +139,7 @@
 
 ;; Horizontal and vertical reference lines.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay (sk/rule-h 3.0) (sk/rule-v 6.0)))
 
@@ -157,7 +154,7 @@
 
 (kind/test-last [(fn [v] (= 0.15 v))])
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/lay (sk/band-v 5.5 6.5) (sk/band-h 3.0 3.5 {:alpha 0.3})))
 
@@ -168,7 +165,7 @@
 ;;
 ;; Pass `:palette` to override the default color cycle.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
 
@@ -178,7 +175,7 @@
 
 ;; The palette applies to all color-mapped marks.
 
-(-> iris
+(-> data/iris
     (sk/lay-stacked-bar :species {:color :species})
     (sk/options {:palette ["#8B5CF6" "#F59E0B" "#10B981"]}))
 
@@ -188,7 +185,7 @@
 
 ;; Pass a map to assign specific colors to specific categories.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette {:setosa "#E74C3C"
                            :versicolor "#3498DB"
@@ -216,7 +213,7 @@
 ;; See the Discovering Palettes and Gradients section below for how to
 ;; search all available names.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette :set2}))
 
@@ -226,7 +223,7 @@
 
 ;; Dark, high-contrast palette.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette :dark2}))
 
@@ -277,7 +274,7 @@
 ;; - `:khroma/okabeito` — designed specifically for color vision deficiency
 ;; - `:tableau-10` — Tableau default, high contrast
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette :khroma/okabeito}))
 
@@ -287,7 +284,7 @@
 ;;
 ;; Customize background color, grid color, and font size.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:title "White Theme"
                  :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 10}}))
@@ -300,7 +297,7 @@
 ;; Control where the legend appears: `:right` (default), `:bottom`,
 ;; `:top`, or `:none`.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:legend-position :bottom}))
 
@@ -312,7 +309,7 @@
 ;;
 ;; Enable mouseover data values with `{:tooltip true}`.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:tooltip true})
     sk/plot)
@@ -323,7 +320,7 @@
 ;;
 ;; Enable drag-to-select with `{:brush true}`. Click to reset.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:brush true})
     sk/plot)

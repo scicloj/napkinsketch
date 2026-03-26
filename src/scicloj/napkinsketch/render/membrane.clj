@@ -106,6 +106,67 @@
                         entries)]
             elems)))))))
 
+(defn- render-size-legend
+  "Render a size legend — graduated circles with value labels.
+   Returns a vector of membrane drawables."
+  [size-legend x y]
+  (let [{:keys [title entries]} size-legend
+        title-color [0.2 0.2 0.2 1.0]
+        point-color [0.4 0.4 0.4 1.0]
+        max-r (reduce max (map :radius entries))
+        row-h 18]
+    (vec
+     (concat
+      (when title
+        [(assoc (ui/translate x (- y 12)
+                              (ui/with-color title-color
+                                (ui/label (defaults/fmt-name title) (ui/font nil 9))))
+                :legend true)])
+      (for [[i {:keys [value radius]}] (map-indexed vector entries)
+            :let [cy (+ y (* i row-h))
+                  ;; Center circles horizontally on the max radius
+                  cx (+ x max-r)]]
+        (assoc
+         (ui/translate 0 0
+                       [(assoc (ui/translate (- cx radius) (- cy radius)
+                                             (ui/with-color point-color
+                                               (ui/with-style ::ui/style-fill
+                                                 (ui/rounded-rectangle (* 2 radius) (* 2 radius) radius))))
+                               :legend true)
+                        (ui/translate (+ x (* 2 max-r) 6) cy
+                                      (ui/with-color title-color
+                                        (ui/label (str value) (ui/font nil 9))))])
+         :legend true))))))
+
+(defn- render-alpha-legend
+  "Render an alpha legend — squares with varying opacity and value labels.
+   Returns a vector of membrane drawables."
+  [alpha-legend x y]
+  (let [{:keys [title entries]} alpha-legend
+        title-color [0.2 0.2 0.2 1.0]
+        sw defaults/legend-swatch-size
+        row-h 16]
+    (vec
+     (concat
+      (when title
+        [(assoc (ui/translate x (- y 12)
+                              (ui/with-color title-color
+                                (ui/label (defaults/fmt-name title) (ui/font nil 9))))
+                :legend true)])
+      (for [[i {:keys [value alpha]}] (map-indexed vector entries)
+            :let [cy (+ y (* i row-h))]]
+        (assoc
+         (ui/translate 0 0
+                       [(assoc (ui/translate x cy
+                                             (ui/with-color [0.3 0.3 0.3 alpha]
+                                               (ui/with-style ::ui/style-fill
+                                                 (ui/rounded-rectangle sw sw 1))))
+                               :legend true)
+                        (ui/translate (+ x sw 6) cy
+                                      (ui/with-color title-color
+                                        (ui/label (str value) (ui/font nil 9))))])
+         :legend true))))))
+
 ;; ---- Labels ----
 
 (defn- render-x-label
@@ -146,7 +207,9 @@
   [sketch & {:keys [tooltip] :as opts}]
   (let [cfg (defaults/resolve-config opts)
         {:keys [margin total-width total-height panel-width panel-height
-                title subtitle caption x-label y-label legend legend-position panels layout grid]} sketch
+                title subtitle caption x-label y-label
+                legend size-legend alpha-legend
+                legend-position panels layout grid]} sketch
         {:keys [x-label-pad y-label-pad title-pad subtitle-pad caption-pad legend-w legend-h strip-h strip-w]} layout
         theme (:theme cfg)
         legend-pos (or legend-position :right)
@@ -249,28 +312,45 @@
                          (ui/with-color text-color
                            (assoc (ui/label x-label (ui/font nil fsize))
                                   :text-anchor "middle")))]))
-      ;; Legend — positioned based on legend-position
-      (when (and legend (not= legend-pos :none))
-        (case legend-pos
-          :right
-          (render-legend-from-sketch legend
-                                     (+ y-label-pad (* grid-cols pw) strip-w 10)
-                                     (+ title-pad strip-h 20) cfg)
-          :top
-          (let [plots-start-y title-pad
-                legend-y (- plots-start-y (or legend-h 30) -5)]
-            (render-legend-horizontal legend
-                                      (+ y-label-pad 10)
-                                      legend-y cfg))
-          :bottom
-          (let [bottom-y (- total-height (or legend-h 30) -8)]
-            (render-legend-horizontal legend
-                                      (+ y-label-pad 10)
-                                      bottom-y cfg))
-          ;; Fallback to right
-          (render-legend-from-sketch legend
-                                     (+ y-label-pad (* grid-cols pw) strip-w 10)
-                                     (+ title-pad strip-h 20) cfg)))
+      ;; Legends — stacked vertically on the right (or horizontal for top/bottom)
+      (let [any-legend? (or legend size-legend alpha-legend)]
+        (when (and any-legend? (not= legend-pos :none))
+          (let [legend-x (+ y-label-pad (* grid-cols pw) strip-w 10)
+                base-y (+ title-pad strip-h 20)]
+            (case legend-pos
+              :right
+              (let [;; Color legend
+                    color-elems (when legend
+                                  (render-legend-from-sketch legend legend-x base-y cfg))
+                    ;; Compute y offset after color legend
+                    color-h (cond
+                              (nil? legend) 0
+                              (= :continuous (:type legend)) 160
+                              :else (+ 16 (* 16 (count (:entries legend)))))
+                    ;; Size legend
+                    size-y (+ base-y color-h (if legend 10 0))
+                    size-elems (when size-legend
+                                 (render-size-legend size-legend legend-x size-y))
+                    size-h (if size-legend (+ 16 (* 18 (count (:entries size-legend)))) 0)
+                    ;; Alpha legend
+                    alpha-y (+ size-y size-h (if size-legend 10 0))
+                    alpha-elems (when alpha-legend
+                                  (render-alpha-legend alpha-legend legend-x alpha-y))]
+                (concat (or color-elems []) (or size-elems []) (or alpha-elems [])))
+              :top
+              (let [plots-start-y title-pad
+                    legend-y (- plots-start-y (or legend-h 30) -5)]
+                (if legend
+                  (render-legend-horizontal legend (+ y-label-pad 10) legend-y cfg)
+                  []))
+              :bottom
+              (let [bottom-y (- total-height (or legend-h 30) -8)]
+                (if legend
+                  (render-legend-horizontal legend (+ y-label-pad 10) bottom-y cfg)
+                  []))
+              ;; Fallback to right
+              (when legend
+                (render-legend-from-sketch legend legend-x base-y cfg))))))
       ;; Panels
       panel-elems
       ;; Strip labels

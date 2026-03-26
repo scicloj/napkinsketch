@@ -1,7 +1,7 @@
 (ns
  napkinsketch-book.extensibility-generated-test
  (:require
-  [tablecloth.api :as tc]
+  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.method :as method]
@@ -9,45 +9,35 @@
   [scicloj.napkinsketch.impl.extract :as extract]
   [scicloj.napkinsketch.impl.sketch :as sketch]
   [scicloj.napkinsketch.render.mark :as mark]
-  [scicloj.napkinsketch.impl.scale :as scale]
-  [scicloj.napkinsketch.impl.coord :as coord]
+  [scicloj.napkinsketch.render.svg :as svg]
   [scicloj.napkinsketch.impl.render :as render]
   [clojure.test :refer [deftest is]]))
 
 
-(def
- v3_l61
- (def
-  iris
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-   {:key-fn keyword})))
+(def v3_l85 (method/lookup :histogram))
 
 
-(def v5_l89 (method/lookup :histogram))
+(deftest t4_l87 (is ((fn [m] (= :bin (:stat m))) v3_l85)))
 
 
-(deftest t6_l91 (is ((fn [m] (= :bin (:stat m))) v5_l89)))
+(def v6_l91 (method/lookup :bar))
 
 
-(def v8_l95 (method/lookup :bar))
+(deftest t7_l93 (is ((fn [m] (= :count (:stat m))) v6_l91)))
 
 
-(deftest t9_l97 (is ((fn [m] (= :count (:stat m))) v8_l95)))
+(def v9_l97 (method/lookup :point))
 
 
-(def v11_l101 (method/lookup :point))
-
-
-(deftest t12_l103 (is ((fn [m] (= :identity (:stat m))) v11_l101)))
+(deftest t10_l99 (is ((fn [m] (= :identity (:stat m))) v9_l97)))
 
 
 (def
- v14_l148
+ v12_l146
  (let
   [s
    (->
-    iris
+    data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     sk/sketch)
    layer
@@ -56,50 +46,50 @@
 
 
 (deftest
- t15_l154
+ t13_l152
  (is
   ((fn
     [m]
     (and (= :point (:mark m)) (number? (get-in m [:style :opacity]))))
-   v14_l148)))
+   v12_l146)))
 
 
 (def
- v17_l218
+ v15_l218
  (def
   my-sketch
   (->
-   iris
+   data/iris
    (sk/lay-point :sepal_length :sepal_width {:color :species})
    sk/sketch)))
 
 
-(def v18_l223 (first (sk/sketch->figure my-sketch :svg {})))
+(def v16_l223 (first (sk/sketch->figure my-sketch :svg {})))
 
 
-(deftest t19_l225 (is ((fn [v] (= :svg v)) v18_l223)))
+(deftest t17_l225 (is ((fn [v] (= :svg v)) v16_l223)))
 
 
-(def v21_l229 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v19_l229 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
-(def v22_l231 (vector? my-figure))
+(def v20_l231 (vector? my-figure))
 
 
-(deftest t23_l233 (is ((fn [v] (true? v)) v22_l231)))
+(deftest t21_l233 (is ((fn [v] (true? v)) v20_l231)))
 
 
-(def v25_l274 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v23_l274 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v26_l276 (vector? my-membrane))
+(def v24_l276 (vector? my-membrane))
 
 
-(deftest t27_l278 (is ((fn [v] (true? v)) v26_l276)))
+(deftest t25_l278 (is ((fn [v] (true? v)) v24_l276)))
 
 
 (def
- v28_l280
+ v26_l280
  (first
   (sk/membrane->figure
    my-membrane
@@ -108,18 +98,18 @@
     :total-height (:total-height my-sketch)})))
 
 
-(deftest t29_l284 (is ((fn [v] (= :svg v)) v28_l280)))
+(deftest t27_l284 (is ((fn [v] (= :svg v)) v26_l280)))
 
 
-(def v31_l338 (-> iris (sk/lay-bar :species) (sk/coord :flip)))
+(def v29_l338 (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
 
 
 (deftest
- t32_l342
+ t30_l342
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v31_l338)))
+   v29_l338)))

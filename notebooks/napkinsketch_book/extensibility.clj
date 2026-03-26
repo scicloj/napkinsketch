@@ -10,21 +10,20 @@
 
 (ns napkinsketch-book.extensibility
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Method constructors — for inspecting method maps
+   ;; Method registry — for inspecting method data
    [scicloj.napkinsketch.method :as method]
-   ;; Napkinsketch internals — for extending the pipeline
+   ;; Implementation namespaces — for extension points
    [scicloj.napkinsketch.impl.stat :as stat]
    [scicloj.napkinsketch.impl.extract :as extract]
    [scicloj.napkinsketch.impl.sketch :as sketch]
    [scicloj.napkinsketch.render.mark :as mark]
-   [scicloj.napkinsketch.impl.scale :as scale]
-   [scicloj.napkinsketch.impl.coord :as coord]
+   [scicloj.napkinsketch.render.svg :as svg]
    [scicloj.napkinsketch.impl.render :as render]))
 
 ;; ## Overview
@@ -57,9 +56,6 @@
 ;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert membrane tree → figure |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
-
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
 
 ;; ## `compute-stat`
 ;;
@@ -147,7 +143,7 @@
 
 ;; A sketch layer looks like this:
 
-(let [s (-> iris
+(let [s (-> data/iris
             (sk/lay-point :sepal_length :sepal_width {:color :species})
             sk/sketch)
       layer (first (:layers (first (:panels s))))]
@@ -220,7 +216,7 @@
 ;; Using `sketch->figure` directly:
 
 (def my-sketch
-  (-> iris
+  (-> data/iris
       (sk/lay-point :sepal_length :sepal_width {:color :species})
       sk/sketch))
 
@@ -339,7 +335,7 @@
 
 ;; A flipped bar chart uses `:flip` coordinates:
 
-(-> iris
+(-> data/iris
     (sk/lay-bar :species)
     (sk/coord :flip))
 

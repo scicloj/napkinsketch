@@ -7,8 +7,8 @@
 
 (ns napkinsketch-book.configuration
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets — iris, tips, penguins, mpg
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -16,11 +16,12 @@
 
 ;; We use the iris dataset throughout.
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
+;; We define `base-views` as a function (not a plain def) because
+;; PlotSpec auto-rendering is lazy — we need a fresh instance each time
+;; we change configuration via `set-config!` or `with-config`.
 
 (def base-views
-  (fn [] (-> iris
+  (fn [] (-> data/iris
              (sk/lay-point :sepal_length :sepal_width {:color :species}))))
 
 ;; ## Inspecting the Current Configuration
@@ -239,8 +240,8 @@ precedence-result
 
 (kind/test-last
  [(fn [m]
-    (and (= 900 (:sketch-width m))    ;; per-call wins over with-config (1200) and set-config! (800)
-         (= 500 (:sketch-height m)))  ;; with-config wins over set-config! (350)
+    (and (= 900 (:sketch-width m)) ;; per-call wins over with-config (1200) and set-config! (800)
+         (= 500 (:sketch-height m))) ;; with-config wins over set-config! (350)
     )])
 
 ;; We can verify point-radius too — only set-config! touched it,

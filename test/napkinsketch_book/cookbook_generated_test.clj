@@ -1,6 +1,7 @@
 (ns
  napkinsketch-book.cookbook-generated-test
  (:require
+  [napkinsketch-book.datasets :as data]
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
@@ -9,126 +10,109 @@
 
 
 (def
- v2_l17
- (def
-  iris
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-   {:key-fn keyword})))
-
-
-(def
- v3_l20
- (def
-  tips
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-   {:key-fn keyword})))
-
-
-(def
- v5_l30
+ v3_l26
  (->
-  iris
+  data/iris
   (sk/lay-boxplot :species :sepal_length)
   (sk/lay-point {:jitter true, :alpha 0.3})))
 
 
 (deftest
- t6_l34
+ t4_l30
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)) (= 3 (:polygons s)))))
-   v5_l30)))
+   v3_l26)))
 
 
 (def
- v8_l43
+ v6_l39
  (->
-  iris
+  data/iris
   (sk/lay-histogram :sepal_length {:normalize :density, :alpha 0.5})
   sk/lay-density))
 
 
 (deftest
- t9_l47
+ t7_l43
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v8_l43)))
+   v6_l39)))
 
 
 (def
- v11_l55
+ v9_l51
  (->
-  iris
+  data/iris
   (sk/view :sepal_length :sepal_width {:color :species})
   (sk/lay-point {:alpha 0.6})
   sk/lay-lm))
 
 
 (deftest
- t12_l60
+ t10_l56
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v11_l55)))
+   v9_l51)))
 
 
 (def
- v14_l68
+ v12_l64
  (->
-  iris
+  data/iris
   (sk/lay-violin :species :petal_width {:alpha 0.3})
   (sk/lay-point {:jitter true, :alpha 0.4})))
 
 
 (deftest
- t15_l72
+ t13_l68
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:polygons s)))))
-   v14_l68)))
+   v12_l64)))
 
 
 (def
- v17_l81
+ v15_l77
  (def
   ts-dates
   (mapv
    (fn*
-    [p1__74421#]
-    (java.time.LocalDate/ofEpochDay (+ 18262 (* (long p1__74421#) 7))))
+    [p1__101499#]
+    (java.time.LocalDate/ofEpochDay
+     (+ 18262 (* (long p1__101499#) 7))))
    (range 52))))
 
 
 (def
- v18_l83
+ v16_l79
  (def
   ts-ds
   {:date ts-dates,
    :value
    (mapv
     (fn*
-     [p1__74422#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__74422#) 0.12)))))
+     [p1__101500#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__101500#) 0.12)))))
     (range 52))}))
 
 
 (def
- v19_l87
+ v17_l83
  (->
   ts-ds
   (sk/lay-area :date :value {:alpha 0.2})
@@ -137,111 +121,103 @@
 
 
 (deftest
- t20_l92
+ t18_l88
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 52 (:points s)) (= 1 (:lines s)) (= 1 (:polygons s)))))
-   v19_l87)))
+   v17_l83)))
 
 
 (def
- v22_l101
+ v20_l97
  (->
-  iris
+  data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
   (sk/facet :species)))
 
 
 (deftest
- t23_l105
- (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:panels s)))) v22_l101)))
+ t21_l101
+ (is ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:panels s)))) v20_l97)))
 
 
 (def
- v25_l113
+ v23_l109
  (->
-  iris
+  data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
   (sk/lay (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3}))))
 
 
 (deftest
- t26_l117
+ t24_l113
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v25_l113)))
+   v23_l109)))
 
 
 (def
- v28_l126
- (-> iris (sk/lay-ridgeline :species :sepal_length {:color :species})))
+ v26_l122
+ (->
+  data/iris
+  (sk/lay-ridgeline :species :sepal_length {:color :species})))
 
 
 (deftest
- t29_l129
+ t27_l125
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:polygons s)) (= 3 (:lines s)))))
-   v28_l126)))
+   v26_l122)))
 
 
 (def
- v31_l137
- (def
-  penguins
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
-   {:key-fn keyword})))
-
-
-(def
- v32_l140
- (-> penguins (sk/lay-stacked-bar-fill :island {:color :species})))
+ v29_l133
+ (-> data/penguins (sk/lay-stacked-bar-fill :island {:color :species})))
 
 
 (deftest
- t33_l143
+ t30_l136
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v32_l140)))
+   v29_l133)))
 
 
 (def
- v35_l153
+ v32_l146
  (->
-  iris
+  data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
   sk/lay-lm))
 
 
 (deftest
- t36_l157
+ t33_l150
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v35_l153)))
+   v32_l146)))
 
 
 (def
- v38_l166
+ v35_l159
  (def
   experiment
   {:condition ["A" "B" "C" "D"],
@@ -251,7 +227,7 @@
 
 
 (def
- v39_l172
+ v36_l165
  (->
   experiment
   (sk/lay-point :condition :mean {:size 5})
@@ -259,18 +235,18 @@
 
 
 (deftest
- t40_l176
+ t37_l169
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 12 (:lines s)))))
-   v39_l172)))
+   v36_l165)))
 
 
 (def
- v42_l184
+ v39_l177
  (->
   experiment
   (sk/lay-lollipop :condition :mean)
@@ -278,39 +254,39 @@
 
 
 (deftest
- t43_l188
+ t40_l181
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 16 (:lines s)))))
-   v42_l184)))
+   v39_l177)))
 
 
 (def
- v45_l196
+ v42_l189
  (->
-  iris
+  data/iris
   (sk/lay-point :species :sepal_length {:alpha 0.3, :jitter 5})
   (sk/lay-summary {:color :species})))
 
 
 (deftest
- t46_l200
+ t43_l193
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 153 (:points s)) (= 3 (:lines s)))))
-   v45_l196)))
+   v42_l189)))
 
 
 (def
- v48_l208
+ v45_l201
  (->
-  tips
+  data/tips
   (sk/view :total_bill :tip {:color :smoker})
   sk/lay-point
   sk/lay-lm
@@ -321,7 +297,7 @@
 
 
 (deftest
- t49_l216
+ t46_l209
  (is
   ((fn
     [v]
@@ -331,13 +307,13 @@
       (pos? (:points s))
       (= 2 (:lines s))
       (some #{"Tipping Behavior"} (:texts s)))))
-   v48_l208)))
+   v45_l201)))
 
 
 (def
- v51_l228
+ v48_l221
  (->
-  iris
+  data/iris
   (sk/view :sepal_length :sepal_width {:color :species})
   (sk/lay-point {:alpha 0.5})
   (sk/lay-lm {:se true})
@@ -345,44 +321,44 @@
 
 
 (deftest
- t52_l234
+ t49_l227
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)) (pos? (:lines s)))))
-   v51_l228)))
+   v48_l221)))
 
 
 (def
- v54_l243
+ v51_l236
  (->
-  tips
+  data/tips
   (sk/lay-bar :day {:color :sex})
   (sk/options {:title "Dodged Bars (default)"})))
 
 
 (deftest
- t55_l247
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v54_l243)))
+ t52_l240
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v51_l236)))
 
 
 (def
- v56_l249
+ v53_l242
  (->
-  tips
+  data/tips
   (sk/lay-stacked-bar :day {:color :sex})
   (sk/options {:title "Stacked Bars"})))
 
 
 (deftest
- t57_l253
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v56_l249)))
+ t54_l246
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v53_l242)))
 
 
 (def
- v59_l260
+ v56_l253
  (def
   daily-temps
   {:day (range 1 15),
@@ -390,7 +366,7 @@
 
 
 (def
- v60_l264
+ v57_l257
  (->
   daily-temps
   (sk/lay-step :day :temp {:color "#2196F3"})
@@ -399,20 +375,20 @@
 
 
 (deftest
- t61_l269
+ t58_l262
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (pos? (:lines s)) (pos? (:points s)))))
-   v60_l264)))
+   v57_l257)))
 
 
 (def
- v63_l278
+ v60_l271
  (->
-  iris
+  data/iris
   (sk/lay-point
    :sepal_length
    :sepal_width
@@ -421,23 +397,25 @@
 
 
 (deftest
- t64_l282
+ t61_l275
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (pos? (:points s)) (pos? (:lines s)))))
-   v63_l278)))
+   v60_l271)))
 
 
 (def
- v66_l290
- (def top5 (-> iris (tc/order-by :sepal_length :desc) (tc/head 5))))
+ v63_l283
+ (def
+  top5
+  (-> data/iris (tc/order-by :sepal_length :desc) (tc/head 5))))
 
 
 (def
- v67_l292
+ v64_l285
  (->
   top5
   (sk/lay-point :sepal_length :sepal_width {:size 5})
@@ -445,7 +423,7 @@
 
 
 (deftest
- t68_l296
+ t65_l289
  (is
   ((fn
     [v]
@@ -454,15 +432,15 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__74423#] (= "virginica" p1__74423#))
+       (fn* [p1__101501#] (= "virginica" p1__101501#))
        (:texts s)))))
-   v67_l292)))
+   v64_l285)))
 
 
 (def
- v70_l304
+ v67_l297
  (->
-  iris
+  data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
   (sk/options
    {:palette
@@ -471,20 +449,20 @@
 
 
 (deftest
- t71_l311
+ t68_l304
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
-   v70_l304)))
+   v67_l297)))
 
 
 (def
- v73_l320
+ v70_l313
  (->
-  iris
+  data/iris
   (sk/view :sepal_length :sepal_width {:color :species})
   sk/lay-point
   sk/lay-lm
@@ -493,23 +471,23 @@
 
 
 (deftest
- t74_l327
+ t71_l320
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (pos? (:points s)) (= 3 (:lines s)))))
-   v73_l320)))
+   v70_l313)))
 
 
 (def
- v76_l336
+ v73_l329
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__74424#] (Math/sin (/ p1__74424# 3.0))) (range 20)),
-   :change (map (fn* [p1__74425#] (- p1__74425# 10)) (range 20))}
+   (map (fn* [p1__101502#] (Math/sin (/ p1__101502# 3.0))) (range 20)),
+   :change (map (fn* [p1__101503#] (- p1__101503# 10)) (range 20))}
   (sk/lay-point :x :y {:color :change})
   (sk/options
    {:color-scale :diverging,
@@ -518,20 +496,20 @@
 
 
 (deftest
- t77_l344
+ t74_l337
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 20 (:points s)))))
-   v76_l336)))
+   v73_l329)))
 
 
 (def
- v79_l352
+ v76_l345
  (->
-  iris
+  data/iris
   (sk/view :sepal_length :sepal_width {:color :species})
   sk/lay-point
   (sk/lay-loess {:se true})
@@ -539,54 +517,54 @@
 
 
 (deftest
- t80_l358
+ t77_l351
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)) (= 3 (:polygons s)))))
-   v79_l352)))
+   v76_l345)))
 
 
 (def
- v82_l367
+ v79_l360
  (def
   iris-sepal
   (->
-   iris
+   data/iris
    (sk/lay-point :sepal_length :sepal_width {:color :species})
    (sk/options {:title "Sepal", :width 300, :height 250}))))
 
 
 (def
- v83_l372
+ v80_l365
  (def
   iris-petal
   (->
-   iris
+   data/iris
    (sk/lay-point :petal_length :petal_width {:color :species})
    (sk/options {:title "Petal", :width 300, :height 250}))))
 
 
 (def
- v84_l377
+ v81_l370
  (sk/arrange
   [iris-sepal iris-petal]
   {:title "Iris Dashboard", :cols 2}))
 
 
 (deftest
- t85_l380
+ t82_l373
  (is
   ((fn
     [v]
     (and (= :div (first v)) (= :kind/hiccup (:kindly/kind (meta v)))))
-   v84_l377)))
+   v81_l370)))
 
 
 (def
- v87_l387
+ v84_l380
  (def
   top-cities
   {:city ["Tokyo" "Delhi" "Shanghai" "São Paulo" "Mumbai"],
@@ -595,7 +573,7 @@
 
 
 (def
- v88_l392
+ v85_l385
  (->
   top-cities
   (sk/lay-point :area :population)
@@ -604,7 +582,7 @@
 
 
 (deftest
- t89_l397
+ t86_l390
  (is
   ((fn
     [v]
@@ -613,11 +591,11 @@
      (and
       (= 5 (:points s))
       (every? (set (:texts s)) ["Tokyo" "Delhi"]))))
-   v88_l392)))
+   v85_l385)))
 
 
 (def
- v91_l405
+ v88_l398
  (let
   [r
    (rng/rng :jdk 77)
@@ -626,8 +604,8 @@
    ys
    (mapv
     (fn*
-     [p1__74426#]
-     (+ (* 3 p1__74426#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__101504#]
+     (+ (* 3 p1__101504#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}
@@ -637,7 +615,7 @@
 
 
 (deftest
- t92_l416
+ t89_l409
  (is
   ((fn
     [v]
@@ -647,32 +625,32 @@
       (= 20 (:points s))
       (= 1 (:lines s))
       (some #{"Simulated: y = 3x + 5 + noise"} (:texts s)))))
-   v91_l405)))
+   v88_l398)))
 
 
 (def
- v94_l427
+ v91_l420
  (->
-  penguins
+  data/penguins
   (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
   (sk/options {:title "Palmer Penguins: Bill Dimensions"})))
 
 
 (deftest
- t95_l431
+ t92_l424
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 342 (:points s)))))
-   v94_l427)))
+   v91_l420)))
 
 
 (def
- v97_l437
+ v94_l430
  (->
-  penguins
+  data/penguins
   (sk/view :bill_length_mm :bill_depth_mm {:color :species})
   sk/lay-point
   sk/lay-lm
@@ -680,20 +658,20 @@
 
 
 (deftest
- t98_l443
+ t95_l436
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 342 (:points s)) (= 3 (:lines s)))))
-   v97_l437)))
+   v94_l430)))
 
 
 (def
- v100_l450
+ v97_l443
  (->
-  penguins
+  data/penguins
   (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
   sk/lay-lm
   (sk/options
@@ -701,39 +679,39 @@
 
 
 (deftest
- t101_l455
+ t98_l448
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 342 (:points s)) (= 1 (:lines s)))))
-   v100_l450)))
+   v97_l443)))
 
 
 (def
- v103_l461
+ v100_l454
  (->
-  penguins
+  data/penguins
   (sk/lay-bar :island {:color :species})
   (sk/options {:title "Species by Island"})))
 
 
 (deftest
- t104_l465
+ t101_l458
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v103_l461)))
+   v100_l454)))
 
 
 (def
- v106_l471
+ v103_l464
  (->
-  penguins
+  data/penguins
   (sk/view :flipper_length_mm :body_mass_g {:color :species})
   sk/lay-point
   sk/lay-lm
@@ -741,39 +719,39 @@
 
 
 (deftest
- t107_l477
+ t104_l470
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 342 (:points s)) (= 3 (:lines s)))))
-   v106_l471)))
+   v103_l464)))
 
 
 (def
- v109_l483
+ v106_l476
  (->
-  penguins
+  data/penguins
   (sk/lay-histogram :body_mass_g {:color :species})
   (sk/options {:title "Body Mass Distribution"})))
 
 
 (deftest
- t110_l487
+ t107_l480
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v109_l483)))
+   v106_l476)))
 
 
 (def
- v112_l495
+ v109_l488
  (->
-  tips
+  data/tips
   (sk/view :total_bill :tip {:color :smoker})
   sk/lay-point
   sk/lay-lm
@@ -784,87 +762,78 @@
 
 
 (deftest
- t113_l502
+ t110_l495
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 244 (:points s)) (= 2 (:lines s)))))
-   v112_l495)))
+   v109_l488)))
 
 
 (def
- v115_l508
+ v112_l501
  (->
-  tips
+  data/tips
   (sk/lay-bar :day {:color :time})
   (sk/options {:title "Visits by Day and Meal Time"})))
 
 
 (deftest
- t116_l512
+ t113_l505
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v115_l508)))
+   v112_l501)))
 
 
 (def
- v118_l518
+ v115_l511
  (->
-  tips
+  data/tips
   (sk/lay-stacked-bar :day {:color :time})
   (sk/options {:title "Visits by Day (Stacked)"})))
 
 
 (deftest
- t119_l522
+ t116_l515
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v118_l518)))
+   v115_l511)))
 
 
 (def
- v121_l528
+ v118_l521
  (->
-  tips
+  data/tips
   (sk/lay-bar :day {:color :sex})
   (sk/coord :flip)
   (sk/options {:title "Day by Gender (Horizontal)"})))
 
 
 (deftest
- t122_l533
+ t119_l526
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v121_l528)))
+   v118_l521)))
 
 
 (def
- v124_l539
- (def
-  mpg
-  (tc/dataset
-   "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/mpg.csv"
-   {:key-fn keyword})))
-
-
-(def
- v126_l544
+ v121_l534
  (->
-  mpg
+  data/mpg
   (sk/view :horsepower :mpg {:color :origin})
   sk/lay-point
   sk/lay-lm
@@ -872,46 +841,49 @@
 
 
 (deftest
- t127_l550
+ t122_l540
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 392 (:points s)) (= 3 (:lines s)))))
-   v126_l544)))
+   v121_l534)))
 
 
 (def
- v129_l556
+ v124_l546
  (->
-  mpg
+  data/mpg
   (sk/lay-point :displacement :mpg {:color :origin})
   (sk/options {:title "Engine Displacement vs Fuel Efficiency"})))
 
 
 (deftest
- t130_l560
+ t125_l550
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 398 (:points s)))))
-   v129_l556)))
+   v124_l546)))
 
 
 (def
- v132_l566
- (-> mpg (sk/lay-bar :origin) (sk/options {:title "Cars by Origin"})))
+ v127_l556
+ (->
+  data/mpg
+  (sk/lay-bar :origin)
+  (sk/options {:title "Cars by Origin"})))
 
 
 (deftest
- t133_l570
+ t128_l560
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v132_l566)))
+   v127_l556)))

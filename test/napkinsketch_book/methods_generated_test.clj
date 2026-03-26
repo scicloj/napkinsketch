@@ -9,171 +9,93 @@
 
 
 (def
- v3_l32
+ v3_l30
  (defn
-  method-table
-  []
-  (kind/table
-   {:column-names ["Method" "Mark" "Stat" "Position"],
-    :row-maps
-    (for
-     [k method/method-order :let [m (method/lookup k)]]
-     {"Method" (name k),
-      "Mark" (name (:mark m)),
-      "Stat" (name (:stat m)),
-      "Position" (name (or (:position m) :identity))})})))
-
-
-(def v4_l43 (method-table))
-
-
-(deftest t5_l45 (is ((fn [t] (= 25 (count (:row-maps t)))) v4_l43)))
-
-
-(def
- v7_l55
- (defn-
-  used-by-mark
-  "Return a sorted comma-separated string of method names using `mk`."
-  [mk]
+  used-by
+  "Sorted comma-separated method names whose `field` equals `value`."
+  [field value]
   (->>
    (method/registered)
-   (filter (fn [[_ m]] (= mk (:mark m))))
+   (filter (fn [[_ m]] (= value (or (get m field) :identity))))
    (map (comp name key))
    sort
    (str/join ", "))))
 
 
 (def
- v8_l64
- (defn-
-  distinct-marks-in-order
-  "Return distinct marks preserving first-seen order from method-order."
-  []
+ v4_l39
+ (defn
+  distinct-in-order
+  "Distinct values of `field` across methods, in first-seen order."
+  [field]
   (let
    [seen (volatile! #{})]
    (reduce
     (fn
      [acc k]
      (let
-      [mk (:mark (method/lookup k))]
-      (if (@seen mk) acc (do (vswap! seen conj mk) (conj acc mk)))))
+      [v (get (method/lookup k) field)]
+      (if (@seen v) acc (do (vswap! seen conj v) (conj acc v)))))
     []
     method/method-order))))
 
 
 (def
- v9_l74
- (defn
-  mark-table
-  []
-  (kind/table
-   {:column-names ["Mark" "Shape" "Used by"],
-    :row-maps
-    (for
-     [mk (distinct-marks-in-order)]
-     {"Mark" (name mk),
-      "Shape" (sk/mark-doc mk),
-      "Used by" (used-by-mark mk)})})))
+ v6_l53
+ (kind/table
+  {:column-names ["Method" "Mark" "Stat" "Position"],
+   :row-maps
+   (for
+    [k method/method-order :let [m (method/lookup k)]]
+    {"Method" (kind/code (pr-str k)),
+     "Mark" (kind/code (pr-str (:mark m))),
+     "Stat" (kind/code (pr-str (:stat m))),
+     "Position" (kind/code (pr-str (or (:position m) :identity)))})}))
 
 
-(def v10_l83 (mark-table))
-
-
-(deftest t11_l85 (is ((fn [t] (= 17 (count (:row-maps t)))) v10_l83)))
+(deftest t7_l63 (is ((fn [t] (= 25 (count (:row-maps t)))) v6_l53)))
 
 
 (def
- v13_l95
- (defn-
-  used-by-stat
-  "Return a sorted comma-separated string of method names using `st`."
-  [st]
-  (->>
-   (method/registered)
-   (filter (fn [[_ m]] (= st (:stat m))))
-   (map (comp name key))
-   sort
-   (str/join ", "))))
+ v9_l73
+ (kind/table
+  {:column-names ["Mark" "Shape" "Used by"],
+   :row-maps
+   (for
+    [mk (distinct-in-order :mark)]
+    {"Mark" (kind/code (pr-str mk)),
+     "Shape" (sk/mark-doc mk),
+     "Used by" (used-by :mark mk)})}))
+
+
+(deftest t10_l81 (is ((fn [t] (= 17 (count (:row-maps t)))) v9_l73)))
 
 
 (def
- v14_l104
- (defn-
-  distinct-stats-in-order
-  "Return distinct stats preserving first-seen order from method-order."
-  []
-  (let
-   [seen (volatile! #{})]
-   (reduce
-    (fn
-     [acc k]
-     (let
-      [st (:stat (method/lookup k))]
-      (if (@seen st) acc (do (vswap! seen conj st) (conj acc st)))))
-    []
-    method/method-order))))
+ v12_l91
+ (kind/table
+  {:column-names ["Stat" "What it computes" "Used by"],
+   :row-maps
+   (for
+    [st (distinct-in-order :stat)]
+    {"Stat" (kind/code (pr-str st)),
+     "What it computes" (sk/stat-doc st),
+     "Used by" (used-by :stat st)})}))
+
+
+(deftest t13_l99 (is ((fn [t] (= 11 (count (:row-maps t)))) v12_l91)))
 
 
 (def
- v15_l114
- (defn
-  stat-table
-  []
-  (kind/table
-   {:column-names ["Stat" "What it computes" "Used by"],
-    :row-maps
-    (for
-     [st (distinct-stats-in-order)]
-     {"Stat" (name st),
-      "What it computes" (sk/stat-doc st),
-      "Used by" (used-by-stat st)})})))
+ v15_l108
+ (kind/table
+  {:column-names ["Position" "What it does" "Used by"],
+   :row-maps
+   (for
+    [pos [:identity :dodge :stack :fill]]
+    {"Position" (kind/code (pr-str pos)),
+     "What it does" (sk/position-doc pos),
+     "Used by" (used-by :position pos)})}))
 
 
-(def v16_l123 (stat-table))
-
-
-(deftest t17_l125 (is ((fn [t] (= 11 (count (:row-maps t)))) v16_l123)))
-
-
-(def
- v19_l134
- (def
-  position-order
-  "Canonical order for positions."
-  [:identity :dodge :stack :fill]))
-
-
-(def
- v20_l138
- (defn-
-  used-by-position
-  "Return method names that default to `pos`."
-  [pos]
-  (let
-   [methods
-    (method/registered)
-    matches
-    (filter (fn [[_ m]] (= pos (or (:position m) :identity))) methods)]
-   (->> matches (map (comp name key)) sort (str/join ", ")))))
-
-
-(def
- v21_l147
- (defn
-  position-table
-  []
-  (kind/table
-   {:column-names ["Position" "What it does" "Used by"],
-    :row-maps
-    (for
-     [pos position-order]
-     {"Position" (name pos),
-      "What it does" (sk/position-doc pos),
-      "Used by" (used-by-position pos)})})))
-
-
-(def v22_l156 (position-table))
-
-
-(deftest t23_l158 (is ((fn [t] (= 4 (count (:row-maps t)))) v22_l156)))
+(deftest t16_l116 (is ((fn [t] (= 4 (count (:row-maps t)))) v15_l108)))
