@@ -172,8 +172,13 @@
                          (let [key (merge {x cat} (zipmap group-cols
                                                           (if (= 1 (count group-cols))
                                                             [cc] cc)))]
-                           (if-let [ds (get grouped key)]
-                             (tc/row-count ds) 0)))
+                           ;; When a group column overlaps with x, merge may
+                           ;; overwrite the x value.  If so the combination is
+                           ;; impossible — return 0.
+                           (if (not= (get key x) cat)
+                             0
+                             (if-let [ds (get grouped key)]
+                               (tc/row-count ds) 0))))
               max-count (reduce max 1 (for [cat categories, cc color-cats]
                                         (count-fn cat cc)))]
           {:categories categories

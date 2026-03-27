@@ -175,7 +175,7 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
-                                (= 9 (:polygons s)))))])
+                                (= 5 (:polygons s)))))])
 
 ;; ## Labels and Faceting
 ;;
