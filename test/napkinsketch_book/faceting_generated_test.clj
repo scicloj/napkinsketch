@@ -232,7 +232,7 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 3 (:panels s)) (= 9 (:polygons s)))))
+     (and (= 3 (:panels s)) (= 5 (:polygons s)))))
    v40_l172)))
 
 

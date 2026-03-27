@@ -247,6 +247,29 @@
     (is (= (:n-groups (:dodge-ctx (first result)))
            (:n-groups (:dodge-ctx (second result)))))))
 
+(deftest count-stat-x-equals-color-test
+  (testing "count stat when x and color map to the same column"
+    (let [sk (-> {:species ["setosa" "setosa" "versicolor" "versicolor"]}
+                 (sk/lay-bar :species {:color :species})
+                 sk/sketch)
+          groups (get-in sk [:panels 0 :layers 0 :groups])]
+      ;; Each group should only have non-zero count for its own species
+      (doseq [g groups]
+        (doseq [{:keys [category count]} (:counts g)]
+          (if (= category (:label g))
+            (is (pos? count) (str (:label g) " should have count for " category))
+            (is (zero? count) (str (:label g) " should have 0 count for " category))))))))
+
+(deftest value-bar-stacking-y0s-test
+  (testing "stacked value bars use y0s baselines"
+    (let [sk (-> {:day ["Mon" "Mon"] :count [30 20] :meal ["lunch" "dinner"]}
+                 (sk/lay-value-bar :day :count {:color :meal :position :stack})
+                 sk/sketch)
+          groups (get-in sk [:panels 0 :layers 0 :groups])
+          dinner (second groups)]
+      ;; dinner baseline should equal lunch value (30)
+      (is (= [30.0] (vec (:y0s dinner)))))))
+
 ;; ============================================================
 ;; scale.clj
 ;; ============================================================

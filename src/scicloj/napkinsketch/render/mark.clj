@@ -723,7 +723,7 @@
       (vec
        (for [group groups
              {:keys [category y0 y1]} (:counts group)
-             :when (and y0 y1)]
+             :when (and y0 y1 (not= y0 y1))]
          (let [bp (band-position band-s category 0 1 0.8)]
            (mk-rect (:color group) (:lo bp) (:hi bp)
                     (num-s y0) (num-s y1)))))

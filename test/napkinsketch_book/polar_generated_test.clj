@@ -67,8 +67,8 @@
 (def
  v14_l67
  (->
-  data/iris
-  (sk/lay-stacked-bar :species {:color :species})
+  data/penguins
+  (sk/lay-stacked-bar :island {:color :species})
   (sk/coord :polar)))
 
 

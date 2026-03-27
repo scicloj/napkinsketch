@@ -175,8 +175,8 @@
 
 ;; The palette applies to all color-mapped marks.
 
-(-> data/iris
-    (sk/lay-stacked-bar :species {:color :species})
+(-> data/penguins
+    (sk/lay-stacked-bar :island {:color :species})
     (sk/options {:palette ["#8B5CF6" "#F59E0B" "#10B981"]}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

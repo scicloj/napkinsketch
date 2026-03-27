@@ -64,8 +64,8 @@
 ;;
 ;; Stacked bars in polar show composition within each wedge.
 
-(-> data/iris
-    (sk/lay-stacked-bar :species {:color :species})
+(-> data/penguins
+    (sk/lay-stacked-bar :island {:color :species})
     (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

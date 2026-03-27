@@ -4,7 +4,7 @@
   [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
-  [clojure.pprint :as pp]
+  [scicloj.napkinsketch.method :as method]
   [clojure.test :refer [deftest is]]))
 
 
@@ -192,7 +192,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__102887#] (= 50 (:n-points p1__102887#))) gs)))
+     (every? (fn* [p1__85873#] (= 50 (:n-points p1__85873#))) gs)))
    v49_l167)))
 
 
@@ -289,13 +289,13 @@
     (and
      (> (count bars) 3)
      (every?
-      (fn* [p1__102888#] (< (:lo p1__102888#) (:hi p1__102888#)))
+      (fn* [p1__85874#] (< (:lo p1__85874#) (:hi p1__85874#)))
       bars)
-     (every? (fn* [p1__102889#] (pos? (:count p1__102889#))) bars)))
+     (every? (fn* [p1__85875#] (pos? (:count p1__85875#))) bars)))
    v74_l238)))
 
 
-(def v77_l253 (-> data/iris (sk/lay-bar :species {:color :species})))
+(def v77_l253 (-> data/penguins (sk/lay-bar :island {:color :species})))
 
 
 (deftest
@@ -313,7 +313,7 @@
  v79_l260
  (def
   bar-sk
-  (-> data/iris (sk/lay-bar :species {:color :species}) sk/sketch)))
+  (-> data/penguins (sk/lay-bar :island {:color :species}) sk/sketch)))
 
 
 (def
@@ -351,8 +351,8 @@
  (def
   stacked-sk
   (->
-   data/iris
-   (sk/lay-stacked-bar :species {:color :species})
+   data/penguins
+   (sk/lay-stacked-bar :island {:color :species})
    sk/sketch)))
 
 
@@ -469,9 +469,7 @@
   wave
   {:x (range 30),
    :y
-   (mapv
-    (fn* [p1__102890#] (Math/sin (* p1__102890# 0.3)))
-    (range 30))}))
+   (mapv (fn* [p1__85876#] (Math/sin (* p1__85876# 0.3))) (range 30))}))
 
 
 (def v111_l374 (-> wave (sk/lay-line :x :y)))

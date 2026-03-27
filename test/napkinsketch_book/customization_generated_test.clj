@@ -121,7 +121,7 @@
   {:x (range 1 50),
    :y
    (mapv
-    (fn* [p1__102078#] (* 2 (Math/pow 1.1 p1__102078#)))
+    (fn* [p1__86258#] (* 2 (Math/pow 1.1 p1__86258#)))
     (range 1 50))}))
 
 
@@ -275,8 +275,8 @@
 (def
  v46_l178
  (->
-  data/iris
-  (sk/lay-stacked-bar :species {:color :species})
+  data/penguins
+  (sk/lay-stacked-bar :island {:color :species})
   (sk/options {:palette ["#8B5CF6" "#F59E0B" "#10B981"]})))
 
 

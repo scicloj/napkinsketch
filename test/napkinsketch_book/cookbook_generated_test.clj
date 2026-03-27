@@ -92,9 +92,8 @@
   ts-dates
   (mapv
    (fn*
-    [p1__101499#]
-    (java.time.LocalDate/ofEpochDay
-     (+ 18262 (* (long p1__101499#) 7))))
+    [p1__87310#]
+    (java.time.LocalDate/ofEpochDay (+ 18262 (* (long p1__87310#) 7))))
    (range 52))))
 
 
@@ -106,8 +105,8 @@
    :value
    (mapv
     (fn*
-     [p1__101500#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__101500#) 0.12)))))
+     [p1__87311#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__87311#) 0.12)))))
     (range 52))}))
 
 
@@ -432,7 +431,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__101501#] (= "virginica" p1__101501#))
+       (fn* [p1__87312#] (= "virginica" p1__87312#))
        (:texts s)))))
    v64_l285)))
 
@@ -486,8 +485,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__101502#] (Math/sin (/ p1__101502# 3.0))) (range 20)),
-   :change (map (fn* [p1__101503#] (- p1__101503# 10)) (range 20))}
+   (map (fn* [p1__87313#] (Math/sin (/ p1__87313# 3.0))) (range 20)),
+   :change (map (fn* [p1__87314#] (- p1__87314# 10)) (range 20))}
   (sk/lay-point :x :y {:color :change})
   (sk/options
    {:color-scale :diverging,
@@ -604,8 +603,8 @@
    ys
    (mapv
     (fn*
-     [p1__101504#]
-     (+ (* 3 p1__101504#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__87315#]
+     (+ (* 3 p1__87315#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}

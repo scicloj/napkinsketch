@@ -13,8 +13,8 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Pretty printing for large maps
-   [clojure.pprint :as pp]))
+   ;; Method registry — lookup mark/stat/position by keyword
+   [scicloj.napkinsketch.method :as method]))
 
 ;; ## A Minimal Scatter Plot
 ;;
@@ -250,15 +250,15 @@ hist-sk
 ;; A bar chart counts occurrences of each category. The sketch records
 ;; the categories and counts per group.
 
-(-> data/iris
-    (sk/lay-bar :species {:color :species}))
+(-> data/penguins
+    (sk/lay-bar :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-(def bar-sk (-> data/iris
-                (sk/lay-bar :species {:color :species})
+(def bar-sk (-> data/penguins
+                (sk/lay-bar :island {:color :species})
                 sk/sketch))
 
 (def bar-layer (first (:layers (first (:panels bar-sk)))))
@@ -287,8 +287,8 @@ bar-layer
 ;;
 ;; Stacking changes the position field:
 
-(def stacked-sk (-> data/iris
-                    (sk/lay-stacked-bar :species {:color :species})
+(def stacked-sk (-> data/penguins
+                    (sk/lay-stacked-bar :island {:color :species})
                     sk/sketch))
 
 (def stacked-layer (first (:layers (first (:panels stacked-sk)))))
@@ -297,7 +297,7 @@ bar-layer
 
 (kind/test-last [(fn [p] (= :stack p))])
 
-;; The data is the same — only the rendering instruction differs.
+;; The counts are the same — only the rendering instruction differs.
 ;; The sketch describes *what* to draw; the renderer decides *how*.
 
 ;; ## Regression Lines
