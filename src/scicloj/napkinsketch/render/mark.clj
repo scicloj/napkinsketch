@@ -754,9 +754,10 @@
            :let [[cr cg cb _] (:color group)
                  cat (nth (:xs group) i)
                  val (nth (:ys group) i)
+                 base (if-let [y0s (:y0s group)] (nth y0s i) 0)
                  dodge-idx (or (:dodge-idx group) 0)
                  bp (band-position band-s cat dodge-idx n-groups frac)
-                 pts (bar-polygon coord-px flipped? (:lo bp) (:hi bp) (num-s 0) (num-s val))]]
+                 pts (bar-polygon coord-px flipped? (:lo bp) (:hi bp) (num-s base) (num-s val))]]
        (ui/with-color [cr cg cb (or opacity 1.0)]
          (ui/with-style ::ui/style-fill
            (apply ui/path pts)))))))
