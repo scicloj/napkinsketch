@@ -96,7 +96,7 @@ scatter-views
 ;; | Column dtype | Inferred type |
 ;; |:-------------|:--------------|
 ;; | float, int | `:numerical` |
-;; | string, keyword, boolean | `:categorical` |
+;; | string, keyword, boolean, symbol, text | `:categorical` |
 ;; | LocalDate, LocalDateTime, Instant, java.util.Date | `:temporal` → numerical with calendar-aware ticks |
 ;;
 ;; Internally, `infer-column-types` in `view.clj` handles this step.
@@ -612,6 +612,46 @@ count-views
 (kind/test-last [(fn [leg] (and (= :continuous (:type leg))
                                 (= 20 (count (:stops leg)))))])
 
+;; ### Size Legend
+;;
+;; When `:size` maps to a numerical column, a size legend shows graduated
+;; circles spanning the data range. Internally, `build-size-legend` in
+;; `sketch.clj` generates five entries with proportional radii.
+
+(:size-legend (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :s [10 20 30 40 50]}
+                  (sk/lay-point :x :y {:size :s})
+                  sk/sketch))
+
+(kind/test-last [(fn [leg] (and (= :size (:type leg))
+                                (= :s (:title leg))
+                                (= 5 (count (:entries leg)))))])
+
+;; Each entry has a `:value` and `:radius`. No size mapping → no size legend:
+
+(:size-legend (sk/sketch scatter-views))
+
+(kind/test-last [nil?])
+
+;; ### Alpha Legend
+;;
+;; When `:alpha` maps to a numerical column, an alpha legend shows
+;; graduated opacity squares. Internally, `build-alpha-legend` in
+;; `sketch.clj` generates five entries with proportional opacity.
+
+(:alpha-legend (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :a [0.1 0.3 0.5 0.7 0.9]}
+                   (sk/lay-point :x :y {:alpha :a})
+                   sk/sketch))
+
+(kind/test-last [(fn [leg] (and (= :alpha (:type leg))
+                                (= :a (:title leg))
+                                (= 5 (count (:entries leg)))))])
+
+;; No alpha mapping → no alpha legend:
+
+(:alpha-legend (sk/sketch scatter-views))
+
+(kind/test-last [nil?])
+
 ;; ## Layout Inference
 ;;
 ;; The `:layout` map adjusts padding based on what elements are
@@ -751,16 +791,22 @@ graph TD
   DOM --> TK[\"Ticks<br/>(compute-ticks)\"]
 
   VIEWS --> LBL[\"Labels<br/>(resolve-labels)\"]
-  AE --> LEG[\"Legend<br/>(build-legend)\"]
+  AE --> LEG[\"Color Legend<br/>(build-legend)\"]
+  AE --> SLEG[\"Size Legend<br/>(build-size-legend)\"]
+  AE --> ALEG[\"Alpha Legend<br/>(build-alpha-legend)\"]
 
   DOM --> LAYOUT[\"Layout<br/>(compute-layout-dims)\"]
   LBL --> LAYOUT
   LEG --> LAYOUT
+  SLEG --> LAYOUT
+  ALEG --> LAYOUT
 
   DOM --> SKETCH[\"Sketch\"]
   TK --> SKETCH
   LBL --> SKETCH
   LEG --> SKETCH
+  SLEG --> SKETCH
+  ALEG --> SKETCH
   LAYOUT --> SKETCH
   STATS --> SKETCH
 
@@ -792,7 +838,9 @@ graph TD
 ;; | Tick values | round intervals (linear), powers of 10 (log) | wadogo scale configuration |
 ;; | Tick labels | number formatting, calendar formatting | wadogo label formatting |
 ;; | Axis labels | column name, underscores → spaces | `(sk/labs {:x "Custom"})` |
-;; | Legend | categorical = discrete, numerical = continuous, none = no legend | `:color` mapping controls presence |
+;; | Color legend | categorical = discrete, numerical = continuous, none = no legend | `:color` mapping controls presence |
+;; | Size legend | 5 graduated circles when `:size` maps to numerical column | `:size` mapping controls presence |
+;; | Alpha legend | 5 graduated opacity squares when `:alpha` maps to numerical column | `:alpha` mapping controls presence |
 ;; | Layout padding | adjusts for title, labels, legend | `:width`, `:height` in options |
 ;; | Layout type | single, facet-grid, multi-variable | `sk/facet`, multiple x-y pairs |
 ;; | Coordinate system | `:cartesian` | `(sk/coord :flip)`, `(sk/coord :polar)` |
