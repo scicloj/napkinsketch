@@ -120,8 +120,8 @@
   exponential-data
   {:x (range 1 50),
    :y
-   (mapv
-    (fn* [p1__86258#] (* 2 (Math/pow 1.1 p1__86258#)))
+   (map
+    (fn* [p1__80590#] (* 2 (Math/pow 1.1 p1__80590#)))
     (range 1 50))}))
 
 

@@ -102,7 +102,7 @@
 (kind/doc #'sk/lay-line)
 
 (def wave {:x (range 30)
-           :y (mapv #(Math/sin (* % 0.3)) (range 30))})
+           :y (map #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
     (sk/lay-line :x :y))
@@ -164,8 +164,8 @@
 
 (def noisy-wave (let [r (rng/rng :jdk 42)]
                   {:x (range 50)
-                   :y (mapv #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rng/drandom r) 0.5)))
-                            (range 50))}))
+                   :y (map #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rng/drandom r) 0.5)))
+                           (range 50))}))
 
 (-> noisy-wave
     (sk/lay-point :x :y)
@@ -193,11 +193,11 @@
 
 (kind/doc #'sk/lay-stacked-area)
 
-(-> {:x (vec (concat (range 10) (range 10) (range 10)))
-     :y (vec (concat [1 2 3 4 5 4 3 2 1 0]
-                     [2 2 2 3 3 3 2 2 2 2]
-                     [1 1 1 1 2 2 2 1 1 1]))
-     :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
+(-> {:x (concat (range 10) (range 10) (range 10))
+     :y (concat [1 2 3 4 5 4 3 2 1 0]
+                [2 2 2 3 3 3 2 2 2 2]
+                [1 1 1 1 2 2 2 1 1 1])
+     :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
     (sk/lay-stacked-area :x :y {:color :group}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

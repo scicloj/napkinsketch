@@ -74,11 +74,11 @@
 ;; Combine area, line, and points. Date columns are detected
 ;; automatically — ticks snap to calendar boundaries.
 
-(def ts-dates (mapv #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 7))) (range 52)))
+(def ts-dates (map #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 7))) (range 52)))
 
 (def ts-ds {:date ts-dates
-            :value (mapv #(+ 100.0 (* 30.0 (Math/sin (* (double %) 0.12))))
-                         (range 52))})
+            :value (map #(+ 100.0 (* 30.0 (Math/sin (* (double %) 0.12))))
+                        (range 52))})
 
 (-> ts-ds
     (sk/lay-area :date :value {:alpha 0.2})
@@ -397,10 +397,10 @@
 
 (let [r (rng/rng :jdk 77)
       xs (range 0 10 0.5)
-      ys (mapv #(+ (* 3 %)
-                   5
-                   (* 2 (- (rng/drandom r) 0.5)))
-               xs)]
+      ys (map #(+ (* 3 %)
+                  5
+                  (* 2 (- (rng/drandom r) 0.5)))
+              xs)]
   (-> {:x xs :y ys}
       (sk/lay-point :x :y)
       sk/lay-lm

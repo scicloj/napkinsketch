@@ -13,7 +13,7 @@
   wave
   {:x (range 30),
    :y
-   (mapv (fn* [p1__79818#] (Math/sin (* p1__79818# 0.3))) (range 30))}))
+   (map (fn* [p1__81785#] (Math/sin (* p1__81785# 0.3))) (range 30))}))
 
 
 (def v4_l21 (-> wave (sk/lay-line :x :y)))
@@ -34,15 +34,12 @@
  v7_l32
  (def
   waves
-  {:x (vec (concat (range 30) (range 30))),
+  {:x (concat (range 30) (range 30)),
    :y
-   (vec
-    (concat
-     (mapv (fn* [p1__79819#] (Math/sin (* p1__79819# 0.3))) (range 30))
-     (mapv
-      (fn* [p1__79820#] (Math/cos (* p1__79820# 0.3)))
-      (range 30)))),
-   :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))}))
+   (concat
+    (map (fn* [p1__81786#] (Math/sin (* p1__81786# 0.3))) (range 30))
+    (map (fn* [p1__81787#] (Math/cos (* p1__81787# 0.3))) (range 30))),
+   :fn (concat (repeat 30 :sin) (repeat 30 :cos))}))
 
 
 (def v8_l37 (-> waves (sk/lay-line :x :y {:color :fn})))
@@ -143,7 +140,7 @@
  (->
   {:x (range 30),
    :y
-   (mapv (fn* [p1__79821#] (Math/sin (* p1__79821# 0.3))) (range 30))}
+   (map (fn* [p1__81788#] (Math/sin (* p1__81788# 0.3))) (range 30))}
   (sk/lay-area :x :y)))
 
 
@@ -161,15 +158,13 @@
 (def
  v27_l115
  (->
-  {:x (vec (concat (range 10) (range 10) (range 10))),
+  {:x (concat (range 10) (range 10) (range 10)),
    :y
-   (vec
-    (concat
-     [1 2 3 4 5 4 3 2 1 0]
-     [2 2 2 3 3 3 2 2 2 2]
-     [1 1 1 1 2 2 2 1 1 1])),
-   :group
-   (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
+   (concat
+    [1 2 3 4 5 4 3 2 1 0]
+    [2 2 2 3 3 3 2 2 2 2]
+    [1 1 1 1 2 2 2 1 1 1]),
+   :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
   (sk/lay-stacked-area :x :y {:color :group})))
 
 

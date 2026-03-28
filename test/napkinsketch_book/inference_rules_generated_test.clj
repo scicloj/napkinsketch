@@ -596,7 +596,61 @@
 
 
 (def
- v111_l623
+ v111_l621
+ (:size-legend
+  (->
+   {:x [1 2 3 4 5], :y [1 2 3 4 5], :s [10 20 30 40 50]}
+   (sk/lay-point :x :y {:size :s})
+   sk/sketch)))
+
+
+(deftest
+ t112_l625
+ (is
+  ((fn
+    [leg]
+    (and
+     (= :size (:type leg))
+     (= :s (:title leg))
+     (= 5 (count (:entries leg)))))
+   v111_l621)))
+
+
+(def v114_l631 (:size-legend (sk/sketch scatter-views)))
+
+
+(deftest t115_l633 (is (nil? v114_l631)))
+
+
+(def
+ v117_l641
+ (:alpha-legend
+  (->
+   {:x [1 2 3 4 5], :y [1 2 3 4 5], :a [0.1 0.3 0.5 0.7 0.9]}
+   (sk/lay-point :x :y {:alpha :a})
+   sk/sketch)))
+
+
+(deftest
+ t118_l645
+ (is
+  ((fn
+    [leg]
+    (and
+     (= :alpha (:type leg))
+     (= :a (:title leg))
+     (= 5 (count (:entries leg)))))
+   v117_l641)))
+
+
+(def v120_l651 (:alpha-legend (sk/sketch scatter-views)))
+
+
+(deftest t121_l653 (is (nil? v120_l651)))
+
+
+(def
+ v123_l663
  (let
   [bare
    (sk/sketch scatter-views)
@@ -613,7 +667,7 @@
 
 
 (deftest
- t112_l635
+ t124_l675
  (is
   ((fn
     [m]
@@ -622,24 +676,24 @@
      (pos? (:full-title-pad m))
      (zero? (:bare-legend-w m))
      (= 100 (:full-legend-w m))))
-   v111_l623)))
+   v123_l663)))
 
 
-(def v114_l649 (let [sk (sk/sketch scatter-views)] (:layout-type sk)))
+(def v126_l689 (let [sk (sk/sketch scatter-views)] (:layout-type sk)))
 
 
-(deftest t115_l652 (is ((fn [lt] (= :single lt)) v114_l649)))
+(deftest t127_l692 (is ((fn [lt] (= :single lt)) v126_l689)))
 
 
 (def
- v117_l660
+ v129_l700
  (def
   normal-sk
   (-> animals (sk/lay-value-bar :animal :count) sk/sketch)))
 
 
 (def
- v118_l665
+ v130_l705
  (def
   flip-sk
   (->
@@ -650,7 +704,7 @@
 
 
 (def
- v119_l671
+ v131_l711
  (let
   [np (first (:panels normal-sk)) fp (first (:panels flip-sk))]
   {:normal
@@ -662,7 +716,7 @@
 
 
 (deftest
- t120_l678
+ t132_l718
  (is
   ((fn
     [m]
@@ -671,64 +725,64 @@
      (not (get-in m [:normal :y-categorical?]))
      (not (get-in m [:flipped :x-categorical?]))
      (true? (get-in m [:flipped :y-categorical?]))))
-   v119_l671)))
+   v131_l711)))
 
 
 (def
- v121_l683
+ v133_l723
  (-> animals (sk/lay-value-bar :animal :count) (sk/coord :flip)))
 
 
 (deftest
- t122_l687
- (is ((fn [v] (= 4 (:polygons (sk/svg-summary v)))) v121_l683)))
+ t134_l727
+ (is ((fn [v] (= 4 (:polygons (sk/svg-summary v)))) v133_l723)))
 
 
 (def
- v124_l694
+ v136_l734
  (let
   [sk (-> five-points (sk/lay-point :x :y) (sk/coord :flip) sk/sketch)]
   {:x-label (:x-label sk), :y-label (:y-label sk)}))
 
 
 (deftest
- t125_l701
+ t137_l741
  (is
-  ((fn [m] (and (= "y" (:x-label m)) (= "x" (:y-label m)))) v124_l694)))
+  ((fn [m] (and (= "y" (:x-label m)) (= "x" (:y-label m)))) v136_l734)))
 
 
 (def
- v127_l711
+ v139_l751
  (def
   multi-views
   (-> five-points (sk/view :x :y) sk/lay-point sk/lay-lm)))
 
 
-(def v128_l717 (sk/sketch multi-views))
+(def v140_l757 (sk/sketch multi-views))
 
 
 (deftest
- t129_l719
+ t141_l759
  (is
   ((fn [sk] (let [p (first (:panels sk))] (= 2 (count (:layers p)))))
-   v128_l717)))
+   v140_l757)))
 
 
-(def v130_l722 multi-views)
+(def v142_l762 multi-views)
 
 
 (deftest
- t131_l724
+ t143_l764
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 5 (:points s)) (= 1 (:lines s)))))
-   v130_l722)))
+   v142_l762)))
 
 
 (def
- v133_l738
+ v145_l778
  (kind/mermaid
-  "\ngraph TD\n  VIEWS[\"views + options\"]\n  VIEWS --> CT[\"Column Types<br/>(infer-column-types)\"]\n  VIEWS --> AE[\"Aesthetics<br/>(resolve-aesthetics)\"]\n  CT --> GR[\"Grouping<br/>(infer-grouping)\"]\n  AE --> GR\n  CT --> ME[\"Method<br/>(infer-method)\"]\n  GR --> STATS[\"Statistics<br/>(compute-stat)\"]\n  ME --> STATS\n\n  STATS --> DOM[\"Domains<br/>(collect-domain + pad-domain)\"]\n  DOM --> TK[\"Ticks<br/>(compute-ticks)\"]\n\n  VIEWS --> LBL[\"Labels<br/>(resolve-labels)\"]\n  AE --> LEG[\"Legend<br/>(build-legend)\"]\n\n  DOM --> LAYOUT[\"Layout<br/>(compute-layout-dims)\"]\n  LBL --> LAYOUT\n  LEG --> LAYOUT\n\n  DOM --> SKETCH[\"Sketch\"]\n  TK --> SKETCH\n  LBL --> SKETCH\n  LEG --> SKETCH\n  LAYOUT --> SKETCH\n  STATS --> SKETCH\n\n  style VIEWS fill:#e8f5e9\n  style SKETCH fill:#fff3e0\n  style STATS fill:#e3f2fd\n  style DOM fill:#e3f2fd\n"))
+  "\ngraph TD\n  VIEWS[\"views + options\"]\n  VIEWS --> CT[\"Column Types<br/>(infer-column-types)\"]\n  VIEWS --> AE[\"Aesthetics<br/>(resolve-aesthetics)\"]\n  CT --> GR[\"Grouping<br/>(infer-grouping)\"]\n  AE --> GR\n  CT --> ME[\"Method<br/>(infer-method)\"]\n  GR --> STATS[\"Statistics<br/>(compute-stat)\"]\n  ME --> STATS\n\n  STATS --> DOM[\"Domains<br/>(collect-domain + pad-domain)\"]\n  DOM --> TK[\"Ticks<br/>(compute-ticks)\"]\n\n  VIEWS --> LBL[\"Labels<br/>(resolve-labels)\"]\n  AE --> LEG[\"Color Legend<br/>(build-legend)\"]\n  AE --> SLEG[\"Size Legend<br/>(build-size-legend)\"]\n  AE --> ALEG[\"Alpha Legend<br/>(build-alpha-legend)\"]\n\n  DOM --> LAYOUT[\"Layout<br/>(compute-layout-dims)\"]\n  LBL --> LAYOUT\n  LEG --> LAYOUT\n  SLEG --> LAYOUT\n  ALEG --> LAYOUT\n\n  DOM --> SKETCH[\"Sketch\"]\n  TK --> SKETCH\n  LBL --> SKETCH\n  LEG --> SKETCH\n  SLEG --> SKETCH\n  ALEG --> SKETCH\n  LAYOUT --> SKETCH\n  STATS --> SKETCH\n\n  style VIEWS fill:#e8f5e9\n  style SKETCH fill:#fff3e0\n  style STATS fill:#e3f2fd\n  style DOM fill:#e3f2fd\n"))

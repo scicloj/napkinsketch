@@ -92,11 +92,11 @@
    [r (rng/rng :jdk 42)]
    {:x (range 50),
     :y
-    (mapv
+    (map
      (fn*
-      [p1__79898#]
+      [p1__80441#]
       (+
-       (Math/sin (* p1__79898# 0.2))
+       (Math/sin (* p1__80441# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -137,7 +137,7 @@
    [r (rng/rng :jdk 99)]
    {:x (for [i (range 5) _j (range 5)] i),
     :y (for [_i (range 5) j (range 5)] j),
-    :value (vec (repeatedly 25 (fn* [] (rng/irandom r 100))))})))
+    :value (repeatedly 25 (fn* [] (rng/irandom r 100)))})))
 
 
 (def v23_l106 (-> grid-data (sk/lay-tile :x :y {:fill :value})))

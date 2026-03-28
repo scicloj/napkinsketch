@@ -369,7 +369,7 @@ bar-layer
 ;; Line marks from identity data (not regression) store xs/ys vectors:
 
 (def wave {:x (range 30)
-           :y (mapv #(Math/sin (* % 0.3)) (range 30))})
+           :y (map #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
     (sk/lay-line :x :y))

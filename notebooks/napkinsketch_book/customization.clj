@@ -80,7 +80,7 @@
 
 (def exponential-data
   {:x (range 1 50)
-   :y (mapv #(* 2 (Math/pow 1.1 %)) (range 1 50))})
+   :y (map #(* 2 (Math/pow 1.1 %)) (range 1 50))})
 
 ;; Linear scale — hard to see the structure.
 

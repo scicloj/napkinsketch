@@ -140,7 +140,7 @@
 ;; A bar chart with 12 categories.
 
 (-> (let [r (rng/rng :jdk 99)]
-      {:category (mapv #(keyword (str "cat-" %)) (range 12))
+      {:category (map #(keyword (str "cat-" %)) (range 12))
        :value (repeatedly 12 #(+ 10 (rng/irandom r 90)))})
     (sk/lay-value-bar :category :value))
 
@@ -303,12 +303,12 @@
 ;; `LocalDateTime` values preserve sub-day precision. Tick labels
 ;; show `HH:MM` format when the range is less than a day.
 
-(-> {:time (mapv #(java.time.LocalDateTime/of 2025 3 15
-                                              (+ 8 (int (/ % 4)))
-                                              (* 15 (mod (int %) 4))
-                                              0)
-                 (range 24))
-     :value (mapv #(+ 18.0 (* 4.0 (Math/sin (* % 0.3)))) (range 24))}
+(-> {:time (map #(java.time.LocalDateTime/of 2025 3 15
+                                             (+ 8 (int (/ % 4)))
+                                             (* 15 (mod (int %) 4))
+                                             0)
+                (range 24))
+     :value (map #(+ 18.0 (* 4.0 (Math/sin (* % 0.3)))) (range 24))}
     (sk/lay-line :time :value)
     sk/lay-point)
 
@@ -322,10 +322,10 @@
 ;; calendar-aware tick formatting. Tick labels show hours when the range
 ;; spans less than a day.
 
-(-> {:time (mapv #(java.time.Instant/ofEpochSecond
-                   (+ 1750003200 (* % 3600)))
-                 (range 12))
-     :temp (mapv #(+ 20.0 (* 5.0 (Math/sin (* % 0.5)))) (range 12))}
+(-> {:time (map #(java.time.Instant/ofEpochSecond
+                  (+ 1750003200 (* % 3600)))
+                (range 12))
+     :temp (map #(+ 20.0 (* 5.0 (Math/sin (* % 0.5)))) (range 12))}
     (sk/lay-line :time :temp)
     sk/lay-point)
 
@@ -338,9 +338,9 @@
 ;;
 ;; With a date range spanning several years, tick labels show year values.
 
-(-> {:date (mapv #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 120)))
-                 (range 20))
-     :value (mapv #(+ 100 (* 50 (Math/sin (* % 0.4)))) (range 20))}
+(-> {:date (map #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 120)))
+                (range 20))
+     :value (map #(+ 100 (* 50 (Math/sin (* % 0.4)))) (range 20))}
     (sk/lay-line :date :value)
     sk/lay-point)
 
