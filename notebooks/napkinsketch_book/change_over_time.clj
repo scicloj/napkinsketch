@@ -16,7 +16,7 @@
 ;; Connected line through data points.
 
 (def wave {:x (range 30)
-           :y (mapv #(Math/sin (* % 0.3)) (range 30))})
+           :y (map #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
     (sk/lay-line :x :y))
@@ -29,10 +29,10 @@
 
 ;; Color separates multiple series.
 
-(def waves {:x (vec (concat (range 30) (range 30)))
-            :y (vec (concat (mapv #(Math/sin (* % 0.3)) (range 30))
-                            (mapv #(Math/cos (* % 0.3)) (range 30))))
-            :fn (vec (concat (repeat 30 :sin) (repeat 30 :cos)))})
+(def waves {:x (concat (range 30) (range 30))
+            :y (concat (map #(Math/sin (* % 0.3)) (range 30))
+                       (map #(Math/cos (* % 0.3)) (range 30)))
+            :fn (concat (repeat 30 :sin) (repeat 30 :cos))})
 
 (-> waves
     (sk/lay-line :x :y {:color :fn}))
@@ -101,7 +101,7 @@
 ;; Filled area under a line.
 
 (-> {:x (range 30)
-     :y (mapv #(Math/sin (* % 0.3)) (range 30))}
+     :y (map #(Math/sin (* % 0.3)) (range 30))}
     (sk/lay-area :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -112,11 +112,11 @@
 
 ;; Each group fills above the previous.
 
-(-> {:x (vec (concat (range 10) (range 10) (range 10)))
-     :y (vec (concat [1 2 3 4 5 4 3 2 1 0]
-                     [2 2 2 3 3 3 2 2 2 2]
-                     [1 1 1 1 2 2 2 1 1 1]))
-     :group (vec (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C")))}
+(-> {:x (concat (range 10) (range 10) (range 10))
+     :y (concat [1 2 3 4 5 4 3 2 1 0]
+                [2 2 2 3 3 3 2 2 2 2]
+                [1 1 1 1 2 2 2 1 1 1])
+     :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
     (sk/lay-stacked-area :x :y {:color :group}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
