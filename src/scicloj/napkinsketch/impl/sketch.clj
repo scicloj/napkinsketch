@@ -30,12 +30,15 @@
 (defn compute-global-y-domain
   "Compute global y-domain from position-adjusted layers.
    Reads pre-computed :y0/:y1 from stacked layers. Extends domain to
-   include 0 for marks that draw stems from baseline (lollipop, value-bar)."
+   include 0 for marks that draw from baseline (area, lollipop, value-bar).
+   Clamps the lower bound to 0 for these marks so padding doesn't extend
+   below the baseline."
   [layers scale-spec]
   (let [fill-layers (filter #(= :fill (:position %)) layers)
         stack-layers (filter #(= :stack (:position %)) layers)
-        zero-baseline-marks #{:lollipop :value-bar}
-        needs-zero? (some #(zero-baseline-marks (:mark %)) layers)]
+        zero-baseline-marks #{:lollipop :value-bar :area}
+        needs-zero? (some #(zero-baseline-marks (:mark %)) layers)
+        clamp-zero (fn [[lo hi]] [(max 0.0 (double lo)) hi])]
     (cond
       ;; Fill mode: normalized to [0, 1]
       (seq fill-layers)
@@ -66,7 +69,7 @@
             hi (max max-rect-y1 max-area-y
                     (if (seq other-yd) (reduce max 0 other-yd) 0))]
         (if (pos? hi)
-          (scale/pad-domain [0 hi] scale-spec)
+          (clamp-zero (scale/pad-domain [0 hi] scale-spec))
           [0 1]))
 
       ;; Normal: collect y-domains from layers
@@ -81,9 +84,9 @@
                     (scale/pad-domain [(reduce min vals) (reduce max vals)] scale-spec)
                     (distinct vals)))]
         (if (and needs-zero? (sequential? dom) (number? (first dom)))
-          (scale/pad-domain [(min 0.0 (double (first dom)))
-                             (max 0.0 (double (second dom)))]
-                            scale-spec)
+          (clamp-zero (scale/pad-domain [(min 0.0 (double (first dom)))
+                                         (max 0.0 (double (second dom)))]
+                                        scale-spec))
           dom)))))
 
 ;; ---- Tick Computation ----
