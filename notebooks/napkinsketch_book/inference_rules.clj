@@ -15,7 +15,9 @@
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
-   [scicloj.napkinsketch.api :as sk]))
+   [scicloj.napkinsketch.api :as sk]
+   ;; Shared datasets
+   [napkinsketch-book.datasets :as data]))
 
 ;; ## What Gets Inferred
 ;;
@@ -542,8 +544,7 @@ count-views
 ;; Labels come from column names. Underscores and hyphens become spaces.
 ;; Internally, `resolve-labels` in `sketch.clj` handles this.
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
+(def iris data/iris)
 
 (let [sk (-> iris
              (sk/lay-point :sepal_length :sepal_width)
