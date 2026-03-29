@@ -278,9 +278,9 @@
 
 (kind/test-last [(fn [n] (= 1 n))])
 
-;; ## Membrane (drawable tree)
+;; ## Membrane 
 ;;
-;; A **membrane** (drawable tree) is a value of the
+;; A **membrane** is a value of the
 ;; [Membrane](https://github.com/phronmophobic/membrane) library —
 ;; a tree of layout and drawing primitives (`Translate`, `WithColor`,
 ;; `RoundedRectangle`, `Label`, etc.) that represents a complete plot.
