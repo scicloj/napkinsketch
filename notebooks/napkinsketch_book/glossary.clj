@@ -280,9 +280,10 @@
 
 ;; ## Membrane (drawable tree)
 ;;
-;; A **membrane** (drawable tree) is a tree of layout and
-;; drawing primitives (`Translate`, `WithColor`, `RoundedRectangle`,
-;; `Label`, etc.) that represents a complete plot.
+;; A **membrane** (drawable tree) is a value of the
+;; [Membrane](https://github.com/phronmophobic/membrane) library —
+;; a tree of layout and drawing primitives (`Translate`, `WithColor`,
+;; `RoundedRectangle`, `Label`, etc.) that represents a complete plot.
 ;;
 ;; The membrane is an intermediate step in the SVG rendering path:
 ;; sketch → membrane → SVG hiccup. Direct renderers (e.g., Plotly)

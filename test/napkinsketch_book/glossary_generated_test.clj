@@ -183,25 +183,25 @@
 (deftest t46_l279 (is ((fn [n] (= 1 n)) v45_l273)))
 
 
-(def v48_l291 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v48_l292 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v49_l293 (vector? my-membrane))
+(def v49_l294 (vector? my-membrane))
 
 
-(deftest t50_l295 (is ((fn [v] (true? v)) v49_l293)))
+(deftest t50_l296 (is ((fn [v] (true? v)) v49_l294)))
 
 
-(def v51_l297 (count my-membrane))
+(def v51_l298 (count my-membrane))
 
 
-(deftest t52_l299 (is ((fn [n] (pos? n)) v51_l297)))
+(deftest t52_l300 (is ((fn [n] (pos? n)) v51_l298)))
 
 
-(def v54_l309 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v54_l310 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
-(def v55_l311 (first my-figure))
+(def v55_l312 (first my-figure))
 
 
-(deftest t56_l313 (is ((fn [v] (= :svg v)) v55_l311)))
+(deftest t56_l314 (is ((fn [v] (= :svg v)) v55_l312)))

@@ -34,8 +34,9 @@ graph LR
 ;; - **Sketch** — fully resolved plot specification. Data-space geometry,
 ;;   domains, tick info, legend. Plain Clojure maps. No rendering primitives.
 ;;
-;; - **Membrane** — positioned drawing primitives in pixel space.
-;;   Translate, WithColor, Path, Label, etc.
+;; - **Membrane** — a value of the [Membrane](https://github.com/phronmophobic/membrane)
+;;   library: positioned drawing primitives in pixel space
+;;   (Translate, WithColor, Path, Label, etc.).
 ;;
 ;; - **Figure** — final output. A tree walk converts membrane records
 ;;   to SVG hiccup, which Clay/Kindly renders in notebooks.
