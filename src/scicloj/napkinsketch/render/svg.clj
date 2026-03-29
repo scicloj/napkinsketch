@@ -434,23 +434,30 @@
   ([svg theme]
    (let [attrs (when (and (vector? svg) (map? (second svg))) (second svg))
          ;; Grid color from theme — used to filter grid polylines
-         grid-hex (:grid (or theme defaults/theme))
+         the-theme (or theme defaults/theme)
+         grid-hex (:grid the-theme)
          grid-color (str "rgb(" (str/join ","
                                           (mapv #(int (* 255 (double %)))
                                                 (take 3 (defaults/hex->rgba grid-hex)))) ")")
+         ;; Background color from theme — used to identify panel rects
+         bg-hex (:bg the-theme)
+         bg-color (str "rgb(" (str/join ","
+                                        (mapv #(int (* 255 (double %)))
+                                              (take 3 (defaults/hex->rgba bg-hex)))) ")")
          sw (double defaults/legend-swatch-size)
          ;; Collect rects excluding those inside data-legend groups
          rects (collect-elements-excluding-legend svg :rect)
          polylines (collect-elements svg :polyline)
          polygons (collect-elements svg :polygon)
          texts (collect-elements svg :text)
-         ;; Panels: large rects without border-radius (background fills)
+         ;; Panels: large rects with theme background fill color
          panel-rects (filter #(let [a (second %)]
                                 (and (nil? (:rx a))
                                      (number? (:width a))
                                      (> (double (:width a)) 50)
                                      (number? (:height a))
-                                     (> (double (:height a)) 50)))
+                                     (> (double (:height a)) 50)
+                                     (= bg-color (:fill a))))
                              rects)
          panel-set (set panel-rects)
          ;; Points: rects with rx > 0, excluding legend swatches (known size)
@@ -465,7 +472,7 @@
                                     (number? (:rx a))
                                     (pos? (double (:rx a)))))
                             rects)
-         ;; Tiles: small rects without rx that are not panels or legend swatches
+         ;; Tiles: rects without rx that are not panels or legend swatches
          tile-rects (filter #(let [a (second %)]
                                (and (not (panel-set %))
                                     (not (legend-set %))

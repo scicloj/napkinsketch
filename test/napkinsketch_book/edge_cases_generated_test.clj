@@ -184,7 +184,7 @@
    [r (rng/rng :jdk 99)]
    {:category
     (map
-     (fn* [p1__81839#] (keyword (str "cat-" p1__81839#)))
+     (fn* [p1__89668#] (keyword (str "cat-" p1__89668#)))
      (range 12)),
     :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))})
   (sk/lay-value-bar :category :value)))
@@ -226,7 +226,7 @@
  (->
   data/iris
   (tc/select-rows
-   (fn* [p1__81840#] (= "setosa" (p1__81840# :species))))
+   (fn* [p1__89669#] (= "setosa" (p1__89669# :species))))
   (sk/lay-point :sepal_length :sepal_width)
   sk/lay-lm
   (sk/options {:title "Setosa Only"})))
@@ -376,8 +376,8 @@
  v71_l282
  (->
   {:x (range 20),
-   :y (map (fn* [p1__81841#] (- p1__81841# 10)) (range 20)),
-   :val (map (fn* [p1__81842#] (- p1__81842# 10.0)) (range 20))}
+   :y (map (fn* [p1__89670#] (- p1__89670# 10)) (range 20)),
+   :val (map (fn* [p1__89671#] (- p1__89671# 10.0)) (range 20))}
   (sk/lay-point :x :y {:color :val})
   (sk/options {:color-scale :diverging, :color-midpoint 0})))
 
@@ -408,18 +408,18 @@
   {:time
    (map
     (fn*
-     [p1__81843#]
+     [p1__89672#]
      (java.time.LocalDateTime/of
       2025
       3
       15
-      (+ 8 (int (/ p1__81843# 4)))
-      (* 15 (mod (int p1__81843#) 4))
+      (+ 8 (int (/ p1__89672# 4)))
+      (* 15 (mod (int p1__89672#) 4))
       0))
     (range 24)),
    :value
    (map
-    (fn* [p1__81844#] (+ 18.0 (* 4.0 (Math/sin (* p1__81844# 0.3)))))
+    (fn* [p1__89673#] (+ 18.0 (* 4.0 (Math/sin (* p1__89673# 0.3)))))
     (range 24))}
   (sk/lay-line :time :value)
   sk/lay-point))
@@ -442,13 +442,13 @@
   {:time
    (map
     (fn*
-     [p1__81845#]
+     [p1__89674#]
      (java.time.Instant/ofEpochSecond
-      (+ 1750003200 (* p1__81845# 3600))))
+      (+ 1750003200 (* p1__89674# 3600))))
     (range 12)),
    :temp
    (map
-    (fn* [p1__81846#] (+ 20.0 (* 5.0 (Math/sin (* p1__81846# 0.5)))))
+    (fn* [p1__89675#] (+ 20.0 (* 5.0 (Math/sin (* p1__89675# 0.5)))))
     (range 12))}
   (sk/lay-line :time :temp)
   sk/lay-point))
@@ -465,7 +465,7 @@
       (= 12 (:points s))
       (= 1 (:lines s))
       (some
-       (fn* [p1__81847#] (re-find #":\d\d" p1__81847#))
+       (fn* [p1__89676#] (re-find #":\d\d" p1__89676#))
        (:texts s)))))
    v80_l325)))
 
@@ -476,13 +476,13 @@
   {:date
    (map
     (fn*
-     [p1__81848#]
+     [p1__89677#]
      (java.time.LocalDate/ofEpochDay
-      (+ 18262 (* (long p1__81848#) 120))))
+      (+ 18262 (* (long p1__89677#) 120))))
     (range 20)),
    :value
    (map
-    (fn* [p1__81849#] (+ 100 (* 50 (Math/sin (* p1__81849# 0.4)))))
+    (fn* [p1__89678#] (+ 100 (* 50 (Math/sin (* p1__89678# 0.4)))))
     (range 20))}
   (sk/lay-line :date :value)
   sk/lay-point))
@@ -502,7 +502,7 @@
 (def
  v86_l355
  (->
-  {:cat (map (fn* [p1__81850#] (str "cat-" p1__81850#)) (range 12)),
+  {:cat (map (fn* [p1__89679#] (str "cat-" p1__89679#)) (range 12)),
    :val (repeatedly 12 (fn* [] (rand-int 100)))}
   (sk/lay-bar :cat :val)
   (sk/coord :polar)))
@@ -549,7 +549,7 @@
       (:texts s)
       strip-labels
       (filter
-       (fn* [p1__81851#] (re-find #"sepal|petal" p1__81851#))
+       (fn* [p1__89680#] (re-find #"sepal|petal" p1__89680#))
        texts)]
      (and (= 9 (:panels s)) (= 6 (count strip-labels)))))
    v92_l377)))
