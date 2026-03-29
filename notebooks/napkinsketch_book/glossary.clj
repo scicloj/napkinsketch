@@ -5,7 +5,7 @@
 
 (ns napkinsketch-book.glossary
   (:require
-   ;; Shared datasets — iris, tips, penguins, mpg
+   ;; Shared datasets for these docs
    [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]

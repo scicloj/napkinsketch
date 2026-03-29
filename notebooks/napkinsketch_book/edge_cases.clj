@@ -5,7 +5,7 @@
 
 (ns napkinsketch-book.edge-cases
   (:require
-   ;; Shared datasets — iris, tips, penguins, mpg
+   ;; Shared datasets for these docs
    [napkinsketch-book.datasets :as data]
    ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
