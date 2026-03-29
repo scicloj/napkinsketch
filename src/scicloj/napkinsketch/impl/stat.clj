@@ -144,9 +144,11 @@
                                      (assoc bd :bin-maps bin-maps')))
                                  all-bin-data)
                            all-bin-data)
-            max-count (reduce max 1 (for [{:keys [bin-maps]} all-bin-data
-                                          b bin-maps]
-                                      (:count b)))]
+            ;; Floor at 1 for raw counts; floor at 0 for density (values are typically < 1)
+            floor (if (= normalize :density) 0 1)
+            max-count (reduce max floor (for [{:keys [bin-maps]} all-bin-data
+                                              b bin-maps]
+                                          (:count b)))]
         {:bins all-bin-data
          :max-count max-count
          :x-domain (numeric-extent xs-col)
