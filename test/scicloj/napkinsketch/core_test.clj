@@ -57,19 +57,20 @@
       (is (= 4 (count c2))))))
 
 (deftest gradient-color-test
-  (testing "t=0.0 (viridis start — dark purple)"
+  (testing "t=0.0 (dark blue — low end)"
     (let [[r g b a] (defaults/gradient-color 0.0)]
-      (is (< r 0.4))
+      (is (< r 0.1))
+      (is (< b 0.3))
       (is (== 1.0 a))))
-  (testing "t=1.0 (viridis end — yellow)"
+  (testing "t=1.0 (light blue — high end)"
     (let [[r g b _] (defaults/gradient-color 1.0)]
-      (is (> r 0.9))
-      (is (> g 0.8))))
-  (testing "t=0.5 (mid — teal)"
+      (is (> b 0.9))
+      (is (> g 0.6))))
+  (testing "t=0.5 (mid blue)"
     (let [[r g b _] (defaults/gradient-color 0.5)]
-      (is (< r 0.3))
-      (is (> g 0.4))
-      (is (> b 0.4))))
+      (is (> b 0.5))
+      (is (> g 0.3))
+      (is (< r 0.3))))
   (testing "clamping"
     (is (= (defaults/gradient-color -1.0) (defaults/gradient-color 0.0)))
     (is (= (defaults/gradient-color 2.0) (defaults/gradient-color 1.0)))))

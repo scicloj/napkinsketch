@@ -134,8 +134,9 @@
   (fn [t] (c2d->rgba (g t))))
 
 (def gradient-color
-  "Default gradient function (viridis). Takes t in [0,1], returns [r g b a] 0-1."
-  (wrap-gradient (c/gradient :viridis/viridis)))
+  "Default gradient function (dark blue → light blue, matching ggplot2).
+   Takes t in [0,1], returns [r g b a] 0-1."
+  (wrap-gradient (c/gradient [(c/to-color "#132B43") (c/to-color "#56B1F7")])))
 
 (def diverging-color
   "Diverging gradient function (RdBu). Takes t in [0,1], returns [r g b a] 0-1."
@@ -158,7 +159,7 @@
 
 (defn resolve-gradient-fn
   "Resolve a :color-scale option to a gradient function t→[r g b a] (0-1 range).
-   nil or :sequential → viridis.
+   nil or :sequential → dark blue to light blue (ggplot2 default).
    :diverging → RdBu.
    keyword → clojure2d gradient name (:inferno, :viridis/plasma, etc.).
    map {:low hex :mid hex :high hex} → custom 3-stop gradient.

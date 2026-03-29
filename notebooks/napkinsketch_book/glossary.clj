@@ -328,7 +328,7 @@
 ;; to a smooth color ramp. Used when `:color` maps to a numerical
 ;; column.
 ;;
-;; Common gradients: `:viridis` (default), `:inferno`, `:plasma`,
+;; Common gradients: `:viridis`, `:inferno`, `:plasma`,
 ;; `:magma`. Diverging gradients center on a midpoint value.
 ;; Set via `{:color-scale :inferno}` in options.
 

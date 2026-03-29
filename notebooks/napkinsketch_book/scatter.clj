@@ -121,7 +121,7 @@
 ;; ## Continuous Color
 ;;
 ;; When `:color` maps to a numeric column, Napkinsketch uses a
-;; viridis gradient instead of discrete palette colors.
+;; continuous blue gradient instead of discrete palette colors.
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :petal_length}))

@@ -426,10 +426,10 @@ precedence-plot
 ;; ## Color Scale Configuration
 ;;
 ;; When a numeric column is mapped to `:color`, Napkinsketch uses a
-;; continuous gradient (viridis by default). The `:color-scale` option
+;; continuous gradient (dark-to-light blue by default). The `:color-scale` option
 ;; controls which gradient is used.
 
-;; Default (viridis) continuous color:
+;; Default continuous color (dark blue to light blue):
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/lay-point :x :y {:color :c}))
