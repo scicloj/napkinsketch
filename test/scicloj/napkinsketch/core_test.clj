@@ -2,6 +2,7 @@
   "Hand-written unit tests for napkinsketch core logic."
   (:require [clojure.test :refer [deftest testing is are]]
             [tablecloth.api :as tc]
+            [java-time.api :as jt]
             [scicloj.napkinsketch.api :as sk]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.stat :as stat]
@@ -1040,21 +1041,21 @@
 
 (deftest temporal-epoch-ms-test
   (testing "LocalDate converts to epoch-ms"
-    (let [d (java.time.LocalDate/of 2025 1 1)
+    (let [d (jt/local-date 2025 1 1)
           ms (view/temporal->epoch-ms d)]
       (is (double? ms))
       (is (== ms (* (.toEpochDay d) 86400000)))))
   (testing "LocalDateTime preserves sub-day precision"
-    (let [dt (java.time.LocalDateTime/of 2025 3 15 12 30 0)
+    (let [dt (jt/local-date-time 2025 3 15 12 30 0)
           ms (view/temporal->epoch-ms dt)]
       (is (double? ms))
       ;; Should differ from midnight by 12.5 hours in ms
-      (let [midnight-ms (view/temporal->epoch-ms (java.time.LocalDate/of 2025 3 15))]
+      (let [midnight-ms (view/temporal->epoch-ms (jt/local-date 2025 3 15))]
         (is (== (- ms midnight-ms) (* 12.5 3600000))))))
   (testing "Temporal sketch has datetime ticks"
-    (let [sk (-> (tc/dataset {:date [(java.time.LocalDate/of 2025 1 1)
-                                     (java.time.LocalDate/of 2025 6 1)
-                                     (java.time.LocalDate/of 2025 12 1)]
+    (let [sk (-> (tc/dataset {:date [(jt/local-date 2025 1 1)
+                                     (jt/local-date 2025 6 1)
+                                     (jt/local-date 2025 12 1)]
                               :val [10 20 30]})
                  (sk/view :date :val)
                  sk/lay-point

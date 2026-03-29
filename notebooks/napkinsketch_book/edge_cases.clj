@@ -14,7 +14,13 @@
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
    ;; Fastmath — random number generation
-   [fastmath.random :as rng]))
+   [fastmath.random :as rng]
+   ;; Java-time — idiomatic date/time construction
+   [java-time.api :as jt]
+   ;; dtype-next datetime — vectorized temporal arithmetic
+   [tech.v3.datatype.datetime :as dt-dt]
+   ;; dtype-next core — const-reader for temporal sequences
+   [tech.v3.datatype :as dtype]))
 
 ;; ## Missing Data
 
@@ -291,8 +297,8 @@
 
 ;; ### Dates with very narrow range (two days apart)
 
-(-> {:date [(java.time.LocalDate/of 2025 1 1)
-            (java.time.LocalDate/of 2025 1 2)]
+(-> {:date [(jt/local-date 2025 1 1)
+            (jt/local-date 2025 1 2)]
      :val [10 20]}
     (sk/lay-point :date :val))
 
@@ -303,11 +309,9 @@
 ;; `LocalDateTime` values preserve sub-day precision. Tick labels
 ;; show `HH:MM` format when the range is less than a day.
 
-(-> {:time (map #(java.time.LocalDateTime/of 2025 3 15
-                                             (+ 8 (int (/ % 4)))
-                                             (* 15 (mod (int %) 4))
-                                             0)
-                (range 24))
+(-> {:time (dt-dt/plus-temporal-amount
+            (dtype/const-reader (jt/local-date-time 2025 3 15 8 0) 24)
+            (map #(* (long %) 15) (range 24)) :minutes)
      :value (map #(+ 18.0 (* 4.0 (Math/sin (* % 0.3)))) (range 24))}
     (sk/lay-line :time :value)
     sk/lay-point)
@@ -322,9 +326,9 @@
 ;; calendar-aware tick formatting. Tick labels show hours when the range
 ;; spans less than a day.
 
-(-> {:time (map #(java.time.Instant/ofEpochSecond
-                  (+ 1750003200 (* % 3600)))
-                (range 12))
+(-> {:time (dt-dt/plus-temporal-amount
+            (dtype/const-reader (jt/instant 1750003200000) 12)
+            (range 12) :hours)
      :temp (map #(+ 20.0 (* 5.0 (Math/sin (* % 0.5)))) (range 12))}
     (sk/lay-line :time :temp)
     sk/lay-point)
@@ -338,8 +342,9 @@
 ;;
 ;; With a date range spanning several years, tick labels show year values.
 
-(-> {:date (map #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 120)))
-                (range 20))
+(-> {:date (dt-dt/plus-temporal-amount
+            (dtype/const-reader (jt/local-date 2020 1 1) 20)
+            (map #(* (long %) 120) (range 20)) :days)
      :value (map #(+ 100 (* 50 (Math/sin (* % 0.4)))) (range 20))}
     (sk/lay-line :date :value)
     sk/lay-point)

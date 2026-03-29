@@ -14,7 +14,9 @@
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
    ;; Fastmath — random number generation
-   [fastmath.random :as rng]))
+   [fastmath.random :as rng]
+   ;; Java-time — idiomatic date/time construction
+   [java-time.api :as jt]))
 
 ;; ## Quick Recipes
 
@@ -74,7 +76,7 @@
 ;; Combine area, line, and points. Date columns are detected
 ;; automatically — ticks snap to calendar boundaries.
 
-(def ts-dates (map #(java.time.LocalDate/ofEpochDay (+ 18262 (* (long %) 7))) (range 52)))
+(def ts-dates (take 52 (jt/iterate jt/plus (jt/local-date 2020 1 6) (jt/weeks 1))))
 
 (def ts-ds {:date ts-dates
             :value (map #(+ 100.0 (* 30.0 (Math/sin (* (double %) 0.12))))

@@ -1,8 +1,10 @@
 (ns scicloj.napkinsketch.impl.view
   (:require [tablecloth.api :as tc]
             [tablecloth.column.api :as tcc]
-            [scicloj.napkinsketch.impl.defaults :as defaults])
-  (:import [java.time LocalDate LocalDateTime Instant ZoneOffset]))
+            [tech.v3.datatype :as dtype]
+            [tech.v3.datatype.datetime :as dt-dt]
+            [java-time.api :as jt]
+            [scicloj.napkinsketch.impl.defaults :as defaults]))
 
 ;; ---- Helpers ----
 
@@ -268,43 +270,42 @@
     (cond
       (#{:string :keyword :boolean :symbol :text} t) :categorical
       (#{:float32 :float64 :int8 :int16 :int32 :int64} t) :numerical
-      ;; Check for temporal types by sampling first value
-      (let [v (first (ds col))]
-        (or (instance? LocalDate v)
-            (instance? LocalDateTime v)
-            (instance? Instant v)
-            (instance? java.util.Date v))) :temporal
+      ;; Check for temporal types via dtype-next metadata
+      (dt-dt/datetime-datatype? (dtype/elemwise-datatype (ds col))) :temporal
+      ;; Fallback for java.util.Date (:object dtype)
+      (instance? java.util.Date (first (ds col))) :temporal
       (every? number? (take 100 (ds col))) :numerical
       :else :categorical)))
 
 (defn temporal->epoch-ms
-  "Convert a temporal value to epoch-milliseconds (double)."
+  "Convert a temporal value to epoch-milliseconds (double).
+   Accepts LocalDate, LocalDateTime, Instant, and java.util.Date."
   [v]
   (cond
-    (instance? LocalDate v)
-    (double (* (.toEpochDay ^LocalDate v) 86400000))
-    (instance? LocalDateTime v)
-    (double (.toEpochMilli (.toInstant ^LocalDateTime v ZoneOffset/UTC)))
-    (instance? Instant v)
-    (double (.toEpochMilli ^Instant v))
-    (instance? java.util.Date v)
-    (double (.getTime ^java.util.Date v))
+    (jt/instant? v) (double (jt/to-millis-from-epoch v))
+    (jt/local-date-time? v) (double (jt/to-millis-from-epoch (jt/instant v (jt/zone-offset 0))))
+    (jt/local-date? v) (double (jt/to-millis-from-epoch (jt/instant (jt/local-date-time v (jt/local-time 0)) (jt/zone-offset 0))))
+    (instance? java.util.Date v) (double (.getTime ^java.util.Date v))
     :else (double v)))
 
 (defn- temporalize-column
-  "Replace a temporal column in a dataset with its epoch-ms numeric equivalent."
+  "Replace a temporal column in a dataset with its epoch-ms numeric equivalent.
+   Uses vectorized dt-dt/datetime->epoch for typed temporal columns;
+   falls back to scalar map-columns for java.util.Date (:object dtype)."
   [ds col]
-  (tc/map-columns ds col [col] temporal->epoch-ms))
+  (if (dt-dt/datetime-datatype? (dtype/elemwise-datatype (ds col)))
+    (tc/add-column ds col (dt-dt/datetime->epoch :epoch-milliseconds (ds col)))
+    (tc/map-columns ds col [col] temporal->epoch-ms)))
 
 (defn- temporal->local-date-time
   "Convert any supported temporal value to LocalDateTime (required by wadogo :datetime scale).
    LocalDate gets midnight, Instant and java.util.Date get UTC conversion."
   [v]
   (cond
-    (instance? LocalDateTime v) v
-    (instance? LocalDate v) (.atStartOfDay ^LocalDate v)
-    (instance? Instant v) (LocalDateTime/ofInstant ^Instant v ZoneOffset/UTC)
-    (instance? java.util.Date v) (LocalDateTime/ofInstant (.toInstant ^java.util.Date v) ZoneOffset/UTC)
+    (jt/local-date-time? v) v
+    (jt/local-date? v) (jt/local-date-time v (jt/local-time 0))
+    (jt/instant? v) (jt/local-date-time v "UTC")
+    (instance? java.util.Date v) (jt/local-date-time (jt/instant v) "UTC")
     :else v))
 
 (defn- temporal-extent
@@ -314,8 +315,7 @@
   (let [vals (vec (remove nil? (ds col)))]
     (when (seq vals)
       (let [ldts (mapv temporal->local-date-time vals)]
-        [(reduce #(if (neg? (.compareTo ^Comparable %1 %2)) %1 %2) ldts)
-         (reduce #(if (pos? (.compareTo ^Comparable %1 %2)) %1 %2) ldts)]))))
+        [(apply jt/min ldts) (apply jt/max ldts)]))))
 
 ;; ---- Resolve View ----
 

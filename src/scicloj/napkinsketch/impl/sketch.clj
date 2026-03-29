@@ -3,6 +3,7 @@
    geometry, domains, tick info, legend, and layout. No membrane types,
    no datasets, no scale objects in the output."
   (:require [wadogo.scale :as ws]
+            [java-time.api :as jt]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.stat :as stat]
@@ -96,8 +97,8 @@
   [extents]
   (let [extents (remove nil? extents)]
     (when (seq extents)
-      [(reduce #(if (neg? (.compareTo ^Comparable %1 %2)) %1 %2) (map first extents))
-       (reduce #(if (pos? (.compareTo ^Comparable %1 %2)) %1 %2) (map second extents))])))
+      [(apply jt/min (map first extents))
+       (apply jt/max (map second extents))])))
 
 (defn compute-ticks
   "Compute tick values and labels for a domain+pixel range, using wadogo transiently.
