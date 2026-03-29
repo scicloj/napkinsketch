@@ -91,7 +91,7 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
-                                (pos? (:tiles s)))))])
+                                (pos? (:visible-tiles s)))))])
 
 ;; ## Heatmap (Pre-Computed)
 
@@ -108,7 +108,7 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
-                                (pos? (:tiles s)))))])
+                                (pos? (:visible-tiles s)))))])
 
 ;; ## Density 2D
 
@@ -119,7 +119,7 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
-                                (pos? (:tiles s)))))])
+                                (pos? (:visible-tiles s)))))])
 
 ;; ## Density 2D with Points
 
@@ -131,7 +131,7 @@
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
-                                (pos? (:tiles s)))))])
+                                (pos? (:visible-tiles s)))))])
 
 ;; ## Contour Lines
 

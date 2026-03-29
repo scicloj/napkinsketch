@@ -417,7 +417,8 @@
 (defn svg-summary
   "Extract structural summary from SVG hiccup for testing.
    Returns a map with :width, :height, :panels, :points, :lines,
-   :polygons, :tiles, and :texts — useful for asserting plot structure.
+   :polygons, :tiles, :visible-tiles, and :texts — useful for asserting
+   plot structure.
    (svg-summary (plot views))  — summary of rendered SVG
 
    Counts:
@@ -426,6 +427,7 @@
    :lines   — number of non-grid polylines (data lines, annotations, whiskers)
    :polygons — number of filled polygons (bars, histogram bins, areas, violins)
    :tiles   — number of heatmap tile rectangles (small rects without border-radius)
+   :visible-tiles — tiles with positive width and height (excludes degenerate zero-extent tiles)
    :texts   — vector of all text content strings
 
    Accepts an optional theme map to detect grid-colored polylines correctly
@@ -480,6 +482,11 @@
                                     (number? (:width a))
                                     (number? (:height a))))
                             rects)
+         ;; Visible tiles: tiles with positive width and height
+         visible-tile-rects (filter #(let [a (second %)]
+                                       (and (pos? (double (:width a)))
+                                            (pos? (double (:height a)))))
+                                    tile-rects)
          ;; Lines: filter out grid-colored polylines (theme-derived)
          data-polylines (remove #(= grid-color (get (second %) :stroke)) polylines)]
      {:width (:width attrs)
@@ -489,4 +496,5 @@
       :lines (count data-polylines)
       :polygons (count polygons)
       :tiles (count tile-rects)
+      :visible-tiles (count visible-tile-rects)
       :texts (mapv last texts)})))

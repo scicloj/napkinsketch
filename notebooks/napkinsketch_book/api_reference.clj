@@ -262,7 +262,7 @@
     (sk/lay-tile :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (pos? (:tiles s))))])
+                           (pos? (:visible-tiles s))))])
 
 (kind/doc #'sk/lay-density2d)
 
@@ -270,7 +270,7 @@
     (sk/lay-density2d :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (pos? (:tiles s))))])
+                           (pos? (:visible-tiles s))))])
 
 (kind/doc #'sk/lay-contour)
 

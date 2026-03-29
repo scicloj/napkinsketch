@@ -147,7 +147,7 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__88644#] (Math/sin (* p1__88644# 0.3))) (range 30))}))
+   (map (fn* [p1__76204#] (Math/sin (* p1__76204# 0.3))) (range 30))}))
 
 
 (def v30_l107 (-> wave (sk/lay-line :x :y)))
@@ -257,9 +257,9 @@
     :y
     (map
      (fn*
-      [p1__88645#]
+      [p1__76205#]
       (+
-       (Math/sin (* p1__88645# 0.2))
+       (Math/sin (* p1__76205# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -446,7 +446,8 @@
 (deftest
  t83_l264
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (pos? (:tiles s)))) v82_l261)))
+  ((fn [v] (let [s (sk/svg-summary v)] (pos? (:visible-tiles s))))
+   v82_l261)))
 
 
 (def v84_l267 (kind/doc #'sk/lay-density2d))
@@ -460,7 +461,8 @@
 (deftest
  t86_l272
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (pos? (:tiles s)))) v85_l269)))
+  ((fn [v] (let [s (sk/svg-summary v)] (pos? (:visible-tiles s))))
+   v85_l269)))
 
 
 (def v87_l275 (kind/doc #'sk/lay-contour))

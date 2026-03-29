@@ -94,9 +94,9 @@
     :y
     (map
      (fn*
-      [p1__91875#]
+      [p1__76055#]
       (+
-       (Math/sin (* p1__91875# 0.2))
+       (Math/sin (* p1__76055# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -125,7 +125,7 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (pos? (:tiles s)))))
+     (and (= 1 (:panels s)) (pos? (:visible-tiles s)))))
    v19_l89)))
 
 
@@ -150,7 +150,7 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (pos? (:tiles s)))))
+     (and (= 1 (:panels s)) (pos? (:visible-tiles s)))))
    v23_l106)))
 
 
@@ -166,7 +166,7 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 1 (:panels s)) (pos? (:tiles s)))))
+     (and (= 1 (:panels s)) (pos? (:visible-tiles s)))))
    v26_l117)))
 
 
@@ -185,7 +185,7 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 150 (:points s)) (pos? (:tiles s)))))
+     (and (= 150 (:points s)) (pos? (:visible-tiles s)))))
    v29_l128)))
 
 
