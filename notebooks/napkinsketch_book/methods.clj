@@ -46,7 +46,7 @@
                     (do (vswap! seen conj v) (conj acc v)))))
             [] method/method-order)))
 
-;; ## Method table
+;; ## Methods 
 ;;
 ;; Each row is a registered method showing its mark, stat, and position.
 
@@ -64,7 +64,7 @@
  [(fn [t]
     (= 25 (count (:row-maps t))))])
 
-;; ## Mark table
+;; ## Marks
 ;;
 ;; A **mark** is the visual shape drawn for each data point or group.
 ;; Several methods may share the same mark — for instance, `histogram`
@@ -82,7 +82,7 @@
  [(fn [t]
     (= 17 (count (:row-maps t))))])
 
-;; ## Stat table
+;; ## Stats
 ;;
 ;; A **stat** (statistical transform) processes raw data before
 ;; rendering. Each stat takes data-space inputs and produces
@@ -100,7 +100,7 @@
  [(fn [t]
     (= 11 (count (:row-maps t))))])
 
-;; ## Position table
+;; ## Positions
 ;;
 ;; A **position** adjustment determines how groups share a categorical
 ;; axis slot. Position runs between stat computation and rendering.
