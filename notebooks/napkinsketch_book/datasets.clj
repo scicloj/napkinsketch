@@ -42,7 +42,7 @@ tips
 ;; ## Penguins
 ;;
 ;; 344 penguin measurements (bill, flipper, body mass) across
-;; three species on three islands in the Palmer Archipelago.
+;; three species on three islands in the [Palmer Archipelago](https://en.wikipedia.org/wiki/Palmer_Archipelago).
 
 (def penguins
   (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"

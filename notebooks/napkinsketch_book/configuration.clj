@@ -386,7 +386,7 @@ precedence-plot
 ;;
 ;; - a keyword — any palette name from the
 ;;   [clojure2d](https://github.com/Clojure2D/clojure2d) color library
-;;   (hundreds available: ColorBrewer, Wes Anderson, thi.ng, paletteer, etc.)
+;;   (hundreds available: [ColorBrewer](https://colorbrewer2.org/), Wes Anderson, thi.ng, paletteer, etc.)
 ;; - a vector of hex strings: `["#E74C3C" "#3498DB" "#2ECC71"]`
 ;; - a map of `{category-value "#hex"}` for explicit assignment
 ;;
@@ -485,14 +485,14 @@ precedence-plot
 
 ;; ## Validation Control
 ;;
-;; By default, `sk/sketch` validates the output against a Malli
+;; By default, `sk/sketch` validates the output against a [Malli](https://github.com/metosin/malli)
 ;; schema and throws if the sketch is malformed.  This is controlled
 ;; by the `:validate` key.
 ;;
 ;; Two helper functions let you inspect sketches manually:
 ;;
 ;; - `sk/valid-sketch?` — returns true or false
-;; - `sk/explain-sketch` — returns nil if valid, or a Malli explanation map
+;; - `sk/explain-sketch` — returns nil if valid, or a [Malli](https://github.com/metosin/malli) explanation map
 
 ;; Default behavior (validate = true) — a valid sketch passes silently:
 

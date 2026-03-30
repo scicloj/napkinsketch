@@ -136,7 +136,7 @@
 
 (kind/test-last [(fn [ps] (= 3 (count ps)))])
 
-;; ## SPLOM (Scatter Plot Matrix)
+;; ## [SPLOM](https://en.wikipedia.org/wiki/Scatter_plot#Scatter_plot_matrices) (Scatter Plot Matrix)
 ;;
 ;; `sk/cross` generates all pairs of columns. Combined with the
 ;; multi-variable layout, this produces a scatter plot matrix (SPLOM):

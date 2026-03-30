@@ -25,50 +25,41 @@
 ;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible tools
 ;; to visualize the examples below.
 
-;; ## Loading Data
+;; ## Your First Plot
 ;;
-;; We use the classic iris dataset throughout these examples.
-;; `{:key-fn keyword}` converts CSV string column names to keywords,
-;; which is conventional in Clojure. (Napkinsketch also accepts string
-;; column names, but keywords are idiomatic.)
+;; Load the classic [iris](https://en.wikipedia.org/wiki/Iris_flower_data_set) dataset and scatter two columns. That is all
+;; it takes — one `def` and one pipeline:
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
 
-iris
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width))
 
-(kind/test-last [(fn [v] (= 150 (count (tablecloth.api/rows v))))])
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; ## Input Data
+;; `tc/dataset` loads a CSV into a
+;; [Tablecloth](https://scicloj.github.io/tablecloth/) dataset (a
+;; thin wrapper around [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset)). `{:key-fn keyword}` converts
+;; the CSV header strings to Clojure keywords, which is conventional.
+;; `sk/lay-point` adds a scatter layer — each row becomes a dot.
+
+;; ## Plain Data
 ;;
-;; Napkinsketch coerces its data argument to a
-;; [Tablecloth](https://scicloj.github.io/tablecloth/) dataset.
-;; You can pass a Clojure map of columns, a sequence of row maps,
-;; a CSV path or URL, or an existing dataset.
-;;
-;; A map of columns (keyword → vector) — the simplest inline form:
+;; You do not need to load a CSV — Napkinsketch accepts plain Clojure
+;; data and coerces it to a [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset) dataset (which we
+;; typically use through
+;; [Tablecloth](https://scicloj.github.io/tablecloth/)).
+;; A map of columns works directly:
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
     (sk/lay-point :x :y))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; A sequence of row maps — Tablecloth pivots rows into columns:
+;; See the Core Concepts chapter for more input formats.
 
-(-> [{:x 1 :y 2 :g "a"} {:x 3 :y 4 :g "a"} {:x 5 :y 6 :g "b"}]
-    (sk/lay-point :x :y {:color :g}))
-
-(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
-
-;; A Tablecloth dataset from a CSV file:
-
-(-> (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
-                {:key-fn keyword})
-    (sk/lay-point :total_bill :tip))
-
-(kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
-
-;; ## Colored Scatter
+;; ## Color
 
 ;; Bind `:color` to a column to color points by group.
 
@@ -116,7 +107,7 @@ iris
 
 ;; ## Line Plot
 
-;; Connect points with lines. Here we use a simple time-series-like dataset.
+;; Connect points with lines.
 
 (-> {:x [1 2 3 4 5 6 7 8]
      :y [3 5 4 7 6 8 7 9]}

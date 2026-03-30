@@ -78,13 +78,13 @@ trace-sketch
 
 (kind/test-last [(fn [v] (and (map? v) (contains? v :panels)))])
 
-;; The sketch validates against a Malli schema:
+;; The sketch validates against a [Malli](https://github.com/metosin/malli) schema:
 
 (ss/valid? trace-sketch)
 
 (kind/test-last [true?])
 
-;; Numeric arrays (`:xs`, `:ys`, etc.) are dtype-next buffers — efficient
+;; Numeric arrays (`:xs`, `:ys`, etc.) are [dtype-next](https://github.com/cnuernber/dtype-next) buffers — efficient
 ;; primitive-backed arrays that work with `nth`, `count`, and all standard
 ;; sequence operations.
 

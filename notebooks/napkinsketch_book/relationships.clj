@@ -65,7 +65,7 @@
                            (and (= 244 (:points s))
                                 (= 2 (:lines s)))))])
 
-;; ## LOESS Smoothing
+;; ## [LOESS](https://en.wikipedia.org/wiki/Local_regression) Smoothing
 
 ;; A smooth curve through noisy data.
 
@@ -112,7 +112,7 @@
 
 ;; ## Density 2D
 
-;; KDE-smoothed 2D density heatmap.
+;; [KDE](https://en.wikipedia.org/wiki/Kernel_density_estimation)-smoothed 2D density heatmap.
 
 (-> data/iris
     (sk/lay-density2d :sepal_length :sepal_width))

@@ -199,7 +199,7 @@
 ;; Use a keyword to select a predefined palette.  Napkinsketch accepts
 ;; any palette name from the
 ;; [clojure2d](https://github.com/Clojure2D/clojure2d) color library,
-;; which includes hundreds of palettes from ColorBrewer, Wes Anderson,
+;; which includes hundreds of palettes from [ColorBrewer](https://colorbrewer2.org/), Wes Anderson,
 ;; thi.ng, paletteer (R packages), and more.
 ;;
 ;; Common examples:

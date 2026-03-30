@@ -1,6 +1,6 @@
 ;; # Distributions
 ;;
-;; Histograms, density plots, boxplots, violins, and ridgelines
+;; [Histograms](https://en.wikipedia.org/wiki/Histogram), [density](https://en.wikipedia.org/wiki/Kernel_density_estimation) plots, [boxplots](https://en.wikipedia.org/wiki/Box_plot), [violins](https://en.wikipedia.org/wiki/Violin_plot), and ridgelines
 ;; for exploring the shape and spread of data.
 
 (ns napkinsketch-book.distributions

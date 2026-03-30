@@ -149,7 +149,7 @@ data/iris
 
 (kind/test-last [(fn [m] (= :lm (:stat m)))])
 
-;; A regression line fitted through the scatter data:
+;; A [regression](https://en.wikipedia.org/wiki/Linear_regression) line fitted through the scatter data:
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width)
@@ -250,7 +250,7 @@ data/iris
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Or a LOESS smoother instead — a flexible curve that follows local
+;; Or a [LOESS](https://en.wikipedia.org/wiki/Local_regression) smoother instead — a flexible curve that follows local
 ;; patterns in the data:
 
 (-> scatter-base

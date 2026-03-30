@@ -145,7 +145,7 @@
 ;; No membrane types, no datasets, no scale objects.
 ;;
 ;; Created with `sk/sketch`. Numeric arrays (`:xs`, `:ys`, etc.) are
-;; dtype-next buffers for efficiency.
+;; [dtype-next](https://github.com/cnuernber/dtype-next) buffers for efficiency.
 
 (def my-sketch (sk/sketch views))
 
@@ -208,7 +208,7 @@
 ;; ## Scale
 ;;
 ;; A **scale** maps data values to pixel positions. Built from a
-;; domain and a pixel range using wadogo.
+;; domain and a pixel range using [wadogo](https://github.com/scicloj/wadogo).
 ;;
 ;; | Type | Use |
 ;; |:-----|:----|
