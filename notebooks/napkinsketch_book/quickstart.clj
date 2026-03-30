@@ -40,7 +40,7 @@
 
 ;; `tc/dataset` loads a CSV into a
 ;; [Tablecloth](https://scicloj.github.io/tablecloth/) dataset (a
-;; thin wrapper around [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset)). `{:key-fn keyword}` converts
+;; wrapper around [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset)). `{:key-fn keyword}` converts
 ;; the CSV header strings to Clojure keywords, which is conventional.
 ;; `sk/lay-point` adds a scatter layer — each row becomes a dot.
 
