@@ -68,6 +68,8 @@ Napkinsketch builds on several excellent Clojure libraries:
 - [Malli](https://github.com/metosin/malli) — schema validation
 - [Kindly](https://scicloj.github.io/kindly/) & [Clay](https://scicloj.github.io/clay/) — notebook rendering
 
+Napkinsketch was developed with the help of [Claude Code](https://claude.ai/code) and [Clojure-MCP](https://github.com/bhauman/clojure-mcp).
+
 ## License
 
 MIT
