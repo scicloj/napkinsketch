@@ -345,6 +345,37 @@
 ;;
 ;; See the Configuration chapter for details.
 
+;; ## Plot Options
+;;
+;; **Plot options** are per-plot settings passed to `sk/options`,
+;; `sk/sketch`, or `sk/plot`. They include text content (title,
+;; subtitle, caption, axis labels) and a nested `:config` override.
+;; Unlike configuration keys, plot options are inherently per-plot —
+;; a title does not make sense as a global default.
+;;
+;; See `sk/plot-option-docs` for the full list, or the
+;; [Configuration](configuration.html) chapter for usage examples.
+
+(count sk/plot-option-docs)
+
+(kind/test-last [(fn [n] (= 6 n))])
+
+;; ## Layer Options
+;;
+;; **Layer options** are per-layer settings passed in the options map
+;; of layer functions (`sk/lay-point`, `sk/lay-histogram`, etc.).
+;; They control aesthetics (`:color`, `:size`, `:alpha`, `:shape`),
+;; grouping (`:group`), position adjustment (`:position`), and
+;; method-specific parameters (`:bandwidth`, `:se`, `:normalize`, etc.).
+;;
+;; Six keys are universal — accepted by every layer — and each method
+;; may accept additional keys. See `sk/layer-option-docs` for descriptions,
+;; or inspect a specific method with `sk/method-lookup`.
+
+(count sk/layer-option-docs)
+
+(kind/test-last [(fn [n] (= 17 n))])
+
 ;; ## Tooltip and Brush
 ;;
 ;; A **tooltip** shows data values on hover. A **brush** enables
@@ -382,4 +413,5 @@
 ;; | Gradient | Continuous color ramp for numerical color mappings | Resolved at render time |
 ;; | Configuration | Rendering options: dimensions, theme, palette, etc. | Layered precedence chain |
 ;; | Plot Options | Title, subtitle, caption, labels — per-plot text content | Passed to sk/options |
+;; | Layer Options | Per-layer aesthetics, grouping, position, and method parameters | Passed to layer functions |
 ;; | Tooltip / Brush | JavaScript hover and selection interactions | Added to SVG output |
