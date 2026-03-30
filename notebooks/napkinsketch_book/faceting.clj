@@ -13,8 +13,6 @@
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
-;; ## Sample Data
-
 ;; ## Facet Wrap
 ;;
 ;; `sk/facet` splits views by one categorical column.

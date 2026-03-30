@@ -359,7 +359,7 @@
 
 (-> {:cat (map #(str "cat-" %) (range 12))
      :val (repeatedly 12 #(rand-int 100))}
-    (sk/lay-bar :cat :val)
+    (sk/lay-value-bar :cat :val)
     (sk/coord :polar))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])

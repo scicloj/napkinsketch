@@ -13,8 +13,6 @@
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
-;; ## Datasets
-
 (def wind {:direction ["N" "NE" "E" "SE" "S" "SW" "W" "NW"]
            :speed [12 8 15 10 7 13 9 11]})
 

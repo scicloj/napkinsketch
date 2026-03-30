@@ -12,8 +12,6 @@
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
-;; ## Datasets
-
 ;; ## Histogram
 
 ;; Distribution of sepal length across all species.
@@ -158,7 +156,7 @@
 
 (-> data/iris
     (sk/lay-boxplot :species :sepal_width)
-    (sk/options {:coord :flip}))
+    (sk/coord :flip))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
