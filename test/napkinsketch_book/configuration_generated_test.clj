@@ -93,168 +93,83 @@
 (deftest t13_l80 (is ((fn [t] (= 13 (count (:row-maps t)))) v12_l70)))
 
 
-(def v15_l89 (-> (base-views)))
+(def v15_l90 (-> (base-views) (sk/options {:width 900, :height 250})))
 
 
 (deftest
- t16_l91
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 150 (:points s)) (< (:width s) 800))))
-   v15_l89)))
-
-
-(def v18_l99 (-> (base-views) sk/sketch :width))
-
-
-(deftest t19_l103 (is ((fn [v] (= 600 v)) v18_l99)))
-
-
-(def v21_l107 (-> (base-views) (sk/options {:width 900, :height 250})))
-
-
-(deftest
- t22_l110
+ t16_l93
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (> (:width s) 800))))
-   v21_l107)))
+   v15_l90)))
 
 
-(def
- v24_l118
- (->
-  (base-views)
-  (sk/sketch {:width 900, :height 250})
-  (select-keys [:width :height])))
+(def v18_l102 (-> (base-views) (sk/options {:theme {:bg "#FFFFFF"}})))
 
 
 (deftest
- t25_l122
- (is ((fn [m] (and (= 900 (:width m)) (= 250 (:height m)))) v24_l118)))
+ t19_l105
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v18_l102)))
 
 
-(def
- v27_l129
- (-> (base-views) (sk/options {:theme {:bg "#FFFFFF"}}) sk/plot))
+(def v21_l111 (-> (base-views) (sk/options {:palette :dark2})))
 
 
 (deftest
- t28_l133
+ t22_l114
  (is
-  ((fn
-    [v]
-    (let [s (str v)] (clojure.string/includes? s "rgb(255,255,255)")))
-   v27_l129)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v21_l111)))
 
 
-(def v30_l140 (-> (base-views) (sk/options {:palette :dark2})))
+(def v24_l126 (sk/set-config! {:width 800}))
 
 
-(deftest
- t31_l143
- (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v30_l140)))
+(def v25_l128 (:width (sk/config)))
 
 
-(def v33_l155 (sk/set-config! {:width 800}))
+(deftest t26_l130 (is ((fn [v] (= 800 v)) v25_l128)))
 
 
-(def v35_l159 (:width (sk/config)))
+(def v27_l132 (-> (base-views)))
 
 
-(deftest t36_l161 (is ((fn [v] (= 800 v)) v35_l159)))
+(def v29_l136 (sk/set-config! nil))
 
 
-(def v38_l165 (-> (base-views) sk/sketch :width))
+(def v30_l138 (:width (sk/config)))
 
 
-(deftest t39_l169 (is ((fn [v] (= 800 v)) v38_l165)))
-
-
-(def v41_l173 (-> (base-views) sk/plot))
-
-
-(deftest
- t42_l175
- (is
-  ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 150 (:points s)) (> (:width s) 800))))
-   v41_l173)))
-
-
-(def v44_l183 (sk/set-config! nil))
-
-
-(def v45_l185 (:width (sk/config)))
-
-
-(deftest t46_l187 (is ((fn [v] (= 600 v)) v45_l185)))
+(deftest t31_l140 (is ((fn [v] (= 600 v)) v30_l138)))
 
 
 (def
- v48_l198
- (sk/with-config {:width 1000, :height 300} (:width (sk/config))))
-
-
-(deftest t49_l201 (is ((fn [v] (= 1000 v)) v48_l198)))
-
-
-(def v51_l205 (:width (sk/config)))
-
-
-(deftest t52_l207 (is ((fn [v] (= 600 v)) v51_l205)))
-
-
-(def
- v54_l211
- (sk/with-config
-  {:width 1000, :height 300}
-  (-> (base-views) sk/sketch :width)))
-
-
-(deftest t55_l216 (is ((fn [v] (= 1000 v)) v54_l211)))
-
-
-(def
- v57_l220
+ v33_l151
  (sk/with-config
   {:theme {:bg "#1a1a2e", :grid "#16213e", :font-size 8}}
-  (->
-   (base-views)
-   (sk/options {:title "Dark Theme via with-config"})
-   sk/plot)))
+  (-> (base-views) (sk/options {:title "Dark Theme via with-config"}))))
 
 
 (deftest
- t58_l225
- (is
-  ((fn
-    [v]
-    (let
-     [s (str v)]
-     (and
-      (clojure.string/includes? s "rgb(26,26,46)")
-      (clojure.string/includes? s "Dark Theme via with-config"))))
-   v57_l220)))
+ t34_l155
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v33_l151)))
+
+
+(def v36_l161 (:width (sk/config)))
+
+
+(deftest t37_l163 (is ((fn [v] (= 600 v)) v36_l161)))
 
 
 (def
- v60_l245
+ v39_l179
  (sk/set-config! {:width 800, :height 350, :point-radius 5.0}))
 
 
 (def
- v62_l250
+ v41_l184
  (def
   precedence-result
   (sk/with-config
@@ -264,18 +179,18 @@
     {:sketch-width (:width sketch), :sketch-height (:height sketch)}))))
 
 
-(def v63_l257 precedence-result)
+(def v42_l191 precedence-result)
 
 
 (deftest
- t64_l259
+ t43_l193
  (is
   ((fn [m] (and (= 900 (:sketch-width m)) (= 500 (:sketch-height m))))
-   v63_l257)))
+   v42_l191)))
 
 
 (def
- v66_l268
+ v45_l202
  (def
   precedence-point-radius
   (sk/with-config
@@ -283,14 +198,14 @@
    (:point-radius (sk/config)))))
 
 
-(def v67_l272 precedence-point-radius)
+(def v46_l206 precedence-point-radius)
 
 
-(deftest t68_l274 (is ((fn [v] (= 5.0 v)) v67_l272)))
+(deftest t47_l208 (is ((fn [v] (= 5.0 v)) v46_l206)))
 
 
 (def
- v70_l278
+ v49_l212
  (def
   precedence-plot
   (sk/with-config
@@ -298,30 +213,30 @@
    (-> (base-views) (sk/options {:width 900})))))
 
 
-(def v71_l283 precedence-plot)
+(def v50_l217 precedence-plot)
 
 
 (deftest
- t72_l285
+ t51_l219
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (> (:width s) 900) (< (:width s) 1100))))
-   v71_l283)))
+   v50_l217)))
 
 
-(def v74_l295 (sk/set-config! nil))
+(def v53_l229 (sk/set-config! nil))
 
 
 (def
- v76_l338
+ v55_l272
  (-> (base-views) (sk/options {:theme {:bg "#F5F5DC"}}) sk/plot))
 
 
 (deftest
- t77_l342
+ t56_l276
  (is
   ((fn
     [v]
@@ -330,11 +245,11 @@
      (and
       (clojure.string/includes? s "rgb(245,245,220)")
       (clojure.string/includes? s "rgb(255,255,255)"))))
-   v76_l338)))
+   v55_l272)))
 
 
 (def
- v79_l352
+ v58_l286
  (->
   (base-views)
   (sk/options
@@ -344,16 +259,16 @@
 
 
 (deftest
- t80_l357
+ t59_l291
  (is
   ((fn
     [v]
     (let [s (str v)] (clojure.string/includes? s "rgb(45,45,45)")))
-   v79_l352)))
+   v58_l286)))
 
 
 (def
- v82_l367
+ v61_l301
  (sk/arrange
   [(->
     (base-views)
@@ -371,31 +286,31 @@
       :height 250}))]))
 
 
-(deftest t83_l377 (is ((fn [v] (= :div (first v))) v82_l367)))
+(deftest t62_l311 (is ((fn [v] (= :div (first v))) v61_l301)))
 
 
-(def v85_l401 (-> (base-views) (sk/options {:palette :tableau10})))
+(def v64_l335 (-> (base-views) (sk/options {:palette :tableau10})))
 
 
 (deftest
- t86_l404
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v85_l401)))
+ t65_l338
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v64_l335)))
 
 
 (def
- v88_l409
+ v67_l343
  (->
   (base-views)
   (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]})))
 
 
 (deftest
- t89_l412
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v88_l409)))
+ t68_l346
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v67_l343)))
 
 
 (def
- v91_l417
+ v70_l351
  (->
   (base-views)
   (sk/options
@@ -406,46 +321,46 @@
 
 
 (deftest
- t92_l422
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v91_l417)))
+ t71_l356
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v70_l351)))
 
 
-(def v94_l427 (sk/set-config! {:palette :pastel1}))
+(def v73_l361 (sk/set-config! {:palette :pastel1}))
 
 
-(def v95_l429 (-> (base-views)))
-
-
-(deftest
- t96_l431
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v95_l429)))
-
-
-(def v97_l434 (sk/set-config! nil))
-
-
-(def v99_l438 (sk/with-config {:palette :accent} (-> (base-views))))
+(def v74_l363 (-> (base-views)))
 
 
 (deftest
- t100_l441
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v99_l438)))
+ t75_l365
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v74_l363)))
+
+
+(def v76_l368 (sk/set-config! nil))
+
+
+(def v78_l372 (sk/with-config {:palette :accent} (-> (base-views))))
+
+
+(deftest
+ t79_l375
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v78_l372)))
 
 
 (def
- v102_l452
+ v81_l386
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (sk/lay-point :x :y {:color :c})))
 
 
 (deftest
- t103_l455
- (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v102_l452)))
+ t82_l389
+ (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v81_l386)))
 
 
 (def
- v105_l459
+ v84_l393
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (sk/lay-point :x :y {:color :c})
@@ -453,12 +368,12 @@
 
 
 (deftest
- t106_l463
- (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v105_l459)))
+ t85_l397
+ (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v84_l393)))
 
 
 (def
- v108_l467
+ v87_l401
  (sk/with-config
   {:color-scale :plasma}
   (->
@@ -467,12 +382,12 @@
 
 
 (deftest
- t109_l471
- (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v108_l467)))
+ t88_l405
+ (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v87_l401)))
 
 
 (def
- v111_l477
+ v90_l411
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (sk/lay-point :x :y {:color :c})
@@ -482,56 +397,55 @@
 
 
 (deftest
- t112_l483
+ t91_l417
  (is
   ((fn
     [m]
     (and (= :inferno (:color-scale m)) (= :continuous (:type m))))
-   v111_l477)))
+   v90_l411)))
 
 
-(def v114_l499 (sk/sketch (base-views)))
+(def v93_l433 (sk/sketch (base-views)))
 
 
 (deftest
- t115_l501
+ t94_l435
  (is
-  ((fn [sketch] (and (map? sketch) (= 600 (:width sketch))))
-   v114_l499)))
+  ((fn [sketch] (and (map? sketch) (= 600 (:width sketch)))) v93_l433)))
 
 
-(def v117_l508 (-> (base-views)))
+(def v96_l442 (-> (base-views)))
 
 
 (deftest
- t118_l510
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v117_l508)))
+ t97_l444
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v96_l442)))
 
 
 (def
- v120_l519
+ v99_l453
  (def good-sketch (sk/sketch (base-views) {:validate false})))
 
 
-(def v121_l521 (sk/valid-sketch? good-sketch))
+(def v100_l455 (sk/valid-sketch? good-sketch))
 
 
-(deftest t122_l523 (is ((fn [v] (true? v)) v121_l521)))
+(deftest t101_l457 (is ((fn [v] (true? v)) v100_l455)))
 
 
 (def
- v124_l528
+ v103_l462
  (def bad-sketch (assoc good-sketch :width "not-a-number")))
 
 
-(def v125_l530 (sk/valid-sketch? bad-sketch))
+(def v104_l464 (sk/valid-sketch? bad-sketch))
 
 
-(deftest t126_l532 (is ((fn [v] (false? v)) v125_l530)))
+(deftest t105_l466 (is ((fn [v] (false? v)) v104_l464)))
 
 
 (def
- v128_l537
+ v107_l471
  (->
   (sk/explain-sketch bad-sketch)
   :errors
@@ -540,14 +454,14 @@
 
 
 (deftest
- t129_l542
+ t108_l476
  (is
   ((fn [m] (and (= [:width] (:path m)) (= "not-a-number" (:value m))))
-   v128_l537)))
+   v107_l471)))
 
 
 (def
- v131_l551
+ v110_l485
  (try
   (let
    [sketch
@@ -565,21 +479,21 @@
 
 
 (deftest
- t132_l562
+ t111_l496
  (is
   ((fn
     [m]
     (and
      (:caught m)
      (= "Sketch does not conform to schema" (:message m))))
-   v131_l551)))
+   v110_l485)))
 
 
-(def v134_l571 (sk/sketch (base-views) {:validate false}))
+(def v113_l505 (sk/sketch (base-views) {:validate false}))
 
 
 (deftest
- t135_l573
+ t114_l507
  (is
   ((fn [sketch] (and (map? sketch) (= 600 (:width sketch))))
-   v134_l571)))
+   v113_l505)))

@@ -121,3 +121,52 @@
 ;; the layer options.
 ;; When multiple layers share `:position :dodge`, they are coordinated
 ;; together — error bars automatically align with bars.
+
+;; ## Layer Options
+;;
+;; The options map passed to `lay-` functions controls aesthetics,
+;; statistical parameters, and spatial adjustments for that layer.
+;;
+;; ### Universal options
+;;
+;; Accepted by every method:
+
+(kind/table
+ {:column-names ["Option" "Description"]
+  :row-maps
+  (for [k method/universal-layer-options]
+    {"Option" (kind/code (pr-str k))
+     "Description" (get method/layer-option-docs k)})})
+
+(kind/test-last
+ [(fn [t] (= 6 (count (:row-maps t))))])
+
+;; ### Method-specific options
+;;
+;; Some methods accept additional keys beyond the universal set.
+;; Methods not listed here accept only the universal options above.
+
+(kind/table
+ {:column-names ["Method" "Additional options"]
+  :row-maps
+  (for [k method/method-order
+        :let [m (method/lookup k)
+              accepts (:accepts m)]
+        :when (seq accepts)]
+    {"Method" (kind/code (pr-str k))
+     "Additional options" (str/join ", " (map #(str "`" (pr-str %) "`") accepts))})})
+
+(kind/test-last
+ [(fn [t] (pos? (count (:row-maps t))))])
+
+;; ### All layer option keys
+
+(kind/table
+ {:column-names ["Option" "Description"]
+  :row-maps
+  (for [[k desc] (sort-by key method/layer-option-docs)]
+    {"Option" (kind/code (pr-str k))
+     "Description" desc})})
+
+(kind/test-last
+ [(fn [t] (= 17 (count (:row-maps t))))])

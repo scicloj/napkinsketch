@@ -187,6 +187,11 @@
    Maps each key to [category description]."
   defaults/per-call-key-docs)
 
+(def layer-option-docs
+  "Documentation for layer option keys accepted by lay- functions.
+   Maps each key to a description string."
+  method/layer-option-docs)
+
 (defn set-config!
   "Set global config overrides. Persists across calls until reset.
    (set-config! {:palette :dark2 :theme {:bg \"#FFFFFF\"}})

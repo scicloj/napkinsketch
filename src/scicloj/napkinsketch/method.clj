@@ -7,6 +7,30 @@
 
 ;; ---- Registry ----
 
+(def universal-layer-options
+  "Layer options accepted by all methods."
+  [:color :alpha :group :position :nudge-x :nudge-y])
+
+(def layer-option-docs
+  "Documentation for layer option keys. Maps key to description string."
+  {:color "Column keyword (categorical grouping) or literal color string"
+   :alpha "Column keyword (per-point opacity) or fixed number 0.0–1.0"
+   :group "Column keyword for grouping without color"
+   :position "Override: :identity, :dodge, :stack, or :fill"
+   :nudge-x "Shift all x-coordinates by this data-space amount"
+   :nudge-y "Shift all y-coordinates by this data-space amount"
+   :size "Column keyword or fixed number — point radius or stroke width"
+   :shape "Column keyword for per-point shape"
+   :jitter "true or pixel amount — random offset to reduce overplotting"
+   :text "Column keyword for label content"
+   :se "true to show confidence ribbon around regression line"
+   :bandwidth "LOESS/KDE bandwidth parameter (0.0–1.0)"
+   :normalize "Histogram normalization: :density, :probability, or nil"
+   :levels "Number of contour iso-levels (default 5)"
+   :fill "Column keyword for tile fill values (pre-computed heatmap)"
+   :ymin "Column keyword for lower error bound"
+   :ymax "Column keyword for upper error bound"})
+
 (def ^:private registry*
   "Atom holding keyword → method entry map."
   (atom {}))
@@ -42,31 +66,31 @@
 
 ;; ---- Built-in methods ----
 
-(register! :point {:mark :point :stat :identity :doc "Scatter — individual data points."})
-(register! :line {:mark :line :stat :identity :doc "Line — connects data points in order."})
-(register! :step {:mark :step :stat :identity :doc "Step — horizontal-then-vertical connected points."})
-(register! :area {:mark :area :stat :identity :doc "Area — filled region under a line."})
-(register! :stacked-area {:mark :area :stat :identity :position :stack :doc "Stacked area — filled regions stacked cumulatively."})
-(register! :histogram {:mark :bar :stat :bin :doc "Histogram — bins numerical data into bars."})
-(register! :bar {:mark :rect :stat :count :doc "Bar — counts categorical values."})
-(register! :stacked-bar {:mark :rect :stat :count :position :stack :doc "Stacked bar — counts categorical values, stacked."})
-(register! :stacked-bar-fill {:mark :rect :stat :count :position :fill :doc "Percentage stacked bar — proportions sum to 1.0."})
-(register! :value-bar {:mark :rect :stat :identity :doc "Value bar — categorical x with pre-computed y."})
-(register! :lm {:mark :line :stat :lm :doc "Linear regression — OLS fit line."})
-(register! :loess {:mark :line :stat :loess :doc "LOESS — local regression smoothing."})
-(register! :density {:mark :area :stat :kde :doc "Density — kernel density estimation as filled area."})
-(register! :tile {:mark :tile :stat :bin2d :doc "Tile/heatmap — 2D grid binning."})
-(register! :density2d {:mark :tile :stat :kde2d :doc "2D density — KDE-smoothed heatmap."})
-(register! :contour {:mark :contour :stat :kde2d :doc "Contour — iso-density contour lines."})
-(register! :boxplot {:mark :boxplot :stat :boxplot :doc "Boxplot — median, quartiles, whiskers, outliers."})
-(register! :violin {:mark :violin :stat :violin :doc "Violin — mirrored density curve per category."})
-(register! :ridgeline {:mark :ridgeline :stat :violin :doc "Ridgeline — stacked density curves per category."})
-(register! :summary {:mark :pointrange :stat :summary :doc "Summary — mean ± standard error per category."})
-(register! :errorbar {:mark :errorbar :stat :identity :doc "Errorbar — vertical error bars."})
-(register! :lollipop {:mark :lollipop :stat :identity :doc "Lollipop — stem with dot."})
-(register! :text {:mark :text :stat :identity :doc "Text — data-driven labels."})
-(register! :label {:mark :label :stat :identity :doc "Label — text with background box."})
-(register! :rug {:mark :rug :stat :identity :doc "Rug — axis-margin tick marks."})
+(register! :point {:mark :point :stat :identity :accepts [:size :shape :jitter :text] :doc "Scatter — individual data points."})
+(register! :line {:mark :line :stat :identity :accepts [:size] :doc "Line — connects data points in order."})
+(register! :step {:mark :step :stat :identity :accepts [:size] :doc "Step — horizontal-then-vertical connected points."})
+(register! :area {:mark :area :stat :identity :accepts [] :doc "Area — filled region under a line."})
+(register! :stacked-area {:mark :area :stat :identity :position :stack :accepts [] :doc "Stacked area — filled regions stacked cumulatively."})
+(register! :histogram {:mark :bar :stat :bin :accepts [:normalize] :doc "Histogram — bins numerical data into bars."})
+(register! :bar {:mark :rect :stat :count :accepts [] :doc "Bar — counts categorical values."})
+(register! :stacked-bar {:mark :rect :stat :count :position :stack :accepts [] :doc "Stacked bar — counts categorical values, stacked."})
+(register! :stacked-bar-fill {:mark :rect :stat :count :position :fill :accepts [] :doc "Percentage stacked bar — proportions sum to 1.0."})
+(register! :value-bar {:mark :rect :stat :identity :accepts [] :doc "Value bar — categorical x with pre-computed y."})
+(register! :lm {:mark :line :stat :lm :accepts [:se :size] :doc "Linear regression — OLS fit line."})
+(register! :loess {:mark :line :stat :loess :accepts [:se :bandwidth :size] :doc "LOESS — local regression smoothing."})
+(register! :density {:mark :area :stat :kde :accepts [:bandwidth] :doc "Density — kernel density estimation as filled area."})
+(register! :tile {:mark :tile :stat :bin2d :accepts [:fill] :doc "Tile/heatmap — 2D grid binning."})
+(register! :density2d {:mark :tile :stat :kde2d :accepts [] :doc "2D density — KDE-smoothed heatmap."})
+(register! :contour {:mark :contour :stat :kde2d :accepts [:levels :size] :doc "Contour — iso-density contour lines."})
+(register! :boxplot {:mark :boxplot :stat :boxplot :accepts [:size] :doc "Boxplot — median, quartiles, whiskers, outliers."})
+(register! :violin {:mark :violin :stat :violin :accepts [:bandwidth :size] :doc "Violin — mirrored density curve per category."})
+(register! :ridgeline {:mark :ridgeline :stat :violin :accepts [:bandwidth] :doc "Ridgeline — stacked density curves per category."})
+(register! :summary {:mark :pointrange :stat :summary :accepts [:size] :doc "Summary — mean ± standard error per category."})
+(register! :errorbar {:mark :errorbar :stat :identity :accepts [:ymin :ymax :size] :doc "Errorbar — vertical error bars."})
+(register! :lollipop {:mark :lollipop :stat :identity :accepts [:size] :doc "Lollipop — stem with dot."})
+(register! :text {:mark :text :stat :identity :accepts [:text] :doc "Text — data-driven labels."})
+(register! :label {:mark :label :stat :identity :accepts [:text] :doc "Label — text with background box."})
+(register! :rug {:mark :rug :stat :identity :accepts [] :doc "Rug — axis-margin tick marks."})
 
 ;; ---- Annotation constructors ----
 ;; These are not methods (no mark+stat+position). They take arguments

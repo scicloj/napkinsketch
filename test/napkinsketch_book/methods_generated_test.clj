@@ -99,3 +99,54 @@
 
 
 (deftest t16_l116 (is ((fn [t] (= 4 (count (:row-maps t)))) v15_l108)))
+
+
+(def
+ v18_l134
+ (kind/table
+  {:column-names ["Option" "Description"],
+   :row-maps
+   (for
+    [k method/universal-layer-options]
+    {"Option" (kind/code (pr-str k)),
+     "Description" (get method/layer-option-docs k)})}))
+
+
+(deftest t19_l141 (is ((fn [t] (= 6 (count (:row-maps t)))) v18_l134)))
+
+
+(def
+ v21_l149
+ (kind/table
+  {:column-names ["Method" "Additional options"],
+   :row-maps
+   (for
+    [k
+     method/method-order
+     :let
+     [m (method/lookup k) accepts (:accepts m)]
+     :when
+     (seq accepts)]
+    {"Method" (kind/code (pr-str k)),
+     "Additional options"
+     (str/join
+      ", "
+      (map
+       (fn* [p1__80411#] (str "`" (pr-str p1__80411#) "`"))
+       accepts))})}))
+
+
+(deftest t22_l159 (is ((fn [t] (pos? (count (:row-maps t)))) v21_l149)))
+
+
+(def
+ v24_l164
+ (kind/table
+  {:column-names ["Option" "Description"],
+   :row-maps
+   (for
+    [[k desc] (sort-by key method/layer-option-docs)]
+    {"Option" (kind/code (pr-str k)), "Description" desc})}))
+
+
+(deftest t25_l171 (is ((fn [t] (= 17 (count (:row-maps t)))) v24_l164)))
