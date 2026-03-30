@@ -209,39 +209,63 @@
 
 (defn mark-doc
   "Return the prose description for a mark keyword.
+   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
    (mark-doc :point) => \"Filled circle\""
   [k]
-  (extract/extract-layer {:mark [k :doc]} nil nil nil))
+  (try
+    (let [r (extract/extract-layer {:mark [k :doc]} nil nil nil)]
+      (if (string? r) r "(no description)"))
+    (catch Exception _ "(no description)")))
 
 (defn stat-doc
   "Return the prose description for a stat keyword.
+   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
    (stat-doc :bin) => \"Bin numerical values into ranges\""
   [k]
-  (stat/compute-stat {:stat [k :doc]}))
+  (try
+    (let [r (stat/compute-stat {:stat [k :doc]})]
+      (if (string? r) r "(no description)"))
+    (catch Exception _ "(no description)")))
 
 (defn position-doc
   "Return the prose description for a position keyword.
+   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
    (position-doc :dodge) => \"Shift groups side-by-side within a band\""
   [k]
-  (position/apply-position [k :doc] nil))
+  (try
+    (let [r (position/apply-position [k :doc] nil)]
+      (if (string? r) r "(no description)"))
+    (catch Exception _ "(no description)")))
 
 (defn membrane-mark-doc
   "Return the prose description for how a mark renders to membrane drawables.
+   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
    (membrane-mark-doc :point) => \"Translated colored rounded-rectangles\""
   [k]
-  (mark/layer->membrane {:mark [k :doc]} nil))
+  (try
+    (let [r (mark/layer->membrane {:mark [k :doc]} nil)]
+      (if (string? r) r "(no description)"))
+    (catch Exception _ "(no description)")))
 
 (defn scale-doc
   "Return the prose description for a scale keyword.
+   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
    (scale-doc :linear) => \"Continuous linear mapping\""
   [k]
-  (scale/make-scale [k :doc] nil nil))
+  (try
+    (let [r (scale/make-scale [k :doc] nil nil)]
+      (if (string? r) r "(no description)"))
+    (catch Exception _ "(no description)")))
 
 (defn coord-doc
   "Return the prose description for a coordinate type keyword.
+   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
    (coord-doc :polar) => \"Radial mapping: x→angle, y→radius\""
   [k]
-  (coord/make-coord [k :doc] nil nil nil nil nil))
+  (try
+    (let [r (coord/make-coord [k :doc] nil nil nil nil nil)]
+      (if (string? r) r "(no description)"))
+    (catch Exception _ "(no description)")))
 
 ;; ---- Layer Functions ----
 

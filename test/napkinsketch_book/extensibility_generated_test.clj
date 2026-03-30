@@ -215,3 +215,49 @@
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v44_l334)))
+
+
+(def
+ v47_l354
+ (defmethod
+  stat/compute-stat
+  :quantile
+  [view]
+  {:points [], :x-domain [0 1], :y-domain [0 1]}))
+
+
+(def
+ v48_l357
+ (defmethod
+  stat/compute-stat
+  [:quantile :doc]
+  [_]
+  "Quantile regression bands"))
+
+
+(def v50_l362 (sk/stat-doc :quantile))
+
+
+(deftest
+ t51_l364
+ (is ((fn [v] (= "Quantile regression bands" v)) v50_l362)))
+
+
+(def v53_l372 (remove-method stat/compute-stat [:quantile :doc]))
+
+
+(def v54_l374 (sk/stat-doc :quantile))
+
+
+(deftest t55_l376 (is ((fn [v] (= "(no description)" v)) v54_l374)))
+
+
+(def v57_l382 (remove-method stat/compute-stat :quantile))
+
+
+(def
+ v58_l384
+ (count (filter keyword? (keys (methods stat/compute-stat)))))
+
+
+(deftest t59_l386 (is ((fn [v] (= 11 v)) v58_l384)))

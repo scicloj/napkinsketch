@@ -339,6 +339,52 @@
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
+;; ## Self-Documenting Extensions
+;;
+;; Every generated dispatch table in this notebook is built by
+;; introspecting multimethod keys at render time. When you extend
+;; a multimethod, your new dispatch value automatically appears in
+;; the table. You can also register a `[:key :doc]` defmethod to
+;; provide a description.
+;;
+;; ### Adding a documented extension
+;;
+;; Register both the implementation and a `[:key :doc]` defmethod:
+
+(defmethod stat/compute-stat :quantile [view]
+  {:points [] :x-domain [0 1] :y-domain [0 1]})
+
+(defmethod stat/compute-stat [:quantile :doc] [_]
+  "Quantile regression bands")
+
+;; The doc helper picks it up immediately:
+
+(sk/stat-doc :quantile)
+
+(kind/test-last [(fn [v] (= "Quantile regression bands" v))])
+
+;; ### Missing documentation degrades gracefully
+;;
+;; If you skip the `[:key :doc]` defmethod, the table still renders —
+;; the description falls back to "(no description)" instead of
+;; throwing an error. Let us remove the doc defmethod and verify:
+
+(remove-method stat/compute-stat [:quantile :doc])
+
+(sk/stat-doc :quantile)
+
+(kind/test-last [(fn [v] (= "(no description)" v))])
+
+;; ### Cleanup
+;;
+;; Remove the example extension so it does not affect other tests:
+
+(remove-method stat/compute-stat :quantile)
+
+(count (filter keyword? (keys (methods stat/compute-stat))))
+
+(kind/test-last [(fn [v] (= 11 v))])
+
 ;; ## Summary
 ;;
 ;; | To add... | Extend... |
