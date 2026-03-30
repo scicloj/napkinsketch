@@ -163,7 +163,8 @@
    :diverging → RdBu.
    keyword → clojure2d gradient name (:inferno, :viridis/plasma, etc.).
    map {:low hex :mid hex :high hex} → custom 3-stop gradient.
-   function → used directly."
+   function → used directly.
+   Throws on unrecognized keyword."
   [color-scale]
   (cond
     (nil? color-scale) gradient-color
@@ -173,13 +174,18 @@
     (keyword? color-scale)
     (if-let [g (resolve-gradient-name color-scale)]
       (wrap-gradient g)
-      gradient-color)
+      (throw (ex-info (str "Unknown color scale: " color-scale
+                           ". Use a clojure2d gradient name (e.g. :inferno, :viridis, :plasma)"
+                           " or :sequential / :diverging.")
+                      {:color-scale color-scale})))
     (map? color-scale)
     (let [{:keys [low mid high]
            :or {low "#B2182B" mid "#F7F7F7" high "#2166AC"}} color-scale
           g (c/gradient [(c/to-color low) (c/to-color mid) (c/to-color high)])]
       (wrap-gradient g))
-    :else gradient-color))
+    :else (throw (ex-info (str "Invalid color scale: " (pr-str color-scale)
+                               ". Expected nil, keyword, map, or function.")
+                          {:color-scale color-scale}))))
 
 (defn normalize-midpoint
   "Remap a value v from [vmin, vmax] to [0,1] with optional midpoint.

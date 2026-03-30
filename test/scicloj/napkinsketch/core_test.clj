@@ -1164,3 +1164,24 @@
         (testing mark-name
           (is (sk/valid-sketch? (sk/sketch views {:validate false}))))))))
 
+(deftest with-config-snapshot-test
+  (testing "with-config overrides survive PlotSpec lazy rendering"
+    (let [spec (sk/with-config {:color-scale :plasma}
+                 (-> {:x [1 2 3] :y [1 2 3] :c [1 2 3]}
+                     (sk/lay-point :x :y {:color :c})))]
+      (is (= {:color-scale :plasma} (:config-snapshot spec))
+          "config snapshot is captured")
+      (is (= :plasma (get-in (sk/sketch (sk/views-of spec)
+                                        (merge (:opts spec) (:config-snapshot spec)))
+                             [:legend :color-scale]))
+          "color-scale reaches the sketch")))
+  (testing "no snapshot without with-config"
+    (let [spec (-> {:x [1 2 3] :y [1 2 3]}
+                   (sk/lay-point :x :y))]
+      (is (nil? (:config-snapshot spec)))))
+  (testing "unknown color-scale throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Unknown color scale"
+                          (sk/sketch (sk/views-of (-> {:x [1 2 3] :y [1 2 3] :c [1 2 3]}
+                                                      (sk/lay-point :x :y {:color :c})))
+                                     {:color-scale :totally-bogus})))))
+

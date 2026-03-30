@@ -516,8 +516,9 @@
   ([views] (views->sketch views {}))
   ([views {:keys [x-label y-label title subtitle caption
                   scales legend-position] :as opts}]
-   (let [cfg (-> (defaults/resolve-config opts)
-                 (assoc :gradient-fn (defaults/resolve-gradient-fn (:color-scale opts))))
+   (let [cfg (defaults/resolve-config opts)
+         cfg (assoc cfg :gradient-fn (defaults/resolve-gradient-fn (:color-scale cfg)))
+
          validate? (:validate cfg true)
          width (:width cfg)
          height (:height cfg)

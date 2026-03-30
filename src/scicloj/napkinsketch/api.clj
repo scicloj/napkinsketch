@@ -21,15 +21,24 @@
 ;; ---- PlotSpec: auto-rendering plot specification ----
 
 (defn render-plot-spec
-  "Render a PlotSpec to SVG. Called by Clay via kind/fn at display time."
+  "Render a PlotSpec to SVG. Called by Clay via kind/fn at display time.
+   Restores the config snapshot captured at creation time so that
+   with-config overrides are preserved across the lazy render boundary."
   [spec]
-  (plot-impl/plot (:views spec) (:opts spec)))
+  (let [captured (:config-snapshot spec)]
+    (if captured
+      (binding [defaults/*config* captured]
+        (plot-impl/plot (:views spec) (:opts spec)))
+      (plot-impl/plot (:views spec) (:opts spec)))))
 
 (defn- ->plot-spec
-  "Wrap views + opts in a PlotSpec annotated with kind/fn for auto-rendering."
+  "Wrap views + opts in a PlotSpec annotated with kind/fn for auto-rendering.
+   Snapshots the current *config* binding so with-config overrides survive
+   the lazy render boundary."
   [views & [opts]]
-  (kind/fn (assoc (view/->PlotSpec views (or opts {}))
-                  :kindly/f #'render-plot-spec)))
+  (kind/fn (cond-> (assoc (view/->PlotSpec views (or opts {}))
+                          :kindly/f #'render-plot-spec)
+             defaults/*config* (assoc :config-snapshot defaults/*config*))))
 
 (defn- extract-views
   "Extract raw views vector from PlotSpec or pass through."
