@@ -121,7 +121,7 @@
   {:x (range 1 50),
    :y
    (map
-    (fn* [p1__77566#] (* 2 (Math/pow 1.1 p1__77566#)))
+    (fn* [p1__79568#] (* 2 (Math/pow 1.1 p1__79568#)))
     (range 1 50))}))
 
 
@@ -456,3 +456,23 @@
 
 
 (deftest t83_l328 (is ((fn [v] (= :div (first v))) v82_l323)))
+
+
+(def
+ v85_l334
+ (def
+  splom-cols
+  [:sepal_length :sepal_width :petal_length :petal_width]))
+
+
+(def
+ v86_l336
+ (->
+  data/iris
+  (sk/view (sk/cross splom-cols splom-cols) {:color :species})
+  sk/lay-point
+  (sk/options {:brush true})
+  sk/plot))
+
+
+(deftest t87_l342 (is ((fn [v] (= :div (first v))) v86_l336)))

@@ -326,3 +326,17 @@
     sk/plot)
 
 (kind/test-last [(fn [v] (= :div (first v)))])
+
+;; Brushing becomes especially useful in a scatter plot matrix
+;; (SPLOM). Drag to select points in any panel — the selection
+;; highlights across all panels, revealing multivariate structure.
+
+(def splom-cols [:sepal_length :sepal_width :petal_length :petal_width])
+
+(-> data/iris
+    (sk/view (sk/cross splom-cols splom-cols) {:color :species})
+    sk/lay-point
+    (sk/options {:brush true})
+    sk/plot)
+
+(kind/test-last [(fn [v] (= :div (first v)))])
