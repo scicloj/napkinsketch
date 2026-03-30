@@ -60,13 +60,18 @@ clojure -M:dev -m nrepl.cmdline   # start REPL
 
 ## Acknowledgments
 
-Napkinsketch builds on several Clojure libraries:
+Napkinsketch builds on several excellent Clojure libraries:
 
-- [Tablecloth](https://scicloj.github.io/tablecloth/) — dataset manipulation
+- [Tablecloth](https://scicloj.github.io/tablecloth/) & [dtype-next](https://github.com/cnuernber/dtype-next) — dataset manipulation and high-performance numeric arrays
 - [Membrane](https://github.com/phronmophobic/membrane) — rendering and layout
 - [Wadogo](https://github.com/scicloj/wadogo) — scales
 - [Clojure2d](https://github.com/Clojure2D/clojure2d) — color palettes and gradients
 - [Fastmath](https://github.com/generateme/fastmath) — statistics
+- [Malli](https://github.com/metosin/malli) — schema validation
+- [Kindly](https://scicloj.github.io/kindly/) & [Clay](https://scicloj.github.io/clay/) — notebook rendering
+
+Napkinsketch was developed with the help of [Claude Code](https://claude.ai/code)
+by [Anthropic](https://www.anthropic.com/).
 
 ## License
 

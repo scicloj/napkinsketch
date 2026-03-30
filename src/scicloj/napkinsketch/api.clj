@@ -160,7 +160,7 @@
 (defmacro with-config
   "Execute body with thread-local config overrides.
    Overrides take precedence over set-config! and defaults,
-   but per-call opts still win.
+   but plot options still win.
    (with-config {:theme {:bg \"#FFF\"}} (plot ...))"
   [config-map & body]
   `(binding [defaults/*config* ~config-map]

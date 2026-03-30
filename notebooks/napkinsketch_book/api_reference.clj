@@ -573,6 +573,83 @@ sk1
 
 (kind/test-last [(fn [p] (= :pastel1 p))])
 
+;; ### Documentation Metadata
+
+;; Three maps document the option keys at each scope level.
+
+(kind/doc #'sk/config-key-docs)
+
+(count sk/config-key-docs)
+
+(kind/test-last [(fn [n] (= 36 n))])
+
+(kind/doc #'sk/plot-option-docs)
+
+(count sk/plot-option-docs)
+
+(kind/test-last [(fn [n] (= 6 n))])
+
+(kind/doc #'sk/layer-option-docs)
+
+(count sk/layer-option-docs)
+
+(kind/test-last [(fn [n] (= 17 n))])
+
+;; ## Method Registry
+
+(kind/doc #'sk/method-lookup)
+
+(sk/method-lookup :lm)
+
+(kind/test-last [(fn [m] (and (= :line (:mark m))
+                              (= :lm (:stat m))))])
+
+(kind/doc #'sk/method-registered)
+
+(count (sk/method-registered))
+
+(kind/test-last [(fn [n] (= 25 n))])
+
+;; ## Documentation Helpers
+;;
+;; Query the self-documenting dispatch tables for any extensible concept.
+
+(kind/doc #'sk/stat-doc)
+
+(sk/stat-doc :lm)
+
+(kind/test-last [(fn [s] (string? s))])
+
+(kind/doc #'sk/mark-doc)
+
+(sk/mark-doc :point)
+
+(kind/test-last [(fn [s] (string? s))])
+
+(kind/doc #'sk/position-doc)
+
+(sk/position-doc :dodge)
+
+(kind/test-last [(fn [s] (string? s))])
+
+(kind/doc #'sk/scale-doc)
+
+(sk/scale-doc :linear)
+
+(kind/test-last [(fn [s] (string? s))])
+
+(kind/doc #'sk/coord-doc)
+
+(sk/coord-doc :cartesian)
+
+(kind/test-last [(fn [s] (string? s))])
+
+(kind/doc #'sk/membrane-mark-doc)
+
+(sk/membrane-mark-doc :point)
+
+(kind/test-last [(fn [s] (string? s))])
+
 ;; ## Composition
 
 (kind/doc #'sk/arrange)
