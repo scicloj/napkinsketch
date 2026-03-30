@@ -29,6 +29,30 @@
 
 (kind/test-last [(fn [v] (and (sk/plot-spec? v) (= 1 (count (sk/views-of v)))))])
 
+;; ## Plot Specification
+;;
+;; A **plot specification** is the value returned by layer functions
+;; (`sk/lay-point`, `sk/lay-histogram`, etc.) and by `sk/options`.
+;; It wraps one or more views together with plot options and
+;; auto-renders in [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
+;; tools like [Clay](https://scicloj.github.io/clay/).
+;;
+;; You can inspect or decompose a plot specification using
+;; `sk/plot-spec?` and `sk/views-of`:
+
+(def spec
+  (-> data/iris
+      (sk/lay-point :sepal_length :sepal_width {:color :species})
+      (sk/options {:title "Iris"})))
+
+(sk/plot-spec? spec)
+
+(kind/test-last [(fn [v] (true? v))])
+
+(count (sk/views-of spec))
+
+(kind/test-last [(fn [n] (= 1 n))])
+
 ;; ## Method
 ;;
 ;; A **method** is the bundle of mark + stat + position that determines how
@@ -335,7 +359,9 @@
 ;; ## Configuration
 ;;
 ;; **Configuration** controls rendering behavior — dimensions, theme,
-;; palette, color scale, margins, and more. Configuration follows a
+;; palette, color scale, margins, and more. It is one of three option
+;; scopes — the others are [plot options](#plot-options) and
+;; [layer options](#layer-options). Configuration follows a
 ;; precedence chain:
 ;;
 ;; plot options > `sk/with-config` > `sk/set-config!` > `napkinsketch.edn` > library defaults
@@ -390,6 +416,7 @@
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
 ;; | View | Map: data + column-to-channel mappings + method | User builds, consumed by `sketch` |
+;; | Plot Specification | Auto-rendering wrapper (views + options) | Returned by layer functions |
 ;; | Method | Mark + stat + position bundle | Looked up via `method/lookup`; added by `sk/lay-point`, `sk/lay-histogram`, etc. |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |

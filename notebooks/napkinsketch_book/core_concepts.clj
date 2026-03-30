@@ -108,6 +108,37 @@ data/iris
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
+;; What `sk/lay-point` returns is a **plot specification** — a lightweight
+;; wrapper around one or more views that auto-renders in
+;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible tools
+;; like Clay. Under the hood, the rendering pipeline transforms
+;; views → sketch → membrane → SVG (see the
+;; [Architecture](architecture.html) chapter for the full trace).
+
+(sk/plot-spec? (sk/lay-point data/iris :sepal_length :sepal_width))
+
+(kind/test-last [(fn [v] (true? v))])
+
+;; You can also step through the pipeline manually:
+;; `sk/sketch` returns the intermediate data, and `sk/plot` returns
+;; the final SVG.
+
+;; ## Options
+;;
+;; There are three kinds of options in Napkinsketch:
+;;
+;; - **Layer options** — per-layer settings like `:color`, `:size`,
+;;   `:position`, and method-specific parameters (`:bandwidth`, `:se`, etc.).
+;;   Passed in the options map of layer functions.
+;;   See the [Methods](methods.html) chapter.
+;;
+;; - **Plot options** — per-plot text content: `:title`, `:subtitle`,
+;;   `:caption`, and axis labels. Passed via `sk/options`.
+;;
+;; - **Configuration** — global rendering defaults: dimensions, theme,
+;;   palette, color scale, and more. These follow a layered precedence
+;;   chain. See the [Configuration](configuration.html) chapter.
+
 ;; Data, view, and method — those are the minimal ingredients.
 ;; The next three sections unpack what each part of a method
 

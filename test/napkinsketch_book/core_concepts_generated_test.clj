@@ -58,50 +58,58 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v18_l106)))
 
 
-(def v21_l123 (method/lookup :histogram))
+(def
+ v21_l118
+ (sk/plot-spec? (sk/lay-point data/iris :sepal_length :sepal_width)))
 
 
-(deftest t22_l125 (is ((fn [m] (= :bar (:mark m))) v21_l123)))
+(deftest t22_l120 (is ((fn [v] (true? v)) v21_l118)))
 
 
-(def v24_l129 (-> data/iris (sk/lay-histogram :sepal_length)))
+(def v24_l154 (method/lookup :histogram))
+
+
+(deftest t25_l156 (is ((fn [m] (= :bar (:mark m))) v24_l154)))
+
+
+(def v27_l160 (-> data/iris (sk/lay-histogram :sepal_length)))
 
 
 (deftest
- t25_l132
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v24_l129)))
+ t28_l163
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v27_l160)))
 
 
-(def v27_l148 (method/lookup :lm))
+(def v30_l179 (method/lookup :lm))
 
 
-(deftest t28_l150 (is ((fn [m] (= :lm (:stat m))) v27_l148)))
+(deftest t31_l181 (is ((fn [m] (= :lm (:stat m))) v30_l179)))
 
 
 (def
- v30_l154
+ v33_l185
  (-> data/iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
 
 
 (deftest
- t31_l158
+ t34_l189
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v30_l154)))
+   v33_l185)))
 
 
-(def v33_l169 (method/lookup :stacked-bar))
+(def v36_l200 (method/lookup :stacked-bar))
 
 
-(deftest t34_l171 (is ((fn [m] (= :stack (:position m))) v33_l169)))
+(deftest t37_l202 (is ((fn [m] (= :stack (:position m))) v36_l200)))
 
 
 (def
- v36_l175
+ v39_l206
  (->
   {:day ["Mon" "Mon" "Tue" "Tue"],
    :count [30 20 45 15],
@@ -110,28 +118,28 @@
 
 
 (deftest
- t37_l180
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v36_l175)))
+ t40_l211
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v39_l206)))
 
 
-(def v39_l189 (-> data/iris (sk/view :sepal_length :sepal_width)))
-
-
-(deftest
- t40_l192
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v39_l189)))
-
-
-(def v42_l196 (-> data/iris (sk/view :sepal_length)))
+(def v42_l220 (-> data/iris (sk/view :sepal_length :sepal_width)))
 
 
 (deftest
- t43_l199
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v42_l196)))
+ t43_l223
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v42_l220)))
+
+
+(def v45_l227 (-> data/iris (sk/view :sepal_length)))
+
+
+(deftest
+ t46_l230
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v45_l227)))
 
 
 (def
- v45_l214
+ v48_l245
  (->
   data/iris
   (sk/view :sepal_length :sepal_width)
@@ -140,111 +148,111 @@
 
 
 (deftest
- t46_l219
+ t49_l250
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v45_l214)))
+   v48_l245)))
 
 
 (def
- v48_l226
+ v51_l257
  (-> data/iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
 
 
 (deftest
- t49_l230
+ t52_l261
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v48_l226)))
+   v51_l257)))
 
 
 (def
- v51_l240
+ v54_l271
  (def
   scatter-base
   (-> data/iris (sk/lay-point :sepal_length :sepal_width))))
 
 
-(def v53_l246 (-> scatter-base sk/lay-lm))
+(def v56_l277 (-> scatter-base sk/lay-lm))
 
 
 (deftest
- t54_l249
+ t57_l280
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v53_l246)))
+   v56_l277)))
 
 
-(def v56_l256 (-> scatter-base sk/lay-loess))
+(def v59_l287 (-> scatter-base sk/lay-loess))
 
 
 (deftest
- t57_l259
+ t60_l290
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v56_l256)))
+   v59_l287)))
 
 
 (def
- v59_l273
+ v62_l304
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
- t60_l276
+ t63_l307
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"setosa"} (:texts s)))))
-   v59_l273)))
+   v62_l304)))
 
 
 (def
- v62_l285
+ v65_l316
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :petal_length})))
 
 
 (deftest
- t63_l288
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v62_l285)))
+ t66_l319
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v65_l316)))
 
 
 (def
- v65_l294
+ v68_l325
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color "steelblue"})))
 
 
 (deftest
- t66_l297
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v65_l294)))
+ t69_l328
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v68_l325)))
 
 
 (def
- v68_l307
+ v71_l338
  (->
   data/iris
   (sk/view :sepal_length :sepal_width)
@@ -253,18 +261,18 @@
 
 
 (deftest
- t69_l312
+ t72_l343
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v68_l307)))
+   v71_l338)))
 
 
 (def
- v71_l320
+ v74_l351
  (->
   data/iris
   (sk/view :sepal_length :sepal_width {:color :species})
@@ -273,18 +281,18 @@
 
 
 (deftest
- t72_l325
+ t75_l356
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v71_l320)))
+   v74_l351)))
 
 
 (def
- v74_l340
+ v77_l371
  (->
   data/iris
   (sk/view :sepal_length :sepal_width)
@@ -294,35 +302,35 @@
 
 
 (deftest
- t75_l346
+ t78_l377
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)) (= 3 (:lines s)))))
-   v74_l340)))
+   v77_l371)))
 
 
-(def v77_l361 (def cols [:sepal_length :sepal_width :petal_length]))
+(def v80_l392 (def cols [:sepal_length :sepal_width :petal_length]))
 
 
-(def v78_l363 (sk/cross cols cols))
+(def v81_l394 (sk/cross cols cols))
 
 
-(deftest t79_l365 (is ((fn [v] (= 9 (count v))) v78_l363)))
+(deftest t82_l396 (is ((fn [v] (= 9 (count v))) v81_l394)))
 
 
-(def v81_l370 (-> data/iris (sk/view (sk/cross cols cols))))
+(def v84_l401 (-> data/iris (sk/view (sk/cross cols cols))))
 
 
 (deftest
- t82_l373
- (is ((fn [v] (= 9 (:panels (sk/svg-summary v)))) v81_l370)))
+ t85_l404
+ (is ((fn [v] (= 9 (:panels (sk/svg-summary v)))) v84_l401)))
 
 
 (def
- v84_l392
+ v87_l423
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -330,12 +338,12 @@
 
 
 (deftest
- t85_l396
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v84_l392)))
+ t88_l427
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v87_l423)))
 
 
 (def
- v87_l404
+ v90_l435
  (->
   {:population [1000 5000 50000 200000 1000000 5000000],
    :area [2 8 30 120 500 2100]}
@@ -345,5 +353,5 @@
 
 
 (deftest
- t88_l410
- (is ((fn [v] (= 6 (:points (sk/svg-summary v)))) v87_l404)))
+ t91_l441
+ (is ((fn [v] (= 6 (:points (sk/svg-summary v)))) v90_l435)))

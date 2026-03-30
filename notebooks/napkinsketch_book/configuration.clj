@@ -1,9 +1,16 @@
 ;; # Configuration
 ;;
-;; Napkinsketch uses a layered configuration system.  Every visual
-;; default — dimensions, font sizes, point radius, grid stroke,
-;; annotation colors — can be overridden at multiple levels.
-;; This notebook explains each level and how they compose.
+;; Napkinsketch has three kinds of options:
+;;
+;; - **Layer options** control individual layers — aesthetics like `:color`,
+;;   statistical parameters like `:bandwidth`. See the [Methods](methods.html) chapter.
+;;
+;; - **Plot options** set per-plot text — `:title`, `:subtitle`, `:caption`, axis labels.
+;;
+;; - **Configuration** controls everything else — dimensions, theme, palette,
+;;   color scale, and more — via a layered precedence chain.
+;;
+;; This chapter covers configuration and plot options.
 
 (ns napkinsketch-book.configuration
   (:require
@@ -17,8 +24,8 @@
 ;; We use the iris dataset throughout.
 
 ;; We define `base-views` as a function (not a plain def) because
-;; PlotSpec auto-rendering is lazy — we need a fresh instance each time
-;; we change configuration via `set-config!` or `with-config`.
+;; plot specifications render at display time — calling the function
+;; produces a fresh specification that picks up the current configuration.
 
 (def base-views
   (fn [] (-> data/iris

@@ -127,13 +127,7 @@
      [m (method/lookup k) accepts (:accepts m)]
      :when
      (seq accepts)]
-    {"Method" (kind/code (pr-str k)),
-     "Additional options"
-     (str/join
-      ", "
-      (map
-       (fn* [p1__74158#] (str "`" (pr-str p1__74158#) "`"))
-       accepts))})}))
+    {"Method" (kind/code (pr-str k)), "Additional options" accepts})}))
 
 
 (deftest t22_l159 (is ((fn [t] (pos? (count (:row-maps t)))) v21_l149)))
