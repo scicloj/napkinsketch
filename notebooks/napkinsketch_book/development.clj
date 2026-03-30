@@ -3,12 +3,13 @@
 ;; How to set up a development environment, run tests,
 ;; author notebooks, and release new versions.
 
+^:kindly/hide-code
 (ns napkinsketch-book.development)
 
 ;; ## REPL Setup
 ;;
 ;; Start an nREPL server with the `:dev` alias, which adds
-;; notebooks, tests, Clay, and related dependencies to the classpath:
+;; notebooks, tests, Clay, and related dependencies to the classpath. One way to do it is the following:
 ;;
 ;; ```bash
 ;; clojure -M:dev -m nrepl.cmdline
@@ -17,14 +18,6 @@
 ;; Connect to the REPL from your editor (Calva, CIDER, Cursive, etc.)
 ;; using the port printed to the console (also written to `.nrepl-port`).
 ;;
-;; When reloading namespaces, always use `:reload`:
-;;
-;; ```clojure
-;; (require '[scicloj.napkinsketch.api :as sk] :reload)
-;; ```
-;;
-;; Without `:reload`, you may get stale definitions.
-
 ;; ## Running Tests
 ;;
 ;; The test suite runs via [cognitect test-runner](https://github.com/cognitect-labs/test-runner):
@@ -42,39 +35,47 @@
 ;; There are two kinds of tests:
 ;;
 ;; - **Hand-written tests** in `test/scicloj/napkinsketch/` — unit tests for
-;;   core logic (view resolution, sketching, rendering, etc.)
+;; core logic (view resolution, sketching, rendering, etc.)
 ;;
 ;; - **Generated tests** in `test/napkinsketch_book/` — produced from notebooks
-;;   via Clay GFM rendering. Every `kind/test-last` form in a notebook becomes
-;;   an assertion in the corresponding `*_generated_test.clj` file.
+;; every time [Clay](https://scicloj.github.io/clay/) renders notebooks
+;; using Clay's [test generation](https://scicloj.github.io/clay/clay_book.test_generation.html).
+;; Every `kind/test-last` form in a notebook becomes
+;; an assertion in the corresponding `*_generated_test.clj` file.
 
 ;; ## Notebook Authoring
 ;;
 ;; Notebooks live in `notebooks/napkinsketch_book/` and are Clojure source
 ;; files with `;;` comment blocks for prose (rendered as Markdown by Clay).
 ;;
-;; To add assertions that verify computed values, use `kind/test-last`:
+;; You can explore the data visualizations interactively with Clay.
+;;
+;; To add assertions that verify computed values, use `kind/test-last` with a
+;; function in a vector:
 ;;
 ;; ```clojure
 ;; (+ 1 2)
 ;;
 ;; (kind/test-last [(fn [v] (= 3 v))])
 ;; ```
+;; 
+;; You may also add arguments after the function:
+;; ```clojure
+;; (+ 1 2)
+;;
+;; (kind/test-last [= 3])
+;; ```
 ;;
 ;; `kind/test-last` forms are invisible in rendered output — they only
 ;; generate test assertions. Do not add comments to them.
 ;;
-;; See the **Notebook Style Conventions** section of `CLAUDE.md` for the
-;; full set of authoring guidelines.
-
 ;; ## Regenerating Tests
 ;;
-;; After editing a notebook, regenerate its test file by rendering to
-;; GitHub-flavored Markdown:
+;; After editing a notebook, you may regenerate its test file by rendering it:
 ;;
 ;; ```clojure
-;; (require '[dev :as dev] :reload)
-;; (dev/make-gfm! "napkinsketch_book/scatter.clj")
+;; (require '[scicloj.clay.v2.api :as clay]
+;; (clay/make! {:source-path "napkinsketch_book/scatter.clj"})
 ;; ```
 ;;
 ;; This updates `test/napkinsketch_book/scatter_generated_test.clj`.
@@ -83,7 +84,10 @@
 ;; To regenerate all notebooks at once:
 ;;
 ;; ```clojure
-;; (dev/make-gfm!)
+;; (require 'dev)
+;; (dev/make-gfm!) ; in Github Flavored Markdown format
+;; ;; or:
+;; (dev/make-book!) ; as an HTML book
 ;; ```
 
 ;; ## Building the Book
@@ -92,7 +96,7 @@
 ;; and [Quarto](https://quarto.org/):
 ;;
 ;; ```clojure
-;; (require '[dev :as dev] :reload)
+;; (require '[dev :as dev])
 ;; (dev/make-book!)
 ;; ```
 ;;
@@ -106,7 +110,7 @@
 ;; with [deps-deploy](https://github.com/slipset/deps-deploy):
 ;;
 ;; ```bash
-;; clojure -T:build ci             # run tests + build JAR
+;; clojure -T:build ci                 # run tests + build JAR
 ;; clojure -T:build ci :snapshot true  # build snapshot JAR
 ;; ```
 ;;
