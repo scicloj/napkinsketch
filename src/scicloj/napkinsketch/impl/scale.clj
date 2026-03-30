@@ -9,12 +9,15 @@
   (and (sequential? dom) (seq dom) (not (number? (first dom)))))
 
 (defn scale-kind
-  "Determine the wadogo scale type (:categorical, :log, or :linear) from domain and spec."
+  "Determine the wadogo scale type (:categorical, :log, or :linear) from domain and spec.
+   Passes through vector dispatch values like [:linear :doc] for doc defmethods."
   [domain scale-spec]
-  (cond
-    (categorical-domain? domain) :categorical
-    (= :log (:type scale-spec)) :log
-    :else :linear))
+  (if (and (vector? domain) (= :doc (second domain)))
+    domain
+    (cond
+      (categorical-domain? domain) :categorical
+      (= :log (:type scale-spec)) :log
+      :else :linear)))
 
 (defmulti make-scale
   "Create a wadogo scale mapping domain values to a pixel range."
@@ -28,6 +31,10 @@
 
 (defmethod make-scale :log [domain pixel-range _]
   (ws/scale :log {:domain domain :range pixel-range}))
+
+(defmethod make-scale [:categorical :doc] [_ _ _] "Band scale (one band per category)")
+(defmethod make-scale [:linear :doc] [_ _ _] "Continuous linear mapping")
+(defmethod make-scale [:log :doc] [_ _ _] "Logarithmic mapping")
 
 (defn pad-domain
   "Add padding to a numeric domain. When lo == hi (constant data),

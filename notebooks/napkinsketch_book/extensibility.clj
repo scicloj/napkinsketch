@@ -62,19 +62,17 @@
 ;; Transforms raw data into a statistical summary. Each method
 ;; uses a stat to prepare data for rendering.
 ;;
-;; | Dispatch value | What it does |
-;; |:---------------|:-------------|
-;; | `:identity` | Pass through x/y values as-is (scatter, line) |
-;; | `:bin` | Bin numerical data into histogram bars |
-;; | `:count` | Count occurrences of categorical values |
-;; | `:lm` | Linear regression (slope + intercept) |
-;; | `:loess` | LOESS local regression smoothing |
-;; | `:kde` | Kernel density estimation |
-;; | `:boxplot` | Five-number summary with outlier detection |
-;; | `:violin` | Kernel density estimation per category |
-;; | `:bin2d` | 2D binning for heatmap tiles |
-;; | `:kde2d` | 2D Gaussian KDE for smooth density heatmap |
-;; | `:summary` | Mean ± standard error per category |
+(kind/table
+ {:column-names ["Dispatch value" "What it does"]
+  :row-maps
+  (->> (methods stat/compute-stat)
+       keys
+       (filter keyword?)
+       sort
+       (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
+                      "What it does" (sk/stat-doc k)})))})
+
+(kind/test-last [(fn [t] (= 11 (count (:row-maps t))))])
 ;;
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
@@ -119,25 +117,18 @@
 ;; Converts a stat result into a sketch layer descriptor — a plain
 ;; map with data-space geometry and resolved colors.
 ;;
-;; | Dispatch value | Output |
-;; |:---------------|:-------|
-;; | `:point` | Groups with `:xs`, `:ys`, `:color`, optional `:sizes`/`:alphas` |
-;; | `:bar` | Groups with `:bars` (`:lo`, `:hi`, `:count`) |
-;; | `:line` | Groups with `:xs`/`:ys` or line segments |
-;; | `:rect` | Categorical bars with `:counts` or value bars |
-;; | `:text` | Groups with `:xs`, `:ys`, `:labels` |
-;; | `:area` | Groups with `:xs`, `:ys` for filled polygons |
-;; | `:boxplot` | Boxes with five-number summary and outliers |
-;; | `:violin` | Violin entries with density curves |
-;; | `:errorbar` | Groups with `:xs`, `:ys`, `:ymins`, `:ymaxs` |
-;; | `:lollipop` | Groups with `:xs`, `:ys` for stems + dots |
-;; | `:tile` | Tiles with `:x-lo`, `:x-hi`, `:y-lo`, `:y-hi`, `:color` |
-;; | `:ridgeline` | Ridges with density curves per category |
-;; | `:rug` | Groups with `:xs`, `:ys` for axis tick marks |
-;; | `:step` | Groups with `:xs`, `:ys` for step lines |
-;; | `:pointrange` | Groups with `:xs`, `:ys`, `:ymins`, `:ymaxs` for mean ± SE |
-;; | `:label` | Groups with `:xs`, `:ys`, `:labels` with background box |
-;; | `:contour` | Iso-value polylines from 2D density |
+(kind/table
+ {:column-names ["Dispatch value" "Output"]
+  :row-maps
+  (->> (methods extract/extract-layer)
+       keys
+       (filter keyword?)
+       (remove #{:default})
+       sort
+       (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
+                      "Output" (sk/mark-doc k)})))})
+
+(kind/test-last [(fn [t] (= 17 (count (:row-maps t))))])
 ;;
 ;; Dispatch function: `(fn [view stat all-colors cfg] (:mark view))`
 
@@ -158,25 +149,18 @@
 ;; This is the "membrane path" — used when the target format goes through
 ;; membrane (e.g., SVG).
 ;;
-;; | Dispatch value | Membrane output |
-;; |:---------------|:-------------|
-;; | `:point` | Translated colored rounded-rectangles |
-;; | `:bar` | Filled polygons (histogram bars) |
-;; | `:line` | Stroked polylines |
-;; | `:rect` | Filled polygons (categorical/value bars) |
-;; | `:text` | Translated text labels |
-;; | `:area` | Closed filled polygons with baseline |
-;; | `:boxplot` | Box + whiskers + median line + outlier points |
-;; | `:violin` | Mirrored filled density polygon |
-;; | `:errorbar` | Vertical lines with caps |
-;; | `:lollipop` | Stems with dots at category positions |
-;; | `:tile` | Translated colored rectangles (heatmap cells) |
-;; | `:ridgeline` | Overlapping filled density curves |
-;; | `:rug` | Short stroked tick marks at axis margins |
-;; | `:step` | Stroked step polylines |
-;; | `:pointrange` | Point at mean + vertical SE line |
-;; | `:label` | Text label with filled background box |
-;; | `:contour` | Stroked iso-density polylines |
+(kind/table
+ {:column-names ["Dispatch value" "Membrane output"]
+  :row-maps
+  (->> (methods mark/layer->membrane)
+       keys
+       (filter keyword?)
+       (remove #{:default})
+       sort
+       (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
+                      "Membrane output" (sk/membrane-mark-doc k)})))})
+
+(kind/test-last [(fn [t] (= 17 (count (:row-maps t))))])
 ;;
 ;; Dispatch function: `(fn [layer ctx] (:mark layer))`
 ;;
@@ -309,11 +293,17 @@
 ;;
 ;; Builds a wadogo scale from a domain and pixel range.
 ;;
-;; | Dispatch value | Scale type |
-;; |:---------------|:-----------|
-;; | `:categorical` | Band scale (one band per category) |
-;; | `:linear` | Continuous linear mapping |
-;; | `:log` | Logarithmic mapping |
+(kind/table
+ {:column-names ["Dispatch value" "Scale type"]
+  :row-maps
+  (->> (methods scicloj.napkinsketch.impl.scale/make-scale)
+       keys
+       (filter keyword?)
+       sort
+       (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
+                      "Scale type" (sk/scale-doc k)})))})
+
+(kind/test-last [(fn [t] (= 3 (count (:row-maps t))))])
 ;;
 ;; Dispatch: inferred from the domain type and scale spec.
 ;; Categorical domains → `:categorical`. Numerical domains default to
@@ -324,13 +314,19 @@
 ;; Builds a coordinate function that maps data-space (x, y) to
 ;; pixel-space (px, py).
 ;;
-;; | Dispatch value | Behavior |
-;; |:---------------|:---------|
-;; | `:cartesian` | Standard x-right, y-up mapping |
-;; | `:flip` | Swap x and y axes |
-;; | `:polar` | Radial mapping: x→angle, y→radius |
+(kind/table
+ {:column-names ["Dispatch value" "Behavior"]
+  :row-maps
+  (->> (methods scicloj.napkinsketch.impl.coord/make-coord)
+       keys
+       (filter keyword?)
+       sort
+       (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
+                      "Behavior" (sk/coord-doc k)})))})
+
+(kind/test-last [(fn [t] (= 4 (count (:row-maps t))))])
 ;;
-;; All three use the same scales — `:flip` swaps which scale
+;; All four use the same scales — `:flip` swaps which scale
 ;; maps to which pixel axis, and `:polar` maps x to angle and y to radius.
 
 ;; A flipped bar chart uses `:flip` coordinates:

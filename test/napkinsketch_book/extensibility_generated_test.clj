@@ -14,26 +14,67 @@
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l85 (method/lookup :histogram))
+(def
+ v3_l65
+ (kind/table
+  {:column-names ["Dispatch value" "What it does"],
+   :row-maps
+   (->>
+    (methods stat/compute-stat)
+    keys
+    (filter keyword?)
+    sort
+    (mapv
+     (fn
+      [k]
+      {"Dispatch value" (kind/code (pr-str k)),
+       "What it does" (sk/stat-doc k)})))}))
 
 
-(deftest t4_l87 (is ((fn [m] (= :bin (:stat m))) v3_l85)))
+(deftest t4_l75 (is ((fn [t] (= 11 (count (:row-maps t)))) v3_l65)))
 
 
-(def v6_l91 (method/lookup :bar))
+(def v6_l83 (method/lookup :histogram))
 
 
-(deftest t7_l93 (is ((fn [m] (= :count (:stat m))) v6_l91)))
+(deftest t7_l85 (is ((fn [m] (= :bin (:stat m))) v6_l83)))
 
 
-(def v9_l97 (method/lookup :point))
+(def v9_l89 (method/lookup :bar))
 
 
-(deftest t10_l99 (is ((fn [m] (= :identity (:stat m))) v9_l97)))
+(deftest t10_l91 (is ((fn [m] (= :count (:stat m))) v9_l89)))
+
+
+(def v12_l95 (method/lookup :point))
+
+
+(deftest t13_l97 (is ((fn [m] (= :identity (:stat m))) v12_l95)))
 
 
 (def
- v12_l146
+ v15_l120
+ (kind/table
+  {:column-names ["Dispatch value" "Output"],
+   :row-maps
+   (->>
+    (methods extract/extract-layer)
+    keys
+    (filter keyword?)
+    (remove #{:default})
+    sort
+    (mapv
+     (fn
+      [k]
+      {"Dispatch value" (kind/code (pr-str k)),
+       "Output" (sk/mark-doc k)})))}))
+
+
+(deftest t16_l131 (is ((fn [t] (= 17 (count (:row-maps t)))) v15_l120)))
+
+
+(def
+ v18_l137
  (let
   [s
    (->
@@ -46,16 +87,37 @@
 
 
 (deftest
- t13_l152
+ t19_l143
  (is
   ((fn
     [m]
     (and (= :point (:mark m)) (number? (get-in m [:style :opacity]))))
-   v12_l146)))
+   v18_l137)))
 
 
 (def
- v15_l218
+ v21_l152
+ (kind/table
+  {:column-names ["Dispatch value" "Membrane output"],
+   :row-maps
+   (->>
+    (methods mark/layer->membrane)
+    keys
+    (filter keyword?)
+    (remove #{:default})
+    sort
+    (mapv
+     (fn
+      [k]
+      {"Dispatch value" (kind/code (pr-str k)),
+       "Membrane output" (sk/membrane-mark-doc k)})))}))
+
+
+(deftest t22_l163 (is ((fn [t] (= 17 (count (:row-maps t)))) v21_l152)))
+
+
+(def
+ v24_l202
  (def
   my-sketch
   (->
@@ -64,32 +126,32 @@
    sk/sketch)))
 
 
-(def v16_l223 (first (sk/sketch->figure my-sketch :svg {})))
+(def v25_l207 (first (sk/sketch->figure my-sketch :svg {})))
 
 
-(deftest t17_l225 (is ((fn [v] (= :svg v)) v16_l223)))
+(deftest t26_l209 (is ((fn [v] (= :svg v)) v25_l207)))
 
 
-(def v19_l229 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v28_l213 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
-(def v20_l231 (vector? my-figure))
+(def v29_l215 (vector? my-figure))
 
 
-(deftest t21_l233 (is ((fn [v] (true? v)) v20_l231)))
+(deftest t30_l217 (is ((fn [v] (true? v)) v29_l215)))
 
 
-(def v23_l274 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v32_l258 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v24_l276 (vector? my-membrane))
+(def v33_l260 (vector? my-membrane))
 
 
-(deftest t25_l278 (is ((fn [v] (true? v)) v24_l276)))
+(deftest t34_l262 (is ((fn [v] (true? v)) v33_l260)))
 
 
 (def
- v26_l280
+ v35_l264
  (first
   (sk/membrane->figure
    my-membrane
@@ -98,18 +160,58 @@
     :total-height (:total-height my-sketch)})))
 
 
-(deftest t27_l284 (is ((fn [v] (= :svg v)) v26_l280)))
+(deftest t36_l268 (is ((fn [v] (= :svg v)) v35_l264)))
 
 
-(def v29_l338 (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
+(def
+ v38_l296
+ (kind/table
+  {:column-names ["Dispatch value" "Scale type"],
+   :row-maps
+   (->>
+    (methods scicloj.napkinsketch.impl.scale/make-scale)
+    keys
+    (filter keyword?)
+    sort
+    (mapv
+     (fn
+      [k]
+      {"Dispatch value" (kind/code (pr-str k)),
+       "Scale type" (sk/scale-doc k)})))}))
+
+
+(deftest t39_l306 (is ((fn [t] (= 3 (count (:row-maps t)))) v38_l296)))
+
+
+(def
+ v41_l317
+ (kind/table
+  {:column-names ["Dispatch value" "Behavior"],
+   :row-maps
+   (->>
+    (methods scicloj.napkinsketch.impl.coord/make-coord)
+    keys
+    (filter keyword?)
+    sort
+    (mapv
+     (fn
+      [k]
+      {"Dispatch value" (kind/code (pr-str k)),
+       "Behavior" (sk/coord-doc k)})))}))
+
+
+(deftest t42_l327 (is ((fn [t] (= 4 (count (:row-maps t)))) v41_l317)))
+
+
+(def v44_l334 (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
 
 
 (deftest
- t30_l342
+ t45_l338
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v29_l338)))
+   v44_l334)))

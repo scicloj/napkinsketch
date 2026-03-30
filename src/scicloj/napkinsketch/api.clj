@@ -9,7 +9,10 @@
             [scicloj.napkinsketch.impl.stat :as stat]
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.position :as position]
+            [scicloj.napkinsketch.impl.scale :as scale]
+            [scicloj.napkinsketch.impl.coord :as coord]
             [scicloj.napkinsketch.render.membrane :as membrane]
+            [scicloj.napkinsketch.render.mark :as mark]
             [scicloj.napkinsketch.render.svg :as svg]
             [scicloj.napkinsketch.method :as method]
             [scicloj.kindly.v4.kind :as kind])
@@ -221,6 +224,24 @@
    (position-doc :dodge) => \"Shift groups side-by-side within a band\""
   [k]
   (position/apply-position [k :doc] nil))
+
+(defn membrane-mark-doc
+  "Return the prose description for how a mark renders to membrane drawables.
+   (membrane-mark-doc :point) => \"Translated colored rounded-rectangles\""
+  [k]
+  (mark/layer->membrane {:mark [k :doc]} nil))
+
+(defn scale-doc
+  "Return the prose description for a scale keyword.
+   (scale-doc :linear) => \"Continuous linear mapping\""
+  [k]
+  (scale/make-scale [k :doc] nil nil))
+
+(defn coord-doc
+  "Return the prose description for a coordinate type keyword.
+   (coord-doc :polar) => \"Radial mapping: x→angle, y→radius\""
+  [k]
+  (coord/make-coord [k :doc] nil nil nil nil nil))
 
 ;; ---- Layer Functions ----
 

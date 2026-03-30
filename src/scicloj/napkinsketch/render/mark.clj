@@ -116,6 +116,26 @@
    Dispatches on (:mark layer)."
   (fn [layer ctx] (:mark layer)))
 
+;; ---- Doc defmethods ----
+(defmethod layer->membrane [:point :doc] [_ _] "Translated colored rounded-rectangles")
+(defmethod layer->membrane [:bar :doc] [_ _] "Filled polygons (histogram bars)")
+(defmethod layer->membrane [:line :doc] [_ _] "Stroked polylines")
+(defmethod layer->membrane [:rect :doc] [_ _] "Filled polygons (categorical/value bars)")
+(defmethod layer->membrane [:text :doc] [_ _] "Translated text labels")
+(defmethod layer->membrane [:area :doc] [_ _] "Closed filled polygons with baseline")
+(defmethod layer->membrane [:boxplot :doc] [_ _] "Box + whiskers + median line + outlier points")
+(defmethod layer->membrane [:violin :doc] [_ _] "Mirrored filled density polygon")
+(defmethod layer->membrane [:errorbar :doc] [_ _] "Vertical lines with caps")
+(defmethod layer->membrane [:lollipop :doc] [_ _] "Stems with dots at category positions")
+(defmethod layer->membrane [:tile :doc] [_ _] "Translated colored rectangles (heatmap cells)")
+(defmethod layer->membrane [:ridgeline :doc] [_ _] "Overlapping filled density curves")
+(defmethod layer->membrane [:rug :doc] [_ _] "Short stroked tick marks at axis margins")
+(defmethod layer->membrane [:step :doc] [_ _] "Stroked step polylines")
+(defmethod layer->membrane [:pointrange :doc] [_ _] "Point at mean + vertical SE line")
+(defmethod layer->membrane [:label :doc] [_ _] "Text label with filled background box")
+(defmethod layer->membrane [:contour :doc] [_ _] "Stroked iso-density polylines")
+(defmethod layer->membrane [:default :doc] [_ _] "Generic layer fallback")
+
 ;; ---- Point ----
 
 (defmethod layer->membrane :point [layer ctx]
