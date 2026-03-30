@@ -16,7 +16,7 @@
   {:color "Column keyword (categorical grouping) or literal color string"
    :alpha "Column keyword (per-point opacity) or fixed number 0.0–1.0"
    :group "Column keyword for grouping without color"
-   :position "Override: :identity, :dodge, :stack, or :fill"
+   :position "Position adjustment keyword — how overlapping groups are arranged (see sk/position-doc)"
    :nudge-x "Shift all x-coordinates by this data-space amount"
    :nudge-y "Shift all y-coordinates by this data-space amount"
    :size "Column keyword or fixed number — point radius or stroke width"
