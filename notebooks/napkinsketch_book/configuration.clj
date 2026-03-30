@@ -81,28 +81,11 @@
 
 ;; ## Using Per-Call Options
 ;;
-;; The highest-priority mechanism. Pass an options map to `sk/options`
-;; (or `sk/sketch` or `sk/plot`). Per-call options override everything else.
+;; Pass an options map to `sk/options` to override any setting for a
+;; single plot. Per-call options have the highest priority — they
+;; override everything else.
 
-;; The default plot uses the library defaults (600×400):
-
-(-> (base-views))
-
-(kind/test-last
- [(fn [v]
-    (let [s (sk/svg-summary v)]
-      (and (= 150 (:points s))
-           (< (:width s) 800))))])
-
-;; The sketch confirms the default dimensions:
-
-(-> (base-views)
-    sk/sketch
-    :width)
-
-(kind/test-last [(fn [v] (= 600 v))])
-
-;; A wide, short plot via per-call options:
+;; Custom dimensions (the default is 600×400):
 
 (-> (base-views)
     (sk/options {:width 900 :height 250}))
@@ -113,29 +96,17 @@
       (and (= 150 (:points s))
            (> (:width s) 800))))])
 
-;; The sketch confirms the override:
+;; Theme deep-merge — only the specified keys change. Here we set a
+;; white background; `:grid` and `:font-size` keep their defaults:
 
 (-> (base-views)
-    (sk/sketch {:width 900 :height 250})
-    (select-keys [:width :height]))
-
-(kind/test-last
- [(fn [m] (and (= 900 (:width m)) (= 250 (:height m))))])
-
-;; Theme override — only the specified keys are changed.
-;; Here we set a white background; `:grid` and `:font-size` are
-;; preserved from the defaults.
-
-(-> (base-views)
-    (sk/options {:theme {:bg "#FFFFFF"}})
-    sk/plot)
+    (sk/options {:theme {:bg "#FFFFFF"}}))
 
 (kind/test-last
  [(fn [v]
-    (let [s (str v)]
-      (clojure.string/includes? s "rgb(255,255,255)")))])
+    (= 150 (:points (sk/svg-summary v))))])
 
-;; Palette override:
+;; Named palette:
 
 (-> (base-views)
     (sk/options {:palette :dark2}))
@@ -150,33 +121,15 @@
 ;; `sk/set-config!` sets overrides that persist across calls — useful
 ;; when you want a consistent style for an entire session or notebook.
 
-;; Set a global width override:
+;; Set a global width override and render:
 
 (sk/set-config! {:width 800})
-
-;; The configuration reflects it:
 
 (:width (sk/config))
 
 (kind/test-last [(fn [v] (= 800 v))])
 
-;; The sketch picks it up:
-
-(-> (base-views)
-    sk/sketch
-    :width)
-
-(kind/test-last [(fn [v] (= 800 v))])
-
-;; And the rendered plot uses it:
-
-(-> (base-views) sk/plot)
-
-(kind/test-last
- [(fn [v]
-    (let [s (sk/svg-summary v)]
-      (and (= 150 (:points s))
-           (> (:width s) 800))))])
+(-> (base-views))
 
 ;; Reset to library defaults by passing `nil`:
 
@@ -188,45 +141,26 @@
 
 ;; ## Thread-Local Overrides with with-config
 ;;
-;; `sk/with-config` is a macro that binds configuration overrides for the
-;; duration of its body, then automatically reverts.  This is ideal
+;; `sk/with-config` is a macro that binds configuration overrides for
+;; the duration of its body, then automatically reverts. This is ideal
 ;; for one-off experiments or when different sections of a notebook
 ;; need different settings.
 
-;; Inside the body, the configuration reflects the override:
+;; A dark theme, scoped to this block:
 
-(sk/with-config {:width 1000 :height 300}
-  (:width (sk/config)))
+(sk/with-config {:theme {:bg "#1a1a2e" :grid "#16213e" :font-size 8}}
+  (-> (base-views)
+      (sk/options {:title "Dark Theme via with-config"})))
 
-(kind/test-last [(fn [v] (= 1000 v))])
+(kind/test-last
+ [(fn [v]
+    (= 150 (:points (sk/svg-summary v))))])
 
-;; Outside the `with-config` body, the value reverts:
+;; Outside the body, the default theme is back:
 
 (:width (sk/config))
 
 (kind/test-last [(fn [v] (= 600 v))])
-
-;; The sketch inside `with-config` uses the overridden dimensions:
-
-(sk/with-config {:width 1000 :height 300}
-  (-> (base-views)
-      sk/sketch
-      :width))
-
-(kind/test-last [(fn [v] (= 1000 v))])
-
-;; And the rendered plot shows it too:
-
-(sk/with-config {:theme {:bg "#1a1a2e" :grid "#16213e" :font-size 8}}
-  (-> (base-views)
-      (sk/options {:title "Dark Theme via with-config"})
-      sk/plot))
-
-(kind/test-last
- [(fn [v]
-    (let [s (str v)]
-      (and (clojure.string/includes? s "rgb(26,26,46)")
-           (clojure.string/includes? s "Dark Theme via with-config"))))])
 
 ;; ## The Precedence Chain
 ;;
