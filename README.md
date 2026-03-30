@@ -53,10 +53,8 @@ covering chart types, configuration, faceting, and API reference.
 
 ## Development
 
-```bash
-clojure -M:dev -m nrepl.cmdline   # start REPL
-./run_tests.sh                    # run tests
-```
+See the [development guide](https://scicloj.github.io/napkinsketch/napkinsketch_book.development.html)
+for REPL setup, testing, notebook authoring, and deployment.
 
 ## Acknowledgments
 

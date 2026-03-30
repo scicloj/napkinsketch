@@ -147,7 +147,7 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__76668#] (Math/sin (* p1__76668# 0.3))) (range 30))}))
+   (map (fn* [p1__78813#] (Math/sin (* p1__78813# 0.3))) (range 30))}))
 
 
 (def v30_l107 (-> wave (sk/lay-line :x :y)))
@@ -257,9 +257,9 @@
     :y
     (map
      (fn*
-      [p1__76669#]
+      [p1__78814#]
       (+
-       (Math/sin (* p1__76669# 0.2))
+       (Math/sin (* p1__78814# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -981,11 +981,112 @@
 (deftest t203_l574 (is ((fn [p] (= :pastel1 p)) v202_l571)))
 
 
-(def v205_l578 (kind/doc #'sk/arrange))
+(def v205_l580 (kind/doc #'sk/config-key-docs))
+
+
+(def v206_l582 (count sk/config-key-docs))
+
+
+(deftest t207_l584 (is ((fn [n] (= 36 n)) v206_l582)))
+
+
+(def v208_l586 (kind/doc #'sk/plot-option-docs))
+
+
+(def v209_l588 (count sk/plot-option-docs))
+
+
+(deftest t210_l590 (is ((fn [n] (= 6 n)) v209_l588)))
+
+
+(def v211_l592 (kind/doc #'sk/layer-option-docs))
+
+
+(def v212_l594 (count sk/layer-option-docs))
+
+
+(deftest t213_l596 (is ((fn [n] (= 17 n)) v212_l594)))
+
+
+(def v215_l600 (kind/doc #'sk/method-lookup))
+
+
+(def v216_l602 (sk/method-lookup :lm))
+
+
+(deftest
+ t217_l604
+ (is ((fn [m] (and (= :line (:mark m)) (= :lm (:stat m)))) v216_l602)))
+
+
+(def v218_l607 (kind/doc #'sk/method-registered))
+
+
+(def v219_l609 (count (sk/method-registered)))
+
+
+(deftest t220_l611 (is ((fn [n] (= 25 n)) v219_l609)))
+
+
+(def v222_l617 (kind/doc #'sk/stat-doc))
+
+
+(def v223_l619 (sk/stat-doc :lm))
+
+
+(deftest t224_l621 (is ((fn [s] (string? s)) v223_l619)))
+
+
+(def v225_l623 (kind/doc #'sk/mark-doc))
+
+
+(def v226_l625 (sk/mark-doc :point))
+
+
+(deftest t227_l627 (is ((fn [s] (string? s)) v226_l625)))
+
+
+(def v228_l629 (kind/doc #'sk/position-doc))
+
+
+(def v229_l631 (sk/position-doc :dodge))
+
+
+(deftest t230_l633 (is ((fn [s] (string? s)) v229_l631)))
+
+
+(def v231_l635 (kind/doc #'sk/scale-doc))
+
+
+(def v232_l637 (sk/scale-doc :linear))
+
+
+(deftest t233_l639 (is ((fn [s] (string? s)) v232_l637)))
+
+
+(def v234_l641 (kind/doc #'sk/coord-doc))
+
+
+(def v235_l643 (sk/coord-doc :cartesian))
+
+
+(deftest t236_l645 (is ((fn [s] (string? s)) v235_l643)))
+
+
+(def v237_l647 (kind/doc #'sk/membrane-mark-doc))
+
+
+(def v238_l649 (sk/membrane-mark-doc :point))
+
+
+(deftest t239_l651 (is ((fn [s] (string? s)) v238_l649)))
+
+
+(def v241_l655 (kind/doc #'sk/arrange))
 
 
 (def
- v206_l580
+ v242_l657
  (sk/arrange
   [(->
     data/iris
@@ -998,14 +1099,14 @@
   {:cols 2}))
 
 
-(deftest t207_l586 (is ((fn [v] (= :div (first v))) v206_l580)))
+(deftest t243_l663 (is ((fn [v] (= :div (first v))) v242_l657)))
 
 
-(def v209_l589 (kind/doc #'sk/save))
+(def v245_l666 (kind/doc #'sk/save))
 
 
 (def
- v211_l593
+ v247_l670
  (let
   [path
    (str (java.io.File/createTempFile "napkinsketch-example" ".svg"))]
@@ -1018,4 +1119,4 @@
   (.contains (slurp path) "<svg")))
 
 
-(deftest t212_l599 (is (true? v211_l593)))
+(deftest t248_l676 (is (true? v247_l670)))
