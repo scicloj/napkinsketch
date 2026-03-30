@@ -154,7 +154,7 @@
               accepts (:accepts m)]
         :when (seq accepts)]
     {"Method" (kind/code (pr-str k))
-     "Additional options" (str/join ", " (map #(str "`" (pr-str %) "`") accepts))})})
+     "Additional options" accepts})})
 
 (kind/test-last
  [(fn [t] (pos? (count (:row-maps t))))])
