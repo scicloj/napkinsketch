@@ -369,8 +369,9 @@
 ;; method-specific parameters (`:bandwidth`, `:se`, `:normalize`, etc.).
 ;;
 ;; Six keys are universal — accepted by every layer — and each method
-;; may accept additional keys. See `sk/layer-option-docs` for descriptions,
-;; or inspect a specific method with `sk/method-lookup`.
+;; may accept additional keys. The [Methods](methods.html) chapter lists
+;; which options each method accepts. See also `sk/layer-option-docs`
+;; for descriptions, or inspect a specific method with `sk/method-lookup`.
 
 (count sk/layer-option-docs)
 
