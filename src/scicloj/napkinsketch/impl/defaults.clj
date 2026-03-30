@@ -256,6 +256,57 @@
         (reset! edn-cache {:value v :timestamp now})
         v))))
 
+(def config-key-docs
+  "Documentation metadata for configuration keys.
+   Each entry maps a key to [category description]."
+  {:width ["Layout" "Plot width in pixels"]
+   :height ["Layout" "Plot height in pixels"]
+   :margin ["Layout" "Margin around single-panel plots (pixels)"]
+   :margin-multi ["Layout" "Margin around multi-panel plots (pixels)"]
+   :panel-size ["Layout" "Default panel size for faceted/multi-variable grids"]
+   :legend-width ["Layout" "Width reserved for the legend column"]
+   :theme ["Theme" "Nested map {:bg :grid :font-size} — visual identity"]
+   :label-font-size ["Typography" "Font size for axis labels"]
+   :title-font-size ["Typography" "Font size for the plot title"]
+   :strip-font-size ["Typography" "Font size for facet strip labels"]
+   :point-radius ["Points" "Default point radius"]
+   :point-opacity ["Points" "Default point opacity (0.0–1.0)"]
+   :point-stroke ["Points" "Point border stroke color (\"none\" to disable)"]
+   :point-stroke-width ["Points" "Point border stroke width"]
+   :bar-opacity ["Bars & Lines" "Default bar fill opacity"]
+   :line-width ["Bars & Lines" "Default line stroke width"]
+   :grid-stroke-width ["Bars & Lines" "Grid line stroke width"]
+   :annotation-stroke ["Annotations" "Stroke color for annotation marks"]
+   :annotation-dash ["Annotations" "Dash pattern [dash gap] for annotation lines"]
+   :band-opacity ["Annotations" "Opacity for confidence bands"]
+   :tick-spacing-x ["Ticks" "Minimum pixel spacing between x-axis ticks"]
+   :tick-spacing-y ["Ticks" "Minimum pixel spacing between y-axis ticks"]
+   :bin-method ["Statistics" "Histogram bin count method (:sturges, :sqrt, :rice, :fd)"]
+   :domain-padding ["Statistics" "Fractional padding added to numeric domains"]
+   :label-offset ["Labels" "Pixel offset for axis labels from the axis"]
+   :title-offset ["Labels" "Pixel offset for the title from the top"]
+   :strip-height ["Labels" "Height of facet strip label bars"]
+   :validate ["Behavior" "When true, validate sketches against Malli schema"]
+   :default-color ["Behavior" "Fallback color when no color mapping is set"]})
+
+(def per-call-key-docs
+  "Documentation for per-call-only option keys (not in config).
+   Accepted by sk/options, sk/sketch, and sk/plot but not part of the
+   persistent configuration. Each entry maps a key to [category description]."
+  {:title ["Content" "Plot title string"]
+   :subtitle ["Content" "Plot subtitle string"]
+   :caption ["Content" "Plot caption string (bottom)"]
+   :x-label ["Content" "X-axis label (overrides inferred)"]
+   :y-label ["Content" "Y-axis label (overrides inferred)"]
+   :palette ["Color" "Categorical palette — keyword, vector, or map"]
+   :color-scale ["Color" "Continuous color scale — :sequential, :diverging, or keyword"]
+   :color-midpoint ["Color" "Center value for diverging color scales"]
+   :legend-position ["Layout" "Legend placement — :right, :bottom, :top, or :none"]
+   :tooltip ["Interaction" "Enable hover tooltips (truthy value)"]
+   :brush ["Interaction" "Enable drag-to-select brush (truthy value)"]
+   :format ["Output" "Render format — :svg (default)"]
+   :config ["Config" "Nested config map merged into resolved config"]})
+
 (defn config
   "Return the effective resolved configuration as a map.
    Merges: library defaults < napkinsketch.edn < set-config! < *config*.

@@ -39,29 +39,47 @@
          (= 25 (:margin cfg))
          (map? (:theme cfg))))])
 
-;; The configuration contains keys grouped by purpose.
+;; ### Configuration Keys
 ;;
-;; **Layout:** `:width`, `:height`, `:margin`, `:margin-multi`, `:panel-size`, `:legend-width`
-;;
-;; **Theme:** `:theme` — a nested map `{:bg :grid :font-size}`
-;;
-;; **Typography:** `:label-font-size`, `:title-font-size`, `:strip-font-size`
-;;
-;; **Points:** `:point-radius`, `:point-opacity`, `:point-stroke`, `:point-stroke-width`
-;;
-;; **Bars and lines:** `:bar-opacity`, `:line-width`, `:grid-stroke-width`
-;;
-;; **Annotations:** `:annotation-stroke`, `:annotation-dash`, `:band-opacity`
-;;
-;; **Ticks:** `:tick-spacing-x`, `:tick-spacing-y`
-;;
-;; **Statistics:** `:bin-method`, `:domain-padding`
-;;
-;; **Labels:** `:label-offset`, `:title-offset`, `:strip-height`
-;;
-;; **Behavior:** `:validate`, `:default-color`
+;; Each key, its default value, and a description.
 
-;; ## Per-Call Options
+(def category-order
+  ["Layout" "Theme" "Typography" "Points" "Bars & Lines"
+   "Annotations" "Ticks" "Statistics" "Labels" "Behavior"])
+
+(kind/table
+ {:column-names ["Key" "Default" "Category" "Description"]
+  :row-maps
+  (let [cfg (sk/config)]
+    (->> sk/config-key-docs
+         (sort-by (fn [[k [cat]]]
+                    [(.indexOf ^java.util.List category-order cat) (name k)]))
+         (mapv (fn [[k [cat desc]]]
+                 {"Key" (kind/code (pr-str k))
+                  "Default" (kind/code (pr-str (get cfg k)))
+                  "Category" cat
+                  "Description" desc}))))})
+
+(kind/test-last [(fn [t] (= 29 (count (:row-maps t))))])
+
+;; ### Per-Call Options
+;;
+;; These options are accepted by `sk/options`, `sk/sketch`, and `sk/plot`
+;; but are not part of the persistent configuration.
+
+(kind/table
+ {:column-names ["Key" "Category" "Description"]
+  :row-maps
+  (->> sk/per-call-key-docs
+       (sort-by (fn [[k [cat]]] [cat (name k)]))
+       (mapv (fn [[k [cat desc]]]
+               {"Key" (kind/code (pr-str k))
+                "Category" cat
+                "Description" desc})))})
+
+(kind/test-last [(fn [t] (= 13 (count (:row-maps t))))])
+
+;; ## Using Per-Call Options
 ;;
 ;; The highest-priority mechanism. Pass an options map to `sk/options`
 ;; (or `sk/sketch` or `sk/plot`). Per-call options override everything else.

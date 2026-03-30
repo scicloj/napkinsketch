@@ -171,6 +171,19 @@
   []
   (defaults/config))
 
+(def config-key-docs
+  "Documentation metadata for configuration keys.
+   Maps each config key to [category description].
+   Use with (sk/config) to build reference tables."
+  defaults/config-key-docs)
+
+(def per-call-key-docs
+  "Documentation for per-call-only option keys.
+   These are accepted by sk/options, sk/sketch, and sk/plot but are
+   not part of the persistent configuration returned by sk/config.
+   Maps each key to [category description]."
+  defaults/per-call-key-docs)
+
 (defn set-config!
   "Set global config overrides. Persists across calls until reset.
    (set-config! {:palette :dark2 :theme {:bg \"#FFFFFF\"}})
