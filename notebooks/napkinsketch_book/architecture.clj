@@ -242,3 +242,26 @@ graph TD
 ;; The `impl/` directory is pure data — no membrane dependency.
 ;; The `render/` directory uses membrane for pixel-space layout and
 ;; SVG conversion.
+
+;; ## Dependencies
+;;
+;; Napkinsketch builds on several excellent Clojure libraries:
+;;
+;; - [Tablecloth](https://scicloj.github.io/tablecloth/) &
+;;   [dtype-next](https://github.com/cnuernber/dtype-next) —
+;;   dataset manipulation and high-performance numeric arrays
+;;
+;; - [Membrane](https://github.com/phronmophobic/membrane) —
+;;   rendering and layout
+;;
+;; - [Wadogo](https://github.com/scicloj/wadogo) — scales
+;;
+;; - [Clojure2d](https://github.com/Clojure2D/clojure2d) —
+;;   color palettes and gradients
+;;
+;; - [Fastmath](https://github.com/generateme/fastmath) — statistics
+;;
+;; - [Malli](https://github.com/metosin/malli) — schema validation
+;;
+;; - [Kindly](https://scicloj.github.io/kindly/) &
+;;   [Clay](https://scicloj.github.io/clay/) — notebook rendering
