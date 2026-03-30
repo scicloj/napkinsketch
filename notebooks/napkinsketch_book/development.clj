@@ -74,7 +74,7 @@
 ;; After editing a notebook, you may regenerate its test file by rendering it:
 ;;
 ;; ```clojure
-;; (require '[scicloj.clay.v2.api :as clay]
+;; (require '[scicloj.clay.v2.api :as clay])
 ;; (clay/make! {:source-path "napkinsketch_book/scatter.clj"})
 ;; ```
 ;;
