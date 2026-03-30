@@ -7,8 +7,8 @@
 
 (ns napkinsketch-book.core-concepts
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; Shared datasets for these docs
+   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -22,17 +22,12 @@
 ;; Each column has a name (a keyword like `:sepal_length`) and holds
 ;; values of one type.
 ;;
-;; We load the classic iris flower dataset from a CSV file.
-;; `{:key-fn keyword}` converts the CSV header strings to Clojure
-;; keywords.
+;; We use the classic iris flower dataset throughout these examples.
+;; It is loaded in the Datasets chapter and available as `data/iris`.
 
-(def iris
-  (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-              {:key-fn keyword}))
+data/iris
 
-iris
-
-(kind/test-last [(fn [ds] (= 150 (tc/row-count ds)))])
+(kind/test-last [(fn [ds] (= 150 (count (tablecloth.api/rows ds))))])
 
 ;; The dataset has 150 rows and 5 columns. Four columns are
 ;; **numerical** (measurements in centimeters) and one is
@@ -59,7 +54,7 @@ iris
 ;; `sk/view` creates a view. It returns a vector of maps — plain
 ;; Clojure data that you can inspect, store, and transform.
 
-(def my-view (sk/view iris :sepal_length :sepal_width))
+(def my-view (sk/view data/iris :sepal_length :sepal_width))
 
 (kind/pprint my-view)
 
@@ -108,7 +103,7 @@ iris
 ;; The pipeline resolves all the details — axis ranges, tick positions,
 ;; colors, layout — and produces a visual figure.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -131,7 +126,7 @@ iris
 
 ;; A histogram draws bar shapes filled to show binned counts:
 
-(-> iris
+(-> data/iris
     (sk/lay-histogram :sepal_length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
@@ -156,7 +151,7 @@ iris
 
 ;; A regression line fitted through the scatter data:
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width)
     sk/lay-lm)
 
@@ -191,14 +186,14 @@ iris
 ;; Two numerical columns produce a scatter plot; a single numerical
 ;; column produces a histogram.
 
-(-> iris
+(-> data/iris
     (sk/view :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; A single column produces a histogram:
 
-(-> iris
+(-> data/iris
     (sk/view :sepal_length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
@@ -216,7 +211,7 @@ iris
 ;; scatter points. A regression line is a straight line fitted to
 ;; the data — it shows the overall trend.
 
-(-> iris
+(-> data/iris
     (sk/view :sepal_length :sepal_width)
     sk/lay-point
     sk/lay-lm)
@@ -228,7 +223,7 @@ iris
 ;; The same plot without `sk/view` — the first `sk/lay-X` call sets
 ;; the column mappings and subsequent layers inherit them:
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width)
     sk/lay-lm)
 
@@ -243,7 +238,7 @@ iris
 ;; the original.
 
 (def scatter-base
-  (-> iris
+  (-> data/iris
       (sk/lay-point :sepal_length :sepal_width)))
 
 ;; Add a regression line:
@@ -275,7 +270,7 @@ iris
 ;; color from the **palette** (an ordered set of colors). A
 ;; **legend** appears alongside the plot, mapping labels to colors.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -287,7 +282,7 @@ iris
 ;; a smooth color ramp from low to high. The legend shows a color
 ;; bar instead of discrete entries.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :petal_length}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -296,7 +291,7 @@ iris
 ;; colors all points uniformly. No legend appears because there is
 ;; nothing to distinguish.
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color "steelblue"}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -309,7 +304,7 @@ iris
 ;;
 ;; Compare: without `:color`, `sk/lay-lm` fits one line to all the data:
 
-(-> iris
+(-> data/iris
     (sk/view :sepal_length :sepal_width)
     sk/lay-point
     sk/lay-lm)
@@ -322,7 +317,7 @@ iris
 ;; all layers inherit it. Each species becomes a separate group, so the
 ;; regression fits three lines instead of one:
 
-(-> iris
+(-> data/iris
     (sk/view :sepal_length :sepal_width {:color :species})
     sk/lay-point
     sk/lay-lm)
@@ -342,7 +337,7 @@ iris
 ;;
 ;; `sk/facet` specifies which column to split on:
 
-(-> iris
+(-> data/iris
     (sk/view :sepal_length :sepal_width)
     (sk/facet :species)
     sk/lay-point
@@ -372,7 +367,7 @@ iris
 ;; Three columns crossed with themselves produce nine panels —
 ;; a full grid where each row and column corresponds to a variable:
 
-(-> iris
+(-> data/iris
     (sk/view (sk/cross cols cols)))
 
 (kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
@@ -394,7 +389,7 @@ iris
 ;;
 ;; Here we flip a scatter plot so sepal length runs vertically:
 
-(-> iris
+(-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/coord :flip))
 
