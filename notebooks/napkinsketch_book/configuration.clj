@@ -93,7 +93,11 @@
 ;; single plot. Plot options have the highest priority — they
 ;; override everything else.
 
-;; Custom dimensions (the default is 600×400):
+;; Custom dimensions — the defaults are:
+
+(select-keys (sk/config) [:width :height])
+
+(kind/test-last [(fn [m] (= {:width 600 :height 400} m))])
 
 (-> (base-views)
     (sk/options {:width 900 :height 250}))
@@ -133,9 +137,9 @@
 
 (sk/set-config! {:width 800})
 
-(:width (sk/config))
+(select-keys (sk/config) [:width :height])
 
-(kind/test-last [(fn [v] (= 800 v))])
+(kind/test-last [(fn [m] (= {:width 800 :height 400} m))])
 
 (-> (base-views))
 
@@ -143,9 +147,9 @@
 
 (sk/set-config! nil)
 
-(:width (sk/config))
+(select-keys (sk/config) [:width :height])
 
-(kind/test-last [(fn [v] (= 600 v))])
+(kind/test-last [(fn [m] (= {:width 600 :height 400} m))])
 
 ;; ## Thread-Local Overrides with with-config
 ;;
@@ -166,9 +170,9 @@
 
 ;; Outside the body, the default theme is back:
 
-(:width (sk/config))
+(select-keys (sk/config) [:width :height])
 
-(kind/test-last [(fn [v] (= 600 v))])
+(kind/test-last [(fn [m] (= {:width 600 :height 400} m))])
 
 ;; ## The Precedence Chain
 ;;
@@ -182,7 +186,13 @@
 ;; Let's demonstrate all three programmatic levels at once, using a
 ;; different key at each level so we can see each one win.
 
-;; Set a global override for width, height, and point-radius:
+;; Before overriding, the library default for point-radius is:
+
+(:point-radius (sk/config))
+
+(kind/test-last [(fn [v] (= 2.5 v))])
+
+;; Now set a global override for width, height, and point-radius:
 
 (sk/set-config! {:width 800 :height 350 :point-radius 5.0})
 
@@ -236,6 +246,10 @@ precedence-plot
 
 (sk/set-config! nil)
 
+(select-keys (sk/config) [:width :height :point-radius])
+
+(kind/test-last [(fn [m] (= {:width 600 :height 400 :point-radius 2.5} m))])
+
 ;; To summarize what happened:
 ;;
 ;; | Key | Library default | set-config! | with-config | plot options | Winner |
@@ -271,7 +285,11 @@ precedence-plot
 ;; - `:bg` — panel background color (hex string)
 ;; - `:grid` — grid line color (hex string)
 ;; - `:font-size` — tick label font size (number)
-;;
+
+(count (:theme (sk/config)))
+
+(kind/test-last [(fn [n] (= 3 n))])
+
 ;; Theme is **deep-merged** at every level — you only need to specify the
 ;; keys you want to change.
 
