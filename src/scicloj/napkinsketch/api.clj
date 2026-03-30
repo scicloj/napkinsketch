@@ -180,12 +180,16 @@
    Use with (sk/config) to build reference tables."
   defaults/config-key-docs)
 
-(def per-call-key-docs
-  "Documentation for per-call-only option keys.
+(def plot-option-docs
+  "Documentation for plot-level option keys.
    These are accepted by sk/options, sk/sketch, and sk/plot but are
-   not part of the persistent configuration returned by sk/config.
+   inherently per-plot (text content or nested config override).
    Maps each key to [category description]."
-  defaults/per-call-key-docs)
+  defaults/plot-option-docs)
+
+(def ^:deprecated per-call-key-docs
+  "Deprecated: use plot-option-docs instead."
+  defaults/plot-option-docs)
 
 (def layer-option-docs
   "Documentation for layer option keys accepted by lay- functions.

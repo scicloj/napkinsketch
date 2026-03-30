@@ -338,7 +338,7 @@
 ;; palette, color scale, margins, and more. Configuration follows a
 ;; precedence chain:
 ;;
-;; per-call options > `sk/with-config` > `sk/set-config!` > `napkinsketch.edn` > library defaults
+;; plot options > `sk/with-config` > `sk/set-config!` > `napkinsketch.edn` > library defaults
 ;;
 ;; `napkinsketch.edn` is an optional file in your project root that provides
 ;; project-level defaults (e.g., a consistent palette or theme across all plots).
@@ -381,4 +381,5 @@
 ;; | Palette | Ordered color set for categorical aesthetics | Resolved at render time |
 ;; | Gradient | Continuous color ramp for numerical color mappings | Resolved at render time |
 ;; | Configuration | Rendering options: dimensions, theme, palette, etc. | Layered precedence chain |
+;; | Plot Options | Title, subtitle, caption, labels — per-plot text content | Passed to sk/options |
 ;; | Tooltip / Brush | JavaScript hover and selection interactions | Added to SVG output |

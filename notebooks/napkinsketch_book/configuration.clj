@@ -45,7 +45,8 @@
 
 (def category-order
   ["Layout" "Theme" "Typography" "Points" "Bars & Lines"
-   "Annotations" "Ticks" "Statistics" "Labels" "Behavior"])
+   "Annotations" "Ticks" "Statistics" "Labels" "Behavior"
+   "Color" "Interaction" "Output"])
 
 (kind/table
  {:column-names ["Key" "Default" "Category" "Description"]
@@ -60,29 +61,29 @@
                   "Category" cat
                   "Description" desc}))))})
 
-(kind/test-last [(fn [t] (= 29 (count (:row-maps t))))])
+(kind/test-last [(fn [t] (= 36 (count (:row-maps t))))])
 
-;; ### Per-Call Options
+;; ### Plot Options
 ;;
 ;; These options are accepted by `sk/options`, `sk/sketch`, and `sk/plot`
-;; but are not part of the persistent configuration.
+;; but are inherently per-plot — text content or nested config override.
 
 (kind/table
  {:column-names ["Key" "Category" "Description"]
   :row-maps
-  (->> sk/per-call-key-docs
+  (->> sk/plot-option-docs
        (sort-by (fn [[k [cat]]] [cat (name k)]))
        (mapv (fn [[k [cat desc]]]
                {"Key" (kind/code (pr-str k))
                 "Category" cat
                 "Description" desc})))})
 
-(kind/test-last [(fn [t] (= 13 (count (:row-maps t))))])
+(kind/test-last [(fn [t] (= 6 (count (:row-maps t))))])
 
-;; ## Using Per-Call Options
+;; ## Using Plot Options
 ;;
 ;; Pass an options map to `sk/options` to override any setting for a
-;; single plot. Per-call options have the highest priority — they
+;; single plot. Plot options have the highest priority — they
 ;; override everything else.
 
 ;; Custom dimensions (the default is 600×400):
@@ -168,7 +169,7 @@
 ;; layer wins for each key.  The chain from highest to lowest:
 ;;
 ;; ```
-;; per-call options  >  with-config  >  set-config!  >  napkinsketch.edn  >  library defaults
+;; plot options  >  with-config  >  set-config!  >  napkinsketch.edn  >  library defaults
 ;; ```
 ;;
 ;; Let's demonstrate all three programmatic levels at once, using a
@@ -183,7 +184,7 @@
 
 (def precedence-result
   (sk/with-config {:width 1200 :height 500}
-    ;; Pass per-call options for width only:
+    ;; Pass plot options for width only:
     (let [sketch (sk/sketch (base-views) {:width 900})]
       {:sketch-width (:width sketch)
        :sketch-height (:height sketch)})))
@@ -192,7 +193,7 @@ precedence-result
 
 (kind/test-last
  [(fn [m]
-    (and (= 900 (:sketch-width m)) ;; per-call wins over with-config (1200) and set-config! (800)
+    (and (= 900 (:sketch-width m)) ;; plot options win over with-config (1200) and set-config! (800)
          (= 500 (:sketch-height m))) ;; with-config wins over set-config! (350)
     )])
 
@@ -230,9 +231,9 @@ precedence-plot
 
 ;; To summarize what happened:
 ;;
-;; | Key | Library default | set-config! | with-config | per-call | Winner |
+;; | Key | Library default | set-config! | with-config | plot options | Winner |
 ;; |:----|:---------------|:------------|:------------|:---------|:-------|
-;; | `:width` | 600 | 800 | 1200 | 900 | **900** (per-call) |
+;; | `:width` | 600 | 800 | 1200 | 900 | **900** (plot options) |
 ;; | `:height` | 400 | 350 | 500 | — | **500** (with-config) |
 ;; | `:point-radius` | 2.5 | 5.0 | — | — | **5.0** (set-config!) |
 
@@ -264,7 +265,7 @@ precedence-plot
 ;; - `:grid` — grid line color (hex string)
 ;; - `:font-size` — tick label font size (number)
 ;;
-;; Per-call theme is **deep-merged** — you only need to specify the
+;; Theme is **deep-merged** at every level — you only need to specify the
 ;; keys you want to change.
 
 ;; Override only `:bg`, keep default `:grid` and `:font-size`:
@@ -296,7 +297,7 @@ precedence-plot
 ;; ## Comparing Two Themes Side by Side
 ;;
 ;; `sk/arrange` composes independent plots in a CSS grid.
-;; Each plot can have its own per-call theme.
+;; Each plot can have its own theme.
 
 (sk/arrange
  [(-> (base-views)
@@ -330,7 +331,7 @@ precedence-plot
 ;;
 ;; Palette works at every configuration level.
 
-;; Per-call named palette:
+;; Named palette via plot options:
 
 (-> (base-views)
     (sk/options {:palette :tableau10}))
@@ -338,7 +339,7 @@ precedence-plot
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; Per-call custom vector palette:
+;; Custom vector palette:
 
 (-> (base-views)
     (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
@@ -346,7 +347,7 @@ precedence-plot
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; Per-call explicit map palette:
+;; Explicit map palette:
 
 (-> (base-views)
     (sk/options {:palette {"setosa" "#FF6B6B"
@@ -388,7 +389,7 @@ precedence-plot
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
-;; Per-call color scale override — inferno gradient:
+;; Color scale override via plot options — inferno gradient:
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/lay-point :x :y {:color :c})
@@ -521,12 +522,12 @@ precedence-plot
 ;;
 ;; | Mechanism | Scope | Persistence | Example |
 ;; |:----------|:------|:------------|:--------|
-;; | per-call options | single call | none | `(sk/options {...})` or `(sk/plot views {...})` |
+;; | plot options | single call | none | `(sk/options {...})` or `(sk/plot views {...})` |
 ;; | `with-config` | lexical body | until body exits | `(sk/with-config {:width 800} ...)` |
 ;; | `set-config!` | global | until reset | `(sk/set-config! {:width 800})` |
 ;; | `napkinsketch.edn` | project | file on disk | `{:width 800}` in project root |
 ;; | library defaults | everywhere | built-in | `resources/napkinsketch-defaults.edn` |
 ;;
-;; Precedence: per-call > with-config > set-config! > napkinsketch.edn > library defaults.
+;; Precedence: plot options > with-config > set-config! > napkinsketch.edn > library defaults.
 ;;
 ;; Use `sk/config` at any time to see the resolved configuration.

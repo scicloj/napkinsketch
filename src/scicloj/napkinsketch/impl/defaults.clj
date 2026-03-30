@@ -206,7 +206,7 @@
 ;; ---- Configuration Precedence Chain ----
 ;;
 ;; Resolved with precedence (highest to lowest):
-;;   1. per-call opts (passed to sk/plot, sk/sketch, etc.)
+;;   1. plot options (passed to sk/options, sk/plot, sk/sketch, etc.)
 ;;   2. binding *config* (thread-local override)
 ;;   3. set-config! (global mutable state)
 ;;   4. napkinsketch.edn (project root or classpath)
@@ -265,6 +265,7 @@
    :margin-multi ["Layout" "Margin around multi-panel plots (pixels)"]
    :panel-size ["Layout" "Default panel size for faceted/multi-variable grids"]
    :legend-width ["Layout" "Width reserved for the legend column"]
+   :legend-position ["Layout" "Legend placement — :right, :bottom, :top, or :none"]
    :theme ["Theme" "Nested map {:bg :grid :font-size} — visual identity"]
    :label-font-size ["Typography" "Font size for axis labels"]
    :title-font-size ["Typography" "Font size for the plot title"]
@@ -287,24 +288,24 @@
    :title-offset ["Labels" "Pixel offset for the title from the top"]
    :strip-height ["Labels" "Height of facet strip label bars"]
    :validate ["Behavior" "When true, validate sketches against Malli schema"]
-   :default-color ["Behavior" "Fallback color when no color mapping is set"]})
+   :default-color ["Behavior" "Fallback color when no color mapping is set"]
+   :palette ["Color" "Categorical palette — keyword, vector, or map"]
+   :color-scale ["Color" "Continuous color scale — :sequential, :diverging, or keyword"]
+   :color-midpoint ["Color" "Center value for diverging color scales"]
+   :tooltip ["Interaction" "Enable hover tooltips (truthy value)"]
+   :brush ["Interaction" "Enable drag-to-select brush (truthy value)"]
+   :format ["Output" "Render format — :svg (default)"]})
 
-(def per-call-key-docs
-  "Documentation for per-call-only option keys (not in config).
-   Accepted by sk/options, sk/sketch, and sk/plot but not part of the
-   persistent configuration. Each entry maps a key to [category description]."
+(def plot-option-docs
+  "Documentation for plot-level option keys.
+   These are accepted by sk/options, sk/sketch, and sk/plot but are
+   inherently per-plot (text content or nested config override).
+   Each entry maps a key to [category description]."
   {:title ["Content" "Plot title string"]
    :subtitle ["Content" "Plot subtitle string"]
    :caption ["Content" "Plot caption string (bottom)"]
    :x-label ["Content" "X-axis label (overrides inferred)"]
    :y-label ["Content" "Y-axis label (overrides inferred)"]
-   :palette ["Color" "Categorical palette — keyword, vector, or map"]
-   :color-scale ["Color" "Continuous color scale — :sequential, :diverging, or keyword"]
-   :color-midpoint ["Color" "Center value for diverging color scales"]
-   :legend-position ["Layout" "Legend placement — :right, :bottom, :top, or :none"]
-   :tooltip ["Interaction" "Enable hover tooltips (truthy value)"]
-   :brush ["Interaction" "Enable drag-to-select brush (truthy value)"]
-   :format ["Output" "Render format — :svg (default)"]
    :config ["Config" "Nested config map merged into resolved config"]})
 
 (defn config
@@ -322,14 +323,15 @@
       from-binding (merge from-binding))))
 
 (defn resolve-config
-  "Resolve config with per-call opts merged on top of the precedence chain.
-   Per-call opts have the highest priority. Keys relevant to config are
+  "Resolve config with plot options merged on top of the precedence chain.
+   Plot options have the highest priority. Keys relevant to config are
    extracted; unknown keys are ignored."
-  [per-call-opts]
+  [plot-opts]
   (let [cfg (config)]
-    (if (seq per-call-opts)
+    (if (seq plot-opts)
       (let [{:keys [config width height palette theme
-                    color-scale color-midpoint validate]} per-call-opts]
+                    color-scale color-midpoint validate
+                    legend-position tooltip brush format]} plot-opts]
         (cond-> cfg
           config (merge config)
           width (assoc :width width)
@@ -338,5 +340,9 @@
           theme (update :theme merge theme)
           (some? color-scale) (assoc :color-scale color-scale)
           (some? color-midpoint) (assoc :color-midpoint color-midpoint)
-          (some? validate) (assoc :validate validate)))
+          (some? validate) (assoc :validate validate)
+          (some? legend-position) (assoc :legend-position legend-position)
+          (some? tooltip) (assoc :tooltip tooltip)
+          (some? brush) (assoc :brush brush)
+          (some? format) (assoc :format format)))
       cfg)))
