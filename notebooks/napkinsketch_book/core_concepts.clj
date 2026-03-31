@@ -291,6 +291,17 @@ data/iris
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
+;; You can also add a layer with **different columns** by passing them
+;; explicitly. This creates a multi-panel layout, one panel per column
+;; pair:
+
+(-> scatter-base
+    (sk/lay-point :petal_length :petal_width))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 300 (:points s)))))])
+
 ;; ## Color
 ;;
 ;; The `:color` option controls point and line colors. Its behavior

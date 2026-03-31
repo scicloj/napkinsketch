@@ -450,3 +450,16 @@
     (ex-message e)))
 
 (kind/test-last [(fn [m] (re-find #"must contain :boxes" m))])
+
+;; ### x-only method with y column
+;;
+;; Methods that use only the x column (histogram, bar, density, rug)
+;; reject a y column with a clear message.
+
+(try
+  (-> {:x [1 2 3] :y [4 5 6]}
+      (sk/lay-histogram :x :y))
+  (catch Exception e
+    (ex-message e)))
+
+(kind/test-last [(fn [m] (re-find #"uses only the x column" m))])

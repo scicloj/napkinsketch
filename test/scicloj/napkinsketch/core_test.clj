@@ -933,7 +933,7 @@
 (deftest categorical-single-category-test
   (testing "bar chart with only one category"
     (let [ds (tc/dataset {:cat ["a" "a" "a"] :val [1 2 3]})
-          sk (sk/sketch (-> ds (sk/lay-bar :cat :val)))]
+          sk (sk/sketch (-> ds (sk/lay-value-bar :cat :val)))]
       (is (= 1 (count (:panels sk)))))))
 
 (deftest histogram-uniform-data-test
@@ -1010,6 +1010,50 @@
           layer (first (:layers (first (:panels sk))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group)))))))
+
+(deftest plotspec-pipeline-test
+  (testing "lay-X 3-arity with PlotSpec adds layer with column overrides"
+    (let [p (sk/lay-point {:x [1 2 3] :y [4 5 6]} :x :y)
+          p2 (sk/lay-line p :x :y)]
+      (is (sk/plot-spec? p2))
+      (is (= 2 (count (sk/views-of p2))))))
+  (testing "lay-X 4-arity with PlotSpec adds layer with columns + opts"
+    (let [p (sk/lay-point {:x [1 2 3] :y [4 5 6] :g ["a" "b" "a"]} :x :y)
+          p2 (sk/lay-line p :x :y {:color :g})
+          s (sk/svg-summary p2)]
+      (is (= 3 (:points s)))
+      (is (= 2 (:lines s)))))
+  (testing "lay-X 2-arity with PlotSpec and column override"
+    (let [ds {:a [1 2 3 4 5] :b [5 4 3 2 1] :c [10 20 30 40 50]}
+          p (sk/lay-point ds :a :b)
+          p2 (sk/lay-histogram p :c)
+          s (sk/svg-summary p2)]
+      (is (= 2 (:panels s)))
+      (is (= 5 (:points s)))
+      (is (pos? (:polygons s)))))
+  (testing "lay-X with PlotSpec and different columns creates multi-panel"
+    (let [ds {:a [1 2 3] :b [4 5 6] :c [7 8 9] :d [10 11 12]}
+          p (sk/lay-point ds :a :b)
+          p2 (sk/lay-point p :c :d)
+          s (sk/svg-summary p2)]
+      (is (= 2 (:panels s)))
+      (is (= 6 (:points s))))))
+
+(deftest x-only-validation-test
+  (testing "histogram rejects :y column"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"lay-histogram uses only the x column"
+                          (sk/lay-histogram {:x [1 2 3] :y [4 5 6]} :x :y))))
+  (testing "bar rejects :y column"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"lay-bar uses only the x column"
+                          (sk/lay-bar {:x ["a" "b"] :y [1 2]} :x :y))))
+  (testing "density rejects :y column"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"lay-density uses only the x column"
+                          (sk/lay-density {:x [1 2 3] :y [4 5 6]} :x :y))))
+  (testing "histogram with opts (not :y) still works"
+    (is (some? (sk/lay-histogram {:x [1 2 3 4 5]} :x {:color :x})))))
 
 (deftest multiple-layers-test
   (testing "sketch with point + line layers"

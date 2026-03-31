@@ -71,14 +71,14 @@
 (register! :step {:mark :step :stat :identity :accepts [:size] :doc "Step — horizontal-then-vertical connected points."})
 (register! :area {:mark :area :stat :identity :accepts [] :doc "Area — filled region under a line."})
 (register! :stacked-area {:mark :area :stat :identity :position :stack :accepts [] :doc "Stacked area — filled regions stacked cumulatively."})
-(register! :histogram {:mark :bar :stat :bin :accepts [:normalize] :doc "Histogram — bins numerical data into bars."})
-(register! :bar {:mark :rect :stat :count :accepts [] :doc "Bar — counts categorical values."})
-(register! :stacked-bar {:mark :rect :stat :count :position :stack :accepts [] :doc "Stacked bar — counts categorical values, stacked."})
-(register! :stacked-bar-fill {:mark :rect :stat :count :position :fill :accepts [] :doc "Percentage stacked bar — proportions sum to 1.0."})
+(register! :histogram {:mark :bar :stat :bin :x-only true :accepts [:normalize] :doc "Histogram — bins numerical data into bars."})
+(register! :bar {:mark :rect :stat :count :x-only true :accepts [] :doc "Bar — counts categorical values."})
+(register! :stacked-bar {:mark :rect :stat :count :position :stack :x-only true :accepts [] :doc "Stacked bar — counts categorical values, stacked."})
+(register! :stacked-bar-fill {:mark :rect :stat :count :position :fill :x-only true :accepts [] :doc "Percentage stacked bar — proportions sum to 1.0."})
 (register! :value-bar {:mark :rect :stat :identity :accepts [] :doc "Value bar — categorical x with pre-computed y."})
 (register! :lm {:mark :line :stat :lm :accepts [:se :size] :doc "Linear regression — OLS fit line."})
 (register! :loess {:mark :line :stat :loess :accepts [:se :bandwidth :size] :doc "LOESS — local regression smoothing."})
-(register! :density {:mark :area :stat :kde :accepts [:bandwidth] :doc "Density — kernel density estimation as filled area."})
+(register! :density {:mark :area :stat :kde :x-only true :accepts [:bandwidth] :doc "Density — kernel density estimation as filled area."})
 (register! :tile {:mark :tile :stat :bin2d :accepts [:fill] :doc "Tile/heatmap — 2D grid binning."})
 (register! :density2d {:mark :tile :stat :kde2d :accepts [] :doc "2D density — KDE-smoothed heatmap."})
 (register! :contour {:mark :contour :stat :kde2d :accepts [:levels :size] :doc "Contour — iso-density contour lines."})
@@ -90,7 +90,7 @@
 (register! :lollipop {:mark :lollipop :stat :identity :accepts [:size] :doc "Lollipop — stem with dot."})
 (register! :text {:mark :text :stat :identity :accepts [:text] :doc "Text — data-driven labels."})
 (register! :label {:mark :label :stat :identity :accepts [:text] :doc "Label — text with background box."})
-(register! :rug {:mark :rug :stat :identity :accepts [] :doc "Rug — axis-margin tick marks."})
+(register! :rug {:mark :rug :stat :identity :x-only true :accepts [] :doc "Rug — axis-margin tick marks."})
 
 ;; ---- Annotation constructors ----
 ;; These are not methods (no mark+stat+position). They take arguments
