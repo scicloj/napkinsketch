@@ -49,7 +49,7 @@
 ;; ## Plain Data
 ;;
 ;; You do not need to load a CSV — Napkinsketch accepts plain Clojure
-;; data and coerces it to a tech.ml.dataset dataset.
+;; data and coerces it into a dataset internally.
 ;; A map of columns works directly:
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
@@ -102,7 +102,7 @@
                            (and (= 1 (:panels s))
                                 (= 3 (:polygons s)))))])
 
-;; Flip to horizontal with `sk/coord`:
+;; **Horizontal bars** — flip with `sk/coord`:
 
 (-> iris
     (sk/lay-bar :species)
@@ -160,7 +160,7 @@
 
 ;; ## Multiple Layers
 ;;
-;; Use `sk/view` to set shared column mappings and aesthetics, then
+;; Use `sk/view` to set shared column mappings, then
 ;; add layers with `sk/lay-*`. All layers inherit the view's mappings:
 
 (-> iris
