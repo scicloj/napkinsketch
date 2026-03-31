@@ -77,7 +77,7 @@
             point-group (fn [ds group-val]
                           (cond-> {:xs (ds x) :ys (ds y)
                                    :row-indices (ds :__row-idx)}
-                            group-val (assoc :color (extract-color group-val))
+                            (some? group-val) (assoc :color (extract-color group-val))
                             numeric-color? (assoc :color-values (ds color))
                             size (assoc :sizes (ds size))
                             alpha (assoc :alphas (ds alpha))
@@ -129,7 +129,7 @@
                           (fn [ds gv]
                             (let [hist (stats/histogram (ds x) (:bin-method (or cfg defaults/defaults)))]
                               (cond-> {:bin-maps (:bins-maps hist)}
-                                gv (assoc :color gv)))))
+                                (some? gv) (assoc :color gv)))))
             ;; When normalize=:density, convert counts to density (area integrates to 1)
             all-bin-data (if (= normalize :density)
                            (mapv (fn [bd]
@@ -265,15 +265,15 @@
                                     (not= (dfn/reduce-min (ds x))
                                           (dfn/reduce-max (ds x))))
                            (cond-> (fit-lm-with-se (ds x) (ds y) n-grid level)
-                             gv (assoc :color gv)))))
+                             (some? gv) (assoc :color gv)))))
               results (remove nil? results)
               lines (mapv (fn [{:keys [x1 y1 x2 y2 color]}]
                             (cond-> {:x1 x1 :y1 y1 :x2 x2 :y2 y2}
-                              color (assoc :color color)))
+                              (some? color) (assoc :color color)))
                           results)
               ribbons (mapv (fn [{:keys [xs ys ymins ymaxs color]}]
                               (cond-> {:xs xs :ys ys :ymins ymins :ymaxs ymaxs}
-                                color (assoc :color color)))
+                                (some? color) (assoc :color color)))
                             results)
               all-ymins (mapcat :ymins results)
               all-ymaxs (mapcat :ymaxs results)
@@ -292,7 +292,7 @@
                                   (not= (dfn/reduce-min (ds x))
                                         (dfn/reduce-max (ds x))))
                          (cond-> (fit-lm (ds x) (ds y))
-                           gv (assoc :color gv)))))]
+                           (some? gv) (assoc :color gv)))))]
           {:lines (remove nil? lines)
            :x-domain (numeric-extent (clean x))
            :y-domain (numeric-extent (clean y))})))))
@@ -421,15 +421,15 @@
                                           (dfn/reduce-max (ds x))))
                            (cond-> (fit-loess-with-se (ds x) (ds y)
                                                       n-grid bandwidth level n-boot)
-                             gv (assoc :color gv)))))
+                             (some? gv) (assoc :color gv)))))
               results (remove nil? results)
               curves (mapv (fn [{:keys [xs ys color]}]
                              (cond-> {:xs xs :ys ys}
-                               color (assoc :color color)))
+                               (some? color) (assoc :color color)))
                            results)
               ribbons (mapv (fn [{:keys [xs ys ymins ymaxs color]}]
                               (cond-> {:xs xs :ys ys :ymins ymins :ymaxs ymaxs}
-                                color (assoc :color color)))
+                                (some? color) (assoc :color color)))
                             results)
               all-ymins (mapcat :ymins results)
               all-ymaxs (mapcat :ymaxs results)
@@ -448,7 +448,7 @@
                                    (not= (dfn/reduce-min (ds x))
                                          (dfn/reduce-max (ds x))))
                           (cond-> (fit-loess (ds x) (ds y) n-grid bandwidth)
-                            gv (assoc :color gv)))))
+                            (some? gv) (assoc :color gv)))))
               curves (remove nil? curves)
               all-ys (mapcat :ys curves)
               y-min (if (seq all-ys) (reduce min all-ys) (dfn/reduce-min (clean y)))
@@ -493,7 +493,7 @@
                     (fn [ds gv]
                       (when (>= (tc/row-count ds) 2)
                         (cond-> (fit-kde (ds x) n-grid bandwidth)
-                          gv (assoc :color gv)))))
+                          (some? gv) (assoc :color gv)))))
             curves (remove nil? curves)
             all-ys (mapcat :ys curves)
             y-max (if (seq all-ys) (reduce max all-ys) 1)
@@ -638,7 +638,7 @@
                                      :ys (mapv :mean per-cat)
                                      :ymins (mapv #(- (:mean %) (:se %)) per-cat)
                                      :ymaxs (mapv #(+ (:mean %) (:se %)) per-cat)}
-                              gv (assoc :color gv)))))
+                              (some? gv) (assoc :color gv)))))
             all-ys (mapcat (fn [g] (concat (:ymins g) (:ymaxs g))) all-groups)
             y-min (if (seq all-ys) (reduce min all-ys) 0)
             y-max (if (seq all-ys) (reduce max all-ys) 1)]

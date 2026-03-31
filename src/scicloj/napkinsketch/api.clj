@@ -42,9 +42,15 @@
              defaults/*config* (assoc :config-snapshot defaults/*config*))))
 
 (defn- extract-views
-  "Extract raw views vector from PlotSpec or pass through."
+  "Extract raw views vector from PlotSpec or pass through.
+   Throws if a vector contains nested PlotSpecs (use the PlotSpec pipeline directly)."
   [x]
   (cond (view/plot-spec? x) (:views x)
+        (and (sequential? x) (some view/plot-spec? x))
+        (throw (ex-info (str "Vector contains a PlotSpec. Pass the PlotSpec directly "
+                             "instead of wrapping in a vector — e.g. "
+                             "(-> data (sk/lay-point :x :y) (sk/options {...}))")
+                        {}))
         (view/views? x) x
         :else x))
 
@@ -195,10 +201,6 @@
    These are accepted by sk/options, sk/sketch, and sk/plot but are
    inherently per-plot (text content or nested config override).
    Maps each key to [category description]."
-  defaults/plot-option-docs)
-
-(def ^:deprecated per-call-key-docs
-  "Deprecated: use plot-option-docs instead."
   defaults/plot-option-docs)
 
 (def layer-option-docs
@@ -755,11 +757,17 @@
    (save views \"plot.svg\")
    (save views \"plot.svg\" {:width 800 :height 600})"
   ([spec-or-views path]
-   (let [views (extract-views spec-or-views)
-         opts (carry-opts spec-or-views)]
-     (if (seq opts)
-       (svg/save views path opts)
-       (svg/save views path))))
+   (let [path-str (str path)]
+     (when-not (.endsWith path-str ".svg")
+       (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
+     (let [views (extract-views spec-or-views)
+           opts (carry-opts spec-or-views)]
+       (if (seq opts)
+         (svg/save views path opts)
+         (svg/save views path)))))
   ([spec-or-views path opts]
-   (svg/save (extract-views spec-or-views) path
-             (kindly/deep-merge (carry-opts spec-or-views) opts))))
+   (let [path-str (str path)]
+     (when-not (.endsWith path-str ".svg")
+       (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
+     (svg/save (extract-views spec-or-views) path
+               (kindly/deep-merge (carry-opts spec-or-views) opts)))))

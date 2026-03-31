@@ -1098,6 +1098,28 @@
                            (sk/lay-value-bar :category :value {:color :group :position :stack})))]
       (is (not (clojure.string/includes? (str svg) "NaN"))))))
 
+(deftest boolean-color-test
+  (testing "Boolean false is not dropped as group key"
+    (let [sk (-> {:x [1 2 3 4] :y [10 20 30 40] :flag [true false true false]}
+                 (sk/lay-point :x :y {:color :flag})
+                 sk/sketch)
+          groups (-> sk :panels first :layers first :groups)]
+      (is (= 2 (count groups)) "two groups for true/false")
+      (is (= "true" (:label (first groups))))
+      (is (= "false" (:label (second groups))))
+      ;; Both groups should get distinct palette colors (not default gray)
+      (is (not= (:color (first groups)) (:color (second groups)))
+          "true and false get different colors")))
+  (testing "Legend matches rendering for boolean groups"
+    (let [sk (-> {:x [1 2 3 4] :y [10 20 30 40] :flag [true false true false]}
+                 (sk/lay-point :x :y {:color :flag})
+                 sk/sketch)
+          legend-colors (mapv :color (:entries (:legend sk)))
+          group-colors (mapv :color (-> sk :panels first :layers first :groups))]
+      (is (= (count legend-colors) (count group-colors)))
+      (is (= (set legend-colors) (set group-colors))
+          "legend colors match group colors"))))
+
 (deftest facet-then-lay-test
   (testing "layer added after facet inherits facet keys"
     (let [data (tc/dataset {:x [1 2 3 4 5 6]

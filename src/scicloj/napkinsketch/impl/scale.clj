@@ -15,6 +15,11 @@
   (if (and (vector? domain) (= :doc (second domain)))
     domain
     (cond
+      (and (categorical-domain? domain) (= :log (:type scale-spec)))
+      (throw (ex-info (str "Log scale requires numeric data, but domain is categorical: "
+                           (vec (take 5 domain))
+                           (when (> (count domain) 5) " ..."))
+                      {:domain domain :scale-spec scale-spec}))
       (categorical-domain? domain) :categorical
       (= :log (:type scale-spec)) :log
       :else :linear)))

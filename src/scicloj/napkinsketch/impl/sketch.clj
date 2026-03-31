@@ -159,6 +159,7 @@
   "Filter rows with non-positive values on log-scaled axes.
    When :x-scale or :y-scale is {:type :log}, removes rows where
    the corresponding column has values <= 0 and prints a warning.
+   Throws a clear error if log scale is applied to non-numeric data.
    Returns the resolved view with filtered :data."
   [rv]
   (let [ds (:data rv)]
@@ -168,6 +169,14 @@
             y-log? (= :log (:type (:y-scale rv)))
             x-col (when (and x-log? (keyword? (:x rv))) (:x rv))
             y-col (when (and y-log? (keyword? (:y rv))) (:y rv))
+            _ (when (and x-col (ds x-col)
+                         (not (casting/numeric-type? (dtype/elemwise-datatype (ds x-col)))))
+                (throw (ex-info (str "Log scale requires numeric data, but column " x-col " is non-numeric.")
+                                {:column x-col :type (dtype/elemwise-datatype (ds x-col))})))
+            _ (when (and y-col (ds y-col)
+                         (not (casting/numeric-type? (dtype/elemwise-datatype (ds y-col)))))
+                (throw (ex-info (str "Log scale requires numeric data, but column " y-col " is non-numeric.")
+                                {:column y-col :type (dtype/elemwise-datatype (ds y-col))})))
             n-before (tc/row-count ds)
             ds (if (and x-col (ds x-col))
                  (tc/select-rows ds (dfn/> (ds x-col) 0))
@@ -188,9 +197,9 @@
           rv)))))
 
 (defn- filter-infinities
-  "Filter rows containing infinite values on numeric x or y columns.
-   Removes rows where the x or y column contains ##Inf or ##-Inf
-   and prints a warning. Non-numeric columns are skipped.
+  "Filter rows containing non-finite values on numeric x or y columns.
+   Removes rows where the x or y column contains nil, NaN, Inf, or -Inf
+   and prints an appropriate warning. Non-numeric columns are skipped.
    Returns the resolved view with filtered :data."
   [rv]
   (let [ds (:data rv)]
@@ -203,6 +212,16 @@
             y-numeric? (and y-col (ds y-col)
                             (casting/numeric-type? (dtype/elemwise-datatype (ds y-col))))
             n-before (tc/row-count ds)
+            ;; First pass: drop missing (nil/NaN)
+            cols-to-check (cond-> []
+                            x-numeric? (conj x-col)
+                            y-numeric? (conj y-col))
+            ds (if (seq cols-to-check)
+                 (tc/drop-missing ds cols-to-check)
+                 ds)
+            n-after-missing (tc/row-count ds)
+            n-missing (- n-before n-after-missing)
+            ;; Second pass: drop infinite
             ds (if x-numeric?
                  (tc/select-rows ds (dfn/finite? (ds x-col)))
                  ds)
@@ -210,9 +229,14 @@
                  (tc/select-rows ds (dfn/finite? (ds y-col)))
                  ds)
             n-after (tc/row-count ds)
-            removed (- n-before n-after)]
+            n-infinite (- n-after-missing n-after)
+            removed (+ n-missing n-infinite)]
         (when (pos? removed)
-          (println (str "Warning: Removed " removed " rows containing non-finite values (Inf or -Inf).")))
+          (let [parts (cond-> []
+                        (pos? n-missing) (conj (str n-missing " missing (nil/NaN)"))
+                        (pos? n-infinite) (conj (str n-infinite " non-finite (Inf/-Inf)")))]
+            (println (str "Warning: Removed " removed " rows with non-finite values: "
+                          (clojure.string/join ", " parts) "."))))
         (if (pos? removed)
           (assoc rv :data ds)
           rv)))))

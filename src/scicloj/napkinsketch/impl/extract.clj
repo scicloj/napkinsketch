@@ -11,7 +11,7 @@
   "Resolve a color value to [r g b a]. Handles column values, fixed colors, and defaults."
   [all-colors color-val fixed-color cfg]
   (cond
-    color-val (defaults/color-for all-colors color-val (:palette cfg))
+    (some? color-val) (defaults/color-for all-colors color-val (:palette cfg))
     fixed-color (if (string? fixed-color) (defaults/hex->rgba fixed-color) fixed-color)
     :else (defaults/hex->rgba (:default-color cfg))))
 
@@ -57,7 +57,7 @@
    (for [{:keys [color xs ys ymins ymaxs labels]} (:points stat)]
      (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
               :xs xs :ys ys}
-       color (assoc :label (str color))
+       (some? color) (assoc :label (str color))
        (and with-range? ymins) (assoc :ymins ymins)
        (and with-range? ymaxs) (assoc :ymaxs ymaxs)
        (and with-labels? labels) (assoc :labels (mapv str labels))))))
@@ -104,7 +104,7 @@
                   (for [{:keys [color xs ys sizes alphas shapes row-indices color-values]} (:points stat)]
                     (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
                              :xs xs :ys ys}
-                      color (assoc :label (str color))
+                      (some? color) (assoc :label (str color))
                       (and numeric-color? color-values)
                       (assoc :colors (vec (map (fn [v]
                                                  (let [t (defaults/normalize-midpoint v (or c-min 0) (or c-max 1) (:color-midpoint cfg))
