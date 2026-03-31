@@ -103,18 +103,26 @@
   "Look up the color for a categorical value from the palette.
    Returns [r g b a] in 0-1 range.
    palette can be: nil (default), a keyword (any clojure2d palette name),
-   a vector of hex strings, or a map of {category-value color}."
+   a vector of hex strings, or a map of {category-value color}.
+   Map lookup is tolerant of string/keyword mismatch: {:setosa \"#F00\"}
+   matches both :setosa and \"setosa\" data values."
   ([categories val]
    (color-for categories val nil))
   ([categories val palette]
    (let [idx (if categories (.indexOf ^java.util.List categories val) -1)
          idx (if (neg? idx) 0 idx)]
      (if (map? palette)
-       ;; Explicit mapping: look up value, fall back to index in default palette
-       (if-let [cv (get palette val)]
-         (hex->rgba cv)
-         (let [pal (resolve-palette default-palette-name)]
-           (c2d->rgba (nth pal (mod idx (count pal))))))
+       ;; Explicit mapping: look up value, try alternate string/keyword form,
+       ;; fall back to index in default palette
+       (let [cv (or (get palette val)
+                    (cond
+                      (keyword? val) (get palette (name val))
+                      (string? val) (get palette (keyword val))
+                      :else nil))]
+         (if cv
+           (hex->rgba cv)
+           (let [pal (resolve-palette default-palette-name)]
+             (c2d->rgba (nth pal (mod idx (count pal)))))))
        ;; Index-based: keyword → c/palette, vector → use directly, nil → default
        (cond
          (keyword? palette)

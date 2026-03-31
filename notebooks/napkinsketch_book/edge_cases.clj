@@ -271,6 +271,17 @@
 
 (kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
 
+;; ### Log scale with non-positive values
+;;
+;; Non-positive values are filtered on log-scaled axes
+;; (following ggplot2 behavior). Here x includes 0 and -1:
+
+(-> {:x [0 -1 1 10 100] :y [1 2 3 4 5]}
+    (sk/lay-point :x :y)
+    (sk/scale :x :log))
+
+(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+
 ;; ## Continuous Color Edge Cases
 
 ;; ### Continuous color — constant value

@@ -4,6 +4,8 @@
    no datasets, no scale objects in the output."
   (:require [wadogo.scale :as ws]
             [java-time.api :as jt]
+            [tablecloth.api :as tc]
+            [tech.v3.datatype.functional :as dfn]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.stat :as stat]
@@ -150,12 +152,45 @@
 
 ;; ---- Per-Panel Resolution ----
 
+(defn- filter-log-nonpositive
+  "Filter rows with non-positive values on log-scaled axes.
+   When :x-scale or :y-scale is {:type :log}, removes rows where
+   the corresponding column has values <= 0 and prints a warning.
+   Returns the resolved view with filtered :data."
+  [rv]
+  (let [ds (:data rv)]
+    (if-not (tc/dataset? ds)
+      rv
+      (let [x-log? (= :log (:type (:x-scale rv)))
+            y-log? (= :log (:type (:y-scale rv)))
+            x-col (when (and x-log? (keyword? (:x rv))) (:x rv))
+            y-col (when (and y-log? (keyword? (:y rv))) (:y rv))
+            n-before (tc/row-count ds)
+            ds (if (and x-col (ds x-col))
+                 (tc/select-rows ds (dfn/> (ds x-col) 0))
+                 ds)
+            ds (if (and y-col (ds y-col))
+                 (tc/select-rows ds (dfn/> (ds y-col) 0))
+                 ds)
+            n-after (tc/row-count ds)
+            removed (- n-before n-after)]
+        (when (pos? removed)
+          (let [axes (cond
+                       (and x-col y-col) (str x-col " and " y-col)
+                       x-col (str x-col)
+                       :else (str y-col))]
+            (println (str "Warning: Removed " removed " rows containing non-positive values (log scale on " axes ")."))))
+        (if (pos? removed)
+          (assoc rv :data ds)
+          rv)))))
+
 (defn resolve-panel-views
   "Resolve views and compute stats for a group of views belonging to one panel.
    If pre-resolved views are provided, skips resolve-view.
+   Filters non-positive values on log-scaled axes (ggplot2 behavior).
    Returns {:resolved [...] :stat-results [...] :layers [...]}."
   [panel-views all-colors cfg & {:keys [resolved]}]
-  (let [resolved (or resolved (mapv view/resolve-view panel-views))
+  (let [resolved (or resolved (mapv (comp filter-log-nonpositive view/resolve-view) panel-views))
         stat-results (mapv #(stat/compute-stat (assoc % :cfg (merge cfg (:cfg %)))) resolved)
         raw-layers (vec (map (fn [rv sr]
                                (-> (extract/extract-layer rv sr all-colors cfg)
@@ -168,9 +203,10 @@
 (defn- collect-colors
   "Resolve views and collect color categories across all views.
    Attaches :__resolved to each view for downstream re-use.
+   Filters non-positive values on log-scaled axes (ggplot2 behavior).
    Returns {:resolved-all :numeric-color? :all-colors :color-cols :tagged-views}."
   [non-ann-views]
-  (let [resolved-all (mapv view/resolve-view non-ann-views)
+  (let [resolved-all (mapv (comp filter-log-nonpositive view/resolve-view) non-ann-views)
         tagged-views (mapv (fn [v rv] (assoc v :__resolved rv)) non-ann-views resolved-all)
         numeric-color? (some #(= :numerical (:color-type %)) resolved-all)
         all-colors (when-not numeric-color?

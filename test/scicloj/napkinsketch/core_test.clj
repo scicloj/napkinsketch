@@ -987,6 +987,30 @@
           panel (first (:panels sk))]
       (is (= :log (get-in panel [:x-scale :type]))))))
 
+(deftest log-scale-nonpositive-test
+  (testing "non-positive values are filtered on log-scaled x axis"
+    (let [sk (sk/sketch (-> {:x [0 -1 1 10 100] :y [1 2 3 4 5]}
+                            (sk/lay-point :x :y)
+                            (sk/scale :x :log)))
+          layer (first (:layers (first (:panels sk))))
+          group (first (:groups layer))]
+      (is (= 3 (count (:xs group))))
+      (is (= [1 10 100] (vec (:xs group))))))
+  (testing "non-positive values are filtered on log-scaled y axis"
+    (let [sk (sk/sketch (-> {:x [1 2 3 4 5] :y [0 -1 1 10 100]}
+                            (sk/lay-point :x :y)
+                            (sk/scale :y :log)))
+          layer (first (:layers (first (:panels sk))))
+          group (first (:groups layer))]
+      (is (= 3 (count (:xs group))))))
+  (testing "all-positive data is not filtered"
+    (let [sk (sk/sketch (-> {:x [1 10 100] :y [1 2 3]}
+                            (sk/lay-point :x :y)
+                            (sk/scale :x :log)))
+          layer (first (:layers (first (:panels sk))))
+          group (first (:groups layer))]
+      (is (= 3 (count (:xs group)))))))
+
 (deftest multiple-layers-test
   (testing "sketch with point + line layers"
     (let [views (-> tiny-ds
