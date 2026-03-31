@@ -3,6 +3,7 @@
             [membrane.ui :as ui]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [fastmath.random :as rng]
+            [tech.v3.datatype :as dtype]
             [tech.v3.datatype.functional :as dfn]
             [wadogo.scale :as ws]))
 
@@ -174,10 +175,10 @@
            :let [;; One seeded RNG per group for deterministic jitter
                  jitter-rng (when jitter? (rng/rng :jdk (hash (:color group))))]
            i (range (clojure.core/count xs))
-           :let [[px py] (coord-fn (nth xs i) (nth ys i))
+           :let [[px py] (coord-fn (xs i) (ys i))
                  ;; For dodged points on categorical axis, override px
                  px (if dodge?
-                      (:mid (band-position sx (nth xs i) (or dodge-idx 0) n-groups 0.8))
+                      (:mid (band-position sx (xs i) (or dodge-idx 0) n-groups 0.8))
                       px)
                  [px py] (if jitter?
                            (if cat-jitter?
@@ -188,15 +189,15 @@
                              [(+ (double px) (* jitter-amount (- (* 2.0 (rng/drandom jitter-rng)) 1.0)))
                               (+ (double py) (* jitter-amount (- (* 2.0 (rng/drandom jitter-rng)) 1.0)))])
                            [px py])
-                 pt-r (if sizes (size-scale (nth sizes i)) radius)
-                 pt-alpha (if alphas (alpha-scale (nth alphas i)) (or opacity 1.0))
-                 pt-shape (if shapes (get shape-map (nth shapes i) :circle) :circle)
-                 [cr cg cb _] (if colors (nth colors i) color)]]
+                 pt-r (if sizes (size-scale (sizes i)) radius)
+                 pt-alpha (if alphas (alpha-scale (alphas i)) (or opacity 1.0))
+                 pt-shape (if shapes (get shape-map (shapes i) :circle) :circle)
+                 [cr cg cb _] (if colors (colors i) color)]]
        (-> (ui/translate (- (double px) pt-r) (- (double py) pt-r)
                          (ui/with-color [cr cg cb pt-alpha]
                            (draw-shape pt-shape pt-r)))
-           (cond-> row-indices (assoc :row-idx (nth row-indices i))
-                   tooltip (assoc :tooltip (make-tooltip ctx (nth xs i) (nth ys i) label))))))))
+           (cond-> row-indices (assoc :row-idx (row-indices i))
+                   tooltip (assoc :tooltip (make-tooltip ctx (xs i) (ys i) label))))))))
 
 ;; ---- Text ----
 
@@ -208,8 +209,8 @@
     (vec
      (for [{:keys [color xs ys labels]} groups
            i (range (count xs))
-           :let [[px py] (coord-fn (nth xs i) (nth ys i))
-                 label (if labels (nth labels i) "")
+           :let [[px py] (coord-fn (xs i) (ys i))
+                 label (if labels (labels i) "")
                  [cr cg cb _] color]]
        (ui/translate (double px) (- (double py) (/ fsize 2.0))
                      (ui/with-color [cr cg cb 1.0]
@@ -225,8 +226,8 @@
     (vec
      (for [{:keys [color xs ys labels]} groups
            i (range (count xs))
-           :let [[px py] (coord-fn (nth xs i) (nth ys i))
-                 label (if labels (nth labels i) "")
+           :let [[px py] (coord-fn (xs i) (ys i))
+                 label (if labels (labels i) "")
                  [cr cg cb _] color
                  text-y (- (double py) (/ fsize 2.0))
                  text-w (* (count label) char-w)
@@ -288,9 +289,9 @@
     (vec
      (for [{:keys [color xs ys ymins ymaxs dodge-idx]} groups
            i (range (clojure.core/count xs))
-           :let [x (nth xs i)
-                 ymin-val (nth ymins i)
-                 ymax-val (nth ymaxs i)
+           :let [x (xs i)
+                 ymin-val (ymins i)
+                 ymax-val (ymaxs i)
                  ;; For dodged errorbars on categorical axis, use band-position
                  px (if band-scale?
                       (:mid (band-position sx x (or dodge-idx 0) n-groups 0.8))
@@ -433,20 +434,20 @@
               viol-mid (:mid bp)
               half-w (/ (:sub-bw bp) 2.0)
               ;; Normalize densities so max density fills half the band width
-              max-d (reduce max 0.001 densities)
+              max-d (max 0.001 (dfn/reduce-max densities))
               norm (/ half-w max-d)
               ;; Build mirrored polygon points
               n (count ys)
               right-pts (mapv (fn [i]
-                                (let [y-val (nth ys i)
-                                      d (nth densities i)
+                                (let [y-val (ys i)
+                                      d (densities i)
                                       py (num-s y-val)
                                       px (+ viol-mid (* d norm))]
                                   (if flipped? [py px] [px py])))
                               (range n))
               left-pts (mapv (fn [i]
-                               (let [y-val (nth ys (- n 1 i))
-                                     d (nth densities (- n 1 i))
+                               (let [y-val (ys (- n 1 i))
+                                     d (densities (- n 1 i))
                                      py (num-s y-val)
                                      px (- viol-mid (* d norm))]
                                  (if flipped? [py px] [px py])))
@@ -527,7 +528,7 @@
         overlap 1.5
         bw (:bw (first (vals cat-positions)))
         ;; Max density across all ridges for normalization
-        max-d (reduce max 0.001 (mapcat :densities ridges))
+        max-d (max 0.001 (dfn/reduce-max (dtype/concat-buffers (map :densities ridges))))
         norm (* bw overlap (/ 1.0 max-d))
         ;; After domain swap in sketch, sx is the numeric scale (maps to x-pixels)
         ;; and sy is categorical. Use sx for numeric value → pixel mapping.
@@ -542,15 +543,15 @@
                  [cr cg cb _] color
                  ;; Build polygon: baseline at mid, curve goes upward (toward lower px)
                  curve-pts (mapv (fn [i]
-                                   (let [y-val (nth ys i)
-                                         d (nth densities i)
+                                   (let [y-val (ys i)
+                                         d (densities i)
                                          py (num-scale y-val)
                                          px (- (double mid) (* d norm))]
                                      [py px]))
                                  (range n))
                  ;; Baseline points (flat line at mid)
-                 base-pts [(let [py (num-scale (nth ys (dec n)))] [py mid])
-                           (let [py (num-scale (nth ys 0))] [py mid])]
+                 base-pts [(let [py (num-scale (ys (dec n)))] [py mid])
+                           (let [py (num-scale (ys 0))] [py mid])]
                  all-pts (concat curve-pts base-pts)]]
        [(ui/with-color [cr cg cb (or opacity 0.7)]
           (ui/with-style ::ui/style-fill
@@ -571,7 +572,7 @@
      (for [{:keys [color xs ys]} groups
            i (range (count xs))
            :let [[cr cg cb _] color
-                 [px py] (coord-fn (nth xs i) (nth ys i))]
+                 [px py] (coord-fn (xs i) (ys i))]
            tick (cond-> []
                   (#{:x :both} (or side :x))
                   (conj (ui/with-color [cr cg cb (or opacity 0.5)]
@@ -602,10 +603,10 @@
      (for [{:keys [color xs ys ymins ymaxs dodge-idx]} groups
            i (range (count xs))
            :let [[cr cg cb _] color
-                 x (nth xs i)
-                 y (nth ys i)
-                 ymin-val (nth ymins i)
-                 ymax-val (nth ymaxs i)
+                 x (xs i)
+                 y (ys i)
+                 ymin-val (ymins i)
+                 ymax-val (ymaxs i)
                  ;; For dodged pointranges on categorical axis, use band-position
                  px (if band-scale?
                       (:mid (band-position sx x (or dodge-idx 0) n-groups 0.8))

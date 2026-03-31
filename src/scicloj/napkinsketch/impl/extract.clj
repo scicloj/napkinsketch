@@ -273,8 +273,8 @@
                 ;; Infer tile extent from grid spacing
                 (let [data (:data view)
                       fill-vals (when fill-col (data fill-col))
-                      f-lo (when (seq fill-vals) (reduce min fill-vals))
-                      f-hi (when (seq fill-vals) (reduce max fill-vals))
+                      f-lo (when (seq fill-vals) (dfn/reduce-min fill-vals))
+                      f-hi (when (seq fill-vals) (dfn/reduce-max fill-vals))
                       all-xs (mapcat :xs (:points stat))
                       all-ys (mapcat :ys (:points stat))
                       min-step (fn [vals]
@@ -289,12 +289,12 @@
                       y-half (/ (min-step all-ys) 2.0)]
                   (vec (for [{:keys [xs ys]} (:points stat)
                              i (range (count xs))
-                             :let [xv (double (nth xs i))
-                                   yv (double (nth ys i))]]
+                             :let [xv (double (xs i))
+                                   yv (double (ys i))]]
                          {:x-lo (- xv x-half) :x-hi (+ xv x-half)
                           :y-lo (- yv y-half) :y-hi (+ yv y-half)
                           :color (if fill-vals
-                                   (let [fv (nth fill-vals i)
+                                   (let [fv (fill-vals i)
                                          t (defaults/normalize-midpoint fv (or f-lo 0) (or f-hi 1) (:color-midpoint cfg))]
                                      ((:gradient-fn cfg) t))
                                    ((:gradient-fn cfg) 0.5))}))))]

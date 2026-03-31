@@ -2,9 +2,10 @@
   (:require [tablecloth.api :as tc]
             [tech.v3.datatype :as dtype]
             [tech.v3.datatype.functional :as dfn]
+            [tech.v3.datatype.argops :as argops]
+            [tech.v3.tensor :as tensor]
             [fastmath.ml.regression :as regr]
             [fastmath.stats :as stats]
-            [fastmath.stats.bootstrap :as boot]
             [fastmath.interpolation.acm :as interp]
             [fastmath.kernel :as kernel]
             [fastmath.random :as frand]
@@ -60,8 +61,8 @@
                       (if (= mark :rect) [(min 0 lo) (max 0 hi)]
                           ;; Extend domain to include ymin/ymax if present
                           (if (and ymin ymax)
-                            [(min lo (reduce min (clean ymin)))
-                             (max hi (reduce max (clean ymax)))]
+                            [(min lo (dfn/reduce-min (clean ymin)))
+                             (max hi (dfn/reduce-max (clean ymax)))]
                             [lo hi]))))
             numeric-color? (and color (= color-type :numerical))
             ;; Extract color value from group key when color is part of group
@@ -277,11 +278,11 @@
                               (cond-> {:xs xs :ys ys :ymins ymins :ymaxs ymaxs}
                                 (some? color) (assoc :color color)))
                             results)
-              all-ymins (mapcat :ymins results)
-              all-ymaxs (mapcat :ymaxs results)
+              ymin-bufs (seq (map :ymins results))
+              ymax-bufs (seq (map :ymaxs results))
               y-ext (numeric-extent (clean y))
-              y-lo (min (first y-ext) (reduce min all-ymins))
-              y-hi (max (second y-ext) (reduce max all-ymaxs))]
+              y-lo (min (first y-ext) (if ymin-bufs (dfn/reduce-min (dtype/concat-buffers ymin-bufs)) (first y-ext)))
+              y-hi (max (second y-ext) (if ymax-bufs (dfn/reduce-max (dtype/concat-buffers ymax-bufs)) (second y-ext)))]
           {:lines lines
            :ribbons ribbons
            :x-domain (numeric-extent (clean x))
@@ -337,7 +338,7 @@
 (defn fit-loess
   "Fit a LOESS curve, return {:xs ... :ys ...} evaluated on a grid."
   [xs-col ys-col n-grid bandwidth]
-  (let [order (dtype/->int-array (tech.v3.datatype.argops/argsort xs-col))
+  (let [order (dtype/->int-array (argops/argsort xs-col))
         sorted-xs (dtype/->double-array (dtype/indexed-buffer order xs-col))
         sorted-ys (dtype/->double-array (dtype/indexed-buffer order ys-col))
         [uxs uys] (dedup-xy sorted-xs sorted-ys)
@@ -354,7 +355,7 @@
    {:xs :ys :ymins :ymaxs} evaluated on a grid."
   [xs-col ys-col n-grid bandwidth level n-boot]
   (let [;; Original fit (with dedup for duplicate x-values)
-        order (dtype/->int-array (tech.v3.datatype.argops/argsort xs-col))
+        order (dtype/->int-array (argops/argsort xs-col))
         sorted-xs (dtype/->double-array (dtype/indexed-buffer order xs-col))
         sorted-ys (dtype/->double-array (dtype/indexed-buffer order ys-col))
         [uxs uys] (dedup-xy sorted-xs sorted-ys)
@@ -365,19 +366,18 @@
         grid-xs (dfn/+ x-min (dfn/* step (range n-grid)))
         grid-ys (dtype/emap loess-fn :float64 grid-xs)
 
-        ;; Bootstrap: resample (x,y) pairs, fit LOESS, evaluate on grid
-        pairs (mapv vector (dtype/->double-array xs-col)
-                    (dtype/->double-array ys-col))
+        ;; Bootstrap: resample via tensor, fit LOESS, evaluate on grid
+        t (tensor/->tensor [xs-col ys-col] :datatype :float64)
+        n (long (second (dtype/shape t)))
         rng-inst (frand/rng :jdk 42)
-        boot-result (boot/bootstrap {:data pairs} nil
-                                    {:samples n-boot :rng rng-inst})
-        boot-grid-ys (for [sample (:samples boot-result)]
-                       (let [sample-xs (double-array (map first sample))
-                             sample-ys (double-array (map second sample))
-                             order (dtype/->int-array (tech.v3.datatype.argops/argsort sample-xs))
-                             sxs (dtype/->double-array (dtype/indexed-buffer order sample-xs))
-                             sys (dtype/->double-array (dtype/indexed-buffer order sample-ys))
-                             [bsx bsy] (dedup-xy sxs sys)]
+        boot-grid-ys (for [_ (range n-boot)]
+                       (let [indices (int-array (repeatedly n #(frand/irandom rng-inst (int n))))
+                             sampled (tensor/select t :all indices)
+                             order (argops/argsort (tensor/select sampled 0 :all))
+                             sorted (tensor/select sampled :all order)
+                             sorted-xs (dtype/->double-array (tensor/select sorted 0 :all))
+                             sorted-ys (dtype/->double-array (tensor/select sorted 1 :all))
+                             [bsx bsy] (dedup-xy sorted-xs sorted-ys)]
                          (when (>= (alength bsx) 4)
                            (try
                              (let [bfn (interp/loess bsx bsy {:bandwidth bandwidth})]
@@ -390,11 +390,11 @@
         hi-idx (min (dec (max 1 n-valid))
                     (long (* (- 1.0 (/ alpha 2.0)) n-valid)))
         ymins (mapv (fn [i]
-                      (let [vals (sort (map #(nth % i) valid-boots))]
+                      (let [vals (sort (map #(% i) valid-boots))]
                         (nth vals lo-idx)))
                     (range n-grid))
         ymaxs (mapv (fn [i]
-                      (let [vals (sort (map #(nth % i) valid-boots))]
+                      (let [vals (sort (map #(% i) valid-boots))]
                         (nth vals hi-idx)))
                     (range n-grid))]
     {:xs grid-xs :ys grid-ys :ymins ymins :ymaxs ymaxs}))
@@ -434,11 +434,11 @@
                               (cond-> {:xs xs :ys ys :ymins ymins :ymaxs ymaxs}
                                 (some? color) (assoc :color color)))
                             results)
-              all-ymins (mapcat :ymins results)
-              all-ymaxs (mapcat :ymaxs results)
+              ymin-bufs (seq (map :ymins results))
+              ymax-bufs (seq (map :ymaxs results))
               y-ext (numeric-extent (clean y))
-              y-lo (min (first y-ext) (if (seq all-ymins) (reduce min all-ymins) (first y-ext)))
-              y-hi (max (second y-ext) (if (seq all-ymaxs) (reduce max all-ymaxs) (second y-ext)))]
+              y-lo (min (first y-ext) (if ymin-bufs (dfn/reduce-min (dtype/concat-buffers ymin-bufs)) (first y-ext)))
+              y-hi (max (second y-ext) (if ymax-bufs (dfn/reduce-max (dtype/concat-buffers ymax-bufs)) (second y-ext)))]
           {:points curves
            :ribbons ribbons
            :x-domain (numeric-extent (clean x))
@@ -453,9 +453,9 @@
                           (cond-> (fit-loess (ds x) (ds y) n-grid bandwidth)
                             (some? gv) (assoc :color gv)))))
               curves (remove nil? curves)
-              all-ys (mapcat :ys curves)
-              y-min (if (seq all-ys) (reduce min all-ys) (dfn/reduce-min (clean y)))
-              y-max (if (seq all-ys) (reduce max all-ys) (dfn/reduce-max (clean y)))]
+              ys-bufs (seq (map :ys curves))
+              y-min (if ys-bufs (dfn/reduce-min (dtype/concat-buffers ys-bufs)) (dfn/reduce-min (clean y)))
+              y-max (if ys-bufs (dfn/reduce-max (dtype/concat-buffers ys-bufs)) (dfn/reduce-max (clean y)))]
           {:points curves
            :x-domain (numeric-extent (clean x))
            :y-domain [y-min y-max]})))))
@@ -498,11 +498,11 @@
                         (cond-> (fit-kde (ds x) n-grid bandwidth)
                           (some? gv) (assoc :color gv)))))
             curves (remove nil? curves)
-            all-ys (mapcat :ys curves)
-            y-max (if (seq all-ys) (reduce max all-ys) 1)
-            all-xs (mapcat :xs curves)
-            x-lo (reduce min all-xs)
-            x-hi (reduce max all-xs)]
+            ys-bufs (seq (map :ys curves))
+            y-max (if ys-bufs (dfn/reduce-max (dtype/concat-buffers ys-bufs)) 1)
+            xs-bufs (seq (map :xs curves))
+            x-lo (dfn/reduce-min (dtype/concat-buffers xs-bufs))
+            x-hi (dfn/reduce-max (dtype/concat-buffers xs-bufs))]
         {:points curves
          :x-domain [x-lo x-hi]
          :y-domain [0 y-max]}))))
@@ -603,9 +603,10 @@
                                                :ys (:xs kde) :densities (:ys kde)}
                                         cc (assoc :color cc)))))
         ;; Expand y-domain to cover full KDE curve extent (tails beyond raw data)
-        all-kde-ys (mapcat :ys (:items result))
-        y-domain (if (seq all-kde-ys)
-                   [(reduce min all-kde-ys) (reduce max all-kde-ys)]
+        kde-ys-bufs (seq (map :ys (:items result)))
+        y-domain (if kde-ys-bufs
+                   (let [all-kde-ys (dtype/concat-buffers kde-ys-bufs)]
+                     [(dfn/reduce-min all-kde-ys) (dfn/reduce-max all-kde-ys)])
                    (:y-domain result))]
     {:violins (:items result)
      :categories (:categories result)

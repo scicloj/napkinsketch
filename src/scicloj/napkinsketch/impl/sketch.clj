@@ -462,9 +462,10 @@
       numeric-color?
       (let [color-views (filter #(and (view/column-ref? (:color %))
                                       (:data %)) resolved-all)
-            all-vals (mapcat #((:data %) (:color %)) color-views)
-            c-min (reduce min all-vals)
-            c-max (reduce max all-vals)
+            all-bufs (map #((:data %) (:color %)) color-views)
+            all-vals (dtype/concat-buffers all-bufs)
+            c-min (dfn/reduce-min all-vals)
+            c-max (dfn/reduce-max all-vals)
             n-stops 20]
         {:title (first color-cols)
          :type :continuous
@@ -503,9 +504,10 @@
                                  (:data %)) resolved-all)]
     (when (seq size-views)
       (let [size-col (:size (first size-views))
-            all-vals (mapcat #((:data %) (:size %)) size-views)
-            s-min (reduce min all-vals)
-            s-max (reduce max all-vals)
+            all-bufs (map #((:data %) (:size %)) size-views)
+            all-vals (dtype/concat-buffers all-bufs)
+            s-min (dfn/reduce-min all-vals)
+            s-max (dfn/reduce-max all-vals)
             span (max 1e-6 (- (double s-max) (double s-min)))
             values (nice-legend-values s-min s-max 5)]
         {:title size-col
@@ -523,9 +525,10 @@
                                   (:data %)) resolved-all)]
     (when (seq alpha-views)
       (let [alpha-col (:alpha (first alpha-views))
-            all-vals (mapcat #((:data %) (:alpha %)) alpha-views)
-            a-min (reduce min all-vals)
-            a-max (reduce max all-vals)
+            all-bufs (map #((:data %) (:alpha %)) alpha-views)
+            all-vals (dtype/concat-buffers all-bufs)
+            a-min (dfn/reduce-min all-vals)
+            a-max (dfn/reduce-max all-vals)
             span (max 1e-6 (- (double a-max) (double a-min)))
             values (nice-legend-values a-min a-max 5)]
         {:title alpha-col
