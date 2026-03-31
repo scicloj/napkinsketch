@@ -739,6 +739,38 @@
       (finally
         (defaults/set-config! nil)))))
 
+(deftest deep-merge-config-test
+  (testing "set-config! partial theme deep-merges, preserving other theme keys"
+    (try
+      (defaults/set-config! {:theme {:bg "#000"}})
+      (let [theme (:theme (defaults/config))]
+        (is (= "#000" (:bg theme)))
+        ;; grid and font-size preserved from library defaults
+        (is (string? (:grid theme)) "grid should be preserved")
+        (is (number? (:font-size theme)) "font-size should be preserved"))
+      (finally
+        (defaults/set-config! nil))))
+  (testing "with-config partial theme deep-merges"
+    (sk/with-config {:theme {:bg "#111"}}
+      (let [theme (:theme (defaults/config))]
+        (is (= "#111" (:bg theme)))
+        (is (string? (:grid theme)) "grid should be preserved")
+        (is (number? (:font-size theme)) "font-size should be preserved"))))
+  (testing "partial theme via with-config renders without error"
+    (sk/with-config {:theme {:bg "#222"}}
+      (let [svg (-> {:x [1 2 3] :y [4 5 6]}
+                    (sk/lay-point :x :y)
+                    sk/plot)]
+        (is (vector? svg)))))
+  (testing "sk/options deep-merges theme across calls"
+    (let [spec (-> {:x [1 2 3] :y [4 5 6]}
+                   (sk/lay-point :x :y)
+                   (sk/options {:theme {:bg "#FFF"} :width 800})
+                   (sk/options {:theme {:font-size 14}}))]
+      (is (= "#FFF" (get-in (:opts spec) [:theme :bg])))
+      (is (= 14 (get-in (:opts spec) [:theme :font-size])))
+      (is (= 800 (:width (:opts spec)))))))
+
 (deftest dynamic-binding-test
   (testing "binding *config* overrides set-config!"
     (try

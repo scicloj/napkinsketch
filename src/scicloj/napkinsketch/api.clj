@@ -15,6 +15,7 @@
             [scicloj.napkinsketch.render.mark :as mark]
             [scicloj.napkinsketch.render.svg :as svg]
             [scicloj.napkinsketch.method :as method]
+            [scicloj.kindly.v4.api :as kindly]
             [scicloj.kindly.v4.kind :as kind])
   (:import [scicloj.napkinsketch.impl.view PlotSpec]))
 
@@ -146,12 +147,12 @@
 
 (defn options
   "Set plot-level options on a plot specification.
-   Options are applied when the plot is rendered (by Clay or by `plot`).
+   Options are deep-merged — nested maps like :theme are merged recursively.
    (options spec {:width 800 :palette :dark2})
    (options spec {:theme {:bg \"#FFF\"} :legend-position :bottom})"
   [spec-or-views opts]
   (->plot-spec (extract-views spec-or-views)
-               (merge (carry-opts spec-or-views) opts)))
+               (kindly/deep-merge (carry-opts spec-or-views) opts)))
 
 (defn plot-spec?
   "Return true if x is a PlotSpec (auto-rendering plot specification)."
@@ -617,7 +618,7 @@
                    (carry-opts spec-or-views)))
   ([spec-or-views opts]
    (plot-impl/plot (extract-views spec-or-views)
-                   (merge (carry-opts spec-or-views) opts))))
+                   (kindly/deep-merge (carry-opts spec-or-views) opts))))
 
 (defn sketch
   "Resolve views into a sketch — a plain Clojure map with data-space
@@ -634,7 +635,7 @@
        (sketch-impl/views->sketch views))))
   ([spec-or-views opts]
    (sketch-impl/views->sketch (extract-views spec-or-views)
-                              (merge (carry-opts spec-or-views) opts))))
+                              (kindly/deep-merge (carry-opts spec-or-views) opts))))
 
 (defn views->sketch
   "Convert views into a sketch — a plain Clojure map with data-space
@@ -652,7 +653,7 @@
        (sketch-impl/views->sketch views))))
   ([spec-or-views opts]
    (sketch-impl/views->sketch (extract-views spec-or-views)
-                              (merge (carry-opts spec-or-views) opts))))
+                              (kindly/deep-merge (carry-opts spec-or-views) opts))))
 
 (defn sketch->membrane
   "Convert a sketch into a membrane drawable tree.
@@ -761,4 +762,4 @@
        (svg/save views path))))
   ([spec-or-views path opts]
    (svg/save (extract-views spec-or-views) path
-             (merge (carry-opts spec-or-views) opts))))
+             (kindly/deep-merge (carry-opts spec-or-views) opts))))

@@ -168,6 +168,17 @@
  [(fn [v]
     (= 150 (:points (sk/svg-summary v))))])
 
+;; Partial theme override — only `:bg` changes; `:grid` and `:font-size`
+;; are deep-merged from the defaults:
+
+(sk/with-config {:theme {:bg "#F5F5DC"}}
+  (-> (base-views)
+      (sk/options {:title "Partial Theme Override"})))
+
+(kind/test-last
+ [(fn [v]
+    (= 150 (:points (sk/svg-summary v))))])
+
 ;; Outside the body, the default theme is back:
 
 (select-keys (sk/config) [:width :height])
@@ -290,7 +301,9 @@ precedence-plot
 
 (kind/test-last [(fn [n] (= 3 n))])
 
-;; Theme is **deep-merged** at every level — you only need to specify the
+;; All configuration merging uses **deep-merge** — nested maps like `:theme`
+;; are merged recursively at every level (`sk/options`, `sk/with-config`,
+;; `sk/set-config!`, and `napkinsketch.edn`). You only need to specify the
 ;; keys you want to change.
 
 ;; Override only `:bg`, keep default `:grid` and `:font-size`:

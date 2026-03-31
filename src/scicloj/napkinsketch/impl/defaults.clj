@@ -2,7 +2,8 @@
   (:require [clojure.string :as str]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure2d.color :as c]))
+            [clojure2d.color :as c]
+            [scicloj.kindly.v4.api :as kindly]))
 
 ;; ---- Palette and Theme ----
 
@@ -324,7 +325,8 @@
 
 (defn config
   "Return the effective resolved configuration as a map.
-   Merges: library defaults < napkinsketch.edn < set-config! < *config*.
+   Deep-merges: library defaults < napkinsketch.edn < set-config! < *config*.
+   Nested maps (e.g. :theme) are merged recursively.
    Useful for inspecting which values are in effect."
   []
   (let [base @library-defaults
@@ -332,14 +334,15 @@
         from-atom @config-atom
         from-binding *config*]
     (cond-> base
-      from-edn (merge from-edn)
-      from-atom (merge from-atom)
-      from-binding (merge from-binding))))
+      from-edn (kindly/deep-merge from-edn)
+      from-atom (kindly/deep-merge from-atom)
+      from-binding (kindly/deep-merge from-binding))))
 
 (defn resolve-config
-  "Resolve config with plot options merged on top of the precedence chain.
-   Plot options have the highest priority. Keys relevant to config are
-   extracted; unknown keys are ignored."
+  "Resolve config with plot options deep-merged on top of the precedence chain.
+   Plot options have the highest priority. Nested maps (e.g. :theme) are
+   merged recursively. Keys relevant to config are extracted; unknown keys
+   are ignored."
   [plot-opts]
   (let [cfg (config)]
     (if (seq plot-opts)
@@ -347,11 +350,11 @@
                     color-scale color-midpoint validate
                     legend-position tooltip brush format]} plot-opts]
         (cond-> cfg
-          config (merge config)
+          config (kindly/deep-merge config)
           width (assoc :width width)
           height (assoc :height height)
           palette (assoc :palette palette)
-          theme (update :theme merge theme)
+          theme (update :theme kindly/deep-merge theme)
           (some? color-scale) (assoc :color-scale color-scale)
           (some? color-midpoint) (assoc :color-midpoint color-midpoint)
           (some? validate) (assoc :validate validate)
