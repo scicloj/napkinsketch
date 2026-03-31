@@ -326,3 +326,8 @@
     (sk/options {:brush true}))
 
 (kind/test-last [(fn [v] (= :div (first (sk/plot v))))])
+
+;; ## What's Next
+;;
+;; - [**Faceting**](./napkinsketch_book.faceting.html) — split any chart into panels by one or two variables
+;; - [**API Reference**](./napkinsketch_book.api_reference.html) — complete function listing with docstrings

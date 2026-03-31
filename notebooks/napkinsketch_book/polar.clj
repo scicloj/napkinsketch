@@ -96,3 +96,8 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (some #{"Iris in Polar Space"} (:texts s)))))])
+
+;; ## What's Next
+;;
+;; - [**Cookbook**](./napkinsketch_book.cookbook.html) — recipes for common multi-layer plots
+;; - [**Customization**](./napkinsketch_book.customization.html) — colors, annotations, and interactive features

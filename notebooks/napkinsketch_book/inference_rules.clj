@@ -848,3 +848,8 @@ graph TD
 ;;
 ;; The sketch captures the result of all inference. When in doubt,
 ;; look at the sketch.
+
+;; ## What's Next
+;;
+;; - [**Methods**](./napkinsketch_book.methods.html) — the full registry of marks, stats, and positions that inference selects from
+;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — see inference in action with the most common chart type

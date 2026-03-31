@@ -395,3 +395,8 @@
 ;; | A new output format (membrane-based) | `membrane->figure` + `sketch->figure` |
 ;; | A new scale type | `make-scale` |
 ;; | A new coordinate system | `make-coord` |
+
+;; ## What's Next
+;;
+;; - [**Architecture**](./napkinsketch_book.architecture.html) — the four-stage pipeline and key libraries
+;; - [**Edge Cases**](./napkinsketch_book.edge_cases.html) — how the library handles unusual inputs

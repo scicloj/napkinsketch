@@ -489,13 +489,7 @@ data/iris
 ;; This chapter covered the core building blocks. The rest of the
 ;; book builds on them:
 ;;
-;; - **Inference Rules** — how Napkinsketch chooses defaults for
-;;   marks, stats, and domains automatically
-;; - **Methods** — complete tables of every mark, stat, and position
-;; - **Glossary** — concise definitions of every term, including
-;;   ones not covered here (theme, annotation, and more)
-;; - **Chart Types** — scatter plots, distributions, bar charts,
-;;   time series, and polar charts
-;; - **How-to Guides** — faceting, configuration, customization,
-;;   and recipes for common tasks
+;; - [**Inference Rules**](./napkinsketch_book.inference_rules.html) — how napkinsketch chooses defaults for marks, stats, and domains
+;; - [**Methods**](./napkinsketch_book.methods.html) — complete tables of every mark, stat, and position
+;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — the most common chart type, a good place to start exploring
 

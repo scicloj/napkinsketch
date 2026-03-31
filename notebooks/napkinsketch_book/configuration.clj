@@ -568,3 +568,8 @@ precedence-plot
 ;; Precedence: plot options > with-config > set-config! > napkinsketch.edn > library defaults.
 ;;
 ;; Use `sk/config` at any time to see the resolved configuration.
+
+;; ## What's Next
+;;
+;; - [**Customization**](./napkinsketch_book.customization.html) — annotations, color scales, tooltips, and brush selection
+;; - [**Faceting**](./napkinsketch_book.faceting.html) — split plots into panels by category

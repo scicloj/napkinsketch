@@ -265,3 +265,8 @@ graph TD
 ;;
 ;; - [Kindly](https://scicloj.github.io/kindly/) &
 ;;   [Clay](https://scicloj.github.io/clay/) — notebook rendering
+
+;; ## What's Next
+;;
+;; - [**Extensibility**](./napkinsketch_book.extensibility.html) — add custom marks, stats, scales, and renderers via multimethods
+;; - [**Exploring Sketches**](./napkinsketch_book.exploring_sketches.html) — inspect sketch data structures at each stage

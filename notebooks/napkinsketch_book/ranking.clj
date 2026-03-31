@@ -132,3 +132,8 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
                                 (= 4 (:lines s)))))])
+
+;; ## What's Next
+;;
+;; - [**Change over Time**](./napkinsketch_book.change_over_time.html) — line charts, step functions, and stacked areas
+;; - [**Configuration**](./napkinsketch_book.configuration.html) — control dimensions, palettes, and themes

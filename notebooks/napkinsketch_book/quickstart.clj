@@ -213,8 +213,6 @@
 ;;
 ;; Explore the rest of the book:
 ;;
-;; - **Core Concepts** — views, methods, layers, faceting
-;; - **Chart Types** — scatter plots, distributions, bar charts,
-;;   time series, polar charts
-;; - **How-to Guides** — faceting, configuration, customization,
-;;   and recipes for common tasks
+;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) — views, methods, layers, faceting
+;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — the most common starting point for chart types
+;; - [**Cookbook**](./napkinsketch_book.cookbook.html) — recipes for common tasks

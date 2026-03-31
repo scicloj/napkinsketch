@@ -122,3 +122,8 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 3 (:polygons s)))))])
+
+;; ## What's Next
+;;
+;; - [**Relationships**](./napkinsketch_book.relationships.html) — heatmaps, contours, and 2D density
+;; - [**Polar**](./napkinsketch_book.polar.html) — radial charts for cyclical data

@@ -157,3 +157,9 @@
 
 ;; See the [Faceting](faceting.html) chapter for more SPLOM
 ;; variations, including brush selection.
+
+;; ## What's Next
+;;
+;; - [**Distributions**](./napkinsketch_book.distributions.html) — histograms, density curves, boxplots, violins
+;; - [**Relationships**](./napkinsketch_book.relationships.html) — heatmaps, contours, and 2D density
+;; - [**Customization**](./napkinsketch_book.customization.html) — colors, palettes, themes, and annotations

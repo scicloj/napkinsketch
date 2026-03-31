@@ -170,3 +170,9 @@
 
 (kind/test-last
  [(fn [t] (= 20 (count (:row-maps t))))])
+
+;; ## What's Next
+;;
+;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — see point, line, and regression methods in action
+;; - [**Distributions**](./napkinsketch_book.distributions.html) — histograms, density, boxplots, violins
+;; - [**Customization**](./napkinsketch_book.customization.html) — colors, palettes, themes, and per-layer options

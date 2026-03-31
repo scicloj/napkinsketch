@@ -562,3 +562,8 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 3 (:polygons s)))))])
+
+;; ## What's Next
+;;
+;; - [**Configuration**](./napkinsketch_book.configuration.html) — control dimensions, palettes, and themes at every scope
+;; - [**Customization**](./napkinsketch_book.customization.html) — annotations, tooltips, and brush selection

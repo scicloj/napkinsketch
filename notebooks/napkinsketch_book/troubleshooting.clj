@@ -154,3 +154,8 @@
     (sk/lay-line :x :y {:stroke-width 3}))
 
 (kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
+
+;; ## What's Next
+;;
+;; - [**API Reference**](./napkinsketch_book.api_reference.html) — complete function listing with docstrings
+;; - [**Exploring Sketches**](./napkinsketch_book.exploring_sketches.html) — inspect the data structures behind your plots

@@ -609,3 +609,8 @@ final-sk
 (vec (:xs (first (:groups (first (:layers (first (:panels tiny-sk))))))))
 
 (kind/test-last [(fn [v] (and (vector? v) (number? (first v))))])
+
+;; ## What's Next
+;;
+;; - [**Architecture**](./napkinsketch_book.architecture.html) — the four-stage pipeline in detail
+;; - [**Extensibility**](./napkinsketch_book.extensibility.html) — add custom marks, stats, and renderers

@@ -261,3 +261,8 @@
  [(fn [v] (let [s (sk/svg-summary v)]
             (and (= 3 (:panels s))
                  (pos? (:polygons s)))))])
+
+;; ## What's Next
+;;
+;; - [**Ranking**](./napkinsketch_book.ranking.html) — bar charts and lollipop plots for categorical comparisons
+;; - [**Faceting**](./napkinsketch_book.faceting.html) — split distributions by groups into separate panels

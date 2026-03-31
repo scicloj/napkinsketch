@@ -190,3 +190,8 @@
                                 (= 150 (:points s))
                                 (some #{"Iris by Species"} (:texts s))
                                 (some #{"Sepal Length (cm)"} (:texts s)))))])
+
+;; ## What's Next
+;;
+;; - [**Troubleshooting**](./napkinsketch_book.troubleshooting.html) — common issues and how to fix them
+;; - [**API Reference**](./napkinsketch_book.api_reference.html) — complete function listing with docstrings

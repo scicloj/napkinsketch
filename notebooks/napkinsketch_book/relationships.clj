@@ -155,3 +155,8 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
+
+;; ## What's Next
+;;
+;; - [**Polar**](./napkinsketch_book.polar.html) — radial charts and pie-style visualizations
+;; - [**Faceting**](./napkinsketch_book.faceting.html) — split any chart into panels by category
