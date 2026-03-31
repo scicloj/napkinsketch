@@ -71,11 +71,12 @@
 
 
 (def
- v12_l56
+ v12_l55
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
-  (sk/labs {:title "Pipeline Labels", :x "Length", :y "Width"})))
+  (sk/labs {:x "Length", :y "Width"})
+  (sk/options {:title "Pipeline Labels"})))
 
 
 (deftest
@@ -86,7 +87,7 @@
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"Pipeline Labels"} (:texts s)))))
-   v12_l56)))
+   v12_l55)))
 
 
 (def
@@ -121,7 +122,7 @@
   {:x (range 1 50),
    :y
    (map
-    (fn* [p1__79568#] (* 2 (Math/pow 1.1 p1__79568#)))
+    (fn* [p1__141889#] (* 2 (Math/pow 1.1 p1__141889#)))
     (range 1 50))}))
 
 

@@ -138,9 +138,9 @@
                 (carry-opts spec-or-views))))
 
 (defn labs
-  "Set labels on views. Keys: :title, :subtitle, :caption, :x, :y.
-   (labs views {:title \"My Plot\" :x \"X Axis\" :y \"Y Axis\"})
-   (labs views {:title \"Title\" :subtitle \"Detail\" :caption \"Source: ...\"})"
+  "Set axis labels on views. Keys: :x, :y.
+   For plot-level text (title, subtitle, caption), use sk/options instead.
+   (labs views {:x \"X Axis\" :y \"Y Axis\"})"
   [spec-or-views label-opts]
   (->plot-spec (view/labs (extract-views spec-or-views) label-opts)
                (carry-opts spec-or-views)))

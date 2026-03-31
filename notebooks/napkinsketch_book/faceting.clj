@@ -177,14 +177,13 @@
 
 ;; ## Labels and Faceting
 ;;
-;; `sk/labs` works with faceted plots:
+;; `sk/labs` and `sk/options` work with faceted plots:
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species)
-    (sk/labs {:title "Iris by Species"
-              :x "Sepal Length (cm)"
-              :y "Sepal Width (cm)"}))
+    (sk/labs {:x "Sepal Length (cm)" :y "Sepal Width (cm)"})
+    (sk/options {:title "Iris by Species"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))

@@ -5,7 +5,9 @@
   (:require [wadogo.scale :as ws]
             [java-time.api :as jt]
             [tablecloth.api :as tc]
+            [tech.v3.datatype :as dtype]
             [tech.v3.datatype.functional :as dfn]
+            [tech.v3.datatype.casting :as casting]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.stat :as stat]
@@ -47,32 +49,33 @@
       (seq fill-layers)
       [0.0 1.0]
 
-      ;; Stack mode: read pre-computed y1 values from adjusted layers
+      ;; Stack mode: read pre-computed y0/y1 values from adjusted layers
       (seq stack-layers)
-      (let [;; Stacked rect: max y1 across all groups and categories
-            max-rect-y1 (reduce max 0
-                                (for [l stack-layers
-                                      :when (:categories l)
-                                      g (:groups l)
-                                      {:keys [y1]} (:counts g)
-                                      :when y1]
-                                  y1))
-            ;; Stacked area: max ys (already accumulated)
-            max-area-y (reduce max 0
-                               (for [l stack-layers
-                                     :when (and (not (:categories l)) (:groups l))
-                                     g (:groups l)
-                                     y (:ys g)]
-                                 y))
+      (let [;; Stacked rect: collect all y0 and y1 values
+            rect-vals (for [l stack-layers
+                            :when (:categories l)
+                            g (:groups l)
+                            {:keys [y0 y1]} (:counts g)
+                            v [y0 y1]
+                            :when v]
+                        v)
+            ;; Stacked area: all ys and y0s (already accumulated)
+            area-vals (for [l stack-layers
+                            :when (and (not (:categories l)) (:groups l))
+                            g (:groups l)
+                            y (concat (:ys g) (or (:y0s g) []))]
+                        y)
             ;; Other (non-stacked) layers: use their y-domain
             other-yd (mapcat (fn [l]
                                (when-not (#{:stack :fill} (:position l))
                                  (:y-domain l)))
                              layers)
-            hi (max max-rect-y1 max-area-y
-                    (if (seq other-yd) (reduce max 0 other-yd) 0))]
-        (if (pos? hi)
-          (clamp-zero (scale/pad-domain [0 hi] scale-spec))
+            ;; Always include 0 — stacked bars are drawn from the baseline
+            all-vals (concat rect-vals area-vals other-yd [0])
+            lo (double (reduce min all-vals))
+            hi (double (reduce max all-vals))]
+        (if (< lo hi)
+          (scale/pad-domain [lo hi] scale-spec)
           [0 1]))
 
       ;; Normal: collect y-domains from layers
@@ -184,13 +187,42 @@
           (assoc rv :data ds)
           rv)))))
 
+(defn- filter-infinities
+  "Filter rows containing infinite values on numeric x or y columns.
+   Removes rows where the x or y column contains ##Inf or ##-Inf
+   and prints a warning. Non-numeric columns are skipped.
+   Returns the resolved view with filtered :data."
+  [rv]
+  (let [ds (:data rv)]
+    (if-not (tc/dataset? ds)
+      rv
+      (let [x-col (when (keyword? (:x rv)) (:x rv))
+            y-col (when (keyword? (:y rv)) (:y rv))
+            x-numeric? (and x-col (ds x-col)
+                            (casting/numeric-type? (dtype/elemwise-datatype (ds x-col))))
+            y-numeric? (and y-col (ds y-col)
+                            (casting/numeric-type? (dtype/elemwise-datatype (ds y-col))))
+            n-before (tc/row-count ds)
+            ds (if x-numeric?
+                 (tc/select-rows ds (dfn/finite? (ds x-col)))
+                 ds)
+            ds (if y-numeric?
+                 (tc/select-rows ds (dfn/finite? (ds y-col)))
+                 ds)
+            n-after (tc/row-count ds)
+            removed (- n-before n-after)]
+        (when (pos? removed)
+          (println (str "Warning: Removed " removed " rows containing non-finite values (Inf or -Inf).")))
+        (if (pos? removed)
+          (assoc rv :data ds)
+          rv)))))
+
 (defn resolve-panel-views
   "Resolve views and compute stats for a group of views belonging to one panel.
    If pre-resolved views are provided, skips resolve-view.
-   Filters non-positive values on log-scaled axes (ggplot2 behavior).
    Returns {:resolved [...] :stat-results [...] :layers [...]}."
   [panel-views all-colors cfg & {:keys [resolved]}]
-  (let [resolved (or resolved (mapv (comp filter-log-nonpositive view/resolve-view) panel-views))
+  (let [resolved (or resolved (mapv (comp filter-log-nonpositive filter-infinities view/resolve-view) panel-views))
         stat-results (mapv #(stat/compute-stat (assoc % :cfg (merge cfg (:cfg %)))) resolved)
         raw-layers (vec (map (fn [rv sr]
                                (-> (extract/extract-layer rv sr all-colors cfg)
@@ -203,10 +235,10 @@
 (defn- collect-colors
   "Resolve views and collect color categories across all views.
    Attaches :__resolved to each view for downstream re-use.
-   Filters non-positive values on log-scaled axes (ggplot2 behavior).
+   Filters infinite values and non-positive values on log-scaled axes.
    Returns {:resolved-all :numeric-color? :all-colors :color-cols :tagged-views}."
   [non-ann-views]
-  (let [resolved-all (mapv (comp filter-log-nonpositive view/resolve-view) non-ann-views)
+  (let [resolved-all (mapv (comp filter-log-nonpositive filter-infinities view/resolve-view) non-ann-views)
         tagged-views (mapv (fn [v rv] (assoc v :__resolved rv)) non-ann-views resolved-all)
         numeric-color? (some #(= :numerical (:color-type %)) resolved-all)
         all-colors (when-not numeric-color?
@@ -377,13 +409,14 @@
            (:col-label pd) (assoc :col-label (:col-label pd))))))))
 
 (defn- resolve-labels
-  "Resolve effective title and axis labels."
+  "Resolve effective title and axis labels.
+   Title comes from opts only; axis labels fall back to view-level :x-label/:y-label
+   (set via sk/labs), then scale :label, then auto-inferred column name."
   [non-ann-views x-vars y-vars x-scale-spec y-scale-spec
    title x-label y-label auto-label?]
-  (let [view-title (:title (first non-ann-views))
-        view-x-label (:x-label (first non-ann-views))
+  (let [view-x-label (:x-label (first non-ann-views))
         view-y-label (:y-label (first non-ann-views))]
-    {:eff-title (or title view-title)
+    {:eff-title title
      :eff-x-label (or x-label
                       view-x-label
                       (:label x-scale-spec)
@@ -543,6 +576,24 @@
                            "Supported polar marks: " (sort polar-supported-marks))
                       {:mark m :supported polar-supported-marks})))))
 
+(defn- warn-conflicting-specs
+  "Warn when views disagree about scale or coord specs.
+   Only the first view's specs are used — conflicting specs are silently ignored
+   without this warning."
+  [views]
+  (let [x-types (distinct (keep (comp :type :x-scale) views))
+        y-types (distinct (keep (comp :type :y-scale) views))
+        coords (distinct (keep :coord views))]
+    (when (> (count x-types) 1)
+      (println (str "Warning: Views have conflicting x-scale types " (vec x-types)
+                    ". Using first view's scale: " (first x-types) ".")))
+    (when (> (count y-types) 1)
+      (println (str "Warning: Views have conflicting y-scale types " (vec y-types)
+                    ". Using first view's scale: " (first y-types) ".")))
+    (when (> (count coords) 1)
+      (println (str "Warning: Views have conflicting coord types " (vec coords)
+                    ". Using first view's coord: " (first coords) ".")))))
+
 (defn views->sketch
   "Resolve views + options into a sketch — a fully resolved plot specification
    with data-space geometry, domains, ticks, legend, and layout info.
@@ -574,6 +625,7 @@
          coord-type (or (:coord (first non-ann-views)) :cartesian)
          ;; Polar+mark compatibility check
          _ (validate-polar-marks resolved-all coord-type)
+         _ (warn-conflicting-specs non-ann-views)
 
          ;; Annotations
          annotations (vec (for [a ann-views]
@@ -642,10 +694,7 @@
          {:keys [eff-title eff-x-label eff-y-label]}
          (resolve-labels non-ann-views x-vars y-vars x-scale-spec y-scale-spec
                          title x-label y-label auto-label?)
-
-         ;; Subtitle and caption — opts override view-level
-         subtitle (or subtitle (:subtitle (first non-ann-views)))
-         caption (or caption (:caption (first non-ann-views)))
+         ;; Subtitle and caption — from opts only
          ;; Swap labels when axes are visually transposed
          swap-labels? (or (= coord-type :flip)
                           has-ridgeline?)

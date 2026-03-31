@@ -105,7 +105,7 @@
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
   (sk/coord :polar)
-  (sk/labs {:title "Iris in Polar Space"})))
+  (sk/options {:title "Iris in Polar Space"})))
 
 
 (deftest

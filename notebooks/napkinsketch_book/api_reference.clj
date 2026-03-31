@@ -445,7 +445,7 @@ sk1
 (kind/doc #'sk/labs)
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species}) (sk/labs {:title "Iris Dimensions" :x "Sepal Length (cm)" :y "Sepal Width (cm)"}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species}) (sk/labs {:x "Sepal Length (cm)" :y "Sepal Width (cm)"}) (sk/options {:title "Iris Dimensions"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (some #{"Iris Dimensions"} (:texts s))))])

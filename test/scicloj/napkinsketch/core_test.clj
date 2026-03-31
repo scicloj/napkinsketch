@@ -995,18 +995,23 @@
       (is (= :flip (:coord panel))))))
 
 (deftest labs-test
-  (testing "labels propagate to sketch"
-    (let [views (-> tiny-ds
-                    (sk/view :x :y)
-                    sk/lay-point
-                    (sk/labs {:title "T" :subtitle "ST" :caption "C"
-                              :x "X Axis" :y "Y Axis"}))
-          sk (sk/sketch views)]
+  (testing "axis labels propagate to sketch via labs"
+    (let [sk (-> tiny-ds
+                 (sk/view :x :y)
+                 sk/lay-point
+                 (sk/labs {:x "X Axis" :y "Y Axis"})
+                 sk/sketch)]
+      (is (= "X Axis" (:x-label sk)))
+      (is (= "Y Axis" (:y-label sk)))))
+  (testing "title/subtitle/caption propagate via options"
+    (let [sk (-> tiny-ds
+                 (sk/view :x :y)
+                 sk/lay-point
+                 (sk/options {:title "T" :subtitle "ST" :caption "C"})
+                 sk/sketch)]
       (is (= "T" (:title sk)))
       (is (= "ST" (:subtitle sk)))
-      (is (= "C" (:caption sk)))
-      (is (= "X Axis" (:x-label sk)))
-      (is (= "Y Axis" (:y-label sk))))))
+      (is (= "C" (:caption sk))))))
 
 (deftest log-scale-test
   (testing "log scale is recorded in sketch"
@@ -1042,6 +1047,93 @@
           layer (first (:layers (first (:panels sk))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group)))))))
+
+(deftest infinity-filtering-test
+  (testing "infinite y values are filtered with warning"
+    (let [sk (sk/sketch (-> {:x [1 2 3 4 5]
+                             :y [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]}
+                            (sk/lay-point :x :y)))
+          layer (first (:layers (first (:panels sk))))
+          group (first (:groups layer))]
+      (is (= 3 (count (:xs group))))
+      (is (= [1 3 5] (vec (:xs group))))
+      (is (= [10.0 30.0 50.0] (vec (:ys group))))))
+  (testing "infinite x values are filtered"
+    (let [sk (sk/sketch (-> {:x [1.0 Double/POSITIVE_INFINITY 3.0]
+                             :y [10 20 30]}
+                            (sk/lay-point :x :y)))
+          group (-> sk :panels first :layers first :groups first)]
+      (is (= 2 (count (:xs group))))))
+  (testing "SVG has no NaN after infinity filtering"
+    (let [svg (sk/plot (-> {:x [1 2 3] :y [1.0 Double/POSITIVE_INFINITY 3.0]}
+                           (sk/lay-point :x :y)))]
+      (is (not (clojure.string/includes? (str svg) "NaN")))))
+  (testing "all-finite data is not filtered"
+    (let [sk (sk/sketch (-> {:x [1 2 3] :y [10.0 20.0 30.0]}
+                            (sk/lay-point :x :y)))
+          group (-> sk :panels first :layers first :groups first)]
+      (is (= 3 (count (:xs group)))))))
+
+(deftest stacked-negative-domain-test
+  (testing "all-negative stacked bars produce correct y-domain"
+    (let [sk (sk/sketch (-> {:category ["A" "A" "B" "B"]
+                             :group ["g1" "g2" "g1" "g2"]
+                             :value [-10 -20 -5 -15]}
+                            (sk/lay-value-bar :category :value {:color :group :position :stack})))
+          [lo hi] (:y-domain (first (:panels sk)))]
+      (is (neg? lo) "lower bound should be negative for all-negative stacked data")
+      (is (pos? hi) "upper bound includes 0 baseline with padding")))
+  (testing "mixed positive/negative stacked bars span both sides"
+    (let [sk (sk/sketch (-> {:category ["A" "A" "B" "B"]
+                             :group ["g1" "g2" "g1" "g2"]
+                             :value [10 -20 5 -15]}
+                            (sk/lay-value-bar :category :value {:color :group :position :stack})))
+          [lo hi] (:y-domain (first (:panels sk)))]
+      (is (neg? lo) "lower bound extends below zero")
+      (is (pos? hi) "upper bound extends above zero")))
+  (testing "all-negative stacked bars render without NaN"
+    (let [svg (sk/plot (-> {:category ["A" "A" "B" "B"]
+                            :group ["g1" "g2" "g1" "g2"]
+                            :value [-10 -20 -5 -15]}
+                           (sk/lay-value-bar :category :value {:color :group :position :stack})))]
+      (is (not (clojure.string/includes? (str svg) "NaN"))))))
+
+(deftest facet-then-lay-test
+  (testing "layer added after facet inherits facet keys"
+    (let [data (tc/dataset {:x [1 2 3 4 5 6]
+                            :y [10 20 30 40 50 60]
+                            :species ["a" "a" "a" "b" "b" "b"]})
+          p (-> data
+                (sk/lay-point :x :y)
+                (sk/facet :species)
+                (sk/lay-line :x :y))
+          views (sk/views-of p)]
+      (is (= 4 (count views)))
+      (is (= ["a" "b" "a" "b"] (mapv :facet-col views)))
+      (is (every? #(= 3 (tc/row-count (:data %))) views))))
+  (testing "facet-then-lay produces correct panels with layers"
+    (let [data (tc/dataset {:x [1 2 3 4 5 6]
+                            :y [10 20 30 40 50 60]
+                            :species ["a" "a" "a" "b" "b" "b"]})
+          sk (sk/sketch (-> data
+                            (sk/lay-point :x :y)
+                            (sk/facet :species)
+                            (sk/lay-line :x :y)))]
+      (is (= 2 (count (:panels sk))))
+      (is (every? #(= 2 (count (:layers %))) (:panels sk)))))
+  (testing "facet-grid then lay works with row and col"
+    (let [data (tc/dataset {:x [1 2 3 4 5 6 7 8]
+                            :y [10 20 30 40 50 60 70 80]
+                            :sp ["a" "a" "b" "b" "a" "a" "b" "b"]
+                            :sx ["m" "f" "m" "f" "m" "f" "m" "f"]})
+          p (-> data
+                (sk/lay-point :x :y)
+                (sk/facet-grid :sp :sx)
+                (sk/lay-line :x :y))
+          views (sk/views-of p)]
+      (is (= 8 (count views)))
+      (is (every? some? (map :facet-row views)))
+      (is (every? some? (map :facet-col views))))))
 
 (deftest plotspec-pipeline-test
   (testing "lay-X 3-arity with PlotSpec adds layer with column overrides"

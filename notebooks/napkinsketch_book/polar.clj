@@ -86,12 +86,12 @@
 ;; ## Explicit Labels with Polar
 ;;
 ;; By default, polar suppresses auto-generated axis labels (since there
-;; are no rectangular axes). You can still set explicit labels with `sk/labs`:
+;; are no rectangular axes). You can still set a title with `sk/options`:
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/coord :polar)
-    (sk/labs {:title "Iris in Polar Space"}))
+    (sk/options {:title "Iris in Polar Space"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

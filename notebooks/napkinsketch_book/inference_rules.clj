@@ -666,7 +666,7 @@ count-views
                 :y [3 5 4 7 6 8]
                 :g ["a" "a" "a" "b" "b" "b"]}
                (sk/lay-point :x :y {:color :g})
-               (sk/labs {:title "My Plot"})
+               (sk/options {:title "My Plot"})
                sk/sketch)]
   {:bare-title-pad (get-in bare [:layout :title-pad])
    :full-title-pad (get-in full [:layout :title-pad])

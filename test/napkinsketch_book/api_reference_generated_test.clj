@@ -147,7 +147,9 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__77877#] (Math/sin (* p1__77877# 0.3))) (range 30))}))
+   (map
+    (fn* [p1__142579#] (Math/sin (* p1__142579# 0.3)))
+    (range 30))}))
 
 
 (def v30_l107 (-> wave (sk/lay-line :x :y)))
@@ -257,9 +259,9 @@
     :y
     (map
      (fn*
-      [p1__77878#]
+      [p1__142580#]
       (+
-       (Math/sin (* p1__77878# 0.2))
+       (Math/sin (* p1__142580# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -727,10 +729,8 @@
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
-  (sk/labs
-   {:title "Iris Dimensions",
-    :x "Sepal Length (cm)",
-    :y "Sepal Width (cm)"})))
+  (sk/labs {:x "Sepal Length (cm)", :y "Sepal Width (cm)"})
+  (sk/options {:title "Iris Dimensions"})))
 
 
 (deftest

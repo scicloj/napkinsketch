@@ -50,13 +50,13 @@
                            (and (= 150 (:points s))
                                 (some #{"Iris Sepal Measurements"} (:texts s)))))])
 
-;; `sk/labs` sets labels in the pipeline — equivalent to passing
-;; `:title`, `:x-label`, `:y-label` in `sk/options`.
+;; `sk/labs` sets axis labels. Titles go in `sk/options`.
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/labs {:title "Pipeline Labels" :x "Length" :y "Width"}))
+    (sk/labs {:x "Length" :y "Width"})
 
+    (sk/options {:title "Pipeline Labels"}))
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (some #{"Pipeline Labels"} (:texts s)))))])

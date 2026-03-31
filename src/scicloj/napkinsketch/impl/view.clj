@@ -154,9 +154,15 @@
         existing-anns (filter #(annotation-marks (:mark %)) base-views)
         data-views (remove #(annotation-marks (:mark %)) base-views)
         has-marks? (some :mark data-views)
-        ;; Recover unique bare bases from __base or strip mark/stat/position
+        ;; Recover unique bare bases — strip mark/stat/position but keep
+        ;; facet keys and faceted dataset so new layers inherit the facet split.
+        ;; Only fall back to __base when there are no facet keys (pre-facet case).
         bare-views (if has-marks?
-                     (let [bases (map #(or (:__base %) (dissoc % :mark :stat :position)) data-views)]
+                     (let [bases (map (fn [v]
+                                        (if (or (:facet-row v) (:facet-col v))
+                                          (dissoc v :mark :stat :position)
+                                          (or (:__base v) (dissoc v :mark :stat :position))))
+                                      data-views)]
                        (vec (distinct bases)))
                      data-views)
         new-layers (apply concat (map #(merge-layer bare-views %) data-specs))]
@@ -173,14 +179,11 @@
   (mapv #(assoc % :coord c) views))
 
 (defn labs
-  "Set labels on views. Keys: :title, :subtitle, :caption, :x, :y.
-   (labs views {:title \"My Plot\" :x \"X Axis\" :y \"Y Axis\"})
-   (labs views {:title \"Title\" :subtitle \"More detail\" :caption \"Source: ...\"})"
+  "Set axis labels on views. Keys: :x, :y.
+   For plot-level text (title, subtitle, caption), use sk/options instead.
+   (labs views {:x \"X Axis\" :y \"Y Axis\"})"
   [views label-opts]
   (let [m (cond-> {}
-            (:title label-opts) (assoc :title (:title label-opts))
-            (:subtitle label-opts) (assoc :subtitle (:subtitle label-opts))
-            (:caption label-opts) (assoc :caption (:caption label-opts))
             (:x label-opts) (assoc :x-label (:x label-opts))
             (:y label-opts) (assoc :y-label (:y label-opts)))]
     (mapv #(merge % m) views)))

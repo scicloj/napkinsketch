@@ -37,6 +37,22 @@
                            (and (= 1 (:panels s))
                                 (= 3 (:points s)))))])
 
+;; ## Infinite Values
+;;
+;; Rows with `Double/POSITIVE_INFINITY` or `Double/NEGATIVE_INFINITY`
+;; are filtered automatically with a warning — similar to log-scale filtering.
+
+(def with-infinity
+  {:x [1 2 3 4 5]
+   :y [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]})
+
+(-> with-infinity
+    (sk/lay-point :x :y))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:points s))
+                                (not (clojure.string/includes? (str v) "NaN")))))])
 ;; ## Single Point
 
 ;; A lone data point should render without errors.
