@@ -38,18 +38,18 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; `tc/dataset` loads a CSV into a
-;; [Tablecloth](https://scicloj.github.io/tablecloth/) dataset (a
-;; wrapper around [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset)). `{:key-fn keyword}` converts
+;; - `tc/dataset` loads a CSV into a
+;; [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset) dataset 
+;; (which we typically use through
+;; [Tablecloth](https://scicloj.github.io/tablecloth/)).
+;; - The `:key-fn keyword` option converts
 ;; the CSV header strings to Clojure keywords, which is conventional.
-;; `sk/lay-point` adds a scatter layer — each row becomes a dot.
+;; - `sk/lay-point` adds a scatter layer — each row becomes a dot.
 
 ;; ## Plain Data
 ;;
 ;; You do not need to load a CSV — Napkinsketch accepts plain Clojure
-;; data and coerces it to a [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset) dataset (which we
-;; typically use through
-;; [Tablecloth](https://scicloj.github.io/tablecloth/)).
+;; data and coerces it to a tech.ml.dataset dataset.
 ;; A map of columns works directly:
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
@@ -57,7 +57,7 @@
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; See the Core Concepts chapter for more input formats.
+;; See [**Core Concepts**](./napkinsketch_book.core_concepts.html) for more input formats.
 
 ;; String column names also work — keywords are conventional but not
 ;; required:
@@ -79,9 +79,11 @@
                                 (some #{"setosa"} (:texts s))
                                 (some #{"sepal length"} (:texts s)))))])
 
-;; ## Histogram
-
-;; Pass a single column to get a histogram (automatic binning).
+;; ## More Chart Types
+;;
+;; Each `sk/lay-*` function adds a different chart type.
+;;
+;; **Histogram** — pass a single column for automatic binning:
 
 (-> iris
     (sk/lay-histogram :sepal_length))
@@ -91,9 +93,7 @@
                                 (pos? (:polygons s))
                                 (zero? (:points s)))))])
 
-;; ## Bar Chart
-
-;; Count occurrences of a categorical column.
+;; **Bar chart** — count occurrences of a categorical column:
 
 (-> iris
     (sk/lay-bar :species))
@@ -102,9 +102,7 @@
                            (and (= 1 (:panels s))
                                 (= 3 (:polygons s)))))])
 
-;; ## Flipped Bar Chart
-
-;; Use `coord :flip` for horizontal bars.
+;; Flip to horizontal with `sk/coord`:
 
 (-> iris
     (sk/lay-bar :species)
@@ -113,9 +111,7 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:polygons s))))])
 
-;; ## Line Plot
-
-;; Connect points with lines.
+;; **Line chart** — connect points in order:
 
 (-> {:x [1 2 3 4 5 6 7 8]
      :y [3 5 4 7 6 8 7 9]}
@@ -124,6 +120,17 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:lines s))
                                 (zero? (:points s)))))])
+
+;; **Boxplot** — compare distributions across categories:
+
+(-> iris
+    (sk/lay-boxplot :species :sepal_width))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:lines s)))))])
+
+;; See the [**Methods**](./napkinsketch_book.methods.html) chapter for the full list of 25 chart types.
 
 ;; ## Inference
 ;;
@@ -149,19 +156,7 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; ## Boxplot
-;;
-;; A categorical column paired with a numerical column — use
-;; `sk/lay-boxplot` to compare distributions across groups:
-
-(-> iris
-    (sk/lay-boxplot :species :sepal_width))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (pos? (:lines s)))))])
-
-;; See the Inference Rules chapter for the full set of rules.
+;; See the [**Inference Rules**](./napkinsketch_book.inference_rules.html) chapter for the full set of rules.
 
 ;; ## Multiple Layers
 ;;
@@ -177,9 +172,9 @@
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; ## Custom Options
-
-;; Use `sk/options` for width, height, title, and axis labels.
+;; ## Titles and Labels
+;;
+;; Use `sk/options` for width, height, title, and axis labels:
 
 (-> iris
     (sk/lay-point :petal_length :petal_width {:color :species})
@@ -193,15 +188,17 @@
                                 (some #{"Iris Petals"} (:texts s))
                                 (some #{"Petal Length (cm)"} (:texts s)))))])
 
-;; ## Next Steps
+;; ## Dashboards  
 ;;
-;; Combine multiple plots into a dashboard with `sk/arrange`:
+;; Combine multiple plots with `sk/arrange`:
 
 (sk/arrange [(sk/lay-point iris :sepal_length :sepal_width {:color :species})
              (sk/lay-histogram iris :sepal_length {:color :species})]
             {:cols 2})
 
 (kind/test-last [(fn [v] (vector? v))])
+
+;; ## Export
 
 ;; Save a plot to SVG with `sk/save`:
 ;;
@@ -211,8 +208,8 @@
 ;;     (sk/save "my-plot.svg"))
 ;; ```
 ;;
-;; Explore the rest of the book:
+;; ## What's Next
 ;;
-;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) — views, methods, layers, faceting
+;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) — views, methods, layers, and how they compose
 ;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — the most common starting point for chart types
-;; - [**Cookbook**](./napkinsketch_book.cookbook.html) — recipes for common tasks
+;; - [**Cookbook**](./napkinsketch_book.cookbook.html) — recipes for common multi-layer plots
