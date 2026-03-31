@@ -242,8 +242,10 @@
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
   (sk/facet :species)
-  (sk/labs {:x "Sepal Length (cm)", :y "Sepal Width (cm)"})
-  (sk/options {:title "Iris by Species"})))
+  (sk/options
+   {:title "Iris by Species",
+    :x-label "Sepal Length (cm)",
+    :y-label "Sepal Width (cm)"})))
 
 
 (deftest

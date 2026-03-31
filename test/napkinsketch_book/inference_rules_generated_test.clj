@@ -536,7 +536,7 @@
    (->
     five-points
     (sk/lay-point :x :y)
-    (sk/labs {:x "Length (cm)", :y "Width (cm)"})
+    (sk/options {:x-label "Length (cm)", :y-label "Width (cm)"})
     sk/sketch)]
   {:x-label (:x-label sk), :y-label (:y-label sk)}))
 

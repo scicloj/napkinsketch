@@ -71,7 +71,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__80745#] (= "Distribution of Total Bill" p1__80745#))
+       (fn* [p1__88795#] (= "Distribution of Total Bill" p1__88795#))
        (:texts s)))))
    v12_l53)))
 
@@ -184,7 +184,7 @@
    box-layer
    (first
     (filter
-     (fn* [p1__80746#] (= :boxplot (:mark p1__80746#)))
+     (fn* [p1__88796#] (= :boxplot (:mark p1__88796#)))
      (:layers panel)))
    cats
    (:color-categories box-layer)]
@@ -253,7 +253,7 @@
    viol-layer
    (first
     (filter
-     (fn* [p1__80747#] (= :violin (:mark p1__80747#)))
+     (fn* [p1__88797#] (= :violin (:mark p1__88797#)))
      (:layers panel)))
    cats
    (:color-categories viol-layer)]
@@ -309,3 +309,39 @@
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
    v54_l233)))
+
+
+(def
+ v57_l247
+ (->
+  (sk/distribution data/iris :sepal_length :sepal_width :petal_length)
+  sk/lay-histogram))
+
+
+(deftest
+ t58_l250
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 3 (:panels s)) (pos? (:polygons s)))))
+   v57_l247)))
+
+
+(def
+ v60_l257
+ (->
+  (sk/distribution data/iris :sepal_length :sepal_width :petal_length)
+  (sk/lay-density {:color :species})))
+
+
+(deftest
+ t61_l260
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 3 (:panels s)) (pos? (:polygons s)))))
+   v60_l257)))

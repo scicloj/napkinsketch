@@ -23,13 +23,13 @@
 
 ;; We use the iris dataset throughout.
 
-;; We define `base-views` as a function (not a plain def) because
+;; We define `base-plot` as a function because
 ;; plot specifications render at display time — calling the function
 ;; produces a fresh specification that picks up the current configuration.
 
-(def base-views
-  (fn [] (-> data/iris
-             (sk/lay-point :sepal_length :sepal_width {:color :species}))))
+(defn base-plot
+  [] (-> data/iris
+         (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 ;; ## Inspecting the Current Configuration
 ;;
@@ -99,7 +99,7 @@
 
 (kind/test-last [(fn [m] (= {:width 600 :height 400} m))])
 
-(-> (base-views)
+(-> (base-plot)
     (sk/options {:width 900 :height 250}))
 
 (kind/test-last
@@ -111,7 +111,7 @@
 ;; Theme deep-merge — only the specified keys change. Here we set a
 ;; white background; `:grid` and `:font-size` keep their defaults:
 
-(-> (base-views)
+(-> (base-plot)
     (sk/options {:theme {:bg "#FFFFFF"}}))
 
 (kind/test-last
@@ -120,7 +120,7 @@
 
 ;; Named palette:
 
-(-> (base-views)
+(-> (base-plot)
     (sk/options {:palette :dark2}))
 
 (kind/test-last
@@ -141,7 +141,7 @@
 
 (kind/test-last [(fn [m] (= {:width 800 :height 400} m))])
 
-(-> (base-views))
+(-> (base-plot))
 
 ;; Reset to library defaults by passing `nil`:
 
@@ -161,7 +161,7 @@
 ;; A dark theme, scoped to this block:
 
 (sk/with-config {:theme {:bg "#1a1a2e" :grid "#16213e" :font-size 8}}
-  (-> (base-views)
+  (-> (base-plot)
       (sk/options {:title "Dark Theme via with-config"})))
 
 (kind/test-last
@@ -172,7 +172,7 @@
 ;; are deep-merged from the defaults:
 
 (sk/with-config {:theme {:bg "#F5F5DC"}}
-  (-> (base-views)
+  (-> (base-plot)
       (sk/options {:title "Partial Theme Override"})))
 
 (kind/test-last
@@ -213,7 +213,7 @@
 (def precedence-result
   (sk/with-config {:width 1200 :height 500}
     ;; Pass plot options for width only:
-    (let [sketch (sk/sketch (base-views) {:width 900})]
+    (let [sketch (sk/sketch (base-plot) {:width 900})]
       {:sketch-width (:width sketch)
        :sketch-height (:height sketch)})))
 
@@ -222,8 +222,7 @@ precedence-result
 (kind/test-last
  [(fn [m]
     (and (= 900 (:sketch-width m)) ;; plot options win over with-config (1200) and set-config! (800)
-         (= 500 (:sketch-height m))) ;; with-config wins over set-config! (350)
-    )])
+         (= 500 (:sketch-height m))))]) ;; with-config wins over set-config! (350)
 
 ;; We can verify point-radius too — only set-config! touched it,
 ;; so it wins over the library default (2.5):
@@ -240,7 +239,7 @@ precedence-point-radius
 
 (def precedence-plot
   (sk/with-config {:width 1200 :height 500}
-    (-> (base-views)
+    (-> (base-plot)
         (sk/options {:width 900}))))
 
 precedence-plot
@@ -308,7 +307,7 @@ precedence-plot
 
 ;; Override only `:bg`, keep default `:grid` and `:font-size`:
 
-(-> (base-views)
+(-> (base-plot)
     (sk/options {:theme {:bg "#F5F5DC"}})
     sk/plot)
 
@@ -322,7 +321,7 @@ precedence-plot
 
 ;; Override all three for a dark theme:
 
-(-> (base-views)
+(-> (base-plot)
     (sk/options {:title "Full Dark Theme"
                  :theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}})
     sk/plot)
@@ -338,11 +337,11 @@ precedence-plot
 ;; Each plot can have its own theme.
 
 (sk/arrange
- [(-> (base-views)
+ [(-> (base-plot)
       (sk/options {:title "Light"
                    :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}
                    :width 350 :height 250}))
-  (-> (base-views)
+  (-> (base-plot)
       (sk/options {:title "Dark"
                    :theme {:bg "#2d2d2d" :grid "#444444" :font-size 8}
                    :width 350 :height 250}))])
@@ -371,7 +370,7 @@ precedence-plot
 
 ;; Named palette via plot options:
 
-(-> (base-views)
+(-> (base-plot)
     (sk/options {:palette :tableau10}))
 
 (kind/test-last
@@ -379,7 +378,7 @@ precedence-plot
 
 ;; Custom vector palette:
 
-(-> (base-views)
+(-> (base-plot)
     (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
 
 (kind/test-last
@@ -387,7 +386,7 @@ precedence-plot
 
 ;; Explicit map palette:
 
-(-> (base-views)
+(-> (base-plot)
     (sk/options {:palette {"setosa" "#FF6B6B"
                            "versicolor" "#4ECDC4"
                            "virginica" "#45B7D1"}}))
@@ -399,7 +398,7 @@ precedence-plot
 
 (sk/set-config! {:palette :pastel1})
 
-(-> (base-views))
+(-> (base-plot))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -409,7 +408,7 @@ precedence-plot
 ;; Thread-local palette via with-config:
 
 (sk/with-config {:palette :accent}
-  (-> (base-views)))
+  (-> (base-plot)))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -469,7 +468,7 @@ precedence-plot
 
 ;; Default behavior (validate = true) — a valid sketch passes silently:
 
-(sk/sketch (base-views))
+(sk/sketch (base-plot))
 
 (kind/test-last
  [(fn [sketch]
@@ -478,7 +477,7 @@ precedence-plot
 
 ;; The rendered plot works normally:
 
-(-> (base-views))
+(-> (base-plot))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -489,7 +488,7 @@ precedence-plot
 ;; with validation disabled, then corrupt it.  First, create a valid
 ;; sketch and confirm it passes:
 
-(def good-sketch (sk/sketch (base-views) {:validate false}))
+(def good-sketch (sk/sketch (base-plot) {:validate false}))
 
 (sk/valid-sketch? good-sketch)
 
@@ -522,7 +521,7 @@ precedence-plot
 ;; by catching the exception:
 
 (try
-  (let [sketch (sk/sketch (base-views) {:validate false})
+  (let [sketch (sk/sketch (base-plot) {:validate false})
         bad (assoc sketch :width "not-a-number")]
     (when-let [explanation (sk/explain-sketch bad)]
       (throw (ex-info "Sketch does not conform to schema"
@@ -541,7 +540,7 @@ precedence-plot
 ;;
 ;; Disable validation with `:validate false`:
 
-(sk/sketch (base-views) {:validate false})
+(sk/sketch (base-plot) {:validate false})
 
 (kind/test-last
  [(fn [sketch]

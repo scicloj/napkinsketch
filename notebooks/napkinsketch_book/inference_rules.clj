@@ -569,7 +569,7 @@ count-views
 
 (let [sk (-> five-points
              (sk/lay-point :x :y)
-             (sk/labs {:x "Length (cm)" :y "Width (cm)"})
+             (sk/options {:x-label "Length (cm)" :y-label "Width (cm)"})
              sk/sketch)]
   {:x-label (:x-label sk)
    :y-label (:y-label sk)})
@@ -838,7 +838,7 @@ graph TD
 ;; | Fill domain | `[0.0, 1.0]` for fill position | `(sk/scale views :y {:domain [0 2]})` |
 ;; | Tick values | round intervals (linear), powers of 10 (log) | wadogo scale configuration |
 ;; | Tick labels | number formatting, calendar formatting | wadogo label formatting |
-;; | Axis labels | column name, underscores → spaces | `(sk/labs {:x "Custom"})` |
+;; | Axis labels | column name, underscores → spaces | `(sk/options {:x-label "Custom"})` |
 ;; | Color legend | categorical = discrete, numerical = continuous, none = no legend | `:color` mapping controls presence |
 ;; | Size legend | 5 graduated circles when `:size` maps to numerical column | `:size` mapping controls presence |
 ;; | Alpha legend | 5 graduated opacity squares when `:alpha` maps to numerical column | `:alpha` mapping controls presence |

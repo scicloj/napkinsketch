@@ -216,3 +216,21 @@
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (some #{"petal length"} (:texts s)))))
    v33_l136)))
+
+
+(def
+ v36_l150
+ (def cols [:sepal_length :sepal_width :petal_length :petal_width]))
+
+
+(def
+ v37_l152
+ (->
+  data/iris
+  (sk/view (sk/cross cols cols) {:color :species})
+  sk/lay-point))
+
+
+(deftest
+ t38_l156
+ (is ((fn [v] (= 16 (:panels (sk/svg-summary v)))) v37_l152)))

@@ -50,17 +50,6 @@
                            (and (= 150 (:points s))
                                 (some #{"Iris Sepal Measurements"} (:texts s)))))])
 
-;; `sk/labs` sets axis labels. Titles go in `sk/options`.
-
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/labs {:x "Length" :y "Width"})
-
-    (sk/options {:title "Pipeline Labels"}))
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (some #{"Pipeline Labels"} (:texts s)))))])
-
 ;; Add a subtitle and caption for context.
 
 (-> data/iris
@@ -311,10 +300,9 @@
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/options {:tooltip true})
-    sk/plot)
+    (sk/options {:tooltip true}))
 
-(kind/test-last [(fn [v] (= :div (first v)))])
+(kind/test-last [(fn [v] (= :div (first (sk/plot v))))])
 
 ;; ## Brush Selection
 ;;
@@ -322,10 +310,9 @@
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/options {:brush true})
-    sk/plot)
+    (sk/options {:brush true}))
 
-(kind/test-last [(fn [v] (= :div (first v)))])
+(kind/test-last [(fn [v] (= :div (first (sk/plot v))))])
 
 ;; Brushing becomes especially useful in a scatter plot matrix
 ;; (SPLOM). Drag to select points in any panel — the selection
@@ -336,7 +323,6 @@
 (-> data/iris
     (sk/view (sk/cross splom-cols splom-cols) {:color :species})
     sk/lay-point
-    (sk/options {:brush true})
-    sk/plot)
+    (sk/options {:brush true}))
 
-(kind/test-last [(fn [v] (= :div (first v)))])
+(kind/test-last [(fn [v] (= :div (first (sk/plot v))))])

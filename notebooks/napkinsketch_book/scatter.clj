@@ -139,3 +139,21 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (some #{"petal length"} (:texts s)))))])
+
+;; ## Scatter Plot Matrix (SPLOM)
+;;
+;; `sk/cross` generates all combinations of two lists. Passing
+;; column names produces a grid of scatter plots — one per pair of
+;; variables. The diagonal shows histograms (automatic inference
+;; for same-column pairs).
+
+(def cols [:sepal_length :sepal_width :petal_length :petal_width])
+
+(-> data/iris
+    (sk/view (sk/cross cols cols) {:color :species})
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 16 (:panels (sk/svg-summary v))))])
+
+;; See the [Faceting](faceting.html) chapter for more SPLOM
+;; variations, including brush selection.

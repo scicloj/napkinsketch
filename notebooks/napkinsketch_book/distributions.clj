@@ -237,3 +237,27 @@
  [(fn [v] (let [s (sk/svg-summary v)]
             (and (= 1 (:panels s))
                  (= 3 (:polygons s)))))])
+
+;; ## Comparing Multiple Columns
+;;
+;; `sk/distribution` creates side-by-side histograms for multiple
+;; columns — useful when you want to compare the shape of different
+;; variables. Each column gets its own facet panel.
+
+(-> (sk/distribution data/iris :sepal_length :sepal_width :petal_length)
+    sk/lay-histogram)
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 3 (:panels s))
+                 (pos? (:polygons s)))))])
+
+;; Combine with `:color` to see group differences within each column.
+
+(-> (sk/distribution data/iris :sepal_length :sepal_width :petal_length)
+    (sk/lay-density {:color :species}))
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 3 (:panels s))
+                 (pos? (:polygons s)))))])

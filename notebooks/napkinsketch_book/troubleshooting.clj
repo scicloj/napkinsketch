@@ -1,0 +1,156 @@
+;; # Troubleshooting
+;;
+;; Common mistakes and how to fix them.
+
+(ns napkinsketch-book.troubleshooting
+  (:require
+   ;; Shared datasets for these docs
+   [napkinsketch-book.datasets :as data]
+   ;; Kindly — notebook rendering protocol
+   [scicloj.kindly.v4.kind :as kind]
+   ;; Tablecloth — dataset manipulation
+   [tablecloth.api :as tc]
+   ;; Napkinsketch — composable plotting
+   [scicloj.napkinsketch.api :as sk]))
+
+;; ## Column Not Found
+;;
+;; **Symptom**: `"Column :foo not found in dataset"` error.
+;;
+;; **Cause**: The column name does not exist in the dataset. CSV
+;; headers are strings by default — without `{:key-fn keyword}`,
+;; columns have string names like `"sepal_length"` instead of
+;; `:sepal_length`.
+;;
+;; **Fix**: Pass `{:key-fn keyword}` when loading the dataset:
+;;
+;; ```clojure
+;; (tc/dataset "data.csv" {:key-fn keyword})
+;; ```
+;;
+;; You can check available columns with:
+
+(tc/column-names data/iris)
+
+(kind/test-last [(fn [v] (some #{:sepal_length} v))])
+
+;; ## Wrong Chart Type from Inference
+;;
+;; **Symptom**: `sk/view` produces a scatter when you expected a
+;; boxplot, or a histogram when you expected a bar chart.
+;;
+;; **Cause**: `sk/view` infers the chart type from column types.
+;; Mixed types (categorical x, numerical y) produce a scatter,
+;; not a boxplot.
+;;
+;; **Fix**: Use an explicit `sk/lay-*` function instead of relying
+;; on inference:
+
+;; This infers a scatter (categorical x numerical):
+
+(-> data/iris
+    (sk/view :species :sepal_width))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; Use `sk/lay-boxplot` if you want a boxplot:
+
+(-> data/iris
+    (sk/lay-boxplot :species :sepal_width))
+
+(kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
+
+;; See the [Inference Rules](inference_rules.html) chapter for the
+;; full set of rules.
+
+;; ## x-Only Methods Do Not Accept a y Column
+;;
+;; **Symptom**: `"lay-histogram uses only the x column"` error.
+;;
+;; **Cause**: Histogram, bar, density, and rug methods use only the
+;; x column. Passing a y column is an error.
+;;
+;; **Fix**: Remove the y column:
+;;
+;; ```clojure
+;; ;; Wrong:
+;; (sk/lay-histogram data :sepal_length :sepal_width)
+;;
+;; ;; Correct:
+;; (sk/lay-histogram data :sepal_length)
+;; ```
+
+;; ## Categorical Column with Log Scale
+;;
+;; **Symptom**: `"Log scale requires numerical data"` error.
+;;
+;; **Cause**: Log scales only work with numerical columns. Categorical
+;; columns (strings, keywords) cannot be log-transformed.
+;;
+;; **Fix**: Use a numerical column for log scale, or remove the log
+;; scale for categorical data.
+
+;; ## Polar Coordinates with Unsupported Marks
+;;
+;; **Symptom**: Errors or unexpected output with `(sk/coord :polar)`.
+;;
+;; **Cause**: Not all marks support polar coordinates. Currently
+;; `:point`, `:bar`, and `:line` work well with polar.
+;;
+;; **Fix**: Check the [Polar](polar.html) chapter for supported marks.
+
+;; ## Tooltip and Brush Not Working
+;;
+;; **Symptom**: You set `{:tooltip true}` but no tooltip appears when
+;; hovering over points.
+;;
+;; **Cause**: Tooltip and brush interactivity use JavaScript that
+;; requires a compatible notebook viewer. Static HTML export or some
+;; viewers may not support it.
+;;
+;; **Fix**: Use [Clay](https://scicloj.github.io/clay/) or another
+;; Kindly-compatible tool that supports `kind/hiccup` with embedded
+;; scripts.
+
+(-> data/iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/options {:tooltip true}))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; ## Stale REPL After Editing Source
+;;
+;; **Symptom**: Changes to source files are not reflected in the REPL.
+;;
+;; **Cause**: Clojure namespaces are loaded once. The REPL does not
+;; automatically reload when files change.
+;;
+;; **Fix**: Use `:reload` when requiring namespaces:
+;;
+;; ```clojure
+;; (require '[scicloj.napkinsketch.api :as sk] :reload)
+;; ```
+
+;; ## Changing Number of Histogram Bins
+;;
+;; **Symptom**: The histogram has too many or too few bins.
+;;
+;; **Cause**: The default bin count is inferred from the data.
+;;
+;; **Fix**: Pass `:bins` in the layer options:
+
+(-> data/iris
+    (sk/lay-histogram :sepal_length {:bins 15}))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; ## Changing Line Thickness
+;;
+;; **Symptom**: Lines are too thin or too thick.
+;;
+;; **Fix**: Pass `:stroke-width` in the layer options:
+
+(-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
+    (sk/lay-line :x :y {:stroke-width 3}))
+
+(kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])

@@ -12,9 +12,7 @@
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
-   [scicloj.napkinsketch.api :as sk]
-   ;; Method constructors — for inspecting method maps
-   [scicloj.napkinsketch.method :as method]))
+   [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Data
 ;;
@@ -65,10 +63,15 @@ data/iris
 ;; dataset (`:data`) and the column mappings (`:x` and `:y`).
 ;; No rendering has happened yet — it is just a description.
 
+;; You can also pass column mappings as a map, which lets you include
+;; additional aesthetics like `:color`:
+
+(kind/pprint (sk/view data/iris {:x :sepal_length :y :sepal_width :color :species}))
+
 ;; ## Methods
 ;;
 ;; A **method** tells Napkinsketch *how* to turn data into a visual.
-;; It combines three concepts:
+;; It combines three concepts (each explained in detail below):
 ;;
 ;; - **mark** — what shape to draw (points, bars, lines)
 ;; - **stat** — what computation to perform first (use data as-is,
@@ -76,11 +79,11 @@ data/iris
 ;; - **position** — how overlapping groups share space (stack, dodge);
 ;;   defaults to identity (no adjustment) when omitted
 ;;
-;; `method/lookup` retrieves a method by keyword. Most methods only
+;; `sk/method-lookup` retrieves a method by keyword. Most methods only
 ;; store `:mark` and `:stat` — when `:position` is absent, identity
 ;; is assumed:
 
-(method/lookup :point)
+(sk/method-lookup :point)
 
 (kind/test-last [(fn [m] (and (= :point (:mark m))
                               (= :identity (:stat m))))])
@@ -90,11 +93,11 @@ data/iris
 ;; the method's keys merged in.
 
 (def view-with-method
-  (sk/lay my-view (method/lookup :point)))
+  (sk/lay my-view (sk/method-lookup :point)))
 
 (kind/pprint view-with-method)
 
-;; In practice you rarely call `sk/lay` and `method/lookup` separately.
+;; In practice you rarely call `sk/lay` and `sk/method-lookup` separately.
 ;; `sk/lay-point` combines both steps — it creates the method and adds
 ;; the layer in one call. You will use `sk/lay-point`,
 ;; `sk/lay-histogram`, and similar functions throughout the rest of
@@ -111,17 +114,21 @@ data/iris
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; What `sk/lay-point` returns is a **plot specification** — a lightweight
-;; wrapper around one or more views that auto-renders in
+;; What `sk/lay-point` returns is a **plot specification** (PlotSpec) — a
+;; lightweight wrapper around one or more views that auto-renders in
 ;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible tools
-;; like Clay. Under the hood, the rendering pipeline transforms
-;; views → sketch → membrane → SVG (see the
-;; [Architecture](architecture.html) chapter for the full trace).
+;; like Clay.
 
 (sk/plot-spec? (sk/lay-point data/iris :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (true? v))])
 
+;; Under the hood, auto-rendering transforms your views through
+;; several stages — computing layout, drawing shapes, producing SVG.
+;; The [Architecture](architecture.html) chapter traces every step;
+;; the [Glossary](glossary.html) defines terms like **sketch** (the
+;; intermediate data representation) and **membrane** (the drawable tree).
+;;
 ;; You can also step through the pipeline manually:
 ;; `sk/sketch` returns the intermediate data, and `sk/plot` returns
 ;; the final SVG.
@@ -142,6 +149,16 @@ data/iris
 ;;   palette, color scale, and more. These follow a layered precedence
 ;;   chain. See the [Configuration](configuration.html) chapter.
 
+;; Here is one option from each scope in a single pipeline:
+
+(-> data/iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.5}) ;; layer options
+    (sk/options {:title "Iris Measurements"                                ;; plot option
+                 :width 500 :palette :dark2}))                             ;; config options
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"Iris Measurements"} (:texts s)))))])
 ;; Data, view, and method — those are the minimal ingredients.
 ;; The next three sections unpack what each part of a method
 
@@ -154,7 +171,7 @@ data/iris
 ;; the *shape*. The `:histogram` method uses `:mark :bar` because a
 ;; histogram is drawn with bar shapes:
 
-(method/lookup :histogram)
+(sk/method-lookup :histogram)
 
 (kind/test-last [(fn [m] (= :bar (:mark m)))])
 
@@ -179,7 +196,7 @@ data/iris
 ;; The `:lm` method uses `:stat :lm` — it fits a straight line to
 ;; the data and returns a polyline of predicted values:
 
-(method/lookup :lm)
+(sk/method-lookup :lm)
 
 (kind/test-last [(fn [m] (= :lm (:stat m)))])
 
@@ -200,7 +217,7 @@ data/iris
 ;; (`:position :identity`). The `:stacked-bar` method includes
 ;; `:position :stack`, which places groups on top of each other:
 
-(method/lookup :stacked-bar)
+(sk/method-lookup :stacked-bar)
 
 (kind/test-last [(fn [m] (= :stack (:position m)))])
 
@@ -265,6 +282,16 @@ data/iris
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
+;; `sk/lay` also accepts annotation maps (`sk/rule-h`, `sk/band-v`,
+;; etc.) — see the [Customization](customization.html) chapter.
+
+;; ### When to use `sk/view`
+;;
+;; There are three common patterns:
+;;
+;; - **Quick single-layer plot** — `(sk/lay-point data :x :y)` — no `sk/view` needed
+;; - **Inferred method** — `(sk/view data :x :y)` — the library picks the chart type
+;; - **Shared aesthetics** — `(-> data (sk/view :x :y {:color :g}) sk/lay-point sk/lay-lm)` — all layers inherit
 ;; ## Incremental Building
 ;;
 ;; Because views are plain data, you can save a partial plot and

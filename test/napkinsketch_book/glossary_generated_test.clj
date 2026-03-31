@@ -144,7 +144,7 @@
 
 
 (def
- v39_l211
+ v39_l215
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width)
@@ -154,41 +154,41 @@
   count))
 
 
-(deftest t40_l216 (is ((fn [n] (= 3 n)) v39_l211)))
+(deftest t40_l220 (is ((fn [n] (= 3 n)) v39_l215)))
 
 
 (def
- v42_l225
+ v42_l229
  (let
   [p (first (:panels my-sketch))]
   {:x-domain (:x-domain p), :y-domain (:y-domain p)}))
 
 
 (deftest
- t43_l229
+ t43_l233
  (is
   ((fn
     [m]
     (and (= 2 (count (:x-domain m))) (number? (first (:x-domain m)))))
-   v42_l225)))
+   v42_l229)))
 
 
-(def v45_l275 (:mark (sk/rule-h 5)))
+(def v45_l279 (:mark (sk/rule-h 5)))
 
 
-(deftest t46_l277 (is ((fn [m] (= :rule-h m)) v45_l275)))
+(deftest t46_l281 (is ((fn [m] (= :rule-h m)) v45_l279)))
 
 
-(def v48_l286 (:legend my-sketch))
+(def v48_l290 (:legend my-sketch))
 
 
 (deftest
- t49_l288
- (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v48_l286)))
+ t49_l292
+ (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v48_l290)))
 
 
 (def
- v51_l297
+ v51_l301
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -202,40 +202,40 @@
   :panels))
 
 
-(deftest t52_l303 (is ((fn [n] (= 1 n)) v51_l297)))
+(deftest t52_l307 (is ((fn [n] (= 1 n)) v51_l301)))
 
 
-(def v54_l316 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v54_l320 (def my-membrane (sk/sketch->membrane my-sketch)))
 
 
-(def v55_l318 (vector? my-membrane))
+(def v55_l322 (vector? my-membrane))
 
 
-(deftest t56_l320 (is ((fn [v] (true? v)) v55_l318)))
+(deftest t56_l324 (is ((fn [v] (true? v)) v55_l322)))
 
 
-(def v57_l322 (count my-membrane))
+(def v57_l326 (count my-membrane))
 
 
-(deftest t58_l324 (is ((fn [n] (pos? n)) v57_l322)))
+(deftest t58_l328 (is ((fn [n] (pos? n)) v57_l326)))
 
 
-(def v60_l334 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v60_l338 (def my-figure (sk/sketch->figure my-sketch :svg {})))
 
 
-(def v61_l336 (first my-figure))
+(def v61_l340 (first my-figure))
 
 
-(deftest t62_l338 (is ((fn [v] (= :svg v)) v61_l336)))
+(deftest t62_l342 (is ((fn [v] (= :svg v)) v61_l340)))
 
 
-(def v64_l385 (count sk/plot-option-docs))
+(def v64_l389 (count sk/plot-option-docs))
 
 
-(deftest t65_l387 (is ((fn [n] (= 6 n)) v64_l385)))
+(deftest t65_l391 (is ((fn [n] (= 6 n)) v64_l389)))
 
 
-(def v67_l402 (count sk/layer-option-docs))
+(def v67_l406 (count sk/layer-option-docs))
 
 
-(deftest t68_l404 (is ((fn [n] (= 17 n)) v67_l402)))
+(deftest t68_l408 (is ((fn [n] (= 17 n)) v67_l406)))

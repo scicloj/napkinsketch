@@ -144,9 +144,9 @@
                 (carry-opts spec-or-views))))
 
 (defn labs
-  "Set axis labels on views. Keys: :x, :y.
-   For plot-level text (title, subtitle, caption), use sk/options instead.
-   (labs views {:x \"X Axis\" :y \"Y Axis\"})"
+  "DEPRECATED — use (sk/options {:x-label \"...\" :y-label \"...\"}) instead.
+   Set axis labels on views. Keys: :x, :y."
+  {:deprecated "0.2"}
   [spec-or-views label-opts]
   (->plot-spec (view/labs (extract-views spec-or-views) label-opts)
                (carry-opts spec-or-views)))
@@ -290,6 +290,11 @@
 
 ;; ---- Layer Functions ----
 
+(defn- col-ref?
+  "True if v is a column reference — keyword or string."
+  [v]
+  (or (keyword? v) (string? v)))
+
 (defn- lay-method
   "Internal dispatch for lay-X functions.
    `method-key` is a keyword that looks up defaults from the method registry.
@@ -303,24 +308,24 @@
    (let [extracted (extract-views spec-or-data)
          opts (carry-opts spec-or-data)]
      (if (view/views? extracted)
-       ;; PlotSpec/views: x-or-opts is keyword (column override) or map (opts)
-       (let [layer (if (keyword? x-or-opts)
+       ;; PlotSpec/views: x-or-opts is column ref (keyword/string) or map (opts)
+       (let [layer (if (col-ref? x-or-opts)
                      (assoc (method/lookup method-key) :x x-or-opts)
                      (merge (method/lookup method-key) x-or-opts))]
          (->plot-spec (view/lay extracted layer) opts))
-       ;; Raw data: x-or-opts is a column keyword or an opts map
+       ;; Raw data: x-or-opts is a column ref or an opts map
        (->plot-spec (-> extracted (view/view x-or-opts) (view/lay (method/lookup method-key)))))))
   ([method-key spec-or-data x y-or-opts]
    (let [extracted (extract-views spec-or-data)
          opts (carry-opts spec-or-data)]
      (if (view/views? extracted)
-       ;; PlotSpec/views: x is column, y-or-opts is column keyword or opts map
-       (let [layer (if (keyword? y-or-opts)
+       ;; PlotSpec/views: x is column, y-or-opts is column ref or opts map
+       (let [layer (if (col-ref? y-or-opts)
                      (assoc (method/lookup method-key) :x x :y y-or-opts)
                      (merge (method/lookup method-key) {:x x} y-or-opts))]
          (->plot-spec (view/lay extracted layer) opts))
        ;; Raw data
-       (if (keyword? y-or-opts)
+       (if (col-ref? y-or-opts)
          (do (when (:x-only (method/lookup method-key))
                (throw (ex-info (str "lay-" (name method-key) " uses only the x column; "
                                     ":y column " y-or-opts " is not supported. "

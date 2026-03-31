@@ -207,6 +207,10 @@
 ;;
 ;; - `sk/facet` creates a row or column of panels
 ;; - `sk/facet-grid` creates a row × column grid from two columns
+;;
+;; By default all panels share the same axis ranges. Use
+;; `(sk/options {:scales ...})` to allow panels to have independent
+;; ranges: `:shared` (default), `:free-x`, `:free-y`, or `:free`.
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width)

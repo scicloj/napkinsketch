@@ -995,11 +995,11 @@
       (is (= :flip (:coord panel))))))
 
 (deftest labs-test
-  (testing "axis labels propagate to sketch via labs"
+  (testing "axis labels propagate to sketch via options"
     (let [sk (-> tiny-ds
                  (sk/view :x :y)
                  sk/lay-point
-                 (sk/labs {:x "X Axis" :y "Y Axis"})
+                 (sk/options {:x-label "X Axis" :y-label "Y Axis"})
                  sk/sketch)]
       (is (= "X Axis" (:x-label sk)))
       (is (= "Y Axis" (:y-label sk)))))
@@ -1326,6 +1326,20 @@
                             #"not found in dataset"
                             (-> iris (sk/view :sepl_length :sepal_width)
                                 sk/lay-point sk/plot))))))
+
+(deftest string-column-in-lay-test
+  (testing "String column names in lay-point directly (no sk/view)"
+    (let [s (-> {"x" [1 2 3] "y" [4 5 6]}
+                (sk/lay-point "x" "y") sk/plot sk/svg-summary)]
+      (is (= 3 (:points s)))))
+  (testing "String column names in lay-line directly"
+    (let [s (-> {"x" [1 2 3] "y" [4 5 6]}
+                (sk/lay-line "x" "y") sk/plot sk/svg-summary)]
+      (is (= 1 (:lines s)))))
+  (testing "String column in lay-histogram directly"
+    (let [s (-> {"x" [1 2 3 4 5 6 7 8 9 10]}
+                (sk/lay-histogram "x") sk/plot sk/svg-summary)]
+      (is (pos? (:polygons s))))))
 
 (deftest named-color-test
   (testing "Named color strings work as fixed colors"

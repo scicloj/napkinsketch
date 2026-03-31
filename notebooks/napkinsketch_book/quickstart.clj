@@ -59,6 +59,14 @@
 
 ;; See the Core Concepts chapter for more input formats.
 
+;; String column names also work — keywords are conventional but not
+;; required:
+
+(-> {"x" [1 2 3 4 5] "y" [2 4 3 5 4]}
+    (sk/lay-point "x" "y"))
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
 ;; ## Color
 
 ;; Bind `:color` to a column to color points by group.
@@ -141,6 +149,18 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
+;; ## Boxplot
+;;
+;; A categorical column paired with a numerical column — use
+;; `sk/lay-boxplot` to compare distributions across groups:
+
+(-> iris
+    (sk/lay-boxplot :species :sepal_width))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:lines s)))))])
+
 ;; See the Inference Rules chapter for the full set of rules.
 
 ;; ## Multiple Layers
@@ -175,7 +195,26 @@
 
 ;; ## Next Steps
 ;;
-;; - Combine multiple plots into a dashboard with `sk/arrange`
-;;   (see the Cookbook)
-;; - Explore faceting, configuration, and customization in the
-;;   How-to Guides
+;; Combine multiple plots into a dashboard with `sk/arrange`:
+
+(sk/arrange [(sk/lay-point iris :sepal_length :sepal_width {:color :species})
+             (sk/lay-histogram iris :sepal_length {:color :species})]
+            {:cols 2})
+
+(kind/test-last [(fn [v] (vector? v))])
+
+;; Save a plot to SVG with `sk/save`:
+;;
+;; ```clojure
+;; (-> iris
+;;     (sk/lay-point :sepal_length :sepal_width)
+;;     (sk/save "my-plot.svg"))
+;; ```
+;;
+;; Explore the rest of the book:
+;;
+;; - **Core Concepts** — views, methods, layers, faceting
+;; - **Chart Types** — scatter plots, distributions, bar charts,
+;;   time series, polar charts
+;; - **How-to Guides** — faceting, configuration, customization,
+;;   and recipes for common tasks

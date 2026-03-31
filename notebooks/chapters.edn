@@ -13,7 +13,8 @@
  "🍳 How-to Guides" ["cookbook"
                       "configuration"
                       "customization"
-                      "faceting"]
+                      "faceting"
+                      "troubleshooting"]
  "📖 Reference" ["api_reference"]
  "🔬 Internals" ["exploring_sketches"
                   "architecture"
