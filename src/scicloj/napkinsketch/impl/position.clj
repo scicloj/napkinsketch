@@ -160,6 +160,12 @@
 
 ;; ---- Entry point ----
 
+(defmethod apply-position :default [position _]
+  (if (and (vector? position) (= :doc (second position)))
+    "(no description)"
+    (throw (ex-info (str "Position must be :dodge, :stack, :fill, or nil, got: " (pr-str position))
+                    {:position position}))))
+
 (defn apply-positions
   "Apply position adjustments to all layers in a panel.
    Groups layers by position type and applies adjustments per group.

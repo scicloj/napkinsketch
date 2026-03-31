@@ -398,14 +398,14 @@
 ;; grouping (`:group`), position adjustment (`:position`), and
 ;; method-specific parameters (`:bandwidth`, `:se`, `:normalize`, etc.).
 ;;
-;; Six keys are universal — accepted by every layer — and each method
+;; Four keys are universal — accepted by every layer — and each method
 ;; may accept additional keys. The [Methods](methods.html) chapter lists
 ;; which options each method accepts. See also `sk/layer-option-docs`
 ;; for descriptions, or inspect a specific method with `sk/method-lookup`.
 
 (count sk/layer-option-docs)
 
-(kind/test-last [(fn [n] (= 17 n))])
+(kind/test-last [(fn [n] (= 20 n))])
 
 ;; ## Tooltip and Brush
 ;;

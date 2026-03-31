@@ -420,10 +420,13 @@
       {:mark :contour :levels []}
       (let [{:keys [densities n-grid x-lo x-hi y-lo y-hi x-step y-step max-d]} grid
             n-levels (or (:levels view) 5)
-            ;; Threshold levels at evenly spaced fractions of max density
-            ;; Skip very low (< 10%) to avoid noise contours
-            thresholds (vec (for [i (range 1 (inc n-levels))]
-                              (* max-d (/ (double i) (inc n-levels)))))
+            ;; Threshold levels evenly spaced from 5% to 95% of max density.
+            ;; ggplot2 uses a similar approach via pretty() over the density
+            ;; range. Starting at 5% (not 0%) avoids noise contours at the
+            ;; very edge of the density falloff.
+            thresholds (vec (for [i (range n-levels)]
+                              (let [frac (+ 0.05 (* 0.9 (/ (double i) (max 1 (dec n-levels)))))]
+                                (* max-d frac))))
             levels (vec (for [threshold thresholds
                               :let [t (/ threshold max-d)
                                     segments (marching-squares-segments

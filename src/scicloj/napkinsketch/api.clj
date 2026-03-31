@@ -295,6 +295,19 @@
   [v]
   (or (keyword? v) (string? v)))
 
+(defn- warn-unknown-opts
+  "Warn when user-provided layer options contain unrecognized keys."
+  [method-key user-opts]
+  (when (map? user-opts)
+    (let [m (method/lookup method-key)
+          allowed (into #{} (concat method/universal-layer-options (:accepts m)))]
+      (doseq [k (keys user-opts)]
+        (when (and (keyword? k) (not (allowed k)))
+          (println (str "Warning: lay-" (name method-key)
+                        " does not recognize option " k
+                        ". Accepted options: "
+                        (sort allowed))))))))
+
 (defn- lay-method
   "Internal dispatch for lay-X functions.
    `method-key` is a keyword that looks up defaults from the method registry.
@@ -311,7 +324,8 @@
        ;; PlotSpec/views: x-or-opts is column ref (keyword/string) or map (opts)
        (let [layer (if (col-ref? x-or-opts)
                      (assoc (method/lookup method-key) :x x-or-opts)
-                     (merge (method/lookup method-key) x-or-opts))]
+                     (do (warn-unknown-opts method-key x-or-opts)
+                         (merge (method/lookup method-key) x-or-opts)))]
          (->plot-spec (view/lay extracted layer) opts))
        ;; Raw data: x-or-opts is a column ref or an opts map
        (->plot-spec (-> extracted (view/view x-or-opts) (view/lay (method/lookup method-key)))))))
@@ -322,7 +336,8 @@
        ;; PlotSpec/views: x is column, y-or-opts is column ref or opts map
        (let [layer (if (col-ref? y-or-opts)
                      (assoc (method/lookup method-key) :x x :y y-or-opts)
-                     (merge (method/lookup method-key) {:x x} y-or-opts))]
+                     (do (warn-unknown-opts method-key y-or-opts)
+                         (merge (method/lookup method-key) {:x x} y-or-opts)))]
          (->plot-spec (view/lay extracted layer) opts))
        ;; Raw data
        (if (col-ref? y-or-opts)
@@ -332,10 +347,12 @@
                                     "Use (lay-" (name method-key) " data " x ") instead.")
                                {:method method-key :x x :y y-or-opts})))
              (->plot-spec (-> spec-or-data (view/view x y-or-opts) (view/lay (method/lookup method-key)))))
-         (->plot-spec (-> spec-or-data (view/view x) (view/lay (merge (method/lookup method-key) y-or-opts))))))))
+         (do (warn-unknown-opts method-key y-or-opts)
+             (->plot-spec (-> spec-or-data (view/view x) (view/lay (merge (method/lookup method-key) y-or-opts)))))))))
   ([method-key spec-or-data x y opts]
    (let [extracted (extract-views spec-or-data)
          carry (carry-opts spec-or-data)]
+     (warn-unknown-opts method-key opts)
      (if (view/views? extracted)
        ;; PlotSpec/views: x, y columns + opts
        (->plot-spec (view/lay extracted (merge (method/lookup method-key) {:x x :y y} opts)) carry)

@@ -139,7 +139,7 @@
      "Description" (get method/layer-option-docs k)})})
 
 (kind/test-last
- [(fn [t] (= 6 (count (:row-maps t))))])
+ [(fn [t] (= 4 (count (:row-maps t))))])
 
 ;; ### Method-specific options
 ;;
@@ -169,4 +169,4 @@
      "Description" desc})})
 
 (kind/test-last
- [(fn [t] (= 17 (count (:row-maps t))))])
+ [(fn [t] (= 20 (count (:row-maps t))))])

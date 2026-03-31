@@ -112,7 +112,7 @@
      "Description" (get method/layer-option-docs k)})}))
 
 
-(deftest t19_l141 (is ((fn [t] (= 6 (count (:row-maps t)))) v18_l134)))
+(deftest t19_l141 (is ((fn [t] (= 4 (count (:row-maps t)))) v18_l134)))
 
 
 (def
@@ -143,4 +143,4 @@
     {"Option" (kind/code (pr-str k)), "Description" desc})}))
 
 
-(deftest t25_l171 (is ((fn [t] (= 17 (count (:row-maps t)))) v24_l164)))
+(deftest t25_l171 (is ((fn [t] (= 20 (count (:row-maps t)))) v24_l164)))

@@ -584,7 +584,7 @@ sk1
 
 (count sk/layer-option-docs)
 
-(kind/test-last [(fn [n] (= 17 n))])
+(kind/test-last [(fn [n] (= 20 n))])
 
 ;; ## Method Registry
 

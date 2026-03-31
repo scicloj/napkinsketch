@@ -147,7 +147,9 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__87291#] (Math/sin (* p1__87291# 0.3))) (range 30))}))
+   (map
+    (fn* [p1__108372#] (Math/sin (* p1__108372# 0.3)))
+    (range 30))}))
 
 
 (def v30_l107 (-> wave (sk/lay-line :x :y)))
@@ -257,9 +259,9 @@
     :y
     (map
      (fn*
-      [p1__87292#]
+      [p1__108373#]
       (+
-       (Math/sin (* p1__87292# 0.2))
+       (Math/sin (* p1__108373# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -980,7 +982,7 @@
 (def v209_l585 (count sk/layer-option-docs))
 
 
-(deftest t210_l587 (is ((fn [n] (= 17 n)) v209_l585)))
+(deftest t210_l587 (is ((fn [n] (= 20 n)) v209_l585)))
 
 
 (def v212_l591 (kind/doc #'sk/method-lookup))

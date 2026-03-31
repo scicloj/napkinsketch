@@ -238,4 +238,4 @@
 (def v67_l406 (count sk/layer-option-docs))
 
 
-(deftest t68_l408 (is ((fn [n] (= 17 n)) v67_l406)))
+(deftest t68_l408 (is ((fn [n] (= 20 n)) v67_l406)))

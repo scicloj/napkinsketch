@@ -551,13 +551,28 @@
          :x-domain categories
          :y-domain [y-min y-max]}))))
 
+(defn- quantile-r7
+  "R type 7 quantile (ggplot2/R default). Uses linear interpolation:
+   h = (n-1)*p + 1, Q = x[floor(h)] + (h - floor(h)) * (x[ceil(h)] - x[floor(h)]).
+   This matches R's quantile(x, p, type=7) and ggplot2's boxplot quartiles."
+  [sorted-arr p]
+  (let [n (alength sorted-arr)
+        h (+ (* (dec n) (double p)) 1.0)
+        lo-idx (max 0 (min (dec n) (dec (long (Math/floor h)))))
+        hi-idx (max 0 (min (dec n) (dec (long (Math/ceil h)))))
+        frac (- h (Math/floor h))]
+    (+ (aget sorted-arr lo-idx)
+       (* frac (- (aget sorted-arr hi-idx) (aget sorted-arr lo-idx))))))
+
 (defn- five-number-summary
   "Compute boxplot five-number summary for a numeric column.
+   Uses R type 7 quantiles (ggplot2/R default) for Q1, median, Q3.
    Returns {:median :q1 :q3 :whisker-lo :whisker-hi :outliers}."
   [col]
-  (let [q1 (stats/quantile col 0.25)
-        median (stats/quantile col 0.5)
-        q3 (stats/quantile col 0.75)
+  (let [sorted (double-array (sort col))
+        q1 (quantile-r7 sorted 0.25)
+        median (quantile-r7 sorted 0.5)
+        q3 (quantile-r7 sorted 0.75)
         iqr (- (double q3) (double q1))
         fence-lo (- (double q1) (* 1.5 iqr))
         fence-hi (+ (double q3) (* 1.5 iqr))
@@ -715,13 +730,17 @@
             n-grid (or (:kde2d-grid cfg) 25)
             x-step (/ (- x-hi x-lo) n-grid)
             y-step (/ (- y-hi y-lo) n-grid)
-            ;; Bandwidth: Silverman's rule per axis
+            ;; Bandwidth: Silverman's rule for 2D product-kernel KDE.
+            ;; h_j = sigma_j * n^(-1/6), matching the d=2 case of the general
+            ;; formula h = (4/(d+2))^(1/(d+4)) * sigma * n^(-1/(d+4)).
+            ;; ggplot2 uses MASS::bandwidth.nrd which is slightly different
+            ;; (Sheather-Jones plug-in), but Silverman-2D is a good default.
             bw-cfg (:kde2d-bandwidth cfg)
             x-std (stats/stddev xs)
             y-std (stats/stddev ys)
-            n-pow (Math/pow (double n) -0.2)
-            bw-x (if bw-cfg (first bw-cfg) (* 1.06 x-std n-pow))
-            bw-y (if bw-cfg (second bw-cfg) (* 1.06 y-std n-pow))
+            n-pow (Math/pow (double n) (/ -1.0 6.0))
+            bw-x (if bw-cfg (first bw-cfg) (* x-std n-pow))
+            bw-y (if bw-cfg (second bw-cfg) (* y-std n-pow))
             inv-bwx2 (/ 1.0 (* 2.0 bw-x bw-x))
             inv-bwy2 (/ 1.0 (* 2.0 bw-y bw-y))
             ;; Compute density at each grid cell center

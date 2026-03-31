@@ -215,7 +215,7 @@
    [r (rng/rng :jdk 99)]
    {:category
     (map
-     (fn* [p1__87922#] (keyword (str "cat-" p1__87922#)))
+     (fn* [p1__101496#] (keyword (str "cat-" p1__101496#)))
      (range 12)),
     :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))})
   (sk/lay-value-bar :category :value)))
@@ -257,7 +257,7 @@
  (->
   data/iris
   (tc/select-rows
-   (fn* [p1__87923#] (= "setosa" (p1__87923# :species))))
+   (fn* [p1__101497#] (= "setosa" (p1__101497# :species))))
   (sk/lay-point :sepal_length :sepal_width)
   sk/lay-lm
   (sk/options {:title "Setosa Only"})))
@@ -420,8 +420,8 @@
  v78_l315
  (->
   {:x (range 20),
-   :y (map (fn* [p1__87924#] (- p1__87924# 10)) (range 20)),
-   :val (map (fn* [p1__87925#] (- p1__87925# 10.0)) (range 20))}
+   :y (map (fn* [p1__101498#] (- p1__101498# 10)) (range 20)),
+   :val (map (fn* [p1__101499#] (- p1__101499# 10.0)) (range 20))}
   (sk/lay-point :x :y {:color :val})
   (sk/options {:color-scale :diverging, :color-midpoint 0})))
 
@@ -450,11 +450,11 @@
   {:time
    (dt-dt/plus-temporal-amount
     (dtype/const-reader (jt/local-date-time 2025 3 15 8 0) 24)
-    (map (fn* [p1__87926#] (* (long p1__87926#) 15)) (range 24))
+    (map (fn* [p1__101500#] (* (long p1__101500#) 15)) (range 24))
     :minutes),
    :value
    (map
-    (fn* [p1__87927#] (+ 18.0 (* 4.0 (Math/sin (* p1__87927# 0.3)))))
+    (fn* [p1__101501#] (+ 18.0 (* 4.0 (Math/sin (* p1__101501# 0.3)))))
     (range 24))}
   (sk/lay-line :time :value)
   sk/lay-point))
@@ -481,7 +481,7 @@
     :hours),
    :temp
    (map
-    (fn* [p1__87928#] (+ 20.0 (* 5.0 (Math/sin (* p1__87928# 0.5)))))
+    (fn* [p1__101502#] (+ 20.0 (* 5.0 (Math/sin (* p1__101502# 0.5)))))
     (range 12))}
   (sk/lay-line :time :temp)
   sk/lay-point))
@@ -498,7 +498,7 @@
       (= 12 (:points s))
       (= 1 (:lines s))
       (some
-       (fn* [p1__87929#] (re-find #":\d\d" p1__87929#))
+       (fn* [p1__101503#] (re-find #":\d\d" p1__101503#))
        (:texts s)))))
    v87_l356)))
 
@@ -509,11 +509,11 @@
   {:date
    (dt-dt/plus-temporal-amount
     (dtype/const-reader (jt/local-date 2020 1 1) 20)
-    (map (fn* [p1__87930#] (* (long p1__87930#) 120)) (range 20))
+    (map (fn* [p1__101504#] (* (long p1__101504#) 120)) (range 20))
     :days),
    :value
    (map
-    (fn* [p1__87931#] (+ 100 (* 50 (Math/sin (* p1__87931# 0.4)))))
+    (fn* [p1__101505#] (+ 100 (* 50 (Math/sin (* p1__101505# 0.4)))))
     (range 20))}
   (sk/lay-line :date :value)
   sk/lay-point))
@@ -533,7 +533,7 @@
 (def
  v93_l387
  (->
-  {:cat (map (fn* [p1__87932#] (str "cat-" p1__87932#)) (range 12)),
+  {:cat (map (fn* [p1__101506#] (str "cat-" p1__101506#)) (range 12)),
    :val (repeatedly 12 (fn* [] (rand-int 100)))}
   (sk/lay-value-bar :cat :val)
   (sk/coord :polar)))
@@ -580,7 +580,7 @@
       (:texts s)
       strip-labels
       (filter
-       (fn* [p1__87933#] (re-find #"sepal|petal" p1__87933#))
+       (fn* [p1__101507#] (re-find #"sepal|petal" p1__101507#))
        texts)]
      (and (= 9 (:panels s)) (= 6 (count strip-labels)))))
    v99_l409)))
