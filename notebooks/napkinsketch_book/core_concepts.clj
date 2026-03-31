@@ -7,6 +7,8 @@
 
 (ns napkinsketch-book.core-concepts
   (:require
+   ;; Tablecloth — dataset manipulation
+   [tablecloth.api :as tc]
    ;; Shared datasets for these docs
    [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
@@ -24,11 +26,12 @@
 ;; [Tablecloth](https://scicloj.github.io/tablecloth/) API.
 ;;
 ;; We use the classic iris flower dataset throughout these examples.
-;; It is loaded in the Datasets chapter and available as `data/iris`.
+;; It is loaded in the [Datasets](./napkinsketch_book.datasets.html)
+;; chapter and available as `data/iris`.
 
 data/iris
 
-(kind/test-last [(fn [ds] (= 150 (count (tablecloth.api/rows ds))))])
+(kind/test-last [(fn [ds] (= 150 (count (tc/rows ds))))])
 
 ;; The dataset has 150 rows and 5 columns. Four columns are
 ;; **numerical** (measurements in centimeters) and one is
@@ -37,15 +40,55 @@ data/iris
 ;; This distinction matters: Napkinsketch treats numerical and
 ;; categorical columns differently when choosing axes, colors, and
 ;; statistical transforms.
+
+;; ### Input formats
 ;;
-;; You can also pass data as a plain Clojure map of columns —
-;; Napkinsketch coerces it to a dataset internally:
+;; You do not need to construct a Tablecloth dataset explicitly.
+;; Napkinsketch accepts several common Clojure data shapes and
+;; coerces them into a dataset internally.
+;;
+;; **Map of columns** — keys are column names, values are sequences:
 
 (-> {:x [1 2 3 4 5]
      :y [2 4 3 5 4]}
     (sk/lay-point :x :y))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
+;; **Sequence of row maps** — each map is one row. Missing keys
+;; become nil:
+
+(-> [{:city "Paris" :temperature 22}
+     {:city "London" :temperature 18}
+     {:city "Berlin" :temperature 20}
+     {:city "Rome" :temperature 28}]
+    (sk/lay-value-bar :city :temperature))
+
+(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
+
+;; **Tablecloth dataset** — use `tc/dataset` to load from a URL or
+;; file, or to create a dataset from any of the formats above. The
+;; `:key-fn keyword` option converts string column headers to keywords:
+
+(-> (tc/dataset {:product ["Apples" "Bananas" "Cherries"]
+                 :sales [120 85 200]})
+    (sk/lay-value-bar :product :sales))
+
+(kind/test-last [(fn [v] (= 3 (:polygons (sk/svg-summary v))))])
+
+;; `tc/dataset` also reads CSV, TSV, JSON, Parquet, and other file
+;; formats directly from local paths or URLs — see the
+;; [Tablecloth documentation](https://scicloj.github.io/tablecloth/)
+;; for the full list.
+;;
+;; **Sequence of sequences** — each inner sequence is a row. Pass
+;; column names explicitly since there are no keys:
+
+(-> (tc/dataset [[1 10] [2 20] [3 15] [4 25]]
+                {:column-names [:x :y]})
+    (sk/lay-line :x :y))
+
+(kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
 
 ;; ## Views
 ;;
