@@ -148,6 +148,11 @@
   "Apply one or more methods to views. Additive: calling lay on
    already-layered views appends new methods rather than overwriting."
   [base-views & layer-specs]
+  (doseq [spec layer-specs]
+    (when-not (map? spec)
+      (throw (ex-info (str "Layer spec must be a map, got: " (type spec)
+                           ". Use lay-point, lay-line, etc. to add layers.")
+                      {:spec spec}))))
   (let [ann-specs (filter #(and (map? %) (annotation-marks (:mark %))) layer-specs)
         data-specs (remove #(and (map? %) (annotation-marks (:mark %))) layer-specs)
         ;; Separate existing annotations from data views
