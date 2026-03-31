@@ -181,6 +181,9 @@
 (defn coord
   "Set coordinate system on views."
   [views c]
+  (when-not (#{:cartesian :flip :polar :fixed} c)
+    (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " (pr-str c))
+                    {:coord c})))
   (mapv #(assoc % :coord c) views))
 
 (defn labs
@@ -469,6 +472,9 @@
 (defn scale
   "Set scale options for :x or :y across all views."
   ([views channel type-or-opts]
+   (when-not (#{:x :y} channel)
+     (throw (ex-info (str "Scale channel must be :x or :y, got: " (pr-str channel))
+                     {:channel channel})))
    (if (map? type-or-opts)
      (scale views channel (or (:type type-or-opts) :linear) (dissoc type-or-opts :type))
      (scale views channel type-or-opts {})))

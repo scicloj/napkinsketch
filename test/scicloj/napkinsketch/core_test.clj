@@ -1399,3 +1399,44 @@
                                                       (sk/lay-point :x :y {:color :c})))
                                      {:color-scale :totally-bogus})))))
 
+(deftest validation-test
+  (testing "numeric faceting produces correct panels"
+    (is (= 3 (-> {:x [1 2 3 4 5 6] :y [10 20 30 40 50 60]
+                  :f [1.0 1.0 2.0 2.0 3.0 3.0]}
+                 (sk/lay-point :x :y) (sk/facet :f) sk/sketch :panels count)))
+    (is (= 3 (-> {:x [1 2 3 4 5 6] :y [10 20 30 40 50 60]
+                  :s ["a" "a" "b" "b" "c" "c"]}
+                 (sk/lay-point :x :y) (sk/facet :s) sk/sketch :panels count))))
+
+  (testing "histogram on categorical column throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
+                          (-> {:x ["a" "b" "c"]} (sk/lay-histogram :x) sk/sketch))))
+
+  (testing "lm on categorical x throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
+                          (-> {:species ["a" "b" "c"] :y [1 2 3]}
+                              (sk/lay-lm :species :y) sk/sketch))))
+
+  (testing "loess on categorical x throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
+                          (-> {:species ["a" "b" "c" "d"] :y [1 2 3 4]}
+                              (sk/lay-loess :species :y) sk/sketch))))
+
+  (testing "errorbar without ymin/ymax throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ymin.*ymax"
+                          (-> {:x ["a" "b" "c"] :y [1 2 3]}
+                              (sk/lay-errorbar :x :y) sk/sketch))))
+
+  (testing "text without :text column throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"text"
+                          (-> {:x [1 2 3] :y [10 20 30]}
+                              (sk/lay-text :x :y) sk/sketch))))
+
+  (testing "scale channel validation"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Scale channel"
+                          (sk/scale [] :z :log))))
+
+  (testing "coord validation"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Coordinate"
+                          (sk/coord [] :invalid)))))
+

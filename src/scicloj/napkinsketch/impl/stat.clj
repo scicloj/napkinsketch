@@ -119,6 +119,7 @@
 ;; ---- Binning ----
 
 (defmethod compute-stat :bin [{:keys [data x x-type group cfg normalize] :as view}]
+  (validate-numeric-column view :x :bin)
   (let [clean (cond-> (tc/drop-missing data [x])
                 (= x-type :categorical) (tc/map-columns x [x] str))
         xs-col (clean x)]
@@ -244,9 +245,10 @@
      :x1 x-min :y1 (regr/predict model [x-min])
      :x2 x-max :y2 (regr/predict model [x-max])}))
 
-(defmethod compute-stat :lm [view]
-  (let [{:keys [data x y group cfg]} view
-        se (:se view)
+(defmethod compute-stat :lm [{:keys [data x y group cfg] :as view}]
+  (validate-numeric-column view :x :lm)
+  (validate-numeric-column view :y :lm)
+  (let [se (:se view)
         level (or (:level view) 0.95)
         n-grid (or (:se-n-grid (or cfg defaults/defaults)) 80)
         clean (tc/drop-missing data [x y])
@@ -397,9 +399,10 @@
                     (range n-grid))]
     {:xs grid-xs :ys grid-ys :ymins ymins :ymaxs ymaxs}))
 
-(defmethod compute-stat :loess [view]
-  (let [{:keys [data x y group cfg]} view
-        se (:se view)
+(defmethod compute-stat :loess [{:keys [data x y group cfg] :as view}]
+  (validate-numeric-column view :x :loess)
+  (validate-numeric-column view :y :loess)
+  (let [se (:se view)
         level (or (:level view) 0.95)
         n-boot (or (:se-boot view) 200)
         clean (tc/drop-missing data [x y])
@@ -615,6 +618,7 @@
 ;; ---- Summary (mean ± SE per category) ----
 
 (defmethod compute-stat :summary [{:keys [data x y x-type group] :as view}]
+  (validate-numeric-column view :y :summary)
   (let [clean (cond-> (tc/drop-missing data [x y])
                 (= x-type :categorical) (tc/map-columns x [x] str))
         categories (distinct (clean x))]
@@ -647,6 +651,8 @@
          :y-domain [y-min y-max]}))))
 
 (defmethod compute-stat :bin2d [{:keys [data x y cfg] :as view}]
+  (validate-numeric-column view :x :bin2d)
+  (validate-numeric-column view :y :bin2d)
   (let [cfg (or cfg defaults/defaults)
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)]

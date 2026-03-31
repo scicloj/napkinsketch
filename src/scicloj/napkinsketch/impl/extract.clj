@@ -53,14 +53,25 @@
      :with-range? — include :ymins/:ymaxs (errorbar, pointrange)
      :with-labels? — include :labels from :labels key (text, label marks)"
   [view stat all-colors cfg & {:keys [with-range? with-labels?]}]
-  (vec
-   (for [{:keys [color xs ys ymins ymaxs labels]} (:points stat)]
-     (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
-              :xs xs :ys ys}
-       (some? color) (assoc :label (str color))
-       (and with-range? ymins) (assoc :ymins ymins)
-       (and with-range? ymaxs) (assoc :ymaxs ymaxs)
-       (and with-labels? labels) (assoc :labels (mapv str labels))))))
+  (let [groups (vec
+                (for [{:keys [color xs ys ymins ymaxs labels]} (:points stat)]
+                  (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                           :xs xs :ys ys}
+                    (some? color) (assoc :label (str color))
+                    (and with-range? ymins) (assoc :ymins ymins)
+                    (and with-range? ymaxs) (assoc :ymaxs ymaxs)
+                    (and with-labels? labels) (assoc :labels (mapv str labels)))))]
+    (when (and with-range? (seq groups)
+               (not-any? :ymins groups))
+      (throw (ex-info (str "errorbar/pointrange requires :ymin and :ymax columns. "
+                           "Pass them as options: (sk/lay-errorbar :x :y {:ymin :lo :ymax :hi})")
+                      {:mark (:mark view)})))
+    (when (and with-labels? (seq groups)
+               (not-any? :labels groups))
+      (throw (ex-info (str "text/label mark requires a :text column. "
+                           "Pass it as an option: (sk/lay-text :x :y {:text :label-column})")
+                      {:mark (:mark view)})))
+    groups))
 
 ;; ---- Geometry Extraction (stat → layer descriptors) ----
 

@@ -338,8 +338,8 @@
           cvs (or (seq facet-col-vals) ["_"])]
       (for [[ri rv] (map-indexed vector rvs)
             [ci cv] (map-indexed vector cvs)]
-        {:views (filterv #(and (= (or (:facet-row %) "_") (str rv))
-                               (= (or (:facet-col %) "_") (str cv)))
+        {:views (filterv #(and (= (or (:facet-row %) "_") rv)
+                               (= (or (:facet-col %) "_") cv))
                          non-ann-views)
          :row ri :col ci
          :row-label (when (not= rv "_") (str rv))
