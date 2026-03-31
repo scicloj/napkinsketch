@@ -20,7 +20,10 @@
 ;;
 ;; A **dataset** is a table of rows and columns — like a spreadsheet.
 ;; Each column has a name (a keyword like `:sepal_length`) and holds
-;; values of one type.
+;; values of one type. Napkinsketch uses
+;; [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset)
+;; as its columnar data representation, typically through the
+;; [Tablecloth](https://scicloj.github.io/tablecloth/) API.
 ;;
 ;; We use the classic iris flower dataset throughout these examples.
 ;; It is loaded in the Datasets chapter and available as `data/iris`.
