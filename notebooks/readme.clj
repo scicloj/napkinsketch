@@ -38,15 +38,21 @@
 ;; Scatter plot with color grouping:
 
 (-> iris
+    ;; scatterplot layer: 
     (sk/lay-point :sepal_length :sepal_width {:color :species})
+    ;; eager rendering (usually not needed):
     sk/plot)
 
 ;; Multiple layers — shared aesthetics via `sk/view`:
 
 (-> iris
+    ;; aesthetics shared across layers: 
     (sk/view :sepal_length :sepal_width {:color :species})
+    ;; scatterplot layer: 
     sk/lay-point
+    ;; linear model layer:
     sk/lay-lm
+    ;; eager rendering (usually not needed):
     sk/plot)
 
 ;; ## Documentation
