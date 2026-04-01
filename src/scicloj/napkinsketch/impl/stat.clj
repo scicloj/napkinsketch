@@ -100,14 +100,14 @@
 (defmethod compute-stat [:identity :doc] [_] "Pass-through — no transform")
 (defmethod compute-stat [:bin :doc] [_] "Bin numerical values into ranges")
 (defmethod compute-stat [:count :doc] [_] "Count occurrences per category")
-(defmethod compute-stat [:lm :doc] [_] "Linear regression (OLS fit + confidence band)")
-(defmethod compute-stat [:loess :doc] [_] "LOESS local regression")
-(defmethod compute-stat [:kde :doc] [_] "1D kernel density estimation")
+(defmethod compute-stat [:lm :doc] [_] "Linear model (lm) — OLS regression line + optional confidence band")
+(defmethod compute-stat [:loess :doc] [_] "LOESS (local regression) smoothing")
+(defmethod compute-stat [:kde :doc] [_] "KDE (kernel density estimation) — 1D")
 (defmethod compute-stat [:boxplot :doc] [_] "Five-number summary + outliers")
 (defmethod compute-stat [:violin :doc] [_] "KDE per category (density profile)")
 (defmethod compute-stat [:summary :doc] [_] "Mean ± standard error per category")
 (defmethod compute-stat [:bin2d :doc] [_] "2D grid binning (heatmap counts)")
-(defmethod compute-stat [:kde2d :doc] [_] "2D Gaussian KDE (smooth density)")
+(defmethod compute-stat [:kde2d :doc] [_] "2D Gaussian KDE (kernel density estimation)")
 
 (defmethod compute-stat :identity [{:keys [mark x y x-type] :as view}]
   (when (and (#{:lollipop :errorbar :pointrange} mark)

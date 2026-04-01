@@ -143,14 +143,6 @@
    (->plot-spec (view/scale (extract-views spec-or-views) channel type opts)
                 (carry-opts spec-or-views))))
 
-(defn labs
-  "DEPRECATED — use (sk/options {:x-label \"...\" :y-label \"...\"}) instead.
-   Set axis labels on views. Keys: :x, :y."
-  {:deprecated "0.2"}
-  [spec-or-views label-opts]
-  (->plot-spec (view/labs (extract-views spec-or-views) label-opts)
-               (carry-opts spec-or-views)))
-
 (defn options
   "Set plot-level options on a plot specification.
    Options are deep-merged — nested maps like :theme are merged recursively.

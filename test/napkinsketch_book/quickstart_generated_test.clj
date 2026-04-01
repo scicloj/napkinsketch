@@ -153,7 +153,7 @@
 
 
 (def
- v40_l166
+ v40_l167
  (->
   iris
   (sk/view :sepal_length :sepal_width {:color :species})
@@ -162,18 +162,18 @@
 
 
 (deftest
- t41_l171
+ t41_l172
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v40_l166)))
+   v40_l167)))
 
 
 (def
- v43_l179
+ v43_l180
  (->
   iris
   (sk/lay-point :petal_length :petal_width {:color :species})
@@ -186,7 +186,7 @@
 
 
 (deftest
- t44_l186
+ t44_l187
  (is
   ((fn
     [v]
@@ -196,15 +196,15 @@
       (= 150 (:points s))
       (some #{"Iris Petals"} (:texts s))
       (some #{"Petal Length (cm)"} (:texts s)))))
-   v43_l179)))
+   v43_l180)))
 
 
 (def
- v46_l195
+ v46_l196
  (sk/arrange
   [(sk/lay-point iris :sepal_length :sepal_width {:color :species})
    (sk/lay-histogram iris :sepal_length {:color :species})]
   {:cols 2}))
 
 
-(deftest t47_l199 (is ((fn [v] (vector? v)) v46_l195)))
+(deftest t47_l200 (is ((fn [v] (vector? v)) v46_l196)))

@@ -64,7 +64,7 @@ tiny-sk
 ;; ### The panel
 ;;
 ;; The sketch contains one or more panels. A simple plot has one panel;
-;; faceting and SPLOM produce multiple. Each panel holds its own data space:
+;; faceting and SPLOM (scatter plot matrix) produce multiple. Each panel holds its own data space:
 
 (def tiny-panel (first (:panels tiny-sk)))
 

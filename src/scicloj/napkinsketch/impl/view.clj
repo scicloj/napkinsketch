@@ -186,16 +186,6 @@
                     {:coord c})))
   (mapv #(assoc % :coord c) views))
 
-(defn labs
-  "Set axis labels on views. Keys: :x, :y.
-   For plot-level text (title, subtitle, caption), use sk/options instead.
-   (labs views {:x \"X Axis\" :y \"Y Axis\"})"
-  [views label-opts]
-  (let [m (cond-> {}
-            (:x label-opts) (assoc :x-label (:x label-opts))
-            (:y label-opts) (assoc :y-label (:y label-opts)))]
-    (mapv #(merge % m) views)))
-
 ;; ---- Annotation Constructors ----
 
 (defn rule-v

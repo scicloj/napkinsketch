@@ -348,7 +348,7 @@ fixed-color-views
 ;; ### What grouping affects
 ;;
 ;; Grouping determines how statistical transformations operate.
-;; Without grouping, `sk/lay-lm` fits one regression line through
+;; Without grouping, `sk/lay-lm` (linear model) fits one regression line through
 ;; all the data. With grouping, it fits one line per group.
 
 ;; One regression line — no grouping:
@@ -685,7 +685,7 @@ count-views
 ;;
 ;; - Single panel → `:single`
 ;; - Facet grid (`:facet-row` or `:facet-col`) → `:facet-grid`
-;; - Multiple x-y pairs (SPLOM) → `:multi-variable`
+;; - Multiple x-y pairs (scatter plot matrix) → `:multi-variable`
 
 (let [sk (sk/sketch scatter-views)]
   (:layout-type sk))

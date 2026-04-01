@@ -425,7 +425,7 @@
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |
 ;; | Group | Subset of data drawn together (from `:color` or `:group`) | Created during stat computation |
-;; | Stat | Data transform: identity, bin, count, lm, kde, etc. | Computed during sketch resolution |
+;; | Stat | Data transform: identity, bin, count, lm (linear model), kde (kernel density), etc. | Computed during sketch resolution |
 ;; | Position | How groups share space: dodge, stack, fill, identity | Applied between stat and rendering |
 ;; | Nudge | Constant data-space offset (`:nudge-x`, `:nudge-y`) | Applied during layer extraction |
 ;; | Jitter | Random pixel offset to reduce overplotting | Applied at render time |

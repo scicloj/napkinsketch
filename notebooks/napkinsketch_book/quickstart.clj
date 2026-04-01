@@ -161,7 +161,8 @@
 ;; ## Multiple Layers
 ;;
 ;; Use `sk/view` to set shared column mappings, then
-;; add layers with `sk/lay-*`. All layers inherit the view's mappings:
+;; add layers with `sk/lay-*`. All layers inherit the view's mappings.
+;; Here `sk/lay-lm` adds a linear model (regression line) per group:
 
 (-> iris
     (sk/view :sepal_length :sepal_width {:color :species})

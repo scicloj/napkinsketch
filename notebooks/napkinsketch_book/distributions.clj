@@ -113,7 +113,7 @@
 
 ;; ## Boxplot
 
-;; Median, quartiles, whiskers at 1.5×IQR, and outlier points.
+;; Median, quartiles, whiskers at 1.5×IQR (interquartile range), and outlier points.
 
 (-> data/iris
     (sk/lay-boxplot :species :sepal_width))

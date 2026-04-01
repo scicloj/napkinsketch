@@ -36,7 +36,7 @@
 
 ;; ### Histogram with density overlay
 ;;
-;; Normalize the histogram to density scale so it is comparable with the KDE curve.
+;; Normalize the histogram to density scale so it is comparable with the KDE (kernel density estimation) curve.
 
 (-> data/iris
     (sk/lay-histogram :sepal_length {:normalize :density :alpha 0.5})
@@ -184,9 +184,9 @@
                            (and (= 4 (:points s))
                                 (= 16 (:lines s)))))])
 
-;; ### Summary (Mean ± SE) with raw data
+;; ### Summary (Mean ± SE) with Raw Data
 ;;
-;; The `summary` mark computes mean and standard error per category.
+;; The `summary` method computes mean and SE (standard error) per category.
 
 (-> data/iris
     (sk/lay-point :species :sepal_length {:alpha 0.3 :jitter 5})
@@ -340,7 +340,7 @@
                            (and (= 1 (:panels s))
                                 (= 20 (:points s)))))])
 
-;; ### LOESS confidence ribbon
+;; ### LOESS (Local Regression) Confidence Ribbon
 ;;
 ;; Add `{:se true}` to a LOESS smoother for a bootstrap confidence band.
 

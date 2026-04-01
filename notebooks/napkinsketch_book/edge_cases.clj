@@ -247,7 +247,7 @@
 ;; ### Confidence ribbon — small n
 
 ;; Linear regression with se=true on exactly 3 points
-;; (minimum for lm).
+;; (minimum for lm — linear model).
 
 (-> {:x [1 2 3] :y [2 4 5]}
     (sk/lay-point :x :y)

@@ -68,7 +68,7 @@
 ;;
 ;; A **mark** is the visual shape drawn for each data point or group.
 ;; Several methods may share the same mark — for instance, `histogram`
-;; and `value-bar` both draw bars, and `lm` and `loess` both draw lines.
+;; and `value-bar` both draw bars, and `lm` (linear model) and `loess` (local regression) both draw lines.
 
 (kind/table
  {:column-names ["Mark" "Shape" "Used by"]

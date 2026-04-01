@@ -23,7 +23,7 @@
    :shape "Column keyword for per-point shape"
    :jitter "true or pixel amount — random offset to reduce overplotting"
    :text "Column keyword for label content"
-   :se "true to show confidence ribbon around fitted line"
+   :se "true to show SE (standard error) confidence ribbon around fitted line"
    :se-boot "Number of bootstrap resamples for LOESS confidence ribbon (default 200)"
    :bandwidth "Smoothing bandwidth for density and LOESS methods"
    :normalize "Histogram normalization — :density (area integrates to 1) or nil"
@@ -79,11 +79,11 @@
 (register! :stacked-bar {:mark :rect :stat :count :position :stack :x-only true :accepts [] :doc "Stacked bar — counts categorical values, stacked."})
 (register! :stacked-bar-fill {:mark :rect :stat :count :position :fill :x-only true :accepts [] :doc "Percentage stacked bar — proportions sum to 1.0."})
 (register! :value-bar {:mark :rect :stat :identity :accepts [] :doc "Value bar — categorical x with pre-computed y."})
-(register! :lm {:mark :line :stat :lm :accepts [:se :size :nudge-x :nudge-y] :doc "Linear regression — OLS fit line."})
-(register! :loess {:mark :line :stat :loess :accepts [:se :se-boot :bandwidth :size :nudge-x :nudge-y] :doc "LOESS — local regression smoothing."})
-(register! :density {:mark :area :stat :kde :x-only true :accepts [:bandwidth] :doc "Density — kernel density estimation as filled area."})
+(register! :lm {:mark :line :stat :lm :accepts [:se :size :nudge-x :nudge-y] :doc "Linear model (lm) — ordinary least squares (OLS) regression line."})
+(register! :loess {:mark :line :stat :loess :accepts [:se :se-boot :bandwidth :size :nudge-x :nudge-y] :doc "LOESS (local regression) — smooth curve fitted to nearby data."})
+(register! :density {:mark :area :stat :kde :x-only true :accepts [:bandwidth] :doc "Density — KDE (kernel density estimation) as filled area."})
 (register! :tile {:mark :tile :stat :bin2d :accepts [:fill :kde2d-grid] :doc "Tile/heatmap — 2D grid binning."})
-(register! :density2d {:mark :tile :stat :kde2d :accepts [:kde2d-grid] :doc "2D density — KDE-smoothed heatmap."})
+(register! :density2d {:mark :tile :stat :kde2d :accepts [:kde2d-grid] :doc "2D density — kernel density estimation (KDE) smoothed heatmap."})
 (register! :contour {:mark :contour :stat :kde2d :accepts [:levels :size] :doc "Contour — iso-density contour lines."})
 (register! :boxplot {:mark :boxplot :stat :boxplot :accepts [:size] :doc "Boxplot — median, quartiles, whiskers, outliers."})
 (register! :violin {:mark :violin :stat :violin :accepts [:bandwidth :size] :doc "Violin — mirrored density curve per category."})

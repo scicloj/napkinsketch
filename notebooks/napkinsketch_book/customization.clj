@@ -318,7 +318,7 @@
 (kind/test-last [(fn [v] (= :div (first (sk/plot v))))])
 
 ;; Brushing becomes especially useful in a scatter plot matrix
-;; (SPLOM). Drag to select points in any panel — the selection
+;; (SPLOM — scatter plot matrix). Drag to select points in any panel — the selection
 ;; highlights across all panels, revealing multivariate structure.
 
 (def splom-cols [:sepal_length :sepal_width :petal_length :petal_width])

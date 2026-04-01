@@ -107,7 +107,7 @@ data/iris
 ;; No rendering has happened yet — it is just a description.
 
 ;; You can also pass column mappings as a map, which lets you include
-;; additional aesthetics like `:color`:
+;; additional visual mappings like `:color`:
 
 (kind/pprint (sk/view data/iris {:x :sepal_length :y :sepal_width :color :species}))
 
@@ -234,7 +234,7 @@ data/iris
 ;; the data; the mark renders the result. Together, `:stat :bin` and
 ;; `:mark :bar` produce the familiar histogram shape.
 ;;
-;; The `:lm` method uses `:stat :lm` — it fits a straight line to
+;; The `:lm` (linear model) method uses `:stat :lm` — it fits a straight line to
 ;; the data and returns a polyline of predicted values:
 
 (sk/method-lookup :lm)
@@ -299,7 +299,7 @@ data/iris
 ;; the same axes. Each `sk/lay-X` call adds one layer; thread them and they are
 ;; drawn together, each contributing its own visual element.
 ;;
-;; Here we add a linear regression line (`sk/lay-lm`) on top of the
+;; Here we add a linear model regression line (`sk/lay-lm`) on top of the
 ;; scatter points. A regression line is a straight line fitted to
 ;; the data — it shows the overall trend.
 
@@ -312,7 +312,7 @@ data/iris
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Or with a LOESS smoother — a flexible curve that follows local
+;; Or with a [LOESS](https://en.wikipedia.org/wiki/Local_regression) (local regression) smoother — a flexible curve that follows local
 ;; trends instead of fitting a straight line:
 
 (-> data/iris
@@ -428,7 +428,7 @@ data/iris
 ;; **groups**. Each group is processed independently: it gets its
 ;; own regression line, density curve, or bar.
 ;;
-;; Compare: without `:color`, `sk/lay-lm` fits one line to all the data:
+;; Compare: without `:color`, `sk/lay-lm` (linear model) fits one line to all the data:
 
 (-> data/iris
     (sk/view :sepal_length :sepal_width)

@@ -435,7 +435,7 @@
 (defn- resolve-labels
   "Resolve effective title and axis labels.
    Title comes from opts only; axis labels fall back to view-level :x-label/:y-label
-   (set via sk/labs), then scale :label, then auto-inferred column name."
+   (set via sk/options), then scale :label, then auto-inferred column name."
   [non-ann-views x-vars y-vars x-scale-spec y-scale-spec
    title x-label y-label auto-label?]
   (let [view-x-label (:x-label (first non-ann-views))
