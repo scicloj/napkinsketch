@@ -3,7 +3,7 @@
 ;; Napkinsketch has three kinds of options:
 ;;
 ;; - **Layer options** control individual layers — aesthetics like `:color`,
-;;   statistical parameters like `:bandwidth`. See the [Methods](methods.html) chapter.
+;;   statistical parameters like `:bandwidth`. See the [Methods](./napkinsketch_book.methods.html) chapter.
 ;;
 ;; - **Plot options** set per-plot text — `:title`, `:subtitle`, `:caption`, axis labels.
 ;;

@@ -168,8 +168,8 @@ data/iris
 
 ;; Under the hood, auto-rendering transforms your views through
 ;; several stages — computing layout, drawing shapes, producing SVG.
-;; The [Architecture](architecture.html) chapter traces every step;
-;; the [Glossary](glossary.html) defines terms like **sketch** (the
+;; The [Architecture](./napkinsketch_book.architecture.html) chapter traces every step;
+;; the [Glossary](./napkinsketch_book.glossary.html) defines terms like **sketch** (the
 ;; intermediate data representation) and **membrane** (the drawable tree).
 ;;
 ;; You can also step through the pipeline manually:
@@ -183,14 +183,14 @@ data/iris
 ;; - **Layer options** — per-layer settings like `:color`, `:size`,
 ;;   `:position`, and method-specific parameters (`:bandwidth`, `:se`, etc.).
 ;;   Passed in the options map of layer functions.
-;;   See the [Methods](methods.html) chapter.
+;;   See the [Methods](./napkinsketch_book.methods.html) chapter.
 ;;
 ;; - **Plot options** — per-plot text content: `:title`, `:subtitle`,
 ;;   `:caption`, and axis labels. Passed via `sk/options`.
 ;;
 ;; - **Configuration** — global rendering defaults: dimensions, theme,
 ;;   palette, color scale, and more. These follow a layered precedence
-;;   chain. See the [Configuration](configuration.html) chapter.
+;;   chain. See the [Configuration](./napkinsketch_book.configuration.html) chapter.
 
 ;; Here is one option from each scope in a single pipeline:
 
@@ -202,8 +202,6 @@ data/iris
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (some #{"Iris Measurements"} (:texts s)))))])
-;; Data, view, and method — those are the minimal ingredients.
-;; The next three sections unpack what each part of a method
 
 ;; ## Mark
 ;;
@@ -314,6 +312,18 @@ data/iris
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
+;; Or with a LOESS smoother — a flexible curve that follows local
+;; trends instead of fitting a straight line:
+
+(-> data/iris
+    (sk/view :sepal_length :sepal_width)
+    sk/lay-point
+    sk/lay-loess)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
+
 ;; The same plot without `sk/view` — the first `sk/lay-X` call sets
 ;; the column mappings and subsequent layers inherit them:
 
@@ -326,7 +336,7 @@ data/iris
                                 (= 1 (:lines s)))))])
 
 ;; `sk/lay` also accepts annotation maps (`sk/rule-h`, `sk/band-v`,
-;; etc.) — see the [Customization](customization.html) chapter.
+;; etc.) — see the [Customization](./napkinsketch_book.customization.html) chapter.
 
 ;; ### When to use `sk/view`
 ;;
@@ -335,6 +345,7 @@ data/iris
 ;; - **Quick single-layer plot** — `(sk/lay-point data :x :y)` — no `sk/view` needed
 ;; - **Inferred method** — `(sk/view data :x :y)` — the library picks the chart type
 ;; - **Shared aesthetics** — `(-> data (sk/view :x :y {:color :g}) sk/lay-point sk/lay-lm)` — all layers inherit
+;;
 ;; ## Incremental Building
 ;;
 ;; Because views are plain data, you can save a partial plot and

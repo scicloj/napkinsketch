@@ -81,7 +81,7 @@
                                 (= 244 (:points s))
                                 (= 4 (:lines s)))))])
 
-;; ## Free Scales
+;; ## Free Scales (Independent Axis Ranges)
 ;;
 ;; By default all panels share the same axis ranges. Use the `:scales`
 ;; option to let axes vary per panel.

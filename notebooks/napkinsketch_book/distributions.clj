@@ -262,6 +262,9 @@
             (and (= 3 (:panels s))
                  (pos? (:polygons s)))))])
 
+;; All distribution methods support `:color` for group comparisons
+;; and compose freely with other layers and facets.
+
 ;; ## What's Next
 ;;
 ;; - [**Ranking**](./napkinsketch_book.ranking.html) — bar charts and lollipop plots for categorical comparisons

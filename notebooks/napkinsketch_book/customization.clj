@@ -199,6 +199,9 @@
 ;; - `:tableau10` — Tableau default
 ;; - `:category10` — D3 default
 ;;
+;; This is a small sample — thousands more are available.
+;; See the Discovering Palettes and Gradients section below.
+;;
 ;; See the Discovering Palettes and Gradients section below for how to
 ;; search all available names.
 

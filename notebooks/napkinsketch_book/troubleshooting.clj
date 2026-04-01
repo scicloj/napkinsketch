@@ -60,7 +60,7 @@
 
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
-;; See the [Inference Rules](inference_rules.html) chapter for the
+;; See the [Inference Rules](./napkinsketch_book.inference_rules.html) chapter for the
 ;; full set of rules.
 
 ;; ## x-Only Methods Do Not Accept a y Column
@@ -97,7 +97,7 @@
 ;; **Cause**: Not all marks support polar coordinates. Currently
 ;; `:point`, `:bar`, and `:line` work well with polar.
 ;;
-;; **Fix**: Check the [Polar](polar.html) chapter for supported marks.
+;; **Fix**: Check the [Polar](./napkinsketch_book.polar.html) chapter for supported marks.
 
 ;; ## Tooltip and Brush Not Working
 ;;

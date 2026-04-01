@@ -596,7 +596,7 @@ final-sk
 ;; ## Data Types
 ;;
 ;; Sketches are plain inspectable data — maps, numbers, strings,
-;; keywords, and dtype-next buffers for numeric arrays (`:xs`, `:ys`,
+;; keywords, and dtype-next buffers for numeric arrays (see [Architecture](./napkinsketch_book.architecture.html)) (`:xs`, `:ys`,
 ;; etc.). The buffers support `nth`, `count`, `seq`, and all standard
 ;; sequence operations.
 

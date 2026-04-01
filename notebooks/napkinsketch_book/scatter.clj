@@ -155,7 +155,7 @@
 
 (kind/test-last [(fn [v] (= 16 (:panels (sk/svg-summary v))))])
 
-;; See the [Faceting](faceting.html) chapter for more SPLOM
+;; See the [Faceting](./napkinsketch_book.faceting.html) chapter for more SPLOM
 ;; variations, including brush selection.
 
 ;; ## What's Next

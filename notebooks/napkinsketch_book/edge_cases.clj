@@ -1,5 +1,9 @@
 ;; # Edge Cases
 ;;
+;; This chapter tests how napkinsketch handles unusual or boundary
+;; inputs — missing values, extreme numbers, degenerate datasets,
+;; and uncommon configurations.
+;;
 ;; Testing robustness: missing data, extreme values, small datasets,
 ;; many categories, computed columns, and other tricky scenarios.
 

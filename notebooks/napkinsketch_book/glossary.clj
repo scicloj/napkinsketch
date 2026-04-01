@@ -57,7 +57,7 @@
 ;;
 ;; A **method** is the bundle of mark + stat + position that determines how
 ;; data becomes a visual element.
-;; See the [Methods](methods.html) chapter for detailed tables of all
+;; See the [Methods](./napkinsketch_book.methods.html) chapter for detailed tables of all
 ;; built-in methods, marks, stats, and positions.
 
 ;; ## Mark
@@ -66,14 +66,14 @@
 ;; Several methods may share the same mark — for instance, `lm` and `loess`
 ;; both draw lines, and `area`, `stacked-area`, and `density` all draw
 ;; filled regions.
-;; See the [Methods](methods.html) chapter for a table of all built-in marks.
+;; See the [Methods](./napkinsketch_book.methods.html) chapter for a table of all built-in marks.
 
 ;; ## Stat
 ;;
 ;; A **stat** (statistical transform) processes raw data before
 ;; rendering. Each stat takes data-space inputs and produces
 ;; the geometry that its mark will draw.
-;; See the [Methods](methods.html) chapter for a table of all built-in stats.
+;; See the [Methods](./napkinsketch_book.methods.html) chapter for a table of all built-in stats.
 
 ;; ## Position
 ;;
@@ -83,7 +83,7 @@
 ;; the layer options.
 ;; When multiple layers share `:position :dodge`, they are coordinated
 ;; together — error bars automatically align with bars.
-;; See the [Methods](methods.html) chapter for a table of all built-in positions.
+;; See the [Methods](./napkinsketch_book.methods.html) chapter for a table of all built-in positions.
 
 (def tips {:day ["Mon" "Mon" "Tue" "Tue"]
            :count [30 20 45 15]
@@ -384,7 +384,7 @@
 ;; a title does not make sense as a global default.
 ;;
 ;; See `sk/plot-option-docs` for the full list, or the
-;; [Configuration](configuration.html) chapter for usage examples.
+;; [Configuration](./napkinsketch_book.configuration.html) chapter for usage examples.
 
 (count sk/plot-option-docs)
 
@@ -399,7 +399,7 @@
 ;; method-specific parameters (`:bandwidth`, `:se`, `:normalize`, etc.).
 ;;
 ;; Four keys are universal — accepted by every layer — and each method
-;; may accept additional keys. The [Methods](methods.html) chapter lists
+;; may accept additional keys. The [Methods](./napkinsketch_book.methods.html) chapter lists
 ;; which options each method accepts. See also `sk/layer-option-docs`
 ;; for descriptions, or inspect a specific method with `sk/method-lookup`.
 
