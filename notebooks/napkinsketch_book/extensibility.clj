@@ -56,6 +56,7 @@
 ;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert membrane tree → figure |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
+;; | `apply-position` | `impl/position.clj` | position keyword | Adjust group layout (dodge, stack, fill) |
 
 ;; ## `compute-stat`
 ;;
@@ -108,9 +109,15 @@
 ;;   ...)
 ;; ```
 ;;
-;; The return value must have the same shape as `:identity` — a map
-;; with `:points` (groups of `:xs`, `:ys`), `:x-domain`, and
-;; `:y-domain`.
+;; The return value must always include `:x-domain` and `:y-domain`.
+;; The rest of the shape depends on what the paired `extract-layer`
+;; expects — the stat and extractor are a matched pair. For
+;; point-like marks, return `:points` (groups of `:xs`, `:ys`).
+;; For other marks, study a similar existing pair as a template:
+;;
+;; - `:identity` → `{:points [...] :x-domain [...] :y-domain [...]}`
+;; - `:bin` → `{:bins [...] :max-count ... :x-domain [...] :y-domain [...]}`
+;; - `:boxplot` → `{:boxes [...] :categories [...] :x-domain [...] :y-domain [...]}`
 
 ;; ## `extract-layer`
 ;;
@@ -183,6 +190,30 @@
 ;;   ;; Build filled polygon from xs/ys + baseline
 ;;   ...)
 ;; ```
+;;
+;; ### How to extend: register a method and create a layer function
+;;
+;; After defining `compute-stat` and `extract-layer` for your custom
+;; mark, register a method and create a convenience function:
+;;
+;; ```clojure
+;; ;; Register the method
+;; (method/register! :waterfall
+;;   {:mark :waterfall :stat :waterfall
+;;    :doc "Waterfall — running total with increase/decrease bars."})
+;;
+;; ;; Create a layer function (follows the same pattern as built-in ones)
+;; (defn lay-waterfall
+;;   ([views] (sk/lay views (method/lookup :waterfall)))
+;;   ([data x y] (-> data (sk/view x y) (sk/lay (merge (method/lookup :waterfall)))))
+;;   ([data x y opts] (-> data (sk/view x y) (sk/lay (merge (method/lookup :waterfall) opts)))))
+;; ```
+;;
+;; Users can then call `(lay-waterfall data :category :amount)`.
+;;
+;; Note: if your custom mark is not one of the built-in marks, you also
+;; need a `layer->membrane` defmethod for the SVG renderer. Without one,
+;; the library throws an error explaining which defmethod to add.
 
 ;; ## `sketch->figure`
 ;;
@@ -395,6 +426,7 @@
 ;; | A new output format (membrane-based) | `membrane->figure` + `sketch->figure` |
 ;; | A new scale type | `make-scale` |
 ;; | A new coordinate system | `make-coord` |
+;; | A new position adjustment | `apply-position` |
 
 ;; ## What's Next
 ;;

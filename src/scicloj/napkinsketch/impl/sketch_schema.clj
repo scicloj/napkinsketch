@@ -149,7 +149,7 @@
 (def Layer
   "A rendered mark layer with data-space geometry."
   [:map
-   [:mark [:enum :point :bar :line :step :rect :text :label :area :errorbar :lollipop :boxplot :violin :tile :ridgeline :rug :pointrange :contour]]
+   [:mark keyword?]
    [:style MarkStyle]
    [:groups {:optional true} [:vector [:or PointGroup BarGroup RectCountGroup RectValueGroup
                                        LineSegmentGroup PolylineGroup TextGroup ErrorbarGroup]]]
@@ -158,7 +158,7 @@
    [:tiles {:optional true} [:vector TileEntry]]
    [:ridges {:optional true} [:vector [:map [:category any?] [:color Color] [:ys [:sequential number?]] [:densities [:sequential number?]]]]]
    [:color-categories {:optional true} [:maybe [:vector any?]]]
-   [:position {:optional true} [:enum :dodge :stack :fill]]
+   [:position {:optional true} keyword?]
    [:categories {:optional true} [:vector any?]]
    [:side {:optional true} [:enum :x :y :both]]])
 

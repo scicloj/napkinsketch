@@ -624,7 +624,12 @@
                           (ui/rounded-rectangle (* 2 r) (* 2 r) r))))]))))
 
 (defmethod layer->membrane :default [layer ctx]
-  (layer->membrane (assoc layer :mark :point) ctx))
+  (let [m (:mark layer)]
+    (if (and (vector? m) (= :doc (second m)))
+      "(no description)"
+      (throw (ex-info (str "No layer->membrane renderer for mark " (pr-str m)
+                           ". Define (defmethod layer->membrane " (pr-str m) " [layer ctx] ...)")
+                      {:mark m})))))
 
 ;; ---- Bar (histogram) ----
 
