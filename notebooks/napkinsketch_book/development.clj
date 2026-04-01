@@ -104,6 +104,29 @@
 ;; goes to the `docs/` directory and is published to
 ;; [scicloj.github.io/napkinsketch](https://scicloj.github.io/napkinsketch/).
 
+;; ## Generating the README
+;;
+;; The `README.md` is generated from `notebooks/readme.clj` using Clay's
+;; GFM (GitHub-Flavored Markdown) output. The notebook contains live code
+;; examples that produce SVG plots, so the README always shows current output.
+;;
+;; ```clojure
+;; (require '[dev :as dev])
+;; (dev/make-readme!)
+;; ```
+;;
+;; This produces:
+;;
+;; - `README.md` at the repo root
+;; - `readme_files/*.svg` — rendered plot images referenced by the README
+;;
+;; The book's `index.clj` reads `README.md` and copies `readme_files/`
+;; into `notebooks/` so that the book's front page shows the same images.
+;; Run `make-readme!` before `make-book!` when the README content changes.
+;;
+;; Note: the readme notebook uses `sk/plot` (eager rendering) instead of
+;; auto-rendering PlotSpec, because GFM mode requires materialized SVG values.
+
 ;; ## Building a JAR
 ;;
 ;; The build uses [tools.build](https://clojure.org/guides/tools_build)

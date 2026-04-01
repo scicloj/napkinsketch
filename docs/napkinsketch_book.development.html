@@ -375,6 +375,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#notebook-authoring" id="toc-notebook-authoring" class="nav-link" data-scroll-target="#notebook-authoring">Notebook Authoring</a></li>
   <li><a href="#regenerating-tests" id="toc-regenerating-tests" class="nav-link" data-scroll-target="#regenerating-tests">Regenerating Tests</a></li>
   <li><a href="#building-the-book" id="toc-building-the-book" class="nav-link" data-scroll-target="#building-the-book">Building the Book</a></li>
+  <li><a href="#generating-the-readme" id="toc-generating-the-readme" class="nav-link" data-scroll-target="#generating-the-readme">Generating the README</a></li>
   <li><a href="#building-a-jar" id="toc-building-a-jar" class="nav-link" data-scroll-target="#building-a-jar">Building a JAR</a></li>
   <li><a href="#deploying-to-clojars" id="toc-deploying-to-clojars" class="nav-link" data-scroll-target="#deploying-to-clojars">Deploying to Clojars</a></li>
   <li><a href="#continuous-integration" id="toc-continuous-integration" class="nav-link" data-scroll-target="#continuous-integration">Continuous Integration</a></li>
@@ -467,18 +468,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>(dev/make-book!)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Chapter ordering is defined in <code>notebooks/chapters.edn</code>. The output goes to the <code>docs/</code> directory and is published to <a href="https://scicloj.github.io/napkinsketch/">scicloj.github.io/napkinsketch</a>.</p>
 </section>
+<section id="generating-the-readme" class="level2">
+<h2 class="anchored" data-anchor-id="generating-the-readme">Generating the README</h2>
+<p>The <code>README.md</code> is generated from <code>notebooks/readme.clj</code> using Clay’s GFM (GitHub-Flavored Markdown) output. The notebook contains live code examples that produce SVG plots, so the README always shows current output.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> '[dev <span class="at">:as</span> dev])</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>(dev/make-readme!)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This produces:</p>
+<ul>
+<li><code>README.md</code> at the repo root</li>
+<li><code>readme_files/*.svg</code> — rendered plot images referenced by the README</li>
+</ul>
+<p>The book’s <code>index.clj</code> reads <code>README.md</code> and copies <code>readme_files/</code> into <code>notebooks/</code> so that the book’s front page shows the same images. Run <code>make-readme!</code> before <code>make-book!</code> when the README content changes.</p>
+<p>Note: the readme notebook uses <code>sk/plot</code> (eager rendering) instead of auto-rendering PlotSpec, because GFM mode requires materialized SVG values.</p>
+</section>
 <section id="building-a-jar" class="level2">
 <h2 class="anchored" data-anchor-id="building-a-jar">Building a JAR</h2>
 <p>The build uses <a href="https://clojure.org/guides/tools_build">tools.build</a> with <a href="https://github.com/slipset/deps-deploy">deps-deploy</a>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">clojure</span> <span class="at">-T:build</span> ci                 <span class="co"># run tests + build JAR</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">clojure</span> <span class="at">-T:build</span> ci :snapshot true  <span class="co"># build snapshot JAR</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">clojure</span> <span class="at">-T:build</span> ci                 <span class="co"># run tests + build JAR</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">clojure</span> <span class="at">-T:build</span> ci :snapshot true  <span class="co"># build snapshot JAR</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The JAR is written to <code>target/</code>.</p>
 </section>
 <section id="deploying-to-clojars" class="level2">
 <h2 class="anchored" data-anchor-id="deploying-to-clojars">Deploying to Clojars</h2>
 <p>Two convenience scripts handle the full build-and-deploy workflow:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./release.sh</span>    <span class="co"># test + build + deploy release</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./snapshot.sh</span>   <span class="co"># test + build + deploy snapshot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./release.sh</span>    <span class="co"># test + build + deploy release</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./snapshot.sh</span>   <span class="co"># test + build + deploy snapshot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Both run tests first, then build the JAR, then deploy to <a href="https://clojars.org/org.scicloj/napkinsketch">Clojars</a>. Deployment requires <code>CLOJARS_USERNAME</code> and <code>CLOJARS_PASSWORD</code> environment variables (or a <code>~/.m2/settings.xml</code> with credentials).</p>
 </section>
 <section id="continuous-integration" class="level2">

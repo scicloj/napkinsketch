@@ -3503,6 +3503,17 @@
     ]
   },
   {
+    "objectID": "napkinsketch_book.development.html#generating-the-readme",
+    "href": "napkinsketch_book.development.html#generating-the-readme",
+    "title": "25  Development",
+    "section": "Generating the README",
+    "text": "Generating the README\nThe README.md is generated from notebooks/readme.clj using Clay’s GFM (GitHub-Flavored Markdown) output. The notebook contains live code examples that produce SVG plots, so the README always shows current output.\n(require '[dev :as dev])\n(dev/make-readme!)\nThis produces:\n\nREADME.md at the repo root\nreadme_files/*.svg — rendered plot images referenced by the README\n\nThe book’s index.clj reads README.md and copies readme_files/ into notebooks/ so that the book’s front page shows the same images. Run make-readme! before make-book! when the README content changes.\nNote: the readme notebook uses sk/plot (eager rendering) instead of auto-rendering PlotSpec, because GFM mode requires materialized SVG values.",
+    "crumbs": [
+      "🔬 Internals",
+      "<span class='chapter-number'>25</span>  <span class='chapter-title'>Development</span>"
+    ]
+  },
+  {
     "objectID": "napkinsketch_book.development.html#building-a-jar",
     "href": "napkinsketch_book.development.html#building-a-jar",
     "title": "25  Development",
