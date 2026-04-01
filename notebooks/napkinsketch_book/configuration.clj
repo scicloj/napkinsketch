@@ -43,7 +43,7 @@
     (and (map? cfg)
          (= 600 (:width cfg))
          (= 400 (:height cfg))
-         (= 25 (:margin cfg))
+         (= 30 (:margin cfg))
          (map? (:theme cfg))))])
 
 ;; ### Configuration Keys
@@ -201,7 +201,7 @@
 
 (:point-radius (sk/config))
 
-(kind/test-last [(fn [v] (= 2.5 v))])
+(kind/test-last [(fn [v] (= 3.0 v))])
 
 ;; Now set a global override for width, height, and point-radius:
 
@@ -258,7 +258,7 @@ precedence-plot
 
 (select-keys (sk/config) [:width :height :point-radius])
 
-(kind/test-last [(fn [m] (= {:width 600 :height 400 :point-radius 2.5} m))])
+(kind/test-last [(fn [m] (= {:width 600 :height 400 :point-radius 3.0} m))])
 
 ;; To summarize what happened:
 ;;
@@ -317,7 +317,7 @@ precedence-plot
       ;; beige background
       (and (clojure.string/includes? s "rgb(245,245,220)")
            ;; default grid color is still white
-           (clojure.string/includes? s "rgb(255,255,255)"))))])
+           (clojure.string/includes? s "rgb(245,245,245)"))))])
 
 ;; Override all three for a dark theme:
 

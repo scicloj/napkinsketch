@@ -33,7 +33,7 @@
 
 (def theme
   "Default theme: background color, grid color, and font size."
-  {:bg "#EBEBEB" :grid "#FFFFFF" :font-size 8})
+  {:bg "#E8E8E8" :grid "#F5F5F5" :font-size 11})
 
 ;; ---- Visual Defaults ----
 
@@ -41,21 +41,21 @@
   "Default configuration: layout dimensions, spacing, visual properties."
   {;; Layout
    :width 600 :height 400
-   :margin 25 :margin-multi 30 :panel-size 200 :legend-width 100
+   :margin 30 :margin-multi 30 :panel-size 200 :legend-width 100
    ;; Ticks
    :tick-spacing-x 60 :tick-spacing-y 40
    ;; Points
-   :point-radius 2.5 :point-opacity 0.7
+   :point-radius 3.0 :point-opacity 0.75
    :point-stroke "none" :point-stroke-width 0
    ;; Bars and lines
-   :bar-opacity 0.7 :line-width 2 :grid-stroke-width 1.5
+   :bar-opacity 0.7 :line-width 2 :grid-stroke-width 0.6
    ;; Annotations
    :annotation-stroke "#333" :annotation-dash [4 3] :band-opacity 0.15
    ;; Statistics
    :bin-method :sturges
    :domain-padding 0.05
    ;; Labels and titles
-   :label-font-size 11 :title-font-size 13
+   :label-font-size 13 :title-font-size 15
    :label-offset 18 :title-offset 18
    ;; Facet strips
    :strip-font-size 10 :strip-height 16

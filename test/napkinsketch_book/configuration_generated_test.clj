@@ -29,7 +29,7 @@
      (map? cfg)
      (= 600 (:width cfg))
      (= 400 (:height cfg))
-     (= 25 (:margin cfg))
+     (= 30 (:margin cfg))
      (map? (:theme cfg))))
    v5_l39)))
 
@@ -194,7 +194,7 @@
 (def v44_l202 (:point-radius (sk/config)))
 
 
-(deftest t45_l204 (is ((fn [v] (= 2.5 v)) v44_l202)))
+(deftest t45_l204 (is ((fn [v] (= 3.0 v)) v44_l202)))
 
 
 (def
@@ -270,7 +270,7 @@
 (deftest
  t63_l261
  (is
-  ((fn [m] (= {:width 600, :height 400, :point-radius 2.5} m))
+  ((fn [m] (= {:width 600, :height 400, :point-radius 3.0} m))
    v62_l259)))
 
 
@@ -294,7 +294,7 @@
      [s (str v)]
      (and
       (clojure.string/includes? s "rgb(245,245,220)")
-      (clojure.string/includes? s "rgb(255,255,255)"))))
+      (clojure.string/includes? s "rgb(245,245,245)"))))
    v68_l310)))
 
 

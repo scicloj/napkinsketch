@@ -8,7 +8,7 @@
 
 
 (def
- v2_l16
+ v2_l17
  (def
   wind
   {:direction ["N" "NE" "E" "SE" "S" "SW" "W" "NW"],
@@ -16,7 +16,7 @@
 
 
 (def
- v4_l25
+ v4_l26
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -24,48 +24,48 @@
 
 
 (deftest
- t5_l29
+ t5_l30
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v4_l25)))
+   v4_l26)))
 
 
-(def v7_l40 (-> data/iris (sk/lay-bar :species) (sk/coord :polar)))
+(def v7_l41 (-> data/iris (sk/lay-bar :species) (sk/coord :polar)))
 
 
 (deftest
- t8_l44
+ t8_l45
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v7_l40)))
+   v7_l41)))
 
 
 (def
- v10_l53
+ v10_l54
  (-> wind (sk/lay-value-bar :direction :speed) (sk/coord :polar)))
 
 
 (deftest
- t11_l57
+ t11_l58
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)))))
-   v10_l53)))
+   v10_l54)))
 
 
 (def
- v13_l65
+ v13_l66
  (->
   data/penguins
   (sk/lay-stacked-bar :island {:color :species})
@@ -73,34 +73,34 @@
 
 
 (deftest
- t14_l69
+ t14_l70
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v13_l65)))
+   v13_l66)))
 
 
 (def
- v16_l78
+ v16_l79
  (-> data/iris (sk/lay-histogram :sepal_length) (sk/coord :polar)))
 
 
 (deftest
- t17_l82
+ t17_l83
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v16_l78)))
+   v16_l79)))
 
 
 (def
- v19_l91
+ v19_l92
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -109,7 +109,7 @@
 
 
 (deftest
- t20_l96
+ t20_l97
  (is
   ((fn
     [v]
@@ -118,4 +118,4 @@
      (and
       (= 1 (:panels s))
       (some #{"Iris in Polar Space"} (:texts s)))))
-   v19_l91)))
+   v19_l92)))

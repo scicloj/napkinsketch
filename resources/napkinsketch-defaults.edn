@@ -3,20 +3,20 @@
 ;; by calling set-config!, or by binding *config*.
 {;; Layout
  :width 600 :height 400
- :margin 25 :margin-multi 30 :panel-size 200 :legend-width 100
+ :margin 30 :margin-multi 30 :panel-size 200 :legend-width 100
 
- ;; Theme (visual identity)
- :theme {:bg "#EBEBEB" :grid "#FFFFFF" :font-size 8}
+ ;; Theme (visual identity — ggplot2-inspired with friendly feel)
+ :theme {:bg "#E8E8E8" :grid "#F5F5F5" :font-size 11}
 
  ;; Typography
- :label-font-size 11 :title-font-size 13 :strip-font-size 10
+ :label-font-size 13 :title-font-size 15 :strip-font-size 10
 
  ;; Points
- :point-radius 2.5 :point-opacity 0.7
+ :point-radius 3.0 :point-opacity 0.75
  :point-stroke "none" :point-stroke-width 0
 
  ;; Bars and lines
- :bar-opacity 0.7 :line-width 2 :grid-stroke-width 1.5
+ :bar-opacity 0.7 :line-width 2 :grid-stroke-width 0.6
 
  ;; Annotations
  :annotation-stroke "#333" :annotation-dash [4 3] :band-opacity 0.15

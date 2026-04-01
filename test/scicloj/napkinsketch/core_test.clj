@@ -686,20 +686,20 @@
       (is (map? cfg))
       (is (= 600 (:width cfg)))
       (is (= 400 (:height cfg)))
-      (is (= 25 (:margin cfg)))
-      (is (= 2.5 (:point-radius cfg)))
-      (is (= 0.7 (:point-opacity cfg)))
+      (is (= 30 (:margin cfg)))
+      (is (= 3.0 (:point-radius cfg)))
+      (is (= 0.75 (:point-opacity cfg)))
       (is (= 0.7 (:bar-opacity cfg)))
       (is (= 2 (:line-width cfg)))
-      (is (= 1.5 (:grid-stroke-width cfg)))
+      (is (= 0.6 (:grid-stroke-width cfg)))
       (is (string? (:annotation-stroke cfg)))
       (is (= 0.15 (:band-opacity cfg)))
       (is (= 60 (:tick-spacing-x cfg)))
       (is (= 40 (:tick-spacing-y cfg)))
       (is (= :sturges (:bin-method cfg)))
       (is (= 0.05 (:domain-padding cfg)))
-      (is (= 11 (:label-font-size cfg)))
-      (is (= 13 (:title-font-size cfg)))
+      (is (= 13 (:label-font-size cfg)))
+      (is (= 15 (:title-font-size cfg)))
       (is (= 10 (:strip-font-size cfg)))
       (is (= 18 (:label-offset cfg)))
       (is (= 18 (:title-offset cfg)))
@@ -785,7 +785,7 @@
     (binding [defaults/*config* {:point-radius 5.0}]
       (is (= 5.0 (:point-radius (defaults/config)))))
     ;; Outside binding, back to defaults
-    (is (= 2.5 (:point-radius (defaults/config))))))
+    (is (= 3.0 (:point-radius (defaults/config))))))
 
 (deftest resolve-config-test
   (testing "per-call opts override everything"
@@ -803,8 +803,8 @@
     (let [cfg (defaults/resolve-config {:theme {:bg "#FFF"}})]
       (is (= "#FFF" (get-in cfg [:theme :bg])))
       ;; grid and font-size preserved from defaults
-      (is (= "#FFFFFF" (get-in cfg [:theme :grid])))
-      (is (= 8 (get-in cfg [:theme :font-size])))))
+      (is (= "#F5F5F5" (get-in cfg [:theme :grid])))
+      (is (= 11 (get-in cfg [:theme :font-size])))))
   (testing "per-call palette"
     (let [cfg (defaults/resolve-config {:palette :dark2})]
       (is (= :dark2 (:palette cfg)))))
@@ -825,7 +825,7 @@
           (is (= 900 (:width cfg)))
           (is (= 500 (:height cfg)))
           ;; margin untouched by any override → from defaults
-          (is (= 25 (:margin cfg)))))
+          (is (= 30 (:margin cfg)))))
       (finally
         (defaults/set-config! nil)))))
 
