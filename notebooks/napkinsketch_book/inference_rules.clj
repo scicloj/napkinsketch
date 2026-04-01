@@ -21,20 +21,22 @@
 
 ;; ## What Gets Inferred
 ;;
-;; When you write `(-> data (sk/lay-point :x :y))`, the library fills
+;; When you write `(-> data (sk/lay-point :x :y))` — or even just
+;; `(sk/lay-point data)` — the library fills
 ;; in everything needed to render a plot. Here is the full list of
 ;; inference steps, in the order they happen:
 ;;
-;; 1. **Column types** — numerical, categorical, or temporal
-;; 2. **Aesthetic resolution** — is `:color` a column reference, a hex string, or a CSS name?
-;; 3. **Grouping** — which column(s) split data into subsets
-;; 4. **Method** — which mark and stat to use (scatter, histogram, bar, ...)
-;; 5. **Domains** — data extent for each axis, with padding
-;; 6. **Ticks** — nice round values and formatted labels
-;; 7. **Axis labels** — derived from column names
-;; 8. **Legend** — type, entries, and layout space
-;; 9. **Layout** — single panel, facet grid, or multi-variable
-;; 10. **Coordinate transform** — cartesian, flip, or polar
+;; 1. **Column selection** — which columns map to x, y, and color (inferred from dataset shape when omitted)
+;; 2. **Column types** — numerical, categorical, or temporal
+;; 3. **Aesthetic resolution** — is `:color` a column reference, a hex string, or a CSS name?
+;; 4. **Grouping** — which column(s) split data into subsets
+;; 5. **Method** — which mark and stat to use (scatter, histogram, bar, ...)
+;; 6. **Domains** — data extent for each axis, with padding
+;; 7. **Ticks** — nice round values and formatted labels
+;; 8. **Axis labels** — derived from column names
+;; 9. **Legend** — type, entries, and layout space
+;; 10. **Layout** — single panel, facet grid, or multi-variable
+;; 11. **Coordinate transform** — cartesian, flip, or polar
 ;;
 ;; Each rule has a sensible default and an explicit override.
 ;; The sections below demonstrate each rule with live examples.
@@ -88,6 +90,49 @@ scatter-views
 ;; - `:layout` has `:legend-w 0` — no space reserved for a legend
 ;; - The single layer has `:mark :point` and a single `:groups` entry with all 5 data
 ;;   points, colored in default gray `[0.2 0.2 0.2 1.0]`
+
+;; ## Column Selection
+;;
+;; When column names are omitted, napkinsketch infers them from
+;; the dataset shape:
+;;
+;; | Number of columns | Inferred mapping |
+;; |:------------------|:-----------------|
+;; | 1 | first → x |
+;; | 2 | first → x, second → y |
+;; | 3 | first → x, second → y, third → color |
+;; | 4+ | error — specify columns explicitly |
+;;
+;; One column:
+
+(-> {:values [1 2 3 4 5 6]}
+    sk/lay-histogram)
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; Two columns:
+
+(-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
+;; Three columns — the third becomes `:color`:
+
+(-> {:x [1 2 3 4] :y [4 5 6 7] :g ["a" "a" "b" "b"]}
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:points s))
+                                (some #{"a"} (:texts s)))))])
+
+;; When you provide explicit columns, inference is skipped — you
+;; are in full control:
+
+(-> data/iris
+    (sk/lay-point :petal_length :petal_width {:color :species}))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; ## Column Type Detection
 ;;
@@ -829,6 +874,7 @@ graph TD
 ;;
 ;; | What is inferred | Default | Override |
 ;; |:-----------------|:--------|:---------|
+;; | Column selection | 1→x, 2→x y, 3→x y color | explicit column args in `sk/view` or `sk/lay-*` |
 ;; | Column type | dtype inspection | `:x-type`, `:y-type`, `:color-type` in view options |
 ;; | Aesthetic classification | keyword = column, string = color/column | explicit `:color` keyword vs hex string |
 ;; | Grouping | categorical color column | `:group` aesthetic |

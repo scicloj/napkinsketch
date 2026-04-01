@@ -70,6 +70,7 @@
    Data can be a Tablecloth dataset, a map of columns ({:x [1 2 3]}),
    a sequence of row maps ([{:x 1 :y 2} ...]), or a CSV path/URL.
    Column references must be keywords.
+   (view data)                   — infer columns (1→x, 2→x y, 3→x y color)
    (view data :x :y)            — two keywords, one scatter view
    (view data [:x :y])          — pair as vector, same result
    (view data [[:x1 :y1] ...])  — multiple views
@@ -78,6 +79,7 @@
    (view data :x :y {:color :species})  — layers inherit color grouping
    (view data :x {:color :species})     — single column + shared aesthetics
    Layer opts override view-level aesthetics."
+  ([data] (->plot-spec (view/view data)))
   ([data spec-or-x] (->plot-spec (view/view data spec-or-x)))
   ([data x-or-spec y-or-opts] (->plot-spec (view/view data x-or-spec y-or-opts)))
   ([data x y opts] (->plot-spec (view/view data x y opts))))
@@ -307,8 +309,12 @@
    column overrides when applicable. When creating from raw data, validates
    that x-only methods (histogram, bar, density, etc.) are not given a :y column."
   ([method-key spec-or-views]
-   (->plot-spec (view/lay (extract-views spec-or-views) (method/lookup method-key))
-                (carry-opts spec-or-views)))
+   (let [extracted (extract-views spec-or-views)]
+     (if (view/views? extracted)
+       (->plot-spec (view/lay extracted (method/lookup method-key))
+                    (carry-opts spec-or-views))
+       ;; Raw data: infer columns, then add layer
+       (->plot-spec (view/lay (view/view spec-or-views) (method/lookup method-key))))))
   ([method-key spec-or-data x-or-opts]
    (let [extracted (extract-views spec-or-data)
          opts (carry-opts spec-or-data)]

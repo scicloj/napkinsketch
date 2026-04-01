@@ -73,6 +73,26 @@ data/iris
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
+;; When the dataset has 1, 2, or 3 columns, you can omit the column
+;; names entirely — they are inferred by position (first → x,
+;; second → y, third → color):
+
+(-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
+;; With three columns, the third becomes the color grouping:
+
+(-> {:x [1 2 3 4] :y [4 5 6 7] :group ["a" "a" "b" "b"]}
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 4 (:points s))
+                                (some #{"a"} (:texts s)))))])
+
+;; Datasets with four or more columns require explicit column names.
+;;
 ;; **Tablecloth dataset** — `tc/dataset` loads data from CSV files,
 ;; URLs, and other file formats. The `:key-fn keyword` option converts
 ;; string column headers to keywords. See the
@@ -276,8 +296,13 @@ data/iris
 
 ;; ## Inference
 ;;
-;; You do not always need to choose a method yourself. When you skip
-;; the layer step, Napkinsketch infers the method from the column types.
+;; Napkinsketch infers two things automatically:
+;;
+;; - **Columns** — when omitted, inferred from the dataset shape
+;;   (1 column → x, 2 → x y, 3 → x y color)
+;; - **Method** — when using `sk/view` instead of an explicit `sk/lay-*`,
+;;   the chart type is chosen from the column types
+;;
 ;; Two numerical columns produce a scatter plot; a single numerical
 ;; column produces a histogram.
 
@@ -345,7 +370,8 @@ data/iris
 ;;
 ;; There are three common patterns:
 ;;
-;; - **Quick single-layer plot** — `(sk/lay-point data :x :y)` — no `sk/view` needed
+;; - **Minimal** — `(sk/lay-point data)` — columns inferred from dataset shape
+;; - **Explicit columns** — `(sk/lay-point data :x :y)` — no `sk/view` needed
 ;; - **Inferred method** — `(sk/view data :x :y)` — the library picks the chart type
 ;; - **Shared aesthetics** — `(-> data (sk/view :x :y {:color :g}) sk/lay-point sk/lay-lm)` — all layers inherit
 ;;

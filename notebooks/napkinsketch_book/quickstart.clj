@@ -57,6 +57,14 @@
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
+;; When the dataset has few columns, you can skip the column names —
+;; napkinsketch infers them from the dataset shape:
+
+(-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
 ;; See [**Core Concepts**](./napkinsketch_book.core_concepts.html) for more input formats.
 
 ;; String column names also work — keywords are conventional but not

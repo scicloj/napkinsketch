@@ -95,7 +95,20 @@
 (defn view
   "Create views from data and column specs.
    An optional opts map sets shared aesthetics (e.g. {:color :species})
-   that all layers inherit. Layer opts override view-level aesthetics."
+   that all layers inherit. Layer opts override view-level aesthetics.
+   The 1-arity infers columns from the dataset shape:
+   1 column → x, 2 columns → x y, 3 columns → x y + color."
+  ([data]
+   (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))
+         cols (vec (tc/column-names ds))
+         n (count cols)]
+     (case n
+       1 (view data (cols 0))
+       2 (view data (cols 0) (cols 1))
+       3 (view data (cols 0) (cols 1) {:color (cols 2)})
+       (throw (ex-info (str "Cannot infer columns from a " n "-column dataset. "
+                            "Specify columns explicitly: (view data :x :y)")
+                       {:column-count n :columns cols})))))
   ([data spec-or-x]
    (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))]
      (if (multi-spec? spec-or-x)
