@@ -73,15 +73,11 @@ data/iris
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
-;; **Tablecloth dataset** — use `tc/dataset` to load from a URL or
-;; file, or to create a dataset from any of the formats above. The
-;; `:key-fn keyword` option converts string column headers to keywords:
-
-(-> (tc/dataset {:product ["Apples" "Bananas" "Cherries"]
-                 :sales [120 85 200]})
-    (sk/lay-value-bar :product :sales))
-
-(kind/test-last [(fn [v] (= 3 (:polygons (sk/svg-summary v))))])
+;; **Tablecloth dataset** — `tc/dataset` loads data from CSV files,
+;; URLs, and other file formats. The `:key-fn keyword` option converts
+;; string column headers to keywords. See the
+;; [Tablecloth documentation](https://scicloj.github.io/tablecloth/)
+;; for all supported formats (CSV, TSV, JSON, Parquet, and more).
 
 ;; `tc/dataset` also reads CSV, TSV, JSON, Parquet, and other file
 ;; formats directly from local paths or URLs — see the
