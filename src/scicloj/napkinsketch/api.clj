@@ -24,13 +24,15 @@
 (defn render-plot-spec
   "Render a PlotSpec to SVG. Called by Clay via kind/fn at display time.
    Restores the config snapshot captured at creation time so that
-   with-config overrides are preserved across the lazy render boundary."
+   with-config overrides are preserved across the lazy render boundary.
+   Wraps output in a div with bottom margin for notebook spacing."
   [spec]
-  (let [captured (:config-snapshot spec)]
-    (if captured
-      (binding [defaults/*config* captured]
-        (plot-impl/plot (:views spec) (:opts spec)))
-      (plot-impl/plot (:views spec) (:opts spec)))))
+  (let [captured (:config-snapshot spec)
+        rendered (if captured
+                   (binding [defaults/*config* captured]
+                     (plot-impl/plot (:views spec) (:opts spec)))
+                   (plot-impl/plot (:views spec) (:opts spec)))]
+    (kind/hiccup [:div {:style {:margin-bottom "1em"}} rendered])))
 
 (defn- ->plot-spec
   "Wrap views + opts in a PlotSpec annotated with kind/fn for auto-rendering.
