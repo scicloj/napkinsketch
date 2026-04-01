@@ -1,0 +1,25 @@
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    theme: [cosmo, notebooks/custom.scss]
+    toc-expand: 3
+    number-depth: 1
+  revealjs: {theme: solarized, navigation-mode: vertical, transition: slide, background-transition: fade, incremental: true}
+project: {type: book}
+book:
+  chapters:
+  - index.qmd
+  - part: 🚀 Getting Started
+    chapters: [napkinsketch_book.quickstart.qmd, napkinsketch_book.datasets.qmd]
+  - part: 🧱 Foundations
+    chapters: [napkinsketch_book.core_concepts.qmd, napkinsketch_book.inference_rules.qmd, napkinsketch_book.methods.qmd, napkinsketch_book.glossary.qmd]
+  - part: 📊 Chart Types
+    chapters: [napkinsketch_book.scatter.qmd, napkinsketch_book.distributions.qmd, napkinsketch_book.ranking.qmd, napkinsketch_book.change_over_time.qmd, napkinsketch_book.relationships.qmd, napkinsketch_book.polar.qmd]
+  - part: 🍳 How-to Guides
+    chapters: [napkinsketch_book.cookbook.qmd, napkinsketch_book.configuration.qmd, napkinsketch_book.customization.qmd, napkinsketch_book.faceting.qmd, napkinsketch_book.troubleshooting.qmd]
+  - part: 📖 Reference
+    chapters: [napkinsketch_book.api_reference.qmd]
+  - part: 🔬 Internals
+    chapters: [napkinsketch_book.exploring_sketches.qmd, napkinsketch_book.architecture.qmd, napkinsketch_book.extensibility.qmd, napkinsketch_book.waterfall_extension.qmd, napkinsketch_book.edge_cases.qmd, napkinsketch_book.development.qmd]
+  title: Napkinsketch

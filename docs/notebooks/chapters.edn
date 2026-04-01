@@ -1,0 +1,24 @@
+{"🚀 Getting Started" ["quickstart"
+                        "datasets"]
+ "🧱 Foundations" ["core_concepts"
+                    "inference_rules"
+                    "methods"
+                    "glossary"]
+ "📊 Chart Types" ["scatter"
+                    "distributions"
+                    "ranking"
+                    "change_over_time"
+                    "relationships"
+                    "polar"]
+ "🍳 How-to Guides" ["cookbook"
+                      "configuration"
+                      "customization"
+                      "faceting"
+                      "troubleshooting"]
+ "📖 Reference" ["api_reference"]
+ "🔬 Internals" ["exploring_sketches"
+                  "architecture"
+                  "extensibility"
+                  "waterfall_extension"
+                  "edge_cases"
+                  "development"]}

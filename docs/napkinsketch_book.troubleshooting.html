@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.24">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>18&nbsp; Troubleshooting – Napkinsketch</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./napkinsketch_book.api_reference.html" rel="next">
+<link href="./napkinsketch_book.faceting.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-a52dacdebdbd438f6573f472e77663ff.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./napkinsketch_book.cookbook.html">🍳 How-to Guides</a></li><li class="breadcrumb-item"><a href="./napkinsketch_book.troubleshooting.html"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Troubleshooting</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      </a>
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Napkinsketch</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">🚀 Getting Started</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.quickstart.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Quickstart</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">🧱 Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.core_concepts.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Core Concepts</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.inference_rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Inference Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.glossary.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Glossary</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">📊 Chart Types</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.scatter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Scatter</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Distributions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.ranking.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Ranking</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.change_over_time.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Change Over Time</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Relationships</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.polar.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Polar Coordinates</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">🍳 How-to Guides</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.cookbook.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Cookbook</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.configuration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Configuration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.customization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Customization</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.faceting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Faceting</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.troubleshooting.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Troubleshooting</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">📖 Reference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.api_reference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">API Reference</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">🔬 Internals</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.exploring_sketches.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Sketches</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.architecture.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Architecture</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.extensibility.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Extensibility</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.waterfall_extension.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Extension Example: Waterfall Chart</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.edge_cases.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Edge Cases</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.development.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Development</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="3">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#column-not-found" id="toc-column-not-found" class="nav-link active" data-scroll-target="#column-not-found">Column Not Found</a></li>
+  <li><a href="#wrong-chart-type-from-inference" id="toc-wrong-chart-type-from-inference" class="nav-link" data-scroll-target="#wrong-chart-type-from-inference">Wrong Chart Type from Inference</a></li>
+  <li><a href="#x-only-methods-do-not-accept-a-y-column" id="toc-x-only-methods-do-not-accept-a-y-column" class="nav-link" data-scroll-target="#x-only-methods-do-not-accept-a-y-column">x-Only Methods Do Not Accept a y Column</a></li>
+  <li><a href="#categorical-column-with-log-scale" id="toc-categorical-column-with-log-scale" class="nav-link" data-scroll-target="#categorical-column-with-log-scale">Categorical Column with Log Scale</a></li>
+  <li><a href="#polar-coordinates-with-unsupported-marks" id="toc-polar-coordinates-with-unsupported-marks" class="nav-link" data-scroll-target="#polar-coordinates-with-unsupported-marks">Polar Coordinates with Unsupported Marks</a></li>
+  <li><a href="#tooltip-and-brush-not-working" id="toc-tooltip-and-brush-not-working" class="nav-link" data-scroll-target="#tooltip-and-brush-not-working">Tooltip and Brush Not Working</a></li>
+  <li><a href="#stale-repl-after-editing-source" id="toc-stale-repl-after-editing-source" class="nav-link" data-scroll-target="#stale-repl-after-editing-source">Stale REPL After Editing Source</a></li>
+  <li><a href="#changing-number-of-histogram-bins" id="toc-changing-number-of-histogram-bins" class="nav-link" data-scroll-target="#changing-number-of-histogram-bins">Changing Number of Histogram Bins</a></li>
+  <li><a href="#changing-line-thickness" id="toc-changing-line-thickness" class="nav-link" data-scroll-target="#changing-line-thickness">Changing Line Thickness</a></li>
+  <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s Next</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./napkinsketch_book.cookbook.html">🍳 How-to Guides</a></li><li class="breadcrumb-item"><a href="./napkinsketch_book.troubleshooting.html"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Troubleshooting</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Troubleshooting</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<style></style>
+<style>.printedClojure .sourceCode {
+  background-color: transparent;
+  border-style: none;
+}
+</style>
+<style>.clay-limit-image-width .clay-image {max-width: 100%}
+.clay-side-by-side .sourceCode {margin: 0}
+.clay-side-by-side {margin: 1em 0}
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js" type="text/javascript"></script>
+<script src="https://daslu.github.io/scittle/js/scittle.js" type="text/javascript"></script>
+<script src="https://daslu.github.io/scittle/js/scittle.cljs-ajax.js" type="text/javascript"></script>
+<script src="https://daslu.github.io/scittle/js/scittle.reagent.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-require@1" type="text/javascript"></script>
+<script type="application/x-scittle">(defn kindly-compute "Request a function call from the Clay server" ([params callback] (ajax.core/POST "/kindly-compute" {:format :transit, :params params, :handler callback, :error-handler (fn [e] (js/console.log (str "error on compute: " e)))})) ([func params callback] (ajax.core/POST (str "/kindly-compute/" func) {:format :transit, :params (if (sequential? params) {:args params} params), :handler callback, :error-handler (fn [e] (js/console.log (str "error on compute: " e)))})))</script>
+<p>Common mistakes and how to fix them.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> napkinsketch-book.troubleshooting</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Shared datasets for these docs</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>   [napkinsketch-book.datasets <span class="at">:as</span> data]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Kindly — notebook rendering protocol</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>   [scicloj.kindly.v4.kind <span class="at">:as</span> kind]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Tablecloth — dataset manipulation</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>   [tablecloth.api <span class="at">:as</span> tc]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Napkinsketch — composable plotting</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.api <span class="at">:as</span> sk]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="column-not-found" class="level2">
+<h2 class="anchored" data-anchor-id="column-not-found">Column Not Found</h2>
+<p><strong>Symptom</strong>: <code>"Column :foo not found in dataset"</code> error.</p>
+<p><strong>Cause</strong>: The column name does not exist in the dataset. CSV headers are strings by default — without <code>{:key-fn keyword}</code>, columns have string names like <code>"sepal_length"</code> instead of <code>:sepal_length</code>.</p>
+<p><strong>Fix</strong>: Pass <code>{:key-fn keyword}</code> when loading the dataset:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(tc/dataset <span class="st">"data.csv"</span> {<span class="at">:key-fn</span> <span class="kw">keyword</span>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>You can check available columns with:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(tc/column-names data/iris)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">:sepal</span>_length <span class="at">:sepal</span>_width <span class="at">:petal</span>_length <span class="at">:petal</span>_width <span class="at">:species</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="wrong-chart-type-from-inference" class="level2">
+<h2 class="anchored" data-anchor-id="wrong-chart-type-from-inference">Wrong Chart Type from Inference</h2>
+<p><strong>Symptom</strong>: <code>sk/view</code> produces a scatter when you expected a boxplot, or a histogram when you expected a bar chart.</p>
+<p><strong>Cause</strong>: <code>sk/view</code> infers the chart type from column types. Mixed types (categorical x, numerical y) produce a scatter, not a boxplot.</p>
+<p><strong>Fix</strong>: Use an explicit <code>sk/lay-*</code> function instead of relying on inference:</p>
+<p>This infers a scatter (categorical x numerical):</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> data/iris</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    (sk/view <span class="at">:species</span> <span class="at">:sepal</span>_width))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<svg height="418.0" role="img" viewbox="0 0 622.5 418.0" width="622.5" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(12.0,200.0)"><g transform="rotate(-90.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal width</text></g></g></g><g transform="translate(322.5,402.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">species</text></g></g><g transform="translate(22.5,0.0)"><g><g><g><g transform="translate(30.0,30.0)"><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="340.0" stroke="none" width="540.0" x="0" y="0"></rect></g></g></g><g><g><g><polyline fill="none" points="30.0,354.54545454545456 570.0,354.54545454545456" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,290.1515151515151 570.0,290.1515151515151" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,225.75757575757578 570.0,225.75757575757578" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,161.3636363636364 570.0,161.3636363636364" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,96.969696969697 570.0,96.969696969697" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,32.57575757575762 570.0,32.57575757575762" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g data-row-idx="0" transform="translate(117.0,158.3636363636364)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="1" transform="translate(117.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="2" transform="translate(117.0,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="3" transform="translate(117.0,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="4" transform="translate(117.0,145.4848484848485)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="5" transform="translate(117.0,106.84848484848487)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="6" transform="translate(117.0,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="7" transform="translate(117.0,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="8" transform="translate(117.0,235.63636363636365)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="9" transform="translate(117.0,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="10" transform="translate(117.0,132.60606060606062)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="11" transform="translate(117.0,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="12" transform="translate(117.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="13" transform="translate(117.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="14" transform="translate(117.0,93.969696969697)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="15" transform="translate(117.0,42.454545454545496)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="16" transform="translate(117.0,106.84848484848487)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="17" transform="translate(117.0,158.3636363636364)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="18" transform="translate(117.0,119.7272727272728)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="19" transform="translate(117.0,119.7272727272728)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="20" transform="translate(117.0,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="21" transform="translate(117.0,132.60606060606062)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="22" transform="translate(117.0,145.4848484848485)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="23" transform="translate(117.0,184.12121212121218)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="24" transform="translate(117.0,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="25" transform="translate(117.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="26" transform="translate(117.0,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="27" transform="translate(117.0,158.3636363636364)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="28" transform="translate(117.0,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="29" transform="translate(117.0,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="30" transform="translate(117.0,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="31" transform="translate(117.0,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="32" transform="translate(117.0,81.09090909090918)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="33" transform="translate(117.0,68.21212121212125)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="34" transform="translate(117.0,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="35" transform="translate(117.0,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="36" transform="translate(117.0,158.3636363636364)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="37" transform="translate(117.0,145.4848484848485)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="38" transform="translate(117.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="39" transform="translate(117.0,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="40" transform="translate(117.0,158.3636363636364)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="41" transform="translate(117.0,312.90909090909093)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="42" transform="translate(117.0,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="43" transform="translate(117.0,158.3636363636364)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="44" transform="translate(117.0,119.7272727272728)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="45" transform="translate(117.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="46" transform="translate(117.0,119.7272727272728)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="47" transform="translate(117.0,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="48" transform="translate(117.0,132.60606060606062)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="49" transform="translate(117.0,184.12121212121218)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="50" transform="translate(297.0,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="51" transform="translate(297.0,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="52" transform="translate(297.0,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="53" transform="translate(297.0,312.90909090909093)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="54" transform="translate(297.0,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="55" transform="translate(297.0,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="56" transform="translate(297.0,184.12121212121218)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="57" transform="translate(297.0,300.03030303030306)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="58" transform="translate(297.0,235.63636363636365)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="59" transform="translate(297.0,261.3939393939394)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="60" transform="translate(297.0,351.54545454545456)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="61" transform="translate(297.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="62" transform="translate(297.0,325.78787878787875)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="63" transform="translate(297.0,235.63636363636365)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="64" transform="translate(297.0,235.63636363636365)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="65" transform="translate(297.0,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="66" transform="translate(297.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="67" transform="translate(297.0,261.3939393939394)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="68" transform="translate(297.0,325.78787878787875)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="69" transform="translate(297.0,287.1515151515151)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="70" transform="translate(297.0,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="71" transform="translate(297.0,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="72" transform="translate(297.0,287.1515151515151)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="73" transform="translate(297.0,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="74" transform="translate(297.0,235.63636363636365)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="75" transform="translate(297.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="76" transform="translate(297.0,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="77" transform="translate(297.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="78" transform="translate(297.0,235.63636363636365)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="79" transform="translate(297.0,274.27272727272725)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="80" transform="translate(297.0,300.03030303030306)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="81" transform="translate(297.0,300.03030303030306)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="82" transform="translate(297.0,261.3939393939394)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="83" transform="translate(297.0,261.3939393939394)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="84" transform="translate(297.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="85" transform="translate(297.0,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="86" transform="translate(297.0,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="87" transform="translate(297.0,312.90909090909093)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="88" transform="translate(297.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="89" transform="translate(297.0,287.1515151515151)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="90" transform="translate(297.0,274.27272727272725)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="91" transform="translate(297.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="92" transform="translate(297.0,274.27272727272725)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="93" transform="translate(297.0,312.90909090909093)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="94" transform="translate(297.0,261.3939393939394)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="95" transform="translate(297.0,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="96" transform="translate(297.0,235.63636363636365)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="97" transform="translate(297.0,235.63636363636365)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="98" transform="translate(297.0,287.1515151515151)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="99" transform="translate(297.0,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="100" transform="translate(476.99999999999994,184.12121212121218)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="101" transform="translate(476.99999999999994,261.3939393939394)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="102" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="103" transform="translate(476.99999999999994,235.63636363636365)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="104" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="105" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="106" transform="translate(476.99999999999994,287.1515151515151)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="107" transform="translate(476.99999999999994,235.63636363636365)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="108" transform="translate(476.99999999999994,287.1515151515151)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="109" transform="translate(476.99999999999994,145.4848484848485)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="110" transform="translate(476.99999999999994,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="111" transform="translate(476.99999999999994,261.3939393939394)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="112" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="113" transform="translate(476.99999999999994,287.1515151515151)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="114" transform="translate(476.99999999999994,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="115" transform="translate(476.99999999999994,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="116" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="117" transform="translate(476.99999999999994,119.7272727272728)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="118" transform="translate(476.99999999999994,274.27272727272725)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="119" transform="translate(476.99999999999994,325.78787878787875)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="120" transform="translate(476.99999999999994,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="121" transform="translate(476.99999999999994,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="122" transform="translate(476.99999999999994,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="123" transform="translate(476.99999999999994,261.3939393939394)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="124" transform="translate(476.99999999999994,184.12121212121218)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="125" transform="translate(476.99999999999994,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="126" transform="translate(476.99999999999994,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="127" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="128" transform="translate(476.99999999999994,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="129" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="130" transform="translate(476.99999999999994,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="131" transform="translate(476.99999999999994,119.7272727272728)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="132" transform="translate(476.99999999999994,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="133" transform="translate(476.99999999999994,248.51515151515156)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="134" transform="translate(476.99999999999994,274.27272727272725)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="135" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="136" transform="translate(476.99999999999994,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="137" transform="translate(476.99999999999994,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="138" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="139" transform="translate(476.99999999999994,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="140" transform="translate(476.99999999999994,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="141" transform="translate(476.99999999999994,209.87878787878788)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="142" transform="translate(476.99999999999994,261.3939393939394)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="143" transform="translate(476.99999999999994,197.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="144" transform="translate(476.99999999999994,184.12121212121218)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="145" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="146" transform="translate(476.99999999999994,287.1515151515151)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="147" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="148" transform="translate(476.99999999999994,171.24242424242428)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="149" transform="translate(476.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g transform="translate(101.14285714285714,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">setosa</text></g></g><g transform="translate(268.57142857142856,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">versicolor</text></g></g><g transform="translate(451.71428571428567,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">virginica</text></g></g><g transform="translate(10.5,349.04545454545456)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2.0</text></g></g><g transform="translate(10.5,284.6515151515151)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2.5</text></g></g><g transform="translate(10.5,220.25757575757578)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3.0</text></g></g><g transform="translate(10.5,155.8636363636364)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3.5</text></g></g><g transform="translate(10.5,91.469696969697)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.0</text></g></g><g transform="translate(10.5,27.07575757575762)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.5</text></g></g></g></g></g></svg>
+<p>Use <code>sk/lay-boxplot</code> if you want a boxplot:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> data/iris</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-boxplot <span class="at">:species</span> <span class="at">:sepal</span>_width))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<svg height="418.0" role="img" viewbox="0 0 622.5 418.0" width="622.5" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(12.0,200.0)"><g transform="rotate(-90.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal width</text></g></g></g><g transform="translate(322.5,402.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">species</text></g></g><g transform="translate(22.5,0.0)"><g><g><g><g transform="translate(30.0,30.0)"><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="340.0" stroke="none" width="540.0" x="0" y="0"></rect></g></g></g><g><g><g><polyline fill="none" points="30.0,354.54545454545456 570.0,354.54545454545456" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,290.1515151515151 570.0,290.1515151515151" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,225.75757575757578 570.0,225.75757575757578" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,161.3636363636364 570.0,161.3636363636364" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,96.969696969697 570.0,96.969696969697" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,32.57575757575762 570.0,32.57575757575762" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="66.0,138.82575757575756 174.0,138.82575757575756 174.0,200.0 66.0,200.0 66.0,138.82575757575756" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><g><polyline fill="none" points="66.0,138.82575757575756 174.0,138.82575757575756 174.0,200.0 66.0,200.0 66.0,138.82575757575756" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="66.0,174.24242424242428 174.0,174.24242424242428" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="120.0,200.0 120.0,238.63636363636365" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="120.0,138.82575757575756 120.0,71.21212121212125" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="103.8,238.63636363636365 136.2,238.63636363636365" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="103.8,71.21212121212125 136.2,71.21212121212125" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g transform="translate(117.5,42.954545454545496)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="1.0" height="5.0" rx="2.5" ry="2.5" stroke="none" width="5.0" x="0" y="0"></rect></g></g></g><g transform="translate(117.5,313.40909090909093)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="1.0" height="5.0" rx="2.5" ry="2.5" stroke="none" width="5.0" x="0" y="0"></rect></g></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="246.0,225.75757575757578 354.0,225.75757575757578 354.0,286.9318181818182 246.0,286.9318181818182 246.0,225.75757575757578" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><g><polyline fill="none" points="246.0,225.75757575757578 354.0,225.75757575757578 354.0,286.9318181818182 246.0,286.9318181818182 246.0,225.75757575757578" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="246.0,251.51515151515156 354.0,251.51515151515156" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="300.0,286.9318181818182 300.0,354.54545454545456" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="300.0,225.75757575757578 300.0,174.24242424242428" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="283.8,354.54545454545456 316.2,354.54545454545456" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="283.8,174.24242424242428 316.2,174.24242424242428" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="426.0,203.21969696969697 534.0,203.21969696969697 534.0,251.51515151515156 426.0,251.51515151515156 426.0,203.21969696969697" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><g><polyline fill="none" points="426.0,203.21969696969697 534.0,203.21969696969697 534.0,251.51515151515156 426.0,251.51515151515156 426.0,203.21969696969697" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="426.0,225.75757575757578 534.0,225.75757575757578" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="480.0,251.51515151515156 480.0,290.1515151515151" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="480.0,203.21969696969697 480.0,148.4848484848485" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="463.8,290.1515151515151 496.2,290.1515151515151" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g><g><g><polyline fill="none" points="463.8,148.4848484848485 496.2,148.4848484848485" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="1.5"></polyline></g></g></g><g transform="translate(477.5,120.2272727272728)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="1.0" height="5.0" rx="2.5" ry="2.5" stroke="none" width="5.0" x="0" y="0"></rect></g></g></g><g transform="translate(477.5,326.28787878787875)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="1.0" height="5.0" rx="2.5" ry="2.5" stroke="none" width="5.0" x="0" y="0"></rect></g></g></g><g transform="translate(477.5,120.2272727272728)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="1.0" height="5.0" rx="2.5" ry="2.5" stroke="none" width="5.0" x="0" y="0"></rect></g></g></g><g transform="translate(101.14285714285714,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">setosa</text></g></g><g transform="translate(268.57142857142856,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">versicolor</text></g></g><g transform="translate(451.71428571428567,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">virginica</text></g></g><g transform="translate(10.5,349.04545454545456)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2.0</text></g></g><g transform="translate(10.5,284.6515151515151)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2.5</text></g></g><g transform="translate(10.5,220.25757575757578)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3.0</text></g></g><g transform="translate(10.5,155.8636363636364)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3.5</text></g></g><g transform="translate(10.5,91.469696969697)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.0</text></g></g><g transform="translate(10.5,27.07575757575762)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.5</text></g></g></g></g></g></svg>
+<p>See the <a href="./napkinsketch_book.inference_rules.html">Inference Rules</a> chapter for the full set of rules.</p>
+</section>
+<section id="x-only-methods-do-not-accept-a-y-column" class="level2">
+<h2 class="anchored" data-anchor-id="x-only-methods-do-not-accept-a-y-column">x-Only Methods Do Not Accept a y Column</h2>
+<p><strong>Symptom</strong>: <code>"lay-histogram uses only the x column"</code> error.</p>
+<p><strong>Cause</strong>: Histogram, bar, density, and rug methods use only the x column. Passing a y column is an error.</p>
+<p><strong>Fix</strong>: Remove the y column:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">;; Wrong:</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>(sk/lay-histogram data <span class="at">:sepal</span>_length <span class="at">:sepal</span>_width)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">;; Correct:</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>(sk/lay-histogram data <span class="at">:sepal</span>_length)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="categorical-column-with-log-scale" class="level2">
+<h2 class="anchored" data-anchor-id="categorical-column-with-log-scale">Categorical Column with Log Scale</h2>
+<p><strong>Symptom</strong>: <code>"Log scale requires numerical data"</code> error.</p>
+<p><strong>Cause</strong>: Log scales only work with numerical columns. Categorical columns (strings, keywords) cannot be log-transformed.</p>
+<p><strong>Fix</strong>: Use a numerical column for log scale, or remove the log scale for categorical data.</p>
+</section>
+<section id="polar-coordinates-with-unsupported-marks" class="level2">
+<h2 class="anchored" data-anchor-id="polar-coordinates-with-unsupported-marks">Polar Coordinates with Unsupported Marks</h2>
+<p><strong>Symptom</strong>: Errors or unexpected output with <code>(sk/coord :polar)</code>.</p>
+<p><strong>Cause</strong>: Not all marks support polar coordinates. Currently <code>:point</code>, <code>:bar</code>, and <code>:line</code> work well with polar.</p>
+<p><strong>Fix</strong>: Check the <a href="./napkinsketch_book.polar.html">Polar</a> chapter for supported marks.</p>
+</section>
+<section id="tooltip-and-brush-not-working" class="level2">
+<h2 class="anchored" data-anchor-id="tooltip-and-brush-not-working">Tooltip and Brush Not Working</h2>
+<p><strong>Symptom</strong>: You set <code>{:tooltip true}</code> but no tooltip appears when hovering over points.</p>
+<p><strong>Cause</strong>: Tooltip and brush interactivity use JavaScript that requires a compatible notebook viewer. Static HTML export or some viewers may not support it.</p>
+<p><strong>Fix</strong>: Use <a href="https://scicloj.github.io/clay/">Clay</a> or another Kindly-compatible tool that supports <code>kind/hiccup</code> with embedded scripts.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> data/iris</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:sepal</span>_length <span class="at">:sepal</span>_width {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    (sk/options {<span class="at">:tooltip</span> <span class="va">true</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="nsk-92b4468f-07ac-4157-8df0-011dc672a3b4" style="display:inline-block;position:relative;"><style>.nsk-tooltip { display:none; position:absolute; pointer-events:none; background:rgba(0,0,0,0.8); color:#fff; padding:6px 10px; border-radius:4px; font-family:sans-serif; font-size:13px; white-space:nowrap; z-index:10; }</style><svg height="418.0" role="img" viewbox="0 0 722.5 418.0" width="722.5" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(12.0,200.0)"><g transform="rotate(-90.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal width</text></g></g></g><g transform="translate(322.5,402.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal length</text></g></g><g transform="translate(632.5,8.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="9">species</text></g></g><g transform="translate(632.5,20.0)"><g><g transform="translate(0.0,0.0)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.0,0.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">setosa</text></g></g></g></g><g transform="translate(632.5,36.0)"><g><g transform="translate(0.0,0.0)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.0,0.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">versicolor</text></g></g></g></g><g transform="translate(632.5,52.0)"><g><g transform="translate(0.0,0.0)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.0,0.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">virginica</text></g></g></g></g><g transform="translate(22.5,0.0)"><g><g><g><g transform="translate(30.0,30.0)"><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="340.0" stroke="none" width="540.0" x="0" y="0"></rect></g></g></g><g><g><g><polyline fill="none" points="81.81818181818181,30.0 81.81818181818181,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="150.0,30.0 150.0,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="218.18181818181816,30.0 218.18181818181816,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="286.3636363636364,30.0 286.3636363636364,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="354.54545454545456,30.0 354.54545454545456,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="422.72727272727275,30.0 422.72727272727275,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="490.9090909090909,30.0 490.9090909090909,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="559.0909090909091,30.0 559.0909090909091,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,354.54545454545456 570.0,354.54545454545456" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,290.1515151515151 570.0,290.1515151515151" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,225.75757575757578 570.0,225.75757575757578" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,161.3636363636364 570.0,161.3636363636364" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,96.969696969697 570.0,96.969696969697" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,32.57575757575762 570.0,32.57575757575762" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g data-row-idx="0" data-tooltip="sepal length: 5.100, sepal width: 3.500, color: setosa" transform="translate(160.63636363636357,158.3636363636364)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="1" data-tooltip="sepal length: 4.900, sepal width: 3.000, color: setosa" transform="translate(133.3636363636364,222.75757575757578)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="2" data-tooltip="sepal length: 4.700, sepal width: 3.200, color: setosa" transform="translate(106.09090909090911,197.0)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="3" data-tooltip="sepal length: 4.600, sepal width: 3.100, color: setosa" transform="translate(92.45454545454538,209.87878787878788)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="4" data-tooltip="sepal length: 5.000, sepal width: 3.600, color: setosa" transform="translate(147.0,145.4848484848485)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="5" data-tooltip="sepal length: 5.400, sepal width: 3.900, color: setosa" transform="translate(201.5454545454546,106.84848484848487)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="6" data-tooltip="sepal length: 4.600, sepal width: 3.400, color: setosa" transform="translate(92.45454545454538,171.24242424242428)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="7" data-tooltip="sepal length: 5.000, sepal width: 3.400, color: setosa" transform="translate(147.0,171.24242424242428)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="8" data-tooltip="sepal length: 4.400, sepal width: 2.900, color: setosa" transform="translate(65.18181818181822,235.63636363636365)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="9" data-tooltip="sepal length: 4.900, sepal width: 3.100, color: setosa" transform="translate(133.3636363636364,209.87878787878788)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="10" data-tooltip="sepal length: 5.400, sepal width: 3.700, color: setosa" transform="translate(201.5454545454546,132.60606060606062)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="11" data-tooltip="sepal length: 4.800, sepal width: 3.400, color: setosa" transform="translate(119.72727272727269,171.24242424242428)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="12" data-tooltip="sepal length: 4.800, sepal width: 3.000, color: setosa" transform="translate(119.72727272727269,222.75757575757578)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="13" data-tooltip="sepal length: 4.300, sepal width: 3.000, color: setosa" transform="translate(51.545454545454504,222.75757575757578)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="14" data-tooltip="sepal length: 5.800, sepal width: 4.000, color: setosa" transform="translate(256.09090909090907,93.969696969697)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="15" data-tooltip="sepal length: 5.700, sepal width: 4.400, color: setosa" transform="translate(242.45454545454547,42.454545454545496)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="16" data-tooltip="sepal length: 5.400, sepal width: 3.900, color: setosa" transform="translate(201.5454545454546,106.84848484848487)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="17" data-tooltip="sepal length: 5.100, sepal width: 3.500, color: setosa" transform="translate(160.63636363636357,158.3636363636364)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="18" data-tooltip="sepal length: 5.700, sepal width: 3.800, color: setosa" transform="translate(242.45454545454547,119.7272727272728)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="19" data-tooltip="sepal length: 5.100, sepal width: 3.800, color: setosa" transform="translate(160.63636363636357,119.7272727272728)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="20" data-tooltip="sepal length: 5.400, sepal width: 3.400, color: setosa" transform="translate(201.5454545454546,171.24242424242428)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="21" data-tooltip="sepal length: 5.100, sepal width: 3.700, color: setosa" transform="translate(160.63636363636357,132.60606060606062)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="22" data-tooltip="sepal length: 4.600, sepal width: 3.600, color: setosa" transform="translate(92.45454545454538,145.4848484848485)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="23" data-tooltip="sepal length: 5.100, sepal width: 3.300, color: setosa" transform="translate(160.63636363636357,184.12121212121218)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="24" data-tooltip="sepal length: 4.800, sepal width: 3.400, color: setosa" transform="translate(119.72727272727269,171.24242424242428)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="25" data-tooltip="sepal length: 5.000, sepal width: 3.000, color: setosa" transform="translate(147.0,222.75757575757578)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="26" data-tooltip="sepal length: 5.000, sepal width: 3.400, color: setosa" transform="translate(147.0,171.24242424242428)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="27" data-tooltip="sepal length: 5.200, sepal width: 3.500, color: setosa" transform="translate(174.27272727272728,158.3636363636364)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="28" data-tooltip="sepal length: 5.200, sepal width: 3.400, color: setosa" transform="translate(174.27272727272728,171.24242424242428)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="29" data-tooltip="sepal length: 4.700, sepal width: 3.200, color: setosa" transform="translate(106.09090909090911,197.0)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="30" data-tooltip="sepal length: 4.800, sepal width: 3.100, color: setosa" transform="translate(119.72727272727269,209.87878787878788)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="31" data-tooltip="sepal length: 5.400, sepal width: 3.400, color: setosa" transform="translate(201.5454545454546,171.24242424242428)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="32" data-tooltip="sepal length: 5.200, sepal width: 4.100, color: setosa" transform="translate(174.27272727272728,81.09090909090918)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="33" data-tooltip="sepal length: 5.500, sepal width: 4.200, color: setosa" transform="translate(215.18181818181816,68.21212121212125)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="34" data-tooltip="sepal length: 4.900, sepal width: 3.100, color: setosa" transform="translate(133.3636363636364,209.87878787878788)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="35" data-tooltip="sepal length: 5.000, sepal width: 3.200, color: setosa" transform="translate(147.0,197.0)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="36" data-tooltip="sepal length: 5.500, sepal width: 3.500, color: setosa" transform="translate(215.18181818181816,158.3636363636364)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="37" data-tooltip="sepal length: 4.900, sepal width: 3.600, color: setosa" transform="translate(133.3636363636364,145.4848484848485)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="38" data-tooltip="sepal length: 4.400, sepal width: 3.000, color: setosa" transform="translate(65.18181818181822,222.75757575757578)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="39" data-tooltip="sepal length: 5.100, sepal width: 3.400, color: setosa" transform="translate(160.63636363636357,171.24242424242428)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="40" data-tooltip="sepal length: 5.000, sepal width: 3.500, color: setosa" transform="translate(147.0,158.3636363636364)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="41" data-tooltip="sepal length: 4.500, sepal width: 2.300, color: setosa" transform="translate(78.81818181818181,312.90909090909093)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="42" data-tooltip="sepal length: 4.400, sepal width: 3.200, color: setosa" transform="translate(65.18181818181822,197.0)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="43" data-tooltip="sepal length: 5.000, sepal width: 3.500, color: setosa" transform="translate(147.0,158.3636363636364)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="44" data-tooltip="sepal length: 5.100, sepal width: 3.800, color: setosa" transform="translate(160.63636363636357,119.7272727272728)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="45" data-tooltip="sepal length: 4.800, sepal width: 3.000, color: setosa" transform="translate(119.72727272727269,222.75757575757578)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="46" data-tooltip="sepal length: 5.100, sepal width: 3.800, color: setosa" transform="translate(160.63636363636357,119.7272727272728)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="47" data-tooltip="sepal length: 4.600, sepal width: 3.200, color: setosa" transform="translate(92.45454545454538,197.0)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="48" data-tooltip="sepal length: 5.300, sepal width: 3.700, color: setosa" transform="translate(187.90909090909088,132.60606060606062)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="49" data-tooltip="sepal length: 5.000, sepal width: 3.300, color: setosa" transform="translate(147.0,184.12121212121218)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="50" data-tooltip="sepal length: 7.000, sepal width: 3.200, color: versicolor" transform="translate(419.72727272727275,197.0)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="51" data-tooltip="sepal length: 6.400, sepal width: 3.200, color: versicolor" transform="translate(337.90909090909093,197.0)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="52" data-tooltip="sepal length: 6.900, sepal width: 3.100, color: versicolor" transform="translate(406.0909090909091,209.87878787878788)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="53" data-tooltip="sepal length: 5.500, sepal width: 2.300, color: versicolor" transform="translate(215.18181818181816,312.90909090909093)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="54" data-tooltip="sepal length: 6.500, sepal width: 2.800, color: versicolor" transform="translate(351.54545454545456,248.51515151515156)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="55" data-tooltip="sepal length: 5.700, sepal width: 2.800, color: versicolor" transform="translate(242.45454545454547,248.51515151515156)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="56" data-tooltip="sepal length: 6.300, sepal width: 3.300, color: versicolor" transform="translate(324.2727272727272,184.12121212121218)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="57" data-tooltip="sepal length: 4.900, sepal width: 2.400, color: versicolor" transform="translate(133.3636363636364,300.03030303030306)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="58" data-tooltip="sepal length: 6.600, sepal width: 2.900, color: versicolor" transform="translate(365.18181818181813,235.63636363636365)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="59" data-tooltip="sepal length: 5.200, sepal width: 2.700, color: versicolor" transform="translate(174.27272727272728,261.3939393939394)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="60" data-tooltip="sepal length: 5.000, sepal width: 2.000, color: versicolor" transform="translate(147.0,351.54545454545456)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="61" data-tooltip="sepal length: 5.900, sepal width: 3.000, color: versicolor" transform="translate(269.72727272727275,222.75757575757578)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="62" data-tooltip="sepal length: 6.000, sepal width: 2.200, color: versicolor" transform="translate(283.3636363636364,325.78787878787875)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="63" data-tooltip="sepal length: 6.100, sepal width: 2.900, color: versicolor" transform="translate(296.99999999999994,235.63636363636365)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="64" data-tooltip="sepal length: 5.600, sepal width: 2.900, color: versicolor" transform="translate(228.81818181818176,235.63636363636365)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="65" data-tooltip="sepal length: 6.700, sepal width: 3.100, color: versicolor" transform="translate(378.8181818181818,209.87878787878788)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="66" data-tooltip="sepal length: 5.600, sepal width: 3.000, color: versicolor" transform="translate(228.81818181818176,222.75757575757578)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="67" data-tooltip="sepal length: 5.800, sepal width: 2.700, color: versicolor" transform="translate(256.09090909090907,261.3939393939394)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="68" data-tooltip="sepal length: 6.200, sepal width: 2.200, color: versicolor" transform="translate(310.6363636363637,325.78787878787875)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="69" data-tooltip="sepal length: 5.600, sepal width: 2.500, color: versicolor" transform="translate(228.81818181818176,287.1515151515151)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="70" data-tooltip="sepal length: 5.900, sepal width: 3.200, color: versicolor" transform="translate(269.72727272727275,197.0)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="71" data-tooltip="sepal length: 6.100, sepal width: 2.800, color: versicolor" transform="translate(296.99999999999994,248.51515151515156)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="72" data-tooltip="sepal length: 6.300, sepal width: 2.500, color: versicolor" transform="translate(324.2727272727272,287.1515151515151)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="73" data-tooltip="sepal length: 6.100, sepal width: 2.800, color: versicolor" transform="translate(296.99999999999994,248.51515151515156)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="74" data-tooltip="sepal length: 6.400, sepal width: 2.900, color: versicolor" transform="translate(337.90909090909093,235.63636363636365)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="75" data-tooltip="sepal length: 6.600, sepal width: 3.000, color: versicolor" transform="translate(365.18181818181813,222.75757575757578)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="76" data-tooltip="sepal length: 6.800, sepal width: 2.800, color: versicolor" transform="translate(392.4545454545454,248.51515151515156)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="77" data-tooltip="sepal length: 6.700, sepal width: 3.000, color: versicolor" transform="translate(378.8181818181818,222.75757575757578)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="78" data-tooltip="sepal length: 6.000, sepal width: 2.900, color: versicolor" transform="translate(283.3636363636364,235.63636363636365)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="79" data-tooltip="sepal length: 5.700, sepal width: 2.600, color: versicolor" transform="translate(242.45454545454547,274.27272727272725)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="80" data-tooltip="sepal length: 5.500, sepal width: 2.400, color: versicolor" transform="translate(215.18181818181816,300.03030303030306)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="81" data-tooltip="sepal length: 5.500, sepal width: 2.400, color: versicolor" transform="translate(215.18181818181816,300.03030303030306)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="82" data-tooltip="sepal length: 5.800, sepal width: 2.700, color: versicolor" transform="translate(256.09090909090907,261.3939393939394)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="83" data-tooltip="sepal length: 6.000, sepal width: 2.700, color: versicolor" transform="translate(283.3636363636364,261.3939393939394)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="84" data-tooltip="sepal length: 5.400, sepal width: 3.000, color: versicolor" transform="translate(201.5454545454546,222.75757575757578)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="85" data-tooltip="sepal length: 6.000, sepal width: 3.400, color: versicolor" transform="translate(283.3636363636364,171.24242424242428)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="86" data-tooltip="sepal length: 6.700, sepal width: 3.100, color: versicolor" transform="translate(378.8181818181818,209.87878787878788)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="87" data-tooltip="sepal length: 6.300, sepal width: 2.300, color: versicolor" transform="translate(324.2727272727272,312.90909090909093)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="88" data-tooltip="sepal length: 5.600, sepal width: 3.000, color: versicolor" transform="translate(228.81818181818176,222.75757575757578)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="89" data-tooltip="sepal length: 5.500, sepal width: 2.500, color: versicolor" transform="translate(215.18181818181816,287.1515151515151)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="90" data-tooltip="sepal length: 5.500, sepal width: 2.600, color: versicolor" transform="translate(215.18181818181816,274.27272727272725)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="91" data-tooltip="sepal length: 6.100, sepal width: 3.000, color: versicolor" transform="translate(296.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="92" data-tooltip="sepal length: 5.800, sepal width: 2.600, color: versicolor" transform="translate(256.09090909090907,274.27272727272725)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="93" data-tooltip="sepal length: 5.000, sepal width: 2.300, color: versicolor" transform="translate(147.0,312.90909090909093)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="94" data-tooltip="sepal length: 5.600, sepal width: 2.700, color: versicolor" transform="translate(228.81818181818176,261.3939393939394)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="95" data-tooltip="sepal length: 5.700, sepal width: 3.000, color: versicolor" transform="translate(242.45454545454547,222.75757575757578)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="96" data-tooltip="sepal length: 5.700, sepal width: 2.900, color: versicolor" transform="translate(242.45454545454547,235.63636363636365)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="97" data-tooltip="sepal length: 6.200, sepal width: 2.900, color: versicolor" transform="translate(310.6363636363637,235.63636363636365)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="98" data-tooltip="sepal length: 5.100, sepal width: 2.500, color: versicolor" transform="translate(160.63636363636357,287.1515151515151)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="99" data-tooltip="sepal length: 5.700, sepal width: 2.800, color: versicolor" transform="translate(242.45454545454547,248.51515151515156)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="100" data-tooltip="sepal length: 6.300, sepal width: 3.300, color: virginica" transform="translate(324.2727272727272,184.12121212121218)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="101" data-tooltip="sepal length: 5.800, sepal width: 2.700, color: virginica" transform="translate(256.09090909090907,261.3939393939394)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="102" data-tooltip="sepal length: 7.100, sepal width: 3.000, color: virginica" transform="translate(433.36363636363626,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="103" data-tooltip="sepal length: 6.300, sepal width: 2.900, color: virginica" transform="translate(324.2727272727272,235.63636363636365)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="104" data-tooltip="sepal length: 6.500, sepal width: 3.000, color: virginica" transform="translate(351.54545454545456,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="105" data-tooltip="sepal length: 7.600, sepal width: 3.000, color: virginica" transform="translate(501.5454545454545,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="106" data-tooltip="sepal length: 4.900, sepal width: 2.500, color: virginica" transform="translate(133.3636363636364,287.1515151515151)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="107" data-tooltip="sepal length: 7.300, sepal width: 2.900, color: virginica" transform="translate(460.6363636363636,235.63636363636365)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="108" data-tooltip="sepal length: 6.700, sepal width: 2.500, color: virginica" transform="translate(378.8181818181818,287.1515151515151)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="109" data-tooltip="sepal length: 7.200, sepal width: 3.600, color: virginica" transform="translate(447.0,145.4848484848485)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="110" data-tooltip="sepal length: 6.500, sepal width: 3.200, color: virginica" transform="translate(351.54545454545456,197.0)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="111" data-tooltip="sepal length: 6.400, sepal width: 2.700, color: virginica" transform="translate(337.90909090909093,261.3939393939394)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="112" data-tooltip="sepal length: 6.800, sepal width: 3.000, color: virginica" transform="translate(392.4545454545454,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="113" data-tooltip="sepal length: 5.700, sepal width: 2.500, color: virginica" transform="translate(242.45454545454547,287.1515151515151)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="114" data-tooltip="sepal length: 5.800, sepal width: 2.800, color: virginica" transform="translate(256.09090909090907,248.51515151515156)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="115" data-tooltip="sepal length: 6.400, sepal width: 3.200, color: virginica" transform="translate(337.90909090909093,197.0)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="116" data-tooltip="sepal length: 6.500, sepal width: 3.000, color: virginica" transform="translate(351.54545454545456,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="117" data-tooltip="sepal length: 7.700, sepal width: 3.800, color: virginica" transform="translate(515.1818181818182,119.7272727272728)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="118" data-tooltip="sepal length: 7.700, sepal width: 2.600, color: virginica" transform="translate(515.1818181818182,274.27272727272725)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="119" data-tooltip="sepal length: 6.000, sepal width: 2.200, color: virginica" transform="translate(283.3636363636364,325.78787878787875)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="120" data-tooltip="sepal length: 6.900, sepal width: 3.200, color: virginica" transform="translate(406.0909090909091,197.0)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="121" data-tooltip="sepal length: 5.600, sepal width: 2.800, color: virginica" transform="translate(228.81818181818176,248.51515151515156)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="122" data-tooltip="sepal length: 7.700, sepal width: 2.800, color: virginica" transform="translate(515.1818181818182,248.51515151515156)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="123" data-tooltip="sepal length: 6.300, sepal width: 2.700, color: virginica" transform="translate(324.2727272727272,261.3939393939394)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="124" data-tooltip="sepal length: 6.700, sepal width: 3.300, color: virginica" transform="translate(378.8181818181818,184.12121212121218)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="125" data-tooltip="sepal length: 7.200, sepal width: 3.200, color: virginica" transform="translate(447.0,197.0)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="126" data-tooltip="sepal length: 6.200, sepal width: 2.800, color: virginica" transform="translate(310.6363636363637,248.51515151515156)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="127" data-tooltip="sepal length: 6.100, sepal width: 3.000, color: virginica" transform="translate(296.99999999999994,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="128" data-tooltip="sepal length: 6.400, sepal width: 2.800, color: virginica" transform="translate(337.90909090909093,248.51515151515156)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="129" data-tooltip="sepal length: 7.200, sepal width: 3.000, color: virginica" transform="translate(447.0,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="130" data-tooltip="sepal length: 7.400, sepal width: 2.800, color: virginica" transform="translate(474.2727272727273,248.51515151515156)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="131" data-tooltip="sepal length: 7.900, sepal width: 3.800, color: virginica" transform="translate(542.4545454545455,119.7272727272728)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="132" data-tooltip="sepal length: 6.400, sepal width: 2.800, color: virginica" transform="translate(337.90909090909093,248.51515151515156)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="133" data-tooltip="sepal length: 6.300, sepal width: 2.800, color: virginica" transform="translate(324.2727272727272,248.51515151515156)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="134" data-tooltip="sepal length: 6.100, sepal width: 2.600, color: virginica" transform="translate(296.99999999999994,274.27272727272725)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="135" data-tooltip="sepal length: 7.700, sepal width: 3.000, color: virginica" transform="translate(515.1818181818182,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="136" data-tooltip="sepal length: 6.300, sepal width: 3.400, color: virginica" transform="translate(324.2727272727272,171.24242424242428)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="137" data-tooltip="sepal length: 6.400, sepal width: 3.100, color: virginica" transform="translate(337.90909090909093,209.87878787878788)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="138" data-tooltip="sepal length: 6.000, sepal width: 3.000, color: virginica" transform="translate(283.3636363636364,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="139" data-tooltip="sepal length: 6.900, sepal width: 3.100, color: virginica" transform="translate(406.0909090909091,209.87878787878788)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="140" data-tooltip="sepal length: 6.700, sepal width: 3.100, color: virginica" transform="translate(378.8181818181818,209.87878787878788)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="141" data-tooltip="sepal length: 6.900, sepal width: 3.100, color: virginica" transform="translate(406.0909090909091,209.87878787878788)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="142" data-tooltip="sepal length: 5.800, sepal width: 2.700, color: virginica" transform="translate(256.09090909090907,261.3939393939394)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="143" data-tooltip="sepal length: 6.800, sepal width: 3.200, color: virginica" transform="translate(392.4545454545454,197.0)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="144" data-tooltip="sepal length: 6.700, sepal width: 3.300, color: virginica" transform="translate(378.8181818181818,184.12121212121218)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="145" data-tooltip="sepal length: 6.700, sepal width: 3.000, color: virginica" transform="translate(378.8181818181818,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="146" data-tooltip="sepal length: 6.300, sepal width: 2.500, color: virginica" transform="translate(324.2727272727272,287.1515151515151)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="147" data-tooltip="sepal length: 6.500, sepal width: 3.000, color: virginica" transform="translate(351.54545454545456,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="148" data-tooltip="sepal length: 6.200, sepal width: 3.400, color: virginica" transform="translate(310.6363636363637,171.24242424242428)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="149" data-tooltip="sepal length: 5.900, sepal width: 3.000, color: virginica" transform="translate(269.72727272727275,222.75757575757578)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g transform="translate(72.38961038961038,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.5</text></g></g><g transform="translate(140.57142857142858,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">5.0</text></g></g><g transform="translate(208.75324675324674,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">5.5</text></g></g><g transform="translate(276.93506493506493,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">6.0</text></g></g><g transform="translate(345.1168831168831,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">6.5</text></g></g><g transform="translate(413.2987012987013,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">7.0</text></g></g><g transform="translate(481.48051948051943,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">7.5</text></g></g><g transform="translate(549.6623376623377,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">8.0</text></g></g><g transform="translate(10.5,349.04545454545456)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2.0</text></g></g><g transform="translate(10.5,284.6515151515151)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2.5</text></g></g><g transform="translate(10.5,220.25757575757578)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3.0</text></g></g><g transform="translate(10.5,155.8636363636364)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3.5</text></g></g><g transform="translate(10.5,91.469696969697)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.0</text></g></g><g transform="translate(10.5,27.07575757575762)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.5</text></g></g></g></g></g></svg><script type="application/x-scittle">(let [container (.getElementById js/document "nsk-92b4468f-07ac-4157-8df0-011dc672a3b4") svg (.querySelector container "svg") tip-el (.createElement js/document "div")] (set! (.-className tip-el) "nsk-tooltip") (.appendChild container tip-el) (let [show! (fn [e] (when-let [el (.closest (.-target e) "[data-tooltip]")] (let [text (.getAttribute el "data-tooltip")] (when text (set! (.-textContent tip-el) text) (set! (.. tip-el -style -display) "block"))))) hide! (fn [_] (set! (.. tip-el -style -display) "none")) move! (fn [e] (let [r (.getBoundingClientRect container) x (+ (- (.-clientX e) (.-left r)) 12) y (+ (- (.-clientY e) (.-top r)) 12)] (set! (.. tip-el -style -left) (str x "px")) (set! (.. tip-el -style -top) (str y "px"))))] (.addEventListener svg "mouseover" show!) (.addEventListener svg "mouseout" hide!) (.addEventListener svg "mousemove" move!)))</script></div>
+</section>
+<section id="stale-repl-after-editing-source" class="level2">
+<h2 class="anchored" data-anchor-id="stale-repl-after-editing-source">Stale REPL After Editing Source</h2>
+<p><strong>Symptom</strong>: Changes to source files are not reflected in the REPL.</p>
+<p><strong>Cause</strong>: Clojure namespaces are loaded once. The REPL does not automatically reload when files change.</p>
+<p><strong>Fix</strong>: Use <code>:reload</code> when requiring namespaces:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> '[scicloj.napkinsketch.api <span class="at">:as</span> sk] <span class="at">:reload</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="changing-number-of-histogram-bins" class="level2">
+<h2 class="anchored" data-anchor-id="changing-number-of-histogram-bins">Changing Number of Histogram Bins</h2>
+<p><strong>Symptom</strong>: The histogram has too many or too few bins.</p>
+<p><strong>Cause</strong>: The default bin count is inferred from the data.</p>
+<p><strong>Fix</strong>: Pass <code>:bins</code> in the layer options:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> data/iris</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-histogram <span class="at">:sepal</span>_length {<span class="at">:normalize</span> <span class="at">:density</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<svg height="418.0" role="img" viewbox="0 0 600.0 418.0" width="600.0" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(300.0,402.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal length</text></g></g><g transform="translate(0.0,0.0)"><g><g><g><g transform="translate(30.0,30.0)"><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="340.0" stroke="none" width="540.0" x="0" y="0"></rect></g></g></g><g><g><g><polyline fill="none" points="81.81818181818181,30.0 81.81818181818181,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="150.0,30.0 150.0,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="218.18181818181816,30.0 218.18181818181816,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="286.3636363636364,30.0 286.3636363636364,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="354.54545454545456,30.0 354.54545454545456,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="422.72727272727275,30.0 422.72727272727275,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="490.9090909090909,30.0 490.9090909090909,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="559.0909090909091,30.0 559.0909090909091,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,354.54545454545456 570.0,354.54545454545456" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,321.4285714285714 570.0,321.4285714285714" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,288.3116883116883 570.0,288.3116883116883" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,255.1948051948051 570.0,255.1948051948051" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,222.07792207792195 570.0,222.07792207792195" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,188.96103896103878 570.0,188.96103896103878" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,155.84415584415567 570.0,155.84415584415567" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,122.72727272727252 570.0,122.72727272727252" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,89.61038961038935 570.0,89.61038961038935" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,56.493506493506175 570.0,56.493506493506175" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="54.545454545454504,354.54545454545456 109.09090909090911,354.54545454545456 109.09090909090911,255.1948051948052 54.545454545454504,255.1948051948052 54.545454545454504,354.54545454545456" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="109.09090909090911,354.54545454545456 163.63636363636357,354.54545454545456 163.63636363636357,100.64935064935008 109.09090909090911,100.64935064935008 109.09090909090911,354.54545454545456" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="163.63636363636357,354.54545454545456 218.18181818181816,354.54545454545456 218.18181818181816,133.76623376623374 163.63636363636357,133.76623376623374 163.63636363636357,354.54545454545456" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="218.18181818181816,354.54545454545456 272.72727272727275,354.54545454545456 272.72727272727275,45.45454545454544 218.18181818181816,45.45454545454544 218.18181818181816,354.54545454545456" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="272.72727272727275,354.54545454545456 327.2727272727273,354.54545454545456 327.2727272727273,45.45454545454544 272.72727272727275,45.45454545454544 272.72727272727275,354.54545454545456" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="327.2727272727273,354.54545454545456 381.8181818181818,354.54545454545456 381.8181818181818,199.99999999999966 327.2727272727273,199.99999999999966 327.2727272727273,354.54545454545456" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="381.8181818181818,354.54545454545456 436.36363636363626,354.54545454545456 436.36363636363626,177.92207792207753 381.8181818181818,177.92207792207753 381.8181818181818,354.54545454545456" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="436.36363636363626,354.54545454545456 490.9090909090909,354.54545454545456 490.9090909090909,288.31168831168833 436.36363636363626,288.31168831168833 436.36363636363626,354.54545454545456" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.7" points="490.9090909090909,354.54545454545456 545.4545454545455,354.54545454545456 545.4545454545455,288.31168831168833 490.9090909090909,288.31168831168833 490.9090909090909,354.54545454545456" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g transform="translate(72.38961038961038,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.5</text></g></g><g transform="translate(140.57142857142858,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">5.0</text></g></g><g transform="translate(208.75324675324674,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">5.5</text></g></g><g transform="translate(276.93506493506493,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">6.0</text></g></g><g transform="translate(345.1168831168831,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">6.5</text></g></g><g transform="translate(413.2987012987013,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">7.0</text></g></g><g transform="translate(481.48051948051943,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">7.5</text></g></g><g transform="translate(549.6623376623377,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">8.0</text></g></g><g transform="translate(10.5,349.04545454545456)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">0.0</text></g></g><g transform="translate(5.0,315.9285714285714)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">0.05</text></g></g><g transform="translate(10.5,282.8116883116883)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">0.1</text></g></g><g transform="translate(5.0,249.6948051948051)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">0.15</text></g></g><g transform="translate(10.5,216.57792207792195)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">0.2</text></g></g><g transform="translate(5.0,183.46103896103878)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">0.25</text></g></g><g transform="translate(10.5,150.34415584415567)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">0.3</text></g></g><g transform="translate(5.0,117.22727272727252)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">0.35</text></g></g><g transform="translate(10.5,84.11038961038935)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">0.4</text></g></g><g transform="translate(5.0,50.993506493506175)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">0.45</text></g></g></g></g></g></svg>
+</section>
+<section id="changing-line-thickness" class="level2">
+<h2 class="anchored" data-anchor-id="changing-line-thickness">Changing Line Thickness</h2>
+<p><strong>Symptom</strong>: Lines are too thin or too thick.</p>
+<p><strong>Fix</strong>: Pass <code>:size</code> in the layer options (controls stroke width):</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> {<span class="at">:x</span> [<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span>] <span class="at">:y</span> [<span class="dv">2</span> <span class="dv">4</span> <span class="dv">3</span> <span class="dv">5</span> <span class="dv">4</span>]}</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-line <span class="at">:x</span> <span class="at">:y</span> {<span class="at">:size</span> <span class="dv">3</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<svg height="418.0" role="img" viewbox="0 0 622.5 418.0" width="622.5" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(12.0,200.0)"><g transform="rotate(-90.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">y</text></g></g></g><g transform="translate(322.5,402.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">x</text></g></g><g transform="translate(22.5,0.0)"><g><g><g><g transform="translate(30.0,30.0)"><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="340.0" stroke="none" width="540.0" x="0" y="0"></rect></g></g></g><g><g><g><polyline fill="none" points="54.54545454545454,30.0 54.54545454545454,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="115.90909090909089,30.0 115.90909090909089,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="177.27272727272725,30.0 177.27272727272725,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="238.6363636363636,30.0 238.6363636363636,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="300.0,30.0 300.0,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="361.3636363636364,30.0 361.3636363636364,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="422.72727272727275,30.0 422.72727272727275,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="484.09090909090907,30.0 484.09090909090907,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="545.4545454545454,30.0 545.4545454545454,370.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,354.54545454545456 570.0,354.54545454545456" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,303.03030303030306 570.0,303.03030303030306" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,251.51515151515153 570.0,251.51515151515153" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,200.00000000000003 570.0,200.00000000000003" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,148.48484848484853 570.0,148.48484848484853" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,96.969696969697 570.0,96.969696969697" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,45.454545454545496 570.0,45.454545454545496" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="54.54545454545454,354.54545454545456 177.27272727272725,148.48484848484853 300.0,251.51515151515153 422.72727272727275,45.454545454545496 545.4545454545454,148.48484848484853" stroke="rgb(51,51,51)" stroke-opacity="1.0" stroke-width="3"></polyline></g></g></g><g transform="translate(45.11688311688311,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">1.0</text></g></g><g transform="translate(106.48051948051946,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">1.5</text></g></g><g transform="translate(167.84415584415584,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2.0</text></g></g><g transform="translate(229.20779220779218,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2.5</text></g></g><g transform="translate(290.57142857142856,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3.0</text></g></g><g transform="translate(351.93506493506493,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3.5</text></g></g><g transform="translate(413.2987012987013,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.0</text></g></g><g transform="translate(474.6623376623376,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.5</text></g></g><g transform="translate(536.0259740259739,388.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">5.0</text></g></g><g transform="translate(10.5,349.04545454545456)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2.0</text></g></g><g transform="translate(10.5,297.53030303030306)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2.5</text></g></g><g transform="translate(10.5,246.01515151515153)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3.0</text></g></g><g transform="translate(10.5,194.50000000000003)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3.5</text></g></g><g transform="translate(10.5,142.98484848484853)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.0</text></g></g><g transform="translate(10.5,91.469696969697)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4.5</text></g></g><g transform="translate(10.5,39.954545454545496)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">5.0</text></g></g></g></g></g></svg>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s Next</h2>
+<ul>
+<li><a href="./napkinsketch_book.api_reference.html"><strong>API Reference</strong></a> — complete function listing with docstrings</li>
+<li><a href="./napkinsketch_book.exploring_sketches.html"><strong>Exploring Sketches</strong></a> — inspect the data structures behind your plots</li>
+</ul>
+<div style="background-color:grey;height:2px;width:100%;"></div>
+<div><pre><small><small>source: <a href="https://github.com/scicloj/napkinsketch/blob/main/notebooks/napkinsketch_book/troubleshooting.clj">notebooks/napkinsketch_book/troubleshooting.clj</a></small></small></pre></div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./napkinsketch_book.faceting.html" class="pagination-link" aria-label="Faceting">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Faceting</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./napkinsketch_book.api_reference.html" class="pagination-link" aria-label="API Reference">
+        <span class="nav-page-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">API Reference</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
