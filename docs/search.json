@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Napkinsketch",
     "section": "",
-    "text": "1 Preface\nSimple and easy plotting\nNapkinSketch is a Clojure library for composable plotting, inspired by the Grammar of Graphics.",
+    "text": "1 Preface\nSimple and easy plotting\nCopy readme_files to notebooks path so Clay can find them for the book\nSimple and easy plotting\nNapkinSketch is a Clojure library for composable plotting, inspired by the Grammar of Graphics.",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
     ]
@@ -34,7 +34,7 @@
     "href": "index.html#quick-example",
     "title": "Napkinsketch",
     "section": "Quick example",
-    "text": "Quick example\n(require '[tablecloth.api :as tc]\n         '[scicloj.napkinsketch.api :as sk])\n\n(def iris (tc/dataset \"https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv\"\n                      {:key-fn keyword}))\n\n;; Scatter plot with color grouping\n(-&gt; iris\n    (sk/lay-point :sepal_length :sepal_width {:color :species}))\n\n;; Multiple layers — shared aesthetics via sk/view\n(-&gt; iris\n    (sk/view :sepal_length :sepal_width {:color :species})\n    ;; scatter plot\n    sk/lay-point\n    ;; linear model\n    sk/lay-lm)",
+    "text": "Quick example\n(ns readme\n  (:require [tablecloth.api :as tc]\n            [scicloj.napkinsketch.api :as sk]))\n\n(def iris (tc/dataset \"https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv\"\n                      {:key-fn keyword}))\nScatter plot with color grouping:\n(-&gt; iris\n    (sk/lay-point :sepal_length :sepal_width {:color :species})\n    sk/plot)\n\nMultiple layers — shared aesthetics via sk/view:\n(-&gt; iris\n    (sk/view :sepal_length :sepal_width {:color :species})\n    sk/lay-point\n    sk/lay-lm\n    sk/plot)",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
     ]
@@ -44,17 +44,7 @@
     "href": "index.html#documentation",
     "title": "Napkinsketch",
     "section": "Documentation",
-    "text": "Documentation\nSee the book for a full guide covering chart types, configuration, faceting, and API reference.",
-    "crumbs": [
-      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
-    ]
-  },
-  {
-    "objectID": "index.html#development",
-    "href": "index.html#development",
-    "title": "Napkinsketch",
-    "section": "Development",
-    "text": "Development\nSee the development guide for REPL setup, testing, notebook authoring, and deployment.",
+    "text": "Documentation\nFull documentation",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
     ]
@@ -64,7 +54,7 @@
     "href": "index.html#license",
     "title": "Napkinsketch",
     "section": "License",
-    "text": "License\nMIT\n\nsource: notebooks/index.clj",
+    "text": "License\nCopyright © 2025-2026 Scicloj\nDistributed under the MIT License.\n\nsource: notebooks/index.clj",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
     ]

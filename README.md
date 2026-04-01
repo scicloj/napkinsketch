@@ -1,8 +1,10 @@
+
 # Napkinsketch
 Simple and easy plotting
 
-NapkinSketch is a Clojure library for composable plotting, inspired by 
+NapkinSketch is a Clojure library for composable plotting, inspired by
 the Grammar of Graphics.
+
 
 ## General info
 
@@ -13,6 +15,7 @@ the Grammar of Graphics.
 |Deps |[![Clojars Project](https://img.shields.io/clojars/v/org.scicloj/napkinsketch.svg)](https://clojars.org/org.scicloj/napkinsketch)|
 |License |[MIT](https://github.com/scicloj/napkinsketch/blob/main/LICENSE)|
 |Status |🛠alpha🛠|
+
 
 ## Usage
 
@@ -26,38 +29,42 @@ Napkinsketch is intended to be used with data-visualization tools
 that support the [Kindly](https://scicloj.github.io/kindly) convention
 such as [Clay](https://scicloj.github.io/clay/).
 
-## Quick example
 
-```clojure
-(require '[tablecloth.api :as tc]
-         '[scicloj.napkinsketch.api :as sk])
+## Quick example
+```clj
+(ns readme
+  (:require [tablecloth.api :as tc]
+            [scicloj.napkinsketch.api :as sk]))
 
 (def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                       {:key-fn keyword}))
-
-;; Scatter plot with color grouping
+```
+Scatter plot with color grouping:
+```clj
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk/plot)
+```
+![](readme_files/image0.svg)
 
-;; Multiple layers — shared aesthetics via sk/view
+Multiple layers — shared aesthetics via `sk/view`:
+```clj
 (-> iris
     (sk/view :sepal_length :sepal_width {:color :species})
-    ;; scatter plot
     sk/lay-point
-    ;; linear model
-    sk/lay-lm)
+    sk/lay-lm
+    sk/plot)
 ```
+![](readme_files/image1.svg)
+
 
 ## Documentation
 
-See the [book](https://scicloj.github.io/napkinsketch/) for a full guide
-covering chart types, configuration, faceting, and API reference.
+[Full documentation](https://scicloj.github.io/napkinsketch/)
 
-## Development
-
-See the [development guide](https://scicloj.github.io/napkinsketch/napkinsketch_book.development.html)
-for REPL setup, testing, notebook authoring, and deployment.
 
 ## License
 
-MIT
+Copyright © 2025-2026 Scicloj
+
+Distributed under the MIT License.

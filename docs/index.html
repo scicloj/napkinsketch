@@ -78,7 +78,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-13a4be051d73a9612a977567fe3c17bb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-47c769d3d3297953383b17cda1be3526.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -376,7 +376,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a></li>
   <li><a href="#quick-example" id="toc-quick-example" class="nav-link" data-scroll-target="#quick-example">Quick example</a></li>
   <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation">Documentation</a></li>
-  <li><a href="#development" id="toc-development" class="nav-link" data-scroll-target="#development">Development</a></li>
   <li><a href="#license" id="toc-license" class="nav-link" data-scroll-target="#license">License</a></li>
   </ul></li>
   </ul>
@@ -419,6 +418,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Simple and easy plotting</p>
 <section id="preface" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Preface</h1>
+<p>Copy readme_files to notebooks path so Clay can find them for the book</p>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">nil</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Simple and easy plotting</p>
 <p>NapkinSketch is a Clojure library for composable plotting, inspired by the Grammar of Graphics.</p>
 <section id="general-info" class="level2">
 <h2 class="anchored" data-anchor-id="general-info">General info</h2>
@@ -450,40 +454,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="usage" class="level2">
 <h2 class="anchored" data-anchor-id="usage">Usage</h2>
 <p>Add to your <code>deps.edn</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>org.scicloj/napkinsketch {<span class="at">:mvn/version</span> <span class="st">"0.1.0"</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>org.scicloj/napkinsketch {<span class="at">:mvn/version</span> <span class="st">"0.1.0"</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Napkinsketch is intended to be used with data-visualization tools that support the <a href="https://scicloj.github.io/kindly">Kindly</a> convention such as <a href="https://scicloj.github.io/clay/">Clay</a>.</p>
 </section>
 <section id="quick-example" class="level2">
 <h2 class="anchored" data-anchor-id="quick-example">Quick example</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> '[tablecloth.api <span class="at">:as</span> tc]</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>         '[scicloj.napkinsketch.api <span class="at">:as</span> sk])</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> iris </span>(tc/dataset <span class="st">"https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                      {<span class="at">:key-fn</span> <span class="kw">keyword</span>}))</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">;; Scatter plot with color grouping</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> iris</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:sepal</span>_length <span class="at">:sepal</span>_width {<span class="at">:color</span> <span class="at">:species</span>}))</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">;; Multiple layers — shared aesthetics via sk/view</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> iris</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    (sk/view <span class="at">:sepal</span>_length <span class="at">:sepal</span>_width {<span class="at">:color</span> <span class="at">:species</span>})</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">;; scatter plot</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    sk/lay-point</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">;; linear model</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    sk/lay-lm)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clj code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> readme</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span> [tablecloth.api <span class="at">:as</span> tc]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>            [scicloj.napkinsketch.api <span class="at">:as</span> sk]))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> iris </span>(tc/dataset <span class="st">"https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                      {<span class="at">:key-fn</span> <span class="kw">keyword</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Scatter plot with color grouping:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clj code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> iris</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:sepal</span>_length <span class="at">:sepal</span>_width {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    sk/plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><img src="readme_files/image0.svg" class="img-fluid"></p>
+<p>Multiple layers — shared aesthetics via <code>sk/view</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode clj code-with-copy"><code class="sourceCode clojure"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> iris</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    (sk/view <span class="at">:sepal</span>_length <span class="at">:sepal</span>_width {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    sk/lay-point</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    sk/lay-lm</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    sk/plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><img src="readme_files/image1.svg" class="img-fluid"></p>
 </section>
 <section id="documentation" class="level2">
 <h2 class="anchored" data-anchor-id="documentation">Documentation</h2>
-<p>See the <a href="https://scicloj.github.io/napkinsketch/">book</a> for a full guide covering chart types, configuration, faceting, and API reference.</p>
-</section>
-<section id="development" class="level2">
-<h2 class="anchored" data-anchor-id="development">Development</h2>
-<p>See the <a href="https://scicloj.github.io/napkinsketch/napkinsketch_book.development.html">development guide</a> for REPL setup, testing, notebook authoring, and deployment.</p>
+<p><a href="https://scicloj.github.io/napkinsketch/">Full documentation</a></p>
 </section>
 <section id="license" class="level2">
 <h2 class="anchored" data-anchor-id="license">License</h2>
-<p>MIT</p>
+<p>Copyright © 2025-2026 Scicloj</p>
+<p>Distributed under the MIT License.</p>
 <div style="background-color:grey;height:2px;width:100%;"></div>
 <div><pre><small><small>source: <a href="https://github.com/scicloj/napkinsketch/blob/main/notebooks/index.clj">notebooks/index.clj</a></small></small></pre></div>
 
