@@ -3,39 +3,51 @@ format:
     toc: true
     toc-depth: 4
     theme: [cosmo, notebooks/custom.scss]
-    toc-expand: false
     number-depth: 1
     include-after-body:
       text: |2
 
+
                 <script>
                 document.addEventListener('DOMContentLoaded', function () {
-                  document.querySelectorAll('#TOC a').forEach(function (link) {
-                    const parent = link.parentElement;
-                    const siblings = parent.querySelector('ul');
-                    if (siblings) {
-                      const chevron = document.createElement('span');
-                      chevron.textContent = '▶';
-                      chevron.style.cssText = `
-                        display: inline-block;
-                        margin-left: 8px;
-                        transition: transform 0.25s ease;
-                        font-size: 1em;
-                        color: #2780e3;
-                        vertical-align: middle;
-                      `;
-                      link.appendChild(chevron);
-                      link.style.cursor = 'pointer';
-                      link.style.fontWeight = 'bold';
+                  const toc = document.getElementById('TOC');
+                  if (toc) {
+                    const tocHeading = toc.querySelector('h2');
+                    if (tocHeading) tocHeading.style.display = 'none';
 
-                      link.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        const isOpen = siblings.style.display !== 'none';
-                        siblings.style.display = isOpen ? 'none' : 'block';
-                        chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
-                      });
-                    }
-                  });
+                    const topList = toc.querySelector('ul');
+
+                    const btn = document.createElement('button');
+                    btn.textContent = '⌃';
+                    btn.style.cssText = `
+                      display: block;
+                      width: 100%;
+                      padding: 4px 8px;
+                      margin-bottom: 8px;
+                      font-size: 2em;
+                      cursor: pointer;
+                      border: none;
+                      outline: none;
+                      box-shadow: none;
+                      background: transparent;
+                      color: #2780e3;
+                      text-align: left;
+                      transition: transform 0.25s ease;
+                      transform-origin: center;
+                      -webkit-appearance: none;
+                      appearance: none;
+                    `;
+
+                    let expanded = true;
+
+                    btn.addEventListener('click', function () {
+                      expanded = !expanded;
+                      if (topList) topList.style.display = expanded ? 'block' : 'none';
+                      btn.style.transform = expanded ? 'rotate(0deg)' : 'rotate(180deg)';
+                    });
+
+                    toc.insertBefore(btn, toc.firstChild);
+                  }
                 });
                 </script>
   revealjs: {theme: solarized, navigation-mode: vertical, transition: slide, background-transition: fade, incremental: true}

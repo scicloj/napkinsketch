@@ -71,7 +71,7 @@
                                      g (first (:groups (first (:layers p))))]
                                  (and (= :linear (get-in p [:x-scale :type]))
                                       (= 1 (count (:groups (first (:layers p)))))
-                                      (= [0.2 0.2 0.2 1.0] (:color g))))))])
+                                      (= (scicloj.napkinsketch.impl.defaults/hex->rgba (:default-color (scicloj.napkinsketch.impl.defaults/config))) (:color g))))))])
 
 ;; And the resulting plot:
 
@@ -89,7 +89,7 @@ scatter-views
 ;; - `:legend` is `nil` — no color mapping
 ;; - `:layout` has `:legend-w 0` — no space reserved for a legend
 ;; - The single layer has `:mark :point` and a single `:groups` entry with all 5 data
-;;   points, colored in default gray `[0.2 0.2 0.2 1.0]`
+;;   points, colored in the default color (steel blue)
 
 ;; ## Column Selection
 ;;
@@ -306,7 +306,7 @@ fixed-color-views
 ;; ### No color — default gray
 
 ;; Look back at the first scatter sketch above — its single `:groups`
-;; entry has `:color [0.2 0.2 0.2 1.0]` (dark gray). No legend.
+;; entry has the default color (steel blue). No legend.
 
 ;; ## Grouping
 ;;

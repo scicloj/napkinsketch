@@ -367,7 +367,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+        <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
@@ -1229,34 +1229,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
 </div> <!-- /content -->
 
+
         <script>
         document.addEventListener('DOMContentLoaded', function () {
-          document.querySelectorAll('#TOC a').forEach(function (link) {
-            const parent = link.parentElement;
-            const siblings = parent.querySelector('ul');
-            if (siblings) {
-              const chevron = document.createElement('span');
-              chevron.textContent = '▶';
-              chevron.style.cssText = `
-                display: inline-block;
-                margin-left: 8px;
-                transition: transform 0.25s ease;
-                font-size: 1em;
-                color: #2780e3;
-                vertical-align: middle;
-              `;
-              link.appendChild(chevron);
-              link.style.cursor = 'pointer';
-              link.style.fontWeight = 'bold';
+          const toc = document.getElementById('TOC');
+          if (toc) {
+            const tocHeading = toc.querySelector('h2');
+            if (tocHeading) tocHeading.style.display = 'none';
 
-              link.addEventListener('click', function (e) {
-                e.preventDefault();
-                const isOpen = siblings.style.display !== 'none';
-                siblings.style.display = isOpen ? 'none' : 'block';
-                chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
-              });
-            }
-          });
+            const topList = toc.querySelector('ul');
+
+            const btn = document.createElement('button');
+            btn.textContent = '⌃';
+            btn.style.cssText = `
+              display: block;
+              width: 100%;
+              padding: 4px 8px;
+              margin-bottom: 8px;
+              font-size: 2em;
+              cursor: pointer;
+              border: none;
+              outline: none;
+              box-shadow: none;
+              background: transparent;
+              color: #2780e3;
+              text-align: left;
+              transition: transform 0.25s ease;
+              transform-origin: center;
+              -webkit-appearance: none;
+              appearance: none;
+            `;
+
+            let expanded = true;
+
+            btn.addEventListener('click', function () {
+              expanded = !expanded;
+              if (topList) topList.style.display = expanded ? 'block' : 'none';
+              btn.style.transform = expanded ? 'rotate(0deg)' : 'rotate(180deg)';
+            });
+
+            toc.insertBefore(btn, toc.firstChild);
+          }
         });
         </script>
 

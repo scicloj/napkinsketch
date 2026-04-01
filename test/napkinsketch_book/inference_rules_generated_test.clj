@@ -36,7 +36,10 @@
       (and
        (= :linear (get-in p [:x-scale :type]))
        (= 1 (count (:groups (first (:layers p)))))
-       (= [0.2 0.2 0.2 1.0] (:color g))))))
+       (=
+        (scicloj.napkinsketch.impl.defaults/hex->rgba
+         (:default-color (scicloj.napkinsketch.impl.defaults/config)))
+        (:color g))))))
    v6_l62)))
 
 

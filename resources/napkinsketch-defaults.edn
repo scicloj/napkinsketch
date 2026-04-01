@@ -16,7 +16,7 @@
  :point-stroke "none" :point-stroke-width 0
 
  ;; Bars and lines
- :bar-opacity 0.7 :line-width 2 :grid-stroke-width 0.6
+ :bar-opacity 0.85 :line-width 2.5 :grid-stroke-width 0.6
 
  ;; Annotations
  :annotation-stroke "#333" :annotation-dash [4 3] :band-opacity 0.15
