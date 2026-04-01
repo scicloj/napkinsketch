@@ -42,7 +42,9 @@ such as [Clay](https://scicloj.github.io/clay/).
 ;; Multiple layers — shared aesthetics via sk/view
 (-> iris
     (sk/view :sepal_length :sepal_width {:color :species})
+    ;; scatter plot
     sk/lay-point
+    ;; linear model
     sk/lay-lm)
 ```
 
