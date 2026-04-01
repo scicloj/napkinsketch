@@ -42,7 +42,9 @@ such as [Clay](https://scicloj.github.io/clay/).
 Scatter plot with color grouping:
 ```clj
 (-> iris
+    ;; scatterplot layer: 
     (sk/lay-point :sepal_length :sepal_width {:color :species})
+    ;; eager rendering (usually not needed):
     sk/plot)
 ```
 ![](readme_files/image0.svg)
@@ -50,9 +52,13 @@ Scatter plot with color grouping:
 Multiple layers — shared aesthetics via `sk/view`:
 ```clj
 (-> iris
+    ;; aesthetics shared across layers: 
     (sk/view :sepal_length :sepal_width {:color :species})
+    ;; scatterplot layer: 
     sk/lay-point
+    ;; linear model layer:
     sk/lay-lm
+    ;; eager rendering (usually not needed):
     sk/plot)
 ```
 ![](readme_files/image1.svg)
