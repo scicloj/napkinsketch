@@ -23,8 +23,6 @@
    [scicloj.napkinsketch.impl.stat :as stat]
    [scicloj.napkinsketch.impl.extract :as extract]
    [scicloj.napkinsketch.render.mark :as mark]
-   ;; SVG renderer — reload ensures protocol extensions are fresh
-   [scicloj.napkinsketch.render.svg :as svg]
    ;; Method registry — to register our new chart type
    [scicloj.napkinsketch.method :as method]
    ;; Membrane — drawing primitives
