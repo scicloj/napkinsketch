@@ -149,7 +149,13 @@
                    :doc "Waterfall — running total with increase/decrease bars."})
 
 ;; Now we can plot it. Since there is no built-in `sk/lay-waterfall`,
-;; we use `sk/lay` with the method lookup:
+;; we use `sk/lay` with the method lookup.
+;;
+;; Normally you would use `sk/options` instead of `sk/plot` — that
+;; keeps the result as a composable plot specification that auto-renders
+;; in notebooks. Here we use `sk/plot` to force eager rendering to SVG
+;; before the cleanup section at the end of this notebook removes the
+;; extension's defmethods:
 
 (-> pnl-data
     (sk/view :category :amount)

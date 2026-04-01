@@ -171,7 +171,7 @@
 
 
 (def
- v16_l154
+ v16_l160
  (->
   pnl-data
   (sk/view :category :amount)
@@ -181,18 +181,18 @@
 
 
 (deftest
- t17_l160
+ t17_l166
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 6 (:polygons s)))))
-   v16_l154)))
+   v16_l160)))
 
 
 (def
- v19_l171
+ v19_l177
  (defn
   lay-waterfall
   ([views] (sk/lay views (method/lookup :waterfall)))
@@ -206,7 +206,7 @@
 
 
 (def
- v21_l178
+ v21_l184
  (->
   pnl-data
   (lay-waterfall :category :amount)
@@ -214,13 +214,13 @@
 
 
 (deftest
- t22_l182
+ t22_l188
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 6 (:polygons s)))) v21_l178)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 6 (:polygons s)))) v21_l184)))
 
 
 (def
- v24_l190
+ v24_l196
  (defmethod
   stat/compute-stat
   [:waterfall :doc]
@@ -229,7 +229,7 @@
 
 
 (def
- v25_l193
+ v25_l199
  (defmethod
   extract/extract-layer
   [:waterfall :doc]
@@ -238,7 +238,7 @@
 
 
 (def
- v26_l196
+ v26_l202
  (defmethod
   mark/layer->membrane
   [:waterfall :doc]
@@ -246,43 +246,43 @@
   "Filled rectangles positioned by running total"))
 
 
-(def v27_l199 (sk/stat-doc :waterfall))
+(def v27_l205 (sk/stat-doc :waterfall))
 
 
 (deftest
- t28_l201
+ t28_l207
  (is
   ((fn [v] (= "Compute running totals for waterfall bars" v))
-   v27_l199)))
+   v27_l205)))
 
 
-(def v30_l207 (remove-method stat/compute-stat :waterfall))
+(def v30_l213 (remove-method stat/compute-stat :waterfall))
 
 
-(def v31_l208 (remove-method stat/compute-stat [:waterfall :doc]))
+(def v31_l214 (remove-method stat/compute-stat [:waterfall :doc]))
 
 
-(def v32_l209 (remove-method extract/extract-layer :waterfall))
+(def v32_l215 (remove-method extract/extract-layer :waterfall))
 
 
-(def v33_l210 (remove-method extract/extract-layer [:waterfall :doc]))
+(def v33_l216 (remove-method extract/extract-layer [:waterfall :doc]))
 
 
-(def v34_l211 (remove-method mark/layer->membrane :waterfall))
+(def v34_l217 (remove-method mark/layer->membrane :waterfall))
 
 
-(def v35_l212 (remove-method mark/layer->membrane [:waterfall :doc]))
+(def v35_l218 (remove-method mark/layer->membrane [:waterfall :doc]))
 
 
 (def
- v36_l213
+ v36_l219
  (swap!
   @(resolve 'scicloj.napkinsketch.method/registry*)
   dissoc
   :waterfall))
 
 
-(def v38_l217 (nil? (method/lookup :waterfall)))
+(def v38_l223 (nil? (method/lookup :waterfall)))
 
 
-(deftest t39_l219 (is ((fn [v] (true? v)) v38_l217)))
+(deftest t39_l225 (is ((fn [v] (true? v)) v38_l223)))
