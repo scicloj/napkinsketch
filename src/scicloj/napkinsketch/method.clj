@@ -91,8 +91,8 @@
 (register! :summary {:mark :pointrange :stat :summary :accepts [:size] :doc "Summary — mean ± standard error per category."})
 (register! :errorbar {:mark :errorbar :stat :identity :accepts [:ymin :ymax :size :nudge-x :nudge-y] :doc "Errorbar — vertical error bars."})
 (register! :lollipop {:mark :lollipop :stat :identity :accepts [:size] :doc "Lollipop — stem with dot."})
-(register! :text {:mark :text :stat :identity :accepts [:text] :doc "Text — data-driven labels."})
-(register! :label {:mark :label :stat :identity :accepts [:text] :doc "Label — text with background box."})
+(register! :text {:mark :text :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Text — data-driven labels."})
+(register! :label {:mark :label :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Label — text with background box."})
 (register! :rug {:mark :rug :stat :identity :x-only true :accepts [:side] :doc "Rug — axis-margin tick marks."})
 
 ;; ---- Annotation constructors ----

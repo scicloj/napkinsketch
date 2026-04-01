@@ -194,14 +194,16 @@
                  :xs xs :ys ys}))}))
 
 (defmethod extract-layer :text [view stat all-colors cfg]
-  {:mark :text
-   :style {:font-size (or (:font-size view) 10)}
-   :groups (extract-xy-groups view stat all-colors cfg :with-labels? true)})
+  (-> {:mark :text
+       :style {:font-size (or (:font-size view) 10)}
+       :groups (extract-xy-groups view stat all-colors cfg :with-labels? true)}
+      (apply-nudge view)))
 
 (defmethod extract-layer :label [view stat all-colors cfg]
-  {:mark :label
-   :style {:font-size (or (:font-size view) 10)}
-   :groups (extract-xy-groups view stat all-colors cfg :with-labels? true)})
+  (-> {:mark :label
+       :style {:font-size (or (:font-size view) 10)}
+       :groups (extract-xy-groups view stat all-colors cfg :with-labels? true)}
+      (apply-nudge view)))
 
 (defmethod extract-layer :area [view stat all-colors cfg]
   (cond-> {:mark :area

@@ -11,49 +11,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Public API** (`scicloj.napkinsketch.api`): `view`, `lay`, `plot`, `sketch`,
   `views->sketch`, `sketch->membrane`, `membrane->figure`, `sketch->figure`,
   `svg-summary`, `valid-sketch?`, `explain-sketch`, `config`, `set-config!`,
-  `with-config`, `arrange`, `save`
-- **28 mark constructors**: point, line, step, histogram, bar, stacked-bar,
-  stacked-bar-fill, value-bar, lm, loess, text, label, area, stacked-area,
-  density, tile, density2d, contour, ridgeline, boxplot, violin, rug, summary,
-  errorbar, lollipop, rule-v, rule-h, band-v, band-h
-- **String column names accepted**: column references can be keywords or strings;
-  datasets with string column names are auto-normalized to keywords
-- **Named CSS colors**: `"red"`, `"steelblue"`, and other CSS color names
-  accepted as fixed colors alongside hex strings like `"#FF0000"`
-- **Aesthetics**: `:color` (column or numeric for continuous), `:alpha`,
-  `:size`, `:shape`, `:group`, `:text`, `:ymin`, `:ymax`
-- **Stats**: identity, bin, count, lm, loess, kde, boxplot, violin, bin2d,
-  kde2d, summary
-- **Scales**: linear, log, categorical, date (auto-detected)
-- **Coordinates**: cartesian, flip, polar, fixed (1:1 aspect ratio)
-- **Faceting**: `facet` (wrap), `facet-grid` (row×column), `cross`, `pairs`,
-  `distribution` — with free/shared scales
-- **Confidence ribbons**: `(sk/lm {:se true})` and `(sk/loess {:se true})`
-  with configurable confidence level
-- **Continuous color**: numeric `:color` → viridis gradient with continuous
-  legend (20 pre-computed stops, serializable)
-- **Diverging color**: `:color-scale :diverging` with `:color-midpoint`
-- **7,000+ palettes** via clojure2d.color integration — keyword, vector, or
-  explicit `{:category "#hex"}` map
-- **Layered config system**: per-call options > `with-config` > `set-config!` >
-  `napkinsketch.edn` > library defaults — theme deep-merges
-- **Multi-plot composition**: `sk/arrange` for CSS grid layout of independent plots
-- **Labels**: `sk/labs` with `:title`, `:subtitle`, `:caption`, `:x`, `:y`
+  `with-config`, `arrange`, `save`, `options`, `facet`, `facet-grid`, `coord`,
+  `scale`, `cross`, `distribution`, `views-of`, `plot-spec?`
+- **25 layer functions**: `lay-point`, `lay-line`, `lay-step`, `lay-histogram`,
+  `lay-bar`, `lay-stacked-bar`, `lay-stacked-bar-fill`, `lay-value-bar`,
+  `lay-lm`, `lay-loess`, `lay-text`, `lay-label`, `lay-area`, `lay-stacked-area`,
+  `lay-density`, `lay-tile`, `lay-density2d`, `lay-contour`, `lay-ridgeline`,
+  `lay-boxplot`, `lay-violin`, `lay-rug`, `lay-summary`, `lay-errorbar`,
+  `lay-lollipop`
 - **Annotations**: `rule-v`, `rule-h`, `band-v`, `band-h`
-- **Interactivity**: tooltip and brush selection via Scittle scripts
-- **Sketch validation**: Malli schema with `valid-sketch?` and `explain-sketch`
-- **dtype-next integration**: numeric arrays (xs, ys, sizes, etc.) stored as
-  dtype-next buffers at the sketch boundary for efficiency
-- **19 notebooks** (~500 tests, ~750 assertions): quickstart, core_concepts,
-  inference_rules, glossary, scatter, distributions, ranking, evolution,
-  relationships, polar, cookbook, configuration, customization, faceting,
-  api_reference, exploring_sketches, architecture, extensibility, edge_cases
+- **PlotSpec auto-rendering**: layer functions return a PlotSpec that
+  auto-renders in Kindly-compatible notebooks — no explicit `sk/plot` needed
+- **Input formats**: Tablecloth datasets, maps of columns, sequences of row
+  maps, CSV/URL paths — all coerced to tech.ml.dataset internally
+- **String column names**: column references can be keywords or strings
+- **Named CSS colors**: `"red"`, `"steelblue"`, etc. alongside hex strings
+- **Aesthetics**: `:color` (categorical or continuous), `:alpha`, `:size`,
+  `:shape`, `:group`, `:text`, `:ymin`, `:ymax`
+- **Stats**: identity, bin, count, lm (linear model), loess (local regression),
+  kde (kernel density), boxplot, violin, bin2d, kde2d, summary
+- **Scales**: linear, log, categorical, datetime (auto-detected)
+- **Coordinates**: cartesian, flip, polar, fixed (1:1 aspect ratio)
+- **Faceting**: `facet` (wrap), `facet-grid` (row×column), `cross` (SPLOM),
+  `distribution` (diagonal histograms)
+- **Confidence ribbons**: `{:se true}` on lm and loess methods
+- **Continuous color**: numeric `:color` → viridis gradient with color bar legend
+- **Diverging color**: `:color-scale :diverging` with `:color-midpoint`
+- **7,000+ palettes** via clojure2d integration — keyword, vector, or explicit map
+- **Layered config**: per-call > `with-config` > `set-config!` > `napkinsketch.edn`
+  \> library defaults — theme deep-merges
+- **Multi-plot dashboards**: `sk/arrange` for CSS grid layout
+- **Annotations**: vertical/horizontal rules and shaded bands
+- **Interactivity**: tooltip and brush selection via JavaScript
+- **Sketch validation**: Malli schema with `valid-sketch?` and `explain-sketch`;
+  open to custom marks via `keyword?` (not closed enum)
+- **Unknown option warnings**: `lay-*` functions warn on unrecognized option keys
+- **Extensibility**: 8 multimethod extension points with `[:key :doc]`
+  self-documenting pattern; end-to-end waterfall chart example in notebooks
+- **24 notebooks** (~595 tests, ~948 assertions): quickstart, datasets,
+  core_concepts, inference_rules, methods, glossary, scatter, distributions,
+  ranking, change_over_time, relationships, polar, cookbook, configuration,
+  customization, faceting, troubleshooting, api_reference, exploring_sketches,
+  architecture, extensibility, waterfall_extension, edge_cases, development
 
 ### Architecture
 - **Four-stage pipeline**: views → sketch → membrane → figure
-- **Sketch is plain data**: Clojure maps with dtype-next buffers, no functions/datasets/membrane types
-- **`impl/` vs `render/` boundary**: pure data transformations vs membrane-dependent rendering
-- **Multimethod extensibility**: `compute-stat`, `extract-layer`, `layer->membrane`,
-  `sketch->figure`, `membrane->figure`
-- **ToSVG protocol**: extend-protocol for membrane→SVG conversion
-- **Position system**: `impl/position.clj` centralizes dodge/stack/fill transforms
+- **Sketch is plain data**: Clojure maps with dtype-next buffers, serializable
+- **`impl/` vs `render/` boundary**: pure data transformations vs membrane rendering
+- **Method registry**: keyword → {mark, stat, position, doc, accepts} with
+  `method/register!` for third-party extensions
+- **R type 7 quartiles**: boxplot uses ggplot2/R-compatible quantile method
+- **2D Silverman bandwidth**: KDE2D uses correct d=2 formula

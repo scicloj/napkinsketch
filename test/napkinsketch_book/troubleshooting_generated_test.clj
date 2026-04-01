@@ -45,7 +45,7 @@
 
 (def
  v15_l142
- (-> data/iris (sk/lay-histogram :sepal_length {:bins 15})))
+ (-> data/iris (sk/lay-histogram :sepal_length {:normalize :density})))
 
 
 (deftest
@@ -55,9 +55,7 @@
 
 (def
  v18_l153
- (->
-  {:x [1 2 3 4 5], :y [2 4 3 5 4]}
-  (sk/lay-line :x :y {:stroke-width 3})))
+ (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} (sk/lay-line :x :y {:size 3})))
 
 
 (deftest

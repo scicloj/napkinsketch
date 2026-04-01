@@ -140,7 +140,7 @@
 ;; **Fix**: Pass `:bins` in the layer options:
 
 (-> data/iris
-    (sk/lay-histogram :sepal_length {:bins 15}))
+    (sk/lay-histogram :sepal_length {:normalize :density}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -148,10 +148,10 @@
 ;;
 ;; **Symptom**: Lines are too thin or too thick.
 ;;
-;; **Fix**: Pass `:stroke-width` in the layer options:
+;; **Fix**: Pass `:size` in the layer options (controls stroke width):
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
-    (sk/lay-line :x :y {:stroke-width 3}))
+    (sk/lay-line :x :y {:size 3}))
 
 (kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
 
