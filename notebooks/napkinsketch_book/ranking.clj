@@ -110,7 +110,7 @@
                            (and (= 1 (:panels s))
                                 (= 4 (:polygons s)))))])
 
-;; ## Lollipop
+;; ## [Lollipop](https://en.wikipedia.org/wiki/Lollipop_chart)
 
 ;; Stem + dot — a lighter alternative to bar charts.
 

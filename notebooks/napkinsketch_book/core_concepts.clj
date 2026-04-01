@@ -522,7 +522,7 @@ data/iris
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; `sk/scale` changes how a numeric axis is drawn. `:log` applies a
-;; logarithmic transformation — useful when values span a wide
+;; [logarithmic](https://en.wikipedia.org/wiki/Logarithmic_scale) transformation — useful when values span a wide
 ;; range, so that small and large values are both visible.
 ;;
 ;; Here we use a dataset where values vary by orders of magnitude:

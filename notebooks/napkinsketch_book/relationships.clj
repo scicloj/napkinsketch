@@ -82,7 +82,7 @@
                            (and (= 50 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; ## Heatmap (Auto-Binned)
+;; ## [Heatmap](https://en.wikipedia.org/wiki/Heat_map) (Auto-Binned)
 
 ;; Bin x and y into a grid, count points per cell.
 
@@ -133,7 +133,7 @@
                            (and (= 150 (:points s))
                                 (pos? (:visible-tiles s)))))])
 
-;; ## Contour Lines
+;; ## [Contour](https://en.wikipedia.org/wiki/Contour_line) Lines
 
 ;; Iso-density contour lines from 2D KDE.
 

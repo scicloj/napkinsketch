@@ -1,4 +1,4 @@
-;; # Polar Coordinates
+;; # [Polar Coordinates](https://en.wikipedia.org/wiki/Polar_coordinate_system)
 ;;
 ;; `(sk/coord :polar)` maps x to angle and y to radius. Bars become
 ;; arc-interpolated wedges (rose charts), and scatter points wrap into

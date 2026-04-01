@@ -22,7 +22,7 @@
 
 ;; ### Boxplot with jittered points
 ;;
-;; Overlay raw observations on a boxplot summary. The auto-jitter
+;; Overlay raw observations on a boxplot summary. The auto-[jitter](https://en.wikipedia.org/wiki/Jitter)
 ;; detects the categorical axis and constrains points to the band width.
 
 (-> data/iris
@@ -153,7 +153,7 @@
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; ### Points with error bars
+;; ### Points with [Error Bars](https://en.wikipedia.org/wiki/Error_bar)
 ;;
 ;; Combining `point` and `errorbar` layers shows measurements
 ;; with uncertainty.
@@ -340,7 +340,7 @@
                            (and (= 1 (:panels s))
                                 (= 20 (:points s)))))])
 
-;; ### LOESS (Local Regression) Confidence Ribbon
+;; ### LOESS (Local Regression) [Confidence Ribbon](https://en.wikipedia.org/wiki/Confidence_band)
 ;;
 ;; Add `{:se true}` to a LOESS smoother for a bootstrap confidence band.
 

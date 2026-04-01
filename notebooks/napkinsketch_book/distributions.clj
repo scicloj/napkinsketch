@@ -213,7 +213,7 @@
             (and (= 1 (:panels s))
                  (= 3 (:polygons s)))))])
 
-;; ## Ridgeline Plot
+;; ## [Ridgeline](https://en.wikipedia.org/wiki/Ridgeline_plot) Plot
 ;;
 ;; Overlapping density curves stacked vertically by category — good
 ;; for comparing distribution shapes across many groups.

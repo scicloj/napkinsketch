@@ -108,7 +108,7 @@
                            (and (= 1 (:panels s))
                                 (= 1 (:polygons s)))))])
 
-;; ## Stacked Area
+;; ## [Stacked Area](https://en.wikipedia.org/wiki/Area_chart)
 
 ;; Each group fills above the previous.
 

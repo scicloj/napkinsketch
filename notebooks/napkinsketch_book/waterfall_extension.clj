@@ -1,7 +1,7 @@
 ;; # Extension Example: Waterfall Chart
 ;;
 ;; This notebook walks through building a custom chart type from
-;; scratch — a **waterfall chart** that shows running totals as
+;; scratch — a **[waterfall chart](https://en.wikipedia.org/wiki/Waterfall_chart)** that shows running totals as
 ;; colored bars (green for increases, red for decreases).
 ;;
 ;; It demonstrates all three extension points needed for a new mark:
