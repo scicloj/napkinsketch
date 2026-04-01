@@ -3,7 +3,9 @@
    Produces layer descriptor maps — plain Clojure maps with mark type,
    style, and groups of data-space coordinates."
   (:require [scicloj.napkinsketch.impl.defaults :as defaults]
-            [tech.v3.datatype.functional :as dfn]))
+            [tech.v3.datatype.functional :as dfn]
+            [tablecloth.api :as tc]
+            [tech.v3.datatype :as dtype]))
 
 ;; ---- Color Resolution (data-space) ----
 
@@ -102,11 +104,11 @@
 (defmethod extract-layer :point [view stat all-colors cfg]
   (let [numeric-color? (= (:color-type view) :numerical)
         ;; For numeric color: compute global min/max for normalization
-        all-color-vals (when numeric-color?
-                         (mapcat :color-values (:points stat)))
-        c-min (when (seq all-color-vals) (reduce min all-color-vals))
-        c-max (when (seq all-color-vals) (reduce max all-color-vals))
-        c-range (when (and c-min c-max) (- (double c-max) (double c-min)))]
+        all-color-buf (when numeric-color?
+                        (let [bufs (keep :color-values (:points stat))]
+                          (when (seq bufs) (dtype/concat-buffers bufs))))
+        c-min (when all-color-buf (dfn/reduce-min all-color-buf))
+        c-max (when all-color-buf (dfn/reduce-max all-color-buf))]
     (-> {:mark :point
          :style (cond-> {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
                          :radius (or (:fixed-size view) (:point-radius cfg))}
@@ -259,47 +261,69 @@
                           :densities (:densities v)}
                    (:color v) (assoc :color-category (:color v)))))}))
 
+(defn- min-step
+  "Minimum step between sorted distinct values in a sequence."
+  [vals]
+  (let [sorted (vec (sort (distinct vals)))
+        n (count sorted)]
+    (if (<= n 1)
+      1.0
+      (reduce min (map #(- (double (sorted (inc %)))
+                           (double (sorted %)))
+                       (range (dec n)))))))
+
 (defmethod extract-layer :tile [view stat all-colors cfg]
   (let [fill-col (:fill view)
-        ;; Two paths: bin2d stat produces :tiles directly;
+        grad-fn (:gradient-fn cfg)
+        midpoint (:color-midpoint cfg)
+        ;; Two paths: bin2d/kde2d stat produces :tiles as a dataset;
         ;; identity stat with :fill uses point groups
         tiles (if (:tiles stat)
-                ;; bin2d path
-                (let [[f-lo f-hi] (:fill-range stat)
-                      f-span (max 1e-10 (- (double f-hi) (double f-lo)))]
-                  (vec (for [{:keys [x-lo x-hi y-lo y-hi fill]} (:tiles stat)
-                             :let [t (defaults/normalize-midpoint fill f-lo f-hi (:color-midpoint cfg))]]
-                         {:x-lo x-lo :x-hi x-hi :y-lo y-lo :y-hi y-hi
-                          :color ((:gradient-fn cfg) t)})))
-                ;; identity path — each point is a tile at (x, y) with fill value
-                ;; Infer tile extent from grid spacing
+                ;; bin2d/kde2d path — :tiles is a dataset with :x-lo :x-hi :y-lo :y-hi :fill
+                (let [tile-ds (:tiles stat)
+                      [f-lo f-hi] (:fill-range stat)
+                      ;; Derive :color column from :fill using gradient function
+                      with-color (tc/add-column tile-ds :color
+                                                (fn [ds]
+                                                  (mapv (fn [f]
+                                                          (grad-fn (defaults/normalize-midpoint
+                                                                    f f-lo f-hi midpoint)))
+                                                        (ds :fill))))]
+                  (vec (tc/rows (tc/select-columns with-color
+                                                   [:x-lo :x-hi :y-lo :y-hi :color])
+                                :as-maps)))
+                ;; identity path — derive tile bounds from point coordinates
                 (let [data (:data view)
                       fill-vals (when fill-col (data fill-col))
                       f-lo (when (seq fill-vals) (dfn/reduce-min fill-vals))
                       f-hi (when (seq fill-vals) (dfn/reduce-max fill-vals))
                       all-xs (mapcat :xs (:points stat))
                       all-ys (mapcat :ys (:points stat))
-                      min-step (fn [vals]
-                                 (let [sorted (vec (sort (distinct vals)))
-                                       n (count sorted)]
-                                   (if (<= n 1)
-                                     1.0
-                                     (reduce min (map #(- (double (sorted (inc %)))
-                                                          (double (sorted %)))
-                                                      (range (dec n)))))))
                       x-half (/ (min-step all-xs) 2.0)
-                      y-half (/ (min-step all-ys) 2.0)]
-                  (vec (for [{:keys [xs ys]} (:points stat)
-                             i (range (count xs))
-                             :let [xv (double (xs i))
-                                   yv (double (ys i))]]
-                         {:x-lo (- xv x-half) :x-hi (+ xv x-half)
-                          :y-lo (- yv y-half) :y-hi (+ yv y-half)
-                          :color (if fill-vals
-                                   (let [fv (fill-vals i)
-                                         t (defaults/normalize-midpoint fv (or f-lo 0) (or f-hi 1) (:color-midpoint cfg))]
-                                     ((:gradient-fn cfg) t))
-                                   ((:gradient-fn cfg) 0.5))}))))]
+                      y-half (/ (min-step all-ys) 2.0)
+                      ;; Build a dataset from the parallel buffers
+                      all-x-vals (vec (mapcat :xs (:points stat)))
+                      all-y-vals (vec (mapcat :ys (:points stat)))
+                      pt-ds (tc/dataset {:x all-x-vals :y all-y-vals})
+                      ;; Derive tile bounds as columns
+                      with-bounds (-> pt-ds
+                                      (tc/add-column :x-lo (dfn/- (pt-ds :x) x-half))
+                                      (tc/add-column :x-hi (dfn/+ (pt-ds :x) x-half))
+                                      (tc/add-column :y-lo (dfn/- (pt-ds :y) y-half))
+                                      (tc/add-column :y-hi (dfn/+ (pt-ds :y) y-half)))
+                      ;; Derive color column
+                      with-color (tc/add-column with-bounds :color
+                                                (fn [ds]
+                                                  (if fill-vals
+                                                    (mapv (fn [f]
+                                                            (grad-fn (defaults/normalize-midpoint
+                                                                      f (or f-lo 0) (or f-hi 1) midpoint)))
+                                                          fill-vals)
+                                                    (vec (repeat (tc/row-count ds)
+                                                                 (grad-fn 0.5))))))]
+                  (vec (tc/rows (tc/select-columns with-color
+                                                   [:x-lo :x-hi :y-lo :y-hi :color])
+                                :as-maps))))]
     {:mark :tile
      :style {:opacity (or (:fixed-alpha view) 1.0)}
      :tiles tiles}))

@@ -190,7 +190,7 @@
               :x-type :numerical :y-type :numerical :cfg defaults/defaults}
         result (stat/compute-stat view)]
     (is (seq (:tiles result)))
-    (is (every? #(and (:x-lo %) (:y-lo %) (:fill %)) (:tiles result)))))
+    (is (= #{:x-lo :x-hi :y-lo :y-hi :fill} (set (tc/column-names (:tiles result)))))))
 
 ;; ============================================================
 ;; position.clj

@@ -166,45 +166,44 @@
         categories (distinct (clean x))]
     (if (empty? categories)
       {:categories [] :bars [] :max-count 0 :x-domain ["?"] :y-domain [0 1]}
-      (if (seq group-cols)
-        (let [color-col (first group-cols)
-              clean-c (tc/drop-missing clean group-cols)
-              color-cats (sort (distinct (clean-c color-col)))
-              all-group-cols (distinct (cons x group-cols))
-              grouped (tc/group-by clean-c all-group-cols {:result-type :as-map})
-              count-fn (fn [cat cc]
-                         (let [key (merge {x cat} (zipmap group-cols
-                                                          (if (= 1 (count group-cols))
-                                                            [cc] cc)))]
-                           ;; When a group column overlaps with x, merge may
-                           ;; overwrite the x value.  If so the combination is
-                           ;; impossible — return 0.
-                           (if (not= (get key x) cat)
+      ;; Use tc/group-by for efficient counting
+      (let [color-col (first group-cols)
+            has-color? (seq group-cols)
+            clean-c (if has-color? (tc/drop-missing clean group-cols) clean)
+            color-cats (when has-color? (sort (distinct (clean-c color-col))))
+            ;; Single tc/group-by handles both colored and uncolored cases
+            grouped (tc/group-by clean-c
+                                 (if has-color? [x color-col] [x])
+                                 {:result-type :as-map})]
+        (if has-color?
+          (let [count-fn (fn [cat cc]
+                           ;; When color column == x column, cat must equal cc
+                           ;; (otherwise the combination is impossible)
+                           (if (and (= x color-col) (not= cat cc))
                              0
-                             (if-let [ds (get grouped key)]
-                               (tc/row-count ds) 0))))
-              max-count (reduce max 1 (for [cat categories, cc color-cats]
-                                        (count-fn cat cc)))]
-          {:categories categories
-           :bars (for [cc color-cats]
-                   {:color cc
-                    :counts (mapv (fn [cat] {:category cat :count (count-fn cat cc)})
-                                  categories)})
-           :max-count max-count
-           :x-domain categories
-           :y-domain [0 max-count]})
-        (let [grouped (tc/group-by clean [x] {:result-type :as-map})
-              counts-by-cat (mapv (fn [cat]
-                                    {:category cat
-                                     :count (if-let [ds (get grouped {x cat})]
-                                              (tc/row-count ds) 0)})
-                                  categories)
-              max-count (reduce max 1 (map :count counts-by-cat))]
-          {:categories categories
-           :bars [{:counts counts-by-cat}]
-           :max-count max-count
-           :x-domain categories
-           :y-domain [0 max-count]})))))
+                             (if-let [ds (get grouped (zipmap [x color-col] [cat cc]))]
+                               (tc/row-count ds) 0)))
+                max-count (reduce max 1 (for [cat categories, cc color-cats]
+                                          (count-fn cat cc)))]
+            {:categories categories
+             :bars (for [cc color-cats]
+                     {:color cc
+                      :counts (mapv (fn [cat] {:category cat :count (count-fn cat cc)})
+                                    categories)})
+             :max-count max-count
+             :x-domain categories
+             :y-domain [0 max-count]})
+          (let [counts-by-cat (mapv (fn [cat]
+                                      {:category cat
+                                       :count (if-let [ds (get grouped {x cat})]
+                                                (tc/row-count ds) 0)})
+                                    categories)
+                max-count (reduce max 1 (map :count counts-by-cat))]
+            {:categories categories
+             :bars [{:counts counts-by-cat}]
+             :max-count max-count
+             :x-domain categories
+             :y-domain [0 max-count]}))))))
 
 ;; ---- Linear Regression ----
 
@@ -512,6 +511,7 @@
 (defn- per-category-stat
   "Shared iteration for boxplot/violin: clean data, group by category and
    optional color, apply per-group-fn to each subset's y-column.
+   Uses tc/group-by for efficient O(n) grouping instead of per-category filtering.
    per-group-fn: (fn [y-col category color-or-nil]) -> map
    min-n: minimum row count to include a group."
   [view min-n per-group-fn]
@@ -527,21 +527,35 @@
             has-color? (and (seq group-cols) color-col)
             clean-c (if has-color? (tc/drop-missing clean group-cols) clean)
             color-cats (when has-color? (vec (sort (distinct (clean-c color-col)))))
-            items (if has-color?
-                    (vec (for [cat categories
-                               cc color-cats
-                               :let [rows (tc/select-rows clean-c
-                                                          (fn [row] (and (= (get row x) cat)
-                                                                         (= (get row color-col) cc))))
-                                     n (tc/row-count rows)]
-                               :when (>= n min-n)]
-                           (per-group-fn (rows y) cat cc)))
-                    (vec (for [cat categories
-                               :let [rows (tc/select-rows clean-c
-                                                          (fn [row] (= (get row x) cat)))
-                                     n (tc/row-count rows)]
-                               :when (>= n min-n)]
-                           (per-group-fn (rows y) cat nil))))
+            ;; Single tc/group-by replaces O(cats × colors) select-rows calls
+            group-keys (if has-color? [x color-col] [x])
+            grouped (tc/group-by clean-c group-keys {:result-type :as-map})
+            ;; When x == color-col, each category IS its own color group
+            ;; (no cross-product — a "setosa" category can only have "setosa" color)
+            x-is-color? (and has-color? (= x color-col))
+            items (vec
+                   (cond
+                     x-is-color?
+                     (for [cat categories
+                           :let [gk {x cat}
+                                 ds (get grouped gk)]
+                           :when (and ds (>= (tc/row-count ds) min-n))]
+                       (per-group-fn (ds y) cat cat))
+
+                     has-color?
+                     (for [cat categories
+                           cc color-cats
+                           :let [gk (zipmap group-keys [cat cc])
+                                 ds (get grouped gk)]
+                           :when (and ds (>= (tc/row-count ds) min-n))]
+                       (per-group-fn (ds y) cat cc))
+
+                     :else
+                     (for [cat categories
+                           :let [gk {x cat}
+                                 ds (get grouped gk)]
+                           :when (and ds (>= (tc/row-count ds) min-n))]
+                       (per-group-fn (ds y) cat nil))))
             all-ys (clean y)
             y-min (dfn/reduce-min all-ys)
             y-max (dfn/reduce-max all-ys)]
@@ -641,14 +655,16 @@
     (if (empty? categories)
       {:points [] :x-domain ["?"] :y-domain [0 1]}
       (let [group-cols (or group [])
+            ;; Use tc/group-by for O(n) grouping instead of per-category select-rows
             all-groups (group-by-columns
                         clean group-cols
                         (fn [ds gv]
-                          (let [per-cat (for [cat categories
-                                              :let [rows (tc/select-rows ds (fn [row] (= (get row x) cat)))
-                                                    n (tc/row-count rows)]
-                                              :when (pos? n)
-                                              :let [ys-col (rows y)
+                          (let [cat-grouped (tc/group-by ds [x] {:result-type :as-map})
+                                per-cat (for [cat categories
+                                              :let [cat-ds (get cat-grouped {x cat})]
+                                              :when (and cat-ds (pos? (tc/row-count cat-ds)))
+                                              :let [ys-col (cat-ds y)
+                                                    n (tc/row-count cat-ds)
                                                     mean-val (stats/mean ys-col)
                                                     se (if (>= n 2)
                                                          (/ (stats/stddev ys-col) (Math/sqrt (double n)))
@@ -694,12 +710,17 @@
                            {}
                            (range n))
             max-count (reduce max 1 (vals counts))
-            tiles (vec (for [[[xi yi] cnt] counts]
-                         {:x-lo (+ x-min (* xi x-step))
-                          :x-hi (+ x-min (* (inc xi) x-step))
-                          :y-lo (+ y-min (* yi y-step))
-                          :y-hi (+ y-min (* (inc yi) y-step))
-                          :fill cnt}))]
+            ;; Build tile dataset — each tile is an observation with bounds and fill
+            tile-data (reduce (fn [acc [[xi yi] cnt]]
+                                (-> acc
+                                    (update :x-lo conj (+ x-min (* xi x-step)))
+                                    (update :x-hi conj (+ x-min (* (inc xi) x-step)))
+                                    (update :y-lo conj (+ y-min (* yi y-step)))
+                                    (update :y-hi conj (+ y-min (* (inc yi) y-step)))
+                                    (update :fill conj cnt)))
+                              {:x-lo [] :x-hi [] :y-lo [] :y-hi [] :fill []}
+                              counts)
+            tiles (tc/dataset tile-data)]
         {:tiles tiles
          :x-domain [x-min x-max]
          :y-domain [y-min y-max]
@@ -759,16 +780,20 @@
                               acc))]
                     (aset densities (+ (* gi n-grid) gj) d))))
             max-d (reduce max 0.0 densities)
-            ;; Build tiles with density as fill value
-            tiles (vec (for [gi (range n-grid)
-                             gj (range n-grid)
-                             :let [d (aget densities (+ (* gi n-grid) gj))]
-                             :when (> d (* 0.01 max-d))]
-                         {:x-lo (+ x-lo (* gi x-step))
-                          :x-hi (+ x-lo (* (inc gi) x-step))
-                          :y-lo (+ y-lo (* gj y-step))
-                          :y-hi (+ y-lo (* (inc gj) y-step))
-                          :fill d}))]
+            ;; Build tile dataset with density as fill value
+            tile-data (reduce (fn [acc [gi gj]]
+                                (let [d (aget densities (+ (* gi n-grid) gj))]
+                                  (if (> d (* 0.01 max-d))
+                                    (-> acc
+                                        (update :x-lo conj (+ x-lo (* gi x-step)))
+                                        (update :x-hi conj (+ x-lo (* (inc gi) x-step)))
+                                        (update :y-lo conj (+ y-lo (* gj y-step)))
+                                        (update :y-hi conj (+ y-lo (* (inc gj) y-step)))
+                                        (update :fill conj d))
+                                    acc)))
+                              {:x-lo [] :x-hi [] :y-lo [] :y-hi [] :fill []}
+                              (for [gi (range n-grid) gj (range n-grid)] [gi gj]))
+            tiles (tc/dataset tile-data)]
         {:tiles tiles
          :x-domain [x-lo x-hi]
          :y-domain [y-lo y-hi]
