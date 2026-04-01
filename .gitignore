@@ -10,3 +10,4 @@ docs/*.qmd
 .claude
 CLAUDE.md
 dev-notes/
+dev-tools/
