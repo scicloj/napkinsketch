@@ -45,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Interactivity**: tooltip and brush selection via JavaScript
 - **Sketch validation**: Malli schema with `valid-sketch?` and `explain-sketch`;
   open to custom marks via `keyword?` (not closed enum)
+- **Column inference**: `(sk/view data)` and `(sk/lay-point data)` infer columns
+  from dataset shape (1→x, 2→x y, 3→x y color, 4+→error)
 - **Unknown option warnings**: `lay-*` functions warn on unrecognized option keys
 - **Extensibility**: 8 multimethod extension points with `[:key :doc]`
   self-documenting pattern; end-to-end waterfall chart example in notebooks
@@ -60,5 +62,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`impl/` vs `render/` boundary**: pure data transformations vs membrane rendering
 - **Method registry**: keyword → {mark, stat, position, doc, accepts} with
   `method/register!` for third-party extensions
+- **Tidy data**: aggregation stats use `tc/group-by` for O(n) grouping;
+  tile pipeline uses `tc/dataset` + `tc/add-column`
+- **Visual defaults tuned**: larger fonts, larger points, thinner grid, more margin
+  (guided by Claude Vision API review tool)
 - **R type 7 quartiles**: boxplot uses ggplot2/R-compatible quantile method
 - **2D Silverman bandwidth**: KDE2D uses correct d=2 formula
