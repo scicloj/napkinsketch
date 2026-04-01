@@ -9,34 +9,38 @@
         document.addEventListener('DOMContentLoaded', function () {
           const toc = document.getElementById('TOC');
           if (toc) {
-            // Hide Quarto's native TOC heading
             const tocHeading = toc.querySelector('h2');
             if (tocHeading) tocHeading.style.display = 'none';
 
             const topList = toc.querySelector('ul');
 
             const btn = document.createElement('button');
-            btn.textContent = '☰';
+            btn.textContent = '⌃';
             btn.style.cssText = `
               display: block;
               width: 100%;
               padding: 4px 8px;
               margin-bottom: 8px;
-              font-size: 1.2em;
+              font-size: 2em;
               cursor: pointer;
               border: none;
+              outline: none;
+              box-shadow: none;
               background: transparent;
               color: #2780e3;
               text-align: left;
+              transition: transform 0.25s ease;
+              transform-origin: center;
+              -webkit-appearance: none;
+              appearance: none;
             `;
 
-            // Start collapsed
-            if (topList) topList.style.display = 'none';
-            let expanded = false;
+            let expanded = true;
 
             btn.addEventListener('click', function () {
               expanded = !expanded;
               if (topList) topList.style.display = expanded ? 'block' : 'none';
+              btn.style.transform = expanded ? 'rotate(0deg)' : 'rotate(180deg)';
             });
 
             toc.insertBefore(btn, toc.firstChild);
