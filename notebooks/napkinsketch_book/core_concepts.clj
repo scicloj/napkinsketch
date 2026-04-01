@@ -40,6 +40,13 @@ data/iris
 ;; This distinction matters: Napkinsketch treats numerical and
 ;; categorical columns differently when choosing axes, colors, and
 ;; statistical transforms.
+;;
+;; Here is a scatter plot of sepal dimensions, colored by species:
+
+(-> data/iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; ### Input formats
 ;;
