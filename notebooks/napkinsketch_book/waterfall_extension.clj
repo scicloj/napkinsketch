@@ -23,6 +23,8 @@
    [scicloj.napkinsketch.impl.stat :as stat]
    [scicloj.napkinsketch.impl.extract :as extract]
    [scicloj.napkinsketch.render.mark :as mark]
+   ;; SVG renderer — reload ensures protocol extensions are fresh
+   [scicloj.napkinsketch.render.svg :as svg]
    ;; Method registry — to register our new chart type
    [scicloj.napkinsketch.method :as method]
    ;; Membrane — drawing primitives
@@ -115,20 +117,25 @@
 
 (defmethod mark/layer->membrane :waterfall [layer ctx]
   (let [{:keys [bars style]} layer
-        {:keys [sx sy]} ctx
+        {:keys [sx sy coord-fn]} ctx
         {:keys [opacity]} style
-        bw (wadogo.scale/data sx :bandwidth)]
+        ;; Get band info from the scale to find bar width.
+        ;; (sx category true) returns {:rstart :rend :point} for that band.
+        sample-info (sx (-> bars first :category) true)
+        bw (- (:rend sample-info) (:rstart sample-info))
+        w (* 0.8 bw)]
     (vec
      (for [{:keys [category start end color]} bars
            :let [[cr cg cb ca] color
-                 px (double (sx category))
+                 ;; Use the band info for precise positioning
+                 band (sx category true)
+                 mid-x (:point band)
                  py-start (double (sy start))
                  py-end (double (sy end))
                  top (min py-start py-end)
                  bot (max py-start py-end)
-                 w (* 0.8 bw)
-                 x0 (+ px (* 0.1 bw))
-                 x1 (+ x0 w)]]
+                 x0 (- mid-x (/ w 2.0))
+                 x1 (+ mid-x (/ w 2.0))]]
        (ui/with-color [cr cg cb (or opacity ca)]
          (ui/with-style :membrane.ui/style-fill
            (ui/path [x0 top] [x1 top] [x1 bot] [x0 bot])))))))
