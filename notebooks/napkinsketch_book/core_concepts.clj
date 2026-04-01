@@ -99,11 +99,6 @@ data/iris
 ;; [Tablecloth documentation](https://scicloj.github.io/tablecloth/)
 ;; for all supported formats (CSV, TSV, JSON, Parquet, and more).
 
-;; `tc/dataset` also reads CSV, TSV, JSON, Parquet, and other file
-;; formats directly from local paths or URLs — see the
-;; [Tablecloth documentation](https://scicloj.github.io/tablecloth/)
-;; for the full list.
-;;
 ;; **Sequence of sequences** — each inner sequence is a row. Pass
 ;; column names explicitly since there are no keys:
 
@@ -368,7 +363,7 @@ data/iris
 
 ;; ### When to use `sk/view`
 ;;
-;; There are three common patterns:
+;; There are four common patterns:
 ;;
 ;; - **Minimal** — `(sk/lay-point data)` — columns inferred from dataset shape
 ;; - **Explicit columns** — `(sk/lay-point data :x :y)` — no `sk/view` needed
@@ -394,7 +389,7 @@ data/iris
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Or a [LOESS](https://en.wikipedia.org/wiki/Local_regression) smoother instead — a flexible curve that follows local
+;; Or a LOESS smoother instead — a flexible curve that follows local
 ;; patterns in the data:
 
 (-> scatter-base

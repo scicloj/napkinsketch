@@ -136,7 +136,7 @@ scatter-views
 
 ;; ## Column Type Detection
 ;;
-;; The first inference step: is each column **numerical**, **categorical**,
+;; Once columns are selected, the next step is determining the type of each column: **numerical**, **categorical**,
 ;; or **temporal**? This determines the scale type, domain, tick style,
 ;; and the default mark.
 ;;
