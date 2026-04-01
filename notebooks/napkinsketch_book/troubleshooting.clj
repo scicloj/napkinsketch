@@ -118,43 +118,6 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; ## Stale REPL After Editing Source
-;;
-;; **Symptom**: Changes to source files are not reflected in the REPL.
-;;
-;; **Cause**: Clojure namespaces are loaded once. The REPL does not
-;; automatically reload when files change.
-;;
-;; **Fix**: Use `:reload` when requiring namespaces:
-;;
-;; ```clojure
-;; (require '[scicloj.napkinsketch.api :as sk] :reload)
-;; ```
-
-;; ## Changing Number of Histogram Bins
-;;
-;; **Symptom**: The histogram has too many or too few bins.
-;;
-;; **Cause**: The default bin count is inferred from the data.
-;;
-;; **Fix**: Pass `:bins` in the layer options:
-
-(-> data/iris
-    (sk/lay-histogram :sepal_length {:normalize :density}))
-
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
-
-;; ## Changing Line Thickness
-;;
-;; **Symptom**: Lines are too thin or too thick.
-;;
-;; **Fix**: Pass `:size` in the layer options (controls stroke width):
-
-(-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
-    (sk/lay-line :x :y {:size 3}))
-
-(kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
-
 ;; ## What's Next
 ;;
 ;; - [**API Reference**](./napkinsketch_book.api_reference.html) — complete function listing with docstrings

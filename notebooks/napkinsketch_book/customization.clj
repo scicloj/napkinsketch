@@ -114,6 +114,13 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
+;; `:size` controls line thickness on line-based marks:
+
+(-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
+    (sk/lay-line :x :y {:size 3}))
+
+(kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
+
 ;; Alpha works on bars and polygons too.
 
 (-> data/iris

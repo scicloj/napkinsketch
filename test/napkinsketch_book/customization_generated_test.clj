@@ -102,7 +102,7 @@
   {:x (range 1 50),
    :y
    (map
-    (fn* [p1__94911#] (* 2 (Math/pow 1.1 p1__94911#)))
+    (fn* [p1__96962#] (* 2 (Math/pow 1.1 p1__96962#)))
     (range 1 50))}))
 
 
@@ -186,17 +186,27 @@
    v26_l110)))
 
 
-(def v29_l119 (-> data/iris (sk/lay-bar :species {:alpha 0.4})))
+(def
+ v29_l119
+ (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} (sk/lay-line :x :y {:size 3})))
 
 
 (deftest
  t30_l122
+ (is ((fn [v] (= 1 (:lines (sk/svg-summary v)))) v29_l119)))
+
+
+(def v32_l126 (-> data/iris (sk/lay-bar :species {:alpha 0.4})))
+
+
+(deftest
+ t33_l129
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:polygons s)))) v29_l119)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:polygons s)))) v32_l126)))
 
 
 (def
- v32_l131
+ v35_l138
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -204,24 +214,24 @@
 
 
 (deftest
- t33_l135
+ t36_l142
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 2 (:lines s)))))
-   v32_l131)))
+   v35_l138)))
 
 
-(def v35_l142 (:band-opacity (sk/config)))
+(def v38_l149 (:band-opacity (sk/config)))
 
 
-(deftest t36_l144 (is ((fn [v] (= 0.15 v)) v35_l142)))
+(deftest t39_l151 (is ((fn [v] (= 0.15 v)) v38_l149)))
 
 
 (def
- v37_l146
+ v40_l153
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -229,13 +239,13 @@
 
 
 (deftest
- t38_l150
+ t41_l157
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v37_l146)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v40_l153)))
 
 
 (def
- v40_l157
+ v43_l164
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -243,18 +253,18 @@
 
 
 (deftest
- t41_l161
+ t44_l168
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v40_l157)))
+   v43_l164)))
 
 
 (def
- v43_l167
+ v46_l174
  (->
   data/penguins
   (sk/lay-stacked-bar :island {:color :species})
@@ -262,18 +272,18 @@
 
 
 (deftest
- t44_l171
+ t47_l178
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v43_l167)))
+   v46_l174)))
 
 
 (def
- v46_l177
+ v49_l184
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -283,18 +293,18 @@
 
 
 (deftest
- t47_l183
+ t50_l190
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v46_l177)))
+   v49_l184)))
 
 
 (def
- v49_l208
+ v52_l215
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -302,18 +312,18 @@
 
 
 (deftest
- t50_l212
+ t53_l219
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v49_l208)))
+   v52_l215)))
 
 
 (def
- v52_l218
+ v55_l225
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -321,54 +331,54 @@
 
 
 (deftest
- t53_l222
+ t56_l229
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v52_l218)))
+   v55_l225)))
 
 
-(def v55_l236 (c2d/find-palette #"budapest"))
+(def v58_l243 (c2d/find-palette #"budapest"))
 
 
 (deftest
- t56_l238
+ t59_l245
  (is
   ((fn [v] (and (sequential? v) (some #{:grand-budapest-1} v)))
-   v55_l236)))
+   v58_l243)))
 
 
-(def v58_l242 (c2d/find-palette #"^:set"))
-
-
-(deftest
- t59_l244
- (is ((fn [v] (and (sequential? v) (some #{:set1} v))) v58_l242)))
-
-
-(def v61_l248 (c2d/find-gradient #"viridis"))
+(def v61_l249 (c2d/find-palette #"^:set"))
 
 
 (deftest
- t62_l250
- (is
-  ((fn [v] (and (sequential? v) (some #{:viridis/viridis} v)))
-   v61_l248)))
+ t62_l251
+ (is ((fn [v] (and (sequential? v) (some #{:set1} v))) v61_l249)))
 
 
-(def v64_l255 (c2d/palette :grand-budapest-1))
+(def v64_l255 (c2d/find-gradient #"viridis"))
 
 
 (deftest
  t65_l257
- (is ((fn [v] (and (sequential? v) (pos? (count v)))) v64_l255)))
+ (is
+  ((fn [v] (and (sequential? v) (some #{:viridis/viridis} v)))
+   v64_l255)))
+
+
+(def v67_l262 (c2d/palette :grand-budapest-1))
+
+
+(deftest
+ t68_l264
+ (is ((fn [v] (and (sequential? v) (pos? (count v)))) v67_l262)))
 
 
 (def
- v67_l269
+ v70_l276
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -376,12 +386,12 @@
 
 
 (deftest
- t68_l273
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v67_l269)))
+ t71_l280
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v70_l276)))
 
 
 (def
- v70_l279
+ v73_l286
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -391,13 +401,13 @@
 
 
 (deftest
- t71_l284
+ t74_l291
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v70_l279)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v73_l286)))
 
 
 (def
- v73_l292
+ v76_l299
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -405,47 +415,47 @@
 
 
 (deftest
- t74_l296
+ t77_l303
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (< (:width s) 700))))
-   v73_l292)))
+   v76_l299)))
 
 
 (def
- v76_l304
+ v79_l311
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
   (sk/options {:tooltip true})))
 
 
-(deftest t77_l308 (is ((fn [v] (= :div (first (sk/plot v)))) v76_l304)))
+(deftest t80_l315 (is ((fn [v] (= :div (first (sk/plot v)))) v79_l311)))
 
 
 (def
- v79_l314
+ v82_l321
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
   (sk/options {:brush true})))
 
 
-(deftest t80_l318 (is ((fn [v] (= :div (first (sk/plot v)))) v79_l314)))
+(deftest t83_l325 (is ((fn [v] (= :div (first (sk/plot v)))) v82_l321)))
 
 
 (def
- v82_l324
+ v85_l331
  (def
   splom-cols
   [:sepal_length :sepal_width :petal_length :petal_width]))
 
 
 (def
- v83_l326
+ v86_l333
  (->
   data/iris
   (sk/view (sk/cross splom-cols splom-cols) {:color :species})
@@ -453,4 +463,4 @@
   (sk/options {:brush true})))
 
 
-(deftest t84_l331 (is ((fn [v] (= :div (first (sk/plot v)))) v83_l326)))
+(deftest t87_l338 (is ((fn [v] (= :div (first (sk/plot v)))) v86_l333)))

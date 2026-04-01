@@ -41,23 +41,3 @@
 (deftest
  t13_l119
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v12_l115)))
-
-
-(def
- v15_l142
- (-> data/iris (sk/lay-histogram :sepal_length {:normalize :density})))
-
-
-(deftest
- t16_l145
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v15_l142)))
-
-
-(def
- v18_l153
- (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} (sk/lay-line :x :y {:size 3})))
-
-
-(deftest
- t19_l156
- (is ((fn [v] (= 1 (:lines (sk/svg-summary v)))) v18_l153)))
