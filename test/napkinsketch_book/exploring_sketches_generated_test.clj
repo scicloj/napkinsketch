@@ -192,7 +192,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__119647#] (= 50 (:n-points p1__119647#))) gs)))
+     (every? (fn* [p1__80557#] (= 50 (:n-points p1__80557#))) gs)))
    v49_l167)))
 
 
@@ -289,9 +289,9 @@
     (and
      (> (count bars) 3)
      (every?
-      (fn* [p1__119648#] (< (:lo p1__119648#) (:hi p1__119648#)))
+      (fn* [p1__80558#] (< (:lo p1__80558#) (:hi p1__80558#)))
       bars)
-     (every? (fn* [p1__119649#] (pos? (:count p1__119649#))) bars)))
+     (every? (fn* [p1__80559#] (pos? (:count p1__80559#))) bars)))
    v74_l238)))
 
 
@@ -469,9 +469,7 @@
   wave
   {:x (range 30),
    :y
-   (map
-    (fn* [p1__119650#] (Math/sin (* p1__119650# 0.3)))
-    (range 30))}))
+   (map (fn* [p1__80560#] (Math/sin (* p1__80560# 0.3))) (range 30))}))
 
 
 (def v111_l374 (-> wave (sk/lay-line :x :y)))
