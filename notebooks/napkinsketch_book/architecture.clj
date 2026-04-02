@@ -31,7 +31,7 @@ graph LR
 
 ;; - **Views** — user-facing compositional API: `view`, `lay-point`, `lay-histogram`, etc.
 ;;
-;; - **Plan** — fully resolved sketch. Data-space geometry,
+;; - **Plan** — fully resolved plan. Data-space geometry,
 ;;   domains, tick info, legend. Plain Clojure maps. No rendering primitives.
 ;;
 ;; - **Membrane** — a value of the [Membrane](https://github.com/phronmophobic/membrane)
@@ -168,7 +168,7 @@ graph LR
 ;;
 ;; This separation enables:
 ;;
-;; - Inspecting the sketch without rendering
+;; - Inspecting the plan without rendering
 ;;
 ;; - Validating plot structure with Malli
 ;;

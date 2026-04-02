@@ -622,7 +622,7 @@
                     ". Using first view's coord: " (first coords) ".")))))
 
 (defn views->plan
-  "Resolve views + options into a plan — a fully resolved sketch
+  "Resolve views + options into a plan — a fully resolved plan
    with data-space geometry, domains, ticks, legend, and layout info.
    No membrane types, no datasets in the output.
    Options include :validate (default true) — when true, validates the

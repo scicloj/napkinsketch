@@ -251,7 +251,7 @@
 ;; ---- Plan (top-level) ----
 
 (def PlanSchema
-  "A fully resolved sketch.
+  "A fully resolved plan.
    Data-space geometry, no membrane types, no datasets.
    Numeric arrays (xs, ys, etc.) may be dtype-next buffers."
   [:map

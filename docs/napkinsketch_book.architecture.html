@@ -450,7 +450,7 @@ graph LR
 </div>
 <ul>
 <li><p><strong>Views</strong> — user-facing compositional API: <code>view</code>, <code>lay-point</code>, <code>lay-histogram</code>, etc.</p></li>
-<li><p><strong>Plan</strong> — fully resolved sketch. Data-space geometry, domains, tick info, legend. Plain Clojure maps. No rendering primitives.</p></li>
+<li><p><strong>Plan</strong> — fully resolved plan. Data-space geometry, domains, tick info, legend. Plain Clojure maps. No rendering primitives.</p></li>
 <li><p><strong>Membrane</strong> — a value of the <a href="https://github.com/phronmophobic/membrane">Membrane</a> library: positioned drawing primitives in pixel space (Translate, WithColor, Path, Label, etc.).</p></li>
 <li><p><strong>Figure</strong> — final output. A tree walk converts membrane records to SVG hiccup, which Clay/Kindly renders in notebooks.</p></li>
 </ul>
@@ -1577,7 +1577,7 @@ graph LR
 <p>The membrane tree is <strong>Java objects</strong> — <code>Translate</code>, <code>WithColor</code>, <code>RoundedRectangle</code>, <code>Label</code>, etc. All positions are resolved to pixel coordinates. Not serializable.</p>
 <p>This separation enables:</p>
 <ul>
-<li><p>Inspecting the sketch without rendering</p></li>
+<li><p>Inspecting the plan without rendering</p></li>
 <li><p>Validating plot structure with Malli</p></li>
 <li><p>Adding other backends (Canvas, Plotly, Vega-Lite) that consume plans</p></li>
 </ul>
