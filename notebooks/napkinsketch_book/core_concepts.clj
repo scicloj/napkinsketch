@@ -166,7 +166,7 @@ data/iris
 
 ;; ## Plotting
 ;;
-;; Napkinsketch plot specifications auto-render in notebooks.
+;; Napkinsketch sketches auto-render in notebooks.
 ;; The pipeline resolves all the details — axis ranges, tick positions,
 ;; colors, layout — and produces a visual figure.
 
@@ -175,12 +175,12 @@ data/iris
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; What `sk/lay-point` returns is a **plot specification** (PlotSpec) — a
+;; What `sk/lay-point` returns is a **sketch** (Sketch) — a
 ;; lightweight wrapper around one or more views that auto-renders in
 ;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible tools
 ;; like Clay.
 
-(sk/plot-spec? (sk/lay-point data/iris :sepal_length :sepal_width))
+(sk/sketch? (sk/lay-point data/iris :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (true? v))])
 

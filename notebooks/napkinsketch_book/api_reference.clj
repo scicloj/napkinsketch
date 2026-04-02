@@ -331,7 +331,7 @@
 
 (kind/doc #'sk/options)
 
-;; Set render options on a plot specification:
+;; Set render options on a sketch:
 
 (-> tiny
     (sk/lay-point :x :y)
@@ -341,17 +341,17 @@
                            (and (< (:width s) 500)
                                 (some #{"Small Plot"} (:texts s)))))])
 
-(kind/doc #'sk/plot-spec?)
+(kind/doc #'sk/sketch?)
 
-;; Check whether a value is a plot specification:
+;; Check whether a value is a sketch:
 
-(sk/plot-spec? (sk/lay-point tiny :x :y))
+(sk/sketch? (sk/lay-point tiny :x :y))
 
 (kind/test-last [true?])
 
 (kind/doc #'sk/views-of)
 
-;; Extract the raw views from a plot specification:
+;; Extract the raw views from a sketch:
 
 (count (sk/views-of (-> tiny (sk/lay-point :x :y) (sk/lay-lm))))
 

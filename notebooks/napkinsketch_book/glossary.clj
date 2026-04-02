@@ -27,29 +27,29 @@
 
 (kind/pprint views)
 
-(kind/test-last [(fn [v] (and (sk/plot-spec? v) (= 1 (count (sk/views-of v)))))])
+(kind/test-last [(fn [v] (and (sk/sketch? v) (= 1 (count (sk/views-of v)))))])
 
-;; ## Plot Specification
+;; ## Sketch
 ;;
-;; A **plot specification** is the value returned by layer functions
+;; A **sketch** is the value returned by layer functions
 ;; (`sk/lay-point`, `sk/lay-histogram`, etc.) and by `sk/options`.
 ;; It wraps one or more views together with plot options and
 ;; auto-renders in [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).
 ;;
-;; You can inspect or decompose a plot specification using
-;; `sk/plot-spec?` and `sk/views-of`:
+;; You can inspect or decompose a sketch using
+;; `sk/sketch?` and `sk/views-of`:
 
-(def spec
+(def my-sketch
   (-> data/iris
       (sk/lay-point :sepal_length :sepal_width {:color :species})
       (sk/options {:title "Iris"})))
 
-(sk/plot-spec? spec)
+(sk/sketch? my-sketch)
 
 (kind/test-last [(fn [v] (true? v))])
 
-(count (sk/views-of spec))
+(count (sk/views-of my-sketch))
 
 (kind/test-last [(fn [n] (= 1 n))])
 
@@ -333,7 +333,7 @@
 ;; a abcdefgh to a specific format. For SVG, the figure is hiccup markup
 ;; wrapped in `kind/hiccup`.
 ;;
-;; Created by `sk/plot` or by auto-rendering a plot specification.
+;; Created by `sk/plot` or by auto-rendering a sketch.
 
 (def my-figure (sk/abcdefgh->figure my-abcdefgh :svg {}))
 
@@ -420,7 +420,7 @@
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
 ;; | View | Map: data + column-to-channel mappings + method | User builds, consumed by `abcdefgh` |
-;; | Plot Specification | Auto-rendering wrapper (views + options) | Returned by layer functions |
+;; | Sketch | Auto-rendering wrapper (views + options) | Returned by layer functions |
 ;; | Method | Mark + stat + position bundle | Looked up via `method/lookup`; added by `sk/lay-point`, `sk/lay-histogram`, etc. |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |

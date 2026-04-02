@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `views->abcdefgh`, `abcdefgh->membrane`, `membrane->figure`, `abcdefgh->figure`,
   `svg-summary`, `valid-abcdefgh?`, `explain-abcdefgh`, `config`, `set-config!`,
   `with-config`, `arrange`, `save`, `options`, `facet`, `facet-grid`, `coord`,
-  `scale`, `cross`, `distribution`, `views-of`, `plot-spec?`
+  `scale`, `cross`, `distribution`, `views-of`, `sketch?`
 - **25 layer functions**: `lay-point`, `lay-line`, `lay-step`, `lay-histogram`,
   `lay-bar`, `lay-stacked-bar`, `lay-stacked-bar-fill`, `lay-value-bar`,
   `lay-lm`, `lay-loess`, `lay-text`, `lay-label`, `lay-area`, `lay-stacked-area`,
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `lay-boxplot`, `lay-violin`, `lay-rug`, `lay-summary`, `lay-errorbar`,
   `lay-lollipop`
 - **Annotations**: `rule-v`, `rule-h`, `band-v`, `band-h`
-- **PlotSpec auto-rendering**: layer functions return a PlotSpec that
+- **Sketch auto-rendering**: layer functions return a Sketch that
   auto-renders in Kindly-compatible notebooks — no explicit `sk/plot` needed
 - **Input formats**: Tablecloth datasets, maps of columns, sequences of row
   maps, CSV/URL paths — all coerced to tech.ml.dataset internally

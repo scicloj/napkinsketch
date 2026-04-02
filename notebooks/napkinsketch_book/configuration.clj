@@ -24,7 +24,7 @@
 ;; We use the iris dataset throughout.
 
 ;; We define `base-plot` as a function because
-;; plot specifications render at display time — calling the function
+;; sketches render at display time — calling the function
 ;; produces a fresh specification that picks up the current configuration.
 
 (defn base-plot

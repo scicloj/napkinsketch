@@ -17,39 +17,39 @@
             [scicloj.napkinsketch.method :as method]
             [scicloj.kindly.v4.api :as kindly]
             [scicloj.kindly.v4.kind :as kind])
-  (:import [scicloj.napkinsketch.impl.view PlotSpec]))
+  (:import [scicloj.napkinsketch.impl.view Sketch]))
 
-;; ---- PlotSpec: auto-rendering plot specification ----
+;; ---- Sketch: auto-rendering sketch ----
 
-(defn render-plot-spec
-  "Render a PlotSpec to SVG. Called by Clay via kind/fn at display time.
+(defn render-sketch
+  "Render a Sketch to SVG. Called by Clay via kind/fn at display time.
    Restores the config snapshot captured at creation time so that
    with-config overrides are preserved across the lazy render boundary.
    Wraps output in a div with bottom margin for notebook spacing."
-  [spec]
-  (let [captured (:config-snapshot spec)
+  [sketch]
+  (let [captured (:config-snapshot sketch)
         rendered (if captured
                    (binding [defaults/*config* captured]
-                     (plot-impl/plot (:views spec) (:opts spec)))
-                   (plot-impl/plot (:views spec) (:opts spec)))]
+                     (plot-impl/plot (:views sketch) (:opts sketch)))
+                   (plot-impl/plot (:views sketch) (:opts sketch)))]
     (kind/hiccup [:div {:style {:margin-bottom "1em"}} rendered])))
 
-(defn- ->plot-spec
-  "Wrap views + opts in a PlotSpec annotated with kind/fn for auto-rendering.
+(defn- ->sketch
+  "Wrap views + opts in a Sketch annotated with kind/fn for auto-rendering.
    Snapshots the current *config* binding so with-config overrides survive
    the lazy render boundary."
   [views & [opts]]
-  (kind/fn (cond-> (assoc (view/->PlotSpec views (or opts {}))
-                          :kindly/f #'render-plot-spec)
+  (kind/fn (cond-> (assoc (view/->Sketch views (or opts {}))
+                          :kindly/f #'render-sketch)
              defaults/*config* (assoc :config-snapshot defaults/*config*))))
 
 (defn- extract-views
-  "Extract raw views vector from PlotSpec or pass through.
-   Throws if a vector contains nested PlotSpecs (use the PlotSpec pipeline directly)."
+  "Extract raw views vector from Sketch or pass through.
+   Throws if a vector contains nested Sketches (use the Sketch pipeline directly)."
   [x]
-  (cond (view/plot-spec? x) (:views x)
-        (and (sequential? x) (some view/plot-spec? x))
-        (throw (ex-info (str "Vector contains a PlotSpec. Pass the PlotSpec directly "
+  (cond (view/sketch? x) (:views x)
+        (and (sequential? x) (some view/sketch? x))
+        (throw (ex-info (str "Vector contains a Sketch. Pass the Sketch directly "
                              "instead of wrapping in a vector — e.g. "
                              "(-> data (sk/lay-point :x :y) (sk/options {...}))")
                         {}))
@@ -57,13 +57,13 @@
         :else x))
 
 (defn- carry-opts
-  "Extract opts from PlotSpec, or empty map."
+  "Extract opts from Sketch, or empty map."
   [x]
-  (if (view/plot-spec? x) (:opts x) {}))
+  (if (view/sketch? x) (:opts x) {}))
 
-(defmethod print-method PlotSpec [^PlotSpec spec ^java.io.Writer w]
-  (.write w "#plot ")
-  (print-method (:views spec) w))
+(defmethod print-method Sketch [^Sketch sketch ^java.io.Writer w]
+  (.write w "#sketch ")
+  (print-method (:views sketch) w))
 
 ;; ---- Compositional API ----
 
@@ -81,28 +81,28 @@
    (view data :x :y {:color :species})  — layers inherit color grouping
    (view data :x {:color :species})     — single column + shared aesthetics
    Layer opts override view-level aesthetics."
-  ([data] (->plot-spec (view/view data)))
-  ([data spec-or-x] (->plot-spec (view/view data spec-or-x)))
-  ([data x-or-spec y-or-opts] (->plot-spec (view/view data x-or-spec y-or-opts)))
-  ([data x y opts] (->plot-spec (view/view data x y opts))))
+  ([data] (->sketch (view/view data)))
+  ([data spec-or-x] (->sketch (view/view data spec-or-x)))
+  ([data x-or-spec y-or-opts] (->sketch (view/view data x-or-spec y-or-opts)))
+  ([data x y opts] (->sketch (view/view data x y opts))))
 
 (defn lay
   "Apply one or more methods to views. Primarily used for annotations;
    for data layers prefer sk/lay-point, sk/lay-histogram, etc.
    (lay views (rule-h 5))            — horizontal reference line
    (lay views (rule-v 3) (band-h 1 2)) — multiple annotations"
-  [spec-or-views & layer-specs]
-  (->plot-spec (apply view/lay (extract-views spec-or-views) layer-specs)
-               (carry-opts spec-or-views)))
+  [sketch-or-views & layer-specs]
+  (->sketch (apply view/lay (extract-views sketch-or-views) layer-specs)
+               (carry-opts sketch-or-views)))
 
 (defn coord
   "Set coordinate system on views.
    Options: :cartesian (default), :flip, :polar, :fixed.
    (coord views :flip)   — flipped coordinates
    (coord views :fixed)  — fixed 1:1 aspect ratio"
-  [spec-or-views c]
-  (->plot-spec (view/coord (extract-views spec-or-views) c)
-               (carry-opts spec-or-views)))
+  [sketch-or-views c]
+  (->sketch (view/coord (extract-views sketch-or-views) c)
+               (carry-opts sketch-or-views)))
 
 (defn cross
   "Cartesian product of two sequences."
@@ -114,58 +114,58 @@
    Default is a horizontal row of panels.
    (facet views :species)        — horizontal row
    (facet views :species :col)   — vertical column"
-  ([spec-or-views col]
-   (->plot-spec (view/facet (extract-views spec-or-views) col)
-                (carry-opts spec-or-views)))
-  ([spec-or-views col direction]
-   (->plot-spec (view/facet (extract-views spec-or-views) col direction)
-                (carry-opts spec-or-views))))
+  ([sketch-or-views col]
+   (->sketch (view/facet (extract-views sketch-or-views) col)
+                (carry-opts sketch-or-views)))
+  ([sketch-or-views col direction]
+   (->sketch (view/facet (extract-views sketch-or-views) col direction)
+                (carry-opts sketch-or-views))))
 
 (defn facet-grid
   "Split views by two categorical columns for a row × column grid.
    Either column may be nil for a single-dimension facet.
    (facet-grid views :smoker :sex)   — 2D grid
    (facet-grid views nil :species)   — same as facet"
-  [spec-or-views row-col col-col]
-  (->plot-spec (view/facet-grid (extract-views spec-or-views) row-col col-col)
-               (carry-opts spec-or-views)))
+  [sketch-or-views row-col col-col]
+  (->sketch (view/facet-grid (extract-views sketch-or-views) row-col col-col)
+               (carry-opts sketch-or-views)))
 
 (defn distribution
   "Create diagonal views (x=y) for each column, used for histograms in SPLOM.
    (distribution data :a :b :c) => views with [[:a :a] [:b :b] [:c :c]]"
   [data & cols]
-  (->plot-spec (apply view/distribution data cols)))
+  (->sketch (apply view/distribution data cols)))
 
 (defn scale
   "Set scale options for :x or :y across all views.
    (scale views :x :log)                — log x-axis
    (scale views :y {:type :linear :domain [0 100]}) — fixed domain"
-  ([spec-or-views channel type-or-opts]
-   (->plot-spec (view/scale (extract-views spec-or-views) channel type-or-opts)
-                (carry-opts spec-or-views)))
-  ([spec-or-views channel type opts]
-   (->plot-spec (view/scale (extract-views spec-or-views) channel type opts)
-                (carry-opts spec-or-views))))
+  ([sketch-or-views channel type-or-opts]
+   (->sketch (view/scale (extract-views sketch-or-views) channel type-or-opts)
+                (carry-opts sketch-or-views)))
+  ([sketch-or-views channel type opts]
+   (->sketch (view/scale (extract-views sketch-or-views) channel type opts)
+                (carry-opts sketch-or-views))))
 
 (defn options
-  "Set plot-level options on a plot specification.
+  "Set plot-level options on a sketch.
    Options are deep-merged — nested maps like :theme are merged recursively.
-   (options spec {:width 800 :palette :dark2})
-   (options spec {:theme {:bg \"#FFF\"} :legend-position :bottom})"
-  [spec-or-views opts]
-  (->plot-spec (extract-views spec-or-views)
-               (kindly/deep-merge (carry-opts spec-or-views) opts)))
+   (options sketch {:width 800 :palette :dark2})
+   (options sketch {:theme {:bg \"#FFF\"} :legend-position :bottom})"
+  [sketch-or-views opts]
+  (->sketch (extract-views sketch-or-views)
+               (kindly/deep-merge (carry-opts sketch-or-views) opts)))
 
-(defn plot-spec?
-  "Return true if x is a PlotSpec (auto-rendering plot specification)."
+(defn sketch?
+  "Return true if x is a Sketch (auto-rendering sketch)."
   [x]
-  (view/plot-spec? x))
+  (view/sketch? x))
 
 (defn views-of
-  "Extract the raw views vector from a plot specification.
-   Useful for inspecting view data: (kind/pprint (views-of my-spec))"
-  [spec-or-views]
-  (extract-views spec-or-views))
+  "Extract the raw views vector from a sketch.
+   Useful for inspecting view data: (kind/pprint (views-of my-sketch))"
+  [sketch-or-views]
+  (extract-views sketch-or-views))
 
 ;; ---- Configuration ----
 
@@ -314,10 +314,10 @@
                     {:method method-key :x x :y y}))))
 
 (defn- lay-on-views
-  "Add a method layer to existing views (PlotSpec path)."
+  "Add a method layer to existing views (Sketch path)."
   [method-key views layer-overrides carry-opts]
   (let [layer (merge (method/lookup method-key) layer-overrides)]
-    (->plot-spec (view/lay views layer) carry-opts)))
+    (->sketch (view/lay views layer) carry-opts)))
 
 (defn- lay-on-data
   "Create views from raw data, then add a method layer."
@@ -326,30 +326,30 @@
         layer (if layer-opts
                 (merge (method/lookup method-key) layer-opts)
                 (method/lookup method-key))]
-    (->plot-spec (view/lay views layer))))
+    (->sketch (view/lay views layer))))
 
 (defn- lay-method
   "Internal dispatch for lay-X functions.
-   All arities detect PlotSpec/views as the first arg and add a layer with
+   All arities detect Sketch/views as the first arg and add a layer with
    column overrides when applicable. When creating from raw data, validates
    that x-only methods are not given a :y column."
-  ([method-key spec-or-views]
-   (let [extracted (extract-views spec-or-views)]
+  ([method-key sketch-or-views]
+   (let [extracted (extract-views sketch-or-views)]
      (if (view/views? extracted)
-       (lay-on-views method-key extracted {} (carry-opts spec-or-views))
-       (lay-on-data method-key spec-or-views []))))
-  ([method-key spec-or-data x-or-opts]
-   (let [extracted (extract-views spec-or-data)
-         opts (carry-opts spec-or-data)]
+       (lay-on-views method-key extracted {} (carry-opts sketch-or-views))
+       (lay-on-data method-key sketch-or-views []))))
+  ([method-key sketch-or-data x-or-opts]
+   (let [extracted (extract-views sketch-or-data)
+         opts (carry-opts sketch-or-data)]
      (if (view/views? extracted)
        (if (col-ref? x-or-opts)
          (lay-on-views method-key extracted {:x x-or-opts} opts)
          (do (warn-unknown-opts method-key x-or-opts)
              (lay-on-views method-key extracted x-or-opts opts)))
        (lay-on-data method-key extracted [x-or-opts]))))
-  ([method-key spec-or-data x y-or-opts]
-   (let [extracted (extract-views spec-or-data)
-         opts (carry-opts spec-or-data)]
+  ([method-key sketch-or-data x y-or-opts]
+   (let [extracted (extract-views sketch-or-data)
+         opts (carry-opts sketch-or-data)]
      (if (view/views? extracted)
        (if (col-ref? y-or-opts)
          (lay-on-views method-key extracted {:x x :y y-or-opts} opts)
@@ -357,17 +357,17 @@
              (lay-on-views method-key extracted (merge {:x x} y-or-opts) opts)))
        (if (col-ref? y-or-opts)
          (do (check-x-only method-key x y-or-opts)
-             (lay-on-data method-key spec-or-data [x y-or-opts]))
+             (lay-on-data method-key sketch-or-data [x y-or-opts]))
          (do (warn-unknown-opts method-key y-or-opts)
-             (lay-on-data method-key spec-or-data [x] y-or-opts))))))
-  ([method-key spec-or-data x y opts]
-   (let [extracted (extract-views spec-or-data)
-         carry (carry-opts spec-or-data)]
+             (lay-on-data method-key sketch-or-data [x] y-or-opts))))))
+  ([method-key sketch-or-data x y opts]
+   (let [extracted (extract-views sketch-or-data)
+         carry (carry-opts sketch-or-data)]
      (warn-unknown-opts method-key opts)
      (if (view/views? extracted)
        (lay-on-views method-key extracted (merge {:x x :y y} opts) carry)
        (do (check-x-only method-key x y)
-           (lay-on-data method-key spec-or-data [x y] opts))))))
+           (lay-on-data method-key sketch-or-data [x y] opts))))))
 
 (defn lay-point
   "Add a scatter layer — shows individual data points.
@@ -642,12 +642,12 @@
    :color-scale (:sequential, :diverging, or {:low :mid :high} map),
    :color-midpoint (number — centers diverging gradient on this value),
    :validate (default true — validates abcdefgh against Malli schema)."
-  ([spec-or-views]
-   (plot-impl/plot (extract-views spec-or-views)
-                   (carry-opts spec-or-views)))
-  ([spec-or-views opts]
-   (plot-impl/plot (extract-views spec-or-views)
-                   (kindly/deep-merge (carry-opts spec-or-views) opts))))
+  ([sketch-or-views]
+   (plot-impl/plot (extract-views sketch-or-views)
+                   (carry-opts sketch-or-views)))
+  ([sketch-or-views opts]
+   (plot-impl/plot (extract-views sketch-or-views)
+                   (kindly/deep-merge (carry-opts sketch-or-views) opts))))
 
 (defn abcdefgh
   "Resolve views into a abcdefgh — a plain Clojure map with data-space
@@ -656,15 +656,15 @@
    (abcdefgh views)              — default 600×400
    (abcdefgh views {:width 800 :title \"My Plot\"})
    Pass {:validate false} to skip Malli schema validation."
-  ([spec-or-views]
-   (let [views (extract-views spec-or-views)
-         opts (carry-opts spec-or-views)]
+  ([sketch-or-views]
+   (let [views (extract-views sketch-or-views)
+         opts (carry-opts sketch-or-views)]
      (if (seq opts)
        (sketch-impl/views->abcdefgh views opts)
        (sketch-impl/views->abcdefgh views))))
-  ([spec-or-views opts]
-   (sketch-impl/views->abcdefgh (extract-views spec-or-views)
-                              (kindly/deep-merge (carry-opts spec-or-views) opts))))
+  ([sketch-or-views opts]
+   (sketch-impl/views->abcdefgh (extract-views sketch-or-views)
+                              (kindly/deep-merge (carry-opts sketch-or-views) opts))))
 
 (defn views->abcdefgh
   "Convert views into a abcdefgh — a plain Clojure map with data-space
@@ -674,15 +674,15 @@
    (views->abcdefgh views)              — default 600×400
    (views->abcdefgh views {:width 800 :title \"My Plot\"})
    Pass {:validate false} to skip Malli schema validation."
-  ([spec-or-views]
-   (let [views (extract-views spec-or-views)
-         opts (carry-opts spec-or-views)]
+  ([sketch-or-views]
+   (let [views (extract-views sketch-or-views)
+         opts (carry-opts sketch-or-views)]
      (if (seq opts)
        (sketch-impl/views->abcdefgh views opts)
        (sketch-impl/views->abcdefgh views))))
-  ([spec-or-views opts]
-   (sketch-impl/views->abcdefgh (extract-views spec-or-views)
-                              (kindly/deep-merge (carry-opts spec-or-views) opts))))
+  ([sketch-or-views opts]
+   (sketch-impl/views->abcdefgh (extract-views sketch-or-views)
+                              (kindly/deep-merge (carry-opts sketch-or-views) opts))))
 
 (defn abcdefgh->membrane
   "Convert a abcdefgh into a membrane drawable tree.
@@ -726,23 +726,23 @@
    Returns a map with :width, :height, :panels, :points, :lines,
    :polygons, :tiles, :visible-tiles, and :texts — useful for asserting
    plot structure.
-   Accepts SVG hiccup or a PlotSpec (auto-renders to SVG first).
+   Accepts SVG hiccup or a Sketch (auto-renders to SVG first).
    (svg-summary (plot views))  — summary of rendered SVG
-   (svg-summary my-spec)       — auto-renders PlotSpec, then summarizes"
-  ([svg-or-spec]
-   (if (view/plot-spec? svg-or-spec)
-     (svg/svg-summary (plot svg-or-spec))
-     (svg/svg-summary svg-or-spec)))
-  ([svg-or-spec theme]
-   (if (view/plot-spec? svg-or-spec)
-     (svg/svg-summary (plot svg-or-spec) theme)
-     (svg/svg-summary svg-or-spec theme))))
+   (svg-summary my-sketch)       — auto-renders Sketch, then summarizes"
+  ([svg-or-sketch]
+   (if (view/sketch? svg-or-sketch)
+     (svg/svg-summary (plot svg-or-sketch))
+     (svg/svg-summary svg-or-sketch)))
+  ([svg-or-sketch theme]
+   (if (view/sketch? svg-or-sketch)
+     (svg/svg-summary (plot svg-or-sketch) theme)
+     (svg/svg-summary svg-or-sketch theme))))
 
 ;; ---- Multi-Plot Composition ----
 
 (defn arrange
   "Arrange multiple plots in a CSS grid layout.
-   plots: a flat vector of plots or PlotSpecs, or a vector of vectors (explicit rows).
+   plots: a flat vector of plots or Sketches, or a vector of vectors (explicit rows).
    opts:  {:cols N, :title \"...\", :gap \"8px\"}.
    (arrange [plot-a plot-b])                — 1×2 row
    (arrange [plot-a plot-b plot-c] {:cols 2}) — 2-column grid, wraps
@@ -754,8 +754,8 @@
          nested? (and (sequential? (first plots))
                       (not (keyword? (ffirst plots))))
          flat-plots (if nested? (vec (apply concat plots)) (vec plots))
-         ;; Auto-render any PlotSpecs to SVG hiccup
-         flat-plots (mapv #(if (view/plot-spec? %) (plot %) %) flat-plots)
+         ;; Auto-render any Sketches to SVG hiccup
+         flat-plots (mapv #(if (view/sketch? %) (plot %) %) flat-plots)
          n-cols (or cols
                     (if nested? (count (first plots)) (count flat-plots)))
          grid-style {:display "grid"
@@ -776,25 +776,25 @@
 
 (defn save
   "Save a plot to an SVG file.
-   views — a vector of view maps, or a PlotSpec.
+   views — a vector of view maps, or a Sketch.
    path  — file path (string or java.io.File).
    opts  — same options as `plot` (:width, :height, :title, :theme, etc.).
    Tooltip and brush interactivity are not included in saved files.
    Returns the path.
    (save views \"plot.svg\")
    (save views \"plot.svg\" {:width 800 :height 600})"
-  ([spec-or-views path]
+  ([sketch-or-views path]
    (let [path-str (str path)]
      (when-not (.endsWith path-str ".svg")
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
-     (let [views (extract-views spec-or-views)
-           opts (carry-opts spec-or-views)]
+     (let [views (extract-views sketch-or-views)
+           opts (carry-opts sketch-or-views)]
        (if (seq opts)
          (svg/save views path opts)
          (svg/save views path)))))
-  ([spec-or-views path opts]
+  ([sketch-or-views path opts]
    (let [path-str (str path)]
      (when-not (.endsWith path-str ".svg")
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
-     (svg/save (extract-views spec-or-views) path
-               (kindly/deep-merge (carry-opts spec-or-views) opts)))))
+     (svg/save (extract-views sketch-or-views) path
+               (kindly/deep-merge (carry-opts sketch-or-views) opts)))))

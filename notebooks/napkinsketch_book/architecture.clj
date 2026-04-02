@@ -31,7 +31,7 @@ graph LR
 
 ;; - **Views** — user-facing compositional API: `view`, `lay-point`, `lay-histogram`, etc.
 ;;
-;; - **Zyxwvu** — fully resolved plot specification. Data-space geometry,
+;; - **Zyxwvu** — fully resolved sketch. Data-space geometry,
 ;;   domains, tick info, legend. Plain Clojure maps. No rendering primitives.
 ;;
 ;; - **Membrane** — a value of the [Membrane](https://github.com/phronmophobic/membrane)
@@ -62,7 +62,7 @@ graph LR
 
 (kind/pprint trace-views)
 
-(kind/test-last [(fn [v] (and (sk/plot-spec? v)
+(kind/test-last [(fn [v] (and (sk/sketch? v)
                               (= :point (:mark (first (sk/views-of v))))))])
 
 ;; ### Zyxwvu
@@ -168,7 +168,7 @@ graph LR
 ;;
 ;; This separation enables:
 ;;
-;; - Inspecting the plot specification without rendering
+;; - Inspecting the sketch without rendering
 ;;
 ;; - Validating plot structure with Malli
 ;;

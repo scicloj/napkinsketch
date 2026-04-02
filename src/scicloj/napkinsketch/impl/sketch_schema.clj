@@ -251,7 +251,7 @@
 ;; ---- Zyxwvu (top-level) ----
 
 (def Abcdefgh
-  "A fully resolved plot specification.
+  "A fully resolved sketch.
    Data-space geometry, no membrane types, no datasets.
    Numeric arrays (xs, ys, etc.) may be dtype-next buffers."
   [:map

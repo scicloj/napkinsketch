@@ -449,21 +449,21 @@
 
 (deftest lay-test
   (testing "lay merges mark into views"
-    (let [spec (sk/view tiny-ds [[:x :y]])
-          layered (sk/views-of (sk/lay spec (merge (method/lookup :point) {:color :x})))]
+    (let [sketch (sk/view tiny-ds [[:x :y]])
+          layered (sk/views-of (sk/lay sketch (merge (method/lookup :point) {:color :x})))]
       (is (= :point (:mark (first layered))))
       (is (= :x (:color (first layered))))))
   (testing "lay is additive"
-    (let [spec (sk/view tiny-ds [[:x :y]])
-          l1 (sk/lay spec (method/lookup :point))
+    (let [sketch (sk/view tiny-ds [[:x :y]])
+          l1 (sk/lay sketch (method/lookup :point))
           l2 (sk/lay l1 (method/lookup :lm))]
       (is (= 2 (count (sk/views-of l2)))))))
 
 (deftest view-record-test
-  (testing "view returns PlotSpec wrapping View records"
-    (let [spec (sk/view tiny-ds [[:x :y]])
-          views (sk/views-of spec)]
-      (is (view/plot-spec? spec))
+  (testing "view returns Sketch wrapping View records"
+    (let [sketch (sk/view tiny-ds [[:x :y]])
+          views (sk/views-of sketch)]
+      (is (view/sketch? sketch))
       (is (instance? scicloj.napkinsketch.impl.view.View (first views)))
       (is (view/views? views))))
   (testing "views? rejects plain maps"
@@ -502,28 +502,28 @@
     (let [fig (-> tiny-ds (sk/lay-point :x :y) sk/plot)]
       (is (some? fig)))))
 
-(deftest plot-spec-test
-  (testing "API functions return PlotSpec"
-    (is (view/plot-spec? (sk/view tiny-ds [[:x :y]])))
-    (is (view/plot-spec? (sk/lay-point tiny-ds :x :y)))
-    (is (view/plot-spec? (-> tiny-ds (sk/lay-point :x :y) (sk/lay-lm)))))
+(deftest sketch-test
+  (testing "API functions return Sketch"
+    (is (view/sketch? (sk/view tiny-ds [[:x :y]])))
+    (is (view/sketch? (sk/lay-point tiny-ds :x :y)))
+    (is (view/sketch? (-> tiny-ds (sk/lay-point :x :y) (sk/lay-lm)))))
   (testing "views-of extracts raw views"
     (let [views (sk/views-of (sk/lay-point tiny-ds :x :y))]
       (is (vector? views))
       (is (view/views? views))))
   (testing "options stores render options"
-    (let [spec (-> tiny-ds (sk/lay-point :x :y) (sk/options {:width 800}))]
-      (is (view/plot-spec? spec))
-      (is (= 800 (:width (:opts spec))))))
-  (testing "plot accepts PlotSpec"
+    (let [sketch (-> tiny-ds (sk/lay-point :x :y) (sk/options {:width 800}))]
+      (is (view/sketch? sketch))
+      (is (= 800 (:width (:opts sketch))))))
+  (testing "plot accepts Sketch"
     (let [fig (-> tiny-ds (sk/lay-point :x :y) sk/plot)]
       (is (vector? fig))
       (is (= :svg (first fig)))))
-  (testing "abcdefgh accepts PlotSpec"
+  (testing "abcdefgh accepts Sketch"
     (let [qwerty (-> tiny-ds (sk/lay-point :x :y) sk/abcdefgh)]
       (is (map? qwerty))
       (is (contains? qwerty :panels))))
-  (testing "svg-summary accepts PlotSpec"
+  (testing "svg-summary accepts Sketch"
     (let [s (sk/svg-summary (sk/lay-point tiny-ds :x :y))]
       (is (map? s))
       (is (= 5 (:points s)))))
@@ -763,13 +763,13 @@
                     sk/plot)]
         (is (vector? svg)))))
   (testing "sk/options deep-merges theme across calls"
-    (let [spec (-> {:x [1 2 3] :y [4 5 6]}
+    (let [sketch (-> {:x [1 2 3] :y [4 5 6]}
                    (sk/lay-point :x :y)
                    (sk/options {:theme {:bg "#FFF"} :width 800})
                    (sk/options {:theme {:font-size 14}}))]
-      (is (= "#FFF" (get-in (:opts spec) [:theme :bg])))
-      (is (= 14 (get-in (:opts spec) [:theme :font-size])))
-      (is (= 800 (:width (:opts spec)))))))
+      (is (= "#FFF" (get-in (:opts sketch) [:theme :bg])))
+      (is (= 14 (get-in (:opts sketch) [:theme :font-size])))
+      (is (= 800 (:width (:opts sketch)))))))
 
 (deftest dynamic-binding-test
   (testing "binding *config* overrides set-config!"
@@ -1157,19 +1157,19 @@
       (is (every? some? (map :facet-row views)))
       (is (every? some? (map :facet-col views))))))
 
-(deftest plotspec-pipeline-test
-  (testing "lay-X 3-arity with PlotSpec adds layer with column overrides"
+(deftest sketch-pipeline-test
+  (testing "lay-X 3-arity with Sketch adds layer with column overrides"
     (let [p (sk/lay-point {:x [1 2 3] :y [4 5 6]} :x :y)
           p2 (sk/lay-line p :x :y)]
-      (is (sk/plot-spec? p2))
+      (is (sk/sketch? p2))
       (is (= 2 (count (sk/views-of p2))))))
-  (testing "lay-X 4-arity with PlotSpec adds layer with columns + opts"
+  (testing "lay-X 4-arity with Sketch adds layer with columns + opts"
     (let [p (sk/lay-point {:x [1 2 3] :y [4 5 6] :g ["a" "b" "a"]} :x :y)
           p2 (sk/lay-line p :x :y {:color :g})
           s (sk/svg-summary p2)]
       (is (= 3 (:points s)))
       (is (= 2 (:lines s)))))
-  (testing "lay-X 2-arity with PlotSpec and column override"
+  (testing "lay-X 2-arity with Sketch and column override"
     (let [ds {:a [1 2 3 4 5] :b [5 4 3 2 1] :c [10 20 30 40 50]}
           p (sk/lay-point ds :a :b)
           p2 (sk/lay-histogram p :c)
@@ -1177,7 +1177,7 @@
       (is (= 2 (:panels s)))
       (is (= 5 (:points s)))
       (is (pos? (:polygons s)))))
-  (testing "lay-X with PlotSpec and different columns creates multi-panel"
+  (testing "lay-X with Sketch and different columns creates multi-panel"
     (let [ds {:a [1 2 3] :b [4 5 6] :c [7 8 9] :d [10 11 12]}
           p (sk/lay-point ds :a :b)
           p2 (sk/lay-point p :c :d)
@@ -1393,20 +1393,20 @@
           (is (sk/valid-abcdefgh? (sk/abcdefgh views {:validate false}))))))))
 
 (deftest with-config-snapshot-test
-  (testing "with-config overrides survive PlotSpec lazy rendering"
-    (let [spec (sk/with-config {:color-scale :plasma}
+  (testing "with-config overrides survive Sketch lazy rendering"
+    (let [sketch (sk/with-config {:color-scale :plasma}
                  (-> {:x [1 2 3] :y [1 2 3] :c [1 2 3]}
                      (sk/lay-point :x :y {:color :c})))]
-      (is (= {:color-scale :plasma} (:config-snapshot spec))
+      (is (= {:color-scale :plasma} (:config-snapshot sketch))
           "config snapshot is captured")
-      (is (= :plasma (get-in (sk/abcdefgh (sk/views-of spec)
-                                        (merge (:opts spec) (:config-snapshot spec)))
+      (is (= :plasma (get-in (sk/abcdefgh (sk/views-of sketch)
+                                        (merge (:opts sketch) (:config-snapshot sketch)))
                              [:legend :color-scale]))
           "color-scale reaches the abcdefgh")))
   (testing "no snapshot without with-config"
-    (let [spec (-> {:x [1 2 3] :y [1 2 3]}
+    (let [sketch (-> {:x [1 2 3] :y [1 2 3]}
                    (sk/lay-point :x :y))]
-      (is (nil? (:config-snapshot spec)))))
+      (is (nil? (:config-snapshot sketch)))))
   (testing "unknown color-scale throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Unknown color scale"
                           (sk/abcdefgh (sk/views-of (-> {:x [1 2 3] :y [1 2 3] :c [1 2 3]}

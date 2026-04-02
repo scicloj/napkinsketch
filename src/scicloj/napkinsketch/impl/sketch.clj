@@ -622,7 +622,7 @@
                     ". Using first view's coord: " (first coords) ".")))))
 
 (defn views->abcdefgh
-  "Resolve views + options into a abcdefgh — a fully resolved plot specification
+  "Resolve views + options into a abcdefgh — a fully resolved sketch
    with data-space geometry, domains, ticks, legend, and layout info.
    No membrane types, no datasets in the output.
    Options include :validate (default true) — when true, validates the
