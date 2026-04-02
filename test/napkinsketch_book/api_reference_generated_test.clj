@@ -147,7 +147,9 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__99911#] (Math/sin (* p1__99911# 0.3))) (range 30))}))
+   (map
+    (fn* [p1__121899#] (Math/sin (* p1__121899# 0.3)))
+    (range 30))}))
 
 
 (def v30_l107 (-> wave (sk/lay-line :x :y)))
@@ -257,9 +259,9 @@
     :y
     (map
      (fn*
-      [p1__99912#]
+      [p1__121900#]
       (+
-       (Math/sin (* p1__99912# 0.2))
+       (Math/sin (* p1__121900# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -577,10 +579,10 @@
    v109_l336)))
 
 
-(def v111_l344 (kind/doc #'sk/plot-spec?))
+(def v111_l344 (kind/doc #'sk/sketch?))
 
 
-(def v113_l348 (sk/plot-spec? (sk/lay-point tiny :x :y)))
+(def v113_l348 (sk/sketch? (sk/lay-point tiny :x :y)))
 
 
 (deftest t114_l350 (is (true? v113_l348)))
@@ -597,10 +599,10 @@
 (deftest t118_l358 (is ((fn [v] (= 2 v)) v117_l356)))
 
 
-(def v119_l360 (kind/doc #'sk/sketch))
+(def v119_l360 (kind/doc #'sk/plan))
 
 
-(def v121_l364 (def sk1 (-> tiny (sk/lay-point :x :y) sk/sketch)))
+(def v121_l364 (def sk1 (-> tiny (sk/lay-point :x :y) sk/plan)))
 
 
 (def v122_l368 sk1)
@@ -612,12 +614,10 @@
   ((fn [m] (and (= 600 (:width m)) (= "x" (:x-label m)))) v122_l368)))
 
 
-(def v125_l375 (kind/doc #'sk/views->sketch))
+(def v125_l375 (kind/doc #'sk/views->plan))
 
 
-(def
- v126_l377
- (def sk2 (-> tiny (sk/lay-point :x :y) sk/views->sketch)))
+(def v126_l377 (def sk2 (-> tiny (sk/lay-point :x :y) sk/views->plan)))
 
 
 (def v127_l381 (= (keys sk1) (keys sk2)))
@@ -626,10 +626,10 @@
 (deftest t128_l383 (is (true? v127_l381)))
 
 
-(def v129_l385 (kind/doc #'sk/sketch->membrane))
+(def v129_l385 (kind/doc #'sk/plan->membrane))
 
 
-(def v130_l387 (def m1 (sk/sketch->membrane sk1)))
+(def v130_l387 (def m1 (sk/plan->membrane sk1)))
 
 
 (def v131_l389 (vector? m1))
@@ -654,10 +654,10 @@
 (deftest t135_l399 (is ((fn [v] (= :svg v)) v134_l395)))
 
 
-(def v136_l401 (kind/doc #'sk/sketch->figure))
+(def v136_l401 (kind/doc #'sk/plan->figure))
 
 
-(def v137_l403 (first (sk/sketch->figure sk1 :svg {})))
+(def v137_l403 (first (sk/plan->figure sk1 :svg {})))
 
 
 (deftest t138_l405 (is ((fn [v] (= :svg v)) v137_l403)))
@@ -915,19 +915,19 @@
  (is ((fn [m] (and (= 1 (:panels m)) (= 150 (:points m)))) v185_l532)))
 
 
-(def v187_l538 (kind/doc #'sk/valid-sketch?))
+(def v187_l538 (kind/doc #'sk/valid-plan?))
 
 
-(def v188_l540 (sk/valid-sketch? sk1))
+(def v188_l540 (sk/valid-plan? sk1))
 
 
 (deftest t189_l542 (is (true? v188_l540)))
 
 
-(def v190_l544 (kind/doc #'sk/explain-sketch))
+(def v190_l544 (kind/doc #'sk/explain-plan))
 
 
-(def v191_l546 (sk/explain-sketch sk1))
+(def v191_l546 (sk/explain-plan sk1))
 
 
 (deftest t192_l548 (is (nil? v191_l546)))

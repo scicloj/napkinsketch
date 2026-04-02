@@ -107,12 +107,12 @@
     (str/join ", " parts)))
 
 ;; ---- layer->membrane multimethod ----
-;; layer->membrane takes abcdefgh layer descriptors (data-space geometry,
+;; layer->membrane takes plan layer descriptors (data-space geometry,
 ;; resolved colors) and renders them as membrane drawable primitives.
 
 (defmulti layer->membrane
-  "Convert a abcdefgh layer into membrane drawable primitives.
-   `layer` is a abcdefgh layer map with data-space geometry and resolved colors.
+  "Convert a plan layer into membrane drawable primitives.
+   `layer` is a plan layer map with data-space geometry and resolved colors.
    `ctx` contains :coord-fn, :sx, :sy, :coord-type.
    Dispatches on (:mark layer)."
   (fn [layer ctx] (:mark layer)))
@@ -530,7 +530,7 @@
         ;; Max density across all ridges for normalization
         max-d (max 0.001 (dfn/reduce-max (dtype/concat-buffers (map :densities ridges))))
         norm (* bw overlap (/ 1.0 max-d))
-        ;; After domain swap in abcdefgh, sx is the numeric scale (maps to x-pixels)
+        ;; After domain swap in plan, sx is the numeric scale (maps to x-pixels)
         ;; and sy is categorical. Use sx for numeric value → pixel mapping.
         num-scale sx]
     (vec
@@ -730,7 +730,7 @@
 ;; ---- Rect (categorical bars / value bars) ----
 
 (defn layer->membrane-categorical-bars
-  "Render categorical count bars from a abcdefgh :rect layer.
+  "Render categorical count bars from a plan :rect layer.
    Stack: reads pre-computed :y0/:y1 from position adjustment.
    Dodge: reads :dodge-idx/:dodge-ctx from position adjustment."
   [layer ctx]
@@ -766,7 +766,7 @@
                       (num-s 0) (num-s count)))))))))
 
 (defn layer->membrane-value-bars
-  "Render value bars from a abcdefgh :rect layer."
+  "Render value bars from a plan :rect layer."
   [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [flipped? band-s num-s]} (orient-scales ctx)

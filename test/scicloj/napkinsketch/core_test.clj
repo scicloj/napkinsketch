@@ -79,22 +79,22 @@
 (deftest legend-serializable-test
   (testing "continuous legend has :color-scale keyword, no :gradient-fn"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
-          qwerty (sk/abcdefgh (-> ds (sk/lay-point :x :y {:color :c})))
-          legend (:legend qwerty)]
+          pl (sk/plan (-> ds (sk/lay-point :x :y {:color :c})))
+          legend (:legend pl)]
       (is (= :continuous (:type legend)))
       (is (contains? legend :color-scale))
       (is (not (contains? legend :gradient-fn)))
       (is (nil? (:color-scale legend)) "default color-scale is nil")))
   (testing "explicit :color-scale is stored as keyword"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
-          qwerty (sk/abcdefgh (-> ds (sk/lay-point :x :y {:color :c}))
+          pl (sk/plan (-> ds (sk/lay-point :x :y {:color :c}))
                         {:color-scale :inferno})
-          legend (:legend qwerty)]
+          legend (:legend pl)]
       (is (= :inferno (:color-scale legend)))))
   (testing "legend has 20 pre-computed stops"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
-          qwerty (sk/abcdefgh (-> ds (sk/lay-point :x :y {:color :c})))
-          legend (:legend qwerty)]
+          pl (sk/plan (-> ds (sk/lay-point :x :y {:color :c})))
+          legend (:legend pl)]
       (is (= 20 (count (:stops legend))))
       (is (== 0.0 (:t (first (:stops legend)))))
       (is (== 1.0 (:t (last (:stops legend))))))))
@@ -251,10 +251,10 @@
 
 (deftest count-stat-x-equals-color-test
   (testing "count stat when x and color map to the same column"
-    (let [qwerty (-> {:species ["setosa" "setosa" "versicolor" "versicolor"]}
+    (let [pl (-> {:species ["setosa" "setosa" "versicolor" "versicolor"]}
                  (sk/lay-bar :species {:color :species})
-                 sk/abcdefgh)
-          groups (get-in qwerty [:panels 0 :layers 0 :groups])]
+                 sk/plan)
+          groups (get-in pl [:panels 0 :layers 0 :groups])]
       ;; Each group should only have non-zero count for its own species
       (doseq [g groups]
         (doseq [{:keys [category count]} (:counts g)]
@@ -264,10 +264,10 @@
 
 (deftest value-bar-stacking-y0s-test
   (testing "stacked value bars use y0s baselines"
-    (let [qwerty (-> {:day ["Mon" "Mon"] :count [30 20] :meal ["lunch" "dinner"]}
+    (let [pl (-> {:day ["Mon" "Mon"] :count [30 20] :meal ["lunch" "dinner"]}
                  (sk/lay-value-bar :day :count {:color :meal :position :stack})
-                 sk/abcdefgh)
-          groups (get-in qwerty [:panels 0 :layers 0 :groups])
+                 sk/plan)
+          groups (get-in pl [:panels 0 :layers 0 :groups])
           dinner (second groups)]
       ;; dinner baseline should equal lunch value (30)
       (is (= [30.0] (vec (:y0s dinner)))))))
@@ -429,7 +429,7 @@
                      (sk/view :x :y {:color :g})
                      sk/lay-point
                      sk/lay-lm)
-          s (sk/abcdefgh result)
+          s (sk/plan result)
           layers (:layers (first (:panels s)))]
       (is (= 2 (count layers)))
       (is (= 2 (count (:groups (first layers)))))
@@ -519,50 +519,50 @@
     (let [fig (-> tiny-ds (sk/lay-point :x :y) sk/plot)]
       (is (vector? fig))
       (is (= :svg (first fig)))))
-  (testing "abcdefgh accepts Sketch"
-    (let [qwerty (-> tiny-ds (sk/lay-point :x :y) sk/abcdefgh)]
-      (is (map? qwerty))
-      (is (contains? qwerty :panels))))
+  (testing "plan accepts Sketch"
+    (let [pl (-> tiny-ds (sk/lay-point :x :y) sk/plan)]
+      (is (map? pl))
+      (is (contains? pl :panels))))
   (testing "svg-summary accepts Sketch"
     (let [s (sk/svg-summary (sk/lay-point tiny-ds :x :y))]
       (is (map? s))
       (is (= 5 (:points s)))))
   (testing "options flow through to render"
-    (let [qwerty (-> tiny-ds (sk/lay-point :x :y) (sk/options {:width 800}) sk/abcdefgh)]
-      (is (= 800 (:width qwerty))))))
+    (let [pl (-> tiny-ds (sk/lay-point :x :y) (sk/options {:width 800}) sk/plan)]
+      (is (= 800 (:width pl))))))
 
 ;; ============================================================
-;; views->abcdefgh (integration)
+;; views->plan (integration)
 ;; ============================================================
 
-(deftest views-to-abcdefgh-test
+(deftest views-to-plan-test
   (let [views (-> tiny-ds
                   (sk/view [[:x :y]])
                   sk/lay-point)
-        qwerty (sk/abcdefgh views)]
-    (is (map? qwerty))
-    (is (contains? qwerty :panels))
-    (is (contains? qwerty :width))
-    (is (contains? qwerty :height))
-    (is (= 1 (count (:panels qwerty))))
-    (let [panel (first (:panels qwerty))]
+        pl (sk/plan views)]
+    (is (map? pl))
+    (is (contains? pl :panels))
+    (is (contains? pl :width))
+    (is (contains? pl :height))
+    (is (= 1 (count (:panels pl))))
+    (let [panel (first (:panels pl))]
       (is (seq (:layers panel)))
       (is (contains? panel :x-domain))
       (is (contains? panel :y-domain)))))
 
-(deftest abcdefgh-with-color-test
+(deftest plan-with-color-test
   (let [ds (tc/dataset {:x [1 2 3 4] :y [1 2 3 4] :g ["a" "a" "b" "b"]})
         views (-> ds (sk/view [[:x :y]]) (sk/lay-point {:color :g}))
-        qwerty (sk/abcdefgh views)]
-    (is (:legend qwerty))
-    (is (= 2 (count (:entries (:legend qwerty)))))))
+        pl (sk/plan views)]
+    (is (:legend pl))
+    (is (= 2 (count (:entries (:legend pl)))))))
 
-(deftest abcdefgh-faceted-test
+(deftest plan-faceted-test
   (let [ds (tc/dataset {:x [1 2 3 4 5 6] :y [1 2 3 4 5 6]
                         :g ["a" "a" "b" "b" "c" "c"]})
         views (-> ds (sk/view [[:x :y]]) (sk/facet :g) sk/lay-point)
-        qwerty (sk/abcdefgh views)]
-    (is (= 3 (count (:panels qwerty))))))
+        pl (sk/plan views)]
+    (is (= 3 (count (:panels pl))))))
 
 (deftest coord-fixed-test
   (testing "adjust-fixed-aspect: equal ranges → square panel"
@@ -671,10 +671,10 @@
       (is (= :div (first title-div)))
       (is (= "Test" (last title-div))))))
 
-(deftest valid-abcdefgh-test
+(deftest valid-plan-test
   (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)
-        qwerty (sk/abcdefgh views)]
-    (is (sk/valid-abcdefgh? qwerty))))
+        pl (sk/plan views)]
+    (is (sk/valid-plan? pl))))
 
 ;; ============================================================
 ;; Configuration System
@@ -849,34 +849,34 @@
       (is (= 1234 (:width (sk/config)))))
     (is (= 600 (:width (sk/config))))))
 
-;; ---- Config affects abcdefgh output ----
+;; ---- Config affects plan output ----
 
-(deftest config-affects-abcdefgh-test
+(deftest config-affects-plan-test
   (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)]
-    (testing "default width/height in abcdefgh"
-      (let [s (sk/abcdefgh views)]
+    (testing "default width/height in plan"
+      (let [s (sk/plan views)]
         (is (= 600 (:width s)))
         (is (= 400 (:height s)))))
-    (testing "per-call opts change abcdefgh dimensions"
-      (let [s (sk/abcdefgh views {:width 800 :height 300})]
+    (testing "per-call opts change plan dimensions"
+      (let [s (sk/plan views {:width 800 :height 300})]
         (is (= 800 (:width s)))
         (is (= 300 (:height s)))))
-    (testing "set-config! changes abcdefgh dimensions"
+    (testing "set-config! changes plan dimensions"
       (try
         (sk/set-config! {:width 700})
-        (let [s (sk/abcdefgh views)]
+        (let [s (sk/plan views)]
           (is (= 700 (:width s))))
         (finally
           (sk/set-config! nil))))
-    (testing "with-config changes abcdefgh dimensions"
+    (testing "with-config changes plan dimensions"
       (sk/with-config {:height 500}
-        (let [s (sk/abcdefgh views)]
+        (let [s (sk/plan views)]
           (is (= 500 (:height s)))))
       ;; After with-config, back to default
-      (let [s (sk/abcdefgh views)]
+      (let [s (sk/plan views)]
         (is (= 400 (:height s)))))
-    (testing "abcdefgh does NOT contain :theme key"
-      (let [s (sk/abcdefgh views)]
+    (testing "plan does NOT contain :theme key"
+      (let [s (sk/plan views)]
         (is (not (contains? s :theme)))))))
 
 ;; ---- Config affects rendered SVG ----
@@ -931,58 +931,58 @@
 
 (deftest config-validate-flag-test
   (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)]
-    (testing "validate true (default) — valid abcdefgh passes"
-      (is (some? (sk/abcdefgh views))))
+    (testing "validate true (default) — valid plan passes"
+      (is (some? (sk/plan views))))
     (testing "validate false skips schema check"
-      (is (some? (sk/abcdefgh views {:validate false}))))))
+      (is (some? (sk/plan views {:validate false}))))))
 
 ;; ---- Edge case tests ----
 
 (deftest single-point-dataset-test
-  (testing "abcdefgh with a single data point does not throw"
+  (testing "plan with a single data point does not throw"
     (let [ds (tc/dataset {:x [5] :y [10]})
-          qwerty (sk/abcdefgh (-> ds (sk/lay-point :x :y)))]
-      (is (= 1 (count (:panels qwerty))))
+          pl (sk/plan (-> ds (sk/lay-point :x :y)))]
+      (is (= 1 (count (:panels pl))))
       (is (some? (sk/plot (-> ds (sk/lay-point :x :y))))))))
 
 (deftest two-point-dataset-test
   (testing "regression with exactly 2 points — lm needs n>=3 so falls back gracefully"
     (let [ds (tc/dataset {:x [1 2] :y [3 4]})
           views (-> ds (sk/view :x :y) sk/lay-point)]
-      (is (some? (sk/abcdefgh views))))))
+      (is (some? (sk/plan views))))))
 
 (deftest all-same-values-test
   (testing "scatter where all x values are identical"
     (let [ds (tc/dataset {:x [5 5 5 5] :y [1 2 3 4]})
-          qwerty (sk/abcdefgh (-> ds (sk/lay-point :x :y)))]
-      (is (some? qwerty))
-      (is (= 1 (count (:panels qwerty))))))
+          pl (sk/plan (-> ds (sk/lay-point :x :y)))]
+      (is (some? pl))
+      (is (= 1 (count (:panels pl))))))
   (testing "scatter where all y values are identical"
     (let [ds (tc/dataset {:x [1 2 3 4] :y [5 5 5 5]})
-          qwerty (sk/abcdefgh (-> ds (sk/lay-point :x :y)))]
-      (is (some? qwerty)))))
+          pl (sk/plan (-> ds (sk/lay-point :x :y)))]
+      (is (some? pl)))))
 
 (deftest categorical-single-category-test
   (testing "bar chart with only one category"
     (let [ds (tc/dataset {:cat ["a" "a" "a"] :val [1 2 3]})
-          qwerty (sk/abcdefgh (-> ds (sk/lay-value-bar :cat :val)))]
-      (is (= 1 (count (:panels qwerty)))))))
+          pl (sk/plan (-> ds (sk/lay-value-bar :cat :val)))]
+      (is (= 1 (count (:panels pl)))))))
 
 (deftest histogram-uniform-data-test
   (testing "histogram with all identical values"
     (let [ds (tc/dataset {:x [5 5 5 5 5]})
-          qwerty (sk/abcdefgh (-> ds (sk/lay-histogram :x)))]
-      (is (some? qwerty)))))
+          pl (sk/plan (-> ds (sk/lay-histogram :x)))]
+      (is (some? pl)))))
 
 (deftest polar-coord-test
-  (testing "polar coordinate abcdefgh structure"
+  (testing "polar coordinate plan structure"
     (let [ds (tc/dataset {:cat ["A" "B" "C"] :val [10 20 30]})
           views (-> ds
                     (sk/view :cat :val)
                     sk/lay-bar
                     (sk/coord :polar))
-          qwerty (sk/abcdefgh views)]
-      (is (= :polar (get-in qwerty [:panels 0 :coord]))))))
+          pl (sk/plan views)]
+      (is (= :polar (get-in pl [:panels 0 :coord]))))))
 
 (deftest flip-coord-test
   (testing "flipped coordinates swap x/y domains"
@@ -990,105 +990,105 @@
                     (sk/view :cat :val)
                     sk/lay-bar
                     (sk/coord :flip))
-          qwerty (sk/abcdefgh views)
-          panel (first (:panels qwerty))]
+          pl (sk/plan views)
+          panel (first (:panels pl))]
       (is (= :flip (:coord panel))))))
 
 (deftest labs-test
-  (testing "axis labels propagate to abcdefgh via options"
-    (let [qwerty (-> tiny-ds
+  (testing "axis labels propagate to plan via options"
+    (let [pl (-> tiny-ds
                  (sk/view :x :y)
                  sk/lay-point
                  (sk/options {:x-label "X Axis" :y-label "Y Axis"})
-                 sk/abcdefgh)]
-      (is (= "X Axis" (:x-label qwerty)))
-      (is (= "Y Axis" (:y-label qwerty)))))
+                 sk/plan)]
+      (is (= "X Axis" (:x-label pl)))
+      (is (= "Y Axis" (:y-label pl)))))
   (testing "title/subtitle/caption propagate via options"
-    (let [qwerty (-> tiny-ds
+    (let [pl (-> tiny-ds
                  (sk/view :x :y)
                  sk/lay-point
                  (sk/options {:title "T" :subtitle "ST" :caption "C"})
-                 sk/abcdefgh)]
-      (is (= "T" (:title qwerty)))
-      (is (= "ST" (:subtitle qwerty)))
-      (is (= "C" (:caption qwerty))))))
+                 sk/plan)]
+      (is (= "T" (:title pl)))
+      (is (= "ST" (:subtitle pl)))
+      (is (= "C" (:caption pl))))))
 
 (deftest log-scale-test
-  (testing "log scale is recorded in abcdefgh"
+  (testing "log scale is recorded in plan"
     (let [ds (tc/dataset {:x [1 10 100 1000] :y [1 2 3 4]})
           views (-> ds
                     (sk/view :x :y)
                     sk/lay-point
                     (sk/scale :x :log))
-          qwerty (sk/abcdefgh views)
-          panel (first (:panels qwerty))]
+          pl (sk/plan views)
+          panel (first (:panels pl))]
       (is (= :log (get-in panel [:x-scale :type]))))))
 
 (deftest log-scale-nonpositive-test
   (testing "non-positive values are filtered on log-scaled x axis"
-    (let [qwerty (sk/abcdefgh (-> {:x [0 -1 1 10 100] :y [1 2 3 4 5]}
+    (let [pl (sk/plan (-> {:x [0 -1 1 10 100] :y [1 2 3 4 5]}
                             (sk/lay-point :x :y)
                             (sk/scale :x :log)))
-          layer (first (:layers (first (:panels qwerty))))
+          layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))
       (is (= [1 10 100] (vec (:xs group))))))
   (testing "non-positive values are filtered on log-scaled y axis"
-    (let [qwerty (sk/abcdefgh (-> {:x [1 2 3 4 5] :y [0 -1 1 10 100]}
+    (let [pl (sk/plan (-> {:x [1 2 3 4 5] :y [0 -1 1 10 100]}
                             (sk/lay-point :x :y)
                             (sk/scale :y :log)))
-          layer (first (:layers (first (:panels qwerty))))
+          layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))))
   (testing "all-positive data is not filtered"
-    (let [qwerty (sk/abcdefgh (-> {:x [1 10 100] :y [1 2 3]}
+    (let [pl (sk/plan (-> {:x [1 10 100] :y [1 2 3]}
                             (sk/lay-point :x :y)
                             (sk/scale :x :log)))
-          layer (first (:layers (first (:panels qwerty))))
+          layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group)))))))
 
 (deftest infinity-filtering-test
   (testing "infinite y values are filtered with warning"
-    (let [qwerty (sk/abcdefgh (-> {:x [1 2 3 4 5]
+    (let [pl (sk/plan (-> {:x [1 2 3 4 5]
                              :y [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]}
                             (sk/lay-point :x :y)))
-          layer (first (:layers (first (:panels qwerty))))
+          layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))
       (is (= [1 3 5] (vec (:xs group))))
       (is (= [10.0 30.0 50.0] (vec (:ys group))))))
   (testing "infinite x values are filtered"
-    (let [qwerty (sk/abcdefgh (-> {:x [1.0 Double/POSITIVE_INFINITY 3.0]
+    (let [pl (sk/plan (-> {:x [1.0 Double/POSITIVE_INFINITY 3.0]
                              :y [10 20 30]}
                             (sk/lay-point :x :y)))
-          group (-> qwerty :panels first :layers first :groups first)]
+          group (-> pl :panels first :layers first :groups first)]
       (is (= 2 (count (:xs group))))))
   (testing "SVG has no NaN after infinity filtering"
     (let [svg (sk/plot (-> {:x [1 2 3] :y [1.0 Double/POSITIVE_INFINITY 3.0]}
                            (sk/lay-point :x :y)))]
       (is (not (clojure.string/includes? (str svg) "NaN")))))
   (testing "all-finite data is not filtered"
-    (let [qwerty (sk/abcdefgh (-> {:x [1 2 3] :y [10.0 20.0 30.0]}
+    (let [pl (sk/plan (-> {:x [1 2 3] :y [10.0 20.0 30.0]}
                             (sk/lay-point :x :y)))
-          group (-> qwerty :panels first :layers first :groups first)]
+          group (-> pl :panels first :layers first :groups first)]
       (is (= 3 (count (:xs group)))))))
 
 (deftest stacked-negative-domain-test
   (testing "all-negative stacked bars produce correct y-domain"
-    (let [qwerty (sk/abcdefgh (-> {:category ["A" "A" "B" "B"]
+    (let [pl (sk/plan (-> {:category ["A" "A" "B" "B"]
                              :group ["g1" "g2" "g1" "g2"]
                              :value [-10 -20 -5 -15]}
                             (sk/lay-value-bar :category :value {:color :group :position :stack})))
-          [lo hi] (:y-domain (first (:panels qwerty)))]
+          [lo hi] (:y-domain (first (:panels pl)))]
       (is (neg? lo) "lower bound should be negative for all-negative stacked data")
       (is (pos? hi) "upper bound includes 0 baseline with padding")))
   (testing "mixed positive/negative stacked bars span both sides"
-    (let [qwerty (sk/abcdefgh (-> {:category ["A" "A" "B" "B"]
+    (let [pl (sk/plan (-> {:category ["A" "A" "B" "B"]
                              :group ["g1" "g2" "g1" "g2"]
                              :value [10 -20 5 -15]}
                             (sk/lay-value-bar :category :value {:color :group :position :stack})))
-          [lo hi] (:y-domain (first (:panels qwerty)))]
+          [lo hi] (:y-domain (first (:panels pl)))]
       (is (neg? lo) "lower bound extends below zero")
       (is (pos? hi) "upper bound extends above zero")))
   (testing "all-negative stacked bars render without NaN"
@@ -1100,10 +1100,10 @@
 
 (deftest boolean-color-test
   (testing "Boolean false is not dropped as group key"
-    (let [qwerty (-> {:x [1 2 3 4] :y [10 20 30 40] :flag [true false true false]}
+    (let [pl (-> {:x [1 2 3 4] :y [10 20 30 40] :flag [true false true false]}
                  (sk/lay-point :x :y {:color :flag})
-                 sk/abcdefgh)
-          groups (-> qwerty :panels first :layers first :groups)]
+                 sk/plan)
+          groups (-> pl :panels first :layers first :groups)]
       (is (= 2 (count groups)) "two groups for true/false")
       (is (= "true" (:label (first groups))))
       (is (= "false" (:label (second groups))))
@@ -1111,11 +1111,11 @@
       (is (not= (:color (first groups)) (:color (second groups)))
           "true and false get different colors")))
   (testing "Legend matches rendering for boolean groups"
-    (let [qwerty (-> {:x [1 2 3 4] :y [10 20 30 40] :flag [true false true false]}
+    (let [pl (-> {:x [1 2 3 4] :y [10 20 30 40] :flag [true false true false]}
                  (sk/lay-point :x :y {:color :flag})
-                 sk/abcdefgh)
-          legend-colors (mapv :color (:entries (:legend qwerty)))
-          group-colors (mapv :color (-> qwerty :panels first :layers first :groups))]
+                 sk/plan)
+          legend-colors (mapv :color (:entries (:legend pl)))
+          group-colors (mapv :color (-> pl :panels first :layers first :groups))]
       (is (= (count legend-colors) (count group-colors)))
       (is (= (set legend-colors) (set group-colors))
           "legend colors match group colors"))))
@@ -1137,12 +1137,12 @@
     (let [data (tc/dataset {:x [1 2 3 4 5 6]
                             :y [10 20 30 40 50 60]
                             :species ["a" "a" "a" "b" "b" "b"]})
-          qwerty (sk/abcdefgh (-> data
+          pl (sk/plan (-> data
                             (sk/lay-point :x :y)
                             (sk/facet :species)
                             (sk/lay-line :x :y)))]
-      (is (= 2 (count (:panels qwerty))))
-      (is (every? #(= 2 (count (:layers %))) (:panels qwerty)))))
+      (is (= 2 (count (:panels pl))))
+      (is (every? #(= 2 (count (:layers %))) (:panels pl)))))
   (testing "facet-grid then lay works with row and col"
     (let [data (tc/dataset {:x [1 2 3 4 5 6 7 8]
                             :y [10 20 30 40 50 60 70 80]
@@ -1202,28 +1202,28 @@
     (is (some? (sk/lay-histogram {:x [1 2 3 4 5]} :x {:color :x})))))
 
 (deftest multiple-layers-test
-  (testing "abcdefgh with point + line layers"
+  (testing "plan with point + line layers"
     (let [views (-> tiny-ds
                     (sk/view :x :y)
                     sk/lay-point
                     sk/lay-line)
-          qwerty (sk/abcdefgh views)
-          layers (get-in qwerty [:panels 0 :layers])]
+          pl (sk/plan views)
+          layers (get-in pl [:panels 0 :layers])]
       (is (= 2 (count layers))))))
 
 (deftest color-groups-test
   (testing "color mapping with string values produces legend"
     (let [ds (tc/dataset {:x [1 2 3] :y [4 5 6] :g ["a" "b" "a"]})
-          qwerty (sk/abcdefgh (-> ds (sk/lay-point :x :y {:color :g})))]
-      (is (some? (:legend qwerty)))
-      (is (= 2 (count (get-in qwerty [:legend :entries])))))))
+          pl (sk/plan (-> ds (sk/lay-point :x :y {:color :g})))]
+      (is (some? (:legend pl)))
+      (is (= 2 (count (get-in pl [:legend :entries])))))))
 
-(deftest abcdefgh-dimensions-test
+(deftest plan-dimensions-test
   (testing "custom width and height"
     (let [views (-> tiny-ds (sk/view :x :y) sk/lay-point)
-          qwerty (sk/abcdefgh views {:width 800 :height 300})]
-      (is (= 800 (:width qwerty)))
-      (is (= 300 (:height qwerty))))))
+          pl (sk/plan views {:width 800 :height 300})]
+      (is (= 800 (:width pl)))
+      (is (= 300 (:height pl))))))
 
 (deftest cross-grid-strip-labels-test
   (testing "cross plot (full grid) shows all strip labels"
@@ -1266,16 +1266,16 @@
       ;; Should differ from midnight by 12.5 hours in ms
       (let [midnight-ms (view/temporal->epoch-ms (jt/local-date 2025 3 15))]
         (is (== (- ms midnight-ms) (* 12.5 3600000))))))
-  (testing "Temporal abcdefgh has datetime ticks"
-    (let [qwerty (-> (tc/dataset {:date [(jt/local-date 2025 1 1)
+  (testing "Temporal plan has datetime ticks"
+    (let [pl (-> (tc/dataset {:date [(jt/local-date 2025 1 1)
                                      (jt/local-date 2025 6 1)
                                      (jt/local-date 2025 12 1)]
                               :val [10 20 30]})
                  (sk/view :date :val)
                  sk/lay-point
-                 sk/abcdefgh)]
-      (is (= 1 (count (:panels qwerty))))
-      (is (seq (get-in qwerty [:panels 0 :x-ticks :labels]))))))
+                 sk/plan)]
+      (is (= 1 (count (:panels pl))))
+      (is (seq (get-in pl [:panels 0 :x-ticks :labels]))))))
 
 (deftest format-log-ticks-test
   (testing "Powers of 10 >= 1 render as integers"
@@ -1349,11 +1349,11 @@
                 sk/plot sk/svg-summary)]
       (is (= 3 (:points s)))))
   (testing "Named color produces correct RGBA"
-    (let [qwerty (-> {:x [1 2 3] :y [4 5 6]}
+    (let [pl (-> {:x [1 2 3] :y [4 5 6]}
                  (sk/view :x :y)
                  (sk/lay-point {:color "steelblue"})
-                 sk/abcdefgh)
-          c (:color (first (:groups (first (:layers (first (:panels qwerty)))))))]
+                 sk/plan)
+          c (:color (first (:groups (first (:layers (first (:panels pl)))))))]
       (is (> (nth c 2) 0.5) "steelblue should have high blue channel")))
   (testing "Unknown color string gives helpful error"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
@@ -1364,7 +1364,7 @@
                               sk/plot)))))
 
 (deftest schema-all-marks-test
-  (testing "Every mark type produces a valid abcdefgh"
+  (testing "Every mark type produces a valid plan"
     (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                            {:key-fn keyword})
           xy-ds (tc/dataset {:x (range 10) :y (range 10)})
@@ -1390,7 +1390,7 @@
                  ["summary" (-> iris (sk/view :species :sepal_width) sk/lay-summary)]]]
       (doseq [[mark-name views] cases]
         (testing mark-name
-          (is (sk/valid-abcdefgh? (sk/abcdefgh views {:validate false}))))))))
+          (is (sk/valid-plan? (sk/plan views {:validate false}))))))))
 
 (deftest with-config-snapshot-test
   (testing "with-config overrides survive Sketch lazy rendering"
@@ -1399,17 +1399,17 @@
                      (sk/lay-point :x :y {:color :c})))]
       (is (= {:color-scale :plasma} (:config-snapshot sketch))
           "config snapshot is captured")
-      (is (= :plasma (get-in (sk/abcdefgh (sk/views-of sketch)
+      (is (= :plasma (get-in (sk/plan (sk/views-of sketch)
                                         (merge (:opts sketch) (:config-snapshot sketch)))
                              [:legend :color-scale]))
-          "color-scale reaches the abcdefgh")))
+          "color-scale reaches the plan")))
   (testing "no snapshot without with-config"
     (let [sketch (-> {:x [1 2 3] :y [1 2 3]}
                    (sk/lay-point :x :y))]
       (is (nil? (:config-snapshot sketch)))))
   (testing "unknown color-scale throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Unknown color scale"
-                          (sk/abcdefgh (sk/views-of (-> {:x [1 2 3] :y [1 2 3] :c [1 2 3]}
+                          (sk/plan (sk/views-of (-> {:x [1 2 3] :y [1 2 3] :c [1 2 3]}
                                                       (sk/lay-point :x :y {:color :c})))
                                      {:color-scale :totally-bogus})))))
 
@@ -1417,34 +1417,34 @@
   (testing "numeric faceting produces correct panels"
     (is (= 3 (-> {:x [1 2 3 4 5 6] :y [10 20 30 40 50 60]
                   :f [1.0 1.0 2.0 2.0 3.0 3.0]}
-                 (sk/lay-point :x :y) (sk/facet :f) sk/abcdefgh :panels count)))
+                 (sk/lay-point :x :y) (sk/facet :f) sk/plan :panels count)))
     (is (= 3 (-> {:x [1 2 3 4 5 6] :y [10 20 30 40 50 60]
                   :s ["a" "a" "b" "b" "c" "c"]}
-                 (sk/lay-point :x :y) (sk/facet :s) sk/abcdefgh :panels count))))
+                 (sk/lay-point :x :y) (sk/facet :s) sk/plan :panels count))))
 
   (testing "histogram on categorical column throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
-                          (-> {:x ["a" "b" "c"]} (sk/lay-histogram :x) sk/abcdefgh))))
+                          (-> {:x ["a" "b" "c"]} (sk/lay-histogram :x) sk/plan))))
 
   (testing "lm on categorical x throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
                           (-> {:species ["a" "b" "c"] :y [1 2 3]}
-                              (sk/lay-lm :species :y) sk/abcdefgh))))
+                              (sk/lay-lm :species :y) sk/plan))))
 
   (testing "loess on categorical x throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
                           (-> {:species ["a" "b" "c" "d"] :y [1 2 3 4]}
-                              (sk/lay-loess :species :y) sk/abcdefgh))))
+                              (sk/lay-loess :species :y) sk/plan))))
 
   (testing "errorbar without ymin/ymax throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ymin.*ymax"
                           (-> {:x ["a" "b" "c"] :y [1 2 3]}
-                              (sk/lay-errorbar :x :y) sk/abcdefgh))))
+                              (sk/lay-errorbar :x :y) sk/plan))))
 
   (testing "text without :text column throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"text"
                           (-> {:x [1 2 3] :y [10 20 30]}
-                              (sk/lay-text :x :y) sk/abcdefgh))))
+                              (sk/lay-text :x :y) sk/plan))))
 
   (testing "scale channel validation"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Scale channel"

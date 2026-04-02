@@ -326,7 +326,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./napkinsketch_book.exploring_sketches.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Sketches</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Plans</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -409,16 +409,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#plot" id="toc-plot" class="nav-link" data-scroll-target="#plot"><code>plot</code></a></li>
   <li><a href="#options" id="toc-options" class="nav-link" data-scroll-target="#options"><code>options</code></a></li>
-  <li><a href="#plot-spec" id="toc-plot-spec" class="nav-link" data-scroll-target="#plot-spec"><code>plot-spec?</code></a></li>
+  <li><a href="#sketch" id="toc-sketch" class="nav-link" data-scroll-target="#sketch"><code>sketch?</code></a></li>
   <li><a href="#views-of" id="toc-views-of" class="nav-link" data-scroll-target="#views-of"><code>views-of</code></a></li>
-  <li><a href="#sketch" id="toc-sketch" class="nav-link" data-scroll-target="#sketch"><code>sketch</code></a></li>
+  <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan"><code>plan</code></a></li>
   </ul></li>
   <li><a href="#pipeline" id="toc-pipeline" class="nav-link" data-scroll-target="#pipeline">Pipeline</a>
   <ul>
-  <li><a href="#views-sketch" id="toc-views-sketch" class="nav-link" data-scroll-target="#views-sketch"><code>views-&gt;sketch</code></a></li>
-  <li><a href="#sketch-membrane" id="toc-sketch-membrane" class="nav-link" data-scroll-target="#sketch-membrane"><code>sketch-&gt;membrane</code></a></li>
+  <li><a href="#views-plan" id="toc-views-plan" class="nav-link" data-scroll-target="#views-plan"><code>views-&gt;plan</code></a></li>
+  <li><a href="#plan-membrane" id="toc-plan-membrane" class="nav-link" data-scroll-target="#plan-membrane"><code>plan-&gt;membrane</code></a></li>
   <li><a href="#membrane-figure" id="toc-membrane-figure" class="nav-link" data-scroll-target="#membrane-figure"><code>membrane-&gt;figure</code></a></li>
-  <li><a href="#sketch-figure" id="toc-sketch-figure" class="nav-link" data-scroll-target="#sketch-figure"><code>sketch-&gt;figure</code></a></li>
+  <li><a href="#plan-figure" id="toc-plan-figure" class="nav-link" data-scroll-target="#plan-figure"><code>plan-&gt;figure</code></a></li>
   </ul></li>
   <li><a href="#transforms" id="toc-transforms" class="nav-link" data-scroll-target="#transforms">Transforms</a>
   <ul>
@@ -445,8 +445,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#inspection" id="toc-inspection" class="nav-link" data-scroll-target="#inspection">Inspection</a>
   <ul>
   <li><a href="#svg-summary" id="toc-svg-summary" class="nav-link" data-scroll-target="#svg-summary"><code>svg-summary</code></a></li>
-  <li><a href="#valid-sketch" id="toc-valid-sketch" class="nav-link" data-scroll-target="#valid-sketch"><code>valid-sketch?</code></a></li>
-  <li><a href="#explain-sketch" id="toc-explain-sketch" class="nav-link" data-scroll-target="#explain-sketch"><code>explain-sketch</code></a></li>
+  <li><a href="#valid-plan" id="toc-valid-plan" class="nav-link" data-scroll-target="#valid-plan"><code>valid-plan?</code></a></li>
+  <li><a href="#explain-plan" id="toc-explain-plan" class="nav-link" data-scroll-target="#explain-plan"><code>explain-plan</code></a></li>
   </ul></li>
   <li><a href="#configuration" id="toc-configuration" class="nav-link" data-scroll-target="#configuration">Configuration</a>
   <ul>
@@ -575,7 +575,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="lay" class="level3">
 <h3 class="anchored" data-anchor-id="lay"><code>lay</code></h3>
-<p><code>[spec-or-views &amp; layer-specs]</code></p>
+<p><code>[sketch-or-views &amp; layer-specs]</code></p>
 <p>Apply one or more methods to views. Primarily used for annotations; for data layers prefer sk/lay-point, sk/lay-histogram, etc. (lay views (rule-h 5)) — horizontal reference line (lay views (rule-v 3) (band-h 1 2)) — multiple annotations</p>
 <p>Add layers with <code>sk/lay-point</code>, <code>sk/lay-lm</code>, etc.:</p>
 <div class="sourceClojure">
@@ -939,9 +939,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="rendering">Rendering</h2>
 <section id="plot" class="level3">
 <h3 class="anchored" data-anchor-id="plot"><code>plot</code></h3>
-<p><code>[spec-or-views]</code></p>
-<p><code>[spec-or-views opts]</code></p>
-<p>Render views as a figure (default: SVG hiccup wrapped with kind/hiccup). (plot views) — default 600×400 SVG (plot views {:width 800 :height 500 :title “My Plot”}) (plot views {:format :svg}) — explicit format Options: :width, :height, :title, :subtitle, :caption, :x-label, :y-label, :palette (keyword, vector, or map), :theme {:bg :grid :font-size}, :legend-position (:right :bottom :top :none), :tooltip, :brush, :color-scale (:sequential, :diverging, or {:low :mid :high} map), :color-midpoint (number — centers diverging gradient on this value), :validate (default true — validates sketch against Malli schema).</p>
+<p><code>[sketch-or-views]</code></p>
+<p><code>[sketch-or-views opts]</code></p>
+<p>Render views as a figure (default: SVG hiccup wrapped with kind/hiccup). (plot views) — default 600×400 SVG (plot views {:width 800 :height 500 :title “My Plot”}) (plot views {:format :svg}) — explicit format Options: :width, :height, :title, :subtitle, :caption, :x-label, :y-label, :palette (keyword, vector, or map), :theme {:bg :grid :font-size}, :legend-position (:right :bottom :top :none), :tooltip, :brush, :color-scale (:sequential, :diverging, or {:low :mid :high} map), :color-midpoint (number — centers diverging gradient on this value), :validate (default true — validates plan against Malli schema).</p>
 <p>See the Customization notebook for options (title, theme, tooltip, brush, legend position, palette).</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> tiny</span>
@@ -951,9 +951,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="options" class="level3">
 <h3 class="anchored" data-anchor-id="options"><code>options</code></h3>
-<p><code>[spec-or-views opts]</code></p>
-<p>Set plot-level options on a plot specification. Options are deep-merged — nested maps like :theme are merged recursively. (options spec {:width 800 :palette :dark2}) (options spec {:theme {:bg “#FFF”} :legend-position :bottom})</p>
-<p>Set render options on a plot specification:</p>
+<p><code>[sketch-or-views opts]</code></p>
+<p>Set plot-level options on a sketch. Options are deep-merged — nested maps like :theme are merged recursively. (options sketch {:width 800 :palette :dark2}) (options sketch {:theme {:bg “#FFF”} :legend-position :bottom})</p>
+<p>Set render options on a sketch:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> tiny</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:x</span> <span class="at">:y</span>)</span>
@@ -961,13 +961,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div style="margin-bottom:1em;"><svg aria-label="Small Plot" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" height="236.0" role="img" viewbox="0 0 418.0 236.0" width="418.0" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(218.0,14.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="15" text-anchor="middle">Small Plot</text></g></g><g transform="translate(12.0,118.0)"><g transform="rotate(-90.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">y</text></g></g></g><g transform="translate(218.0,220.0)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">x</text></g></g><g transform="translate(18.0,18.0)"><g><g><g><g transform="translate(30.0,30.0)"><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="140.0" stroke="none" width="340.0" x="0" y="0"></rect></g></g></g><g><g><g><polyline fill="none" points="45.45454545454545,30.0 45.45454545454545,170.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="122.72727272727272,30.0 122.72727272727272,170.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="200.0,30.0 200.0,170.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="277.27272727272725,30.0 277.27272727272725,170.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="354.5454545454545,30.0 354.5454545454545,170.0" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,131.8181818181818 370.0,131.8181818181818" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="30.0,68.18181818181817 370.0,68.18181818181817" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g data-row-idx="0" transform="translate(42.45454545454545,128.8181818181818)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="1" transform="translate(119.72727272727272,65.18181818181817)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="2" transform="translate(197.0,160.63636363636363)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="3" transform="translate(274.27272727272725,33.363636363636374)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="4" transform="translate(351.5454545454545,97.0)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g transform="translate(42.31168831168831,188.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">1</text></g></g><g transform="translate(119.58441558441558,188.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2</text></g></g><g transform="translate(196.85714285714286,188.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">3</text></g></g><g transform="translate(274.1298701298701,188.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4</text></g></g><g transform="translate(351.40259740259734,188.0)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">5</text></g></g><g transform="translate(21.5,126.31818181818181)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">2</text></g></g><g transform="translate(21.5,62.68181818181817)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11">4</text></g></g></g></g></g></svg></div>
 </section>
-<section id="plot-spec" class="level3">
-<h3 class="anchored" data-anchor-id="plot-spec"><code>plot-spec?</code></h3>
+<section id="sketch" class="level3">
+<h3 class="anchored" data-anchor-id="sketch"><code>sketch?</code></h3>
 <p><code>[x]</code></p>
-<p>Return true if x is a PlotSpec (auto-rendering plot specification).</p>
-<p>Check whether a value is a plot specification:</p>
+<p>Return true if x is a Sketch (auto-rendering sketch).</p>
+<p>Check whether a value is a sketch:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>(sk/plot-spec? (sk/lay-point tiny <span class="at">:x</span> <span class="at">:y</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>(sk/sketch? (sk/lay-point tiny <span class="at">:x</span> <span class="at">:y</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -975,9 +975,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="views-of" class="level3">
 <h3 class="anchored" data-anchor-id="views-of"><code>views-of</code></h3>
-<p><code>[spec-or-views]</code></p>
-<p>Extract the raw views vector from a plot specification. Useful for inspecting view data: (kind/pprint (views-of my-spec))</p>
-<p>Extract the raw views from a plot specification:</p>
+<p><code>[sketch-or-views]</code></p>
+<p>Extract the raw views vector from a sketch. Useful for inspecting view data: (kind/pprint (views-of my-sketch))</p>
+<p>Extract the raw views from a sketch:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> (sk/views-of (<span class="kw">-&gt;</span> tiny (sk/lay-point <span class="at">:x</span> <span class="at">:y</span>) (sk/lay-lm))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -985,16 +985,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="sketch" class="level3">
-<h3 class="anchored" data-anchor-id="sketch"><code>sketch</code></h3>
-<p><code>[spec-or-views]</code></p>
-<p><code>[spec-or-views opts]</code></p>
-<p>Resolve views into a sketch — a plain Clojure map with data-space geometry, domains, tick info, legend, and layout. No membrane types, no datasets, no scale objects in the output. Serializable data. (sketch views) — default 600×400 (sketch views {:width 800 :title “My Plot”}) Pass {:validate false} to skip Malli schema validation.</p>
-<p>Returns the intermediate sketch data structure:</p>
+<section id="plan" class="level3">
+<h3 class="anchored" data-anchor-id="plan"><code>plan</code></h3>
+<p><code>[sketch-or-views]</code></p>
+<p><code>[sketch-or-views opts]</code></p>
+<p>Resolve views into a plan — a plain Clojure map with data-space geometry, domains, tick info, legend, and layout. No membrane types, no datasets, no scale objects in the output. Serializable data. (plan views) — default 600×400 (plan views {:width 800 :title “My Plot”}) Pass {:validate false} to skip Malli schema validation.</p>
+<p>Returns the intermediate plan data structure:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> sk1 </span>(<span class="kw">-&gt;</span> tiny</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>             (sk/lay-point <span class="at">:x</span> <span class="at">:y</span>)</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>             sk/sketch))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>             sk/plan))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>sk1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1062,15 +1062,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="pipeline" class="level2">
 <h2 class="anchored" data-anchor-id="pipeline">Pipeline</h2>
-<section id="views-sketch" class="level3">
-<h3 class="anchored" data-anchor-id="views-sketch"><code>views-&gt;sketch</code></h3>
-<p><code>[spec-or-views]</code></p>
-<p><code>[spec-or-views opts]</code></p>
-<p>Convert views into a sketch — a plain Clojure map with data-space geometry, domains, tick info, legend, and layout. No membrane types, no datasets, no scale objects in the output. Serializable data. Same as <code>sketch</code> but with an explicit pipeline-style name. (views-&gt;sketch views) — default 600×400 (views-&gt;sketch views {:width 800 :title “My Plot”}) Pass {:validate false} to skip Malli schema validation.</p>
+<section id="views-plan" class="level3">
+<h3 class="anchored" data-anchor-id="views-plan"><code>views-&gt;plan</code></h3>
+<p><code>[sketch-or-views]</code></p>
+<p><code>[sketch-or-views opts]</code></p>
+<p>Convert views into a plan — a plain Clojure map with data-space geometry, domains, tick info, legend, and layout. No membrane types, no datasets, no scale objects in the output. Serializable data. Same as <code>plan</code> but with an explicit pipeline-style name. (views-&gt;plan views) — default 600×400 (views-&gt;plan views {:width 800 :title “My Plot”}) Pass {:validate false} to skip Malli schema validation.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> sk2 </span>(<span class="kw">-&gt;</span> tiny</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>             (sk/lay-point <span class="at">:x</span> <span class="at">:y</span>)</span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>             sk/views-&gt;sketch))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>             sk/views-&gt;plan))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">=</span> (<span class="kw">keys</span> sk1) (<span class="kw">keys</span> sk2))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1079,12 +1079,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="sketch-membrane" class="level3">
-<h3 class="anchored" data-anchor-id="sketch-membrane"><code>sketch-&gt;membrane</code></h3>
-<p><code>[sketch &amp; {:as opts}]</code></p>
-<p>Convert a sketch into a membrane drawable tree. (sketch-&gt;membrane (sketch views))</p>
+<section id="plan-membrane" class="level3">
+<h3 class="anchored" data-anchor-id="plan-membrane"><code>plan-&gt;membrane</code></h3>
+<p><code>[plan &amp; {:as opts}]</code></p>
+<p>Convert a plan into a membrane drawable tree. (plan-&gt;membrane (plan views))</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> m1 </span>(sk/sketch-&gt;membrane sk1))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> m1 </span>(sk/plan-&gt;membrane sk1))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">vector?</span> m1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1096,7 +1096,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="membrane-figure" class="level3">
 <h3 class="anchored" data-anchor-id="membrane-figure"><code>membrane-&gt;figure</code></h3>
 <p><code>[membrane-tree format opts]</code></p>
-<p>Convert a membrane drawable tree into a figure for the given format. Dispatches on format keyword; :svg is always available. (membrane-&gt;figure (sketch-&gt;membrane (sketch views)) :svg {})</p>
+<p>Convert a membrane drawable tree into a figure for the given format. Dispatches on format keyword; :svg is always available. (membrane-&gt;figure (plan-&gt;membrane (plan views)) :svg {})</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (sk/membrane-&gt;figure m1 <span class="at">:svg</span></span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>                            {<span class="at">:total-width</span> (<span class="at">:total-width</span> sk1)</span>
@@ -1106,12 +1106,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="at">:svg</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="sketch-figure" class="level3">
-<h3 class="anchored" data-anchor-id="sketch-figure"><code>sketch-&gt;figure</code></h3>
-<p><code>[sketch format opts]</code></p>
-<p>Convert a sketch into a figure for the given format. Dispatches on format keyword. Each renderer is a separate namespace that registers a defmethod; :svg is always available. (sketch-&gt;figure (sketch views) :svg {}) (sketch-&gt;figure (sketch views) :plotly {})</p>
+<section id="plan-figure" class="level3">
+<h3 class="anchored" data-anchor-id="plan-figure"><code>plan-&gt;figure</code></h3>
+<p><code>[plan format opts]</code></p>
+<p>Convert a plan into a figure for the given format. Dispatches on format keyword. Each renderer is a separate namespace that registers a defmethod; :svg is always available. (plan-&gt;figure (plan views) :svg {}) (plan-&gt;figure (plan views) :plotly {})</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (sk/sketch-&gt;figure sk1 <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (sk/plan-&gt;figure sk1 <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="at">:svg</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1122,7 +1122,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="transforms">Transforms</h2>
 <section id="coord" class="level3">
 <h3 class="anchored" data-anchor-id="coord"><code>coord</code></h3>
-<p><code>[spec-or-views c]</code></p>
+<p><code>[sketch-or-views c]</code></p>
 <p>Set coordinate system on views. Options: :cartesian (default), :flip, :polar, :fixed. (coord views :flip) — flipped coordinates (coord views :fixed) — fixed 1:1 aspect ratio</p>
 <p>Flip axes:</p>
 <div class="sourceClojure">
@@ -1139,8 +1139,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="scale" class="level3">
 <h3 class="anchored" data-anchor-id="scale"><code>scale</code></h3>
-<p><code>[spec-or-views channel type-or-opts]</code></p>
-<p><code>[spec-or-views channel type opts]</code></p>
+<p><code>[sketch-or-views channel type-or-opts]</code></p>
+<p><code>[sketch-or-views channel type opts]</code></p>
 <p>Set scale options for :x or :y across all views. (scale views :x :log) — log x-axis (scale views :y {:type :linear :domain [0 100]}) — fixed domain</p>
 <p>Log scale:</p>
 <div class="sourceClojure">
@@ -1236,8 +1236,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="faceting">Faceting</h2>
 <section id="facet" class="level3">
 <h3 class="anchored" data-anchor-id="facet"><code>facet</code></h3>
-<p><code>[spec-or-views col]</code></p>
-<p><code>[spec-or-views col direction]</code></p>
+<p><code>[sketch-or-views col]</code></p>
+<p><code>[sketch-or-views col direction]</code></p>
 <p>Split views by a categorical column into separate panels. Default is a horizontal row of panels. (facet views :species) — horizontal row (facet views :species :col) — vertical column</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb67"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> data/iris</span>
@@ -1248,7 +1248,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="facet-grid" class="level3">
 <h3 class="anchored" data-anchor-id="facet-grid"><code>facet-grid</code></h3>
-<p><code>[spec-or-views row-col col-col]</code></p>
+<p><code>[sketch-or-views row-col col-col]</code></p>
 <p>Split views by two categorical columns for a row × column grid. Either column may be nil for a single-dimension facet. (facet-grid views :smoker :sex) — 2D grid (facet-grid views nil :species) — same as facet</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb68"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> data/tips</span>
@@ -1262,9 +1262,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="inspection">Inspection</h2>
 <section id="svg-summary" class="level3">
 <h3 class="anchored" data-anchor-id="svg-summary"><code>svg-summary</code></h3>
-<p><code>[svg-or-spec]</code></p>
-<p><code>[svg-or-spec theme]</code></p>
-<p>Extract structural summary from SVG hiccup for testing. Returns a map with :width, :height, :panels, :points, :lines, :polygons, :tiles, :visible-tiles, and :texts — useful for asserting plot structure. Accepts SVG hiccup or a PlotSpec (auto-renders to SVG first). (svg-summary (plot views)) — summary of rendered SVG (svg-summary my-spec) — auto-renders PlotSpec, then summarizes</p>
+<p><code>[svg-or-sketch]</code></p>
+<p><code>[svg-or-sketch theme]</code></p>
+<p>Extract structural summary from SVG hiccup for testing. Returns a map with :width, :height, :panels, :points, :lines, :polygons, :tiles, :visible-tiles, and :texts — useful for asserting plot structure. Accepts SVG hiccup or a Sketch (auto-renders to SVG first). (svg-summary (plot views)) — summary of rendered SVG (svg-summary my-sketch) — auto-renders Sketch, then summarizes</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb69"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> data/iris</span>
 <span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:sepal</span>_length <span class="at">:sepal</span>_width {<span class="at">:color</span> <span class="at">:species</span>}) sk/svg-summary)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1301,23 +1301,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb70-29"><a href="#cb70-29" aria-hidden="true" tabindex="-1"></a> <span class="at">:height</span> <span class="fl">418.0</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="valid-sketch" class="level3">
-<h3 class="anchored" data-anchor-id="valid-sketch"><code>valid-sketch?</code></h3>
-<p><code>[sketch]</code></p>
-<p>Check if a sketch conforms to the Malli schema. (valid-sketch? (sketch views)) — true if valid</p>
+<section id="valid-plan" class="level3">
+<h3 class="anchored" data-anchor-id="valid-plan"><code>valid-plan?</code></h3>
+<p><code>[plan]</code></p>
+<p>Check if a plan conforms to the Malli schema. (valid-plan? (plan views)) — true if valid</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb71"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>(sk/valid-sketch? sk1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb71"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>(sk/valid-plan? sk1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb72"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="explain-sketch" class="level3">
-<h3 class="anchored" data-anchor-id="explain-sketch"><code>explain-sketch</code></h3>
-<p><code>[sketch]</code></p>
-<p>Explain why a sketch does not conform to the Malli schema. Returns nil if valid, or a Malli explanation map if invalid. (explain-sketch (sketch views))</p>
+<section id="explain-plan" class="level3">
+<h3 class="anchored" data-anchor-id="explain-plan"><code>explain-plan</code></h3>
+<p><code>[plan]</code></p>
+<p>Explain why a plan does not conform to the Malli schema. Returns nil if valid, or a Malli explanation map if invalid. (explain-plan (plan views))</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>(sk/explain-sketch sk1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>(sk/explain-plan sk1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb74"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="va">nil</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1398,7 +1398,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="plot-option-docs" class="level3">
 <h3 class="anchored" data-anchor-id="plot-option-docs"><code>plot-option-docs</code></h3>
-<p>Documentation for plot-level option keys. These are accepted by sk/options, sk/sketch, and sk/plot but are inherently per-plot (text content or nested config override). Maps each key to [category description].</p>
+<p>Documentation for plot-level option keys. These are accepted by sk/options, sk/plan, and sk/plot but are inherently per-plot (text content or nested config override). Maps each key to [category description].</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb81"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> sk/plot-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1522,7 +1522,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="arrange"><code>arrange</code></h3>
 <p><code>[plots]</code></p>
 <p><code>[plots opts]</code></p>
-<p>Arrange multiple plots in a CSS grid layout. plots: a flat vector of plots or PlotSpecs, or a vector of vectors (explicit rows). opts: {:cols N, :title “…”, :gap “8px”}. (arrange [plot-a plot-b]) — 1×2 row (arrange [plot-a plot-b plot-c] {:cols 2}) — 2-column grid, wraps (arrange [[plot-a plot-b] [plot-c plot-d]]) — explicit 2×2 grid</p>
+<p>Arrange multiple plots in a CSS grid layout. plots: a flat vector of plots or Sketches, or a vector of vectors (explicit rows). opts: {:cols N, :title “…”, :gap “8px”}. (arrange [plot-a plot-b]) — 1×2 row (arrange [plot-a plot-b plot-c] {:cols 2}) — 2-column grid, wraps (arrange [[plot-a plot-b] [plot-c plot-d]]) — explicit 2×2 grid</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb101"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>(sk/arrange [(<span class="kw">-&gt;</span> data/iris</span>
 <span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a>                 (sk/lay-point <span class="at">:sepal</span>_length <span class="at">:sepal</span>_width {<span class="at">:color</span> <span class="at">:species</span>}) (sk/options {<span class="at">:width</span> <span class="dv">250</span> <span class="at">:height</span> <span class="dv">200</span>}))</span>
@@ -1537,9 +1537,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="export">Export</h2>
 <section id="save" class="level3">
 <h3 class="anchored" data-anchor-id="save"><code>save</code></h3>
-<p><code>[spec-or-views path]</code></p>
-<p><code>[spec-or-views path opts]</code></p>
-<p>Save a plot to an SVG file. views — a vector of view maps, or a PlotSpec. path — file path (string or java.io.File). opts — same options as <code>plot</code> (:width, :height, :title, :theme, etc.). Tooltip and brush interactivity are not included in saved files. Returns the path. (save views “plot.svg”) (save views “plot.svg” {:width 800 :height 600})</p>
+<p><code>[sketch-or-views path]</code></p>
+<p><code>[sketch-or-views path opts]</code></p>
+<p>Save a plot to an SVG file. views — a vector of view maps, or a Sketch. path — file path (string or java.io.File). opts — same options as <code>plot</code> (:width, :height, :title, :theme, etc.). Tooltip and brush interactivity are not included in saved files. Returns the path. (save views “plot.svg”) (save views “plot.svg” {:width 800 :height 600})</p>
 <p>Save a plot to an SVG file:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb102"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [<span class="kw">path</span> (<span class="kw">str</span> (java.io.File/createTempFile <span class="st">"napkinsketch-example"</span> <span class="st">".svg"</span>))]</span>
@@ -1966,8 +1966,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./napkinsketch_book.exploring_sketches.html" class="pagination-link" aria-label="Exploring Sketches">
-        <span class="nav-page-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Sketches</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./napkinsketch_book.exploring_sketches.html" class="pagination-link" aria-label="Exploring Plans">
+        <span class="nav-page-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Plans</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

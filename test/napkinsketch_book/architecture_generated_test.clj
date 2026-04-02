@@ -11,7 +11,7 @@
 (def
  v3_l20
  (kind/mermaid
-  "\ngraph LR\n  V[\"Views<br/>(API)\"] -->|resolve| S[\"Sketch<br/>(data-space)\"]\n  S -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]\n  M -->|tree walk| F[\"Figure<br/>(output)\"]\n  style V fill:#e8f5e9\n  style S fill:#fff3e0\n  style M fill:#e3f2fd\n  style F fill:#fce4ec\n"))
+  "\ngraph LR\n  V[\"Views<br/>(API)\"] -->|resolve| S[\"PlanSchema<br/>(data-space)\"]\n  S -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]\n  M -->|tree walk| F[\"Figure<br/>(output)\"]\n  style V fill:#e8f5e9\n  style S fill:#fff3e0\n  style M fill:#e3f2fd\n  style F fill:#fce4ec\n"))
 
 
 (def
@@ -32,14 +32,14 @@
  (is
   ((fn
     [v]
-    (and (sk/plot-spec? v) (= :point (:mark (first (sk/views-of v))))))
+    (and (sk/sketch? v) (= :point (:mark (first (sk/views-of v))))))
    v8_l63)))
 
 
-(def v11_l75 (def trace-sketch (sk/sketch trace-views)))
+(def v11_l75 (def trace-plan (sk/plan trace-views)))
 
 
-(def v12_l77 trace-sketch)
+(def v12_l77 trace-plan)
 
 
 (deftest
@@ -47,13 +47,13 @@
  (is ((fn [v] (and (map? v) (contains? v :panels))) v12_l77)))
 
 
-(def v15_l83 (ss/valid? trace-sketch))
+(def v15_l83 (ss/valid? trace-plan))
 
 
 (deftest t16_l85 (is (true? v15_l83)))
 
 
-(def v18_l98 (def trace-membrane (sk/sketch->membrane trace-sketch)))
+(def v18_l98 (def trace-membrane (sk/plan->membrane trace-plan)))
 
 
 (def v19_l100 trace-membrane)
@@ -71,8 +71,8 @@
   (sk/membrane->figure
    trace-membrane
    :svg
-   {:total-width (:total-width trace-sketch),
-    :total-height (:total-height trace-sketch)})))
+   {:total-width (:total-width trace-plan),
+    :total-height (:total-height trace-plan)})))
 
 
 (def v23_l114 (kind/pprint trace-figure))
@@ -100,7 +100,7 @@
 (def
  v29_l140
  (kind/mermaid
-  "\ngraph LR\n  subgraph WHAT [\"WHAT — data + semantics\"]\n    V[\"Views\"]\n    ST[\"Statistics\"]\n    D[\"Domains\"]\n    C[\"Colors\"]\n  end\n  subgraph HOW [\"HOW — pixels + rendering\"]\n    SC[\"Scales (wadogo)\"]\n    CO[\"Coord transforms\"]\n    MS[\"Membrane tree\"]\n    SV[\"SVG conversion\"]\n  end\n  WHAT -->|sketch| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
+  "\ngraph LR\n  subgraph WHAT [\"WHAT — data + semantics\"]\n    V[\"Views\"]\n    ST[\"Statistics\"]\n    D[\"Domains\"]\n    C[\"Colors\"]\n  end\n  subgraph HOW [\"HOW — pixels + rendering\"]\n    SC[\"Scales (wadogo)\"]\n    CO[\"Coord transforms\"]\n    MS[\"Membrane tree\"]\n    SV[\"SVG conversion\"]\n  end\n  WHAT -->|plan| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
 
 
 (def
@@ -117,15 +117,15 @@
 (def
  v32_l188
  (def
-  multi-sketch
-  (sk/sketch multi-views {:title "Iris Petals with Regression"})))
+  multi-plan
+  (sk/plan multi-views {:title "Iris Petals with Regression"})))
 
 
 (def
  v34_l192
  (mapv
   (fn [layer] {:mark (:mark layer), :n-groups (count (:groups layer))})
-  (:layers (first (:panels multi-sketch)))))
+  (:layers (first (:panels multi-plan)))))
 
 
 (deftest
@@ -140,7 +140,7 @@
    v34_l192)))
 
 
-(def v37_l203 multi-sketch)
+(def v37_l203 multi-plan)
 
 
 (deftest
@@ -173,4 +173,4 @@
 (def
  v43_l218
  (kind/mermaid
-  "\ngraph TD\n  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]\n  API --> PLOT[\"impl/plot.clj\"]\n  API --> SKETCH[\"impl/sketch.clj\"]\n  SKETCH --> VIEW\n  SKETCH --> STAT[\"impl/stat.clj\"]\n  SKETCH --> SCALE[\"impl/scale.clj\"]\n  SKETCH --> DEFAULTS[\"impl/defaults.clj\"]\n  PLOT --> SKETCH\n  PLOT --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SKETCH fill:#ffe0b2\n  style PLOT fill:#bbdefb\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))
+  "\ngraph TD\n  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]\n  API --> PLOT[\"impl/plot.clj\"]\n  API --> PLAN[\"impl/sketch.clj\"]\n  PLAN --> VIEW\n  PLAN --> STAT[\"impl/stat.clj\"]\n  PLAN --> SCALE[\"impl/scale.clj\"]\n  PLAN --> DEFAULTS[\"impl/defaults.clj\"]\n  PLOT --> PLAN\n  PLOT --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style PLAN fill:#ffe0b2\n  style PLOT fill:#bbdefb\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))

@@ -1,5 +1,5 @@
 (ns scicloj.napkinsketch.impl.sketch-schema
-  "Malli schemas for the abcdefgh data model."
+  "Malli schemas for the plan data model."
   (:require [malli.core :as m]))
 
 ;; ---- Primitive Schemas ----
@@ -248,9 +248,9 @@
    [:strip-h number?]
    [:strip-w number?]])
 
-;; ---- Zyxwvu (top-level) ----
+;; ---- Plan (top-level) ----
 
-(def Abcdefgh
+(def PlanSchema
   "A fully resolved sketch.
    Data-space geometry, no membrane types, no datasets.
    Numeric arrays (xs, ys, etc.) may be dtype-next buffers."
@@ -279,11 +279,11 @@
 ;; ---- Validation Helpers ----
 
 (defn valid?
-  "Check if a abcdefgh is valid."
-  [abcdefgh]
-  (m/validate Abcdefgh abcdefgh))
+  "Check if a plan is valid."
+  [plan]
+  (m/validate PlanSchema plan))
 
 (defn explain
-  "Explain why a abcdefgh is invalid."
-  [abcdefgh]
-  (m/explain Abcdefgh abcdefgh))
+  "Explain why a plan is invalid."
+  [plan]
+  (m/explain PlanSchema plan))

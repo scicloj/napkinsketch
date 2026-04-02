@@ -326,7 +326,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./napkinsketch_book.exploring_sketches.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Sketches</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Plans</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -375,12 +375,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#pipeline-trace" id="toc-pipeline-trace" class="nav-link" data-scroll-target="#pipeline-trace">Pipeline Trace</a>
   <ul>
   <li><a href="#views" id="toc-views" class="nav-link" data-scroll-target="#views">Views</a></li>
-  <li><a href="#sketch" id="toc-sketch" class="nav-link" data-scroll-target="#sketch">Sketch</a></li>
+  <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan">Plan</a></li>
   <li><a href="#membrane" id="toc-membrane" class="nav-link" data-scroll-target="#membrane">Membrane</a></li>
   <li><a href="#figure" id="toc-figure" class="nav-link" data-scroll-target="#figure">Figure</a></li>
   <li><a href="#pipeline-summary" id="toc-pipeline-summary" class="nav-link" data-scroll-target="#pipeline-summary">Pipeline Summary</a></li>
   </ul></li>
-  <li><a href="#the-sketch-boundary" id="toc-the-sketch-boundary" class="nav-link" data-scroll-target="#the-sketch-boundary">The Sketch Boundary</a></li>
+  <li><a href="#the-plan-boundary" id="toc-the-plan-boundary" class="nav-link" data-scroll-target="#the-plan-boundary">The Plan Boundary</a></li>
   <li><a href="#multi-layer-example" id="toc-multi-layer-example" class="nav-link" data-scroll-target="#multi-layer-example">Multi-Layer Example</a></li>
   <li><a href="#namespace-structure" id="toc-namespace-structure" class="nav-link" data-scroll-target="#namespace-structure">Namespace Structure</a></li>
   <li><a href="#dependencies" id="toc-dependencies" class="nav-link" data-scroll-target="#dependencies">Dependencies</a></li>
@@ -440,7 +440,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="pipeline-overview">Pipeline Overview</h2>
 <div class="mermaid">
 graph LR
-  V["Views<br>(API)"] --&gt;|resolve| S["Sketch<br>(data-space)"]
+  V["Views<br>(API)"] --&gt;|resolve| S["PlanSchema<br>(data-space)"]
   S --&gt;|scales + coords| M["Membrane<br>(pixel-space)"]
   M --&gt;|tree walk| F["Figure<br>(output)"]
   style V fill:#e8f5e9
@@ -450,7 +450,7 @@ graph LR
 </div>
 <ul>
 <li><p><strong>Views</strong> — user-facing compositional API: <code>view</code>, <code>lay-point</code>, <code>lay-histogram</code>, etc.</p></li>
-<li><p><strong>Sketch</strong> — fully resolved plot specification. Data-space geometry, domains, tick info, legend. Plain Clojure maps. No rendering primitives.</p></li>
+<li><p><strong>Plan</strong> — fully resolved sketch. Data-space geometry, domains, tick info, legend. Plain Clojure maps. No rendering primitives.</p></li>
 <li><p><strong>Membrane</strong> — a value of the <a href="https://github.com/phronmophobic/membrane">Membrane</a> library: positioned drawing primitives in pixel space (Translate, WithColor, Path, Label, etc.).</p></li>
 <li><p><strong>Figure</strong> — final output. A tree walk converts membrane records to SVG hiccup, which Clay/Kindly renders in notebooks.</p></li>
 </ul>
@@ -504,17 +504,17 @@ graph LR
 <span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>|  <span class="dv">5</span> |  <span class="dv">4</span> | <span class="at">:b</span> |</span>
 <span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>, <span class="at">:x</span> <span class="at">:x</span>, <span class="at">:y</span> <span class="at">:y</span>}}],</span>
 <span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {},</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a> <span class="at">:kindly/f</span> <span class="va">#'scicloj.napkinsketch.api/render-plot-spec</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a> <span class="at">:kindly/f</span> <span class="va">#'scicloj.napkinsketch.api/render-sketch</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="sketch" class="level3">
-<h3 class="anchored" data-anchor-id="sketch">Sketch</h3>
-<p><code>sk/sketch</code> resolves the views into a sketch — a pure-data map with data-space geometry, resolved colors, computed domains, and tick info. The values are still in data space — <code>x=1</code> means the original data value 1, not a pixel position.</p>
+<section id="plan" class="level3">
+<h3 class="anchored" data-anchor-id="plan">Plan</h3>
+<p><code>sk/plan</code> resolves the views into a plan — a pure-data map with data-space geometry, resolved colors, computed domains, and tick info. The values are still in data space — <code>x=1</code> means the original data value 1, not a pixel position.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> trace-sketch </span>(sk/sketch trace-views))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> trace-plan </span>(sk/plan trace-views))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>trace-sketch</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>trace-plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:caption</span> <span class="va">nil</span>,</span>
@@ -609,9 +609,9 @@ graph LR
 <span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a> <span class="at">:height</span> <span class="dv">400</span>,</span>
 <span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a> <span class="at">:margin</span> <span class="dv">30</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The sketch validates against a <a href="https://github.com/metosin/malli">Malli</a> schema:</p>
+<p>The plan validates against a <a href="https://github.com/metosin/malli">Malli</a> schema:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(ss/valid? trace-sketch)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(ss/valid? trace-plan)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -620,9 +620,9 @@ graph LR
 </section>
 <section id="membrane" class="level3">
 <h3 class="anchored" data-anchor-id="membrane">Membrane</h3>
-<p><code>sk/sketch-&gt;membrane</code> converts the sketch into a tree of membrane drawing primitives positioned in pixel space. This is the format-agnostic intermediate representation — <code>Translate</code>, <code>WithColor</code>, <code>WithStyle</code>, <code>RoundedRectangle</code>, <code>Label</code>, <code>Path</code>, etc.</p>
+<p><code>sk/plan-&gt;membrane</code> converts the plan into a tree of membrane drawing primitives positioned in pixel space. This is the format-agnostic intermediate representation — <code>Translate</code>, <code>WithColor</code>, <code>WithStyle</code>, <code>RoundedRectangle</code>, <code>Label</code>, <code>Path</code>, etc.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> trace-membrane </span>(sk/sketch-&gt;membrane trace-sketch))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> trace-membrane </span>(sk/plan-&gt;membrane trace-plan))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>trace-membrane</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1023,8 +1023,8 @@ graph LR
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> trace-figure</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  (sk/membrane-&gt;figure trace-membrane <span class="at">:svg</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                       {<span class="at">:total-width</span> (<span class="at">:total-width</span> trace-sketch)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:total-height</span> (<span class="at">:total-height</span> trace-sketch)}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                       {<span class="at">:total-width</span> (<span class="at">:total-width</span> trace-plan)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">:total-height</span> (<span class="at">:total-height</span> trace-plan)}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>(kind/pprint trace-figure)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1534,7 +1534,7 @@ graph LR
 <td style="text-align: left;">N/A (declarative)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Sketch</td>
+<td style="text-align: left;">Plan</td>
 <td style="text-align: left;">Clojure maps + dtype buffers</td>
 <td style="text-align: left;">Data space</td>
 </tr>
@@ -1552,9 +1552,9 @@ graph LR
 </table>
 </section>
 </section>
-<section id="the-sketch-boundary" class="level2">
-<h2 class="anchored" data-anchor-id="the-sketch-boundary">The Sketch Boundary</h2>
-<p>The sketch separates <strong>what</strong> to draw from <strong>how</strong> to draw it. It sits between the two concerns.</p>
+<section id="the-plan-boundary" class="level2">
+<h2 class="anchored" data-anchor-id="the-plan-boundary">The Plan Boundary</h2>
+<p>The plan separates <strong>what</strong> to draw from <strong>how</strong> to draw it. It sits between the two concerns.</p>
 <div class="mermaid">
 graph LR
   subgraph WHAT ["WHAT — data + semantics"]
@@ -1569,22 +1569,22 @@ graph LR
     MS["Membrane tree"]
     SV["SVG conversion"]
   end
-  WHAT --&gt;|sketch| HOW
+  WHAT --&gt;|plan| HOW
   style WHAT fill:#e8f5e9
   style HOW fill:#e3f2fd
 </div>
-<p>The sketch is <strong>plain inspectable data</strong> — maps, numbers, strings, keywords, and dtype-next buffers for numeric arrays. No membrane types, no datasets, no scale objects. It validates against a Malli schema.</p>
+<p>The plan is <strong>plain inspectable data</strong> — maps, numbers, strings, keywords, and dtype-next buffers for numeric arrays. No membrane types, no datasets, no scale objects. It validates against a Malli schema.</p>
 <p>The membrane tree is <strong>Java objects</strong> — <code>Translate</code>, <code>WithColor</code>, <code>RoundedRectangle</code>, <code>Label</code>, etc. All positions are resolved to pixel coordinates. Not serializable.</p>
 <p>This separation enables:</p>
 <ul>
-<li><p>Inspecting the plot specification without rendering</p></li>
+<li><p>Inspecting the sketch without rendering</p></li>
 <li><p>Validating plot structure with Malli</p></li>
-<li><p>Adding other backends (Canvas, Plotly, Vega-Lite) that consume sketches</p></li>
+<li><p>Adding other backends (Canvas, Plotly, Vega-Lite) that consume plans</p></li>
 </ul>
 </section>
 <section id="multi-layer-example" class="level2">
 <h2 class="anchored" data-anchor-id="multi-layer-example">Multi-Layer Example</h2>
-<p>A sketch can hold multiple layers. Here, scatter points and per-species regression lines share the same panel.</p>
+<p>A plan can hold multiple layers. Here, scatter points and per-species regression lines share the same panel.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> multi-views</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> data/iris</span>
@@ -1593,21 +1593,21 @@ graph LR
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>      sk/lay-lm))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> multi-sketch </span>(sk/sketch multi-views {<span class="at">:title</span> <span class="st">"Iris Petals with Regression"</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> multi-plan </span>(sk/plan multi-views {<span class="at">:title</span> <span class="st">"Iris Petals with Regression"</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Two layers in the sketch — point and line:</p>
+<p>Two layers in the plan — point and line:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">mapv</span> (<span class="kw">fn</span> [layer]</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>        {<span class="at">:mark</span> (<span class="at">:mark</span> layer)</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">:n-groups</span> (<span class="kw">count</span> (<span class="at">:groups</span> layer))})</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>      (<span class="at">:layers</span> (<span class="kw">first</span> (<span class="at">:panels</span> multi-sketch))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>      (<span class="at">:layers</span> (<span class="kw">first</span> (<span class="at">:panels</span> multi-plan))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>[{<span class="at">:mark</span> <span class="at">:point</span>, <span class="at">:n-groups</span> <span class="dv">3</span>} {<span class="at">:mark</span> <span class="at">:line</span>, <span class="at">:n-groups</span> <span class="dv">3</span>}]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Title and legend are top-level sketch keys:</p>
+<p>Title and legend are top-level plan keys:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>multi-sketch</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>multi-plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:caption</span> <span class="va">nil</span>,</span>
@@ -1758,12 +1758,12 @@ graph LR
 graph TD
   API["api.clj"] --&gt; VIEW["impl/view.clj"]
   API --&gt; PLOT["impl/plot.clj"]
-  API --&gt; SKETCH["impl/sketch.clj"]
-  SKETCH --&gt; VIEW
-  SKETCH --&gt; STAT["impl/stat.clj"]
-  SKETCH --&gt; SCALE["impl/scale.clj"]
-  SKETCH --&gt; DEFAULTS["impl/defaults.clj"]
-  PLOT --&gt; SKETCH
+  API --&gt; PLAN["impl/sketch.clj"]
+  PLAN --&gt; VIEW
+  PLAN --&gt; STAT["impl/stat.clj"]
+  PLAN --&gt; SCALE["impl/scale.clj"]
+  PLAN --&gt; DEFAULTS["impl/defaults.clj"]
+  PLOT --&gt; PLAN
   PLOT --&gt; SVG["render/svg.clj"]
   SVG --&gt; MEMBRANE["render/membrane.clj"]
   MEMBRANE --&gt; PANEL["render/panel.clj"]
@@ -1771,7 +1771,7 @@ graph TD
   PANEL --&gt; SCALE
   PANEL --&gt; COORD["impl/coord.clj"]
   style API fill:#c8e6c9
-  style SKETCH fill:#ffe0b2
+  style PLAN fill:#ffe0b2
   style PLOT fill:#bbdefb
   style SVG fill:#f8bbd0
   style MEMBRANE fill:#f8bbd0
@@ -1795,7 +1795,7 @@ graph TD
 <h2 class="anchored" data-anchor-id="whats-next">What’s Next</h2>
 <ul>
 <li><a href="./napkinsketch_book.extensibility.html"><strong>Extensibility</strong></a> — add custom marks, stats, scales, and renderers via multimethods</li>
-<li><a href="./napkinsketch_book.exploring_sketches.html"><strong>Exploring Sketches</strong></a> — inspect sketch data structures at each stage</li>
+<li><a href="./napkinsketch_book.exploring_sketches.html"><strong>Exploring Plans</strong></a> — inspect plan data structures at each stage</li>
 </ul>
 <div style="background-color:grey;height:2px;width:100%;"></div>
 <div><pre><small><small>source: <a href="https://github.com/scicloj/napkinsketch/blob/main/notebooks/napkinsketch_book/architecture.clj">notebooks/napkinsketch_book/architecture.clj</a></small></small></pre></div>
@@ -2206,8 +2206,8 @@ graph TD
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./napkinsketch_book.exploring_sketches.html" class="pagination-link" aria-label="Exploring Sketches">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Sketches</span></span>
+      <a href="./napkinsketch_book.exploring_sketches.html" class="pagination-link" aria-label="Exploring Plans">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Plans</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

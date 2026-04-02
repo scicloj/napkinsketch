@@ -139,10 +139,10 @@
 
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
-(let [qwerty (-> data/tips
+(let [pl (-> data/tips
              (sk/lay-boxplot :day :total_bill {:color :smoker})
-             sk/abcdefgh)
-      panel (first (:panels qwerty))
+             sk/plan)
+      panel (first (:panels pl))
       box-layer (first (filter #(= :boxplot (:mark %)) (:layers panel)))
       cats (:color-categories box-layer)]
   (count cats))
@@ -191,10 +191,10 @@
 
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
-(let [qwerty (-> data/tips
+(let [pl (-> data/tips
              (sk/lay-violin :day :total_bill {:color :smoker})
-             sk/abcdefgh)
-      panel (first (:panels qwerty))
+             sk/plan)
+      panel (first (:panels pl))
       viol-layer (first (filter #(= :violin (:mark %)) (:layers panel)))
       cats (:color-categories viol-layer)]
   (count cats))

@@ -209,8 +209,8 @@
   (sk/with-config
    {:width 1200, :height 500}
    (let
-    [sketch (sk/sketch (base-plot) {:width 900})]
-    {:sketch-width (:width sketch), :sketch-height (:height sketch)}))))
+    [plan (sk/plan (base-plot) {:width 900})]
+    {:plan-width (:width plan), :plan-height (:height plan)}))))
 
 
 (def v50_l220 precedence-result)
@@ -219,7 +219,7 @@
 (deftest
  t51_l222
  (is
-  ((fn [m] (and (= 900 (:sketch-width m)) (= 500 (:sketch-height m))))
+  ((fn [m] (and (= 900 (:plan-width m)) (= 500 (:plan-height m))))
    v50_l220)))
 
 
@@ -441,7 +441,7 @@
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (sk/lay-point :x :y {:color :c})
-  (sk/sketch {:color-scale :inferno})
+  (sk/plan {:color-scale :inferno})
   :legend
   (select-keys [:color-scale :type])))
 
@@ -455,14 +455,12 @@
    v103_l449)))
 
 
-(def v106_l471 (sk/sketch (base-plot)))
+(def v106_l471 (sk/plan (base-plot)))
 
 
 (deftest
  t107_l473
- (is
-  ((fn [sketch] (and (map? sketch) (= 600 (:width sketch))))
-   v106_l471)))
+ (is ((fn [plan] (and (map? plan) (= 600 (:width plan)))) v106_l471)))
 
 
 (def v109_l480 (-> (base-plot)))
@@ -473,23 +471,19 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v109_l480)))
 
 
-(def
- v112_l491
- (def good-sketch (sk/sketch (base-plot) {:validate false})))
+(def v112_l491 (def good-plan (sk/plan (base-plot) {:validate false})))
 
 
-(def v113_l493 (sk/valid-sketch? good-sketch))
+(def v113_l493 (sk/valid-plan? good-plan))
 
 
 (deftest t114_l495 (is ((fn [v] (true? v)) v113_l493)))
 
 
-(def
- v116_l500
- (def bad-sketch (assoc good-sketch :width "not-a-number")))
+(def v116_l500 (def bad-plan (assoc good-plan :width "not-a-number")))
 
 
-(def v117_l502 (sk/valid-sketch? bad-sketch))
+(def v117_l502 (sk/valid-plan? bad-plan))
 
 
 (deftest t118_l504 (is ((fn [v] (false? v)) v117_l502)))
@@ -498,7 +492,7 @@
 (def
  v120_l509
  (->
-  (sk/explain-sketch bad-sketch)
+  (sk/explain-plan bad-plan)
   :errors
   first
   (select-keys [:path :in :value])))
@@ -515,15 +509,15 @@
  v123_l523
  (try
   (let
-   [sketch
-    (sk/sketch (base-plot) {:validate false})
+   [plan
+    (sk/plan (base-plot) {:validate false})
     bad
-    (assoc sketch :width "not-a-number")]
+    (assoc plan :width "not-a-number")]
    (when-let
-    [explanation (sk/explain-sketch bad)]
+    [explanation (sk/explain-plan bad)]
     (throw
      (ex-info
-      "Sketch does not conform to schema"
+      "PlanSchema does not conform to schema"
       {:explanation explanation})))
    :no-error)
   (catch Exception e {:caught true, :message (.getMessage e)})))
@@ -536,15 +530,13 @@
     [m]
     (and
      (:caught m)
-     (= "Sketch does not conform to schema" (:message m))))
+     (= "PlanSchema does not conform to schema" (:message m))))
    v123_l523)))
 
 
-(def v126_l543 (sk/sketch (base-plot) {:validate false}))
+(def v126_l543 (sk/plan (base-plot) {:validate false}))
 
 
 (deftest
  t127_l545
- (is
-  ((fn [sketch] (and (map? sketch) (= 600 (:width sketch))))
-   v126_l543)))
+ (is ((fn [plan] (and (map? plan) (= 600 (:width plan)))) v126_l543)))

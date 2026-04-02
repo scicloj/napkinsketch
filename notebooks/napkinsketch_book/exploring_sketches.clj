@@ -1,9 +1,9 @@
-;; # Exploring Zyxwvus
+;; # Exploring Plans
 ;;
 ;; When Napkinsketch renders a plot, it builds an intermediate data
-;; structure called a **abcdefgh** before rendering anything. This notebook
-;; walks through the abcdefgh step by step, building intuition for the
-;; data model by looking at what `sk/abcdefgh` produces for different plots.
+;; structure called a **plan** before rendering anything. This notebook
+;; walks through the plan step by step, building intuition for the
+;; data model by looking at what `sk/plan` produces for different plots.
 
 (ns napkinsketch-book.exploring-sketches
   (:require
@@ -33,19 +33,19 @@
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; And here is the abcdefgh — the data structure that drives the rendering.
-;; We'll use `sk/abcdefgh` with the same arguments:
+;; And here is the plan — the data structure that drives the rendering.
+;; We'll use `sk/plan` with the same arguments:
 
-(def tiny-qwerty (-> tiny
+(def tiny-pl (-> tiny
                  (sk/lay-point :x :y)
-                 sk/abcdefgh))
+                 sk/plan))
 
-;; ### What's in a abcdefgh?
+;; ### What's in a plan?
 ;;
-;; At the top level, a abcdefgh describes dimensions and layout.
-;; Here is the entire abcdefgh — a plain Clojure map:
+;; At the top level, a plan describes dimensions and layout.
+;; Here is the entire plan — a plain Clojure map:
 
-tiny-qwerty
+tiny-pl
 
 (kind/test-last [(fn [m] (and (= 600 (:width m))
                               (= 400 (:height m))
@@ -63,10 +63,10 @@ tiny-qwerty
 
 ;; ### The panel
 ;;
-;; The abcdefgh contains one or more panels. A simple plot has one panel;
+;; The plan contains one or more panels. A simple plot has one panel;
 ;; faceting and SPLOM (scatter plot matrix) produce multiple. Each panel holds its own data space:
 
-(def tiny-panel (first (:panels tiny-qwerty)))
+(def tiny-panel (first (:panels tiny-pl)))
 
 (keys tiny-panel)
 
@@ -129,11 +129,11 @@ tiny-layer
 ;; These are the original data values — not pixel positions.
 ;; The renderer maps them through scales to get pixel coordinates.
 ;;
-;; In other words, the abcdefgh describes geometry in data space.
+;; In other words, the plan describes geometry in data space.
 
 ;; ## Adding Color
 ;;
-;; When we map a column to color, the abcdefgh splits data into groups
+;; When we map a column to color, the plan splits data into groups
 ;; and adds a legend.
 
 (-> data/iris
@@ -143,20 +143,20 @@ tiny-layer
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-(def iris-qwerty (-> data/iris
+(def iris-pl (-> data/iris
                  (sk/lay-point :sepal_length :sepal_width {:color :species})
-                 sk/abcdefgh))
+                 sk/plan))
 
-;; Here is the full abcdefgh — notice the legend and three groups:
+;; Here is the full plan — notice the legend and three groups:
 
-iris-qwerty
+iris-pl
 
 (kind/test-last [(fn [m] (and (= 3 (count (:entries (:legend m))))
                               (= 1 (count (:panels m)))))])
 
 ;; Now we have three groups — one per species:
 
-(def iris-layer (first (:layers (first (:panels iris-qwerty)))))
+(def iris-layer (first (:layers (first (:panels iris-pl)))))
 
 (count (:groups iris-layer))
 
@@ -174,7 +174,7 @@ iris-qwerty
 
 ;; The legend describes the color mapping:
 
-(:legend iris-qwerty)
+(:legend iris-pl)
 
 (kind/test-last [(fn [leg] (= 3 (count (:entries leg))))])
 
@@ -183,33 +183,33 @@ iris-qwerty
 
 ;; ### Continuous Color
 ;;
-;; When `:color` maps to a **numeric** column, the abcdefgh stores
+;; When `:color` maps to a **numeric** column, the plan stores
 ;; per-point colors and a continuous gradient legend.
 
-(def cont-qwerty (-> data/iris
+(def cont-pl (-> data/iris
                  (sk/lay-point :sepal_length :sepal_width {:color :petal_length})
-                 sk/abcdefgh))
+                 sk/plan))
 
-(:legend cont-qwerty)
+(:legend cont-pl)
 
 (kind/test-last [(fn [m] (= :continuous (:type m)))])
 
 ;; The legend has pre-computed gradient stops — no functions:
 
-(select-keys (:legend cont-qwerty) [:title :type :min :max :color-scale])
+(select-keys (:legend cont-pl) [:title :type :min :max :color-scale])
 
 (kind/test-last [(fn [m] (and (= :continuous (:type m))
                               (not (contains? m :gradient-fn))))])
 
 ;; Twenty evenly spaced stops store the gradient colors:
 
-(count (:stops (:legend cont-qwerty)))
+(count (:stops (:legend cont-pl)))
 
 (kind/test-last [(fn [n] (= 20 n))])
 
 ;; ## Histograms
 ;;
-;; A histogram computes bins from the data. The abcdefgh stores the
+;; A histogram computes bins from the data. The plan stores the
 ;; bin edges and counts — still in data space.
 
 (-> data/iris
@@ -219,15 +219,15 @@ iris-qwerty
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-(def hist-qwerty (-> data/iris
+(def hist-pl (-> data/iris
                  (sk/lay-histogram :sepal_length)
-                 sk/abcdefgh))
+                 sk/plan))
 
-hist-qwerty
+hist-pl
 
 (kind/test-last [(fn [m] (= 1 (count (:panels m))))])
 
-(def hist-layer (first (:layers (first (:panels hist-qwerty)))))
+(def hist-layer (first (:layers (first (:panels hist-pl)))))
 
 (:mark hist-layer)
 
@@ -247,7 +247,7 @@ hist-qwerty
 
 ;; ## Categorical Bars
 ;;
-;; A bar chart counts occurrences of each category. The abcdefgh records
+;; A bar chart counts occurrences of each category. The plan records
 ;; the categories and counts per group.
 
 (-> data/penguins
@@ -257,11 +257,11 @@ hist-qwerty
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-(def bar-qwerty (-> data/penguins
+(def bar-pl (-> data/penguins
                 (sk/lay-bar :island {:color :species})
-                sk/abcdefgh))
+                sk/plan))
 
-(def bar-layer (first (:layers (first (:panels bar-qwerty)))))
+(def bar-layer (first (:layers (first (:panels bar-pl)))))
 
 ;; The mark type is `:rect` and the layer knows the categories:
 
@@ -287,18 +287,18 @@ bar-layer
 ;;
 ;; Stacking changes the position field:
 
-(def stacked-qwerty (-> data/penguins
+(def stacked-pl (-> data/penguins
                     (sk/lay-stacked-bar :island {:color :species})
-                    sk/abcdefgh))
+                    sk/plan))
 
-(def stacked-layer (first (:layers (first (:panels stacked-qwerty)))))
+(def stacked-layer (first (:layers (first (:panels stacked-pl)))))
 
 (:position stacked-layer)
 
 (kind/test-last [(fn [p] (= :stack p))])
 
 ;; The counts are the same — only the rendering instruction differs.
-;; The abcdefgh describes *what* to draw; the renderer decides *how*.
+;; The plan describes *what* to draw; the renderer decides *how*.
 
 ;; ## Regression Lines
 ;;
@@ -312,16 +312,16 @@ bar-layer
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-(def lm-qwerty (-> data/iris
+(def lm-pl (-> data/iris
                (sk/lay-point :sepal_length :sepal_width)
                sk/lay-lm
-               sk/abcdefgh))
+               sk/plan))
 
 ;; Two layers — points and line:
 
-(mapv :mark (:layers (first (:panels lm-qwerty))))
+(mapv :mark (:layers (first (:panels lm-pl))))
 (kind/test-last [(fn [marks] (= [:point :line] marks))])
-(def lm-layer (second (:layers (first (:panels lm-qwerty)))))
+(def lm-layer (second (:layers (first (:panels lm-pl)))))
 
 ;; Its group has endpoints — a line segment in data space:
 
@@ -347,13 +347,13 @@ bar-layer
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
-(def grp-qwerty (-> data/iris
+(def grp-pl (-> data/iris
                 (sk/view :petal_length :petal_width {:color :species})
                 sk/lay-point
                 sk/lay-lm
-                sk/abcdefgh))
+                sk/plan))
 
-(let [line-layer (second (:layers (first (:panels grp-qwerty))))]
+(let [line-layer (second (:layers (first (:panels grp-pl))))]
   (mapv (fn [g]
           {:color (:color g)
            :x1 (some-> (:x1 g) (Math/round) int)
@@ -378,11 +378,11 @@ bar-layer
                            (and (= 1 (:panels s))
                                 (= 1 (:lines s)))))])
 
-(def wave-qwerty (-> wave
+(def wave-pl (-> wave
                  (sk/lay-line :x :y)
-                 sk/abcdefgh))
+                 sk/plan))
 
-(def wave-group (first (:groups (first (:layers (first (:panels wave-qwerty)))))))
+(def wave-group (first (:groups (first (:layers (first (:panels wave-pl)))))))
 
 {:n-points (count (:xs wave-group))
  :first-x (first (:xs wave-group))
@@ -395,7 +395,7 @@ bar-layer
 ;; ## Value Bars
 ;;
 ;; Value bars map categorical x to numeric y without any counting.
-;; The abcdefgh stores the raw x/y pairs:
+;; The plan stores the raw x/y pairs:
 
 (def sales {:product [:widget :gadget :gizmo :doohickey]
             :revenue [120 340 210 95]})
@@ -407,11 +407,11 @@ bar-layer
                            (and (= 1 (:panels s))
                                 (= 4 (:polygons s)))))])
 
-(def sales-qwerty (-> sales
+(def sales-pl (-> sales
                   (sk/lay-value-bar :product :revenue)
-                  sk/abcdefgh))
+                  sk/plan))
 
-(let [g (first (:groups (first (:layers (first (:panels sales-qwerty))))))]
+(let [g (first (:groups (first (:layers (first (:panels sales-pl))))))]
   {:xs (:xs g)
    :ys (:ys g)})
 
@@ -419,20 +419,20 @@ bar-layer
 
 ;; ## Flipped Coordinates
 ;;
-;; Setting `:coord :flip` swaps x and y in the abcdefgh's panel:
+;; Setting `:coord :flip` swaps x and y in the plan's panel:
 
-(def flip-qwerty (-> data/iris
+(def flip-pl (-> data/iris
                  (sk/lay-bar :species)
                  (sk/coord :flip)
-                 sk/abcdefgh))
+                 sk/plan))
 
-(:coord (first (:panels flip-qwerty)))
+(:coord (first (:panels flip-pl)))
 
 (kind/test-last [(fn [c] (= :flip c))])
 
 ;; The domains are swapped — the categorical axis is now y:
 
-(let [p (first (:panels flip-qwerty))]
+(let [p (first (:panels flip-pl))]
   {:x-domain-type (if (number? (first (:x-domain p))) :numeric :categorical)
    :y-domain-type (if (number? (first (:y-domain p))) :numeric :categorical)})
 
@@ -442,19 +442,19 @@ bar-layer
 ;; The layer data is unchanged — the coord type tells the renderer
 ;; to swap axes during mapping.
 
-;; ## Options Affect the Zyxwvu
+;; ## Options Affect the Plan
 ;;
-;; Title, labels, and dimensions are recorded in the abcdefgh:
+;; Title, labels, and dimensions are recorded in the plan:
 
-(def opts-qwerty (-> data/iris
+(def opts-pl (-> data/iris
                  (sk/lay-point :sepal_length :sepal_width)
-                 (sk/abcdefgh {:title "My Custom Title"
+                 (sk/plan {:title "My Custom Title"
                              :x-label "Length (cm)"
                              :y-label "Width (cm)"
                              :width 800
                              :height 300})))
 
-opts-qwerty
+opts-pl
 
 (kind/test-last [(fn [m] (and (= "My Custom Title" (:title m))
                               (= 800 (:width m))
@@ -462,18 +462,18 @@ opts-qwerty
 
 ;; The layout records how much space to reserve for each label:
 
-(:layout opts-qwerty)
+(:layout opts-pl)
 
 (kind/test-last [(fn [lay] (and (pos? (:title-pad lay))
                                 (pos? (:x-label-pad lay))
                                 (pos? (:y-label-pad lay))))])
 
-;; ## Zyxwvu vs Plot — Side by Side
+;; ## Plan vs Plot — Side by Side
 ;;
-;; `sk/abcdefgh` and `sk/plot` accept the same arguments.
-;; `sk/abcdefgh` returns the intermediate data map; `sk/plot` returns the final SVG.
+;; `sk/plan` and `sk/plot` accept the same arguments.
+;; `sk/plan` returns the intermediate data map; `sk/plot` returns the final SVG.
 
-;; The abcdefgh (a plain Clojure map):
+;; The plan (a plain Clojure map):
 
 (def final-views
   (-> data/iris
@@ -481,9 +481,9 @@ opts-qwerty
       sk/lay-point
       sk/lay-lm))
 
-(def final-qwerty (sk/abcdefgh final-views {:title "Iris Petals"}))
+(def final-pl (sk/plan final-views {:title "Iris Petals"}))
 
-final-qwerty
+final-pl
 
 (kind/test-last [(fn [m] (= "Iris Petals" (:title m)))])
 
@@ -492,7 +492,7 @@ final-qwerty
 (mapv (fn [l]
         {:mark (:mark l)
          :n-groups (count (:groups l))})
-      (:layers (first (:panels final-qwerty))))
+      (:layers (first (:panels final-pl))))
 
 (kind/test-last [(fn [ls] (= 2 (count ls)))])
 
@@ -504,109 +504,109 @@ final-qwerty
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; ## Multi-Panel Zyxwvus
+;; ## Multi-Panel Plans
 ;;
-;; Faceting produces abcdefghs with multiple panels. Each panel has
+;; Faceting produces plans with multiple panels. Each panel has
 ;; its own domains, ticks, and layers, plus grid positioning.
 
-(def faceted-qwerty
+(def faceted-pl
   (-> data/iris
       (sk/lay-point :sepal_length :sepal_width {:color :species})
       (sk/facet :species)
-      sk/abcdefgh))
+      sk/plan))
 
 ;; The grid tells us the layout:
 
-(:grid faceted-qwerty)
+(:grid faceted-pl)
 
 (kind/test-last [(fn [g] (and (= 1 (:rows g)) (= 3 (:cols g))))])
 
 ;; Three panels — one per species:
 
-(count (:panels faceted-qwerty))
+(count (:panels faceted-pl))
 
 (kind/test-last [(fn [n] (= 3 n))])
 
 ;; Each panel has a grid position and strip label:
 
-(:panels faceted-qwerty)
+(:panels faceted-pl)
 
 (kind/test-last [(fn [ps] (and (= 3 (count ps))
                                (every? :col-label ps)))])
 
 ;; Panel-level domains show the data range for each subset:
 
-(:panels faceted-qwerty)
+(:panels faceted-pl)
 
 (kind/test-last [(fn [ps] (every? :x-domain ps))])
 
 ;; With shared scales (the default), all panels have the same domains.
 ;; With `:scales :free-y`, each panel gets its own y-domain.
 
-;; The abcdefgh also records per-panel pixel dimensions:
+;; The plan also records per-panel pixel dimensions:
 
-(select-keys faceted-qwerty [:layout-type :grid :total-width :total-height])
+(select-keys faceted-pl [:layout-type :grid :total-width :total-height])
 
 (kind/test-last [(fn [m] (= :facet-grid (:layout-type m)))])
 
-;; Multi-panel abcdefghs validate against the same Malli schema:
+;; Multi-panel plans validate against the same Malli schema:
 
-(sk/valid-abcdefgh? faceted-qwerty)
+(sk/valid-plan? faceted-pl)
 
 (kind/test-last [true?])
 
 ;; ## Malli Validation
 ;;
-;; Every abcdefgh conforms to a Malli schema. Validation runs automatically
-;; when `sk/abcdefgh` is called (default `:validate true`).
+;; Every plan conforms to a Malli schema. Validation runs automatically
+;; when `sk/plan` is called (default `:validate true`).
 ;; Pass `{:validate false}` to skip it.
 ;;
-;; You can also check manually with `sk/valid-abcdefgh?`:
+;; You can also check manually with `sk/valid-plan?`:
 
-(sk/valid-abcdefgh? tiny-qwerty)
-
-(kind/test-last [true?])
-
-(sk/valid-abcdefgh? iris-qwerty)
+(sk/valid-plan? tiny-pl)
 
 (kind/test-last [true?])
 
-(sk/valid-abcdefgh? hist-qwerty)
+(sk/valid-plan? iris-pl)
 
 (kind/test-last [true?])
 
-(sk/valid-abcdefgh? bar-qwerty)
+(sk/valid-plan? hist-pl)
 
 (kind/test-last [true?])
 
-(sk/valid-abcdefgh? lm-qwerty)
+(sk/valid-plan? bar-pl)
 
 (kind/test-last [true?])
 
-(sk/valid-abcdefgh? final-qwerty)
+(sk/valid-plan? lm-pl)
 
 (kind/test-last [true?])
 
-;; When a abcdefgh is invalid, `sk/explain-abcdefgh` shows which part failed:
+(sk/valid-plan? final-pl)
 
-(sk/explain-abcdefgh (assoc tiny-qwerty :width "not-a-number"))
+(kind/test-last [true?])
+
+;; When a plan is invalid, `sk/explain-plan` shows which part failed:
+
+(sk/explain-plan (assoc tiny-pl :width "not-a-number"))
 
 (kind/test-last [some?])
 
 ;; ## Data Types
 ;;
-;; Zyxwvus are plain inspectable data — maps, numbers, strings,
+;; Plans are plain inspectable data — maps, numbers, strings,
 ;; keywords, and dtype-next buffers for numeric arrays (see [Architecture](./napkinsketch_book.architecture.html)) (`:xs`, `:ys`,
 ;; etc.). The buffers support `nth`, `count`, `seq`, and all standard
 ;; sequence operations.
 
-(type (:xs (first (:groups (first (:layers (first (:panels tiny-qwerty))))))))
+(type (:xs (first (:groups (first (:layers (first (:panels tiny-pl))))))))
 
 (kind/test-last [(fn [t] (not= clojure.lang.PersistentVector t))])
 
 ;; You can convert any numeric buffer to a plain vector with `vec`:
 
-(vec (:xs (first (:groups (first (:layers (first (:panels tiny-qwerty))))))))
+(vec (:xs (first (:groups (first (:layers (first (:panels tiny-pl))))))))
 
 (kind/test-last [(fn [v] (and (vector? v) (number? (first v))))])
 

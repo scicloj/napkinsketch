@@ -131,7 +131,7 @@
 
 (def
  v38_l183
- (sk/plot-spec? (sk/lay-point data/iris :sepal_length :sepal_width)))
+ (sk/sketch? (sk/lay-point data/iris :sepal_length :sepal_width)))
 
 
 (deftest t39_l185 (is ((fn [v] (true? v)) v38_l183)))

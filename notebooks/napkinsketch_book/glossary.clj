@@ -91,7 +91,7 @@
 
 (-> tips
     (sk/lay-value-bar :day :count {:color :meal :position :stack})
-    sk/abcdefgh
+    sk/plan
     (get-in [:panels 0 :layers 0 :groups 1 :y0s]))
 
 (kind/test-last [(fn [y0s] (every? pos? y0s))])
@@ -128,7 +128,7 @@
 
 (-> data/iris
     (sk/lay-line :sepal_length :sepal_width {:group :species})
-    sk/abcdefgh
+    sk/plan
     (get-in [:panels 0 :layers 0 :groups])
     count)
 
@@ -143,7 +143,7 @@
 
 (-> {:x [1 2 3] :y [4 5 6]}
     (sk/lay-point :x :y {:nudge-x 0.5})
-    sk/abcdefgh
+    sk/plan
     (get-in [:panels 0 :layers 0 :groups 0 :xs]))
 
 (kind/test-last [(fn [xs] (= [1.5 2.5 3.5] xs))])
@@ -161,40 +161,40 @@
 
 (kind/test-last [(fn [m] (true? (:jitter m)))])
 
-;; ## Zyxwvu
+;; ## Plan
 ;;
-;; A **abcdefgh** is the fully resolved intermediate representation —
+;; A **plan** is the fully resolved intermediate representation —
 ;; a plain Clojure map containing everything needed to render a plot:
 ;; data-space geometry, domains, tick info, legend, layout dimensions.
 ;; No membrane types, no datasets, no scale objects.
 ;;
-;; Created with `sk/abcdefgh`. Numeric arrays (`:xs`, `:ys`, etc.) are
+;; Created with `sk/plan`. Numeric arrays (`:xs`, `:ys`, etc.) are
 ;; [dtype-next](https://github.com/cnuernber/dtype-next) buffers for efficiency.
 
-(def my-abcdefgh (sk/abcdefgh views))
+(def my-plan (sk/plan views))
 
-(sort (keys my-abcdefgh))
+(sort (keys my-plan))
 
 (kind/test-last [(fn [ks] (every? keyword? ks))])
 
 ;; ## Panel
 ;;
-;; A **panel** is a single plotting area within a abcdefgh. It contains
+;; A **panel** is a single plotting area within a plan. It contains
 ;; x/y domains, scale specs, tick info, coordinate type, and layers.
 ;; A simple plot has one panel; `sk/facet` and `sk/facet-grid` produce multiple.
 
-(sort (keys (first (:panels my-abcdefgh))))
+(sort (keys (first (:panels my-plan))))
 
 (kind/test-last [(fn [ks] (some #{:x-domain :y-domain :layers} ks))])
 
 ;; ## Layer
 ;;
-;; A **layer** is a abcdefgh-level descriptor: resolved mark type,
+;; A **layer** is a plan-level descriptor: resolved mark type,
 ;; style, and groups of data-space geometry. Layers live inside
-;; panels in the abcdefgh.
+;; panels in the plan.
 
 (-> views
-    sk/abcdefgh
+    sk/plan
     (get-in [:panels 0 :layers 0]))
 
 (kind/test-last [(fn [m] (= :point (:mark m)))])
@@ -215,7 +215,7 @@
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width)
     (sk/facet :species)
-    sk/abcdefgh :panels count)
+    sk/plan :panels count)
 
 (kind/test-last [(fn [n] (= 3 n))])
 
@@ -226,7 +226,7 @@
 ;; - Numerical: `[min max]` with padding (e.g., `[4.0 8.2]`)
 ;; - Categorical: sequence of distinct values (e.g., `["setosa" "versicolor" "virginica"]`)
 
-(let [p (first (:panels my-abcdefgh))]
+(let [p (first (:panels my-plan))]
   {:x-domain (:x-domain p)
    :y-domain (:y-domain p)})
 
@@ -244,8 +244,8 @@
 ;; | `:log` | Orders-of-magnitude data |
 ;; | `:categorical` | Distinct categories (band scale) |
 ;;
-;; Scales are created at render time, not stored in the abcdefgh.
-;; The abcdefgh stores scale *specs* (`:type`, `:domain`).
+;; Scales are created at render time, not stored in the plan.
+;; The plan stores scale *specs* (`:type`, `:domain`).
 ;;
 ;; **Temporal columns** (`LocalDate`, `LocalDateTime`, `Instant`,
 ;; `java.util.Date`) are automatically detected and treated as
@@ -283,11 +283,11 @@
 ;; ## Legend
 ;;
 ;; A **legend** is generated automatically when a color (or shape)
-;; aesthetic maps to a data column. It appears in the abcdefgh as a
+;; aesthetic maps to a data column. It appears in the plan as a
 ;; `:legend` key containing entries with labels and colors.
 ;; Position is controlled via `{:legend-position :bottom}` in options.
 
-(:legend my-abcdefgh)
+(:legend my-plan)
 
 (kind/test-last [(fn [leg] (and (map? leg)
                                 (contains? leg :entries)))])
@@ -296,7 +296,7 @@
 ;;
 ;; A **theme** controls the visual appearance of non-data elements:
 ;; background color, grid lines, font sizes, margins.
-;; Passed as `{:theme {...}}` via `sk/options` or directly to `sk/abcdefgh`.
+;; Passed as `{:theme {...}}` via `sk/options` or directly to `sk/plan`.
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -314,10 +314,10 @@
 ;; `RoundedRectangle`, `Label`, etc.) that represents a complete plot.
 ;;
 ;; The membrane is an intermediate step in the SVG rendering path:
-;; abcdefgh → membrane → SVG hiccup. Direct renderers (e.g., Plotly)
+;; plan → membrane → SVG hiccup. Direct renderers (e.g., Plotly)
 ;; skip the membrane entirely.
 
-(def my-membrane (sk/abcdefgh->membrane my-abcdefgh))
+(def my-membrane (sk/plan->membrane my-plan))
 
 (vector? my-membrane)
 
@@ -330,12 +330,12 @@
 ;; ## Figure
 ;;
 ;; A **figure** is the final rendered output — the result of rendering
-;; a abcdefgh to a specific format. For SVG, the figure is hiccup markup
+;; a plan to a specific format. For SVG, the figure is hiccup markup
 ;; wrapped in `kind/hiccup`.
 ;;
 ;; Created by `sk/plot` or by auto-rendering a sketch.
 
-(def my-figure (sk/abcdefgh->figure my-abcdefgh :svg {}))
+(def my-figure (sk/plan->figure my-plan :svg {}))
 
 (first my-figure)
 
@@ -378,7 +378,7 @@
 ;; ## Plot Options
 ;;
 ;; **Plot options** are per-plot settings passed to `sk/options`,
-;; `sk/abcdefgh`, or `sk/plot`. They include text content (title,
+;; `sk/plan`, or `sk/plot`. They include text content (title,
 ;; subtitle, caption, axis labels) and a nested `:config` override.
 ;; Unlike configuration keys, plot options are inherently per-plot —
 ;; a title does not make sense as a global default.
@@ -419,25 +419,25 @@
 ;;
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
-;; | View | Map: data + column-to-channel mappings + method | User builds, consumed by `abcdefgh` |
+;; | View | Map: data + column-to-channel mappings + method | User builds, consumed by `plan` |
 ;; | Sketch | Auto-rendering wrapper (views + options) | Returned by layer functions |
 ;; | Method | Mark + stat + position bundle | Looked up via `method/lookup`; added by `sk/lay-point`, `sk/lay-histogram`, etc. |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |
 ;; | Group | Subset of data drawn together (from `:color` or `:group`) | Created during stat computation |
-;; | Stat | Data transform: identity, bin, count, lm (linear model), kde (kernel density), etc. | Computed during abcdefgh resolution |
+;; | Stat | Data transform: identity, bin, count, lm (linear model), kde (kernel density), etc. | Computed during plan resolution |
 ;; | Position | How groups share space: dodge, stack, fill, identity | Applied between stat and rendering |
 ;; | Nudge | Constant data-space offset (`:nudge-x`, `:nudge-y`) | Applied during layer extraction |
 ;; | Jitter | Random pixel offset to reduce overplotting | Applied at render time |
-;; | Layer | Resolved geometry + style for one mark | Lives inside abcdefgh panels |
-;; | Zyxwvu | Complete resolved plot description | Inspectable (dtype-next buffers for numerics) |
-;; | Panel | One plotting area (domain, ticks, layers) | One or more per abcdefgh |
-;; | Facet | Split data into panels by a categorical column | Configured on views, realized in abcdefgh |
+;; | Layer | Resolved geometry + style for one mark | Lives inside plan panels |
+;; | Plan | Complete resolved plot description | Inspectable (dtype-next buffers for numerics) |
+;; | Panel | One plotting area (domain, ticks, layers) | One or more per plan |
+;; | Facet | Split data into panels by a categorical column | Configured on views, realized in plan |
 ;; | Domain | Data range on an axis | Part of panel |
 ;; | Scale | Data → pixel mapping | Created at render time |
 ;; | Coord | Coordinate system (cartesian, flip, polar) | Applied at render time |
 ;; | Annotation | Non-data reference marks (rules, bands) | Overlay on panels |
-;; | Legend | Color/shape key generated from aesthetic mappings | Part of abcdefgh |
+;; | Legend | Color/shape key generated from aesthetic mappings | Part of plan |
 ;; | Theme | Visual styling: background, grid, fonts, margins | Passed in options, merged with defaults |
 ;; | Membrane | Drawable tree (membrane library) | Intermediate (SVG path only) |
 ;; | Figure | Final output (SVG hiccup, Plotly spec, ...) | Returned to user |

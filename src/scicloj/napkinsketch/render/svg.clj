@@ -180,12 +180,12 @@
                  title (assoc :aria-label title))]
      [:svg attrs body])))
 
-;; ---- Zyxwvu → Membrane (drawable tree) ----
+;; ---- Plan → Membrane (drawable tree) ----
 
 ;; Membrane-building code lives in render/membrane.clj.
 ;; This namespace handles membrane → SVG conversion only.
 
-;; ---- abcdefgh->figure :svg ----
+;; ---- plan->figure :svg ----
 
 ;; ---- Tooltip interactivity ----
 
@@ -301,16 +301,16 @@
                  brush (conj (brush-script div-id))))))
       (kind/hiccup svg))))
 
-(defmethod render/abcdefgh->figure :svg [abcdefgh _ opts]
+(defmethod render/plan->figure :svg [plan _ opts]
   (let [render-opts (select-keys opts [:tooltip :width :height :theme :palette
                                        :color-scale :color-midpoint])
-        membrane-tree (apply membrane/abcdefgh->membrane abcdefgh
+        membrane-tree (apply membrane/plan->membrane plan
                              (mapcat identity render-opts))]
     (render/membrane->figure membrane-tree :svg
                              (assoc opts
-                                    :total-width (:total-width abcdefgh)
-                                    :total-height (:total-height abcdefgh)
-                                    :title (:title abcdefgh)))))
+                                    :total-width (:total-width plan)
+                                    :total-height (:total-height plan)
+                                    :title (:title plan)))))
 
 ;; ---- SVG inspection ----
 
@@ -403,13 +403,13 @@
   ([views path] (save views path {}))
   ([views path opts]
    (let [views (if (map? views) [views] views)
-         qwerty (sketch/views->abcdefgh views opts)
-         membrane-tree (apply membrane/abcdefgh->membrane qwerty
+         pl (sketch/views->plan views opts)
+         membrane-tree (apply membrane/plan->membrane pl
                               (mapcat identity
                                       (select-keys opts [:width :height :theme :palette
                                                          :color-scale :color-midpoint])))
          svg-body (membrane->svg membrane-tree)
-         svg (wrap-svg (:total-width qwerty) (:total-height qwerty) svg-body (:title qwerty))
+         svg (wrap-svg (:total-width pl) (:total-height pl) svg-body (:title pl))
          xml-header "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
          svg-str (str xml-header (hiccup->svg-str svg))]
      (spit (str path) svg-str)

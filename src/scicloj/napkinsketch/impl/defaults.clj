@@ -221,7 +221,7 @@
 ;; ---- Configuration Precedence Chain ----
 ;;
 ;; Resolved with precedence (highest to lowest):
-;;   1. plot options (passed to sk/options, sk/plot, sk/abcdefgh, etc.)
+;;   1. plot options (passed to sk/options, sk/plot, sk/plan, etc.)
 ;;   2. binding *config* (thread-local override)
 ;;   3. set-config! (global mutable state)
 ;;   4. napkinsketch.edn (project root or classpath)
@@ -302,7 +302,7 @@
    :label-offset ["Labels" "Pixel offset for axis labels from the axis"]
    :title-offset ["Labels" "Pixel offset for the title from the top"]
    :strip-height ["Labels" "Height of facet strip label bars"]
-   :validate ["Behavior" "When true, validate abcdefghs against Malli schema"]
+   :validate ["Behavior" "When true, validate plans against Malli schema"]
    :default-color ["Behavior" "Fallback color when no color mapping is set"]
    :palette ["Color" "Categorical palette — keyword, vector, or map"]
    :color-scale ["Color" "Continuous color scale — :sequential, :diverging, or keyword"]
@@ -313,7 +313,7 @@
 
 (def plot-option-docs
   "Documentation for plot-level option keys.
-   These are accepted by sk/options, sk/abcdefgh, and sk/plot but are
+   These are accepted by sk/options, sk/plan, and sk/plot but are
    inherently per-plot (text content or nested config override).
    Each entry maps a key to [category description]."
   {:title ["Content" "Plot title string"]

@@ -326,7 +326,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./napkinsketch_book.exploring_sketches.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Sketches</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Plans</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -382,7 +382,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#how-to-extend-add-a-new-mark-type" id="toc-how-to-extend-add-a-new-mark-type" class="nav-link" data-scroll-target="#how-to-extend-add-a-new-mark-type">How to extend: add a new mark type</a></li>
   <li><a href="#how-to-extend-register-a-method-and-create-a-layer-function" id="toc-how-to-extend-register-a-method-and-create-a-layer-function" class="nav-link" data-scroll-target="#how-to-extend-register-a-method-and-create-a-layer-function">How to extend: register a method and create a layer function</a></li>
   </ul></li>
-  <li><a href="#sketch-figure" id="toc-sketch-figure" class="nav-link" data-scroll-target="#sketch-figure"><code>sketch-&gt;figure</code></a>
+  <li><a href="#plan-figure" id="toc-plan-figure" class="nav-link" data-scroll-target="#plan-figure"><code>plan-&gt;figure</code></a>
   <ul>
   <li><a href="#how-to-extend-add-a-new-direct-format" id="toc-how-to-extend-add-a-new-direct-format" class="nav-link" data-scroll-target="#how-to-extend-add-a-new-direct-format">How to extend: add a new direct format</a></li>
   </ul></li>
@@ -461,15 +461,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
 <p>The pipeline from data to figure has several stages, each governed by a multimethod:</p>
-<pre><code>views → views-&gt;sketch (compute-stat, extract-layer, ...)
+<pre><code>views → views-&gt;plan (compute-stat, extract-layer, ...)
                                              ↓
-                                          sketch
+                                          plan
                                              ↓
-                         sketch-&gt;figure (orchestrates full path)
+                         plan-&gt;figure (orchestrates full path)
                                              ↓
                              ┌───────────────┴───────────────┐
                     membrane path                     direct path
-                 sketch→membrane                   sketch→figure
+                 plan→membrane                   plan→figure
                        ↓
                  membrane→figure
                        ↓
@@ -500,19 +500,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;"><code>extract-layer</code></td>
 <td style="text-align: left;"><code>impl/extract.clj</code></td>
 <td style="text-align: left;"><code>:mark</code> key</td>
-<td style="text-align: left;">Convert stat result → sketch layer descriptor</td>
+<td style="text-align: left;">Convert stat result → plan layer descriptor</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><code>layer-&gt;membrane</code></td>
 <td style="text-align: left;"><code>render/mark.clj</code></td>
 <td style="text-align: left;"><code>:mark</code> key</td>
-<td style="text-align: left;">Render sketch layer → membrane drawables</td>
+<td style="text-align: left;">Render plan layer → membrane drawables</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><code>sketch-&gt;figure</code></td>
+<td style="text-align: left;"><code>plan-&gt;figure</code></td>
 <td style="text-align: left;"><code>impl/render.clj</code></td>
 <td style="text-align: left;">format keyword</td>
-<td style="text-align: left;">Orchestrate sketch → figure (full path)</td>
+<td style="text-align: left;">Orchestrate plan → figure (full path)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><code>membrane-&gt;figure</code></td>
@@ -689,7 +689,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="extract-layer" class="level2">
 <h2 class="anchored" data-anchor-id="extract-layer"><code>extract-layer</code></h2>
-<p>Converts a stat result into a sketch layer descriptor — a plain map with data-space geometry and resolved colors.</p>
+<p>Converts a stat result into a plan layer descriptor — a plain map with data-space geometry and resolved colors.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>(kind/table</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a> {<span class="at">:column-names</span> [<span class="st">"Dispatch value"</span> <span class="st">"Output"</span>]</span>
@@ -823,11 +823,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>Dispatch function: <code>(fn [view stat all-colors cfg] (:mark view))</code></p>
-<p>A sketch layer looks like this:</p>
+<p>A plan layer looks like this:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [s (<span class="kw">-&gt;</span> data/iris</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>            (sk/lay-point <span class="at">:sepal</span>_length <span class="at">:sepal</span>_width {<span class="at">:color</span> <span class="at">:species</span>})</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>            sk/sketch)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>            sk/plan)</span>
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>      layer (<span class="kw">first</span> (<span class="at">:layers</span> (<span class="kw">first</span> (<span class="at">:panels</span> s))))]</span>
 <span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  layer)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -877,7 +877,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="layer-membrane" class="level2">
 <h2 class="anchored" data-anchor-id="layer-membrane"><code>layer-&gt;membrane</code></h2>
-<p>Renders a sketch layer descriptor into membrane drawable primitives. This is the “membrane path” — used when the target format goes through membrane (e.g., SVG).</p>
+<p>Renders a plan layer descriptor into membrane drawable primitives. This is the “membrane path” — used when the target format goes through membrane (e.g., SVG).</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>(kind/table</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a> {<span class="at">:column-names</span> [<span class="st">"Dispatch value"</span> <span class="st">"Membrane output"</span>]</span>
@@ -1044,9 +1044,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Note: if your custom mark is not one of the built-in marks, you also need a <code>layer-&gt;membrane</code> defmethod for the SVG renderer. Without one, the library throws an error explaining which defmethod to add.</p>
 </section>
 </section>
-<section id="sketch-figure" class="level2">
-<h2 class="anchored" data-anchor-id="sketch-figure"><code>sketch-&gt;figure</code></h2>
-<p>Orchestrates the full sketch → figure path. The <code>:svg</code> implementation goes through the membrane path: <code>sketch → membrane → figure</code>. Other renderers can skip membrane and go directly from sketch to their target format.</p>
+<section id="plan-figure" class="level2">
+<h2 class="anchored" data-anchor-id="plan-figure"><code>plan-&gt;figure</code></h2>
+<p>Orchestrates the full plan → figure path. The <code>:svg</code> implementation goes through the membrane path: <code>plan → membrane → figure</code>. Other renderers can skip membrane and go directly from plan to their target format.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -1057,27 +1057,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td style="text-align: left;"><code>:svg</code></td>
-<td style="text-align: left;">sketch → membrane → <code>membrane-&gt;figure :svg</code></td>
+<td style="text-align: left;">plan → membrane → <code>membrane-&gt;figure :svg</code></td>
 </tr>
 </tbody>
 </table>
-<p>Dispatch function: <code>(fn [sketch format opts] format)</code></p>
-<p>Using <code>sketch-&gt;figure</code> directly:</p>
+<p>Dispatch function: <code>(fn [plan format opts] format)</code></p>
+<p>Using <code>plan-&gt;figure</code> directly:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-sketch</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-plan</span></span>
 <span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> data/iris</span>
 <span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>      (sk/lay-point <span class="at">:sepal</span>_length <span class="at">:sepal</span>_width {<span class="at">:color</span> <span class="at">:species</span>})</span>
-<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>      sk/sketch))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>      sk/plan))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb63"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (sk/sketch-&gt;figure my-sketch <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb63"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (sk/plan-&gt;figure my-plan <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb64"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="at">:svg</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The same sketch can be rendered to different formats:</p>
+<p>The same plan can be rendered to different formats:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb65"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-figure </span>(sk/sketch-&gt;figure my-sketch <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb65"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-figure </span>(sk/plan-&gt;figure my-plan <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb66"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">vector?</span> my-figure)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1087,17 +1087,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="how-to-extend-add-a-new-direct-format" class="level3">
 <h3 class="anchored" data-anchor-id="how-to-extend-add-a-new-direct-format">How to extend: add a new direct format</h3>
-<p>To add a Plotly renderer that reads sketch data directly (no membrane needed), register a <code>sketch-&gt;figure</code> defmethod:</p>
+<p>To add a Plotly renderer that reads plan data directly (no membrane needed), register a <code>plan-&gt;figure</code> defmethod:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb68"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> mylib.render.plotly</span>
 <span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span> [scicloj.napkinsketch.impl.render <span class="at">:as</span> render]))</span>
 <span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/sketch-&gt;figure </span><span class="at">:plotly</span> [sketch _ opts]</span>
-<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Read sketch domains, layers, legend, layout</span></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/plan-&gt;figure </span><span class="at">:plotly</span> [plan _ opts]</span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Read plan domains, layers, legend, layout</span></span>
 <span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Build a Plotly.js spec directly — no membrane needed</span></span>
-<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:data</span> (<span class="kw">mapcat</span> sketch-layer-&gt;plotly-traces</span>
-<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>                 (<span class="at">:layers</span> (<span class="kw">first</span> (<span class="at">:panels</span> sketch))))</span>
-<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>   <span class="at">:layout</span> {<span class="at">:xaxis</span> {<span class="at">:title</span> (<span class="at">:x-label</span> sketch)}</span>
-<span id="cb68-10"><a href="#cb68-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">:yaxis</span> {<span class="at">:title</span> (<span class="at">:y-label</span> sketch)}}})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:data</span> (<span class="kw">mapcat</span> plan-layer-&gt;plotly-traces</span>
+<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>                 (<span class="at">:layers</span> (<span class="kw">first</span> (<span class="at">:panels</span> plan))))</span>
+<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>   <span class="at">:layout</span> {<span class="at">:xaxis</span> {<span class="at">:title</span> (<span class="at">:x-label</span> plan)}</span>
+<span id="cb68-10"><a href="#cb68-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">:yaxis</span> {<span class="at">:title</span> (<span class="at">:y-label</span> plan)}}})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Then users opt in by requiring the namespace:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb69"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> '[mylib.render.plotly])</span>
 <span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>(sk/plot views {<span class="at">:format</span> <span class="at">:plotly</span>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1121,9 +1121,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <p>Dispatch function: <code>(fn [membrane-tree format opts] format)</code></p>
-<p><code>sk/sketch-&gt;membrane</code> builds the tree, <code>sk/membrane-&gt;figure</code> converts it:</p>
+<p><code>sk/plan-&gt;membrane</code> builds the tree, <code>sk/membrane-&gt;figure</code> converts it:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb70"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-membrane </span>(sk/sketch-&gt;membrane my-sketch))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb70"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-membrane </span>(sk/plan-&gt;membrane my-plan))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb71"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">vector?</span> my-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1133,8 +1133,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (sk/membrane-&gt;figure my-membrane <span class="at">:svg</span></span>
-<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>                            {<span class="at">:total-width</span> (<span class="at">:total-width</span> my-sketch)</span>
-<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>                             <span class="at">:total-height</span> (<span class="at">:total-height</span> my-sketch)}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>                            {<span class="at">:total-width</span> (<span class="at">:total-width</span> my-plan)</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>                             <span class="at">:total-height</span> (<span class="at">:total-height</span> my-plan)}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb74"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="at">:svg</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1150,12 +1150,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Walk the same drawable tree, emit canvas draw calls</span></span>
 <span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a>  (canvas-walk membrane-tree))</span>
 <span id="cb75-8"><a href="#cb75-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a><span class="co">;; Also register sketch-&gt;figure to orchestrate the full path:</span></span>
-<span id="cb75-10"><a href="#cb75-10" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/sketch-&gt;figure </span><span class="at">:canvas</span> [sketch _ opts]</span>
-<span id="cb75-11"><a href="#cb75-11" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [mt (membrane/sketch-&gt;membrane sketch)]</span>
+<span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a><span class="co">;; Also register plan-&gt;figure to orchestrate the full path:</span></span>
+<span id="cb75-10"><a href="#cb75-10" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/plan-&gt;figure </span><span class="at">:canvas</span> [plan _ opts]</span>
+<span id="cb75-11"><a href="#cb75-11" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [mt (membrane/plan-&gt;membrane plan)]</span>
 <span id="cb75-12"><a href="#cb75-12" aria-hidden="true" tabindex="-1"></a>    (render/membrane-&gt;figure mt <span class="at">:canvas</span></span>
-<span id="cb75-13"><a href="#cb75-13" aria-hidden="true" tabindex="-1"></a>                              {<span class="at">:total-width</span> (<span class="at">:total-width</span> sketch)</span>
-<span id="cb75-14"><a href="#cb75-14" aria-hidden="true" tabindex="-1"></a>                               <span class="at">:total-height</span> (<span class="at">:total-height</span> sketch)})))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb75-13"><a href="#cb75-13" aria-hidden="true" tabindex="-1"></a>                              {<span class="at">:total-width</span> (<span class="at">:total-width</span> plan)</span>
+<span id="cb75-14"><a href="#cb75-14" aria-hidden="true" tabindex="-1"></a>                               <span class="at">:total-height</span> (<span class="at">:total-height</span> plan)})))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="make-scale" class="level2">
@@ -1304,7 +1304,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb90"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">remove-method</span> stat/compute-stat [<span class="at">:quantile</span> <span class="at">:doc</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb91"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>#multifn[compute-stat <span class="bn">0x3c91cb4</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb91"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>#object[clojure.lang.MultiFn <span class="bn">0x14baee01</span> <span class="st">"clojure.lang.MultiFn@14baee01"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb92"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>(sk/stat-doc <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1320,7 +1320,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb94"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">remove-method</span> stat/compute-stat <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb95"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>#multifn[compute-stat <span class="bn">0x3c91cb4</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb95"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>#object[clojure.lang.MultiFn <span class="bn">0x14baee01</span> <span class="st">"clojure.lang.MultiFn@14baee01"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb96"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> (<span class="kw">filter</span> <span class="kw">keyword?</span> (<span class="kw">keys</span> (<span class="kw">methods</span> stat/compute-stat))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1354,11 +1354,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td style="text-align: left;">A new output format (direct)</td>
-<td style="text-align: left;"><code>sketch-&gt;figure</code></td>
+<td style="text-align: left;"><code>plan-&gt;figure</code></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">A new output format (membrane-based)</td>
-<td style="text-align: left;"><code>membrane-&gt;figure</code> + <code>sketch-&gt;figure</code></td>
+<td style="text-align: left;"><code>membrane-&gt;figure</code> + <code>plan-&gt;figure</code></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">A new scale type</td>

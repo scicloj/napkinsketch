@@ -147,15 +147,15 @@
 (def
  v24_l117
  (def
-  faceted-sk
+  faceted-pl
   (->
    data/iris
    (sk/lay-point :sepal_length :sepal_width {:color :species})
    (sk/facet :species)
-   sk/sketch)))
+   sk/plan)))
 
 
-(def v25_l123 (:grid faceted-sk))
+(def v25_l123 (:grid faceted-pl))
 
 
 (deftest
@@ -163,13 +163,13 @@
  (is ((fn [g] (and (= 1 (:rows g)) (= 3 (:cols g)))) v25_l123)))
 
 
-(def v27_l127 (count (:panels faceted-sk)))
+(def v27_l127 (count (:panels faceted-pl)))
 
 
 (deftest t28_l129 (is ((fn [n] (= 3 n)) v27_l127)))
 
 
-(def v30_l133 (:panels faceted-sk))
+(def v30_l133 (:panels faceted-pl))
 
 
 (deftest t31_l135 (is ((fn [ps] (= 3 (count ps))) v30_l133)))

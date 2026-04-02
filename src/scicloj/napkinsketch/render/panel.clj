@@ -9,7 +9,7 @@
 ;; ---- Grid Lines ----
 
 (defn render-grid-from-ticks
-  "Render grid lines using pre-computed tick values from a abcdefgh.
+  "Render grid lines using pre-computed tick values from a plan.
    Skips grid lines for categorical axes (like ggplot2)."
   [sx sy x-ticks y-ticks pw ph m cfg]
   (let [theme (:theme cfg)
@@ -64,7 +64,7 @@
 ;; ---- Tick Labels ----
 
 (defn render-tick-labels
-  "Render tick labels from pre-computed tick info in a abcdefgh."
+  "Render tick labels from pre-computed tick info in a plan."
   [axis tick-info scale pw ph m cfg]
   (let [{:keys [values labels]} tick-info
         fsize (get-in cfg [:theme :font-size] 8)
@@ -89,8 +89,8 @@
 ;; ---- Panel Rendering ----
 
 (defn panel->membrane
-  "Convert a abcdefgh panel into a membrane drawable tree.
-   Takes a panel map from views->abcdefgh and pixel dimensions.
+  "Convert a plan panel into a membrane drawable tree.
+   Takes a panel map from views->plan and pixel dimensions.
    show-x? and show-y? control whether tick labels are drawn
    (grid lines always render). cfg is the resolved config map."
   [panel pw ph m cfg & {:keys [show-x? show-y? tooltip x-col-name y-col-name]
@@ -159,7 +159,7 @@
                      (vec (concat base-grid ridge-lines)))
                    base-grid)))
 
-        ;; Data marks from abcdefgh layers
+        ;; Data marks from plan layers
         marks (vec (mapcat #(mark/layer->membrane % ctx) layers))
 
         ;; Annotation marks

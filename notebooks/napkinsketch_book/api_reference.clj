@@ -357,13 +357,13 @@
 
 (kind/test-last [(fn [v] (= 2 v))])
 
-(kind/doc #'sk/abcdefgh)
+(kind/doc #'sk/plan)
 
-;; Returns the intermediate abcdefgh data structure:
+;; Returns the intermediate plan data structure:
 
 (def sk1 (-> tiny
              (sk/lay-point :x :y)
-             sk/abcdefgh))
+             sk/plan))
 
 sk1
 
@@ -372,19 +372,19 @@ sk1
 
 ;; ## Pipeline
 
-(kind/doc #'sk/views->abcdefgh)
+(kind/doc #'sk/views->plan)
 
 (def sk2 (-> tiny
              (sk/lay-point :x :y)
-             sk/views->abcdefgh))
+             sk/views->plan))
 
 (= (keys sk1) (keys sk2))
 
 (kind/test-last [true?])
 
-(kind/doc #'sk/abcdefgh->membrane)
+(kind/doc #'sk/plan->membrane)
 
-(def m1 (sk/abcdefgh->membrane sk1))
+(def m1 (sk/plan->membrane sk1))
 
 (vector? m1)
 
@@ -398,9 +398,9 @@ sk1
 
 (kind/test-last [(fn [v] (= :svg v))])
 
-(kind/doc #'sk/abcdefgh->figure)
+(kind/doc #'sk/plan->figure)
 
-(first (sk/abcdefgh->figure sk1 :svg {}))
+(first (sk/plan->figure sk1 :svg {}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
@@ -535,15 +535,15 @@ sk1
 (kind/test-last [(fn [m] (and (= 1 (:panels m))
                               (= 150 (:points m))))])
 
-(kind/doc #'sk/valid-abcdefgh?)
+(kind/doc #'sk/valid-plan?)
 
-(sk/valid-abcdefgh? sk1)
+(sk/valid-plan? sk1)
 
 (kind/test-last [true?])
 
-(kind/doc #'sk/explain-abcdefgh)
+(kind/doc #'sk/explain-plan)
 
-(sk/explain-abcdefgh sk1)
+(sk/explain-plan sk1)
 
 (kind/test-last [nil?])
 

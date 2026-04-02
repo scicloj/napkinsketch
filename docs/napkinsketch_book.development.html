@@ -325,7 +325,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./napkinsketch_book.exploring_sketches.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Sketches</span></span></a>
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Exploring Plans</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -431,7 +431,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">clojure</span> <span class="at">-M:dev:test</span> <span class="at">-m</span> cognitect.test-runner</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>There are two kinds of tests:</p>
 <ul>
-<li><p><strong>Hand-written tests</strong> in <code>test/scicloj/napkinsketch/</code> — unit tests for core logic (view resolution, sketching, rendering, etc.)</p></li>
+<li><p><strong>Hand-written tests</strong> in <code>test/scicloj/napkinsketch/</code> — unit tests for core logic (view resolution, plan resolution, rendering, etc.)</p></li>
 <li><p><strong>Generated tests</strong> in <code>test/napkinsketch_book/</code> — produced from notebooks every time <a href="https://scicloj.github.io/clay/">Clay</a> renders notebooks using Clay’s <a href="https://scicloj.github.io/clay/clay_book.test_generation.html">test generation</a>. Every <code>kind/test-last</code> form in a notebook becomes an assertion in the corresponding <code>*_generated_test.clj</code> file.</p></li>
 </ul>
 </section>
@@ -479,7 +479,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><code>readme_files/*.svg</code> — rendered plot images referenced by the README</li>
 </ul>
 <p>The book’s <code>index.clj</code> reads <code>README.md</code> and copies <code>readme_files/</code> into <code>notebooks/</code> so that the book’s front page shows the same images. Run <code>make-readme!</code> before <code>make-book!</code> when the README content changes.</p>
-<p>Note: the readme notebook uses <code>sk/plot</code> (eager rendering) instead of auto-rendering PlotSpec, because GFM mode requires materialized SVG values.</p>
+<p>Note: the readme notebook uses <code>sk/plot</code> (eager rendering) instead of auto-rendering Sketch, because GFM mode requires materialized SVG values.</p>
 </section>
 <section id="building-a-jar" class="level2">
 <h2 class="anchored" data-anchor-id="building-a-jar">Building a JAR</h2>

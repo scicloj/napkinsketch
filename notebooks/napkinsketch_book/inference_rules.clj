@@ -2,10 +2,10 @@
 ;;
 ;; Napkinsketch infers many parameters automatically so you can write
 ;; less and get reasonable defaults. This notebook shows those rules
-;; in action by examining the **abcdefgh** — the resolved data structure
+;; in action by examining the **plan** — the resolved data structure
 ;; that captures every inference decision.
 ;;
-;; The examples use small inline datasets so the full abcdefgh is
+;; The examples use small inline datasets so the full plan is
 ;; readable.
 
 (ns napkinsketch-book.inference-rules
@@ -41,13 +41,13 @@
 ;; Each rule has a sensible default and an explicit override.
 ;; The sections below demonstrate each rule with live examples.
 
-;; ## Inspecting the Zyxwvu
+;; ## Inspecting the Plan
 ;;
-;; Every call to `sk/abcdefgh` returns a plain Clojure map: the **abcdefgh**.
+;; Every call to `sk/plan` returns a plain Clojure map: the **plan**.
 ;; It contains everything needed to render a plot — domains, ticks,
 ;; scales, layers with positioned data, legend, layout dimensions.
 ;;
-;; To understand what Napkinsketch inferred, look at the abcdefgh.
+;; To understand what Napkinsketch inferred, look at the plan.
 
 (def five-points
   {:x [1.0 2.0 3.0 4.0 5.0]
@@ -57,17 +57,17 @@
   (-> five-points
       (sk/lay-point :x :y)))
 
-;; Here is the full abcdefgh:
+;; Here is the full plan:
 
-(sk/abcdefgh scatter-views)
+(sk/plan scatter-views)
 
-(kind/test-last [(fn [qwerty] (and (= :single (:layout-type qwerty))
-                               (= 1 (count (:panels qwerty)))
-                               (= "x" (:x-label qwerty))
-                               (= "y" (:y-label qwerty))
-                               (nil? (:legend qwerty))
-                               (zero? (get-in qwerty [:layout :legend-w]))
-                               (let [p (first (:panels qwerty))
+(kind/test-last [(fn [pl] (and (= :single (:layout-type pl))
+                               (= 1 (count (:panels pl)))
+                               (= "x" (:x-label pl))
+                               (= "y" (:y-label pl))
+                               (nil? (:legend pl))
+                               (zero? (get-in pl [:layout :legend-w]))
+                               (let [p (first (:panels pl))
                                      g (first (:groups (first (:layers p))))]
                                  (and (= :linear (get-in p [:x-scale :type]))
                                       (= 1 (count (:groups (first (:layers p)))))
@@ -79,7 +79,7 @@ scatter-views
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; Notice in the abcdefgh above:
+;; Notice in the plan above:
 ;;
 ;; - `:x-domain` is `[0.8 5.2]` — wider than the data range `[1.0, 5.0]`
 ;;   because of 5% padding
@@ -159,9 +159,9 @@ scatter-views
   (-> animals
       (sk/lay-value-bar :animal :count)))
 
-(sk/abcdefgh bar-views)
+(sk/plan bar-views)
 
-(kind/test-last [(fn [qwerty] (let [p (first (:panels qwerty))]
+(kind/test-last [(fn [pl] (let [p (first (:panels pl))]
                             (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
                                  (true? (:categorical? (:x-ticks p))))))])
 
@@ -179,11 +179,11 @@ bar-views
 ;; with calendar-aware tick labels.
 ;; Clojure's `#inst` reader literal is a convenient way to write dates:
 
-(let [qwerty (-> {:date [#inst "2024-01-01" #inst "2024-06-01" #inst "2024-12-01"]
+(let [pl (-> {:date [#inst "2024-01-01" #inst "2024-06-01" #inst "2024-12-01"]
               :val [10 25 18]}
              (sk/lay-point :date :val)
-             sk/abcdefgh)
-      p (first (:panels qwerty))]
+             sk/plan)
+      p (first (:panels pl))]
   {:x-domain-numeric? (number? (first (:x-domain p)))
    :tick-count (count (:values (:x-ticks p)))
    :first-tick-label (first (:labels (:x-ticks p)))})
@@ -213,12 +213,12 @@ bar-views
        :g ["a" "a" "a" "b" "b" "b"]}
       (sk/lay-point :x :y {:color :g})))
 
-(sk/abcdefgh colored-views)
+(sk/plan colored-views)
 
-(kind/test-last [(fn [qwerty] (let [layer (first (:layers (first (:panels qwerty))))]
+(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (and (= 2 (count (:groups layer)))
-                                 (some? (:legend qwerty))
-                                 (= 100 (get-in qwerty [:layout :legend-w])))))])
+                                 (some? (:legend pl))
+                                 (= 100 (get-in pl [:layout :legend-w])))))])
 
 colored-views
 
@@ -237,11 +237,11 @@ colored-views
   (-> five-points
       (sk/lay-point :x :y {:color "#E74C3C"})))
 
-(sk/abcdefgh fixed-color-views)
+(sk/plan fixed-color-views)
 
-(kind/test-last [(fn [qwerty] (and (nil? (:legend qwerty))
-                               (zero? (get-in qwerty [:layout :legend-w]))
-                               (let [layer (first (:layers (first (:panels qwerty))))
+(kind/test-last [(fn [pl] (and (nil? (:legend pl))
+                               (zero? (get-in pl [:layout :legend-w]))
+                               (let [layer (first (:layers (first (:panels pl))))
                                      c (:color (first (:groups layer)))]
                                  (and (= 1 (count (:groups layer)))
                                       (> (nth c 0) 0.85)
@@ -292,11 +292,11 @@ fixed-color-views
 
 ;; Verify: `"red"` is a fixed color when the dataset has no `red` column:
 
-(let [qwerty (-> five-points
+(let [pl (-> five-points
              (sk/lay-point :x :y {:color "red"})
-             sk/abcdefgh)]
-  {:legend (:legend qwerty)
-   :color (:color (first (:groups (first (:layers (first (:panels qwerty)))))))})
+             sk/plan)]
+  {:legend (:legend pl)
+   :color (:color (first (:groups (first (:layers (first (:panels pl)))))))})
 
 (kind/test-last [(fn [m] (and (nil? (:legend m))
                               (> (first (:color m)) 0.9)))])
@@ -305,7 +305,7 @@ fixed-color-views
 
 ;; ### No color — default gray
 
-;; Look back at the first scatter abcdefgh above — its single `:groups`
+;; Look back at the first scatter plan above — its single `:groups`
 ;; entry has the default color (steel blue). No legend.
 
 ;; ## Grouping
@@ -328,11 +328,11 @@ fixed-color-views
 ;; above), the data is split into one group per category. Each group
 ;; gets a distinct palette color and a legend entry:
 
-(let [qwerty (sk/abcdefgh colored-views)
-      layer (first (:layers (first (:panels qwerty))))]
+(let [pl (sk/plan colored-views)
+      layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :group-labels (mapv :label (:groups layer))
-   :has-legend? (some? (:legend qwerty))})
+   :has-legend? (some? (:legend pl))})
 
 (kind/test-last [(fn [m] (and (= 2 (:group-count m))
                               (= ["a" "b"] (:group-labels m))
@@ -348,15 +348,15 @@ fixed-color-views
 ;; gradient. There is one group, and the legend is continuous
 ;; with 20 pre-computed color stops.
 
-(let [qwerty (-> {:x [1 2 3 4 5]
+(let [pl (-> {:x [1 2 3 4 5]
               :y [2 4 3 5 4]
               :val [10 20 30 40 50]}
              (sk/lay-point :x :y {:color :val})
-             sk/abcdefgh)
-      layer (first (:layers (first (:panels qwerty))))]
+             sk/plan)
+      layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
-   :legend-type (:type (:legend qwerty))
-   :color-stops (count (:stops (:legend qwerty)))})
+   :legend-type (:type (:legend pl))
+   :color-stops (count (:stops (:legend pl)))})
 
 (kind/test-last [(fn [m] (and (= 1 (:group-count m))
                               (= :continuous (:legend-type m))
@@ -376,12 +376,12 @@ fixed-color-views
    :y [3 5 4 7 6 8]
    :g ["a" "a" "a" "b" "b" "b"]})
 
-(let [qwerty (-> grouped-data
+(let [pl (-> grouped-data
              (sk/lay-point :x :y {:group :g})
-             sk/abcdefgh)
-      layer (first (:layers (first (:panels qwerty))))]
+             sk/plan)
+      layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
-   :has-legend? (some? (:legend qwerty))})
+   :has-legend? (some? (:legend pl))})
 
 (kind/test-last [(fn [m] (and (= 2 (:group-count m))
                               (false? (:has-legend? m))))])
@@ -445,9 +445,9 @@ fixed-color-views
   (-> five-points
       (sk/view :x)))
 
-(sk/abcdefgh hist-views)
+(sk/plan hist-views)
 
-(kind/test-last [(fn [qwerty] (let [layer (first (:layers (first (:panels qwerty))))]
+(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :bar (:mark layer))))])
 
 hist-views
@@ -464,9 +464,9 @@ hist-views
   (-> animals
       (sk/view :animal)))
 
-(sk/abcdefgh count-views)
+(sk/plan count-views)
 
-(kind/test-last [(fn [qwerty] (let [layer (first (:layers (first (:panels qwerty))))]
+(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :rect (:mark layer))))])
 
 count-views
@@ -478,10 +478,10 @@ count-views
 ;;
 ;; Mixed column types (categorical x, numerical y) default to `:point`:
 
-(let [qwerty (-> {:species ["a" "b" "c"] :val [10 20 15]}
+(let [pl (-> {:species ["a" "b" "c"] :val [10 20 15]}
              (sk/view :species :val)
-             sk/abcdefgh)
-      layer (first (:layers (first (:panels qwerty))))]
+             sk/plan)
+      layer (first (:layers (first (:panels pl))))]
   (:mark layer))
 
 (kind/test-last [(fn [m] (= :point m))])
@@ -492,8 +492,8 @@ count-views
 ;; aren't clipped at the edges. Internally, `pad-domain` in
 ;; `scale.clj` computes this padding.
 
-(let [qwerty (sk/abcdefgh scatter-views)
-      p (first (:panels qwerty))]
+(let [pl (sk/plan scatter-views)
+      p (first (:panels pl))]
   {:x-domain (:x-domain p)
    :data-range [1.0 5.0]
    :padding-each-side (* 0.05 (- 5.0 1.0))})
@@ -508,19 +508,19 @@ count-views
 ;;
 ;; Bar chart y-domains always include zero:
 
-(let [qwerty (sk/abcdefgh bar-views)
-      p (first (:panels qwerty))]
+(let [pl (sk/plan bar-views)
+      p (first (:panels pl))]
   {:y-domain (:y-domain p)})
 
 (kind/test-last [(fn [m] (<= (first (:y-domain m)) 0))])
 
 ;; Percentage-filled layers normalize the y-domain to `[0.0, 1.0]`:
 
-(let [fill-qwerty (-> {:x ["a" "a" "b" "b"]
+(let [fill-pl (-> {:x ["a" "a" "b" "b"]
                    :g ["m" "n" "m" "n"]}
                   (sk/lay-stacked-bar-fill :x {:color :g})
-                  sk/abcdefgh)
-      p (first (:panels fill-qwerty))]
+                  sk/plan)
+      p (first (:panels fill-pl))]
   (:y-domain p))
 
 (kind/test-last [(fn [d] (and (== 0.0 (first d))
@@ -529,7 +529,7 @@ count-views
 ;; The y-domain is exactly `[0.0, 1.0]` — each category sums to 100%.
 
 ;; Multi-layer plots merge domains across layers — see
-;; "Multi-Layer Zyxwvus" below.
+;; "Multi-Layer Plans" below.
 
 ;; ## Tick Inference
 ;;
@@ -546,8 +546,8 @@ count-views
 ;;
 ;; Linear ticks for the scatter example:
 
-(let [qwerty (sk/abcdefgh scatter-views)
-      p (first (:panels qwerty))]
+(let [pl (sk/plan scatter-views)
+      p (first (:panels pl))]
   {:x-tick-values (:values (:x-ticks p))
    :x-tick-labels (:labels (:x-ticks p))})
 
@@ -560,12 +560,12 @@ count-views
 ;;
 ;; Log ticks for a multi-decade range:
 
-(let [qwerty (-> {:x [0.1 1.0 10.0 100.0 1000.0]
+(let [pl (-> {:x [0.1 1.0 10.0 100.0 1000.0]
               :y [5 10 15 20 25]}
              (sk/lay-point :x :y)
              (sk/scale :x :log)
-             sk/abcdefgh)
-      p (first (:panels qwerty))]
+             sk/plan)
+      p (first (:panels pl))]
   {:tick-values (:values (:x-ticks p))
    :tick-labels (:labels (:x-ticks p))})
 
@@ -578,8 +578,8 @@ count-views
 
 ;; Categorical ticks match domain order:
 
-(let [qwerty (sk/abcdefgh bar-views)
-      p (first (:panels qwerty))]
+(let [pl (sk/plan bar-views)
+      p (first (:panels pl))]
   (:values (:x-ticks p)))
 
 (kind/test-last [(fn [v] (= ["cat" "dog" "bird" "fish"] v))])
@@ -587,15 +587,15 @@ count-views
 ;; ## Axis Label Inference
 ;;
 ;; Labels come from column names. Underscores and hyphens become spaces.
-;; Internally, `resolve-labels` in `abcdefgh.clj` handles this.
+;; Internally, `resolve-labels` in `plan.clj` handles this.
 
 (def iris data/iris)
 
-(let [qwerty (-> iris
+(let [pl (-> iris
              (sk/lay-point :sepal_length :sepal_width)
-             sk/abcdefgh)]
-  {:x-label (:x-label qwerty)
-   :y-label (:y-label qwerty)})
+             sk/plan)]
+  {:x-label (:x-label pl)
+   :y-label (:y-label pl)})
 
 (kind/test-last [(fn [m] (and (= "sepal length" (:x-label m))
                               (= "sepal width" (:y-label m))))])
@@ -603,21 +603,21 @@ count-views
 ;; When only one column is specified, the y-axis shows computed counts.
 ;; The system omits the y-label since it would repeat the column name:
 
-(let [qwerty (-> five-points (sk/view :x) sk/abcdefgh)]
-  {:x-label (:x-label qwerty)
-   :y-label (:y-label qwerty)})
+(let [pl (-> five-points (sk/view :x) sk/plan)]
+  {:x-label (:x-label pl)
+   :y-label (:y-label pl)})
 
 (kind/test-last [(fn [m] (and (= "x" (:x-label m))
                               (nil? (:y-label m))))])
 
 ;; Explicit labels override inference:
 
-(let [qwerty (-> five-points
+(let [pl (-> five-points
              (sk/lay-point :x :y)
              (sk/options {:x-label "Length (cm)" :y-label "Width (cm)"})
-             sk/abcdefgh)]
-  {:x-label (:x-label qwerty)
-   :y-label (:y-label qwerty)})
+             sk/plan)]
+  {:x-label (:x-label pl)
+   :y-label (:y-label pl)})
 
 (kind/test-last [(fn [m] (and (= "Length (cm)" (:x-label m))
                               (= "Width (cm)" (:y-label m))))])
@@ -625,12 +625,12 @@ count-views
 ;; ## Legend Inference
 ;;
 ;; A legend appears when a column is mapped to color. Internally,
-;; `build-legend` in `abcdefgh.clj` constructs the legend from
+;; `build-legend` in `plan.clj` constructs the legend from
 ;; the collected color information. Three cases:
 ;;
 ;; Categorical color → discrete legend with one entry per category:
 
-(:legend (sk/abcdefgh colored-views))
+(:legend (sk/plan colored-views))
 
 (kind/test-last [(fn [leg] (and (= :g (:title leg))
                                 (= 2 (count (:entries leg)))))])
@@ -639,13 +639,13 @@ count-views
 ;;
 ;; No color mapping → no legend:
 
-(:legend (sk/abcdefgh scatter-views))
+(:legend (sk/plan scatter-views))
 
 (kind/test-last [nil?])
 
 ;; Fixed color string → no legend:
 
-(:legend (sk/abcdefgh fixed-color-views))
+(:legend (sk/plan fixed-color-views))
 
 (kind/test-last [nil?])
 
@@ -653,7 +653,7 @@ count-views
 
 (:legend (-> {:x [1 2 3] :y [4 5 6] :val [10 20 30]}
              (sk/lay-point :x :y {:color :val})
-             sk/abcdefgh))
+             sk/plan))
 
 (kind/test-last [(fn [leg] (and (= :continuous (:type leg))
                                 (= 20 (count (:stops leg)))))])
@@ -662,11 +662,11 @@ count-views
 ;;
 ;; When `:size` maps to a numerical column, a size legend shows graduated
 ;; circles spanning the data range. Internally, `build-size-legend` in
-;; `abcdefgh.clj` generates five entries with proportional radii.
+;; `plan.clj` generates five entries with proportional radii.
 
 (:size-legend (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :s [10 20 30 40 50]}
                   (sk/lay-point :x :y {:size :s})
-                  sk/abcdefgh))
+                  sk/plan))
 
 (kind/test-last [(fn [leg] (and (= :size (:type leg))
                                 (= :s (:title leg))
@@ -674,7 +674,7 @@ count-views
 
 ;; Each entry has a `:value` and `:radius`. No size mapping → no size legend:
 
-(:size-legend (sk/abcdefgh scatter-views))
+(:size-legend (sk/plan scatter-views))
 
 (kind/test-last [nil?])
 
@@ -682,11 +682,11 @@ count-views
 ;;
 ;; When `:alpha` maps to a numerical column, an alpha legend shows
 ;; graduated opacity squares. Internally, `build-alpha-legend` in
-;; `abcdefgh.clj` generates five entries with proportional opacity.
+;; `plan.clj` generates five entries with proportional opacity.
 
 (:alpha-legend (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :a [0.1 0.3 0.5 0.7 0.9]}
                    (sk/lay-point :x :y {:alpha :a})
-                   sk/abcdefgh))
+                   sk/plan))
 
 (kind/test-last [(fn [leg] (and (= :alpha (:type leg))
                                 (= :a (:title leg))
@@ -694,25 +694,25 @@ count-views
 
 ;; No alpha mapping → no alpha legend:
 
-(:alpha-legend (sk/abcdefgh scatter-views))
+(:alpha-legend (sk/plan scatter-views))
 
 (kind/test-last [nil?])
 
 ;; ## Layout Inference
 ;;
 ;; The `:layout` map adjusts padding based on what elements are
-;; present. Internally, `compute-layout-dims` in `abcdefgh.clj`
+;; present. Internally, `compute-layout-dims` in `plan.clj`
 ;; calculates the space needed for titles, labels, and legends.
 ;;
 ;; Compare a bare plot to one with title, labels, and legend:
 
-(let [bare (sk/abcdefgh scatter-views)
+(let [bare (sk/plan scatter-views)
       full (-> {:x [1 2 3 4 5 6]
                 :y [3 5 4 7 6 8]
                 :g ["a" "a" "a" "b" "b" "b"]}
                (sk/lay-point :x :y {:color :g})
                (sk/options {:title "My Plot"})
-               sk/abcdefgh)]
+               sk/plan)]
   {:bare-title-pad (get-in bare [:layout :title-pad])
    :full-title-pad (get-in full [:layout :title-pad])
    :bare-legend-w (get-in bare [:layout :legend-w])
@@ -732,30 +732,30 @@ count-views
 ;; - Facet grid (`:facet-row` or `:facet-col`) → `:facet-grid`
 ;; - Multiple x-y pairs (scatter plot matrix) → `:multi-variable`
 
-(let [qwerty (sk/abcdefgh scatter-views)]
-  (:layout-type qwerty))
+(let [pl (sk/plan scatter-views)]
+  (:layout-type pl))
 
 (kind/test-last [(fn [lt] (= :single lt))])
 
 ;; ## Coordinate Flipping
 ;;
-;; Setting `:coord :flip` swaps axes in the abcdefgh. The layer data
+;; Setting `:coord :flip` swaps axes in the plan. The layer data
 ;; stays the same — the panel-level domains and ticks are swapped.
 ;; Internally, `make-coord` in `coord.clj` handles the transformation.
 
-(def normal-qwerty
+(def normal-pl
   (-> animals
       (sk/lay-value-bar :animal :count)
-      sk/abcdefgh))
+      sk/plan))
 
-(def flip-qwerty
+(def flip-pl
   (-> animals
       (sk/lay-value-bar :animal :count)
       (sk/coord :flip)
-      sk/abcdefgh))
+      sk/plan))
 
-(let [np (first (:panels normal-qwerty))
-      fp (first (:panels flip-qwerty))]
+(let [np (first (:panels normal-pl))
+      fp (first (:panels flip-pl))]
   {:normal {:x-categorical? (:categorical? (:x-ticks np))
             :y-categorical? (:categorical? (:y-ticks np))}
    :flipped {:x-categorical? (:categorical? (:x-ticks fp))
@@ -777,12 +777,12 @@ count-views
 ;; Labels are also swapped — the x-label and y-label follow their
 ;; visual axis, not the data axis:
 
-(let [qwerty (-> five-points
+(let [pl (-> five-points
              (sk/lay-point :x :y)
              (sk/coord :flip)
-             sk/abcdefgh)]
-  {:x-label (:x-label qwerty)
-   :y-label (:y-label qwerty)})
+             sk/plan)]
+  {:x-label (:x-label pl)
+   :y-label (:y-label pl)})
 
 (kind/test-last [(fn [m] (and (= "y" (:x-label m))
                               (= "x" (:y-label m))))])
@@ -790,7 +790,7 @@ count-views
 ;; After flipping, the visual x-axis shows "y" and the visual y-axis
 ;; shows "x" — labels track the visual axes.
 
-;; ## Multi-Layer Zyxwvus
+;; ## Multi-Layer Plans
 ;;
 ;; When multiple layers share a panel, their domains are merged:
 
@@ -800,9 +800,9 @@ count-views
       sk/lay-point
       sk/lay-lm))
 
-(sk/abcdefgh multi-views)
+(sk/plan multi-views)
 
-(kind/test-last [(fn [qwerty] (let [p (first (:panels qwerty))]
+(kind/test-last [(fn [pl] (let [p (first (:panels pl))]
                             (= 2 (count (:layers p)))))])
 
 multi-views
@@ -817,7 +817,7 @@ multi-views
 
 ;; ## Resolution Overview
 ;;
-;; All of the inference rules above feed into `views->abcdefgh`, which
+;; All of the inference rules above feed into `views->plan`, which
 ;; orchestrates a resolution pipeline. The diagram below shows the
 ;; key steps and their data dependencies:
 
@@ -847,17 +847,17 @@ graph TD
   SLEG --> LAYOUT
   ALEG --> LAYOUT
 
-  DOM --> ZYXWVU[\"Abcdefgh\"]
-  TK --> ZYXWVU
-  LBL --> ZYXWVU
-  LEG --> ZYXWVU
-  SLEG --> ZYXWVU
-  ALEG --> ZYXWVU
-  LAYOUT --> ZYXWVU
-  STATS --> ZYXWVU
+  DOM --> PLAN[\"PlanSchema\"]
+  TK --> PLAN
+  LBL --> PLAN
+  LEG --> PLAN
+  SLEG --> PLAN
+  ALEG --> PLAN
+  LAYOUT --> PLAN
+  STATS --> PLAN
 
   style VIEWS fill:#e8f5e9
-  style ZYXWVU fill:#fff3e0
+  style PLAN fill:#fff3e0
   style STATS fill:#e3f2fd
   style DOM fill:#e3f2fd
 ")
@@ -865,8 +865,8 @@ graph TD
 ;; Each box corresponds to a named function in the codebase.
 ;; The top four boxes — Column Types, Aesthetics, Grouping, and
 ;; Method — are the per-view inference steps (in `view.clj`).
-;; The remaining boxes are the abcdefgh-level orchestration steps
-;; (in `abcdefgh.clj` and `scale.clj`).
+;; The remaining boxes are the plan-level orchestration steps
+;; (in `plan.clj` and `scale.clj`).
 
 ;; ## Summary
 ;;
@@ -892,8 +892,8 @@ graph TD
 ;; | Layout type | single, facet-grid, multi-variable | `sk/facet`, multiple x-y pairs |
 ;; | Coordinate system | `:cartesian` | `(sk/coord :flip)`, `(sk/coord :polar)` |
 ;;
-;; The abcdefgh captures the result of all inference. When in doubt,
-;; look at the abcdefgh.
+;; The plan captures the result of all inference. When in doubt,
+;; look at the plan.
 
 ;; ## What's Next
 ;;

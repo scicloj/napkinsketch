@@ -1,5 +1,5 @@
 (ns scicloj.napkinsketch.impl.sketch
-  "Resolve views into a abcdefgh — a plain Clojure map with data-space
+  "Resolve views into a plan — a plain Clojure map with data-space
    geometry, domains, tick info, legend, and layout. No membrane types,
    no datasets, no scale objects in the output."
   (:require [wadogo.scale :as ws]
@@ -621,13 +621,13 @@
       (println (str "Warning: Views have conflicting coord types " (vec coords)
                     ". Using first view's coord: " (first coords) ".")))))
 
-(defn views->abcdefgh
-  "Resolve views + options into a abcdefgh — a fully resolved sketch
+(defn views->plan
+  "Resolve views + options into a plan — a fully resolved sketch
    with data-space geometry, domains, ticks, legend, and layout info.
    No membrane types, no datasets in the output.
    Options include :validate (default true) — when true, validates the
-   resulting abcdefgh against the Malli schema and throws on failure."
-  ([views] (views->abcdefgh views {}))
+   resulting plan against the Malli schema and throws on failure."
+  ([views] (views->plan views {}))
   ([views {:keys [x-label y-label title subtitle caption
                   scales legend-position] :as opts}]
    (let [cfg (defaults/resolve-config opts)
@@ -741,7 +741,7 @@
                                           facet-row-vals facet-col-vals
                                           grid-rows grid-cols pw ph multi? panels legend-position)
 
-         abcdefgh
+         plan
          {:width width :height height :margin m
           :total-width (:total-w layout-dims) :total-height (:total-h layout-dims)
           :panel-width pw :panel-height ph
@@ -760,6 +760,6 @@
                                             :subtitle-pad :caption-pad
                                             :legend-w :legend-h :strip-h :strip-w])}]
      (when validate?
-       (when-let [explanation (ss/explain abcdefgh)]
-         (throw (ex-info "Abcdefgh does not conform to schema" {:explanation explanation}))))
-     abcdefgh)))
+       (when-let [explanation (ss/explain plan)]
+         (throw (ex-info "Plan does not conform to schema" {:explanation explanation}))))
+     plan)))

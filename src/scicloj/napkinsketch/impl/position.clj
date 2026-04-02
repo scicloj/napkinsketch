@@ -1,6 +1,6 @@
 (ns scicloj.napkinsketch.impl.position
   "Position adjustment — composable transforms on layer descriptors.
-   Runs between extract-layer and build-panels in the abcdefgh pipeline.
+   Runs between extract-layer and build-panels in the plan pipeline.
 
    Position types:
      :identity — no adjustment (default)

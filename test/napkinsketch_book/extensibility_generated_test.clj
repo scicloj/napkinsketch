@@ -80,7 +80,7 @@
    (->
     data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
-    sk/sketch)
+    sk/plan)
    layer
    (first (:layers (first (:panels s))))]
   layer))
@@ -119,20 +119,20 @@
 (def
  v24_l233
  (def
-  my-sketch
+  my-plan
   (->
    data/iris
    (sk/lay-point :sepal_length :sepal_width {:color :species})
-   sk/sketch)))
+   sk/plan)))
 
 
-(def v25_l238 (first (sk/sketch->figure my-sketch :svg {})))
+(def v25_l238 (first (sk/plan->figure my-plan :svg {})))
 
 
 (deftest t26_l240 (is ((fn [v] (= :svg v)) v25_l238)))
 
 
-(def v28_l244 (def my-figure (sk/sketch->figure my-sketch :svg {})))
+(def v28_l244 (def my-figure (sk/plan->figure my-plan :svg {})))
 
 
 (def v29_l246 (vector? my-figure))
@@ -141,7 +141,7 @@
 (deftest t30_l248 (is ((fn [v] (true? v)) v29_l246)))
 
 
-(def v32_l289 (def my-membrane (sk/sketch->membrane my-sketch)))
+(def v32_l289 (def my-membrane (sk/plan->membrane my-plan)))
 
 
 (def v33_l291 (vector? my-membrane))
@@ -156,8 +156,8 @@
   (sk/membrane->figure
    my-membrane
    :svg
-   {:total-width (:total-width my-sketch),
-    :total-height (:total-height my-sketch)})))
+   {:total-width (:total-width my-plan),
+    :total-height (:total-height my-plan)})))
 
 
 (deftest t36_l299 (is ((fn [v] (= :svg v)) v35_l295)))

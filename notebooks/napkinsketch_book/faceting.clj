@@ -110,27 +110,27 @@
 
 ;; Other options: `:free-x`, `:free` (both axes free).
 
-;; ## Facet Zyxwvu Structure
+;; ## Facet Plan Structure
 ;;
-;; Under the hood, faceting produces multiple panels in the abcdefgh:
+;; Under the hood, faceting produces multiple panels in the plan:
 
-(def faceted-qwerty
+(def faceted-pl
   (-> data/iris
       (sk/lay-point :sepal_length :sepal_width {:color :species})
       (sk/facet :species)
-      sk/abcdefgh))
+      sk/plan))
 
-(:grid faceted-qwerty)
+(:grid faceted-pl)
 
 (kind/test-last [(fn [g] (and (= 1 (:rows g)) (= 3 (:cols g))))])
 
-(count (:panels faceted-qwerty))
+(count (:panels faceted-pl))
 
 (kind/test-last [(fn [n] (= 3 n))])
 
 ;; Each panel has a grid position and a strip label:
 
-(:panels faceted-qwerty)
+(:panels faceted-pl)
 
 (kind/test-last [(fn [ps] (= 3 (count ps)))])
 
