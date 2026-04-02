@@ -32,15 +32,15 @@
 ;; by a multimethod:
 ;;
 ;; ```
-;; views → views->sketch (compute-stat, extract-layer, ...)
+;; views → views->abcdefgh (compute-stat, extract-layer, ...)
 ;;                                              ↓
-;;                                           sketch
+;;                                           abcdefgh
 ;;                                              ↓
-;;                          sketch->figure (orchestrates full path)
+;;                          abcdefgh->figure (orchestrates full path)
 ;;                                              ↓
 ;;                              ┌───────────────┴───────────────┐
 ;;                     membrane path                     direct path
-;;                  sketch→membrane                   sketch→figure
+;;                  abcdefgh→membrane                   abcdefgh→figure
 ;;                        ↓
 ;;                  membrane→figure
 ;;                        ↓
@@ -50,9 +50,9 @@
 ;; | Multimethod | Namespace | Dispatches on | Purpose |
 ;; |:------------|:----------|:--------------|:--------|
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
-;; | `extract-layer` | `impl/extract.clj` | `:mark` key | Convert stat result → sketch layer descriptor |
-;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render sketch layer → membrane drawables |
-;; | `sketch->figure` | `impl/render.clj` | format keyword | Orchestrate sketch → figure (full path) |
+;; | `extract-layer` | `impl/extract.clj` | `:mark` key | Convert stat result → abcdefgh layer descriptor |
+;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render abcdefgh layer → membrane drawables |
+;; | `abcdefgh->figure` | `impl/render.clj` | format keyword | Orchestrate abcdefgh → figure (full path) |
 ;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert membrane tree → figure |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
@@ -121,7 +121,7 @@
 
 ;; ## `extract-layer`
 ;;
-;; Converts a stat result into a sketch layer descriptor — a plain
+;; Converts a stat result into a abcdefgh layer descriptor — a plain
 ;; map with data-space geometry and resolved colors.
 ;;
 (kind/table
@@ -139,11 +139,11 @@
 ;;
 ;; Dispatch function: `(fn [view stat all-colors cfg] (:mark view))`
 
-;; A sketch layer looks like this:
+;; A abcdefgh layer looks like this:
 
 (let [s (-> data/iris
             (sk/lay-point :sepal_length :sepal_width {:color :species})
-            sk/sketch)
+            sk/abcdefgh)
       layer (first (:layers (first (:panels s))))]
   layer)
 
@@ -152,7 +152,7 @@
 
 ;; ## `layer->membrane`
 ;;
-;; Renders a sketch layer descriptor into membrane drawable primitives.
+;; Renders a abcdefgh layer descriptor into membrane drawable primitives.
 ;; This is the "membrane path" — used when the target format goes through
 ;; membrane (e.g., SVG).
 ;;
@@ -215,33 +215,33 @@
 ;; need a `layer->membrane` defmethod for the SVG renderer. Without one,
 ;; the library throws an error explaining which defmethod to add.
 
-;; ## `sketch->figure`
+;; ## `abcdefgh->figure`
 ;;
-;; Orchestrates the full sketch → figure path. The `:svg` implementation
-;; goes through the membrane path: `sketch → membrane → figure`.
-;; Other renderers can skip membrane and go directly from sketch
+;; Orchestrates the full abcdefgh → figure path. The `:svg` implementation
+;; goes through the membrane path: `abcdefgh → membrane → figure`.
+;; Other renderers can skip membrane and go directly from abcdefgh
 ;; to their target format.
 ;;
 ;; | Dispatch value | Path |
 ;; |:---------------|:-----|
-;; | `:svg` | sketch → membrane → `membrane->figure :svg` |
+;; | `:svg` | abcdefgh → membrane → `membrane->figure :svg` |
 ;;
-;; Dispatch function: `(fn [sketch format opts] format)`
+;; Dispatch function: `(fn [abcdefgh format opts] format)`
 
-;; Using `sketch->figure` directly:
+;; Using `abcdefgh->figure` directly:
 
-(def my-sketch
+(def my-abcdefgh
   (-> data/iris
       (sk/lay-point :sepal_length :sepal_width {:color :species})
-      sk/sketch))
+      sk/abcdefgh))
 
-(first (sk/sketch->figure my-sketch :svg {}))
+(first (sk/abcdefgh->figure my-abcdefgh :svg {}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
-;; The same sketch can be rendered to different formats:
+;; The same abcdefgh can be rendered to different formats:
 
-(def my-figure (sk/sketch->figure my-sketch :svg {}))
+(def my-figure (sk/abcdefgh->figure my-abcdefgh :svg {}))
 
 (vector? my-figure)
 
@@ -249,20 +249,20 @@
 
 ;; ### How to extend: add a new direct format
 ;;
-;; To add a Plotly renderer that reads sketch data directly
-;; (no membrane needed), register a `sketch->figure` defmethod:
+;; To add a Plotly renderer that reads abcdefgh data directly
+;; (no membrane needed), register a `abcdefgh->figure` defmethod:
 ;;
 ;; ```clojure
 ;; (ns mylib.render.plotly
 ;;   (:require [scicloj.napkinsketch.impl.render :as render]))
 ;;
-;; (defmethod render/sketch->figure :plotly [sketch _ opts]
-;;   ;; Read sketch domains, layers, legend, layout
+;; (defmethod render/abcdefgh->figure :plotly [abcdefgh _ opts]
+;;   ;; Read abcdefgh domains, layers, legend, layout
 ;;   ;; Build a Plotly.js spec directly — no membrane needed
-;;   {:data (mapcat sketch-layer->plotly-traces
-;;                  (:layers (first (:panels sketch))))
-;;    :layout {:xaxis {:title (:x-label sketch)}
-;;             :yaxis {:title (:y-label sketch)}}})
+;;   {:data (mapcat abcdefgh-layer->plotly-traces
+;;                  (:layers (first (:panels abcdefgh))))
+;;    :layout {:xaxis {:title (:x-label abcdefgh)}
+;;             :yaxis {:title (:y-label abcdefgh)}}})
 ;; ```
 ;;
 ;; Then users opt in by requiring the namespace:
@@ -284,17 +284,17 @@
 ;;
 ;; Dispatch function: `(fn [membrane-tree format opts] format)`
 
-;; `sk/sketch->membrane` builds the tree, `sk/membrane->figure` converts it:
+;; `sk/abcdefgh->membrane` builds the tree, `sk/membrane->figure` converts it:
 
-(def my-membrane (sk/sketch->membrane my-sketch))
+(def my-membrane (sk/abcdefgh->membrane my-abcdefgh))
 
 (vector? my-membrane)
 
 (kind/test-last [(fn [v] (true? v))])
 
 (first (sk/membrane->figure my-membrane :svg
-                            {:total-width (:total-width my-sketch)
-                             :total-height (:total-height my-sketch)}))
+                            {:total-width (:total-width my-abcdefgh)
+                             :total-height (:total-height my-abcdefgh)}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
@@ -312,12 +312,12 @@
 ;;   ;; Walk the same drawable tree, emit canvas draw calls
 ;;   (canvas-walk membrane-tree))
 ;;
-;; ;; Also register sketch->figure to orchestrate the full path:
-;; (defmethod render/sketch->figure :canvas [sketch _ opts]
-;;   (let [mt (membrane/sketch->membrane sketch)]
+;; ;; Also register abcdefgh->figure to orchestrate the full path:
+;; (defmethod render/abcdefgh->figure :canvas [abcdefgh _ opts]
+;;   (let [mt (membrane/abcdefgh->membrane abcdefgh)]
 ;;     (render/membrane->figure mt :canvas
-;;                               {:total-width (:total-width sketch)
-;;                                :total-height (:total-height sketch)})))
+;;                               {:total-width (:total-width abcdefgh)
+;;                                :total-height (:total-height abcdefgh)})))
 ;; ```
 
 ;; ## `make-scale`
@@ -422,8 +422,8 @@
 ;; |:----------|:----------|
 ;; | A new statistical transform | `compute-stat` |
 ;; | A new mark type | `extract-layer` + `layer->membrane` |
-;; | A new output format (direct) | `sketch->figure` |
-;; | A new output format (membrane-based) | `membrane->figure` + `sketch->figure` |
+;; | A new output format (direct) | `abcdefgh->figure` |
+;; | A new output format (membrane-based) | `membrane->figure` + `abcdefgh->figure` |
 ;; | A new scale type | `make-scale` |
 ;; | A new coordinate system | `make-coord` |
 ;; | A new position adjustment | `apply-position` |

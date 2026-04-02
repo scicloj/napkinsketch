@@ -187,11 +187,11 @@ data/iris
 ;; Under the hood, auto-rendering transforms your views through
 ;; several stages — computing layout, drawing shapes, producing SVG.
 ;; The [Architecture](./napkinsketch_book.architecture.html) chapter traces every step;
-;; the [Glossary](./napkinsketch_book.glossary.html) defines terms like **sketch** (the
+;; the [Glossary](./napkinsketch_book.glossary.html) defines terms like **abcdefgh** (the
 ;; intermediate data representation) and **membrane** (the drawable tree).
 ;;
 ;; You can also step through the pipeline manually:
-;; `sk/sketch` returns the intermediate data, and `sk/plot` returns
+;; `sk/abcdefgh` returns the intermediate data, and `sk/plot` returns
 ;; the final SVG.
 
 ;; ## Options

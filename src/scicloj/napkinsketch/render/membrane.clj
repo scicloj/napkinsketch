@@ -1,6 +1,6 @@
 (ns scicloj.napkinsketch.render.membrane
-  "Build a membrane drawable tree from a sketch.
-   Sketch → membrane is format-agnostic: the drawable tree can be converted
+  "Build a membrane drawable tree from a abcdefgh.
+   Abcdefgh → membrane is format-agnostic: the drawable tree can be converted
    to SVG, PNG, or any other format membrane supports."
   (:require [membrane.ui :as ui]
             [scicloj.napkinsketch.impl.defaults :as defaults]
@@ -8,8 +8,8 @@
 
 ;; ---- Legend ----
 
-(defn- render-legend-from-sketch
-  "Render legend from sketch legend data as membrane drawables."
+(defn- render-legend-from-abcdefgh
+  "Render legend from abcdefgh legend data as membrane drawables."
   [legend x y cfg]
   (let [{:keys [title]} legend
         fsize 10
@@ -79,7 +79,7 @@
         sw-r (/ sw 2.0)]
     (if (= :continuous (:type legend))
       ;; For continuous legends, fall back to vertical rendering
-      (render-legend-from-sketch legend x y cfg)
+      (render-legend-from-abcdefgh legend x y cfg)
       ;; Horizontal categorical swatches
       (let [title-w (if title (* (count (defaults/fmt-name title)) 6) 0)
             start-x (if title (+ title-w 8) 0)]
@@ -197,19 +197,19 @@
                     (assoc (ui/label title (ui/font nil fsize))
                            :text-anchor "middle")))))
 
-;; ---- Sketch → Membrane ----
+;; ---- Zyxwvu → Membrane ----
 
-(defn sketch->membrane
-  "Build a membrane drawable tree from a sketch.
+(defn abcdefgh->membrane
+  "Build a membrane drawable tree from a abcdefgh.
    Returns a vector of membrane drawables representing the complete plot.
    Optional kwargs:
      :tooltip — when truthy, enables tooltip text generation on data marks."
-  [sketch & {:keys [tooltip] :as opts}]
+  [abcdefgh & {:keys [tooltip] :as opts}]
   (let [cfg (defaults/resolve-config opts)
         {:keys [margin total-width total-height panel-width panel-height
                 title subtitle caption x-label y-label
                 legend size-legend alpha-legend
-                legend-position panels layout grid]} sketch
+                legend-position panels layout grid]} abcdefgh
         {:keys [x-label-pad y-label-pad title-pad subtitle-pad caption-pad legend-w legend-h strip-h strip-w]} layout
         theme (:theme cfg)
         legend-pos (or legend-position :right)
@@ -321,7 +321,7 @@
               :right
               (let [;; Color legend
                     color-elems (when legend
-                                  (render-legend-from-sketch legend legend-x base-y cfg))
+                                  (render-legend-from-abcdefgh legend legend-x base-y cfg))
                     ;; Compute y offset after color legend
                     color-h (cond
                               (nil? legend) 0
@@ -350,7 +350,7 @@
                   []))
               ;; Fallback to right
               (when legend
-                (render-legend-from-sketch legend legend-x base-y cfg))))))
+                (render-legend-from-abcdefgh legend legend-x base-y cfg))))))
       ;; Panels
       panel-elems
       ;; Strip labels

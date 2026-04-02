@@ -7,7 +7,7 @@
 ;; It demonstrates all three extension points needed for a new mark:
 ;;
 ;; 1. `compute-stat` — transform raw values into cumulative bars
-;; 2. `extract-layer` — convert stat output into sketch geometry
+;; 2. `extract-layer` — convert stat output into abcdefgh geometry
 ;; 3. `layer->membrane` — render bars as membrane drawables
 ;;
 ;; After reading this, you should be able to add any custom chart
@@ -81,7 +81,7 @@
 
 ;; ## Step 2: The Extractor
 ;;
-;; `extract-layer` converts the stat output into a sketch layer
+;; `extract-layer` converts the stat output into a abcdefgh layer
 ;; descriptor — a plain map with `:mark`, `:style`, and geometry
 ;; data. Colors are resolved here using the library's color system.
 ;;
@@ -103,7 +103,7 @@
 
 ;; ## Step 3: The Renderer
 ;;
-;; `layer->membrane` turns the sketch layer into membrane drawable
+;; `layer->membrane` turns the abcdefgh layer into membrane drawable
 ;; primitives. The rendering context (`ctx`) provides:
 ;;
 ;; - `:sx` — the x scale function (data value → pixel x)

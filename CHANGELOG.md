@@ -8,9 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Public API** (`scicloj.napkinsketch.api`): `view`, `lay`, `plot`, `sketch`,
-  `views->sketch`, `sketch->membrane`, `membrane->figure`, `sketch->figure`,
-  `svg-summary`, `valid-sketch?`, `explain-sketch`, `config`, `set-config!`,
+- **Public API** (`scicloj.napkinsketch.api`): `view`, `lay`, `plot`, `abcdefgh`,
+  `views->abcdefgh`, `abcdefgh->membrane`, `membrane->figure`, `abcdefgh->figure`,
+  `svg-summary`, `valid-abcdefgh?`, `explain-abcdefgh`, `config`, `set-config!`,
   `with-config`, `arrange`, `save`, `options`, `facet`, `facet-grid`, `coord`,
   `scale`, `cross`, `distribution`, `views-of`, `plot-spec?`
 - **25 layer functions**: `lay-point`, `lay-line`, `lay-step`, `lay-histogram`,
@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Multi-plot dashboards**: `sk/arrange` for CSS grid layout
 - **Annotations**: vertical/horizontal rules and shaded bands
 - **Interactivity**: tooltip and brush selection via JavaScript
-- **Sketch validation**: Malli schema with `valid-sketch?` and `explain-sketch`;
+- **Abcdefgh validation**: Malli schema with `valid-abcdefgh?` and `explain-abcdefgh`;
   open to custom marks via `keyword?` (not closed enum)
 - **Column inference**: `(sk/view data)` and `(sk/lay-point data)` infer columns
   from dataset shape (1→x, 2→x y, 3→x y color, 4+→error)
@@ -57,8 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   architecture, extensibility, waterfall_extension, edge_cases, development
 
 ### Architecture
-- **Four-stage pipeline**: views → sketch → membrane → figure
-- **Sketch is plain data**: Clojure maps with dtype-next buffers, serializable
+- **Four-stage pipeline**: views → abcdefgh → membrane → figure
+- **Abcdefgh is plain data**: Clojure maps with dtype-next buffers, serializable
 - **`impl/` vs `render/` boundary**: pure data transformations vs membrane rendering
 - **Method registry**: keyword → {mark, stat, position, doc, accepts} with
   `method/register!` for third-party extensions

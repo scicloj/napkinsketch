@@ -194,7 +194,7 @@
 
 (def plot-option-docs
   "Documentation for plot-level option keys.
-   These are accepted by sk/options, sk/sketch, and sk/plot but are
+   These are accepted by sk/options, sk/abcdefgh, and sk/plot but are
    inherently per-plot (text content or nested config override).
    Maps each key to [category description]."
   defaults/plot-option-docs)
@@ -641,7 +641,7 @@
    :legend-position (:right :bottom :top :none), :tooltip, :brush,
    :color-scale (:sequential, :diverging, or {:low :mid :high} map),
    :color-midpoint (number — centers diverging gradient on this value),
-   :validate (default true — validates sketch against Malli schema)."
+   :validate (default true — validates abcdefgh against Malli schema)."
   ([spec-or-views]
    (plot-impl/plot (extract-views spec-or-views)
                    (carry-opts spec-or-views)))
@@ -649,77 +649,77 @@
    (plot-impl/plot (extract-views spec-or-views)
                    (kindly/deep-merge (carry-opts spec-or-views) opts))))
 
-(defn sketch
-  "Resolve views into a sketch — a plain Clojure map with data-space
+(defn abcdefgh
+  "Resolve views into a abcdefgh — a plain Clojure map with data-space
    geometry, domains, tick info, legend, and layout. No membrane types,
    no datasets, no scale objects in the output. Serializable data.
-   (sketch views)              — default 600×400
-   (sketch views {:width 800 :title \"My Plot\"})
+   (abcdefgh views)              — default 600×400
+   (abcdefgh views {:width 800 :title \"My Plot\"})
    Pass {:validate false} to skip Malli schema validation."
   ([spec-or-views]
    (let [views (extract-views spec-or-views)
          opts (carry-opts spec-or-views)]
      (if (seq opts)
-       (sketch-impl/views->sketch views opts)
-       (sketch-impl/views->sketch views))))
+       (sketch-impl/views->abcdefgh views opts)
+       (sketch-impl/views->abcdefgh views))))
   ([spec-or-views opts]
-   (sketch-impl/views->sketch (extract-views spec-or-views)
+   (sketch-impl/views->abcdefgh (extract-views spec-or-views)
                               (kindly/deep-merge (carry-opts spec-or-views) opts))))
 
-(defn views->sketch
-  "Convert views into a sketch — a plain Clojure map with data-space
+(defn views->abcdefgh
+  "Convert views into a abcdefgh — a plain Clojure map with data-space
    geometry, domains, tick info, legend, and layout. No membrane types,
    no datasets, no scale objects in the output. Serializable data.
-   Same as `sketch` but with an explicit pipeline-style name.
-   (views->sketch views)              — default 600×400
-   (views->sketch views {:width 800 :title \"My Plot\"})
+   Same as `abcdefgh` but with an explicit pipeline-style name.
+   (views->abcdefgh views)              — default 600×400
+   (views->abcdefgh views {:width 800 :title \"My Plot\"})
    Pass {:validate false} to skip Malli schema validation."
   ([spec-or-views]
    (let [views (extract-views spec-or-views)
          opts (carry-opts spec-or-views)]
      (if (seq opts)
-       (sketch-impl/views->sketch views opts)
-       (sketch-impl/views->sketch views))))
+       (sketch-impl/views->abcdefgh views opts)
+       (sketch-impl/views->abcdefgh views))))
   ([spec-or-views opts]
-   (sketch-impl/views->sketch (extract-views spec-or-views)
+   (sketch-impl/views->abcdefgh (extract-views spec-or-views)
                               (kindly/deep-merge (carry-opts spec-or-views) opts))))
 
-(defn sketch->membrane
-  "Convert a sketch into a membrane drawable tree.
-   (sketch->membrane (sketch views))"
-  [sketch & {:as opts}]
-  (membrane/sketch->membrane sketch opts))
+(defn abcdefgh->membrane
+  "Convert a abcdefgh into a membrane drawable tree.
+   (abcdefgh->membrane (abcdefgh views))"
+  [abcdefgh & {:as opts}]
+  (membrane/abcdefgh->membrane abcdefgh opts))
 
 (defn membrane->figure
   "Convert a membrane drawable tree into a figure for the given format.
    Dispatches on format keyword; :svg is always available.
-   (membrane->figure (sketch->membrane (sketch views)) :svg {})"
+   (membrane->figure (abcdefgh->membrane (abcdefgh views)) :svg {})"
   [membrane-tree format opts]
   (render-impl/membrane->figure membrane-tree format opts))
 
-(defn sketch->figure
-  "Convert a sketch into a figure for the given format.
+(defn abcdefgh->figure
+  "Convert a abcdefgh into a figure for the given format.
    Dispatches on format keyword. Each renderer is a separate namespace
    that registers a defmethod; :svg is always available.
-   (sketch->figure (sketch views) :svg {})
-   (sketch->figure (sketch views) :plotly {})"
-  [sketch format opts]
-  (render-impl/sketch->figure sketch format opts))
+   (abcdefgh->figure (abcdefgh views) :svg {})
+   (abcdefgh->figure (abcdefgh views) :plotly {})"
+  [abcdefgh format opts]
+  (render-impl/abcdefgh->figure abcdefgh format opts))
 
-;; ---- Sketch Validation ----
+;; ---- Zyxwvu Validation ----
 
-(defn valid-sketch?
-  "Check if a sketch conforms to the Malli schema.
-   (valid-sketch? (sketch views))  — true if valid"
-  [sketch]
-  (ss/valid? sketch))
+(defn valid-abcdefgh?
+  "Check if a abcdefgh conforms to the Malli schema.
+   (valid-abcdefgh? (abcdefgh views))  — true if valid"
+  [abcdefgh]
+  (ss/valid? abcdefgh))
 
-(defn explain-sketch
-  "Explain why a sketch does not conform to the Malli schema.
+(defn explain-abcdefgh
+  "Explain why a abcdefgh does not conform to the Malli schema.
    Returns nil if valid, or a Malli explanation map if invalid.
-   (explain-sketch (sketch views))"
-  [sketch]
-  (ss/explain sketch))
+   (explain-abcdefgh (abcdefgh views))"
+  [abcdefgh]
+  (ss/explain abcdefgh))
 
 (defn svg-summary
   "Extract structural summary from SVG hiccup for testing.

@@ -72,7 +72,7 @@
 
 ;; ### Plot Options
 ;;
-;; These options are accepted by `sk/options`, `sk/sketch`, and `sk/plot`
+;; These options are accepted by `sk/options`, `sk/abcdefgh`, and `sk/plot`
 ;; but are inherently per-plot — text content or nested config override.
 
 (kind/table
@@ -213,16 +213,16 @@
 (def precedence-result
   (sk/with-config {:width 1200 :height 500}
     ;; Pass plot options for width only:
-    (let [sketch (sk/sketch (base-plot) {:width 900})]
-      {:sketch-width (:width sketch)
-       :sketch-height (:height sketch)})))
+    (let [abcdefgh (sk/abcdefgh (base-plot) {:width 900})]
+      {:abcdefgh-width (:width abcdefgh)
+       :abcdefgh-height (:height abcdefgh)})))
 
 precedence-result
 
 (kind/test-last
  [(fn [m]
-    (and (= 900 (:sketch-width m)) ;; plot options win over with-config (1200) and set-config! (800)
-         (= 500 (:sketch-height m))))]) ;; with-config wins over set-config! (350)
+    (and (= 900 (:abcdefgh-width m)) ;; plot options win over with-config (1200) and set-config! (800)
+         (= 500 (:abcdefgh-height m))))]) ;; with-config wins over set-config! (350)
 
 ;; We can verify point-radius too — only set-config! touched it,
 ;; so it wins over the library default (2.5):
@@ -442,13 +442,13 @@ precedence-plot
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
-;; The sketch records `:color-scale` in its legend. The renderer
+;; The abcdefgh records `:color-scale` in its legend. The renderer
 ;; uses the pre-computed gradient stops, or resolves a fresh gradient
 ;; if the render-time configuration specifies a different color scale.
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/lay-point :x :y {:color :c})
-    (sk/sketch {:color-scale :inferno})
+    (sk/abcdefgh {:color-scale :inferno})
     :legend
     (select-keys [:color-scale :type]))
 
@@ -457,23 +457,23 @@ precedence-plot
 
 ;; ## Validation Control
 ;;
-;; By default, `sk/sketch` validates the output against a [Malli](https://github.com/metosin/malli)
-;; schema and throws if the sketch is malformed.  This is controlled
+;; By default, `sk/abcdefgh` validates the output against a [Malli](https://github.com/metosin/malli)
+;; schema and throws if the abcdefgh is malformed.  This is controlled
 ;; by the `:validate` key.
 ;;
-;; Two helper functions let you inspect sketches manually:
+;; Two helper functions let you inspect abcdefghs manually:
 ;;
-;; - `sk/valid-sketch?` — returns true or false
-;; - `sk/explain-sketch` — returns nil if valid, or a [Malli](https://github.com/metosin/malli) explanation map
+;; - `sk/valid-abcdefgh?` — returns true or false
+;; - `sk/explain-abcdefgh` — returns nil if valid, or a [Malli](https://github.com/metosin/malli) explanation map
 
-;; Default behavior (validate = true) — a valid sketch passes silently:
+;; Default behavior (validate = true) — a valid abcdefgh passes silently:
 
-(sk/sketch (base-plot))
+(sk/abcdefgh (base-plot))
 
 (kind/test-last
- [(fn [sketch]
-    (and (map? sketch)
-         (= 600 (:width sketch))))])
+ [(fn [abcdefgh]
+    (and (map? abcdefgh)
+         (= 600 (:width abcdefgh))))])
 
 ;; The rendered plot works normally:
 
@@ -484,29 +484,29 @@ precedence-plot
 
 ;; ### What Validation Catches
 ;;
-;; To see what happens when a sketch is malformed, we can build one
+;; To see what happens when a abcdefgh is malformed, we can build one
 ;; with validation disabled, then corrupt it.  First, create a valid
-;; sketch and confirm it passes:
+;; abcdefgh and confirm it passes:
 
-(def good-sketch (sk/sketch (base-plot) {:validate false}))
+(def good-abcdefgh (sk/abcdefgh (base-plot) {:validate false}))
 
-(sk/valid-sketch? good-sketch)
+(sk/valid-abcdefgh? good-abcdefgh)
 
 (kind/test-last [(fn [v] (true? v))])
 
 ;; Now corrupt the `:width` to a string — this violates the schema,
 ;; which requires a positive integer:
 
-(def bad-sketch (assoc good-sketch :width "not-a-number"))
+(def bad-abcdefgh (assoc good-abcdefgh :width "not-a-number"))
 
-(sk/valid-sketch? bad-sketch)
+(sk/valid-abcdefgh? bad-abcdefgh)
 
 (kind/test-last [(fn [v] (false? v))])
 
-;; `sk/explain-sketch` pinpoints the problem.  The `:errors` key in
+;; `sk/explain-abcdefgh` pinpoints the problem.  The `:errors` key in
 ;; the returned map shows exactly which path failed and why:
 
-(-> (sk/explain-sketch bad-sketch)
+(-> (sk/explain-abcdefgh bad-abcdefgh)
     :errors
     first
     (select-keys [:path :in :value]))
@@ -516,15 +516,15 @@ precedence-plot
     (and (= [:width] (:path m))
          (= "not-a-number" (:value m))))])
 
-;; With validation enabled (the default), `sk/sketch` would throw
-;; an exception for such a malformed sketch.  We can verify this
+;; With validation enabled (the default), `sk/abcdefgh` would throw
+;; an exception for such a malformed abcdefgh.  We can verify this
 ;; by catching the exception:
 
 (try
-  (let [sketch (sk/sketch (base-plot) {:validate false})
-        bad (assoc sketch :width "not-a-number")]
-    (when-let [explanation (sk/explain-sketch bad)]
-      (throw (ex-info "Sketch does not conform to schema"
+  (let [abcdefgh (sk/abcdefgh (base-plot) {:validate false})
+        bad (assoc abcdefgh :width "not-a-number")]
+    (when-let [explanation (sk/explain-abcdefgh bad)]
+      (throw (ex-info "Abcdefgh does not conform to schema"
                       {:explanation explanation})))
     :no-error)
   (catch Exception e
@@ -534,18 +534,18 @@ precedence-plot
 (kind/test-last
  [(fn [m]
     (and (:caught m)
-         (= "Sketch does not conform to schema" (:message m))))])
+         (= "Abcdefgh does not conform to schema" (:message m))))])
 
 ;; ### Disabling Validation
 ;;
 ;; Disable validation with `:validate false`:
 
-(sk/sketch (base-plot) {:validate false})
+(sk/abcdefgh (base-plot) {:validate false})
 
 (kind/test-last
- [(fn [sketch]
-    (and (map? sketch)
-         (= 600 (:width sketch))))])
+ [(fn [abcdefgh]
+    (and (map? abcdefgh)
+         (= 600 (:width abcdefgh))))])
 
 ;; You can also disable validation globally for a debugging session:
 ;;

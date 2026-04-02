@@ -35,7 +35,7 @@
 ;; There are two kinds of tests:
 ;;
 ;; - **Hand-written tests** in `test/scicloj/napkinsketch/` — unit tests for
-;; core logic (view resolution, sketching, rendering, etc.)
+;; core logic (view resolution, zyxwvu resolution, rendering, etc.)
 ;;
 ;; - **Generated tests** in `test/napkinsketch_book/` — produced from notebooks
 ;; every time [Clay](https://scicloj.github.io/clay/) renders notebooks

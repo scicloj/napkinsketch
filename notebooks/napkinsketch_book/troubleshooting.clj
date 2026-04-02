@@ -121,4 +121,4 @@
 ;; ## What's Next
 ;;
 ;; - [**API Reference**](./napkinsketch_book.api_reference.html) — complete function listing with docstrings
-;; - [**Exploring Sketches**](./napkinsketch_book.exploring_sketches.html) — inspect the data structures behind your plots
+;; - [**Exploring Zyxwvus**](./napkinsketch_book.exploring_sketches.html) — inspect the data structures behind your plots

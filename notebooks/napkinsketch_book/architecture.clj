@@ -20,7 +20,7 @@
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  V[\"Views<br/>(API)\"] -->|resolve| S[\"Sketch<br/>(data-space)\"]
+  V[\"Views<br/>(API)\"] -->|resolve| S[\"Abcdefgh<br/>(data-space)\"]
   S -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]
   M -->|tree walk| F[\"Figure<br/>(output)\"]
   style V fill:#e8f5e9
@@ -31,7 +31,7 @@ graph LR
 
 ;; - **Views** — user-facing compositional API: `view`, `lay-point`, `lay-histogram`, etc.
 ;;
-;; - **Sketch** — fully resolved plot specification. Data-space geometry,
+;; - **Zyxwvu** — fully resolved plot specification. Data-space geometry,
 ;;   domains, tick info, legend. Plain Clojure maps. No rendering primitives.
 ;;
 ;; - **Membrane** — a value of the [Membrane](https://github.com/phronmophobic/membrane)
@@ -65,22 +65,22 @@ graph LR
 (kind/test-last [(fn [v] (and (sk/plot-spec? v)
                               (= :point (:mark (first (sk/views-of v))))))])
 
-;; ### Sketch
+;; ### Zyxwvu
 ;;
-;; `sk/sketch` resolves the views into a sketch — a pure-data map with
+;; `sk/abcdefgh` resolves the views into a abcdefgh — a pure-data map with
 ;; data-space geometry, resolved colors, computed domains, and tick info.
 ;; The values are still in data space — `x=1` means the original data
 ;; value 1, not a pixel position.
 
-(def trace-sketch (sk/sketch trace-views))
+(def trace-abcdefgh (sk/abcdefgh trace-views))
 
-trace-sketch
+trace-abcdefgh
 
 (kind/test-last [(fn [v] (and (map? v) (contains? v :panels)))])
 
-;; The sketch validates against a [Malli](https://github.com/metosin/malli) schema:
+;; The abcdefgh validates against a [Malli](https://github.com/metosin/malli) schema:
 
-(ss/valid? trace-sketch)
+(ss/valid? trace-abcdefgh)
 
 (kind/test-last [true?])
 
@@ -90,12 +90,12 @@ trace-sketch
 
 ;; ### Membrane
 ;;
-;; `sk/sketch->membrane` converts the sketch into a tree of membrane
+;; `sk/abcdefgh->membrane` converts the abcdefgh into a tree of membrane
 ;; drawing primitives positioned in pixel space. This is the
 ;; format-agnostic intermediate representation — `Translate`,
 ;; `WithColor`, `WithStyle`, `RoundedRectangle`, `Label`, `Path`, etc.
 
-(def trace-membrane (sk/sketch->membrane trace-sketch))
+(def trace-membrane (sk/abcdefgh->membrane trace-abcdefgh))
 
 trace-membrane
 
@@ -108,8 +108,8 @@ trace-membrane
 
 (def trace-figure
   (sk/membrane->figure trace-membrane :svg
-                       {:total-width (:total-width trace-sketch)
-                        :total-height (:total-height trace-sketch)}))
+                       {:total-width (:total-width trace-abcdefgh)
+                        :total-height (:total-height trace-abcdefgh)}))
 
 (kind/pprint trace-figure)
 
@@ -128,13 +128,13 @@ trace-membrane
 ;; | Stage | Type | Coordinates |
 ;; |:------|:-----|:------------|
 ;; | Views | Clojure maps | N/A (declarative) |
-;; | Sketch | Clojure maps + dtype buffers | Data space |
+;; | Zyxwvu | Clojure maps + dtype buffers | Data space |
 ;; | Membrane | Record tree | Pixel space |
 ;; | Figure | Hiccup vectors | Pixel space |
 
-;; ## The Sketch Boundary
+;; ## The Zyxwvu Boundary
 ;;
-;; The sketch separates **what** to draw from **how** to
+;; The abcdefgh separates **what** to draw from **how** to
 ;; draw it. It sits between the two concerns.
 
 ^:kindly/hide-code
@@ -152,12 +152,12 @@ graph LR
     MS[\"Membrane tree\"]
     SV[\"SVG conversion\"]
   end
-  WHAT -->|sketch| HOW
+  WHAT -->|abcdefgh| HOW
   style WHAT fill:#e8f5e9
   style HOW fill:#e3f2fd
 ")
 
-;; The sketch is **plain inspectable data** — maps, numbers, strings,
+;; The abcdefgh is **plain inspectable data** — maps, numbers, strings,
 ;; keywords, and dtype-next buffers for numeric arrays. No membrane
 ;; types, no datasets, no scale objects. It validates against a Malli
 ;; schema.
@@ -172,11 +172,11 @@ graph LR
 ;;
 ;; - Validating plot structure with Malli
 ;;
-;; - Adding other backends (Canvas, Plotly, Vega-Lite) that consume sketches
+;; - Adding other backends (Canvas, Plotly, Vega-Lite) that consume abcdefghs
 
 ;; ## Multi-Layer Example
 ;;
-;; A sketch can hold multiple layers. Here, scatter points and
+;; A abcdefgh can hold multiple layers. Here, scatter points and
 ;; per-species regression lines share the same panel.
 
 (def multi-views
@@ -185,22 +185,22 @@ graph LR
       sk/lay-point
       sk/lay-lm))
 
-(def multi-sketch (sk/sketch multi-views {:title "Iris Petals with Regression"}))
+(def multi-abcdefgh (sk/abcdefgh multi-views {:title "Iris Petals with Regression"}))
 
-;; Two layers in the sketch — point and line:
+;; Two layers in the abcdefgh — point and line:
 
 (mapv (fn [layer]
         {:mark (:mark layer)
          :n-groups (count (:groups layer))})
-      (:layers (first (:panels multi-sketch))))
+      (:layers (first (:panels multi-abcdefgh))))
 
 (kind/test-last [(fn [v] (and (= :point (:mark (first v)))
                               (= :line (:mark (second v)))
                               (= 3 (:n-groups (first v)))))])
 
-;; Title and legend are top-level sketch keys:
+;; Title and legend are top-level abcdefgh keys:
 
-multi-sketch
+multi-abcdefgh
 
 (kind/test-last [(fn [m] (and (= "Iris Petals with Regression" (:title m))
                               (= 3 (count (get-in m [:legend :entries])))))])
@@ -220,12 +220,12 @@ multi-sketch
 graph TD
   API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]
   API --> PLOT[\"impl/plot.clj\"]
-  API --> SKETCH[\"impl/sketch.clj\"]
-  SKETCH --> VIEW
-  SKETCH --> STAT[\"impl/stat.clj\"]
-  SKETCH --> SCALE[\"impl/scale.clj\"]
-  SKETCH --> DEFAULTS[\"impl/defaults.clj\"]
-  PLOT --> SKETCH
+  API --> ZYXWVU[\"impl/abcdefgh.clj\"]
+  ZYXWVU --> VIEW
+  ZYXWVU --> STAT[\"impl/stat.clj\"]
+  ZYXWVU --> SCALE[\"impl/scale.clj\"]
+  ZYXWVU --> DEFAULTS[\"impl/defaults.clj\"]
+  PLOT --> ZYXWVU
   PLOT --> SVG[\"render/svg.clj\"]
   SVG --> MEMBRANE[\"render/membrane.clj\"]
   MEMBRANE --> PANEL[\"render/panel.clj\"]
@@ -233,7 +233,7 @@ graph TD
   PANEL --> SCALE
   PANEL --> COORD[\"impl/coord.clj\"]
   style API fill:#c8e6c9
-  style SKETCH fill:#ffe0b2
+  style ZYXWVU fill:#ffe0b2
   style PLOT fill:#bbdefb
   style SVG fill:#f8bbd0
   style MEMBRANE fill:#f8bbd0
@@ -269,4 +269,4 @@ graph TD
 ;; ## What's Next
 ;;
 ;; - [**Extensibility**](./napkinsketch_book.extensibility.html) — add custom marks, stats, scales, and renderers via multimethods
-;; - [**Exploring Sketches**](./napkinsketch_book.exploring_sketches.html) — inspect sketch data structures at each stage
+;; - [**Exploring Zyxwvus**](./napkinsketch_book.exploring_sketches.html) — inspect abcdefgh data structures at each stage
