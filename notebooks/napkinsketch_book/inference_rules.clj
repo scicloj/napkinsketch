@@ -847,7 +847,7 @@ graph TD
   SLEG --> LAYOUT
   ALEG --> LAYOUT
 
-  DOM --> PLAN[\"PlanSchema\"]
+  DOM --> PLAN[\"Plan\"]
   TK --> PLAN
   LBL --> PLAN
   LEG --> PLAN

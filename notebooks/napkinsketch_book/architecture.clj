@@ -20,7 +20,7 @@
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  V[\"Views<br/>(API)\"] -->|resolve| S[\"PlanSchema<br/>(data-space)\"]
+  V[\"Views<br/>(API)\"] -->|resolve| S[\"Plan<br/>(data-space)\"]
   S -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]
   M -->|tree walk| F[\"Figure<br/>(output)\"]
   style V fill:#e8f5e9

@@ -524,7 +524,7 @@ precedence-plot
   (let [plan (sk/plan (base-plot) {:validate false})
         bad (assoc plan :width "not-a-number")]
     (when-let [explanation (sk/explain-plan bad)]
-      (throw (ex-info "PlanSchema does not conform to schema"
+      (throw (ex-info "Plan does not conform to schema"
                       {:explanation explanation})))
     :no-error)
   (catch Exception e
@@ -534,7 +534,7 @@ precedence-plot
 (kind/test-last
  [(fn [m]
     (and (:caught m)
-         (= "PlanSchema does not conform to schema" (:message m))))])
+         (= "Plan does not conform to schema" (:message m))))])
 
 ;; ### Disabling Validation
 ;;

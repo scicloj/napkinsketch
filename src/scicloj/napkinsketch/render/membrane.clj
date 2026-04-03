@@ -1,6 +1,6 @@
 (ns scicloj.napkinsketch.render.membrane
   "Build a membrane drawable tree from a plan.
-   PlanSchema → membrane is format-agnostic: the drawable tree can be converted
+   Plan → membrane is format-agnostic: the drawable tree can be converted
    to SVG, PNG, or any other format membrane supports."
   (:require [membrane.ui :as ui]
             [scicloj.napkinsketch.impl.defaults :as defaults]
