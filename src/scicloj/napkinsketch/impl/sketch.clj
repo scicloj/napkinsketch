@@ -138,20 +138,72 @@
                  labels (scale/format-ticks s ticks)]
              {:values (vec ticks) :labels (vec labels) :categorical? false})))))))
 
-;; ---- Layout Detection ----
+;; ---- Unified Grid ----
+;;
+;; A grid has two axes (column and row). Each axis has:
+;;   :key    — the view property that varies (:x, :y, :facet-col, :facet-row)
+;;   :kind   — :structural (column variation) or :data (facet variation)
+;;   :values — the distinct values on this axis
+;;
+;; Placement is one algorithm: match view's value at the axis key.
+;; nil means broadcast (appear in all cells on that axis).
+;; The "_" sentinel from sk/facet is normalized to nil at the boundary.
 
-(defn infer-layout
-  "Determine layout type from views."
+(defn- grid-coord
+  "Get a view's coordinate for a grid axis, normalizing the \"_\" sentinel to nil.
+   nil means broadcast (match all cells on this axis)."
+  [view key]
+  (when key
+    (let [v (get view key)]
+      (when (and (some? v) (not= "_" v))
+        v))))
+
+(defn- axis-values
+  "Collect distinct real values of a key across views (excludes nil and \"_\")."
+  [views key]
+  (vec (distinct (keep #(grid-coord % key) views))))
+
+(defn infer-grid
+  "Infer grid structure from views. Returns a grid spec with:
+   :col-axis, :row-axis — axis descriptors (or nil)
+   :grid-cols, :grid-rows — dimensions
+   :layout-type — :single, :multi-variable, or :facet-grid (backward compat)
+   :x-vars, :y-vars, :facet-col-vals, :facet-row-vals (backward compat)"
   [views]
-  (let [facet-rows (seq (remove nil? (map :facet-row views)))
-        facet-cols (seq (remove nil? (map :facet-col views)))]
-    (cond
-      (or facet-rows facet-cols) :facet-grid
-      :else (let [x-vars (distinct (map :x views))
-                  y-vars (distinct (map :y views))]
-              (if (or (> (count x-vars) 1) (> (count y-vars) 1))
-                :multi-variable
-                :single)))))
+  (let [fcv (axis-values views :facet-col)
+        frv (axis-values views :facet-row)
+        x-vars (vec (distinct (map :x views)))
+        y-vars (vec (distinct (map :y views)))
+
+        col-axis (cond
+                   (seq fcv) {:key :facet-col :kind :data :values fcv}
+                   (> (count x-vars) 1) {:key :x :kind :structural :values x-vars}
+                   :else nil)
+
+        row-axis (cond
+                   (seq frv) {:key :facet-row :kind :data :values frv}
+                   (> (count y-vars) 1) {:key :y :kind :structural :values y-vars}
+                   :else nil)
+
+        grid-cols (if col-axis (count (:values col-axis)) 1)
+        grid-rows (if row-axis (count (:values row-axis)) 1)
+
+        layout-type (cond
+                      (or (= :data (:kind col-axis))
+                          (= :data (:kind row-axis))) :facet-grid
+                      (or col-axis row-axis) :multi-variable
+                      :else :single)]
+
+    {:col-axis col-axis
+     :row-axis row-axis
+     :grid-cols grid-cols
+     :grid-rows grid-rows
+     :layout-type layout-type
+     ;; Backward compat — downstream code uses these directly
+     :x-vars x-vars
+     :y-vars y-vars
+     :facet-col-vals (when (= :data (:kind col-axis)) fcv)
+     :facet-row-vals (when (= :data (:kind row-axis)) frv)}))
 
 ;; ---- Per-Panel Resolution ----
 
@@ -277,25 +329,7 @@
      :color-cols color-cols
      :tagged-views tagged-views}))
 
-(defn- compute-grid
-  "Compute grid dimensions and facet/variable lists from layout type.
-   Returns {:grid-rows :grid-cols :facet-row-vals :facet-col-vals :x-vars :y-vars}."
-  [non-ann-views layout-type]
-  (let [x-vars (distinct (map :x non-ann-views))
-        y-vars (distinct (map :y non-ann-views))
-        facet-row-vals (when (= layout-type :facet-grid)
-                         (vec (distinct (remove #(= "_" %) (map :facet-row non-ann-views)))))
-        facet-col-vals (when (= layout-type :facet-grid)
-                         (vec (distinct (remove #(= "_" %) (map :facet-col non-ann-views)))))
-        [grid-rows grid-cols]
-        (case layout-type
-          :single [1 1]
-          :facet-grid [(max 1 (count (or facet-row-vals ["_"])))
-                       (max 1 (count (or facet-col-vals ["_"])))]
-          :multi-variable [(count y-vars) (count x-vars)])]
-    {:grid-rows grid-rows :grid-cols grid-cols
-     :facet-row-vals facet-row-vals :facet-col-vals facet-col-vals
-     :x-vars x-vars :y-vars y-vars}))
+;; compute-grid is absorbed into infer-grid above
 
 (defn- compute-panel-dims
   "Compute per-panel pixel dimensions and margin."
@@ -327,32 +361,34 @@
           {:pw pw :ph (/ pw data-ratio)})))))
 
 (defn- group-panels
-  "Group views into panel descriptors by layout type."
-  [non-ann-views layout-type facet-row-vals facet-col-vals x-vars y-vars]
-  (case layout-type
-    :single
-    [{:views non-ann-views :row 0 :col 0}]
-
-    :facet-grid
-    (let [rvs (or (seq facet-row-vals) ["_"])
-          cvs (or (seq facet-col-vals) ["_"])]
-      (for [[ri rv] (map-indexed vector rvs)
-            [ci cv] (map-indexed vector cvs)]
-        {:views (filterv #(and (= (or (:facet-row %) "_") rv)
-                               (= (or (:facet-col %) "_") cv))
-                         non-ann-views)
-         :row ri :col ci
-         :row-label (when (not= rv "_") (str rv))
-         :col-label (when (not= cv "_") (str cv))}))
-
-    :multi-variable
-    (for [[ri yv] (map-indexed vector y-vars)
-          [ci xv] (map-indexed vector x-vars)]
-      {:views (filterv #(and (= xv (:x %)) (= yv (:y %))) non-ann-views)
-       :row ri :col ci
-       :var-x xv :var-y yv
-       :col-label (defaults/fmt-name xv)
-       :row-label (defaults/fmt-name yv)})))
+  "Place views into grid cells. One unified algorithm.
+   Views without a coordinate on an axis broadcast into all cells on that axis."
+  [views {:keys [col-axis row-axis]}]
+  (let [col-vals (or (:values col-axis) [nil])
+        row-vals (or (:values row-axis) [nil])
+        col-key (:key col-axis)
+        row-key (:key row-axis)]
+    (vec
+     (for [[ri rv] (map-indexed vector row-vals)
+           [ci cv] (map-indexed vector col-vals)]
+       (let [matching (filterv
+                       #(and (or (nil? cv) (nil? (grid-coord % col-key)) (= cv (grid-coord % col-key)))
+                             (or (nil? rv) (nil? (grid-coord % row-key)) (= rv (grid-coord % row-key))))
+                       views)]
+         {:views matching
+          :row ri :col ci
+          ;; For multi-variable domain sharing (downstream compat)
+          :var-x (when (= :x col-key) cv)
+          :var-y (when (= :y row-key) rv)
+          ;; Labels — structural axes use column names, data axes use values
+          :col-label (when cv
+                       (if (= :structural (:kind col-axis))
+                         (defaults/fmt-name cv)
+                         (str cv)))
+          :row-label (when rv
+                       (if (= :structural (:kind row-axis))
+                         (defaults/fmt-name rv)
+                         (str rv)))})))))
 
 (defn- build-panels
   "Build panel specs with domains, ticks, and annotations."
@@ -365,14 +401,18 @@
                          (collect-domain all-stat-results :x-domain x-scale-spec))
         global-y-dom (or (:domain y-scale-spec)
                          (compute-global-y-domain all-layers y-scale-spec))
-        mv-col-x-doms (when (= layout-type :multi-variable)
+        ;; Per-column/row domains — used for multi-variable and mixed grids
+        ;; (any grid where structural axes produce :var-x/:var-y on panels)
+        has-var-x? (some :var-x panel-data)
+        has-var-y? (some :var-y panel-data)
+        mv-col-x-doms (when has-var-x?
                         (into {} (for [xv x-vars]
                                    [xv (let [pds (filter #(= xv (:var-x %)) panel-data)
                                              scatter-pds (filter #(not= (:var-x %) (:var-y %)) pds)
                                              srs (mapcat :stat-results scatter-pds)]
                                          (when (seq srs)
                                            (collect-domain srs :x-domain x-scale-spec)))])))
-        mv-row-y-doms (when (= layout-type :multi-variable)
+        mv-row-y-doms (when has-var-y?
                         (into {} (for [yv y-vars]
                                    [yv (let [pds (filter #(= yv (:var-y %)) panel-data)
                                              scatter-pds (filter #(not= (:var-x %) (:var-y %)) pds)
@@ -390,12 +430,18 @@
                :single
                [global-x-dom global-y-dom]
                :facet-grid
-               [(case scale-mode
-                  (:shared :free-y) global-x-dom
-                  local-x-dom)
-                (case scale-mode
-                  (:shared :free-x) global-y-dom
-                  local-y-dom)]
+               [(if (and has-var-x? (:var-x pd))
+                  ;; Mixed grid: structural x-axis → per-column domains
+                  (or (get mv-col-x-doms (:var-x pd)) local-x-dom)
+                  (case scale-mode
+                    (:shared :free-y) global-x-dom
+                    local-x-dom))
+                (if (and has-var-y? (:var-y pd))
+                  ;; Mixed grid: structural y-axis → per-row domains
+                  (or (get mv-row-y-doms (:var-y pd)) local-y-dom)
+                  (case scale-mode
+                    (:shared :free-x) global-y-dom
+                    local-y-dom))]
                :multi-variable
                (let [diagonal? (= (:var-x pd) (:var-y pd))]
                  [(or (get mv-col-x-doms (:var-x pd)) local-x-dom)
@@ -428,7 +474,24 @@
                   :layers (or (:layers pd) [])
                   :row (:row pd)
                   :col (:col pd)}
-           (seq annotations) (assoc :annotations annotations)
+           ;; Filter annotations by grid coordinates — nil = broadcast
+           (seq annotations)
+           (assoc :annotations
+                  (let [panel-anns
+                        (filterv
+                         (fn [a]
+                           (and (or (nil? (grid-coord a :facet-col))
+                                    (= (grid-coord a :facet-col) (:col-label pd)))
+                                (or (nil? (grid-coord a :facet-row))
+                                    (= (grid-coord a :facet-row) (:row-label pd)))
+                                (or (nil? (grid-coord a :x))
+                                    (= (grid-coord a :x) (:var-x pd))
+                                    (nil? (:var-x pd)))
+                                (or (nil? (grid-coord a :y))
+                                    (= (grid-coord a :y) (:var-y pd))
+                                    (nil? (:var-y pd)))))
+                         annotations)]
+                    (mapv #(dissoc % :facet-col :facet-row :x :y) panel-anns)))
            (:row-label pd) (assoc :row-label (:row-label pd))
            (:col-label pd) (assoc :col-label (:col-label pd))))))))
 
@@ -565,9 +628,11 @@
         legend-w (if (and any-legend? (= legend-pos :right)) (:legend-width cfg) 0)
         legend-h (if (and any-legend? (#{:bottom :top} legend-pos)) 30 0)
         has-col-strips? (or (and (= layout-type :facet-grid) (seq facet-col-vals))
-                            multi?)
+                            multi?
+                            (some :col-label panels))
         has-row-strips? (or (and (= layout-type :facet-grid) (seq facet-row-vals))
-                            multi?)
+                            multi?
+                            (some :row-label panels))
         strip-h (if has-col-strips? (:strip-height cfg 16) 0)
         strip-w (if has-row-strips? 60 0)
         top-legend-pad (if (= legend-pos :top) legend-h 0)]
@@ -639,7 +704,10 @@
          views (if (map? views) [views] views)
          ann-views (filter #(view/annotation-marks (:mark %)) views)
          non-ann-views (remove #(view/annotation-marks (:mark %)) views)
-         layout-type (infer-layout non-ann-views)
+         ;; Grid — unified detection
+         grid (infer-grid non-ann-views)
+         layout-type (:layout-type grid)
+         {:keys [grid-rows grid-cols facet-row-vals facet-col-vals x-vars y-vars]} grid
          scale-mode (or scales :shared)
 
          ;; Colors (also resolves all views once — tagged for reuse)
@@ -654,22 +722,17 @@
          _ (validate-polar-marks resolved-all coord-type)
          _ (warn-conflicting-specs non-ann-views)
 
-         ;; Annotations
+         ;; Annotations — preserve grid coordinates for per-panel placement
          annotations (vec (for [a ann-views]
-                            (select-keys a [:mark :intercept :lo :hi :alpha])))
-
-         ;; Grid
-         {:keys [grid-rows grid-cols facet-row-vals facet-col-vals x-vars y-vars]}
-         (compute-grid non-ann-views layout-type)
+                            (select-keys a [:mark :intercept :lo :hi :alpha
+                                            :facet-col :facet-row :x :y])))
 
          ;; Panel pixel dimensions
          {:keys [m pw ph]}
          (compute-panel-dims cfg layout-type grid-rows grid-cols width height)
 
-         ;; Group tagged views into panels and resolve stats/layers
-         ;; (tagged views carry :__resolved so resolve-view isn't called again)
-         panel-groups (group-panels tagged-views layout-type
-                                    facet-row-vals facet-col-vals x-vars y-vars)
+         ;; Group tagged views into panels — one unified algorithm
+         panel-groups (group-panels tagged-views grid)
          panel-data (mapv (fn [pg]
                             (if (seq (:views pg))
                               (let [pre-resolved (mapv :__resolved (:views pg))]

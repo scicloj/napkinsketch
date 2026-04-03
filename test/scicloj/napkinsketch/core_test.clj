@@ -10,6 +10,7 @@
             [scicloj.napkinsketch.impl.position :as position]
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.view :as view]
+            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [scicloj.napkinsketch.method :as method]))
 
 ;; ============================================================
@@ -88,7 +89,7 @@
   (testing "explicit :color-scale is stored as keyword"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
           pl (sk/plan (-> ds (sk/lay-point :x :y {:color :c}))
-                        {:color-scale :inferno})
+                      {:color-scale :inferno})
           legend (:legend pl)]
       (is (= :inferno (:color-scale legend)))))
   (testing "legend has 20 pre-computed stops"
@@ -764,9 +765,9 @@
         (is (vector? svg)))))
   (testing "sk/options deep-merges theme across calls"
     (let [sketch (-> {:x [1 2 3] :y [4 5 6]}
-                   (sk/lay-point :x :y)
-                   (sk/options {:theme {:bg "#FFF"} :width 800})
-                   (sk/options {:theme {:font-size 14}}))]
+                     (sk/lay-point :x :y)
+                     (sk/options {:theme {:bg "#FFF"} :width 800})
+                     (sk/options {:theme {:font-size 14}}))]
       (is (= "#FFF" (get-in (:opts sketch) [:theme :bg])))
       (is (= 14 (get-in (:opts sketch) [:theme :font-size])))
       (is (= 800 (:width (:opts sketch)))))))
@@ -1027,23 +1028,23 @@
 (deftest log-scale-nonpositive-test
   (testing "non-positive values are filtered on log-scaled x axis"
     (let [pl (sk/plan (-> {:x [0 -1 1 10 100] :y [1 2 3 4 5]}
-                            (sk/lay-point :x :y)
-                            (sk/scale :x :log)))
+                          (sk/lay-point :x :y)
+                          (sk/scale :x :log)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))
       (is (= [1 10 100] (vec (:xs group))))))
   (testing "non-positive values are filtered on log-scaled y axis"
     (let [pl (sk/plan (-> {:x [1 2 3 4 5] :y [0 -1 1 10 100]}
-                            (sk/lay-point :x :y)
-                            (sk/scale :y :log)))
+                          (sk/lay-point :x :y)
+                          (sk/scale :y :log)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))))
   (testing "all-positive data is not filtered"
     (let [pl (sk/plan (-> {:x [1 10 100] :y [1 2 3]}
-                            (sk/lay-point :x :y)
-                            (sk/scale :x :log)))
+                          (sk/lay-point :x :y)
+                          (sk/scale :x :log)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group)))))))
@@ -1051,8 +1052,8 @@
 (deftest infinity-filtering-test
   (testing "infinite y values are filtered with warning"
     (let [pl (sk/plan (-> {:x [1 2 3 4 5]
-                             :y [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]}
-                            (sk/lay-point :x :y)))
+                           :y [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]}
+                          (sk/lay-point :x :y)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))
@@ -1060,8 +1061,8 @@
       (is (= [10.0 30.0 50.0] (vec (:ys group))))))
   (testing "infinite x values are filtered"
     (let [pl (sk/plan (-> {:x [1.0 Double/POSITIVE_INFINITY 3.0]
-                             :y [10 20 30]}
-                            (sk/lay-point :x :y)))
+                           :y [10 20 30]}
+                          (sk/lay-point :x :y)))
           group (-> pl :panels first :layers first :groups first)]
       (is (= 2 (count (:xs group))))))
   (testing "SVG has no NaN after infinity filtering"
@@ -1070,24 +1071,24 @@
       (is (not (clojure.string/includes? (str svg) "NaN")))))
   (testing "all-finite data is not filtered"
     (let [pl (sk/plan (-> {:x [1 2 3] :y [10.0 20.0 30.0]}
-                            (sk/lay-point :x :y)))
+                          (sk/lay-point :x :y)))
           group (-> pl :panels first :layers first :groups first)]
       (is (= 3 (count (:xs group)))))))
 
 (deftest stacked-negative-domain-test
   (testing "all-negative stacked bars produce correct y-domain"
     (let [pl (sk/plan (-> {:category ["A" "A" "B" "B"]
-                             :group ["g1" "g2" "g1" "g2"]
-                             :value [-10 -20 -5 -15]}
-                            (sk/lay-value-bar :category :value {:color :group :position :stack})))
+                           :group ["g1" "g2" "g1" "g2"]
+                           :value [-10 -20 -5 -15]}
+                          (sk/lay-value-bar :category :value {:color :group :position :stack})))
           [lo hi] (:y-domain (first (:panels pl)))]
       (is (neg? lo) "lower bound should be negative for all-negative stacked data")
       (is (pos? hi) "upper bound includes 0 baseline with padding")))
   (testing "mixed positive/negative stacked bars span both sides"
     (let [pl (sk/plan (-> {:category ["A" "A" "B" "B"]
-                             :group ["g1" "g2" "g1" "g2"]
-                             :value [10 -20 5 -15]}
-                            (sk/lay-value-bar :category :value {:color :group :position :stack})))
+                           :group ["g1" "g2" "g1" "g2"]
+                           :value [10 -20 5 -15]}
+                          (sk/lay-value-bar :category :value {:color :group :position :stack})))
           [lo hi] (:y-domain (first (:panels pl)))]
       (is (neg? lo) "lower bound extends below zero")
       (is (pos? hi) "upper bound extends above zero")))
@@ -1138,9 +1139,9 @@
                             :y [10 20 30 40 50 60]
                             :species ["a" "a" "a" "b" "b" "b"]})
           pl (sk/plan (-> data
-                            (sk/lay-point :x :y)
-                            (sk/facet :species)
-                            (sk/lay-line :x :y)))]
+                          (sk/lay-point :x :y)
+                          (sk/facet :species)
+                          (sk/lay-line :x :y)))]
       (is (= 2 (count (:panels pl))))
       (is (every? #(= 2 (count (:layers %))) (:panels pl)))))
   (testing "facet-grid then lay works with row and col"
@@ -1395,23 +1396,23 @@
 (deftest with-config-snapshot-test
   (testing "with-config overrides survive Sketch lazy rendering"
     (let [sketch (sk/with-config {:color-scale :plasma}
-                 (-> {:x [1 2 3] :y [1 2 3] :c [1 2 3]}
-                     (sk/lay-point :x :y {:color :c})))]
+                   (-> {:x [1 2 3] :y [1 2 3] :c [1 2 3]}
+                       (sk/lay-point :x :y {:color :c})))]
       (is (= {:color-scale :plasma} (:config-snapshot sketch))
           "config snapshot is captured")
       (is (= :plasma (get-in (sk/plan (sk/views-of sketch)
-                                        (merge (:opts sketch) (:config-snapshot sketch)))
+                                      (merge (:opts sketch) (:config-snapshot sketch)))
                              [:legend :color-scale]))
           "color-scale reaches the plan")))
   (testing "no snapshot without with-config"
     (let [sketch (-> {:x [1 2 3] :y [1 2 3]}
-                   (sk/lay-point :x :y))]
+                     (sk/lay-point :x :y))]
       (is (nil? (:config-snapshot sketch)))))
   (testing "unknown color-scale throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Unknown color scale"
                           (sk/plan (sk/views-of (-> {:x [1 2 3] :y [1 2 3] :c [1 2 3]}
-                                                      (sk/lay-point :x :y {:color :c})))
-                                     {:color-scale :totally-bogus})))))
+                                                    (sk/lay-point :x :y {:color :c})))
+                                   {:color-scale :totally-bogus})))))
 
 (deftest validation-test
   (testing "numeric faceting produces correct panels"
@@ -1453,4 +1454,30 @@
   (testing "coord validation"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Coordinate"
                           (sk/coord [] :invalid)))))
+
+(deftest facet-broadcast-test
+  (testing "Non-faceted view broadcasts into all facet panels"
+    (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+                           {:key-fn keyword})
+          ;; Faceted scatter
+          faceted-views (:views (-> iris
+                                    (sk/lay-point :sepal_length :sepal_width {:color :species})
+                                    (sk/facet :species)))
+          ;; Non-faceted LOESS overlay (no :facet-col, no :facet-row)
+          overlay {:x :sepal_length :y :sepal_width :mark :line :stat :loess :data iris}
+          all-views (conj faceted-views overlay)
+          s (sk/svg-summary (sk/plan->figure
+                             (sketch-impl/views->plan all-views {}) :svg {}))]
+      (is (= 3 (:panels s)) "Non-faceted overlay should not reduce panel count")
+      (is (= 3 (:lines s)) "LOESS should appear in all 3 panels")
+      (is (= 150 (:points s)) "Scatter points still render")))
+  (testing "Existing faceted behavior unchanged"
+    (let [s (-> (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+                            {:key-fn keyword})
+                (sk/lay-point :sepal_length :sepal_width {:color :species})
+                (sk/facet :species)
+                sk/plot
+                sk/svg-summary)]
+      (is (= 3 (:panels s)))
+      (is (= 150 (:points s))))))
 
