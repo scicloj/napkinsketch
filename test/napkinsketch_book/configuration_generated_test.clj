@@ -517,7 +517,7 @@
     [explanation (sk/explain-plan bad)]
     (throw
      (ex-info
-      "PlanSchema does not conform to schema"
+      "Plan does not conform to schema"
       {:explanation explanation})))
    :no-error)
   (catch Exception e {:caught true, :message (.getMessage e)})))
@@ -530,7 +530,7 @@
     [m]
     (and
      (:caught m)
-     (= "PlanSchema does not conform to schema" (:message m))))
+     (= "Plan does not conform to schema" (:message m))))
    v123_l523)))
 
 

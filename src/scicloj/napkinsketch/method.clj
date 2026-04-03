@@ -43,7 +43,7 @@
    :mark, :stat, and optionally :position and :doc.
    Position defaults to nil (identity) — only :dodge, :stack, :fill are explicit."
   [k entry]
-  (swap! registry* assoc k entry)
+  (swap! registry* assoc k (view/map->Method entry))
   k)
 
 (defn lookup

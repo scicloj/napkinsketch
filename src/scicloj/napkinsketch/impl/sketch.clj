@@ -249,7 +249,7 @@
   (let [resolved (or resolved (mapv (comp filter-log-nonpositive filter-infinities view/resolve-view) panel-views))
         stat-results (mapv #(stat/compute-stat (assoc % :cfg (merge cfg (:cfg %)))) resolved)
         raw-layers (vec (map (fn [rv sr]
-                               (-> (extract/extract-layer rv sr all-colors cfg)
+                               (-> (view/map->Layer (extract/extract-layer rv sr all-colors cfg))
                                    (assoc :y-domain (:y-domain sr)
                                           :x-domain (:x-domain sr))))
                              resolved stat-results))
@@ -742,23 +742,24 @@
                                           grid-rows grid-cols pw ph multi? panels legend-position)
 
          plan
-         {:width width :height height :margin m
-          :total-width (:total-w layout-dims) :total-height (:total-h layout-dims)
-          :panel-width pw :panel-height ph
-          :grid {:rows grid-rows :cols grid-cols}
-          :layout-type layout-type
-          :title eff-title
-          :subtitle subtitle
-          :caption caption
-          :x-label eff-x-label :y-label eff-y-label
-          :legend legend
-          :size-legend size-legend
-          :alpha-legend alpha-legend
-          :legend-position (or legend-position :right)
-          :panels panels
-          :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad
-                                            :subtitle-pad :caption-pad
-                                            :legend-w :legend-h :strip-h :strip-w])}]
+         (view/map->Plan
+          {:width width :height height :margin m
+           :total-width (:total-w layout-dims) :total-height (:total-h layout-dims)
+           :panel-width pw :panel-height ph
+           :grid {:rows grid-rows :cols grid-cols}
+           :layout-type layout-type
+           :title eff-title
+           :subtitle subtitle
+           :caption caption
+           :x-label eff-x-label :y-label eff-y-label
+           :legend legend
+           :size-legend size-legend
+           :alpha-legend alpha-legend
+           :legend-position (or legend-position :right)
+           :panels panels
+           :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad
+                                             :subtitle-pad :caption-pad
+                                             :legend-w :legend-h :strip-h :strip-w])})]
      (when validate?
        (when-let [explanation (ss/explain plan)]
          (throw (ex-info "Plan does not conform to schema" {:explanation explanation}))))

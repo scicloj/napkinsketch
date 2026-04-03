@@ -11,7 +11,7 @@
 (def
  v3_l20
  (kind/mermaid
-  "\ngraph LR\n  V[\"Views<br/>(API)\"] -->|resolve| S[\"PlanSchema<br/>(data-space)\"]\n  S -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]\n  M -->|tree walk| F[\"Figure<br/>(output)\"]\n  style V fill:#e8f5e9\n  style S fill:#fff3e0\n  style M fill:#e3f2fd\n  style F fill:#fce4ec\n"))
+  "\ngraph LR\n  V[\"Views<br/>(API)\"] -->|resolve| S[\"Plan<br/>(data-space)\"]\n  S -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]\n  M -->|tree walk| F[\"Figure<br/>(output)\"]\n  style V fill:#e8f5e9\n  style S fill:#fff3e0\n  style M fill:#e3f2fd\n  style F fill:#fce4ec\n"))
 
 
 (def

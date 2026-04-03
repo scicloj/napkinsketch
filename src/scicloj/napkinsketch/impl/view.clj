@@ -90,6 +90,27 @@
   [x]
   (instance? Sketch x))
 
+(defrecord Plan [panels width height])
+
+(defn plan?
+  "True if x is a plan (the resolved data-space geometry)."
+  [x]
+  (instance? Plan x))
+
+(defrecord Layer [mark style])
+
+(defn layer?
+  "True if x is a layer (resolved geometry for one mark)."
+  [x]
+  (instance? Layer x))
+
+(defrecord Method [mark stat])
+
+(defn method?
+  "True if x is a method (mark + stat + position bundle)."
+  [x]
+  (instance? Method x))
+
 ;; ---- View ----
 
 (defn view

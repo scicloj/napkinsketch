@@ -93,7 +93,7 @@
    (lay views (rule-v 3) (band-h 1 2)) — multiple annotations"
   [sketch-or-views & layer-specs]
   (->sketch (apply view/lay (extract-views sketch-or-views) layer-specs)
-               (carry-opts sketch-or-views)))
+            (carry-opts sketch-or-views)))
 
 (defn coord
   "Set coordinate system on views.
@@ -102,7 +102,7 @@
    (coord views :fixed)  — fixed 1:1 aspect ratio"
   [sketch-or-views c]
   (->sketch (view/coord (extract-views sketch-or-views) c)
-               (carry-opts sketch-or-views)))
+            (carry-opts sketch-or-views)))
 
 (defn cross
   "Cartesian product of two sequences."
@@ -116,10 +116,10 @@
    (facet views :species :col)   — vertical column"
   ([sketch-or-views col]
    (->sketch (view/facet (extract-views sketch-or-views) col)
-                (carry-opts sketch-or-views)))
+             (carry-opts sketch-or-views)))
   ([sketch-or-views col direction]
    (->sketch (view/facet (extract-views sketch-or-views) col direction)
-                (carry-opts sketch-or-views))))
+             (carry-opts sketch-or-views))))
 
 (defn facet-grid
   "Split views by two categorical columns for a row × column grid.
@@ -128,7 +128,7 @@
    (facet-grid views nil :species)   — same as facet"
   [sketch-or-views row-col col-col]
   (->sketch (view/facet-grid (extract-views sketch-or-views) row-col col-col)
-               (carry-opts sketch-or-views)))
+            (carry-opts sketch-or-views)))
 
 (defn distribution
   "Create diagonal views (x=y) for each column, used for histograms in SPLOM.
@@ -142,10 +142,10 @@
    (scale views :y {:type :linear :domain [0 100]}) — fixed domain"
   ([sketch-or-views channel type-or-opts]
    (->sketch (view/scale (extract-views sketch-or-views) channel type-or-opts)
-                (carry-opts sketch-or-views)))
+             (carry-opts sketch-or-views)))
   ([sketch-or-views channel type opts]
    (->sketch (view/scale (extract-views sketch-or-views) channel type opts)
-                (carry-opts sketch-or-views))))
+             (carry-opts sketch-or-views))))
 
 (defn options
   "Set plot-level options on a sketch.
@@ -154,12 +154,37 @@
    (options sketch {:theme {:bg \"#FFF\"} :legend-position :bottom})"
   [sketch-or-views opts]
   (->sketch (extract-views sketch-or-views)
-               (kindly/deep-merge (carry-opts sketch-or-views) opts)))
+            (kindly/deep-merge (carry-opts sketch-or-views) opts)))
 
 (defn sketch?
   "Return true if x is a Sketch (auto-rendering sketch)."
   [x]
   (view/sketch? x))
+
+(defn plan?
+  "Return true if x is a plan (the resolved data-space geometry from sk/plan)."
+  [x]
+  (view/plan? x))
+
+(defn layer?
+  "Return true if x is a layer (resolved geometry for one mark in a plan)."
+  [x]
+  (view/layer? x))
+
+(defn method?
+  "Return true if x is a method (mark + stat + position bundle from the registry)."
+  [x]
+  (view/method? x))
+
+(defn- expect-type
+  "Validate that x is of the expected type. Throws with helpful message if not."
+  [x pred expected-name fn-name]
+  (when-not (pred x)
+    (throw (ex-info (str fn-name " expects a " expected-name ". "
+                         (cond (view/sketch? x) "Got a sketch."
+                               (view/plan? x) "Got a plan."
+                               :else (str "Got: " (type x) ".")))
+                    {:function fn-name :expected expected-name :got-type (str (type x))}))))
 
 (defn views-of
   "Extract the raw views vector from a sketch.
@@ -664,7 +689,7 @@
        (sketch-impl/views->plan views))))
   ([sketch-or-views opts]
    (sketch-impl/views->plan (extract-views sketch-or-views)
-                              (kindly/deep-merge (carry-opts sketch-or-views) opts))))
+                            (kindly/deep-merge (carry-opts sketch-or-views) opts))))
 
 (defn views->plan
   "Convert views into a plan — a plain Clojure map with data-space
@@ -682,13 +707,14 @@
        (sketch-impl/views->plan views))))
   ([sketch-or-views opts]
    (sketch-impl/views->plan (extract-views sketch-or-views)
-                              (kindly/deep-merge (carry-opts sketch-or-views) opts))))
+                            (kindly/deep-merge (carry-opts sketch-or-views) opts))))
 
 (defn plan->membrane
   "Convert a plan into a membrane drawable tree.
-   (plan->membrane (plan views))"
-  [plan & {:as opts}]
-  (membrane/plan->membrane plan opts))
+   (plan->membrane (plan sketch))"
+  [plan-data & {:as opts}]
+  (expect-type plan-data view/plan? "plan (from sk/plan)" "sk/plan->membrane")
+  (membrane/plan->membrane plan-data opts))
 
 (defn membrane->figure
   "Convert a membrane drawable tree into a figure for the given format.
@@ -701,9 +727,10 @@
   "Convert a plan into a figure for the given format.
    Dispatches on format keyword. Each renderer is a separate namespace
    that registers a defmethod; :svg is always available.
-   (plan->figure (plan views) :svg {})
-   (plan->figure (plan views) :plotly {})"
+   (plan->figure (plan sketch) :svg {})
+   (plan->figure (plan sketch) :plotly {})"
   [plan format opts]
+  (expect-type plan view/plan? "plan (from sk/plan)" "sk/plan->figure")
   (render-impl/plan->figure plan format opts))
 
 ;; ---- Plan Validation ----
