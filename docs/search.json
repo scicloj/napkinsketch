@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Napkinsketch",
     "section": "",
-    "text": "1 Preface\nSimple and easy plotting\nCopy readme_files to notebooks path so Clay can find them for the book\nSimple and easy plotting\nNapkinSketch is a Clojure library for composable plotting, inspired by the Grammar of Graphics.",
+    "text": "1 Preface\nSimple and easy plotting\nNapkinSketch is a Clojure library for composable plotting, inspired by the Grammar of Graphics.",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
     ]
