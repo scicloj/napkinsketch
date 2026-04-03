@@ -71,7 +71,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__70543#] (= "Distribution of Total Bill" p1__70543#))
+       (fn* [p1__75323#] (= "Distribution of Total Bill" p1__75323#))
        (:texts s)))))
    v12_l53)))
 
@@ -184,7 +184,7 @@
    box-layer
    (first
     (filter
-     (fn* [p1__70544#] (= :boxplot (:mark p1__70544#)))
+     (fn* [p1__75324#] (= :boxplot (:mark p1__75324#)))
      (:layers panel)))
    cats
    (:color-categories box-layer)]
@@ -253,7 +253,7 @@
    viol-layer
    (first
     (filter
-     (fn* [p1__70545#] (= :violin (:mark p1__70545#)))
+     (fn* [p1__75325#] (= :violin (:mark p1__75325#)))
      (:layers panel)))
    cats
    (:color-categories viol-layer)]

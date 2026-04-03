@@ -1,9 +1,10 @@
 ;; # Core Concepts
 ;;
-;; This chapter introduces the ideas behind Napkinsketch: how data
-;; becomes a plot, and how the pieces compose. Every concept is
-;; explained as it appears — no prior knowledge of plotting libraries
-;; is assumed.
+;; This chapter is a reference for every concept in Napkinsketch.
+;; If you have not read the
+;; [Composable Plotting](./napkinsketch_book.composability.html)
+;; chapter, start there — it introduces sketches, views, and
+;; methods through progressive examples.
 
 (ns napkinsketch-book.core-concepts
   (:require
@@ -108,91 +109,16 @@ data/iris
 
 (kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
 
-;; ## Views
+;; ## Sketches, Views, and Methods
 ;;
-;; A **view** describes *what* to plot: which dataset, which column
-;; goes on the x-axis, and which goes on the y-axis.
+;; The [Composable Plotting](./napkinsketch_book.composability.html)
+;; chapter introduces these concepts through progressive examples.
+;; Read it first if you have not already.
 ;;
-;; `sk/view` creates a view. It returns a vector of maps — plain
-;; Clojure data that you can inspect, store, and transform.
-
-(def my-view (sk/view data/iris :sepal_length :sepal_width))
-
-(kind/pprint my-view)
-
-;; The view is a vector containing one map. That map holds the
-;; dataset (`:data`) and the column mappings (`:x` and `:y`).
-;; No rendering has happened yet — it is just a description.
-
-;; You can also pass column mappings as a map, which lets you include
-;; additional visual mappings like `:color`:
-
-(kind/pprint (sk/view data/iris {:x :sepal_length :y :sepal_width :color :species}))
-
-;; ## Methods
-;;
-;; A **method** tells Napkinsketch *how* to turn data into a visual.
-;; It combines three concepts (each explained in detail below):
-;;
-;; - **mark** — what shape to draw (points, bars, lines)
-;; - **stat** — what computation to perform first (use data as-is,
-;;   bin into ranges, fit a line)
-;; - **position** — how overlapping groups share space (stack, dodge);
-;;   defaults to identity (no adjustment) when omitted
-;;
-;; `sk/method-lookup` retrieves a method by keyword. Most methods only
-;; store `:mark` and `:stat` — when `:position` is absent, identity
-;; is assumed:
-
-(sk/method-lookup :point)
-
-(kind/test-last [(fn [m] (and (= :point (:mark m))
-                              (= :identity (:stat m))))])
-
-;; `sk/lay` adds a method to a view — it says "draw this data using
-;; this approach." The result is still a vector of maps, now with
-;; the method's keys merged in.
-
-(def view-with-method
-  (sk/lay my-view (sk/method-lookup :point)))
-
-(kind/pprint view-with-method)
-
-;; In practice you rarely call `sk/lay` and `sk/method-lookup` separately.
-;; `sk/lay-point` combines both steps — it creates the method and adds
-;; the layer in one call. You will use `sk/lay-point`,
-;; `sk/lay-histogram`, and similar functions throughout the rest of
-;; the book.
-
-;; ## Plotting
-;;
-;; Napkinsketch sketches auto-render in notebooks.
-;; The pipeline resolves all the details — axis ranges, tick positions,
-;; colors, layout — and produces a visual figure.
-
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width))
-
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
-
-;; What `sk/lay-point` returns is a **sketch** (Sketch) — a
-;; lightweight wrapper around one or more views that auto-renders in
-;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible tools
-;; like Clay.
-
-(sk/sketch? (sk/lay-point data/iris :sepal_length :sepal_width))
-
-(kind/test-last [(fn [v] (true? v))])
-
-;; Under the hood, auto-rendering transforms your views through
-;; several stages — computing layout, drawing shapes, producing SVG.
-;; The [Architecture](./napkinsketch_book.architecture.html) chapter traces every step;
-;; the [Glossary](./napkinsketch_book.glossary.html) defines terms like **plan** (the
-;; intermediate data representation) and **membrane** (the drawable tree).
-;;
-;; You can also step through the pipeline manually:
-;; `sk/plan` returns the intermediate data, and `sk/plot` returns
-;; the final SVG.
+;; In short: `sk/view` describes your views of the data, `sk/lay-*`
+;; functions add drawing methods, and the result is a **sketch** —
+;; a composable, auto-rendering value. Everything is plain data
+;; you can inspect with `sk/views-of`.
 
 ;; ## Options
 ;;
