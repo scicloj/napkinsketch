@@ -21,8 +21,8 @@
 
 ;; ## What Gets Inferred
 ;;
-;; When you write `(-> data (sk/lay-point :x :y))` — or even just
-;; `(sk/lay-point data)` — the library fills
+;; When you write `(-> data (sk/xkcd7-lay-point :x :y))` — or even just
+;; `(sk/xkcd7-lay-point data)` — the library fills
 ;; in everything needed to render a plot. Here is the full list of
 ;; inference steps, in the order they happen:
 ;;
@@ -43,7 +43,7 @@
 
 ;; ## Inspecting the Plan
 ;;
-;; Every call to `sk/plan` returns a plain Clojure map: the **plan**.
+;; Every call to `sk/xkcd7-plan` returns a plain Clojure map: the **plan**.
 ;; It contains everything needed to render a plot — domains, ticks,
 ;; scales, layers with positioned data, legend, layout dimensions.
 ;;
@@ -55,11 +55,11 @@
 
 (def scatter-views
   (-> five-points
-      (sk/lay-point :x :y)))
+      (sk/xkcd7-lay-point :x :y)))
 
 ;; Here is the full plan:
 
-(sk/plan scatter-views)
+(sk/xkcd7-plan scatter-views)
 
 (kind/test-last [(fn [pl] (and (= :single (:layout-type pl))
                                (= 1 (count (:panels pl)))
@@ -106,21 +106,21 @@ scatter-views
 ;; One column:
 
 (-> {:values [1 2 3 4 5 6]}
-    sk/lay-histogram)
+    sk/xkcd7-lay-histogram)
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 ;; Two columns:
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
-    sk/lay-point)
+    sk/xkcd7-lay-point)
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; Three columns — the third becomes `:color`:
 
 (-> {:x [1 2 3 4] :y [4 5 6 7] :g ["a" "a" "b" "b"]}
-    sk/lay-point)
+    sk/xkcd7-lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -130,7 +130,7 @@ scatter-views
 ;; are in full control:
 
 (-> data/iris
-    (sk/lay-point :petal_length :petal_width {:color :species}))
+    (sk/xkcd7-lay-point :petal_length :petal_width {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -157,9 +157,9 @@ scatter-views
 
 (def bar-views
   (-> animals
-      (sk/lay-value-bar :animal :count)))
+      (sk/xkcd7-lay-value-bar :animal :count)))
 
-(sk/plan bar-views)
+(sk/xkcd7-plan bar-views)
 
 (kind/test-last [(fn [pl] (let [p (first (:panels pl))]
                             (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
@@ -181,8 +181,8 @@ bar-views
 
 (let [pl (-> {:date [#inst "2024-01-01" #inst "2024-06-01" #inst "2024-12-01"]
               :val [10 25 18]}
-             (sk/lay-point :date :val)
-             sk/plan)
+             (sk/xkcd7-lay-point :date :val)
+             sk/xkcd7-plan)
       p (first (:panels pl))]
   {:x-domain-numeric? (number? (first (:x-domain p)))
    :tick-count (count (:values (:x-ticks p)))
@@ -211,9 +211,9 @@ bar-views
   (-> {:x [1 2 3 4 5 6]
        :y [3 5 4 7 6 8]
        :g ["a" "a" "a" "b" "b" "b"]}
-      (sk/lay-point :x :y {:color :g})))
+      (sk/xkcd7-lay-point :x :y {:color :g})))
 
-(sk/plan colored-views)
+(sk/xkcd7-plan colored-views)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (and (= 2 (count (:groups layer)))
@@ -235,9 +235,9 @@ colored-views
 
 (def fixed-color-views
   (-> five-points
-      (sk/lay-point :x :y {:color "#E74C3C"})))
+      (sk/xkcd7-lay-point :x :y {:color "#E74C3C"})))
 
-(sk/plan fixed-color-views)
+(sk/xkcd7-plan fixed-color-views)
 
 (kind/test-last [(fn [pl] (and (nil? (:legend pl))
                                (zero? (get-in pl [:layout :legend-w]))
@@ -263,7 +263,7 @@ fixed-color-views
 ;; fixed colors:
 
 (-> five-points
-    (sk/lay-point :x :y {:color "steelblue"}))
+    (sk/xkcd7-lay-point :x :y {:color "steelblue"}))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -293,8 +293,8 @@ fixed-color-views
 ;; Verify: `"red"` is a fixed color when the dataset has no `red` column:
 
 (let [pl (-> five-points
-             (sk/lay-point :x :y {:color "red"})
-             sk/plan)]
+             (sk/xkcd7-lay-point :x :y {:color "red"})
+             sk/xkcd7-plan)]
   {:legend (:legend pl)
    :color (:color (first (:groups (first (:layers (first (:panels pl)))))))})
 
@@ -328,7 +328,7 @@ fixed-color-views
 ;; above), the data is split into one group per category. Each group
 ;; gets a distinct palette color and a legend entry:
 
-(let [pl (sk/plan colored-views)
+(let [pl (sk/xkcd7-plan colored-views)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :group-labels (mapv :label (:groups layer))
@@ -351,8 +351,8 @@ fixed-color-views
 (let [pl (-> {:x [1 2 3 4 5]
               :y [2 4 3 5 4]
               :val [10 20 30 40 50]}
-             (sk/lay-point :x :y {:color :val})
-             sk/plan)
+             (sk/xkcd7-lay-point :x :y {:color :val})
+             sk/xkcd7-plan)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :legend-type (:type (:legend pl))
@@ -377,8 +377,8 @@ fixed-color-views
    :g ["a" "a" "a" "b" "b" "b"]})
 
 (let [pl (-> grouped-data
-             (sk/lay-point :x :y {:group :g})
-             sk/plan)
+             (sk/xkcd7-lay-point :x :y {:group :g})
+             sk/xkcd7-plan)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :has-legend? (some? (:legend pl))})
@@ -393,15 +393,15 @@ fixed-color-views
 ;; ### What grouping affects
 ;;
 ;; Grouping determines how statistical transformations operate.
-;; Without grouping, `sk/lay-lm` (linear model) fits one regression line through
+;; Without grouping, `sk/xkcd7-lay-lm` (linear model) fits one regression line through
 ;; all the data. With grouping, it fits one line per group.
 
 ;; One regression line — no grouping:
 
 (-> grouped-data
-    (sk/view :x :y)
-    sk/lay-point
-    sk/lay-lm)
+    (sk/xkcd7-view :x :y)
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 6 (:points s))
@@ -410,9 +410,9 @@ fixed-color-views
 ;; Two regression lines — grouped by color:
 
 (-> grouped-data
-    (sk/view :x :y {:color :g})
-    sk/lay-point
-    sk/lay-lm)
+    (sk/xkcd7-view :x :y {:color :g})
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 6 (:points s))
@@ -424,7 +424,7 @@ fixed-color-views
 
 ;; ## Method Inference
 ;;
-;; When you use `sk/view` without an explicit `sk/lay-*` call,
+;; When you use `sk/xkcd7-view` without an explicit `sk/xkcd7-lay-*` call,
 ;; Napkinsketch infers the **method** — a mark + stat bundle —
 ;; from the column types. Internally, `infer-method` in `view.clj`
 ;; implements these rules:
@@ -436,16 +436,16 @@ fixed-color-views
 ;; | two numerical | `:point` | `:identity` (scatter) |
 ;; | mixed (categorical + numerical) | `:point` | `:identity` (scatter) |
 ;;
-;; When you use `sk/lay-point`, `sk/lay-histogram`, etc., the method's
+;; When you use `sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram`, etc., the method's
 ;; stat takes precedence — column-type inference is bypassed.
 ;;
 ;; A single numerical column:
 
 (def hist-views
   (-> five-points
-      (sk/view :x)))
+      (sk/xkcd7-view :x)))
 
-(sk/plan hist-views)
+(sk/xkcd7-plan hist-views)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :bar (:mark layer))))])
@@ -462,9 +462,9 @@ hist-views
 
 (def count-views
   (-> animals
-      (sk/view :animal)))
+      (sk/xkcd7-view :animal)))
 
-(sk/plan count-views)
+(sk/xkcd7-plan count-views)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :rect (:mark layer))))])
@@ -479,8 +479,8 @@ count-views
 ;; Mixed column types (categorical x, numerical y) default to `:point`:
 
 (let [pl (-> {:species ["a" "b" "c"] :val [10 20 15]}
-             (sk/view :species :val)
-             sk/plan)
+             (sk/xkcd7-view :species :val)
+             sk/xkcd7-plan)
       layer (first (:layers (first (:panels pl))))]
   (:mark layer))
 
@@ -492,7 +492,7 @@ count-views
 ;; aren't clipped at the edges. Internally, `pad-domain` in
 ;; `scale.clj` computes this padding.
 
-(let [pl (sk/plan scatter-views)
+(let [pl (sk/xkcd7-plan scatter-views)
       p (first (:panels pl))]
   {:x-domain (:x-domain p)
    :data-range [1.0 5.0]
@@ -508,7 +508,7 @@ count-views
 ;;
 ;; Bar chart y-domains always include zero:
 
-(let [pl (sk/plan bar-views)
+(let [pl (sk/xkcd7-plan bar-views)
       p (first (:panels pl))]
   {:y-domain (:y-domain p)})
 
@@ -518,8 +518,8 @@ count-views
 
 (let [fill-pl (-> {:x ["a" "a" "b" "b"]
                    :g ["m" "n" "m" "n"]}
-                  (sk/lay-stacked-bar-fill :x {:color :g})
-                  sk/plan)
+                  (sk/xkcd7-lay-stacked-bar-fill :x {:color :g})
+                  sk/xkcd7-plan)
       p (first (:panels fill-pl))]
   (:y-domain p))
 
@@ -546,7 +546,7 @@ count-views
 ;;
 ;; Linear ticks for the scatter example:
 
-(let [pl (sk/plan scatter-views)
+(let [pl (sk/xkcd7-plan scatter-views)
       p (first (:panels pl))]
   {:x-tick-values (:values (:x-ticks p))
    :x-tick-labels (:labels (:x-ticks p))})
@@ -562,9 +562,9 @@ count-views
 
 (let [pl (-> {:x [0.1 1.0 10.0 100.0 1000.0]
               :y [5 10 15 20 25]}
-             (sk/lay-point :x :y)
-             (sk/scale :x :log)
-             sk/plan)
+             (sk/xkcd7-lay-point :x :y)
+             (sk/xkcd7-scale :x :log)
+             sk/xkcd7-plan)
       p (first (:panels pl))]
   {:tick-values (:values (:x-ticks p))
    :tick-labels (:labels (:x-ticks p))})
@@ -578,7 +578,7 @@ count-views
 
 ;; Categorical ticks match domain order:
 
-(let [pl (sk/plan bar-views)
+(let [pl (sk/xkcd7-plan bar-views)
       p (first (:panels pl))]
   (:values (:x-ticks p)))
 
@@ -592,8 +592,8 @@ count-views
 (def iris data/iris)
 
 (let [pl (-> iris
-             (sk/lay-point :sepal_length :sepal_width)
-             sk/plan)]
+             (sk/xkcd7-lay-point :sepal_length :sepal_width)
+             sk/xkcd7-plan)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -603,7 +603,7 @@ count-views
 ;; When only one column is specified, the y-axis shows computed counts.
 ;; The system omits the y-label since it would repeat the column name:
 
-(let [pl (-> five-points (sk/view :x) sk/plan)]
+(let [pl (-> five-points (sk/xkcd7-view :x) sk/xkcd7-plan)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -613,9 +613,9 @@ count-views
 ;; Explicit labels override inference:
 
 (let [pl (-> five-points
-             (sk/lay-point :x :y)
-             (sk/options {:x-label "Length (cm)" :y-label "Width (cm)"})
-             sk/plan)]
+             (sk/xkcd7-lay-point :x :y)
+             (sk/xkcd7-options {:x-label "Length (cm)" :y-label "Width (cm)"})
+             sk/xkcd7-plan)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -630,7 +630,7 @@ count-views
 ;;
 ;; Categorical color → discrete legend with one entry per category:
 
-(:legend (sk/plan colored-views))
+(:legend (sk/xkcd7-plan colored-views))
 
 (kind/test-last [(fn [leg] (and (= :g (:title leg))
                                 (= 2 (count (:entries leg)))))])
@@ -639,21 +639,21 @@ count-views
 ;;
 ;; No color mapping → no legend:
 
-(:legend (sk/plan scatter-views))
+(:legend (sk/xkcd7-plan scatter-views))
 
 (kind/test-last [nil?])
 
 ;; Fixed color string → no legend:
 
-(:legend (sk/plan fixed-color-views))
+(:legend (sk/xkcd7-plan fixed-color-views))
 
 (kind/test-last [nil?])
 
 ;; Numeric color → continuous legend (gradient bar):
 
 (:legend (-> {:x [1 2 3] :y [4 5 6] :val [10 20 30]}
-             (sk/lay-point :x :y {:color :val})
-             sk/plan))
+             (sk/xkcd7-lay-point :x :y {:color :val})
+             sk/xkcd7-plan))
 
 (kind/test-last [(fn [leg] (and (= :continuous (:type leg))
                                 (= 20 (count (:stops leg)))))])
@@ -665,8 +665,8 @@ count-views
 ;; `plan.clj` generates five entries with proportional radii.
 
 (:size-legend (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :s [10 20 30 40 50]}
-                  (sk/lay-point :x :y {:size :s})
-                  sk/plan))
+                  (sk/xkcd7-lay-point :x :y {:size :s})
+                  sk/xkcd7-plan))
 
 (kind/test-last [(fn [leg] (and (= :size (:type leg))
                                 (= :s (:title leg))
@@ -674,7 +674,7 @@ count-views
 
 ;; Each entry has a `:value` and `:radius`. No size mapping → no size legend:
 
-(:size-legend (sk/plan scatter-views))
+(:size-legend (sk/xkcd7-plan scatter-views))
 
 (kind/test-last [nil?])
 
@@ -685,8 +685,8 @@ count-views
 ;; `plan.clj` generates five entries with proportional opacity.
 
 (:alpha-legend (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :a [0.1 0.3 0.5 0.7 0.9]}
-                   (sk/lay-point :x :y {:alpha :a})
-                   sk/plan))
+                   (sk/xkcd7-lay-point :x :y {:alpha :a})
+                   sk/xkcd7-plan))
 
 (kind/test-last [(fn [leg] (and (= :alpha (:type leg))
                                 (= :a (:title leg))
@@ -694,7 +694,7 @@ count-views
 
 ;; No alpha mapping → no alpha legend:
 
-(:alpha-legend (sk/plan scatter-views))
+(:alpha-legend (sk/xkcd7-plan scatter-views))
 
 (kind/test-last [nil?])
 
@@ -706,13 +706,13 @@ count-views
 ;;
 ;; Compare a bare plot to one with title, labels, and legend:
 
-(let [bare (sk/plan scatter-views)
+(let [bare (sk/xkcd7-plan scatter-views)
       full (-> {:x [1 2 3 4 5 6]
                 :y [3 5 4 7 6 8]
                 :g ["a" "a" "a" "b" "b" "b"]}
-               (sk/lay-point :x :y {:color :g})
-               (sk/options {:title "My Plot"})
-               sk/plan)]
+               (sk/xkcd7-lay-point :x :y {:color :g})
+               (sk/xkcd7-options {:title "My Plot"})
+               sk/xkcd7-plan)]
   {:bare-title-pad (get-in bare [:layout :title-pad])
    :full-title-pad (get-in full [:layout :title-pad])
    :bare-legend-w (get-in bare [:layout :legend-w])
@@ -732,7 +732,7 @@ count-views
 ;; - Facet grid (`:facet-row` or `:facet-col`) → `:facet-grid`
 ;; - Multiple x-y pairs (scatter plot matrix) → `:multi-variable`
 
-(let [pl (sk/plan scatter-views)]
+(let [pl (sk/xkcd7-plan scatter-views)]
   (:layout-type pl))
 
 (kind/test-last [(fn [lt] (= :single lt))])
@@ -745,14 +745,14 @@ count-views
 
 (def normal-pl
   (-> animals
-      (sk/lay-value-bar :animal :count)
-      sk/plan))
+      (sk/xkcd7-lay-value-bar :animal :count)
+      sk/xkcd7-plan))
 
 (def flip-pl
   (-> animals
-      (sk/lay-value-bar :animal :count)
-      (sk/coord :flip)
-      sk/plan))
+      (sk/xkcd7-lay-value-bar :animal :count)
+      (sk/xkcd7-coord :flip)
+      sk/xkcd7-plan))
 
 (let [np (first (:panels normal-pl))
       fp (first (:panels flip-pl))]
@@ -767,8 +767,8 @@ count-views
                               (true? (get-in m [:flipped :y-categorical?]))))])
 
 (-> animals
-    (sk/lay-value-bar :animal :count)
-    (sk/coord :flip))
+    (sk/xkcd7-lay-value-bar :animal :count)
+    (sk/xkcd7-coord :flip))
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
@@ -778,9 +778,9 @@ count-views
 ;; visual axis, not the data axis:
 
 (let [pl (-> five-points
-             (sk/lay-point :x :y)
-             (sk/coord :flip)
-             sk/plan)]
+             (sk/xkcd7-lay-point :x :y)
+             (sk/xkcd7-coord :flip)
+             sk/xkcd7-plan)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -796,11 +796,11 @@ count-views
 
 (def multi-views
   (-> five-points
-      (sk/view :x :y)
-      sk/lay-point
-      sk/lay-lm))
+      (sk/xkcd7-view :x :y)
+      sk/xkcd7-lay-point
+      sk/xkcd7-lay-lm))
 
-(sk/plan multi-views)
+(sk/xkcd7-plan multi-views)
 
 (kind/test-last [(fn [pl] (let [p (first (:panels pl))]
                             (= 2 (count (:layers p)))))])
@@ -874,23 +874,23 @@ graph TD
 ;;
 ;; | What is inferred | Default | Override |
 ;; |:-----------------|:--------|:---------|
-;; | Column selection | 1→x, 2→x y, 3→x y color | explicit column args in `sk/view` or `sk/lay-*` |
+;; | Column selection | 1→x, 2→x y, 3→x y color | explicit column args in `sk/xkcd7-view` or `sk/xkcd7-lay-*` |
 ;; | Column type | dtype inspection | `:x-type`, `:y-type`, `:color-type` in view options |
 ;; | Aesthetic classification | keyword = column, string = color/column | explicit `:color` keyword vs hex string |
 ;; | Grouping | categorical color column | `:group` aesthetic |
-;; | Method (mark + stat) | column types (see table above) | `sk/lay-point`, `sk/lay-histogram`, etc. |
-;; | Domain extent | data range + 5% padding | `(sk/scale views :x {:domain [0 10]})` |
-;; | Domain zero-anchor | bar/stacked charts include zero | `(sk/scale views :y {:domain [5 20]})` |
-;; | Fill domain | `[0.0, 1.0]` for fill position | `(sk/scale views :y {:domain [0 2]})` |
+;; | Method (mark + stat) | column types (see table above) | `sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram`, etc. |
+;; | Domain extent | data range + 5% padding | `(sk/xkcd7-scale views :x {:domain [0 10]})` |
+;; | Domain zero-anchor | bar/stacked charts include zero | `(sk/xkcd7-scale views :y {:domain [5 20]})` |
+;; | Fill domain | `[0.0, 1.0]` for fill position | `(sk/xkcd7-scale views :y {:domain [0 2]})` |
 ;; | Tick values | round intervals (linear), powers of 10 (log) | wadogo scale configuration |
 ;; | Tick labels | number formatting, calendar formatting | wadogo label formatting |
-;; | Axis labels | column name, underscores → spaces | `(sk/options {:x-label "Custom"})` |
+;; | Axis labels | column name, underscores → spaces | `(sk/xkcd7-options {:x-label "Custom"})` |
 ;; | Color legend | categorical = discrete, numerical = continuous, none = no legend | `:color` mapping controls presence |
 ;; | Size legend | 5 graduated circles when `:size` maps to numerical column | `:size` mapping controls presence |
 ;; | Alpha legend | 5 graduated opacity squares when `:alpha` maps to numerical column | `:alpha` mapping controls presence |
 ;; | Layout padding | adjusts for title, labels, legend | `:width`, `:height` in options |
-;; | Layout type | single, facet-grid, multi-variable | `sk/facet`, multiple x-y pairs |
-;; | Coordinate system | `:cartesian` | `(sk/coord :flip)`, `(sk/coord :polar)` |
+;; | Layout type | single, facet-grid, multi-variable | `sk/xkcd7-facet`, multiple x-y pairs |
+;; | Coordinate system | `:cartesian` | `(sk/xkcd7-coord :flip)`, `(sk/xkcd7-coord :polar)` |
 ;;
 ;; The plan captures the result of all inference. When in doubt,
 ;; look at the plan.
