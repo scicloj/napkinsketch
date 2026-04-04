@@ -4,6 +4,7 @@
    to SVG, PNG, or any other format membrane supports."
   (:require [membrane.ui :as ui]
             [scicloj.napkinsketch.impl.defaults :as defaults]
+            [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.render.panel :as panel]))
 
 ;; ---- Legend ----
@@ -225,6 +226,13 @@
         text-color (if-let [tc (:text-color cfg)]
                      (defaults/hex->rgba tc)
                      [0.2 0.2 0.2 1.0])
+        bottom-row-panels (filter #(= (:row %) (dec grid-rows)) panels)
+        x-axis-layouts (for [p bottom-row-panels]
+                         (sketch/infer-x-tick-layout (get-in p [:x-ticks :labels]) pw margin cfg))
+        max-x-tick-footprint (reduce max 0.0 (map :tick-label-footprint x-axis-layouts))
+        x-axis-label-gap (if x-label 6.0 0.0)
+        panel-bottom-y (+ title-pad strip-h (* grid-rows ph))
+        x-axis-label-y (+ panel-bottom-y max-x-tick-footprint x-axis-label-gap)
 
         ;; Render each panel, positioned in the grid
         panel-elems
@@ -308,7 +316,7 @@
       ;; X-axis label
       (when x-label
         (let [fsize label-fsize]
-          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) (- total-height x-label-pad -2)
+          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) x-axis-label-y
                          (ui/with-color text-color
                            (assoc (ui/label x-label (ui/font nil fsize))
                                   :text-anchor "middle")))]))

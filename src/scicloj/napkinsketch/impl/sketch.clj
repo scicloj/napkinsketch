@@ -129,11 +129,18 @@
         (if (= x-rotate-cfg :auto)
           (> estimated-label-width avg-tick-spacing)
           (number? x-rotate-cfg))
-        rotation-deg (if (number? x-rotate-cfg) x-rotate-cfg -45)]
+        rotation-deg (if (number? x-rotate-cfg) x-rotate-cfg -45)
+        theta-rad (Math/toRadians (Math/abs rotation-deg))
+        footprint (+ (* estimated-label-width
+                        (Math/sin theta-rad))
+                     (* fsize
+                        (Math/cos theta-rad)))]
     {:rotate? rotate?
      :rotation-deg rotation-deg
      :avg-tick-spacing avg-tick-spacing
-     :estimated-label-width estimated-label-width}))
+     :estimated-label-width estimated-label-width
+     :tick-label-height fsize
+     :tick-label-footprint (if rotate? footprint fsize)}))
 
 (defn compute-ticks
   "Compute tick values and labels for a domain+pixel range, using wadogo transiently.
@@ -578,9 +585,10 @@
   (let [tick-fsize (get-in cfg [:theme :font-size] 8)
         x-layouts (for [p panels]
                     (infer-x-tick-layout (get-in p [:x-ticks :labels]) pw (:margin cfg) cfg))
-        rotate-x-ticks? (boolean (some :rotate? x-layouts))
+        max-x-tick-footprint (reduce max 0.0 (map :tick-label-footprint x-layouts))
         x-label-pad (+ (if eff-x-label (:label-offset cfg) 0)
-                       (if rotate-x-ticks? (:x-tick-extra-pad cfg 48) 0))
+                       (max 0.0 (- max-x-tick-footprint tick-fsize))
+                       (if (and eff-x-label (pos? max-x-tick-footprint)) 6.0 0.0))
         ;; y-label-pad must account for y-tick label width (e.g. category names)
         max-y-tick-len (reduce max 0
                                (for [p panels
