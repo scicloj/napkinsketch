@@ -19,8 +19,8 @@
  v4_l26
  (->
   data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
-  (sk/coord :polar)))
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+  (sk/xkcd7-coord :polar)))
 
 
 (deftest
@@ -34,7 +34,9 @@
    v4_l26)))
 
 
-(def v7_l41 (-> data/iris (sk/lay-bar :species) (sk/coord :polar)))
+(def
+ v7_l41
+ (-> data/iris (sk/xkcd7-lay-bar :species) (sk/xkcd7-coord :polar)))
 
 
 (deftest
@@ -50,7 +52,10 @@
 
 (def
  v10_l54
- (-> wind (sk/lay-value-bar :direction :speed) (sk/coord :polar)))
+ (->
+  wind
+  (sk/xkcd7-lay-value-bar :direction :speed)
+  (sk/xkcd7-coord :polar)))
 
 
 (deftest
@@ -68,8 +73,8 @@
  v13_l66
  (->
   data/penguins
-  (sk/lay-stacked-bar :island {:color :species})
-  (sk/coord :polar)))
+  (sk/xkcd7-lay-stacked-bar :island {:color :species})
+  (sk/xkcd7-coord :polar)))
 
 
 (deftest
@@ -85,7 +90,10 @@
 
 (def
  v16_l79
- (-> data/iris (sk/lay-histogram :sepal_length) (sk/coord :polar)))
+ (->
+  data/iris
+  (sk/xkcd7-lay-histogram :sepal_length)
+  (sk/xkcd7-coord :polar)))
 
 
 (deftest
@@ -103,9 +111,9 @@
  v19_l92
  (->
   data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
-  (sk/coord :polar)
-  (sk/options {:title "Iris in Polar Space"})))
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+  (sk/xkcd7-coord :polar)
+  (sk/xkcd7-options {:title "Iris in Polar Space"})))
 
 
 (deftest

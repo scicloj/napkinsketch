@@ -24,8 +24,8 @@
 ;; edge = maximum).
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/coord :polar))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -39,8 +39,8 @@
 ;; curved edges.
 
 (-> data/iris
-    (sk/lay-bar :species)
-    (sk/coord :polar))
+    (sk/xkcd7-lay-bar :species)
+    (sk/xkcd7-coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -52,8 +52,8 @@
 ;; gets a wedge proportional to wind speed.
 
 (-> wind
-    (sk/lay-value-bar :direction :speed)
-    (sk/coord :polar))
+    (sk/xkcd7-lay-value-bar :direction :speed)
+    (sk/xkcd7-coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -64,8 +64,8 @@
 ;; Stacked bars in polar show composition within each wedge.
 
 (-> data/penguins
-    (sk/lay-stacked-bar :island {:color :species})
-    (sk/coord :polar))
+    (sk/xkcd7-lay-stacked-bar :island {:color :species})
+    (sk/xkcd7-coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -77,8 +77,8 @@
 ;; circular distributions (e.g., time of day, compass bearing).
 
 (-> data/iris
-    (sk/lay-histogram :sepal_length)
-    (sk/coord :polar))
+    (sk/xkcd7-lay-histogram :sepal_length)
+    (sk/xkcd7-coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -90,9 +90,9 @@
 ;; are no rectangular axes). You can still set a title with `sk/options`:
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/coord :polar)
-    (sk/options {:title "Iris in Polar Space"}))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-coord :polar)
+    (sk/xkcd7-options {:title "Iris in Polar Space"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

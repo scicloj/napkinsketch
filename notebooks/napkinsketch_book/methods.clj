@@ -7,7 +7,7 @@
 ;; - **stat** — what computation to apply first (pass through, bin, count, regress, ...)
 ;; - **position** — how overlapping groups share space (identity, dodge, stack, fill)
 ;;
-;; Layer functions (`sk/lay-point`, `sk/lay-histogram`, `sk/lay-bar`, `sk/lay-lm`, etc.)
+;; Layer functions (`sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram`, `sk/xkcd7-lay-bar`, `sk/xkcd7-lay-lm`, etc.)
 ;; each add a layer with the corresponding method. When no layer is added,
 ;; napkinsketch infers a method from the column types.
 ;;

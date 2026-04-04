@@ -15,6 +15,8 @@
             [scicloj.napkinsketch.render.mark :as mark]
             [scicloj.napkinsketch.render.svg :as svg]
             [scicloj.napkinsketch.method :as method]
+            [scicloj.napkinsketch.impl.blueprint :as blueprint]
+            [tablecloth.api :as tc]
             [scicloj.kindly.v4.api :as kindly]
             [scicloj.kindly.v4.kind :as kind])
   (:import [scicloj.napkinsketch.impl.view Sketch]))
@@ -757,13 +759,17 @@
    (svg-summary (plot views))  — summary of rendered SVG
    (svg-summary my-sketch)       — auto-renders Sketch, then summarizes"
   ([svg-or-sketch]
-   (if (view/sketch? svg-or-sketch)
-     (svg/svg-summary (plot svg-or-sketch))
-     (svg/svg-summary svg-or-sketch)))
+   (cond
+     (view/sketch? svg-or-sketch) (svg/svg-summary (plot svg-or-sketch))
+     (blueprint/blueprint? svg-or-sketch)
+     (svg/svg-summary (plot-impl/plot (blueprint/resolve-blueprint svg-or-sketch) (:opts svg-or-sketch {})))
+     :else (svg/svg-summary svg-or-sketch)))
   ([svg-or-sketch theme]
-   (if (view/sketch? svg-or-sketch)
-     (svg/svg-summary (plot svg-or-sketch) theme)
-     (svg/svg-summary svg-or-sketch theme))))
+   (cond
+     (view/sketch? svg-or-sketch) (svg/svg-summary (plot svg-or-sketch) theme)
+     (blueprint/blueprint? svg-or-sketch)
+     (svg/svg-summary (plot-impl/plot (blueprint/resolve-blueprint svg-or-sketch) (:opts svg-or-sketch {})) theme)
+     :else (svg/svg-summary svg-or-sketch theme))))
 
 ;; ---- Multi-Plot Composition ----
 
@@ -825,3 +831,237 @@
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
      (svg/save (extract-views sketch-or-views) path
                (kindly/deep-merge (carry-opts sketch-or-views) opts)))))
+
+;; ================================================================
+;; PROPOSED API — temporary xkcd7- prefix (will be renamed)
+;; ================================================================
+
+(defn- xkcd7-wrap-autorender
+  "Wrap a Blueprint with kind/fn for auto-rendering in Clay."
+  [bp]
+  (kind/fn (cond-> (assoc bp :kindly/f #'blueprint/render-blueprint)
+             defaults/*config* (assoc :config-snapshot defaults/*config*))))
+
+(defn- xkcd7-ensure-bp
+  "Coerce first arg to a Blueprint if it isn't one already."
+  [x]
+  (cond
+    (blueprint/blueprint? x) x
+    (tc/dataset? x)          (xkcd7-wrap-autorender (blueprint/->blueprint x {} [] [] {}))
+    (map? x)                 (xkcd7-wrap-autorender (blueprint/->blueprint (tc/dataset x) {} [] [] {}))
+    :else                    (xkcd7-wrap-autorender (blueprint/->blueprint nil {} [] [] {}))))
+
+(defn xkcd7-sketch
+  "Create a Blueprint."
+  ([] (xkcd7-wrap-autorender (blueprint/->blueprint nil {} [] [] {})))
+  ([data] (xkcd7-sketch data {}))
+  ([data shared]
+   (xkcd7-wrap-autorender
+    (blueprint/->blueprint
+     (when data (if (tc/dataset? data) data (tc/dataset data)))
+     shared [] [] {}))))
+
+(defn xkcd7-with-data
+  "Supply or replace data in a Blueprint."
+  [bp data]
+  (assoc bp :data (if (tc/dataset? data) data (tc/dataset data))))
+
+(defn xkcd7-view
+  "Add entries to a Blueprint."
+  ([bp-or-data]
+   (let [bp (xkcd7-ensure-bp bp-or-data)]
+     (if (:data bp)
+       (let [ds (:data bp)
+             cols (vec (tc/column-names ds))
+             n (count cols)]
+         (case n
+           1 (update bp :entries conj {:x (cols 0)})
+           2 (update bp :entries conj {:x (cols 0) :y (cols 1)})
+           3 (update bp :entries conj {:x (cols 0) :y (cols 1) :color (cols 2)})
+           (throw (ex-info (str "Cannot infer columns from " n " columns.") {:columns cols}))))
+       bp)))
+  ([bp-or-data x-or-entries]
+   (let [bp (xkcd7-ensure-bp bp-or-data)]
+     (cond
+       (or (keyword? x-or-entries)
+           (string? x-or-entries)) (update bp :entries conj {:x x-or-entries})
+       (map? x-or-entries)       (update bp :entries conj x-or-entries)
+       (sequential? x-or-entries)
+       (update bp :entries into (mapv (fn [[x y]] {:x x :y y}) x-or-entries)))))
+  ([bp-or-data x y]
+   (let [bp (xkcd7-ensure-bp bp-or-data)]
+     (if (and (sequential? x) (map? y))
+       ;; Pairs + shared opts: (view bp pairs {:color :species})
+       (let [bp (update bp :shared merge y)]
+         (update bp :entries into (mapv (fn [[a b]] {:x a :y b}) x)))
+       (update bp :entries conj {:x x :y y}))))
+  ([bp-or-data x y opts]
+   (let [bp (xkcd7-ensure-bp bp-or-data)]
+     (-> bp
+         (update :shared merge opts)
+         (update :entries conj {:x x :y y})))))
+
+(defn xkcd7-lay
+  "Add a method to a Blueprint."
+  ([bp-or-data method-key]
+   (let [bp (xkcd7-ensure-bp bp-or-data)]
+     (if (keyword? method-key)
+       (let [m (method/lookup method-key)]
+         (update bp :methods conj (or (select-keys m [:mark :stat :position])
+                                      {:mark method-key :stat :identity})))
+       (update bp :methods conj method-key))))
+  ([bp-or-data method-key opts]
+   (let [bp (xkcd7-ensure-bp bp-or-data)]
+     (if (keyword? method-key)
+       (let [m (method/lookup method-key)]
+         (update bp :methods conj (merge (or (select-keys m [:mark :stat :position])
+                                             {:mark method-key :stat :identity})
+                                         opts)))
+       (update bp :methods conj (merge method-key opts))))))
+
+(defmacro ^:private def-xkcd7-lay [method-key]
+  (let [fn-name (symbol (str "xkcd7-lay-" (name method-key)))]
+    `(defn ~fn-name
+       ~(str "Add :" (name method-key) " method to a Blueprint.\n"
+             "  (xkcd7-lay-" (name method-key) " bp) — add to existing Blueprint.\n"
+             "  (xkcd7-lay-" (name method-key) " bp {:alpha 0.5}) — with options.\n"
+             "  (xkcd7-lay-" (name method-key) " data :x :y) — data + columns.\n"
+             "  (xkcd7-lay-" (name method-key) " data :x :y {:color :c}) — data + columns + opts.")
+       ([bp-or-data#]
+        (let [bp# (xkcd7-ensure-bp bp-or-data#)]
+          (xkcd7-lay (if (and (empty? (:entries bp#))
+                              (:data bp#)
+                              (<= (count (tc/column-names (:data bp#))) 3))
+                       (xkcd7-view bp#)
+                       bp#)
+                     ~method-key)))
+       ([bp-or-data# x-or-opts#]
+        (if (or (keyword? x-or-opts#) (string? x-or-opts#))
+          ;; Single column (univariate): data + x
+          (-> (xkcd7-ensure-bp bp-or-data#)
+              (xkcd7-view x-or-opts#)
+              (xkcd7-lay ~method-key))
+          ;; Options map
+          (xkcd7-lay bp-or-data# ~method-key x-or-opts#)))
+       ([bp-or-data# x# y-or-opts#]
+        (if (or (keyword? y-or-opts#) (string? y-or-opts#))
+          ;; data + x + y
+          (-> (xkcd7-ensure-bp bp-or-data#)
+              (xkcd7-view x# y-or-opts#)
+              (xkcd7-lay ~method-key))
+          ;; bp + x-column + opts (univariate + opts)
+          (-> (xkcd7-ensure-bp bp-or-data#)
+              (xkcd7-view x#)
+              (xkcd7-lay ~method-key y-or-opts#))))
+       ([bp-or-data# x# y# opts#]
+        (-> (xkcd7-ensure-bp bp-or-data#)
+            (xkcd7-view x# y#)
+            (xkcd7-lay ~method-key opts#))))))
+
+(def-xkcd7-lay :point)
+(def-xkcd7-lay :line)
+(def-xkcd7-lay :step)
+(def-xkcd7-lay :area)
+(def-xkcd7-lay :stacked-area)
+(def-xkcd7-lay :histogram)
+(def-xkcd7-lay :bar)
+(def-xkcd7-lay :stacked-bar)
+(def-xkcd7-lay :stacked-bar-fill)
+(def-xkcd7-lay :value-bar)
+(def-xkcd7-lay :lm)
+(def-xkcd7-lay :loess)
+(def-xkcd7-lay :density)
+(def-xkcd7-lay :tile)
+(def-xkcd7-lay :density2d)
+(def-xkcd7-lay :contour)
+(def-xkcd7-lay :boxplot)
+(def-xkcd7-lay :violin)
+(def-xkcd7-lay :ridgeline)
+(def-xkcd7-lay :summary)
+(def-xkcd7-lay :errorbar)
+(def-xkcd7-lay :lollipop)
+(def-xkcd7-lay :text)
+(def-xkcd7-lay :label)
+(def-xkcd7-lay :rug)
+
+(defn xkcd7-overlay
+  "Add an entry with its own methods."
+  ([bp-or-data x y methods]
+   (let [bp (xkcd7-ensure-bp bp-or-data)]
+     (update bp :entries conj {:x x :y y :methods methods})))
+  ([bp-or-data entry-map methods]
+   (let [bp (xkcd7-ensure-bp bp-or-data)]
+     (update bp :entries conj (assoc entry-map :methods methods)))))
+
+(defn xkcd7-facet
+  "Facet a Blueprint by a column."
+  ([bp col] (xkcd7-facet bp col :col))
+  ([bp col direction]
+   (let [k (case direction :col :facet-col :row :facet-row)]
+     (update bp :entries (fn [entries] (mapv #(assoc % k col) entries))))))
+
+(defn xkcd7-facet-grid
+  "Facet a Blueprint by two columns (2D grid)."
+  [bp col-col row-col]
+  (update bp :entries (fn [entries]
+                        (mapv #(assoc % :facet-col col-col :facet-row row-col) entries))))
+
+(defn xkcd7-options
+  "Set plot-level options (title, labels, width, height, etc.)."
+  [bp opts]
+  (update bp :opts merge opts))
+
+(defn xkcd7-scale
+  "Set axis scale on a Blueprint.
+   (xkcd7-scale bp :x :log) — log scale on x-axis."
+  [bp channel scale-type]
+  (let [k (case channel :x :x-scale :y :y-scale
+                (throw (ex-info (str "Scale channel must be :x or :y, got: " channel)
+                                {:channel channel})))]
+    (update bp :entries (fn [entries]
+                          (mapv #(assoc % k (if (map? scale-type)
+                                              scale-type
+                                              {:type scale-type})) entries)))))
+
+(defn xkcd7-coord
+  "Set coordinate transform on a Blueprint.
+   (xkcd7-coord bp :flip) — flipped coordinates."
+  [bp coord-type]
+  (update bp :entries (fn [entries]
+                        (mapv #(assoc % :coord coord-type) entries))))
+
+(defn xkcd7-plan
+  "Resolve a Blueprint into a plan — a plain Clojure map with data-space
+   geometry, domains, tick info, legend, and layout.
+   (xkcd7-plan bp)
+   (xkcd7-plan bp {:title \"My Plot\"})"
+  ([bp]
+   (let [views (blueprint/resolve-blueprint bp)]
+     (sketch-impl/views->plan views (:opts bp {}))))
+  ([bp opts]
+   (let [views (blueprint/resolve-blueprint bp)]
+     (sketch-impl/views->plan views (merge (:opts bp {}) opts)))))
+
+(defn xkcd7-annotate
+  "Add annotation entries to a Blueprint.
+   Annotations (rule-h, rule-v, band-h, band-v) are view maps that
+   don't participate in the entry × methods cross product.
+   (xkcd7-annotate bp (sk/rule-h 5) (sk/band-v 3 7))"
+  [bp & annotations]
+  (reduce (fn [bp ann]
+            (update bp :entries conj (assoc ann :methods [ann])))
+          bp annotations))
+
+(defn xkcd7-distribution
+  "Add diagonal entries (x=y) for each column — used for histograms in SPLOM.
+   (xkcd7-distribution bp :a :b :c) adds entries [{:x :a :y :a} {:x :b :y :b} {:x :c :y :c}]"
+  [bp-or-data & cols]
+  (let [bp (xkcd7-ensure-bp bp-or-data)]
+    (reduce (fn [bp col] (update bp :entries conj {:x col :y col}))
+            bp cols)))
+
+(defn xkcd7-plot
+  "Render a Blueprint to SVG (or interactive HTML if tooltip/brush is set)."
+  [bp]
+  (let [views (blueprint/resolve-blueprint bp)]
+    (plot-impl/plot views (:opts bp {}))))

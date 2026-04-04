@@ -14,8 +14,8 @@
  v3_l28
  (->
   data/iris
-  (sk/lay-boxplot :species :sepal_length)
-  (sk/lay-point {:jitter true, :alpha 0.3})))
+  (sk/xkcd7-lay-boxplot :species :sepal_length)
+  (sk/xkcd7-lay-point {:jitter true, :alpha 0.3})))
 
 
 (deftest
@@ -33,8 +33,10 @@
  v6_l41
  (->
   data/iris
-  (sk/lay-histogram :sepal_length {:normalize :density, :alpha 0.5})
-  sk/lay-density))
+  (sk/xkcd7-lay-histogram
+   :sepal_length
+   {:normalize :density, :alpha 0.5})
+  sk/xkcd7-lay-density))
 
 
 (deftest
@@ -52,9 +54,9 @@
  v9_l53
  (->
   data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
-  (sk/lay-point {:alpha 0.6})
-  sk/lay-lm))
+  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+  (sk/xkcd7-lay-point {:alpha 0.6})
+  sk/xkcd7-lay-lm))
 
 
 (deftest
@@ -72,8 +74,8 @@
  v12_l66
  (->
   data/iris
-  (sk/lay-violin :species :petal_width {:alpha 0.3})
-  (sk/lay-point {:jitter true, :alpha 0.4})))
+  (sk/xkcd7-lay-violin :species :petal_width {:alpha 0.3})
+  (sk/xkcd7-lay-point {:jitter true, :alpha 0.4})))
 
 
 (deftest
@@ -102,8 +104,8 @@
    :value
    (map
     (fn*
-     [p1__89031#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__89031#) 0.12)))))
+     [p1__310316#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__310316#) 0.12)))))
     (range 52))}))
 
 
@@ -111,9 +113,9 @@
  v17_l85
  (->
   ts-ds
-  (sk/lay-area :date :value {:alpha 0.2})
-  sk/lay-line
-  (sk/lay-point {:alpha 0.5})))
+  (sk/xkcd7-lay-area :date :value {:alpha 0.2})
+  sk/xkcd7-lay-line
+  (sk/xkcd7-lay-point {:alpha 0.5})))
 
 
 (deftest
@@ -131,8 +133,8 @@
  v20_l99
  (->
   data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
-  (sk/facet :species)))
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+  (sk/xkcd7-facet :species)))
 
 
 (deftest
@@ -144,8 +146,8 @@
  v23_l111
  (->
   data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
-  (sk/lay (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3}))))
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+  (sk/xkcd7-annotate (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3}))))
 
 
 (deftest
@@ -163,7 +165,7 @@
  v26_l124
  (->
   data/iris
-  (sk/lay-ridgeline :species :sepal_length {:color :species})))
+  (sk/xkcd7-lay-ridgeline :species :sepal_length {:color :species})))
 
 
 (deftest
@@ -179,7 +181,9 @@
 
 (def
  v29_l135
- (-> data/penguins (sk/lay-stacked-bar-fill :island {:color :species})))
+ (->
+  data/penguins
+  (sk/xkcd7-lay-stacked-bar-fill :island {:color :species})))
 
 
 (deftest
@@ -197,8 +201,8 @@
  v32_l148
  (->
   data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
-  sk/lay-lm))
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+  (sk/xkcd7-lay-lm {:color nil})))
 
 
 (deftest
@@ -226,8 +230,8 @@
  v36_l167
  (->
   experiment
-  (sk/lay-point :condition :mean {:size 5})
-  (sk/lay-errorbar {:ymin :ci_lo, :ymax :ci_hi})))
+  (sk/xkcd7-lay-point :condition :mean {:size 5})
+  (sk/xkcd7-lay-errorbar {:ymin :ci_lo, :ymax :ci_hi})))
 
 
 (deftest
@@ -245,8 +249,8 @@
  v39_l179
  (->
   experiment
-  (sk/lay-lollipop :condition :mean)
-  (sk/lay-errorbar {:ymin :ci_lo, :ymax :ci_hi})))
+  (sk/xkcd7-lay-lollipop :condition :mean)
+  (sk/xkcd7-lay-errorbar {:ymin :ci_lo, :ymax :ci_hi})))
 
 
 (deftest
@@ -264,8 +268,8 @@
  v42_l191
  (->
   data/iris
-  (sk/lay-point :species :sepal_length {:alpha 0.3, :jitter 5})
-  (sk/lay-summary {:color :species})))
+  (sk/xkcd7-lay-point :species :sepal_length {:alpha 0.3, :jitter 5})
+  (sk/xkcd7-lay-summary {:color :species})))
 
 
 (deftest
@@ -283,10 +287,10 @@
  v45_l203
  (->
   data/tips
-  (sk/view :total_bill :tip {:color :smoker})
-  sk/lay-point
-  sk/lay-lm
-  (sk/options
+  (sk/xkcd7-view :total_bill :tip {:color :smoker})
+  sk/xkcd7-lay-point
+  sk/xkcd7-lay-lm
+  (sk/xkcd7-options
    {:title "Tipping Behavior",
     :x-label "Total Bill ($)",
     :y-label "Tip ($)"})))
@@ -310,10 +314,10 @@
  v48_l223
  (->
   data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
-  (sk/lay-point {:alpha 0.5})
-  (sk/lay-lm {:se true})
-  (sk/options {:title "Sepal Regression with Confidence Bands"})))
+  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+  (sk/xkcd7-lay-point {:alpha 0.5})
+  (sk/xkcd7-lay-lm {:se true})
+  (sk/xkcd7-options {:title "Sepal Regression with Confidence Bands"})))
 
 
 (deftest
@@ -331,8 +335,8 @@
  v51_l238
  (->
   data/tips
-  (sk/lay-bar :day {:color :sex})
-  (sk/options {:title "Dodged Bars (default)"})))
+  (sk/xkcd7-lay-bar :day {:color :sex})
+  (sk/xkcd7-options {:title "Dodged Bars (default)"})))
 
 
 (deftest
@@ -344,8 +348,8 @@
  v53_l244
  (->
   data/tips
-  (sk/lay-stacked-bar :day {:color :sex})
-  (sk/options {:title "Stacked Bars"})))
+  (sk/xkcd7-lay-stacked-bar :day {:color :sex})
+  (sk/xkcd7-options {:title "Stacked Bars"})))
 
 
 (deftest
@@ -365,9 +369,9 @@
  v57_l259
  (->
   daily-temps
-  (sk/lay-step :day :temp {:color "#2196F3"})
-  (sk/lay-point {:color "#2196F3", :size 3})
-  (sk/options {:title "Daily Temperature (Step)"})))
+  (sk/xkcd7-lay-step :day :temp {:color "#2196F3"})
+  (sk/xkcd7-lay-point {:color "#2196F3", :size 3})
+  (sk/xkcd7-options {:title "Daily Temperature (Step)"})))
 
 
 (deftest
@@ -385,11 +389,11 @@
  v60_l273
  (->
   data/iris
-  (sk/lay-point
+  (sk/xkcd7-lay-point
    :sepal_length
    :sepal_width
    {:color :species, :alpha 0.4})
-  (sk/lay-contour {:levels 5})))
+  (sk/xkcd7-lay-contour {:levels 5})))
 
 
 (deftest
@@ -414,8 +418,8 @@
  v64_l287
  (->
   top5
-  (sk/lay-point :sepal_length :sepal_width {:size 5})
-  (sk/lay-label {:text :species, :nudge-y 0.15})))
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:size 5})
+  (sk/xkcd7-lay-label {:text :species, :nudge-y 0.15})))
 
 
 (deftest
@@ -428,7 +432,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__89032#] (= "virginica" p1__89032#))
+       (fn* [p1__310317#] (= "virginica" p1__310317#))
        (:texts s)))))
    v64_l287)))
 
@@ -437,8 +441,8 @@
  v67_l299
  (->
   data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
-  (sk/options
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+  (sk/xkcd7-options
    {:palette
     {:setosa "#E91E63", :versicolor "#4CAF50", :virginica "#2196F3"},
     :title "Custom Palette Map"})))
@@ -459,11 +463,11 @@
  v70_l315
  (->
   data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
-  sk/lay-point
-  sk/lay-lm
-  (sk/coord :fixed)
-  (sk/options {:title "Fixed Aspect Ratio"})))
+  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+  sk/xkcd7-lay-point
+  sk/xkcd7-lay-lm
+  (sk/xkcd7-coord :fixed)
+  (sk/xkcd7-options {:title "Fixed Aspect Ratio"})))
 
 
 (deftest
@@ -482,10 +486,10 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__89033#] (Math/sin (/ p1__89033# 3.0))) (range 20)),
-   :change (map (fn* [p1__89034#] (- p1__89034# 10)) (range 20))}
-  (sk/lay-point :x :y {:color :change})
-  (sk/options
+   (map (fn* [p1__310318#] (Math/sin (/ p1__310318# 3.0))) (range 20)),
+   :change (map (fn* [p1__310319#] (- p1__310319# 10)) (range 20))}
+  (sk/xkcd7-lay-point :x :y {:color :change})
+  (sk/xkcd7-options
    {:color-scale :diverging,
     :color-midpoint 0,
     :title "Diverging Color Scale"})))
@@ -506,10 +510,10 @@
  v76_l347
  (->
   data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
-  sk/lay-point
-  (sk/lay-loess {:se true})
-  (sk/options {:title "LOESS with 95% CI"})))
+  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+  sk/xkcd7-lay-point
+  (sk/xkcd7-lay-loess {:se true})
+  (sk/xkcd7-options {:title "LOESS with 95% CI"})))
 
 
 (deftest
@@ -529,8 +533,8 @@
   iris-sepal
   (->
    data/iris
-   (sk/lay-point :sepal_length :sepal_width {:color :species})
-   (sk/options {:title "Sepal", :width 300, :height 250}))))
+   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+   (sk/xkcd7-options {:title "Sepal", :width 300, :height 250}))))
 
 
 (def
@@ -539,8 +543,8 @@
   iris-petal
   (->
    data/iris
-   (sk/lay-point :petal_length :petal_width {:color :species})
-   (sk/options {:title "Petal", :width 300, :height 250}))))
+   (sk/xkcd7-lay-point :petal_length :petal_width {:color :species})
+   (sk/xkcd7-options {:title "Petal", :width 300, :height 250}))))
 
 
 (def
@@ -572,9 +576,9 @@
  v85_l387
  (->
   top-cities
-  (sk/lay-point :area :population)
-  (sk/lay-text {:text :city, :nudge-y 1.0})
-  (sk/options {:title "Population vs Area"})))
+  (sk/xkcd7-lay-point :area :population)
+  (sk/xkcd7-lay-text {:text :city, :nudge-y 1.0})
+  (sk/xkcd7-options {:title "Population vs Area"})))
 
 
 (deftest
@@ -600,14 +604,14 @@
    ys
    (map
     (fn*
-     [p1__89035#]
-     (+ (* 3 p1__89035#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__310320#]
+     (+ (* 3 p1__310320#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}
-   (sk/lay-point :x :y)
-   sk/lay-lm
-   (sk/options {:title "Simulated: y = 3x + 5 + noise"}))))
+   (sk/xkcd7-lay-point :x :y)
+   sk/xkcd7-lay-lm
+   (sk/xkcd7-options {:title "Simulated: y = 3x + 5 + noise"}))))
 
 
 (deftest
@@ -628,8 +632,8 @@
  v91_l422
  (->
   data/penguins
-  (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
-  (sk/options {:title "Palmer Penguins: Bill Dimensions"})))
+  (sk/xkcd7-lay-point :bill_length_mm :bill_depth_mm {:color :species})
+  (sk/xkcd7-options {:title "Palmer Penguins: Bill Dimensions"})))
 
 
 (deftest
@@ -647,10 +651,10 @@
  v94_l432
  (->
   data/penguins
-  (sk/view :bill_length_mm :bill_depth_mm {:color :species})
-  sk/lay-point
-  sk/lay-lm
-  (sk/options {:title "Bill Length vs Depth with Regression"})))
+  (sk/xkcd7-view :bill_length_mm :bill_depth_mm {:color :species})
+  sk/xkcd7-lay-point
+  sk/xkcd7-lay-lm
+  (sk/xkcd7-options {:title "Bill Length vs Depth with Regression"})))
 
 
 (deftest
@@ -668,9 +672,9 @@
  v97_l445
  (->
   data/penguins
-  (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
-  sk/lay-lm
-  (sk/options
+  (sk/xkcd7-lay-point :bill_length_mm :bill_depth_mm {:color :species})
+  (sk/xkcd7-lay-lm {:color nil})
+  (sk/xkcd7-options
    {:title "Simpson's Paradox: Overall vs Per-Group Trend"})))
 
 
@@ -689,8 +693,8 @@
  v100_l456
  (->
   data/penguins
-  (sk/lay-bar :island {:color :species})
-  (sk/options {:title "Species by Island"})))
+  (sk/xkcd7-lay-bar :island {:color :species})
+  (sk/xkcd7-options {:title "Species by Island"})))
 
 
 (deftest
@@ -708,10 +712,10 @@
  v103_l466
  (->
   data/penguins
-  (sk/view :flipper_length_mm :body_mass_g {:color :species})
-  sk/lay-point
-  sk/lay-lm
-  (sk/options {:title "Flipper Length vs Body Mass"})))
+  (sk/xkcd7-view :flipper_length_mm :body_mass_g {:color :species})
+  sk/xkcd7-lay-point
+  sk/xkcd7-lay-lm
+  (sk/xkcd7-options {:title "Flipper Length vs Body Mass"})))
 
 
 (deftest
@@ -729,8 +733,8 @@
  v106_l478
  (->
   data/penguins
-  (sk/lay-histogram :body_mass_g {:color :species})
-  (sk/options {:title "Body Mass Distribution"})))
+  (sk/xkcd7-lay-histogram :body_mass_g {:color :species})
+  (sk/xkcd7-options {:title "Body Mass Distribution"})))
 
 
 (deftest
@@ -748,10 +752,10 @@
  v109_l490
  (->
   data/tips
-  (sk/view :total_bill :tip {:color :smoker})
-  sk/lay-point
-  sk/lay-lm
-  (sk/options
+  (sk/xkcd7-view :total_bill :tip {:color :smoker})
+  sk/xkcd7-lay-point
+  sk/xkcd7-lay-lm
+  (sk/xkcd7-options
    {:title "Tipping: Smokers vs Non-Smokers",
     :x-label "Total Bill ($)",
     :y-label "Tip ($)"})))
@@ -772,8 +776,8 @@
  v112_l503
  (->
   data/tips
-  (sk/lay-bar :day {:color :time})
-  (sk/options {:title "Visits by Day and Meal Time"})))
+  (sk/xkcd7-lay-bar :day {:color :time})
+  (sk/xkcd7-options {:title "Visits by Day and Meal Time"})))
 
 
 (deftest
@@ -791,8 +795,8 @@
  v115_l513
  (->
   data/tips
-  (sk/lay-stacked-bar :day {:color :time})
-  (sk/options {:title "Visits by Day (Stacked)"})))
+  (sk/xkcd7-lay-stacked-bar :day {:color :time})
+  (sk/xkcd7-options {:title "Visits by Day (Stacked)"})))
 
 
 (deftest
@@ -810,9 +814,9 @@
  v118_l523
  (->
   data/tips
-  (sk/lay-bar :day {:color :sex})
-  (sk/coord :flip)
-  (sk/options {:title "Day by Gender (Horizontal)"})))
+  (sk/xkcd7-lay-bar :day {:color :sex})
+  (sk/xkcd7-coord :flip)
+  (sk/xkcd7-options {:title "Day by Gender (Horizontal)"})))
 
 
 (deftest
@@ -830,10 +834,10 @@
  v121_l536
  (->
   data/mpg
-  (sk/view :horsepower :mpg {:color :origin})
-  sk/lay-point
-  sk/lay-lm
-  (sk/options {:title "Horsepower vs MPG by Origin"})))
+  (sk/xkcd7-view :horsepower :mpg {:color :origin})
+  sk/xkcd7-lay-point
+  sk/xkcd7-lay-lm
+  (sk/xkcd7-options {:title "Horsepower vs MPG by Origin"})))
 
 
 (deftest
@@ -851,8 +855,8 @@
  v124_l548
  (->
   data/mpg
-  (sk/lay-point :displacement :mpg {:color :origin})
-  (sk/options {:title "Engine Displacement vs Fuel Efficiency"})))
+  (sk/xkcd7-lay-point :displacement :mpg {:color :origin})
+  (sk/xkcd7-options {:title "Engine Displacement vs Fuel Efficiency"})))
 
 
 (deftest
@@ -870,8 +874,8 @@
  v127_l558
  (->
   data/mpg
-  (sk/lay-bar :origin)
-  (sk/options {:title "Cars by Origin"})))
+  (sk/xkcd7-lay-bar :origin)
+  (sk/xkcd7-options {:title "Cars by Origin"})))
 
 
 (deftest

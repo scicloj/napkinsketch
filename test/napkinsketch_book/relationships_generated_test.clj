@@ -10,7 +10,10 @@
 
 (def
  v3_l21
- (-> data/iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
+ (->
+  data/iris
+  (sk/xkcd7-lay-point :sepal_length :sepal_width)
+  sk/xkcd7-lay-lm))
 
 
 (deftest
@@ -28,9 +31,9 @@
  v6_l33
  (->
   data/iris
-  (sk/view :petal_length :petal_width {:color :species})
-  sk/lay-point
-  sk/lay-lm))
+  (sk/xkcd7-view :petal_length :petal_width {:color :species})
+  sk/xkcd7-lay-point
+  sk/xkcd7-lay-lm))
 
 
 (deftest
@@ -48,9 +51,9 @@
  v9_l46
  (->
   data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
-  sk/lay-point
-  (sk/lay-lm {:se true})))
+  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+  sk/xkcd7-lay-point
+  (sk/xkcd7-lay-lm {:se true})))
 
 
 (deftest
@@ -68,9 +71,9 @@
  v12_l59
  (->
   data/tips
-  (sk/view :total_bill :tip {:color :smoker})
-  sk/lay-point
-  sk/lay-lm))
+  (sk/xkcd7-view :total_bill :tip {:color :smoker})
+  sk/xkcd7-lay-point
+  sk/xkcd7-lay-lm))
 
 
 (deftest
@@ -94,14 +97,16 @@
     :y
     (map
      (fn*
-      [p1__88830#]
+      [p1__305683#]
       (+
-       (Math/sin (* p1__88830# 0.2))
+       (Math/sin (* p1__305683# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
 
-(def v16_l77 (-> noisy-wave (sk/lay-point :x :y) sk/lay-loess))
+(def
+ v16_l77
+ (-> noisy-wave (sk/xkcd7-lay-point :x :y) sk/xkcd7-lay-loess))
 
 
 (deftest
@@ -115,7 +120,9 @@
    v16_l77)))
 
 
-(def v19_l89 (-> data/iris (sk/lay-tile :sepal_length :sepal_width)))
+(def
+ v19_l89
+ (-> data/iris (sk/xkcd7-lay-tile :sepal_length :sepal_width)))
 
 
 (deftest
@@ -140,7 +147,7 @@
     :value (repeatedly 25 (fn* [] (rng/irandom r 100)))})))
 
 
-(def v23_l106 (-> grid-data (sk/lay-tile :x :y {:fill :value})))
+(def v23_l106 (-> grid-data (sk/xkcd7-lay-tile :x :y {:fill :value})))
 
 
 (deftest
@@ -156,7 +163,7 @@
 
 (def
  v26_l117
- (-> data/iris (sk/lay-density2d :sepal_length :sepal_width)))
+ (-> data/iris (sk/xkcd7-lay-density2d :sepal_length :sepal_width)))
 
 
 (deftest
@@ -174,8 +181,8 @@
  v29_l128
  (->
   data/iris
-  (sk/lay-density2d :sepal_length :sepal_width)
-  (sk/lay-point {:alpha 0.5})))
+  (sk/xkcd7-lay-density2d :sepal_length :sepal_width)
+  (sk/xkcd7-lay-point {:alpha 0.5})))
 
 
 (deftest
@@ -191,7 +198,7 @@
 
 (def
  v32_l140
- (-> data/iris (sk/lay-contour :sepal_length :sepal_width)))
+ (-> data/iris (sk/xkcd7-lay-contour :sepal_length :sepal_width)))
 
 
 (deftest
@@ -209,8 +216,8 @@
  v35_l151
  (->
   data/iris
-  (sk/lay-point :sepal_length :sepal_width {:alpha 0.3})
-  (sk/lay-contour {:levels 8})))
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:alpha 0.3})
+  (sk/xkcd7-lay-contour {:levels 8})))
 
 
 (deftest

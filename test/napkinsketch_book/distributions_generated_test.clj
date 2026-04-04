@@ -7,7 +7,7 @@
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l19 (-> data/iris (sk/lay-histogram :sepal_length)))
+(def v3_l19 (-> data/iris (sk/xkcd7-lay-histogram :sepal_length)))
 
 
 (deftest
@@ -23,7 +23,9 @@
 
 (def
  v6_l31
- (-> data/iris (sk/lay-histogram :sepal_length {:color :species})))
+ (->
+  data/iris
+  (sk/xkcd7-lay-histogram :sepal_length {:color :species})))
 
 
 (deftest
@@ -37,7 +39,7 @@
    v6_l31)))
 
 
-(def v9_l43 (-> data/iris (sk/lay-histogram :petal_width)))
+(def v9_l43 (-> data/iris (sk/xkcd7-lay-histogram :petal_width)))
 
 
 (deftest
@@ -55,8 +57,8 @@
  v12_l53
  (->
   data/tips
-  (sk/lay-histogram :total_bill)
-  (sk/options
+  (sk/xkcd7-lay-histogram :total_bill)
+  (sk/xkcd7-options
    {:title "Distribution of Total Bill", :x-label "Amount ($)"})))
 
 
@@ -71,7 +73,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__88505#] (= "Distribution of Total Bill" p1__88505#))
+       (fn* [p1__306429#] (= "Distribution of Total Bill" p1__306429#))
        (:texts s)))))
    v12_l53)))
 
@@ -80,8 +82,10 @@
  v15_l70
  (->
   data/iris
-  (sk/lay-histogram :sepal_length {:normalize :density, :alpha 0.5})
-  sk/lay-density))
+  (sk/xkcd7-lay-histogram
+   :sepal_length
+   {:normalize :density, :alpha 0.5})
+  sk/xkcd7-lay-density))
 
 
 (deftest
@@ -95,7 +99,7 @@
    v15_l70)))
 
 
-(def v18_l82 (-> data/iris (sk/lay-density :sepal_length)))
+(def v18_l82 (-> data/iris (sk/xkcd7-lay-density :sepal_length)))
 
 
 (deftest
@@ -111,7 +115,7 @@
 
 (def
  v21_l94
- (-> data/iris (sk/lay-density :sepal_length {:color :species})))
+ (-> data/iris (sk/xkcd7-lay-density :sepal_length {:color :species})))
 
 
 (deftest
@@ -127,7 +131,7 @@
 
 (def
  v24_l106
- (-> data/iris (sk/lay-density :sepal_length {:bandwidth 0.3})))
+ (-> data/iris (sk/xkcd7-lay-density :sepal_length {:bandwidth 0.3})))
 
 
 (deftest
@@ -141,7 +145,9 @@
    v24_l106)))
 
 
-(def v27_l118 (-> data/iris (sk/lay-boxplot :species :sepal_width)))
+(def
+ v27_l118
+ (-> data/iris (sk/xkcd7-lay-boxplot :species :sepal_width)))
 
 
 (deftest
@@ -157,7 +163,9 @@
 
 (def
  v30_l131
- (-> data/tips (sk/lay-boxplot :day :total_bill {:color :smoker})))
+ (->
+  data/tips
+  (sk/xkcd7-lay-boxplot :day :total_bill {:color :smoker})))
 
 
 (deftest
@@ -177,14 +185,14 @@
   [pl
    (->
     data/tips
-    (sk/lay-boxplot :day :total_bill {:color :smoker})
-    sk/plan)
+    (sk/xkcd7-lay-boxplot :day :total_bill {:color :smoker})
+    sk/xkcd7-plan)
    panel
    (first (:panels pl))
    box-layer
    (first
     (filter
-     (fn* [p1__88506#] (= :boxplot (:mark p1__88506#)))
+     (fn* [p1__306430#] (= :boxplot (:mark p1__306430#)))
      (:layers panel)))
    cats
    (:color-categories box-layer)]
@@ -196,7 +204,10 @@
 
 (def
  v36_l157
- (-> data/iris (sk/lay-boxplot :species :sepal_width) (sk/coord :flip)))
+ (->
+  data/iris
+  (sk/xkcd7-lay-boxplot :species :sepal_width)
+  (sk/xkcd7-coord :flip)))
 
 
 (deftest
@@ -210,7 +221,7 @@
    v36_l157)))
 
 
-(def v39_l172 (-> data/tips (sk/lay-violin :day :total_bill)))
+(def v39_l172 (-> data/tips (sk/xkcd7-lay-violin :day :total_bill)))
 
 
 (deftest
@@ -226,7 +237,7 @@
 
 (def
  v42_l184
- (-> data/tips (sk/lay-violin :day :total_bill {:color :smoker})))
+ (-> data/tips (sk/xkcd7-lay-violin :day :total_bill {:color :smoker})))
 
 
 (deftest
@@ -246,14 +257,14 @@
   [pl
    (->
     data/tips
-    (sk/lay-violin :day :total_bill {:color :smoker})
-    sk/plan)
+    (sk/xkcd7-lay-violin :day :total_bill {:color :smoker})
+    sk/xkcd7-plan)
    panel
    (first (:panels pl))
    viol-layer
    (first
     (filter
-     (fn* [p1__88507#] (= :violin (:mark p1__88507#)))
+     (fn* [p1__306431#] (= :violin (:mark p1__306431#)))
      (:layers panel)))
    cats
    (:color-categories viol-layer)]
@@ -265,7 +276,10 @@
 
 (def
  v48_l207
- (-> data/iris (sk/lay-violin :species :petal_length) (sk/coord :flip)))
+ (->
+  data/iris
+  (sk/xkcd7-lay-violin :species :petal_length)
+  (sk/xkcd7-coord :flip)))
 
 
 (deftest
@@ -279,7 +293,9 @@
    v48_l207)))
 
 
-(def v51_l221 (-> data/iris (sk/lay-ridgeline :species :sepal_length)))
+(def
+ v51_l221
+ (-> data/iris (sk/xkcd7-lay-ridgeline :species :sepal_length)))
 
 
 (deftest
@@ -297,7 +313,7 @@
  v54_l233
  (->
   data/iris
-  (sk/lay-ridgeline :species :sepal_length {:color :species})))
+  (sk/xkcd7-lay-ridgeline :species :sepal_length {:color :species})))
 
 
 (deftest
@@ -314,12 +330,13 @@
 (def
  v57_l247
  (->
-  (sk/distribution data/iris :sepal_length :sepal_width :petal_length)
-  sk/lay-histogram))
+  data/iris
+  (sk/xkcd7-distribution :sepal_length :sepal_width :petal_length)
+  sk/xkcd7-lay-histogram))
 
 
 (deftest
- t58_l250
+ t58_l251
  (is
   ((fn
     [v]
@@ -330,18 +347,19 @@
 
 
 (def
- v60_l257
+ v60_l258
  (->
-  (sk/distribution data/iris :sepal_length :sepal_width :petal_length)
-  (sk/lay-density {:color :species})))
+  data/iris
+  (sk/xkcd7-distribution :sepal_length :sepal_width :petal_length)
+  (sk/xkcd7-lay-density {:color :species})))
 
 
 (deftest
- t61_l260
+ t61_l262
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (pos? (:polygons s)))))
-   v60_l257)))
+   v60_l258)))

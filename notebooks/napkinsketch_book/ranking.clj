@@ -19,7 +19,7 @@
 ;; Count occurrences of a categorical column.
 
 (-> data/iris
-    (sk/lay-bar :species))
+    (sk/xkcd7-lay-bar :species))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -31,7 +31,7 @@
 ;; Grouped (dodged) bars — count by day, colored by smoking status.
 
 (-> data/tips
-    (sk/lay-bar :day {:color :smoker}))
+    (sk/xkcd7-lay-bar :day {:color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -43,7 +43,7 @@
 ;; Same data, stacked instead of dodged.
 
 (-> data/tips
-    (sk/lay-stacked-bar :day {:color :smoker}))
+    (sk/xkcd7-lay-stacked-bar :day {:color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -55,7 +55,7 @@
 ;; 100% stacked bars — shows proportions instead of counts.
 
 (-> data/penguins
-    (sk/lay-stacked-bar-fill :island {:color :species}))
+    (sk/xkcd7-lay-stacked-bar-fill :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -66,8 +66,8 @@
 ;; Flip the bar chart for horizontal orientation.
 
 (-> data/iris
-    (sk/lay-bar :species)
-    (sk/coord :flip))
+    (sk/xkcd7-lay-bar :species)
+    (sk/xkcd7-coord :flip))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -79,8 +79,8 @@
 ;; Colored bars, flipped.
 
 (-> data/tips
-    (sk/lay-bar :day {:color :time})
-    (sk/coord :flip))
+    (sk/xkcd7-lay-bar :day {:color :time})
+    (sk/xkcd7-coord :flip))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -92,7 +92,7 @@
 ;; Pre-computed y values (no counting).
 
 (-> sales
-    (sk/lay-value-bar :product :revenue))
+    (sk/xkcd7-lay-value-bar :product :revenue))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -103,8 +103,8 @@
 ;; Flip for horizontal orientation.
 
 (-> sales
-    (sk/lay-value-bar :product :revenue)
-    (sk/coord :flip))
+    (sk/xkcd7-lay-value-bar :product :revenue)
+    (sk/xkcd7-coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -115,7 +115,7 @@
 ;; Stem + dot — a lighter alternative to bar charts.
 
 (-> sales
-    (sk/lay-lollipop :product :revenue))
+    (sk/xkcd7-lay-lollipop :product :revenue))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -126,8 +126,8 @@
 ;; Flipped for horizontal orientation.
 
 (-> sales
-    (sk/lay-lollipop :product :revenue)
-    (sk/coord :flip))
+    (sk/xkcd7-lay-lollipop :product :revenue)
+    (sk/xkcd7-coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))

@@ -17,7 +17,7 @@
 ;; Sepal dimensions, no color — the default mark.
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -29,7 +29,7 @@
 ;; Adding `:color :species` groups points by species with distinct colors.
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species}))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -41,7 +41,7 @@
 ;; Petal length vs width — a strongly correlated pair.
 
 (-> data/iris
-    (sk/lay-point :petal_length :petal_width {:color :species}))
+    (sk/xkcd7-lay-point :petal_length :petal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -53,7 +53,7 @@
 ;; A fixed color string (not a column reference) applies to all points.
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color "#E74C3C"}))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color "#E74C3C"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -64,11 +64,11 @@
 ;; Wider plot with custom title and labels.
 
 (-> data/tips
-    (sk/lay-point :total_bill :tip {:color :day})
-    (sk/options {:width 700 :height 300
-                 :title "Tips by Day"
-                 :x-label "Total Bill ($)"
-                 :y-label "Tip ($)"}))
+    (sk/xkcd7-lay-point :total_bill :tip {:color :day})
+    (sk/xkcd7-options {:width 700 :height 300
+                       :title "Tips by Day"
+                       :x-label "Total Bill ($)"
+                       :y-label "Tip ($)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -82,7 +82,7 @@
 ;; Each point's radius reflects the column value.
 
 (-> data/tips
-    (sk/lay-point :total_bill :tip {:color :day :size :size}))
+    (sk/xkcd7-lay-point :total_bill :tip {:color :day :size :size}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -91,7 +91,7 @@
 ;; Combine size with alpha for dense data.
 
 (-> data/tips
-    (sk/lay-point :total_bill :tip {:color :day :size :size :alpha 0.6}))
+    (sk/xkcd7-lay-point :total_bill :tip {:color :day :size :size :alpha 0.6}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -103,7 +103,7 @@
 ;; points overlap. Use `:jitter true` to add random pixel offsets.
 
 (-> data/iris
-    (sk/lay-point :species :sepal_width {:jitter true}))
+    (sk/xkcd7-lay-point :species :sepal_width {:jitter true}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -112,7 +112,7 @@
 ;; Control the jitter amount in pixels.
 
 (-> data/iris
-    (sk/lay-point :species :sepal_width {:jitter 10 :alpha 0.5}))
+    (sk/xkcd7-lay-point :species :sepal_width {:jitter 10 :alpha 0.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -124,7 +124,7 @@
 ;; continuous blue gradient instead of discrete palette colors.
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :petal_length}))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :petal_length}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -134,7 +134,7 @@
 ;; Continuous color with size — a color-size bubble plot.
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :petal_length :size :petal_width :alpha 0.7}))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :petal_length :size :petal_width :alpha 0.7}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -149,9 +149,9 @@
 
 (def cols [:sepal_length :sepal_width :petal_length :petal_width])
 
-(-> data/iris
-    (sk/view (sk/cross cols cols) {:color :species})
-    sk/lay-point)
+(-> (sk/xkcd7-sketch data/iris {:color :species})
+    (sk/xkcd7-view (sk/cross cols cols))
+    (sk/xkcd7-lay-point))
 
 (kind/test-last [(fn [v] (= 16 (:panels (sk/svg-summary v))))])
 

@@ -15,7 +15,7 @@
    :revenue [120 340 210 95]}))
 
 
-(def v4_l21 (-> data/iris (sk/lay-bar :species)))
+(def v4_l21 (-> data/iris (sk/xkcd7-lay-bar :species)))
 
 
 (deftest
@@ -29,7 +29,7 @@
    v4_l21)))
 
 
-(def v7_l33 (-> data/tips (sk/lay-bar :day {:color :smoker})))
+(def v7_l33 (-> data/tips (sk/xkcd7-lay-bar :day {:color :smoker})))
 
 
 (deftest
@@ -43,7 +43,9 @@
    v7_l33)))
 
 
-(def v10_l45 (-> data/tips (sk/lay-stacked-bar :day {:color :smoker})))
+(def
+ v10_l45
+ (-> data/tips (sk/xkcd7-lay-stacked-bar :day {:color :smoker})))
 
 
 (deftest
@@ -59,7 +61,9 @@
 
 (def
  v13_l57
- (-> data/penguins (sk/lay-stacked-bar-fill :island {:color :species})))
+ (->
+  data/penguins
+  (sk/xkcd7-lay-stacked-bar-fill :island {:color :species})))
 
 
 (deftest
@@ -73,7 +77,9 @@
    v13_l57)))
 
 
-(def v16_l68 (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
+(def
+ v16_l68
+ (-> data/iris (sk/xkcd7-lay-bar :species) (sk/xkcd7-coord :flip)))
 
 
 (deftest
@@ -89,7 +95,10 @@
 
 (def
  v19_l81
- (-> data/tips (sk/lay-bar :day {:color :time}) (sk/coord :flip)))
+ (->
+  data/tips
+  (sk/xkcd7-lay-bar :day {:color :time})
+  (sk/xkcd7-coord :flip)))
 
 
 (deftest
@@ -103,7 +112,7 @@
    v19_l81)))
 
 
-(def v22_l94 (-> sales (sk/lay-value-bar :product :revenue)))
+(def v22_l94 (-> sales (sk/xkcd7-lay-value-bar :product :revenue)))
 
 
 (deftest
@@ -119,7 +128,10 @@
 
 (def
  v25_l105
- (-> sales (sk/lay-value-bar :product :revenue) (sk/coord :flip)))
+ (->
+  sales
+  (sk/xkcd7-lay-value-bar :product :revenue)
+  (sk/xkcd7-coord :flip)))
 
 
 (deftest
@@ -133,7 +145,7 @@
    v25_l105)))
 
 
-(def v28_l117 (-> sales (sk/lay-lollipop :product :revenue)))
+(def v28_l117 (-> sales (sk/xkcd7-lay-lollipop :product :revenue)))
 
 
 (deftest
@@ -149,7 +161,10 @@
 
 (def
  v31_l128
- (-> sales (sk/lay-lollipop :product :revenue) (sk/coord :flip)))
+ (->
+  sales
+  (sk/xkcd7-lay-lollipop :product :revenue)
+  (sk/xkcd7-coord :flip)))
 
 
 (deftest

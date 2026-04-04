@@ -11,6 +11,7 @@
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.blueprint :as blueprint]
             [scicloj.napkinsketch.method :as method]))
 
 ;; ============================================================
@@ -1480,4 +1481,124 @@
                 sk/svg-summary)]
       (is (= 3 (:panels s)))
       (is (= 150 (:points s))))))
+
+;; ============================================================
+;; PROPOSED API (xkcd7-) tests
+;; ============================================================
+
+(defn- xkcd7-summary
+  "Resolve a Blueprint and get svg-summary."
+  [bp]
+  (let [views (blueprint/resolve-blueprint bp)
+        fig (sk/plan->figure (sketch-impl/views->plan views (:opts bp {})) :svg {})]
+    (sk/svg-summary fig)))
+
+(deftest xkcd7-basic-test
+  (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+                         {:key-fn keyword})]
+    (testing "Scatter + lm"
+      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris {:color :species})
+                                 (sk/xkcd7-view :sepal_length :sepal_width)
+                                 (sk/xkcd7-lay-point {:alpha 0.5})
+                                 (sk/xkcd7-lay-lm)))]
+        (is (= 1 (:panels s)))
+        (is (= 150 (:points s)))
+        (is (= 3 (:lines s)))))
+
+    (testing "SPLOM inference"
+      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris {:color :species})
+                                 (sk/xkcd7-view (sk/cross [:sepal_length :sepal_width :petal_length]
+                                                          [:sepal_length :sepal_width :petal_length]))))]
+        (is (= 9 (:panels s)))
+        (is (= 900 (:points s)))))
+
+    (testing "Simpson's paradox via nil cancellation"
+      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris {:color :species})
+                                 (sk/xkcd7-view :sepal_length :sepal_width)
+                                 (sk/xkcd7-lay-point {:alpha 0.4})
+                                 (sk/xkcd7-lay-lm)
+                                 (sk/xkcd7-lay-lm {:color nil})))]
+        (is (= 1 (:panels s)))
+        (is (= 150 (:points s)))
+        (is (= 4 (:lines s)))))
+
+    (testing "Faceted + per-entry methods via view"
+      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
+                                 (sk/xkcd7-view :sepal_length :sepal_width)
+                                 (sk/xkcd7-lay-point)
+                                 (sk/xkcd7-facet :species)
+                                 (sk/xkcd7-view {:x :sepal_length :y :sepal_width
+                                                 :methods [{:mark :line :stat :loess}]})))]
+        (is (= 3 (:panels s)))
+        (is (= 150 (:points s)))
+        (is (= 3 (:lines s)))))
+
+    (testing "Data-first (no sketch call)"
+      (let [s (xkcd7-summary (-> iris
+                                 (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+                                 (sk/xkcd7-lay-point {:alpha 0.5})
+                                 (sk/xkcd7-lay-lm)))]
+        (is (= 1 (:panels s)))
+        (is (= 150 (:points s)))
+        (is (= 3 (:lines s)))))
+
+    (testing "Recipe"
+      (let [recipe (-> (sk/xkcd7-sketch)
+                       (sk/xkcd7-view :sepal_length :sepal_width)
+                       (sk/xkcd7-lay-point)
+                       (sk/xkcd7-lay-lm))
+            s (xkcd7-summary (sk/xkcd7-with-data recipe iris))]
+        (is (= 1 (:panels s)))
+        (is (= 150 (:points s)))))
+
+    (testing "Mixed grid"
+      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
+                                 (sk/xkcd7-view :sepal_length :sepal_width)
+                                 (sk/xkcd7-view :sepal_length :petal_width)
+                                 (sk/xkcd7-lay-point {:alpha 0.5})
+                                 (sk/xkcd7-facet :species)))]
+        (is (= 6 (:panels s)))
+        (is (= 300 (:points s)))))
+
+    (testing "Inference: one numerical column"
+      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
+                                 (sk/xkcd7-view :sepal_length)))]
+        (is (pos? (:polygons s)))
+        (is (zero? (:points s)))))
+
+    (testing "Inference: one categorical column"
+      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
+                                 (sk/xkcd7-view :species)))]
+        (is (= 3 (:polygons s)))))
+
+    (testing "2D facet grid"
+      (let [tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
+                             {:key-fn keyword})
+            s (xkcd7-summary (-> (sk/xkcd7-sketch tips {:color :smoker})
+                                 (sk/xkcd7-view :total_bill :tip)
+                                 (sk/xkcd7-lay-point {:alpha 0.5})
+                                 (sk/xkcd7-facet-grid :day :sex)))]
+        (is (= 8 (:panels s)))))
+
+    (testing "Options pass through"
+      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
+                                 (sk/xkcd7-view :sepal_length :sepal_width)
+                                 (sk/xkcd7-lay-point)
+                                 (sk/xkcd7-options {:title "Test" :width 400})))]
+        (is (= 1 (:panels s)))
+        (is (some #{"Test"} (:texts s)))))
+
+    (testing "Lay-first (methods before view)"
+      (let [s (xkcd7-summary (-> iris
+                                 (sk/xkcd7-lay-point {:alpha 0.5})
+                                 (sk/xkcd7-lay-lm)
+                                 (sk/xkcd7-view :sepal_length :sepal_width {:color :species})))]
+        (is (= 1 (:panels s)))
+        (is (= 150 (:points s)))
+        (is (= 3 (:lines s)))))
+
+    (testing "Column inference"
+      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch {:a [1 2 3 4 5] :b [2 4 3 5 4]})
+                                 (sk/xkcd7-view)))]
+        (is (= 5 (:points s)))))))
 

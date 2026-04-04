@@ -26,8 +26,8 @@
 ;; detects the categorical axis and constrains points to the band width.
 
 (-> data/iris
-    (sk/lay-boxplot :species :sepal_length)
-    (sk/lay-point {:jitter true :alpha 0.3}))
+    (sk/xkcd7-lay-boxplot :species :sepal_length)
+    (sk/xkcd7-lay-point {:jitter true :alpha 0.3}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -39,8 +39,8 @@
 ;; Normalize the histogram to density scale so it is comparable with the KDE (kernel density estimation) curve.
 
 (-> data/iris
-    (sk/lay-histogram :sepal_length {:normalize :density :alpha 0.5})
-    sk/lay-density)
+    (sk/xkcd7-lay-histogram :sepal_length {:normalize :density :alpha 0.5})
+    sk/xkcd7-lay-density)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -51,9 +51,9 @@
 ;; Fit a linear regression per group to reveal trends across species.
 
 (-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
-    (sk/lay-point {:alpha 0.6})
-    sk/lay-lm)
+    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-lay-point {:alpha 0.6})
+    sk/xkcd7-lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -64,8 +64,8 @@
 ;; Show the density shape and every observation together.
 
 (-> data/iris
-    (sk/lay-violin :species :petal_width {:alpha 0.3})
-    (sk/lay-point {:jitter true :alpha 0.4}))
+    (sk/xkcd7-lay-violin :species :petal_width {:alpha 0.3})
+    (sk/xkcd7-lay-point {:jitter true :alpha 0.4}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -83,9 +83,9 @@
                         (range 52))})
 
 (-> ts-ds
-    (sk/lay-area :date :value {:alpha 0.2})
-    sk/lay-line
-    (sk/lay-point {:alpha 0.5}))
+    (sk/xkcd7-lay-area :date :value {:alpha 0.2})
+    sk/xkcd7-lay-line
+    (sk/xkcd7-lay-point {:alpha 0.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 52 (:points s))
@@ -97,8 +97,8 @@
 ;; Split a scatter plot by species to compare patterns side by side.
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/facet :species))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:panels s))))])
@@ -109,8 +109,8 @@
 ;; Pass `{:alpha …}` to control band opacity.
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/lay (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3})))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-annotate (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -122,7 +122,7 @@
 ;; density curves. Grid lines at each baseline aid comparison.
 
 (-> data/iris
-    (sk/lay-ridgeline :species :sepal_length {:color :species}))
+    (sk/xkcd7-lay-ridgeline :species :sepal_length {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:polygons s))
@@ -133,7 +133,7 @@
 ;; Show the proportion of each species per island using 100% stacked bars.
 
 (-> data/penguins
-    (sk/lay-stacked-bar-fill :island {:color :species}))
+    (sk/xkcd7-lay-stacked-bar-fill :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -146,8 +146,8 @@
 ;; Color points by group, but fit a single overall regression line.
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    sk/lay-lm)
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-lay-lm {:color nil}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -165,8 +165,8 @@
    :ci_hi [12.0 18.0 14.5 20.5]})
 
 (-> experiment
-    (sk/lay-point :condition :mean {:size 5})
-    (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
+    (sk/xkcd7-lay-point :condition :mean {:size 5})
+    (sk/xkcd7-lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -177,8 +177,8 @@
 ;; Composing lollipop stems with error bars.
 
 (-> experiment
-    (sk/lay-lollipop :condition :mean)
-    (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
+    (sk/xkcd7-lay-lollipop :condition :mean)
+    (sk/xkcd7-lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -189,8 +189,8 @@
 ;; The `summary` method computes mean and SE (standard error) per category.
 
 (-> data/iris
-    (sk/lay-point :species :sepal_length {:alpha 0.3 :jitter 5})
-    (sk/lay-summary {:color :species}))
+    (sk/xkcd7-lay-point :species :sepal_length {:alpha 0.3 :jitter 5})
+    (sk/xkcd7-lay-summary {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 153 (:points s))
@@ -201,12 +201,12 @@
 ;; Scatter + per-group regression to compare smoker tipping patterns.
 
 (-> data/tips
-    (sk/view :total_bill :tip {:color :smoker})
-    sk/lay-point
-    sk/lay-lm
-    (sk/options {:title "Tipping Behavior"
-                 :x-label "Total Bill ($)"
-                 :y-label "Tip ($)"}))
+    (sk/xkcd7-view :total_bill :tip {:color :smoker})
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm
+    (sk/xkcd7-options {:title "Tipping Behavior"
+                       :x-label "Total Bill ($)"
+                       :y-label "Tip ($)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
@@ -221,10 +221,10 @@
 ;; confidence ribbons.
 
 (-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
-    (sk/lay-point {:alpha 0.5})
-    (sk/lay-lm {:se true})
-    (sk/options {:title "Sepal Regression with Confidence Bands"}))
+    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-lay-point {:alpha 0.5})
+    (sk/xkcd7-lay-lm {:se true})
+    (sk/xkcd7-options {:title "Sepal Regression with Confidence Bands"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -236,14 +236,14 @@
 ;; Side-by-side comparison: default dodged bars vs stacked bars.
 
 (-> data/tips
-    (sk/lay-bar :day {:color :sex})
-    (sk/options {:title "Dodged Bars (default)"}))
+    (sk/xkcd7-lay-bar :day {:color :sex})
+    (sk/xkcd7-options {:title "Dodged Bars (default)"}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 (-> data/tips
-    (sk/lay-stacked-bar :day {:color :sex})
-    (sk/options {:title "Stacked Bars"}))
+    (sk/xkcd7-lay-stacked-bar :day {:color :sex})
+    (sk/xkcd7-options {:title "Stacked Bars"}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -257,9 +257,9 @@
    :temp [12 14 14 16 18 17 15 13 14 16 19 21 20 18]})
 
 (-> daily-temps
-    (sk/lay-step :day :temp {:color "#2196F3"})
-    (sk/lay-point {:color "#2196F3" :size 3})
-    (sk/options {:title "Daily Temperature (Step)"}))
+    (sk/xkcd7-lay-step :day :temp {:color "#2196F3"})
+    (sk/xkcd7-lay-point {:color "#2196F3" :size 3})
+    (sk/xkcd7-options {:title "Daily Temperature (Step)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:lines s))
@@ -271,8 +271,8 @@
 ;; high-density regions in a point cloud.
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.4})
-    (sk/lay-contour {:levels 5}))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species :alpha 0.4})
+    (sk/xkcd7-lay-contour {:levels 5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
@@ -285,8 +285,8 @@
 (def top5 (-> data/iris (tc/order-by :sepal_length :desc) (tc/head 5)))
 
 (-> top5
-    (sk/lay-point :sepal_length :sepal_width {:size 5})
-    (sk/lay-label {:text :species :nudge-y 0.15}))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:size 5})
+    (sk/xkcd7-lay-label {:text :species :nudge-y 0.15}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
@@ -297,11 +297,11 @@
 ;; Assign specific colors to each category using a palette map.
 
 (-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/options {:palette {:setosa "#E91E63"
-                           :versicolor "#4CAF50"
-                           :virginica "#2196F3"}
-                 :title "Custom Palette Map"}))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-options {:palette {:setosa "#E91E63"
+                                 :versicolor "#4CAF50"
+                                 :virginica "#2196F3"}
+                       :title "Custom Palette Map"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -309,15 +309,15 @@
 
 ;; ### Fixed aspect ratio
 ;;
-;; Use `sk/coord :fixed` so one unit on x equals one unit on y.
+;; Use `sk/xkcd7-coord :fixed` so one unit on x equals one unit on y.
 ;; This makes the plot square when x and y have equal ranges.
 
 (-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
-    sk/lay-point
-    sk/lay-lm
-    (sk/coord :fixed)
-    (sk/options {:title "Fixed Aspect Ratio"}))
+    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm
+    (sk/xkcd7-coord :fixed)
+    (sk/xkcd7-options {:title "Fixed Aspect Ratio"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
@@ -331,10 +331,10 @@
 (-> {:x (range 20)
      :y (map #(Math/sin (/ % 3.0)) (range 20))
      :change (map #(- % 10) (range 20))}
-    (sk/lay-point :x :y {:color :change})
-    (sk/options {:color-scale :diverging
-                 :color-midpoint 0
-                 :title "Diverging Color Scale"}))
+    (sk/xkcd7-lay-point :x :y {:color :change})
+    (sk/xkcd7-options {:color-scale :diverging
+                       :color-midpoint 0
+                       :title "Diverging Color Scale"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -345,10 +345,10 @@
 ;; Add `{:se true}` to a LOESS smoother for a bootstrap confidence band.
 
 (-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
-    sk/lay-point
-    (sk/lay-loess {:se true})
-    (sk/options {:title "LOESS with 95% CI"}))
+    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+    sk/xkcd7-lay-point
+    (sk/xkcd7-lay-loess {:se true})
+    (sk/xkcd7-options {:title "LOESS with 95% CI"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -361,13 +361,13 @@
 
 (def iris-sepal
   (-> data/iris
-      (sk/lay-point :sepal_length :sepal_width {:color :species})
-      (sk/options {:title "Sepal" :width 300 :height 250})))
+      (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+      (sk/xkcd7-options {:title "Sepal" :width 300 :height 250})))
 
 (def iris-petal
   (-> data/iris
-      (sk/lay-point :petal_length :petal_width {:color :species})
-      (sk/options {:title "Petal" :width 300 :height 250})))
+      (sk/xkcd7-lay-point :petal_length :petal_width {:color :species})
+      (sk/xkcd7-options {:title "Petal" :width 300 :height 250})))
 
 (sk/arrange [iris-sepal iris-petal]
             {:title "Iris Dashboard" :cols 2})
@@ -385,9 +385,9 @@
    :area [2194 1484 6341 1521 603]})
 
 (-> top-cities
-    (sk/lay-point :area :population)
-    (sk/lay-text {:text :city :nudge-y 1.0})
-    (sk/options {:title "Population vs Area"}))
+    (sk/xkcd7-lay-point :area :population)
+    (sk/xkcd7-lay-text {:text :city :nudge-y 1.0})
+    (sk/xkcd7-options {:title "Population vs Area"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 5 (:points s))
@@ -404,9 +404,9 @@
                   (* 2 (- (rng/drandom r) 0.5)))
               xs)]
   (-> {:x xs :y ys}
-      (sk/lay-point :x :y)
-      sk/lay-lm
-      (sk/options {:title "Simulated: y = 3x + 5 + noise"})))
+      (sk/xkcd7-lay-point :x :y)
+      sk/xkcd7-lay-lm
+      (sk/xkcd7-options {:title "Simulated: y = 3x + 5 + noise"})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 20 (:points s))
@@ -420,8 +420,8 @@
 ;; Bill dimensions separate the three species clearly.
 
 (-> data/penguins
-    (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
-    (sk/options {:title "Palmer Penguins: Bill Dimensions"}))
+    (sk/xkcd7-lay-point :bill_length_mm :bill_depth_mm {:color :species})
+    (sk/xkcd7-options {:title "Palmer Penguins: Bill Dimensions"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -430,10 +430,10 @@
 ;; Per-species regression reveals different slopes.
 
 (-> data/penguins
-    (sk/view :bill_length_mm :bill_depth_mm {:color :species})
-    sk/lay-point
-    sk/lay-lm
-    (sk/options {:title "Bill Length vs Depth with Regression"}))
+    (sk/xkcd7-view :bill_length_mm :bill_depth_mm {:color :species})
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm
+    (sk/xkcd7-options {:title "Bill Length vs Depth with Regression"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 342 (:points s))
@@ -443,9 +443,9 @@
 ;; of Simpson's paradox.
 
 (-> data/penguins
-    (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
-    sk/lay-lm
-    (sk/options {:title "Simpson's Paradox: Overall vs Per-Group Trend"}))
+    (sk/xkcd7-lay-point :bill_length_mm :bill_depth_mm {:color :species})
+    (sk/xkcd7-lay-lm {:color nil})
+    (sk/xkcd7-options {:title "Simpson's Paradox: Overall vs Per-Group Trend"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 342 (:points s))
@@ -454,8 +454,8 @@
 ;; Species distribution across islands.
 
 (-> data/penguins
-    (sk/lay-bar :island {:color :species})
-    (sk/options {:title "Species by Island"}))
+    (sk/xkcd7-lay-bar :island {:color :species})
+    (sk/xkcd7-options {:title "Species by Island"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -464,10 +464,10 @@
 ;; Flipper length vs body mass — a strong positive correlation.
 
 (-> data/penguins
-    (sk/view :flipper_length_mm :body_mass_g {:color :species})
-    sk/lay-point
-    sk/lay-lm
-    (sk/options {:title "Flipper Length vs Body Mass"}))
+    (sk/xkcd7-view :flipper_length_mm :body_mass_g {:color :species})
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm
+    (sk/xkcd7-options {:title "Flipper Length vs Body Mass"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 342 (:points s))
@@ -476,8 +476,8 @@
 ;; Body mass distribution by species.
 
 (-> data/penguins
-    (sk/lay-histogram :body_mass_g {:color :species})
-    (sk/options {:title "Body Mass Distribution"}))
+    (sk/xkcd7-lay-histogram :body_mass_g {:color :species})
+    (sk/xkcd7-options {:title "Body Mass Distribution"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -488,11 +488,11 @@
 ;; Tipping behavior: smokers vs non-smokers.
 
 (-> data/tips
-    (sk/view :total_bill :tip {:color :smoker})
-    sk/lay-point
-    sk/lay-lm
-    (sk/options {:title "Tipping: Smokers vs Non-Smokers"
-                 :x-label "Total Bill ($)" :y-label "Tip ($)"}))
+    (sk/xkcd7-view :total_bill :tip {:color :smoker})
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm
+    (sk/xkcd7-options {:title "Tipping: Smokers vs Non-Smokers"
+                       :x-label "Total Bill ($)" :y-label "Tip ($)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 244 (:points s))
@@ -501,8 +501,8 @@
 ;; Tip amounts by day, colored by meal time.
 
 (-> data/tips
-    (sk/lay-bar :day {:color :time})
-    (sk/options {:title "Visits by Day and Meal Time"}))
+    (sk/xkcd7-lay-bar :day {:color :time})
+    (sk/xkcd7-options {:title "Visits by Day and Meal Time"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -511,8 +511,8 @@
 ;; Stacked view of the same data.
 
 (-> data/tips
-    (sk/lay-stacked-bar :day {:color :time})
-    (sk/options {:title "Visits by Day (Stacked)"}))
+    (sk/xkcd7-lay-stacked-bar :day {:color :time})
+    (sk/xkcd7-options {:title "Visits by Day (Stacked)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -521,9 +521,9 @@
 ;; Horizontal bar chart of party sizes.
 
 (-> data/tips
-    (sk/lay-bar :day {:color :sex})
-    (sk/coord :flip)
-    (sk/options {:title "Day by Gender (Horizontal)"}))
+    (sk/xkcd7-lay-bar :day {:color :sex})
+    (sk/xkcd7-coord :flip)
+    (sk/xkcd7-options {:title "Day by Gender (Horizontal)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -534,10 +534,10 @@
 ;; Horsepower vs fuel efficiency, colored by origin.
 
 (-> data/mpg
-    (sk/view :horsepower :mpg {:color :origin})
-    sk/lay-point
-    sk/lay-lm
-    (sk/options {:title "Horsepower vs MPG by Origin"}))
+    (sk/xkcd7-view :horsepower :mpg {:color :origin})
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm
+    (sk/xkcd7-options {:title "Horsepower vs MPG by Origin"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 392 (:points s))
@@ -546,8 +546,8 @@
 ;; Displacement vs MPG — another negative correlation.
 
 (-> data/mpg
-    (sk/lay-point :displacement :mpg {:color :origin})
-    (sk/options {:title "Engine Displacement vs Fuel Efficiency"}))
+    (sk/xkcd7-lay-point :displacement :mpg {:color :origin})
+    (sk/xkcd7-options {:title "Engine Displacement vs Fuel Efficiency"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -556,8 +556,8 @@
 ;; Count of cars by origin.
 
 (-> data/mpg
-    (sk/lay-bar :origin)
-    (sk/options {:title "Cars by Origin"}))
+    (sk/xkcd7-lay-bar :origin)
+    (sk/xkcd7-options {:title "Cars by Origin"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
