@@ -44,6 +44,7 @@
    :margin 30 :margin-multi 30 :panel-size 200 :legend-width 100
    ;; Ticks
    :tick-spacing-x 60 :tick-spacing-y 40
+   :x-tick-rotate :auto :x-tick-extra-pad 48
    ;; Points
    :point-radius 3.0 :point-opacity 0.75
    :point-stroke "none" :point-stroke-width 0
@@ -297,6 +298,8 @@
    :band-opacity ["Annotations" "Opacity for confidence bands"]
    :tick-spacing-x ["Ticks" "Minimum pixel spacing between x-axis ticks"]
    :tick-spacing-y ["Ticks" "Minimum pixel spacing between y-axis ticks"]
+   :x-tick-rotate ["Ticks" "Degrees to rotate x-axis tick labels when needed (default: auto)"]
+   :x-tick-extra-pad ["Ticks" "Extra bottom padding reserved for rotated x-axis tick labels"]
    :bin-method ["Statistics" "Histogram bin count method (:sturges, :sqrt, :rice, :fd)"]
    :domain-padding ["Statistics" "Fractional padding added to numeric domains"]
    :label-offset ["Labels" "Pixel offset for axis labels from the axis"]

@@ -545,9 +545,26 @@
    legend size-legend alpha-legend
    facet-row-vals facet-col-vals
    grid-rows grid-cols pw ph multi? panels legend-position]
-  (let [x-label-pad (if eff-x-label (:label-offset cfg) 0)
+  (let [tick-fsize (get-in cfg [:theme :font-size] 8)
+        max-x-tick-len (reduce max 0
+                               (for [p panels
+                                     :let [labels (get-in p [:x-ticks :labels])]
+                                     label (or labels [])]
+                                 (count label)))
+        max-x-tick-count (reduce max 0 (map #(count (get-in % [:x-ticks :labels])) panels))
+        usable-width (max 1.0 (- (double pw) (* 2.0 (:margin cfg))))
+        avg-x-spacing (if (> max-x-tick-count 1)
+                        (/ usable-width (double (dec max-x-tick-count)))
+                        usable-width)
+        estimated-x-label-width (* max-x-tick-len (/ tick-fsize 1.8))
+        x-rotate-cfg (:x-tick-rotate cfg :auto)
+        rotate-x-ticks?
+        (if (= x-rotate-cfg :auto)
+          (> estimated-x-label-width avg-x-spacing)
+          (number? x-rotate-cfg))
+        x-label-pad (+ (if eff-x-label (:label-offset cfg) 0)
+                       (if rotate-x-ticks? (:x-tick-extra-pad cfg 48) 0))
         ;; y-label-pad must account for y-tick label width (e.g. category names)
-        tick-fsize (get-in cfg [:theme :font-size] 8)
         max-y-tick-len (reduce max 0
                                (for [p panels
                                      :let [labels (get-in p [:y-ticks :labels])]

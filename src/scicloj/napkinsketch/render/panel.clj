@@ -68,16 +68,38 @@
   [axis tick-info scale pw ph m cfg]
   (let [{:keys [values labels]} tick-info
         fsize (get-in cfg [:theme :font-size] 8)
-        tick-color [0.4 0.4 0.4 1.0]]
+        tick-color [0.4 0.4 0.4 1.0]
+        x-rotate-cfg (:x-tick-rotate cfg :auto)
+        avg-label-len (if (seq labels)
+                        (/ (reduce + (map count labels)) (double (count labels)))
+                        0.0)
+        usable-width (max 1.0 (- (double pw) (* 2.0 (double m))))
+        avg-tick-spacing (if (> (count values) 1)
+                           (/ usable-width (double (dec (count values))))
+                           usable-width)
+        estimated-label-width (* avg-label-len (/ fsize 1.8))
+        rotate-x?
+        (and (= axis :x)
+             (if (= x-rotate-cfg :auto)
+               (> estimated-label-width avg-tick-spacing)
+               (number? x-rotate-cfg)))
+        x-rotation-deg (if (number? x-rotate-cfg) x-rotate-cfg -45)]
     (when (seq values)
       (vec
        (map (fn [t label]
               (if (= axis :x)
                 (let [px (scale t)]
-                  (ui/translate (- (double px) (* (count label) (/ fsize 3.5)))
-                                (- (double ph) (double fsize) 1)
-                                (ui/with-color tick-color
-                                  (ui/label label (ui/font nil fsize)))))
+                  (if rotate-x?
+                    (ui/translate (double px)
+                                  (- (double ph) 2)
+                                  (membrane.ui.Rotate. x-rotation-deg
+                                                       (ui/with-color tick-color
+                                                         (assoc (ui/label label (ui/font nil fsize))
+                                                                :text-anchor "end"))))
+                    (ui/translate (- (double px) (* (count label) (/ fsize 3.5)))
+                                  (- (double ph) (double fsize) 1)
+                                  (ui/with-color tick-color
+                                    (ui/label label (ui/font nil fsize))))))
                 (let [py (scale t)
                       lw (* (count label) (/ fsize 2.0))]
                   (ui/translate (- (double m) lw 3)
