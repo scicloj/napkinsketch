@@ -29,7 +29,7 @@
 
 (defn base-plot
   [] (-> data/iris
-         (sk/lay-point :sepal_length :sepal_width {:color :species})))
+         (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
 
 ;; ## Inspecting the Current Configuration
 ;;
@@ -72,7 +72,7 @@
 
 ;; ### Plot Options
 ;;
-;; These options are accepted by `sk/options`, `sk/plan`, and `sk/plot`
+;; These options are accepted by `sk/xkcd7-options`, `sk/xkcd7-plan`, and `sk/xkcd7-plot`
 ;; but are inherently per-plot — text content or nested config override.
 
 (kind/table
@@ -89,7 +89,7 @@
 
 ;; ## Using Plot Options
 ;;
-;; Pass an options map to `sk/options` to override any setting for a
+;; Pass an options map to `sk/xkcd7-options` to override any setting for a
 ;; single plot. Plot options have the highest priority — they
 ;; override everything else.
 
@@ -100,7 +100,7 @@
 (kind/test-last [(fn [m] (= {:width 600 :height 400} m))])
 
 (-> (base-plot)
-    (sk/options {:width 900 :height 250}))
+    (sk/xkcd7-options {:width 900 :height 250}))
 
 (kind/test-last
  [(fn [v]
@@ -112,7 +112,7 @@
 ;; white background; `:grid` and `:font-size` keep their defaults:
 
 (-> (base-plot)
-    (sk/options {:theme {:bg "#FFFFFF"}}))
+    (sk/xkcd7-options {:theme {:bg "#FFFFFF"}}))
 
 (kind/test-last
  [(fn [v]
@@ -121,7 +121,7 @@
 ;; Named palette:
 
 (-> (base-plot)
-    (sk/options {:palette :dark2}))
+    (sk/xkcd7-options {:palette :dark2}))
 
 (kind/test-last
  [(fn [v]
@@ -162,7 +162,7 @@
 
 (sk/with-config {:theme {:bg "#1a1a2e" :grid "#16213e" :font-size 8}}
   (-> (base-plot)
-      (sk/options {:title "Dark Theme via with-config"})))
+      (sk/xkcd7-options {:title "Dark Theme via with-config"})))
 
 (kind/test-last
  [(fn [v]
@@ -173,7 +173,7 @@
 
 (sk/with-config {:theme {:bg "#F5F5DC"}}
   (-> (base-plot)
-      (sk/options {:title "Partial Theme Override"})))
+      (sk/xkcd7-options {:title "Partial Theme Override"})))
 
 (kind/test-last
  [(fn [v]
@@ -213,7 +213,7 @@
 (def precedence-result
   (sk/with-config {:width 1200 :height 500}
     ;; Pass plot options for width only:
-    (let [plan (sk/plan (base-plot) {:width 900})]
+    (let [plan (sk/xkcd7-plan (base-plot) {:width 900})]
       {:plan-width (:width plan)
        :plan-height (:height plan)})))
 
@@ -240,7 +240,7 @@ precedence-point-radius
 (def precedence-plot
   (sk/with-config {:width 1200 :height 500}
     (-> (base-plot)
-        (sk/options {:width 900}))))
+        (sk/xkcd7-options {:width 900}))))
 
 precedence-plot
 
@@ -301,15 +301,15 @@ precedence-plot
 (kind/test-last [(fn [n] (= 3 n))])
 
 ;; All configuration merging uses **deep-merge** — nested maps like `:theme`
-;; are merged recursively at every level (`sk/options`, `sk/with-config`,
+;; are merged recursively at every level (`sk/xkcd7-options`, `sk/with-config`,
 ;; `sk/set-config!`, and `napkinsketch.edn`). You only need to specify the
 ;; keys you want to change.
 
 ;; Override only `:bg`, keep default `:grid` and `:font-size`:
 
 (-> (base-plot)
-    (sk/options {:theme {:bg "#F5F5DC"}})
-    sk/plot)
+    (sk/xkcd7-options {:theme {:bg "#F5F5DC"}})
+    sk/xkcd7-plot)
 
 (kind/test-last
  [(fn [v]
@@ -322,9 +322,9 @@ precedence-plot
 ;; Override all three for a dark theme:
 
 (-> (base-plot)
-    (sk/options {:title "Full Dark Theme"
-                 :theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}})
-    sk/plot)
+    (sk/xkcd7-options {:title "Full Dark Theme"
+                       :theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}})
+    sk/xkcd7-plot)
 
 (kind/test-last
  [(fn [v]
@@ -338,13 +338,13 @@ precedence-plot
 
 (sk/arrange
  [(-> (base-plot)
-      (sk/options {:title "Light"
-                   :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}
-                   :width 350 :height 250}))
+      (sk/xkcd7-options {:title "Light"
+                         :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}
+                         :width 350 :height 250}))
   (-> (base-plot)
-      (sk/options {:title "Dark"
-                   :theme {:bg "#2d2d2d" :grid "#444444" :font-size 8}
-                   :width 350 :height 250}))])
+      (sk/xkcd7-options {:title "Dark"
+                         :theme {:bg "#2d2d2d" :grid "#444444" :font-size 8}
+                         :width 350 :height 250}))])
 
 (kind/test-last
  [(fn [v]
@@ -371,7 +371,7 @@ precedence-plot
 ;; Named palette via plot options:
 
 (-> (base-plot)
-    (sk/options {:palette :tableau10}))
+    (sk/xkcd7-options {:palette :tableau10}))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -379,7 +379,7 @@ precedence-plot
 ;; Custom vector palette:
 
 (-> (base-plot)
-    (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
+    (sk/xkcd7-options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -387,9 +387,9 @@ precedence-plot
 ;; Explicit map palette:
 
 (-> (base-plot)
-    (sk/options {:palette {"setosa" "#FF6B6B"
-                           "versicolor" "#4ECDC4"
-                           "virginica" "#45B7D1"}}))
+    (sk/xkcd7-options {:palette {"setosa" "#FF6B6B"
+                                 "versicolor" "#4ECDC4"
+                                 "virginica" "#45B7D1"}}))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -422,15 +422,15 @@ precedence-plot
 ;; Default continuous color (dark blue to light blue):
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
-    (sk/lay-point :x :y {:color :c}))
+    (sk/xkcd7-lay-point :x :y {:color :c}))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
 ;; Color scale override via plot options — inferno gradient:
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
-    (sk/lay-point :x :y {:color :c})
-    (sk/options {:color-scale :inferno}))
+    (sk/xkcd7-lay-point :x :y {:color :c})
+    (sk/xkcd7-options {:color-scale :inferno}))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
@@ -438,7 +438,7 @@ precedence-plot
 
 (sk/with-config {:color-scale :plasma}
   (-> {:x (range 50) :y (range 50) :c (range 50)}
-      (sk/lay-point :x :y {:color :c})))
+      (sk/xkcd7-lay-point :x :y {:color :c})))
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
@@ -447,8 +447,8 @@ precedence-plot
 ;; if the render-time configuration specifies a different color scale.
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
-    (sk/lay-point :x :y {:color :c})
-    (sk/plan {:color-scale :inferno})
+    (sk/xkcd7-lay-point :x :y {:color :c})
+    (sk/xkcd7-plan {:color-scale :inferno})
     :legend
     (select-keys [:color-scale :type]))
 
@@ -457,7 +457,7 @@ precedence-plot
 
 ;; ## Validation Control
 ;;
-;; By default, `sk/plan` validates the output against a [Malli](https://github.com/metosin/malli)
+;; By default, `sk/xkcd7-plan` validates the output against a [Malli](https://github.com/metosin/malli)
 ;; schema and throws if the plan is malformed.  This is controlled
 ;; by the `:validate` key.
 ;;
@@ -468,7 +468,7 @@ precedence-plot
 
 ;; Default behavior (validate = true) — a valid plan passes silently:
 
-(sk/plan (base-plot))
+(sk/xkcd7-plan (base-plot))
 
 (kind/test-last
  [(fn [plan]
@@ -488,7 +488,7 @@ precedence-plot
 ;; with validation disabled, then corrupt it.  First, create a valid
 ;; plan and confirm it passes:
 
-(def good-plan (sk/plan (base-plot) {:validate false}))
+(def good-plan (sk/xkcd7-plan (base-plot) {:validate false}))
 
 (sk/valid-plan? good-plan)
 
@@ -516,12 +516,12 @@ precedence-plot
     (and (= [:width] (:path m))
          (= "not-a-number" (:value m))))])
 
-;; With validation enabled (the default), `sk/plan` would throw
+;; With validation enabled (the default), `sk/xkcd7-plan` would throw
 ;; an exception for such a malformed plan.  We can verify this
 ;; by catching the exception:
 
 (try
-  (let [plan (sk/plan (base-plot) {:validate false})
+  (let [plan (sk/xkcd7-plan (base-plot) {:validate false})
         bad (assoc plan :width "not-a-number")]
     (when-let [explanation (sk/explain-plan bad)]
       (throw (ex-info "Plan does not conform to schema"
@@ -540,7 +540,7 @@ precedence-plot
 ;;
 ;; Disable validation with `:validate false`:
 
-(sk/plan (base-plot) {:validate false})
+(sk/xkcd7-plan (base-plot) {:validate false})
 
 (kind/test-last
  [(fn [plan]
@@ -559,7 +559,7 @@ precedence-plot
 ;;
 ;; | Mechanism | Scope | Persistence | Example |
 ;; |:----------|:------|:------------|:--------|
-;; | plot options | single call | none | `(sk/options {...})` or `(sk/plot views {...})` |
+;; | plot options | single call | none | `(sk/xkcd7-options {...})` or `(sk/xkcd7-plot views {...})` |
 ;; | `with-config` | lexical body | until body exits | `(sk/with-config {:width 800} ...)` |
 ;; | `set-config!` | global | until reset | `(sk/set-config! {:width 800})` |
 ;; | `napkinsketch.edn` | project | file on disk | `{:width 800}` in project root |
