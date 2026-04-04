@@ -3,6 +3,7 @@
             [wadogo.scale :as ws]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.scale :as scale]
+            [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.impl.coord :as coord]
             [scicloj.napkinsketch.render.mark :as mark]))
 
@@ -69,30 +70,19 @@
   (let [{:keys [values labels]} tick-info
         fsize (get-in cfg [:theme :font-size] 8)
         tick-color [0.4 0.4 0.4 1.0]
-        x-rotate-cfg (:x-tick-rotate cfg :auto)
-        avg-label-len (if (seq labels)
-                        (/ (reduce + (map count labels)) (double (count labels)))
-                        0.0)
-        usable-width (max 1.0 (- (double pw) (* 2.0 (double m))))
-        avg-tick-spacing (if (> (count values) 1)
-                           (/ usable-width (double (dec (count values))))
-                           usable-width)
-        estimated-label-width (* avg-label-len (/ fsize 1.8))
-        rotate-x?
-        (and (= axis :x)
-             (if (= x-rotate-cfg :auto)
-               (> estimated-label-width avg-tick-spacing)
-               (number? x-rotate-cfg)))
-        x-rotation-deg (if (number? x-rotate-cfg) x-rotate-cfg -45)]
+        {:keys [rotate? rotation-deg]}
+        (if (= axis :x)
+          (sketch/infer-x-tick-layout labels pw m cfg)
+          {:rotate? false :rotation-deg 0})]
     (when (seq values)
       (vec
        (map (fn [t label]
               (if (= axis :x)
                 (let [px (scale t)]
-                  (if rotate-x?
+                  (if rotate?
                     (ui/translate (double px)
                                   (- (double ph) 2)
-                                  (membrane.ui.Rotate. x-rotation-deg
+                                  (membrane.ui.Rotate. rotation-deg
                                                        (ui/with-color tick-color
                                                          (assoc (ui/label label (ui/font nil fsize))
                                                                 :text-anchor "end"))))

@@ -105,6 +105,36 @@
       [(apply jt/min (map first extents))
        (apply jt/max (map second extents))])))
 
+(defn estimate-text-width
+  "Estimate label width in pixels from average character count and font size.
+   Uses a lightweight heuristic rather than measured font metrics."
+  [avg-label-len fsize]
+  (* avg-label-len (/ fsize 1.8)))
+
+(defn infer-x-tick-layout
+  "Infer x-axis tick label layout from tick labels, panel width, margin, and config.
+   Returns a map with rotation and spacing estimates for shared use by layout/rendering."
+  [labels pw m cfg]
+  (let [fsize (get-in cfg [:theme :font-size] 8)
+        x-rotate-cfg (:x-tick-rotate cfg :auto)
+        avg-label-len (if (seq labels)
+                        (/ (reduce + (map count labels)) (double (count labels)))
+                        0.0)
+        usable-width (max 1.0 (- (double pw) (* 2.0 (double m))))
+        avg-tick-spacing (if (> (count labels) 1)
+                           (/ usable-width (double (dec (count labels))))
+                           usable-width)
+        estimated-label-width (estimate-text-width avg-label-len fsize)
+        rotate?
+        (if (= x-rotate-cfg :auto)
+          (> estimated-label-width avg-tick-spacing)
+          (number? x-rotate-cfg))
+        rotation-deg (if (number? x-rotate-cfg) x-rotate-cfg -45)]
+    {:rotate? rotate?
+     :rotation-deg rotation-deg
+     :avg-tick-spacing avg-tick-spacing
+     :estimated-label-width estimated-label-width}))
+
 (defn compute-ticks
   "Compute tick values and labels for a domain+pixel range, using wadogo transiently.
    When temporal-extent is provided (a [min max] pair of temporal objects),
@@ -546,22 +576,9 @@
    facet-row-vals facet-col-vals
    grid-rows grid-cols pw ph multi? panels legend-position]
   (let [tick-fsize (get-in cfg [:theme :font-size] 8)
-        max-x-tick-len (reduce max 0
-                               (for [p panels
-                                     :let [labels (get-in p [:x-ticks :labels])]
-                                     label (or labels [])]
-                                 (count label)))
-        max-x-tick-count (reduce max 0 (map #(count (get-in % [:x-ticks :labels])) panels))
-        usable-width (max 1.0 (- (double pw) (* 2.0 (:margin cfg))))
-        avg-x-spacing (if (> max-x-tick-count 1)
-                        (/ usable-width (double (dec max-x-tick-count)))
-                        usable-width)
-        estimated-x-label-width (* max-x-tick-len (/ tick-fsize 1.8))
-        x-rotate-cfg (:x-tick-rotate cfg :auto)
-        rotate-x-ticks?
-        (if (= x-rotate-cfg :auto)
-          (> estimated-x-label-width avg-x-spacing)
-          (number? x-rotate-cfg))
+        x-layouts (for [p panels]
+                    (infer-x-tick-layout (get-in p [:x-ticks :labels]) pw (:margin cfg) cfg))
+        rotate-x-ticks? (boolean (some :rotate? x-layouts))
         x-label-pad (+ (if eff-x-label (:label-offset cfg) 0)
                        (if rotate-x-ticks? (:x-tick-extra-pad cfg 48) 0))
         ;; y-label-pad must account for y-tick label width (e.g. category names)
