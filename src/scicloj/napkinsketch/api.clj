@@ -849,6 +849,7 @@
     (blueprint/blueprint? x) x
     (tc/dataset? x)          (xkcd7-wrap-autorender (blueprint/->blueprint x {} [] [] {}))
     (map? x)                 (xkcd7-wrap-autorender (blueprint/->blueprint (tc/dataset x) {} [] [] {}))
+    (sequential? x)          (xkcd7-wrap-autorender (blueprint/->blueprint (tc/dataset x) {} [] [] {}))
     :else                    (xkcd7-wrap-autorender (blueprint/->blueprint nil {} [] [] {}))))
 
 (defn xkcd7-sketch
