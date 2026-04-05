@@ -1525,10 +1525,9 @@
     (testing "Faceted + per-entry methods via view"
       (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
                                  (sk/xkcd7-view :sepal_length :sepal_width)
-                                 (sk/xkcd7-lay-point)
-                                 (sk/xkcd7-facet :species)
-                                 (sk/xkcd7-view {:x :sepal_length :y :sepal_width
-                                                 :methods [{:mark :line :stat :loess}]})))]
+                                 sk/xkcd7-lay-point
+                                 sk/xkcd7-lay-loess
+                                 (sk/xkcd7-facet :species)))]
         (is (= 3 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))

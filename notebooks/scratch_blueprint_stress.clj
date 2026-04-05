@@ -57,20 +57,23 @@
 
 (let [bp (-> iris
              (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))]
-  [(:shared bp) (:color (first (:methods bp)))])
+  [(:shared bp) (:color (first (:methods (first (:entries bp)))))])
 
 (kind/test-last [(fn [[shared method-color]]
                    (and (empty? shared)
                         (= :species method-color)))])
 
-;; A second bare `lay-*` gets no color.
+;; A second bare `lay-*` adds a global method (no color).
 
 (let [bp (-> iris
              (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
              sk/xkcd7-lay-lm)]
-  (mapv :color (:methods bp)))
+  [(:color (first (:methods (first (:entries bp)))))
+   (:color (first (:methods bp)))])
 
-(kind/test-last [(fn [colors] (= [:species nil] colors))])
+(kind/test-last [(fn [[entry-color global-color]]
+                   (and (= :species entry-color)
+                        (nil? global-color)))])
 
 ;; ## Faceting + shared color + per-method nil
 
@@ -172,17 +175,19 @@
 
 ;; ## Multiple `lay-*` with columns create independent entries
 
-;; Two `lay-*` calls with columns → two entries, two methods.
-;; Cross product gives 4 views.
+;; Two `lay-*` calls with columns → two entries, each with own methods.
+;; No global methods. No cross product.
 
 (let [bp (-> iris
              (sk/xkcd7-lay-point :sepal_length :sepal_width)
              (sk/xkcd7-lay-histogram :petal_length))]
-  [(count (:entries bp)) (count (:methods bp))])
+  [(count (:entries bp)) (count (:methods bp))
+   (mapv #(count (:methods %)) (:entries bp))])
 
-(kind/test-last [(fn [[entries methods]]
+(kind/test-last [(fn [[entries global-methods entry-method-counts]]
                    (and (= 2 entries)
-                        (= 2 methods)))])
+                        (= 0 global-methods)
+                        (= [1 1] entry-method-counts)))])
 
 ;; ## Plain data coercion
 

@@ -475,13 +475,12 @@
 ;; reject a y column with a clear message.
 
 ;; Note: in the xkcd7 API, `(lay-histogram data :x :y)` creates an
-;; entry with both :x and :y. The error is deferred to render time.
+;; entry with both :x and :y. The histogram stat ignores the y column
+;; and renders based on x alone.
 
-(try
-  (-> {:x [1 2 3] :y [4 5 6]}
-      (sk/xkcd7-lay-histogram :x :y)
-      sk/xkcd7-plot)
-  (catch Exception e
-    (ex-message e)))
+(-> {:x [1 2 3] :y [4 5 6]}
+    (sk/xkcd7-lay-histogram :x :y)
+    sk/svg-summary
+    :polygons)
 
-(kind/test-last [(fn [m] (string? m))])
+(kind/test-last [(fn [n] (pos? n))])
