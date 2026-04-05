@@ -171,12 +171,12 @@
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 150 (:points s)) (= 1 (:lines s)))))
+     (and (= 2 (:panels s)) (= 300 (:points s)) (= 1 (:lines s)))))
    v26_l109)))
 
 
 (def
- v29_l121
+ v29_l126
  (->
   iris
   (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
@@ -188,30 +188,30 @@
 
 
 (deftest
- t30_l127
+ t30_l132
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v29_l121)))
+     (and (= 2 (:panels s)) (= 300 (:points s)) (= 3 (:lines s)))))
+   v29_l126)))
 
 
 (def
- v32_l135
+ v32_l141
  (let
   [bp (-> {:x [1 2 3], :y [4 5 6]} (sk/xkcd7-view))]
   [(count (:entries bp)) (:shared bp)]))
 
 
 (deftest
- t33_l139
- (is ((fn [[n shared]] (and (= 1 n) (empty? shared))) v32_l135)))
+ t33_l145
+ (is ((fn [[n shared]] (and (= 1 n) (empty? shared))) v32_l141)))
 
 
 (def
- v35_l145
+ v35_l151
  (->
   (sk/xkcd7-sketch
    {:x [1 2 3 4 5], :y [2 4 3 5 4], :g [:a :a :b :b :a]}
@@ -221,15 +221,15 @@
 
 
 (deftest
- t36_l150
- (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v35_l145)))
+ t36_l156
+ (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v35_l151)))
 
 
-(def v38_l154 (def cols [:sepal_length :sepal_width :petal_length]))
+(def v38_l160 (def cols [:sepal_length :sepal_width :petal_length]))
 
 
 (def
- v39_l156
+ v40_l165
  (->
   (sk/xkcd7-sketch iris {:color :species})
   (sk/xkcd7-view (sk/cross cols cols))
@@ -237,18 +237,18 @@
 
 
 (deftest
- t40_l160
+ t41_l169
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 9 (:panels s)) (= (* 9 150) (:points s)))))
-   v39_l156)))
+   v40_l165)))
 
 
 (def
- v42_l169
+ v43_l178
  (let
   [bp
    (->
@@ -259,34 +259,34 @@
 
 
 (deftest
- t43_l174
+ t44_l183
  (is
   ((fn [[entries methods]] (and (= 2 entries) (= 2 methods)))
-   v42_l169)))
+   v43_l178)))
 
 
 (def
- v45_l182
+ v46_l191
  (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} (sk/xkcd7-lay-point :x :y)))
 
 
 (deftest
- t46_l185
- (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v45_l182)))
+ t47_l194
+ (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v46_l191)))
 
 
 (def
- v48_l189
+ v49_l198
  (-> {"x" [1 2 3 4 5], "y" [2 4 3 5 4]} (sk/xkcd7-lay-point "x" "y")))
 
 
 (deftest
- t49_l192
- (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v48_l189)))
+ t50_l201
+ (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v49_l198)))
 
 
 (def
- v51_l196
+ v52_l205
  (def
   recipe
   (->
@@ -296,22 +296,22 @@
    sk/xkcd7-lay-lm)))
 
 
-(def v52_l201 (-> recipe (sk/xkcd7-with-data iris)))
+(def v53_l210 (-> recipe (sk/xkcd7-with-data iris)))
 
 
 (deftest
- t53_l203
+ t54_l212
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v52_l201)))
+   v53_l210)))
 
 
 (def
- v55_l212
+ v56_l221
  (->
   iris
   (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
@@ -320,18 +320,18 @@
 
 
 (deftest
- t56_l217
+ t57_l226
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v55_l212)))
+   v56_l221)))
 
 
 (def
- v58_l225
+ v59_l234
  (let
   [bp
    (->
@@ -345,16 +345,16 @@
 
 
 (deftest
- t59_l233
+ t60_l242
  (is
   ((fn
     [[shared-c entry-c method-c]]
     (and (= :species shared-c) (nil? entry-c) (nil? method-c)))
-   v58_l225)))
+   v59_l234)))
 
 
 (def
- v61_l240
+ v62_l249
  (let
   [bp
    (->
@@ -365,16 +365,16 @@
 
 
 (deftest
- t62_l245
+ t63_l254
  (is
   ((fn
     [[title width shared]]
     (and (= "My Plot" title) (= 800 width) (empty? shared)))
-   v61_l240)))
+   v62_l249)))
 
 
 (def
- v64_l252
+ v65_l261
  (let
   [bp
    (->
@@ -386,7 +386,7 @@
 
 
 (deftest
- t65_l259
+ t66_l268
  (is
   ((fn [[yscale coord]] (and (= {:type :log} yscale) (= :flip coord)))
-   v64_l252)))
+   v65_l261)))

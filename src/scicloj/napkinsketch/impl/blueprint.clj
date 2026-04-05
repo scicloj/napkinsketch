@@ -75,7 +75,11 @@
         (fn [entry]
           (let [entry-idx (swap! idx inc)
                 own-methods (:methods entry)
-                combined (concat (or own-methods nil) global-methods)
+                ;; Annotation entries (rule-h, band-v etc.) don't get global methods
+                ann-entry? (some #(#{:rule-h :rule-v :band-h :band-v} (:mark %)) own-methods)
+                combined (if ann-entry?
+                           own-methods
+                           (concat (or own-methods nil) global-methods))
                 entry-methods (if (seq combined) (vec combined) [{:mark :infer}])
                 base (merge shared (dissoc entry :methods))]
             (map (fn [m]

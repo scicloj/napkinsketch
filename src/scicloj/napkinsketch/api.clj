@@ -813,7 +813,7 @@
 
 (defn save
   "Save a plot to an SVG file.
-   views — a vector of view maps, or a Sketch.
+   views — a vector of view maps, a Sketch, or a Blueprint.
    path  — file path (string or java.io.File).
    opts  — same options as `plot` (:width, :height, :title, :theme, etc.).
    Tooltip and brush interactivity are not included in saved files.
@@ -821,20 +821,24 @@
    (save views \"plot.svg\")
    (save views \"plot.svg\" {:width 800 :height 600})"
   ([sketch-or-views path]
-   (let [path-str (str path)]
-     (when-not (.endsWith path-str ".svg")
-       (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
-     (let [views (extract-views sketch-or-views)
-           opts (carry-opts sketch-or-views)]
-       (if (seq opts)
-         (svg/save views path opts)
-         (svg/save views path)))))
+   (save sketch-or-views path {}))
   ([sketch-or-views path opts]
    (let [path-str (str path)]
      (when-not (.endsWith path-str ".svg")
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
-     (svg/save (extract-views sketch-or-views) path
-               (kindly/deep-merge (carry-opts sketch-or-views) opts)))))
+     (if (blueprint/blueprint? sketch-or-views)
+       ;; Blueprint: use xkcd7 pipeline
+       (let [views (blueprint/resolve-blueprint sketch-or-views)
+             all-opts (kindly/deep-merge (:opts sketch-or-views {}) opts)
+             plan (sketch-impl/xkcd7-views->plan views all-opts)
+             svg-hiccup (render-impl/plan->figure plan :svg {})]
+         (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                         (svg/hiccup->svg-str svg-hiccup)))
+         path)
+       ;; Sketch/views: use old pipeline
+       (let [views (extract-views sketch-or-views)
+             all-opts (kindly/deep-merge (carry-opts sketch-or-views) opts)]
+         (svg/save views path all-opts))))))
 
 ;; ================================================================
 ;; PROPOSED API — temporary xkcd7- prefix (will be renamed)
