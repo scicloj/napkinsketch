@@ -762,13 +762,17 @@
    (cond
      (view/sketch? svg-or-sketch) (svg/svg-summary (plot svg-or-sketch))
      (blueprint/blueprint? svg-or-sketch)
-     (svg/svg-summary (plot-impl/plot (blueprint/resolve-blueprint svg-or-sketch) (:opts svg-or-sketch {})))
+     (let [views (blueprint/resolve-blueprint svg-or-sketch)
+           plan (sketch-impl/xkcd7-views->plan views (:opts svg-or-sketch {}))]
+       (svg/svg-summary (render-impl/plan->figure plan :svg {})))
      :else (svg/svg-summary svg-or-sketch)))
   ([svg-or-sketch theme]
    (cond
      (view/sketch? svg-or-sketch) (svg/svg-summary (plot svg-or-sketch) theme)
      (blueprint/blueprint? svg-or-sketch)
-     (svg/svg-summary (plot-impl/plot (blueprint/resolve-blueprint svg-or-sketch) (:opts svg-or-sketch {})) theme)
+     (let [views (blueprint/resolve-blueprint svg-or-sketch)
+           plan (sketch-impl/xkcd7-views->plan views (:opts svg-or-sketch {}))]
+       (svg/svg-summary (render-impl/plan->figure plan :svg {}) theme))
      :else (svg/svg-summary svg-or-sketch theme))))
 
 ;; ---- Multi-Plot Composition ----
@@ -1063,16 +1067,16 @@
                         (mapv #(assoc % :coord coord-type) entries))))
 
 (defn xkcd7-plan
-  "Resolve a Blueprint into a plan — a plain Clojure map with data-space
-   geometry, domains, tick info, legend, and layout.
+  "Resolve a Blueprint into a plan using entry-based grid layout.
+   Each entry = one panel. Grid position from structural columns.
    (xkcd7-plan bp)
    (xkcd7-plan bp {:title \"My Plot\"})"
   ([bp]
    (let [views (blueprint/resolve-blueprint bp)]
-     (sketch-impl/views->plan views (:opts bp {}))))
+     (sketch-impl/xkcd7-views->plan views (:opts bp {}))))
   ([bp opts]
    (let [views (blueprint/resolve-blueprint bp)]
-     (sketch-impl/views->plan views (merge (:opts bp {}) opts)))))
+     (sketch-impl/xkcd7-views->plan views (merge (:opts bp {}) opts)))))
 
 (defn xkcd7-annotate
   "Add annotation entries to a Blueprint.
@@ -1108,5 +1112,6 @@
 (defn xkcd7-plot
   "Render a Blueprint to SVG (or interactive HTML if tooltip/brush is set)."
   [bp]
-  (let [views (blueprint/resolve-blueprint bp)]
-    (plot-impl/plot views (:opts bp {}))))
+  (let [views (blueprint/resolve-blueprint bp)
+        plan (sketch-impl/xkcd7-views->plan views (:opts bp {}))]
+    (render-impl/plan->figure plan :svg {})))

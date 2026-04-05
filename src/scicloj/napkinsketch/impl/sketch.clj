@@ -827,3 +827,237 @@
        (when-let [explanation (ss/explain plan)]
          (throw (ex-info "Plan does not conform to schema" {:explanation explanation}))))
      plan)))
+
+;; ================================================================
+;; xkcd7 Grid Layout
+;; ================================================================
+
+(defn- xkcd7-infer-grid
+  "Infer grid structure from entry-grouped views.
+   Each entry = one panel. Grid position from structural columns.
+   Returns {:grid-cols N :grid-rows N :panels [{:views [...] :row R :col C ...}]}"
+  [entry-groups {:keys [grid-cols grid-rows] :as user-grid}]
+  (let [;; Collect x/y variables per entry (use first view's :x/:y)
+        entry-vars (mapv (fn [eg]
+                           (let [v (first (:views eg))]
+                             {:x (:x v) :y (:y v) :entry-idx (:entry-idx eg)}))
+                         entry-groups)
+        ;; Distinct x-variables in order of appearance
+        x-vars (or grid-cols
+                   (vec (distinct (map :x entry-vars))))
+        ;; Distinct y-variables in order of appearance (nil is valid)
+        y-vars (or grid-rows
+                   (vec (distinct (map :y entry-vars))))
+        ;; Build position map: (x, y) → list of entry indices at that position
+        pos-map (reduce (fn [m {:keys [x y entry-idx]}]
+                          (update m [x y] (fnil conj []) entry-idx))
+                        {} entry-vars)
+        ;; For stacking: expand grid rows for duplicate positions
+        ;; Walk through entries in order, assign (row, col)
+        ;; Entries with same (x, y) get consecutive rows (sub-panels)
+        row-offsets (atom {}) ;; y-var → next available sub-row
+        panels (vec
+                (for [eg entry-groups
+                      :let [v (first (:views eg))
+                            xv (:x v)
+                            yv (:y v)
+                            ci (.indexOf ^java.util.List x-vars xv)
+                            base-ri (.indexOf ^java.util.List y-vars yv)
+                            ;; Stacking: track how many entries at this y-var
+                            stack-key [xv yv]
+                            sub-offset (get @row-offsets stack-key 0)
+                            _ (swap! row-offsets update stack-key (fnil inc 0))
+                            ri (+ (* base-ri (apply max 1
+                                                    (map (fn [yv']
+                                                           (count (get pos-map [xv yv'] [])))
+                                                         y-vars)))
+                                  sub-offset)]]
+                  {:views (:views eg)
+                   :row ri :col ci
+                   :var-x xv :var-y yv
+                   :col-label (when xv (defaults/fmt-name xv))
+                   :row-label (when yv (defaults/fmt-name yv))}))
+        ;; Compute actual grid dimensions
+        max-row (if (seq panels) (inc (apply max (map :row panels))) 1)
+        max-col (if (seq panels) (inc (apply max (map :col panels))) 1)]
+    {:grid-cols max-col
+     :grid-rows max-row
+     :layout-type (if (and (= 1 max-row) (= 1 max-col)) :single :multi-variable)
+     :x-vars x-vars
+     :y-vars y-vars
+     :panels panels}))
+
+(defn xkcd7-views->plan
+  "xkcd7 pipeline: resolve views into a plan using entry-based grid layout.
+   Each entry = one panel. Grid position from structural columns.
+   Reuses existing stat computation, domain, tick, legend, and layout logic."
+  ([views] (xkcd7-views->plan views {}))
+  ([views {:keys [x-label y-label title subtitle caption
+                  scales legend-position grid-cols grid-rows] :as opts}]
+   (let [cfg (defaults/resolve-config opts)
+         cfg (assoc cfg :gradient-fn (defaults/resolve-gradient-fn (:color-scale cfg)))
+         validate? (:validate cfg true)
+         width (:width cfg)
+         height (:height cfg)
+         views (if (map? views) [views] views)
+
+         ;; Separate annotations
+         ann-views (filter #(view/annotation-marks (:mark %)) views)
+         non-ann-views (remove #(view/annotation-marks (:mark %)) views)
+
+         ;; Group views by entry index
+         entry-groups (vec
+                       (for [[idx vs] (sort-by key (group-by :__entry-idx non-ann-views))]
+                         {:entry-idx idx :views (vec vs)}))
+
+         ;; Infer grid from entries
+         grid (xkcd7-infer-grid entry-groups
+                                (cond-> {}
+                                  grid-cols (assoc :grid-cols grid-cols)
+                                  grid-rows (assoc :grid-rows grid-rows)))
+         {:keys [layout-type x-vars y-vars]} grid
+         grid-rows-n (:grid-rows grid)
+         grid-cols-n (:grid-cols grid)
+
+         ;; Colors
+         {:keys [resolved-all numeric-color? all-colors color-cols tagged-views]}
+         (collect-colors non-ann-views)
+
+         ;; Scale & coord specs (from first view, or per-panel later)
+         x-scale-spec (or (:x-scale (first non-ann-views)) {:type :linear})
+         y-scale-spec (or (:y-scale (first non-ann-views)) {:type :linear})
+         coord-type (or (:coord (first non-ann-views)) :cartesian)
+         _ (validate-polar-marks resolved-all coord-type)
+
+         ;; Annotations
+         annotations (vec (for [a ann-views]
+                            (select-keys a [:mark :intercept :lo :hi :alpha
+                                            :facet-col :facet-row :x :y])))
+
+         ;; Panel dimensions
+         {:keys [m pw ph]}
+         (compute-panel-dims cfg layout-type grid-rows-n grid-cols-n width height)
+
+         ;; Tag views for reuse (match tagged-views back to panels)
+         tagged-by-idx (group-by :__entry-idx tagged-views)
+
+         ;; Resolve each panel's views
+         panel-data (mapv
+                     (fn [pg]
+                       (let [entry-idx (:entry-idx (meta pg) (:entry-idx
+                                                              (first (filter #(= (:__entry-idx (first (:views %)))
+                                                                                 (:__entry-idx (first (:views pg))))
+                                                                             entry-groups))))
+                             panel-tagged (or (get tagged-by-idx
+                                                   (:__entry-idx (first (:views pg))))
+                                              (:views pg))
+                             pre-resolved (mapv :__resolved panel-tagged)]
+                         (if (seq panel-tagged)
+                           (merge pg (resolve-panel-views panel-tagged all-colors cfg
+                                                          :resolved pre-resolved))
+                           pg)))
+                     (:panels grid))
+
+         ;; Build panels with per-entry domains
+         panels (vec
+                 (for [pd panel-data
+                       :when (seq (:views pd))]
+                   (let [local-srs (:stat-results pd)
+                         local-layers (:layers pd)
+                         ;; Per-entry domains — each panel gets its own
+                         x-dom (or (:domain x-scale-spec)
+                                   (collect-domain local-srs :x-domain x-scale-spec))
+                         y-dom (or (:domain y-scale-spec)
+                                   (compute-global-y-domain local-layers y-scale-spec))
+                         [x-dom' y-dom'] (if (= coord-type :flip)
+                                           [y-dom x-dom]
+                                           [x-dom y-dom])
+                         [x-sspec' y-sspec'] (if (= coord-type :flip)
+                                               [y-scale-spec x-scale-spec]
+                                               [x-scale-spec y-scale-spec])
+                         ;; Temporal extents
+                         resolved-views (:resolved pd)
+                         x-temp-ext (merge-temporal-extents (map :x-temporal-extent resolved-views))
+                         y-temp-ext (merge-temporal-extents (map :y-temporal-extent resolved-views))
+                         [x-te y-te] (if (= coord-type :flip)
+                                       [y-temp-ext x-temp-ext]
+                                       [x-temp-ext y-temp-ext])
+                         x-px [m (- pw m)]
+                         y-px [(- ph m) m]
+                         x-ticks (when x-dom' (compute-ticks x-dom' x-px x-sspec' (:tick-spacing-x cfg) x-te))
+                         y-ticks (when y-dom' (compute-ticks y-dom' y-px y-sspec' (:tick-spacing-y cfg) y-te))]
+                     (cond-> {:x-domain (vec (if (sequential? x-dom') x-dom' [x-dom']))
+                              :y-domain (vec (if (sequential? y-dom') y-dom' [y-dom']))
+                              :x-scale x-sspec'
+                              :y-scale y-sspec'
+                              :coord coord-type
+                              :x-ticks (or x-ticks {:values [] :labels [] :categorical? false})
+                              :y-ticks (or y-ticks {:values [] :labels [] :categorical? false})
+                              :layers (or local-layers [])
+                              :row (:row pd)
+                              :col (:col pd)}
+                       (seq annotations)
+                       (assoc :annotations
+                              (let [panel-anns
+                                    (filterv
+                                     (fn [a]
+                                       (and (or (nil? (:x a)) (= (:x a) (:var-x pd)))
+                                            (or (nil? (:y a)) (= (:y a) (:var-y pd)))))
+                                     annotations)]
+                                (mapv #(dissoc % :facet-col :facet-row :x :y) panel-anns)))
+                       (:row-label pd) (assoc :row-label (:row-label pd))
+                       (:col-label pd) (assoc :col-label (:col-label pd))))))
+
+         ;; Ridgeline axis swap
+         has-ridgeline? (some #(= :ridgeline (:mark %)) non-ann-views)
+         panels (if has-ridgeline?
+                  (mapv (fn [p]
+                          (-> p
+                              (assoc :x-domain (:y-domain p) :y-domain (:x-domain p)
+                                     :x-ticks (:y-ticks p) :y-ticks (:x-ticks p)
+                                     :x-scale (:y-scale p) :y-scale (:x-scale p))))
+                        panels)
+                  panels)
+
+         ;; Labels
+         multi? (and (= layout-type :multi-variable) (> grid-cols-n 1) (> grid-rows-n 1))
+         auto-label? (and (not multi?) (coord/show-ticks? coord-type))
+         {:keys [eff-title eff-x-label eff-y-label]}
+         (resolve-labels non-ann-views x-vars y-vars x-scale-spec y-scale-spec
+                         title x-label y-label auto-label?)
+         swap-labels? (or (= coord-type :flip) has-ridgeline?)
+         [eff-x-label eff-y-label] (if swap-labels?
+                                     [eff-y-label eff-x-label]
+                                     [eff-x-label eff-y-label])
+
+         ;; Legends
+         legend (build-legend resolved-all numeric-color? all-colors color-cols cfg)
+         size-legend (build-size-legend resolved-all)
+         alpha-legend (build-alpha-legend resolved-all)
+
+         ;; Layout dims
+         layout-dims (compute-layout-dims cfg layout-type eff-title eff-x-label eff-y-label
+                                          subtitle caption
+                                          legend size-legend alpha-legend
+                                          nil nil ;; no facet-row/col-vals
+                                          grid-rows-n grid-cols-n pw ph multi? panels legend-position)
+
+         plan
+         (view/map->Plan
+          {:width width :height height :margin m
+           :total-width (:total-w layout-dims) :total-height (:total-h layout-dims)
+           :panel-width pw :panel-height ph
+           :grid {:rows grid-rows-n :cols grid-cols-n}
+           :layout-type layout-type
+           :title eff-title :subtitle subtitle :caption caption
+           :x-label eff-x-label :y-label eff-y-label
+           :legend legend :size-legend size-legend :alpha-legend alpha-legend
+           :legend-position (or legend-position :right)
+           :panels panels
+           :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad
+                                             :subtitle-pad :caption-pad
+                                             :legend-w :legend-h :strip-h :strip-w])})]
+     (when validate?
+       (when-let [explanation (ss/explain plan)]
+         (throw (ex-info "Plan does not conform to schema" {:explanation explanation}))))
+     plan)))

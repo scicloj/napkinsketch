@@ -5,6 +5,8 @@
    Produces view maps for the existing views->plan pipeline."
   (:require [tablecloth.api :as tc]
             [scicloj.napkinsketch.impl.plot :as plot-impl]
+            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.render :as render-impl]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.kindly.v4.kind :as kind]))
 
@@ -67,34 +69,39 @@
   [{:keys [data shared entries methods]}]
   (let [expanded (expand-facets entries data)
         global-methods methods]
-    (vec
-     (mapcat
-      (fn [entry]
-        (let [own-methods (:methods entry)
-              combined (concat (or own-methods nil) global-methods)
-              entry-methods (if (seq combined) (vec combined) [{:mark :infer}])
-              base (merge shared (dissoc entry :methods))]
-          (map (fn [m]
-                 (let [resolved (merge base m)
-                       d (or (:data resolved) data)
-                       d (when d (if (tc/dataset? d) d (tc/dataset d)))]
-                   (-> resolved
-                       (assoc :data d)
-                       (cond-> (= :infer (:mark resolved))
-                         (-> (dissoc :mark :stat))))))
-               entry-methods)))
-      expanded))))
+    (let [idx (atom -1)]
+      (vec
+       (mapcat
+        (fn [entry]
+          (let [entry-idx (swap! idx inc)
+                own-methods (:methods entry)
+                combined (concat (or own-methods nil) global-methods)
+                entry-methods (if (seq combined) (vec combined) [{:mark :infer}])
+                base (merge shared (dissoc entry :methods))]
+            (map (fn [m]
+                   (let [resolved (merge base m)
+                         d (or (:data resolved) data)
+                         d (when d (if (tc/dataset? d) d (tc/dataset d)))]
+                     (-> resolved
+                         (assoc :data d
+                                :__entry-idx entry-idx)
+                         (cond-> (= :infer (:mark resolved))
+                           (-> (dissoc :mark :stat))))))
+                 entry-methods)))
+        expanded)))))
 
 ;; ---- Rendering ----
 
 (defn render-blueprint
-  "Render a Blueprint to SVG. Called by Clay via kind/fn at display time.
+  "Render a Blueprint to SVG via xkcd7 grid pipeline.
+   Called by Clay via kind/fn at display time.
    Restores config snapshot if present."
   [bp]
   (let [captured (:config-snapshot bp)
         render-fn (fn []
                     (let [views (resolve-blueprint bp)
-                          rendered (plot-impl/plot views (:opts bp {}))]
+                          plan (sketch-impl/xkcd7-views->plan views (:opts bp {}))
+                          rendered (render-impl/plan->figure plan :svg {})]
                       (kind/hiccup [:div {:style {:margin-bottom "1em"}} rendered])))]
     (if captured
       (binding [defaults/*config* captured]
