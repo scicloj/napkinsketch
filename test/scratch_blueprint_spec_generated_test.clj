@@ -603,16 +603,18 @@
  v80_l428
  (->
   (sk/xkcd7-sketch iris {:color :species})
-  (sk/xkcd7-view (sk/cross splom-cols splom-cols))
-  sk/xkcd7-lay-point))
+  (sk/xkcd7-view (sk/cross splom-cols splom-cols))))
 
 
 (deftest
- t81_l432
+ t81_l431
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and (= 9 (:panels s)) (= (* 9 150) (:points s)))))
+     (and
+      (= 9 (:panels s))
+      (= (* 6 150) (:points s))
+      (pos? (:polygons s)))))
    v80_l428)))

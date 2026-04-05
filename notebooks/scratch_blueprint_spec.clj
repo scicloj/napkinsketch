@@ -426,14 +426,16 @@
 (def splom-cols [:sepal_length :sepal_width :petal_length])
 
 (-> (sk/xkcd7-sketch iris {:color :species})
-    (sk/xkcd7-view (sk/cross splom-cols splom-cols))
-    sk/xkcd7-lay-point)
+    (sk/xkcd7-view (sk/cross splom-cols splom-cols)))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 9 (:panels s))
-                                (= (* 9 150) (:points s)))))])
+                                (= (* 6 150) (:points s))
+                                (pos? (:polygons s)))))])
 
-;; 9 panels (3×3 grid), all colored by species.
+;; 9 panels (3×3 grid), colored by species.
+;; Off-diagonal: scatter (6 × 150 = 900 points).
+;; Diagonal: histograms (inferred when x=y).
 
 ;; ## Summary
 ;;
