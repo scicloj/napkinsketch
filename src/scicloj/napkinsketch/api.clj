@@ -930,31 +930,25 @@
       ;; No match — create new entry with this method
       (update bp :entries conj (assoc entry-keys :methods [method-map])))))
 
+(defn- xkcd7-method-map
+  "Build a method map from a method-key (keyword) or raw map, with optional opts."
+  [method-key opts]
+  (let [base (if (keyword? method-key)
+               (let [m (method/lookup method-key)]
+                 (or (not-empty (select-keys (or m {}) [:mark :stat :position]))
+                     {:mark method-key :stat :identity}))
+               ;; Raw map — pass through as-is
+               method-key)]
+    (merge base opts)))
+
 (defn xkcd7-lay
-  "Add a method to a Blueprint."
+  "Add a global method to a Blueprint (applies to all entries)."
   ([bp-or-data method-key]
    (let [bp (xkcd7-ensure-bp bp-or-data)]
-     (if (keyword? method-key)
-       (let [m (method/lookup method-key)]
-         (update bp :methods conj (or (select-keys m [:mark :stat :position])
-                                      {:mark method-key :stat :identity})))
-       (update bp :methods conj method-key))))
+     (update bp :methods conj (xkcd7-method-map method-key nil))))
   ([bp-or-data method-key opts]
    (let [bp (xkcd7-ensure-bp bp-or-data)]
-     (if (keyword? method-key)
-       (let [m (method/lookup method-key)]
-         (update bp :methods conj (merge (or (select-keys m [:mark :stat :position])
-                                             {:mark method-key :stat :identity})
-                                         opts)))
-       (update bp :methods conj (merge method-key opts))))))
-
-(defn- xkcd7-method-map
-  "Build a method map from a method-key and optional opts."
-  [method-key opts]
-  (let [m (when (keyword? method-key) (method/lookup method-key))
-        base (or (select-keys (or m {}) [:mark :stat :position])
-                 {:mark method-key :stat :identity})]
-    (merge base opts)))
+     (update bp :methods conj (xkcd7-method-map method-key opts)))))
 
 (defn- xkcd7-lay-method
   "Shared implementation for all xkcd7-lay-* functions.
@@ -1173,15 +1167,6 @@
   ([bp-or-data x-or-opts] (xkcd7-lay-method :rug bp-or-data x-or-opts))
   ([bp-or-data x y-or-opts] (xkcd7-lay-method :rug bp-or-data x y-or-opts))
   ([bp-or-data x y opts] (xkcd7-lay-method :rug bp-or-data x y opts)))
-
-(defn xkcd7-overlay
-  "Add an entry with its own methods."
-  ([bp-or-data x y methods]
-   (let [bp (xkcd7-ensure-bp bp-or-data)]
-     (update bp :entries conj {:x x :y y :methods methods})))
-  ([bp-or-data entry-map methods]
-   (let [bp (xkcd7-ensure-bp bp-or-data)]
-     (update bp :entries conj (assoc entry-map :methods methods)))))
 
 (defn xkcd7-facet
   "Facet a Blueprint by a column."

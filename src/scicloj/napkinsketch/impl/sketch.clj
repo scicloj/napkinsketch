@@ -878,7 +878,9 @@
                               (let [yv (:y v)
                                     i (.indexOf ^java.util.List row-vals yv)]
                                 [(max 0 i) (when yv (defaults/fmt-name yv))]))
-                            ;; Stacking for duplicate positions
+                            ;; Stacking: when multiple entries share the same
+                            ;; grid position, offset each by one row below the base.
+                            ;; sub=0 → base position; sub>0 → stacked below.
                             stack-key [ri ci]
                             sub (get @stack-counts stack-key 0)
                             _ (swap! stack-counts update stack-key (fnil inc 0))]]
@@ -958,15 +960,11 @@
          ;; Tag views for reuse (match tagged-views back to panels)
          tagged-by-idx (group-by :__entry-idx tagged-views)
 
-         ;; Resolve each panel's views
+         ;; Resolve each panel's views using tagged (color-resolved) versions
          panel-data (mapv
                      (fn [pg]
-                       (let [entry-idx (:entry-idx (meta pg) (:entry-idx
-                                                              (first (filter #(= (:__entry-idx (first (:views %)))
-                                                                                 (:__entry-idx (first (:views pg))))
-                                                                             entry-groups))))
-                             panel-tagged (or (get tagged-by-idx
-                                                   (:__entry-idx (first (:views pg))))
+                       (let [eidx (:__entry-idx (first (:views pg)))
+                             panel-tagged (or (get tagged-by-idx eidx)
                                               (:views pg))
                              pre-resolved (mapv :__resolved panel-tagged)]
                          (if (seq panel-tagged)

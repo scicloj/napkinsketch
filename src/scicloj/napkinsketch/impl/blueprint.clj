@@ -1,10 +1,9 @@
 (ns scicloj.napkinsketch.impl.blueprint
-  "PROPOSED-Sketch implementation: the new composable data model.
+  "Blueprint: the xkcd7 composable data model.
    A Blueprint is a record with :data :shared :entries :methods :opts.
-   Resolution: shared → entry → method. Nil cancels.
-   Produces view maps for the existing views->plan pipeline."
+   Resolution: merge(shared, entry, method). Nil cancels.
+   Produces view maps for the xkcd7-views->plan pipeline."
   (:require [tablecloth.api :as tc]
-            [scicloj.napkinsketch.impl.plot :as plot-impl]
             [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.render :as render-impl]
             [scicloj.napkinsketch.impl.defaults :as defaults]
@@ -21,10 +20,15 @@
 
 ;; ---- Resolution ----
 
+(defn- ensure-dataset
+  "Coerce raw data to a Tablecloth dataset. Returns nil for nil input."
+  [d]
+  (when d (if (tc/dataset? d) d (tc/dataset d))))
+
 (defn- expand-facets
   "Expand entries with keyword :facet-col/:facet-row into per-value entries."
   [entries data]
-  (let [ds (when data (if (tc/dataset? data) data (tc/dataset data)))]
+  (let [ds (ensure-dataset data)]
     (vec
      (mapcat
       (fn [entry]
@@ -34,24 +38,21 @@
               nr? (keyword? frow)]
           (cond
             (and nc? nr?)
-            (let [ed (or (:data entry) ds)
-                  ed (when ed (if (tc/dataset? ed) ed (tc/dataset ed)))]
+            (let [ed (ensure-dataset (or (:data entry) ds))]
               (for [cv (distinct (ed fcol)) rv (distinct (ed frow))]
                 (-> entry
                     (assoc :facet-col (str cv) :facet-row (str rv)
                            :data (tc/select-rows ed (fn [r] (and (= (r fcol) cv) (= (r frow) rv))))))))
 
             nc?
-            (let [ed (or (:data entry) ds)
-                  ed (when ed (if (tc/dataset? ed) ed (tc/dataset ed)))]
+            (let [ed (ensure-dataset (or (:data entry) ds))]
               (for [cv (distinct (ed fcol))]
                 (-> entry
                     (assoc :facet-col (str cv)
                            :data (tc/select-rows ed (fn [r] (= (r fcol) cv)))))))
 
             nr?
-            (let [ed (or (:data entry) ds)
-                  ed (when ed (if (tc/dataset? ed) ed (tc/dataset ed)))]
+            (let [ed (ensure-dataset (or (:data entry) ds))]
               (for [rv (distinct (ed frow))]
                 (-> entry
                     (assoc :facet-row (str rv)
@@ -84,8 +85,7 @@
                 base (merge shared (dissoc entry :methods))]
             (map (fn [m]
                    (let [resolved (merge base m)
-                         d (or (:data resolved) data)
-                         d (when d (if (tc/dataset? d) d (tc/dataset d)))]
+                         d (ensure-dataset (or (:data resolved) data))]
                      (-> resolved
                          (assoc :data d
                                 :__entry-idx entry-idx)
@@ -103,9 +103,10 @@
   [bp]
   (let [captured (:config-snapshot bp)
         render-fn (fn []
-                    (let [views (resolve-blueprint bp)
-                          plan (sketch-impl/xkcd7-views->plan views (:opts bp {}))
-                          rendered (render-impl/plan->figure plan :svg {})]
+                    (let [opts (:opts bp {})
+                          views (resolve-blueprint bp)
+                          plan (sketch-impl/xkcd7-views->plan views opts)
+                          rendered (render-impl/plan->figure plan :svg opts)]
                       (kind/hiccup [:div {:style {:margin-bottom "1em"}} rendered])))]
     (if captured
       (binding [defaults/*config* captured]
