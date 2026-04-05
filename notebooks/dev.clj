@@ -19,12 +19,13 @@
           chapters)))
 
 (defn make-book!
-  "Render book HTML through Quarto."
-  []
+  "Render book HTML through Quarto.
+  Use `:docs true` to render to the `docs` directory for publishing."
+  [{:keys [docs]}]
   (clay/make! {:format [:quarto :html]
                :base-source-path "notebooks"
                :source-path (into ["index.clj"] (chapters->parts (read-chapters)))
-               :base-target-path "docs"
+               :base-target-path (when docs "docs")
                :book {:title "Napkinsketch"}
                :clean-up-target-dir true}))
 
@@ -57,7 +58,8 @@
 
 (comment
   (make-readme!)
-  (make-book!)
+  (make-book! {:docs true})
+  (make-book! {:docs false})
   (make-gfm!)
   (make-gfm! "napkinsketch_book/quickstart.clj"))
 
