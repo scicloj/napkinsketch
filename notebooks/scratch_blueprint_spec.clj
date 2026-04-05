@@ -339,7 +339,105 @@
 
 ;; Small dataset (≤3 columns) → columns auto-inferred, entry-specific.
 
+;; ---
+;; # Grid Layout Rules
+;;
+;; Each entry produces its own panel. The grid is determined by
+;; structural columns: entries sharing an x-variable align in the
+;; same grid column; entries sharing a y-variable align in the same
+;; grid row. Per-entry axes — no range leaking.
+
+;; ## Rule 13: each entry = one panel
+
+;; Two `lay-*` with different columns → two separate panels.
+;; No cross-product — scatter stays on its entry, histogram on its.
+
+(let [bp (-> iris
+             (sk/xkcd7-lay-point :sepal_length :sepal_width)
+             (sk/xkcd7-lay-histogram :petal_length))]
+  (kind/pprint (bp-summary bp)))
+
+(kind/test-last [(fn [m]
+                   (and (= 2 (count (:entries m)))
+                        (= 0 (count (:methods m)))))])
+
+(-> iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width)
+    (sk/xkcd7-lay-histogram :petal_length))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 150 (:points s))
+                                (pos? (:polygons s)))))])
+
+;; Two panels: scatter (150 points) and histogram (polygons).
+;; Each has its own axis range — no leaking.
+
+;; ## Rule 14: shared x-variable → same grid column
+
+;; Scatter and histogram of the same x-variable share the x-axis.
+
+(-> iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width)
+    (sk/xkcd7-lay-histogram :sepal_length))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 150 (:points s))
+                                (pos? (:polygons s)))))])
+
+;; Two panels stacked vertically (same x-column), shared x-axis.
+;; This is a marginal distribution layout.
+
+;; ## Rule 15: methods within one entry → one panel (overlay)
+
+;; Multiple methods on the same entry produce one panel with
+;; overlaid layers — not separate panels.
+
+(-> iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-lay-lm :sepal_length :sepal_width))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; One panel: colored scatter + overall regression line.
+;; Both methods are entry-specific (same :x/:y → found same entry).
+
+;; ## Rule 16: global methods apply to all entries
+
+(-> iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width)
+    (sk/xkcd7-lay-point :petal_length :petal_width)
+    sk/xkcd7-lay-lm)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (pos? (:panels s))
+                                (pos? (:points s))
+                                (pos? (:lines s)))))])
+
+;; Two entries (different columns), each gets the global lm method.
+;; Both panels have scatter + regression line.
+
+;; ## Rule 17: SPLOM — cross product of columns
+
+(def splom-cols [:sepal_length :sepal_width :petal_length])
+
+(-> (sk/xkcd7-sketch iris {:color :species})
+    (sk/xkcd7-view (sk/cross splom-cols splom-cols))
+    sk/xkcd7-lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 9 (:panels s))
+                                (= (* 9 150) (:points s)))))])
+
+;; 9 panels (3×3 grid), all colored by species.
+
 ;; ## Summary
+;;
+;; ### Verb scopes
 ;;
 ;; | Scope | Set by | Affects |
 ;; |:------|:-------|:--------|
@@ -355,3 +453,12 @@
 ;;
 ;; Structural aesthetics (`:x`, `:y`) → entry-specific.
 ;; Non-structural aesthetics (`:color`, `:alpha`, etc.) → method-level.
+;;
+;; ### Grid layout
+;;
+;; - Each entry = one panel
+;; - Methods within one entry = overlay (same panel)
+;; - Entries sharing x-variable → same grid column (shared x-axis)
+;; - Entries sharing y-variable → same grid row (shared y-axis)
+;; - Same position → stacked sub-panels
+;; - User override: `{:grid-cols [...] :grid-rows [...]}`
