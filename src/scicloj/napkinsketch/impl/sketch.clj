@@ -942,11 +942,17 @@
          {:keys [resolved-all numeric-color? all-colors color-cols tagged-views]}
          (collect-colors non-ann-views)
 
-         ;; Scale & coord specs (from first view, or per-panel later)
-         x-scale-spec (or (:x-scale (first non-ann-views)) {:type :linear})
-         y-scale-spec (or (:y-scale (first non-ann-views)) {:type :linear})
-         coord-type (or (:coord (first non-ann-views)) :cartesian)
-         _ (validate-polar-marks resolved-all coord-type)
+         ;; Default scale & coord specs (fallback for panels that don't specify)
+         default-x-scale {:type :linear}
+         default-y-scale {:type :linear}
+         default-coord :cartesian
+         ;; Representative specs for plot-level decisions (labels, ridgeline, fixed-aspect).
+         ;; Per-panel specs override these in the panel-building loop below.
+         rep-x-scale (or (:x-scale (first non-ann-views)) default-x-scale)
+         rep-y-scale (or (:y-scale (first non-ann-views)) default-y-scale)
+         rep-coord (or (:coord (first non-ann-views)) default-coord)
+         _ (validate-polar-marks resolved-all rep-coord)
+         _ (warn-conflicting-specs non-ann-views)
 
          ;; Annotations
          annotations (vec (for [a ann-views]
@@ -979,6 +985,11 @@
                        :when (seq (:views pd))]
                    (let [local-srs (:stat-results pd)
                          local-layers (:layers pd)
+                         ;; Per-panel scale/coord from the panel's own views
+                         panel-view (first (:views pd))
+                         x-scale-spec (or (:x-scale panel-view) default-x-scale)
+                         y-scale-spec (or (:y-scale panel-view) default-y-scale)
+                         coord-type (or (:coord panel-view) default-coord)
                          ;; Per-entry domains — each panel gets its own
                          x-dom (or (:domain x-scale-spec)
                                    (collect-domain local-srs :x-domain x-scale-spec))
@@ -1036,11 +1047,11 @@
 
          ;; Labels
          multi? (and (= layout-type :multi-variable) (> grid-cols-n 1) (> grid-rows-n 1))
-         auto-label? (and (not multi?) (coord/show-ticks? coord-type))
+         auto-label? (and (not multi?) (coord/show-ticks? rep-coord))
          {:keys [eff-title eff-x-label eff-y-label]}
-         (resolve-labels non-ann-views x-vars y-vars x-scale-spec y-scale-spec
+         (resolve-labels non-ann-views x-vars y-vars rep-x-scale rep-y-scale
                          title x-label y-label auto-label?)
-         swap-labels? (or (= coord-type :flip) has-ridgeline?)
+         swap-labels? (or (= rep-coord :flip) has-ridgeline?)
          [eff-x-label eff-y-label] (if swap-labels?
                                      [eff-y-label eff-x-label]
                                      [eff-x-label eff-y-label])

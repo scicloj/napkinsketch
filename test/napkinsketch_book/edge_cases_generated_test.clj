@@ -224,7 +224,7 @@
    [r (rng/rng :jdk 99)]
    {:category
     (map
-     (fn* [p1__70238#] (keyword (str "cat-" p1__70238#)))
+     (fn* [p1__330171#] (keyword (str "cat-" p1__330171#)))
      (range 12)),
     :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))})
   (sk/xkcd7-lay-value-bar :category :value)))
@@ -266,7 +266,7 @@
  (->
   data/iris
   (tc/select-rows
-   (fn* [p1__70239#] (= "setosa" (p1__70239# :species))))
+   (fn* [p1__330172#] (= "setosa" (p1__330172# :species))))
   (sk/xkcd7-lay-point :sepal_length :sepal_width)
   sk/xkcd7-lay-lm
   (sk/xkcd7-options {:title "Setosa Only"})))
@@ -429,8 +429,8 @@
  v78_l319
  (->
   {:x (range 20),
-   :y (map (fn* [p1__70240#] (- p1__70240# 10)) (range 20)),
-   :val (map (fn* [p1__70241#] (- p1__70241# 10.0)) (range 20))}
+   :y (map (fn* [p1__330173#] (- p1__330173# 10)) (range 20)),
+   :val (map (fn* [p1__330174#] (- p1__330174# 10.0)) (range 20))}
   (sk/xkcd7-lay-point :x :y {:color :val})
   (sk/xkcd7-options {:color-scale :diverging, :color-midpoint 0})))
 
@@ -459,11 +459,11 @@
   {:time
    (dt-dt/plus-temporal-amount
     (dtype/const-reader (jt/local-date-time 2025 3 15 8 0) 24)
-    (map (fn* [p1__70242#] (* (long p1__70242#) 15)) (range 24))
+    (map (fn* [p1__330175#] (* (long p1__330175#) 15)) (range 24))
     :minutes),
    :value
    (map
-    (fn* [p1__70243#] (+ 18.0 (* 4.0 (Math/sin (* p1__70243# 0.3)))))
+    (fn* [p1__330176#] (+ 18.0 (* 4.0 (Math/sin (* p1__330176# 0.3)))))
     (range 24))}
   (sk/xkcd7-lay-line :time :value)
   sk/xkcd7-lay-point))
@@ -490,7 +490,7 @@
     :hours),
    :temp
    (map
-    (fn* [p1__70244#] (+ 20.0 (* 5.0 (Math/sin (* p1__70244# 0.5)))))
+    (fn* [p1__330177#] (+ 20.0 (* 5.0 (Math/sin (* p1__330177# 0.5)))))
     (range 12))}
   (sk/xkcd7-lay-line :time :temp)
   sk/xkcd7-lay-point))
@@ -507,7 +507,7 @@
       (= 12 (:points s))
       (= 1 (:lines s))
       (some
-       (fn* [p1__70245#] (re-find #":\d\d" p1__70245#))
+       (fn* [p1__330178#] (re-find #":\d\d" p1__330178#))
        (:texts s)))))
    v87_l360)))
 
@@ -518,11 +518,11 @@
   {:date
    (dt-dt/plus-temporal-amount
     (dtype/const-reader (jt/local-date 2020 1 1) 20)
-    (map (fn* [p1__70246#] (* (long p1__70246#) 120)) (range 20))
+    (map (fn* [p1__330179#] (* (long p1__330179#) 120)) (range 20))
     :days),
    :value
    (map
-    (fn* [p1__70247#] (+ 100 (* 50 (Math/sin (* p1__70247# 0.4)))))
+    (fn* [p1__330180#] (+ 100 (* 50 (Math/sin (* p1__330180# 0.4)))))
     (range 20))}
   (sk/xkcd7-lay-line :date :value)
   sk/xkcd7-lay-point))
@@ -542,7 +542,7 @@
 (def
  v93_l391
  (->
-  {:cat (map (fn* [p1__70248#] (str "cat-" p1__70248#)) (range 12)),
+  {:cat (map (fn* [p1__330181#] (str "cat-" p1__330181#)) (range 12)),
    :val (repeatedly 12 (fn* [] (rand-int 100)))}
   (sk/xkcd7-lay-value-bar :cat :val)
   (sk/xkcd7-coord :polar)))
@@ -554,7 +554,50 @@
 
 
 (def
- v96_l400
+ v96_l404
+ (->
+  {:x [1 10 100 1000], :y [2 4 8 16]}
+  (sk/xkcd7-lay-point :x :y)
+  (sk/xkcd7-scale :x :log)
+  (sk/xkcd7-coord :flip)))
+
+
+(deftest
+ t97_l409
+ (is
+  ((fn
+    [v]
+    (let
+     [plan (sk/xkcd7-plan v) panel (first (:panels plan))]
+     (and
+      (= 4 (:points (sk/svg-summary v)))
+      (= :flip (:coord panel))
+      (= {:type :log} (:y-scale panel))
+      (= {:type :linear} (:x-scale panel)))))
+   v96_l404)))
+
+
+(def
+ v99_l422
+ (->
+  data/iris
+  (sk/xkcd7-lay-point :sepal_length :sepal_width)
+  (sk/xkcd7-scale :y {:domain [0 6]})))
+
+
+(deftest
+ t100_l426
+ (is
+  ((fn
+    [v]
+    (let
+     [plan (sk/xkcd7-plan v) panel (first (:panels plan))]
+     (= [0 6] (:y-domain panel))))
+   v99_l422)))
+
+
+(def
+ v102_l434
  (->
   {:x (range 100), :y (range 0 10 0.1)}
   (sk/xkcd7-lay-point :x :y)
@@ -562,12 +605,12 @@
 
 
 (deftest
- t97_l404
- (is ((fn [v] (= 100 (:points (sk/svg-summary v)))) v96_l400)))
+ t103_l438
+ (is ((fn [v] (= 100 (:points (sk/svg-summary v)))) v102_l434)))
 
 
 (def
- v99_l413
+ v105_l447
  (->
   data/iris
   (sk/xkcd7-view
@@ -578,7 +621,7 @@
 
 
 (deftest
- t100_l417
+ t106_l451
  (is
   ((fn
     [v]
@@ -589,14 +632,14 @@
       (:texts s)
       strip-labels
       (filter
-       (fn* [p1__70249#] (re-find #"sepal|petal" p1__70249#))
+       (fn* [p1__330182#] (re-find #"sepal|petal" p1__330182#))
        texts)]
      (and (= 9 (:panels s)) (= 6 (count strip-labels)))))
-   v99_l413)))
+   v105_l447)))
 
 
 (def
- v102_l428
+ v108_l462
  (try
   (->
    {:x [1 2 3], :y [4 5 6]}
@@ -605,11 +648,11 @@
   (catch Exception e (ex-message e))))
 
 
-(deftest t103_l435 (is ((fn [m] (string? m)) v102_l428)))
+(deftest t109_l469 (is ((fn [m] (string? m)) v108_l462)))
 
 
 (def
- v105_l439
+ v111_l473
  (try
   (->
    {:x [1 2 3], :y [4 5 6]}
@@ -618,11 +661,11 @@
   (catch Exception e (ex-message e))))
 
 
-(deftest t106_l446 (is ((fn [m] (string? m)) v105_l439)))
+(deftest t112_l480 (is ((fn [m] (string? m)) v111_l473)))
 
 
 (def
- v108_l450
+ v114_l484
  (try
   (->
    {:x [1 2 3], :y [4 5 6]}
@@ -633,12 +676,12 @@
 
 
 (deftest
- t109_l458
- (is ((fn [m] (re-find #"not supported with polar" m)) v108_l450)))
+ t115_l492
+ (is ((fn [m] (re-find #"not supported with polar" m)) v114_l484)))
 
 
 (def
- v111_l462
+ v117_l496
  (try
   (->
    {:x [1 2 3]}
@@ -649,12 +692,12 @@
 
 
 (deftest
- t112_l470
- (is ((fn [m] (re-find #"must contain :boxes" m)) v111_l462)))
+ t118_l504
+ (is ((fn [m] (re-find #"must contain :boxes" m)) v117_l496)))
 
 
 (def
- v114_l481
+ v120_l515
  (->
   {:x [1 2 3], :y [4 5 6]}
   (sk/xkcd7-lay-histogram :x :y)
@@ -662,4 +705,4 @@
   :polygons))
 
 
-(deftest t115_l486 (is ((fn [n] (pos? n)) v114_l481)))
+(deftest t121_l520 (is ((fn [n] (pos? n)) v120_l515)))

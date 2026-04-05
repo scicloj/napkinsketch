@@ -437,6 +437,44 @@
 ;; Off-diagonal: scatter (6 × 150 = 900 points).
 ;; Diagonal: histograms (inferred when x=y).
 
+;; ## Rule 18: per-panel scale and coord specs
+
+;; Scale and coord specs are extracted per-panel, not globally.
+;; Each panel uses the scale/coord from its own entry's views.
+
+(def scale-plan
+  (-> iris
+      (sk/xkcd7-view :sepal_length :sepal_width)
+      sk/xkcd7-lay-point
+      (sk/xkcd7-scale :x :log)
+      (sk/xkcd7-scale :y {:domain [0 6]})
+      (sk/xkcd7-coord :flip)
+      sk/xkcd7-plan))
+
+(let [panel (first (:panels scale-plan))]
+  {:coord (:coord panel)
+   :x-scale (:x-scale panel)
+   :y-scale (:y-scale panel)
+   :x-domain (:x-domain panel)})
+
+(kind/test-last
+ [(fn [m]
+    (and (= :flip (:coord m))
+         ;; After flip: x-scale was the original y-scale (domain [0 6])
+         (= [0 6] (:x-domain m))
+         (= {:type :linear :domain [0 6]} (:x-scale m))
+         ;; After flip: y-scale was the original x-scale (log)
+         (= {:type :log} (:y-scale m))))])
+
+;; Coord `:flip` swaps domains, ticks, and scale specs per-panel.
+;; The plan's labels also swap to match: x-label becomes y-label and vice versa.
+
+(select-keys scale-plan [:x-label :y-label])
+
+(kind/test-last
+ [(fn [m] (and (= "sepal_width" (:x-label m))
+               (= "sepal_length" (:y-label m))))])
+
 ;; ## Summary
 ;;
 ;; ### Verb scopes

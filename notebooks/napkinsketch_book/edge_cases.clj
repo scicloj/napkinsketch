@@ -395,6 +395,40 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
+;; ### Log scale + coord flip combined
+;;
+;; When log scale and coord flip are both applied, the panel should
+;; have log ticks on the (now vertical) axis and the domain should
+;; reflect the flipped layout.
+
+(-> {:x [1 10 100 1000] :y [2 4 8 16]}
+    (sk/xkcd7-lay-point :x :y)
+    (sk/xkcd7-scale :x :log)
+    (sk/xkcd7-coord :flip))
+
+(kind/test-last
+ [(fn [v]
+    (let [plan (sk/xkcd7-plan v)
+          panel (first (:panels plan))]
+      (and (= 4 (:points (sk/svg-summary v)))
+           (= :flip (:coord panel))
+           ;; After flip: y-scale is original x-scale (log)
+           (= {:type :log} (:y-scale panel))
+           ;; After flip: x-scale is original y-scale (linear)
+           (= {:type :linear} (:x-scale panel)))))])
+
+;; ### Scale with explicit domain
+
+(-> data/iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width)
+    (sk/xkcd7-scale :y {:domain [0 6]}))
+
+(kind/test-last
+ [(fn [v]
+    (let [plan (sk/xkcd7-plan v)
+          panel (first (:panels plan))]
+      (= [0 6] (:y-domain panel))))])
+
 ;; ### Fixed aspect ratio with extreme domain ratio
 
 (-> {:x (range 100) :y (range 0 10 0.1)}

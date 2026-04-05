@@ -850,15 +850,23 @@
   (kind/fn (cond-> (assoc bp :kindly/f #'blueprint/render-blueprint)
              defaults/*config* (assoc :config-snapshot defaults/*config*))))
 
+(defn- xkcd7-coerce-dataset
+  "Coerce data to a tablecloth dataset. Returns nil for nil."
+  [d]
+  (when d
+    (if (tc/dataset? d) d (tc/dataset d))))
+
 (defn- xkcd7-ensure-bp
   "Coerce first arg to a Blueprint if it isn't one already.
-   Stores raw data as-is — coercion to dataset happens at resolution time."
+   Data is eagerly coerced to a dataset so downstream code can
+   uniformly use tc/column-names."
   [x]
   (cond
     (blueprint/blueprint? x) x
     (or (tc/dataset? x)
         (map? x)
-        (sequential? x))    (xkcd7-wrap-autorender (blueprint/->blueprint x {} [] [] {}))
+        (sequential? x))    (xkcd7-wrap-autorender
+                             (blueprint/->blueprint (xkcd7-coerce-dataset x) {} [] [] {}))
     :else                    (xkcd7-wrap-autorender (blueprint/->blueprint nil {} [] [] {}))))
 
 (defn xkcd7-sketch
@@ -867,23 +875,19 @@
   ([data] (xkcd7-sketch data {}))
   ([data shared]
    (xkcd7-wrap-autorender
-    (blueprint/->blueprint data shared [] [] {}))))
+    (blueprint/->blueprint (xkcd7-coerce-dataset data) shared [] [] {}))))
 
 (defn xkcd7-with-data
-  "Supply or replace data in a Blueprint. Stores raw data as-is."
+  "Supply or replace data in a Blueprint."
   [bp data]
-  (assoc bp :data data))
+  (assoc bp :data (xkcd7-coerce-dataset data)))
 
 (defn xkcd7-view
   "Add entries to a Blueprint."
   ([bp-or-data]
    (let [bp (xkcd7-ensure-bp bp-or-data)]
      (if (:data bp)
-       (let [d (:data bp)
-             cols (vec (cond
-                         (tc/dataset? d) (tc/column-names d)
-                         (map? d) (keys d)
-                         :else (tc/column-names (tc/dataset d))))
+       (let [cols (vec (tc/column-names (:data bp)))
              n (count cols)]
          (case n
            1 (update bp :entries conj {:x (cols 0)})
@@ -959,11 +963,8 @@
   ([method-key bp-or-data]
    (let [bp (xkcd7-ensure-bp bp-or-data)
          d (:data bp)
-         col-count (when d
-                     (cond (tc/dataset? d) (count (tc/column-names d))
-                           (map? d) (count (keys d))
-                           :else nil))]
-     (if (and (empty? (:entries bp)) d col-count (<= col-count 3))
+         col-count (when d (count (tc/column-names d)))]
+     (if (and (empty? (:entries bp)) d (<= col-count 3))
        (let [bp2 (xkcd7-view bp)]
          (xkcd7-add-entry-method bp2 (first (:entries bp2))
                                  (xkcd7-method-map method-key nil)))
