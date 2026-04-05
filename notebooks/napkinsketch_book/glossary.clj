@@ -18,16 +18,17 @@
 
 ;; ## View
 ;;
-;; A **view** is a map describing what to plot: data and column-to-channel
-;; mappings — which columns map to `:x`, `:y`, `:color`, `:size`, and
-;; other visual channels. `sk/xkcd7-view` sets the shared mappings; layer
-;; functions (`sk/xkcd7-lay-point`, `sk/xkcd7-lay-lm`, etc.) add methods on top.
+;; A **view** is a resolved map describing what to plot: data and
+;; column-to-channel mappings. Internally, each entry in a Blueprint
+;; resolves to one or more view maps that the pipeline processes.
+;; At the API level, `sk/xkcd7-view` adds entries (what to plot) and
+;; sets shared aesthetics; `sk/xkcd7-lay-*` adds methods (how to plot).
 
-(def views
+(def my-blueprint
   (-> data/iris
       (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
 
-(kind/pprint views)
+(kind/pprint my-blueprint)
 
 (kind/test-last [(fn [v] (and (instance? Blueprint v) (= 1 (count (:entries v)))))])
 
@@ -173,7 +174,7 @@
 ;; Created with `sk/xkcd7-plan`. Numeric arrays (`:xs`, `:ys`, etc.) are
 ;; [dtype-next](https://github.com/cnuernber/dtype-next) buffers for efficiency.
 
-(def my-plan (sk/xkcd7-plan views))
+(def my-plan (sk/xkcd7-plan my-blueprint))
 
 (sort (keys my-plan))
 
@@ -195,7 +196,7 @@
 ;; style, and groups of data-space geometry. Layers live inside
 ;; panels in the plan.
 
-(-> views
+(-> my-blueprint
     sk/xkcd7-plan
     (get-in [:panels 0 :layers 0]))
 

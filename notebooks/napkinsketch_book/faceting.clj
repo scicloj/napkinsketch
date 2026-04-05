@@ -142,17 +142,16 @@
 (def cols [:sepal_length :sepal_width :petal_length :petal_width])
 
 (-> data/iris
-    (sk/xkcd7-view (sk/cross cols cols))
-    (sk/xkcd7-lay-point {:color :species}))
+    (sk/xkcd7-view (sk/cross cols cols) {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 16 (:panels s))
-                                (= 2400 (:points s)))))])
+                                (= (* 12 150) (:points s))
+                                (pos? (:polygons s)))))])
 
-;; Diagonal panels (where x = y) show points along the identity line
-;; since every row has the same value for both axes. Off-diagonal
-;; panels share scales per column (x) and per row (y), so each column
-;; of plots has the same x-axis and each row has the same y-axis.
+;; Diagonal panels (where x = y) show histograms — inference detects
+;; same-column pairs. Off-diagonal panels show scatter plots. All
+;; panels are colored by species (shared via `view`).
 
 ;; ## Distribution Helper
 ;;
