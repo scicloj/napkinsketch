@@ -1,4 +1,4 @@
-;; # Extension Example: Waterfall Chart (xkcd7 API)
+;; # Extension Example: Waterfall Chart
 ;;
 ;; This notebook walks through building a custom chart type from
 ;; scratch — a **[waterfall chart](https://en.wikipedia.org/wiki/Waterfall_chart)** that shows running totals as
@@ -10,9 +10,8 @@
 ;; - `extract-layer` — convert stat output into plan geometry
 ;; - `layer->membrane` — render bars as membrane drawables
 ;;
-;; The extension points (stat, extractor, renderer) are identical to
-;; the original waterfall extension notebook. Only the user-facing
-;; plotting API changes — this version uses the xkcd7 Blueprint API.
+;; After reading this, you should be able to add any custom chart
+;; type to napkinsketch.
 
 (ns napkinsketch-book.xkcd7-waterfall-extension
   (:require

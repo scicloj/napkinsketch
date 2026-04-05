@@ -18,61 +18,61 @@
 
 
 (def
- v5_l66
+ v5_l70
  (def trace-data {:x [1 2 3 4 5], :y [2 4 3 5 4], :g [:a :a :b :b :b]}))
 
 
 (def
- v7_l77
+ v7_l81
  (def trace-bp (-> trace-data (sk/xkcd7-lay-point :x :y {:color :g}))))
 
 
-(def v9_l93 (blueprint/blueprint? trace-bp))
+(def v9_l97 (blueprint/blueprint? trace-bp))
 
 
-(deftest t10_l95 (is (true? v9_l93)))
+(deftest t10_l99 (is (true? v9_l97)))
 
 
-(def v12_l99 (count (:entries trace-bp)))
+(def v12_l103 (count (:entries trace-bp)))
 
 
-(deftest t13_l101 (is ((fn [n] (= 1 n)) v12_l99)))
+(deftest t13_l105 (is ((fn [n] (= 1 n)) v12_l103)))
 
 
-(def v14_l103 (:entries trace-bp))
+(def v14_l107 (:entries trace-bp))
 
 
 (deftest
- t15_l105
+ t15_l109
  (is
   ((fn
     [entries]
     (let
      [e (first entries)]
      (and (= :x (:x e)) (= :y (:y e)) (= 1 (count (:methods e))))))
-   v14_l103)))
+   v14_l107)))
 
 
-(def v17_l114 (get-in (:entries trace-bp) [0 :methods 0 :mark]))
+(def v17_l118 (get-in (:entries trace-bp) [0 :methods 0 :mark]))
 
 
-(deftest t18_l116 (is ((fn [m] (= :point m)) v17_l114)))
+(deftest t18_l120 (is ((fn [m] (= :point m)) v17_l118)))
 
 
-(def v20_l124 (def trace-views (blueprint/resolve-blueprint trace-bp)))
+(def v20_l128 (def trace-views (blueprint/resolve-blueprint trace-bp)))
 
 
-(def v21_l127 (count trace-views))
+(def v21_l131 (count trace-views))
 
 
-(deftest t22_l129 (is ((fn [n] (= 1 n)) v21_l127)))
+(deftest t22_l133 (is ((fn [n] (= 1 n)) v21_l131)))
 
 
-(def v23_l131 (select-keys (first trace-views) [:x :y :mark :color]))
+(def v23_l135 (select-keys (first trace-views) [:x :y :mark :color]))
 
 
 (deftest
- t24_l133
+ t24_l137
  (is
   ((fn
     [m]
@@ -81,41 +81,41 @@
      (= :y (:y m))
      (= :point (:mark m))
      (= :g (:color m))))
-   v23_l131)))
+   v23_l135)))
 
 
 (def
- v26_l144
+ v26_l148
  (def trace-plan (sketch-impl/xkcd7-views->plan trace-views {})))
 
 
-(def v27_l147 trace-plan)
+(def v27_l151 trace-plan)
 
 
 (deftest
- t28_l149
- (is ((fn [v] (and (map? v) (contains? v :panels))) v27_l147)))
+ t28_l153
+ (is ((fn [v] (and (map? v) (contains? v :panels))) v27_l151)))
 
 
-(def v30_l153 (ss/valid? trace-plan))
+(def v30_l157 (ss/valid? trace-plan))
 
 
-(deftest t31_l155 (is (true? v30_l153)))
+(deftest t31_l159 (is (true? v30_l157)))
 
 
-(def v33_l162 (def trace-membrane (sk/plan->membrane trace-plan)))
+(def v33_l166 (def trace-membrane (sk/plan->membrane trace-plan)))
 
 
-(def v34_l164 trace-membrane)
+(def v34_l168 trace-membrane)
 
 
 (deftest
- t35_l166
- (is ((fn [v] (and (vector? v) (pos? (count v)))) v34_l164)))
+ t35_l170
+ (is ((fn [v] (and (vector? v) (pos? (count v)))) v34_l168)))
 
 
 (def
- v37_l172
+ v37_l176
  (def
   trace-figure
   (sk/membrane->figure
@@ -125,45 +125,45 @@
     :total-height (:total-height trace-plan)})))
 
 
-(def v38_l177 (kind/pprint trace-figure))
+(def v38_l181 (kind/pprint trace-figure))
 
 
 (deftest
- t39_l179
- (is ((fn [v] (and (vector? v) (= :svg (first v)))) v38_l177)))
+ t39_l183
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v38_l181)))
 
 
-(def v41_l183 (kind/hiccup trace-figure))
+(def v41_l187 (kind/hiccup trace-figure))
 
 
 (deftest
- t42_l185
+ t42_l189
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 5 (:points s)))))
-   v41_l183)))
+   v41_l187)))
 
 
-(def v44_l195 (def shortcut-plan (sk/xkcd7-plan trace-bp)))
+(def v44_l199 (def shortcut-plan (sk/xkcd7-plan trace-bp)))
 
 
-(def v45_l197 (ss/valid? shortcut-plan))
+(def v45_l201 (ss/valid? shortcut-plan))
 
 
-(deftest t46_l199 (is (true? v45_l197)))
+(deftest t46_l203 (is (true? v45_l201)))
 
 
 (def
- v48_l217
+ v48_l221
  (kind/mermaid
   "\ngraph LR\n  subgraph WHAT [\"WHAT — data + semantics\"]\n    B[\"Blueprint\"]\n    V[\"Views\"]\n    ST[\"Statistics\"]\n    D[\"Domains\"]\n    C[\"Colors\"]\n  end\n  subgraph HOW [\"HOW — pixels + rendering\"]\n    SC[\"Scales (wadogo)\"]\n    CO[\"Coord transforms\"]\n    MS[\"Membrane tree\"]\n    SV[\"SVG conversion\"]\n  end\n  WHAT -->|plan| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
 
 
 (def
- v50_l262
+ v50_l266
  (def
   multi-bp
   (->
@@ -173,55 +173,55 @@
    sk/xkcd7-lay-lm)))
 
 
-(def v52_l270 (count (:entries multi-bp)))
+(def v52_l274 (count (:entries multi-bp)))
 
 
-(deftest t53_l272 (is ((fn [n] (= 1 n)) v52_l270)))
+(deftest t53_l276 (is ((fn [n] (= 1 n)) v52_l274)))
 
 
-(def v54_l274 (mapv :mark (:methods multi-bp)))
-
-
-(deftest
- t55_l276
- (is
-  ((fn [v] (and (= :point (first v)) (= :line (second v)))) v54_l274)))
-
-
-(def v57_l282 (def multi-views (blueprint/resolve-blueprint multi-bp)))
-
-
-(def v58_l284 (count multi-views))
-
-
-(deftest t59_l286 (is ((fn [n] (= 2 n)) v58_l284)))
-
-
-(def v60_l288 (mapv :mark multi-views))
+(def v54_l278 (mapv :mark (:methods multi-bp)))
 
 
 (deftest
- t61_l290
+ t55_l280
  (is
-  ((fn [v] (and (= :point (first v)) (= :line (second v)))) v60_l288)))
+  ((fn [v] (and (= :point (first v)) (= :line (second v)))) v54_l278)))
+
+
+(def v57_l286 (def multi-views (blueprint/resolve-blueprint multi-bp)))
+
+
+(def v58_l288 (count multi-views))
+
+
+(deftest t59_l290 (is ((fn [n] (= 2 n)) v58_l288)))
+
+
+(def v60_l292 (mapv :mark multi-views))
+
+
+(deftest
+ t61_l294
+ (is
+  ((fn [v] (and (= :point (first v)) (= :line (second v)))) v60_l292)))
 
 
 (def
- v63_l295
+ v63_l299
  (def
   multi-plan
   (sk/xkcd7-plan multi-bp {:title "Iris Petals with Regression"})))
 
 
 (def
- v64_l298
+ v64_l302
  (mapv
   (fn [layer] {:mark (:mark layer), :n-groups (count (:groups layer))})
   (:layers (first (:panels multi-plan)))))
 
 
 (deftest
- t65_l303
+ t65_l307
  (is
   ((fn
     [v]
@@ -229,25 +229,25 @@
      (= :point (:mark (first v)))
      (= :line (:mark (second v)))
      (= 3 (:n-groups (first v)))))
-   v64_l298)))
+   v64_l302)))
 
 
-(def v67_l309 multi-plan)
+(def v67_l313 multi-plan)
 
 
 (deftest
- t68_l311
+ t68_l315
  (is
   ((fn
     [m]
     (and
      (= "Iris Petals with Regression" (:title m))
      (= 3 (count (get-in m [:legend :entries])))))
-   v67_l309)))
+   v67_l313)))
 
 
 (def
- v70_l316
+ v70_l320
  (->
   data/iris
   (sk/xkcd7-view :petal_length :petal_width {:color :species})
@@ -257,17 +257,17 @@
 
 
 (deftest
- t71_l322
+ t71_l326
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v70_l316)))
+   v70_l320)))
 
 
 (def
- v73_l328
+ v73_l332
  (kind/mermaid
   "\ngraph TD\n  API[\"api.clj\"] --> BP[\"impl/blueprint.clj\"]\n  API --> VIEW[\"impl/view.clj\"]\n  API --> PLOT[\"impl/plot.clj\"]\n  API --> PLAN[\"impl/sketch.clj\"]\n  BP --> VIEW\n  BP --> PLAN\n  BP --> RENDER[\"impl/render.clj\"]\n  PLAN --> VIEW\n  PLAN --> STAT[\"impl/stat.clj\"]\n  PLAN --> SCALE[\"impl/scale.clj\"]\n  PLAN --> DEFAULTS[\"impl/defaults.clj\"]\n  PLOT --> PLAN\n  PLOT --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style BP fill:#d1c4e9\n  style PLAN fill:#ffe0b2\n  style PLOT fill:#bbdefb\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))

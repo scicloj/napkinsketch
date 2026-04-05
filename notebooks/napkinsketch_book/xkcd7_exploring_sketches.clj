@@ -5,6 +5,14 @@
 ;; walks through the plan step by step, building intuition for the
 ;; data model by looking at what `sk/xkcd7-plan` produces for different
 ;; Blueprints.
+;;
+;; You would explore plans when:
+;;
+;; - **Debugging** — a plot looks wrong and you want to see what data
+;;   the renderer received (domains, groups, tick values)
+;; - **Building a custom renderer** — you need to understand the plan
+;;   structure to consume it
+;; - **Validating** — you want to assert plan properties in tests
 
 (ns napkinsketch-book.xkcd7-exploring-sketches
   (:require

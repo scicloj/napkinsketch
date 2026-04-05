@@ -58,6 +58,10 @@ graph LR
 ;; - **Figure** — final output. A tree walk converts membrane records
 ;;   to SVG hiccup, which Clay/Kindly renders in notebooks.
 
+;; Most users only interact with the Blueprint stage and never need to
+;; think about the others. The stages below matter when you are debugging
+;; unexpected output, building a custom renderer, or extending the library.
+
 ;; ## Pipeline Trace
 ;;
 ;; Let's trace a small example through all five stages,

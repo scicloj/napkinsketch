@@ -6,12 +6,12 @@
 ;; Its operators are shaped by Clojure idioms — threading, merge,
 ;; plain maps — rather than a custom DSL.
 ;;
-;; The Blueprint API has two verbs and one noun:
+;; The API has two verbs and one noun:
 ;;
 ;; | Phase | Verb | What it does | Example |
 ;; |:------|:-----|:-------------|:--------|
-;; | **What** to plot | `sk/xkcd7-view` | Declare entries (columns and aesthetics) | `(sk/xkcd7-view data :x :y)` |
-;; | **How** to plot | `sk/xkcd7-lay-*` | Add a drawing method | `sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram` |
+;; | **What** to plot | `sk/xkcd7-view` | Declare what columns and aesthetics to use | `(sk/xkcd7-view data :x :y)` |
+;; | **How** to plot | `sk/xkcd7-lay-*` | Choose a drawing method | `sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram` |
 ;;
 ;; The noun is a **Blueprint** — the composable result of both verbs.
 ;; Blueprints auto-render in notebooks, compose through threading (`->`),
@@ -28,53 +28,15 @@
 
 ;; ## One Layer
 ;;
-;; The simplest Blueprint: data, columns, and a chart type — all in
-;; one call.
+;; The simplest plot: data, columns, and a chart type.
 
-(def scatter
-  (-> data/iris
-      (sk/xkcd7-lay-point :sepal_length :sepal_width)))
-
-;; `sk/xkcd7-lay-point` returns a **Blueprint** — a lightweight record
-;; that auto-renders in notebooks.
-;; When displayed, the notebook renders it:
-
-scatter
+(-> data/iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; ## Inspecting a Blueprint
-;;
-;; A Blueprint is a Clojure record with five fields:
-;;
-;; - `:data` — the dataset
-;; - `:shared` — options that apply to all entries (from `xkcd7-view` opts)
-;; - `:entries` — what to plot (column declarations, one per panel)
-;; - `:methods` — global drawing methods (from bare `xkcd7-lay-*`)
-;; - `:opts` — plot-level options (title, width, height)
-;;
-;; You can inspect these directly with `keys` and standard map access:
-
-(keys scatter)
-
-(kind/test-last [(fn [v] (every? (set v) [:data :shared :entries :methods :opts]))])
-
-;; The entries tell us which columns are mapped.
-;; Each entry is a map with `:x`, `:y`, and its own `:methods`:
-
-(:entries scatter)
-
-(kind/test-last [(fn [v] (and (= 1 (count v))
-                              (= :sepal_length (:x (first v)))
-                              (= :sepal_width (:y (first v)))))])
-
-;; The entry has its own `:methods` because we used `xkcd7-lay-point`
-;; with columns — that makes the method entry-specific:
-
-(:methods (first (:entries scatter)))
-
-(kind/test-last [(fn [v] (and (= 1 (count v))
-                              (= :point (:mark (first v)))))])
+;; `sk/xkcd7-lay-point` creates a Blueprint — a lightweight description
+;; of the plot. Nothing is computed until the notebook displays it.
 
 ;; ## Adding Color
 ;;
@@ -90,136 +52,64 @@ scatter
 
 ;; ## Multiple Layers
 ;;
-;; Use `sk/xkcd7-view` to declare **what** to plot — which columns and
-;; aesthetics. Then add **how** to draw with `sk/xkcd7-lay-*`.
-;; Multiple bare `lay-*` calls (without columns) become global methods
-;; that apply to every entry.
+;; This is where composability begins. Use `sk/xkcd7-view` to declare
+;; **what** to plot — which columns and aesthetics. Then add **how** to
+;; draw with one or more `sk/xkcd7-lay-*` calls:
 
-(def scatter-with-regression
-  (-> data/iris
-      (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-      sk/xkcd7-lay-point
-      sk/xkcd7-lay-lm))
-
-;; The Blueprint now has one entry (the column pair) and two global
-;; methods (point and linear model):
-
-(:entries scatter-with-regression)
-
-(kind/test-last [(fn [v] (= 1 (count v)))])
-
-(:methods scatter-with-regression)
-
-(kind/test-last [(fn [v] (= 2 (count v)))])
-
-;; Both layers render together — each species gets its own
-;; fitted line:
-
-scatter-with-regression
+(-> data/iris
+    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; ## Three Scopes
+;; Both layers share the same columns and color. The scatter points
+;; and regression lines render together — each species gets its own
+;; fitted line.
 ;;
-;; A Blueprint has three levels where options can live, from broadest
-;; to narrowest:
-;;
-;; - **Shared** — from `xkcd7-view` opts, applies to all entries
-;; - **Entry-specific** — from `xkcd7-lay-*` with columns, on one entry
-;; - **Global methods** — from bare `xkcd7-lay-*`, applies to all entries
-;;
-;; At resolution time, each view is:
-;; `merge(shared, entry, method)`.
-;;
-;; Here is an example showing shared color with two entry-specific
-;; layers on the same columns:
-
-(def layered
-  (-> data/iris
-      (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-      (sk/xkcd7-lay-point :sepal_length :sepal_width)
-      (sk/xkcd7-lay-lm :sepal_length :sepal_width)))
-
-;; Both methods land on the same entry because they match the same
-;; `:x` and `:y`. The entry now has two methods:
-
-(count (:methods (first (:entries layered))))
-
-(kind/test-last [(fn [v] (= 2 v))])
-
-;; The global `:methods` list is empty — everything is entry-specific:
-
-(:methods layered)
-
-(kind/test-last [(fn [v] (= 0 (count v)))])
+;; The key insight: **`view` describes what, `lay-*` describes how.**
+;; Separating them lets you reuse the same "what" with different "how"s.
 
 ;; ## Inference
 ;;
-;; When you omit something, napkinsketch infers it from the data.
-;; The principle is simple:
-;;
-;; ```
-;; resolved-value = (or your-explicit-choice (inferred-from-data))
-;; ```
-;;
-;; `sk/xkcd7-view` without a `sk/xkcd7-lay-*` infers the drawing
-;; method from the column types. Two numerical columns produce a scatter:
+;; When you omit a `lay-*`, napkinsketch infers the drawing method
+;; from the column types:
 
 (-> data/iris
     (sk/xkcd7-view :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; A single numerical column produces a histogram:
+;; Two numerical columns → scatter. One numerical column → histogram:
 
 (-> data/iris
     (sk/xkcd7-view :sepal_length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; ## Multiple Views
+;; The principle: `resolved = (or your-choice (inferred-from-data))`.
+;; See [**Inference Rules**](./napkinsketch_book.inference_rules.html) for the full set.
+
+;; ## Comparing Multiple Variables
 ;;
-;; `sk/xkcd7-view` accepts a vector of column pairs. Each pair becomes
-;; a separate entry — and therefore a separate panel:
+;; Pass a vector of column names to create one panel per variable.
+;; Keywords create univariate panels (one column each):
 
-(def two-panels
-  (-> data/iris
-      (sk/xkcd7-view [[:sepal_length :sepal_width]
-                      [:petal_length :petal_width]])))
+(sk/xkcd7-lay-histogram data/iris [:sepal_length :sepal_width :petal_length])
 
-;; The Blueprint wraps two entries — one per column pair:
+(kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
 
-(:entries two-panels)
+;; Pairs create bivariate panels:
 
-(kind/test-last [(fn [v] (= 2 (count v)))])
-
-two-panels
+(-> data/iris
+    (sk/xkcd7-view [[:sepal_length :sepal_width]
+                    [:petal_length :petal_width]]))
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
-;; A vector of keywords creates univariate entries — one histogram
-;; per column:
-
-(-> data/iris
-    (sk/xkcd7-view [:sepal_length :sepal_width :petal_length]))
-
-(kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
-
-;; You can also create multiple histograms directly with
-;; `xkcd7-lay-histogram` and a vector of columns:
-
-(-> data/iris
-    (sk/xkcd7-lay-histogram [:sepal_length :sepal_width :petal_length]))
-
-(kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
-
-;; ## The SPLOM
-;;
-;; `sk/cross` generates all combinations of columns — the same
-;; idea as Wilkinson's cross operator. Passing the result to
-;; `sk/xkcd7-view` produces a
+;; `sk/cross` generates all combinations — a
 ;; [scatter plot matrix](https://en.wikipedia.org/wiki/Scatter_plot#Scatter_plot_matrices):
 
 (def cols [:sepal_length :sepal_width :petal_length])
@@ -229,16 +119,14 @@ two-panels
 
 (kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
 
-;; Nine panels — one per column pair. On the diagonal (where
-;; x = y), inference produces histograms instead of scatters.
-;; The color grouping applies to all entries through the shared scope.
+;; Nine panels. On the diagonal (where x = y), inference produces
+;; histograms instead of scatters.
 
 ;; ## Options and Faceting
 ;;
 ;; `sk/xkcd7-options` adds titles and configuration.
 ;; `sk/xkcd7-facet` splits the data into panels by a column.
-;; Everything threads together — each function takes a Blueprint
-;; and returns a Blueprint:
+;; Everything threads together:
 
 (-> data/iris
     (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
@@ -252,19 +140,55 @@ two-panels
                                 (= 150 (:points s))
                                 (some #{"Iris by Species"} (:texts s)))))])
 
-;; ## Penguins Example
-;;
-;; The same patterns work with any dataset. Here are penguins
-;; with bill dimensions, colored by species:
+;; ## Annotations
 
-(-> data/penguins
-    (sk/xkcd7-view :bill_length_mm :bill_depth_mm {:color :species})
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm
-    (sk/xkcd7-options {:title "Palmer Penguins"}))
+;; Reference lines and shaded bands layer on top of any plot:
+
+(-> data/iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-annotate (sk/rule-h 3.0)
+                       (sk/band-v 5.5 7.0 {:alpha 0.15})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (some #{"Palmer Penguins"} (:texts s))))])
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; ## Inside a Blueprint
+;;
+;; A Blueprint is a Clojure record with five fields. You can inspect
+;; it with standard map operations:
+
+(def my-bp
+  (-> data/iris
+      (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+      sk/xkcd7-lay-point
+      sk/xkcd7-lay-lm))
+
+;; `:shared` holds the options from `xkcd7-view` — these apply to
+;; all entries:
+
+(:shared my-bp)
+
+(kind/test-last [(fn [v] (= :species (:color v)))])
+
+;; `:entries` holds the column declarations — one per panel:
+
+(:entries my-bp)
+
+(kind/test-last [(fn [v] (and (= 1 (count v))
+                              (= :sepal_length (:x (first v)))))])
+
+;; `:methods` holds the global drawing methods — these apply to
+;; all entries:
+
+(mapv :mark (:methods my-bp))
+
+(kind/test-last [(fn [v] (= [:point :line] v))])
+
+;; When `lay-*` is called **with columns**, the method attaches to
+;; a specific entry instead of going global. When called **without
+;; columns** (bare), it goes into the global `:methods` list.
+;; This is the distinction between entry-specific and global methods.
 
 ;; ## Summary
 ;;
@@ -276,15 +200,15 @@ two-panels
 ;; | `sk/xkcd7-facet` | Split into panels | Blueprint |
 ;; | `sk/xkcd7-coord` | Set coordinate system | Blueprint |
 ;; | `sk/xkcd7-scale` | Set axis scale type | Blueprint |
+;; | `sk/xkcd7-annotate` | Add reference lines and bands | Blueprint |
 ;;
 ;; Every function returns a Blueprint. Blueprints compose through `->`.
-;; They are plain data — records you can inspect with `keys`, `:entries`,
-;; `:methods`, and `:shared`.
 ;;
-;; A Blueprint has three scopes for options:
+;; The [Core Concepts](./napkinsketch_book.core_concepts.html) chapter
+;; covers each concept in detail.
 ;;
-;; - **Shared** — from `xkcd7-view` opts, inherited by all entries
-;; - **Entry-specific** — from `xkcd7-lay-*` with columns
-;; - **Global methods** — from bare `xkcd7-lay-*`
+;; ## What's Next
 ;;
-;; Resolution merges them: `merge(shared, entry, method)`.
+;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) — data formats, marks, stats, color, grouping, coordinates
+;; - [**Inference Rules**](./napkinsketch_book.inference_rules.html) — how napkinsketch chooses defaults
+;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — chart type examples to explore
