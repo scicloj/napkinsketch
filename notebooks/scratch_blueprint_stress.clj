@@ -104,7 +104,7 @@
 ;; ## Entry with `:methods` + shared
 
 ;; An entry with its own `:methods` still inherits shared.
-;; Here shared has `:color :species`, the entry's method cancels it.
+;; Each entry = one panel. The second entry also gets global methods.
 
 (-> iris
     (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
@@ -113,10 +113,15 @@
                     :methods [{:mark :line :stat :lm :color nil}]}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
+                           (and (= 2 (:panels s))
+                                (= 300 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Without the `:color nil`, the lm entry would inherit shared color.
+;; 2 panels (each entry is its own panel, stacked because same x/y).
+;; Both get the global point method → 300 total points.
+;; Only the second entry has lm → 1 line (with :color nil cancelling shared).
+
+;; Without `:color nil`, the lm entry inherits shared color → 3 lines.
 
 (-> iris
     (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
@@ -125,7 +130,8 @@
                     :methods [{:mark :line :stat :lm}]}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
+                           (and (= 2 (:panels s))
+                                (= 300 (:points s))
                                 (= 3 (:lines s)))))])
 
 ;; ## Column inference + shared
@@ -152,6 +158,9 @@
 ;; ## SPLOM with shared color
 
 (def cols [:sepal_length :sepal_width :petal_length])
+
+;; With `lay-point` (explicit mark), all 9 panels are scatter.
+;; Use `view` alone for diagonal histogram inference (see spec Rule 17).
 
 (-> (sk/xkcd7-sketch iris {:color :species})
     (sk/xkcd7-view (sk/cross cols cols))

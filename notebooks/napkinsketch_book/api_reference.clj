@@ -377,7 +377,7 @@ plan1
 
 (def plan2 (-> tiny
                (sk/xkcd7-lay-point :x :y)
-               sk/views->plan))
+               sk/xkcd7-plan))
 
 (= (keys plan1) (keys plan2))
 
