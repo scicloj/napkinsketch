@@ -168,13 +168,13 @@
 
 ;; ## Multiple Layers
 ;;
-;; Use `sk/xkcd7-sketch` to set shared aesthetics and `sk/xkcd7-view`
-;; to set column mappings, then add layers with `sk/xkcd7-lay-*`.
-;; All layers inherit the shared mappings.
-;; Here `sk/xkcd7-lay-lm` adds a linear model (regression line) per group:
+;; Use `sk/xkcd7-view` to set shared column mappings and aesthetics,
+;; then add layers with `sk/xkcd7-lay-*`. All layers inherit the
+;; shared mappings. Here `sk/xkcd7-lay-lm` adds a linear model
+;; (regression line) per group:
 
-(-> (sk/xkcd7-sketch iris {:color :species})
-    (sk/xkcd7-view :sepal_length :sepal_width)
+(-> iris
+    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
     sk/xkcd7-lay-point
     sk/xkcd7-lay-lm)
 

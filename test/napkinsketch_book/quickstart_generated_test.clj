@@ -171,8 +171,8 @@
 (def
  v43_l176
  (->
-  (sk/xkcd7-sketch iris {:color :species})
-  (sk/xkcd7-view :sepal_length :sepal_width)
+  iris
+  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
   sk/xkcd7-lay-point
   sk/xkcd7-lay-lm))
 
