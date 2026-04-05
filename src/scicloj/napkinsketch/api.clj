@@ -956,75 +956,223 @@
                  {:mark method-key :stat :identity})]
     (merge base opts)))
 
-(defmacro ^:private def-xkcd7-lay [method-key]
-  (let [fn-name (symbol (str "xkcd7-lay-" (name method-key)))]
-    `(defn ~fn-name
-       ~(str "Add :" (name method-key) " method to a Blueprint.\n"
-             "  Without columns → global method (applies to all entries).\n"
-             "  With columns → entry-specific (find or create entry).\n"
-             "  (xkcd7-lay-" (name method-key) " bp) — global method.\n"
-             "  (xkcd7-lay-" (name method-key) " bp {:alpha 0.5}) — global with opts.\n"
-             "  (xkcd7-lay-" (name method-key) " data :x :y) — entry-specific.\n"
-             "  (xkcd7-lay-" (name method-key) " data :x :y {:color :c}) — entry-specific with opts.")
-       ([bp-or-data#]
-        (let [bp# (xkcd7-ensure-bp bp-or-data#)]
-          (if (and (empty? (:entries bp#))
-                   (:data bp#)
-                   (<= (count (tc/column-names (:data bp#))) 3))
-            ;; Auto-infer columns for small datasets, then entry-specific
-            (let [bp2# (xkcd7-view bp#)]
-              (xkcd7-add-entry-method bp2# (first (:entries bp2#))
-                                      (xkcd7-method-map ~method-key nil)))
-            ;; No columns → global method
-            (xkcd7-lay bp# ~method-key))))
-       ([bp-or-data# x-or-opts#]
-        (if (or (keyword? x-or-opts#) (string? x-or-opts#))
-          ;; Single column (univariate): entry-specific
-          (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data#)
-                                  {:x x-or-opts#}
-                                  (xkcd7-method-map ~method-key nil))
-          ;; Options map: global method
-          (xkcd7-lay bp-or-data# ~method-key x-or-opts#)))
-       ([bp-or-data# x# y-or-opts#]
-        (if (or (keyword? y-or-opts#) (string? y-or-opts#))
-          ;; data + x + y: entry-specific
-          (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data#)
-                                  {:x x# :y y-or-opts#}
-                                  (xkcd7-method-map ~method-key nil))
-          ;; bp + x-column + opts (univariate + opts): entry-specific
-          (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data#)
-                                  {:x x#}
-                                  (xkcd7-method-map ~method-key y-or-opts#))))
-       ([bp-or-data# x# y# opts#]
-        (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data#)
-                                {:x x# :y y#}
-                                (xkcd7-method-map ~method-key opts#))))))
+(defn- xkcd7-lay-method
+  "Shared implementation for all xkcd7-lay-* functions.
+   1-arity: auto-infer columns for small datasets, otherwise global method.
+   2-arity: keyword/string → univariate entry-specific; map → global with opts.
+   3-arity: two keywords → bivariate entry-specific; keyword+map → univariate+opts.
+   4-arity: bivariate entry-specific with opts."
+  ([method-key bp-or-data]
+   (let [bp (xkcd7-ensure-bp bp-or-data)
+         d (:data bp)
+         col-count (when d
+                     (cond (tc/dataset? d) (count (tc/column-names d))
+                           (map? d) (count (keys d))
+                           :else nil))]
+     (if (and (empty? (:entries bp)) d col-count (<= col-count 3))
+       (let [bp2 (xkcd7-view bp)]
+         (xkcd7-add-entry-method bp2 (first (:entries bp2))
+                                 (xkcd7-method-map method-key nil)))
+       (xkcd7-lay bp method-key))))
+  ([method-key bp-or-data x-or-opts]
+   (if (or (keyword? x-or-opts) (string? x-or-opts))
+     (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data)
+                             {:x x-or-opts}
+                             (xkcd7-method-map method-key nil))
+     (xkcd7-lay bp-or-data method-key x-or-opts)))
+  ([method-key bp-or-data x y-or-opts]
+   (if (or (keyword? y-or-opts) (string? y-or-opts))
+     (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data)
+                             {:x x :y y-or-opts}
+                             (xkcd7-method-map method-key nil))
+     (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data)
+                             {:x x}
+                             (xkcd7-method-map method-key y-or-opts))))
+  ([method-key bp-or-data x y opts]
+   (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data)
+                           {:x x :y y}
+                           (xkcd7-method-map method-key opts))))
 
-(def-xkcd7-lay :point)
-(def-xkcd7-lay :line)
-(def-xkcd7-lay :step)
-(def-xkcd7-lay :area)
-(def-xkcd7-lay :stacked-area)
-(def-xkcd7-lay :histogram)
-(def-xkcd7-lay :bar)
-(def-xkcd7-lay :stacked-bar)
-(def-xkcd7-lay :stacked-bar-fill)
-(def-xkcd7-lay :value-bar)
-(def-xkcd7-lay :lm)
-(def-xkcd7-lay :loess)
-(def-xkcd7-lay :density)
-(def-xkcd7-lay :tile)
-(def-xkcd7-lay :density2d)
-(def-xkcd7-lay :contour)
-(def-xkcd7-lay :boxplot)
-(def-xkcd7-lay :violin)
-(def-xkcd7-lay :ridgeline)
-(def-xkcd7-lay :summary)
-(def-xkcd7-lay :errorbar)
-(def-xkcd7-lay :lollipop)
-(def-xkcd7-lay :text)
-(def-xkcd7-lay :label)
-(def-xkcd7-lay :rug)
+(defn xkcd7-lay-point
+  "Add :point method (scatter) to a Blueprint.
+   Without columns → global method (applies to all entries).
+   With columns → entry-specific (find or create entry).
+   (xkcd7-lay-point bp)                         — global method
+   (xkcd7-lay-point bp {:color :species})        — global with opts
+   (xkcd7-lay-point data :x :y)                 — entry-specific
+   (xkcd7-lay-point data :x :y {:color :c})     — entry-specific with opts"
+  ([bp-or-data] (xkcd7-lay-method :point bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :point bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :point bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :point bp-or-data x y opts)))
+
+(defn xkcd7-lay-line
+  "Add :line method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :line bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :line bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :line bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :line bp-or-data x y opts)))
+
+(defn xkcd7-lay-step
+  "Add :step method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :step bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :step bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :step bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :step bp-or-data x y opts)))
+
+(defn xkcd7-lay-area
+  "Add :area method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :area bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :area bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :area bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :area bp-or-data x y opts)))
+
+(defn xkcd7-lay-stacked-area
+  "Add :stacked-area method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :stacked-area bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :stacked-area bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :stacked-area bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :stacked-area bp-or-data x y opts)))
+
+(defn xkcd7-lay-histogram
+  "Add :histogram method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :histogram bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :histogram bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :histogram bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :histogram bp-or-data x y opts)))
+
+(defn xkcd7-lay-bar
+  "Add :bar method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :bar bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :bar bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :bar bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :bar bp-or-data x y opts)))
+
+(defn xkcd7-lay-stacked-bar
+  "Add :stacked-bar method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :stacked-bar bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :stacked-bar bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :stacked-bar bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :stacked-bar bp-or-data x y opts)))
+
+(defn xkcd7-lay-stacked-bar-fill
+  "Add :stacked-bar-fill method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :stacked-bar-fill bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :stacked-bar-fill bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :stacked-bar-fill bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :stacked-bar-fill bp-or-data x y opts)))
+
+(defn xkcd7-lay-value-bar
+  "Add :value-bar method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :value-bar bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :value-bar bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :value-bar bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :value-bar bp-or-data x y opts)))
+
+(defn xkcd7-lay-lm
+  "Add :lm (linear model) method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :lm bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :lm bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :lm bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :lm bp-or-data x y opts)))
+
+(defn xkcd7-lay-loess
+  "Add :loess (local regression) method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :loess bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :loess bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :loess bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :loess bp-or-data x y opts)))
+
+(defn xkcd7-lay-density
+  "Add :density (KDE) method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :density bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :density bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :density bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :density bp-or-data x y opts)))
+
+(defn xkcd7-lay-tile
+  "Add :tile (heatmap) method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :tile bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :tile bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :tile bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :tile bp-or-data x y opts)))
+
+(defn xkcd7-lay-density2d
+  "Add :density2d (2D KDE heatmap) method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :density2d bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :density2d bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :density2d bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :density2d bp-or-data x y opts)))
+
+(defn xkcd7-lay-contour
+  "Add :contour method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :contour bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :contour bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :contour bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :contour bp-or-data x y opts)))
+
+(defn xkcd7-lay-boxplot
+  "Add :boxplot method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :boxplot bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :boxplot bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :boxplot bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :boxplot bp-or-data x y opts)))
+
+(defn xkcd7-lay-violin
+  "Add :violin method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :violin bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :violin bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :violin bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :violin bp-or-data x y opts)))
+
+(defn xkcd7-lay-ridgeline
+  "Add :ridgeline method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :ridgeline bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :ridgeline bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :ridgeline bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :ridgeline bp-or-data x y opts)))
+
+(defn xkcd7-lay-summary
+  "Add :summary (mean ± SE) method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :summary bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :summary bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :summary bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :summary bp-or-data x y opts)))
+
+(defn xkcd7-lay-errorbar
+  "Add :errorbar method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :errorbar bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :errorbar bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :errorbar bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :errorbar bp-or-data x y opts)))
+
+(defn xkcd7-lay-lollipop
+  "Add :lollipop method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :lollipop bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :lollipop bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :lollipop bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :lollipop bp-or-data x y opts)))
+
+(defn xkcd7-lay-text
+  "Add :text method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :text bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :text bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :text bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :text bp-or-data x y opts)))
+
+(defn xkcd7-lay-label
+  "Add :label method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :label bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :label bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :label bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :label bp-or-data x y opts)))
+
+(defn xkcd7-lay-rug
+  "Add :rug method to a Blueprint."
+  ([bp-or-data] (xkcd7-lay-method :rug bp-or-data))
+  ([bp-or-data x-or-opts] (xkcd7-lay-method :rug bp-or-data x-or-opts))
+  ([bp-or-data x y-or-opts] (xkcd7-lay-method :rug bp-or-data x y-or-opts))
+  ([bp-or-data x y opts] (xkcd7-lay-method :rug bp-or-data x y opts)))
 
 (defn xkcd7-overlay
   "Add an entry with its own methods."
