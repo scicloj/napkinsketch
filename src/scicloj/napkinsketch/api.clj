@@ -1116,6 +1116,7 @@
 (defn xkcd7-plot
   "Render a Blueprint to SVG (or interactive HTML if tooltip/brush is set)."
   [bp]
-  (let [views (blueprint/resolve-blueprint bp)
-        plan (sketch-impl/xkcd7-views->plan views (:opts bp {}))]
-    (render-impl/plan->figure plan :svg {})))
+  (let [opts (:opts bp {})
+        views (blueprint/resolve-blueprint bp)
+        plan (sketch-impl/xkcd7-views->plan views opts)]
+    (render-impl/plan->figure plan :svg opts)))
