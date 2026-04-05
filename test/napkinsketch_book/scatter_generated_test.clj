@@ -7,7 +7,9 @@
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l19 (-> data/iris (sk/lay-point :sepal_length :sepal_width)))
+(def
+ v3_l19
+ (-> data/iris (sk/xkcd7-lay-point :sepal_length :sepal_width)))
 
 
 (deftest
@@ -25,7 +27,7 @@
  v6_l31
  (->
   data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})))
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
@@ -43,7 +45,7 @@
  v9_l43
  (->
   data/iris
-  (sk/lay-point :petal_length :petal_width {:color :species})))
+  (sk/xkcd7-lay-point :petal_length :petal_width {:color :species})))
 
 
 (deftest
@@ -61,7 +63,7 @@
  v12_l55
  (->
   data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color "#E74C3C"})))
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color "#E74C3C"})))
 
 
 (deftest
@@ -79,8 +81,8 @@
  v15_l66
  (->
   data/tips
-  (sk/lay-point :total_bill :tip {:color :day})
-  (sk/options
+  (sk/xkcd7-lay-point :total_bill :tip {:color :day})
+  (sk/xkcd7-options
    {:width 700,
     :height 300,
     :title "Tips by Day",
@@ -107,7 +109,7 @@
  v18_l84
  (->
   data/tips
-  (sk/lay-point :total_bill :tip {:color :day, :size :size})))
+  (sk/xkcd7-lay-point :total_bill :tip {:color :day, :size :size})))
 
 
 (deftest
@@ -125,7 +127,7 @@
  v21_l93
  (->
   data/tips
-  (sk/lay-point
+  (sk/xkcd7-lay-point
    :total_bill
    :tip
    {:color :day, :size :size, :alpha 0.6})))
@@ -144,7 +146,9 @@
 
 (def
  v24_l105
- (-> data/iris (sk/lay-point :species :sepal_width {:jitter true})))
+ (->
+  data/iris
+  (sk/xkcd7-lay-point :species :sepal_width {:jitter true})))
 
 
 (deftest
@@ -162,7 +166,7 @@
  v27_l114
  (->
   data/iris
-  (sk/lay-point :species :sepal_width {:jitter 10, :alpha 0.5})))
+  (sk/xkcd7-lay-point :species :sepal_width {:jitter 10, :alpha 0.5})))
 
 
 (deftest
@@ -180,7 +184,10 @@
  v30_l126
  (->
   data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :petal_length})))
+  (sk/xkcd7-lay-point
+   :sepal_length
+   :sepal_width
+   {:color :petal_length})))
 
 
 (deftest
@@ -201,7 +208,7 @@
  v33_l136
  (->
   data/iris
-  (sk/lay-point
+  (sk/xkcd7-lay-point
    :sepal_length
    :sepal_width
    {:color :petal_length, :size :petal_width, :alpha 0.7})))
@@ -226,9 +233,9 @@
 (def
  v37_l152
  (->
-  data/iris
-  (sk/view (sk/cross cols cols) {:color :species})
-  sk/lay-point))
+  (sk/xkcd7-sketch data/iris {:color :species})
+  (sk/xkcd7-view (sk/cross cols cols))
+  (sk/xkcd7-lay-point)))
 
 
 (deftest

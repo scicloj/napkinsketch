@@ -17,7 +17,7 @@
  (def with-missing {:x [1 2 nil 4 5 nil 7], :y [3 nil 5 6 nil 8 9]}))
 
 
-(def v4_l37 (-> with-missing (sk/lay-point :x :y)))
+(def v4_l37 (-> with-missing (sk/xkcd7-lay-point :x :y)))
 
 
 (deftest
@@ -40,7 +40,7 @@
    [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]}))
 
 
-(def v8_l53 (-> with-infinity (sk/lay-point :x :y)))
+(def v8_l53 (-> with-infinity (sk/xkcd7-lay-point :x :y)))
 
 
 (deftest
@@ -57,7 +57,7 @@
    v8_l53)))
 
 
-(def v11_l64 (-> {:x [3], :y [7]} (sk/lay-point :x :y)))
+(def v11_l64 (-> {:x [3], :y [7]} (sk/xkcd7-lay-point :x :y)))
 
 
 (deftest
@@ -71,7 +71,9 @@
    v11_l64)))
 
 
-(def v14_l76 (-> {:x [1 10], :y [5 50]} (sk/lay-point :x :y) sk/lay-lm))
+(def
+ v14_l76
+ (-> {:x [1 10], :y [5 50]} (sk/xkcd7-lay-point :x :y) sk/xkcd7-lay-lm))
 
 
 (deftest
@@ -87,7 +89,10 @@
 
 (def
  v17_l88
- (-> {:x [1 5 10], :y [5 25 50]} (sk/lay-point :x :y) sk/lay-lm))
+ (->
+  {:x [1 5 10], :y [5 25 50]}
+  (sk/xkcd7-lay-point :x :y)
+  sk/xkcd7-lay-lm))
 
 
 (deftest
@@ -103,7 +108,7 @@
 
 (def
  v20_l100
- (-> {:x [5 5 5 5 5], :y [1 2 3 4 5]} (sk/lay-point :x :y)))
+ (-> {:x [5 5 5 5 5], :y [1 2 3 4 5]} (sk/xkcd7-lay-point :x :y)))
 
 
 (deftest
@@ -119,7 +124,7 @@
 
 (def
  v23_l111
- (-> {:x [1 2 3 4 5], :y [3 3 3 3 3]} (sk/lay-point :x :y)))
+ (-> {:x [1 2 3 4 5], :y [3 3 3 3 3]} (sk/xkcd7-lay-point :x :y)))
 
 
 (deftest
@@ -135,7 +140,7 @@
 
 (def
  v26_l122
- (-> {:x [-5 -3 0 3 5], :y [-2 4 0 -4 2]} (sk/lay-point :x :y)))
+ (-> {:x [-5 -3 0 3 5], :y [-2 4 0 -4 2]} (sk/xkcd7-lay-point :x :y)))
 
 
 (deftest
@@ -153,7 +158,7 @@
  v29_l131
  (->
   {:x [1000000.0 2000000.0 3000000.0], :y [1.0E9 2.0E9 3.0E9]}
-  (sk/lay-point :x :y)))
+  (sk/xkcd7-lay-point :x :y)))
 
 
 (deftest
@@ -171,7 +176,7 @@
  v32_l140
  (->
   {:x [0.001 0.002 0.003], :y [1.0E-4 2.0E-4 3.0E-4]}
-  (sk/lay-point :x :y)))
+  (sk/xkcd7-lay-point :x :y)))
 
 
 (deftest
@@ -196,7 +201,9 @@
     :group (repeatedly 1000 (fn* [] ([:a :b :c] (rng/irandom r 3))))})))
 
 
-(def v36_l157 (-> large-data (sk/lay-point :x :y {:color :group})))
+(def
+ v36_l157
+ (-> large-data (sk/xkcd7-lay-point :x :y {:color :group})))
 
 
 (deftest
@@ -217,10 +224,10 @@
    [r (rng/rng :jdk 99)]
    {:category
     (map
-     (fn* [p1__318086#] (keyword (str "cat-" p1__318086#)))
+     (fn* [p1__66546#] (keyword (str "cat-" p1__66546#)))
      (range 12)),
     :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))})
-  (sk/lay-value-bar :category :value)))
+  (sk/xkcd7-lay-value-bar :category :value)))
 
 
 (deftest
@@ -239,8 +246,8 @@
  (->
   data/iris
   (tc/map-columns :sepal_ratio [:sepal_length :sepal_width] /)
-  (sk/lay-point :sepal_length :sepal_ratio {:color :species})
-  (sk/options {:title "Sepal Length/Width Ratio"})))
+  (sk/xkcd7-lay-point :sepal_length :sepal_ratio {:color :species})
+  (sk/xkcd7-options {:title "Sepal Length/Width Ratio"})))
 
 
 (deftest
@@ -259,10 +266,10 @@
  (->
   data/iris
   (tc/select-rows
-   (fn* [p1__318087#] (= "setosa" (p1__318087# :species))))
-  (sk/lay-point :sepal_length :sepal_width)
-  sk/lay-lm
-  (sk/options {:title "Setosa Only"})))
+   (fn* [p1__66547#] (= "setosa" (p1__66547# :species))))
+  (sk/xkcd7-lay-point :sepal_length :sepal_width)
+  sk/xkcd7-lay-lm
+  (sk/xkcd7-options {:title "Setosa Only"})))
 
 
 (deftest
@@ -280,7 +287,7 @@
  v48_l210
  (->
   {:category ["a" "b" "c"], :count [10 20 15]}
-  (sk/lay-value-bar :category :count {:position :stack})))
+  (sk/xkcd7-lay-value-bar :category :count {:position :stack})))
 
 
 (deftest
@@ -292,7 +299,7 @@
  v51_l221
  (->
   {:x ["a" "b" "a"], :g ["g1" "g1" "g2"]}
-  (sk/lay-bar :x {:color :g})))
+  (sk/xkcd7-lay-bar :x {:color :g})))
 
 
 (deftest
@@ -304,7 +311,7 @@
  v54_l232
  (->
   {:x ["a" "a" "b" "b" "b"], :g ["g1" "g2" "g1" "g1" "g1"]}
-  (sk/lay-stacked-bar-fill :x {:color :g})))
+  (sk/xkcd7-lay-stacked-bar-fill :x {:color :g})))
 
 
 (deftest
@@ -316,7 +323,7 @@
  v57_l242
  (->
   data/iris
-  (sk/lay-point
+  (sk/xkcd7-lay-point
    :sepal_length
    :sepal_width
    {:nudge-x 0.1, :nudge-y -0.05})))
@@ -331,8 +338,8 @@
  v60_l252
  (->
   {:x [1 2 3], :y [2 4 5]}
-  (sk/lay-point :x :y)
-  (sk/lay-lm {:se true})))
+  (sk/xkcd7-lay-point :x :y)
+  (sk/xkcd7-lay-lm {:se true})))
 
 
 (deftest
@@ -352,7 +359,7 @@
   (let
    [r (rng/rng :jdk 55)]
    {:x (range 10), :y (repeatedly 10 (fn* [] (rng/irandom r 20)))})
-  (sk/lay-stacked-area :x :y)))
+  (sk/xkcd7-lay-stacked-area :x :y)))
 
 
 (deftest
@@ -364,9 +371,9 @@
  v66_l275
  (->
   {:x [1 10 100 1000 10000], :y [2 20 200 2000 20000]}
-  (sk/lay-point :x :y)
-  (sk/scale :x :log)
-  (sk/scale :y :log)))
+  (sk/xkcd7-lay-point :x :y)
+  (sk/xkcd7-scale :x :log)
+  (sk/xkcd7-scale :y :log)))
 
 
 (deftest
@@ -384,8 +391,8 @@
  v69_l287
  (->
   {:x [0.001 0.01 0.1 1 10 100], :y [1 2 3 4 5 6]}
-  (sk/lay-point :x :y)
-  (sk/scale :x :log)))
+  (sk/xkcd7-lay-point :x :y)
+  (sk/xkcd7-scale :x :log)))
 
 
 (deftest
@@ -397,8 +404,8 @@
  v72_l299
  (->
   {:x [0 -1 1 10 100], :y [1 2 3 4 5]}
-  (sk/lay-point :x :y)
-  (sk/scale :x :log)))
+  (sk/xkcd7-lay-point :x :y)
+  (sk/xkcd7-scale :x :log)))
 
 
 (deftest
@@ -410,7 +417,7 @@
  v75_l312
  (->
   {:x [1 2 3], :y [4 5 6], :c [5 5 5]}
-  (sk/lay-point :x :y {:color :c})))
+  (sk/xkcd7-lay-point :x :y {:color :c})))
 
 
 (deftest
@@ -422,10 +429,10 @@
  v78_l319
  (->
   {:x (range 20),
-   :y (map (fn* [p1__318088#] (- p1__318088# 10)) (range 20)),
-   :val (map (fn* [p1__318089#] (- p1__318089# 10.0)) (range 20))}
-  (sk/lay-point :x :y {:color :val})
-  (sk/options {:color-scale :diverging, :color-midpoint 0})))
+   :y (map (fn* [p1__66548#] (- p1__66548# 10)) (range 20)),
+   :val (map (fn* [p1__66549#] (- p1__66549# 10.0)) (range 20))}
+  (sk/xkcd7-lay-point :x :y {:color :val})
+  (sk/xkcd7-options {:color-scale :diverging, :color-midpoint 0})))
 
 
 (deftest
@@ -438,7 +445,7 @@
  (->
   {:date [(jt/local-date 2025 1 1) (jt/local-date 2025 1 2)],
    :val [10 20]}
-  (sk/lay-point :date :val)))
+  (sk/xkcd7-lay-point :date :val)))
 
 
 (deftest
@@ -452,14 +459,14 @@
   {:time
    (dt-dt/plus-temporal-amount
     (dtype/const-reader (jt/local-date-time 2025 3 15 8 0) 24)
-    (map (fn* [p1__318090#] (* (long p1__318090#) 15)) (range 24))
+    (map (fn* [p1__66550#] (* (long p1__66550#) 15)) (range 24))
     :minutes),
    :value
    (map
-    (fn* [p1__318091#] (+ 18.0 (* 4.0 (Math/sin (* p1__318091# 0.3)))))
+    (fn* [p1__66551#] (+ 18.0 (* 4.0 (Math/sin (* p1__66551# 0.3)))))
     (range 24))}
-  (sk/lay-line :time :value)
-  sk/lay-point))
+  (sk/xkcd7-lay-line :time :value)
+  sk/xkcd7-lay-point))
 
 
 (deftest
@@ -483,10 +490,10 @@
     :hours),
    :temp
    (map
-    (fn* [p1__318092#] (+ 20.0 (* 5.0 (Math/sin (* p1__318092# 0.5)))))
+    (fn* [p1__66552#] (+ 20.0 (* 5.0 (Math/sin (* p1__66552# 0.5)))))
     (range 12))}
-  (sk/lay-line :time :temp)
-  sk/lay-point))
+  (sk/xkcd7-lay-line :time :temp)
+  sk/xkcd7-lay-point))
 
 
 (deftest
@@ -500,7 +507,7 @@
       (= 12 (:points s))
       (= 1 (:lines s))
       (some
-       (fn* [p1__318093#] (re-find #":\d\d" p1__318093#))
+       (fn* [p1__66553#] (re-find #":\d\d" p1__66553#))
        (:texts s)))))
    v87_l360)))
 
@@ -511,14 +518,14 @@
   {:date
    (dt-dt/plus-temporal-amount
     (dtype/const-reader (jt/local-date 2020 1 1) 20)
-    (map (fn* [p1__318094#] (* (long p1__318094#) 120)) (range 20))
+    (map (fn* [p1__66554#] (* (long p1__66554#) 120)) (range 20))
     :days),
    :value
    (map
-    (fn* [p1__318095#] (+ 100 (* 50 (Math/sin (* p1__318095# 0.4)))))
+    (fn* [p1__66555#] (+ 100 (* 50 (Math/sin (* p1__66555# 0.4)))))
     (range 20))}
-  (sk/lay-line :date :value)
-  sk/lay-point))
+  (sk/xkcd7-lay-line :date :value)
+  sk/xkcd7-lay-point))
 
 
 (deftest
@@ -535,10 +542,10 @@
 (def
  v93_l391
  (->
-  {:cat (map (fn* [p1__318096#] (str "cat-" p1__318096#)) (range 12)),
+  {:cat (map (fn* [p1__66556#] (str "cat-" p1__66556#)) (range 12)),
    :val (repeatedly 12 (fn* [] (rand-int 100)))}
-  (sk/lay-value-bar :cat :val)
-  (sk/coord :polar)))
+  (sk/xkcd7-lay-value-bar :cat :val)
+  (sk/xkcd7-coord :polar)))
 
 
 (deftest
@@ -550,8 +557,8 @@
  v96_l400
  (->
   {:x (range 100), :y (range 0 10 0.1)}
-  (sk/lay-point :x :y)
-  (sk/coord :fixed)))
+  (sk/xkcd7-lay-point :x :y)
+  (sk/xkcd7-coord :fixed)))
 
 
 (deftest
@@ -563,11 +570,11 @@
  v99_l413
  (->
   data/iris
-  (sk/view
+  (sk/xkcd7-view
    (sk/cross
     [:sepal_length :sepal_width :petal_length]
     [:sepal_length :sepal_width :petal_length]))
-  (sk/lay-point {:color :species})))
+  (sk/xkcd7-lay-point {:color :species})))
 
 
 (deftest
@@ -582,7 +589,7 @@
       (:texts s)
       strip-labels
       (filter
-       (fn* [p1__318097#] (re-find #"sepal|petal" p1__318097#))
+       (fn* [p1__66557#] (re-find #"sepal|petal" p1__66557#))
        texts)]
      (and (= 9 (:panels s)) (= 6 (count strip-labels)))))
    v99_l413)))
@@ -591,7 +598,10 @@
 (def
  v102_l428
  (try
-  (-> {:x [1 2 3], :y [4 5 6]} (sk/lay-point :nonexistent :y) sk/plot)
+  (->
+   {:x [1 2 3], :y [4 5 6]}
+   (sk/xkcd7-lay-point :nonexistent :y)
+   sk/xkcd7-plot)
   (catch Exception e (ex-message e))))
 
 
@@ -611,8 +621,8 @@
  (try
   (->
    {:x [1 2 3], :y [4 5 6]}
-   (sk/lay-point :x :y {:color :bogus})
-   sk/plot)
+   (sk/xkcd7-lay-point :x :y {:color :bogus})
+   sk/xkcd7-plot)
   (catch Exception e (ex-message e))))
 
 
@@ -630,9 +640,9 @@
  (try
   (->
    {:x [1 2 3], :y [4 5 6]}
-   (sk/lay-line :x :y)
-   (sk/coord :polar)
-   sk/plot)
+   (sk/xkcd7-lay-line :x :y)
+   (sk/xkcd7-coord :polar)
+   sk/xkcd7-plot)
   (catch Exception e (ex-message e))))
 
 
@@ -646,9 +656,9 @@
  (try
   (->
    {:x [1 2 3]}
-   (sk/view :x)
-   (sk/lay {:mark :boxplot, :stat :bin})
-   sk/plot)
+   (sk/xkcd7-view :x)
+   (sk/xkcd7-lay {:mark :boxplot, :stat :bin})
+   sk/xkcd7-plot)
   (catch Exception e (ex-message e))))
 
 
@@ -660,7 +670,7 @@
 (def
  v114_l479
  (try
-  (-> {:x [1 2 3], :y [4 5 6]} (sk/lay-histogram :x :y))
+  (-> {:x [1 2 3], :y [4 5 6]} (sk/xkcd7-lay-histogram :x :y))
   (catch Exception e (ex-message e))))
 
 
