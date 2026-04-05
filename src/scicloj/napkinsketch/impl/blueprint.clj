@@ -4,6 +4,7 @@
    Resolution: merge(shared, entry, method). Nil cancels.
    Produces view maps for the xkcd7-views->plan pipeline."
   (:require [tablecloth.api :as tc]
+            [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.render :as render-impl]
             [scicloj.napkinsketch.impl.defaults :as defaults]
@@ -76,8 +77,8 @@
         (fn [entry]
           (let [entry-idx (swap! idx inc)
                 own-methods (:methods entry)
-                ;; Annotation entries (rule-h, band-v etc.) don't get global methods
-                ann-entry? (some #(#{:rule-h :rule-v :band-h :band-v} (:mark %)) own-methods)
+                ;; Annotation entries don't get global methods
+                ann-entry? (some #(view/annotation-marks (:mark %)) own-methods)
                 combined (if ann-entry?
                            own-methods
                            (concat (or own-methods nil) global-methods))
