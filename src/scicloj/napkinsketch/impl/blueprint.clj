@@ -60,14 +60,19 @@
 
 (defn resolve-blueprint
   "Resolve a Blueprint into a flat vector of view maps for views->plan.
-   Expands facets, crosses entries × methods, merges shared → entry → method."
+   Expands facets, crosses entries × methods, merges shared → entry → method.
+   Each entry uses: own :methods (if any) + global methods.
+   Entries without own :methods use global methods only.
+   If no global methods exist and entry has no own methods, {:mark :infer} is used."
   [{:keys [data shared entries methods]}]
   (let [expanded (expand-facets entries data)
-        default-methods (if (empty? methods) [{:mark :infer}] methods)]
+        global-methods methods]
     (vec
      (mapcat
       (fn [entry]
-        (let [entry-methods (or (:methods entry) default-methods)
+        (let [own-methods (:methods entry)
+              combined (concat (or own-methods nil) global-methods)
+              entry-methods (if (seq combined) (vec combined) [{:mark :infer}])
               base (merge shared (dissoc entry :methods))]
           (map (fn [m]
                  (let [resolved (merge base m)

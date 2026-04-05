@@ -17,38 +17,42 @@
 ;; |:------|:-----|:-------|
 ;; | `:data` | dataset or nil | `sketch`, or implicitly by `view`/`lay-*` |
 ;; | `:shared` | map | `sketch`, `view` |
-;; | `:entries` | vector of maps | `view`, `distribution`, `annotate` |
-;; | `:methods` | vector of maps | `lay-*` |
+;; | `:entries` | vector of maps | `view`, `lay-*` (with columns), `distribution`, `annotate`, `overlay` |
+;; | `:methods` | vector of maps | `lay-*` (without columns) |
 ;; | `:opts` | map | `options` |
 ;;
 ;; ## Resolution
 ;;
-;; When a Blueprint is rendered, each entry is crossed with each method:
+;; Each entry gets its own methods (if any) PLUS the global methods.
+;; Entries without own methods use global methods only.
+;; If no methods at all, `{:mark :infer}` is used.
 ;;
 ;; ```
 ;; for each entry:
-;;   methods = entry's :methods (if present) or Blueprint's methods
+;;   methods = concat(entry's :methods, global methods)
 ;;   for each method:
 ;;     view = merge(shared, entry, method)
 ;; ```
 ;;
 ;; Later maps win. `nil` values cancel earlier keys.
-;; If no methods are present, `{:mark :infer}` is used (inference).
-;; If an entry has its own `:methods` key, those are used instead of
-;; the Blueprint's methods list. All entries inherit `:shared`.
 ;;
 ;; ## Verb Rules
 ;;
-;; | Verb | What it does | Where opts go |
-;; |:-----|:-------------|:--------------|
-;; | `sketch data opts` | Set data + shared | `:shared` |
-;; | `view bp cols opts` | Add entry + set shared | `:shared` |
-;; | `view bp entry-map` | Add entry (may include `:methods`) | entry |
-;; | `lay-* bp opts` | Add method | the method |
-;; | `lay-* data cols opts` | Add entry + method | the method |
-;; | `options bp opts` | Set plot options | `:opts` |
-;; | `annotate bp anns` | Add self-contained entries | entry |
-;; | `distribution bp cols` | Add diagonal entries | entry |
+;; | Verb | Columns? | What it does |
+;; |:-----|:---------|:-------------|
+;; | `sketch` | — | Set data + shared aesthetics |
+;; | `view` | yes | Add entry + set shared (opts → shared) |
+;; | `lay-*` | no | Add **global** method (all entries get it) |
+;; | `lay-*` | yes | Add **entry-specific** method (find or create entry) |
+;; | `overlay` | yes | Add entry with own method (different columns, future: same panel) |
+;; | `annotate` | — | Add self-contained annotation entries |
+;; | `distribution` | yes | Add diagonal entries for SPLOM |
+;; | `options` | — | Set plot-level options |
+;;
+;; The structural/non-structural distinction:
+;;
+;; - `:x`, `:y` → **structural** (define what data to plot, create entries)
+;; - `:color`, `:alpha`, `:size`, `:se`, etc. → **non-structural** (aesthetics/parameters)
 
 ;; ## Setup
 
@@ -56,9 +60,6 @@
                       {:key-fn keyword}))
 
 ;; ## Rule 1: `view` opts go into `:shared`
-
-;; When `view` receives an opts map, those aesthetics merge into
-;; `:shared` and apply to ALL methods on ALL entries.
 
 (-> iris
     (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
@@ -70,22 +71,41 @@
                                 (= 3 (:lines s)))))])
 
 ;; Both point and lm inherit `:color :species` from shared.
-;; Three regression lines — one per species.
 
-;; Verify the mechanism: shared has color, entry does not.
+;; Verify the mechanism:
 
 (let [bp (-> iris (sk/xkcd7-view :sepal_length :sepal_width {:color :species}))]
   [(:shared bp) (first (:entries bp))])
 
 (kind/test-last [(fn [[shared entry]]
                    (and (= :species (:color shared))
-                        (nil? (:color entry))
-                        (= :sepal_length (:x entry))))])
+                        (nil? (:color entry))))])
 
-;; ## Rule 2: `lay-*` opts go into the method
+;; ## Rule 2: `lay-*` without columns → global method
 
-;; When `lay-*` receives an opts map, those aesthetics apply only
-;; to that specific method — not to shared, not to the entry.
+(let [bp (-> iris
+             (sk/xkcd7-view :sepal_length :sepal_width)
+             sk/xkcd7-lay-point
+             sk/xkcd7-lay-lm)]
+  [(count (:methods bp)) (nil? (:methods (first (:entries bp))))])
+
+(kind/test-last [(fn [[n-global entry-has-no-methods]]
+                   (and (= 2 n-global)
+                        entry-has-no-methods))])
+
+;; ## Rule 3: `lay-*` with columns → entry-specific method
+
+(let [bp (-> iris (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))]
+  [(count (:methods bp)) (:methods (first (:entries bp)))])
+
+(kind/test-last [(fn [[n-global entry-methods]]
+                   (and (= 0 n-global)
+                        (= 1 (count entry-methods))
+                        (= :point (:mark (first entry-methods)))))])
+
+;; ## Rule 4: entry-specific methods + global methods combine
+
+;; Entry gets its own methods AND global methods.
 
 (-> iris
     (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
@@ -95,20 +115,73 @@
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Points are colored (`:color` is in the point method).
-;; The lm method has no color — one overall regression line.
+;; Points are colored (entry-specific method has `:color`).
+;; Lm is global (no color) → 1 overall line.
 
-;; Verify the mechanism: shared is empty, method has color.
+;; Verify the mechanism:
 
-(let [bp (-> iris (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))]
-  [(:shared bp) (first (:methods bp))])
+(let [bp (-> iris
+             (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+             sk/xkcd7-lay-lm)]
+  [(count (:methods bp))
+   (count (:methods (first (:entries bp))))])
 
-(kind/test-last [(fn [[shared method]]
-                   (and (empty? shared)
-                        (= :species (:color method))
-                        (= :point (:mark method))))])
+(kind/test-last [(fn [[n-global n-entry]]
+                   (and (= 1 n-global)
+                        (= 1 n-entry)))])
 
-;; ## Rule 3: `sketch` opts go into `:shared`
+;; ## Rule 5: find-or-create entry by matching columns
+
+;; A second `lay-*` with the same columns finds the existing entry.
+
+(let [bp (-> iris
+             (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+             (sk/xkcd7-lay-lm :sepal_length :sepal_width))]
+  [(count (:entries bp))
+   (count (:methods (first (:entries bp))))
+   (count (:methods bp))])
+
+(kind/test-last [(fn [[n-entries n-entry-methods n-global]]
+                   (and (= 1 n-entries)
+                        (= 2 n-entry-methods)
+                        (= 0 n-global)))])
+
+;; One entry with two methods (point + lm), both entry-specific.
+
+(-> iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-lay-lm :sepal_length :sepal_width))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; ## Rule 6: two `lay-*` with different columns → separate entries
+
+(-> iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width)
+    (sk/xkcd7-lay-histogram :petal_length))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (pos? (:points s))
+                                (pos? (:polygons s)))))])
+
+;; Verify structure: two entries, each with own methods.
+
+(let [bp (-> iris
+             (sk/xkcd7-lay-point :sepal_length :sepal_width)
+             (sk/xkcd7-lay-histogram :petal_length))]
+  [(count (:entries bp))
+   (count (:methods bp))
+   (mapv #(count (:methods %)) (:entries bp))])
+
+(kind/test-last [(fn [[n-entries n-global entry-method-counts]]
+                   (and (= 2 n-entries)
+                        (= 0 n-global)
+                        (= [1 1] entry-method-counts)))])
+
+;; ## Rule 7: `sketch` opts go into `:shared`
 
 (-> (sk/xkcd7-sketch iris {:color :species})
     (sk/xkcd7-view :sepal_length :sepal_width)
@@ -119,9 +192,7 @@
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; Same result as Rule 1 — both methods inherit shared color.
-
-;; ## Rule 4: method opts override shared (`nil` cancels)
+;; ## Rule 8: method opts override shared (`nil` cancels)
 
 (-> iris
     (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
@@ -132,12 +203,7 @@
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Points are colored (from shared). The lm method cancels color
-;; with `{:color nil}` — one overall regression line.
-
-;; ## Rule 5: shared affects all entries
-
-;; When multiple entries exist, shared merges into each one.
+;; ## Rule 9: shared affects all entries
 
 (-> (sk/xkcd7-sketch iris {:color :species})
     (sk/xkcd7-view :sepal_length :sepal_width)
@@ -148,29 +214,7 @@
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
-;; Two panels (two entries), both colored by species.
-
-;; ## Rule 6: per-entry methods via `view`
-
-;; Pass a map with `:methods` to `view` to add an entry that uses
-;; its own method list instead of the Blueprint's. The entry still
-;; inherits `:shared`.
-
-(-> iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    (sk/xkcd7-view {:x :sepal_length :y :sepal_width
-                    :methods [{:mark :line :stat :lm :color nil}]}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
-
-;; Points are colored (shared + default methods).
-;; The second entry has its own `:methods` with `:color nil`,
-;; cancelling shared — one overall regression line.
-
-;; ## Rule 7: annotations are self-contained entries
+;; ## Rule 10: annotations are self-contained
 
 (-> iris
     (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
@@ -180,39 +224,41 @@
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; The rule-h annotation has its own `:methods` and does not
-;; participate in the entry × methods cross product.
+;; ## Rule 11: `overlay` — different columns, own methods
 
-;; ## Rule 8: `lay-*` shorthand creates entry + method separately
+;; `overlay` adds an entry with its own method. Currently rendered as
+;; a separate panel (same-panel rendering is a future pipeline feature).
 
-;; `(lay-point data :x :y {:color :c})` creates entry `{:x :y}`
-;; and method `{:mark :point :color :c}`. Shared is untouched.
-;; A subsequent bare `lay-*` adds a method with no aesthetics.
+(let [bp (-> iris
+             (sk/xkcd7-lay-point :sepal_length :sepal_width)
+             (sk/xkcd7-overlay :sepal_length :petal_width :lm))]
+  [(count (:entries bp))
+   (mapv #(count (:methods %)) (:entries bp))])
 
-(-> iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-loess)
+(kind/test-last [(fn [[n-entries method-counts]]
+                   (and (= 2 n-entries)
+                        (= [1 1] method-counts)))])
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
+;; ## Rule 12: `lay-*` shorthand with auto-infer
 
-;; Points are colored (method has `:color :species`).
-;; Loess has no color — shared is empty, loess method has no color.
-;; One overall smoothing line.
+(-> {:x [1 2 3] :y [4 5 6]}
+    sk/xkcd7-lay-point)
+
+(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
 
 ;; ## Summary
-;;
-;; The three scopes, from broadest to narrowest:
 ;;
 ;; | Scope | Set by | Affects |
 ;; |:------|:-------|:--------|
 ;; | **shared** | `sketch`, `view` (opts map) | all entries × all methods |
-;; | **per-entry** | `view` (columns/map) | one entry × its methods |
-;; | **per-method** | `lay-*` (opts map) | one method only |
+;; | **per-entry** | `lay-*` (with columns), `overlay` | one entry's own methods |
+;; | **per-method** | `lay-*` opts map | one method only |
+;; | **global** | `lay-*` (no columns) | all entries |
 ;;
-;; Resolution order: `merge(shared, entry, method)` — later wins, `nil` cancels.
+;; Resolution: `merge(shared, entry, method)` — later wins, `nil` cancels.
 ;;
-;; Entries with `:methods` use their own method list (from `view`
-;; with a map, or `annotate`). Entries without `:methods` use the
-;; Blueprint's method list (from `lay-*` calls).
+;; Entry methods = `concat(own-methods, global-methods)`.
+;; Entries without own methods use global methods only.
+;;
+;; Structural aesthetics (`:x`, `:y`) → entry-specific.
+;; Non-structural aesthetics (`:color`, `:alpha`, etc.) → method-level.

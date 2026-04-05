@@ -902,6 +902,24 @@
          (update :shared merge opts)
          (update :entries conj {:x x :y y})))))
 
+(defn- xkcd7-add-entry-method
+  "Add a method to a specific entry (found by matching :x/:y, or created new).
+   Used when lay-* is called with structural columns."
+  [bp entry-keys method-map]
+  (let [entries (:entries bp)
+        idx (first (keep-indexed
+                    (fn [i e]
+                      (when (and (= (:x e) (:x entry-keys))
+                                 (= (:y e) (:y entry-keys)))
+                        i))
+                    entries))]
+    (if idx
+      ;; Found existing entry — append method to its :methods
+      (update-in bp [:entries idx :methods]
+                 (fn [ms] (conj (or ms []) method-map)))
+      ;; No match — create new entry with this method
+      (update bp :entries conj (assoc entry-keys :methods [method-map])))))
+
 (defn xkcd7-lay
   "Add a method to a Blueprint."
   ([bp-or-data method-key]
@@ -920,44 +938,57 @@
                                          opts)))
        (update bp :methods conj (merge method-key opts))))))
 
+(defn- xkcd7-method-map
+  "Build a method map from a method-key and optional opts."
+  [method-key opts]
+  (let [m (when (keyword? method-key) (method/lookup method-key))
+        base (or (select-keys (or m {}) [:mark :stat :position])
+                 {:mark method-key :stat :identity})]
+    (merge base opts)))
+
 (defmacro ^:private def-xkcd7-lay [method-key]
   (let [fn-name (symbol (str "xkcd7-lay-" (name method-key)))]
     `(defn ~fn-name
        ~(str "Add :" (name method-key) " method to a Blueprint.\n"
-             "  (xkcd7-lay-" (name method-key) " bp) — add to existing Blueprint.\n"
-             "  (xkcd7-lay-" (name method-key) " bp {:alpha 0.5}) — with options.\n"
-             "  (xkcd7-lay-" (name method-key) " data :x :y) — data + columns.\n"
-             "  (xkcd7-lay-" (name method-key) " data :x :y {:color :c}) — data + columns + opts.")
+             "  Without columns → global method (applies to all entries).\n"
+             "  With columns → entry-specific (find or create entry).\n"
+             "  (xkcd7-lay-" (name method-key) " bp) — global method.\n"
+             "  (xkcd7-lay-" (name method-key) " bp {:alpha 0.5}) — global with opts.\n"
+             "  (xkcd7-lay-" (name method-key) " data :x :y) — entry-specific.\n"
+             "  (xkcd7-lay-" (name method-key) " data :x :y {:color :c}) — entry-specific with opts.")
        ([bp-or-data#]
         (let [bp# (xkcd7-ensure-bp bp-or-data#)]
-          (xkcd7-lay (if (and (empty? (:entries bp#))
-                              (:data bp#)
-                              (<= (count (tc/column-names (:data bp#))) 3))
-                       (xkcd7-view bp#)
-                       bp#)
-                     ~method-key)))
+          (if (and (empty? (:entries bp#))
+                   (:data bp#)
+                   (<= (count (tc/column-names (:data bp#))) 3))
+            ;; Auto-infer columns for small datasets, then entry-specific
+            (let [bp2# (xkcd7-view bp#)]
+              (xkcd7-add-entry-method bp2# (first (:entries bp2#))
+                                      (xkcd7-method-map ~method-key nil)))
+            ;; No columns → global method
+            (xkcd7-lay bp# ~method-key))))
        ([bp-or-data# x-or-opts#]
         (if (or (keyword? x-or-opts#) (string? x-or-opts#))
-          ;; Single column (univariate): data + x
-          (-> (xkcd7-ensure-bp bp-or-data#)
-              (xkcd7-view x-or-opts#)
-              (xkcd7-lay ~method-key))
-          ;; Options map
+          ;; Single column (univariate): entry-specific
+          (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data#)
+                                  {:x x-or-opts#}
+                                  (xkcd7-method-map ~method-key nil))
+          ;; Options map: global method
           (xkcd7-lay bp-or-data# ~method-key x-or-opts#)))
        ([bp-or-data# x# y-or-opts#]
         (if (or (keyword? y-or-opts#) (string? y-or-opts#))
-          ;; data + x + y
-          (-> (xkcd7-ensure-bp bp-or-data#)
-              (xkcd7-view x# y-or-opts#)
-              (xkcd7-lay ~method-key))
-          ;; bp + x-column + opts (univariate + opts)
-          (-> (xkcd7-ensure-bp bp-or-data#)
-              (xkcd7-view x#)
-              (xkcd7-lay ~method-key y-or-opts#))))
+          ;; data + x + y: entry-specific
+          (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data#)
+                                  {:x x# :y y-or-opts#}
+                                  (xkcd7-method-map ~method-key nil))
+          ;; bp + x-column + opts (univariate + opts): entry-specific
+          (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data#)
+                                  {:x x#}
+                                  (xkcd7-method-map ~method-key y-or-opts#))))
        ([bp-or-data# x# y# opts#]
-        (-> (xkcd7-ensure-bp bp-or-data#)
-            (xkcd7-view x# y#)
-            (xkcd7-lay ~method-key opts#))))))
+        (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data#)
+                                {:x x# :y y#}
+                                (xkcd7-method-map ~method-key opts#))))))
 
 (def-xkcd7-lay :point)
 (def-xkcd7-lay :line)
@@ -1052,6 +1083,19 @@
   (reduce (fn [bp ann]
             (update bp :entries conj (assoc ann :methods [ann])))
           bp annotations))
+
+(defn xkcd7-overlay
+  "Add a layer with different columns on the same panel as an existing entry.
+   Use when you want two different column mappings sharing the same axes —
+   e.g., scatter of :x/:y with a line of :x/:y_predicted.
+   The overlay creates a new entry with its own :methods.
+   (xkcd7-overlay bp :x :y_predicted :line)
+   (xkcd7-overlay bp :x :y_predicted :line {:color \"red\"})"
+  ([bp x y method-key]
+   (xkcd7-overlay bp x y method-key {}))
+  ([bp x y method-key opts]
+   (let [method-map (xkcd7-method-map method-key opts)]
+     (update bp :entries conj {:x x :y y :methods [method-map]}))))
 
 (defn xkcd7-distribution
   "Add diagonal entries (x=y) for each column — used for histograms in SPLOM.
