@@ -149,11 +149,13 @@
 
 (def cols [:sepal_length :sepal_width :petal_length :petal_width])
 
-(-> (sk/xkcd7-sketch data/iris {:color :species})
-    (sk/xkcd7-view (sk/cross cols cols))
-    (sk/xkcd7-lay-point))
+(-> data/iris
+    (sk/xkcd7-view (sk/cross cols cols) {:color :species}))
 
-(kind/test-last [(fn [v] (= 16 (:panels (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 16 (:panels s))
+                                (= (* 12 150) (:points s))
+                                (pos? (:polygons s)))))])
 
 ;; See the [Faceting](./napkinsketch_book.faceting.html) chapter for more SPLOM
 ;; variations, including brush selection.

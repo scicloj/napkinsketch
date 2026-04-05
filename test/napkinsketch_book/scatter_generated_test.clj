@@ -232,12 +232,18 @@
 
 (def
  v37_l152
- (->
-  (sk/xkcd7-sketch data/iris {:color :species})
-  (sk/xkcd7-view (sk/cross cols cols))
-  (sk/xkcd7-lay-point)))
+ (-> data/iris (sk/xkcd7-view (sk/cross cols cols) {:color :species})))
 
 
 (deftest
- t38_l156
- (is ((fn [v] (= 16 (:panels (sk/svg-summary v)))) v37_l152)))
+ t38_l155
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and
+      (= 16 (:panels s))
+      (= (* 12 150) (:points s))
+      (pos? (:polygons s)))))
+   v37_l152)))
