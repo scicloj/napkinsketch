@@ -346,17 +346,21 @@
 
 ;; Check whether a value is a sketch:
 
+;; `sk/sketch?` checks the old Sketch type. Blueprints are not Sketches.
+
 (sk/sketch? (sk/xkcd7-lay-point tiny :x :y))
 
-(kind/test-last [true?])
+(kind/test-last [false?])
 
 (kind/doc #'sk/xkcd7-plan)
 
-;; Extract the entries (views) from a blueprint:
+;; A Blueprint's entries — `lay-point :x :y` creates one entry-specific entry.
+;; `lay-lm` (bare) adds a global method.
 
-(count (:entries (-> tiny (sk/xkcd7-lay-point :x :y) (sk/xkcd7-lay-lm))))
+(let [bp (-> tiny (sk/xkcd7-lay-point :x :y) sk/xkcd7-lay-lm)]
+  [(count (:entries bp)) (count (:methods bp))])
 
-(kind/test-last [(fn [v] (= 2 v))])
+(kind/test-last [(fn [[entries globals]] (and (= 1 entries) (= 1 globals)))])
 
 (kind/doc #'sk/xkcd7-plan)
 

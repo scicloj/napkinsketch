@@ -1060,7 +1060,7 @@
                                 {:channel channel})))]
     (update bp :entries (fn [entries]
                           (mapv #(assoc % k (if (map? scale-type)
-                                              scale-type
+                                              (merge {:type :linear} scale-type)
                                               {:type scale-type})) entries)))))
 
 (defn xkcd7-coord
