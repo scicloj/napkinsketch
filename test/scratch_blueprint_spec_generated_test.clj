@@ -8,7 +8,7 @@
 
 
 (def
- v3_l55
+ v3_l60
  (def
   iris
   (tc/dataset
@@ -17,7 +17,45 @@
 
 
 (def
- v5_l63
+ v5_l65
+ (defn
+  bp-summary
+  "Show the Blueprint fields that matter for understanding the rules."
+  [bp]
+  {:shared (:shared bp),
+   :entries
+   (mapv (fn* [p1__325599#] (dissoc p1__325599# :data)) (:entries bp)),
+   :methods (:methods bp),
+   :opts (:opts bp)}))
+
+
+(def
+ v7_l78
+ (let
+  [bp
+   (->
+    iris
+    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm)]
+  (kind/pprint (bp-summary bp))))
+
+
+(deftest
+ t8_l84
+ (is
+  ((fn
+    [m]
+    (and
+     (= :species (get-in m [:shared :color]))
+     (= 1 (count (:entries m)))
+     (nil? (:color (first (:entries m))))
+     (= 2 (count (:methods m)))))
+   v7_l78)))
+
+
+(def
+ v9_l90
  (->
   iris
   (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
@@ -26,40 +64,121 @@
 
 
 (deftest
- t6_l68
+ t10_l95
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v5_l63)))
+   v9_l90)))
 
 
 (def
- v8_l77
+ v12_l104
  (let
   [bp
    (->
     iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species}))]
-  [(:shared bp) (first (:entries bp))]))
+    (sk/xkcd7-view :sepal_length :sepal_width)
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm)]
+  (kind/pprint (bp-summary bp))))
 
 
 (deftest
- t9_l80
+ t13_l110
  (is
   ((fn
-    [[shared entry]]
+    [m]
     (and
-     (= :species (:color shared))
-     (nil? (:color entry))
-     (= :sepal_length (:x entry))))
-   v8_l77)))
+     (= 2 (count (:methods m)))
+     (= :point (:mark (first (:methods m))))
+     (nil? (:methods (first (:entries m))))))
+   v12_l104)))
 
 
 (def
- v11_l90
+ v14_l115
+ (->
+  iris
+  (sk/xkcd7-view :sepal_length :sepal_width)
+  sk/xkcd7-lay-point
+  sk/xkcd7-lay-lm))
+
+
+(deftest
+ t15_l120
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 1 (:lines s)))))
+   v14_l115)))
+
+
+(def
+ v17_l128
+ (let
+  [bp
+   (->
+    iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))]
+  (kind/pprint (bp-summary bp))))
+
+
+(deftest
+ t18_l132
+ (is
+  ((fn
+    [m]
+    (and
+     (= 0 (count (:methods m)))
+     (= 1 (count (:entries m)))
+     (= 1 (count (:methods (first (:entries m)))))
+     (= :species (:color (first (:methods (first (:entries m))))))))
+   v17_l128)))
+
+
+(def
+ v19_l138
+ (->
+  iris
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
+
+
+(deftest
+ t20_l141
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v19_l138)))
+
+
+(def
+ v22_l148
+ (let
+  [bp
+   (->
+    iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    sk/xkcd7-lay-lm)]
+  (kind/pprint (bp-summary bp))))
+
+
+(deftest
+ t23_l153
+ (is
+  ((fn
+    [m]
+    (and
+     (= 1 (count (:methods m)))
+     (= 1 (count (:methods (first (:entries m)))))
+     (= :point (:mark (first (:methods (first (:entries m))))))
+     (= :line (:mark (first (:methods m))))))
+   v22_l148)))
+
+
+(def
+ v24_l159
  (->
   iris
   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
@@ -67,40 +186,125 @@
 
 
 (deftest
- t12_l94
+ t25_l163
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v11_l90)))
+   v24_l159)))
 
 
 (def
- v14_l103
+ v27_l172
  (let
   [bp
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))]
-  [(:shared bp) (first (:methods bp))]))
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-lay-lm :sepal_length :sepal_width))]
+  (kind/pprint (bp-summary bp))))
 
 
 (deftest
- t15_l106
+ t28_l177
  (is
   ((fn
-    [[shared method]]
+    [m]
     (and
-     (empty? shared)
-     (= :species (:color method))
-     (= :point (:mark method))))
-   v14_l103)))
+     (= 1 (count (:entries m)))
+     (= 0 (count (:methods m)))
+     (= 2 (count (:methods (first (:entries m)))))))
+   v27_l172)))
 
 
 (def
- v17_l113
+ v29_l182
+ (->
+  iris
+  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+  (sk/xkcd7-lay-lm :sepal_length :sepal_width)))
+
+
+(deftest
+ t30_l186
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 150 (:points s)) (= 1 (:lines s)))))
+   v29_l182)))
+
+
+(def
+ v32_l196
+ (let
+  [bp
+   (->
+    iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width)
+    (sk/xkcd7-lay-histogram :petal_length))]
+  (kind/pprint (bp-summary bp))))
+
+
+(deftest
+ t33_l201
+ (is
+  ((fn
+    [m]
+    (and
+     (= 2 (count (:entries m)))
+     (= 0 (count (:methods m)))
+     (=
+      [1 1]
+      (mapv
+       (fn* [p1__325600#] (count (:methods p1__325600#)))
+       (:entries m)))
+     (= :sepal_length (:x (first (:entries m))))
+     (= :petal_length (:x (second (:entries m))))))
+   v32_l196)))
+
+
+(def
+ v34_l208
+ (->
+  iris
+  (sk/xkcd7-lay-point :sepal_length :sepal_width)
+  (sk/xkcd7-lay-histogram :petal_length)))
+
+
+(deftest
+ t35_l212
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (pos? (:points s)) (pos? (:polygons s)))))
+   v34_l208)))
+
+
+(def
+ v37_l221
+ (let
+  [bp
+   (->
+    (sk/xkcd7-sketch iris {:color :species})
+    (sk/xkcd7-view :sepal_length :sepal_width)
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm)]
+  (kind/pprint (bp-summary bp))))
+
+
+(deftest
+ t38_l227
+ (is ((fn [m] (= :species (get-in m [:shared :color]))) v37_l221)))
+
+
+(def
+ v39_l230
  (->
   (sk/xkcd7-sketch iris {:color :species})
   (sk/xkcd7-view :sepal_length :sepal_width)
@@ -109,18 +313,41 @@
 
 
 (deftest
- t18_l118
+ t40_l235
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v17_l113)))
+   v39_l230)))
 
 
 (def
- v20_l126
+ v42_l243
+ (let
+  [bp
+   (->
+    iris
+    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
+    sk/xkcd7-lay-point
+    (sk/xkcd7-lay-lm {:color nil}))]
+  (kind/pprint (bp-summary bp))))
+
+
+(deftest
+ t43_l249
+ (is
+  ((fn
+    [m]
+    (and
+     (= :species (get-in m [:shared :color]))
+     (nil? (:color (second (:methods m))))))
+   v42_l243)))
+
+
+(def
+ v44_l253
  (->
   iris
   (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
@@ -129,18 +356,42 @@
 
 
 (deftest
- t21_l131
+ t45_l258
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v20_l126)))
+   v44_l253)))
 
 
 (def
- v23_l142
+ v47_l266
+ (let
+  [bp
+   (->
+    (sk/xkcd7-sketch iris {:color :species})
+    (sk/xkcd7-view :sepal_length :sepal_width)
+    (sk/xkcd7-view :petal_length :petal_width)
+    sk/xkcd7-lay-point)]
+  (kind/pprint (bp-summary bp))))
+
+
+(deftest
+ t48_l272
+ (is
+  ((fn
+    [m]
+    (and
+     (= :species (get-in m [:shared :color]))
+     (= 2 (count (:entries m)))
+     (= 1 (count (:methods m)))))
+   v47_l266)))
+
+
+(def
+ v49_l277
  (->
   (sk/xkcd7-sketch iris {:color :species})
   (sk/xkcd7-view :sepal_length :sepal_width)
@@ -149,41 +400,40 @@
 
 
 (deftest
- t24_l147
+ t50_l282
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v23_l142)))
+   v49_l277)))
 
 
 (def
- v26_l159
- (->
-  iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  (sk/xkcd7-view
-   {:x :sepal_length,
-    :y :sepal_width,
-    :methods [{:mark :line, :stat :lm, :color nil}]})))
+ v52_l290
+ (let
+  [bp
+   (->
+    iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    (sk/xkcd7-annotate (sk/rule-h 3.0)))]
+  (kind/pprint (bp-summary bp))))
 
 
 (deftest
- t27_l165
+ t53_l295
  (is
   ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v26_l159)))
+    [m]
+    (and
+     (= 2 (count (:entries m)))
+     (= :rule-h (:mark (second (:entries m))))))
+   v52_l290)))
 
 
 (def
- v29_l175
+ v54_l299
  (->
   iris
   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
@@ -191,30 +441,59 @@
 
 
 (deftest
- t30_l179
+ t55_l303
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v29_l175)))
+   v54_l299)))
 
 
 (def
- v32_l192
- (->
-  iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-loess))
+ v57_l311
+ (let
+  [bp
+   (->
+    iris
+    (sk/xkcd7-lay-point :sepal_length :sepal_width)
+    (sk/xkcd7-overlay :sepal_length :petal_width :lm))]
+  (kind/pprint (bp-summary bp))))
 
 
 (deftest
- t33_l196
+ t58_l316
  (is
   ((fn
-    [v]
-    (let
-     [s (sk/svg-summary v)]
-     (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v32_l192)))
+    [m]
+    (and
+     (= 2 (count (:entries m)))
+     (= :sepal_width (:y (first (:entries m))))
+     (= :petal_width (:y (second (:entries m))))
+     (= :line (:mark (first (:methods (second (:entries m))))))))
+   v57_l311)))
+
+
+(def
+ v60_l327
+ (let
+  [bp (-> {:x [1 2 3], :y [4 5 6]} sk/xkcd7-lay-point)]
+  (kind/pprint (bp-summary bp))))
+
+
+(deftest
+ t61_l331
+ (is
+  ((fn
+    [m]
+    (and (= 1 (count (:entries m))) (= :x (:x (first (:entries m))))))
+   v60_l327)))
+
+
+(def v62_l335 (-> {:x [1 2 3], :y [4 5 6]} sk/xkcd7-lay-point))
+
+
+(deftest
+ t63_l338
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v62_l335)))
