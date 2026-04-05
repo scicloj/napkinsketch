@@ -24,7 +24,7 @@
   [bp]
   {:shared (:shared bp),
    :entries
-   (mapv (fn* [p1__325599#] (dissoc p1__325599# :data)) (:entries bp)),
+   (mapv (fn* [p1__78226#] (dissoc p1__78226# :data)) (:entries bp)),
    :methods (:methods bp),
    :opts (:opts bp)}))
 
@@ -260,7 +260,7 @@
      (=
       [1 1]
       (mapv
-       (fn* [p1__325600#] (count (:methods p1__325600#)))
+       (fn* [p1__78227#] (count (:methods p1__78227#)))
        (:entries m)))
      (= :sepal_length (:x (first (:entries m))))
      (= :petal_length (:x (second (:entries m))))))
