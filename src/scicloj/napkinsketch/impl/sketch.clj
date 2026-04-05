@@ -834,57 +834,74 @@
 
 (defn- xkcd7-infer-grid
   "Infer grid structure from entry-grouped views.
-   Each entry = one panel. Grid position from structural columns.
+   Each entry = one panel. Grid position determined by:
+   - Faceted entries: :facet-col → grid col, :facet-row → grid row
+   - Non-faceted entries: :x column → grid col, :y column → grid row
    Returns {:grid-cols N :grid-rows N :panels [{:views [...] :row R :col C ...}]}"
   [entry-groups {:keys [grid-cols grid-rows] :as user-grid}]
-  (let [;; Collect x/y variables per entry (use first view's :x/:y)
-        entry-vars (mapv (fn [eg]
-                           (let [v (first (:views eg))]
-                             {:x (:x v) :y (:y v) :entry-idx (:entry-idx eg)}))
-                         entry-groups)
-        ;; Distinct x-variables in order of appearance
-        x-vars (or grid-cols
-                   (vec (distinct (map :x entry-vars))))
-        ;; Distinct y-variables in order of appearance (nil is valid)
-        y-vars (or grid-rows
-                   (vec (distinct (map :y entry-vars))))
-        ;; Build position map: (x, y) → list of entry indices at that position
-        pos-map (reduce (fn [m {:keys [x y entry-idx]}]
-                          (update m [x y] (fnil conj []) entry-idx))
-                        {} entry-vars)
-        ;; For stacking: expand grid rows for duplicate positions
-        ;; Walk through entries in order, assign (row, col)
-        ;; Entries with same (x, y) get consecutive rows (sub-panels)
-        row-offsets (atom {}) ;; y-var → next available sub-row
+  (let [;; Detect faceting: check if any entry has :facet-col or :facet-row
+        first-views (mapv #(first (:views %)) entry-groups)
+        has-facet-col? (some :facet-col first-views)
+        has-facet-row? (some :facet-row first-views)
+        faceted? (or has-facet-col? has-facet-row?)
+
+        ;; Collect grid axis values
+        col-vals (if faceted?
+                   (vec (distinct (keep :facet-col first-views)))
+                   (or grid-cols (vec (distinct (map :x first-views)))))
+        row-vals (if faceted?
+                   (vec (distinct (keep :facet-row first-views)))
+                   (or grid-rows (vec (distinct (map :y first-views)))))
+        ;; For non-faceted with single x/y, use nil sentinels
+        col-vals (if (empty? col-vals) [nil] col-vals)
+        row-vals (if (empty? row-vals) [nil] row-vals)
+
+        ;; Position each entry
+        stack-counts (atom {})
         panels (vec
                 (for [eg entry-groups
                       :let [v (first (:views eg))
-                            xv (:x v)
-                            yv (:y v)
-                            ci (.indexOf ^java.util.List x-vars xv)
-                            base-ri (.indexOf ^java.util.List y-vars yv)
-                            ;; Stacking: track how many entries at this y-var
-                            stack-key [xv yv]
-                            sub-offset (get @row-offsets stack-key 0)
-                            _ (swap! row-offsets update stack-key (fnil inc 0))
-                            ri (+ (* base-ri (apply max 1
-                                                    (map (fn [yv']
-                                                           (count (get pos-map [xv yv'] [])))
-                                                         y-vars)))
-                                  sub-offset)]]
+                            ;; Determine grid position
+                            [ci col-label]
+                            (if has-facet-col?
+                              (let [fc (:facet-col v)
+                                    i (.indexOf ^java.util.List col-vals fc)]
+                                [(max 0 i) (str fc)])
+                              (let [xv (:x v)
+                                    i (.indexOf ^java.util.List col-vals xv)]
+                                [(max 0 i) (when xv (defaults/fmt-name xv))]))
+                            [ri row-label]
+                            (if has-facet-row?
+                              (let [fr (:facet-row v)
+                                    i (.indexOf ^java.util.List row-vals fr)]
+                                [(max 0 i) (str fr)])
+                              (let [yv (:y v)
+                                    i (.indexOf ^java.util.List row-vals yv)]
+                                [(max 0 i) (when yv (defaults/fmt-name yv))]))
+                            ;; Stacking for duplicate positions
+                            stack-key [ri ci]
+                            sub (get @stack-counts stack-key 0)
+                            _ (swap! stack-counts update stack-key (fnil inc 0))]]
                   {:views (:views eg)
-                   :row ri :col ci
-                   :var-x xv :var-y yv
-                   :col-label (when xv (defaults/fmt-name xv))
-                   :row-label (when yv (defaults/fmt-name yv))}))
+                   :row (if (> sub 0) (+ (* ri (count col-vals)) sub) ri)
+                   :col ci
+                   :var-x (:x v) :var-y (:y v)
+                   :col-label col-label
+                   :row-label row-label}))
         ;; Compute actual grid dimensions
         max-row (if (seq panels) (inc (apply max (map :row panels))) 1)
-        max-col (if (seq panels) (inc (apply max (map :col panels))) 1)]
+        max-col (if (seq panels) (inc (apply max (map :col panels))) 1)
+        layout-type (cond
+                      faceted? :facet-grid
+                      (and (= 1 max-row) (= 1 max-col)) :single
+                      :else :multi-variable)]
     {:grid-cols max-col
      :grid-rows max-row
-     :layout-type (if (and (= 1 max-row) (= 1 max-col)) :single :multi-variable)
-     :x-vars x-vars
-     :y-vars y-vars
+     :layout-type layout-type
+     :x-vars (vec (distinct (map :x first-views)))
+     :y-vars (vec (distinct (map :y first-views)))
+     :facet-col-vals (when has-facet-col? col-vals)
+     :facet-row-vals (when has-facet-row? row-vals)
      :panels panels}))
 
 (defn xkcd7-views->plan
@@ -1039,7 +1056,7 @@
          layout-dims (compute-layout-dims cfg layout-type eff-title eff-x-label eff-y-label
                                           subtitle caption
                                           legend size-legend alpha-legend
-                                          nil nil ;; no facet-row/col-vals
+                                          (:facet-row-vals grid) (:facet-col-vals grid)
                                           grid-rows-n grid-cols-n pw ph multi? panels legend-position)
 
          plan
