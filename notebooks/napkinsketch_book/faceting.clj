@@ -153,13 +153,11 @@
 ;; same-column pairs. Off-diagonal panels show scatter plots. All
 ;; panels are colored by species (shared via `view`).
 
-;; ## Distribution Helper
+;; ## Comparing Multiple Columns
 ;;
-;; `sk/xkcd7-distribution` creates diagonal views — one histogram per column:
+;; Pass a vector of column names to create one panel per column:
 
-(-> data/iris
-    (sk/xkcd7-distribution :sepal_length :sepal_width :petal_length)
-    (sk/xkcd7-lay-histogram {:color :species}))
+(sk/xkcd7-lay-histogram data/iris [:sepal_length :sepal_width :petal_length] {:color :species})
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))

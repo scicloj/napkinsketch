@@ -92,13 +92,12 @@
 
 ;; Each faceted panel has colored points + 1 overall lm line.
 
-;; ## Distribution + shared color
+;; ## Multi-column histogram with shared color
 
-;; Diagonal entries with shared color produce colored histograms.
+;; Vector of columns with shared color produce colored histograms.
 
-(-> (sk/xkcd7-sketch iris {:color :species})
-    (sk/xkcd7-distribution :sepal_length :sepal_width :petal_length)
-    sk/xkcd7-lay-histogram)
+(sk/xkcd7-lay-histogram (sk/xkcd7-sketch iris {:color :species})
+                        [:sepal_length :sepal_width :petal_length])
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))

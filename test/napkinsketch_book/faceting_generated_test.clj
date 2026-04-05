@@ -201,14 +201,14 @@
 
 (def
  v37_l160
- (->
+ (sk/xkcd7-lay-histogram
   data/iris
-  (sk/xkcd7-distribution :sepal_length :sepal_width :petal_length)
-  (sk/xkcd7-lay-histogram {:color :species})))
+  [:sepal_length :sepal_width :petal_length]
+  {:color :species}))
 
 
 (deftest
- t38_l164
+ t38_l162
  (is
   ((fn
     [v]
@@ -219,7 +219,7 @@
 
 
 (def
- v40_l170
+ v40_l168
  (->
   data/penguins
   (sk/xkcd7-lay-bar :species {:color :species})
@@ -227,18 +227,18 @@
 
 
 (deftest
- t41_l174
+ t41_l172
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 5 (:polygons s)))))
-   v40_l170)))
+   v40_l168)))
 
 
 (def
- v43_l182
+ v43_l180
  (->
   data/iris
   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
@@ -250,7 +250,7 @@
 
 
 (deftest
- t44_l188
+ t44_l186
  (is
   ((fn
     [v]
@@ -261,4 +261,4 @@
       (= 150 (:points s))
       (some #{"Iris by Species"} (:texts s))
       (some #{"Sepal Length (cm)"} (:texts s)))))
-   v43_l182)))
+   v43_l180)))

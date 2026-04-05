@@ -240,12 +240,21 @@
 
 ;; ## Comparing Multiple Columns
 ;;
-;; `sk/xkcd7-distribution` creates side-by-side histograms for multiple
-;; columns — useful when you want to compare the shape of different
-;; variables. Each column gets its own facet panel.
+;; Pass a vector of column names to `sk/xkcd7-lay-histogram` (or any
+;; `lay-*` function) to create one panel per column. This is useful
+;; for comparing the shape of different variables side by side.
+
+(sk/xkcd7-lay-histogram data/iris [:sepal_length :sepal_width :petal_length])
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            (and (= 3 (:panels s))
+                 (pos? (:polygons s)))))])
+
+;; The same works with `sk/xkcd7-view` and a separate `lay-*` step:
 
 (-> data/iris
-    (sk/xkcd7-distribution :sepal_length :sepal_width :petal_length)
+    (sk/xkcd7-view [:sepal_length :sepal_width :petal_length])
     sk/xkcd7-lay-histogram)
 
 (kind/test-last
@@ -255,17 +264,15 @@
 
 ;; Combine with `:color` to see group differences within each column.
 
-(-> data/iris
-    (sk/xkcd7-distribution :sepal_length :sepal_width :petal_length)
-    (sk/xkcd7-lay-density {:color :species}))
+(sk/xkcd7-lay-density data/iris [:sepal_length :sepal_width :petal_length] {:color :species})
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
             (and (= 3 (:panels s))
                  (pos? (:polygons s)))))])
 
-;; All distribution methods support `:color` for group comparisons
-;; and compose freely with other layers and facets.
+;; The multi-column vector works with any `lay-*` function — histograms,
+;; density curves, boxplots, violin plots, and more.
 
 ;; ## What's Next
 ;;

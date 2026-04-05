@@ -499,11 +499,9 @@ plan1
                            (and (= 4 (:panels s))
                                 (= 600 (:points s)))))])
 
-(kind/doc #'sk/xkcd7-distribution)
+;; Multi-column vector creates one panel per column:
 
-(-> data/iris
-    (sk/xkcd7-distribution :sepal_length :sepal_width)
-    sk/xkcd7-lay-histogram)
+(sk/xkcd7-lay-histogram data/iris [:sepal_length :sepal_width])
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))

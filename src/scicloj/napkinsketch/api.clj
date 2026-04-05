@@ -902,13 +902,21 @@
            (string? x-or-entries)) (update bp :entries conj {:x x-or-entries})
        (map? x-or-entries)       (update bp :entries conj x-or-entries)
        (sequential? x-or-entries)
-       (update bp :entries into (mapv (fn [[x y]] {:x x :y y}) x-or-entries)))))
+       (let [first-el (first x-or-entries)]
+         (if (or (keyword? first-el) (string? first-el))
+           ;; Vector of keywords → univariate entries: [:a :b :c]
+           (update bp :entries into (mapv (fn [col] {:x col}) x-or-entries))
+           ;; Vector of pairs → bivariate entries: [[:x1 :y1] [:x2 :y2]]
+           (update bp :entries into (mapv (fn [[x y]] {:x x :y y}) x-or-entries)))))))
   ([bp-or-data x y]
    (let [bp (xkcd7-ensure-bp bp-or-data)]
      (if (and (sequential? x) (map? y))
-       ;; Pairs + shared opts: (view bp pairs {:color :species})
-       (let [bp (update bp :shared merge y)]
-         (update bp :entries into (mapv (fn [[a b]] {:x a :y b}) x)))
+       ;; Columns/pairs + shared opts: (view bp [:a :b :c] {:color :species})
+       (let [bp (update bp :shared merge y)
+             first-el (first x)]
+         (if (or (keyword? first-el) (string? first-el))
+           (update bp :entries into (mapv (fn [col] {:x col}) x))
+           (update bp :entries into (mapv (fn [[a b]] {:x a :y b}) x))))
        (update bp :entries conj {:x x :y y}))))
   ([bp-or-data x y opts]
    (let [bp (xkcd7-ensure-bp bp-or-data)]
@@ -957,8 +965,10 @@
 (defn- xkcd7-lay-method
   "Shared implementation for all xkcd7-lay-* functions.
    1-arity: auto-infer columns for small datasets, otherwise global method.
-   2-arity: keyword/string → univariate entry-specific; map → global with opts.
-   3-arity: two keywords → bivariate entry-specific; keyword+map → univariate+opts.
+   2-arity: keyword/string → univariate entry-specific; vector → multi-column;
+            map → global with opts.
+   3-arity: two keywords → bivariate entry-specific; keyword+map → univariate+opts;
+            vector+map → multi-column with opts.
    4-arity: bivariate entry-specific with opts."
   ([method-key bp-or-data]
    (let [bp (xkcd7-ensure-bp bp-or-data)
@@ -970,16 +980,26 @@
                                  (xkcd7-method-map method-key nil)))
        (xkcd7-lay bp method-key))))
   ([method-key bp-or-data x-or-opts]
-   (if (or (keyword? x-or-opts) (string? x-or-opts))
+   (cond
+     (or (keyword? x-or-opts) (string? x-or-opts))
      (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data)
                              {:x x-or-opts}
                              (xkcd7-method-map method-key nil))
+     (sequential? x-or-opts)
+     (-> (xkcd7-view bp-or-data x-or-opts)
+         (xkcd7-lay method-key))
+     :else
      (xkcd7-lay bp-or-data method-key x-or-opts)))
   ([method-key bp-or-data x y-or-opts]
-   (if (or (keyword? y-or-opts) (string? y-or-opts))
+   (cond
+     (or (keyword? y-or-opts) (string? y-or-opts))
      (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data)
                              {:x x :y y-or-opts}
                              (xkcd7-method-map method-key nil))
+     (and (sequential? x) (map? y-or-opts))
+     (-> (xkcd7-view bp-or-data x y-or-opts)
+         (xkcd7-lay method-key))
+     :else
      (xkcd7-add-entry-method (xkcd7-ensure-bp bp-or-data)
                              {:x x}
                              (xkcd7-method-map method-key y-or-opts))))
@@ -1240,14 +1260,6 @@
   ([bp x y method-key opts]
    (let [method-map (xkcd7-method-map method-key opts)]
      (update bp :entries conj {:x x :y y :methods [method-map]}))))
-
-(defn xkcd7-distribution
-  "Add diagonal entries (x=y) for each column — used for histograms in SPLOM.
-   (xkcd7-distribution bp :a :b :c) adds entries [{:x :a :y :a} {:x :b :y :b} {:x :c :y :c}]"
-  [bp-or-data & cols]
-  (let [bp (xkcd7-ensure-bp bp-or-data)]
-    (reduce (fn [bp col] (update bp :entries conj {:x col :y col}))
-            bp cols)))
 
 (defn xkcd7-plot
   "Render a Blueprint to SVG (or interactive HTML if tooltip/brush is set)."
