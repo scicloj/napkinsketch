@@ -851,13 +851,14 @@
              defaults/*config* (assoc :config-snapshot defaults/*config*))))
 
 (defn- xkcd7-ensure-bp
-  "Coerce first arg to a Blueprint if it isn't one already."
+  "Coerce first arg to a Blueprint if it isn't one already.
+   Stores raw data as-is — coercion to dataset happens at resolution time."
   [x]
   (cond
     (blueprint/blueprint? x) x
-    (tc/dataset? x)          (xkcd7-wrap-autorender (blueprint/->blueprint x {} [] [] {}))
-    (map? x)                 (xkcd7-wrap-autorender (blueprint/->blueprint (tc/dataset x) {} [] [] {}))
-    (sequential? x)          (xkcd7-wrap-autorender (blueprint/->blueprint (tc/dataset x) {} [] [] {}))
+    (or (tc/dataset? x)
+        (map? x)
+        (sequential? x))    (xkcd7-wrap-autorender (blueprint/->blueprint x {} [] [] {}))
     :else                    (xkcd7-wrap-autorender (blueprint/->blueprint nil {} [] [] {}))))
 
 (defn xkcd7-sketch
@@ -866,22 +867,23 @@
   ([data] (xkcd7-sketch data {}))
   ([data shared]
    (xkcd7-wrap-autorender
-    (blueprint/->blueprint
-     (when data (if (tc/dataset? data) data (tc/dataset data)))
-     shared [] [] {}))))
+    (blueprint/->blueprint data shared [] [] {}))))
 
 (defn xkcd7-with-data
-  "Supply or replace data in a Blueprint."
+  "Supply or replace data in a Blueprint. Stores raw data as-is."
   [bp data]
-  (assoc bp :data (if (tc/dataset? data) data (tc/dataset data))))
+  (assoc bp :data data))
 
 (defn xkcd7-view
   "Add entries to a Blueprint."
   ([bp-or-data]
    (let [bp (xkcd7-ensure-bp bp-or-data)]
      (if (:data bp)
-       (let [ds (:data bp)
-             cols (vec (tc/column-names ds))
+       (let [d (:data bp)
+             cols (vec (cond
+                         (tc/dataset? d) (tc/column-names d)
+                         (map? d) (keys d)
+                         :else (tc/column-names (tc/dataset d))))
              n (count cols)]
          (case n
            1 (update bp :entries conj {:x (cols 0)})
