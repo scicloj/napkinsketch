@@ -466,18 +466,28 @@
 
 (defmethod layer->membrane :tile [layer ctx]
   (let [{:keys [style tiles]} layer
-        {:keys [coord-fn]} ctx
-        {:keys [opacity]} style]
+        {:keys [coord-fn panel-width panel-height margin]} ctx
+        {:keys [opacity]} style
+        m (double (or margin 0))
+        ;; Drawing area bounds for clamping
+        x-lo-clip m
+        y-lo-clip m
+        x-hi-clip (- (double panel-width) m)
+        y-hi-clip (- (double panel-height) m)]
     (vec
      (for [{:keys [x-lo x-hi y-lo y-hi color]} tiles
            :let [[px1 py1] (coord-fn x-lo y-lo)
                  [px2 py2] (coord-fn x-hi y-hi)
-                 x-min (min px1 px2)
-                 y-min (min py1 py2)
-                 w (Math/abs (- (double px2) (double px1)))
-                 h (Math/abs (- (double py2) (double py1)))
-                 [cr cg cb _] color]]
-       (ui/translate x-min y-min
+                 ;; Clamp to drawing area
+                 rx1 (max x-lo-clip (min px1 px2))
+                 ry1 (max y-lo-clip (min py1 py2))
+                 rx2 (min x-hi-clip (max px1 px2))
+                 ry2 (min y-hi-clip (max py1 py2))
+                 w (- rx2 rx1)
+                 h (- ry2 ry1)
+                 [cr cg cb _] color]
+           :when (and (pos? w) (pos? h))]
+       (ui/translate rx1 ry1
                      (ui/with-color [cr cg cb (or opacity 1.0)]
                        (ui/with-style ::ui/style-fill
                          (ui/rectangle w h))))))))
