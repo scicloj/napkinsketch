@@ -47,10 +47,12 @@
 
 ;; ## Sketch
 ;;
-;; A **sketch** is the value returned by layer functions
-;; (`sk/lay-point`, `sk/lay-histogram`, etc.) and by `sk/options`.
-;; It wraps one or more views together with plot options and
-;; auto-renders in [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
+;; A **sketch** is a composable record with five fields: `:data`,
+;; `:shared`, `:entries`, `:methods`, and `:opts`. Every function in
+;; the API (`sk/view`, `sk/lay-*`, `sk/facet`, `sk/options`, `sk/scale`,
+;; `sk/coord`, `sk/annotate`) takes a sketch and returns a sketch.
+;; Sketches auto-render in
+;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).
 ;;
 ;; You can inspect or decompose a sketch by checking if it is a sketch
@@ -289,6 +291,7 @@
 ;; | `:cartesian` | Standard x→right, y→up |
 ;; | `:flip` | Swap x and y axes |
 ;; | `:polar` | Radial: x→angle, y→radius |
+;; | `:fixed` | Equal aspect ratio: 1 data unit = 1 data unit |
 
 ;; ## Annotation
 ;;
@@ -444,33 +447,39 @@
 
 ;; ## Summary Table
 ;;
-;; | Term | What | Lifetime |
-;; |:-----|:-----|:---------|
-;; | View | Map: data + column-to-channel mappings + method | User builds, consumed by `plan` |
-;; | Sketch | Auto-rendering sketch (views + options) | Returned by layer functions |
-;; | Method | Mark + stat + position bundle | Looked up via `method/lookup`; added by `sk/lay-point`, `sk/lay-histogram`, etc. |
-;; | Mark | Visual type: point, line, bar, ... | Key in view map |
-;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |
-;; | Group | Subset of data drawn together (from `:color` or `:group`) | Created during stat computation |
-;; | Stat | Data transform: identity, bin, count, lm (linear model), kde (kernel density), etc. | Computed during plan resolution |
-;; | Position | How groups share space: dodge, stack, fill, identity | Applied between stat and rendering |
-;; | Nudge | Constant data-space offset (`:nudge-x`, `:nudge-y`) | Applied during layer extraction |
-;; | Jitter | Random pixel offset to reduce overplotting | Applied at render time |
-;; | Layer | Resolved geometry + style for one mark | Lives inside plan panels |
-;; | Plan | Complete resolved plot description | Inspectable (dtype-next buffers for numerics) |
+;; | Term | What | Key functions |
+;; |:-----|:-----|:-------------|
+;; | Sketch | Composable value: data + shared + entries + methods + opts | All `sk/` functions return sketches |
+;; | Entry | Map in `:entries` declaring what to plot (column pairs) | `sk/view`, `sk/lay-*` with columns |
+;; | Shared aesthetics | Options in `:shared` that apply to all entries | `sk/view` opts map |
+;; | Global method | Method in `:methods` applied to all entries | `sk/lay-*` without columns |
+;; | Entry-local method | Method in `entry[:methods]` applied to one entry | `sk/lay-*` with columns |
+;; | Resolution | `merge(shared, entry, method)` → resolved view | Automatic during `sk/plan` |
+;; | Method | Mark + stat + position bundle | `sk/method-lookup`, `sk/lay-*` |
+;; | Mark | Visual shape: point, line, bar, area, ... | Key in method map |
+;; | Stat | Data transform: identity, bin, count, lm, kde, ... | Key in method map |
+;; | Position | How groups share space: dodge, stack, fill, identity | Key in method map |
+;; | Inference | Auto-choosing mark/stat from column types | When `sk/lay-*` is omitted |
+;; | Aesthetic | Data-driven visual property: color, size, alpha | Key in shared or method |
+;; | Group | Subset of data drawn together | From `:color` or `:group` |
+;; | Plan | Fully resolved plot description | `sk/plan` |
 ;; | Panel | One plotting area (domain, ticks, layers) | One or more per plan |
-;; | Facet | Split data into panels by a categorical column | Configured on views, realized in plan |
+;; | Layer | Resolved geometry + style for one mark | Inside plan panels |
 ;; | Domain | Data range on an axis | Part of panel |
-;; | Scale | Data → pixel mapping | Created at render time |
-;; | Coord | Coordinate system (cartesian, flip, polar) | Applied at render time |
-;; | Annotation | Non-data reference marks (rules, bands) | Overlay on panels |
-;; | Legend | Color/shape key generated from aesthetic mappings | Part of plan |
-;; | Theme | Visual styling: background, grid, fonts, margins | Passed in options, merged with defaults |
-;; | Membrane | Drawable tree (membrane library) | Intermediate (SVG path only) |
-;; | Figure | Final output (SVG hiccup, Plotly spec, ...) | Returned to user |
-;; | Palette | Ordered color set for categorical aesthetics | Resolved at render time |
-;; | Gradient | Continuous color ramp for numerical color mappings | Resolved at render time |
-;; | Configuration | Rendering options: dimensions, theme, palette, etc. | Layered precedence chain |
-;; | Plot Options | Title, subtitle, caption, labels — per-plot text content | Passed to sk/options |
-;; | Layer Options | Per-layer aesthetics, grouping, position, and method parameters | Passed to layer functions |
-;; | Tooltip / Brush | JavaScript hover and selection interactions | Added to SVG output |
+;; | Tick | Axis mark with label at a domain value | Part of panel |
+;; | Scale | Data → pixel mapping (linear, log, categorical) | `sk/scale` |
+;; | Coord | Coordinate system (cartesian, flip, polar, fixed) | `sk/coord` |
+;; | Facet | Split into panels by a categorical column | `sk/facet`, `sk/facet-grid` |
+;; | Annotation | Non-data reference marks (rules, bands) | `sk/annotate` |
+;; | Legend | Color/size/alpha key from aesthetic mappings | Automatic in plan |
+;; | Plot options | Title, subtitle, caption, labels, dimensions | `sk/options` |
+;; | Layer options | Per-layer aesthetics and method parameters | `sk/lay-*` opts map |
+;; | Theme | Visual styling: background, grid, fonts | `:theme` in `sk/options` |
+;; | Palette | Ordered color set for categorical aesthetics | `:palette` in `sk/options` |
+;; | Gradient | Continuous color ramp for numerical mappings | `:color-scale` in `sk/options` |
+;; | Configuration | Global rendering defaults | `sk/config`, `sk/set-config!`, `sk/with-config` |
+;; | View (internal) | Resolved map from `merge(shared, entry, method)` | Internal to pipeline |
+;; | Membrane | Drawable tree (membrane library) | Internal rendering step |
+;; | Figure | Final output (SVG hiccup) | `sk/plot`, `sk/save` |
+;; | Arrange | Compose multiple sketches into a grid | `sk/arrange` |
+;; | Tooltip / Brush | JavaScript hover and selection interactions | `{:tooltip true}` in options |
