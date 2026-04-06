@@ -158,7 +158,7 @@
 (def
  v34_l161
  (def
-  my-bp
+  my-xkcd7-sk
   (->
    data/iris
    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
@@ -166,13 +166,13 @@
    sk/xkcd7-lay-lm)))
 
 
-(def v36_l170 (:shared my-bp))
+(def v36_l170 (:shared my-xkcd7-sk))
 
 
 (deftest t37_l172 (is ((fn [v] (= :species (:color v))) v36_l170)))
 
 
-(def v39_l176 (:entries my-bp))
+(def v39_l176 (:entries my-xkcd7-sk))
 
 
 (deftest
@@ -182,7 +182,7 @@
    v39_l176)))
 
 
-(def v42_l184 (mapv :mark (:methods my-bp)))
+(def v42_l184 (mapv :mark (:methods my-xkcd7-sk)))
 
 
 (deftest t43_l186 (is ((fn [v] (= [:point :line] v)) v42_l184)))

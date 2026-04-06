@@ -146,7 +146,7 @@
                   {:mark :waterfall :stat :waterfall
                    :doc "Waterfall — running total with increase/decrease bars."})
 
-;; Now we can plot it using the xkcd7 Blueprint API. Since there is
+;; Now we can plot it using the xkcd7 xkcd7-sketch API. Since there is
 ;; no built-in `sk/xkcd7-lay-waterfall`, we use `sk/xkcd7-lay` with
 ;; the method lookup.
 ;;
@@ -170,11 +170,11 @@
 
 ;; ## Optional: Convenience Function
 ;;
-;; For a polished API, wrap the pattern in a Blueprint-compatible
+;; For a polished API, wrap the pattern in a xkcd7-sketch-compatible
 ;; function:
 
 (defn lay-waterfall
-  ([bp] (sk/xkcd7-lay bp (method/lookup :waterfall)))
+  ([xkcd7-sk] (sk/xkcd7-lay xkcd7-sk (method/lookup :waterfall)))
   ([data x y] (-> data (sk/xkcd7-view x y) (sk/xkcd7-lay (method/lookup :waterfall))))
   ([data x y opts] (-> data (sk/xkcd7-view x y) (sk/xkcd7-lay (merge (method/lookup :waterfall) opts)))))
 

@@ -29,11 +29,11 @@
 ;; ## Overview
 ;;
 ;; The pipeline from data to figure has several stages, each governed
-;; by a multimethod. The Blueprint API adds a composable front-end
+;; by a multimethod. The xkcd7-sketch API adds a composable front-end
 ;; that resolves into the same pipeline:
 ;;
 ;; ```
-;; Blueprint (xkcd7-view, xkcd7-lay-*, xkcd7-options, ...)
+;; xkcd7-sketch (xkcd7-view, xkcd7-lay-*, xkcd7-options, ...)
 ;;                        ↓
 ;;                     resolve
 ;;                        ↓
@@ -198,11 +198,11 @@
 ;;   ...)
 ;; ```
 ;;
-;; ### How to extend: register a method and create a Blueprint-compatible layer function
+;; ### How to extend: register a method and create a xkcd7-sketch-compatible layer function
 ;;
 ;; After defining `compute-stat` and `extract-layer` for your custom
 ;; mark, register a method and create a convenience function that
-;; works with the Blueprint API:
+;; works with the xkcd7-sketch API:
 ;;
 ;; ```clojure
 ;; ;; Register the method
@@ -215,7 +215,7 @@
 ;;
 ;; ;; Or create a convenience function using xkcd7-lay:
 ;; (defn lay-waterfall
-;;   ([bp] (sk/xkcd7-lay bp (method/lookup :waterfall)))
+;;   ([xkcd7-sk] (sk/xkcd7-lay xkcd7-sk (method/lookup :waterfall)))
 ;;   ([data x y] (-> data (sk/xkcd7-view x y) (sk/xkcd7-lay (method/lookup :waterfall))))
 ;;   ([data x y opts] (-> data (sk/xkcd7-view x y) (sk/xkcd7-lay (merge (method/lookup :waterfall) opts)))))
 ;; ```
@@ -349,7 +349,7 @@
 ;;
 ;; Dispatch: inferred from the domain type and scale spec.
 ;; Categorical domains → `:categorical`. Numerical domains default to
-;; `:linear`, overridden to `:log` by `(sk/xkcd7-scale blueprint :x :log)`.
+;; `:linear`, overridden to `:log` by `(sk/xkcd7-scale xkcd7-sketch :x :log)`.
 
 ;; ## `make-coord`
 ;;

@@ -4,7 +4,7 @@
 ;; structure called a **plan** before rendering anything. This notebook
 ;; walks through the plan step by step, building intuition for the
 ;; data model by looking at what `sk/xkcd7-plan` produces for different
-;; Blueprints.
+;; xkcd7-sketches.
 ;;
 ;; You would explore plans when:
 ;;
@@ -43,7 +43,7 @@
                                 (= 5 (:points s)))))])
 
 ;; And here is the plan — the data structure that drives the rendering.
-;; We'll use `sk/xkcd7-plan` with the same Blueprint:
+;; We'll use `sk/xkcd7-plan` with the same xkcd7-sketch:
 
 (def tiny-pl (-> tiny
                  (sk/xkcd7-lay-point :x :y)
@@ -110,7 +110,7 @@ tiny-pl
 
 ;; ### The layer
 ;;
-;; Each method in the Blueprint produces one layer. Our scatter has a single
+;; Each method in the xkcd7-sketch produces one layer. Our scatter has a single
 ;; point layer:
 
 (def tiny-layer (first (:layers tiny-panel)))
@@ -477,20 +477,20 @@ opts-pl
                                 (pos? (:x-label-pad lay))
                                 (pos? (:y-label-pad lay))))])
 
-;; ## Plan vs Blueprint — Side by Side
+;; ## Plan vs xkcd7-sketch — Side by Side
 ;;
-;; `sk/xkcd7-plan` and `sk/xkcd7-plot` accept the same Blueprint.
+;; `sk/xkcd7-plan` and `sk/xkcd7-plot` accept the same xkcd7-sketch.
 ;; `sk/xkcd7-plan` returns the intermediate data map; `sk/xkcd7-plot` returns the final SVG.
 
 ;; The plan (a plain Clojure map):
 
-(def final-bp
+(def final-xkcd7-sk
   (-> data/iris
       (sk/xkcd7-view :petal_length :petal_width {:color :species})
       sk/xkcd7-lay-point
       sk/xkcd7-lay-lm))
 
-(def final-pl (sk/xkcd7-plan final-bp {:title "Iris Petals"}))
+(def final-pl (sk/xkcd7-plan final-xkcd7-sk {:title "Iris Petals"}))
 
 final-pl
 
@@ -507,7 +507,7 @@ final-pl
 
 ;; The rendered plot (SVG):
 
-(-> final-bp (sk/xkcd7-options {:title "Iris Petals"}))
+(-> final-xkcd7-sk (sk/xkcd7-options {:title "Iris Petals"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

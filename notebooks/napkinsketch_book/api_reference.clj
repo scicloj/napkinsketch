@@ -332,7 +332,7 @@
 
 (kind/doc #'sk/xkcd7-options)
 
-;; Set render options on a blueprint:
+;; Set render options on a xkcd7-sketch:
 
 (-> tiny
     (sk/xkcd7-lay-point :x :y)
@@ -346,7 +346,7 @@
 
 ;; Check whether a value is a sketch:
 
-;; `sk/sketch?` checks the old Sketch type. Blueprints are not Sketches.
+;; `sk/sketch?` checks the old Sketch type. xkcd7-sketches are not Sketches.
 
 (sk/sketch? (sk/xkcd7-lay-point tiny :x :y))
 
@@ -354,11 +354,11 @@
 
 (kind/doc #'sk/xkcd7-plan)
 
-;; A Blueprint's entries — `lay-point :x :y` creates one entry-specific entry.
+;; A xkcd7-sketch's entries — `lay-point :x :y` creates one entry-specific entry.
 ;; `lay-lm` (bare) adds a global method.
 
-(let [bp (-> tiny (sk/xkcd7-lay-point :x :y) sk/xkcd7-lay-lm)]
-  [(count (:entries bp)) (count (:methods bp))])
+(let [xkcd7-sk (-> tiny (sk/xkcd7-lay-point :x :y) sk/xkcd7-lay-lm)]
+  [(count (:entries xkcd7-sk)) (count (:methods xkcd7-sk))])
 
 (kind/test-last [(fn [[entries globals]] (and (= 1 entries) (= 1 globals)))])
 

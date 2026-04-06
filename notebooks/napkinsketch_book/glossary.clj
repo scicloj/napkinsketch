@@ -14,33 +14,33 @@
    ;; Method constructors — for inspecting method maps
    [scicloj.napkinsketch.method :as method])
   (:import
-   [scicloj.napkinsketch.impl.blueprint Blueprint]))
+   [scicloj.napkinsketch.impl.xkcd7-sketch Xkcd7Sketch]))
 
 ;; ## View
 ;;
 ;; A **view** is a resolved map describing what to plot: data and
-;; column-to-channel mappings. Internally, each entry in a Blueprint
+;; column-to-channel mappings. Internally, each entry in a xkcd7-sketch
 ;; resolves to one or more view maps that the pipeline processes.
 ;; At the API level, `sk/xkcd7-view` adds entries (what to plot) and
 ;; sets shared aesthetics; `sk/xkcd7-lay-*` adds methods (how to plot).
 
-(def my-blueprint
+(def my-xkcd7-sketch
   (-> data/iris
       (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
 
-(kind/pprint my-blueprint)
+(kind/pprint my-xkcd7-sketch)
 
-(kind/test-last [(fn [v] (and (instance? Blueprint v) (= 1 (count (:entries v)))))])
+(kind/test-last [(fn [v] (and (instance? Xkcd7Sketch v) (= 1 (count (:entries v)))))])
 
 ;; ## Sketch
 ;;
-;; A **sketch** (also called a Blueprint internally) is the value returned by layer functions
+;; A **sketch** (also called a xkcd7-sketch internally) is the value returned by layer functions
 ;; (`sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram`, etc.) and by `sk/xkcd7-options`.
 ;; It wraps one or more views together with plot options and
 ;; auto-renders in [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).
 ;;
-;; You can inspect or decompose a sketch by checking if it is a Blueprint
+;; You can inspect or decompose a sketch by checking if it is a xkcd7-sketch
 ;; and accessing its `:entries`:
 
 (def my-sketch
@@ -48,7 +48,7 @@
       (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
       (sk/xkcd7-options {:title "Iris"})))
 
-(instance? Blueprint my-sketch)
+(instance? Xkcd7Sketch my-sketch)
 
 (kind/test-last [(fn [v] (true? v))])
 
@@ -174,7 +174,7 @@
 ;; Created with `sk/xkcd7-plan`. Numeric arrays (`:xs`, `:ys`, etc.) are
 ;; [dtype-next](https://github.com/cnuernber/dtype-next) buffers for efficiency.
 
-(def my-plan (sk/xkcd7-plan my-blueprint))
+(def my-plan (sk/xkcd7-plan my-xkcd7-sketch))
 
 (sort (keys my-plan))
 
@@ -196,7 +196,7 @@
 ;; style, and groups of data-space geometry. Layers live inside
 ;; panels in the plan.
 
-(-> my-blueprint
+(-> my-xkcd7-sketch
     sk/xkcd7-plan
     (get-in [:panels 0 :layers 0]))
 
@@ -423,7 +423,7 @@
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
 ;; | View | Map: data + column-to-channel mappings + method | User builds, consumed by `xkcd7-plan` |
-;; | Sketch | Auto-rendering Blueprint (views + options) | Returned by layer functions |
+;; | Sketch | Auto-rendering xkcd7-sketch (views + options) | Returned by layer functions |
 ;; | Method | Mark + stat + position bundle | Looked up via `method/lookup`; added by `sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram`, etc. |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |

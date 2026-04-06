@@ -1,5 +1,5 @@
 (ns
- scratch-blueprint-spec-generated-test
+ scratch-xkcd7-sketch-spec-generated-test
  (:require
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
@@ -19,26 +19,26 @@
 (def
  v5_l65
  (defn
-  bp-summary
+  xkcd7-sk-summary
   "Show the Blueprint fields that matter for understanding the rules."
-  [bp]
-  {:shared (:shared bp),
+  [xkcd7-sk]
+  {:shared (:shared xkcd7-sk),
    :entries
-   (mapv (fn* [p1__77431#] (dissoc p1__77431# :data)) (:entries bp)),
-   :methods (:methods bp),
-   :opts (:opts bp)}))
+   (mapv (fn* [p1__77431#] (dissoc p1__77431# :data)) (:entries xkcd7-sk)),
+   :methods (:methods xkcd7-sk),
+   :opts (:opts xkcd7-sk)}))
 
 
 (def
  v7_l78
  (let
-  [bp
+  [xkcd7-sk
    (->
     iris
     (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
     sk/xkcd7-lay-point
     sk/xkcd7-lay-lm)]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -77,13 +77,13 @@
 (def
  v12_l104
  (let
-  [bp
+  [xkcd7-sk
    (->
     iris
     (sk/xkcd7-view :sepal_length :sepal_width)
     sk/xkcd7-lay-point
     sk/xkcd7-lay-lm)]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -121,11 +121,11 @@
 (def
  v17_l128
  (let
-  [bp
+  [xkcd7-sk
    (->
     iris
     (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -156,12 +156,12 @@
 (def
  v22_l148
  (let
-  [bp
+  [xkcd7-sk
    (->
     iris
     (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
     sk/xkcd7-lay-lm)]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -199,12 +199,12 @@
 (def
  v27_l172
  (let
-  [bp
+  [xkcd7-sk
    (->
     iris
     (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
     (sk/xkcd7-lay-lm :sepal_length :sepal_width))]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -241,12 +241,12 @@
 (def
  v32_l196
  (let
-  [bp
+  [xkcd7-sk
    (->
     iris
     (sk/xkcd7-lay-point :sepal_length :sepal_width)
     (sk/xkcd7-lay-histogram :petal_length))]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -289,13 +289,13 @@
 (def
  v37_l221
  (let
-  [bp
+  [xkcd7-sk
    (->
     (sk/xkcd7-sketch iris {:color :species})
     (sk/xkcd7-view :sepal_length :sepal_width)
     sk/xkcd7-lay-point
     sk/xkcd7-lay-lm)]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -326,13 +326,13 @@
 (def
  v42_l243
  (let
-  [bp
+  [xkcd7-sk
    (->
     iris
     (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
     sk/xkcd7-lay-point
     (sk/xkcd7-lay-lm {:color nil}))]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -369,13 +369,13 @@
 (def
  v47_l266
  (let
-  [bp
+  [xkcd7-sk
    (->
     (sk/xkcd7-sketch iris {:color :species})
     (sk/xkcd7-view :sepal_length :sepal_width)
     (sk/xkcd7-view :petal_length :petal_width)
     sk/xkcd7-lay-point)]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -413,12 +413,12 @@
 (def
  v52_l290
  (let
-  [bp
+  [xkcd7-sk
    (->
     iris
     (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
     (sk/xkcd7-annotate (sk/rule-h 3.0)))]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -454,12 +454,12 @@
 (def
  v57_l311
  (let
-  [bp
+  [xkcd7-sk
    (->
     iris
     (sk/xkcd7-lay-point :sepal_length :sepal_width)
     (sk/xkcd7-overlay :sepal_length :petal_width :lm))]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -478,8 +478,8 @@
 (def
  v60_l327
  (let
-  [bp (-> {:x [1 2 3], :y [4 5 6]} sk/xkcd7-lay-point)]
-  (kind/pprint (bp-summary bp))))
+  [xkcd7-sk (-> {:x [1 2 3], :y [4 5 6]} sk/xkcd7-lay-point)]
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest
@@ -502,12 +502,12 @@
 (def
  v65_l355
  (let
-  [bp
+  [xkcd7-sk
    (->
     iris
     (sk/xkcd7-lay-point :sepal_length :sepal_width)
     (sk/xkcd7-lay-histogram :petal_length))]
-  (kind/pprint (bp-summary bp))))
+  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
 
 
 (deftest

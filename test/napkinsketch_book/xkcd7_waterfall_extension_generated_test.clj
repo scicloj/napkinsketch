@@ -195,7 +195,7 @@
  v19_l176
  (defn
   lay-waterfall
-  ([bp] (sk/xkcd7-lay bp (method/lookup :waterfall)))
+  ([xkcd7-sk] (sk/xkcd7-lay xkcd7-sk (method/lookup :waterfall)))
   ([data x y]
    (->
     data

@@ -4,7 +4,7 @@
   [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
-  [scicloj.napkinsketch.impl.blueprint :as blueprint]
+  [scicloj.napkinsketch.impl.xkcd7-sketch :as xkcd7-sketch]
   [scicloj.napkinsketch.impl.sketch :as sketch-impl]
   [scicloj.napkinsketch.impl.render :as render-impl]
   [scicloj.napkinsketch.impl.sketch-schema :as ss]
@@ -24,22 +24,22 @@
 
 (def
  v7_l81
- (def trace-bp (-> trace-data (sk/xkcd7-lay-point :x :y {:color :g}))))
+ (def trace-xkcd7-sk (-> trace-data (sk/xkcd7-lay-point :x :y {:color :g}))))
 
 
-(def v9_l97 (blueprint/blueprint? trace-bp))
+(def v9_l97 (xkcd7-sketch/xkcd7-sketch? trace-xkcd7-sk))
 
 
 (deftest t10_l99 (is (true? v9_l97)))
 
 
-(def v12_l103 (count (:entries trace-bp)))
+(def v12_l103 (count (:entries trace-xkcd7-sk)))
 
 
 (deftest t13_l105 (is ((fn [n] (= 1 n)) v12_l103)))
 
 
-(def v14_l107 (:entries trace-bp))
+(def v14_l107 (:entries trace-xkcd7-sk))
 
 
 (deftest
@@ -53,13 +53,13 @@
    v14_l107)))
 
 
-(def v17_l118 (get-in (:entries trace-bp) [0 :methods 0 :mark]))
+(def v17_l118 (get-in (:entries trace-xkcd7-sk) [0 :methods 0 :mark]))
 
 
 (deftest t18_l120 (is ((fn [m] (= :point m)) v17_l118)))
 
 
-(def v20_l128 (def trace-views (blueprint/resolve-blueprint trace-bp)))
+(def v20_l128 (def trace-views (xkcd7-sketch/xkcd7-resolve-sketch trace-xkcd7-sk)))
 
 
 (def v21_l131 (count trace-views))
@@ -147,7 +147,7 @@
    v41_l187)))
 
 
-(def v44_l199 (def shortcut-plan (sk/xkcd7-plan trace-bp)))
+(def v44_l199 (def shortcut-plan (sk/xkcd7-plan trace-xkcd7-sk)))
 
 
 (def v45_l201 (ss/valid? shortcut-plan))
@@ -165,7 +165,7 @@
 (def
  v50_l266
  (def
-  multi-bp
+  multi-xkcd7-sk
   (->
    data/iris
    (sk/xkcd7-view :petal_length :petal_width {:color :species})
@@ -173,13 +173,13 @@
    sk/xkcd7-lay-lm)))
 
 
-(def v52_l274 (count (:entries multi-bp)))
+(def v52_l274 (count (:entries multi-xkcd7-sk)))
 
 
 (deftest t53_l276 (is ((fn [n] (= 1 n)) v52_l274)))
 
 
-(def v54_l278 (mapv :mark (:methods multi-bp)))
+(def v54_l278 (mapv :mark (:methods multi-xkcd7-sk)))
 
 
 (deftest
@@ -188,7 +188,7 @@
   ((fn [v] (and (= :point (first v)) (= :line (second v)))) v54_l278)))
 
 
-(def v57_l286 (def multi-views (blueprint/resolve-blueprint multi-bp)))
+(def v57_l286 (def multi-views (xkcd7-sketch/xkcd7-resolve-sketch multi-xkcd7-sk)))
 
 
 (def v58_l288 (count multi-views))
@@ -210,7 +210,7 @@
  v63_l299
  (def
   multi-plan
-  (sk/xkcd7-plan multi-bp {:title "Iris Petals with Regression"})))
+  (sk/xkcd7-plan multi-xkcd7-sk {:title "Iris Petals with Regression"})))
 
 
 (def

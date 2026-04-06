@@ -1,8 +1,8 @@
-;; # Blueprint Architecture
+;; # xkcd7-sketch Architecture
 ;;
-;; The Blueprint pipeline extends napkinsketch's four-stage pipeline
+;; The xkcd7-sketch pipeline extends napkinsketch's four-stage pipeline
 ;; with a composable front end. Instead of building view maps by hand,
-;; you compose a Blueprint — a declarative description of entries,
+;; you compose a xkcd7-sketch — a declarative description of entries,
 ;; methods, and shared options — that resolves into views automatically.
 ;;
 ;; This notebook traces a small example through every stage,
@@ -16,8 +16,8 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Blueprint internals — for tracing resolution
-   [scicloj.napkinsketch.impl.blueprint :as blueprint]
+   ;; xkcd7-sketch internals — for tracing resolution
+   [scicloj.napkinsketch.impl.xkcd7-sketch :as xkcd7-sketch]
    ;; Sketch internals — for tracing views->plan
    [scicloj.napkinsketch.impl.sketch :as sketch-impl]
    ;; Render internals — for tracing plan->figure
@@ -30,7 +30,7 @@
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  B[\"Blueprint<br/>(composable API)\"] -->|resolve| V[\"Views<br/>(flat maps)\"]
+  B[\"xkcd7-sketch<br/>(composable API)\"] -->|resolve| V[\"Views<br/>(flat maps)\"]
   V -->|xkcd7-views->plan| P[\"Plan<br/>(data-space)\"]
   P -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]
   M -->|tree walk| F[\"Figure<br/>(output)\"]
@@ -41,11 +41,11 @@ graph LR
   style F fill:#fce4ec
 ")
 
-;; - **Blueprint** — the composable user API. Functions like
+;; - **xkcd7-sketch** — the composable user API. Functions like
 ;;   `xkcd7-sketch`, `xkcd7-view`, `xkcd7-lay-point`, `xkcd7-options`, and
-;;   `xkcd7-facet` build up a Blueprint record. No computation has happened yet.
+;;   `xkcd7-facet` build up a xkcd7-sketch record. No computation has happened yet.
 ;;
-;; - **Views** — a flat vector of maps produced by resolving the Blueprint.
+;; - **Views** — a flat vector of maps produced by resolving the xkcd7-sketch.
 ;;   Each view map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
 ;;   keys. This is the same format that the old pipeline used directly.
 ;;
@@ -58,7 +58,7 @@ graph LR
 ;; - **Figure** — final output. A tree walk converts membrane records
 ;;   to SVG hiccup, which Clay/Kindly renders in notebooks.
 
-;; Most users only interact with the Blueprint stage and never need to
+;; Most users only interact with the xkcd7-sketch stage and never need to
 ;; think about the others. The stages below matter when you are debugging
 ;; unexpected output, building a custom renderer, or extending the library.
 
@@ -72,17 +72,17 @@ graph LR
    :y [2 4 3 5 4]
    :g [:a :a :b :b :b]})
 
-;; ### Blueprint
+;; ### xkcd7-sketch
 ;;
-;; The user composes a Blueprint by threading data through
-;; composable functions. The Blueprint records what to plot
+;; The user composes a xkcd7-sketch by threading data through
+;; composable functions. The xkcd7-sketch records what to plot
 ;; without doing any computation.
 
-(def trace-bp
+(def trace-xkcd7-sk
   (-> trace-data
       (sk/xkcd7-lay-point :x :y {:color :g})))
 
-;; The Blueprint is a record with five fields:
+;; The xkcd7-sketch is a record with five fields:
 ;;
 ;; - `:data` — the dataset (coerced to tablecloth)
 ;;
@@ -94,17 +94,17 @@ graph LR
 ;;
 ;; - `:opts` — rendering options (title, width, etc.)
 
-(blueprint/blueprint? trace-bp)
+(xkcd7-sketch/xkcd7-sketch? trace-xkcd7-sk)
 
 (kind/test-last [true?])
 
-;; Let's look at the entries and methods inside the Blueprint:
+;; Let's look at the entries and methods inside the xkcd7-sketch:
 
-(count (:entries trace-bp))
+(count (:entries trace-xkcd7-sk))
 
 (kind/test-last [(fn [n] (= 1 n))])
 
-(:entries trace-bp)
+(:entries trace-xkcd7-sk)
 
 (kind/test-last [(fn [entries]
                    (let [e (first entries)]
@@ -115,18 +115,18 @@ graph LR
 ;; The entry has one method — the point layer — attached directly
 ;; because `xkcd7-lay-point` was called with columns.
 
-(get-in (:entries trace-bp) [0 :methods 0 :mark])
+(get-in (:entries trace-xkcd7-sk) [0 :methods 0 :mark])
 
 (kind/test-last [(fn [m] (= :point m))])
 
 ;; ### Views
 ;;
-;; `resolve-blueprint` flattens the Blueprint into a vector of
+;; `xkcd7-resolve-sketch` flattens the xkcd7-sketch into a vector of
 ;; view maps. Each view merges shared options, entry columns,
 ;; and method details into one map with `:data`, `:x`, `:y`, `:mark`, etc.
 
 (def trace-views
-  (blueprint/resolve-blueprint trace-bp))
+  (xkcd7-sketch/xkcd7-resolve-sketch trace-xkcd7-sk))
 
 (count trace-views)
 
@@ -190,13 +190,13 @@ trace-membrane
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; ### Shortcut: Blueprint to Plan
+;; ### Shortcut: xkcd7-sketch to Plan
 ;;
-;; In practice, `sk/xkcd7-plan` does the Blueprint-to-plan conversion
-;; in one step — resolving the Blueprint and running `xkcd7-views->plan`
+;; In practice, `sk/xkcd7-plan` does the xkcd7-sketch-to-plan conversion
+;; in one step — resolving the xkcd7-sketch and running `xkcd7-views->plan`
 ;; internally.
 
-(def shortcut-plan (sk/xkcd7-plan trace-bp))
+(def shortcut-plan (sk/xkcd7-plan trace-xkcd7-sk))
 
 (ss/valid? shortcut-plan)
 
@@ -206,7 +206,7 @@ trace-membrane
 ;;
 ;; | Stage | Type | Coordinates |
 ;; |:------|:-----|:------------|
-;; | Blueprint | Blueprint record | N/A (declarative) |
+;; | xkcd7-sketch | xkcd7-sketch record | N/A (declarative) |
 ;; | Views | Vector of maps | N/A (declarative) |
 ;; | Plan | Clojure maps + dtype buffers | Data space |
 ;; | Membrane | Record tree | Pixel space |
@@ -215,14 +215,14 @@ trace-membrane
 ;; ## The Plan Boundary
 ;;
 ;; The plan separates **what** to draw from **how** to
-;; draw it. The Blueprint and view stages describe intent;
+;; draw it. The xkcd7-sketch and view stages describe intent;
 ;; the membrane and figure stages handle rendering.
 
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
   subgraph WHAT [\"WHAT — data + semantics\"]
-    B[\"Blueprint\"]
+    B[\"xkcd7-sketch\"]
     V[\"Views\"]
     ST[\"Statistics\"]
     D[\"Domains\"]
@@ -258,24 +258,24 @@ graph LR
 
 ;; ## Multi-Layer Example
 ;;
-;; A Blueprint can hold multiple methods on the same entry.
+;; A xkcd7-sketch can hold multiple methods on the same entry.
 ;; Here, scatter points and per-species regression lines share
 ;; the same panel because both `xkcd7-lay-point` and `xkcd7-lay-lm`
 ;; target the same `:petal_length`/`:petal_width` entry.
 
-(def multi-bp
+(def multi-xkcd7-sk
   (-> data/iris
       (sk/xkcd7-view :petal_length :petal_width {:color :species})
       sk/xkcd7-lay-point
       sk/xkcd7-lay-lm))
 
-;; The Blueprint has one entry with two global methods:
+;; The xkcd7-sketch has one entry with two global methods:
 
-(count (:entries multi-bp))
+(count (:entries multi-xkcd7-sk))
 
 (kind/test-last [(fn [n] (= 1 n))])
 
-(mapv :mark (:methods multi-bp))
+(mapv :mark (:methods multi-xkcd7-sk))
 
 (kind/test-last [(fn [v] (and (= :point (first v))
                               (= :line (second v))))])
@@ -283,7 +283,7 @@ graph LR
 ;; Resolving produces two views — one per method — both sharing
 ;; the same columns:
 
-(def multi-views (blueprint/resolve-blueprint multi-bp))
+(def multi-views (xkcd7-sketch/xkcd7-resolve-sketch multi-xkcd7-sk))
 
 (count multi-views)
 
@@ -297,7 +297,7 @@ graph LR
 ;; Building a plan with a title and checking the layers:
 
 (def multi-plan
-  (sk/xkcd7-plan multi-bp {:title "Iris Petals with Regression"}))
+  (sk/xkcd7-plan multi-xkcd7-sk {:title "Iris Petals with Regression"}))
 
 (mapv (fn [layer]
         {:mark (:mark layer)
@@ -332,13 +332,13 @@ multi-plan
 ^:kindly/hide-code
 (kind/mermaid "
 graph TD
-  API[\"api.clj\"] --> BP[\"impl/blueprint.clj\"]
+  API[\"api.clj\"] --> XKCD7SK[\"impl/xkcd7_sketch.clj\"]
   API --> VIEW[\"impl/view.clj\"]
   API --> PLOT[\"impl/plot.clj\"]
   API --> PLAN[\"impl/sketch.clj\"]
-  BP --> VIEW
-  BP --> PLAN
-  BP --> RENDER[\"impl/render.clj\"]
+  XKCD7SK --> VIEW
+  XKCD7SK --> PLAN
+  XKCD7SK --> RENDER[\"impl/render.clj\"]
   PLAN --> VIEW
   PLAN --> STAT[\"impl/stat.clj\"]
   PLAN --> SCALE[\"impl/scale.clj\"]
@@ -351,17 +351,17 @@ graph TD
   PANEL --> SCALE
   PANEL --> COORD[\"impl/coord.clj\"]
   style API fill:#c8e6c9
-  style BP fill:#d1c4e9
+  style XKCD7SK fill:#d1c4e9
   style PLAN fill:#ffe0b2
   style PLOT fill:#bbdefb
   style SVG fill:#f8bbd0
   style MEMBRANE fill:#f8bbd0
 ")
 
-;; The `impl/blueprint.clj` module is the new addition. It sits between
-;; the public API and the plan resolution stage. It holds the `Blueprint`
-;; record, the `resolve-blueprint` function that flattens entries and
-;; methods into view maps, and the `render-blueprint` function that
+;; The `impl/xkcd7_sketch.clj` module is the new addition. It sits between
+;; the public API and the plan resolution stage. It holds the `Xkcd7Sketch`
+;; record, the `xkcd7-resolve-sketch` function that flattens entries and
+;; methods into view maps, and the `xkcd7-render-sketch` function that
 ;; drives the full pipeline for auto-rendering in notebooks.
 ;;
 ;; The `impl/` directory is pure data — no membrane dependency.

@@ -11,7 +11,7 @@
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.sketch :as sketch-impl]
-            [scicloj.napkinsketch.impl.blueprint :as blueprint]
+            [scicloj.napkinsketch.impl.xkcd7-sketch :as xkcd7-sketch]
             [scicloj.napkinsketch.method :as method]))
 
 ;; ============================================================
@@ -1487,10 +1487,10 @@
 ;; ============================================================
 
 (defn- xkcd7-summary
-  "Resolve a Blueprint and get svg-summary."
-  [bp]
-  (let [views (blueprint/resolve-blueprint bp)
-        fig (sk/plan->figure (sketch-impl/views->plan views (:opts bp {})) :svg {})]
+  "Resolve a xkcd7-sketch and get svg-summary."
+  [xkcd7-sk]
+  (let [views (xkcd7-sketch/xkcd7-resolve-sketch xkcd7-sk)
+        fig (sk/plan->figure (sketch-impl/views->plan views (:opts xkcd7-sk {})) :svg {})]
     (sk/svg-summary fig)))
 
 (deftest xkcd7-basic-test

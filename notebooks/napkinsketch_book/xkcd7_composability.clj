@@ -1,4 +1,4 @@
-;; # Composable Plotting with Blueprints
+;; # Composable Plotting with xkcd7-sketches
 ;;
 ;; Napkinsketch is a composable plotting library inspired by
 ;; Wilkinson's [Grammar of Graphics](https://link.springer.com/book/10.1007/0-387-28695-0)
@@ -13,8 +13,8 @@
 ;; | **What** to plot | `sk/xkcd7-view` | Declare what columns and aesthetics to use | `(sk/xkcd7-view data :x :y)` |
 ;; | **How** to plot | `sk/xkcd7-lay-*` | Choose a drawing method | `sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram` |
 ;;
-;; The noun is a **Blueprint** — the composable result of both verbs.
-;; Blueprints auto-render in notebooks, compose through threading (`->`),
+;; The noun is a **xkcd7-sketch** — the composable result of both verbs.
+;; xkcd7-sketches auto-render in notebooks, compose through threading (`->`),
 ;; and are plain inspectable data.
 
 (ns napkinsketch-book.xkcd7-composability
@@ -35,7 +35,7 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; `sk/xkcd7-lay-point` creates a Blueprint — a lightweight description
+;; `sk/xkcd7-lay-point` creates a xkcd7-sketch — a lightweight description
 ;; of the plot. Nothing is computed until the notebook displays it.
 
 ;; ## Adding Color
@@ -153,12 +153,12 @@
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; ## Inside a Blueprint
+;; ## Inside a xkcd7-sketch
 ;;
-;; A Blueprint is a Clojure record with five fields. You can inspect
+;; A xkcd7-sketch is a Clojure record with five fields. You can inspect
 ;; it with standard map operations:
 
-(def my-bp
+(def my-xkcd7-sk
   (-> data/iris
       (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
       sk/xkcd7-lay-point
@@ -167,13 +167,13 @@
 ;; `:shared` holds the options from `xkcd7-view` — these apply to
 ;; all entries:
 
-(:shared my-bp)
+(:shared my-xkcd7-sk)
 
 (kind/test-last [(fn [v] (= :species (:color v)))])
 
 ;; `:entries` holds the column declarations — one per panel:
 
-(:entries my-bp)
+(:entries my-xkcd7-sk)
 
 (kind/test-last [(fn [v] (and (= 1 (count v))
                               (= :sepal_length (:x (first v)))))])
@@ -181,7 +181,7 @@
 ;; `:methods` holds the global drawing methods — these apply to
 ;; all entries:
 
-(mapv :mark (:methods my-bp))
+(mapv :mark (:methods my-xkcd7-sk))
 
 (kind/test-last [(fn [v] (= [:point :line] v))])
 
@@ -194,15 +194,15 @@
 ;;
 ;; | Function | Role | Returns |
 ;; |:---------|:-----|:--------|
-;; | `sk/xkcd7-view` | Declare entries (what to show) | Blueprint |
-;; | `sk/xkcd7-lay-*` | Add a method (how to show it) | Blueprint |
-;; | `sk/xkcd7-options` | Set title, labels, configuration | Blueprint |
-;; | `sk/xkcd7-facet` | Split into panels | Blueprint |
-;; | `sk/xkcd7-coord` | Set coordinate system | Blueprint |
-;; | `sk/xkcd7-scale` | Set axis scale type | Blueprint |
-;; | `sk/xkcd7-annotate` | Add reference lines and bands | Blueprint |
+;; | `sk/xkcd7-view` | Declare entries (what to show) | xkcd7-sketch |
+;; | `sk/xkcd7-lay-*` | Add a method (how to show it) | xkcd7-sketch |
+;; | `sk/xkcd7-options` | Set title, labels, configuration | xkcd7-sketch |
+;; | `sk/xkcd7-facet` | Split into panels | xkcd7-sketch |
+;; | `sk/xkcd7-coord` | Set coordinate system | xkcd7-sketch |
+;; | `sk/xkcd7-scale` | Set axis scale type | xkcd7-sketch |
+;; | `sk/xkcd7-annotate` | Add reference lines and bands | xkcd7-sketch |
 ;;
-;; Every function returns a Blueprint. Blueprints compose through `->`.
+;; Every function returns a xkcd7-sketch. xkcd7-sketches compose through `->`.
 ;;
 ;; The [Core Concepts](./napkinsketch_book.core_concepts.html) chapter
 ;; covers each concept in detail.

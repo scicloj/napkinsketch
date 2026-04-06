@@ -648,7 +648,7 @@
 (def
  v139_l487
  (def
-  final-bp
+  final-xkcd7-sk
   (->
    data/iris
    (sk/xkcd7-view :petal_length :petal_width {:color :species})
@@ -658,7 +658,7 @@
 
 (def
  v140_l493
- (def final-pl (sk/xkcd7-plan final-bp {:title "Iris Petals"})))
+ (def final-pl (sk/xkcd7-plan final-xkcd7-sk {:title "Iris Petals"})))
 
 
 (def v141_l495 final-pl)
@@ -679,7 +679,7 @@
 (deftest t145_l506 (is ((fn [ls] (= 2 (count ls))) v144_l501)))
 
 
-(def v147_l510 (-> final-bp (sk/xkcd7-options {:title "Iris Petals"})))
+(def v147_l510 (-> final-xkcd7-sk (sk/xkcd7-options {:title "Iris Petals"})))
 
 
 (deftest

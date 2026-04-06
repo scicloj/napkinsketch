@@ -6,25 +6,25 @@
   [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.method :as method]
   [clojure.test :refer [deftest is]])
- (:import [scicloj.napkinsketch.impl.blueprint Blueprint]))
+ (:import [scicloj.napkinsketch.impl.xkcd7_sketch Xkcd7Sketch]))
 
 
 (def
  v3_l27
  (def
-  my-blueprint
+  my-xkcd7-sketch
   (->
    data/iris
    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))))
 
 
-(def v4_l31 (kind/pprint my-blueprint))
+(def v4_l31 (kind/pprint my-xkcd7-sketch))
 
 
 (deftest
  t5_l33
  (is
-  ((fn [v] (and (instance? Blueprint v) (= 1 (count (:entries v)))))
+  ((fn [v] (and (instance? Xkcd7Sketch v) (= 1 (count (:entries v)))))
    v4_l31)))
 
 
@@ -38,7 +38,7 @@
    (sk/xkcd7-options {:title "Iris"}))))
 
 
-(def v8_l51 (instance? Blueprint my-sketch))
+(def v8_l51 (instance? Xkcd7Sketch my-sketch))
 
 
 (deftest t9_l53 (is ((fn [v] (true? v)) v8_l51)))
@@ -121,7 +121,7 @@
 (deftest t27_l165 (is ((fn [m] (true? (:jitter m))) v26_l163)))
 
 
-(def v29_l177 (def my-plan (sk/xkcd7-plan my-blueprint)))
+(def v29_l177 (def my-plan (sk/xkcd7-plan my-xkcd7-sketch)))
 
 
 (def v30_l179 (sort (keys my-plan)))
@@ -140,7 +140,7 @@
 
 (def
  v36_l199
- (-> my-blueprint sk/xkcd7-plan (get-in [:panels 0 :layers 0])))
+ (-> my-xkcd7-sketch sk/xkcd7-plan (get-in [:panels 0 :layers 0])))
 
 
 (deftest t37_l203 (is ((fn [m] (= :point (:mark m))) v36_l199)))

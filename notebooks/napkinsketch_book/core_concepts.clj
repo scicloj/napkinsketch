@@ -111,7 +111,7 @@ data/iris
 
 ;; ## Sketches, Views, and Methods
 ;;
-;; A **sketch** (Blueprint) is a composable value with five fields:
+;; A **sketch** (xkcd7-sketch) is a composable value with five fields:
 ;;
 ;; - `:data` — the dataset
 ;; - `:shared` — aesthetics that apply to all entries and methods

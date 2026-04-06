@@ -1,5 +1,5 @@
 (ns
- scratch-blueprint-stress-generated-test
+ scratch-xkcd7-sketch-stress-generated-test
   (:require
    [tablecloth.api :as tc]
    [scicloj.kindly.v4.kind :as kind]
@@ -25,12 +25,12 @@
 (def
   v5_l22
   (let
-   [bp
+   [xkcd7-sk
     (->
      iris
      (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
      (sk/xkcd7-view :petal_length :petal_width {:alpha 0.4}))]
-    [(:shared bp) (count (:entries bp))]))
+    [(:shared xkcd7-sk) (count (:entries xkcd7-sk))]))
 
 (deftest
   t6_l27
@@ -61,23 +61,23 @@
 (def
   v11_l47
   (let
-   [bp
+   [xkcd7-sk
     (->
      iris
      (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
      (sk/xkcd7-view :petal_length :petal_width {:color :petal_length}))]
-    (:color (:shared bp))))
+    (:color (:shared xkcd7-sk))))
 
 (deftest t12_l52 (is ((fn [v] (= :petal_length v)) v11_l47)))
 
 (def
   v14_l58
   (let
-   [bp
+   [xkcd7-sk
     (->
      iris
      (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))]
-    [(:shared bp) (:color (first (:methods (first (:entries bp)))))]))
+    [(:shared xkcd7-sk) (:color (first (:methods (first (:entries xkcd7-sk)))))]))
 
 (deftest
   t15_l62
@@ -90,13 +90,13 @@
 (def
   v17_l68
   (let
-   [bp
+   [xkcd7-sk
     (->
      iris
      (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
      sk/xkcd7-lay-lm)]
-    [(:color (first (:methods (first (:entries bp)))))
-     (:color (first (:methods bp)))]))
+    [(:color (first (:methods (first (:entries xkcd7-sk)))))
+     (:color (first (:methods xkcd7-sk)))]))
 
 (deftest
   t18_l74
@@ -185,8 +185,8 @@
 (def
   v32_l144
   (let
-   [bp (-> {:x [1 2 3], :y [4 5 6]} (sk/xkcd7-view))]
-    [(count (:entries bp)) (:shared bp)]))
+   [xkcd7-sk (-> {:x [1 2 3], :y [4 5 6]} (sk/xkcd7-view))]
+    [(count (:entries xkcd7-sk)) (:shared xkcd7-sk)]))
 
 (deftest
   t33_l148
@@ -227,16 +227,16 @@
 (def
   v43_l181
   (let
-   [bp
+   [xkcd7-sk
     (->
      iris
      (sk/xkcd7-lay-point :sepal_length :sepal_width)
      (sk/xkcd7-lay-histogram :petal_length))]
-    [(count (:entries bp))
-     (count (:methods bp))
+    [(count (:entries xkcd7-sk))
+     (count (:methods xkcd7-sk))
      (mapv
       (fn* [p1__11149#] (count (:methods p1__11149#)))
-      (:entries bp))]))
+      (:entries xkcd7-sk))]))
 
 (deftest
   t44_l187
@@ -308,15 +308,15 @@
 (def
   v59_l239
   (let
-   [bp
+   [xkcd7-sk
     (->
      iris
      (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
      (sk/xkcd7-lay-point)
      (sk/xkcd7-lay-lm {:color nil}))]
-    [(:color (:shared bp))
-     (:color (first (:entries bp)))
-     (:color (second (:methods bp)))]))
+    [(:color (:shared xkcd7-sk))
+     (:color (first (:entries xkcd7-sk)))
+     (:color (second (:methods xkcd7-sk)))]))
 
 (deftest
   t60_l247
@@ -329,12 +329,12 @@
 (def
   v62_l254
   (let
-   [bp
+   [xkcd7-sk
     (->
      iris
      (sk/xkcd7-lay-point :sepal_length :sepal_width)
      (sk/xkcd7-options {:title "My Plot", :width 800}))]
-    [(:title (:opts bp)) (:width (:opts bp)) (:shared bp)]))
+    [(:title (:opts xkcd7-sk)) (:width (:opts xkcd7-sk)) (:shared xkcd7-sk)]))
 
 (deftest
   t63_l259
@@ -347,13 +347,13 @@
 (def
   v65_l266
   (let
-   [bp
+   [xkcd7-sk
     (->
      iris
      (sk/xkcd7-lay-point :sepal_length :sepal_width)
      (sk/xkcd7-scale :y :log)
      (sk/xkcd7-coord :flip))]
-    [(-> bp :entries first :y-scale) (-> bp :entries first :coord)]))
+    [(-> xkcd7-sk :entries first :y-scale) (-> xkcd7-sk :entries first :coord)]))
 
 (deftest
   t66_l273

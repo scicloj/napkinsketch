@@ -615,8 +615,8 @@
 (def
  v117_l360
  (let
-  [bp (-> tiny (sk/xkcd7-lay-point :x :y) sk/xkcd7-lay-lm)]
-  [(count (:entries bp)) (count (:methods bp))]))
+  [xkcd7-sk (-> tiny (sk/xkcd7-lay-point :x :y) sk/xkcd7-lay-lm)]
+  [(count (:entries xkcd7-sk)) (count (:methods xkcd7-sk))]))
 
 
 (deftest

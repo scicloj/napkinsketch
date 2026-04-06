@@ -39,14 +39,14 @@
 (def
  v13_l35
  (let
-  [bp (-> iris (sk/xkcd7-lay-point :sepal_length :sepal_width))]
+  [xkcd7-sk (-> iris (sk/xkcd7-lay-point :sepal_length :sepal_width))]
   (kind/pprint
-   {:shared (:shared bp),
+   {:shared (:shared xkcd7-sk),
     :entries
     (mapv
      (fn* [p1__326051#] (dissoc p1__326051# :data))
-     (:entries bp)),
-    :methods (:methods bp)})))
+     (:entries xkcd7-sk)),
+    :methods (:methods xkcd7-sk)})))
 
 
 (deftest t14_l40 (is ((fn [m] (= 1 (count (:entries m)))) v13_l35)))

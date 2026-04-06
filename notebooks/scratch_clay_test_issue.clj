@@ -1,7 +1,7 @@
 ;; # Minimal reproduction of test-generation issue
 ;;
 ;; This notebook isolates the Column/postwalk error
-;; encountered when generating tests from Blueprint notebooks.
+;; encountered when generating tests from xkcd7-sketch notebooks.
 
 (ns scratch-clay-test-issue
   (:require [tablecloth.api :as tc]
@@ -23,19 +23,19 @@
 
 (kind/test-last [(fn [m] (= 1 (:a m)))])
 
-;; ## Case 3: auto-rendered Blueprint — does this error?
+;; ## Case 3: auto-rendered xkcd7-sketch — does this error?
 
 (-> iris
     (sk/xkcd7-lay-point :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; ## Case 4: kind/pprint of bp-summary (no dataset) — should work
+;; ## Case 4: kind/pprint of xkcd7-sk-summary (no dataset) — should work
 
-(let [bp (-> iris (sk/xkcd7-lay-point :sepal_length :sepal_width))]
-  (kind/pprint {:shared (:shared bp)
-                :entries (mapv #(dissoc % :data) (:entries bp))
-                :methods (:methods bp)}))
+(let [xkcd7-sk (-> iris (sk/xkcd7-lay-point :sepal_length :sepal_width))]
+  (kind/pprint {:shared (:shared xkcd7-sk)
+                :entries (mapv #(dissoc % :data) (:entries xkcd7-sk))
+                :methods (:methods xkcd7-sk)}))
 
 (kind/test-last [(fn [m] (= 1 (count (:entries m))))])
 
