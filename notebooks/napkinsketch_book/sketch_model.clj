@@ -15,9 +15,9 @@
    [scicloj.kindly.v4.kind :as kind]
    [scicloj.napkinsketch.api :as sk]))
 
-;; ## Idea 1: Two verbs, one noun
+;; ## Idea 1: The what/how split
 ;;
-;; The API has two verbs:
+;; The API separates **what** to plot from **how** to draw it:
 ;;
 ;; | Verb | What it does | Example |
 ;; |:-----|:-------------|:--------|
@@ -98,7 +98,7 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; The principle: **resolved = (or your-choice (inferred-from-data))**.
+;; The principle: **`resolved` = `(or your-choice (inferred-from-data))`**.
 ;;
 ;; This works for marks, stats, color types, and grouping.
 ;; See [Inference Rules](./napkinsketch_book.inference_rules.html)
@@ -131,7 +131,7 @@
 ;;
 ;; | Idea | In code |
 ;; |:-----|:--------|
-;; | Two verbs, one noun | `sk/view` (what) + `sk/lay-*` (how) → sketch |
+;; | The what/how split | `sk/view` (what) + `sk/lay-*` (how) → sketch |
 ;; | Sketches are data | Plain records — inspect with `kind/pprint` |
 ;; | What/how separation | Share columns across layers |
 ;; | Inference fills gaps | Omit choices, library infers from data |
