@@ -109,19 +109,131 @@ data/iris
 
 (kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
 
-;; ## Sketches, Views, and Methods
+;; ## The Sketch Record
 ;;
 ;; A **sketch** is a composable value with five fields:
 ;;
-;; - `:data` — the dataset
-;; - `:shared` — aesthetics that apply to all entries and methods
-;; - `:entries` — what to plot (column pairs)
-;; - `:methods` — how to plot (mark + stat + position)
-;; - `:opts` — plot-level options (title, labels, dimensions)
+;; | Field | Contains | Set by |
+;; |:------|:---------|:-------|
+;; | `:data` | the dataset | `sk/lay-*` or `sk/sketch` |
+;; | `:shared` | aesthetics for all entries | `sk/view` opts map |
+;; | `:entries` | what to plot (column pairs) | `sk/view`, `sk/lay-*` with columns |
+;; | `:methods` | how to plot (global methods) | `sk/lay-*` without columns |
+;; | `:opts` | title, width, theme | `sk/options` |
 ;;
-;; `sk/view` describes your views of the data (adds entries),
-;; `sk/lay-*` functions add drawing methods, and the result
-;; auto-renders in the notebook.
+;; Here is a concrete sketch:
+
+(-> data/iris
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm
+    kind/pprint)
+
+(kind/test-last [(fn [sk] (and (= :species (get-in sk [:shared :color]))
+                               (= 1 (count (:entries sk)))
+                               (= 2 (count (:methods sk)))))])
+
+;; `:shared` has `{:color :species}` — it applies to all layers.
+;; `:entries` has one entry `{:x :sepal_length :y :sepal_width}`.
+;; `:methods` has two global methods: point and lm.
+
+;; ## Entries
+;;
+;; An **entry** is a plain map in `:entries` that declares **what** to
+;; plot — which columns map to x and y. Each entry becomes one panel
+;; in the rendered plot.
+;;
+;; `sk/view` adds entries:
+
+(-> data/iris
+    (sk/view :sepal_length :sepal_width)
+    (sk/view :petal_length :petal_width)
+    sk/lay-point
+    kind/pprint)
+
+(kind/test-last [(fn [sk] (and (= 2 (count (:entries sk)))
+                               (= :sepal_length (:x (first (:entries sk))))
+                               (= :petal_length (:x (second (:entries sk))))))])
+
+;; Two entries, two panels. Each `sk/view` call adds one entry.
+;; The global `sk/lay-point` applies to both.
+
+;; `sk/lay-*` with columns also creates entries:
+
+(-> data/iris
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/lay-histogram :petal_length)
+    kind/pprint)
+
+(kind/test-last [(fn [sk] (and (= 2 (count (:entries sk)))
+                               (= 0 (count (:methods sk)))
+                               (= 1 (count (:methods (first (:entries sk)))))))])
+
+;; Two entries — but here each entry carries its OWN method.
+;; The global `:methods` is empty. This is the entry-local pattern.
+
+;; ## Shared Aesthetics
+;;
+;; The opts map in `sk/view` goes into `:shared` — these aesthetics
+;; apply to ALL entries and ALL methods:
+
+(-> data/iris
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
+
+;; Both point and lm inherit `:color :species` from shared.
+;; Three regression lines — one per species.
+;;
+;; Compare with per-method color:
+
+(-> data/iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk/lay-lm)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; Here `:color :species` is in the point's entry-local method, not
+;; in shared. The lm (a global method) doesn't see it — one overall
+;; regression line instead of three.
+
+;; ## Global vs Entry-Local Methods
+;;
+;; **Global methods** are stored in `sketch[:methods]` and apply to
+;; ALL entries. Created by bare `sk/lay-*` (without columns):
+;;
+;; ```clojure
+;; (-> data (sk/view :x :y) sk/lay-point sk/lay-lm)
+;; ;;                        ^^^^^^^^^^^^  ^^^^^^^^^^
+;; ;;                        global         global
+;; ```
+;;
+;; **Entry-local methods** are stored inside a specific entry's
+;; `:methods` key. Created by `sk/lay-*` with columns:
+;;
+;; ```clojure
+;; (-> data (sk/lay-point :x :y) (sk/lay-lm :x :y))
+;; ;;        ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+;; ;;        entry-local            entry-local (same entry)
+;; ```
+;;
+;; When both exist, entry methods come first, then global methods:
+;;
+;; ```
+;; for each entry:
+;;   methods = concat(entry's :methods, global methods)
+;;   for each method:
+;;     resolved = merge(shared, entry, method)
+;; ```
+;;
+;; See [Sketch Rules](./napkinsketch_book.sketch_rules.html) for the
+;; full set of 18 tested rules.
 
 ;; ## Options
 ;;

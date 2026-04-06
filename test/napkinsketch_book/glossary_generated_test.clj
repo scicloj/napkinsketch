@@ -9,7 +9,7 @@
 
 
 (def
- v3_l25
+ v3_l42
  (def
   my-sketch
   (->
@@ -17,16 +17,16 @@
    (sk/lay-point :sepal_length :sepal_width {:color :species}))))
 
 
-(def v4_l29 (kind/pprint my-sketch))
+(def v4_l46 (kind/pprint my-sketch))
 
 
 (deftest
- t5_l31
- (is ((fn [v] (and (sk/sketch? v) (= 1 (count (:entries v))))) v4_l29)))
+ t5_l48
+ (is ((fn [v] (and (sk/sketch? v) (= 1 (count (:entries v))))) v4_l46)))
 
 
 (def
- v7_l44
+ v7_l61
  (def
   my-sketch
   (->
@@ -35,20 +35,20 @@
    (sk/options {:title "Iris"}))))
 
 
-(def v8_l49 (sk/sketch? my-sketch))
+(def v8_l66 (sk/sketch? my-sketch))
 
 
-(deftest t9_l51 (is ((fn [v] (true? v)) v8_l49)))
+(deftest t9_l68 (is ((fn [v] (true? v)) v8_l66)))
 
 
-(def v10_l53 (count (:entries my-sketch)))
+(def v10_l70 (count (:entries my-sketch)))
 
 
-(deftest t11_l55 (is ((fn [n] (= 1 n)) v10_l53)))
+(deftest t11_l72 (is ((fn [n] (= 1 n)) v10_l70)))
 
 
 (def
- v13_l89
+ v13_l117
  (def
   tips
   {:day ["Mon" "Mon" "Tue" "Tue"],
@@ -57,7 +57,7 @@
 
 
 (def
- v14_l93
+ v14_l121
  (->
   tips
   (sk/lay-value-bar :day :count {:color :meal, :position :stack})
@@ -65,18 +65,18 @@
   (get-in [:panels 0 :layers 0 :groups 1 :y0s])))
 
 
-(deftest t15_l98 (is ((fn [y0s] (every? pos? y0s)) v14_l93)))
+(deftest t15_l126 (is ((fn [y0s] (every? pos? y0s)) v14_l121)))
 
 
 (def
- v17_l117
+ v17_l145
  (merge
   (method/lookup :point)
   {:color :species, :size :petal_length, :alpha 0.7}))
 
 
 (deftest
- t18_l119
+ t18_l147
  (is
   ((fn
     [m]
@@ -84,11 +84,11 @@
      (= :species (:color m))
      (= :petal_length (:size m))
      (= 0.7 (:alpha m))))
-   v17_l117)))
+   v17_l145)))
 
 
 (def
- v20_l130
+ v20_l158
  (->
   data/iris
   (sk/lay-line :sepal_length :sepal_width {:group :species})
@@ -97,11 +97,11 @@
   count))
 
 
-(deftest t21_l136 (is ((fn [n] (= 3 n)) v20_l130)))
+(deftest t21_l164 (is ((fn [n] (= 3 n)) v20_l158)))
 
 
 (def
- v23_l145
+ v23_l173
  (->
   {:x [1 2 3], :y [4 5 6]}
   (sk/lay-point :x :y {:nudge-x 0.5})
@@ -109,40 +109,40 @@
   (get-in [:panels 0 :layers 0 :groups 0 :xs])))
 
 
-(deftest t24_l150 (is ((fn [xs] (= [1.5 2.5 3.5] xs)) v23_l145)))
+(deftest t24_l178 (is ((fn [xs] (= [1.5 2.5 3.5] xs)) v23_l173)))
 
 
-(def v26_l161 (merge (method/lookup :point) {:jitter true}))
+(def v26_l189 (merge (method/lookup :point) {:jitter true}))
 
 
-(deftest t27_l163 (is ((fn [m] (true? (:jitter m))) v26_l161)))
+(deftest t27_l191 (is ((fn [m] (true? (:jitter m))) v26_l189)))
 
 
-(def v29_l175 (def my-plan (sk/plan my-sketch)))
+(def v29_l203 (def my-plan (sk/plan my-sketch)))
 
 
-(def v30_l177 (sort (keys my-plan)))
+(def v30_l205 (sort (keys my-plan)))
 
 
-(deftest t31_l179 (is ((fn [ks] (every? keyword? ks)) v30_l177)))
+(deftest t31_l207 (is ((fn [ks] (every? keyword? ks)) v30_l205)))
 
 
-(def v33_l187 (sort (keys (first (:panels my-plan)))))
+(def v33_l215 (sort (keys (first (:panels my-plan)))))
 
 
 (deftest
- t34_l189
- (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v33_l187)))
+ t34_l217
+ (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v33_l215)))
 
 
-(def v36_l197 (-> my-sketch sk/plan (get-in [:panels 0 :layers 0])))
+(def v36_l225 (-> my-sketch sk/plan (get-in [:panels 0 :layers 0])))
 
 
-(deftest t37_l201 (is ((fn [m] (= :point (:mark m))) v36_l197)))
+(deftest t37_l229 (is ((fn [m] (= :point (:mark m))) v36_l225)))
 
 
 (def
- v39_l216
+ v39_l244
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width)
@@ -152,41 +152,41 @@
   count))
 
 
-(deftest t40_l221 (is ((fn [n] (= 3 n)) v39_l216)))
+(deftest t40_l249 (is ((fn [n] (= 3 n)) v39_l244)))
 
 
 (def
- v42_l230
+ v42_l258
  (let
   [p (first (:panels my-plan))]
   {:x-domain (:x-domain p), :y-domain (:y-domain p)}))
 
 
 (deftest
- t43_l234
+ t43_l262
  (is
   ((fn
     [m]
     (and (= 2 (count (:x-domain m))) (number? (first (:x-domain m)))))
-   v42_l230)))
+   v42_l258)))
 
 
-(def v45_l280 (:mark (sk/rule-h 5)))
+(def v45_l308 (:mark (sk/rule-h 5)))
 
 
-(deftest t46_l282 (is ((fn [m] (= :rule-h m)) v45_l280)))
+(deftest t46_l310 (is ((fn [m] (= :rule-h m)) v45_l308)))
 
 
-(def v48_l291 (:legend my-plan))
+(def v48_l319 (:legend my-plan))
 
 
 (deftest
- t49_l293
- (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v48_l291)))
+ t49_l321
+ (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v48_l319)))
 
 
 (def
- v51_l302
+ v51_l330
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -200,40 +200,40 @@
   :panels))
 
 
-(deftest t52_l308 (is ((fn [n] (= 1 n)) v51_l302)))
+(deftest t52_l336 (is ((fn [n] (= 1 n)) v51_l330)))
 
 
-(def v54_l321 (def my-membrane (sk/plan->membrane my-plan)))
+(def v54_l349 (def my-membrane (sk/plan->membrane my-plan)))
 
 
-(def v55_l323 (vector? my-membrane))
+(def v55_l351 (vector? my-membrane))
 
 
-(deftest t56_l325 (is ((fn [v] (true? v)) v55_l323)))
+(deftest t56_l353 (is ((fn [v] (true? v)) v55_l351)))
 
 
-(def v57_l327 (count my-membrane))
+(def v57_l355 (count my-membrane))
 
 
-(deftest t58_l329 (is ((fn [n] (pos? n)) v57_l327)))
+(deftest t58_l357 (is ((fn [n] (pos? n)) v57_l355)))
 
 
-(def v60_l339 (def my-figure (sk/plan->figure my-plan :svg {})))
+(def v60_l367 (def my-figure (sk/plan->figure my-plan :svg {})))
 
 
-(def v61_l341 (first my-figure))
+(def v61_l369 (first my-figure))
 
 
-(deftest t62_l343 (is ((fn [v] (= :svg v)) v61_l341)))
+(deftest t62_l371 (is ((fn [v] (= :svg v)) v61_l369)))
 
 
-(def v64_l390 (count sk/plot-option-docs))
+(def v64_l418 (count sk/plot-option-docs))
 
 
-(deftest t65_l392 (is ((fn [n] (= 6 n)) v64_l390)))
+(deftest t65_l420 (is ((fn [n] (= 6 n)) v64_l418)))
 
 
-(def v67_l407 (count sk/layer-option-docs))
+(def v67_l435 (count sk/layer-option-docs))
 
 
-(deftest t68_l409 (is ((fn [n] (= 20 n)) v67_l407)))
+(deftest t68_l437 (is ((fn [n] (= 20 n)) v67_l435)))

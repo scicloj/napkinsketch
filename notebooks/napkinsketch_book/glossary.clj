@@ -16,9 +16,26 @@
 
 ;; ## View
 ;;
-;; A **view** is a resolved map describing what to plot: data and
-;; column-to-channel mappings. Internally, each entry in a sketch
-;; resolves to one or more view maps that the pipeline processes.
+;; ## Entry
+;;
+;; An **entry** is a plain map in `sketch[:entries]` that declares
+;; **what** to plot — which columns map to x and y. Each entry
+;; becomes one panel in the rendered plot.
+;;
+;; Created by `sk/view` or by `sk/lay-*` with columns.
+;; An entry can optionally carry its own `:methods` (entry-local
+;; methods). Multiple entries produce multi-panel layouts.
+;;
+;; See [Core Concepts](./napkinsketch_book.core_concepts.html) and
+;; [Sketch Rules](./napkinsketch_book.sketch_rules.html) for details.
+
+;; ## View (internal)
+;;
+;; A **view** is the internal resolved map produced during plan
+;; computation. Each entry in a sketch resolves to one or more views
+;; via `merge(shared, entry, method)`. Views carry all the information
+;; the pipeline needs: data, columns, mark, stat, color, grouping.
+;;
 ;; At the API level, `sk/view` adds entries (what to plot) and
 ;; sets shared aesthetics; `sk/lay-*` adds methods (how to plot).
 
@@ -60,6 +77,17 @@
 ;; data becomes a visual element.
 ;; See the [Methods](./napkinsketch_book.methods.html) chapter for detailed tables of all
 ;; built-in methods, marks, stats, and positions.
+;;
+;; Methods come in two scopes:
+;;
+;; - **Global method** — stored in `sketch[:methods]`, applied to ALL
+;;   entries. Created by bare `sk/lay-*` (without columns).
+;;
+;; - **Entry-local method** — stored in `entry[:methods]`, applied
+;;   only to that entry. Created by `sk/lay-*` with columns.
+;;
+;; Resolution: each entry uses `concat(own methods, global methods)`.
+;; See [Sketch Rules](./napkinsketch_book.sketch_rules.html) Rules 2-5.
 
 ;; ## Mark
 ;;
