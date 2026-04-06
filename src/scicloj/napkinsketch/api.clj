@@ -1,7 +1,7 @@
 (ns scicloj.napkinsketch.api
   "Public API for napkinsketch — composable plotting in Clojure."
   (:require [scicloj.napkinsketch.impl.view :as view]
-            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.render :as render-impl]
@@ -14,7 +14,6 @@
             [scicloj.napkinsketch.render.mark :as mark]
             [scicloj.napkinsketch.render.svg :as svg]
             [scicloj.napkinsketch.method :as method]
-            [scicloj.napkinsketch.impl.sketch :as sketch]
             [tablecloth.api :as tc]
             [scicloj.kindly.v4.api :as kindly]
             [scicloj.kindly.v4.kind :as kind]))
@@ -382,14 +381,14 @@
      (if (and (empty? (:entries sk)) d (<= col-count 3))
        (let [sk2 (view sk)]
          (add-entry-method sk2 (first (:entries sk2))
-                                 (method-map method-key nil)))
+                           (method-map method-key nil)))
        (lay sk method-key))))
   ([method-key sk-or-data x-or-opts]
    (cond
      (or (keyword? x-or-opts) (string? x-or-opts))
      (add-entry-method (ensure-sk sk-or-data)
-                             {:x x-or-opts}
-                             (method-map method-key nil))
+                       {:x x-or-opts}
+                       (method-map method-key nil))
      (sequential? x-or-opts)
      (-> (view sk-or-data x-or-opts)
          (lay method-key))
@@ -402,22 +401,22 @@
            (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
                            {:method method-key :x x :y y-or-opts})))
          (add-entry-method (ensure-sk sk-or-data)
-                                 {:x x :y y-or-opts}
-                                 (method-map method-key nil)))
+                           {:x x :y y-or-opts}
+                           (method-map method-key nil)))
      (and (sequential? x) (map? y-or-opts))
      (-> (view sk-or-data x y-or-opts)
          (lay method-key))
      :else
      (add-entry-method (ensure-sk sk-or-data)
-                             {:x x}
-                             (method-map method-key y-or-opts))))
+                       {:x x}
+                       (method-map method-key y-or-opts))))
   ([method-key sk-or-data x y opts]
    (when (x-only-methods method-key)
      (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
                      {:method method-key :x x :y y})))
    (add-entry-method (ensure-sk sk-or-data)
-                           {:x x :y y}
-                           (method-map method-key opts))))
+                     {:x x :y y}
+                     (method-map method-key opts))))
 
 (defn lay-point
   "Add :point method (scatter) to a sketch.
@@ -619,7 +618,7 @@
   (let [col-col (normalize-col col-col)
         row-col (normalize-col row-col)]
     (update sk :entries (fn [entries]
-                                (mapv #(assoc % :facet-col col-col :facet-row row-col) entries)))))
+                          (mapv #(assoc % :facet-col col-col :facet-row row-col) entries)))))
 
 (defn- deep-merge
   "Recursively merge maps. Non-map values are overwritten."
@@ -642,9 +641,9 @@
                 (throw (ex-info (str "Scale channel must be :x or :y, got: " channel)
                                 {:channel channel})))]
     (update sk :entries (fn [entries]
-                                (mapv #(assoc % k (if (map? scale-type)
-                                                    (merge {:type :linear} scale-type)
-                                                    {:type scale-type})) entries)))))
+                          (mapv #(assoc % k (if (map? scale-type)
+                                              (merge {:type :linear} scale-type)
+                                              {:type scale-type})) entries)))))
 
 (defn coord
   "Set coordinate transform on a sketch.
@@ -654,7 +653,7 @@
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
                     {:coord coord-type})))
   (update sk :entries (fn [entries]
-                              (mapv #(assoc % :coord coord-type) entries))))
+                        (mapv #(assoc % :coord coord-type) entries))))
 
 (defn plan
   "Resolve a sketch into a plan using entry-based grid layout.
@@ -663,10 +662,10 @@
    (plan sk {:title \"My Plot\"})"
   ([sk]
    (let [views (sketch/resolve-sketch sk)]
-     (sketch-impl/views->plan views (:opts sk {}))))
+     (sketch/views->plan views (:opts sk {}))))
   ([sk opts]
    (let [views (sketch/resolve-sketch sk)]
-     (sketch-impl/views->plan views (merge (:opts sk {}) opts)))))
+     (sketch/views->plan views (merge (:opts sk {}) opts)))))
 
 (defn annotate
   "Add annotation entries to a sketch.
@@ -698,7 +697,7 @@
   ([sk]
    (let [opts (:opts sk {})
          views (sketch/resolve-sketch sk)
-         plan (sketch-impl/views->plan views opts)]
+         plan (sketch/views->plan views opts)]
      (render-impl/plan->figure plan :svg opts)))
   ([sk opts]
    (plot (options sk opts))))
@@ -716,13 +715,13 @@
   ([svg-or-sketch]
    (if (sketch/sketch? svg-or-sketch)
      (let [views (sketch/resolve-sketch svg-or-sketch)
-           plan (sketch-impl/views->plan views (:opts svg-or-sketch {}))]
+           plan (sketch/views->plan views (:opts svg-or-sketch {}))]
        (svg/svg-summary (render-impl/plan->figure plan :svg {})))
      (svg/svg-summary svg-or-sketch)))
   ([svg-or-sketch theme]
    (if (sketch/sketch? svg-or-sketch)
      (let [views (sketch/resolve-sketch svg-or-sketch)
-           plan (sketch-impl/views->plan views (:opts svg-or-sketch {}))]
+           plan (sketch/views->plan views (:opts svg-or-sketch {}))]
        (svg/svg-summary (render-impl/plan->figure plan :svg {}) theme))
      (svg/svg-summary svg-or-sketch theme))))
 
@@ -784,8 +783,8 @@
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
      (let [views (sketch/resolve-sketch sk)
            all-opts (kindly/deep-merge (:opts sk {}) opts)
-           plan (sketch-impl/views->plan views all-opts)
-           svg-hiccup (render-impl/plan->figure plan :svg {})]
+           plan (sketch/views->plan views all-opts)
+           svg-hiccup (render-impl/plan->figure plan :svg all-opts)]
        (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                        (svg/hiccup->svg-str svg-hiccup)))
        path))))

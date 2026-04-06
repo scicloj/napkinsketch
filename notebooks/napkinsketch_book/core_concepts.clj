@@ -111,7 +111,7 @@ data/iris
 
 ;; ## Sketches, Views, and Methods
 ;;
-;; A **sketch** (sketch) is a composable value with five fields:
+;; A **sketch** is a composable value with five fields:
 ;;
 ;; - `:data` — the dataset
 ;; - `:shared` — aesthetics that apply to all entries and methods
@@ -128,8 +128,7 @@ data/iris
 ;; There are three scopes for options in Napkinsketch:
 ;;
 ;; - **Shared** — aesthetics like `:color` and `:alpha` that apply to
-;;   all entries and methods. Set via `sk/sketch` or
-;;   `sk/view` opts map.
+;;   all entries and methods. Set via `sk/view` opts map.
 ;;
 ;; - **Per-method** — aesthetics and parameters that apply to one
 ;;   method only. Set via `sk/lay-*` opts map. Includes
@@ -148,7 +147,7 @@ data/iris
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.5}) ;; per-method
     (sk/options {:title "Iris Measurements"                                ;; plot option
-                       :width 500 :palette :dark2}))                             ;; config via options
+                 :width 500 :palette :dark2}))                             ;; config via options
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

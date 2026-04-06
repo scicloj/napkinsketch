@@ -103,9 +103,7 @@
  (is ((fn [m] (= {:width 600, :height 400} m)) v15_l98)))
 
 
-(def
- v17_l102
- (-> (base-plot) (sk/options {:width 900, :height 250})))
+(def v17_l102 (-> (base-plot) (sk/options {:width 900, :height 250})))
 
 
 (deftest
@@ -119,9 +117,7 @@
    v17_l102)))
 
 
-(def
- v20_l114
- (-> (base-plot) (sk/options {:theme {:bg "#FFFFFF"}})))
+(def v20_l114 (-> (base-plot) (sk/options {:theme {:bg "#FFFFFF"}})))
 
 
 (deftest
@@ -167,9 +163,7 @@
  v35_l163
  (sk/with-config
   {:theme {:bg "#1a1a2e", :grid "#16213e", :font-size 8}}
-  (->
-   (base-plot)
-   (sk/options {:title "Dark Theme via with-config"}))))
+  (-> (base-plot) (sk/options {:title "Dark Theme via with-config"}))))
 
 
 (deftest
@@ -181,9 +175,7 @@
  v38_l174
  (sk/with-config
   {:theme {:bg "#F5F5DC"}}
-  (->
-   (base-plot)
-   (sk/options {:title "Partial Theme Override"}))))
+  (-> (base-plot) (sk/options {:title "Partial Theme Override"}))))
 
 
 (deftest
@@ -290,10 +282,7 @@
 
 (def
  v68_l310
- (->
-  (base-plot)
-  (sk/options {:theme {:bg "#F5F5DC"}})
-  sk/plot))
+ (-> (base-plot) (sk/options {:theme {:bg "#F5F5DC"}}) sk/plot))
 
 
 (deftest
@@ -482,9 +471,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v109_l480)))
 
 
-(def
- v112_l491
- (def good-plan (sk/plan (base-plot) {:validate false})))
+(def v112_l491 (def good-plan (sk/plan (base-plot) {:validate false})))
 
 
 (def v113_l493 (sk/valid-plan? good-plan))

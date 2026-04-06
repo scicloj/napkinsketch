@@ -43,8 +43,8 @@
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:title "Iris Sepal Measurements"
-                       :x-label "Length (cm)"
-                       :y-label "Width (cm)"}))
+                 :x-label "Length (cm)"
+                 :y-label "Width (cm)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -55,8 +55,8 @@
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:title "Iris Measurements"
-                       :subtitle "Sepal dimensions across three species"
-                       :caption "Source: Fisher's Iris dataset (1936)"}))
+                 :subtitle "Sepal dimensions across three species"
+                 :caption "Source: Fisher's Iris dataset (1936)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -184,8 +184,8 @@
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:palette {:setosa "#E74C3C"
-                                 :versicolor "#3498DB"
-                                 :virginica "#2ECC71"}}))
+                           :versicolor "#3498DB"
+                           :virginica "#2ECC71"}}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -207,8 +207,6 @@
 ;; - `:category10` — D3 default
 ;;
 ;; This is a small sample — thousands more are available.
-;; See the Discovering Palettes and Gradients section below.
-;;
 ;; See the Discovering Palettes and Gradients section below for how to
 ;; search all available names.
 
@@ -286,7 +284,7 @@
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:title "White Theme"
-                       :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 10}}))
+                 :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 10}}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])

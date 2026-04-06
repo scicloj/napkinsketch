@@ -225,7 +225,7 @@ precedence-result
          (= 500 (:plan-height m))))]) ;; with-config wins over set-config! (350)
 
 ;; We can verify point-radius too — only set-config! touched it,
-;; so it wins over the library default (2.5):
+;; so it wins over the library default (3.0):
 
 (def precedence-point-radius
   (sk/with-config {:width 1200 :height 500}
@@ -266,7 +266,7 @@ precedence-plot
 ;; |:----|:---------------|:------------|:------------|:---------|:-------|
 ;; | `:width` | 600 | 800 | 1200 | 900 | **900** (plot options) |
 ;; | `:height` | 400 | 350 | 500 | — | **500** (with-config) |
-;; | `:point-radius` | 2.5 | 5.0 | — | — | **5.0** (set-config!) |
+;; | `:point-radius` | 3.0 | 5.0 | — | — | **5.0** (set-config!) |
 
 ;; ## Project-Level Defaults with napkinsketch.edn
 ;;
@@ -323,7 +323,7 @@ precedence-plot
 
 (-> (base-plot)
     (sk/options {:title "Full Dark Theme"
-                       :theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}})
+                 :theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}})
     sk/plot)
 
 (kind/test-last
@@ -339,12 +339,12 @@ precedence-plot
 (sk/arrange
  [(-> (base-plot)
       (sk/options {:title "Light"
-                         :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}
-                         :width 350 :height 250}))
+                   :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}
+                   :width 350 :height 250}))
   (-> (base-plot)
       (sk/options {:title "Dark"
-                         :theme {:bg "#2d2d2d" :grid "#444444" :font-size 8}
-                         :width 350 :height 250}))])
+                   :theme {:bg "#2d2d2d" :grid "#444444" :font-size 8}
+                   :width 350 :height 250}))])
 
 (kind/test-last
  [(fn [v]
@@ -388,8 +388,8 @@ precedence-plot
 
 (-> (base-plot)
     (sk/options {:palette {"setosa" "#FF6B6B"
-                                 "versicolor" "#4ECDC4"
-                                 "virginica" "#45B7D1"}}))
+                           "versicolor" "#4ECDC4"
+                           "virginica" "#45B7D1"}}))
 
 (kind/test-last
  [(fn [v] (= 150 (:points (sk/svg-summary v))))])

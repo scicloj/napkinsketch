@@ -10,7 +10,6 @@
             [scicloj.napkinsketch.impl.position :as position]
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.view :as view]
-            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.method :as method]))
 
@@ -90,7 +89,7 @@
   (testing "explicit :color-scale is stored as keyword"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
           pl (sk/plan (-> ds (sk/lay-point :x :y {:color :c}))
-                            {:color-scale :inferno})
+                      {:color-scale :inferno})
           legend (:legend pl)]
       (is (= :inferno (:color-scale legend)))))
   (testing "legend has 20 pre-computed stops"
@@ -874,23 +873,23 @@
 (deftest log-scale-nonpositive-test
   (testing "non-positive values are filtered on log-scaled x axis"
     (let [pl (sk/plan (-> {:x [0 -1 1 10 100] :y [1 2 3 4 5]}
-                                (sk/lay-point :x :y)
-                                (sk/scale :x :log)))
+                          (sk/lay-point :x :y)
+                          (sk/scale :x :log)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))
       (is (= [1 10 100] (vec (:xs group))))))
   (testing "non-positive values are filtered on log-scaled y axis"
     (let [pl (sk/plan (-> {:x [1 2 3 4 5] :y [0 -1 1 10 100]}
-                                (sk/lay-point :x :y)
-                                (sk/scale :y :log)))
+                          (sk/lay-point :x :y)
+                          (sk/scale :y :log)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))))
   (testing "all-positive data is not filtered"
     (let [pl (sk/plan (-> {:x [1 10 100] :y [1 2 3]}
-                                (sk/lay-point :x :y)
-                                (sk/scale :x :log)))
+                          (sk/lay-point :x :y)
+                          (sk/scale :x :log)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group)))))))
@@ -898,8 +897,8 @@
 (deftest infinity-filtering-test
   (testing "infinite y values are filtered with warning"
     (let [pl (sk/plan (-> {:x [1 2 3 4 5]
-                                 :y [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]}
-                                (sk/lay-point :x :y)))
+                           :y [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]}
+                          (sk/lay-point :x :y)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))
@@ -907,42 +906,42 @@
       (is (= [10.0 30.0 50.0] (vec (:ys group))))))
   (testing "infinite x values are filtered"
     (let [pl (sk/plan (-> {:x [1.0 Double/POSITIVE_INFINITY 3.0]
-                                 :y [10 20 30]}
-                                (sk/lay-point :x :y)))
+                           :y [10 20 30]}
+                          (sk/lay-point :x :y)))
           group (-> pl :panels first :layers first :groups first)]
       (is (= 2 (count (:xs group))))))
   (testing "SVG has no NaN after infinity filtering"
     (let [svg (sk/plot (-> {:x [1 2 3] :y [1.0 Double/POSITIVE_INFINITY 3.0]}
-                                 (sk/lay-point :x :y)))]
+                           (sk/lay-point :x :y)))]
       (is (not (clojure.string/includes? (str svg) "NaN")))))
   (testing "all-finite data is not filtered"
     (let [pl (sk/plan (-> {:x [1 2 3] :y [10.0 20.0 30.0]}
-                                (sk/lay-point :x :y)))
+                          (sk/lay-point :x :y)))
           group (-> pl :panels first :layers first :groups first)]
       (is (= 3 (count (:xs group)))))))
 
 (deftest stacked-negative-domain-test
   (testing "all-negative stacked bars produce correct y-domain"
     (let [pl (sk/plan (-> {:category ["A" "A" "B" "B"]
-                                 :group ["g1" "g2" "g1" "g2"]
-                                 :value [-10 -20 -5 -15]}
-                                (sk/lay-value-bar :category :value {:color :group :position :stack})))
+                           :group ["g1" "g2" "g1" "g2"]
+                           :value [-10 -20 -5 -15]}
+                          (sk/lay-value-bar :category :value {:color :group :position :stack})))
           [lo hi] (:y-domain (first (:panels pl)))]
       (is (neg? lo) "lower bound should be negative for all-negative stacked data")
       (is (pos? hi) "upper bound includes 0 baseline with padding")))
   (testing "mixed positive/negative stacked bars span both sides"
     (let [pl (sk/plan (-> {:category ["A" "A" "B" "B"]
-                                 :group ["g1" "g2" "g1" "g2"]
-                                 :value [10 -20 5 -15]}
-                                (sk/lay-value-bar :category :value {:color :group :position :stack})))
+                           :group ["g1" "g2" "g1" "g2"]
+                           :value [10 -20 5 -15]}
+                          (sk/lay-value-bar :category :value {:color :group :position :stack})))
           [lo hi] (:y-domain (first (:panels pl)))]
       (is (neg? lo) "lower bound extends below zero")
       (is (pos? hi) "upper bound extends above zero")))
   (testing "all-negative stacked bars render without NaN"
     (let [svg (sk/plot (-> {:category ["A" "A" "B" "B"]
-                                  :group ["g1" "g2" "g1" "g2"]
-                                  :value [-10 -20 -5 -15]}
-                                 (sk/lay-value-bar :category :value {:color :group :position :stack})))]
+                            :group ["g1" "g2" "g1" "g2"]
+                            :value [-10 -20 -5 -15]}
+                           (sk/lay-value-bar :category :value {:color :group :position :stack})))]
       (is (not (clojure.string/includes? (str svg) "NaN"))))))
 
 (deftest boolean-color-test
@@ -1245,7 +1244,7 @@
   "Resolve a sketch and get svg-summary."
   [sk]
   (let [views (sketch/resolve-sketch sk)
-        fig (sk/plan->figure (sketch-impl/views->plan views (:opts sk {})) :svg {})]
+        fig (sk/plan->figure (sketch/views->plan views (:opts sk {})) :svg {})]
     (sk/svg-summary fig)))
 
 (deftest basic-test
@@ -1253,45 +1252,45 @@
                          {:key-fn keyword})]
     (testing "Scatter + lm"
       (let [s (summary (-> (sk/sketch iris {:color :species})
-                                 (sk/view :sepal_length :sepal_width)
-                                 (sk/lay-point {:alpha 0.5})
-                                 (sk/lay-lm)))]
+                           (sk/view :sepal_length :sepal_width)
+                           (sk/lay-point {:alpha 0.5})
+                           (sk/lay-lm)))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))
 
     (testing "SPLOM inference"
       (let [s (summary (-> (sk/sketch iris {:color :species})
-                                 (sk/view (sk/cross [:sepal_length :sepal_width :petal_length]
-                                                          [:sepal_length :sepal_width :petal_length]))))]
+                           (sk/view (sk/cross [:sepal_length :sepal_width :petal_length]
+                                              [:sepal_length :sepal_width :petal_length]))))]
         (is (= 9 (:panels s)))
         (is (= 900 (:points s)))))
 
     (testing "Simpson's paradox via nil cancellation"
       (let [s (summary (-> (sk/sketch iris {:color :species})
-                                 (sk/view :sepal_length :sepal_width)
-                                 (sk/lay-point {:alpha 0.4})
-                                 (sk/lay-lm)
-                                 (sk/lay-lm {:color nil})))]
+                           (sk/view :sepal_length :sepal_width)
+                           (sk/lay-point {:alpha 0.4})
+                           (sk/lay-lm)
+                           (sk/lay-lm {:color nil})))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 4 (:lines s)))))
 
     (testing "Faceted + per-entry methods via view"
       (let [s (summary (-> (sk/sketch iris)
-                                 (sk/view :sepal_length :sepal_width)
-                                 sk/lay-point
-                                 sk/lay-loess
-                                 (sk/facet :species)))]
+                           (sk/view :sepal_length :sepal_width)
+                           sk/lay-point
+                           sk/lay-loess
+                           (sk/facet :species)))]
         (is (= 3 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))
 
     (testing "Data-first (no sketch call)"
       (let [s (summary (-> iris
-                                 (sk/view :sepal_length :sepal_width {:color :species})
-                                 (sk/lay-point {:alpha 0.5})
-                                 (sk/lay-lm)))]
+                           (sk/view :sepal_length :sepal_width {:color :species})
+                           (sk/lay-point {:alpha 0.5})
+                           (sk/lay-lm)))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))
@@ -1307,52 +1306,52 @@
 
     (testing "Mixed grid"
       (let [s (summary (-> (sk/sketch iris)
-                                 (sk/view :sepal_length :sepal_width)
-                                 (sk/view :sepal_length :petal_width)
-                                 (sk/lay-point {:alpha 0.5})
-                                 (sk/facet :species)))]
+                           (sk/view :sepal_length :sepal_width)
+                           (sk/view :sepal_length :petal_width)
+                           (sk/lay-point {:alpha 0.5})
+                           (sk/facet :species)))]
         (is (= 6 (:panels s)))
         (is (= 300 (:points s)))))
 
     (testing "Inference: one numerical column"
       (let [s (summary (-> (sk/sketch iris)
-                                 (sk/view :sepal_length)))]
+                           (sk/view :sepal_length)))]
         (is (pos? (:polygons s)))
         (is (zero? (:points s)))))
 
     (testing "Inference: one categorical column"
       (let [s (summary (-> (sk/sketch iris)
-                                 (sk/view :species)))]
+                           (sk/view :species)))]
         (is (= 3 (:polygons s)))))
 
     (testing "2D facet grid"
       (let [tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
                              {:key-fn keyword})
             s (summary (-> (sk/sketch tips {:color :smoker})
-                                 (sk/view :total_bill :tip)
-                                 (sk/lay-point {:alpha 0.5})
-                                 (sk/facet-grid :day :sex)))]
+                           (sk/view :total_bill :tip)
+                           (sk/lay-point {:alpha 0.5})
+                           (sk/facet-grid :day :sex)))]
         (is (= 8 (:panels s)))))
 
     (testing "Options pass through"
       (let [s (summary (-> (sk/sketch iris)
-                                 (sk/view :sepal_length :sepal_width)
-                                 (sk/lay-point)
-                                 (sk/options {:title "Test" :width 400})))]
+                           (sk/view :sepal_length :sepal_width)
+                           (sk/lay-point)
+                           (sk/options {:title "Test" :width 400})))]
         (is (= 1 (:panels s)))
         (is (some #{"Test"} (:texts s)))))
 
     (testing "Lay-first (methods before view)"
       (let [s (summary (-> iris
-                                 (sk/lay-point {:alpha 0.5})
-                                 (sk/lay-lm)
-                                 (sk/view :sepal_length :sepal_width {:color :species})))]
+                           (sk/lay-point {:alpha 0.5})
+                           (sk/lay-lm)
+                           (sk/view :sepal_length :sepal_width {:color :species})))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))
 
     (testing "Column inference"
       (let [s (summary (-> (sk/sketch {:a [1 2 3 4 5] :b [2 4 3 5 4]})
-                                 (sk/view)))]
+                           (sk/view)))]
         (is (= 5 (:points s)))))))
 

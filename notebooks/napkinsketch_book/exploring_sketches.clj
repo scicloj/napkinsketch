@@ -58,6 +58,7 @@ tiny-pl
 
 (kind/test-last [(fn [m] (and (= 600 (:width m))
                               (= 400 (:height m))
+                              (== 30 (:margin m))
                               (nil? (:title m))
                               (= "x" (:x-label m))
                               (= "y" (:y-label m))
@@ -65,7 +66,7 @@ tiny-pl
 
 ;; Notice:
 ;;
-;; - Dimensions are 600×400 with a 25-pixel margin
+;; - Dimensions are 600×400 with a 30-pixel margin
 ;; - Labels `"x"` and `"y"` are inferred from column names
 ;; - No legend (we didn't map a column to color)
 ;; - One panel with `:x-domain`, `:y-domain`, ticks, and layers
@@ -458,10 +459,10 @@ bar-layer
 (def opts-pl (-> data/iris
                  (sk/lay-point :sepal_length :sepal_width)
                  (sk/plan {:title "My Custom Title"
-                                 :x-label "Length (cm)"
-                                 :y-label "Width (cm)"
-                                 :width 800
-                                 :height 300})))
+                           :x-label "Length (cm)"
+                           :y-label "Width (cm)"
+                           :width 800
+                           :height 300})))
 
 opts-pl
 

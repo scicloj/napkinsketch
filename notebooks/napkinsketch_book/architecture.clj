@@ -1,4 +1,4 @@
-;; # sketch Architecture
+;; # Sketch Architecture
 ;;
 ;; The sketch pipeline extends napkinsketch's four-stage pipeline
 ;; with a composable front end. Instead of building view maps by hand,
