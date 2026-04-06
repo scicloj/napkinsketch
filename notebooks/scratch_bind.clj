@@ -272,7 +272,7 @@
 ;; The bind model resolves to the same view-maps that napkinsketch's
 ;; `views->plan` already consumes. A two-function bridge connects them:
 
-(require '[scicloj.napkinsketch.impl.sketch :as sketch-impl])
+(require '[scicloj.napkinsketch.impl.theold-sketch :as sketch-impl])
 (require '[scicloj.napkinsketch.api :as sk])
 
 (defn bind->views

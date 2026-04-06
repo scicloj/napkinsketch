@@ -19,7 +19,7 @@
    ;; xkcd7-sketch internals — for tracing resolution
    [scicloj.napkinsketch.impl.xkcd7-sketch :as xkcd7-sketch]
    ;; Sketch internals — for tracing views->plan
-   [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+   [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
    ;; Render internals — for tracing plan->figure
    [scicloj.napkinsketch.impl.render :as render-impl]
    ;; Malli schema validation

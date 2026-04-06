@@ -1,4 +1,4 @@
-(ns scicloj.napkinsketch.impl.sketch
+(ns scicloj.napkinsketch.impl.theold-sketch
   "Resolve views into a plan — a plain Clojure map with data-space
    geometry, domains, tick info, legend, and layout. No membrane types,
    no datasets, no scale objects in the output."

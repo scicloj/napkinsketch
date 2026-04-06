@@ -5,7 +5,7 @@
    Produces view maps for the xkcd7-views->plan pipeline."
   (:require [tablecloth.api :as tc]
             [scicloj.napkinsketch.impl.view :as view]
-            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.render :as render-impl]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.kindly.v4.kind :as kind]))

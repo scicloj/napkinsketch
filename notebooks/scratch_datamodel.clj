@@ -8,7 +8,7 @@
   (:require [tablecloth.api :as tc]
             [scicloj.kindly.v4.kind :as kind]
             [scicloj.napkinsketch.api :as sk]
-            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
             [napkinsketch-book.datasets :as data]))
 
 ;; ## The Data Model

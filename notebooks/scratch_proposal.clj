@@ -10,7 +10,7 @@
   (:require [tablecloth.api :as tc]
             [tech.v3.datatype.functional :as dfn]
             [scicloj.napkinsketch.api :as sk]
-            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.method :as method]
             [fastmath.stats :as fstats]
