@@ -6,9 +6,9 @@
 ;;
 ;; It demonstrates all three extension points needed for a new mark:
 ;;
-;; 1. `compute-stat` — transform raw values into cumulative bars
-;; 2. `extract-layer` — convert stat output into plan geometry
-;; 3. `layer->membrane` — render bars as membrane drawables
+;; - `compute-stat` — transform raw values into cumulative bars
+;; - `extract-layer` — convert stat output into plan geometry
+;; - `layer->membrane` — render bars as membrane drawables
 ;;
 ;; After reading this, you should be able to add any custom chart
 ;; type to napkinsketch.
@@ -110,8 +110,8 @@
 ;; - `:sy` — the y scale function (data value → pixel y)
 ;; - `:panel-height`, `:panel-width`, `:margin` — layout dimensions
 ;;
-;; For a band (categorical) x-scale, `(ws/data sx :bandwidth)` gives
-;; the bar width.
+;; For a band (categorical) x-scale, `(sx category true)` returns
+;; band info including `:rstart`, `:rend`, and `:point`.
 
 (defmethod mark/layer->membrane :waterfall [layer ctx]
   (let [{:keys [bars style]} layer
@@ -146,20 +146,20 @@
                   {:mark :waterfall :stat :waterfall
                    :doc "Waterfall — running total with increase/decrease bars."})
 
-;; Now we can plot it. Since there is no built-in `sk/lay-waterfall`,
-;; we use `sk/lay` with the method lookup.
+;; Now we can plot it using the xkcd7 xkcd7-sketch API. Since there is
+;; no built-in `sk/xkcd7-lay-waterfall`, we use `sk/xkcd7-lay` with
+;; the method lookup.
 ;;
-;; Normally you would use `sk/options` instead of `sk/plot` — that
-;; keeps the result as a composable sketch that auto-renders
-;; in notebooks. Here we use `sk/plot` to force eager rendering to SVG
-;; before the cleanup section at the end of this notebook removes the
+;; We use `sk/xkcd7-plot` to force eager rendering to SVG before the
+;; cleanup section at the end of this notebook removes the
 ;; extension's defmethods:
 
 (-> pnl-data
-    (sk/view :category :amount)
-    (sk/lay (method/lookup :waterfall))
-    (sk/plot {:title "Profit & Loss Waterfall"
-              :width 500 :height 350}))
+    (sk/xkcd7-view :category :amount)
+    (sk/xkcd7-lay (method/lookup :waterfall))
+    (sk/xkcd7-options {:title "Profit & Loss Waterfall"
+                       :width 500 :height 350})
+    sk/xkcd7-plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -170,18 +170,20 @@
 
 ;; ## Optional: Convenience Function
 ;;
-;; For a polished API, wrap the pattern in a function:
+;; For a polished API, wrap the pattern in a xkcd7-sketch-compatible
+;; function:
 
 (defn lay-waterfall
-  ([views] (sk/lay views (method/lookup :waterfall)))
-  ([data x y] (-> data (sk/view x y) (sk/lay (method/lookup :waterfall))))
-  ([data x y opts] (-> data (sk/view x y) (sk/lay (merge (method/lookup :waterfall) opts)))))
+  ([xkcd7-sk] (sk/xkcd7-lay xkcd7-sk (method/lookup :waterfall)))
+  ([data x y] (-> data (sk/xkcd7-view x y) (sk/xkcd7-lay (method/lookup :waterfall))))
+  ([data x y opts] (-> data (sk/xkcd7-view x y) (sk/xkcd7-lay (merge (method/lookup :waterfall) opts)))))
 
 ;; Now the call is as clean as any built-in method:
 
 (-> pnl-data
     (lay-waterfall :category :amount)
-    (sk/plot {:title "Quarterly Cash Flow" :width 500}))
+    (sk/xkcd7-options {:title "Quarterly Cash Flow" :width 500})
+    sk/xkcd7-plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 6 (:polygons s))))])

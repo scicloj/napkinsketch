@@ -5,7 +5,6 @@
             [membrane.ui :as ui]
             [scicloj.kindly.v4.kind :as kind]
             [scicloj.napkinsketch.impl.defaults :as defaults]
-            [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.render.membrane :as membrane]
             [scicloj.napkinsketch.impl.render :as render])
   (:import [membrane.ui Translate WithColor WithStyle WithStrokeWidth
@@ -391,29 +390,6 @@
     (sequential? elem)
     (str/join "" (map hiccup->svg-str elem))
     :else (str elem)))
-
-(defn save
-  "Write a plot to an SVG file.
-   views — a vector of view maps (same as sk/plot accepts).
-   path  — file path (string or java.io.File).
-   opts  — same options as sk/plot (:width, :height, :title, :theme, etc.).
-   Tooltip and brush interactivity are not included in saved files.
-   (save views \"plot.svg\")
-   (save views \"plot.svg\" {:width 800 :height 600})"
-  ([views path] (save views path {}))
-  ([views path opts]
-   (let [views (if (map? views) [views] views)
-         pl (sketch/views->plan views opts)
-         membrane-tree (apply membrane/plan->membrane pl
-                              (mapcat identity
-                                      (select-keys opts [:width :height :theme :palette
-                                                         :color-scale :color-midpoint])))
-         svg-body (membrane->svg membrane-tree)
-         svg (wrap-svg (:total-width pl) (:total-height pl) svg-body (:title pl))
-         xml-header "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-         svg-str (str xml-header (hiccup->svg-str svg))]
-     (spit (str path) svg-str)
-     path)))
 
 (defn svg-summary
   "Extract structural summary from SVG hiccup for testing.

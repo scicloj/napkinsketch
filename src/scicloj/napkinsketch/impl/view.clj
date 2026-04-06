@@ -83,13 +83,6 @@
   [x]
   (and (sequential? x) (seq x) (instance? View (first x))))
 
-(defrecord Sketch [views opts])
-
-(defn sketch?
-  "True if x is a Sketch (auto-rendering sketch)."
-  [x]
-  (instance? Sketch x))
-
 (defrecord Plan [panels width height])
 
 (defn plan?

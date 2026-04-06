@@ -15,7 +15,7 @@
 
 
 (def
- v3_l66
+ v3_l73
  (kind/table
   {:column-names ["Dispatch value" "What it does"],
    :row-maps
@@ -31,29 +31,29 @@
        "What it does" (sk/stat-doc k)})))}))
 
 
-(deftest t4_l76 (is ((fn [t] (= 11 (count (:row-maps t)))) v3_l66)))
+(deftest t4_l83 (is ((fn [t] (= 11 (count (:row-maps t)))) v3_l73)))
 
 
-(def v6_l84 (method/lookup :histogram))
+(def v6_l91 (method/lookup :histogram))
 
 
-(deftest t7_l86 (is ((fn [m] (= :bin (:stat m))) v6_l84)))
+(deftest t7_l93 (is ((fn [m] (= :bin (:stat m))) v6_l91)))
 
 
-(def v9_l90 (method/lookup :bar))
+(def v9_l97 (method/lookup :bar))
 
 
-(deftest t10_l92 (is ((fn [m] (= :count (:stat m))) v9_l90)))
+(deftest t10_l99 (is ((fn [m] (= :count (:stat m))) v9_l97)))
 
 
-(def v12_l96 (method/lookup :point))
+(def v12_l103 (method/lookup :point))
 
 
-(deftest t13_l98 (is ((fn [m] (= :identity (:stat m))) v12_l96)))
+(deftest t13_l105 (is ((fn [m] (= :identity (:stat m))) v12_l103)))
 
 
 (def
- v15_l127
+ v15_l134
  (kind/table
   {:column-names ["Dispatch value" "Output"],
    :row-maps
@@ -70,33 +70,33 @@
        "Output" (sk/mark-doc k)})))}))
 
 
-(deftest t16_l138 (is ((fn [t] (= 17 (count (:row-maps t)))) v15_l127)))
+(deftest t16_l145 (is ((fn [t] (= 17 (count (:row-maps t)))) v15_l134)))
 
 
 (def
- v18_l144
+ v18_l151
  (let
   [s
    (->
     data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    sk/plan)
+    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+    sk/xkcd7-plan)
    layer
    (first (:layers (first (:panels s))))]
   layer))
 
 
 (deftest
- t19_l150
+ t19_l157
  (is
   ((fn
     [m]
     (and (= :point (:mark m)) (number? (get-in m [:style :opacity]))))
-   v18_l144)))
+   v18_l151)))
 
 
 (def
- v21_l159
+ v21_l166
  (kind/table
   {:column-names ["Dispatch value" "Membrane output"],
    :row-maps
@@ -113,45 +113,45 @@
        "Membrane output" (sk/membrane-mark-doc k)})))}))
 
 
-(deftest t22_l170 (is ((fn [t] (= 17 (count (:row-maps t)))) v21_l159)))
+(deftest t22_l177 (is ((fn [t] (= 17 (count (:row-maps t)))) v21_l166)))
 
 
 (def
- v24_l233
+ v24_l244
  (def
   my-plan
   (->
    data/iris
-   (sk/lay-point :sepal_length :sepal_width {:color :species})
-   sk/plan)))
+   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+   sk/xkcd7-plan)))
 
 
-(def v25_l238 (first (sk/plan->figure my-plan :svg {})))
+(def v25_l249 (first (sk/plan->figure my-plan :svg {})))
 
 
-(deftest t26_l240 (is ((fn [v] (= :svg v)) v25_l238)))
+(deftest t26_l251 (is ((fn [v] (= :svg v)) v25_l249)))
 
 
-(def v28_l244 (def my-figure (sk/plan->figure my-plan :svg {})))
+(def v28_l255 (def my-figure (sk/plan->figure my-plan :svg {})))
 
 
-(def v29_l246 (vector? my-figure))
+(def v29_l257 (vector? my-figure))
 
 
-(deftest t30_l248 (is ((fn [v] (true? v)) v29_l246)))
+(deftest t30_l259 (is ((fn [v] (true? v)) v29_l257)))
 
 
-(def v32_l289 (def my-membrane (sk/plan->membrane my-plan)))
+(def v32_l300 (def my-membrane (sk/plan->membrane my-plan)))
 
 
-(def v33_l291 (vector? my-membrane))
+(def v33_l302 (vector? my-membrane))
 
 
-(deftest t34_l293 (is ((fn [v] (true? v)) v33_l291)))
+(deftest t34_l304 (is ((fn [v] (true? v)) v33_l302)))
 
 
 (def
- v35_l295
+ v35_l306
  (first
   (sk/membrane->figure
    my-membrane
@@ -160,11 +160,11 @@
     :total-height (:total-height my-plan)})))
 
 
-(deftest t36_l299 (is ((fn [v] (= :svg v)) v35_l295)))
+(deftest t36_l310 (is ((fn [v] (= :svg v)) v35_l306)))
 
 
 (def
- v38_l327
+ v38_l338
  (kind/table
   {:column-names ["Dispatch value" "Scale type"],
    :row-maps
@@ -180,11 +180,11 @@
        "Scale type" (sk/scale-doc k)})))}))
 
 
-(deftest t39_l337 (is ((fn [t] (= 3 (count (:row-maps t)))) v38_l327)))
+(deftest t39_l348 (is ((fn [t] (= 3 (count (:row-maps t)))) v38_l338)))
 
 
 (def
- v41_l348
+ v41_l359
  (kind/table
   {:column-names ["Dispatch value" "Behavior"],
    :row-maps
@@ -200,25 +200,27 @@
        "Behavior" (sk/coord-doc k)})))}))
 
 
-(deftest t42_l358 (is ((fn [t] (= 4 (count (:row-maps t)))) v41_l348)))
+(deftest t42_l369 (is ((fn [t] (= 4 (count (:row-maps t)))) v41_l359)))
 
 
-(def v44_l365 (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
+(def
+ v44_l376
+ (-> data/iris (sk/xkcd7-lay-bar :species) (sk/xkcd7-coord :flip)))
 
 
 (deftest
- t45_l369
+ t45_l380
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v44_l365)))
+   v44_l376)))
 
 
 (def
- v47_l385
+ v47_l396
  (defmethod
   stat/compute-stat
   :quantile
@@ -227,7 +229,7 @@
 
 
 (def
- v48_l388
+ v48_l399
  (defmethod
   stat/compute-stat
   [:quantile :doc]
@@ -235,29 +237,29 @@
   "Quantile regression bands"))
 
 
-(def v50_l393 (sk/stat-doc :quantile))
+(def v50_l404 (sk/stat-doc :quantile))
 
 
 (deftest
- t51_l395
- (is ((fn [v] (= "Quantile regression bands" v)) v50_l393)))
+ t51_l406
+ (is ((fn [v] (= "Quantile regression bands" v)) v50_l404)))
 
 
-(def v53_l403 (remove-method stat/compute-stat [:quantile :doc]))
+(def v53_l414 (remove-method stat/compute-stat [:quantile :doc]))
 
 
-(def v54_l405 (sk/stat-doc :quantile))
+(def v54_l416 (sk/stat-doc :quantile))
 
 
-(deftest t55_l407 (is ((fn [v] (= "(no description)" v)) v54_l405)))
+(deftest t55_l418 (is ((fn [v] (= "(no description)" v)) v54_l416)))
 
 
-(def v57_l413 (remove-method stat/compute-stat :quantile))
+(def v57_l424 (remove-method stat/compute-stat :quantile))
 
 
 (def
- v58_l415
+ v58_l426
  (count (filter keyword? (keys (methods stat/compute-stat)))))
 
 
-(deftest t59_l417 (is ((fn [v] (= 11 v)) v58_l415)))
+(deftest t59_l428 (is ((fn [v] (= 11 v)) v58_l426)))

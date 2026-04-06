@@ -1,8 +1,12 @@
-;; # Architecture
+;; # xkcd7-sketch Architecture
 ;;
-;; Napkinsketch transforms data into plots through a four-stage pipeline.
-;; This notebook documents the pipeline, the key data models, and
-;; how the codebase is organized.
+;; The xkcd7-sketch pipeline extends napkinsketch's four-stage pipeline
+;; with a composable front end. Instead of building view maps by hand,
+;; you compose a xkcd7-sketch — a declarative description of entries,
+;; methods, and shared options — that resolves into views automatically.
+;;
+;; This notebook traces a small example through every stage,
+;; explains the plan boundary, and shows the namespace structure.
 
 (ns napkinsketch-book.architecture
   (:require
@@ -12,6 +16,12 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
+   ;; xkcd7-sketch internals — for tracing resolution
+   [scicloj.napkinsketch.impl.xkcd7-sketch :as xkcd7-sketch]
+   ;; Sketch internals — for tracing views->plan
+   [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+   ;; Render internals — for tracing plan->figure
+   [scicloj.napkinsketch.impl.render :as render-impl]
    ;; Malli schema validation
    [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
@@ -20,30 +30,41 @@
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  V[\"Views<br/>(API)\"] -->|resolve| S[\"Plan<br/>(data-space)\"]
-  S -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]
+  B[\"xkcd7-sketch<br/>(composable API)\"] -->|resolve| V[\"Views<br/>(flat maps)\"]
+  V -->|xkcd7-views->plan| P[\"Plan<br/>(data-space)\"]
+  P -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]
   M -->|tree walk| F[\"Figure<br/>(output)\"]
+  style B fill:#d1c4e9
   style V fill:#e8f5e9
-  style S fill:#fff3e0
+  style P fill:#fff3e0
   style M fill:#e3f2fd
   style F fill:#fce4ec
 ")
 
-;; - **Views** — user-facing compositional API: `view`, `lay-point`, `lay-histogram`, etc.
+;; - **xkcd7-sketch** — the composable user API. Functions like
+;;   `xkcd7-sketch`, `xkcd7-view`, `xkcd7-lay-point`, `xkcd7-options`, and
+;;   `xkcd7-facet` build up a xkcd7-sketch record. No computation has happened yet.
 ;;
-;; - **Plan** — fully resolved plan. Data-space geometry,
-;;   domains, tick info, legend. Plain Clojure maps. No rendering primitives.
+;; - **Views** — a flat vector of maps produced by resolving the xkcd7-sketch.
+;;   Each view map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
+;;   keys. This is the same format that the old pipeline used directly.
 ;;
-;; - **Membrane** — a value of the [Membrane](https://github.com/phronmophobic/membrane)
-;;   library: positioned drawing primitives in pixel space
+;; - **Plan** — fully resolved plan. Data-space geometry, domains, tick info,
+;;   legend. Plain Clojure maps and dtype-next buffers. No rendering primitives.
+;;
+;; - **Membrane** — positioned drawing primitives in pixel space
 ;;   (Translate, WithColor, Path, Label, etc.).
 ;;
 ;; - **Figure** — final output. A tree walk converts membrane records
 ;;   to SVG hiccup, which Clay/Kindly renders in notebooks.
 
+;; Most users only interact with the xkcd7-sketch stage and never need to
+;; think about the others. The stages below matter when you are debugging
+;; unexpected output, building a custom renderer, or extending the library.
+
 ;; ## Pipeline Trace
 ;;
-;; Let's trace a small example through all four stages,
+;; Let's trace a small example through all five stages,
 ;; inspecting the intermediate values at each step.
 
 (def trace-data
@@ -51,49 +72,96 @@ graph LR
    :y [2 4 3 5 4]
    :g [:a :a :b :b :b]})
 
+;; ### xkcd7-sketch
+;;
+;; The user composes a xkcd7-sketch by threading data through
+;; composable functions. The xkcd7-sketch records what to plot
+;; without doing any computation.
+
+(def trace-xkcd7-sk
+  (-> trace-data
+      (sk/xkcd7-lay-point :x :y {:color :g})))
+
+;; The xkcd7-sketch is a record with five fields:
+;;
+;; - `:data` — the dataset (coerced to tablecloth)
+;;
+;; - `:shared` — options inherited by all entries (from `xkcd7-view`)
+;;
+;; - `:entries` — structural entries, each with `:x`, `:y`, and optional `:methods`
+;;
+;; - `:methods` — global methods (from bare `xkcd7-lay-*` without columns)
+;;
+;; - `:opts` — rendering options (title, width, etc.)
+
+(xkcd7-sketch/xkcd7-sketch? trace-xkcd7-sk)
+
+(kind/test-last [true?])
+
+;; Let's look at the entries and methods inside the xkcd7-sketch:
+
+(count (:entries trace-xkcd7-sk))
+
+(kind/test-last [(fn [n] (= 1 n))])
+
+(:entries trace-xkcd7-sk)
+
+(kind/test-last [(fn [entries]
+                   (let [e (first entries)]
+                     (and (= :x (:x e))
+                          (= :y (:y e))
+                          (= 1 (count (:methods e))))))])
+
+;; The entry has one method — the point layer — attached directly
+;; because `xkcd7-lay-point` was called with columns.
+
+(get-in (:entries trace-xkcd7-sk) [0 :methods 0 :mark])
+
+(kind/test-last [(fn [m] (= :point m))])
+
 ;; ### Views
 ;;
-;; The user composes views — a vector of plain maps describing
-;; what data to plot and how. No computation has happened yet.
+;; `xkcd7-resolve-sketch` flattens the xkcd7-sketch into a vector of
+;; view maps. Each view merges shared options, entry columns,
+;; and method details into one map with `:data`, `:x`, `:y`, `:mark`, etc.
 
 (def trace-views
-  (-> trace-data
-      (sk/lay-point :x :y {:color :g})))
+  (xkcd7-sketch/xkcd7-resolve-sketch trace-xkcd7-sk))
 
-(kind/pprint trace-views)
+(count trace-views)
 
-(kind/test-last [(fn [v] (and (sk/sketch? v)
-                              (= :point (:mark (first (sk/views-of v))))))])
+(kind/test-last [(fn [n] (= 1 n))])
+
+(select-keys (first trace-views) [:x :y :mark :color])
+
+(kind/test-last [(fn [m] (and (= :x (:x m))
+                              (= :y (:y m))
+                              (= :point (:mark m))
+                              (= :g (:color m))))])
 
 ;; ### Plan
 ;;
-;; `sk/plan` resolves the views into a plan — a pure-data map with
-;; data-space geometry, resolved colors, computed domains, and tick info.
-;; The values are still in data space — `x=1` means the original data
-;; value 1, not a pixel position.
+;; `xkcd7-views->plan` resolves the views into a plan — a pure-data map
+;; with data-space geometry, resolved colors, computed domains, and tick info.
+;; The values are still in data space.
 
-(def trace-plan (sk/plan trace-views))
+(def trace-plan
+  (sketch-impl/xkcd7-views->plan trace-views {}))
 
 trace-plan
 
 (kind/test-last [(fn [v] (and (map? v) (contains? v :panels)))])
 
-;; The plan validates against a [Malli](https://github.com/metosin/malli) schema:
+;; The plan validates against a Malli schema:
 
 (ss/valid? trace-plan)
 
 (kind/test-last [true?])
 
-;; Numeric arrays (`:xs`, `:ys`, etc.) are [dtype-next](https://github.com/cnuernber/dtype-next) buffers — efficient
-;; primitive-backed arrays that work with `nth`, `count`, and all standard
-;; sequence operations.
-
 ;; ### Membrane
 ;;
-;; `sk/plan->membrane` converts the plan into a tree of membrane
-;; drawing primitives positioned in pixel space. This is the
-;; format-agnostic intermediate representation — `Translate`,
-;; `WithColor`, `WithStyle`, `RoundedRectangle`, `Label`, `Path`, etc.
+;; `plan->membrane` converts the plan into a tree of membrane
+;; drawing primitives positioned in pixel space.
 
 (def trace-membrane (sk/plan->membrane trace-plan))
 
@@ -102,9 +170,8 @@ trace-membrane
 (kind/test-last [(fn [v] (and (vector? v) (pos? (count v))))])
 
 ;; ### Figure
-;; `sk/membrane->figure` converts the membrane tree into a figure.
-;; The `:svg` format produces SVG hiccup.
-;; `wrap-svg` adds the root `<svg>` element.
+;;
+;; `membrane->figure` converts the membrane tree into SVG hiccup.
 
 (def trace-figure
   (sk/membrane->figure trace-membrane :svg
@@ -123,11 +190,24 @@ trace-membrane
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
+;; ### Shortcut: xkcd7-sketch to Plan
+;;
+;; In practice, `sk/xkcd7-plan` does the xkcd7-sketch-to-plan conversion
+;; in one step — resolving the xkcd7-sketch and running `xkcd7-views->plan`
+;; internally.
+
+(def shortcut-plan (sk/xkcd7-plan trace-xkcd7-sk))
+
+(ss/valid? shortcut-plan)
+
+(kind/test-last [true?])
+
 ;; ### Pipeline Summary
 ;;
 ;; | Stage | Type | Coordinates |
 ;; |:------|:-----|:------------|
-;; | Views | Clojure maps | N/A (declarative) |
+;; | xkcd7-sketch | xkcd7-sketch record | N/A (declarative) |
+;; | Views | Vector of maps | N/A (declarative) |
 ;; | Plan | Clojure maps + dtype buffers | Data space |
 ;; | Membrane | Record tree | Pixel space |
 ;; | Figure | Hiccup vectors | Pixel space |
@@ -135,12 +215,14 @@ trace-membrane
 ;; ## The Plan Boundary
 ;;
 ;; The plan separates **what** to draw from **how** to
-;; draw it. It sits between the two concerns.
+;; draw it. The xkcd7-sketch and view stages describe intent;
+;; the membrane and figure stages handle rendering.
 
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
   subgraph WHAT [\"WHAT — data + semantics\"]
+    B[\"xkcd7-sketch\"]
     V[\"Views\"]
     ST[\"Statistics\"]
     D[\"Domains\"]
@@ -176,18 +258,46 @@ graph LR
 
 ;; ## Multi-Layer Example
 ;;
-;; A plan can hold multiple layers. Here, scatter points and
-;; per-species regression lines share the same panel.
+;; A xkcd7-sketch can hold multiple methods on the same entry.
+;; Here, scatter points and per-species regression lines share
+;; the same panel because both `xkcd7-lay-point` and `xkcd7-lay-lm`
+;; target the same `:petal_length`/`:petal_width` entry.
 
-(def multi-views
+(def multi-xkcd7-sk
   (-> data/iris
-      (sk/view :petal_length :petal_width {:color :species})
-      sk/lay-point
-      sk/lay-lm))
+      (sk/xkcd7-view :petal_length :petal_width {:color :species})
+      sk/xkcd7-lay-point
+      sk/xkcd7-lay-lm))
 
-(def multi-plan (sk/plan multi-views {:title "Iris Petals with Regression"}))
+;; The xkcd7-sketch has one entry with two global methods:
 
-;; Two layers in the plan — point and line:
+(count (:entries multi-xkcd7-sk))
+
+(kind/test-last [(fn [n] (= 1 n))])
+
+(mapv :mark (:methods multi-xkcd7-sk))
+
+(kind/test-last [(fn [v] (and (= :point (first v))
+                              (= :line (second v))))])
+
+;; Resolving produces two views — one per method — both sharing
+;; the same columns:
+
+(def multi-views (xkcd7-sketch/xkcd7-resolve-sketch multi-xkcd7-sk))
+
+(count multi-views)
+
+(kind/test-last [(fn [n] (= 2 n))])
+
+(mapv :mark multi-views)
+
+(kind/test-last [(fn [v] (and (= :point (first v))
+                              (= :line (second v))))])
+
+;; Building a plan with a title and checking the layers:
+
+(def multi-plan
+  (sk/xkcd7-plan multi-xkcd7-sk {:title "Iris Petals with Regression"}))
 
 (mapv (fn [layer]
         {:mark (:mark layer)
@@ -205,9 +315,13 @@ multi-plan
 (kind/test-last [(fn [m] (and (= "Iris Petals with Regression" (:title m))
                               (= 3 (count (get-in m [:legend :entries])))))])
 
-;; And it renders:
+;; And the rendered result:
 
-(-> multi-views (sk/options {:title "Iris Petals with Regression"}))
+(-> data/iris
+    (sk/xkcd7-view :petal_length :petal_width {:color :species})
+    sk/xkcd7-lay-point
+    sk/xkcd7-lay-lm
+    (sk/xkcd7-options {:title "Iris Petals with Regression"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -218,9 +332,13 @@ multi-plan
 ^:kindly/hide-code
 (kind/mermaid "
 graph TD
-  API[\"api.clj\"] --> VIEW[\"impl/view.clj\"]
+  API[\"api.clj\"] --> XKCD7SK[\"impl/xkcd7_sketch.clj\"]
+  API --> VIEW[\"impl/view.clj\"]
   API --> PLOT[\"impl/plot.clj\"]
   API --> PLAN[\"impl/sketch.clj\"]
+  XKCD7SK --> VIEW
+  XKCD7SK --> PLAN
+  XKCD7SK --> RENDER[\"impl/render.clj\"]
   PLAN --> VIEW
   PLAN --> STAT[\"impl/stat.clj\"]
   PLAN --> SCALE[\"impl/scale.clj\"]
@@ -233,12 +351,19 @@ graph TD
   PANEL --> SCALE
   PANEL --> COORD[\"impl/coord.clj\"]
   style API fill:#c8e6c9
+  style XKCD7SK fill:#d1c4e9
   style PLAN fill:#ffe0b2
   style PLOT fill:#bbdefb
   style SVG fill:#f8bbd0
   style MEMBRANE fill:#f8bbd0
 ")
 
+;; The `impl/xkcd7_sketch.clj` module is the new addition. It sits between
+;; the public API and the plan resolution stage. It holds the `Xkcd7Sketch`
+;; record, the `xkcd7-resolve-sketch` function that flattens entries and
+;; methods into view maps, and the `xkcd7-render-sketch` function that
+;; drives the full pipeline for auto-rendering in notebooks.
+;;
 ;; The `impl/` directory is pure data — no membrane dependency.
 ;; The `render/` directory uses membrane for pixel-space layout and
 ;; SVG conversion.
@@ -265,8 +390,3 @@ graph TD
 ;;
 ;; - [Kindly](https://scicloj.github.io/kindly/) &
 ;;   [Clay](https://scicloj.github.io/clay/) — notebook rendering
-
-;; ## What's Next
-;;
-;; - [**Extensibility**](./napkinsketch_book.extensibility.html) — add custom marks, stats, scales, and renderers via multimethods
-;; - [**Exploring Plans**](./napkinsketch_book.exploring_sketches.html) — inspect plan data structures at each stage

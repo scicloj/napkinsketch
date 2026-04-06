@@ -342,15 +342,13 @@
                            (and (< (:width s) 500)
                                 (some #{"Small Plot"} (:texts s)))))])
 
-(kind/doc #'sk/sketch?)
+(kind/doc #'sk/xkcd7-sketch?)
 
-;; Check whether a value is a sketch:
+;; Check whether a value is a xkcd7-sketch:
 
-;; `sk/sketch?` checks the old Sketch type. xkcd7-sketches are not Sketches.
+(sk/xkcd7-sketch? (sk/xkcd7-lay-point tiny :x :y))
 
-(sk/sketch? (sk/xkcd7-lay-point tiny :x :y))
-
-(kind/test-last [false?])
+(kind/test-last [true?])
 
 (kind/doc #'sk/xkcd7-plan)
 
@@ -376,16 +374,6 @@ plan1
                               (= "x" (:x-label m))))])
 
 ;; ## Pipeline
-
-(kind/doc #'sk/views->plan)
-
-(def plan2 (-> tiny
-               (sk/xkcd7-lay-point :x :y)
-               sk/xkcd7-plan))
-
-(= (keys plan1) (keys plan2))
-
-(kind/test-last [true?])
 
 (kind/doc #'sk/plan->membrane)
 

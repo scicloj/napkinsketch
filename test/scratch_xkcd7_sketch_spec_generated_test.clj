@@ -20,11 +20,13 @@
  v5_l65
  (defn
   xkcd7-sk-summary
-  "Show the Blueprint fields that matter for understanding the rules."
+  "Show the xkcd7-sketch fields that matter for understanding the rules."
   [xkcd7-sk]
   {:shared (:shared xkcd7-sk),
    :entries
-   (mapv (fn* [p1__77431#] (dissoc p1__77431# :data)) (:entries xkcd7-sk)),
+   (mapv
+    (fn* [p1__396742#] (dissoc p1__396742# :data))
+    (:entries xkcd7-sk)),
    :methods (:methods xkcd7-sk),
    :opts (:opts xkcd7-sk)}))
 
@@ -260,7 +262,7 @@
      (=
       [1 1]
       (mapv
-       (fn* [p1__77432#] (count (:methods p1__77432#)))
+       (fn* [p1__396743#] (count (:methods p1__396743#)))
        (:entries m)))
      (= :sepal_length (:x (first (:entries m))))
      (= :petal_length (:x (second (:entries m))))))
@@ -618,3 +620,54 @@
       (= (* 6 150) (:points s))
       (pos? (:polygons s)))))
    v80_l428)))
+
+
+(def
+ v83_l445
+ (def
+  scale-plan
+  (->
+   iris
+   (sk/xkcd7-view :sepal_length :sepal_width)
+   sk/xkcd7-lay-point
+   (sk/xkcd7-scale :x :log)
+   (sk/xkcd7-scale :y {:domain [0 6]})
+   (sk/xkcd7-coord :flip)
+   sk/xkcd7-plan)))
+
+
+(def
+ v84_l454
+ (let
+  [panel (first (:panels scale-plan))]
+  {:coord (:coord panel),
+   :x-scale (:x-scale panel),
+   :y-scale (:y-scale panel),
+   :x-domain (:x-domain panel)}))
+
+
+(deftest
+ t85_l460
+ (is
+  ((fn
+    [m]
+    (and
+     (= :flip (:coord m))
+     (= [0 6] (:x-domain m))
+     (= {:type :linear, :domain [0 6]} (:x-scale m))
+     (= {:type :log} (:y-scale m))))
+   v84_l454)))
+
+
+(def v87_l472 (select-keys scale-plan [:x-label :y-label]))
+
+
+(deftest
+ t88_l474
+ (is
+  ((fn
+    [m]
+    (and
+     (= "sepal_width" (:x-label m))
+     (= "sepal_length" (:y-label m))))
+   v87_l472)))

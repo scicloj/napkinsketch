@@ -52,7 +52,7 @@
 (deftest t14_l40 (is ((fn [m] (= 1 (count (:entries m)))) v13_l35)))
 
 
-(def v16_l44 (-> iris (sk/lay-point :sepal_length :sepal_width)))
+(def v16_l44 (-> iris (sk/xkcd7-lay-point :sepal_length :sepal_width)))
 
 
 (deftest

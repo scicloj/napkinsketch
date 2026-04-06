@@ -29,9 +29,16 @@
 ;; ## Overview
 ;;
 ;; The pipeline from data to figure has several stages, each governed
-;; by a multimethod:
+;; by a multimethod. The xkcd7-sketch API adds a composable front-end
+;; that resolves into the same pipeline:
 ;;
 ;; ```
+;; xkcd7-sketch (xkcd7-view, xkcd7-lay-*, xkcd7-options, ...)
+;;                        ↓
+;;                     resolve
+;;                        ↓
+;;                      views
+;;                        ↓
 ;; views → views->plan (compute-stat, extract-layer, ...)
 ;;                                              ↓
 ;;                                           plan
@@ -142,8 +149,8 @@
 ;; A plan layer looks like this:
 
 (let [s (-> data/iris
-            (sk/lay-point :sepal_length :sepal_width {:color :species})
-            sk/plan)
+            (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+            sk/xkcd7-plan)
       layer (first (:layers (first (:panels s))))]
   layer)
 
@@ -191,10 +198,11 @@
 ;;   ...)
 ;; ```
 ;;
-;; ### How to extend: register a method and create a layer function
+;; ### How to extend: register a method and create a xkcd7-sketch-compatible layer function
 ;;
 ;; After defining `compute-stat` and `extract-layer` for your custom
-;; mark, register a method and create a convenience function:
+;; mark, register a method and create a convenience function that
+;; works with the xkcd7-sketch API:
 ;;
 ;; ```clojure
 ;; ;; Register the method
@@ -202,11 +210,14 @@
 ;;   {:mark :waterfall :stat :waterfall
 ;;    :doc "Waterfall — running total with increase/decrease bars."})
 ;;
-;; ;; Create a layer function (follows the same pattern as built-in ones)
+;; ;; Users can then call:
+;; ;; (sk/xkcd7-lay data (method/lookup :waterfall))
+;;
+;; ;; Or create a convenience function using xkcd7-lay:
 ;; (defn lay-waterfall
-;;   ([views] (sk/lay views (method/lookup :waterfall)))
-;;   ([data x y] (-> data (sk/view x y) (sk/lay (merge (method/lookup :waterfall)))))
-;;   ([data x y opts] (-> data (sk/view x y) (sk/lay (merge (method/lookup :waterfall) opts)))))
+;;   ([xkcd7-sk] (sk/xkcd7-lay xkcd7-sk (method/lookup :waterfall)))
+;;   ([data x y] (-> data (sk/xkcd7-view x y) (sk/xkcd7-lay (method/lookup :waterfall))))
+;;   ([data x y opts] (-> data (sk/xkcd7-view x y) (sk/xkcd7-lay (merge (method/lookup :waterfall) opts)))))
 ;; ```
 ;;
 ;; Users can then call `(lay-waterfall data :category :amount)`.
@@ -232,8 +243,8 @@
 
 (def my-plan
   (-> data/iris
-      (sk/lay-point :sepal_length :sepal_width {:color :species})
-      sk/plan))
+      (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+      sk/xkcd7-plan))
 
 (first (sk/plan->figure my-plan :svg {}))
 
@@ -269,7 +280,7 @@
 ;;
 ;; ```clojure
 ;; (require '[mylib.render.plotly])
-;; (sk/plot views {:format :plotly})
+;; (sk/xkcd7-plot views {:format :plotly})
 ;; ```
 
 ;; ## `membrane->figure`
@@ -338,7 +349,7 @@
 ;;
 ;; Dispatch: inferred from the domain type and scale spec.
 ;; Categorical domains → `:categorical`. Numerical domains default to
-;; `:linear`, overridden to `:log` by `(sk/scale views :x :log)`.
+;; `:linear`, overridden to `:log` by `(sk/xkcd7-scale xkcd7-sketch :x :log)`.
 
 ;; ## `make-coord`
 ;;
@@ -363,8 +374,8 @@
 ;; A flipped bar chart uses `:flip` coordinates:
 
 (-> data/iris
-    (sk/lay-bar :species)
-    (sk/coord :flip))
+    (sk/xkcd7-lay-bar :species)
+    (sk/xkcd7-coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
