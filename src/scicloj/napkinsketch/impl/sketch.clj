@@ -262,6 +262,20 @@
      :color-cols color-cols
      :tagged-views tagged-views}))
 
+(defn- adjust-fixed-aspect
+  "Adjust panel dimensions for coord :fixed so that 1 data unit = 1 data unit
+   on both axes. Shrinks the larger dimension to match the data aspect ratio."
+  [pw ph x-domain y-domain]
+  (let [x-range (- (double (second x-domain)) (double (first x-domain)))
+        y-range (- (double (second y-domain)) (double (first y-domain)))]
+    (if (or (<= x-range 0) (<= y-range 0))
+      {:pw pw :ph ph}
+      (let [data-ratio (/ x-range y-range)
+            panel-ratio (/ pw ph)]
+        (if (> panel-ratio data-ratio)
+          {:pw (* ph data-ratio) :ph ph}
+          {:pw pw :ph (/ pw data-ratio)})))))
+
 (defn- compute-panel-dims
   "Compute per-panel pixel dimensions and margin."
   [cfg layout-type grid-rows grid-cols width height]
@@ -597,7 +611,7 @@
                             (select-keys a [:mark :intercept :lo :hi :alpha
                                             :facet-col :facet-row :x :y])))
 
-         ;; Panel dimensions
+         ;; Panel dimensions (before fixed-aspect adjustment)
          {:keys [m pw ph]}
          (compute-panel-dims cfg layout-type grid-rows-n grid-cols-n width height)
 
@@ -682,6 +696,18 @@
                                      :x-scale (:y-scale p) :y-scale (:x-scale p))))
                         panels)
                   panels)
+
+         ;; Adjust panel dims for coord :fixed
+         [pw ph] (if (= rep-coord :fixed)
+                   (let [p1 (first panels)
+                         gx (:x-domain p1)
+                         gy (:y-domain p1)]
+                     (if (and (sequential? gx) (= 2 (count gx)) (number? (first gx))
+                              (sequential? gy) (= 2 (count gy)) (number? (first gy)))
+                       (let [{pw' :pw ph' :ph} (adjust-fixed-aspect pw ph gx gy)]
+                         [pw' ph'])
+                       [pw ph]))
+                   [pw ph])
 
          ;; Labels
          multi? (and (= layout-type :multi-variable) (> grid-cols-n 1) (> grid-rows-n 1))

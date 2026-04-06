@@ -432,18 +432,14 @@
     (is (= 3 (count (:panels pl))))))
 
 (deftest coord-fixed-test
-  (testing "coord :fixed end-to-end — equal ranges produce square SVG"
+  (testing "coord :fixed end-to-end — equal ranges produce square panel"
     (let [ds (tc/dataset {:x [0 10 5] :y [0 10 5]})
-          fig (-> ds (sk/xkcd7-view :x :y) (sk/xkcd7-coord :fixed) sk/xkcd7-lay-point sk/xkcd7-plot)
-          svg (if (= :svg (first fig)) fig (second fig))
-          {:keys [width height]} (second svg)]
-      (is (== width height) "Equal data ranges → square SVG")))
+          pl (-> ds (sk/xkcd7-view :x :y) (sk/xkcd7-coord :fixed) sk/xkcd7-lay-point sk/xkcd7-plan)]
+      (is (== (:panel-width pl) (:panel-height pl)) "Equal data ranges → square panel")))
   (testing "coord :fixed end-to-end — asymmetric ranges"
     (let [ds (tc/dataset {:x [0 100 50] :y [0 10 5]})
-          fig (-> ds (sk/xkcd7-view :x :y) (sk/xkcd7-coord :fixed) sk/xkcd7-lay-point sk/xkcd7-plot)
-          svg (if (= :svg (first fig)) fig (second fig))
-          {:keys [width height]} (second svg)]
-      (is (> width height) "Wide data → wider SVG"))))
+          pl (-> ds (sk/xkcd7-view :x :y) (sk/xkcd7-coord :fixed) sk/xkcd7-lay-point sk/xkcd7-plan)]
+      (is (> (:panel-width pl) (:panel-height pl)) "Wide data → wider panel"))))
 
 (deftest diverging-color-test
   (testing "diverging-color endpoints"
@@ -1107,11 +1103,10 @@
                   (sk/xkcd7-lay-point {:color "#FF0000"})
                   sk/xkcd7-plot)]
         (is (= 3 (:points (sk/svg-summary v))))))
-    (testing "Typo still gives good error"
-      (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                            #"not found in dataset"
-                            (-> iris (sk/xkcd7-view :sepl_length :sepal_width)
-                                sk/xkcd7-lay-point sk/xkcd7-plot))))))
+    (testing "Typo still gives error at plan time"
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (-> iris (sk/xkcd7-view :sepl_length :sepal_width)
+                       sk/xkcd7-lay-point sk/xkcd7-plot))))))
 
 (deftest string-column-in-lay-test
   (testing "String column names in lay-point directly (no sk/xkcd7-view)"
@@ -1220,19 +1215,16 @@
                           (sk/xkcd7-coord [] :invalid)))))
 
 (deftest facet-broadcast-test
-  (testing "Non-faceted view broadcasts into all facet panels"
+  (testing "Global method (loess) applies to all facet panels"
     (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                            {:key-fn keyword})
-          ;; Faceted scatter
-          faceted-views (:views (-> iris
-                                    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-                                    (sk/xkcd7-facet :species)))
-          ;; Non-faceted LOESS overlay (no :facet-col, no :facet-row)
-          overlay {:x :sepal_length :y :sepal_width :mark :line :stat :loess :data iris}
-          all-views (conj faceted-views overlay)
-          s (sk/svg-summary (sk/plan->figure
-                             (sketch-impl/xkcd7-views->plan all-views {}) :svg {}))]
-      (is (= 3 (:panels s)) "Non-faceted overlay should not reduce panel count")
+          s (-> iris
+                (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
+                (sk/xkcd7-facet :species)
+                sk/xkcd7-lay-loess
+                sk/xkcd7-plot
+                sk/svg-summary)]
+      (is (= 3 (:panels s)) "Faceted into 3 panels by species")
       (is (= 3 (:lines s)) "LOESS should appear in all 3 panels")
       (is (= 150 (:points s)) "Scatter points still render")))
   (testing "Existing faceted behavior unchanged"

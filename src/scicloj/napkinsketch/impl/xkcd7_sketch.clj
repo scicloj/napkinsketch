@@ -21,10 +21,20 @@
 
 ;; ---- Resolution ----
 
+(defn- ensure-keyword-columns
+  "If dataset has string column names, rename them to keywords."
+  [ds]
+  (let [renames (into {} (for [c (tc/column-names ds) :when (string? c)]
+                           [c (keyword c)]))]
+    (if (seq renames)
+      (tc/rename-columns ds renames)
+      ds)))
+
 (defn- ensure-dataset
-  "Coerce raw data to a Tablecloth dataset. Returns nil for nil input."
+  "Coerce raw data to a Tablecloth dataset with keyword column names.
+   Returns nil for nil input."
   [d]
-  (when d (if (tc/dataset? d) d (tc/dataset d))))
+  (when d (ensure-keyword-columns (if (tc/dataset? d) d (tc/dataset d)))))
 
 (defn- expand-facets
   "Expand entries with keyword :facet-col/:facet-row into per-value entries."
@@ -86,7 +96,17 @@
                 base (merge shared (dissoc entry :methods))]
             (map (fn [m]
                    (let [resolved (merge base m)
-                         d (ensure-dataset (or (:data resolved) data))]
+                         d (ensure-dataset (or (:data resolved) data))
+                         ;; Normalize string column refs to keywords.
+                         ;; Skip :color — it can be a literal color string (e.g. "#FF0000").
+                         ;; Color normalization is handled in view/resolve-aesthetics.
+                         resolved (reduce (fn [v k]
+                                            (let [val (get v k)]
+                                              (if (string? val)
+                                                (assoc v k (keyword val))
+                                                v)))
+                                          resolved
+                                          [:x :y :size :alpha :text :group])]
                      (-> resolved
                          (assoc :data d
                                 :__entry-idx entry-idx)

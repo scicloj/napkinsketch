@@ -363,6 +363,10 @@
    (let [xkcd7-sk (xkcd7-ensure-xkcd7-sk xkcd7-sk-or-data)]
      (update xkcd7-sk :methods conj (xkcd7-method-map method-key opts)))))
 
+(def ^:private x-only-methods
+  "Methods that accept only :x, not :y."
+  #{:histogram :bar :density :stacked-bar :stacked-bar-fill})
+
 (defn- xkcd7-lay-method
   "Shared implementation for all xkcd7-lay-* functions.
    1-arity: auto-infer columns for small datasets, otherwise global method.
@@ -394,9 +398,12 @@
   ([method-key xkcd7-sk-or-data x y-or-opts]
    (cond
      (or (keyword? y-or-opts) (string? y-or-opts))
-     (xkcd7-add-entry-method (xkcd7-ensure-xkcd7-sk xkcd7-sk-or-data)
-                             {:x x :y y-or-opts}
-                             (xkcd7-method-map method-key nil))
+     (do (when (x-only-methods method-key)
+           (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
+                           {:method method-key :x x :y y-or-opts})))
+         (xkcd7-add-entry-method (xkcd7-ensure-xkcd7-sk xkcd7-sk-or-data)
+                                 {:x x :y y-or-opts}
+                                 (xkcd7-method-map method-key nil)))
      (and (sequential? x) (map? y-or-opts))
      (-> (xkcd7-view xkcd7-sk-or-data x y-or-opts)
          (xkcd7-lay method-key))
@@ -405,6 +412,9 @@
                              {:x x}
                              (xkcd7-method-map method-key y-or-opts))))
   ([method-key xkcd7-sk-or-data x y opts]
+   (when (x-only-methods method-key)
+     (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
+                     {:method method-key :x x :y y})))
    (xkcd7-add-entry-method (xkcd7-ensure-xkcd7-sk xkcd7-sk-or-data)
                            {:x x :y y}
                            (xkcd7-method-map method-key opts))))
@@ -590,23 +600,39 @@
   ([xkcd7-sk-or-data x y-or-opts] (xkcd7-lay-method :rug xkcd7-sk-or-data x y-or-opts))
   ([xkcd7-sk-or-data x y opts] (xkcd7-lay-method :rug xkcd7-sk-or-data x y opts)))
 
+(defn- normalize-col
+  "Normalize a string column reference to a keyword."
+  [col]
+  (if (string? col) (keyword col) col))
+
 (defn xkcd7-facet
   "Facet a xkcd7-sketch by a column."
   ([xkcd7-sk col] (xkcd7-facet xkcd7-sk col :col))
   ([xkcd7-sk col direction]
-   (let [k (case direction :col :facet-col :row :facet-row)]
+   (let [k (case direction :col :facet-col :row :facet-row)
+         col (normalize-col col)]
      (update xkcd7-sk :entries (fn [entries] (mapv #(assoc % k col) entries))))))
 
 (defn xkcd7-facet-grid
   "Facet a xkcd7-sketch by two columns (2D grid)."
   [xkcd7-sk col-col row-col]
-  (update xkcd7-sk :entries (fn [entries]
-                              (mapv #(assoc % :facet-col col-col :facet-row row-col) entries))))
+  (let [col-col (normalize-col col-col)
+        row-col (normalize-col row-col)]
+    (update xkcd7-sk :entries (fn [entries]
+                                (mapv #(assoc % :facet-col col-col :facet-row row-col) entries)))))
+
+(defn- deep-merge
+  "Recursively merge maps. Non-map values are overwritten."
+  [a b]
+  (if (and (map? a) (map? b))
+    (merge-with deep-merge a b)
+    b))
 
 (defn xkcd7-options
-  "Set plot-level options (title, labels, width, height, etc.)."
+  "Set plot-level options (title, labels, width, height, etc.).
+   Nested maps (e.g. :theme) are deep-merged."
   [xkcd7-sk opts]
-  (update xkcd7-sk :opts merge opts))
+  (update xkcd7-sk :opts deep-merge opts))
 
 (defn xkcd7-scale
   "Set axis scale on a xkcd7-sketch.
@@ -624,6 +650,9 @@
   "Set coordinate transform on a xkcd7-sketch.
    (xkcd7-coord xkcd7-sk :flip) — flipped coordinates."
   [xkcd7-sk coord-type]
+  (when-not (#{:cartesian :flip :polar :fixed} coord-type)
+    (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
+                    {:coord coord-type})))
   (update xkcd7-sk :entries (fn [entries]
                               (mapv #(assoc % :coord coord-type) entries))))
 

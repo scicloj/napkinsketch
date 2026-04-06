@@ -508,13 +508,12 @@
 ;; Methods that use only the x column (histogram, bar, density, rug)
 ;; reject a y column with a clear message.
 
-;; Note: in the xkcd7 API, `(lay-histogram data :x :y)` creates an
-;; entry with both :x and :y. The histogram stat ignores the y column
-;; and renders based on x alone.
+;; Histogram uses only the x column. Passing a y column is now an error:
 
-(-> {:x [1 2 3] :y [4 5 6]}
-    (sk/xkcd7-lay-histogram :x :y)
-    sk/svg-summary
-    :polygons)
+(try
+  (-> {:x [1 2 3] :y [4 5 6]}
+      (sk/xkcd7-lay-histogram :x :y))
+  (catch clojure.lang.ExceptionInfo e
+    (ex-message e)))
 
-(kind/test-last [(fn [n] (pos? n))])
+(kind/test-last [(fn [m] (re-find #"lay-histogram uses only the x column" m))])
