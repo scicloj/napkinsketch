@@ -343,7 +343,8 @@
       (update sk :entries conj (assoc entry-keys :methods [method-map])))))
 
 (defn- method-map
-  "Build a method map from a method-key (keyword) or raw map, with optional opts."
+  "Build a method map from a method-key (keyword) or raw map, with optional opts.
+   Warns on unrecognized option keys."
   [method-key opts]
   (let [base (if (keyword? method-key)
                (let [m (method/lookup method-key)]
@@ -351,6 +352,15 @@
                      {:mark method-key :stat :identity}))
                ;; Raw map — pass through as-is
                method-key)]
+    (when (and opts (keyword? method-key))
+      (let [reg (method/lookup method-key)
+            accepted (into (set method/universal-layer-options)
+                           (:accepts reg))
+            unknown (remove accepted (keys opts))]
+        (when (seq unknown)
+          (println (str "Warning: lay-" (name method-key)
+                        " does not recognize option(s): " (vec unknown)
+                        ". Accepted: " (vec (sort accepted)))))))
     (merge base opts)))
 
 (defn lay
@@ -362,9 +372,10 @@
    (let [sk (ensure-sk sk-or-data)]
      (update sk :methods conj (method-map method-key opts)))))
 
-(def ^:private x-only-methods
-  "Methods that accept only :x, not :y."
-  #{:histogram :bar :density :stacked-bar :stacked-bar-fill})
+(defn- x-only?
+  "True if method-key is registered as x-only (rejects :y column)."
+  [method-key]
+  (:x-only (method/lookup method-key)))
 
 (defn- lay-method
   "Shared implementation for all lay-* functions.
@@ -397,7 +408,7 @@
   ([method-key sk-or-data x y-or-opts]
    (cond
      (or (keyword? y-or-opts) (string? y-or-opts))
-     (do (when (x-only-methods method-key)
+     (do (when (x-only? method-key)
            (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
                            {:method method-key :x x :y y-or-opts})))
          (add-entry-method (ensure-sk sk-or-data)
@@ -411,7 +422,7 @@
                        {:x x}
                        (method-map method-key y-or-opts))))
   ([method-key sk-or-data x y opts]
-   (when (x-only-methods method-key)
+   (when (x-only? method-key)
      (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
                      {:method method-key :x x :y y})))
    (add-entry-method (ensure-sk sk-or-data)
@@ -605,17 +616,20 @@
   (if (string? col) (keyword col) col))
 
 (defn facet
-  "Facet a sketch by a column."
+  "Facet a sketch by a column.
+   Direction is :col (default, horizontal row) or :row (vertical column)."
   ([sk col] (facet sk col :col))
   ([sk col direction]
-   (let [k (case direction :col :facet-col :row :facet-row)
+   (let [sk (ensure-sk sk)
+         k (case direction :col :facet-col :row :facet-row)
          col (normalize-col col)]
      (update sk :entries (fn [entries] (mapv #(assoc % k col) entries))))))
 
 (defn facet-grid
   "Facet a sketch by two columns (2D grid)."
   [sk col-col row-col]
-  (let [col-col (normalize-col col-col)
+  (let [sk (ensure-sk sk)
+        col-col (normalize-col col-col)
         row-col (normalize-col row-col)]
     (update sk :entries (fn [entries]
                           (mapv #(assoc % :facet-col col-col :facet-row row-col) entries)))))
@@ -631,13 +645,14 @@
   "Set plot-level options (title, labels, width, height, etc.).
    Nested maps (e.g. :theme) are deep-merged."
   [sk opts]
-  (update sk :opts deep-merge opts))
+  (update (ensure-sk sk) :opts deep-merge opts))
 
 (defn scale
   "Set axis scale on a sketch.
    (scale sk :x :log) — log scale on x-axis."
   [sk channel scale-type]
-  (let [k (case channel :x :x-scale :y :y-scale
+  (let [sk (ensure-sk sk)
+        k (case channel :x :x-scale :y :y-scale
                 (throw (ex-info (str "Scale channel must be :x or :y, got: " channel)
                                 {:channel channel})))]
     (update sk :entries (fn [entries]
@@ -652,8 +667,9 @@
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
                     {:coord coord-type})))
-  (update sk :entries (fn [entries]
-                        (mapv #(assoc % :coord coord-type) entries))))
+  (let [sk (ensure-sk sk)]
+    (update sk :entries (fn [entries]
+                          (mapv #(assoc % :coord coord-type) entries)))))
 
 (defn plan
   "Resolve a sketch into a plan using entry-based grid layout.
@@ -675,7 +691,7 @@
   [sk & annotations]
   (reduce (fn [sk ann]
             (update sk :entries conj (assoc ann :methods [ann])))
-          sk annotations))
+          (ensure-sk sk) annotations))
 
 (defn overlay
   "Add a layer with different columns on the same panel as an existing entry.
