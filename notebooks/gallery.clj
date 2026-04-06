@@ -714,3 +714,93 @@
 ;;
 ;; - **Gradient line** — line where color varies along the path (e.g.,
 ;;   temperature over time). Needs per-segment coloring.
+
+;; ### Equal aspect ratio scatter
+;; Source: [D3 Graph Gallery: scatter basic](https://d3-graph-gallery.com/graph/scatter_basic.html)
+;; Using coord :fixed to ensure 1 data unit = 1 data unit on both axes.
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/coord :fixed)
+    (sk/options {:title "Iris Sepals (Equal Aspect Ratio)"}))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; ### Value bar chart (pre-computed heights)
+;; Source: [ECharts: Basic Bar](https://echarts.apache.org/examples/en/editor.html?c=bar-simple)
+
+(-> (tc/dataset {:category ["Mon" "Tue" "Wed" "Thu" "Fri" "Sat" "Sun"]
+                 :value [120 200 150 80 70 110 130]})
+    (sk/lay-value-bar :category :value)
+    (sk/options {:title "Weekly Sales"}))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; ### Colored density curves
+;; Source: [Python Graph Gallery: Multiple Density](https://python-graph-gallery.com/density-plot/)
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-density :sepal-length {:color :species})
+    (sk/options {:title "Sepal Length by Species"
+                 :x-label "Sepal Length (cm)"}))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; ### Scatter with LOESS + confidence band by group
+;; Source: [R Graph Gallery: Scatter with smoothing](https://r-graph-gallery.com/scatterplot.html)
+
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
+    sk/lay-point
+    (sk/lay-loess {:se true})
+    (sk/options {:title "Iris: Scatter + LOESS by Species"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
+
+;; ### Errorbar chart
+;; Source: [Vega-Lite: Layered Point + Error Bar](https://vega.github.io/vega-lite/examples/layer_point_errorbar_ci.html)
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-summary :species :sepal-length)
+    (sk/options {:title "Mean Sepal Length ± SE by Species"}))
+
+(kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
+
+;; ### Point + rug (marginal marks)
+;; Source: [Python Graph Gallery: Rug Plot](https://python-graph-gallery.com/rug-plot/)
+
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
+    sk/lay-point
+    sk/lay-rug
+    (sk/options {:title "Iris: Scatter with Rug Marks"}))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; ---
+;; ## Additional Gaps
+;;
+;; More patterns from these galleries that napkinsketch cannot yet do:
+;;
+;; - **Grouped boxplot side-by-side** — ECharts and Vega-Lite show
+;;   multiple boxplots per category with dodge positioning.
+;;   napkinsketch has dodge for bars but not boxplots with a separate
+;;   color group. (Partial support: `{:color :smoker}` on boxplot works
+;;   but visual quality needs checking.)
+;;
+;; - **Candlestick / OHLC** — common in ECharts for financial data.
+;;   Needs a new mark type with open/high/low/close channels.
+;;
+;; - **Gauge chart** — ECharts specialty. Not a statistical graphic.
+;;
+;; - **Funnel chart** — ECharts. Could approximate with horizontal
+;;   bars of decreasing width, but not natively supported.
+;;
+;; - **Radar / Spider chart** — Vega-Lite and ECharts. Needs a new
+;;   coordinate system (radial with fixed angles per category).
+;;
+;; - **Diverging bar** — Python Graph Gallery. Bars extending in both
+;;   directions from a center line. Could approximate with value-bar
+;;   using negative values if clamp-zero is handled correctly (now fixed).
