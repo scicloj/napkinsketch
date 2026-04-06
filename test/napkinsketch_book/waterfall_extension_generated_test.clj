@@ -197,10 +197,7 @@
   lay-waterfall
   ([sk] (sk/lay sk (method/lookup :waterfall)))
   ([data x y]
-   (->
-    data
-    (sk/view x y)
-    (sk/lay (method/lookup :waterfall))))
+   (-> data (sk/view x y) (sk/lay (method/lookup :waterfall))))
   ([data x y opts]
    (->
     data

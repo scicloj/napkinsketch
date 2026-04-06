@@ -198,3 +198,42 @@
      :tick "#999999"}})
   sk/svg-summary
   :panels))
+
+
+(deftest t52_l308 (is ((fn [n] (= 1 n)) v51_l302)))
+
+
+(def v54_l321 (def my-membrane (sk/plan->membrane my-plan)))
+
+
+(def v55_l323 (vector? my-membrane))
+
+
+(deftest t56_l325 (is ((fn [v] (true? v)) v55_l323)))
+
+
+(def v57_l327 (count my-membrane))
+
+
+(deftest t58_l329 (is ((fn [n] (pos? n)) v57_l327)))
+
+
+(def v60_l339 (def my-figure (sk/plan->figure my-plan :svg {})))
+
+
+(def v61_l341 (first my-figure))
+
+
+(deftest t62_l343 (is ((fn [v] (= :svg v)) v61_l341)))
+
+
+(def v64_l390 (count sk/plot-option-docs))
+
+
+(deftest t65_l392 (is ((fn [n] (= 6 n)) v64_l390)))
+
+
+(def v67_l407 (count sk/layer-option-docs))
+
+
+(deftest t68_l409 (is ((fn [n] (= 20 n)) v67_l407)))

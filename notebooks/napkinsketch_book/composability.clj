@@ -37,6 +37,19 @@
 
 ;; `sk/lay-point` creates a sketch — a lightweight description
 ;; of the plot. Nothing is computed until the notebook displays it.
+;;
+;; In the notebook, sketches auto-render as plots. To see the
+;; underlying data, wrap with `kind/pprint`:
+
+(-> data/iris
+    (sk/lay-point :sepal_length :sepal_width)
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (:data v) (vector? (:entries v)) (vector? (:methods v))))])
+
+;; A sketch is a record with `:data`, `:shared`, `:entries`,
+;; `:methods`, and `:opts`. Every function in the API returns
+;; a sketch, so they all compose through `->`.
 
 ;; ## Adding Color
 ;;
@@ -105,7 +118,7 @@
 
 (-> data/iris
     (sk/view [[:sepal_length :sepal_width]
-                    [:petal_length :petal_width]]))
+              [:petal_length :petal_width]]))
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
@@ -147,7 +160,7 @@
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/annotate (sk/rule-h 3.0)
-                       (sk/band-v 5.5 7.0 {:alpha 0.15})))
+                 (sk/band-v 5.5 7.0 {:alpha 0.15})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -155,8 +168,8 @@
 
 ;; ## Inside a sketch
 ;;
-;; A sketch is a Clojure record with five fields. You can inspect
-;; it with standard map operations:
+;; We saw earlier that a sketch is a record with five fields.
+;; You can access them with standard map operations:
 
 (def my-sk
   (-> data/iris

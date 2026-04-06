@@ -7,9 +7,7 @@
   [clojure.test :refer [deftest is]]))
 
 
-(def
- v3_l19
- (-> data/iris (sk/lay-point :sepal_length :sepal_width)))
+(def v3_l19 (-> data/iris (sk/lay-point :sepal_length :sepal_width)))
 
 
 (deftest
@@ -146,9 +144,7 @@
 
 (def
  v24_l105
- (->
-  data/iris
-  (sk/lay-point :species :sepal_width {:jitter true})))
+ (-> data/iris (sk/lay-point :species :sepal_width {:jitter true})))
 
 
 (deftest
@@ -184,10 +180,7 @@
  v30_l126
  (->
   data/iris
-  (sk/lay-point
-   :sepal_length
-   :sepal_width
-   {:color :petal_length})))
+  (sk/lay-point :sepal_length :sepal_width {:color :petal_length})))
 
 
 (deftest

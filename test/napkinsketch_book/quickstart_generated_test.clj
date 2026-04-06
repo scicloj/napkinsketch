@@ -24,9 +24,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v4_l36)))
 
 
-(def
- v7_l55
- (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} (sk/lay-point :x :y)))
+(def v7_l55 (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} (sk/lay-point :x :y)))
 
 
 (deftest
@@ -54,9 +52,7 @@
 
 (def
  v16_l82
- (->
-  iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})))
+ (-> iris (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
@@ -101,9 +97,7 @@
    v22_l106)))
 
 
-(def
- v25_l115
- (-> iris (sk/lay-bar :species) (sk/coord :flip)))
+(def v25_l115 (-> iris (sk/lay-bar :species) (sk/coord :flip)))
 
 
 (deftest
@@ -114,9 +108,7 @@
 
 (def
  v28_l124
- (->
-  {:x [1 2 3 4 5 6 7 8], :y [3 5 4 7 6 8 7 9]}
-  (sk/lay-line :x :y)))
+ (-> {:x [1 2 3 4 5 6 7 8], :y [3 5 4 7 6 8 7 9]} (sk/lay-line :x :y)))
 
 
 (deftest
@@ -218,11 +210,7 @@
 (def
  v49_l205
  (sk/arrange
-  [(sk/lay-point
-    iris
-    :sepal_length
-    :sepal_width
-    {:color :species})
+  [(sk/lay-point iris :sepal_length :sepal_width {:color :species})
    (sk/lay-histogram iris :sepal_length {:color :species})]
   {:cols 2}))
 

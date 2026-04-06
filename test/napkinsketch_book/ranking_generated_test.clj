@@ -43,9 +43,7 @@
    v7_l33)))
 
 
-(def
- v10_l45
- (-> data/tips (sk/lay-stacked-bar :day {:color :smoker})))
+(def v10_l45 (-> data/tips (sk/lay-stacked-bar :day {:color :smoker})))
 
 
 (deftest
@@ -61,9 +59,7 @@
 
 (def
  v13_l57
- (->
-  data/penguins
-  (sk/lay-stacked-bar-fill :island {:color :species})))
+ (-> data/penguins (sk/lay-stacked-bar-fill :island {:color :species})))
 
 
 (deftest
@@ -77,9 +73,7 @@
    v13_l57)))
 
 
-(def
- v16_l68
- (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
+(def v16_l68 (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
 
 
 (deftest
@@ -95,10 +89,7 @@
 
 (def
  v19_l81
- (->
-  data/tips
-  (sk/lay-bar :day {:color :time})
-  (sk/coord :flip)))
+ (-> data/tips (sk/lay-bar :day {:color :time}) (sk/coord :flip)))
 
 
 (deftest
@@ -128,10 +119,7 @@
 
 (def
  v25_l105
- (->
-  sales
-  (sk/lay-value-bar :product :revenue)
-  (sk/coord :flip)))
+ (-> sales (sk/lay-value-bar :product :revenue) (sk/coord :flip)))
 
 
 (deftest
@@ -161,10 +149,7 @@
 
 (def
  v31_l128
- (->
-  sales
-  (sk/lay-lollipop :product :revenue)
-  (sk/coord :flip)))
+ (-> sales (sk/lay-lollipop :product :revenue) (sk/coord :flip)))
 
 
 (deftest

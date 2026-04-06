@@ -33,9 +33,7 @@
  v6_l41
  (->
   data/iris
-  (sk/lay-histogram
-   :sepal_length
-   {:normalize :density, :alpha 0.5})
+  (sk/lay-histogram :sepal_length {:normalize :density, :alpha 0.5})
   sk/lay-density))
 
 
@@ -104,8 +102,8 @@
    :value
    (map
     (fn*
-     [p1__67974#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__67974#) 0.12)))))
+     [p1__79228#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__79228#) 0.12)))))
     (range 52))}))
 
 
@@ -181,9 +179,7 @@
 
 (def
  v29_l135
- (->
-  data/penguins
-  (sk/lay-stacked-bar-fill :island {:color :species})))
+ (-> data/penguins (sk/lay-stacked-bar-fill :island {:color :species})))
 
 
 (deftest
@@ -432,7 +428,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__67975#] (= "virginica" p1__67975#))
+       (fn* [p1__79229#] (= "virginica" p1__79229#))
        (:texts s)))))
    v64_l287)))
 
@@ -486,8 +482,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__67976#] (Math/sin (/ p1__67976# 3.0))) (range 20)),
-   :change (map (fn* [p1__67977#] (- p1__67977# 10)) (range 20))}
+   (map (fn* [p1__79230#] (Math/sin (/ p1__79230# 3.0))) (range 20)),
+   :change (map (fn* [p1__79231#] (- p1__79231# 10)) (range 20))}
   (sk/lay-point :x :y {:color :change})
   (sk/options
    {:color-scale :diverging,
@@ -604,8 +600,8 @@
    ys
    (map
     (fn*
-     [p1__67978#]
-     (+ (* 3 p1__67978#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__79232#]
+     (+ (* 3 p1__79232#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}

@@ -23,9 +23,7 @@
 
 (def
  v6_l31
- (->
-  data/iris
-  (sk/lay-histogram :sepal_length {:color :species})))
+ (-> data/iris (sk/lay-histogram :sepal_length {:color :species})))
 
 
 (deftest
@@ -73,7 +71,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__331050#] (= "Distribution of Total Bill" p1__331050#))
+       (fn* [p1__78695#] (= "Distribution of Total Bill" p1__78695#))
        (:texts s)))))
    v12_l53)))
 
@@ -82,9 +80,7 @@
  v15_l70
  (->
   data/iris
-  (sk/lay-histogram
-   :sepal_length
-   {:normalize :density, :alpha 0.5})
+  (sk/lay-histogram :sepal_length {:normalize :density, :alpha 0.5})
   sk/lay-density))
 
 
@@ -145,9 +141,7 @@
    v24_l106)))
 
 
-(def
- v27_l118
- (-> data/iris (sk/lay-boxplot :species :sepal_width)))
+(def v27_l118 (-> data/iris (sk/lay-boxplot :species :sepal_width)))
 
 
 (deftest
@@ -163,9 +157,7 @@
 
 (def
  v30_l131
- (->
-  data/tips
-  (sk/lay-boxplot :day :total_bill {:color :smoker})))
+ (-> data/tips (sk/lay-boxplot :day :total_bill {:color :smoker})))
 
 
 (deftest
@@ -192,7 +184,7 @@
    box-layer
    (first
     (filter
-     (fn* [p1__331051#] (= :boxplot (:mark p1__331051#)))
+     (fn* [p1__78696#] (= :boxplot (:mark p1__78696#)))
      (:layers panel)))
    cats
    (:color-categories box-layer)]
@@ -204,10 +196,7 @@
 
 (def
  v36_l157
- (->
-  data/iris
-  (sk/lay-boxplot :species :sepal_width)
-  (sk/coord :flip)))
+ (-> data/iris (sk/lay-boxplot :species :sepal_width) (sk/coord :flip)))
 
 
 (deftest
@@ -264,7 +253,7 @@
    viol-layer
    (first
     (filter
-     (fn* [p1__331052#] (= :violin (:mark p1__331052#)))
+     (fn* [p1__78697#] (= :violin (:mark p1__78697#)))
      (:layers panel)))
    cats
    (:color-categories viol-layer)]
@@ -276,10 +265,7 @@
 
 (def
  v48_l207
- (->
-  data/iris
-  (sk/lay-violin :species :petal_length)
-  (sk/coord :flip)))
+ (-> data/iris (sk/lay-violin :species :petal_length) (sk/coord :flip)))
 
 
 (deftest
@@ -293,9 +279,7 @@
    v48_l207)))
 
 
-(def
- v51_l221
- (-> data/iris (sk/lay-ridgeline :species :sepal_length)))
+(def v51_l221 (-> data/iris (sk/lay-ridgeline :species :sepal_length)))
 
 
 (deftest

@@ -34,9 +34,7 @@
    v4_l26)))
 
 
-(def
- v7_l41
- (-> data/iris (sk/lay-bar :species) (sk/coord :polar)))
+(def v7_l41 (-> data/iris (sk/lay-bar :species) (sk/coord :polar)))
 
 
 (deftest
@@ -52,10 +50,7 @@
 
 (def
  v10_l54
- (->
-  wind
-  (sk/lay-value-bar :direction :speed)
-  (sk/coord :polar)))
+ (-> wind (sk/lay-value-bar :direction :speed) (sk/coord :polar)))
 
 
 (deftest
@@ -90,10 +85,7 @@
 
 (def
  v16_l79
- (->
-  data/iris
-  (sk/lay-histogram :sepal_length)
-  (sk/coord :polar)))
+ (-> data/iris (sk/lay-histogram :sepal_length) (sk/coord :polar)))
 
 
 (deftest

@@ -10,10 +10,7 @@
 
 (def
  v3_l21
- (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
-  sk/lay-lm))
+ (-> data/iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
 
 
 (deftest
@@ -97,16 +94,14 @@
     :y
     (map
      (fn*
-      [p1__67773#]
+      [p1__79027#]
       (+
-       (Math/sin (* p1__67773# 0.2))
+       (Math/sin (* p1__79027# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
 
-(def
- v16_l77
- (-> noisy-wave (sk/lay-point :x :y) sk/lay-loess))
+(def v16_l77 (-> noisy-wave (sk/lay-point :x :y) sk/lay-loess))
 
 
 (deftest
@@ -120,9 +115,7 @@
    v16_l77)))
 
 
-(def
- v19_l89
- (-> data/iris (sk/lay-tile :sepal_length :sepal_width)))
+(def v19_l89 (-> data/iris (sk/lay-tile :sepal_length :sepal_width)))
 
 
 (deftest
