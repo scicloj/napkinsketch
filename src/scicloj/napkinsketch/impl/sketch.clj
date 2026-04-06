@@ -862,16 +862,26 @@
          ;; Legends
          legend (build-legend resolved-all numeric-color? all-colors color-cols cfg)
          ;; If no color legend was built, check for tile layers with computed
-         ;; fill colors (e.g., density2d, bin2d) and build a gradient legend.
+         ;; fill colors (e.g., density2d, bin2d, or identity tiles with :fill).
          legend (or legend
-                    (let [fill-ranges (keep (fn [pd]
-                                              (some :fill-range (:stat-results pd)))
-                                            panel-data)]
-                      (when (seq fill-ranges)
+                    (let [;; Path 1: stat produces :fill-range (kde2d, bin2d)
+                          stat-fill-range (some (fn [pd]
+                                                  (some :fill-range (:stat-results pd)))
+                                                panel-data)
+                          ;; Path 2: resolved view has a :fill column (identity tiles)
+                          view-fill-range (when-not stat-fill-range
+                                            (some (fn [rv]
+                                                    (when (and (= :tile (:mark rv)) (:fill rv) (:data rv))
+                                                      (let [vals ((:data rv) (:fill rv))]
+                                                        (when (seq vals)
+                                                          [(dfn/reduce-min vals) (dfn/reduce-max vals)]))))
+                                                  resolved-all))
+                          [f-lo f-hi] (or stat-fill-range view-fill-range)]
+                      (when f-lo
                         (let [grad-fn (:gradient-fn cfg)
-                              [f-lo f-hi] (first fill-ranges)
+                              title (if stat-fill-range :density :fill)
                               n-stops 20]
-                          {:title :density
+                          {:title title
                            :type :continuous
                            :min f-lo :max f-hi
                            :color-scale (:color-scale cfg)
