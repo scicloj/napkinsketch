@@ -9,7 +9,7 @@
 
 
 (def
- v3_l42
+ v3_l40
  (def
   my-sketch
   (->
@@ -17,12 +17,12 @@
    (sk/lay-point :sepal_length :sepal_width {:color :species}))))
 
 
-(def v4_l46 (kind/pprint my-sketch))
+(def v4_l44 (kind/pprint my-sketch))
 
 
 (deftest
- t5_l48
- (is ((fn [v] (and (sk/sketch? v) (= 1 (count (:entries v))))) v4_l46)))
+ t5_l46
+ (is ((fn [v] (and (sk/sketch? v) (= 1 (count (:entries v))))) v4_l44)))
 
 
 (def
@@ -171,22 +171,22 @@
    v42_l258)))
 
 
-(def v45_l308 (:mark (sk/rule-h 5)))
+(def v45_l309 (:mark (sk/rule-h 5)))
 
 
-(deftest t46_l310 (is ((fn [m] (= :rule-h m)) v45_l308)))
+(deftest t46_l311 (is ((fn [m] (= :rule-h m)) v45_l309)))
 
 
-(def v48_l319 (:legend my-plan))
+(def v48_l320 (:legend my-plan))
 
 
 (deftest
- t49_l321
- (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v48_l319)))
+ t49_l322
+ (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v48_l320)))
 
 
 (def
- v51_l330
+ v51_l331
  (->
   data/iris
   (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -200,40 +200,40 @@
   :panels))
 
 
-(deftest t52_l336 (is ((fn [n] (= 1 n)) v51_l330)))
+(deftest t52_l337 (is ((fn [n] (= 1 n)) v51_l331)))
 
 
-(def v54_l349 (def my-membrane (sk/plan->membrane my-plan)))
+(def v54_l350 (def my-membrane (sk/plan->membrane my-plan)))
 
 
-(def v55_l351 (vector? my-membrane))
+(def v55_l352 (vector? my-membrane))
 
 
-(deftest t56_l353 (is ((fn [v] (true? v)) v55_l351)))
+(deftest t56_l354 (is ((fn [v] (true? v)) v55_l352)))
 
 
-(def v57_l355 (count my-membrane))
+(def v57_l356 (count my-membrane))
 
 
-(deftest t58_l357 (is ((fn [n] (pos? n)) v57_l355)))
+(deftest t58_l358 (is ((fn [n] (pos? n)) v57_l356)))
 
 
-(def v60_l367 (def my-figure (sk/plan->figure my-plan :svg {})))
+(def v60_l368 (def my-figure (sk/plan->figure my-plan :svg {})))
 
 
-(def v61_l369 (first my-figure))
+(def v61_l370 (first my-figure))
 
 
-(deftest t62_l371 (is ((fn [v] (= :svg v)) v61_l369)))
+(deftest t62_l372 (is ((fn [v] (= :svg v)) v61_l370)))
 
 
-(def v64_l418 (count sk/plot-option-docs))
+(def v64_l419 (count sk/plot-option-docs))
 
 
-(deftest t65_l420 (is ((fn [n] (= 6 n)) v64_l418)))
+(deftest t65_l421 (is ((fn [n] (= 6 n)) v64_l419)))
 
 
-(def v67_l435 (count sk/layer-option-docs))
+(def v67_l436 (count sk/layer-option-docs))
 
 
-(deftest t68_l437 (is ((fn [n] (= 20 n)) v67_l435)))
+(deftest t68_l438 (is ((fn [n] (= 20 n)) v67_l436)))

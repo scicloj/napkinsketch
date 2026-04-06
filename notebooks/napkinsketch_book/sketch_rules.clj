@@ -86,11 +86,11 @@
 ;; When `view` receives an opts map, those aesthetics merge into
 ;; `:shared` and apply to ALL methods on ALL entries.
 
-(let [sk (-> iris
-             (sk/view :sepal_length :sepal_width {:color :species})
-             sk/lay-point
-             sk/lay-lm)]
-  (kind/pprint (sk-summary sk)))
+(-> iris
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= :species (get-in m [:shared :color]))
@@ -112,11 +112,11 @@
 
 ;; ## Rule 2: `lay-*` without `:x`/`:y` → global method
 
-(let [sk (-> iris
-             (sk/view :sepal_length :sepal_width)
-             sk/lay-point
-             sk/lay-lm)]
-  (kind/pprint (sk-summary sk)))
+(-> iris
+    (sk/view :sepal_length :sepal_width)
+    sk/lay-point
+    sk/lay-lm
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:methods m)))
@@ -136,9 +136,9 @@
 
 ;; ## Rule 3: `lay-*` with `:x`/`:y` → entry-specific method
 
-(let [sk (-> iris
-             (sk/lay-point :sepal_length :sepal_width {:color :species}))]
-  (kind/pprint (sk-summary sk)))
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 0 (count (:methods m)))
@@ -156,10 +156,10 @@
 
 ;; ## Rule 4: entry-specific + global methods combine
 
-(let [sk (-> iris
-             (sk/lay-point :sepal_length :sepal_width {:color :species})
-             sk/lay-lm)]
-  (kind/pprint (sk-summary sk)))
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk/lay-lm
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 1 (count (:methods m)))
@@ -180,10 +180,10 @@
 
 ;; ## Rule 5: find-or-create entry by matching `:x`/`:y`
 
-(let [sk (-> iris
-             (sk/lay-point :sepal_length :sepal_width {:color :species})
-             (sk/lay-lm :sepal_length :sepal_width))]
-  (kind/pprint (sk-summary sk)))
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/lay-lm :sepal_length :sepal_width)
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 1 (count (:entries m)))
@@ -204,10 +204,10 @@
 
 ;; ## Rule 6: different `:x`/`:y` → separate entries
 
-(let [sk (-> iris
-             (sk/lay-point :sepal_length :sepal_width)
-             (sk/lay-histogram :petal_length))]
-  (kind/pprint (sk-summary sk)))
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/lay-histogram :petal_length)
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:entries m)))
@@ -229,11 +229,11 @@
 
 ;; ## Rule 7: `sketch` opts go into `:shared`
 
-(let [sk (-> (sk/sketch iris {:color :species})
-             (sk/view :sepal_length :sepal_width)
-             sk/lay-point
-             sk/lay-lm)]
-  (kind/pprint (sk-summary sk)))
+(-> (sk/sketch iris {:color :species})
+    (sk/view :sepal_length :sepal_width)
+    sk/lay-point
+    sk/lay-lm
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (= :species (get-in m [:shared :color])))])
@@ -251,11 +251,11 @@
 
 ;; ## Rule 8: method opts override shared (`nil` cancels)
 
-(let [sk (-> iris
-             (sk/view :sepal_length :sepal_width {:color :species})
-             sk/lay-point
-             (sk/lay-lm {:color nil}))]
-  (kind/pprint (sk-summary sk)))
+(-> iris
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    (sk/lay-lm {:color nil})
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= :species (get-in m [:shared :color]))
@@ -274,11 +274,11 @@
 
 ;; ## Rule 9: shared affects all entries
 
-(let [sk (-> (sk/sketch iris {:color :species})
-             (sk/view :sepal_length :sepal_width)
-             (sk/view :petal_length :petal_width)
-             sk/lay-point)]
-  (kind/pprint (sk-summary sk)))
+(-> (sk/sketch iris {:color :species})
+    (sk/view :sepal_length :sepal_width)
+    (sk/view :petal_length :petal_width)
+    sk/lay-point
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= :species (get-in m [:shared :color]))
@@ -298,10 +298,10 @@
 
 ;; ## Rule 10: annotations are self-contained
 
-(let [sk (-> iris
-             (sk/lay-point :sepal_length :sepal_width {:color :species})
-             (sk/annotate (sk/rule-h 3.0)))]
-  (kind/pprint (sk-summary sk)))
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/annotate (sk/rule-h 3.0))
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:entries m)))
@@ -319,10 +319,10 @@
 
 ;; ## Rule 11: `overlay` — entry with different columns + own method
 
-(let [sk (-> iris
-             (sk/lay-point :sepal_length :sepal_width)
-             (sk/overlay :sepal_length :petal_width :lm))]
-  (kind/pprint (sk-summary sk)))
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/overlay :sepal_length :petal_width :lm)
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:entries m)))
@@ -335,9 +335,9 @@
 
 ;; ## Rule 12: `lay-*` shorthand with auto-infer
 
-(let [sk (-> {:x [1 2 3] :y [4 5 6]}
-             sk/lay-point)]
-  (kind/pprint (sk-summary sk)))
+(-> {:x [1 2 3] :y [4 5 6]}
+    sk/lay-point
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 1 (count (:entries m)))
@@ -363,10 +363,10 @@
 ;; Two `lay-*` with different columns → two separate panels.
 ;; No cross-product — scatter stays on its entry, histogram on its.
 
-(let [sk (-> iris
-             (sk/lay-point :sepal_length :sepal_width)
-             (sk/lay-histogram :petal_length))]
-  (kind/pprint (sk-summary sk)))
+(-> iris
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/lay-histogram :petal_length)
+    sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:entries m)))
