@@ -749,8 +749,8 @@
             y-hi (+ (double y-max) (* 0.3 y-range))
             ;; Grid resolution
             n-grid (or (:kde2d-grid cfg) 25)
-            x-step (/ (- x-hi x-lo) n-grid)
-            y-step (/ (- y-hi y-lo) n-grid)
+            x-step (max 1e-10 (/ (- x-hi x-lo) n-grid))
+            y-step (max 1e-10 (/ (- y-hi y-lo) n-grid))
             ;; Bandwidth: Silverman's rule for 2D product-kernel KDE.
             ;; h_j = sigma_j * n^(-1/6), matching the d=2 case of the general
             ;; formula h = (4/(d+2))^(1/(d+4)) * sigma * n^(-1/(d+4)).
@@ -760,8 +760,8 @@
             x-std (stats/stddev xs)
             y-std (stats/stddev ys)
             n-pow (Math/pow (double n) (/ -1.0 6.0))
-            bw-x (if bw-cfg (first bw-cfg) (* x-std n-pow))
-            bw-y (if bw-cfg (second bw-cfg) (* y-std n-pow))
+            bw-x (max 1e-10 (if bw-cfg (first bw-cfg) (* x-std n-pow)))
+            bw-y (max 1e-10 (if bw-cfg (second bw-cfg) (* y-std n-pow)))
             inv-bwx2 (/ 1.0 (* 2.0 bw-x bw-x))
             inv-bwy2 (/ 1.0 (* 2.0 bw-y bw-y))
             ;; Compute density at each grid cell center

@@ -450,6 +450,7 @@
       {:mark :contour :levels [] :style {:stroke-width 1.5 :opacity 0.8}}
       (let [{:keys [densities n-grid x-lo x-hi y-lo y-hi x-step y-step max-d]} grid
             n-levels (or (:levels view) 5)
+            max-d (if (and max-d (Double/isFinite max-d) (pos? max-d)) max-d 1.0)
             ;; Threshold levels evenly spaced from 5% to 95% of max density.
             ;; ggplot2 uses a similar approach via pretty() over the density
             ;; range. Starting at 5% (not 0%) avoids noise contours at the
