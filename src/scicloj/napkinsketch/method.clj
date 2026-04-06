@@ -74,7 +74,7 @@
 (register! :step {:mark :step :stat :identity :accepts [:size] :doc "Step — horizontal-then-vertical connected points."})
 (register! :area {:mark :area :stat :identity :accepts [] :doc "Area — filled region under a line."})
 (register! :stacked-area {:mark :area :stat :identity :position :stack :accepts [] :doc "Stacked area — filled regions stacked cumulatively."})
-(register! :histogram {:mark :bar :stat :bin :x-only true :accepts [:normalize] :doc "Histogram — bins numerical data into bars."})
+(register! :histogram {:mark :bar :stat :bin :x-only true :accepts [:normalize :bins :binwidth] :doc "Histogram — bins numerical data into bars."})
 (register! :bar {:mark :rect :stat :count :x-only true :accepts [] :doc "Bar — counts categorical values."})
 (register! :stacked-bar {:mark :rect :stat :count :position :stack :x-only true :accepts [] :doc "Stacked bar — counts categorical values, stacked."})
 (register! :stacked-bar-fill {:mark :rect :stat :count :position :fill :x-only true :accepts [] :doc "Percentage stacked bar — proportions sum to 1.0."})

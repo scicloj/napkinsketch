@@ -528,48 +528,53 @@
               categories))))
 
 (defmethod layer->membrane :ridgeline [layer ctx]
-  (let [{:keys [style ridges categories]} layer
-        {:keys [sx sy margin panel-height]} ctx
-        {:keys [opacity]} style
-        m (or margin 25)
-        ph (or panel-height 400)
-        cat-positions (ridgeline-positions categories ph m)
-        ;; Overlap factor and normalization
-        overlap 1.5
-        bw (:bw (first (vals cat-positions)))
-        ;; Max density across all ridges for normalization
-        max-d (max 0.001 (dfn/reduce-max (dtype/concat-buffers (map :densities ridges))))
-        norm (* bw overlap (/ 1.0 max-d))
-        ;; After domain swap in plan, sx is the numeric scale (maps to x-pixels)
-        ;; and sy is categorical. Use sx for numeric value → pixel mapping.
-        num-scale sx]
-    (vec
-     ;; Render from back (last category) to front (first category)
-     ;; so that front ridges overlap back ones
-     (for [ridge (reverse ridges)
-           :let [{:keys [category color ys densities]} ridge
-                 {:keys [mid]} (get cat-positions category)
-                 n (count ys)
-                 [cr cg cb _] color
-                 ;; Build polygon: baseline at mid, curve goes upward (toward lower px)
-                 curve-pts (mapv (fn [i]
-                                   (let [y-val (ys i)
-                                         d (densities i)
-                                         py (num-scale y-val)
-                                         px (- (double mid) (* d norm))]
-                                     [py px]))
-                                 (range n))
-                 ;; Baseline points (flat line at mid)
-                 base-pts [(let [py (num-scale (ys (dec n)))] [py mid])
-                           (let [py (num-scale (ys 0))] [py mid])]
-                 all-pts (concat curve-pts base-pts)]]
-       [(ui/with-color [cr cg cb (or opacity 0.7)]
-          (ui/with-style ::ui/style-fill
-            (apply ui/path all-pts)))
-        (ui/with-color [cr cg cb 1.0]
-          (ui/with-stroke-width 1.0
-            (ui/with-style ::ui/style-stroke
-              (apply ui/path curve-pts))))]))))
+  (if (empty? (:ridges layer))
+    []
+    (let [{:keys [style ridges categories]} layer
+          {:keys [sx sy margin panel-height]} ctx
+          {:keys [opacity]} style
+          m (or margin 25)
+          ph (or panel-height 400)
+          cat-positions (ridgeline-positions categories ph m)
+          ;; Overlap factor and normalization
+          overlap 1.5
+          bw (or (:bw (first (vals cat-positions))) 1.0)
+          ;; Max density across all ridges for normalization
+          all-densities (seq (keep #(when (seq (:densities %)) (:densities %)) ridges))
+          max-d (if all-densities
+                  (max 0.001 (dfn/reduce-max (dtype/concat-buffers all-densities)))
+                  0.001)
+          norm (* bw overlap (/ 1.0 max-d))
+          ;; After domain swap in plan, sx is the numeric scale (maps to x-pixels)
+          ;; and sy is categorical. Use sx for numeric value → pixel mapping.
+          num-scale sx]
+      (vec
+       ;; Render from back (last category) to front (first category)
+       ;; so that front ridges overlap back ones
+       (for [ridge (reverse ridges)
+             :let [{:keys [category color ys densities]} ridge
+                   {:keys [mid]} (get cat-positions category)
+                   n (count ys)
+                   [cr cg cb _] color
+                   ;; Build polygon: baseline at mid, curve goes upward (toward lower px)
+                   curve-pts (mapv (fn [i]
+                                     (let [y-val (ys i)
+                                           d (densities i)
+                                           py (num-scale y-val)
+                                           px (- (double mid) (* d norm))]
+                                       [py px]))
+                                   (range n))
+                   ;; Baseline points (flat line at mid)
+                   base-pts [(let [py (num-scale (ys (dec n)))] [py mid])
+                             (let [py (num-scale (ys 0))] [py mid])]
+                   all-pts (concat curve-pts base-pts)]]
+         [(ui/with-color [cr cg cb (or opacity 0.7)]
+            (ui/with-style ::ui/style-fill
+              (apply ui/path all-pts)))
+          (ui/with-color [cr cg cb 1.0]
+            (ui/with-stroke-width 1.0
+              (ui/with-style ::ui/style-stroke
+                (apply ui/path curve-pts))))])))))
 
 ;; ---- Rug ----
 

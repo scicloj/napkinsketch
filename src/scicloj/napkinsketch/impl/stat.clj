@@ -130,10 +130,19 @@
         xs-col (clean x)]
     (if (zero? (tc/row-count clean))
       {:bins [] :max-count 0 :x-domain [0 1] :y-domain [0 1]}
-      (let [all-bin-data (group-by-columns
+      (let [;; Determine bin method: explicit :bins count > :binwidth > cfg heuristic
+            bin-arg (or (:bins view)
+                        (when-let [bw (:binwidth view)]
+                          (let [[lo hi] (numeric-extent xs-col)
+                                span (- (double hi) (double lo))]
+                            (if (pos? span)
+                              (max 1 (long (Math/ceil (/ span (double bw)))))
+                              1)))
+                        (:bin-method (or cfg defaults/defaults)))
+            all-bin-data (group-by-columns
                           clean (or group [])
                           (fn [ds gv]
-                            (let [hist (stats/histogram (ds x) (:bin-method (or cfg defaults/defaults)))]
+                            (let [hist (stats/histogram (ds x) bin-arg)]
                               (cond-> {:bin-maps (:bins-maps hist)}
                                 (some? gv) (assoc :color gv)))))
             ;; When normalize=:density, convert counts to density (area integrates to 1)

@@ -294,16 +294,28 @@
 (defn column-type
   "Classify a dataset column as :categorical, :numerical, or :temporal."
   [ds col]
-  (let [t (try (tcc/typeof (ds col)) (catch Exception _ nil))]
-    (cond
-      (#{:string :keyword :boolean :symbol :text} t) :categorical
-      (#{:float32 :float64 :int8 :int16 :int32 :int64} t) :numerical
-      ;; Check for temporal types via dtype-next metadata
-      (dt-dt/datetime-datatype? (dtype/elemwise-datatype (ds col))) :temporal
-      ;; Fallback for java.util.Date (:object dtype)
-      (instance? java.util.Date (first (ds col))) :temporal
-      (every? number? (take 100 (ds col))) :numerical
-      :else :categorical)))
+  (let [c (ds col)
+        n (count c)]
+    (if (zero? n)
+      ;; Empty column — treat as numerical (can't infer, let downstream handle gracefully)
+      :numerical
+      (let [dt (dtype/elemwise-datatype c)
+            t (try (tcc/typeof c) (catch Exception _ nil))
+            ;; All-missing columns (e.g., [##NaN ##NaN]) get :boolean dtype
+            ;; with nil values. Treat as numerical since the input was numeric.
+            all-missing? (every? nil? (take 100 c))]
+        (cond
+          all-missing? :numerical
+          ;; Check dtype first to catch numeric columns
+          (#{:float32 :float64 :int8 :int16 :int32 :int64} dt) :numerical
+          (#{:string :keyword :symbol :text} t) :categorical
+          ;; Check for temporal types via dtype-next metadata
+          (dt-dt/datetime-datatype? dt) :temporal
+          ;; Fallback for java.util.Date (:object dtype)
+          (instance? java.util.Date (first c)) :temporal
+          ;; Check actual values
+          (every? number? (take 100 c)) :numerical
+          :else :categorical)))))
 
 (defn temporal->epoch-ms
   "Convert a temporal value to epoch-milliseconds (double).

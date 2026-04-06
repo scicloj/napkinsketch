@@ -107,12 +107,14 @@
   [ticks]
   (mapv (fn [v]
           (let [v (double v)]
-            (if (and (>= v 1.0) (== v (Math/floor v)))
-              (str (long v))
-              (if (< v 1.0)
-                (let [exp (long (Math/ceil (- (Math/log10 v))))]
-                  (format (str "%." exp "f") v))
-                (str v)))))
+            (if (or (zero? v) (neg? v))
+              (str v)
+              (if (and (>= v 1.0) (== v (Math/floor v)))
+                (str (long v))
+                (if (< v 1.0)
+                  (let [exp (long (Math/ceil (- (Math/log10 v))))]
+                    (format (str "%." exp "f") v))
+                  (str v))))))
         ticks))
 
 (defn log-ticks

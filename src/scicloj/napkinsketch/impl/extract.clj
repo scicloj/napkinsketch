@@ -282,7 +282,9 @@
         midpoint (:color-midpoint cfg)
         ;; Two paths: bin2d/kde2d stat produces :tiles as a dataset;
         ;; identity stat with :fill uses point groups
-        tiles (if (:tiles stat)
+        tiles (if (and (:tiles stat)
+                       (or (and (tc/dataset? (:tiles stat)) (pos? (tc/row-count (:tiles stat))))
+                           (and (not (tc/dataset? (:tiles stat))) (seq (:tiles stat)))))
                 ;; bin2d/kde2d path — :tiles is a dataset with :x-lo :x-hi :y-lo :y-hi :fill
                 (let [tile-ds (:tiles stat)
                       [f-lo f-hi] (:fill-range stat)
