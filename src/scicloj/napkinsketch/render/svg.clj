@@ -286,7 +286,7 @@
         svg (wrap-svg total-width total-height svg-body title)
         interactive? (or tooltip brush)]
     (if interactive?
-      (let [div-id (str "nsk-" (random-uuid))
+      (let [div-id (str "nsk-" (hash [total-width total-height title (count svg-body)]))
             css-parts (cond-> []
                         tooltip (conj tooltip-css)
                         brush (conj brush-css))]
