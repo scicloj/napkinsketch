@@ -1,7 +1,7 @@
 (ns scicloj.napkinsketch.api
   "Public API for napkinsketch — composable plotting in Clojure."
   (:require [scicloj.napkinsketch.impl.view :as view]
-            [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.render :as render-impl]

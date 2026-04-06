@@ -11,7 +11,7 @@
             [tech.v3.datatype.functional :as dfn]
             [java-time.api :as jt]
             [scicloj.napkinsketch.api :as sk]
-            [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [napkinsketch-book.datasets :as data]))
 
 (def iris data/iris)

@@ -12,7 +12,7 @@
             [tech.v3.datatype.functional :as dfn]
             [tech.v3.datatype.argops :as argops]
             [scicloj.napkinsketch.api :as sk]
-            [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [fastmath.stats :as fstats]
             [fastmath.ml.regression :as regr]

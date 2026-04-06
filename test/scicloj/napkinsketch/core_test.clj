@@ -10,7 +10,7 @@
             [scicloj.napkinsketch.impl.position :as position]
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.view :as view]
-            [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
+            [scicloj.napkinsketch.impl.sketch :as sketch-impl]
             [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.method :as method]))
 

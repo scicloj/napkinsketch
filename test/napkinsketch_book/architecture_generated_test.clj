@@ -5,7 +5,7 @@
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.impl.sketch :as sketch]
-  [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
+  [scicloj.napkinsketch.impl.sketch :as sketch-impl]
   [scicloj.napkinsketch.impl.render :as render-impl]
   [scicloj.napkinsketch.impl.sketch-schema :as ss]
   [clojure.test :refer [deftest is]]))
