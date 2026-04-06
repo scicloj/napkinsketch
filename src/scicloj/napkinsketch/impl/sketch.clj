@@ -820,7 +820,12 @@
                        (:row-label pd) (assoc :row-label (:row-label pd))
                        (:col-label pd) (assoc :col-label (:col-label pd))))))
 
-         ;; Ridgeline axis swap
+         ;; Ridgeline axis swap — the user specifies category on x and
+         ;; numeric values on y, but a ridgeline renders categories
+         ;; vertically (stacked rows) and density horizontally.
+         ;; The pipeline resolves everything in the normal orientation
+         ;; first, then swaps x/y here so the renderer draws curves
+         ;; left-to-right with categories top-to-bottom.
          has-ridgeline? (some #(= :ridgeline (:mark %)) non-ann-views)
          panels (if has-ridgeline?
                   (mapv (fn [p]
