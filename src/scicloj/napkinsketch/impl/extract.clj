@@ -447,7 +447,7 @@
 (defmethod extract-layer :contour [view stat all-colors cfg]
   (let [{:keys [grid fill-range]} stat]
     (if (nil? grid)
-      {:mark :contour :levels []}
+      {:mark :contour :levels [] :style {:stroke-width 1.5 :opacity 0.8}}
       (let [{:keys [densities n-grid x-lo x-hi y-lo y-hi x-step y-step max-d]} grid
             n-levels (or (:levels view) 5)
             ;; Threshold levels evenly spaced from 5% to 95% of max density.

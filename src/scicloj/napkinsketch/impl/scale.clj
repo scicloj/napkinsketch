@@ -22,6 +22,11 @@
                       {:domain domain :scale-spec scale-spec}))
       (categorical-domain? domain) :categorical
       (= :log (:type scale-spec)) :log
+      (let [t (:type scale-spec)]
+        (and t (not= t :linear)))
+      (throw (ex-info (str "Unknown scale type: " (:type scale-spec)
+                           ". Supported: :linear, :log")
+                      {:scale-spec scale-spec}))
       :else :linear)))
 
 (defmulti make-scale
