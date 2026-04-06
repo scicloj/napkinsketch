@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **24 notebooks** (~595 tests, ~948 assertions): quickstart, datasets,
   core_concepts, inference_rules, methods, glossary, scatter, distributions,
   ranking, change_over_time, relationships, polar, cookbook, configuration,
-  customization, faceting, troubleshooting, api_reference, exploring_sketches,
+  customization, faceting, troubleshooting, api_reference, exploring_plans,
   architecture, extensibility, waterfall_extension, edge_cases, development
 
 ### Architecture

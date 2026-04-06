@@ -14,7 +14,7 @@
 ;;   structure to consume it
 ;; - **Validating** — you want to assert plan properties in tests
 
-(ns napkinsketch-book.exploring-sketches
+(ns napkinsketch-book.exploring-plans
   (:require
    ;; Shared datasets for these docs
    [napkinsketch-book.datasets :as data]

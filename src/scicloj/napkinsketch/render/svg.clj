@@ -29,10 +29,15 @@
 
 ;; ---- Membrane → SVG conversion ----
 
+(defn- fmt
+  "Format a numeric value to 2 decimal places for SVG coordinates."
+  [v]
+  (format "%.2f" (double v)))
+
 (defn- points->str
   "Convert a seq of [x y] pairs to SVG points attribute string."
   [pts]
-  (str/join " " (map (fn [[x y]] (str (double x) "," (double y))) pts)))
+  (str/join " " (map (fn [[x y]] (str (fmt x) "," (fmt y))) pts)))
 
 (defn- apply-style-attrs
   "Generate SVG attributes from drawing context for a shape element."
@@ -67,7 +72,7 @@
   (-to-svg [elem ctx]
     (let [{:keys [x y drawable]} elem
           inner (membrane->svg drawable ctx)
-          attrs (merge {:transform (str "translate(" (double x) "," (double y) ")")}
+          attrs (merge {:transform (str "translate(" (fmt x) "," (fmt y) ")")}
                        (data-attrs elem))]
       (when inner
         [:g attrs inner])))
@@ -77,7 +82,7 @@
     (let [{:keys [degrees drawable]} elem
           inner (membrane->svg drawable ctx)]
       (when inner
-        [:g {:transform (str "rotate(" (double degrees) ")")}
+        [:g {:transform (str "rotate(" (fmt degrees) ")")}
          inner])))
 
   WithColor

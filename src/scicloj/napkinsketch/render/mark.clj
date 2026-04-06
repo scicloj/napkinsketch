@@ -521,11 +521,11 @@
         usable (- (double ph) (* 2.0 m))
         bw (/ usable (+ (double n-cats) (* 2.0 overlap) -1.0))
         pad (* bw (- overlap 0.5))]
-    (into {} (map-indexed
-              (fn [i cat]
-                [cat {:mid (+ m pad (* bw (+ (double i) 0.5)))
-                      :bw bw}])
-              categories))))
+    (into (array-map) (map-indexed
+                       (fn [i cat]
+                         [cat {:mid (+ m pad (* bw (+ (double i) 0.5)))
+                               :bw bw}])
+                       categories))))
 
 (defmethod layer->membrane :ridgeline [layer ctx]
   (if (empty? (:ridges layer))

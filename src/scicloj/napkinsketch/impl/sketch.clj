@@ -398,7 +398,7 @@
                      (let [color-views (filter #(and (view/column-ref? (:color %))
                                                      (:data %)) resolved-all)]
                        (when (seq color-views)
-                         (vec (distinct (mapcat #((:data %) (:color %)) color-views))))))
+                         (vec (distinct (remove nil? (mapcat #((:data %) (:color %)) color-views)))))))
         color-cols (distinct (keep #(when (view/column-ref? (:color %)) (:color %)) resolved-all))]
     {:resolved-all resolved-all
      :numeric-color? numeric-color?

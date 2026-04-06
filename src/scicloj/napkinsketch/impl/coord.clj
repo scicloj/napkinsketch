@@ -26,7 +26,7 @@
 
 (defmethod make-coord :polar [_ sx sy pw ph m]
   (let [cx (/ pw 2.0) cy (/ ph 2.0)
-        r-max (- (min cx cy) m)
+        r-max (max 1.0 (- (min cx cy) m))
         x-lo (double m) x-span (double (- pw m m))
         y-lo (double m) y-span (double (- ph m m))]
     (fn [dx dy]
@@ -49,7 +49,7 @@
 
 (defmethod make-coord-px :polar [_ sx sy pw ph m]
   (let [cx (/ pw 2.0) cy (/ ph 2.0)
-        r-max (- (min cx cy) m)
+        r-max (max 1.0 (- (min cx cy) m))
         x-lo (double m) x-span (double (- pw m m))
         y-lo (double m) y-span (double (- ph m m))]
     (fn [px py]
