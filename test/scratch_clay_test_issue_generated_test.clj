@@ -28,7 +28,7 @@
 (deftest t8_l24 (is ((fn [m] (= 1 (:a m))) v7_l22)))
 
 
-(def v10_l28 (-> iris (sk/xkcd7-lay-point :sepal_length :sepal_width)))
+(def v10_l28 (-> iris (sk/lay-point :sepal_length :sepal_width)))
 
 
 (deftest
@@ -39,20 +39,20 @@
 (def
  v13_l35
  (let
-  [xkcd7-sk (-> iris (sk/xkcd7-lay-point :sepal_length :sepal_width))]
+  [sk (-> iris (sk/lay-point :sepal_length :sepal_width))]
   (kind/pprint
-   {:shared (:shared xkcd7-sk),
+   {:shared (:shared sk),
     :entries
     (mapv
      (fn* [p1__326051#] (dissoc p1__326051# :data))
-     (:entries xkcd7-sk)),
-    :methods (:methods xkcd7-sk)})))
+     (:entries sk)),
+    :methods (:methods sk)})))
 
 
 (deftest t14_l40 (is ((fn [m] (= 1 (count (:entries m)))) v13_l35)))
 
 
-(def v16_l44 (-> iris (sk/xkcd7-lay-point :sepal_length :sepal_width)))
+(def v16_l44 (-> iris (sk/lay-point :sepal_length :sepal_width)))
 
 
 (deftest

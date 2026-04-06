@@ -11,7 +11,7 @@
 (def v3_l33 (def tiny {:x [1 2 3 4 5], :y [2 4 1 5 3]}))
 
 
-(def v5_l38 (-> tiny (sk/xkcd7-lay-point :x :y)))
+(def v5_l38 (-> tiny (sk/lay-point :x :y)))
 
 
 (deftest
@@ -27,7 +27,7 @@
 
 (def
  v8_l48
- (def tiny-pl (-> tiny (sk/xkcd7-lay-point :x :y) sk/xkcd7-plan)))
+ (def tiny-pl (-> tiny (sk/lay-point :x :y) sk/plan)))
 
 
 (def v10_l57 tiny-pl)
@@ -131,7 +131,7 @@
  v38_l148
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
@@ -151,8 +151,8 @@
   iris-pl
   (->
    data/iris
-   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-   sk/xkcd7-plan)))
+   (sk/lay-point :sepal_length :sepal_width {:color :species})
+   sk/plan)))
 
 
 (def v42_l161 iris-pl)
@@ -212,11 +212,11 @@
   cont-pl
   (->
    data/iris
-   (sk/xkcd7-lay-point
+   (sk/lay-point
     :sepal_length
     :sepal_width
     {:color :petal_length})
-   sk/xkcd7-plan)))
+   sk/plan)))
 
 
 (def v56_l202 (:legend cont-pl))
@@ -245,7 +245,7 @@
 (deftest t63_l217 (is ((fn [n] (= 20 n)) v62_l215)))
 
 
-(def v65_l224 (-> data/iris (sk/xkcd7-lay-histogram :sepal_length)))
+(def v65_l224 (-> data/iris (sk/lay-histogram :sepal_length)))
 
 
 (deftest
@@ -263,7 +263,7 @@
  v67_l231
  (def
   hist-pl
-  (-> data/iris (sk/xkcd7-lay-histogram :sepal_length) sk/xkcd7-plan)))
+  (-> data/iris (sk/lay-histogram :sepal_length) sk/plan)))
 
 
 (def v68_l235 hist-pl)
@@ -302,7 +302,7 @@
 
 (def
  v77_l262
- (-> data/penguins (sk/xkcd7-lay-bar :island {:color :species})))
+ (-> data/penguins (sk/lay-bar :island {:color :species})))
 
 
 (deftest
@@ -322,8 +322,8 @@
   bar-pl
   (->
    data/penguins
-   (sk/xkcd7-lay-bar :island {:color :species})
-   sk/xkcd7-plan)))
+   (sk/lay-bar :island {:color :species})
+   sk/plan)))
 
 
 (def
@@ -362,8 +362,8 @@
   stacked-pl
   (->
    data/penguins
-   (sk/xkcd7-lay-stacked-bar :island {:color :species})
-   sk/xkcd7-plan)))
+   (sk/lay-stacked-bar :island {:color :species})
+   sk/plan)))
 
 
 (def
@@ -381,8 +381,8 @@
  v93_l316
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width)
-  sk/xkcd7-lay-lm))
+  (sk/lay-point :sepal_length :sepal_width)
+  sk/lay-lm))
 
 
 (deftest
@@ -402,9 +402,9 @@
   lm-pl
   (->
    data/iris
-   (sk/xkcd7-lay-point :sepal_length :sepal_width)
-   sk/xkcd7-lay-lm
-   sk/xkcd7-plan)))
+   (sk/lay-point :sepal_length :sepal_width)
+   sk/lay-lm
+   sk/plan)))
 
 
 (def v97_l331 (mapv :mark (:layers (first (:panels lm-pl)))))
@@ -432,9 +432,9 @@
  v104_l351
  (->
   data/iris
-  (sk/xkcd7-view :petal_length :petal_width {:color :species})
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :petal_length :petal_width {:color :species})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -454,10 +454,10 @@
   grp-pl
   (->
    data/iris
-   (sk/xkcd7-view :petal_length :petal_width {:color :species})
-   sk/xkcd7-lay-point
-   sk/xkcd7-lay-lm
-   sk/xkcd7-plan)))
+   (sk/view :petal_length :petal_width {:color :species})
+   sk/lay-point
+   sk/lay-lm
+   sk/plan)))
 
 
 (def
@@ -487,7 +487,7 @@
     (range 30))}))
 
 
-(def v111_l383 (-> wave (sk/xkcd7-lay-line :x :y)))
+(def v111_l383 (-> wave (sk/lay-line :x :y)))
 
 
 (deftest
@@ -503,7 +503,7 @@
 
 (def
  v113_l390
- (def wave-pl (-> wave (sk/xkcd7-lay-line :x :y) sk/xkcd7-plan)))
+ (def wave-pl (-> wave (sk/lay-line :x :y) sk/plan)))
 
 
 (def
@@ -531,7 +531,7 @@
    :revenue [120 340 210 95]}))
 
 
-(def v119_l412 (-> sales (sk/xkcd7-lay-value-bar :product :revenue)))
+(def v119_l412 (-> sales (sk/lay-value-bar :product :revenue)))
 
 
 (deftest
@@ -549,7 +549,7 @@
  v121_l419
  (def
   sales-pl
-  (-> sales (sk/xkcd7-lay-value-bar :product :revenue) sk/xkcd7-plan)))
+  (-> sales (sk/lay-value-bar :product :revenue) sk/plan)))
 
 
 (def
@@ -568,9 +568,9 @@
   flip-pl
   (->
    data/iris
-   (sk/xkcd7-lay-bar :species)
-   (sk/xkcd7-coord :flip)
-   sk/xkcd7-plan)))
+   (sk/lay-bar :species)
+   (sk/coord :flip)
+   sk/plan)))
 
 
 (def v126_l438 (:coord (first (:panels flip-pl))))
@@ -606,8 +606,8 @@
   opts-pl
   (->
    data/iris
-   (sk/xkcd7-lay-point :sepal_length :sepal_width)
-   (sk/xkcd7-plan
+   (sk/lay-point :sepal_length :sepal_width)
+   (sk/plan
     {:title "My Custom Title",
      :x-label "Length (cm)",
      :y-label "Width (cm)",
@@ -648,17 +648,17 @@
 (def
  v139_l487
  (def
-  final-xkcd7-sk
+  final-sk
   (->
    data/iris
-   (sk/xkcd7-view :petal_length :petal_width {:color :species})
-   sk/xkcd7-lay-point
-   sk/xkcd7-lay-lm)))
+   (sk/view :petal_length :petal_width {:color :species})
+   sk/lay-point
+   sk/lay-lm)))
 
 
 (def
  v140_l493
- (def final-pl (sk/xkcd7-plan final-xkcd7-sk {:title "Iris Petals"})))
+ (def final-pl (sk/plan final-sk {:title "Iris Petals"})))
 
 
 (def v141_l495 final-pl)
@@ -681,7 +681,7 @@
 
 (def
  v147_l510
- (-> final-xkcd7-sk (sk/xkcd7-options {:title "Iris Petals"})))
+ (-> final-sk (sk/options {:title "Iris Petals"})))
 
 
 (deftest
@@ -701,9 +701,9 @@
   faceted-pl
   (->
    data/iris
-   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-   (sk/xkcd7-facet :species)
-   sk/xkcd7-plan)))
+   (sk/lay-point :sepal_length :sepal_width {:color :species})
+   (sk/facet :species)
+   sk/plan)))
 
 
 (def v152_l529 (:grid faceted-pl))

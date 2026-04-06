@@ -16,7 +16,7 @@
    (map (fn* [p1__67693#] (Math/sin (* p1__67693# 0.3))) (range 30))}))
 
 
-(def v4_l21 (-> wave (sk/xkcd7-lay-line :x :y)))
+(def v4_l21 (-> wave (sk/lay-line :x :y)))
 
 
 (deftest
@@ -42,7 +42,7 @@
    :fn (concat (repeat 30 :sin) (repeat 30 :cos))}))
 
 
-(def v8_l37 (-> waves (sk/xkcd7-lay-line :x :y {:color :fn})))
+(def v8_l37 (-> waves (sk/lay-line :x :y {:color :fn})))
 
 
 (deftest
@@ -56,7 +56,7 @@
    v8_l37)))
 
 
-(def v11_l48 (-> wave (sk/xkcd7-lay-line :x :y {:size 4})))
+(def v11_l48 (-> wave (sk/lay-line :x :y {:size 4})))
 
 
 (deftest
@@ -83,9 +83,9 @@
  v15_l64
  (->
   growth
-  (sk/xkcd7-view :day :value {:color :group})
-  sk/xkcd7-lay-line
-  sk/xkcd7-lay-point))
+  (sk/view :day :value {:color :group})
+  sk/lay-line
+  sk/lay-point))
 
 
 (deftest
@@ -103,8 +103,8 @@
  v18_l77
  (->
   {:x [1 2 3 4 5], :y [2 4 1 5 3]}
-  (sk/xkcd7-lay-step :x :y)
-  sk/xkcd7-lay-point))
+  (sk/lay-step :x :y)
+  sk/lay-point))
 
 
 (deftest
@@ -122,9 +122,9 @@
  v21_l90
  (->
   growth
-  (sk/xkcd7-view :day :value {:color :group})
-  sk/xkcd7-lay-step
-  sk/xkcd7-lay-point))
+  (sk/view :day :value {:color :group})
+  sk/lay-step
+  sk/lay-point))
 
 
 (deftest
@@ -144,7 +144,7 @@
   {:x (range 30),
    :y
    (map (fn* [p1__67696#] (Math/sin (* p1__67696# 0.3))) (range 30))}
-  (sk/xkcd7-lay-area :x :y)))
+  (sk/lay-area :x :y)))
 
 
 (deftest
@@ -168,7 +168,7 @@
     [2 2 2 3 3 3 2 2 2 2]
     [1 1 1 1 2 2 2 1 1 1]),
    :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
-  (sk/xkcd7-lay-stacked-area :x :y {:color :group})))
+  (sk/lay-stacked-area :x :y {:color :group})))
 
 
 (deftest

@@ -3,8 +3,8 @@
 ;; When Napkinsketch renders a plot, it builds an intermediate data
 ;; structure called a **plan** before rendering anything. This notebook
 ;; walks through the plan step by step, building intuition for the
-;; data model by looking at what `sk/xkcd7-plan` produces for different
-;; xkcd7-sketches.
+;; data model by looking at what `sk/plan` produces for different
+;; sketches.
 ;;
 ;; You would explore plans when:
 ;;
@@ -36,18 +36,18 @@
 ;; Here is the rendered plot:
 
 (-> tiny
-    (sk/xkcd7-lay-point :x :y))
+    (sk/lay-point :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
 ;; And here is the plan — the data structure that drives the rendering.
-;; We'll use `sk/xkcd7-plan` with the same xkcd7-sketch:
+;; We'll use `sk/plan` with the same sketch:
 
 (def tiny-pl (-> tiny
-                 (sk/xkcd7-lay-point :x :y)
-                 sk/xkcd7-plan))
+                 (sk/lay-point :x :y)
+                 sk/plan))
 
 ;; ### What's in a plan?
 ;;
@@ -110,7 +110,7 @@ tiny-pl
 
 ;; ### The layer
 ;;
-;; Each method in the xkcd7-sketch produces one layer. Our scatter has a single
+;; Each method in the sketch produces one layer. Our scatter has a single
 ;; point layer:
 
 (def tiny-layer (first (:layers tiny-panel)))
@@ -146,15 +146,15 @@ tiny-layer
 ;; and adds a legend.
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
 (def iris-pl (-> data/iris
-                 (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-                 sk/xkcd7-plan))
+                 (sk/lay-point :sepal_length :sepal_width {:color :species})
+                 sk/plan))
 
 ;; Here is the full plan — notice the legend and three groups:
 
@@ -196,8 +196,8 @@ iris-pl
 ;; per-point colors and a continuous gradient legend.
 
 (def cont-pl (-> data/iris
-                 (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :petal_length})
-                 sk/xkcd7-plan))
+                 (sk/lay-point :sepal_length :sepal_width {:color :petal_length})
+                 sk/plan))
 
 (:legend cont-pl)
 
@@ -222,15 +222,15 @@ iris-pl
 ;; bin edges and counts — still in data space.
 
 (-> data/iris
-    (sk/xkcd7-lay-histogram :sepal_length))
+    (sk/lay-histogram :sepal_length))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
 (def hist-pl (-> data/iris
-                 (sk/xkcd7-lay-histogram :sepal_length)
-                 sk/xkcd7-plan))
+                 (sk/lay-histogram :sepal_length)
+                 sk/plan))
 
 hist-pl
 
@@ -260,15 +260,15 @@ hist-pl
 ;; the categories and counts per group.
 
 (-> data/penguins
-    (sk/xkcd7-lay-bar :island {:color :species}))
+    (sk/lay-bar :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
 (def bar-pl (-> data/penguins
-                (sk/xkcd7-lay-bar :island {:color :species})
-                sk/xkcd7-plan))
+                (sk/lay-bar :island {:color :species})
+                sk/plan))
 
 (def bar-layer (first (:layers (first (:panels bar-pl)))))
 
@@ -297,8 +297,8 @@ bar-layer
 ;; Stacking changes the position field:
 
 (def stacked-pl (-> data/penguins
-                    (sk/xkcd7-lay-stacked-bar :island {:color :species})
-                    sk/xkcd7-plan))
+                    (sk/lay-stacked-bar :island {:color :species})
+                    sk/plan))
 
 (def stacked-layer (first (:layers (first (:panels stacked-pl)))))
 
@@ -314,17 +314,17 @@ bar-layer
 ;; A regression produces line segments in data space.
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    sk/xkcd7-lay-lm)
+    (sk/lay-point :sepal_length :sepal_width)
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
 (def lm-pl (-> data/iris
-               (sk/xkcd7-lay-point :sepal_length :sepal_width)
-               sk/xkcd7-lay-lm
-               sk/xkcd7-plan))
+               (sk/lay-point :sepal_length :sepal_width)
+               sk/lay-lm
+               sk/plan))
 
 ;; Two layers — points and line:
 
@@ -349,18 +349,18 @@ bar-layer
 ;; layer gets one segment per group:
 
 (-> data/iris
-    (sk/xkcd7-view :petal_length :petal_width {:color :species})
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)
+    (sk/view :petal_length :petal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 (def grp-pl (-> data/iris
-                (sk/xkcd7-view :petal_length :petal_width {:color :species})
-                sk/xkcd7-lay-point
-                sk/xkcd7-lay-lm
-                sk/xkcd7-plan))
+                (sk/view :petal_length :petal_width {:color :species})
+                sk/lay-point
+                sk/lay-lm
+                sk/plan))
 
 (let [line-layer (second (:layers (first (:panels grp-pl))))]
   (mapv (fn [g]
@@ -381,15 +381,15 @@ bar-layer
            :y (map #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
-    (sk/xkcd7-lay-line :x :y))
+    (sk/lay-line :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 1 (:lines s)))))])
 
 (def wave-pl (-> wave
-                 (sk/xkcd7-lay-line :x :y)
-                 sk/xkcd7-plan))
+                 (sk/lay-line :x :y)
+                 sk/plan))
 
 (def wave-group (first (:groups (first (:layers (first (:panels wave-pl)))))))
 
@@ -410,15 +410,15 @@ bar-layer
             :revenue [120 340 210 95]})
 
 (-> sales
-    (sk/xkcd7-lay-value-bar :product :revenue))
+    (sk/lay-value-bar :product :revenue))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 4 (:polygons s)))))])
 
 (def sales-pl (-> sales
-                  (sk/xkcd7-lay-value-bar :product :revenue)
-                  sk/xkcd7-plan))
+                  (sk/lay-value-bar :product :revenue)
+                  sk/plan))
 
 (let [g (first (:groups (first (:layers (first (:panels sales-pl))))))]
   {:xs (:xs g)
@@ -431,9 +431,9 @@ bar-layer
 ;; Setting `:coord :flip` swaps x and y in the plan's panel:
 
 (def flip-pl (-> data/iris
-                 (sk/xkcd7-lay-bar :species)
-                 (sk/xkcd7-coord :flip)
-                 sk/xkcd7-plan))
+                 (sk/lay-bar :species)
+                 (sk/coord :flip)
+                 sk/plan))
 
 (:coord (first (:panels flip-pl)))
 
@@ -456,8 +456,8 @@ bar-layer
 ;; Title, labels, and dimensions are recorded in the plan:
 
 (def opts-pl (-> data/iris
-                 (sk/xkcd7-lay-point :sepal_length :sepal_width)
-                 (sk/xkcd7-plan {:title "My Custom Title"
+                 (sk/lay-point :sepal_length :sepal_width)
+                 (sk/plan {:title "My Custom Title"
                                  :x-label "Length (cm)"
                                  :y-label "Width (cm)"
                                  :width 800
@@ -477,20 +477,20 @@ opts-pl
                                 (pos? (:x-label-pad lay))
                                 (pos? (:y-label-pad lay))))])
 
-;; ## Plan vs xkcd7-sketch — Side by Side
+;; ## Plan vs sketch — Side by Side
 ;;
-;; `sk/xkcd7-plan` and `sk/xkcd7-plot` accept the same xkcd7-sketch.
-;; `sk/xkcd7-plan` returns the intermediate data map; `sk/xkcd7-plot` returns the final SVG.
+;; `sk/plan` and `sk/plot` accept the same sketch.
+;; `sk/plan` returns the intermediate data map; `sk/plot` returns the final SVG.
 
 ;; The plan (a plain Clojure map):
 
-(def final-xkcd7-sk
+(def final-sk
   (-> data/iris
-      (sk/xkcd7-view :petal_length :petal_width {:color :species})
-      sk/xkcd7-lay-point
-      sk/xkcd7-lay-lm))
+      (sk/view :petal_length :petal_width {:color :species})
+      sk/lay-point
+      sk/lay-lm))
 
-(def final-pl (sk/xkcd7-plan final-xkcd7-sk {:title "Iris Petals"}))
+(def final-pl (sk/plan final-sk {:title "Iris Petals"}))
 
 final-pl
 
@@ -507,7 +507,7 @@ final-pl
 
 ;; The rendered plot (SVG):
 
-(-> final-xkcd7-sk (sk/xkcd7-options {:title "Iris Petals"}))
+(-> final-sk (sk/options {:title "Iris Petals"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -520,9 +520,9 @@ final-pl
 
 (def faceted-pl
   (-> data/iris
-      (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-      (sk/xkcd7-facet :species)
-      sk/xkcd7-plan))
+      (sk/lay-point :sepal_length :sepal_width {:color :species})
+      (sk/facet :species)
+      sk/plan))
 
 ;; The grid tells us the layout:
 
@@ -567,7 +567,7 @@ final-pl
 ;; ## Malli Validation
 ;;
 ;; Every plan conforms to a Malli schema. Validation runs automatically
-;; when `sk/xkcd7-plan` is called (default `:validate true`).
+;; when `sk/plan` is called (default `:validate true`).
 ;; Pass `{:validate false}` to skip it.
 ;;
 ;; You can also check manually with `sk/valid-plan?`:

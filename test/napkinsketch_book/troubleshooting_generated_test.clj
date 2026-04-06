@@ -14,7 +14,7 @@
 (deftest t4_l35 (is ((fn [v] (some #{:sepal_length} v)) v3_l33)))
 
 
-(def v6_l51 (-> data/iris (sk/xkcd7-view :species :sepal_width)))
+(def v6_l51 (-> data/iris (sk/view :species :sepal_width)))
 
 
 (deftest
@@ -22,7 +22,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v6_l51)))
 
 
-(def v9_l58 (-> data/iris (sk/xkcd7-lay-boxplot :species :sepal_width)))
+(def v9_l58 (-> data/iris (sk/lay-boxplot :species :sepal_width)))
 
 
 (deftest
@@ -34,8 +34,8 @@
  v12_l115
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options {:tooltip true})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options {:tooltip true})))
 
 
 (deftest

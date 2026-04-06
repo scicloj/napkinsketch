@@ -6,25 +6,25 @@
   [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.method :as method]
   [clojure.test :refer [deftest is]])
- (:import [scicloj.napkinsketch.impl.xkcd7_sketch Xkcd7Sketch]))
+ (:import [scicloj.napkinsketch.impl.sketch Sketch]))
 
 
 (def
  v3_l27
  (def
-  my-xkcd7-sketch
+  my-sketch
   (->
    data/iris
-   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))))
+   (sk/lay-point :sepal_length :sepal_width {:color :species}))))
 
 
-(def v4_l31 (kind/pprint my-xkcd7-sketch))
+(def v4_l31 (kind/pprint my-sketch))
 
 
 (deftest
  t5_l33
  (is
-  ((fn [v] (and (instance? Xkcd7Sketch v) (= 1 (count (:entries v)))))
+  ((fn [v] (and (instance? Sketch v) (= 1 (count (:entries v)))))
    v4_l31)))
 
 
@@ -34,11 +34,11 @@
   my-sketch
   (->
    data/iris
-   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-   (sk/xkcd7-options {:title "Iris"}))))
+   (sk/lay-point :sepal_length :sepal_width {:color :species})
+   (sk/options {:title "Iris"}))))
 
 
-(def v8_l51 (instance? Xkcd7Sketch my-sketch))
+(def v8_l51 (instance? Sketch my-sketch))
 
 
 (deftest t9_l53 (is ((fn [v] (true? v)) v8_l51)))
@@ -63,8 +63,8 @@
  v14_l95
  (->
   tips
-  (sk/xkcd7-lay-value-bar :day :count {:color :meal, :position :stack})
-  sk/xkcd7-plan
+  (sk/lay-value-bar :day :count {:color :meal, :position :stack})
+  sk/plan
   (get-in [:panels 0 :layers 0 :groups 1 :y0s])))
 
 
@@ -94,8 +94,8 @@
  v20_l132
  (->
   data/iris
-  (sk/xkcd7-lay-line :sepal_length :sepal_width {:group :species})
-  sk/xkcd7-plan
+  (sk/lay-line :sepal_length :sepal_width {:group :species})
+  sk/plan
   (get-in [:panels 0 :layers 0 :groups])
   count))
 
@@ -107,8 +107,8 @@
  v23_l147
  (->
   {:x [1 2 3], :y [4 5 6]}
-  (sk/xkcd7-lay-point :x :y {:nudge-x 0.5})
-  sk/xkcd7-plan
+  (sk/lay-point :x :y {:nudge-x 0.5})
+  sk/plan
   (get-in [:panels 0 :layers 0 :groups 0 :xs])))
 
 
@@ -121,7 +121,7 @@
 (deftest t27_l165 (is ((fn [m] (true? (:jitter m))) v26_l163)))
 
 
-(def v29_l177 (def my-plan (sk/xkcd7-plan my-xkcd7-sketch)))
+(def v29_l177 (def my-plan (sk/plan my-sketch)))
 
 
 (def v30_l179 (sort (keys my-plan)))
@@ -140,7 +140,7 @@
 
 (def
  v36_l199
- (-> my-xkcd7-sketch sk/xkcd7-plan (get-in [:panels 0 :layers 0])))
+ (-> my-sketch sk/plan (get-in [:panels 0 :layers 0])))
 
 
 (deftest t37_l203 (is ((fn [m] (= :point (:mark m))) v36_l199)))
@@ -150,9 +150,9 @@
  v39_l218
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width)
-  (sk/xkcd7-facet :species)
-  sk/xkcd7-plan
+  (sk/lay-point :sepal_length :sepal_width)
+  (sk/facet :species)
+  sk/plan
   :panels
   count))
 
@@ -194,8 +194,8 @@
  v51_l304
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options
    {:theme
     {:background "#2d2d2d",
      :grid "#444444",

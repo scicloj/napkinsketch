@@ -45,7 +45,7 @@ data/iris
 ;; Here is a scatter plot of sepal dimensions, colored by species:
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -59,7 +59,7 @@ data/iris
 
 (-> {:x [1 2 3 4 5]
      :y [2 4 3 5 4]}
-    (sk/xkcd7-lay-point :x :y))
+    (sk/lay-point :x :y))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -70,7 +70,7 @@ data/iris
      {:city "London" :temperature 18}
      {:city "Berlin" :temperature 20}
      {:city "Rome" :temperature 28}]
-    (sk/xkcd7-lay-value-bar :city :temperature))
+    (sk/lay-value-bar :city :temperature))
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
@@ -79,14 +79,14 @@ data/iris
 ;; second → y, third → color):
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
-    sk/xkcd7-lay-point)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; With three columns, the third becomes the color grouping:
 
 (-> {:x [1 2 3 4] :y [4 5 6 7] :group ["a" "a" "b" "b"]}
-    sk/xkcd7-lay-point)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -105,13 +105,13 @@ data/iris
 
 (-> (tc/dataset [[1 10] [2 20] [3 15] [4 25]]
                 {:column-names [:x :y]})
-    (sk/xkcd7-lay-line :x :y))
+    (sk/lay-line :x :y))
 
 (kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
 
 ;; ## Sketches, Views, and Methods
 ;;
-;; A **sketch** (xkcd7-sketch) is a composable value with five fields:
+;; A **sketch** (sketch) is a composable value with five fields:
 ;;
 ;; - `:data` — the dataset
 ;; - `:shared` — aesthetics that apply to all entries and methods
@@ -119,8 +119,8 @@ data/iris
 ;; - `:methods` — how to plot (mark + stat + position)
 ;; - `:opts` — plot-level options (title, labels, dimensions)
 ;;
-;; `sk/xkcd7-view` describes your views of the data (adds entries),
-;; `sk/xkcd7-lay-*` functions add drawing methods, and the result
+;; `sk/view` describes your views of the data (adds entries),
+;; `sk/lay-*` functions add drawing methods, and the result
 ;; auto-renders in the notebook.
 
 ;; ## Options
@@ -128,17 +128,17 @@ data/iris
 ;; There are three scopes for options in Napkinsketch:
 ;;
 ;; - **Shared** — aesthetics like `:color` and `:alpha` that apply to
-;;   all entries and methods. Set via `sk/xkcd7-sketch` or
-;;   `sk/xkcd7-view` opts map.
+;;   all entries and methods. Set via `sk/sketch` or
+;;   `sk/view` opts map.
 ;;
 ;; - **Per-method** — aesthetics and parameters that apply to one
-;;   method only. Set via `sk/xkcd7-lay-*` opts map. Includes
+;;   method only. Set via `sk/lay-*` opts map. Includes
 ;;   `:color`, `:alpha`, `:size`, and method-specific parameters
 ;;   like `:bandwidth`, `:se`, `:jitter`.
 ;;   See the [Methods](./napkinsketch_book.methods.html) chapter.
 ;;
 ;; - **Plot options** — per-plot text content: `:title`, `:subtitle`,
-;;   `:caption`, and axis labels. Set via `sk/xkcd7-options`.
+;;   `:caption`, and axis labels. Set via `sk/options`.
 ;;
 ;; Resolution order: `merge(shared, entry, method)` — later wins,
 ;; `nil` cancels.
@@ -146,8 +146,8 @@ data/iris
 ;; Here is one option from each scope in a single pipeline:
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species :alpha 0.5}) ;; per-method
-    (sk/xkcd7-options {:title "Iris Measurements"                                ;; plot option
+    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.5}) ;; per-method
+    (sk/options {:title "Iris Measurements"                                ;; plot option
                        :width 500 :palette :dark2}))                             ;; config via options
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -170,7 +170,7 @@ data/iris
 ;; A histogram draws bar shapes filled to show binned counts:
 
 (-> data/iris
-    (sk/xkcd7-lay-histogram :sepal_length))
+    (sk/lay-histogram :sepal_length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -195,8 +195,8 @@ data/iris
 ;; A [regression](https://en.wikipedia.org/wiki/Linear_regression) line fitted through the scatter data:
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    sk/xkcd7-lay-lm)
+    (sk/lay-point :sepal_length :sepal_width)
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -218,7 +218,7 @@ data/iris
 (-> {:day ["Mon" "Mon" "Tue" "Tue"]
      :count [30 20 45 15]
      :meal ["lunch" "dinner" "lunch" "dinner"]}
-    (sk/xkcd7-lay-value-bar :day :count {:color :meal :position :stack}))
+    (sk/lay-value-bar :day :count {:color :meal :position :stack}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -228,41 +228,41 @@ data/iris
 ;;
 ;; - **Columns** — when omitted, inferred from the dataset shape
 ;;   (1 column → x, 2 → x y, 3 → x y color)
-;; - **Method** — when using `sk/xkcd7-view` instead of an explicit
-;;   `sk/xkcd7-lay-*`, the chart type is chosen from the column types
+;; - **Method** — when using `sk/view` instead of an explicit
+;;   `sk/lay-*`, the chart type is chosen from the column types
 ;;
 ;; Two numerical columns produce a scatter plot; a single numerical
 ;; column produces a histogram.
 
 (-> data/iris
-    (sk/xkcd7-view :sepal_length :sepal_width))
+    (sk/view :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; A single column produces a histogram:
 
 (-> data/iris
-    (sk/xkcd7-view :sepal_length))
+    (sk/view :sepal_length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; Use `sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram`, etc. when you
+;; Use `sk/lay-point`, `sk/lay-histogram`, etc. when you
 ;; want to choose a specific method, pass options like `:color`, or
 ;; add multiple layers.
 
 ;; ## Layers
 ;;
 ;; A plot can have multiple **layers** — different methods drawn on
-;; the same axes. Use `sk/xkcd7-view` to set shared column mappings
-;; and aesthetics, then add methods with `sk/xkcd7-lay-*`.
+;; the same axes. Use `sk/view` to set shared column mappings
+;; and aesthetics, then add methods with `sk/lay-*`.
 ;;
 ;; Here we add a linear model regression line on top of scatter
 ;; points. Both layers share the same columns and aesthetics:
 
 (-> data/iris
-    (sk/xkcd7-view :sepal_length :sepal_width)
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)
+    (sk/view :sepal_length :sepal_width)
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -272,9 +272,9 @@ data/iris
 ;; trends instead of fitting a straight line:
 
 (-> data/iris
-    (sk/xkcd7-view :sepal_length :sepal_width)
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-loess)
+    (sk/view :sepal_length :sepal_width)
+    sk/lay-point
+    sk/lay-loess)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -282,16 +282,16 @@ data/iris
 
 ;; ### Shared vs per-method aesthetics
 ;;
-;; The key distinction: `sk/xkcd7-view` opts go into **shared**
-;; (all methods inherit), while `sk/xkcd7-lay-*` opts go into the
+;; The key distinction: `sk/view` opts go into **shared**
+;; (all methods inherit), while `sk/lay-*` opts go into the
 ;; **method** (only that method gets them).
 
 ;; Shared color — both layers are colored:
 
 (-> data/iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -300,41 +300,41 @@ data/iris
 ;; Per-method color — only points are colored, lm fits one overall line:
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-lm)
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; `sk/xkcd7-annotate` adds annotation entries (`sk/rule-h`,
+;; `sk/annotate` adds annotation entries (`sk/rule-h`,
 ;; `sk/band-v`, etc.) — see the
 ;; [Customization](./napkinsketch_book.customization.html) chapter.
 
-;; ### When to use `sk/xkcd7-view`
+;; ### When to use `sk/view`
 ;;
 ;; There are five common patterns:
 ;;
-;; - **Minimal** — `(sk/xkcd7-lay-point data)` — columns inferred from dataset shape
-;; - **Explicit columns** — `(sk/xkcd7-lay-point data :x :y)` — no `view` needed
-;; - **Per-method color** — `(sk/xkcd7-lay-point data :x :y {:color :c})` — color on this method only
-;; - **Inferred method** — `(sk/xkcd7-view data :x :y)` — the library picks the chart type
-;; - **Shared aesthetics** — `(-> data (sk/xkcd7-view :x :y {:color :c}) sk/xkcd7-lay-point sk/xkcd7-lay-lm)` — all methods inherit
+;; - **Minimal** — `(sk/lay-point data)` — columns inferred from dataset shape
+;; - **Explicit columns** — `(sk/lay-point data :x :y)` — no `view` needed
+;; - **Per-method color** — `(sk/lay-point data :x :y {:color :c})` — color on this method only
+;; - **Inferred method** — `(sk/view data :x :y)` — the library picks the chart type
+;; - **Shared aesthetics** — `(-> data (sk/view :x :y {:color :c}) sk/lay-point sk/lay-lm)` — all methods inherit
 
 ;; ## Incremental Building
 ;;
 ;; Because sketches are plain data, you can save a partial plot and
-;; extend it later. Each `sk/xkcd7-lay-*` call adds a method without
+;; extend it later. Each `sk/lay-*` call adds a method without
 ;; changing the original.
 
 (def scatter-base
   (-> data/iris
-      (sk/xkcd7-lay-point :sepal_length :sepal_width)))
+      (sk/lay-point :sepal_length :sepal_width)))
 
 ;; Add a regression line:
 
 (-> scatter-base
-    sk/xkcd7-lay-lm)
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -344,19 +344,19 @@ data/iris
 ;; patterns in the data:
 
 (-> scatter-base
-    sk/xkcd7-lay-loess)
+    sk/lay-loess)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
 ;; You can also create a **multi-panel layout** by adding multiple
-;; entries with `sk/xkcd7-view`, then a single method:
+;; entries with `sk/view`, then a single method:
 
 (-> data/iris
-    (sk/xkcd7-view :sepal_length :sepal_width)
-    (sk/xkcd7-view :petal_length :petal_width)
-    sk/xkcd7-lay-point)
+    (sk/view :sepal_length :sepal_width)
+    (sk/view :petal_length :petal_width)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -373,7 +373,7 @@ data/iris
 ;; **legend** appears alongside the plot, mapping labels to colors.
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -385,7 +385,7 @@ data/iris
 ;; bar instead of discrete entries.
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :petal_length}))
+    (sk/lay-point :sepal_length :sepal_width {:color :petal_length}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -394,7 +394,7 @@ data/iris
 ;; nothing to distinguish.
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color "steelblue"}))
+    (sk/lay-point :sepal_length :sepal_width {:color "steelblue"}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -404,26 +404,26 @@ data/iris
 ;; **groups**. Each group is processed independently: it gets its
 ;; own regression line, density curve, or bar.
 ;;
-;; Compare: without color in shared, `sk/xkcd7-lay-lm` fits one
+;; Compare: without color in shared, `sk/lay-lm` fits one
 ;; line to all the data:
 
 (-> data/iris
-    (sk/xkcd7-view :sepal_length :sepal_width)
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)
+    (sk/view :sepal_length :sepal_width)
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Passing `:color :species` in `sk/xkcd7-view` makes it a shared
+;; Passing `:color :species` in `sk/view` makes it a shared
 ;; aesthetic — all methods inherit it. Each species becomes a separate
 ;; group, so the regression fits three lines instead of one:
 
 (-> data/iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -438,13 +438,13 @@ data/iris
 ;; plotting areas, one per value of a column. All panels share the
 ;; same axes, making it easy to compare subsets side by side.
 ;;
-;; `sk/xkcd7-facet` specifies which column to split on:
+;; `sk/facet` specifies which column to split on:
 
 (-> data/iris
-    (sk/xkcd7-view :sepal_length :sepal_width)
-    (sk/xkcd7-facet :species)
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)
+    (sk/view :sepal_length :sepal_width)
+    (sk/facet :species)
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -457,7 +457,7 @@ data/iris
 ;; ## Column Combinations
 ;;
 ;; `sk/cross` generates all combinations of two lists. Passing
-;; column names to `sk/cross` and the result to `sk/xkcd7-view`
+;; column names to `sk/cross` and the result to `sk/view`
 ;; creates one panel per combination — a quick way to explore
 ;; relationships across many variables at once.
 
@@ -471,8 +471,8 @@ data/iris
 ;; a full grid where each row and column corresponds to a variable:
 
 (-> data/iris
-    (sk/xkcd7-view (sk/cross cols cols))
-    sk/xkcd7-lay-point)
+    (sk/view (sk/cross cols cols))
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
 
@@ -487,19 +487,19 @@ data/iris
 ;; change how data maps to visual space without changing the data
 ;; itself.
 ;;
-;; `sk/xkcd7-coord` sets the coordinate system. `:flip` swaps the
+;; `sk/coord` sets the coordinate system. `:flip` swaps the
 ;; x and y axes — useful for horizontal layouts or when axis labels
 ;; are long.
 ;;
 ;; Here we flip a scatter plot so sepal length runs vertically:
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-coord :flip))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/coord :flip))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; `sk/xkcd7-scale` changes how a numeric axis is drawn. `:log`
+;; `sk/scale` changes how a numeric axis is drawn. `:log`
 ;; applies a [logarithmic](https://en.wikipedia.org/wiki/Logarithmic_scale) transformation — useful when values span a
 ;; wide range, so that small and large values are both visible.
 ;;
@@ -507,9 +507,9 @@ data/iris
 
 (-> {:population [1000 5000 50000 200000 1000000 5000000]
      :area [2 8 30 120 500 2100]}
-    (sk/xkcd7-lay-point :population :area)
-    (sk/xkcd7-scale :x :log)
-    (sk/xkcd7-scale :y :log))
+    (sk/lay-point :population :area)
+    (sk/scale :x :log)
+    (sk/scale :y :log))
 
 (kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
 

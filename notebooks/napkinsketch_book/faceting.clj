@@ -15,12 +15,12 @@
 
 ;; ## Facet Wrap
 ;;
-;; `sk/xkcd7-facet` splits views by one categorical column.
+;; `sk/facet` splits views by one categorical column.
 ;; The default layout is a horizontal row of panels:
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-facet :species))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -35,8 +35,8 @@
 ;; Pass `:col` as the direction for a vertical column of panels:
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-facet :species :col))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/facet :species :col))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -44,11 +44,11 @@
 
 ;; ## Facet Grid
 ;;
-;; `sk/xkcd7-facet-grid` splits by two columns — one for rows, one for columns:
+;; `sk/facet-grid` splits by two columns — one for rows, one for columns:
 
 (-> data/tips
-    (sk/xkcd7-lay-point :total_bill :tip {:color :sex})
-    (sk/xkcd7-facet-grid :smoker :sex))
+    (sk/lay-point :total_bill :tip {:color :sex})
+    (sk/facet-grid :smoker :sex))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:panels s))
@@ -59,8 +59,8 @@
 ;; ## Faceted Histogram
 
 (-> data/iris
-    (sk/xkcd7-lay-histogram :sepal_length {:color :species})
-    (sk/xkcd7-facet :species))
+    (sk/lay-histogram :sepal_length {:color :species})
+    (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -71,10 +71,10 @@
 ;; Layers compose with faceting — scatter plus regression per panel:
 
 (-> data/tips
-    (sk/xkcd7-view :total_bill :tip {:color :sex})
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm
-    (sk/xkcd7-facet-grid :smoker :sex))
+    (sk/view :total_bill :tip {:color :sex})
+    sk/lay-point
+    sk/lay-lm
+    (sk/facet-grid :smoker :sex))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:panels s))
@@ -89,9 +89,9 @@
 ;; Shared (default) — all panels have the same y-range:
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-facet :species)
-    (sk/xkcd7-options {:scales :shared}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/facet :species)
+    (sk/options {:scales :shared}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -100,9 +100,9 @@
 ;; Free y — each panel has its own y-range:
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-facet :species)
-    (sk/xkcd7-options {:scales :free-y}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/facet :species)
+    (sk/options {:scales :free-y}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -116,9 +116,9 @@
 
 (def faceted-pl
   (-> data/iris
-      (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-      (sk/xkcd7-facet :species)
-      sk/xkcd7-plan))
+      (sk/lay-point :sepal_length :sepal_width {:color :species})
+      (sk/facet :species)
+      sk/plan))
 
 (:grid faceted-pl)
 
@@ -142,7 +142,7 @@
 (def cols [:sepal_length :sepal_width :petal_length :petal_width])
 
 (-> data/iris
-    (sk/xkcd7-view (sk/cross cols cols) {:color :species}))
+    (sk/view (sk/cross cols cols) {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 16 (:panels s))
@@ -157,7 +157,7 @@
 ;;
 ;; Pass a vector of column names to create one panel per column:
 
-(sk/xkcd7-lay-histogram data/iris [:sepal_length :sepal_width :petal_length] {:color :species})
+(sk/lay-histogram data/iris [:sepal_length :sepal_width :petal_length] {:color :species})
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -166,8 +166,8 @@
 ;; ## Faceted Bar Chart
 
 (-> data/penguins
-    (sk/xkcd7-lay-bar :species {:color :species})
-    (sk/xkcd7-facet :island))
+    (sk/lay-bar :species {:color :species})
+    (sk/facet :island))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -175,12 +175,12 @@
 
 ;; ## Labels and Faceting
 ;;
-;; `sk/xkcd7-options` works with faceted plots:
+;; `sk/options` works with faceted plots:
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-facet :species)
-    (sk/xkcd7-options {:title "Iris by Species"
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/facet :species)
+    (sk/options {:title "Iris by Species"
                        :x-label "Sepal Length (cm)" :y-label "Sepal Width (cm)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

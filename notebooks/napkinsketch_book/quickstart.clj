@@ -34,7 +34,7 @@
                       {:key-fn keyword}))
 
 (-> iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width))
+    (sk/lay-point :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -44,7 +44,7 @@
 ;; [Tablecloth](https://scicloj.github.io/tablecloth/)).
 ;; - The `:key-fn keyword` option converts
 ;; the CSV header strings to Clojure keywords, which is conventional.
-;; - `sk/xkcd7-lay-point` adds a scatter layer — each row becomes a dot.
+;; - `sk/lay-point` adds a scatter layer — each row becomes a dot.
 
 ;; ## Plain Data
 ;;
@@ -53,7 +53,7 @@
 ;; A map of columns works directly:
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
-    (sk/xkcd7-lay-point :x :y))
+    (sk/lay-point :x :y))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -61,7 +61,7 @@
 ;; napkinsketch infers them from the dataset shape:
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
-    sk/xkcd7-lay-point)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -71,7 +71,7 @@
 ;; required:
 
 (-> {"x" [1 2 3 4 5] "y" [2 4 3 5 4]}
-    (sk/xkcd7-lay-point "x" "y"))
+    (sk/lay-point "x" "y"))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -80,7 +80,7 @@
 ;; Bind `:color` to a column to color points by group.
 
 (-> iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -89,12 +89,12 @@
 
 ;; ## More Chart Types
 ;;
-;; Each `sk/xkcd7-lay-*` function adds a different chart type.
+;; Each `sk/lay-*` function adds a different chart type.
 ;;
 ;; **Histogram** — pass a single column for automatic binning:
 
 (-> iris
-    (sk/xkcd7-lay-histogram :sepal_length))
+    (sk/lay-histogram :sepal_length))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -104,17 +104,17 @@
 ;; **Bar chart** — count occurrences of a categorical column:
 
 (-> iris
-    (sk/xkcd7-lay-bar :species))
+    (sk/lay-bar :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 3 (:polygons s)))))])
 
-;; **Horizontal bars** — flip with `sk/xkcd7-coord`:
+;; **Horizontal bars** — flip with `sk/coord`:
 
 (-> iris
-    (sk/xkcd7-lay-bar :species)
-    (sk/xkcd7-coord :flip))
+    (sk/lay-bar :species)
+    (sk/coord :flip))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:polygons s))))])
@@ -123,7 +123,7 @@
 
 (-> {:x [1 2 3 4 5 6 7 8]
      :y [3 5 4 7 6 8 7 9]}
-    (sk/xkcd7-lay-line :x :y))
+    (sk/lay-line :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:lines s))
@@ -132,7 +132,7 @@
 ;; **Boxplot** — compare distributions across categories:
 
 (-> iris
-    (sk/xkcd7-lay-boxplot :species :sepal_width))
+    (sk/lay-boxplot :species :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -142,25 +142,25 @@
 
 ;; ## Inference
 ;;
-;; `sk/xkcd7-view` can pick the chart type for you based on column types.
+;; `sk/view` can pick the chart type for you based on column types.
 ;; Two numerical columns produce a scatter plot:
 
 (-> iris
-    (sk/xkcd7-view :sepal_length :sepal_width))
+    (sk/view :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; A single categorical column produces a bar chart:
 
 (-> iris
-    (sk/xkcd7-view :species))
+    (sk/view :species))
 
 (kind/test-last [(fn [v] (= 3 (:polygons (sk/svg-summary v))))])
 
 ;; A single numerical column produces a histogram:
 
 (-> iris
-    (sk/xkcd7-view :sepal_length))
+    (sk/view :sepal_length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -168,15 +168,15 @@
 
 ;; ## Multiple Layers
 ;;
-;; Use `sk/xkcd7-view` to set shared column mappings and aesthetics,
-;; then add layers with `sk/xkcd7-lay-*`. All layers inherit the
-;; shared mappings. Here `sk/xkcd7-lay-lm` adds a linear model
+;; Use `sk/view` to set shared column mappings and aesthetics,
+;; then add layers with `sk/lay-*`. All layers inherit the
+;; shared mappings. Here `sk/lay-lm` adds a linear model
 ;; (regression line) per group:
 
 (-> iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -184,11 +184,11 @@
 
 ;; ## Titles and Labels
 ;;
-;; Use `sk/xkcd7-options` for width, height, title, and axis labels:
+;; Use `sk/options` for width, height, title, and axis labels:
 
 (-> iris
-    (sk/xkcd7-lay-point :petal_length :petal_width {:color :species})
-    (sk/xkcd7-options {:width 500 :height 350
+    (sk/lay-point :petal_length :petal_width {:color :species})
+    (sk/options {:width 500 :height 350
                        :title "Iris Petals"
                        :x-label "Petal Length (cm)"
                        :y-label "Petal Width (cm)"}))
@@ -202,8 +202,8 @@
 ;;
 ;; Combine multiple plots with `sk/arrange`:
 
-(sk/arrange [(sk/xkcd7-lay-point iris :sepal_length :sepal_width {:color :species})
-             (sk/xkcd7-lay-histogram iris :sepal_length {:color :species})]
+(sk/arrange [(sk/lay-point iris :sepal_length :sepal_width {:color :species})
+             (sk/lay-histogram iris :sepal_length {:color :species})]
             {:cols 2})
 
 (kind/test-last [(fn [v] (vector? v))])
@@ -214,7 +214,7 @@
 ;;
 ;; ```clojure
 ;; (-> iris
-;;     (sk/xkcd7-lay-point :sepal_length :sepal_width)
+;;     (sk/lay-point :sepal_length :sepal_width)
 ;;     (sk/save "my-plot.svg"))
 ;; ```
 ;;

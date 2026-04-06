@@ -12,8 +12,8 @@
  v3_l21
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options {:width 800, :height 250})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options {:width 800, :height 250})))
 
 
 (deftest
@@ -31,8 +31,8 @@
  v6_l31
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options {:width 300, :height 500})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options {:width 300, :height 500})))
 
 
 (deftest
@@ -50,8 +50,8 @@
  v9_l43
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options
    {:title "Iris Sepal Measurements",
     :x-label "Length (cm)",
     :y-label "Width (cm)"})))
@@ -74,8 +74,8 @@
  v12_l55
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options
    {:title "Iris Measurements",
     :subtitle "Sepal dimensions across three species",
     :caption "Source: Fisher's Iris dataset (1936)"})))
@@ -110,8 +110,8 @@
  v17_l76
  (->
   exponential-data
-  (sk/xkcd7-lay-point :x :y)
-  (sk/xkcd7-options {:title "Linear Scale"})))
+  (sk/lay-point :x :y)
+  (sk/options {:title "Linear Scale"})))
 
 
 (deftest
@@ -129,9 +129,9 @@
  v20_l86
  (->
   exponential-data
-  (sk/xkcd7-lay-point :x :y)
-  (sk/xkcd7-scale :y :log)
-  (sk/xkcd7-options {:title "Log Y Scale"})))
+  (sk/lay-point :x :y)
+  (sk/scale :y :log)
+  (sk/options {:title "Log Y Scale"})))
 
 
 (deftest
@@ -149,9 +149,9 @@
  v23_l97
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-scale :y {:type :linear, :domain [0 6]})
-  (sk/xkcd7-options {:title "Fixed Y Domain [0, 6]"})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/scale :y {:type :linear, :domain [0 6]})
+  (sk/options {:title "Fixed Y Domain [0, 6]"})))
 
 
 (deftest
@@ -169,7 +169,7 @@
  v26_l110
  (->
   data/iris
-  (sk/xkcd7-lay-point
+  (sk/lay-point
    :sepal_length
    :sepal_width
    {:color :species, :alpha 0.5, :size 5})))
@@ -190,7 +190,7 @@
  v29_l119
  (->
   {:x [1 2 3 4 5], :y [2 4 3 5 4]}
-  (sk/xkcd7-lay-line :x :y {:size 3})))
+  (sk/lay-line :x :y {:size 3})))
 
 
 (deftest
@@ -198,7 +198,7 @@
  (is ((fn [v] (= 1 (:lines (sk/svg-summary v)))) v29_l119)))
 
 
-(def v32_l126 (-> data/iris (sk/xkcd7-lay-bar :species {:alpha 0.4})))
+(def v32_l126 (-> data/iris (sk/lay-bar :species {:alpha 0.4})))
 
 
 (deftest
@@ -211,8 +211,8 @@
  v35_l138
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-annotate (sk/rule-h 3.0) (sk/rule-v 6.0))))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/annotate (sk/rule-h 3.0) (sk/rule-v 6.0))))
 
 
 (deftest
@@ -236,8 +236,8 @@
  v40_l153
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-annotate
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/annotate
    (sk/band-v 5.5 6.5)
    (sk/band-h 3.0 3.5 {:alpha 0.3}))))
 
@@ -252,8 +252,8 @@
  v43_l164
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]})))
 
 
 (deftest
@@ -271,8 +271,8 @@
  v46_l174
  (->
   data/penguins
-  (sk/xkcd7-lay-stacked-bar :island {:color :species})
-  (sk/xkcd7-options {:palette ["#8B5CF6" "#F59E0B" "#10B981"]})))
+  (sk/lay-stacked-bar :island {:color :species})
+  (sk/options {:palette ["#8B5CF6" "#F59E0B" "#10B981"]})))
 
 
 (deftest
@@ -290,8 +290,8 @@
  v49_l184
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options
    {:palette
     {:setosa "#E74C3C", :versicolor "#3498DB", :virginica "#2ECC71"}})))
 
@@ -311,8 +311,8 @@
  v52_l215
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options {:palette :set2})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options {:palette :set2})))
 
 
 (deftest
@@ -330,8 +330,8 @@
  v55_l225
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options {:palette :dark2})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options {:palette :dark2})))
 
 
 (deftest
@@ -385,8 +385,8 @@
  v70_l276
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options {:palette :khroma/okabeito})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options {:palette :khroma/okabeito})))
 
 
 (deftest
@@ -398,8 +398,8 @@
  v73_l286
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options
    {:title "White Theme",
     :theme {:bg "#FFFFFF", :grid "#EEEEEE", :font-size 10}})))
 
@@ -414,8 +414,8 @@
  v76_l299
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options {:legend-position :bottom})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options {:legend-position :bottom})))
 
 
 (deftest
@@ -433,26 +433,26 @@
  v79_l311
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options {:tooltip true})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options {:tooltip true})))
 
 
 (deftest
  t80_l315
- (is ((fn [v] (= :div (first (sk/xkcd7-plot v)))) v79_l311)))
+ (is ((fn [v] (= :div (first (sk/plot v)))) v79_l311)))
 
 
 (def
  v82_l321
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-options {:brush true})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/options {:brush true})))
 
 
 (deftest
  t83_l325
- (is ((fn [v] (= :div (first (sk/xkcd7-plot v)))) v82_l321)))
+ (is ((fn [v] (= :div (first (sk/plot v)))) v82_l321)))
 
 
 (def
@@ -466,11 +466,11 @@
  v86_l333
  (->
   data/iris
-  (sk/xkcd7-view (sk/cross splom-cols splom-cols) {:color :species})
-  sk/xkcd7-lay-point
-  (sk/xkcd7-options {:brush true})))
+  (sk/view (sk/cross splom-cols splom-cols) {:color :species})
+  sk/lay-point
+  (sk/options {:brush true})))
 
 
 (deftest
  t87_l338
- (is ((fn [v] (= :div (first (sk/xkcd7-plot v)))) v86_l333)))
+ (is ((fn [v] (= :div (first (sk/plot v)))) v86_l333)))

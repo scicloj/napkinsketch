@@ -11,7 +11,7 @@
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
-            [scicloj.napkinsketch.impl.xkcd7-sketch :as xkcd7-sketch]
+            [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.method :as method]))
 
 ;; ============================================================
@@ -81,7 +81,7 @@
 (deftest legend-serializable-test
   (testing "continuous legend has :color-scale keyword, no :gradient-fn"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
-          pl (sk/xkcd7-plan (-> ds (sk/xkcd7-lay-point :x :y {:color :c})))
+          pl (sk/plan (-> ds (sk/lay-point :x :y {:color :c})))
           legend (:legend pl)]
       (is (= :continuous (:type legend)))
       (is (contains? legend :color-scale))
@@ -89,13 +89,13 @@
       (is (nil? (:color-scale legend)) "default color-scale is nil")))
   (testing "explicit :color-scale is stored as keyword"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
-          pl (sk/xkcd7-plan (-> ds (sk/xkcd7-lay-point :x :y {:color :c}))
+          pl (sk/plan (-> ds (sk/lay-point :x :y {:color :c}))
                             {:color-scale :inferno})
           legend (:legend pl)]
       (is (= :inferno (:color-scale legend)))))
   (testing "legend has 20 pre-computed stops"
     (let [ds (tc/dataset {:x (range 50) :y (range 50) :c (range 50)})
-          pl (sk/xkcd7-plan (-> ds (sk/xkcd7-lay-point :x :y {:color :c})))
+          pl (sk/plan (-> ds (sk/lay-point :x :y {:color :c})))
           legend (:legend pl)]
       (is (= 20 (count (:stops legend))))
       (is (== 0.0 (:t (first (:stops legend)))))
@@ -254,8 +254,8 @@
 (deftest count-stat-x-equals-color-test
   (testing "count stat when x and color map to the same column"
     (let [pl (-> {:species ["setosa" "setosa" "versicolor" "versicolor"]}
-                 (sk/xkcd7-lay-bar :species {:color :species})
-                 sk/xkcd7-plan)
+                 (sk/lay-bar :species {:color :species})
+                 sk/plan)
           groups (get-in pl [:panels 0 :layers 0 :groups])]
       ;; Each group should only have non-zero count for its own species
       (doseq [g groups]
@@ -267,8 +267,8 @@
 (deftest value-bar-stacking-y0s-test
   (testing "stacked value bars use y0s baselines"
     (let [pl (-> {:day ["Mon" "Mon"] :count [30 20] :meal ["lunch" "dinner"]}
-                 (sk/xkcd7-lay-value-bar :day :count {:color :meal :position :stack})
-                 sk/xkcd7-plan)
+                 (sk/lay-value-bar :day :count {:color :meal :position :stack})
+                 sk/plan)
           groups (get-in pl [:panels 0 :layers 0 :groups])
           dinner (second groups)]
       ;; dinner baseline should equal lunch value (30)
@@ -404,9 +404,9 @@
 
 (deftest views-to-plan-test
   (let [views (-> tiny-ds
-                  (sk/xkcd7-view [[:x :y]])
-                  sk/xkcd7-lay-point)
-        pl (sk/xkcd7-plan views)]
+                  (sk/view [[:x :y]])
+                  sk/lay-point)
+        pl (sk/plan views)]
     (is (map? pl))
     (is (contains? pl :panels))
     (is (contains? pl :width))
@@ -419,26 +419,26 @@
 
 (deftest plan-with-color-test
   (let [ds (tc/dataset {:x [1 2 3 4] :y [1 2 3 4] :g ["a" "a" "b" "b"]})
-        views (-> ds (sk/xkcd7-view [[:x :y]]) (sk/xkcd7-lay-point {:color :g}))
-        pl (sk/xkcd7-plan views)]
+        views (-> ds (sk/view [[:x :y]]) (sk/lay-point {:color :g}))
+        pl (sk/plan views)]
     (is (:legend pl))
     (is (= 2 (count (:entries (:legend pl)))))))
 
 (deftest plan-faceted-test
   (let [ds (tc/dataset {:x [1 2 3 4 5 6] :y [1 2 3 4 5 6]
                         :g ["a" "a" "b" "b" "c" "c"]})
-        views (-> ds (sk/xkcd7-view [[:x :y]]) (sk/xkcd7-facet :g) sk/xkcd7-lay-point)
-        pl (sk/xkcd7-plan views)]
+        views (-> ds (sk/view [[:x :y]]) (sk/facet :g) sk/lay-point)
+        pl (sk/plan views)]
     (is (= 3 (count (:panels pl))))))
 
 (deftest coord-fixed-test
   (testing "coord :fixed end-to-end — equal ranges produce square panel"
     (let [ds (tc/dataset {:x [0 10 5] :y [0 10 5]})
-          pl (-> ds (sk/xkcd7-view :x :y) (sk/xkcd7-coord :fixed) sk/xkcd7-lay-point sk/xkcd7-plan)]
+          pl (-> ds (sk/view :x :y) (sk/coord :fixed) sk/lay-point sk/plan)]
       (is (== (:panel-width pl) (:panel-height pl)) "Equal data ranges → square panel")))
   (testing "coord :fixed end-to-end — asymmetric ranges"
     (let [ds (tc/dataset {:x [0 100 50] :y [0 10 5]})
-          pl (-> ds (sk/xkcd7-view :x :y) (sk/xkcd7-coord :fixed) sk/xkcd7-lay-point sk/xkcd7-plan)]
+          pl (-> ds (sk/view :x :y) (sk/coord :fixed) sk/lay-point sk/plan)]
       (is (> (:panel-width pl) (:panel-height pl)) "Wide data → wider panel"))))
 
 (deftest diverging-color-test
@@ -467,60 +467,60 @@
     (is (fn? (defaults/resolve-gradient-fn {:low "#FF0000" :mid "#FFFFFF" :high "#0000FF"}))))
   (testing "diverging end-to-end"
     (let [ds (tc/dataset {:x (range 10) :y (range 10) :z (map #(- % 5) (range 10))})
-          fig (-> ds (sk/xkcd7-view :x :y)
-                  (sk/xkcd7-lay-point {:color :z})
-                  (sk/xkcd7-plot {:color-scale :diverging :color-midpoint 0}))
+          fig (-> ds (sk/view :x :y)
+                  (sk/lay-point {:color :z})
+                  (sk/plot {:color-scale :diverging :color-midpoint 0}))
           s (sk/svg-summary fig)]
       (is (= 10 (:points s))))))
 
 (deftest loess-se-test
   (testing "LOESS with SE produces ribbon"
     (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
-          fig (-> ds (sk/xkcd7-view :x :y)
-                  sk/xkcd7-lay-point
-                  (sk/xkcd7-lay-loess {:se true :se-boot 50})
-                  sk/xkcd7-plot)
+          fig (-> ds (sk/view :x :y)
+                  sk/lay-point
+                  (sk/lay-loess {:se true :se-boot 50})
+                  sk/plot)
           s (sk/svg-summary fig)]
       (is (= 20 (:points s)))
       (is (= 1 (:lines s)))
       (is (= 1 (:polygons s)) "confidence ribbon polygon")))
   (testing "LOESS without SE has no ribbon"
     (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
-          fig (-> ds (sk/xkcd7-view :x :y)
-                  sk/xkcd7-lay-point
-                  sk/xkcd7-lay-loess
-                  sk/xkcd7-plot)
+          fig (-> ds (sk/view :x :y)
+                  sk/lay-point
+                  sk/lay-loess
+                  sk/plot)
           s (sk/svg-summary fig)]
       (is (= 1 (:lines s)))
       (is (zero? (:polygons s)))))
   (testing "LOESS dedup handles duplicate x values"
     (let [ds (tc/dataset {:x [1 1 2 2 3 3 4 4 5 5] :y [2 3 4 5 6 7 8 9 10 11]})
-          fig (-> ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-loess sk/xkcd7-plot)
+          fig (-> ds (sk/view :x :y) sk/lay-loess sk/plot)
           s (sk/svg-summary fig)]
       (is (= 1 (:lines s))))))
 
 (deftest arrange-test
   (testing "flat plots → CSS grid"
-    (let [p1 (-> tiny-ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-point sk/xkcd7-plot)
-          p2 (-> tiny-ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-point sk/xkcd7-plot)
+    (let [p1 (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
+          p2 (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
           result (sk/arrange [p1 p2])]
       (is (= :div (first result)))
       (is (= :kind/hiccup (:kindly/kind (meta result))))))
   (testing "nested rows → correct cols"
-    (let [p (-> tiny-ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-point sk/xkcd7-plot)
+    (let [p (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
           result (sk/arrange [[p p] [p p]])]
       (is (= "repeat(2, 1fr)"
              (-> result second :style :grid-template-columns)))))
   (testing "title appears as first child"
-    (let [p (-> tiny-ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-point sk/xkcd7-plot)
+    (let [p (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
           result (sk/arrange [p p] {:title "Test" :cols 2})
           title-div (nth result 2)]
       (is (= :div (first title-div)))
       (is (= "Test" (last title-div))))))
 
 (deftest valid-plan-test
-  (let [views (-> tiny-ds (sk/xkcd7-view [[:x :y]]) sk/xkcd7-lay-point)
-        pl (sk/xkcd7-plan views)]
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)
+        pl (sk/plan views)]
     (is (sk/valid-plan? pl))))
 
 ;; ============================================================
@@ -606,14 +606,14 @@
   (testing "partial theme via with-config renders without error"
     (sk/with-config {:theme {:bg "#222"}}
       (let [svg (-> {:x [1 2 3] :y [4 5 6]}
-                    (sk/xkcd7-lay-point :x :y)
-                    sk/xkcd7-plot)]
+                    (sk/lay-point :x :y)
+                    sk/plot)]
         (is (vector? svg)))))
-  (testing "sk/xkcd7-options deep-merges theme across calls"
+  (testing "sk/options deep-merges theme across calls"
     (let [sketch (-> {:x [1 2 3] :y [4 5 6]}
-                     (sk/xkcd7-lay-point :x :y)
-                     (sk/xkcd7-options {:theme {:bg "#FFF"} :width 800})
-                     (sk/xkcd7-options {:theme {:font-size 14}}))]
+                     (sk/lay-point :x :y)
+                     (sk/options {:theme {:bg "#FFF"} :width 800})
+                     (sk/options {:theme {:font-size 14}}))]
       (is (= "#FFF" (get-in (:opts sketch) [:theme :bg])))
       (is (= 14 (get-in (:opts sketch) [:theme :font-size])))
       (is (= 800 (:width (:opts sketch)))))))
@@ -699,54 +699,54 @@
 ;; ---- Config affects plan output ----
 
 (deftest config-affects-plan-test
-  (let [views (-> tiny-ds (sk/xkcd7-view [[:x :y]]) sk/xkcd7-lay-point)]
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)]
     (testing "default width/height in plan"
-      (let [s (sk/xkcd7-plan views)]
+      (let [s (sk/plan views)]
         (is (= 600 (:width s)))
         (is (= 400 (:height s)))))
     (testing "per-call opts change plan dimensions"
-      (let [s (sk/xkcd7-plan views {:width 800 :height 300})]
+      (let [s (sk/plan views {:width 800 :height 300})]
         (is (= 800 (:width s)))
         (is (= 300 (:height s)))))
     (testing "set-config! changes plan dimensions"
       (try
         (sk/set-config! {:width 700})
-        (let [s (sk/xkcd7-plan views)]
+        (let [s (sk/plan views)]
           (is (= 700 (:width s))))
         (finally
           (sk/set-config! nil))))
     (testing "with-config changes plan dimensions"
       (sk/with-config {:height 500}
-        (let [s (sk/xkcd7-plan views)]
+        (let [s (sk/plan views)]
           (is (= 500 (:height s)))))
       ;; After with-config, back to default
-      (let [s (sk/xkcd7-plan views)]
+      (let [s (sk/plan views)]
         (is (= 400 (:height s)))))
     (testing "plan does NOT contain :theme key"
-      (let [s (sk/xkcd7-plan views)]
+      (let [s (sk/plan views)]
         (is (not (contains? s :theme)))))))
 
 ;; ---- Config affects rendered SVG ----
 
 (deftest config-affects-render-test
-  (let [views (-> tiny-ds (sk/xkcd7-view [[:x :y]]) sk/xkcd7-lay-point)]
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)]
     (testing "default theme bg appears in SVG"
-      (let [svg (sk/xkcd7-plot views)
+      (let [svg (sk/plot views)
             summary (sk/svg-summary svg)]
         (is (= 1 (:panels summary)))
         (is (= 5 (:points summary)))))
     (testing "per-call theme overrides bg in SVG"
-      (let [svg (sk/xkcd7-plot views {:theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}})
+      (let [svg (sk/plot views {:theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}})
             s (str svg)]
         ;; Default bg is rgb(235,235,235); custom is rgb(255,255,255)
         (is (clojure.string/includes? s "rgb(255,255,255)"))))
     (testing "with-config theme overrides bg in SVG"
       (let [svg (sk/with-config {:theme {:bg "#FF0000" :grid "#FFFFFF" :font-size 8}}
-                  (sk/xkcd7-plot views))
+                  (sk/plot views))
             s (str svg)]
         (is (clojure.string/includes? s "rgb(255,0,0)"))))
     (testing "per-call width changes SVG viewBox"
-      (let [svg (sk/xkcd7-plot views {:width 800})
+      (let [svg (sk/plot views {:width 800})
             attrs (second svg)]
         (is (> (:width attrs) 800))))))
 
@@ -756,19 +756,19 @@
   (let [ds (tc/dataset {:x [1 2 3 4 5 6]
                         :y [10 20 30 15 25 35]
                         :g ["a" "a" "a" "b" "b" "b"]})
-        views (-> ds (sk/xkcd7-view [[:x :y]]) (sk/xkcd7-lay-point {:color :g}))]
+        views (-> ds (sk/view [[:x :y]]) (sk/lay-point {:color :g}))]
     (testing "default palette produces colored points"
-      (let [svg (sk/xkcd7-plot views)
+      (let [svg (sk/plot views)
             summary (sk/svg-summary svg)]
         (is (= 6 (:points summary)))))
     (testing "per-call palette :dark2 works"
-      (let [svg (sk/xkcd7-plot views {:palette :dark2})
+      (let [svg (sk/plot views {:palette :dark2})
             summary (sk/svg-summary svg)]
         (is (= 6 (:points summary)))))
     (testing "set-config! palette works"
       (try
         (sk/set-config! {:palette :set2})
-        (let [svg (sk/xkcd7-plot views)
+        (let [svg (sk/plot views)
               summary (sk/svg-summary svg)]
           (is (= 6 (:points summary))))
         (finally
@@ -777,85 +777,85 @@
 ;; ---- Config validation flag ----
 
 (deftest config-validate-flag-test
-  (let [views (-> tiny-ds (sk/xkcd7-view [[:x :y]]) sk/xkcd7-lay-point)]
+  (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)]
     (testing "validate true (default) — valid plan passes"
-      (is (some? (sk/xkcd7-plan views))))
+      (is (some? (sk/plan views))))
     (testing "validate false skips schema check"
-      (is (some? (sk/xkcd7-plan views {:validate false}))))))
+      (is (some? (sk/plan views {:validate false}))))))
 
 ;; ---- Edge case tests ----
 
 (deftest single-point-dataset-test
   (testing "plan with a single data point does not throw"
     (let [ds (tc/dataset {:x [5] :y [10]})
-          pl (sk/xkcd7-plan (-> ds (sk/xkcd7-lay-point :x :y)))]
+          pl (sk/plan (-> ds (sk/lay-point :x :y)))]
       (is (= 1 (count (:panels pl))))
-      (is (some? (sk/xkcd7-plot (-> ds (sk/xkcd7-lay-point :x :y))))))))
+      (is (some? (sk/plot (-> ds (sk/lay-point :x :y))))))))
 
 (deftest two-point-dataset-test
   (testing "regression with exactly 2 points — lm needs n>=3 so falls back gracefully"
     (let [ds (tc/dataset {:x [1 2] :y [3 4]})
-          views (-> ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-point)]
-      (is (some? (sk/xkcd7-plan views))))))
+          views (-> ds (sk/view :x :y) sk/lay-point)]
+      (is (some? (sk/plan views))))))
 
 (deftest all-same-values-test
   (testing "scatter where all x values are identical"
     (let [ds (tc/dataset {:x [5 5 5 5] :y [1 2 3 4]})
-          pl (sk/xkcd7-plan (-> ds (sk/xkcd7-lay-point :x :y)))]
+          pl (sk/plan (-> ds (sk/lay-point :x :y)))]
       (is (some? pl))
       (is (= 1 (count (:panels pl))))))
   (testing "scatter where all y values are identical"
     (let [ds (tc/dataset {:x [1 2 3 4] :y [5 5 5 5]})
-          pl (sk/xkcd7-plan (-> ds (sk/xkcd7-lay-point :x :y)))]
+          pl (sk/plan (-> ds (sk/lay-point :x :y)))]
       (is (some? pl)))))
 
 (deftest categorical-single-category-test
   (testing "bar chart with only one category"
     (let [ds (tc/dataset {:cat ["a" "a" "a"] :val [1 2 3]})
-          pl (sk/xkcd7-plan (-> ds (sk/xkcd7-lay-value-bar :cat :val)))]
+          pl (sk/plan (-> ds (sk/lay-value-bar :cat :val)))]
       (is (= 1 (count (:panels pl)))))))
 
 (deftest histogram-uniform-data-test
   (testing "histogram with all identical values"
     (let [ds (tc/dataset {:x [5 5 5 5 5]})
-          pl (sk/xkcd7-plan (-> ds (sk/xkcd7-lay-histogram :x)))]
+          pl (sk/plan (-> ds (sk/lay-histogram :x)))]
       (is (some? pl)))))
 
 (deftest polar-coord-test
   (testing "polar coordinate plan structure"
     (let [ds (tc/dataset {:cat ["A" "B" "C"] :val [10 20 30]})
           views (-> ds
-                    (sk/xkcd7-view :cat :val)
-                    sk/xkcd7-lay-bar
-                    (sk/xkcd7-coord :polar))
-          pl (sk/xkcd7-plan views)]
+                    (sk/view :cat :val)
+                    sk/lay-bar
+                    (sk/coord :polar))
+          pl (sk/plan views)]
       (is (= :polar (get-in pl [:panels 0 :coord]))))))
 
 (deftest flip-coord-test
   (testing "flipped coordinates swap x/y domains"
     (let [views (-> cat-ds
-                    (sk/xkcd7-view :cat :val)
-                    sk/xkcd7-lay-bar
-                    (sk/xkcd7-coord :flip))
-          pl (sk/xkcd7-plan views)
+                    (sk/view :cat :val)
+                    sk/lay-bar
+                    (sk/coord :flip))
+          pl (sk/plan views)
           panel (first (:panels pl))]
       (is (= :flip (:coord panel))))))
 
 (deftest labs-test
   (testing "axis labels propagate to plan via options"
     (let [pl (-> tiny-ds
-                 (sk/xkcd7-view :x :y)
-                 sk/xkcd7-lay-point
-                 (sk/xkcd7-options {:x-label "X Axis" :y-label "Y Axis"})
-                 sk/xkcd7-plan)]
+                 (sk/view :x :y)
+                 sk/lay-point
+                 (sk/options {:x-label "X Axis" :y-label "Y Axis"})
+                 sk/plan)]
       (is (= "X Axis" (:x-label pl)))
       (is (= "Y Axis" (:y-label pl)))))
   (testing "title/subtitle/caption propagate via options"
     (let [pl (-> tiny-ds
-                 (sk/xkcd7-view :x :y)
-                 sk/xkcd7-lay-point
-                 (sk/xkcd7-options {:title "T" :subtitle "ST" :caption "C"})
-                 sk/xkcd7-plan)]
+                 (sk/view :x :y)
+                 sk/lay-point
+                 (sk/options {:title "T" :subtitle "ST" :caption "C"})
+                 sk/plan)]
       (is (= "T" (:title pl)))
       (is (= "ST" (:subtitle pl)))
       (is (= "C" (:caption pl))))))
@@ -864,92 +864,92 @@
   (testing "log scale is recorded in plan"
     (let [ds (tc/dataset {:x [1 10 100 1000] :y [1 2 3 4]})
           views (-> ds
-                    (sk/xkcd7-view :x :y)
-                    sk/xkcd7-lay-point
-                    (sk/xkcd7-scale :x :log))
-          pl (sk/xkcd7-plan views)
+                    (sk/view :x :y)
+                    sk/lay-point
+                    (sk/scale :x :log))
+          pl (sk/plan views)
           panel (first (:panels pl))]
       (is (= :log (get-in panel [:x-scale :type]))))))
 
 (deftest log-scale-nonpositive-test
   (testing "non-positive values are filtered on log-scaled x axis"
-    (let [pl (sk/xkcd7-plan (-> {:x [0 -1 1 10 100] :y [1 2 3 4 5]}
-                                (sk/xkcd7-lay-point :x :y)
-                                (sk/xkcd7-scale :x :log)))
+    (let [pl (sk/plan (-> {:x [0 -1 1 10 100] :y [1 2 3 4 5]}
+                                (sk/lay-point :x :y)
+                                (sk/scale :x :log)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))
       (is (= [1 10 100] (vec (:xs group))))))
   (testing "non-positive values are filtered on log-scaled y axis"
-    (let [pl (sk/xkcd7-plan (-> {:x [1 2 3 4 5] :y [0 -1 1 10 100]}
-                                (sk/xkcd7-lay-point :x :y)
-                                (sk/xkcd7-scale :y :log)))
+    (let [pl (sk/plan (-> {:x [1 2 3 4 5] :y [0 -1 1 10 100]}
+                                (sk/lay-point :x :y)
+                                (sk/scale :y :log)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))))
   (testing "all-positive data is not filtered"
-    (let [pl (sk/xkcd7-plan (-> {:x [1 10 100] :y [1 2 3]}
-                                (sk/xkcd7-lay-point :x :y)
-                                (sk/xkcd7-scale :x :log)))
+    (let [pl (sk/plan (-> {:x [1 10 100] :y [1 2 3]}
+                                (sk/lay-point :x :y)
+                                (sk/scale :x :log)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group)))))))
 
 (deftest infinity-filtering-test
   (testing "infinite y values are filtered with warning"
-    (let [pl (sk/xkcd7-plan (-> {:x [1 2 3 4 5]
+    (let [pl (sk/plan (-> {:x [1 2 3 4 5]
                                  :y [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]}
-                                (sk/xkcd7-lay-point :x :y)))
+                                (sk/lay-point :x :y)))
           layer (first (:layers (first (:panels pl))))
           group (first (:groups layer))]
       (is (= 3 (count (:xs group))))
       (is (= [1 3 5] (vec (:xs group))))
       (is (= [10.0 30.0 50.0] (vec (:ys group))))))
   (testing "infinite x values are filtered"
-    (let [pl (sk/xkcd7-plan (-> {:x [1.0 Double/POSITIVE_INFINITY 3.0]
+    (let [pl (sk/plan (-> {:x [1.0 Double/POSITIVE_INFINITY 3.0]
                                  :y [10 20 30]}
-                                (sk/xkcd7-lay-point :x :y)))
+                                (sk/lay-point :x :y)))
           group (-> pl :panels first :layers first :groups first)]
       (is (= 2 (count (:xs group))))))
   (testing "SVG has no NaN after infinity filtering"
-    (let [svg (sk/xkcd7-plot (-> {:x [1 2 3] :y [1.0 Double/POSITIVE_INFINITY 3.0]}
-                                 (sk/xkcd7-lay-point :x :y)))]
+    (let [svg (sk/plot (-> {:x [1 2 3] :y [1.0 Double/POSITIVE_INFINITY 3.0]}
+                                 (sk/lay-point :x :y)))]
       (is (not (clojure.string/includes? (str svg) "NaN")))))
   (testing "all-finite data is not filtered"
-    (let [pl (sk/xkcd7-plan (-> {:x [1 2 3] :y [10.0 20.0 30.0]}
-                                (sk/xkcd7-lay-point :x :y)))
+    (let [pl (sk/plan (-> {:x [1 2 3] :y [10.0 20.0 30.0]}
+                                (sk/lay-point :x :y)))
           group (-> pl :panels first :layers first :groups first)]
       (is (= 3 (count (:xs group)))))))
 
 (deftest stacked-negative-domain-test
   (testing "all-negative stacked bars produce correct y-domain"
-    (let [pl (sk/xkcd7-plan (-> {:category ["A" "A" "B" "B"]
+    (let [pl (sk/plan (-> {:category ["A" "A" "B" "B"]
                                  :group ["g1" "g2" "g1" "g2"]
                                  :value [-10 -20 -5 -15]}
-                                (sk/xkcd7-lay-value-bar :category :value {:color :group :position :stack})))
+                                (sk/lay-value-bar :category :value {:color :group :position :stack})))
           [lo hi] (:y-domain (first (:panels pl)))]
       (is (neg? lo) "lower bound should be negative for all-negative stacked data")
       (is (pos? hi) "upper bound includes 0 baseline with padding")))
   (testing "mixed positive/negative stacked bars span both sides"
-    (let [pl (sk/xkcd7-plan (-> {:category ["A" "A" "B" "B"]
+    (let [pl (sk/plan (-> {:category ["A" "A" "B" "B"]
                                  :group ["g1" "g2" "g1" "g2"]
                                  :value [10 -20 5 -15]}
-                                (sk/xkcd7-lay-value-bar :category :value {:color :group :position :stack})))
+                                (sk/lay-value-bar :category :value {:color :group :position :stack})))
           [lo hi] (:y-domain (first (:panels pl)))]
       (is (neg? lo) "lower bound extends below zero")
       (is (pos? hi) "upper bound extends above zero")))
   (testing "all-negative stacked bars render without NaN"
-    (let [svg (sk/xkcd7-plot (-> {:category ["A" "A" "B" "B"]
+    (let [svg (sk/plot (-> {:category ["A" "A" "B" "B"]
                                   :group ["g1" "g2" "g1" "g2"]
                                   :value [-10 -20 -5 -15]}
-                                 (sk/xkcd7-lay-value-bar :category :value {:color :group :position :stack})))]
+                                 (sk/lay-value-bar :category :value {:color :group :position :stack})))]
       (is (not (clojure.string/includes? (str svg) "NaN"))))))
 
 (deftest boolean-color-test
   (testing "Boolean false is not dropped as group key"
     (let [pl (-> {:x [1 2 3 4] :y [10 20 30 40] :flag [true false true false]}
-                 (sk/xkcd7-lay-point :x :y {:color :flag})
-                 sk/xkcd7-plan)
+                 (sk/lay-point :x :y {:color :flag})
+                 sk/plan)
           groups (-> pl :panels first :layers first :groups)]
       (is (= 2 (count groups)) "two groups for true/false")
       (is (= "true" (:label (first groups))))
@@ -959,8 +959,8 @@
           "true and false get different colors")))
   (testing "Legend matches rendering for boolean groups"
     (let [pl (-> {:x [1 2 3 4] :y [10 20 30 40] :flag [true false true false]}
-                 (sk/xkcd7-lay-point :x :y {:color :flag})
-                 sk/xkcd7-plan)
+                 (sk/lay-point :x :y {:color :flag})
+                 sk/plan)
           legend-colors (mapv :color (:entries (:legend pl)))
           group-colors (mapv :color (-> pl :panels first :layers first :groups))]
       (is (= (count legend-colors) (count group-colors)))
@@ -971,39 +971,39 @@
   (testing "histogram rejects :y column"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
                           #"lay-histogram uses only the x column"
-                          (sk/xkcd7-lay-histogram {:x [1 2 3] :y [4 5 6]} :x :y))))
+                          (sk/lay-histogram {:x [1 2 3] :y [4 5 6]} :x :y))))
   (testing "bar rejects :y column"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
                           #"lay-bar uses only the x column"
-                          (sk/xkcd7-lay-bar {:x ["a" "b"] :y [1 2]} :x :y))))
+                          (sk/lay-bar {:x ["a" "b"] :y [1 2]} :x :y))))
   (testing "density rejects :y column"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
                           #"lay-density uses only the x column"
-                          (sk/xkcd7-lay-density {:x [1 2 3] :y [4 5 6]} :x :y))))
+                          (sk/lay-density {:x [1 2 3] :y [4 5 6]} :x :y))))
   (testing "histogram with opts (not :y) still works"
-    (is (some? (sk/xkcd7-lay-histogram {:x [1 2 3 4 5]} :x {:color :x})))))
+    (is (some? (sk/lay-histogram {:x [1 2 3 4 5]} :x {:color :x})))))
 
 (deftest multiple-layers-test
   (testing "plan with point + line layers"
     (let [views (-> tiny-ds
-                    (sk/xkcd7-view :x :y)
-                    sk/xkcd7-lay-point
-                    sk/xkcd7-lay-line)
-          pl (sk/xkcd7-plan views)
+                    (sk/view :x :y)
+                    sk/lay-point
+                    sk/lay-line)
+          pl (sk/plan views)
           layers (get-in pl [:panels 0 :layers])]
       (is (= 2 (count layers))))))
 
 (deftest color-groups-test
   (testing "color mapping with string values produces legend"
     (let [ds (tc/dataset {:x [1 2 3] :y [4 5 6] :g ["a" "b" "a"]})
-          pl (sk/xkcd7-plan (-> ds (sk/xkcd7-lay-point :x :y {:color :g})))]
+          pl (sk/plan (-> ds (sk/lay-point :x :y {:color :g})))]
       (is (some? (:legend pl)))
       (is (= 2 (count (get-in pl [:legend :entries])))))))
 
 (deftest plan-dimensions-test
   (testing "custom width and height"
-    (let [views (-> tiny-ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-point)
-          pl (sk/xkcd7-plan views {:width 800 :height 300})]
+    (let [views (-> tiny-ds (sk/view :x :y) sk/lay-point)
+          pl (sk/plan views {:width 800 :height 300})]
       (is (= 800 (:width pl)))
       (is (= 300 (:height pl))))))
 
@@ -1011,9 +1011,9 @@
   (testing "cross plot (full grid) shows all strip labels"
     (let [ds (tc/dataset {:a [1 2 3 4 5] :b [5 4 3 2 1] :c [2 4 6 8 10]})
           views (-> ds
-                    (sk/xkcd7-view (sk/cross [:a :b :c] [:a :b :c]))
-                    sk/xkcd7-lay-point)
-          svg (sk/xkcd7-plot views)
+                    (sk/view (sk/cross [:a :b :c] [:a :b :c]))
+                    sk/lay-point)
+          svg (sk/plot views)
           s (sk/svg-summary svg)
           texts (:texts s)]
       (is (= 9 (:panels s)))
@@ -1026,8 +1026,8 @@
     (let [ds (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                          {:key-fn keyword})
           path (str (java.io.File/createTempFile "napkinsketch" ".svg"))
-          views (-> ds (sk/xkcd7-view :sepal_length :sepal_width)
-                    (sk/xkcd7-lay-point {:color :species}))]
+          views (-> ds (sk/view :sepal_length :sepal_width)
+                    (sk/lay-point {:color :species}))]
       (sk/save views path)
       (let [content (slurp path)]
         (is (.startsWith content "<?xml"))
@@ -1053,9 +1053,9 @@
                                      (jt/local-date 2025 6 1)
                                      (jt/local-date 2025 12 1)]
                               :val [10 20 30]})
-                 (sk/xkcd7-view :date :val)
-                 sk/xkcd7-lay-point
-                 sk/xkcd7-plan)]
+                 (sk/view :date :val)
+                 sk/lay-point
+                 sk/plan)]
       (is (= 1 (count (:panels pl))))
       (is (seq (get-in pl [:panels 0 :x-ticks :labels]))))))
 
@@ -1071,78 +1071,78 @@
   (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                          {:key-fn keyword})]
     (testing "String column refs in 3-arity view"
-      (let [s (-> iris (sk/xkcd7-view "sepal_length" "sepal_width")
-                  sk/xkcd7-lay-point sk/xkcd7-plot sk/svg-summary)]
+      (let [s (-> iris (sk/view "sepal_length" "sepal_width")
+                  sk/lay-point sk/plot sk/svg-summary)]
         (is (= 150 (:points s)))))
     (testing "String columns in vector spec"
-      (let [s (-> iris (sk/xkcd7-view [["sepal_length" "sepal_width"]])
-                  sk/xkcd7-lay-point sk/xkcd7-plot sk/svg-summary)]
+      (let [s (-> iris (sk/view [["sepal_length" "sepal_width"]])
+                  sk/lay-point sk/plot sk/svg-summary)]
         (is (= 150 (:points s)))))
     (testing "String column in mark options"
-      (let [s (-> iris (sk/xkcd7-view :sepal_length :sepal_width)
-                  (sk/xkcd7-lay-point {:color "species"}) sk/xkcd7-plot sk/svg-summary)]
+      (let [s (-> iris (sk/view :sepal_length :sepal_width)
+                  (sk/lay-point {:color "species"}) sk/plot sk/svg-summary)]
         (is (= 150 (:points s)))
         (is (some #{"setosa"} (:texts s)))))
     (testing "Dataset with string column names"
       (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
-            s (-> ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-point sk/xkcd7-plot sk/svg-summary)]
+            s (-> ds (sk/view :x :y) sk/lay-point sk/plot sk/svg-summary)]
         (is (= 3 (:points s)))))
     (testing "Dataset with string columns + string spec"
       (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
-            s (-> ds (sk/xkcd7-view "x" "y") sk/xkcd7-lay-point sk/xkcd7-plot sk/svg-summary)]
+            s (-> ds (sk/view "x" "y") sk/lay-point sk/plot sk/svg-summary)]
         (is (= 3 (:points s)))))
     (testing "String in facet"
-      (let [s (-> iris (sk/xkcd7-view :sepal_length :sepal_width)
-                  (sk/xkcd7-facet "species") sk/xkcd7-lay-point sk/xkcd7-plot sk/svg-summary)]
+      (let [s (-> iris (sk/view :sepal_length :sepal_width)
+                  (sk/facet "species") sk/lay-point sk/plot sk/svg-summary)]
         (is (= 3 (:panels s)))))
     (testing "String in cross"
       (is (= 9 (count (sk/cross ["a" "b" "c"] ["a" "b" "c"])))))
     (testing "Literal color string still works"
       (let [v (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
-                  (sk/xkcd7-view :x :y)
-                  (sk/xkcd7-lay-point {:color "#FF0000"})
-                  sk/xkcd7-plot)]
+                  (sk/view :x :y)
+                  (sk/lay-point {:color "#FF0000"})
+                  sk/plot)]
         (is (= 3 (:points (sk/svg-summary v))))))
     (testing "Typo still gives error at plan time"
       (is (thrown? clojure.lang.ExceptionInfo
-                   (-> iris (sk/xkcd7-view :sepl_length :sepal_width)
-                       sk/xkcd7-lay-point sk/xkcd7-plot))))))
+                   (-> iris (sk/view :sepl_length :sepal_width)
+                       sk/lay-point sk/plot))))))
 
 (deftest string-column-in-lay-test
-  (testing "String column names in lay-point directly (no sk/xkcd7-view)"
+  (testing "String column names in lay-point directly (no sk/view)"
     (let [s (-> {"x" [1 2 3] "y" [4 5 6]}
-                (sk/xkcd7-lay-point "x" "y") sk/xkcd7-plot sk/svg-summary)]
+                (sk/lay-point "x" "y") sk/plot sk/svg-summary)]
       (is (= 3 (:points s)))))
   (testing "String column names in lay-line directly"
     (let [s (-> {"x" [1 2 3] "y" [4 5 6]}
-                (sk/xkcd7-lay-line "x" "y") sk/xkcd7-plot sk/svg-summary)]
+                (sk/lay-line "x" "y") sk/plot sk/svg-summary)]
       (is (= 1 (:lines s)))))
   (testing "String column in lay-histogram directly"
     (let [s (-> {"x" [1 2 3 4 5 6 7 8 9 10]}
-                (sk/xkcd7-lay-histogram "x") sk/xkcd7-plot sk/svg-summary)]
+                (sk/lay-histogram "x") sk/plot sk/svg-summary)]
       (is (pos? (:polygons s))))))
 
 (deftest named-color-test
   (testing "Named color strings work as fixed colors"
     (let [s (-> {:x [1 2 3] :y [4 5 6]}
-                (sk/xkcd7-view :x :y)
-                (sk/xkcd7-lay-point {:color "red"})
-                sk/xkcd7-plot sk/svg-summary)]
+                (sk/view :x :y)
+                (sk/lay-point {:color "red"})
+                sk/plot sk/svg-summary)]
       (is (= 3 (:points s)))))
   (testing "Named color produces correct RGBA"
     (let [pl (-> {:x [1 2 3] :y [4 5 6]}
-                 (sk/xkcd7-view :x :y)
-                 (sk/xkcd7-lay-point {:color "steelblue"})
-                 sk/xkcd7-plan)
+                 (sk/view :x :y)
+                 (sk/lay-point {:color "steelblue"})
+                 sk/plan)
           c (:color (first (:groups (first (:layers (first (:panels pl)))))))]
       (is (> (nth c 2) 0.5) "steelblue should have high blue channel")))
   (testing "Unknown color string gives helpful error"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
                           #"Unknown color"
                           (-> {:x [1 2 3] :y [4 5 6]}
-                              (sk/xkcd7-view :x :y)
-                              (sk/xkcd7-lay-point {:color "notacolor"})
-                              sk/xkcd7-plot)))))
+                              (sk/view :x :y)
+                              (sk/lay-point {:color "notacolor"})
+                              sk/plot)))))
 
 (deftest schema-all-marks-test
   (testing "Every mark type produces a valid plan"
@@ -1151,78 +1151,78 @@
           xy-ds (tc/dataset {:x (range 10) :y (range 10)})
           eb-ds (tc/dataset {:x ["a" "b"] :y [10 20] :ymin [8 17] :ymax [12 23]})
           txt-ds (tc/dataset {:x [1 2] :y [3 4] :n ["a" "b"]})
-          cases [["point" (-> iris (sk/xkcd7-view :sepal_length :sepal_width) (sk/xkcd7-lay-point {:color :species}))]
-                 ["bar" (-> iris (sk/xkcd7-view :species) sk/xkcd7-lay-bar)]
-                 ["histogram" (-> iris (sk/xkcd7-view :sepal_length) sk/xkcd7-lay-histogram)]
-                 ["line" (-> xy-ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-line)]
-                 ["step" (-> xy-ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-step)]
-                 ["lm" (-> iris (sk/xkcd7-view :sepal_length :sepal_width) (sk/xkcd7-lay-lm {:se true}))]
-                 ["loess" (-> iris (sk/xkcd7-view :sepal_length :sepal_width) sk/xkcd7-lay-loess)]
-                 ["area" (-> xy-ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-area)]
-                 ["boxplot" (-> iris (sk/xkcd7-view :species :sepal_width) sk/xkcd7-lay-boxplot)]
-                 ["violin" (-> iris (sk/xkcd7-view :species :sepal_width) sk/xkcd7-lay-violin)]
-                 ["density" (-> iris (sk/xkcd7-view :sepal_length) sk/xkcd7-lay-density)]
-                 ["ridgeline" (-> iris (sk/xkcd7-view :species :sepal_width) sk/xkcd7-lay-ridgeline)]
-                 ["text" (-> txt-ds (sk/xkcd7-view :x :y) (sk/xkcd7-lay-text {:text :n}))]
-                 ["tile" (-> iris (sk/xkcd7-view :sepal_length :sepal_width) sk/xkcd7-lay-tile)]
-                 ["contour" (-> iris (sk/xkcd7-view :sepal_length :sepal_width) sk/xkcd7-lay-contour)]
-                 ["errorbar" (-> eb-ds (sk/xkcd7-view :x :y) (sk/xkcd7-lay-errorbar {:ymin :ymin :ymax :ymax}))]
-                 ["lollipop" (-> eb-ds (sk/xkcd7-view :x :y) sk/xkcd7-lay-lollipop)]
-                 ["summary" (-> iris (sk/xkcd7-view :species :sepal_width) sk/xkcd7-lay-summary)]]]
+          cases [["point" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay-point {:color :species}))]
+                 ["bar" (-> iris (sk/view :species) sk/lay-bar)]
+                 ["histogram" (-> iris (sk/view :sepal_length) sk/lay-histogram)]
+                 ["line" (-> xy-ds (sk/view :x :y) sk/lay-line)]
+                 ["step" (-> xy-ds (sk/view :x :y) sk/lay-step)]
+                 ["lm" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay-lm {:se true}))]
+                 ["loess" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-loess)]
+                 ["area" (-> xy-ds (sk/view :x :y) sk/lay-area)]
+                 ["boxplot" (-> iris (sk/view :species :sepal_width) sk/lay-boxplot)]
+                 ["violin" (-> iris (sk/view :species :sepal_width) sk/lay-violin)]
+                 ["density" (-> iris (sk/view :sepal_length) sk/lay-density)]
+                 ["ridgeline" (-> iris (sk/view :species :sepal_width) sk/lay-ridgeline)]
+                 ["text" (-> txt-ds (sk/view :x :y) (sk/lay-text {:text :n}))]
+                 ["tile" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-tile)]
+                 ["contour" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-contour)]
+                 ["errorbar" (-> eb-ds (sk/view :x :y) (sk/lay-errorbar {:ymin :ymin :ymax :ymax}))]
+                 ["lollipop" (-> eb-ds (sk/view :x :y) sk/lay-lollipop)]
+                 ["summary" (-> iris (sk/view :species :sepal_width) sk/lay-summary)]]]
       (doseq [[mark-name views] cases]
         (testing mark-name
-          (is (sk/valid-plan? (sk/xkcd7-plan views {:validate false}))))))))
+          (is (sk/valid-plan? (sk/plan views {:validate false}))))))))
 
 (deftest validation-test
   (testing "numeric faceting produces correct panels"
     (is (= 3 (-> {:x [1 2 3 4 5 6] :y [10 20 30 40 50 60]
                   :f [1.0 1.0 2.0 2.0 3.0 3.0]}
-                 (sk/xkcd7-lay-point :x :y) (sk/xkcd7-facet :f) sk/xkcd7-plan :panels count)))
+                 (sk/lay-point :x :y) (sk/facet :f) sk/plan :panels count)))
     (is (= 3 (-> {:x [1 2 3 4 5 6] :y [10 20 30 40 50 60]
                   :s ["a" "a" "b" "b" "c" "c"]}
-                 (sk/xkcd7-lay-point :x :y) (sk/xkcd7-facet :s) sk/xkcd7-plan :panels count))))
+                 (sk/lay-point :x :y) (sk/facet :s) sk/plan :panels count))))
 
   (testing "histogram on categorical column throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
-                          (-> {:x ["a" "b" "c"]} (sk/xkcd7-lay-histogram :x) sk/xkcd7-plan))))
+                          (-> {:x ["a" "b" "c"]} (sk/lay-histogram :x) sk/plan))))
 
   (testing "lm on categorical x throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
                           (-> {:species ["a" "b" "c"] :y [1 2 3]}
-                              (sk/xkcd7-lay-lm :species :y) sk/xkcd7-plan))))
+                              (sk/lay-lm :species :y) sk/plan))))
 
   (testing "loess on categorical x throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
                           (-> {:species ["a" "b" "c" "d"] :y [1 2 3 4]}
-                              (sk/xkcd7-lay-loess :species :y) sk/xkcd7-plan))))
+                              (sk/lay-loess :species :y) sk/plan))))
 
   (testing "errorbar without ymin/ymax throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ymin.*ymax"
                           (-> {:x ["a" "b" "c"] :y [1 2 3]}
-                              (sk/xkcd7-lay-errorbar :x :y) sk/xkcd7-plan))))
+                              (sk/lay-errorbar :x :y) sk/plan))))
 
   (testing "text without :text column throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"text"
                           (-> {:x [1 2 3] :y [10 20 30]}
-                              (sk/xkcd7-lay-text :x :y) sk/xkcd7-plan))))
+                              (sk/lay-text :x :y) sk/plan))))
 
   (testing "scale channel validation"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Scale channel"
-                          (sk/xkcd7-scale [] :z :log))))
+                          (sk/scale [] :z :log))))
 
   (testing "coord validation"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Coordinate"
-                          (sk/xkcd7-coord [] :invalid)))))
+                          (sk/coord [] :invalid)))))
 
 (deftest facet-broadcast-test
   (testing "Global method (loess) applies to all facet panels"
     (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                            {:key-fn keyword})
           s (-> iris
-                (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-                (sk/xkcd7-facet :species)
-                sk/xkcd7-lay-loess
-                sk/xkcd7-plot
+                (sk/lay-point :sepal_length :sepal_width {:color :species})
+                (sk/facet :species)
+                sk/lay-loess
+                sk/plot
                 sk/svg-summary)]
       (is (= 3 (:panels s)) "Faceted into 3 panels by species")
       (is (= 3 (:lines s)) "LOESS should appear in all 3 panels")
@@ -1230,129 +1230,129 @@
   (testing "Existing faceted behavior unchanged"
     (let [s (-> (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                             {:key-fn keyword})
-                (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-                (sk/xkcd7-facet :species)
-                sk/xkcd7-plot
+                (sk/lay-point :sepal_length :sepal_width {:color :species})
+                (sk/facet :species)
+                sk/plot
                 sk/svg-summary)]
       (is (= 3 (:panels s)))
       (is (= 150 (:points s))))))
 
 ;; ============================================================
-;; PROPOSED API (xkcd7-) tests
+;; PROPOSED API () tests
 ;; ============================================================
 
-(defn- xkcd7-summary
-  "Resolve a xkcd7-sketch and get svg-summary."
-  [xkcd7-sk]
-  (let [views (xkcd7-sketch/xkcd7-resolve-sketch xkcd7-sk)
-        fig (sk/plan->figure (sketch-impl/xkcd7-views->plan views (:opts xkcd7-sk {})) :svg {})]
+(defn- summary
+  "Resolve a sketch and get svg-summary."
+  [sk]
+  (let [views (sketch/resolve-sketch sk)
+        fig (sk/plan->figure (sketch-impl/views->plan views (:opts sk {})) :svg {})]
     (sk/svg-summary fig)))
 
-(deftest xkcd7-basic-test
+(deftest basic-test
   (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                          {:key-fn keyword})]
     (testing "Scatter + lm"
-      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris {:color :species})
-                                 (sk/xkcd7-view :sepal_length :sepal_width)
-                                 (sk/xkcd7-lay-point {:alpha 0.5})
-                                 (sk/xkcd7-lay-lm)))]
+      (let [s (summary (-> (sk/sketch iris {:color :species})
+                                 (sk/view :sepal_length :sepal_width)
+                                 (sk/lay-point {:alpha 0.5})
+                                 (sk/lay-lm)))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))
 
     (testing "SPLOM inference"
-      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris {:color :species})
-                                 (sk/xkcd7-view (sk/cross [:sepal_length :sepal_width :petal_length]
+      (let [s (summary (-> (sk/sketch iris {:color :species})
+                                 (sk/view (sk/cross [:sepal_length :sepal_width :petal_length]
                                                           [:sepal_length :sepal_width :petal_length]))))]
         (is (= 9 (:panels s)))
         (is (= 900 (:points s)))))
 
     (testing "Simpson's paradox via nil cancellation"
-      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris {:color :species})
-                                 (sk/xkcd7-view :sepal_length :sepal_width)
-                                 (sk/xkcd7-lay-point {:alpha 0.4})
-                                 (sk/xkcd7-lay-lm)
-                                 (sk/xkcd7-lay-lm {:color nil})))]
+      (let [s (summary (-> (sk/sketch iris {:color :species})
+                                 (sk/view :sepal_length :sepal_width)
+                                 (sk/lay-point {:alpha 0.4})
+                                 (sk/lay-lm)
+                                 (sk/lay-lm {:color nil})))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 4 (:lines s)))))
 
     (testing "Faceted + per-entry methods via view"
-      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
-                                 (sk/xkcd7-view :sepal_length :sepal_width)
-                                 sk/xkcd7-lay-point
-                                 sk/xkcd7-lay-loess
-                                 (sk/xkcd7-facet :species)))]
+      (let [s (summary (-> (sk/sketch iris)
+                                 (sk/view :sepal_length :sepal_width)
+                                 sk/lay-point
+                                 sk/lay-loess
+                                 (sk/facet :species)))]
         (is (= 3 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))
 
     (testing "Data-first (no sketch call)"
-      (let [s (xkcd7-summary (-> iris
-                                 (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-                                 (sk/xkcd7-lay-point {:alpha 0.5})
-                                 (sk/xkcd7-lay-lm)))]
+      (let [s (summary (-> iris
+                                 (sk/view :sepal_length :sepal_width {:color :species})
+                                 (sk/lay-point {:alpha 0.5})
+                                 (sk/lay-lm)))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))
 
     (testing "Recipe"
-      (let [recipe (-> (sk/xkcd7-sketch)
-                       (sk/xkcd7-view :sepal_length :sepal_width)
-                       (sk/xkcd7-lay-point)
-                       (sk/xkcd7-lay-lm))
-            s (xkcd7-summary (sk/xkcd7-with-data recipe iris))]
+      (let [recipe (-> (sk/sketch)
+                       (sk/view :sepal_length :sepal_width)
+                       (sk/lay-point)
+                       (sk/lay-lm))
+            s (summary (sk/with-data recipe iris))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))))
 
     (testing "Mixed grid"
-      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
-                                 (sk/xkcd7-view :sepal_length :sepal_width)
-                                 (sk/xkcd7-view :sepal_length :petal_width)
-                                 (sk/xkcd7-lay-point {:alpha 0.5})
-                                 (sk/xkcd7-facet :species)))]
+      (let [s (summary (-> (sk/sketch iris)
+                                 (sk/view :sepal_length :sepal_width)
+                                 (sk/view :sepal_length :petal_width)
+                                 (sk/lay-point {:alpha 0.5})
+                                 (sk/facet :species)))]
         (is (= 6 (:panels s)))
         (is (= 300 (:points s)))))
 
     (testing "Inference: one numerical column"
-      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
-                                 (sk/xkcd7-view :sepal_length)))]
+      (let [s (summary (-> (sk/sketch iris)
+                                 (sk/view :sepal_length)))]
         (is (pos? (:polygons s)))
         (is (zero? (:points s)))))
 
     (testing "Inference: one categorical column"
-      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
-                                 (sk/xkcd7-view :species)))]
+      (let [s (summary (-> (sk/sketch iris)
+                                 (sk/view :species)))]
         (is (= 3 (:polygons s)))))
 
     (testing "2D facet grid"
       (let [tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
                              {:key-fn keyword})
-            s (xkcd7-summary (-> (sk/xkcd7-sketch tips {:color :smoker})
-                                 (sk/xkcd7-view :total_bill :tip)
-                                 (sk/xkcd7-lay-point {:alpha 0.5})
-                                 (sk/xkcd7-facet-grid :day :sex)))]
+            s (summary (-> (sk/sketch tips {:color :smoker})
+                                 (sk/view :total_bill :tip)
+                                 (sk/lay-point {:alpha 0.5})
+                                 (sk/facet-grid :day :sex)))]
         (is (= 8 (:panels s)))))
 
     (testing "Options pass through"
-      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch iris)
-                                 (sk/xkcd7-view :sepal_length :sepal_width)
-                                 (sk/xkcd7-lay-point)
-                                 (sk/xkcd7-options {:title "Test" :width 400})))]
+      (let [s (summary (-> (sk/sketch iris)
+                                 (sk/view :sepal_length :sepal_width)
+                                 (sk/lay-point)
+                                 (sk/options {:title "Test" :width 400})))]
         (is (= 1 (:panels s)))
         (is (some #{"Test"} (:texts s)))))
 
     (testing "Lay-first (methods before view)"
-      (let [s (xkcd7-summary (-> iris
-                                 (sk/xkcd7-lay-point {:alpha 0.5})
-                                 (sk/xkcd7-lay-lm)
-                                 (sk/xkcd7-view :sepal_length :sepal_width {:color :species})))]
+      (let [s (summary (-> iris
+                                 (sk/lay-point {:alpha 0.5})
+                                 (sk/lay-lm)
+                                 (sk/view :sepal_length :sepal_width {:color :species})))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))
 
     (testing "Column inference"
-      (let [s (xkcd7-summary (-> (sk/xkcd7-sketch {:a [1 2 3 4 5] :b [2 4 3 5 4]})
-                                 (sk/xkcd7-view)))]
+      (let [s (summary (-> (sk/sketch {:a [1 2 3 4 5] :b [2 4 3 5 4]})
+                                 (sk/view)))]
         (is (= 5 (:points s)))))))
 

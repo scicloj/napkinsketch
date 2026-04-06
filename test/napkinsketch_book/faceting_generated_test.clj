@@ -11,8 +11,8 @@
  v3_l21
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-facet :species)))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/facet :species)))
 
 
 (deftest
@@ -30,8 +30,8 @@
  v6_l37
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-facet :species :col)))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/facet :species :col)))
 
 
 (deftest
@@ -49,8 +49,8 @@
  v9_l49
  (->
   data/tips
-  (sk/xkcd7-lay-point :total_bill :tip {:color :sex})
-  (sk/xkcd7-facet-grid :smoker :sex)))
+  (sk/lay-point :total_bill :tip {:color :sex})
+  (sk/facet-grid :smoker :sex)))
 
 
 (deftest
@@ -68,8 +68,8 @@
  v12_l61
  (->
   data/iris
-  (sk/xkcd7-lay-histogram :sepal_length {:color :species})
-  (sk/xkcd7-facet :species)))
+  (sk/lay-histogram :sepal_length {:color :species})
+  (sk/facet :species)))
 
 
 (deftest
@@ -87,10 +87,10 @@
  v15_l73
  (->
   data/tips
-  (sk/xkcd7-view :total_bill :tip {:color :sex})
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm
-  (sk/xkcd7-facet-grid :smoker :sex)))
+  (sk/view :total_bill :tip {:color :sex})
+  sk/lay-point
+  sk/lay-lm
+  (sk/facet-grid :smoker :sex)))
 
 
 (deftest
@@ -108,9 +108,9 @@
  v18_l91
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-facet :species)
-  (sk/xkcd7-options {:scales :shared})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/facet :species)
+  (sk/options {:scales :shared})))
 
 
 (deftest
@@ -128,9 +128,9 @@
  v21_l102
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-facet :species)
-  (sk/xkcd7-options {:scales :free-y})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/facet :species)
+  (sk/options {:scales :free-y})))
 
 
 (deftest
@@ -150,9 +150,9 @@
   faceted-pl
   (->
    data/iris
-   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-   (sk/xkcd7-facet :species)
-   sk/xkcd7-plan)))
+   (sk/lay-point :sepal_length :sepal_width {:color :species})
+   (sk/facet :species)
+   sk/plan)))
 
 
 (def v25_l123 (:grid faceted-pl))
@@ -182,7 +182,7 @@
 
 (def
  v34_l144
- (-> data/iris (sk/xkcd7-view (sk/cross cols cols) {:color :species})))
+ (-> data/iris (sk/view (sk/cross cols cols) {:color :species})))
 
 
 (deftest
@@ -201,7 +201,7 @@
 
 (def
  v37_l160
- (sk/xkcd7-lay-histogram
+ (sk/lay-histogram
   data/iris
   [:sepal_length :sepal_width :petal_length]
   {:color :species}))
@@ -222,8 +222,8 @@
  v40_l168
  (->
   data/penguins
-  (sk/xkcd7-lay-bar :species {:color :species})
-  (sk/xkcd7-facet :island)))
+  (sk/lay-bar :species {:color :species})
+  (sk/facet :island)))
 
 
 (deftest
@@ -241,9 +241,9 @@
  v43_l180
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-facet :species)
-  (sk/xkcd7-options
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/facet :species)
+  (sk/options
    {:title "Iris by Species",
     :x-label "Sepal Length (cm)",
     :y-label "Sepal Width (cm)"})))

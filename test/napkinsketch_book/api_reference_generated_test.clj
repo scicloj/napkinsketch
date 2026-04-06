@@ -31,12 +31,12 @@
    :ci_hi [12.0 18.0 14.5 20.5]}))
 
 
-(def v7_l39 (kind/doc #'sk/xkcd7-view))
+(def v7_l39 (kind/doc #'sk/view))
 
 
 (def
  v9_l43
- (-> data/iris (sk/xkcd7-lay-point :sepal_length :sepal_width)))
+ (-> data/iris (sk/lay-point :sepal_length :sepal_width)))
 
 
 (deftest
@@ -50,7 +50,7 @@
    v9_l43)))
 
 
-(def v12_l52 (-> data/iris (sk/xkcd7-lay-histogram :sepal_length)))
+(def v12_l52 (-> data/iris (sk/lay-histogram :sepal_length)))
 
 
 (deftest
@@ -68,9 +68,9 @@
  v15_l61
  (->
   data/iris
-  (sk/xkcd7-view
+  (sk/view
    [[:sepal_length :sepal_width] [:petal_length :petal_width]])
-  (sk/xkcd7-lay-point {:color :species})))
+  (sk/lay-point {:color :species})))
 
 
 (deftest
@@ -88,8 +88,8 @@
  v18_l72
  (->
   data/iris
-  (sk/xkcd7-view {:x :sepal_length, :y :sepal_width})
-  sk/xkcd7-lay-point))
+  (sk/view {:x :sepal_length, :y :sepal_width})
+  sk/lay-point))
 
 
 (deftest
@@ -103,16 +103,16 @@
    v18_l72)))
 
 
-(def v20_l80 (kind/doc #'sk/xkcd7-annotate))
+(def v20_l80 (kind/doc #'sk/annotate))
 
 
 (def
  v22_l84
  (->
   data/iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -126,14 +126,14 @@
    v22_l84)))
 
 
-(def v25_l95 (kind/doc #'sk/xkcd7-lay-point))
+(def v25_l95 (kind/doc #'sk/lay-point))
 
 
 (def
  v26_l97
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
@@ -142,7 +142,7 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v26_l97)))
 
 
-(def v28_l103 (kind/doc #'sk/xkcd7-lay-line))
+(def v28_l103 (kind/doc #'sk/lay-line))
 
 
 (def
@@ -156,7 +156,7 @@
     (range 30))}))
 
 
-(def v30_l108 (-> wave (sk/xkcd7-lay-line :x :y)))
+(def v30_l108 (-> wave (sk/lay-line :x :y)))
 
 
 (deftest
@@ -164,10 +164,10 @@
  (is ((fn [v] (let [s (sk/svg-summary v)] (= 1 (:lines s)))) v30_l108)))
 
 
-(def v32_l114 (kind/doc #'sk/xkcd7-lay-histogram))
+(def v32_l114 (kind/doc #'sk/lay-histogram))
 
 
-(def v33_l116 (-> data/iris (sk/xkcd7-lay-histogram :sepal_length)))
+(def v33_l116 (-> data/iris (sk/lay-histogram :sepal_length)))
 
 
 (deftest
@@ -177,10 +177,10 @@
    v33_l116)))
 
 
-(def v35_l122 (kind/doc #'sk/xkcd7-lay-bar))
+(def v35_l122 (kind/doc #'sk/lay-bar))
 
 
-(def v36_l124 (-> data/iris (sk/xkcd7-lay-bar :species)))
+(def v36_l124 (-> data/iris (sk/lay-bar :species)))
 
 
 (deftest
@@ -189,14 +189,14 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:polygons s)))) v36_l124)))
 
 
-(def v38_l130 (kind/doc #'sk/xkcd7-lay-stacked-bar))
+(def v38_l130 (kind/doc #'sk/lay-stacked-bar))
 
 
 (def
  v39_l132
  (->
   data/penguins
-  (sk/xkcd7-lay-stacked-bar :island {:color :species})))
+  (sk/lay-stacked-bar :island {:color :species})))
 
 
 (deftest
@@ -206,14 +206,14 @@
    v39_l132)))
 
 
-(def v41_l138 (kind/doc #'sk/xkcd7-lay-stacked-bar-fill))
+(def v41_l138 (kind/doc #'sk/lay-stacked-bar-fill))
 
 
 (def
  v42_l140
  (->
   data/penguins
-  (sk/xkcd7-lay-stacked-bar-fill :island {:color :species})))
+  (sk/lay-stacked-bar-fill :island {:color :species})))
 
 
 (deftest
@@ -223,10 +223,10 @@
    v42_l140)))
 
 
-(def v44_l146 (kind/doc #'sk/xkcd7-lay-value-bar))
+(def v44_l146 (kind/doc #'sk/lay-value-bar))
 
 
-(def v45_l148 (-> sales (sk/xkcd7-lay-value-bar :product :revenue)))
+(def v45_l148 (-> sales (sk/lay-value-bar :product :revenue)))
 
 
 (deftest
@@ -235,15 +235,15 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 4 (:polygons s)))) v45_l148)))
 
 
-(def v47_l154 (kind/doc #'sk/xkcd7-lay-lm))
+(def v47_l154 (kind/doc #'sk/lay-lm))
 
 
 (def
  v48_l156
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width)
-  sk/xkcd7-lay-lm))
+  (sk/lay-point :sepal_length :sepal_width)
+  sk/lay-lm))
 
 
 (deftest
@@ -257,7 +257,7 @@
    v48_l156)))
 
 
-(def v50_l164 (kind/doc #'sk/xkcd7-lay-loess))
+(def v50_l164 (kind/doc #'sk/lay-loess))
 
 
 (def
@@ -279,7 +279,7 @@
 
 (def
  v52_l171
- (-> noisy-wave (sk/xkcd7-lay-point :x :y) sk/xkcd7-lay-loess))
+ (-> noisy-wave (sk/lay-point :x :y) sk/lay-loess))
 
 
 (deftest
@@ -293,10 +293,10 @@
    v52_l171)))
 
 
-(def v54_l179 (kind/doc #'sk/xkcd7-lay-density))
+(def v54_l179 (kind/doc #'sk/lay-density))
 
 
-(def v55_l181 (-> data/iris (sk/xkcd7-lay-density :sepal_length)))
+(def v55_l181 (-> data/iris (sk/lay-density :sepal_length)))
 
 
 (deftest
@@ -305,10 +305,10 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 1 (:polygons s)))) v55_l181)))
 
 
-(def v57_l187 (kind/doc #'sk/xkcd7-lay-area))
+(def v57_l187 (kind/doc #'sk/lay-area))
 
 
-(def v58_l189 (-> wave (sk/xkcd7-lay-area :x :y)))
+(def v58_l189 (-> wave (sk/lay-area :x :y)))
 
 
 (deftest
@@ -317,7 +317,7 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 1 (:polygons s)))) v58_l189)))
 
 
-(def v60_l195 (kind/doc #'sk/xkcd7-lay-stacked-area))
+(def v60_l195 (kind/doc #'sk/lay-stacked-area))
 
 
 (def
@@ -330,7 +330,7 @@
     [2 2 2 3 3 3 2 2 2 2]
     [1 1 1 1 2 2 2 1 1 1]),
    :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
-  (sk/xkcd7-lay-stacked-area :x :y {:color :group})))
+  (sk/lay-stacked-area :x :y {:color :group})))
 
 
 (deftest
@@ -339,14 +339,14 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:polygons s)))) v61_l197)))
 
 
-(def v63_l207 (kind/doc #'sk/xkcd7-lay-text))
+(def v63_l207 (kind/doc #'sk/lay-text))
 
 
 (def
  v64_l209
  (->
   {:x [1 2 3 4], :y [4 7 5 8], :name ["A" "B" "C" "D"]}
-  (sk/xkcd7-lay-text :x :y {:text :name})))
+  (sk/lay-text :x :y {:text :name})))
 
 
 (deftest
@@ -360,15 +360,15 @@
    v64_l209)))
 
 
-(def v66_l215 (kind/doc #'sk/xkcd7-lay-label))
+(def v66_l215 (kind/doc #'sk/lay-label))
 
 
 (def
  v67_l217
  (->
   {:x [1 2 3 4], :y [4 7 5 8], :name ["A" "B" "C" "D"]}
-  (sk/xkcd7-lay-point :x :y {:size 5})
-  (sk/xkcd7-lay-label {:text :name})))
+  (sk/lay-point :x :y {:size 5})
+  (sk/lay-label {:text :name})))
 
 
 (deftest
@@ -384,12 +384,12 @@
    v67_l217)))
 
 
-(def v69_l224 (kind/doc #'sk/xkcd7-lay-boxplot))
+(def v69_l224 (kind/doc #'sk/lay-boxplot))
 
 
 (def
  v70_l226
- (-> data/iris (sk/xkcd7-lay-boxplot :species :sepal_width)))
+ (-> data/iris (sk/lay-boxplot :species :sepal_width)))
 
 
 (deftest
@@ -403,10 +403,10 @@
    v70_l226)))
 
 
-(def v72_l233 (kind/doc #'sk/xkcd7-lay-violin))
+(def v72_l233 (kind/doc #'sk/lay-violin))
 
 
-(def v73_l235 (-> data/tips (sk/xkcd7-lay-violin :day :total_bill)))
+(def v73_l235 (-> data/tips (sk/lay-violin :day :total_bill)))
 
 
 (deftest
@@ -415,15 +415,15 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 4 (:polygons s)))) v73_l235)))
 
 
-(def v75_l241 (kind/doc #'sk/xkcd7-lay-errorbar))
+(def v75_l241 (kind/doc #'sk/lay-errorbar))
 
 
 (def
  v76_l243
  (->
   measurements
-  (sk/xkcd7-lay-point :treatment :mean)
-  (sk/xkcd7-lay-errorbar {:ymin :ci_lo, :ymax :ci_hi})))
+  (sk/lay-point :treatment :mean)
+  (sk/lay-errorbar {:ymin :ci_lo, :ymax :ci_hi})))
 
 
 (deftest
@@ -437,10 +437,10 @@
    v76_l243)))
 
 
-(def v78_l251 (kind/doc #'sk/xkcd7-lay-lollipop))
+(def v78_l251 (kind/doc #'sk/lay-lollipop))
 
 
-(def v79_l253 (-> sales (sk/xkcd7-lay-lollipop :product :revenue)))
+(def v79_l253 (-> sales (sk/lay-lollipop :product :revenue)))
 
 
 (deftest
@@ -454,12 +454,12 @@
    v79_l253)))
 
 
-(def v81_l260 (kind/doc #'sk/xkcd7-lay-tile))
+(def v81_l260 (kind/doc #'sk/lay-tile))
 
 
 (def
  v82_l262
- (-> data/iris (sk/xkcd7-lay-tile :sepal_length :sepal_width)))
+ (-> data/iris (sk/lay-tile :sepal_length :sepal_width)))
 
 
 (deftest
@@ -469,12 +469,12 @@
    v82_l262)))
 
 
-(def v84_l268 (kind/doc #'sk/xkcd7-lay-density2d))
+(def v84_l268 (kind/doc #'sk/lay-density2d))
 
 
 (def
  v85_l270
- (-> data/iris (sk/xkcd7-lay-density2d :sepal_length :sepal_width)))
+ (-> data/iris (sk/lay-density2d :sepal_length :sepal_width)))
 
 
 (deftest
@@ -484,12 +484,12 @@
    v85_l270)))
 
 
-(def v87_l276 (kind/doc #'sk/xkcd7-lay-contour))
+(def v87_l276 (kind/doc #'sk/lay-contour))
 
 
 (def
  v88_l278
- (-> data/iris (sk/xkcd7-lay-contour :sepal_length :sepal_width)))
+ (-> data/iris (sk/lay-contour :sepal_length :sepal_width)))
 
 
 (deftest
@@ -498,12 +498,12 @@
   ((fn [v] (let [s (sk/svg-summary v)] (pos? (:lines s)))) v88_l278)))
 
 
-(def v90_l284 (kind/doc #'sk/xkcd7-lay-ridgeline))
+(def v90_l284 (kind/doc #'sk/lay-ridgeline))
 
 
 (def
  v91_l286
- (-> data/iris (sk/xkcd7-lay-ridgeline :species :sepal_length)))
+ (-> data/iris (sk/lay-ridgeline :species :sepal_length)))
 
 
 (deftest
@@ -513,15 +513,15 @@
    v91_l286)))
 
 
-(def v93_l292 (kind/doc #'sk/xkcd7-lay-rug))
+(def v93_l292 (kind/doc #'sk/lay-rug))
 
 
 (def
  v94_l294
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width)
-  (sk/xkcd7-lay-rug {:side :both})))
+  (sk/lay-point :sepal_length :sepal_width)
+  (sk/lay-rug {:side :both})))
 
 
 (deftest
@@ -530,10 +530,10 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 300 (:lines s)))) v94_l294)))
 
 
-(def v96_l301 (kind/doc #'sk/xkcd7-lay-step))
+(def v96_l301 (kind/doc #'sk/lay-step))
 
 
-(def v97_l303 (-> tiny (sk/xkcd7-lay-step :x :y) sk/xkcd7-lay-point))
+(def v97_l303 (-> tiny (sk/lay-step :x :y) sk/lay-point))
 
 
 (deftest
@@ -547,12 +547,12 @@
    v97_l303)))
 
 
-(def v99_l311 (kind/doc #'sk/xkcd7-lay-summary))
+(def v99_l311 (kind/doc #'sk/lay-summary))
 
 
 (def
  v100_l313
- (-> data/iris (sk/xkcd7-lay-summary :species :sepal_length)))
+ (-> data/iris (sk/lay-summary :species :sepal_length)))
 
 
 (deftest
@@ -566,10 +566,10 @@
    v100_l313)))
 
 
-(def v103_l322 (kind/doc #'sk/xkcd7-plot))
+(def v103_l322 (kind/doc #'sk/plot))
 
 
-(def v105_l327 (-> tiny (sk/xkcd7-lay-point :x :y)))
+(def v105_l327 (-> tiny (sk/lay-point :x :y)))
 
 
 (deftest
@@ -578,15 +578,15 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 5 (:points s)))) v105_l327)))
 
 
-(def v107_l333 (kind/doc #'sk/xkcd7-options))
+(def v107_l333 (kind/doc #'sk/options))
 
 
 (def
  v109_l337
  (->
   tiny
-  (sk/xkcd7-lay-point :x :y)
-  (sk/xkcd7-options {:width 400, :height 200, :title "Small Plot"})))
+  (sk/lay-point :x :y)
+  (sk/options {:width 400, :height 200, :title "Small Plot"})))
 
 
 (deftest
@@ -600,4 +600,4 @@
    v109_l337)))
 
 
-(def v111_l345 (kind/doc #'sk/xkcd7-sketch?))
+(def v111_l345 (kind/doc #'sk/sketch?))

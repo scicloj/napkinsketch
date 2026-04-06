@@ -173,11 +173,11 @@
  v16_l157
  (->
   pnl-data
-  (sk/xkcd7-view :category :amount)
-  (sk/xkcd7-lay (method/lookup :waterfall))
-  (sk/xkcd7-options
+  (sk/view :category :amount)
+  (sk/lay (method/lookup :waterfall))
+  (sk/options
    {:title "Profit & Loss Waterfall", :width 500, :height 350})
-  sk/xkcd7-plot))
+  sk/plot))
 
 
 (deftest
@@ -195,17 +195,17 @@
  v19_l176
  (defn
   lay-waterfall
-  ([xkcd7-sk] (sk/xkcd7-lay xkcd7-sk (method/lookup :waterfall)))
+  ([sk] (sk/lay sk (method/lookup :waterfall)))
   ([data x y]
    (->
     data
-    (sk/xkcd7-view x y)
-    (sk/xkcd7-lay (method/lookup :waterfall))))
+    (sk/view x y)
+    (sk/lay (method/lookup :waterfall))))
   ([data x y opts]
    (->
     data
-    (sk/xkcd7-view x y)
-    (sk/xkcd7-lay (merge (method/lookup :waterfall) opts))))))
+    (sk/view x y)
+    (sk/lay (merge (method/lookup :waterfall) opts))))))
 
 
 (def
@@ -213,8 +213,8 @@
  (->
   pnl-data
   (lay-waterfall :category :amount)
-  (sk/xkcd7-options {:title "Quarterly Cash Flow", :width 500})
-  sk/xkcd7-plot))
+  (sk/options {:title "Quarterly Cash Flow", :width 500})
+  sk/plot))
 
 
 (deftest

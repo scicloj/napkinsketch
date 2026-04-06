@@ -481,10 +481,10 @@
                     ". Using first view's coord: " (first coords) ".")))))
 
 ;; ================================================================
-;; xkcd7 Grid Layout
+;; Grid Layout
 ;; ================================================================
 
-(defn- xkcd7-infer-grid
+(defn- infer-grid
   "Infer grid structure from entry-grouped views.
    Each entry = one panel. Grid position determined by:
    - Faceted entries: :facet-col → grid col, :facet-row → grid row
@@ -558,11 +558,11 @@
      :facet-row-vals (when has-facet-row? row-vals)
      :panels panels}))
 
-(defn xkcd7-views->plan
-  "xkcd7 pipeline: resolve views into a plan using entry-based grid layout.
+(defn views->plan
+  "Pipeline: resolve views into a plan using entry-based grid layout.
    Each entry = one panel. Grid position from structural columns.
    Reuses existing stat computation, domain, tick, legend, and layout logic."
-  ([views] (xkcd7-views->plan views {}))
+  ([views] (views->plan views {}))
   ([views {:keys [x-label y-label title subtitle caption
                   scales legend-position grid-cols grid-rows] :as opts}]
    (let [cfg (defaults/resolve-config opts)
@@ -582,7 +582,7 @@
                          {:entry-idx idx :views (vec vs)}))
 
          ;; Infer grid from entries
-         grid (xkcd7-infer-grid entry-groups
+         grid (infer-grid entry-groups
                                 (cond-> {}
                                   grid-cols (assoc :grid-cols grid-cols)
                                   grid-rows (assoc :grid-rows grid-rows)))

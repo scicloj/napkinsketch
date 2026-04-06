@@ -17,7 +17,7 @@
  (def with-missing {:x [1 2 nil 4 5 nil 7], :y [3 nil 5 6 nil 8 9]}))
 
 
-(def v4_l37 (-> with-missing (sk/xkcd7-lay-point :x :y)))
+(def v4_l37 (-> with-missing (sk/lay-point :x :y)))
 
 
 (deftest
@@ -40,7 +40,7 @@
    [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]}))
 
 
-(def v8_l53 (-> with-infinity (sk/xkcd7-lay-point :x :y)))
+(def v8_l53 (-> with-infinity (sk/lay-point :x :y)))
 
 
 (deftest
@@ -57,7 +57,7 @@
    v8_l53)))
 
 
-(def v11_l64 (-> {:x [3], :y [7]} (sk/xkcd7-lay-point :x :y)))
+(def v11_l64 (-> {:x [3], :y [7]} (sk/lay-point :x :y)))
 
 
 (deftest
@@ -73,7 +73,7 @@
 
 (def
  v14_l76
- (-> {:x [1 10], :y [5 50]} (sk/xkcd7-lay-point :x :y) sk/xkcd7-lay-lm))
+ (-> {:x [1 10], :y [5 50]} (sk/lay-point :x :y) sk/lay-lm))
 
 
 (deftest
@@ -91,8 +91,8 @@
  v17_l88
  (->
   {:x [1 5 10], :y [5 25 50]}
-  (sk/xkcd7-lay-point :x :y)
-  sk/xkcd7-lay-lm))
+  (sk/lay-point :x :y)
+  sk/lay-lm))
 
 
 (deftest
@@ -108,7 +108,7 @@
 
 (def
  v20_l100
- (-> {:x [5 5 5 5 5], :y [1 2 3 4 5]} (sk/xkcd7-lay-point :x :y)))
+ (-> {:x [5 5 5 5 5], :y [1 2 3 4 5]} (sk/lay-point :x :y)))
 
 
 (deftest
@@ -124,7 +124,7 @@
 
 (def
  v23_l111
- (-> {:x [1 2 3 4 5], :y [3 3 3 3 3]} (sk/xkcd7-lay-point :x :y)))
+ (-> {:x [1 2 3 4 5], :y [3 3 3 3 3]} (sk/lay-point :x :y)))
 
 
 (deftest
@@ -140,7 +140,7 @@
 
 (def
  v26_l122
- (-> {:x [-5 -3 0 3 5], :y [-2 4 0 -4 2]} (sk/xkcd7-lay-point :x :y)))
+ (-> {:x [-5 -3 0 3 5], :y [-2 4 0 -4 2]} (sk/lay-point :x :y)))
 
 
 (deftest
@@ -158,7 +158,7 @@
  v29_l131
  (->
   {:x [1000000.0 2000000.0 3000000.0], :y [1.0E9 2.0E9 3.0E9]}
-  (sk/xkcd7-lay-point :x :y)))
+  (sk/lay-point :x :y)))
 
 
 (deftest
@@ -176,7 +176,7 @@
  v32_l140
  (->
   {:x [0.001 0.002 0.003], :y [1.0E-4 2.0E-4 3.0E-4]}
-  (sk/xkcd7-lay-point :x :y)))
+  (sk/lay-point :x :y)))
 
 
 (deftest
@@ -203,7 +203,7 @@
 
 (def
  v36_l157
- (-> large-data (sk/xkcd7-lay-point :x :y {:color :group})))
+ (-> large-data (sk/lay-point :x :y {:color :group})))
 
 
 (deftest
@@ -227,7 +227,7 @@
      (fn* [p1__397420#] (keyword (str "cat-" p1__397420#)))
      (range 12)),
     :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))})
-  (sk/xkcd7-lay-value-bar :category :value)))
+  (sk/lay-value-bar :category :value)))
 
 
 (deftest
@@ -246,5 +246,5 @@
  (->
   data/iris
   (tc/map-columns :sepal_ratio [:sepal_length :sepal_width] /)
-  (sk/xkcd7-lay-point :sepal_length :sepal_ratio {:color :species})
-  (sk/xkcd7-options {:title "Sepal Length/Width Ratio"})))
+  (sk/lay-point :sepal_length :sepal_ratio {:color :species})
+  (sk/options {:title "Sepal Length/Width Ratio"})))

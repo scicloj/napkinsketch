@@ -19,8 +19,8 @@
 ;; A single regression line through all data.
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    sk/xkcd7-lay-lm)
+    (sk/lay-point :sepal_length :sepal_width)
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -31,9 +31,9 @@
 ;; Fit a regression line per group.
 
 (-> data/iris
-    (sk/xkcd7-view :petal_length :petal_width {:color :species})
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)
+    (sk/view :petal_length :petal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -44,9 +44,9 @@
 ;; Pass `{:se true}` to show a 95% confidence band around the line.
 
 (-> data/iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    (sk/xkcd7-lay-lm {:se true}))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    (sk/lay-lm {:se true}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -57,9 +57,9 @@
 ;; Do smokers and non-smokers tip differently?
 
 (-> data/tips
-    (sk/xkcd7-view :total_bill :tip {:color :smoker})
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)
+    (sk/view :total_bill :tip {:color :smoker})
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 244 (:points s))
@@ -75,8 +75,8 @@
                            (range 50))}))
 
 (-> noisy-wave
-    (sk/xkcd7-lay-point :x :y)
-    sk/xkcd7-lay-loess)
+    (sk/lay-point :x :y)
+    sk/lay-loess)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 50 (:points s))
@@ -87,7 +87,7 @@
 ;; Bin x and y into a grid, count points per cell.
 
 (-> data/iris
-    (sk/xkcd7-lay-tile :sepal_length :sepal_width))
+    (sk/lay-tile :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -104,7 +104,7 @@
      :value (repeatedly 25 #(rng/irandom r 100))}))
 
 (-> grid-data
-    (sk/xkcd7-lay-tile :x :y {:fill :value}))
+    (sk/lay-tile :x :y {:fill :value}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -115,7 +115,7 @@
 ;; [KDE](https://en.wikipedia.org/wiki/Kernel_density_estimation)-smoothed 2D density heatmap.
 
 (-> data/iris
-    (sk/xkcd7-lay-density2d :sepal_length :sepal_width))
+    (sk/lay-density2d :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -126,8 +126,8 @@
 ;; Overlay scatter points on the density heatmap.
 
 (-> data/iris
-    (sk/xkcd7-lay-density2d :sepal_length :sepal_width)
-    (sk/xkcd7-lay-point {:alpha 0.5}))
+    (sk/lay-density2d :sepal_length :sepal_width)
+    (sk/lay-point {:alpha 0.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -138,7 +138,7 @@
 ;; Iso-density contour lines from 2D KDE.
 
 (-> data/iris
-    (sk/xkcd7-lay-contour :sepal_length :sepal_width))
+    (sk/lay-contour :sepal_length :sepal_width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -149,8 +149,8 @@
 ;; Contour lines overlaid on scatter points.
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:alpha 0.3})
-    (sk/xkcd7-lay-contour {:levels 8}))
+    (sk/lay-point :sepal_length :sepal_width {:alpha 0.3})
+    (sk/lay-contour {:levels 8}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

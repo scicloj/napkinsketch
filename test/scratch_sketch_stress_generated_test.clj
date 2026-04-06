@@ -1,5 +1,5 @@
 (ns
- scratch-xkcd7-sketch-stress-generated-test
+ scratch-sketch-stress-generated-test
  (:require
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
@@ -28,12 +28,12 @@
 (def
  v5_l22
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-view :petal_length :petal_width {:alpha 0.4}))]
-  [(:shared xkcd7-sk) (count (:entries xkcd7-sk))]))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    (sk/view :petal_length :petal_width {:alpha 0.4}))]
+  [(:shared sk) (count (:entries sk))]))
 
 
 (deftest
@@ -49,9 +49,9 @@
  v8_l34
  (->
   iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-view :petal_length :petal_width {:alpha 0.4})
-  sk/xkcd7-lay-point))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  (sk/view :petal_length :petal_width {:alpha 0.4})
+  sk/lay-point))
 
 
 (deftest
@@ -68,12 +68,12 @@
 (def
  v11_l47
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-view :petal_length :petal_width {:color :petal_length}))]
-  (:color (:shared xkcd7-sk))))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    (sk/view :petal_length :petal_width {:color :petal_length}))]
+  (:color (:shared sk))))
 
 
 (deftest t12_l52 (is ((fn [v] (= :petal_length v)) v11_l47)))
@@ -82,12 +82,12 @@
 (def
  v14_l58
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))]
-  [(:shared xkcd7-sk)
-   (:color (first (:methods (first (:entries xkcd7-sk)))))]))
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))]
+  [(:shared sk)
+   (:color (first (:methods (first (:entries sk)))))]))
 
 
 (deftest
@@ -102,13 +102,13 @@
 (def
  v17_l68
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-lm)]
-  [(:color (first (:methods (first (:entries xkcd7-sk)))))
-   (:color (first (:methods xkcd7-sk)))]))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk/lay-lm)]
+  [(:color (first (:methods (first (:entries sk)))))
+   (:color (first (:methods sk)))]))
 
 
 (deftest
@@ -124,10 +124,10 @@
  v20_l82
  (->
   iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  (sk/xkcd7-lay-lm {:color nil})
-  (sk/xkcd7-facet :species)))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  (sk/lay-lm {:color nil})
+  (sk/facet :species)))
 
 
 (deftest
@@ -143,8 +143,8 @@
 
 (def
  v23_l99
- (sk/xkcd7-lay-histogram
-  (sk/xkcd7-sketch iris {:color :species})
+ (sk/lay-histogram
+  (sk/sketch iris {:color :species})
   [:sepal_length :sepal_width :petal_length]))
 
 
@@ -163,9 +163,9 @@
  v26_l111
  (->
   iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  (sk/xkcd7-view
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  (sk/view
    {:x :sepal_length,
     :y :sepal_width,
     :methods [{:mark :line, :stat :lm, :color nil}]})))
@@ -186,9 +186,9 @@
  v29_l128
  (->
   iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  (sk/xkcd7-view
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  (sk/view
    {:x :sepal_length,
     :y :sepal_width,
     :methods [{:mark :line, :stat :lm}]})))
@@ -208,8 +208,8 @@
 (def
  v32_l143
  (let
-  [xkcd7-sk (-> {:x [1 2 3], :y [4 5 6]} (sk/xkcd7-view))]
-  [(count (:entries xkcd7-sk)) (:shared xkcd7-sk)]))
+  [sk (-> {:x [1 2 3], :y [4 5 6]} (sk/view))]
+  [(count (:entries sk)) (:shared sk)]))
 
 
 (deftest
@@ -220,11 +220,11 @@
 (def
  v35_l153
  (->
-  (sk/xkcd7-sketch
+  (sk/sketch
    {:x [1 2 3 4 5], :y [2 4 3 5 4], :g [:a :a :b :b :a]}
    {:color :g})
-  (sk/xkcd7-view)
-  sk/xkcd7-lay-point))
+  (sk/view)
+  sk/lay-point))
 
 
 (deftest
@@ -238,9 +238,9 @@
 (def
  v40_l167
  (->
-  (sk/xkcd7-sketch iris {:color :species})
-  (sk/xkcd7-view (sk/cross cols cols))
-  sk/xkcd7-lay-point))
+  (sk/sketch iris {:color :species})
+  (sk/view (sk/cross cols cols))
+  sk/lay-point))
 
 
 (deftest
@@ -257,16 +257,16 @@
 (def
  v43_l180
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    (sk/xkcd7-lay-histogram :petal_length))]
-  [(count (:entries xkcd7-sk))
-   (count (:methods xkcd7-sk))
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/lay-histogram :petal_length))]
+  [(count (:entries sk))
+   (count (:methods sk))
    (mapv
     (fn* [p1__396999#] (count (:methods p1__396999#)))
-    (:entries xkcd7-sk))]))
+    (:entries sk))]))
 
 
 (deftest
@@ -283,7 +283,7 @@
 
 (def
  v46_l195
- (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} (sk/xkcd7-lay-point :x :y)))
+ (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} (sk/lay-point :x :y)))
 
 
 (deftest
@@ -293,7 +293,7 @@
 
 (def
  v49_l202
- (-> {"x" [1 2 3 4 5], "y" [2 4 3 5 4]} (sk/xkcd7-lay-point "x" "y")))
+ (-> {"x" [1 2 3 4 5], "y" [2 4 3 5 4]} (sk/lay-point "x" "y")))
 
 
 (deftest
@@ -306,13 +306,13 @@
  (def
   recipe
   (->
-   (sk/xkcd7-sketch)
-   (sk/xkcd7-view :sepal_length :sepal_width)
-   sk/xkcd7-lay-point
-   sk/xkcd7-lay-lm)))
+   (sk/sketch)
+   (sk/view :sepal_length :sepal_width)
+   sk/lay-point
+   sk/lay-lm)))
 
 
-(def v53_l214 (-> recipe (sk/xkcd7-with-data iris)))
+(def v53_l214 (-> recipe (sk/with-data iris)))
 
 
 (deftest
@@ -330,9 +330,9 @@
  v56_l225
  (->
   iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  (sk/xkcd7-annotate (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3}))))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  (sk/annotate (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3}))))
 
 
 (deftest
@@ -349,15 +349,15 @@
 (def
  v59_l238
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-lay-point)
-    (sk/xkcd7-lay-lm {:color nil}))]
-  [(:color (:shared xkcd7-sk))
-   (:color (first (:entries xkcd7-sk)))
-   (:color (second (:methods xkcd7-sk)))]))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    (sk/lay-point)
+    (sk/lay-lm {:color nil}))]
+  [(:color (:shared sk))
+   (:color (first (:entries sk)))
+   (:color (second (:methods sk)))]))
 
 
 (deftest
@@ -372,14 +372,14 @@
 (def
  v62_l253
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    (sk/xkcd7-options {:title "My Plot", :width 800}))]
-  [(:title (:opts xkcd7-sk))
-   (:width (:opts xkcd7-sk))
-   (:shared xkcd7-sk)]))
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/options {:title "My Plot", :width 800}))]
+  [(:title (:opts sk))
+   (:width (:opts sk))
+   (:shared sk)]))
 
 
 (deftest
@@ -394,14 +394,14 @@
 (def
  v65_l265
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    (sk/xkcd7-scale :y :log)
-    (sk/xkcd7-coord :flip))]
-  [(-> xkcd7-sk :entries first :y-scale)
-   (-> xkcd7-sk :entries first :coord)]))
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/scale :y :log)
+    (sk/coord :flip))]
+  [(-> sk :entries first :y-scale)
+   (-> sk :entries first :coord)]))
 
 
 (deftest

@@ -14,41 +14,41 @@
    ;; Method constructors — for inspecting method maps
    [scicloj.napkinsketch.method :as method])
   (:import
-   [scicloj.napkinsketch.impl.xkcd7-sketch Xkcd7Sketch]))
+   [scicloj.napkinsketch.impl.sketch Sketch]))
 
 ;; ## View
 ;;
 ;; A **view** is a resolved map describing what to plot: data and
-;; column-to-channel mappings. Internally, each entry in a xkcd7-sketch
+;; column-to-channel mappings. Internally, each entry in a sketch
 ;; resolves to one or more view maps that the pipeline processes.
-;; At the API level, `sk/xkcd7-view` adds entries (what to plot) and
-;; sets shared aesthetics; `sk/xkcd7-lay-*` adds methods (how to plot).
+;; At the API level, `sk/view` adds entries (what to plot) and
+;; sets shared aesthetics; `sk/lay-*` adds methods (how to plot).
 
-(def my-xkcd7-sketch
+(def my-sketch
   (-> data/iris
-      (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
+      (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
-(kind/pprint my-xkcd7-sketch)
+(kind/pprint my-sketch)
 
-(kind/test-last [(fn [v] (and (instance? Xkcd7Sketch v) (= 1 (count (:entries v)))))])
+(kind/test-last [(fn [v] (and (instance? Sketch v) (= 1 (count (:entries v)))))])
 
 ;; ## Sketch
 ;;
-;; A **sketch** (also called a xkcd7-sketch internally) is the value returned by layer functions
-;; (`sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram`, etc.) and by `sk/xkcd7-options`.
+;; A **sketch** (also called a sketch internally) is the value returned by layer functions
+;; (`sk/lay-point`, `sk/lay-histogram`, etc.) and by `sk/options`.
 ;; It wraps one or more views together with plot options and
 ;; auto-renders in [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).
 ;;
-;; You can inspect or decompose a sketch by checking if it is a xkcd7-sketch
+;; You can inspect or decompose a sketch by checking if it is a sketch
 ;; and accessing its `:entries`:
 
 (def my-sketch
   (-> data/iris
-      (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-      (sk/xkcd7-options {:title "Iris"})))
+      (sk/lay-point :sepal_length :sepal_width {:color :species})
+      (sk/options {:title "Iris"})))
 
-(instance? Xkcd7Sketch my-sketch)
+(instance? Sketch my-sketch)
 
 (kind/test-last [(fn [v] (true? v))])
 
@@ -93,8 +93,8 @@
            :meal ["lunch" "dinner" "lunch" "dinner"]})
 
 (-> tips
-    (sk/xkcd7-lay-value-bar :day :count {:color :meal :position :stack})
-    sk/xkcd7-plan
+    (sk/lay-value-bar :day :count {:color :meal :position :stack})
+    sk/plan
     (get-in [:panels 0 :layers 0 :groups 1 :y0s]))
 
 (kind/test-last [(fn [y0s] (every? pos? y0s))])
@@ -130,8 +130,8 @@
 ;; without color using the `:group` key.
 
 (-> data/iris
-    (sk/xkcd7-lay-line :sepal_length :sepal_width {:group :species})
-    sk/xkcd7-plan
+    (sk/lay-line :sepal_length :sepal_width {:group :species})
+    sk/plan
     (get-in [:panels 0 :layers 0 :groups])
     count)
 
@@ -145,8 +145,8 @@
 ;; keys in the layer options.
 
 (-> {:x [1 2 3] :y [4 5 6]}
-    (sk/xkcd7-lay-point :x :y {:nudge-x 0.5})
-    sk/xkcd7-plan
+    (sk/lay-point :x :y {:nudge-x 0.5})
+    sk/plan
     (get-in [:panels 0 :layers 0 :groups 0 :xs]))
 
 (kind/test-last [(fn [xs] (= [1.5 2.5 3.5] xs))])
@@ -171,10 +171,10 @@
 ;; data-space geometry, domains, tick info, legend, layout dimensions.
 ;; No membrane types, no datasets, no scale objects.
 ;;
-;; Created with `sk/xkcd7-plan`. Numeric arrays (`:xs`, `:ys`, etc.) are
+;; Created with `sk/plan`. Numeric arrays (`:xs`, `:ys`, etc.) are
 ;; [dtype-next](https://github.com/cnuernber/dtype-next) buffers for efficiency.
 
-(def my-plan (sk/xkcd7-plan my-xkcd7-sketch))
+(def my-plan (sk/plan my-sketch))
 
 (sort (keys my-plan))
 
@@ -184,7 +184,7 @@
 ;;
 ;; A **panel** is a single plotting area within a plan. It contains
 ;; x/y domains, scale specs, tick info, coordinate type, and layers.
-;; A simple plot has one panel; `sk/xkcd7-facet` and `sk/xkcd7-facet-grid` produce multiple.
+;; A simple plot has one panel; `sk/facet` and `sk/facet-grid` produce multiple.
 
 (sort (keys (first (:panels my-plan))))
 
@@ -196,8 +196,8 @@
 ;; style, and groups of data-space geometry. Layers live inside
 ;; panels in the plan.
 
-(-> my-xkcd7-sketch
-    sk/xkcd7-plan
+(-> my-sketch
+    sk/plan
     (get-in [:panels 0 :layers 0]))
 
 (kind/test-last [(fn [m] (= :point (:mark m)))])
@@ -208,17 +208,17 @@
 ;; column. Each panel shows a subset of the data, sharing the same
 ;; scales for easy comparison.
 ;;
-;; - `sk/xkcd7-facet` creates a row or column of panels
-;; - `sk/xkcd7-facet-grid` creates a row × column grid from two columns
+;; - `sk/facet` creates a row or column of panels
+;; - `sk/facet-grid` creates a row × column grid from two columns
 ;;
 ;; By default all panels share the same axis ranges. Use
-;; `(sk/xkcd7-options {:scales ...})` to allow panels to have independent
+;; `(sk/options {:scales ...})` to allow panels to have independent
 ;; ranges: `:shared` (default), `:free-x`, `:free-y`, or `:free`.
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    (sk/xkcd7-facet :species)
-    sk/xkcd7-plan :panels count)
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/facet :species)
+    sk/plan :panels count)
 
 (kind/test-last [(fn [n] (= 3 n))])
 
@@ -299,11 +299,11 @@
 ;;
 ;; A **theme** controls the visual appearance of non-data elements:
 ;; background color, grid lines, font sizes, margins.
-;; Passed as `{:theme {...}}` via `sk/xkcd7-options` or directly to `sk/xkcd7-plan`.
+;; Passed as `{:theme {...}}` via `sk/options` or directly to `sk/plan`.
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-options {:theme {:background "#2d2d2d" :grid "#444444"
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/options {:theme {:background "#2d2d2d" :grid "#444444"
                                :text "#cccccc" :tick "#999999"}})
     sk/svg-summary :panels)
 
@@ -380,8 +380,8 @@
 
 ;; ## Plot Options
 ;;
-;; **Plot options** are per-plot settings passed to `sk/xkcd7-options`,
-;; `sk/xkcd7-plan`, or `sk/plot`. They include text content (title,
+;; **Plot options** are per-plot settings passed to `sk/options`,
+;; `sk/plan`, or `sk/plot`. They include text content (title,
 ;; subtitle, caption, axis labels) and a nested `:config` override.
 ;; Unlike configuration keys, plot options are inherently per-plot —
 ;; a title does not make sense as a global default.
@@ -396,7 +396,7 @@
 ;; ## Layer Options
 ;;
 ;; **Layer options** are per-layer settings passed in the options map
-;; of layer functions (`sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram`, etc.).
+;; of layer functions (`sk/lay-point`, `sk/lay-histogram`, etc.).
 ;; They control aesthetics (`:color`, `:size`, `:alpha`, `:shape`),
 ;; grouping (`:group`), position adjustment (`:position`), and
 ;; method-specific parameters (`:bandwidth`, `:se`, `:normalize`, etc.).
@@ -422,9 +422,9 @@
 ;;
 ;; | Term | What | Lifetime |
 ;; |:-----|:-----|:---------|
-;; | View | Map: data + column-to-channel mappings + method | User builds, consumed by `xkcd7-plan` |
-;; | Sketch | Auto-rendering xkcd7-sketch (views + options) | Returned by layer functions |
-;; | Method | Mark + stat + position bundle | Looked up via `method/lookup`; added by `sk/xkcd7-lay-point`, `sk/xkcd7-lay-histogram`, etc. |
+;; | View | Map: data + column-to-channel mappings + method | User builds, consumed by `plan` |
+;; | Sketch | Auto-rendering sketch (views + options) | Returned by layer functions |
+;; | Method | Mark + stat + position bundle | Looked up via `method/lookup`; added by `sk/lay-point`, `sk/lay-histogram`, etc. |
 ;; | Mark | Visual type: point, line, bar, ... | Key in view map |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha, shape | Key in view map |
 ;; | Group | Subset of data drawn together (from `:color` or `:group`) | Created during stat computation |
@@ -447,6 +447,6 @@
 ;; | Palette | Ordered color set for categorical aesthetics | Resolved at render time |
 ;; | Gradient | Continuous color ramp for numerical color mappings | Resolved at render time |
 ;; | Configuration | Rendering options: dimensions, theme, palette, etc. | Layered precedence chain |
-;; | Plot Options | Title, subtitle, caption, labels — per-plot text content | Passed to sk/xkcd7-options |
+;; | Plot Options | Title, subtitle, caption, labels — per-plot text content | Passed to sk/options |
 ;; | Layer Options | Per-layer aesthetics, grouping, position, and method parameters | Passed to layer functions |
 ;; | Tooltip / Brush | JavaScript hover and selection interactions | Added to SVG output |

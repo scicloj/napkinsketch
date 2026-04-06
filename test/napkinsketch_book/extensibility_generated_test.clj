@@ -79,8 +79,8 @@
   [s
    (->
     data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-plan)
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk/plan)
    layer
    (first (:layers (first (:panels s))))]
   layer))
@@ -122,8 +122,8 @@
   my-plan
   (->
    data/iris
-   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-   sk/xkcd7-plan)))
+   (sk/lay-point :sepal_length :sepal_width {:color :species})
+   sk/plan)))
 
 
 (def v25_l249 (first (sk/plan->figure my-plan :svg {})))
@@ -205,7 +205,7 @@
 
 (def
  v44_l376
- (-> data/iris (sk/xkcd7-lay-bar :species) (sk/xkcd7-coord :flip)))
+ (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
 
 
 (deftest

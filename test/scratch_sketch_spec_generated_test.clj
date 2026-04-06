@@ -1,5 +1,5 @@
 (ns
- scratch-xkcd7-sketch-spec-generated-test
+ scratch-sketch-spec-generated-test
  (:require
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
@@ -19,28 +19,28 @@
 (def
  v5_l65
  (defn
-  xkcd7-sk-summary
-  "Show the xkcd7-sketch fields that matter for understanding the rules."
-  [xkcd7-sk]
-  {:shared (:shared xkcd7-sk),
+  sk-summary
+  "Show the sketch fields that matter for understanding the rules."
+  [sk]
+  {:shared (:shared sk),
    :entries
    (mapv
     (fn* [p1__396742#] (dissoc p1__396742# :data))
-    (:entries xkcd7-sk)),
-   :methods (:methods xkcd7-sk),
-   :opts (:opts xkcd7-sk)}))
+    (:entries sk)),
+   :methods (:methods sk),
+   :opts (:opts sk)}))
 
 
 (def
  v7_l78
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    sk/lay-lm)]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -60,9 +60,9 @@
  v9_l90
  (->
   iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -79,13 +79,13 @@
 (def
  v12_l104
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-view :sepal_length :sepal_width)
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/view :sepal_length :sepal_width)
+    sk/lay-point
+    sk/lay-lm)]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -104,9 +104,9 @@
  v14_l115
  (->
   iris
-  (sk/xkcd7-view :sepal_length :sepal_width)
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :sepal_length :sepal_width)
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -123,11 +123,11 @@
 (def
  v17_l128
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/lay-point :sepal_length :sepal_width {:color :species}))]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -147,7 +147,7 @@
  v19_l138
  (->
   iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
@@ -158,12 +158,12 @@
 (def
  v22_l148
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-lm)]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    sk/lay-lm)]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -183,8 +183,8 @@
  v24_l159
  (->
   iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-lm))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  sk/lay-lm))
 
 
 (deftest
@@ -201,12 +201,12 @@
 (def
  v27_l172
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-lay-lm :sepal_length :sepal_width))]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/lay-lm :sepal_length :sepal_width))]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -225,8 +225,8 @@
  v29_l182
  (->
   iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-lay-lm :sepal_length :sepal_width)))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/lay-lm :sepal_length :sepal_width)))
 
 
 (deftest
@@ -243,12 +243,12 @@
 (def
  v32_l196
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    (sk/xkcd7-lay-histogram :petal_length))]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/lay-histogram :petal_length))]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -273,8 +273,8 @@
  v34_l208
  (->
   iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width)
-  (sk/xkcd7-lay-histogram :petal_length)))
+  (sk/lay-point :sepal_length :sepal_width)
+  (sk/lay-histogram :petal_length)))
 
 
 (deftest
@@ -291,13 +291,13 @@
 (def
  v37_l221
  (let
-  [xkcd7-sk
+  [sk
    (->
-    (sk/xkcd7-sketch iris {:color :species})
-    (sk/xkcd7-view :sepal_length :sepal_width)
-    sk/xkcd7-lay-point
-    sk/xkcd7-lay-lm)]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/sketch iris {:color :species})
+    (sk/view :sepal_length :sepal_width)
+    sk/lay-point
+    sk/lay-lm)]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -308,10 +308,10 @@
 (def
  v39_l230
  (->
-  (sk/xkcd7-sketch iris {:color :species})
-  (sk/xkcd7-view :sepal_length :sepal_width)
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/sketch iris {:color :species})
+  (sk/view :sepal_length :sepal_width)
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -328,13 +328,13 @@
 (def
  v42_l243
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    (sk/xkcd7-lay-lm {:color nil}))]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    (sk/lay-lm {:color nil}))]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -352,9 +352,9 @@
  v44_l253
  (->
   iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  (sk/xkcd7-lay-lm {:color nil})))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  (sk/lay-lm {:color nil})))
 
 
 (deftest
@@ -371,13 +371,13 @@
 (def
  v47_l266
  (let
-  [xkcd7-sk
+  [sk
    (->
-    (sk/xkcd7-sketch iris {:color :species})
-    (sk/xkcd7-view :sepal_length :sepal_width)
-    (sk/xkcd7-view :petal_length :petal_width)
-    sk/xkcd7-lay-point)]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/sketch iris {:color :species})
+    (sk/view :sepal_length :sepal_width)
+    (sk/view :petal_length :petal_width)
+    sk/lay-point)]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -395,10 +395,10 @@
 (def
  v49_l277
  (->
-  (sk/xkcd7-sketch iris {:color :species})
-  (sk/xkcd7-view :sepal_length :sepal_width)
-  (sk/xkcd7-view :petal_length :petal_width)
-  sk/xkcd7-lay-point))
+  (sk/sketch iris {:color :species})
+  (sk/view :sepal_length :sepal_width)
+  (sk/view :petal_length :petal_width)
+  sk/lay-point))
 
 
 (deftest
@@ -415,12 +415,12 @@
 (def
  v52_l290
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-annotate (sk/rule-h 3.0)))]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/annotate (sk/rule-h 3.0)))]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -438,8 +438,8 @@
  v54_l299
  (->
   iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-annotate (sk/rule-h 3.0))))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/annotate (sk/rule-h 3.0))))
 
 
 (deftest
@@ -456,12 +456,12 @@
 (def
  v57_l311
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    (sk/xkcd7-overlay :sepal_length :petal_width :lm))]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/overlay :sepal_length :petal_width :lm))]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -480,8 +480,8 @@
 (def
  v60_l327
  (let
-  [xkcd7-sk (-> {:x [1 2 3], :y [4 5 6]} sk/xkcd7-lay-point)]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+  [sk (-> {:x [1 2 3], :y [4 5 6]} sk/lay-point)]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -493,7 +493,7 @@
    v60_l327)))
 
 
-(def v62_l335 (-> {:x [1 2 3], :y [4 5 6]} sk/xkcd7-lay-point))
+(def v62_l335 (-> {:x [1 2 3], :y [4 5 6]} sk/lay-point))
 
 
 (deftest
@@ -504,12 +504,12 @@
 (def
  v65_l355
  (let
-  [xkcd7-sk
+  [sk
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    (sk/xkcd7-lay-histogram :petal_length))]
-  (kind/pprint (xkcd7-sk-summary xkcd7-sk))))
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/lay-histogram :petal_length))]
+  (kind/pprint (sk-summary sk))))
 
 
 (deftest
@@ -523,8 +523,8 @@
  v67_l364
  (->
   iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width)
-  (sk/xkcd7-lay-histogram :petal_length)))
+  (sk/lay-point :sepal_length :sepal_width)
+  (sk/lay-histogram :petal_length)))
 
 
 (deftest
@@ -542,8 +542,8 @@
  v70_l380
  (->
   iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width)
-  (sk/xkcd7-lay-histogram :sepal_length)))
+  (sk/lay-point :sepal_length :sepal_width)
+  (sk/lay-histogram :sepal_length)))
 
 
 (deftest
@@ -561,8 +561,8 @@
  v73_l397
  (->
   iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-lay-lm :sepal_length :sepal_width)))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/lay-lm :sepal_length :sepal_width)))
 
 
 (deftest
@@ -580,9 +580,9 @@
  v76_l411
  (->
   iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width)
-  (sk/xkcd7-lay-point :petal_length :petal_width)
-  sk/xkcd7-lay-lm))
+  (sk/lay-point :sepal_length :sepal_width)
+  (sk/lay-point :petal_length :petal_width)
+  sk/lay-lm))
 
 
 (deftest
@@ -604,8 +604,8 @@
 (def
  v80_l428
  (->
-  (sk/xkcd7-sketch iris {:color :species})
-  (sk/xkcd7-view (sk/cross splom-cols splom-cols))))
+  (sk/sketch iris {:color :species})
+  (sk/view (sk/cross splom-cols splom-cols))))
 
 
 (deftest
@@ -628,12 +628,12 @@
   scale-plan
   (->
    iris
-   (sk/xkcd7-view :sepal_length :sepal_width)
-   sk/xkcd7-lay-point
-   (sk/xkcd7-scale :x :log)
-   (sk/xkcd7-scale :y {:domain [0 6]})
-   (sk/xkcd7-coord :flip)
-   sk/xkcd7-plan)))
+   (sk/view :sepal_length :sepal_width)
+   sk/lay-point
+   (sk/scale :x :log)
+   (sk/scale :y {:domain [0 6]})
+   (sk/coord :flip)
+   sk/plan)))
 
 
 (def

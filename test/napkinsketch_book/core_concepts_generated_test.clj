@@ -18,7 +18,7 @@
  v6_l47
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
@@ -28,7 +28,7 @@
 
 (def
  v9_l60
- (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} (sk/xkcd7-lay-point :x :y)))
+ (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} (sk/lay-point :x :y)))
 
 
 (deftest
@@ -43,7 +43,7 @@
    {:city "London", :temperature 18}
    {:city "Berlin", :temperature 20}
    {:city "Rome", :temperature 28}]
-  (sk/xkcd7-lay-value-bar :city :temperature)))
+  (sk/lay-value-bar :city :temperature)))
 
 
 (deftest
@@ -51,7 +51,7 @@
  (is ((fn [v] (= 4 (:polygons (sk/svg-summary v)))) v12_l69)))
 
 
-(def v15_l81 (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} sk/xkcd7-lay-point))
+(def v15_l81 (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} sk/lay-point))
 
 
 (deftest
@@ -63,7 +63,7 @@
  v18_l88
  (->
   {:x [1 2 3 4], :y [4 5 6 7], :group ["a" "a" "b" "b"]}
-  sk/xkcd7-lay-point))
+  sk/lay-point))
 
 
 (deftest
@@ -81,7 +81,7 @@
  v21_l106
  (->
   (tc/dataset [[1 10] [2 20] [3 15] [4 25]] {:column-names [:x :y]})
-  (sk/xkcd7-lay-line :x :y)))
+  (sk/lay-line :x :y)))
 
 
 (deftest
@@ -93,11 +93,11 @@
  v24_l148
  (->
   data/iris
-  (sk/xkcd7-lay-point
+  (sk/lay-point
    :sepal_length
    :sepal_width
    {:color :species, :alpha 0.5})
-  (sk/xkcd7-options
+  (sk/options
    {:title "Iris Measurements", :width 500, :palette :dark2})))
 
 
@@ -120,7 +120,7 @@
 (deftest t28_l168 (is ((fn [m] (= :bar (:mark m))) v27_l166)))
 
 
-(def v30_l172 (-> data/iris (sk/xkcd7-lay-histogram :sepal_length)))
+(def v30_l172 (-> data/iris (sk/lay-histogram :sepal_length)))
 
 
 (deftest
@@ -138,8 +138,8 @@
  v36_l197
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width)
-  sk/xkcd7-lay-lm))
+  (sk/lay-point :sepal_length :sepal_width)
+  sk/lay-lm))
 
 
 (deftest
@@ -165,7 +165,7 @@
   {:day ["Mon" "Mon" "Tue" "Tue"],
    :count [30 20 45 15],
    :meal ["lunch" "dinner" "lunch" "dinner"]}
-  (sk/xkcd7-lay-value-bar
+  (sk/lay-value-bar
    :day
    :count
    {:color :meal, :position :stack})))
@@ -176,7 +176,7 @@
  (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v42_l218)))
 
 
-(def v45_l237 (-> data/iris (sk/xkcd7-view :sepal_length :sepal_width)))
+(def v45_l237 (-> data/iris (sk/view :sepal_length :sepal_width)))
 
 
 (deftest
@@ -184,7 +184,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v45_l237)))
 
 
-(def v48_l244 (-> data/iris (sk/xkcd7-view :sepal_length)))
+(def v48_l244 (-> data/iris (sk/view :sepal_length)))
 
 
 (deftest
@@ -196,9 +196,9 @@
  v51_l262
  (->
   data/iris
-  (sk/xkcd7-view :sepal_length :sepal_width)
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :sepal_length :sepal_width)
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -216,9 +216,9 @@
  v54_l274
  (->
   data/iris
-  (sk/xkcd7-view :sepal_length :sepal_width)
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-loess))
+  (sk/view :sepal_length :sepal_width)
+  sk/lay-point
+  sk/lay-loess))
 
 
 (deftest
@@ -236,9 +236,9 @@
  v57_l291
  (->
   data/iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -256,8 +256,8 @@
  v60_l302
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-lm))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  sk/lay-lm))
 
 
 (deftest
@@ -275,10 +275,10 @@
  v63_l330
  (def
   scatter-base
-  (-> data/iris (sk/xkcd7-lay-point :sepal_length :sepal_width))))
+  (-> data/iris (sk/lay-point :sepal_length :sepal_width))))
 
 
-(def v65_l336 (-> scatter-base sk/xkcd7-lay-lm))
+(def v65_l336 (-> scatter-base sk/lay-lm))
 
 
 (deftest
@@ -292,7 +292,7 @@
    v65_l336)))
 
 
-(def v68_l346 (-> scatter-base sk/xkcd7-lay-loess))
+(def v68_l346 (-> scatter-base sk/lay-loess))
 
 
 (deftest
@@ -310,9 +310,9 @@
  v71_l356
  (->
   data/iris
-  (sk/xkcd7-view :sepal_length :sepal_width)
-  (sk/xkcd7-view :petal_length :petal_width)
-  sk/xkcd7-lay-point))
+  (sk/view :sepal_length :sepal_width)
+  (sk/view :petal_length :petal_width)
+  sk/lay-point))
 
 
 (deftest
@@ -330,7 +330,7 @@
  v74_l375
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
@@ -348,7 +348,7 @@
  v77_l387
  (->
   data/iris
-  (sk/xkcd7-lay-point
+  (sk/lay-point
    :sepal_length
    :sepal_width
    {:color :petal_length})))
@@ -363,7 +363,7 @@
  v80_l396
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color "steelblue"})))
+  (sk/lay-point :sepal_length :sepal_width {:color "steelblue"})))
 
 
 (deftest
@@ -375,9 +375,9 @@
  v83_l410
  (->
   data/iris
-  (sk/xkcd7-view :sepal_length :sepal_width)
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :sepal_length :sepal_width)
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -395,9 +395,9 @@
  v86_l423
  (->
   data/iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -415,10 +415,10 @@
  v89_l443
  (->
   data/iris
-  (sk/xkcd7-view :sepal_length :sepal_width)
-  (sk/xkcd7-facet :species)
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :sepal_length :sepal_width)
+  (sk/facet :species)
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -443,7 +443,7 @@
 
 (def
  v96_l473
- (-> data/iris (sk/xkcd7-view (sk/cross cols cols)) sk/xkcd7-lay-point))
+ (-> data/iris (sk/view (sk/cross cols cols)) sk/lay-point))
 
 
 (deftest
@@ -455,8 +455,8 @@
  v99_l496
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-coord :flip)))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/coord :flip)))
 
 
 (deftest
@@ -469,9 +469,9 @@
  (->
   {:population [1000 5000 50000 200000 1000000 5000000],
    :area [2 8 30 120 500 2100]}
-  (sk/xkcd7-lay-point :population :area)
-  (sk/xkcd7-scale :x :log)
-  (sk/xkcd7-scale :y :log)))
+  (sk/lay-point :population :area)
+  (sk/scale :x :log)
+  (sk/scale :y :log)))
 
 
 (deftest

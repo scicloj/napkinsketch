@@ -19,7 +19,7 @@
            :y (map #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
-    (sk/xkcd7-lay-line :x :y))
+    (sk/lay-line :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -35,7 +35,7 @@
             :fn (concat (repeat 30 :sin) (repeat 30 :cos))})
 
 (-> waves
-    (sk/xkcd7-lay-line :x :y {:color :fn}))
+    (sk/lay-line :x :y {:color :fn}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -46,7 +46,7 @@
 ;; Constant stroke width via `:size`.
 
 (-> wave
-    (sk/xkcd7-lay-line :x :y {:size 4}))
+    (sk/lay-line :x :y {:size 4}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -62,9 +62,9 @@
    :group [:a :a :a :a :a :b :b :b :b :b]})
 
 (-> growth
-    (sk/xkcd7-view :day :value {:color :group})
-    sk/xkcd7-lay-line
-    sk/xkcd7-lay-point)
+    (sk/view :day :value {:color :group})
+    sk/lay-line
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 10 (:points s))
@@ -76,8 +76,8 @@
 
 (-> {:x [1 2 3 4 5]
      :y [2 4 1 5 3]}
-    (sk/xkcd7-lay-step :x :y)
-    sk/xkcd7-lay-point)
+    (sk/lay-step :x :y)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 5 (:points s))
@@ -88,9 +88,9 @@
 ;; Grouped step lines.
 
 (-> growth
-    (sk/xkcd7-view :day :value {:color :group})
-    sk/xkcd7-lay-step
-    sk/xkcd7-lay-point)
+    (sk/view :day :value {:color :group})
+    sk/lay-step
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 10 (:points s))
@@ -102,7 +102,7 @@
 
 (-> {:x (range 30)
      :y (map #(Math/sin (* % 0.3)) (range 30))}
-    (sk/xkcd7-lay-area :x :y))
+    (sk/lay-area :x :y))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -117,7 +117,7 @@
                 [2 2 2 3 3 3 2 2 2 2]
                 [1 1 1 1 2 2 2 1 1 1])
      :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
-    (sk/xkcd7-lay-stacked-area :x :y {:color :group}))
+    (sk/lay-stacked-area :x :y {:color :group}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

@@ -36,27 +36,27 @@
 
 ;; ## Wrong Chart Type from Inference
 ;;
-;; **Symptom**: `sk/xkcd7-view` produces a scatter when you expected a
+;; **Symptom**: `sk/view` produces a scatter when you expected a
 ;; boxplot, or a histogram when you expected a bar chart.
 ;;
-;; **Cause**: `sk/xkcd7-view` infers the chart type from column types.
+;; **Cause**: `sk/view` infers the chart type from column types.
 ;; Mixed types (categorical x, numerical y) produce a scatter,
 ;; not a boxplot.
 ;;
-;; **Fix**: Use an explicit `sk/xkcd7-lay-*` function instead of relying
+;; **Fix**: Use an explicit `sk/lay-*` function instead of relying
 ;; on inference:
 
 ;; This infers a scatter (categorical x numerical):
 
 (-> data/iris
-    (sk/xkcd7-view :species :sepal_width))
+    (sk/view :species :sepal_width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; Use `sk/xkcd7-lay-boxplot` if you want a boxplot:
+;; Use `sk/lay-boxplot` if you want a boxplot:
 
 (-> data/iris
-    (sk/xkcd7-lay-boxplot :species :sepal_width))
+    (sk/lay-boxplot :species :sepal_width))
 
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
@@ -74,10 +74,10 @@
 ;;
 ;; ```clojure
 ;; ;; Wrong:
-;; (sk/xkcd7-lay-histogram data :sepal_length :sepal_width)
+;; (sk/lay-histogram data :sepal_length :sepal_width)
 ;;
 ;; ;; Correct:
-;; (sk/xkcd7-lay-histogram data :sepal_length)
+;; (sk/lay-histogram data :sepal_length)
 ;; ```
 
 ;; ## Categorical Column with Log Scale
@@ -92,7 +92,7 @@
 
 ;; ## Polar Coordinates with Unsupported Marks
 ;;
-;; **Symptom**: Errors or unexpected output with `(sk/xkcd7-coord :polar)`.
+;; **Symptom**: Errors or unexpected output with `(sk/coord :polar)`.
 ;;
 ;; **Cause**: Not all marks support polar coordinates. Currently
 ;; `:point`, `:bar`, and `:line` work well with polar.
@@ -113,8 +113,8 @@
 ;; scripts.
 
 (-> data/iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-options {:tooltip true}))
+    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (sk/options {:tooltip true}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 

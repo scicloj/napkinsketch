@@ -9,7 +9,7 @@
 
 (def
  v3_l33
- (-> data/iris (sk/xkcd7-lay-point :sepal_length :sepal_width)))
+ (-> data/iris (sk/lay-point :sepal_length :sepal_width)))
 
 
 (deftest
@@ -21,7 +21,7 @@
  v6_l46
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})))
+  (sk/lay-point :sepal_length :sepal_width {:color :species})))
 
 
 (deftest
@@ -39,9 +39,9 @@
  v9_l59
  (->
   data/iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -55,7 +55,7 @@
    v9_l59)))
 
 
-(def v12_l80 (-> data/iris (sk/xkcd7-view :sepal_length :sepal_width)))
+(def v12_l80 (-> data/iris (sk/view :sepal_length :sepal_width)))
 
 
 (deftest
@@ -63,7 +63,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v12_l80)))
 
 
-(def v15_l87 (-> data/iris (sk/xkcd7-view :sepal_length)))
+(def v15_l87 (-> data/iris (sk/view :sepal_length)))
 
 
 (deftest
@@ -73,7 +73,7 @@
 
 (def
  v18_l100
- (sk/xkcd7-lay-histogram
+ (sk/lay-histogram
   data/iris
   [:sepal_length :sepal_width :petal_length]))
 
@@ -87,7 +87,7 @@
  v21_l106
  (->
   data/iris
-  (sk/xkcd7-view
+  (sk/view
    [[:sepal_length :sepal_width] [:petal_length :petal_width]])))
 
 
@@ -101,7 +101,7 @@
 
 (def
  v25_l117
- (-> data/iris (sk/xkcd7-view (sk/cross cols cols) {:color :species})))
+ (-> data/iris (sk/view (sk/cross cols cols) {:color :species})))
 
 
 (deftest
@@ -113,11 +113,11 @@
  v28_l131
  (->
   data/iris
-  (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-facet :species)
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm
-  (sk/xkcd7-options {:title "Iris by Species"})))
+  (sk/view :sepal_length :sepal_width {:color :species})
+  (sk/facet :species)
+  sk/lay-point
+  sk/lay-lm
+  (sk/options {:title "Iris by Species"})))
 
 
 (deftest
@@ -138,8 +138,8 @@
  v31_l147
  (->
   data/iris
-  (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-  (sk/xkcd7-annotate
+  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (sk/annotate
    (sk/rule-h 3.0)
    (sk/band-v 5.5 7.0 {:alpha 0.15}))))
 
@@ -158,21 +158,21 @@
 (def
  v34_l161
  (def
-  my-xkcd7-sk
+  my-sk
   (->
    data/iris
-   (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-   sk/xkcd7-lay-point
-   sk/xkcd7-lay-lm)))
+   (sk/view :sepal_length :sepal_width {:color :species})
+   sk/lay-point
+   sk/lay-lm)))
 
 
-(def v36_l170 (:shared my-xkcd7-sk))
+(def v36_l170 (:shared my-sk))
 
 
 (deftest t37_l172 (is ((fn [v] (= :species (:color v))) v36_l170)))
 
 
-(def v39_l176 (:entries my-xkcd7-sk))
+(def v39_l176 (:entries my-sk))
 
 
 (deftest
@@ -182,7 +182,7 @@
    v39_l176)))
 
 
-(def v42_l184 (mapv :mark (:methods my-xkcd7-sk)))
+(def v42_l184 (mapv :mark (:methods my-sk)))
 
 
 (deftest t43_l186 (is ((fn [v] (= [:point :line] v)) v42_l184)))

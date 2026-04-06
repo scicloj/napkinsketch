@@ -7,7 +7,7 @@
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l19 (-> data/iris (sk/xkcd7-lay-histogram :sepal_length)))
+(def v3_l19 (-> data/iris (sk/lay-histogram :sepal_length)))
 
 
 (deftest
@@ -25,7 +25,7 @@
  v6_l31
  (->
   data/iris
-  (sk/xkcd7-lay-histogram :sepal_length {:color :species})))
+  (sk/lay-histogram :sepal_length {:color :species})))
 
 
 (deftest
@@ -39,7 +39,7 @@
    v6_l31)))
 
 
-(def v9_l43 (-> data/iris (sk/xkcd7-lay-histogram :petal_width)))
+(def v9_l43 (-> data/iris (sk/lay-histogram :petal_width)))
 
 
 (deftest
@@ -57,8 +57,8 @@
  v12_l53
  (->
   data/tips
-  (sk/xkcd7-lay-histogram :total_bill)
-  (sk/xkcd7-options
+  (sk/lay-histogram :total_bill)
+  (sk/options
    {:title "Distribution of Total Bill", :x-label "Amount ($)"})))
 
 
@@ -82,10 +82,10 @@
  v15_l70
  (->
   data/iris
-  (sk/xkcd7-lay-histogram
+  (sk/lay-histogram
    :sepal_length
    {:normalize :density, :alpha 0.5})
-  sk/xkcd7-lay-density))
+  sk/lay-density))
 
 
 (deftest
@@ -99,7 +99,7 @@
    v15_l70)))
 
 
-(def v18_l82 (-> data/iris (sk/xkcd7-lay-density :sepal_length)))
+(def v18_l82 (-> data/iris (sk/lay-density :sepal_length)))
 
 
 (deftest
@@ -115,7 +115,7 @@
 
 (def
  v21_l94
- (-> data/iris (sk/xkcd7-lay-density :sepal_length {:color :species})))
+ (-> data/iris (sk/lay-density :sepal_length {:color :species})))
 
 
 (deftest
@@ -131,7 +131,7 @@
 
 (def
  v24_l106
- (-> data/iris (sk/xkcd7-lay-density :sepal_length {:bandwidth 0.3})))
+ (-> data/iris (sk/lay-density :sepal_length {:bandwidth 0.3})))
 
 
 (deftest
@@ -147,7 +147,7 @@
 
 (def
  v27_l118
- (-> data/iris (sk/xkcd7-lay-boxplot :species :sepal_width)))
+ (-> data/iris (sk/lay-boxplot :species :sepal_width)))
 
 
 (deftest
@@ -165,7 +165,7 @@
  v30_l131
  (->
   data/tips
-  (sk/xkcd7-lay-boxplot :day :total_bill {:color :smoker})))
+  (sk/lay-boxplot :day :total_bill {:color :smoker})))
 
 
 (deftest
@@ -185,8 +185,8 @@
   [pl
    (->
     data/tips
-    (sk/xkcd7-lay-boxplot :day :total_bill {:color :smoker})
-    sk/xkcd7-plan)
+    (sk/lay-boxplot :day :total_bill {:color :smoker})
+    sk/plan)
    panel
    (first (:panels pl))
    box-layer
@@ -206,8 +206,8 @@
  v36_l157
  (->
   data/iris
-  (sk/xkcd7-lay-boxplot :species :sepal_width)
-  (sk/xkcd7-coord :flip)))
+  (sk/lay-boxplot :species :sepal_width)
+  (sk/coord :flip)))
 
 
 (deftest
@@ -221,7 +221,7 @@
    v36_l157)))
 
 
-(def v39_l172 (-> data/tips (sk/xkcd7-lay-violin :day :total_bill)))
+(def v39_l172 (-> data/tips (sk/lay-violin :day :total_bill)))
 
 
 (deftest
@@ -237,7 +237,7 @@
 
 (def
  v42_l184
- (-> data/tips (sk/xkcd7-lay-violin :day :total_bill {:color :smoker})))
+ (-> data/tips (sk/lay-violin :day :total_bill {:color :smoker})))
 
 
 (deftest
@@ -257,8 +257,8 @@
   [pl
    (->
     data/tips
-    (sk/xkcd7-lay-violin :day :total_bill {:color :smoker})
-    sk/xkcd7-plan)
+    (sk/lay-violin :day :total_bill {:color :smoker})
+    sk/plan)
    panel
    (first (:panels pl))
    viol-layer
@@ -278,8 +278,8 @@
  v48_l207
  (->
   data/iris
-  (sk/xkcd7-lay-violin :species :petal_length)
-  (sk/xkcd7-coord :flip)))
+  (sk/lay-violin :species :petal_length)
+  (sk/coord :flip)))
 
 
 (deftest
@@ -295,7 +295,7 @@
 
 (def
  v51_l221
- (-> data/iris (sk/xkcd7-lay-ridgeline :species :sepal_length)))
+ (-> data/iris (sk/lay-ridgeline :species :sepal_length)))
 
 
 (deftest
@@ -313,7 +313,7 @@
  v54_l233
  (->
   data/iris
-  (sk/xkcd7-lay-ridgeline :species :sepal_length {:color :species})))
+  (sk/lay-ridgeline :species :sepal_length {:color :species})))
 
 
 (deftest
@@ -329,7 +329,7 @@
 
 (def
  v57_l247
- (sk/xkcd7-lay-histogram
+ (sk/lay-histogram
   data/iris
   [:sepal_length :sepal_width :petal_length]))
 
@@ -349,8 +349,8 @@
  v60_l256
  (->
   data/iris
-  (sk/xkcd7-view [:sepal_length :sepal_width :petal_length])
-  sk/xkcd7-lay-histogram))
+  (sk/view [:sepal_length :sepal_width :petal_length])
+  sk/lay-histogram))
 
 
 (deftest
@@ -366,7 +366,7 @@
 
 (def
  v63_l267
- (sk/xkcd7-lay-density
+ (sk/lay-density
   data/iris
   [:sepal_length :sepal_width :petal_length]
   {:color :species}))

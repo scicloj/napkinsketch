@@ -15,10 +15,10 @@
 
 (def
  v4_l56
- (def scatter-views (-> five-points (sk/xkcd7-lay-point :x :y))))
+ (def scatter-views (-> five-points (sk/lay-point :x :y))))
 
 
-(def v6_l62 (sk/xkcd7-plan scatter-views))
+(def v6_l62 (sk/plan scatter-views))
 
 
 (deftest
@@ -53,7 +53,7 @@
  (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v9_l78)))
 
 
-(def v12_l108 (-> {:values [1 2 3 4 5 6]} sk/xkcd7-lay-histogram))
+(def v12_l108 (-> {:values [1 2 3 4 5 6]} sk/lay-histogram))
 
 
 (deftest
@@ -61,7 +61,7 @@
  (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v12_l108)))
 
 
-(def v15_l115 (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} sk/xkcd7-lay-point))
+(def v15_l115 (-> {:x [1 2 3 4 5], :y [2 4 3 5 4]} sk/lay-point))
 
 
 (deftest
@@ -73,7 +73,7 @@
  v18_l122
  (->
   {:x [1 2 3 4], :y [4 5 6 7], :g ["a" "a" "b" "b"]}
-  sk/xkcd7-lay-point))
+  sk/lay-point))
 
 
 (deftest
@@ -91,7 +91,7 @@
  v21_l132
  (->
   data/iris
-  (sk/xkcd7-lay-point :petal_length :petal_width {:color :species})))
+  (sk/lay-point :petal_length :petal_width {:color :species})))
 
 
 (deftest
@@ -108,10 +108,10 @@
 
 (def
  v25_l158
- (def bar-views (-> animals (sk/xkcd7-lay-value-bar :animal :count))))
+ (def bar-views (-> animals (sk/lay-value-bar :animal :count))))
 
 
-(def v26_l162 (sk/xkcd7-plan bar-views))
+(def v26_l162 (sk/plan bar-views))
 
 
 (deftest
@@ -145,8 +145,8 @@
       #inst "2024-06-01T00:00:00.000-00:00"
       #inst "2024-12-01T00:00:00.000-00:00"],
      :val [10 25 18]}
-    (sk/xkcd7-lay-point :date :val)
-    sk/xkcd7-plan)
+    (sk/lay-point :date :val)
+    sk/plan)
    p
    (first (:panels pl))]
   {:x-domain-numeric? (number? (first (:x-domain p))),
@@ -172,10 +172,10 @@
   colored-views
   (->
    {:x [1 2 3 4 5 6], :y [3 5 4 7 6 8], :g ["a" "a" "a" "b" "b" "b"]}
-   (sk/xkcd7-lay-point :x :y {:color :g}))))
+   (sk/lay-point :x :y {:color :g}))))
 
 
-(def v35_l216 (sk/xkcd7-plan colored-views))
+(def v35_l216 (sk/plan colored-views))
 
 
 (deftest
@@ -204,10 +204,10 @@
  v40_l236
  (def
   fixed-color-views
-  (-> five-points (sk/xkcd7-lay-point :x :y {:color "#E74C3C"}))))
+  (-> five-points (sk/lay-point :x :y {:color "#E74C3C"}))))
 
 
-(def v41_l240 (sk/xkcd7-plan fixed-color-views))
+(def v41_l240 (sk/plan fixed-color-views))
 
 
 (deftest
@@ -242,7 +242,7 @@
 
 (def
  v46_l265
- (-> five-points (sk/xkcd7-lay-point :x :y {:color "steelblue"})))
+ (-> five-points (sk/lay-point :x :y {:color "steelblue"})))
 
 
 (deftest
@@ -256,8 +256,8 @@
   [pl
    (->
     five-points
-    (sk/xkcd7-lay-point :x :y {:color "red"})
-    sk/xkcd7-plan)]
+    (sk/lay-point :x :y {:color "red"})
+    sk/plan)]
   {:legend (:legend pl),
    :color
    (:color (first (:groups (first (:layers (first (:panels pl)))))))}))
@@ -274,7 +274,7 @@
  v52_l331
  (let
   [pl
-   (sk/xkcd7-plan colored-views)
+   (sk/plan colored-views)
    layer
    (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer)),
@@ -300,8 +300,8 @@
   [pl
    (->
     {:x [1 2 3 4 5], :y [2 4 3 5 4], :val [10 20 30 40 50]}
-    (sk/xkcd7-lay-point :x :y {:color :val})
-    sk/xkcd7-plan)
+    (sk/lay-point :x :y {:color :val})
+    sk/plan)
    layer
    (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer)),
@@ -334,8 +334,8 @@
   [pl
    (->
     grouped-data
-    (sk/xkcd7-lay-point :x :y {:group :g})
-    sk/xkcd7-plan)
+    (sk/lay-point :x :y {:group :g})
+    sk/plan)
    layer
    (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer)),
@@ -353,9 +353,9 @@
  v62_l401
  (->
   grouped-data
-  (sk/xkcd7-view :x :y)
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :x :y)
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -373,9 +373,9 @@
  v65_l412
  (->
   grouped-data
-  (sk/xkcd7-view :x :y {:color :g})
-  sk/xkcd7-lay-point
-  sk/xkcd7-lay-lm))
+  (sk/view :x :y {:color :g})
+  sk/lay-point
+  sk/lay-lm))
 
 
 (deftest
@@ -389,10 +389,10 @@
    v65_l412)))
 
 
-(def v68_l444 (def hist-views (-> five-points (sk/xkcd7-view :x))))
+(def v68_l444 (def hist-views (-> five-points (sk/view :x))))
 
 
-(def v69_l448 (sk/xkcd7-plan hist-views))
+(def v69_l448 (sk/plan hist-views))
 
 
 (deftest
@@ -414,10 +414,10 @@
  (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v71_l453)))
 
 
-(def v74_l463 (def count-views (-> animals (sk/xkcd7-view :animal))))
+(def v74_l463 (def count-views (-> animals (sk/view :animal))))
 
 
-(def v75_l467 (sk/xkcd7-plan count-views))
+(def v75_l467 (sk/plan count-views))
 
 
 (deftest
@@ -445,8 +445,8 @@
   [pl
    (->
     {:species ["a" "b" "c"], :val [10 20 15]}
-    (sk/xkcd7-view :species :val)
-    sk/xkcd7-plan)
+    (sk/view :species :val)
+    sk/plan)
    layer
    (first (:layers (first (:panels pl))))]
   (:mark layer)))
@@ -458,7 +458,7 @@
 (def
  v83_l495
  (let
-  [pl (sk/xkcd7-plan scatter-views) p (first (:panels pl))]
+  [pl (sk/plan scatter-views) p (first (:panels pl))]
   {:x-domain (:x-domain p),
    :data-range [1.0 5.0],
    :padding-each-side (* 0.05 (- 5.0 1.0))}))
@@ -479,7 +479,7 @@
 (def
  v86_l511
  (let
-  [pl (sk/xkcd7-plan bar-views) p (first (:panels pl))]
+  [pl (sk/plan bar-views) p (first (:panels pl))]
   {:y-domain (:y-domain p)}))
 
 
@@ -492,8 +492,8 @@
   [fill-pl
    (->
     {:x ["a" "a" "b" "b"], :g ["m" "n" "m" "n"]}
-    (sk/xkcd7-lay-stacked-bar-fill :x {:color :g})
-    sk/xkcd7-plan)
+    (sk/lay-stacked-bar-fill :x {:color :g})
+    sk/plan)
    p
    (first (:panels fill-pl))]
   (:y-domain p)))
@@ -507,7 +507,7 @@
 (def
  v92_l549
  (let
-  [pl (sk/xkcd7-plan scatter-views) p (first (:panels pl))]
+  [pl (sk/plan scatter-views) p (first (:panels pl))]
   {:x-tick-values (:values (:x-ticks p)),
    :x-tick-labels (:labels (:x-ticks p))}))
 
@@ -531,9 +531,9 @@
   [pl
    (->
     {:x [0.1 1.0 10.0 100.0 1000.0], :y [5 10 15 20 25]}
-    (sk/xkcd7-lay-point :x :y)
-    (sk/xkcd7-scale :x :log)
-    sk/xkcd7-plan)
+    (sk/lay-point :x :y)
+    (sk/scale :x :log)
+    sk/plan)
    p
    (first (:panels pl))]
   {:tick-values (:values (:x-ticks p)),
@@ -554,7 +554,7 @@
 (def
  v98_l581
  (let
-  [pl (sk/xkcd7-plan bar-views) p (first (:panels pl))]
+  [pl (sk/plan bar-views) p (first (:panels pl))]
   (:values (:x-ticks p))))
 
 
@@ -572,8 +572,8 @@
   [pl
    (->
     iris
-    (sk/xkcd7-lay-point :sepal_length :sepal_width)
-    sk/xkcd7-plan)]
+    (sk/lay-point :sepal_length :sepal_width)
+    sk/plan)]
   {:x-label (:x-label pl), :y-label (:y-label pl)}))
 
 
@@ -591,7 +591,7 @@
 (def
  v105_l606
  (let
-  [pl (-> five-points (sk/xkcd7-view :x) sk/xkcd7-plan)]
+  [pl (-> five-points (sk/view :x) sk/plan)]
   {:x-label (:x-label pl), :y-label (:y-label pl)}))
 
 
@@ -607,9 +607,9 @@
   [pl
    (->
     five-points
-    (sk/xkcd7-lay-point :x :y)
-    (sk/xkcd7-options {:x-label "Length (cm)", :y-label "Width (cm)"})
-    sk/xkcd7-plan)]
+    (sk/lay-point :x :y)
+    (sk/options {:x-label "Length (cm)", :y-label "Width (cm)"})
+    sk/plan)]
   {:x-label (:x-label pl), :y-label (:y-label pl)}))
 
 
@@ -622,7 +622,7 @@
    v108_l615)))
 
 
-(def v111_l633 (:legend (sk/xkcd7-plan colored-views)))
+(def v111_l633 (:legend (sk/plan colored-views)))
 
 
 (deftest
@@ -632,13 +632,13 @@
    v111_l633)))
 
 
-(def v114_l642 (:legend (sk/xkcd7-plan scatter-views)))
+(def v114_l642 (:legend (sk/plan scatter-views)))
 
 
 (deftest t115_l644 (is (nil? v114_l642)))
 
 
-(def v117_l648 (:legend (sk/xkcd7-plan fixed-color-views)))
+(def v117_l648 (:legend (sk/plan fixed-color-views)))
 
 
 (deftest t118_l650 (is (nil? v117_l648)))
@@ -649,8 +649,8 @@
  (:legend
   (->
    {:x [1 2 3], :y [4 5 6], :val [10 20 30]}
-   (sk/xkcd7-lay-point :x :y {:color :val})
-   sk/xkcd7-plan)))
+   (sk/lay-point :x :y {:color :val})
+   sk/plan)))
 
 
 (deftest
@@ -667,8 +667,8 @@
  (:size-legend
   (->
    {:x [1 2 3 4 5], :y [1 2 3 4 5], :s [10 20 30 40 50]}
-   (sk/xkcd7-lay-point :x :y {:size :s})
-   sk/xkcd7-plan)))
+   (sk/lay-point :x :y {:size :s})
+   sk/plan)))
 
 
 (deftest
@@ -683,7 +683,7 @@
    v123_l667)))
 
 
-(def v126_l677 (:size-legend (sk/xkcd7-plan scatter-views)))
+(def v126_l677 (:size-legend (sk/plan scatter-views)))
 
 
 (deftest t127_l679 (is (nil? v126_l677)))
@@ -694,8 +694,8 @@
  (:alpha-legend
   (->
    {:x [1 2 3 4 5], :y [1 2 3 4 5], :a [0.1 0.3 0.5 0.7 0.9]}
-   (sk/xkcd7-lay-point :x :y {:alpha :a})
-   sk/xkcd7-plan)))
+   (sk/lay-point :x :y {:alpha :a})
+   sk/plan)))
 
 
 (deftest
@@ -710,7 +710,7 @@
    v129_l687)))
 
 
-(def v132_l697 (:alpha-legend (sk/xkcd7-plan scatter-views)))
+(def v132_l697 (:alpha-legend (sk/plan scatter-views)))
 
 
 (deftest t133_l699 (is (nil? v132_l697)))
@@ -720,13 +720,13 @@
  v135_l709
  (let
   [bare
-   (sk/xkcd7-plan scatter-views)
+   (sk/plan scatter-views)
    full
    (->
     {:x [1 2 3 4 5 6], :y [3 5 4 7 6 8], :g ["a" "a" "a" "b" "b" "b"]}
-    (sk/xkcd7-lay-point :x :y {:color :g})
-    (sk/xkcd7-options {:title "My Plot"})
-    sk/xkcd7-plan)]
+    (sk/lay-point :x :y {:color :g})
+    (sk/options {:title "My Plot"})
+    sk/plan)]
   {:bare-title-pad (get-in bare [:layout :title-pad]),
    :full-title-pad (get-in full [:layout :title-pad]),
    :bare-legend-w (get-in bare [:layout :legend-w]),
@@ -748,7 +748,7 @@
 
 (def
  v138_l735
- (let [pl (sk/xkcd7-plan scatter-views)] (:layout-type pl)))
+ (let [pl (sk/plan scatter-views)] (:layout-type pl)))
 
 
 (deftest t139_l738 (is ((fn [lt] (= :single lt)) v138_l735)))
@@ -758,7 +758,7 @@
  v141_l746
  (def
   normal-pl
-  (-> animals (sk/xkcd7-lay-value-bar :animal :count) sk/xkcd7-plan)))
+  (-> animals (sk/lay-value-bar :animal :count) sk/plan)))
 
 
 (def
@@ -767,9 +767,9 @@
   flip-pl
   (->
    animals
-   (sk/xkcd7-lay-value-bar :animal :count)
-   (sk/xkcd7-coord :flip)
-   sk/xkcd7-plan)))
+   (sk/lay-value-bar :animal :count)
+   (sk/coord :flip)
+   sk/plan)))
 
 
 (def
@@ -801,8 +801,8 @@
  v145_l769
  (->
   animals
-  (sk/xkcd7-lay-value-bar :animal :count)
-  (sk/xkcd7-coord :flip)))
+  (sk/lay-value-bar :animal :count)
+  (sk/coord :flip)))
 
 
 (deftest
@@ -816,9 +816,9 @@
   [pl
    (->
     five-points
-    (sk/xkcd7-lay-point :x :y)
-    (sk/xkcd7-coord :flip)
-    sk/xkcd7-plan)]
+    (sk/lay-point :x :y)
+    (sk/coord :flip)
+    sk/plan)]
   {:x-label (:x-label pl), :y-label (:y-label pl)}))
 
 
@@ -834,12 +834,12 @@
   multi-views
   (->
    five-points
-   (sk/xkcd7-view :x :y)
-   sk/xkcd7-lay-point
-   sk/xkcd7-lay-lm)))
+   (sk/view :x :y)
+   sk/lay-point
+   sk/lay-lm)))
 
 
-(def v152_l803 (sk/xkcd7-plan multi-views))
+(def v152_l803 (sk/plan multi-views))
 
 
 (deftest

@@ -14,7 +14,7 @@
   []
   (->
    data/iris
-   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))))
+   (sk/lay-point :sepal_length :sepal_width {:color :species}))))
 
 
 (def v5_l39 (sk/config))
@@ -105,7 +105,7 @@
 
 (def
  v17_l102
- (-> (base-plot) (sk/xkcd7-options {:width 900, :height 250})))
+ (-> (base-plot) (sk/options {:width 900, :height 250})))
 
 
 (deftest
@@ -121,7 +121,7 @@
 
 (def
  v20_l114
- (-> (base-plot) (sk/xkcd7-options {:theme {:bg "#FFFFFF"}})))
+ (-> (base-plot) (sk/options {:theme {:bg "#FFFFFF"}})))
 
 
 (deftest
@@ -129,7 +129,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v20_l114)))
 
 
-(def v23_l123 (-> (base-plot) (sk/xkcd7-options {:palette :dark2})))
+(def v23_l123 (-> (base-plot) (sk/options {:palette :dark2})))
 
 
 (deftest
@@ -169,7 +169,7 @@
   {:theme {:bg "#1a1a2e", :grid "#16213e", :font-size 8}}
   (->
    (base-plot)
-   (sk/xkcd7-options {:title "Dark Theme via with-config"}))))
+   (sk/options {:title "Dark Theme via with-config"}))))
 
 
 (deftest
@@ -183,7 +183,7 @@
   {:theme {:bg "#F5F5DC"}}
   (->
    (base-plot)
-   (sk/xkcd7-options {:title "Partial Theme Override"}))))
+   (sk/options {:title "Partial Theme Override"}))))
 
 
 (deftest
@@ -217,7 +217,7 @@
   (sk/with-config
    {:width 1200, :height 500}
    (let
-    [plan (sk/xkcd7-plan (base-plot) {:width 900})]
+    [plan (sk/plan (base-plot) {:width 900})]
     {:plan-width (:width plan), :plan-height (:height plan)}))))
 
 
@@ -252,7 +252,7 @@
   precedence-plot
   (sk/with-config
    {:width 1200, :height 500}
-   (-> (base-plot) (sk/xkcd7-options {:width 900})))))
+   (-> (base-plot) (sk/options {:width 900})))))
 
 
 (def v58_l245 precedence-plot)
@@ -292,8 +292,8 @@
  v68_l310
  (->
   (base-plot)
-  (sk/xkcd7-options {:theme {:bg "#F5F5DC"}})
-  sk/xkcd7-plot))
+  (sk/options {:theme {:bg "#F5F5DC"}})
+  sk/plot))
 
 
 (deftest
@@ -313,10 +313,10 @@
  v71_l324
  (->
   (base-plot)
-  (sk/xkcd7-options
+  (sk/options
    {:title "Full Dark Theme",
     :theme {:bg "#2d2d2d", :grid "#444444", :font-size 10}})
-  sk/xkcd7-plot))
+  sk/plot))
 
 
 (deftest
@@ -333,14 +333,14 @@
  (sk/arrange
   [(->
     (base-plot)
-    (sk/xkcd7-options
+    (sk/options
      {:title "Light",
       :theme {:bg "#FFFFFF", :grid "#EEEEEE", :font-size 8},
       :width 350,
       :height 250}))
    (->
     (base-plot)
-    (sk/xkcd7-options
+    (sk/options
      {:title "Dark",
       :theme {:bg "#2d2d2d", :grid "#444444", :font-size 8},
       :width 350,
@@ -350,7 +350,7 @@
 (deftest t75_l349 (is ((fn [v] (= :div (first v))) v74_l339)))
 
 
-(def v77_l373 (-> (base-plot) (sk/xkcd7-options {:palette :tableau10})))
+(def v77_l373 (-> (base-plot) (sk/options {:palette :tableau10})))
 
 
 (deftest
@@ -362,7 +362,7 @@
  v80_l381
  (->
   (base-plot)
-  (sk/xkcd7-options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]})))
+  (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]})))
 
 
 (deftest
@@ -374,7 +374,7 @@
  v83_l389
  (->
   (base-plot)
-  (sk/xkcd7-options
+  (sk/options
    {:palette
     {"setosa" "#FF6B6B",
      "versicolor" "#4ECDC4",
@@ -412,7 +412,7 @@
  v94_l424
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
-  (sk/xkcd7-lay-point :x :y {:color :c})))
+  (sk/lay-point :x :y {:color :c})))
 
 
 (deftest
@@ -424,8 +424,8 @@
  v97_l431
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
-  (sk/xkcd7-lay-point :x :y {:color :c})
-  (sk/xkcd7-options {:color-scale :inferno})))
+  (sk/lay-point :x :y {:color :c})
+  (sk/options {:color-scale :inferno})))
 
 
 (deftest
@@ -439,7 +439,7 @@
   {:color-scale :plasma}
   (->
    {:x (range 50), :y (range 50), :c (range 50)}
-   (sk/xkcd7-lay-point :x :y {:color :c}))))
+   (sk/lay-point :x :y {:color :c}))))
 
 
 (deftest
@@ -451,8 +451,8 @@
  v103_l449
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
-  (sk/xkcd7-lay-point :x :y {:color :c})
-  (sk/xkcd7-plan {:color-scale :inferno})
+  (sk/lay-point :x :y {:color :c})
+  (sk/plan {:color-scale :inferno})
   :legend
   (select-keys [:color-scale :type])))
 
@@ -466,7 +466,7 @@
    v103_l449)))
 
 
-(def v106_l471 (sk/xkcd7-plan (base-plot)))
+(def v106_l471 (sk/plan (base-plot)))
 
 
 (deftest
@@ -484,7 +484,7 @@
 
 (def
  v112_l491
- (def good-plan (sk/xkcd7-plan (base-plot) {:validate false})))
+ (def good-plan (sk/plan (base-plot) {:validate false})))
 
 
 (def v113_l493 (sk/valid-plan? good-plan))
@@ -523,7 +523,7 @@
  (try
   (let
    [plan
-    (sk/xkcd7-plan (base-plot) {:validate false})
+    (sk/plan (base-plot) {:validate false})
     bad
     (assoc plan :width "not-a-number")]
    (when-let
@@ -547,7 +547,7 @@
    v123_l523)))
 
 
-(def v126_l543 (sk/xkcd7-plan (base-plot) {:validate false}))
+(def v126_l543 (sk/plan (base-plot) {:validate false}))
 
 
 (deftest

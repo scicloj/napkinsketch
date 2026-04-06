@@ -146,20 +146,20 @@
                   {:mark :waterfall :stat :waterfall
                    :doc "Waterfall — running total with increase/decrease bars."})
 
-;; Now we can plot it using the xkcd7 xkcd7-sketch API. Since there is
-;; no built-in `sk/xkcd7-lay-waterfall`, we use `sk/xkcd7-lay` with
+;; Now we can plot it using the sketch API. Since there is
+;; no built-in `sk/lay-waterfall`, we use `sk/lay` with
 ;; the method lookup.
 ;;
-;; We use `sk/xkcd7-plot` to force eager rendering to SVG before the
+;; We use `sk/plot` to force eager rendering to SVG before the
 ;; cleanup section at the end of this notebook removes the
 ;; extension's defmethods:
 
 (-> pnl-data
-    (sk/xkcd7-view :category :amount)
-    (sk/xkcd7-lay (method/lookup :waterfall))
-    (sk/xkcd7-options {:title "Profit & Loss Waterfall"
+    (sk/view :category :amount)
+    (sk/lay (method/lookup :waterfall))
+    (sk/options {:title "Profit & Loss Waterfall"
                        :width 500 :height 350})
-    sk/xkcd7-plot)
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -170,20 +170,20 @@
 
 ;; ## Optional: Convenience Function
 ;;
-;; For a polished API, wrap the pattern in a xkcd7-sketch-compatible
+;; For a polished API, wrap the pattern in a sketch-compatible
 ;; function:
 
 (defn lay-waterfall
-  ([xkcd7-sk] (sk/xkcd7-lay xkcd7-sk (method/lookup :waterfall)))
-  ([data x y] (-> data (sk/xkcd7-view x y) (sk/xkcd7-lay (method/lookup :waterfall))))
-  ([data x y opts] (-> data (sk/xkcd7-view x y) (sk/xkcd7-lay (merge (method/lookup :waterfall) opts)))))
+  ([sk] (sk/lay sk (method/lookup :waterfall)))
+  ([data x y] (-> data (sk/view x y) (sk/lay (method/lookup :waterfall))))
+  ([data x y opts] (-> data (sk/view x y) (sk/lay (merge (method/lookup :waterfall) opts)))))
 
 ;; Now the call is as clean as any built-in method:
 
 (-> pnl-data
     (lay-waterfall :category :amount)
-    (sk/xkcd7-options {:title "Quarterly Cash Flow" :width 500})
-    sk/xkcd7-plot)
+    (sk/options {:title "Quarterly Cash Flow" :width 500})
+    sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 6 (:polygons s))))])

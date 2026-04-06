@@ -1,10 +1,10 @@
-;; # xkcd7-sketch Stress Tests
+;; # sketch Stress Tests
 ;;
 ;; Edge cases and interactions that test the verb semantics
-;; defined in `scratch_xkcd7_sketch_spec.clj`. Each example targets
+;; defined in `scratch_sketch_spec.clj`. Each example targets
 ;; a specific interaction or boundary condition.
 
-(ns scratch-xkcd7-sketch-stress
+(ns scratch-sketch-stress
   (:require [tablecloth.api :as tc]
             [scicloj.kindly.v4.kind :as kind]
             [scicloj.napkinsketch.api :as sk]))
@@ -19,10 +19,10 @@
 
 ;; Two `view` calls with different shared opts — they should merge.
 
-(let [xkcd7-sk (-> iris
-                   (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-                   (sk/xkcd7-view :petal_length :petal_width {:alpha 0.4}))]
-  [(:shared xkcd7-sk) (count (:entries xkcd7-sk))])
+(let [sk (-> iris
+                   (sk/view :sepal_length :sepal_width {:color :species})
+                   (sk/view :petal_length :petal_width {:alpha 0.4}))]
+  [(:shared sk) (count (:entries sk))])
 
 (kind/test-last [(fn [[shared n]]
                    (and (= :species (:color shared))
@@ -32,9 +32,9 @@
 ;; Both entries inherit both color and alpha.
 
 (-> iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    (sk/xkcd7-view :petal_length :petal_width {:alpha 0.4})
-    sk/xkcd7-lay-point)
+    (sk/view :sepal_length :sepal_width {:color :species})
+    (sk/view :petal_length :petal_width {:alpha 0.4})
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -44,10 +44,10 @@
 
 ;; A second `view` with `:color` overwrites the first.
 
-(let [xkcd7-sk (-> iris
-                   (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-                   (sk/xkcd7-view :petal_length :petal_width {:color :petal_length}))]
-  (:color (:shared xkcd7-sk)))
+(let [sk (-> iris
+                   (sk/view :sepal_length :sepal_width {:color :species})
+                   (sk/view :petal_length :petal_width {:color :petal_length}))]
+  (:color (:shared sk)))
 
 (kind/test-last [(fn [v] (= :petal_length v))])
 
@@ -55,9 +55,9 @@
 
 ;; Verify that `lay-*` with opts leaves shared empty.
 
-(let [xkcd7-sk (-> iris
-                   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species}))]
-  [(:shared xkcd7-sk) (:color (first (:methods (first (:entries xkcd7-sk)))))])
+(let [sk (-> iris
+                   (sk/lay-point :sepal_length :sepal_width {:color :species}))]
+  [(:shared sk) (:color (first (:methods (first (:entries sk)))))])
 
 (kind/test-last [(fn [[shared method-color]]
                    (and (empty? shared)
@@ -65,11 +65,11 @@
 
 ;; A second bare `lay-*` adds a global method (no color).
 
-(let [xkcd7-sk (-> iris
-                   (sk/xkcd7-lay-point :sepal_length :sepal_width {:color :species})
-                   sk/xkcd7-lay-lm)]
-  [(:color (first (:methods (first (:entries xkcd7-sk)))))
-   (:color (first (:methods xkcd7-sk)))])
+(let [sk (-> iris
+                   (sk/lay-point :sepal_length :sepal_width {:color :species})
+                   sk/lay-lm)]
+  [(:color (first (:methods (first (:entries sk)))))
+   (:color (first (:methods sk)))])
 
 (kind/test-last [(fn [[entry-color global-color]]
                    (and (= :species entry-color)
@@ -80,10 +80,10 @@
 ;; Shared color with faceting. Points colored, lm overall per panel.
 
 (-> iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    (sk/xkcd7-lay-lm {:color nil})
-    (sk/xkcd7-facet :species))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    (sk/lay-lm {:color nil})
+    (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -96,7 +96,7 @@
 
 ;; Vector of columns with shared color produce colored histograms.
 
-(sk/xkcd7-lay-histogram (sk/xkcd7-sketch iris {:color :species})
+(sk/lay-histogram (sk/sketch iris {:color :species})
                         [:sepal_length :sepal_width :petal_length])
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -109,9 +109,9 @@
 ;; Each entry = one panel. The second entry also gets global methods.
 
 (-> iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    (sk/xkcd7-view {:x :sepal_length :y :sepal_width
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    (sk/view {:x :sepal_length :y :sepal_width
                     :methods [{:mark :line :stat :lm :color nil}]}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -126,9 +126,9 @@
 ;; Without `:color nil`, the lm entry inherits shared color → 3 lines.
 
 (-> iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    (sk/xkcd7-view {:x :sepal_length :y :sepal_width
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    (sk/view {:x :sepal_length :y :sepal_width
                     :methods [{:mark :line :stat :lm}]}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -140,9 +140,9 @@
 
 ;; 0-arg `view` infers columns from data. Shared is unaffected.
 
-(let [xkcd7-sk (-> {:x [1 2 3] :y [4 5 6]}
-                   (sk/xkcd7-view))]
-  [(count (:entries xkcd7-sk)) (:shared xkcd7-sk)])
+(let [sk (-> {:x [1 2 3] :y [4 5 6]}
+                   (sk/view))]
+  [(count (:entries sk)) (:shared sk)])
 
 (kind/test-last [(fn [[n shared]]
                    (and (= 1 n)
@@ -150,10 +150,10 @@
 
 ;; Column inference respects shared set earlier.
 
-(-> (sk/xkcd7-sketch {:x [1 2 3 4 5] :y [2 4 3 5 4] :g [:a :a :b :b :a]}
+(-> (sk/sketch {:x [1 2 3 4 5] :y [2 4 3 5 4] :g [:a :a :b :b :a]}
                      {:color :g})
-    (sk/xkcd7-view)
-    sk/xkcd7-lay-point)
+    (sk/view)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
@@ -164,9 +164,9 @@
 ;; With `lay-point` (explicit mark), all 9 panels are scatter.
 ;; Use `view` alone for diagonal histogram inference (see spec Rule 17).
 
-(-> (sk/xkcd7-sketch iris {:color :species})
-    (sk/xkcd7-view (sk/cross cols cols))
-    sk/xkcd7-lay-point)
+(-> (sk/sketch iris {:color :species})
+    (sk/view (sk/cross cols cols))
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 9 (:panels s))
@@ -177,11 +177,11 @@
 ;; Two `lay-*` calls with columns → two entries, each with own methods.
 ;; No global methods. No cross product.
 
-(let [xkcd7-sk (-> iris
-                   (sk/xkcd7-lay-point :sepal_length :sepal_width)
-                   (sk/xkcd7-lay-histogram :petal_length))]
-  [(count (:entries xkcd7-sk)) (count (:methods xkcd7-sk))
-   (mapv #(count (:methods %)) (:entries xkcd7-sk))])
+(let [sk (-> iris
+                   (sk/lay-point :sepal_length :sepal_width)
+                   (sk/lay-histogram :petal_length))]
+  [(count (:entries sk)) (count (:methods sk))
+   (mapv #(count (:methods %)) (:entries sk))])
 
 (kind/test-last [(fn [[entries global-methods entry-method-counts]]
                    (and (= 2 entries)
@@ -193,25 +193,25 @@
 ;; Maps of columns, vectors of row maps — all coerced.
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
-    (sk/xkcd7-lay-point :x :y))
+    (sk/lay-point :x :y))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; ## String column names
 
 (-> {"x" [1 2 3 4 5] "y" [2 4 3 5 4]}
-    (sk/xkcd7-lay-point "x" "y"))
+    (sk/lay-point "x" "y"))
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; ## Recipe pattern: sketch without data
 
-(def recipe (-> (sk/xkcd7-sketch)
-                (sk/xkcd7-view :sepal_length :sepal_width)
-                sk/xkcd7-lay-point
-                sk/xkcd7-lay-lm))
+(def recipe (-> (sk/sketch)
+                (sk/view :sepal_length :sepal_width)
+                sk/lay-point
+                sk/lay-lm))
 
-(-> recipe (sk/xkcd7-with-data iris))
+(-> recipe (sk/with-data iris))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -223,9 +223,9 @@
 ;; default methods. But they DO inherit shared (consistent rule).
 
 (-> iris
-    (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-    sk/xkcd7-lay-point
-    (sk/xkcd7-annotate (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3})))
+    (sk/view :sepal_length :sepal_width {:color :species})
+    sk/lay-point
+    (sk/annotate (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -235,13 +235,13 @@
 
 ;; Shared sets color, entry doesn't override, method cancels.
 
-(let [xkcd7-sk (-> iris
-                   (sk/xkcd7-view :sepal_length :sepal_width {:color :species})
-                   (sk/xkcd7-lay-point)
-                   (sk/xkcd7-lay-lm {:color nil}))]
-  [(:color (:shared xkcd7-sk))
-   (:color (first (:entries xkcd7-sk)))
-   (:color (second (:methods xkcd7-sk)))])
+(let [sk (-> iris
+                   (sk/view :sepal_length :sepal_width {:color :species})
+                   (sk/lay-point)
+                   (sk/lay-lm {:color nil}))]
+  [(:color (:shared sk))
+   (:color (first (:entries sk)))
+   (:color (second (:methods sk)))])
 
 (kind/test-last [(fn [[shared-c entry-c method-c]]
                    (and (= :species shared-c)
@@ -250,10 +250,10 @@
 
 ;; ## Options do not affect shared or methods
 
-(let [xkcd7-sk (-> iris
-                   (sk/xkcd7-lay-point :sepal_length :sepal_width)
-                   (sk/xkcd7-options {:title "My Plot" :width 800}))]
-  [(:title (:opts xkcd7-sk)) (:width (:opts xkcd7-sk)) (:shared xkcd7-sk)])
+(let [sk (-> iris
+                   (sk/lay-point :sepal_length :sepal_width)
+                   (sk/options {:title "My Plot" :width 800}))]
+  [(:title (:opts sk)) (:width (:opts sk)) (:shared sk)])
 
 (kind/test-last [(fn [[title width shared]]
                    (and (= "My Plot" title)
@@ -262,12 +262,12 @@
 
 ;; ## Scale and coord apply to entries
 
-(let [xkcd7-sk (-> iris
-                   (sk/xkcd7-lay-point :sepal_length :sepal_width)
-                   (sk/xkcd7-scale :y :log)
-                   (sk/xkcd7-coord :flip))]
-  [(-> xkcd7-sk :entries first :y-scale)
-   (-> xkcd7-sk :entries first :coord)])
+(let [sk (-> iris
+                   (sk/lay-point :sepal_length :sepal_width)
+                   (sk/scale :y :log)
+                   (sk/coord :flip))]
+  [(-> sk :entries first :y-scale)
+   (-> sk :entries first :coord)])
 
 (kind/test-last [(fn [[yscale coord]]
                    (and (= {:type :log} yscale)
