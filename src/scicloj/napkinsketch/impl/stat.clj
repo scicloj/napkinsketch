@@ -186,10 +186,10 @@
                 max-count (reduce max 1 (for [cat categories, cc color-cats]
                                           (count-fn cat cc)))]
             {:categories categories
-             :bars (for [cc color-cats]
-                     {:color cc
-                      :counts (mapv (fn [cat] {:category cat :count (count-fn cat cc)})
-                                    categories)})
+             :bars (vec (for [cc color-cats]
+                          {:color cc
+                           :counts (mapv (fn [cat] {:category cat :count (count-fn cat cc)})
+                                         categories)}))
              :max-count max-count
              :x-domain categories
              :y-domain [0 max-count]})
@@ -295,7 +295,7 @@
                                         (dfn/reduce-max (ds x))))
                          (cond-> (fit-lm (ds x) (ds y))
                            (some? gv) (assoc :color gv)))))]
-          {:lines (remove nil? lines)
+          {:lines (vec (remove nil? lines))
            :x-domain (numeric-extent (clean x))
            :y-domain (numeric-extent (clean y))})))))
 
