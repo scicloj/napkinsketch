@@ -143,7 +143,8 @@
 
 (defmethod extract-layer :line [view stat all-colors cfg]
   (-> (cond-> {:mark :line
-               :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
+               :style {:stroke-width (or (:fixed-size view) (:line-width cfg))
+                       :opacity (or (:fixed-alpha view) 1.0)}
                :groups (vec
                         (concat
                          ;; Regression lines
@@ -170,7 +171,8 @@
 
 (defmethod extract-layer :step [view stat all-colors cfg]
   {:mark :step
-   :style {:stroke-width (or (:fixed-size view) (:line-width cfg))}
+   :style {:stroke-width (or (:fixed-size view) (:line-width cfg))
+           :opacity (or (:fixed-alpha view) 1.0)}
    :groups (extract-xy-groups view stat all-colors cfg)})
 
 (defmethod extract-layer :rect [view stat all-colors cfg]
@@ -216,7 +218,8 @@
 (defmethod extract-layer :errorbar [view stat all-colors cfg]
   (-> {:mark :errorbar
        :style {:stroke-width (or (:fixed-size view) 1.5)
-               :cap-width (or (:cap-width view) 6)}
+               :cap-width (or (:cap-width view) 6)
+               :opacity (or (:fixed-alpha view) 1.0)}
        :groups (extract-xy-groups view stat all-colors cfg :with-range? true)}
       (cond-> (:position view) (assoc :position (:position view)))
       (apply-nudge view)))
@@ -224,7 +227,8 @@
 (defmethod extract-layer :lollipop [view stat all-colors cfg]
   {:mark :lollipop
    :style {:radius (or (:fixed-size view) (:point-radius cfg))
-           :stroke-width 1.5}
+           :stroke-width 1.5
+           :opacity (or (:fixed-alpha view) 1.0)}
    :position (or (:position view) :dodge)
    :groups (extract-xy-groups view stat all-colors cfg)})
 
