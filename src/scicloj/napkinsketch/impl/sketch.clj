@@ -543,7 +543,9 @@
         y-label-pad (if eff-y-label
                       (+ (:label-offset cfg) (max 0.0 (- y-tick-width 12.0)))
                       0)
-        title-pad (if eff-title (:title-offset cfg) 0)
+        title-pad (if eff-title
+                    (+ (:title-offset cfg) (:title-font-size cfg))
+                    0)
         subtitle-pad (if subtitle 16 0)
         caption-pad (if caption 18 0)
         legend-pos (or legend-position :right)
@@ -657,8 +659,11 @@
                                     i (.indexOf ^java.util.List row-vals fr)]
                                 [(max 0 i) (str fr)])
                               (let [yv (:y v)
-                                    i (.indexOf ^java.util.List row-vals yv)]
-                                [(max 0 i) (when yv (defaults/fmt-name yv))]))
+                                    i (.indexOf ^java.util.List row-vals yv)
+                                    ;; Only show row-label when multiple rows exist
+                                    ;; (avoids redundant y-label on single-row facets)
+                                    show-label? (> (count row-vals) 1)]
+                                [(max 0 i) (when (and yv show-label?) (defaults/fmt-name yv))]))
                             ;; Stacking: when multiple entries share the same
                             ;; grid position, offset each by one row below the base.
                             ;; sub=0 → base position; sub>0 → stacked below.
