@@ -24,7 +24,7 @@
   [sk]
   {:shared (:shared sk),
    :entries
-   (mapv (fn* [p1__521235#] (dissoc p1__521235# :data)) (:entries sk)),
+   (mapv (fn* [p1__78005#] (dissoc p1__78005# :data)) (:entries sk)),
    :methods (:methods sk),
    :opts (:opts sk)}))
 
@@ -254,7 +254,7 @@
      (=
       [1 1]
       (mapv
-       (fn* [p1__521236#] (count (:methods p1__521236#)))
+       (fn* [p1__78006#] (count (:methods p1__78006#)))
        (:entries m)))
      (= :sepal_length (:x (first (:entries m))))
      (= :petal_length (:x (second (:entries m))))))
