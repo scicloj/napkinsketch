@@ -651,8 +651,11 @@
                                     i (.indexOf ^java.util.List col-vals fc)]
                                 [(max 0 i) (str fc)])
                               (let [xv (:x v)
-                                    i (.indexOf ^java.util.List col-vals xv)]
-                                [(max 0 i) (when xv (defaults/fmt-name xv))]))
+                                    i (.indexOf ^java.util.List col-vals xv)
+                                    ;; Only show col-label when multiple columns exist
+                                    ;; (avoids redundant x-label on single-column layouts)
+                                    show-label? (> (count col-vals) 1)]
+                                [(max 0 i) (when (and xv show-label?) (defaults/fmt-name xv))]))
                             [ri row-label]
                             (if has-facet-row?
                               (let [fr (:facet-row v)

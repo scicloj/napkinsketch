@@ -148,7 +148,7 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__80191#] (Math/sin (* p1__80191# 0.3))) (range 30))}))
+   (map (fn* [p1__80193#] (Math/sin (* p1__80193# 0.3))) (range 30))}))
 
 
 (def v30_l108 (-> wave (sk/lay-line :x :y)))
@@ -258,9 +258,9 @@
     :y
     (map
      (fn*
-      [p1__80192#]
+      [p1__80194#]
       (+
-       (Math/sin (* p1__80192# 0.2))
+       (Math/sin (* p1__80194# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -982,10 +982,10 @@
  (is ((fn [m] (and (= :line (:mark m)) (= :lm (:stat m)))) v209_l585)))
 
 
-(def v211_l590 (kind/doc #'sk/method-registered))
+(def v211_l590 (kind/doc #'sk/registered-methods))
 
 
-(def v212_l592 (count (sk/method-registered)))
+(def v212_l592 (count (sk/registered-methods)))
 
 
 (deftest t213_l594 (is ((fn [n] (= 25 n)) v212_l592)))
