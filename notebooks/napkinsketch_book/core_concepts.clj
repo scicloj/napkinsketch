@@ -508,6 +508,55 @@ data/iris
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
+;; ## Explicit Grouping
+;;
+;; The `:group` aesthetic creates groups **without** changing colors.
+;; This is useful when you want separate regression lines per group
+;; but uniform color:
+
+(-> data/iris
+    (sk/view :sepal_length :sepal_width {:group :species})
+    sk/lay-point
+    sk/lay-lm)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
+
+;; Three regression lines (one per species) but all the same color.
+;; Compare with `{:color :species}` which would also color them.
+
+;; ## The `sk/sketch` Constructor
+;;
+;; `sk/sketch` creates a sketch from data and shared aesthetics
+;; without adding entries. This is useful when you want to set
+;; shared options first, then add entries later:
+
+(-> (sk/sketch data/iris {:color :species})
+    (sk/view :sepal_length :sepal_width)
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; Equivalent to `(-> data/iris (sk/view :sepal_length :sepal_width {:color :species}) sk/lay-point)`.
+
+;; ## Overlay
+;;
+;; `sk/overlay` adds an entry with different columns and its own
+;; method on the **same panel** as existing entries. Use it when
+;; you want two column mappings sharing the same axes:
+
+(-> data/iris
+    (sk/lay-point :sepal_length :sepal_width)
+    (sk/overlay :sepal_length :petal_width :lm))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (pos? (:points s))
+                                (pos? (:lines s)))))])
+
+;; Scatter on sepal_width, regression on petal_width — both use
+;; sepal_length as x.
+
 ;; ## Grouping
 ;;
 ;; Categorical color does more than set colors — it creates
