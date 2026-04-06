@@ -54,6 +54,9 @@
 ;; - `:methods` — how to plot (mark + stat)
 ;; - `:opts` — plot-level options (title, width, theme)
 ;;
+;; [Core Concepts](./napkinsketch_book.core_concepts.html) explains
+;; each field in detail.
+;;
 ;; Because sketches are data, you can inspect them, store them,
 ;; and compose them with standard Clojure tools.
 

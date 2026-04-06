@@ -30,6 +30,11 @@
 ;;
 ;; ## Resolution
 ;;
+;; Resolution converts a sketch into a **plan** — the fully resolved
+;; data structure that `sk/plan` returns. See
+;; [Inference Rules](./napkinsketch_book.inference_rules.html) for
+;; a full walkthrough of the plan.
+;;
 ;; Each entry gets its own methods (if any) PLUS the global methods.
 ;; Entries without own methods use global methods only.
 ;; If no methods at all, `{:mark :infer}` is used.

@@ -1,6 +1,6 @@
 ;; # Core Concepts
 ;;
-;; This chapter is a reference for every concept in Napkinsketch.
+;; This chapter covers the core concepts you need for daily use.
 ;; If you have not read the
 ;; [Sketch Model](./napkinsketch_book.sketch_model.html)
 ;; chapter, start there — it introduces the mental model behind
@@ -451,8 +451,7 @@ data/iris
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Or a LOESS smoother instead — a flexible curve that follows local
-;; patterns in the data:
+;; Or a LOESS smoother instead:
 
 (-> scatter-base
     sk/lay-loess)

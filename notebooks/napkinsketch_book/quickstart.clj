@@ -44,7 +44,7 @@
 ;; [Tablecloth](https://scicloj.github.io/tablecloth/)).
 ;; - The `:key-fn keyword` option converts
 ;; the CSV header strings to Clojure keywords, which is conventional.
-;; - `sk/lay-point` adds a scatter layer — each row becomes a dot.
+;; - `sk/lay-point` draws each row as a dot (scatter plot).
 
 ;; ## Plain Data
 ;;

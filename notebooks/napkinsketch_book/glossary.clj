@@ -14,8 +14,6 @@
    ;; Method constructors — for inspecting method maps
    [scicloj.napkinsketch.method :as method]))
 
-;; ## View
-;;
 ;; ## Entry
 ;;
 ;; An **entry** is a plain map in `sketch[:entries]` that declares
