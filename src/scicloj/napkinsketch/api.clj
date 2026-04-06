@@ -680,8 +680,7 @@
    (let [views (sketch/resolve-sketch sk)]
      (sketch/views->plan views (:opts sk {}))))
   ([sk opts]
-   (let [views (sketch/resolve-sketch sk)]
-     (sketch/views->plan views (merge (:opts sk {}) opts)))))
+   (plan (options sk opts))))
 
 (defn annotate
   "Add annotation entries to a sketch.
@@ -711,10 +710,8 @@
    (plot sk)
    (plot sk {:width 800 :title \"My Plot\"})"
   ([sk]
-   (let [opts (:opts sk {})
-         views (sketch/resolve-sketch sk)
-         plan (sketch/views->plan views opts)]
-     (render-impl/plan->figure plan :svg opts)))
+   (let [p (plan sk)]
+     (render-impl/plan->figure p :svg (:opts sk {}))))
   ([sk opts]
    (plot (options sk opts))))
 
@@ -730,15 +727,11 @@
    (svg-summary my-sketch)              — auto-renders sketch, then summarizes"
   ([svg-or-sketch]
    (if (sketch/sketch? svg-or-sketch)
-     (let [views (sketch/resolve-sketch svg-or-sketch)
-           plan (sketch/views->plan views (:opts svg-or-sketch {}))]
-       (svg/svg-summary (render-impl/plan->figure plan :svg {})))
+     (svg/svg-summary (plot svg-or-sketch))
      (svg/svg-summary svg-or-sketch)))
   ([svg-or-sketch theme]
    (if (sketch/sketch? svg-or-sketch)
-     (let [views (sketch/resolve-sketch svg-or-sketch)
-           plan (sketch/views->plan views (:opts svg-or-sketch {}))]
-       (svg/svg-summary (render-impl/plan->figure plan :svg {}) theme))
+     (svg/svg-summary (plot svg-or-sketch) theme)
      (svg/svg-summary svg-or-sketch theme))))
 
 ;; ---- Multi-Plot Composition ----
@@ -797,10 +790,9 @@
          sk (ensure-sk sk)]
      (when-not (.endsWith path-str ".svg")
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
-     (let [views (sketch/resolve-sketch sk)
-           all-opts (kindly/deep-merge (:opts sk {}) opts)
-           plan (sketch/views->plan views all-opts)
-           svg-hiccup (render-impl/plan->figure plan :svg all-opts)]
+     (let [sk (if (seq opts) (options sk opts) sk)
+           p (plan sk)
+           svg-hiccup (render-impl/plan->figure p :svg (:opts sk {}))]
        (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                        (svg/hiccup->svg-str svg-hiccup)))
        path))))
