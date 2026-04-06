@@ -33,13 +33,12 @@
 ;; ---- Resolution ----
 
 (defn- ensure-dataset
-  "Coerce raw data to a Tablecloth dataset with keyword column names.
-   Returns nil for nil input."
+  "Coerce raw data to a Tablecloth dataset. Returns nil for nil input."
   [d]
-  (when d (view/ensure-keyword-columns (if (tc/dataset? d) d (tc/dataset d)))))
+  (when d (if (tc/dataset? d) d (tc/dataset d))))
 
 (defn- expand-facets
-  "Expand entries with keyword :facet-col/:facet-row into per-value entries."
+  "Expand entries with column-ref :facet-col/:facet-row into per-value entries."
   [entries data]
   (let [ds (ensure-dataset data)]
     (vec
@@ -47,25 +46,29 @@
       (fn [entry]
         (let [fcol (:facet-col entry)
               frow (:facet-row entry)
-              nc? (keyword? fcol)
-              nr? (keyword? frow)]
+              nc? (view/column-ref? fcol)
+              nr? (view/column-ref? frow)]
           (cond
             (and nc? nr?)
-            (let [ed (ensure-dataset (or (:data entry) ds))]
+            (let [ed (ensure-dataset (or (:data entry) ds))
+                  fcol (view/resolve-col-name ed fcol)
+                  frow (view/resolve-col-name ed frow)]
               (for [cv (distinct (ed fcol)) rv (distinct (ed frow))]
                 (-> entry
                     (assoc :facet-col (str cv) :facet-row (str rv)
                            :data (tc/select-rows ed (fn [r] (and (= (r fcol) cv) (= (r frow) rv))))))))
 
             nc?
-            (let [ed (ensure-dataset (or (:data entry) ds))]
+            (let [ed (ensure-dataset (or (:data entry) ds))
+                  fcol (view/resolve-col-name ed fcol)]
               (for [cv (distinct (ed fcol))]
                 (-> entry
                     (assoc :facet-col (str cv)
                            :data (tc/select-rows ed (fn [r] (= (r fcol) cv)))))))
 
             nr?
-            (let [ed (ensure-dataset (or (:data entry) ds))]
+            (let [ed (ensure-dataset (or (:data entry) ds))
+                  frow (view/resolve-col-name ed frow)]
               (for [rv (distinct (ed frow))]
                 (-> entry
                     (assoc :facet-row (str rv)
@@ -76,7 +79,7 @@
 
 (defn resolve-sketch
   "Resolve a sketch into a flat vector of view maps for views->plan.
-   Expands facets, crosses entries × methods, merges shared → entry → method.
+   Expands facets, crosses entries x methods, merges shared -> entry -> method.
    Each entry uses: own :methods (if any) + global methods.
    Entries without own :methods use global methods only.
    If no global methods exist and entry has no own methods, {:mark :infer} is used."
@@ -98,17 +101,7 @@
                 base (merge shared (dissoc entry :methods))]
             (map (fn [m]
                    (let [resolved (merge base m)
-                         d (ensure-dataset (or (:data resolved) data))
-                         ;; Normalize string column refs to keywords.
-                         ;; Skip :color — it can be a literal color string (e.g. "#FF0000").
-                         ;; Color normalization is handled in view/resolve-aesthetics.
-                         resolved (reduce (fn [v k]
-                                            (let [val (get v k)]
-                                              (if (string? val)
-                                                (assoc v k (keyword val))
-                                                v)))
-                                          resolved
-                                          [:x :y :size :alpha :text :group])]
+                         d (ensure-dataset (or (:data resolved) data))]
                      ;; Validate that referenced columns exist in the dataset.
                      ;; Skip y when nil or same as x (diagonal/histogram case).
                      (when d
@@ -116,12 +109,15 @@
                              x-col (:x resolved)
                              y-col (:y resolved)
                              check-pairs (cond-> []
-                                           (and x-col (keyword? x-col))
+                                           (and x-col (view/column-ref? x-col))
                                            (conj [:x x-col])
-                                           (and y-col (keyword? y-col) (not= y-col x-col))
+                                           (and y-col (view/column-ref? y-col) (not= y-col x-col))
                                            (conj [:y y-col]))]
                          (doseq [[role col] check-pairs
-                                 :when (not (col-names col))]
+                                 :when (and (not (col-names col))
+                                            ;; Check cross-type match
+                                            (not (and (keyword? col) (col-names (name col))))
+                                            (not (and (string? col) (col-names (keyword col)))))]
                            (throw (ex-info (str "Column " col " (from " role ") not found in dataset. Available: " (sort col-names))
                                            {:key role :column col :available (sort col-names)})))))
                      (-> resolved

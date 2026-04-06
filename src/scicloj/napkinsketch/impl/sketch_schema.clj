@@ -197,11 +197,11 @@
   [:or
    ;; Categorical legend
    [:map
-    [:title keyword?]
+    [:title [:or keyword? string?]]
     [:entries [:vector LegendEntry]]]
    ;; Continuous gradient legend
    [:map
-    [:title keyword?]
+    [:title [:or keyword? string?]]
     [:type [:= :continuous]]
     [:min number?]
     [:max number?]
@@ -215,7 +215,7 @@
 
 (def SizeLegend
   [:map
-   [:title keyword?]
+   [:title [:or keyword? string?]]
    [:type [:= :size]]
    [:min number?]
    [:max number?]
@@ -228,7 +228,7 @@
 
 (def AlphaLegend
   [:map
-   [:title keyword?]
+   [:title [:or keyword? string?]]
    [:type [:= :alpha]]
    [:min number?]
    [:max number?]

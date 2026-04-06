@@ -264,9 +264,9 @@
     (sketch/sketch? x) x
     (or (tc/dataset? x)
         (map? x)
-        (sequential? x))    (wrap-autorender
-                             (sketch/->sketch (coerce-dataset x) {} [] [] {}))
-    :else                    (wrap-autorender (sketch/->sketch nil {} [] [] {}))))
+        (sequential? x)) (wrap-autorender
+                          (sketch/->sketch (coerce-dataset x) {} [] [] {}))
+    :else (wrap-autorender (sketch/->sketch nil {} [] [] {}))))
 
 (defn sketch?
   "Return true if x is a sketch."
@@ -309,7 +309,7 @@
      (cond
        (or (keyword? x-or-entries)
            (string? x-or-entries)) (update sk :entries conj {:x x-or-entries})
-       (map? x-or-entries)       (update sk :entries conj x-or-entries)
+       (map? x-or-entries) (update sk :entries conj x-or-entries)
        (sequential? x-or-entries)
        (let [first-el (first x-or-entries)]
          (if (or (keyword? first-el) (string? first-el))
@@ -620,9 +620,9 @@
   ([sk-or-data x y opts] (lay-method :rug sk-or-data x y opts)))
 
 (defn- normalize-col
-  "Normalize a string column reference to a keyword."
+  "Pass through column reference as-is (no string->keyword conversion)."
   [col]
-  (if (string? col) (keyword col) col))
+  col)
 
 (defn facet
   "Facet a sketch by a column.

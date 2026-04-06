@@ -9,63 +9,58 @@
 ;; ---- Helpers ----
 
 (defn column-ref?
-  "True if v is a column reference (keyword).
-   String column names are normalized to keywords at the API boundary,
-   so by the time column-ref? is called, column references are keywords."
+  "True if v is a column reference (keyword or string).
+   Both keyword and string column names are valid references."
   [v]
-  (keyword? v))
+  (or (keyword? v) (string? v)))
 
 (defn- normalize-col-ref
-  "Convert a string column reference to a keyword. Pass through other values."
+  "Pass through column references as-is (no string→keyword conversion)."
   [v]
-  (if (string? v) (keyword v) v))
+  v)
 
 (defn- normalize-col-refs
-  "Normalize string column references to keywords in a map's column-key positions.
-   Excludes :color because it can be a literal color string (e.g. \"#FF0000\").
-   Color strings are normalized later in resolve-view where dataset context is available."
+  "Pass through column references as-is (no string→keyword conversion)."
   [m]
-  (reduce (fn [acc k]
-            (let [v (get acc k)]
-              (if (and (string? v) (not= k :color))
-                (assoc acc k (keyword v))
-                acc)))
-          m
-          defaults/column-keys))
+  m)
 
 (defn ensure-keyword-columns
-  "If dataset has string column names, rename them to keywords."
+  "DEPRECATED — now a pass-through. String column names are preserved."
   [ds]
-  (let [renames (into {} (for [c (tc/column-names ds) :when (string? c)]
-                           [c (keyword c)]))]
-    (if (seq renames)
-      (tc/rename-columns ds renames)
-      ds)))
+  ds)
 
 (defn parse-view-spec
   "Parse a view spec: a keyword or string becomes a histogram view (x=y),
   a vector becomes {:x ... :y ...}, a map passes through.
-  String column references are normalized to keywords."
+  Column references are preserved as-is (keywords stay keywords, strings stay strings)."
   [spec]
   (cond
     (keyword? spec) {:x spec :y spec}
-    (string? spec) (let [k (keyword spec)] {:x k :y k})
-    (map? spec) (normalize-col-refs spec)
-    :else {:x (normalize-col-ref (first spec))
-           :y (normalize-col-ref (second spec))}))
+    (string? spec) {:x spec :y spec}
+    (map? spec) spec
+    :else {:x (first spec)
+           :y (second spec)}))
 
 (defn validate-columns
-  "Check that every column-referencing key in view-map names a real column in ds."
+  "Check that every column-referencing key in view-map names a real column in ds.
+   Accepts both keyword and string column refs, and checks for cross-type matches."
   ([ds view-map]
    (let [col-names (set (tc/column-names ds))]
      (doseq [k defaults/column-keys
              :let [col (get view-map k)]
-             :when (and col (keyword? col) (not (col-names col)))]
+             :when (and col (column-ref? col)
+                        (not (col-names col))
+                         ;; Check cross-type: keyword ref vs string col name, or vice versa
+                        (not (and (keyword? col) (col-names (name col))))
+                        (not (and (string? col) (col-names (keyword col)))))]
        (throw (ex-info (str "Column " col " (from " k ") not found in dataset. Available: " (sort col-names))
                        {:key k :column col :available (sort col-names)})))))
   ([ds role col]
    (let [col-names (set (tc/column-names ds))]
-     (when (and (keyword? col) (not (col-names col)))
+     (when (and (column-ref? col)
+                (not (col-names col))
+                (not (and (keyword? col) (col-names (name col))))
+                (not (and (string? col) (col-names (keyword col)))))
        (throw (ex-info (str "Column " col " (from " role ") not found in dataset. Available: " (sort col-names))
                        {:key role :column col :available (sort col-names)}))))))
 
@@ -246,29 +241,42 @@
 
 ;; ---- Faceting ----
 
+(defn resolve-col-name
+  "Find the actual column name in a dataset that matches a column reference.
+   Handles keyword/string mismatch: if ref is :x, checks for both :x and \"x\".
+   Returns the matching name, or ref unchanged if no match is found."
+  [ds ref]
+  (when (and ds ref)
+    (let [names (set (tc/column-names ds))]
+      (cond
+        (contains? names ref) ref
+        (and (keyword? ref) (contains? names (name ref))) (name ref)
+        (and (string? ref) (contains? names (keyword ref))) (keyword ref)
+        :else ref))))
+
 (defn facet-grid
-  "Split each view by two categorical columns for a row × column grid.
+  "Split each view by two categorical columns for a row x column grid.
    Either column may be nil for a single-dimension facet.
    Each resulting view gets :facet-row and :facet-col keys."
   [views row-col col-col]
-  (let [row-col (normalize-col-ref row-col)
-        col-col (normalize-col-ref col-col)]
-    (vec
-     (mapcat
-      (fn [v]
-        (if-not (:data v)
-          [v]
-          (do
-            (when row-col (validate-columns (:data v) :facet-row row-col))
-            (when col-col (validate-columns (:data v) :facet-col col-col))
-            (let [group-cols (filterv some? [row-col col-col])
-                  groups (tc/group-by (:data v) group-cols {:result-type :as-map})]
-              (map (fn [[gk gds]]
-                     (assoc v :data gds
-                            :facet-row (if row-col (get gk row-col) "_")
-                            :facet-col (if col-col (get gk col-col) "_")))
-                   groups)))))
-      views))))
+  (vec
+   (mapcat
+    (fn [v]
+      (if-not (:data v)
+        [v]
+        (do
+          (when row-col (validate-columns (:data v) :facet-row row-col))
+          (when col-col (validate-columns (:data v) :facet-col col-col))
+          (let [row-col (when row-col (resolve-col-name (:data v) row-col))
+                col-col (when col-col (resolve-col-name (:data v) col-col))
+                group-cols (filterv some? [row-col col-col])
+                groups (tc/group-by (:data v) group-cols {:result-type :as-map})]
+            (map (fn [[gk gds]]
+                   (assoc v :data gds
+                          :facet-row (if row-col (get gk row-col) "_")
+                          :facet-col (if col-col (get gk col-col) "_")))
+                 groups)))))
+    views)))
 
 (defn facet
   "Split each view by a categorical column.
@@ -278,16 +286,30 @@
    (facet views :species :col)   — vertical column"
   ([views col] (facet views col :row))
   ([views col direction]
-   (let [col (normalize-col-ref col)]
-     (case direction
-       :row (facet-grid views nil col)
-       :col (facet-grid views col nil)))))
+   (case direction
+     :row (facet-grid views nil col)
+     :col (facet-grid views col nil))))
 
 (defn distribution
   "Create diagonal views (x=y) for each column, used for histograms in SPLOM.
    (distribution data :a :b :c) => views with [[:a :a] [:b :b] [:c :c]]"
   [data & cols]
-  (view data (mapv (fn [c] (let [c (normalize-col-ref c)] [c c])) cols)))
+  (view data (mapv (fn [c] [c c]) cols)))
+
+;; ---- Column Type Detection ----
+
+(defn resolve-col-name
+  "Find the actual column name in a dataset that matches a column reference.
+   Handles keyword/string mismatch: if ref is :x, checks for both :x and \"x\".
+   Returns the matching name, or ref unchanged if no match is found."
+  [ds ref]
+  (when (and ds ref)
+    (let [names (set (tc/column-names ds))]
+      (cond
+        (contains? names ref) ref
+        (and (keyword? ref) (contains? names (name ref))) (name ref)
+        (and (string? ref) (contains? names (keyword ref))) (keyword ref)
+        :else ref))))
 
 ;; ---- Column Type Detection ----
 
@@ -368,40 +390,57 @@
   "Detect x and y column types (:categorical, :numerical, :temporal).
    Temporal columns are converted to epoch-ms numbers; their original
    extents (as LocalDateTime) are preserved for wadogo :datetime ticks.
+   Resolves column names to match the dataset's actual column names
+   (handles keyword/string mismatch).
    Returns a map with keys :ds, :x-type, :y-type, :x-temporal?, :y-temporal?,
-   :x-temporal-extent, :y-temporal-extent."
+   :x-temporal-extent, :y-temporal-extent, :x-resolved, :y-resolved."
   [ds v]
-  (let [x-type (or (:x-type v) (column-type ds (:x v)))
-        y-type (or (:y-type v) (when (and (:y v) (not= (:x v) (:y v)))
-                                 (column-type ds (:y v))))
+  (let [x-res (resolve-col-name ds (:x v))
+        y-res (resolve-col-name ds (:y v))
+        x-type (or (:x-type v) (column-type ds x-res))
+        y-type (or (:y-type v) (when (and y-res (not= x-res y-res))
+                                 (column-type ds y-res)))
         x-temporal? (= x-type :temporal)
         y-temporal? (= y-type :temporal)
-        x-temp-extent (when x-temporal? (temporal-extent ds (:x v)))
-        y-temp-extent (when y-temporal? (temporal-extent ds (:y v)))
+        x-temp-extent (when x-temporal? (temporal-extent ds x-res))
+        y-temp-extent (when y-temporal? (temporal-extent ds y-res))
         ds (cond-> ds
-             x-temporal? (temporalize-column (:x v))
-             y-temporal? (temporalize-column (:y v)))]
+             x-temporal? (temporalize-column x-res)
+             y-temporal? (temporalize-column y-res))]
     {:ds ds
      :x-type (if x-temporal? :numerical x-type)
      :y-type (if y-temporal? :numerical y-type)
      :x-temporal? x-temporal?
      :y-temporal? y-temporal?
      :x-temporal-extent x-temp-extent
-     :y-temporal-extent y-temp-extent}))
+     :y-temporal-extent y-temp-extent
+     :x-resolved x-res
+     :y-resolved y-res}))
 
 (defn resolve-aesthetics
   "Classify each aesthetic channel (:color, :size, :alpha, :text) as either
    a column reference or a fixed literal value.
+   For :color, a string value is checked against dataset column names
+   (both string and keyword) — if it matches, it's treated as a column ref;
+   otherwise it's a literal color string.
    Returns a map with keys :color, :color-is-col?, :color-type, :fixed-color,
    :size, :size-is-col?, :fixed-size, :alpha, :alpha-is-col?, :fixed-alpha,
    :text-col."
   [ds v]
   (let [color-val (let [cv (:color v)]
-                    (if (and (string? cv)
-                             ((set (tc/column-names ds)) (keyword cv)))
-                      (keyword cv)
+                    (if (and (string? cv))
+                      ;; String :color — check if it matches a dataset column name
+                      (let [names (set (tc/column-names ds))]
+                        (cond
+                          (contains? names cv) cv
+                          (contains? names (keyword cv)) (keyword cv)
+                          :else cv))
                       cv))
-        color-is-col? (and color-val (column-ref? color-val))
+        color-is-col? (and color-val (column-ref? color-val)
+                           ;; After resolution, if color-val is a string that doesn't
+                           ;; match any column, it's a literal color
+                           (let [names (set (tc/column-names ds))]
+                             (contains? names (resolve-col-name ds color-val))))
         c-type (when color-is-col?
                  (or (:color-type v) (column-type ds color-val)))
         fixed-color (when (and color-val (not color-is-col?)) color-val)
@@ -427,13 +466,13 @@
 
 (defn infer-grouping
   "Build the grouping vector from explicit :group and categorical color column.
-   Explicit groups are normalized; categorical color columns are appended.
-   Returns a vector of column keywords."
+   Explicit groups are passed through; categorical color columns are appended.
+   Returns a vector of column references (keywords or strings)."
   [v color-type color-col]
-  (let [explicit-group (let [g (normalize-col-ref (:group v))]
+  (let [explicit-group (let [g (:group v)]
                          (cond (nil? g) nil
-                               (keyword? g) [g]
-                               (sequential? g) (mapv normalize-col-ref g)
+                               (column-ref? g) [g]
+                               (sequential? g) (vec g)
                                :else [g]))
         color-group (when (= color-type :categorical) [color-col])
         group (vec (distinct (concat (or explicit-group color-group [])
@@ -465,6 +504,7 @@
   "Resolve a single view: infer column types, aesthetics, grouping, and method.
    Delegates to `infer-column-types`, `resolve-aesthetics`, `infer-grouping`,
    and `infer-method` — each named for the inference step it performs.
+   Resolves column names to match the dataset's actual names (keyword/string).
    Also normalizes user-facing shorthand options:
      - :bandwidth → :cfg {:kde-bandwidth ...}
      - :tile with :fill → stat :identity"
@@ -473,8 +513,24 @@
     v
     (let [ds (let [d (:data v)] (if (tc/dataset? d) d (tc/dataset d)))
           {:keys [x-type y-type x-temporal? y-temporal?
-                  x-temporal-extent y-temporal-extent]
+                  x-temporal-extent y-temporal-extent
+                  x-resolved y-resolved]
            resolved-ds :ds} (infer-column-types ds v)
+          ;; Update v with resolved column names so downstream code
+          ;; (stat.clj, extract.clj) can use (ds (:x v)) directly.
+          v (cond-> v
+              x-resolved (assoc :x x-resolved)
+              y-resolved (assoc :y y-resolved))
+          ;; Also resolve aesthetic column refs
+          v (cond-> v
+              (and (:size v) (column-ref? (:size v)))
+              (assoc :size (resolve-col-name resolved-ds (:size v)))
+              (and (:alpha v) (column-ref? (:alpha v)))
+              (assoc :alpha (resolve-col-name resolved-ds (:alpha v)))
+              (and (:text v) (column-ref? (:text v)))
+              (assoc :text (resolve-col-name resolved-ds (:text v)))
+              (and (:group v) (column-ref? (:group v)))
+              (assoc :group (resolve-col-name resolved-ds (:group v))))
           {:keys [color color-type fixed-color
                   size fixed-size alpha fixed-alpha text-col]} (resolve-aesthetics resolved-ds v)
           group (infer-grouping v color-type color)
