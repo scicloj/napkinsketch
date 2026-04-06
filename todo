@@ -1,0 +1,1 @@
+view.clj:  :x-type (if x-temporal? :numerical x-type)

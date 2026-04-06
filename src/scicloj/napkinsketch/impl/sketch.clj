@@ -861,6 +861,23 @@
 
          ;; Legends
          legend (build-legend resolved-all numeric-color? all-colors color-cols cfg)
+         ;; If no color legend was built, check for tile layers with computed
+         ;; fill colors (e.g., density2d, bin2d) and build a gradient legend.
+         legend (or legend
+                    (let [fill-ranges (keep (fn [pd]
+                                              (some :fill-range (:stat-results pd)))
+                                            panel-data)]
+                      (when (seq fill-ranges)
+                        (let [grad-fn (:gradient-fn cfg)
+                              [f-lo f-hi] (first fill-ranges)
+                              n-stops 20]
+                          {:title :density
+                           :type :continuous
+                           :min f-lo :max f-hi
+                           :color-scale (:color-scale cfg)
+                           :stops (vec (for [i (range n-stops)
+                                             :let [t (/ (double i) (dec n-stops))]]
+                                         {:t t :color (grad-fn t)}))}))))
          size-legend (build-size-legend resolved-all)
          alpha-legend (build-alpha-legend resolved-all)
 
