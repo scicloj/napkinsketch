@@ -290,12 +290,6 @@
      :row (facet-grid views nil col)
      :col (facet-grid views col nil))))
 
-(defn distribution
-  "Create diagonal views (x=y) for each column, used for histograms in SPLOM.
-   (distribution data :a :b :c) => views with [[:a :a] [:b :b] [:c :c]]"
-  [data & cols]
-  (view data (mapv (fn [c] [c c]) cols)))
-
 ;; ---- Column Type Detection ----
 
 (defn resolve-col-name

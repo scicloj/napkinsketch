@@ -95,26 +95,3 @@
 (register! :label {:mark :label :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Label — text with background box."})
 (register! :rug {:mark :rug :stat :identity :x-only true :accepts [:side] :doc "Rug — axis-margin tick marks."})
 
-;; ---- Annotation constructors ----
-;; These are not methods (no mark+stat+position). They take arguments
-;; and return annotation maps. Kept as functions.
-
-(defn rule-v
-  "Vertical reference line at x = intercept."
-  [intercept]
-  (view/rule-v intercept))
-
-(defn rule-h
-  "Horizontal reference line at y = intercept."
-  [intercept]
-  (view/rule-h intercept))
-
-(defn band-v
-  "Vertical shaded band from x = lo to x = hi."
-  ([lo hi] (view/band-v lo hi))
-  ([lo hi opts] (view/band-v lo hi opts)))
-
-(defn band-h
-  "Horizontal shaded band from y = lo to y = hi."
-  ([lo hi] (view/band-h lo hi))
-  ([lo hi opts] (view/band-h lo hi opts)))

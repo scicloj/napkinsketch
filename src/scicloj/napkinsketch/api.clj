@@ -101,10 +101,6 @@
   []
   (method/registered))
 
-(def method-registered
-  "Deprecated. Use `registered-methods` instead."
-  registered-methods)
-
 (defn mark-doc
   "Return the prose description for a mark keyword.
    Returns \"(no description)\" if no [:key :doc] defmethod is registered.

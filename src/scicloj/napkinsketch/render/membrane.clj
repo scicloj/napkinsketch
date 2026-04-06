@@ -167,36 +167,6 @@
                                         (ui/label (str value) (ui/font nil 9))))])
          :legend true))))))
 
-;; ---- Labels ----
-
-(defn- render-x-label
-  "Render x-axis label centered below the plot area."
-  [label center-x y-pos cfg]
-  (let [fsize (:label-font-size cfg)]
-    (ui/translate center-x y-pos
-                  (ui/with-color [0.2 0.2 0.2 1.0]
-                    (assoc (ui/label label (ui/font nil fsize))
-                           :text-anchor "middle")))))
-
-(defn- render-y-label
-  "Render y-axis label. Uses a Rotate to place vertically."
-  [label center-y x-pos cfg]
-  (let [fsize (:label-font-size cfg)]
-    (ui/translate x-pos center-y
-                  (membrane.ui.Rotate. -90
-                                       (ui/with-color [0.2 0.2 0.2 1.0]
-                                         (assoc (ui/label label (ui/font nil fsize))
-                                                :text-anchor "middle"))))))
-
-(defn- render-title
-  "Render plot title centered above the plot area."
-  [title center-x cfg]
-  (let [fsize (:title-font-size cfg)]
-    (ui/translate center-x 14
-                  (ui/with-color [0.2 0.2 0.2 1.0]
-                    (assoc (ui/label title (ui/font nil fsize))
-                           :text-anchor "middle")))))
-
 ;; ---- Plan → Membrane ----
 
 (defn plan->membrane
