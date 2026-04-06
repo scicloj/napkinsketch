@@ -21,7 +21,6 @@
    ;; Implementation namespaces — for extension points
    [scicloj.napkinsketch.impl.stat :as stat]
    [scicloj.napkinsketch.impl.extract :as extract]
-   [scicloj.napkinsketch.impl.theold-sketch :as sketch]
    [scicloj.napkinsketch.render.mark :as mark]
    [scicloj.napkinsketch.render.svg :as svg]
    [scicloj.napkinsketch.impl.render :as render]))

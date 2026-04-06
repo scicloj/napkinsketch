@@ -12,9 +12,7 @@
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
    ;; Method constructors — for inspecting method maps
-   [scicloj.napkinsketch.method :as method])
-  (:import
-   [scicloj.napkinsketch.impl.sketch Sketch]))
+   [scicloj.napkinsketch.method :as method]))
 
 ;; ## View
 ;;
@@ -30,11 +28,11 @@
 
 (kind/pprint my-sketch)
 
-(kind/test-last [(fn [v] (and (instance? Sketch v) (= 1 (count (:entries v)))))])
+(kind/test-last [(fn [v] (and (sk/sketch? v) (= 1 (count (:entries v)))))])
 
 ;; ## Sketch
 ;;
-;; A **sketch** (also called a sketch internally) is the value returned by layer functions
+;; A **sketch** is the value returned by layer functions
 ;; (`sk/lay-point`, `sk/lay-histogram`, etc.) and by `sk/options`.
 ;; It wraps one or more views together with plot options and
 ;; auto-renders in [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
@@ -48,7 +46,7 @@
       (sk/lay-point :sepal_length :sepal_width {:color :species})
       (sk/options {:title "Iris"})))
 
-(instance? Sketch my-sketch)
+(sk/sketch? my-sketch)
 
 (kind/test-last [(fn [v] (true? v))])
 
@@ -304,7 +302,7 @@
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/options {:theme {:background "#2d2d2d" :grid "#444444"
-                               :text "#cccccc" :tick "#999999"}})
+                         :text "#cccccc" :tick "#999999"}})
     sk/svg-summary :panels)
 
 (kind/test-last [(fn [n] (= 1 n))])

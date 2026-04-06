@@ -16,12 +16,10 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; sketch internals — for tracing resolution
+   ;; Sketch internals — for tracing resolution
    [scicloj.napkinsketch.impl.sketch :as sketch]
-   ;; Sketch internals — for tracing views->plan
+   ;; Pipeline internals — for tracing views->plan
    [scicloj.napkinsketch.impl.theold-sketch :as sketch-impl]
-   ;; Render internals — for tracing plan->figure
-   [scicloj.napkinsketch.impl.render :as render-impl]
    ;; Malli schema validation
    [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
@@ -47,7 +45,7 @@ graph LR
 ;;
 ;; - **Views** — a flat vector of maps produced by resolving the sketch.
 ;;   Each view map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
-;;   keys. This is the same format that the old pipeline used directly.
+;;   keys.
 ;;
 ;; - **Plan** — fully resolved plan. Data-space geometry, domains, tick info,
 ;;   legend. Plain Clojure maps and dtype-next buffers. No rendering primitives.
@@ -332,19 +330,17 @@ multi-plan
 ^:kindly/hide-code
 (kind/mermaid "
 graph TD
-  API[\"api.clj\"] --> SK[\"impl/sketch.clj\"]
+  API[\"api.clj\"] --> SK[\"impl/sketch.clj<br/>(record + constructor)\"]
   API --> VIEW[\"impl/view.clj\"]
-  API --> PLOT[\"impl/plot.clj\"]
-  API --> PLAN[\"impl/sketch.clj\"]
+  API --> PIPE[\"impl/theold_sketch.clj<br/>(views → plan)\"]
   SK --> VIEW
-  SK --> PLAN
+  SK --> PIPE
   SK --> RENDER[\"impl/render.clj\"]
-  PLAN --> VIEW
-  PLAN --> STAT[\"impl/stat.clj\"]
-  PLAN --> SCALE[\"impl/scale.clj\"]
-  PLAN --> DEFAULTS[\"impl/defaults.clj\"]
-  PLOT --> PLAN
-  PLOT --> SVG[\"render/svg.clj\"]
+  PIPE --> VIEW
+  PIPE --> STAT[\"impl/stat.clj\"]
+  PIPE --> SCALE[\"impl/scale.clj\"]
+  PIPE --> DEFAULTS[\"impl/defaults.clj\"]
+  RENDER --> SVG[\"render/svg.clj\"]
   SVG --> MEMBRANE[\"render/membrane.clj\"]
   MEMBRANE --> PANEL[\"render/panel.clj\"]
   PANEL --> MARK[\"render/mark.clj\"]
@@ -352,17 +348,16 @@ graph TD
   PANEL --> COORD[\"impl/coord.clj\"]
   style API fill:#c8e6c9
   style SK fill:#d1c4e9
-  style PLAN fill:#ffe0b2
-  style PLOT fill:#bbdefb
+  style PIPE fill:#ffe0b2
   style SVG fill:#f8bbd0
   style MEMBRANE fill:#f8bbd0
 ")
 
-;; The `impl/sketch.clj` module is the new addition. It sits between
-;; the public API and the plan resolution stage. It holds the `Sketch`
-;; record, the `resolve-sketch` function that flattens entries and
-;; methods into view maps, and the `render-sketch` function that
-;; drives the full pipeline for auto-rendering in notebooks.
+;; `impl/sketch.clj` holds the `Sketch` record, the `resolve-sketch`
+;; function that flattens entries and methods into view maps, and the
+;; `render-sketch` function that drives the full pipeline for
+;; auto-rendering in notebooks. `impl/theold_sketch.clj` handles the
+;; views-to-plan resolution stage (domains, ticks, layout).
 ;;
 ;; The `impl/` directory is pure data — no membrane dependency.
 ;; The `render/` directory uses membrane for pixel-space layout and
