@@ -33,7 +33,7 @@
           m
           defaults/column-keys))
 
-(defn- ensure-keyword-columns
+(defn ensure-keyword-columns
   "If dataset has string column names, rename them to keywords."
   [ds]
   (let [renames (into {} (for [c (tc/column-names ds) :when (string? c)]

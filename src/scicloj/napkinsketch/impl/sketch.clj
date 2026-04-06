@@ -32,20 +32,11 @@
 
 ;; ---- Resolution ----
 
-(defn- ensure-keyword-columns
-  "If dataset has string column names, rename them to keywords."
-  [ds]
-  (let [renames (into {} (for [c (tc/column-names ds) :when (string? c)]
-                           [c (keyword c)]))]
-    (if (seq renames)
-      (tc/rename-columns ds renames)
-      ds)))
-
 (defn- ensure-dataset
   "Coerce raw data to a Tablecloth dataset with keyword column names.
    Returns nil for nil input."
   [d]
-  (when d (ensure-keyword-columns (if (tc/dataset? d) d (tc/dataset d)))))
+  (when d (view/ensure-keyword-columns (if (tc/dataset? d) d (tc/dataset d)))))
 
 (defn- expand-facets
   "Expand entries with keyword :facet-col/:facet-row into per-value entries."

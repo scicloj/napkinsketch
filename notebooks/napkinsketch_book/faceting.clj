@@ -16,7 +16,7 @@
 ;; ## Facet Wrap
 ;;
 ;; `sk/facet` splits views by one categorical column.
-;; The default layout is a horizontal row of panels:
+;; The default direction is `:col` — a horizontal row of panels:
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
@@ -32,11 +32,11 @@
 
 ;; ## Vertical Facet
 ;;
-;; Pass `:col` as the direction for a vertical column of panels:
+;; Pass `:row` as the direction for a vertical column of panels:
 
 (-> data/iris
     (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/facet :species :col))
+    (sk/facet :species :row))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -181,7 +181,7 @@
     (sk/lay-point :sepal_length :sepal_width {:color :species})
     (sk/facet :species)
     (sk/options {:title "Iris by Species"
-                       :x-label "Sepal Length (cm)" :y-label "Sepal Width (cm)"}))
+                 :x-label "Sepal Length (cm)" :y-label "Sepal Width (cm)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))

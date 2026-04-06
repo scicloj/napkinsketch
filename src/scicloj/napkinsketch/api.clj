@@ -342,7 +342,7 @@
       ;; No match — create new entry with this method
       (update sk :entries conj (assoc entry-keys :methods [method-map])))))
 
-(defn- method-map
+(defn- build-method-map
   "Build a method map from a method-key (keyword) or raw map, with optional opts.
    Warns on unrecognized option keys."
   [method-key opts]
@@ -367,10 +367,10 @@
   "Add a global method to a sketch (applies to all entries)."
   ([sk-or-data method-key]
    (let [sk (ensure-sk sk-or-data)]
-     (update sk :methods conj (method-map method-key nil))))
+     (update sk :methods conj (build-method-map method-key nil))))
   ([sk-or-data method-key opts]
    (let [sk (ensure-sk sk-or-data)]
-     (update sk :methods conj (method-map method-key opts)))))
+     (update sk :methods conj (build-method-map method-key opts)))))
 
 (defn- x-only?
   "True if method-key is registered as x-only (rejects :y column)."
@@ -392,14 +392,14 @@
      (if (and (empty? (:entries sk)) d (<= col-count 3))
        (let [sk2 (view sk)]
          (add-entry-method sk2 (first (:entries sk2))
-                           (method-map method-key nil)))
+                           (build-method-map method-key nil)))
        (lay sk method-key))))
   ([method-key sk-or-data x-or-opts]
    (cond
      (or (keyword? x-or-opts) (string? x-or-opts))
      (add-entry-method (ensure-sk sk-or-data)
                        {:x x-or-opts}
-                       (method-map method-key nil))
+                       (build-method-map method-key nil))
      (sequential? x-or-opts)
      (-> (view sk-or-data x-or-opts)
          (lay method-key))
@@ -413,21 +413,21 @@
                            {:method method-key :x x :y y-or-opts})))
          (add-entry-method (ensure-sk sk-or-data)
                            {:x x :y y-or-opts}
-                           (method-map method-key nil)))
+                           (build-method-map method-key nil)))
      (and (sequential? x) (map? y-or-opts))
      (-> (view sk-or-data x y-or-opts)
          (lay method-key))
      :else
      (add-entry-method (ensure-sk sk-or-data)
                        {:x x}
-                       (method-map method-key y-or-opts))))
+                       (build-method-map method-key y-or-opts))))
   ([method-key sk-or-data x y opts]
    (when (x-only? method-key)
      (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
                      {:method method-key :x x :y y})))
    (add-entry-method (ensure-sk sk-or-data)
                      {:x x :y y}
-                     (method-map method-key opts))))
+                     (build-method-map method-key opts))))
 
 (defn lay-point
   "Add :point method (scatter) to a sketch.
@@ -702,7 +702,8 @@
   ([sk x y method-key]
    (overlay sk x y method-key {}))
   ([sk x y method-key opts]
-   (let [method-map (method-map method-key opts)]
+   (let [sk (ensure-sk sk)
+         method-map (build-method-map method-key opts)]
      (update sk :entries conj {:x x :y y :methods [method-map]}))))
 
 (defn plot
