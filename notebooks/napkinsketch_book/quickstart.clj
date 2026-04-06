@@ -189,9 +189,9 @@
 (-> iris
     (sk/lay-point :petal_length :petal_width {:color :species})
     (sk/options {:width 500 :height 350
-                       :title "Iris Petals"
-                       :x-label "Petal Length (cm)"
-                       :y-label "Petal Width (cm)"}))
+                 :title "Iris Petals"
+                 :x-label "Petal Length (cm)"
+                 :y-label "Petal Width (cm)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -220,7 +220,7 @@
 ;;
 ;; ## What's Next
 ;;
-;; - [**Composable Plotting**](./napkinsketch_book.composability.html) — how sketches, views, and layers compose
+;; - [**The Sketch Model**](./napkinsketch_book.sketch_model.html) — the mental model behind composable plotting
 ;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) — data formats, marks, stats, color, grouping, coordinates
 ;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — the most common starting point for chart types
 ;; - [**Cookbook**](./napkinsketch_book.cookbook.html) — recipes for common multi-layer plots

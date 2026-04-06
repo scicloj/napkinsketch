@@ -2,9 +2,9 @@
 ;;
 ;; This chapter is a reference for every concept in Napkinsketch.
 ;; If you have not read the
-;; [Composable Plotting](./napkinsketch_book.composability.html)
-;; chapter, start there — it introduces sketches, views, and
-;; methods through progressive examples.
+;; [Sketch Model](./napkinsketch_book.sketch_model.html)
+;; chapter, start there — it introduces the mental model behind
+;; composable plotting.
 
 (ns napkinsketch-book.core-concepts
   (:require
