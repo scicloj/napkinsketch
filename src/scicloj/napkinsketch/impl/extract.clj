@@ -112,7 +112,11 @@
     (-> {:mark :point
          :style (cond-> {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
                          :radius (or (:fixed-size view) (:point-radius cfg))}
-                  (:jitter view) (assoc :jitter (:jitter view)))
+                  (:jitter view) (assoc :jitter (:jitter view))
+                  (and (:point-stroke cfg)
+                       (not= (:point-stroke cfg) "none"))
+                  (assoc :stroke (:point-stroke cfg)
+                         :stroke-width (or (:point-stroke-width cfg) 0)))
          :groups (vec
                   (for [{:keys [color xs ys sizes alphas shapes row-indices color-values]} (:points stat)]
                     (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)

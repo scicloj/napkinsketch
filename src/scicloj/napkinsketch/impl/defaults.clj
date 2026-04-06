@@ -349,17 +349,20 @@
       (let [{:keys [config width height palette theme
                     color-scale color-midpoint validate
                     legend-position tooltip brush format]} plot-opts]
-        (cond-> cfg
-          config (kindly/deep-merge config)
-          width (assoc :width width)
-          height (assoc :height height)
-          palette (assoc :palette palette)
-          theme (update :theme kindly/deep-merge theme)
-          (some? color-scale) (assoc :color-scale color-scale)
-          (some? color-midpoint) (assoc :color-midpoint color-midpoint)
-          (some? validate) (assoc :validate validate)
-          (some? legend-position) (assoc :legend-position legend-position)
-          (some? tooltip) (assoc :tooltip tooltip)
-          (some? brush) (assoc :brush brush)
-          (some? format) (assoc :format format)))
+        (let [{:keys [point-stroke point-stroke-width]} plot-opts]
+          (cond-> cfg
+            config (kindly/deep-merge config)
+            width (assoc :width width)
+            height (assoc :height height)
+            palette (assoc :palette palette)
+            theme (update :theme kindly/deep-merge theme)
+            (some? color-scale) (assoc :color-scale color-scale)
+            (some? color-midpoint) (assoc :color-midpoint color-midpoint)
+            (some? validate) (assoc :validate validate)
+            (some? legend-position) (assoc :legend-position legend-position)
+            (some? tooltip) (assoc :tooltip tooltip)
+            (some? brush) (assoc :brush brush)
+            (some? format) (assoc :format format)
+            (some? point-stroke) (assoc :point-stroke point-stroke)
+            (some? point-stroke-width) (assoc :point-stroke-width point-stroke-width))))
       cfg)))

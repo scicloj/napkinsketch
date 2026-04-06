@@ -142,7 +142,9 @@
 (defmethod layer->membrane :point [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn tooltip sx sy]} ctx
-        {:keys [opacity radius jitter]} style
+        {:keys [opacity radius jitter stroke stroke-width]} style
+        stroke-rgba (when stroke (defaults/c2d->rgba stroke))
+        stroke-w (when stroke (or stroke-width 1))
         ;; Detect if x-axis is categorical (band scale) for smarter jitter
         x-bandwidth (try (ws/data sx :bandwidth) (catch Exception _ nil))
         cat-jitter? (and jitter x-bandwidth)
@@ -194,8 +196,14 @@
                  pt-shape (if shapes (get shape-map (shapes i) :circle) :circle)
                  [cr cg cb _] (if colors (colors i) color)]]
        (-> (ui/translate (- (double px) pt-r) (- (double py) pt-r)
-                         (ui/with-color [cr cg cb pt-alpha]
-                           (draw-shape pt-shape pt-r)))
+                         [(ui/with-color [cr cg cb pt-alpha]
+                            (draw-shape pt-shape pt-r))
+                          (when stroke-rgba
+                            (let [d (* 2 pt-r)]
+                              (ui/with-color stroke-rgba
+                                (ui/with-stroke-width stroke-w
+                                  (ui/with-style ::ui/style-stroke
+                                    (ui/rounded-rectangle d d pt-r))))))])
            (cond-> row-indices (assoc :row-idx (row-indices i))
                    tooltip (assoc :tooltip (make-tooltip ctx (xs i) (ys i) label))))))))
 

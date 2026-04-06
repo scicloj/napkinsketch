@@ -319,9 +319,11 @@
 
 (defn temporal->epoch-ms
   "Convert a temporal value to epoch-milliseconds (double).
-   Accepts LocalDate, LocalDateTime, Instant, and java.util.Date."
+   Accepts LocalDate, LocalDateTime, Instant, and java.util.Date.
+   Returns ##NaN for nil input."
   [v]
   (cond
+    (nil? v) ##NaN
     (jt/instant? v) (double (jt/to-millis-from-epoch v))
     (jt/local-date-time? v) (double (jt/to-millis-from-epoch (jt/instant v (jt/zone-offset 0))))
     (jt/local-date? v) (double (jt/to-millis-from-epoch (jt/instant (jt/local-date-time v (jt/local-time 0)) (jt/zone-offset 0))))
@@ -331,10 +333,13 @@
 (defn- temporalize-column
   "Replace a temporal column in a dataset with its epoch-ms numeric equivalent.
    Uses vectorized dt-dt/datetime->epoch for typed temporal columns;
-   falls back to scalar map-columns for java.util.Date (:object dtype)."
+   falls back to scalar map-columns for java.util.Date (:object dtype).
+   Casts to :float64 so NaN from nil temporal values is recognized as missing."
   [ds col]
   (if (dt-dt/datetime-datatype? (dtype/elemwise-datatype (ds col)))
-    (tc/add-column ds col (dt-dt/datetime->epoch :epoch-milliseconds (ds col)))
+    (tc/add-column ds col (dtype/elemwise-cast
+                           (dt-dt/datetime->epoch :epoch-milliseconds (ds col))
+                           :float64))
     (tc/map-columns ds col [col] temporal->epoch-ms)))
 
 (defn- temporal->local-date-time

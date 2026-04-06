@@ -265,11 +265,14 @@
            log? (= :log (:type scale-spec))]
        (if temporal-extent
          ;; Temporal: use wadogo :datetime scale for calendar-aware ticks
-         (let [dt-scale (ws/scale :datetime {:domain temporal-extent :range [0.0 1.0]})
-               dt-ticks (ws/ticks dt-scale n)
-               labels (vec (ws/format dt-scale dt-ticks))
-               values (mapv view/temporal->epoch-ms dt-ticks)]
-           {:values values :labels labels :categorical? false})
+         (if (= (first temporal-extent) (second temporal-extent))
+           ;; Single-value temporal domain: one tick at the single value
+           {:values [(first domain)] :labels [(str (first temporal-extent))] :categorical? false}
+           (let [dt-scale (ws/scale :datetime {:domain temporal-extent :range [0.0 1.0]})
+                 dt-ticks (ws/ticks dt-scale n)
+                 labels (vec (ws/format dt-scale dt-ticks))
+                 values (mapv view/temporal->epoch-ms dt-ticks)]
+             {:values values :labels labels :categorical? false}))
          ;; Numeric: use linear/log scale
          (if log?
            ;; Log: use ggplot2-style 1-2-5 nice breaks
