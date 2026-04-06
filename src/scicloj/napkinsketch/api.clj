@@ -95,11 +95,15 @@
   [k]
   (method/lookup k))
 
-(defn method-registered
+(defn registered-methods
   "Return all registered methods as a map of keyword → method map.
    Useful for generating documentation tables."
   []
   (method/registered))
+
+(def method-registered
+  "Deprecated. Use `registered-methods` instead."
+  registered-methods)
 
 (defn mark-doc
   "Return the prose description for a mark keyword.
@@ -283,7 +287,12 @@
   (assoc sk :data (coerce-dataset data)))
 
 (defn view
-  "Add entries to a sketch."
+  "Declare what to plot — add entries (column pairs) and shared aesthetics.
+   (view data :x :y)            — one bivariate entry
+   (view data :x)               — one univariate entry
+   (view data [[:a :b] [:c :d]])— multiple bivariate entries
+   (view data :x :y {:color :g})— entry with shared color grouping
+   (view sk)                    — auto-infer columns from small dataset"
   ([sk-or-data]
    (let [sk (ensure-sk sk-or-data)]
      (if (:data sk)

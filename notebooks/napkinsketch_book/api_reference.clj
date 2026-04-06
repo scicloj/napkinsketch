@@ -60,7 +60,7 @@
 
 (-> data/iris
     (sk/view [[:sepal_length :sepal_width]
-                    [:petal_length :petal_width]])
+              [:petal_length :petal_width]])
     (sk/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -480,7 +480,7 @@ plan1
 
 (-> data/iris
     (sk/view (sk/cross [:sepal_length :petal_length]
-                             [:sepal_width :petal_width]))
+                       [:sepal_width :petal_width]))
     (sk/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -587,9 +587,9 @@ plan1
 (kind/test-last [(fn [m] (and (= :line (:mark m))
                               (= :lm (:stat m))))])
 
-(kind/doc #'sk/method-registered)
+(kind/doc #'sk/registered-methods)
 
-(count (sk/method-registered))
+(count (sk/registered-methods))
 
 (kind/test-last [(fn [n] (= 25 n))])
 
