@@ -512,35 +512,21 @@ data/iris
 ;;
 ;; Categorical color does more than set colors — it creates
 ;; **groups**. Each group is processed independently: it gets its
-;; own regression line, density curve, or bar.
+;; own regression line, density curve, bar, or boxplot.
 ;;
-;; Compare: without color in shared, `sk/lay-lm` fits one
-;; line to all the data:
+;; We saw grouping with scatter + regression in the Shared Aesthetics
+;; section above. Here is another example — grouped density curves:
 
 (-> data/iris
-    (sk/view :sepal_length :sepal_width)
-    sk/lay-point
-    sk/lay-lm)
+    (sk/lay-density :sepal_length {:color :species}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; Passing `:color :species` in `sk/view` makes it a shared
-;; aesthetic — all methods inherit it. Each species becomes a separate
-;; group, so the regression fits three lines instead of one:
-
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
-    sk/lay-point
-    sk/lay-lm)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s)))))])
-
-;; Grouping reveals patterns within each species that the overall
-;; trend line hides.
+;; Each species gets its own KDE curve. Without `:color`, there would
+;; be one density for all 150 values combined.
+;;
+;; Grouping works with every mark that supports color: scatter, line,
+;; area, histogram, density, boxplot, violin, and more.
 
 ;; ## Faceting
 ;;
@@ -564,7 +550,26 @@ data/iris
 ;; Three panels, one per species. The shared axes let you compare
 ;; sepal dimensions across species at a glance.
 
-;; ## Column Combinations
+;; ## Multiple Variables
+;;
+;; Pass a vector of column names to create one panel per variable.
+;; Keywords create **univariate** panels (one column each):
+
+(-> data/iris
+    (sk/lay-histogram [:sepal_length :sepal_width :petal_length]))
+
+(kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
+
+;; Pairs create **bivariate** panels:
+
+(-> data/iris
+    (sk/view [[:sepal_length :sepal_width]
+              [:petal_length :petal_width]])
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+
+;; ## Column Combinations (SPLOM)
 ;;
 ;; `sk/cross` generates all combinations of two lists. Passing
 ;; column names to `sk/cross` and the result to `sk/view`
