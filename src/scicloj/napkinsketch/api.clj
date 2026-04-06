@@ -697,6 +697,11 @@
    don't participate in the entry × methods cross product.
    (annotate sk (sk/rule-h 5) (sk/band-v 3 7))"
   [sk & annotations]
+  (doseq [ann annotations]
+    (when-not (and (map? ann) (view/annotation-marks (:mark ann)))
+      (throw (ex-info (str "annotate expects annotation maps (from rule-h, rule-v, band-h, band-v), got: "
+                           (pr-str ann))
+                      {:annotation ann}))))
   (reduce (fn [sk ann]
             (update sk :entries conj (assoc ann :methods [ann])))
           (ensure-sk sk) annotations))
