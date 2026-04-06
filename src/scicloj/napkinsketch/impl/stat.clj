@@ -45,25 +45,28 @@
   "Clean data, compute domains, group by columns."
   [view]
   (let [{:keys [data x y color color-type size alpha shape text-col x-type y-type group mark ymin ymax]} view
+        x-only? (or (nil? y) (= x y))
         data-idx (tc/add-column data :__row-idx (range (tc/row-count data)))
-        clean (cond-> (tc/drop-missing data-idx [x y])
+        drop-cols (if x-only? [x] [x y])
+        clean (cond-> (tc/drop-missing data-idx drop-cols)
                 (= x-type :categorical) (tc/map-columns x [x] str))]
     (if (zero? (tc/row-count clean))
       {:points [] :x-domain [0 1] :y-domain [0 1]}
       (let [xs-col (clean x)
-            ys-col (clean y)
+            ys-col (if x-only? nil (clean y))
             cat-x? (= x-type :categorical)
             cat-y? (= y-type :categorical)
             x-dom (if cat-x? (distinct xs-col) (numeric-extent xs-col))
-            y-dom (if cat-y?
-                    (distinct ys-col)
-                    (let [[lo hi] (numeric-extent ys-col)]
-                      (if (= mark :rect) [(min 0 lo) (max 0 hi)]
-                          ;; Extend domain to include ymin/ymax if present
-                          (if (and ymin ymax)
-                            [(min lo (dfn/reduce-min (clean ymin)))
-                             (max hi (dfn/reduce-max (clean ymax)))]
-                            [lo hi]))))
+            y-dom (cond
+                    x-only? [0 1]
+                    cat-y? (distinct ys-col)
+                    :else (let [[lo hi] (numeric-extent ys-col)]
+                            (if (= mark :rect) [(min 0 lo) (max 0 hi)]
+                                ;; Extend domain to include ymin/ymax if present
+                                (if (and ymin ymax)
+                                  [(min lo (dfn/reduce-min (clean ymin)))
+                                   (max hi (dfn/reduce-max (clean ymax)))]
+                                  [lo hi]))))
             numeric-color? (and color (= color-type :numerical))
             ;; Extract color value from group key when color is part of group
             color-idx (when color (.indexOf ^java.util.List group color))
@@ -75,8 +78,9 @@
                               ;; Multiple group cols — extract color column value
                               (and color-idx (>= color-idx 0)) (nth group-val color-idx)
                               :else nil))
+            zero-ys (fn [ds] (dtype/const-reader 0.0 (tc/row-count ds)))
             point-group (fn [ds group-val]
-                          (cond-> {:xs (ds x) :ys (ds y)
+                          (cond-> {:xs (ds x) :ys (if x-only? (zero-ys ds) (ds y))
                                    :row-indices (ds :__row-idx)}
                             (some? group-val) (assoc :color (extract-color group-val))
                             numeric-color? (assoc :color-values (ds color))

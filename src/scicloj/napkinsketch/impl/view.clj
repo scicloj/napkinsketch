@@ -462,6 +462,18 @@
                   size fixed-size alpha fixed-alpha text-col]} (resolve-aesthetics resolved-ds v)
           group (infer-grouping v color-type color)
           {:keys [mark stat]} (infer-method v x-type y-type)
+          ;; Validate that marks requiring categorical x are not given numeric x.
+          ;; Only check when stat is the natural stat for the mark (not an explicit override).
+          categorical-x-marks {:boxplot :boxplot :violin :violin
+                               :lollipop :identity :summary :summary
+                               :ridgeline :violin :pointrange :summary}
+          _ (when (and (= x-type :numerical)
+                       (contains? categorical-x-marks mark)
+                       (= stat (categorical-x-marks mark)))
+              (throw (ex-info (str "lay-" (name mark) " requires a categorical :x column, but "
+                                   (pr-str (:x v)) " is numerical. Use a categorical column "
+                                   "(e.g., species names) for the x-axis.")
+                              {:mark mark :x (:x v) :x-type x-type})))
           resolved (cond-> (assoc v :data resolved-ds :x-type x-type :y-type y-type
                                   :color-type color-type :group group :mark mark :stat stat
                                   :color color :fixed-color fixed-color

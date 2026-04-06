@@ -109,6 +109,21 @@
                                                 v)))
                                           resolved
                                           [:x :y :size :alpha :text :group])]
+                     ;; Validate that referenced columns exist in the dataset.
+                     ;; Skip y when nil or same as x (diagonal/histogram case).
+                     (when d
+                       (let [col-names (set (tc/column-names d))
+                             x-col (:x resolved)
+                             y-col (:y resolved)
+                             check-pairs (cond-> []
+                                           (and x-col (keyword? x-col))
+                                           (conj [:x x-col])
+                                           (and y-col (keyword? y-col) (not= y-col x-col))
+                                           (conj [:y y-col]))]
+                         (doseq [[role col] check-pairs
+                                 :when (not (col-names col))]
+                           (throw (ex-info (str "Column " col " (from " role ") not found in dataset. Available: " (sort col-names))
+                                           {:key role :column col :available (sort col-names)})))))
                      (-> resolved
                          (assoc :data d
                                 :__entry-idx entry-idx)
@@ -172,7 +187,7 @@
         stack-layers (filter #(= :stack (:position %)) layers)
         zero-baseline-marks #{:lollipop :value-bar :area}
         needs-zero? (some #(zero-baseline-marks (:mark %)) layers)
-        clamp-zero (fn [[lo hi]] [(max 0.0 (double lo)) hi])]
+        extend-to-zero (fn [[lo hi]] [(min 0.0 (double lo)) (max 0.0 (double hi))])]
     (cond
       ;; Fill mode: normalized to [0, 1]
       (seq fill-layers)
@@ -219,9 +234,9 @@
                     (scale/pad-domain [(reduce min vals) (reduce max vals)] scale-spec)
                     (distinct vals)))]
         (if (and needs-zero? (sequential? dom) (number? (first dom)))
-          (clamp-zero (scale/pad-domain [(min 0.0 (double (first dom)))
-                                         (max 0.0 (double (second dom)))]
-                                        scale-spec))
+          (extend-to-zero (scale/pad-domain [(min 0.0 (double (first dom)))
+                                             (max 0.0 (double (second dom)))]
+                                            scale-spec))
           dom)))))
 
 ;; ---- Tick Computation ----
