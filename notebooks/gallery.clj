@@ -61,7 +61,7 @@
 ;; Here, diamond depth controls bubble size:
 
 (-> diamonds
-    (tc/select-rows (range 500))
+    (tc/head 500)
     (sk/view :carat :price {:color :cut :size :depth})
     sk/lay-point
     (sk/options {:title "Diamond Price vs Carat (bubble)"
@@ -130,7 +130,7 @@
 ;; Density with rug marks showing individual observations:
 
 (-> diamonds
-    (tc/select-rows (range 500))
+    (tc/head 500)
     (sk/view :carat)
     sk/lay-density
     sk/lay-rug
@@ -334,7 +334,7 @@
 ;; Two-dimensional density estimate for diamond carat vs price:
 
 (-> diamonds
-    (tc/select-rows (range 2000))
+    (tc/head 2000)
     (sk/view :carat :price)
     sk/lay-density2d
     (sk/options {:title "Diamond Carat vs Price (density)"
@@ -1551,7 +1551,7 @@
 ;; Source: [Python Graph Gallery: 2D Density](https://python-graph-gallery.com/2d-density-plot-with-ggplot2/)
 
 (-> diamonds
-    (tc/select-rows (range 3000))
+    (tc/head 3000)
     (sk/view :carat :price)
     sk/lay-point
     sk/lay-density2d
@@ -2012,7 +2012,7 @@
 ;; Source: [ECharts: Scatter Logarithmic](https://echarts.apache.org/examples/en/editor.html?c=scatter-logarithmic-regression)
 
 (-> diamonds
-    (tc/select-rows (range 2000))
+    (tc/head 2000)
     (sk/lay-point :carat :price {:alpha 0.15})
     (sk/scale :y :log)
     (sk/options {:title "Diamond Price (Log Scale)"
@@ -2089,7 +2089,7 @@
 ;; Source: [D3 Graph Gallery: Contour](https://d3-graph-gallery.com/graph/density2d_contour.html)
 
 (-> diamonds
-    (tc/select-rows (range 1000))
+    (tc/head 1000)
     (sk/view :carat :price)
     sk/lay-contour
     sk/lay-point
