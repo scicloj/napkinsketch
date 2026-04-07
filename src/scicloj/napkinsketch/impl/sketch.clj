@@ -797,7 +797,8 @@
                          x-dom (or (:domain x-scale-spec)
                                    (collect-domain local-srs :x-domain x-scale-spec))
                          y-dom (or (:domain y-scale-spec)
-                                   (compute-global-y-domain local-layers y-scale-spec))
+                                   (compute-global-y-domain local-layers y-scale-spec)
+                                   [0 1]) ;; fallback for x-only panels (rug, histogram alone)
                          [x-dom' y-dom'] (if (= coord-type :flip)
                                            [y-dom x-dom]
                                            [x-dom y-dom])

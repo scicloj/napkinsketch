@@ -58,7 +58,7 @@
             cat-y? (= y-type :categorical)
             x-dom (if cat-x? (distinct xs-col) (numeric-extent xs-col))
             y-dom (cond
-                    x-only? [0 1]
+                    x-only? nil
                     cat-y? (distinct ys-col)
                     :else (let [[lo hi] (numeric-extent ys-col)]
                             (if (= mark :rect) [(min 0 lo) (max 0 hi)]
