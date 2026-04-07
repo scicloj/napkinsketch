@@ -5,14 +5,16 @@
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [tablecloth.api :as tc]
+  [tech.v3.datatype.functional :as dfn]
+  [fastmath.stats :as fstats]
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l24 (def mpg (rdatasets/ggplot2-mpg)))
+(def v3_l26 (def mpg (rdatasets/ggplot2-mpg)))
 
 
 (def
- v5_l30
+ v5_l32
  (->
   mpg
   (sk/view :displ :hwy {:color :class})
@@ -25,36 +27,36 @@
 
 
 (deftest
- t6_l38
+ t6_l40
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (pos? (:points s)) (pos? (:lines s)))))
-   v5_l30)))
+   v5_l32)))
 
 
-(def v8_l44 (def diamonds (rdatasets/ggplot2-diamonds)))
+(def v8_l46 (def diamonds (rdatasets/ggplot2-diamonds)))
 
 
-(def v9_l46 (def tips (rdatasets/reshape2-tips)))
+(def v9_l48 (def tips (rdatasets/reshape2-tips)))
 
 
-(def v10_l48 (def mtcars (rdatasets/datasets-mtcars)))
+(def v10_l50 (def mtcars (rdatasets/datasets-mtcars)))
 
 
-(def v11_l50 (def economics (rdatasets/ggplot2-economics)))
+(def v11_l52 (def economics (rdatasets/ggplot2-economics)))
 
 
-(def v12_l52 (def iris (rdatasets/datasets-iris)))
+(def v12_l54 (def iris (rdatasets/datasets-iris)))
 
 
-(def v13_l54 (def gapminder (rdatasets/gapminder-gapminder)))
+(def v13_l56 (def gapminder (rdatasets/gapminder-gapminder)))
 
 
 (def
- v15_l61
+ v15_l63
  (->
   diamonds
   (tc/select-rows (range 500))

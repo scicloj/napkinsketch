@@ -32,7 +32,7 @@
 (defn- fmt
   "Format a numeric value to 2 decimal places for SVG coordinates."
   [v]
-  (format "%.2f" (double v)))
+  (if v (format "%.2f" (double v)) "0.00"))
 
 (defn- points->str
   "Convert a seq of [x y] pairs to SVG points attribute string."

@@ -587,7 +587,7 @@
 ;; Source: [Python Graph Gallery: Density with Rug](https://python-graph-gallery.com/71-density-plot-with-shade-seaborn/)
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :Sepal.Length)
+    (sk/view :sepal-length)
     sk/lay-density
     sk/lay-rug
     (sk/options {:title "Iris Sepal Length: Density + Rug"}))
@@ -624,7 +624,7 @@
 ;; Source: [R Graph Gallery: Scatter with Reference Lines](https://r-graph-gallery.com/scatterplot.html)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :Sepal.Length :Sepal.Width {:color :Species})
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/annotate (sk/rule-h 3.0)
                  (sk/rule-v 6.0)
                  (sk/band-v 5.0 6.0 {:alpha 0.1}))
@@ -669,9 +669,9 @@
 ;; Source: [Vega-Lite: Scatter Matrix](https://vega.github.io/vega-lite/examples/interactive_splom.html)
 
 (-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross [:Sepal.Length :Sepal.Width :Petal.Length :Petal.Width]
-                       [:Sepal.Length :Sepal.Width :Petal.Length :Petal.Width])
-             {:color :Species}))
+    (sk/view (sk/cross [:sepal-length :sepal-width :petal-length :petal-width]
+                       [:sepal-length :sepal-width :petal-length :petal-width])
+             {:color :species}))
 
 (kind/test-last [(fn [v] (= 16 (:panels (sk/svg-summary v))))])
 
@@ -679,7 +679,7 @@
 ;; Source: [Python Graph Gallery: Histogram + Density](https://python-graph-gallery.com/density-and-histogram-together/)
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :Sepal.Length)
+    (sk/view :sepal-length)
     (sk/lay-histogram {:normalize :density})
     sk/lay-density
     (sk/options {:title "Sepal Length: Histogram + Density Curve"}))
@@ -1786,11 +1786,15 @@
 ;; ### Facet-grid: rows by drive, columns by cylinders
 ;; Source: [Vega-Lite: Trellis Grid Multi](https://vega.github.io/vega-lite/examples/trellis_scatter.html)
 
+;; TODO: facet-grid with numeric :cyl column produces empty panels.
+;; Faceting currently requires keyword/string values; numeric facet
+;; values don't expand correctly. This is a known limitation.
+
 (-> mpg
     (sk/view :displ :hwy)
     sk/lay-point
-    (sk/facet-grid :drv :cyl)
-    (sk/options {:title "MPG: Drive x Cylinders"
+    (sk/facet-grid :drv :class)
+    (sk/options {:title "MPG: Drive x Class"
                  :x-label "Displacement"
                  :y-label "Highway MPG"}))
 
