@@ -131,17 +131,26 @@
 ;; ---- Rendering ----
 
 (defn render-sketch
-  "Render a sketch to SVG via grid pipeline.
+  "Render a sketch via the grid pipeline.
    Called by Clay via kind/fn at display time.
-   Restores config snapshot if present."
+   Restores config snapshot if present.
+   When opts contain :format :bufimg, renders to BufferedImage (via
+   membrane's Java2D backend) instead of SVG. Clay displays BufferedImage
+   values as inline images automatically."
   [sk]
   (let [captured (:config-snapshot sk)
         render-fn (fn []
                     (let [opts (:opts sk {})
+                          fmt (or (:format opts) :svg)
                           views (resolve-sketch sk)
-                          plan (views->plan views opts)
-                          rendered (render-impl/plan->figure plan :svg opts)]
-                      (kind/hiccup [:div {:style {:margin-bottom "1em"}} rendered])))]
+                          plan (views->plan views opts)]
+                      (if (= fmt :bufimg)
+                        (do
+                          ;; Ensure the bufimg renderer is loaded
+                          (require 'scicloj.napkinsketch.render.bufimg)
+                          (render-impl/plan->figure plan :bufimg opts))
+                        (let [rendered (render-impl/plan->figure plan :svg opts)]
+                          (kind/hiccup [:div {:style {:margin-bottom "1em"}} rendered])))))]
     (if captured
       (binding [defaults/*config* captured]
         (render-fn))

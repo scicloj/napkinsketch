@@ -9,11 +9,12 @@
 
 (def universal-layer-options
   "Layer options accepted by all methods."
-  [:color :alpha :group :position])
+  [:color :color-type :alpha :group :position])
 
 (def layer-option-docs
   "Documentation for layer option keys. Maps key to description string."
   {:color "Column keyword (categorical grouping) or literal color string"
+   :color-type "Override inferred color type — :categorical or :numerical. Use :categorical to treat numeric IDs as groups."
    :alpha "Column keyword (per-point opacity) or fixed number 0.0–1.0"
    :group "Column keyword for grouping without color"
    :position "Position adjustment keyword — how overlapping groups are arranged (see sk/position-doc)"

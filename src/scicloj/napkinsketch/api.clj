@@ -851,3 +851,21 @@
        (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                        (svg/hiccup->svg-str svg-hiccup)))
        path))))
+
+(defn save-png
+  "Save a plot to a PNG file via membrane's Java2D backend.
+   sk — a sketch.
+   path     — file path (string or java.io.File).
+   opts     — same options as save (:width, :height, :title, :theme, etc.).
+   Returns the path.
+   (save-png my-sketch \"plot.png\")
+   (save-png my-sketch \"plot.png\" {:width 800 :height 600})"
+  ([sk path]
+   (save-png sk path {}))
+  ([sk path opts]
+   (require 'scicloj.napkinsketch.render.bufimg)
+   (let [sk (ensure-sk sk)
+         sk (if (seq opts) (options sk opts) sk)
+         p (plan sk)
+         img (render-impl/plan->figure p :bufimg (:opts sk {}))]
+     ((resolve 'scicloj.napkinsketch.render.bufimg/save-png) img path))))
