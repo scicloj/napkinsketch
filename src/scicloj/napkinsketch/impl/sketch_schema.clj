@@ -33,7 +33,9 @@
    [:sizes {:optional true} [:sequential number?]]
    [:alphas {:optional true} [:sequential number?]]
    [:shapes {:optional true} [:vector any?]]
-   [:row-indices {:optional true} [:sequential int?]]])
+   [:row-indices {:optional true} [:sequential int?]]
+   [:dodge-idx {:optional true} int?]
+   [:y0s {:optional true} [:sequential number?]]])
 
 (def BarBin
   [:map
@@ -157,8 +159,11 @@
    [:violins {:optional true} [:vector ViolinEntry]]
    [:tiles {:optional true} [:vector TileEntry]]
    [:ridges {:optional true} [:vector [:map [:category any?] [:color Color] [:ys [:sequential number?]] [:densities [:sequential number?]]]]]
+   [:levels {:optional true} [:vector any?]]
+   [:ribbons {:optional true} [:vector any?]]
    [:color-categories {:optional true} [:maybe [:vector any?]]]
    [:position {:optional true} keyword?]
+   [:dodge-ctx {:optional true} any?]
    [:categories {:optional true} [:vector any?]]
    [:side {:optional true} [:enum :x :y :both]]])
 
