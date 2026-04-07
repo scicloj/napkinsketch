@@ -315,13 +315,21 @@
            (update sk :entries into (mapv (fn [[x y]] {:x x :y y}) x-or-entries)))))))
   ([sk-or-data x y]
    (let [sk (ensure-sk sk-or-data)]
-     (if (and (sequential? x) (map? y))
+     (cond
        ;; Columns/pairs + shared opts: (view sk [:a :b :c] {:color :species})
+       (and (sequential? x) (map? y))
        (let [sk (update sk :shared merge y)
              first-el (first x)]
          (if (or (keyword? first-el) (string? first-el))
            (update sk :entries into (mapv (fn [col] {:x col}) x))
            (update sk :entries into (mapv (fn [[a b]] {:x a :y b}) x))))
+       ;; Single column + shared opts: (view data :x {:color :species})
+       (map? y)
+       (-> sk
+           (update :shared merge y)
+           (update :entries conj {:x x}))
+       ;; Two columns: (view data :x :y)
+       :else
        (update sk :entries conj {:x x :y y}))))
   ([sk-or-data x y opts]
    (let [sk (ensure-sk sk-or-data)]
