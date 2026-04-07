@@ -224,20 +224,20 @@
             vals (mapcat (fn [d]
                            (if (and (= 2 (count d)) (number? (first d)))
                              d (map str d)))
-                         all-yds)
-            dom (when (seq vals)
-                  (if (number? (first vals))
-                    (scale/pad-domain [(reduce min vals) (reduce max vals)] scale-spec)
-                    (distinct vals)))]
-        (if (and needs-zero? (sequential? dom) (number? (first dom)))
-          ;; For baseline marks (area, lollipop, value-bar): ensure domain
-          ;; includes zero, and only pad the end away from zero.
-          (let [[lo hi] dom
-                lo (double lo) hi (double hi)
-                [plo phi] (scale/pad-domain [(min 0.0 lo) (max 0.0 hi)] scale-spec)]
-            [(if (>= lo 0.0) 0.0 plo)
-             (if (<= hi 0.0) 0.0 phi)])
-          dom)))))
+                         all-yds)]
+        (when (seq vals)
+          (if (number? (first vals))
+            (let [raw-lo (reduce min vals)
+                  raw-hi (reduce max vals)]
+              (if needs-zero?
+                ;; Baseline marks: include zero, only pad away from zero.
+                (let [lo (min 0.0 raw-lo)
+                      hi (max 0.0 raw-hi)
+                      [plo phi] (scale/pad-domain [lo hi] scale-spec)]
+                  [(if (>= raw-lo 0.0) 0.0 plo)
+                   (if (<= raw-hi 0.0) 0.0 phi)])
+                (scale/pad-domain [raw-lo raw-hi] scale-spec)))
+            (distinct vals)))))))
 
 ;; ---- Tick Computation ----
 
