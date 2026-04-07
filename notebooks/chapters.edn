@@ -1,6 +1,6 @@
-{"🚀 Getting Started" ["quickstart"
-                       "datasets"]
- "🧱 Foundations" ["sketch_model"
+{"🚀 Getting Started" ["quickstart"]
+ "🧱 Foundations" ["datasets"
+                   "sketch_model"
                    "core_concepts"
                    "sketch_rules"
                    "inference_rules"

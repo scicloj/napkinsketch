@@ -21,15 +21,11 @@
    [tech.v3.datatype.functional :as dfn]
    [fastmath.stats :as fstats]))
 
-;; ## Datasets
-
-(def mpg (rdatasets/ggplot2-mpg))
-
 ;; ## Scatter
 
 ;; Colored scatter with LOESS smoothing — one curve per vehicle class:
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy {:color :class})
     sk/lay-point
     sk/lay-loess
@@ -41,26 +37,13 @@
                            (and (pos? (:points s))
                                 (pos? (:lines s)))))])
 
-;; Load remaining datasets used throughout the gallery:
-
-(def diamonds (rdatasets/ggplot2-diamonds))
-
-(def tips (rdatasets/reshape2-tips))
-
-(def mtcars (rdatasets/datasets-mtcars))
-
-(def economics (rdatasets/ggplot2-economics))
-
-(def iris (rdatasets/datasets-iris))
-
-(def gapminder (rdatasets/gapminder-gapminder))
-
 ;; ### Bubble chart
+;; Source: [R Graph Gallery: Bubble Chart](https://r-graph-gallery.com/bubble-chart.html)
 
 ;; Mapping a third variable to point size produces a bubble chart.
 ;; Here, diamond depth controls bubble size:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (tc/head 500)
     (sk/view :carat :price {:color :cut :size :depth})
     sk/lay-point
@@ -72,10 +55,11 @@
                            (= 500 (:points s))))])
 
 ;; ### Scatter by category
+;; Source: [R Graph Gallery: Scatter Plot](https://r-graph-gallery.com/scatterplot.html)
 
 ;; Categorical x-axis with points — useful for comparing groups:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill {:color :sex})
     sk/lay-point
     (sk/options {:title "Total Bill by Day"
@@ -88,10 +72,11 @@
 ;; ## Distributions
 
 ;; ### Histogram
+;; Source: [R Graph Gallery: Histogram](https://r-graph-gallery.com/histogram.html)
 
 ;; Basic histogram of diamond prices:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/view :price)
     sk/lay-histogram
     (sk/options {:title "Distribution of Diamond Prices"
@@ -103,7 +88,7 @@
 
 ;; Colored histogram by cut quality:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/view :price {:color :cut})
     sk/lay-histogram
     (sk/options {:title "Diamond Prices by Cut"
@@ -114,10 +99,11 @@
                            (< 1 (:polygons s))))])
 
 ;; ### Density
+;; Source: [R Graph Gallery: Density Plot](https://r-graph-gallery.com/density-plot.html)
 
 ;; Overlaid density curves for carat weight by cut:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/view :carat {:color :cut})
     sk/lay-density
     (sk/options {:title "Carat Distribution by Cut"
@@ -129,7 +115,7 @@
 
 ;; Density with rug marks showing individual observations:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (tc/head 500)
     (sk/view :carat)
     sk/lay-density
@@ -143,10 +129,11 @@
                                 (pos? (:lines s)))))])
 
 ;; ### Boxplot
+;; Source: [R Graph Gallery: Boxplot](https://r-graph-gallery.com/boxplot.html)
 
 ;; Grouped boxplot of restaurant tips by day:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill {:color :day})
     sk/lay-boxplot
     (sk/options {:title "Total Bill by Day"
@@ -158,7 +145,7 @@
 
 ;; Boxplot with individual points overlaid:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill)
     sk/lay-boxplot
     sk/lay-point
@@ -171,10 +158,11 @@
                                 (pos? (:points s)))))])
 
 ;; ### Violin
+;; Source: [R Graph Gallery: Violin Plot](https://r-graph-gallery.com/violin-plot.html)
 
 ;; Violin plots show the full distribution shape:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill {:color :day})
     sk/lay-violin
     (sk/options {:title "Total Bill by Day (violin)"
@@ -184,12 +172,10 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:polygons s))))])
 
-;; Violin with embedded boxplot for summary statistics.
-;; Note: don't use {:color :day} here — it would trigger dodge
-;; positioning, offsetting violin and boxplot independently.
+;; Violin with embedded boxplot for summary statistics:
 
-(-> tips
-    (sk/view :day :total-bill)
+(-> (rdatasets/reshape2-tips)
+    (sk/view :day :total-bill {:color :day})
     sk/lay-violin
     sk/lay-boxplot
     (sk/options {:title "Total Bill Distribution by Day"
@@ -200,10 +186,11 @@
                            (pos? (:polygons s))))])
 
 ;; ### Ridgeline
+;; Source: [R Graph Gallery: Ridgeline Plot](https://r-graph-gallery.com/ridgeline-plot.html)
 
 ;; Ridgeline plots stack density curves vertically by category:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/view :cut :price)
     sk/lay-ridgeline
     (sk/options {:title "Price Distribution by Cut (ridgeline)"
@@ -216,10 +203,11 @@
 ;; ## Ranking
 
 ;; ### Bar chart
+;; Source: [R Graph Gallery: Barplot](https://r-graph-gallery.com/barplot.html)
 
 ;; Count of diamonds by cut quality:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/view :cut)
     sk/lay-bar
     (sk/options {:title "Diamond Count by Cut"
@@ -230,10 +218,11 @@
                            (= 5 (:polygons s))))])
 
 ;; ### Horizontal bar
+;; Source: [R Graph Gallery: Barplot](https://r-graph-gallery.com/barplot.html)
 
 ;; Flip coordinates for horizontal bars:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/view :cut)
     sk/lay-bar
     (sk/coord :flip)
@@ -245,11 +234,12 @@
                            (= 5 (:polygons s))))])
 
 ;; ### Lollipop
+;; Source: [R Graph Gallery: Lollipop Plot](https://r-graph-gallery.com/lollipop-plot.html)
 
 ;; Lollipop chart of the top manufacturers by model count:
 
 (def mpg-mfr-counts
-  (-> mpg
+  (-> (rdatasets/ggplot2-mpg)
       (tc/group-by [:manufacturer])
       (tc/aggregate {:count tc/row-count})
       (tc/order-by [:count] :desc)
@@ -283,10 +273,11 @@
 ;; ## Evolution
 
 ;; ### Line chart
+;; Source: [R Graph Gallery: Line Chart](https://r-graph-gallery.com/line-chart.html)
 
 ;; US unemployment over time from the economics dataset:
 
-(-> economics
+(-> (rdatasets/ggplot2-economics)
     (sk/view :date :unemploy)
     sk/lay-line
     (sk/options {:title "US Unemployment Over Time"
@@ -298,12 +289,9 @@
 
 ;; Multi-series line chart — life expectancy for selected countries:
 
-(def gapminder-subset
-  (tc/select-rows gapminder
-                  #(#{"Japan" "Brazil" "Germany" "Nigeria" "Australia"}
-                    (:country %))))
-
-(-> gapminder-subset
+(-> (rdatasets/gapminder-gapminder)
+    (tc/select-rows #(#{"Japan" "Brazil" "Germany" "Nigeria" "Australia"}
+                      (:country %)))
     (sk/view :year :life-exp {:color :country})
     sk/lay-line
     sk/lay-point
@@ -316,10 +304,11 @@
                                 (pos? (:points s)))))])
 
 ;; ### Area chart
+;; Source: [R Graph Gallery: Area Chart](https://r-graph-gallery.com/area-chart.html)
 
 ;; Filled area chart for unemployment:
 
-(-> economics
+(-> (rdatasets/ggplot2-economics)
     (sk/view :date :unemploy)
     sk/lay-area
     (sk/options {:title "US Unemployment Over Time (area)"
@@ -332,10 +321,11 @@
 ;; ## Relationships
 
 ;; ### Heatmap (density2d)
+;; Source: [R Graph Gallery: 2D Density Chart](https://r-graph-gallery.com/2d-density-chart.html)
 
 ;; Two-dimensional density estimate for diamond carat vs price:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (tc/head 2000)
     (sk/view :carat :price)
     sk/lay-density2d
@@ -347,10 +337,11 @@
                            (pos? (:visible-tiles s))))])
 
 ;; ### Scatter with regression
+;; Source: [R Graph Gallery: Scatter Plot](https://r-graph-gallery.com/scatterplot.html)
 
 ;; Linear regression lines overlaid on a scatter plot:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :total-bill :tip {:color :sex})
     sk/lay-point
     sk/lay-lm
@@ -363,10 +354,11 @@
                                 (pos? (:lines s)))))])
 
 ;; ### Contour
+;; Source: [R Graph Gallery: 2D Density Chart](https://r-graph-gallery.com/2d-density-chart.html)
 
 ;; Contour lines on iris sepal dimensions, colored by species:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     sk/lay-contour
@@ -381,10 +373,11 @@
 ;; ## Multi-panel
 
 ;; ### Faceted scatter
+;; Source: [R Graph Gallery: Scatter Plot](https://r-graph-gallery.com/scatterplot.html)
 
 ;; Scatter plot of engine size vs highway MPG, faceted by drive type:
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy {:color :class})
     sk/lay-point
     (sk/facet-grid :drv nil)
@@ -397,7 +390,7 @@
 
 ;; Faceted histogram — highway MPG distribution by drive type:
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :hwy)
     sk/lay-histogram
     (sk/facet-grid :drv nil)
@@ -409,14 +402,15 @@
                            (= 3 (:panels s))))])
 
 ;; ### SPLOM (scatter plot matrix)
+;; Source: [R Graph Gallery: Correlogram](https://r-graph-gallery.com/correlogram.html)
 
 ;; All pairwise combinations of iris measurements. Diagonal panels
 ;; show histograms; off-diagonal panels show scatter plots:
 
-(def iris-cols [:sepal-length :sepal-width :petal-length :petal-width])
-
-(-> iris
-    (sk/view (sk/cross iris-cols iris-cols) {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view (sk/cross [:sepal-length :sepal-width :petal-length :petal-width]
+                       [:sepal-length :sepal-width :petal-length :petal-width])
+             {:color :species})
     (sk/options {:title "Iris SPLOM"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -425,10 +419,11 @@
 ;; ## Composition
 
 ;; ### Stacked bar
+;; Source: [R Graph Gallery: Stacked Barplot](https://r-graph-gallery.com/stacked-barplot.html)
 
 ;; Counts by day, stacked by sex:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day {:color :sex})
     sk/lay-stacked-bar
     (sk/options {:title "Tips by Day and Sex (stacked bar)"
@@ -439,7 +434,7 @@
 
 ;; Proportional stacked bar (stacked fill):
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day {:color :sex})
     sk/lay-stacked-bar-fill
     (sk/options {:title "Proportion by Day and Sex"
@@ -449,16 +444,14 @@
 (kind/test-last [(fn [v] (sk/sketch? v))])
 
 ;; ### Stacked area
+;; Source: [R Graph Gallery: Stacked Area Chart](https://r-graph-gallery.com/stacked-area-graph.html)
 
 ;; World population by continent over time:
 
-(def continent-pop
-  (-> gapminder
-      (tc/group-by [:year :continent])
-      (tc/aggregate {:pop (fn [ds] (reduce + (ds :pop)))})
-      (tc/order-by [:year :continent])))
-
-(-> continent-pop
+(-> (rdatasets/gapminder-gapminder)
+    (tc/group-by [:year :continent])
+    (tc/aggregate {:pop (fn [ds] (reduce + (ds :pop)))})
+    (tc/order-by [:year :continent])
     (sk/view :year :pop {:color :continent})
     sk/lay-stacked-area
     (sk/options {:title "World Population by Continent"
@@ -471,10 +464,11 @@
 ;; ## Polar
 
 ;; ### Rose chart
+;; Source: [R Graph Gallery: Circular Barplot](https://r-graph-gallery.com/circular-barplot.html)
 
 ;; Bar chart in polar coordinates produces a rose (coxcomb) chart:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/view :cut)
     sk/lay-bar
     (sk/coord :polar)
@@ -489,9 +483,7 @@
 ;; ### Scatter with text labels
 ;; Source: [Vega-Lite: Text Scatterplot](https://vega.github.io/vega-lite/examples/text_scatterplot_colored.html)
 
-(def cars (rdatasets/datasets-mtcars))
-
-(-> cars
+(-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
     (sk/lay-text {:text :rownames})
@@ -506,7 +498,7 @@
 ;; ### Scatter with regression and confidence band
 ;; Source: [Vega-Lite: Scatter + Linear Regression](https://vega.github.io/vega-lite/examples/layer_point_line_regression.html)
 
-(-> cars
+(-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
     (sk/lay-lm {:se true})
@@ -521,7 +513,7 @@
 ;; ### Grouped bar chart
 ;; Source: [Vega-Lite: Grouped Bar](https://vega.github.io/vega-lite/examples/bar_grouped.html)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-bar :day {:color :sex})
     (sk/options {:title "Tips by Day and Gender"}))
 
@@ -530,7 +522,7 @@
 ;; ### Log scale scatter
 ;; Source: [ECharts: Scatter Logarithmic](https://echarts.apache.org/examples/en/editor.html?c=scatter-logarithmic-regression)
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/lay-point :carat :price {:alpha 0.1})
     (sk/scale :y :log)
     (sk/options {:title "Diamond Price by Carat (Log Scale)"
@@ -542,7 +534,7 @@
 ;; ### Summary with error bars (mean ± SE)
 ;; Source: [Vega-Lite: Error Bars with CI](https://vega.github.io/vega-lite/examples/layer_point_errorbar_ci.html)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-summary :day :total-bill {:color :sex})
     (sk/options {:title "Average Bill with Standard Error"}))
 
@@ -577,7 +569,7 @@
 ;; ### Step chart
 ;; Source: [Vega-Lite: Step Chart](https://vega.github.io/vega-lite/examples/line_step.html)
 
-(-> economics
+(-> (rdatasets/ggplot2-economics)
     (sk/lay-step :date :unemploy)
     (sk/options {:title "US Unemployment (Step)"
                  :x-label "Date"
@@ -599,7 +591,7 @@
 ;; ### Scatter + LOESS with confidence band
 ;; Source: [Python Graph Gallery: Scatter with Smoothing](https://python-graph-gallery.com/42-custom-linear-regression-fit-seaborn/)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :total-bill :tip {:color :smoker})
     sk/lay-point
     (sk/lay-loess {:se true})
@@ -639,7 +631,7 @@
 ;; ### Violin + boxplot overlay
 ;; Source: [Python Graph Gallery: Violin with Box](https://python-graph-gallery.com/violin-plot/)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill)
     sk/lay-violin
     sk/lay-boxplot
@@ -651,7 +643,7 @@
 ;; ### Horizontal lollipop (ranked)
 ;; Source: [R Graph Gallery: Lollipop](https://r-graph-gallery.com/lollipop-plot.html)
 
-(-> cars
+(-> (rdatasets/datasets-mtcars)
     (sk/lay-lollipop :rownames :mpg)
     (sk/coord :flip)
     (sk/options {:title "Cars Ranked by MPG"}))
@@ -661,7 +653,7 @@
 ;; ### Stacked bar (proportional / fill)
 ;; Source: [Vega-Lite: Stacked Bar Normalized](https://vega.github.io/vega-lite/examples/stacked_bar_normalize.html)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-stacked-bar-fill :day {:color :sex})
     (sk/options {:title "Gender Proportion by Day (100% stacked)"}))
 
@@ -814,10 +806,8 @@
 ;; Economy variables plotted against each other over time create a
 ;; connected scatter plot. Subsampling every 12th month keeps it readable:
 
-(def economics-annual
-  (tc/select-rows economics (range 0 (tc/row-count economics) 12)))
-
-(-> economics-annual
+(-> (rdatasets/ggplot2-economics)
+    (as-> econ (tc/select-rows econ (range 0 (tc/row-count econ) 12)))
     (sk/view :unemploy :pce)
     sk/lay-line
     sk/lay-point
@@ -835,7 +825,7 @@
 
 ;; Layering step and area creates a filled step chart:
 
-(-> economics
+(-> (rdatasets/ggplot2-economics)
     (sk/view :date :unemploy)
     sk/lay-step
     sk/lay-area
@@ -852,7 +842,7 @@
 
 ;; Layering area and line gives a filled region with a crisp boundary:
 
-(-> economics
+(-> (rdatasets/ggplot2-economics)
     (sk/view :date :psavert)
     sk/lay-area
     sk/lay-line
@@ -867,13 +857,8 @@
 ;; ### Multi-series line chart (Texas housing)
 ;; Source: [Vega-Lite: Multi Series Line](https://vega.github.io/vega-lite/examples/line_color.html)
 
-(def txhousing (rdatasets/ggplot2-txhousing))
-
-(def tx-cities
-  (tc/select-rows txhousing
-                  #(#{"Houston" "Dallas" "Austin" "San Antonio"} (:city %))))
-
-(-> tx-cities
+(-> (rdatasets/ggplot2-txhousing)
+    (tc/select-rows #(#{"Houston" "Dallas" "Austin" "San Antonio"} (:city %)))
     (sk/view :date :median {:color :city})
     sk/lay-line
     (sk/options {:title "Texas Median Home Prices"
@@ -887,10 +872,8 @@
 
 ;; Each subject in the sleep study gets a line showing reaction time over days:
 
-(def sleepstudy (rdatasets/lme4-sleepstudy))
-
-(-> sleepstudy
-    (sk/view :days :reaction {:color :subject})
+(-> (rdatasets/lme4-sleepstudy)
+    (sk/view :days :reaction {:color :subject :color-type :categorical})
     sk/lay-line
     sk/lay-point
     (sk/options {:title "Sleep Deprivation: Reaction Time by Subject"
@@ -904,10 +887,8 @@
 ;; ### Step chart of a single subject
 ;; Source: [D3 Graph Gallery: Step Chart](https://d3-graph-gallery.com/graph/line_basic.html)
 
-(def sleep-subject-308
-  (tc/select-rows sleepstudy #(= "308" (str (:subject %)))))
-
-(-> sleep-subject-308
+(-> (rdatasets/lme4-sleepstudy)
+    (tc/select-rows #(= "308" (str (:subject %))))
     (sk/view :days :reaction)
     sk/lay-step
     sk/lay-point
@@ -925,9 +906,7 @@
 ;; ### Old Faithful eruptions
 ;; Source: [R Graph Gallery: Basic Scatter](https://r-graph-gallery.com/scatterplot.html)
 
-(def faithful (rdatasets/datasets-faithful))
-
-(-> faithful
+(-> (rdatasets/datasets-faithful)
     (sk/view :eruptions :waiting)
     sk/lay-point
     (sk/options {:title "Old Faithful Geyser"
@@ -939,7 +918,7 @@
 ;; ### Scatter with LOESS on Old Faithful
 ;; Source: [Python Graph Gallery: Scatter with Smoothing](https://python-graph-gallery.com/42-custom-linear-regression-fit-seaborn/)
 
-(-> faithful
+(-> (rdatasets/datasets-faithful)
     (sk/view :eruptions :waiting)
     sk/lay-point
     sk/lay-loess
@@ -956,7 +935,7 @@
 
 ;; Transparency reveals density in overplotted regions:
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/lay-point :carat :price {:alpha 0.05})
     (sk/options {:title "Diamond Price vs Carat (alpha = 0.05)"
                  :x-label "Carat"
@@ -969,7 +948,7 @@
 
 ;; Color mapped to a continuous variable (horsepower):
 
-(-> mtcars
+(-> (rdatasets/datasets-mtcars)
     (sk/lay-point :wt :mpg {:color :hp})
     (sk/options {:title "Cars: Color by Horsepower"
                  :x-label "Weight (1000 lbs)"
@@ -980,7 +959,7 @@
 ;; ### Scatter with multiple aesthetics (color + size)
 ;; Source: [D3 Graph Gallery: Bubble Chart](https://d3-graph-gallery.com/graph/bubble_basic.html)
 
-(-> mtcars
+(-> (rdatasets/datasets-mtcars)
     (sk/lay-point :hp :mpg {:color :cyl :size :disp})
     (sk/options {:title "Cars: Color by Cylinders, Size by Displacement"
                  :x-label "Horsepower"
@@ -991,10 +970,7 @@
 ;; ### Bubble chart: Gapminder 2007
 ;; Source: [D3 Graph Gallery: Bubble](https://d3-graph-gallery.com/graph/bubble_basic.html)
 
-(def gapminder-2007
-  (tc/select-rows gapminder #(= 2007 (:year %))))
-
-(-> gapminder-2007
+(-> (tc/select-rows (rdatasets/gapminder-gapminder) #(= 2007 (:year %)))
     (sk/lay-point :gdp-percap :life-exp {:color :continent :size :pop :alpha 0.6})
     (sk/scale :x :log)
     (sk/options {:title "Gapminder 2007"
@@ -1006,9 +982,7 @@
 ;; ### Midwest demographics: scatter with size and transparency
 ;; Source: [Python Graph Gallery: Bubble](https://python-graph-gallery.com/bubble-plot/)
 
-(def midwest (rdatasets/ggplot2-midwest))
-
-(-> midwest
+(-> (rdatasets/ggplot2-midwest)
     (sk/lay-point :percollege :percbelowpoverty {:color :state :size :poptotal :alpha 0.5})
     (sk/options {:title "Midwest: College Education vs Poverty"
                  :x-label "Percent College Educated"
@@ -1035,7 +1009,7 @@
 ;; ### Scatter with equal aspect ratio
 ;; Source: [Vega-Lite: Scatter with Fixed Aspect](https://vega.github.io/vega-lite/examples/point_2d.html)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :petal-length {:color :species})
     sk/lay-point
     (sk/coord :fixed)
@@ -1048,10 +1022,9 @@
 ;; ### Point + labels (top fuel-efficient cars)
 ;; Source: [Vega-Lite: Text Marks](https://vega.github.io/vega-lite/examples/text_scatterplot_colored.html)
 
-(def top-mpg-cars
-  (tc/select-rows (tc/order-by mtcars [:mpg] :desc) (range 5)))
-
-(-> top-mpg-cars
+(-> (rdatasets/datasets-mtcars)
+    (tc/order-by [:mpg] :desc)
+    (tc/select-rows (range 5))
     (sk/view :wt :mpg)
     sk/lay-point
     (sk/lay-label {:text :rownames})
@@ -1066,7 +1039,7 @@
 ;; ### Iris scatter with linear regression per species
 ;; Source: [R Graph Gallery: Scatter with Groups](https://r-graph-gallery.com/scatterplot.html)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :petal-length :petal-width {:color :species})
     sk/lay-point
     sk/lay-lm
@@ -1081,7 +1054,7 @@
 ;; ### Linear regression with confidence band
 ;; Source: [Vega-Lite: Regression + CI](https://vega.github.io/vega-lite/examples/layer_point_line_regression.html)
 
-(-> mtcars
+(-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
     (sk/lay-lm {:se true})
@@ -1099,7 +1072,7 @@
 
 ;; Linear regression and LOESS on the same axes:
 
-(-> mtcars
+(-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
     sk/lay-lm
@@ -1118,7 +1091,7 @@
 ;; ### Old Faithful histogram with density curve
 ;; Source: [Python Graph Gallery: Histogram + Density](https://python-graph-gallery.com/density-and-histogram-together/)
 
-(-> faithful
+(-> (rdatasets/datasets-faithful)
     (sk/view :eruptions)
     (sk/lay-histogram {:normalize :density :binwidth 0.25})
     sk/lay-density
@@ -1131,7 +1104,7 @@
 ;; ### Density + rug on Old Faithful
 ;; Source: [Python Graph Gallery: Density + Rug](https://python-graph-gallery.com/71-density-plot-with-shade-seaborn/)
 
-(-> faithful
+(-> (rdatasets/datasets-faithful)
     (sk/view :eruptions)
     sk/lay-density
     sk/lay-rug
@@ -1146,7 +1119,7 @@
 ;; ### Diamond depth density
 ;; Source: [Vega-Lite: Density Plot](https://vega.github.io/vega-lite/examples/area_density.html)
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/view :depth)
     sk/lay-density
     (sk/options {:title "Distribution of Diamond Depth"
@@ -1158,7 +1131,7 @@
 ;; ### Diamond depth histogram + density overlay
 ;; Source: [Python Graph Gallery: Histogram + Density](https://python-graph-gallery.com/density-and-histogram-together/)
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/view :depth)
     (sk/lay-histogram {:normalize :density})
     sk/lay-density
@@ -1171,7 +1144,7 @@
 ;; ### Colored density by species (petal width)
 ;; Source: [Python Graph Gallery: Multiple Density](https://python-graph-gallery.com/density-plot/)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/lay-density :petal-width {:color :species})
     (sk/options {:title "Iris Petal Width by Species"
                  :x-label "Petal Width (cm)"
@@ -1193,7 +1166,7 @@
 ;; ### Histogram with specific bin count
 ;; Source: [Vega-Lite: Histogram with Bins](https://vega.github.io/vega-lite/examples/bar_binned_data.html)
 
-(-> faithful
+(-> (rdatasets/datasets-faithful)
     (sk/view :waiting)
     (sk/lay-histogram {:bins 15})
     (sk/options {:title "Waiting Time Between Eruptions (15 bins)"
@@ -1205,10 +1178,7 @@
 ;; ### Simulated normal distribution
 ;; Source: [ECharts: Histogram](https://echarts.apache.org/examples/en/editor.html?c=bar-histogram)
 
-(def normal-data
-  (tc/dataset {:value (repeatedly 500 #(+ (* 2.0 (rand)) (* 2.0 (rand)) (* 2.0 (rand)) -3.0))}))
-
-(-> normal-data
+(-> (tc/dataset {:value (repeatedly 500 #(+ (* 2.0 (rand)) (* 2.0 (rand)) (* 2.0 (rand)) -3.0))})
     (sk/view :value)
     (sk/lay-histogram {:bins 30 :normalize :density})
     sk/lay-density
@@ -1221,9 +1191,7 @@
 ;; ### Boxplot: chick weights by feed
 ;; Source: [R Graph Gallery: Boxplot](https://r-graph-gallery.com/boxplot.html)
 
-(def chickwts (rdatasets/datasets-chickwts))
-
-(-> chickwts
+(-> (rdatasets/datasets-chickwts)
     (sk/view :feed :weight {:color :feed})
     sk/lay-boxplot
     (sk/options {:title "Chick Weight by Feed Type"
@@ -1235,7 +1203,7 @@
 ;; ### Horizontal boxplot
 ;; Source: [Python Graph Gallery: Horizontal Box](https://python-graph-gallery.com/boxplot/)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :species :sepal-length {:color :species})
     sk/lay-boxplot
     (sk/coord :flip)
@@ -1250,7 +1218,7 @@
 
 ;; Boxplots split by both day and sex:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill {:color :sex})
     sk/lay-boxplot
     (sk/options {:title "Tips by Day and Gender (Grouped Boxplot)"
@@ -1262,7 +1230,7 @@
 ;; ### Violin: iris sepal width
 ;; Source: [Python Graph Gallery: Violin](https://python-graph-gallery.com/violin-plot/)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :species :sepal-width {:color :species})
     sk/lay-violin
     (sk/options {:title "Iris Sepal Width (Violin)"
@@ -1274,7 +1242,7 @@
 ;; ### Horizontal violin
 ;; Source: [Python Graph Gallery: Horizontal Violin](https://python-graph-gallery.com/violin-plot/)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :species :petal-width {:color :species})
     sk/lay-violin
     (sk/coord :flip)
@@ -1290,7 +1258,7 @@
 ;; Layering violin and points gives a view of both distribution shape
 ;; and individual observations:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill)
     sk/lay-violin
     sk/lay-point
@@ -1307,7 +1275,7 @@
 
 ;; All three distribution representations combined:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill)
     sk/lay-violin
     sk/lay-boxplot
@@ -1323,7 +1291,7 @@
 ;; ### Violin by smoker status
 ;; Source: [Python Graph Gallery: Violin by Group](https://python-graph-gallery.com/violin-plot/)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :smoker :total-bill {:color :smoker})
     sk/lay-violin
     (sk/options {:title "Total Bill by Smoking Status"
@@ -1335,7 +1303,7 @@
 ;; ### Ridgeline: iris petal length
 ;; Source: [Python Graph Gallery: Ridgeline](https://python-graph-gallery.com/ridgeline-plot/)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :species :petal-length)
     sk/lay-ridgeline
     (sk/options {:title "Iris Petal Length by Species (Ridgeline)"
@@ -1347,7 +1315,7 @@
 ;; ### Ridgeline: diamond price by color grade
 ;; Source: [Python Graph Gallery: Ridgeline by Category](https://python-graph-gallery.com/ridgeline-plot/)
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (sk/view :color :price)
     sk/lay-ridgeline
     (sk/options {:title "Diamond Price by Color Grade (Ridgeline)"
@@ -1381,7 +1349,7 @@
 ;; ### Bar chart: mpg models per class
 ;; Source: [Vega-Lite: Simple Bar](https://vega.github.io/vega-lite/examples/bar.html)
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :class)
     sk/lay-bar
     (sk/options {:title "Vehicle Count by Class"
@@ -1393,7 +1361,7 @@
 ;; ### Grouped bar chart
 ;; Source: [Vega-Lite: Grouped Bar](https://vega.github.io/vega-lite/examples/bar_grouped.html)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-bar :day {:color :sex})
     (sk/options {:title "Tips Count by Day and Gender"
                  :x-label "Day"
@@ -1404,11 +1372,8 @@
 ;; ### Horizontal value bar chart
 ;; Source: [ECharts: Bar Horizontal](https://echarts.apache.org/examples/en/editor.html?c=bar-y-category)
 
-(def gdp-data
-  (tc/dataset {:country ["US" "China" "Japan" "Germany" "UK" "India" "France"]
-               :gdp [21.4 14.7 5.1 3.8 2.8 2.7 2.6]}))
-
-(-> gdp-data
+(-> (tc/dataset {:country ["US" "China" "Japan" "Germany" "UK" "India" "France"]
+                 :gdp [21.4 14.7 5.1 3.8 2.8 2.7 2.6]})
     (sk/lay-value-bar :country :gdp)
     (sk/coord :flip)
     (sk/options {:title "GDP by Country (2019)"
@@ -1422,11 +1387,8 @@
 
 ;; Value bars support negative values, creating a diverging pattern:
 
-(def diverging-data
-  (tc/dataset {:metric ["Quality" "Speed" "Usability" "Reliability" "Support" "Price" "Design" "Docs"]
-               :score [-30 -20 -10 5 15 25 35 45]}))
-
-(-> diverging-data
+(-> (tc/dataset {:metric ["Quality" "Speed" "Usability" "Reliability" "Support" "Price" "Design" "Docs"]
+                 :score [-30 -20 -10 5 15 25 35 45]})
     (sk/lay-value-bar :metric :score)
     (sk/annotate (sk/rule-h 0))
     (sk/coord :flip)
@@ -1441,12 +1403,9 @@
 ;; ### Lollipop: chick weight by feed
 ;; Source: [R Graph Gallery: Lollipop](https://r-graph-gallery.com/lollipop-plot.html)
 
-(def chickwts-summary
-  (-> chickwts
-      (tc/group-by [:feed])
-      (tc/aggregate {:mean-weight (fn [ds] (dfn/mean (ds :weight)))})))
-
-(-> chickwts-summary
+(-> (rdatasets/datasets-chickwts)
+    (tc/group-by [:feed])
+    (tc/aggregate {:mean-weight (fn [ds] (dfn/mean (ds :weight)))})
     (sk/lay-lollipop :feed :mean-weight)
     (sk/coord :flip)
     (sk/options {:title "Mean Chick Weight by Feed Type"
@@ -1460,12 +1419,9 @@
 ;; ### Lollipop: iris mean sepal length by species
 ;; Source: [D3 Graph Gallery: Lollipop](https://d3-graph-gallery.com/graph/lollipop_basic.html)
 
-(def iris-mean-sepal
-  (-> iris
-      (tc/group-by [:species])
-      (tc/aggregate {:mean-sl (fn [ds] (fstats/mean (ds :sepal-length)))})))
-
-(-> iris-mean-sepal
+(-> (rdatasets/datasets-iris)
+    (tc/group-by [:species])
+    (tc/aggregate {:mean-sl (fn [ds] (fstats/mean (ds :sepal-length)))})
     (sk/lay-lollipop :species :mean-sl)
     (sk/coord :flip)
     (sk/options {:title "Mean Sepal Length by Species"
@@ -1482,7 +1438,7 @@
 ;; ### 2D density tile on Old Faithful
 ;; Source: [R Graph Gallery: 2D Density](https://r-graph-gallery.com/2d-density-chart.html)
 
-(-> faithful
+(-> (rdatasets/datasets-faithful)
     (sk/view :eruptions :waiting)
     sk/lay-density2d
     (sk/options {:title "Old Faithful: 2D Density"
@@ -1494,7 +1450,7 @@
 ;; ### Scatter + density2d overlay on Old Faithful
 ;; Source: [Python Graph Gallery: Scatter + 2D Density](https://python-graph-gallery.com/2d-density-plot-with-ggplot2/)
 
-(-> faithful
+(-> (rdatasets/datasets-faithful)
     (sk/view :eruptions :waiting)
     sk/lay-point
     sk/lay-density2d
@@ -1509,7 +1465,7 @@
 ;; ### Contour plot on Old Faithful
 ;; Source: [D3 Graph Gallery: Contour](https://d3-graph-gallery.com/graph/density2d_contour.html)
 
-(-> faithful
+(-> (rdatasets/datasets-faithful)
     (sk/view :eruptions :waiting)
     sk/lay-point
     sk/lay-contour
@@ -1524,7 +1480,7 @@
 ;; ### Contour only (no scatter)
 ;; Source: [Vega-Lite: Density Contour](https://vega.github.io/vega-lite/examples/area_density_contour.html)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :petal-length)
     sk/lay-contour
     (sk/options {:title "Iris: Sepal vs Petal Length Contour"
@@ -1538,9 +1494,7 @@
 
 ;; Using faithfuld which has pre-computed density on a grid:
 
-(def faithfuld (rdatasets/ggplot2-faithfuld))
-
-(-> faithfuld
+(-> (rdatasets/ggplot2-faithfuld)
     (sk/view :eruptions :waiting {:color :density})
     sk/lay-tile
     (sk/options {:title "Old Faithful: Pre-computed Density Heatmap"
@@ -1552,7 +1506,7 @@
 ;; ### 2D density on diamonds (scatter underneath)
 ;; Source: [Python Graph Gallery: 2D Density](https://python-graph-gallery.com/2d-density-plot-with-ggplot2/)
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (tc/head 3000)
     (sk/view :carat :price)
     sk/lay-point
@@ -1568,7 +1522,7 @@
 ;; ### 2D density on mpg
 ;; Source: [Vega-Lite: Density Heatmap](https://vega.github.io/vega-lite/examples/rect_heatmap_weather.html)
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy)
     sk/lay-density2d
     (sk/options {:title "MPG: Displacement vs Highway (Density)"
@@ -1580,12 +1534,9 @@
 ;; ### Numeric tile heatmap
 ;; Source: [ECharts: Heatmap](https://echarts.apache.org/examples/en/editor.html?c=heatmap-cartesian)
 
-(def synthetic-heatmap
-  (tc/dataset {:row (mapcat #(repeat 6 %) (range 6))
-               :col (flatten (repeat 6 (range 6)))
-               :value (map #(Math/sin (* % 0.5)) (range 36))}))
-
-(-> synthetic-heatmap
+(-> (tc/dataset {:row (mapcat #(repeat 6 %) (range 6))
+                 :col (flatten (repeat 6 (range 6)))
+                 :value (map #(Math/sin (* % 0.5)) (range 36))})
     (sk/view :col :row {:color :value})
     sk/lay-tile
     (sk/options {:title "Synthetic Heatmap (sin wave)"
@@ -1600,16 +1551,13 @@
 ;; ### Mean with error bars (pre-computed)
 ;; Source: [Vega-Lite: Error Bar + Point](https://vega.github.io/vega-lite/examples/layer_point_errorbar_ci.html)
 
-(def iris-stats
-  (-> iris
-      (tc/group-by [:species])
-      (tc/aggregate {:mean (fn [ds] (fstats/mean (ds :sepal-length)))
-                     :ymin (fn [ds] (- (fstats/mean (ds :sepal-length))
-                                       (fstats/stddev (ds :sepal-length))))
-                     :ymax (fn [ds] (+ (fstats/mean (ds :sepal-length))
-                                       (fstats/stddev (ds :sepal-length))))})))
-
-(-> iris-stats
+(-> (rdatasets/datasets-iris)
+    (tc/group-by [:species])
+    (tc/aggregate {:mean (fn [ds] (fstats/mean (ds :sepal-length)))
+                   :ymin (fn [ds] (- (fstats/mean (ds :sepal-length))
+                                     (fstats/stddev (ds :sepal-length))))
+                   :ymax (fn [ds] (+ (fstats/mean (ds :sepal-length))
+                                     (fstats/stddev (ds :sepal-length))))})
     (sk/lay-errorbar :species :mean {:ymin :ymin :ymax :ymax})
     (sk/lay-point :species :mean)
     (sk/options {:title "Mean Sepal Length ± SD by Species"
@@ -1623,7 +1571,7 @@
 ;; ### Summary with error bars (built-in)
 ;; Source: [Vega-Lite: Error Bar Summary](https://vega.github.io/vega-lite/examples/layer_point_errorbar_ci.html)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-summary :day :tip {:color :sex})
     (sk/options {:title "Mean Tip ± SE by Day and Gender"
                  :x-label "Day"
@@ -1639,7 +1587,7 @@
 
 ;; Using overlay to put two different y-variables on the same axes:
 
-(-> economics
+(-> (rdatasets/ggplot2-economics)
     (sk/view :date :unemploy)
     sk/lay-line
     (sk/overlay :date :uempmed :line)
@@ -1652,7 +1600,7 @@
 ;; ### Three overlaid series
 ;; Source: [ECharts: Multi Line](https://echarts.apache.org/examples/en/editor.html?c=line-smooth)
 
-(-> economics
+(-> (rdatasets/ggplot2-economics)
     (sk/view :date :unemploy)
     sk/lay-line
     (sk/overlay :date :uempmed :line)
@@ -1668,7 +1616,7 @@
 
 ;; Highway MPG as scatter, city MPG as line, both against displacement:
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy)
     sk/lay-point
     (sk/overlay :displ :cty :line)
@@ -1686,7 +1634,7 @@
 ;; ### Scatter with reference lines
 ;; Source: [R Graph Gallery: Annotation](https://r-graph-gallery.com/scatterplot.html)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width)
     sk/lay-point
     (sk/annotate (sk/rule-h 3.0)
@@ -1704,7 +1652,7 @@
 ;; ### Scatter with highlight bands
 ;; Source: [Vega-Lite: Rect Annotation](https://vega.github.io/vega-lite/examples/layer_rect_extent.html)
 
-(-> mtcars
+(-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
     (sk/annotate (sk/band-h 20 30)
@@ -1718,7 +1666,7 @@
 ;; ### Area chart with threshold line
 ;; Source: [ECharts: Area with Mark Line](https://echarts.apache.org/examples/en/editor.html?c=area-basic)
 
-(-> economics
+(-> (rdatasets/ggplot2-economics)
     (sk/view :date :unemploy)
     sk/lay-area
     (sk/annotate (sk/rule-h 8000))
@@ -1762,7 +1710,7 @@
 ;; ### Facet-wrap scatter by class
 ;; Source: [Vega-Lite: Faceted Scatter](https://vega.github.io/vega-lite/examples/trellis_scatter.html)
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy)
     sk/lay-point
     (sk/facet :class)
@@ -1775,7 +1723,7 @@
 ;; ### Facet-grid: rows by drive, columns by year
 ;; Source: [Vega-Lite: Trellis Grid](https://vega.github.io/vega-lite/examples/trellis_barley.html)
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy)
     sk/lay-point
     (sk/facet-grid :drv :year)
@@ -1792,7 +1740,7 @@
 ;; Faceting currently requires keyword/string values; numeric facet
 ;; values don't expand correctly. This is a known limitation.
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy)
     sk/lay-point
     (sk/facet-grid :drv :class)
@@ -1805,7 +1753,7 @@
 ;; ### Facet-grid column only
 ;; Source: [Vega-Lite: Column Facet](https://vega.github.io/vega-lite/examples/trellis_bar.html)
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy)
     sk/lay-point
     (sk/facet-grid nil :drv)
@@ -1818,7 +1766,7 @@
 ;; ### Faceted density
 ;; Source: [Python Graph Gallery: Small Multiples Density](https://python-graph-gallery.com/125-small-multiples-for-line-chart/)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :petal-length)
     sk/lay-density
     (sk/facet :species)
@@ -1831,7 +1779,7 @@
 ;; ### Faceted boxplot
 ;; Source: [Vega-Lite: Faceted Boxplot](https://vega.github.io/vega-lite/examples/boxplot.html)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill)
     sk/lay-boxplot
     (sk/facet :sex)
@@ -1846,7 +1794,7 @@
 ;; ### Faceted violin
 ;; Source: [Python Graph Gallery: Faceted Violin](https://python-graph-gallery.com/violin-plot/)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill)
     sk/lay-violin
     (sk/facet :sex)
@@ -1861,7 +1809,7 @@
 ;; ### Faceted bar chart
 ;; Source: [Vega-Lite: Trellis Bar](https://vega.github.io/vega-lite/examples/trellis_bar.html)
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :class)
     sk/lay-bar
     (sk/facet :year)
@@ -1874,7 +1822,7 @@
 ;; ### Faceted scatter + regression per panel
 ;; Source: [Vega-Lite: Faceted with Regression](https://vega.github.io/vega-lite/examples/trellis_scatter.html)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :petal-length :petal-width)
     sk/lay-point
     sk/lay-lm
@@ -1891,7 +1839,7 @@
 ;; ### Facet-grid with boxplot
 ;; Source: [Vega-Lite: Faceted Box](https://vega.github.io/vega-lite/examples/boxplot.html)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill)
     sk/lay-boxplot
     (sk/facet-grid :time :smoker)
@@ -1904,7 +1852,7 @@
 ;; ### Faceted scatter (Gapminder by continent)
 ;; Source: [D3 Graph Gallery: Small Multiples](https://d3-graph-gallery.com/graph/small_multiple_basic.html)
 
-(-> gapminder-2007
+(-> (tc/select-rows (rdatasets/gapminder-gapminder) #(= 2007 (:year %)))
     (sk/view :gdp-percap :life-exp)
     sk/lay-point
     (sk/scale :x :log)
@@ -1918,7 +1866,7 @@
 ;; ### Faceted line + point (sleepstudy per subject)
 ;; Source: [Python Graph Gallery: Small Multiples](https://python-graph-gallery.com/125-small-multiples-for-line-chart/)
 
-(-> sleepstudy
+(-> (rdatasets/lme4-sleepstudy)
     (sk/view :days :reaction)
     sk/lay-line
     sk/lay-point
@@ -1934,7 +1882,7 @@
 ;; ### Faceted scatter + LOESS (mpg by cylinder)
 ;; Source: [Vega-Lite: Faceted with Loess](https://vega.github.io/vega-lite/examples/trellis_scatter.html)
 
-(-> mpg
+(-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy)
     sk/lay-point
     sk/lay-loess
@@ -1953,7 +1901,7 @@
 ;; ### Compact SPLOM (3 variables)
 ;; Source: [Vega-Lite: SPLOM](https://vega.github.io/vega-lite/examples/interactive_splom.html)
 
-(-> mtcars
+(-> (rdatasets/datasets-mtcars)
     (sk/view (sk/cross [:mpg :hp :wt] [:mpg :hp :wt]))
     (sk/options {:title "Motor Trend Cars: 3x3 SPLOM"}))
 
@@ -1962,7 +1910,7 @@
 ;; ### SPLOM (2 variables)
 ;; Source: [D3 Graph Gallery: SPLOM](https://d3-graph-gallery.com/graph/correlogram_basic.html)
 
-(-> mtcars
+(-> (rdatasets/datasets-mtcars)
     (sk/view (sk/cross [:mpg :wt] [:mpg :wt]))
     (sk/options {:title "MPG vs Weight: 2x2 SPLOM"}))
 
@@ -1974,7 +1922,7 @@
 ;; ### Rose chart: tips by day
 ;; Source: [ECharts: Polar Bar](https://echarts.apache.org/examples/en/editor.html?c=bar-polar-stack)
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day)
     sk/lay-bar
     (sk/coord :polar)
@@ -1985,7 +1933,7 @@
 ;; ### Rose chart: chick weights by feed
 ;; Source: [ECharts: Nightingale Rose](https://echarts.apache.org/examples/en/editor.html?c=pie-roseType)
 
-(-> chickwts
+(-> (rdatasets/datasets-chickwts)
     (sk/view :feed)
     sk/lay-bar
     (sk/coord :polar)
@@ -1996,11 +1944,8 @@
 ;; ### Polar value bar
 ;; Source: [ECharts: Polar Bar](https://echarts.apache.org/examples/en/editor.html?c=bar-polar-real-estate)
 
-(def weekly-hours
-  (tc/dataset {:day ["Mon" "Tue" "Wed" "Thu" "Fri" "Sat" "Sun"]
-               :hours [8 7 6 9 5 3 4]}))
-
-(-> weekly-hours
+(-> (tc/dataset {:day ["Mon" "Tue" "Wed" "Thu" "Fri" "Sat" "Sun"]
+                 :hours [8 7 6 9 5 3 4]})
     (sk/lay-value-bar :day :hours)
     (sk/coord :polar)
     (sk/options {:title "Weekly Working Hours (Polar)"}))
@@ -2013,7 +1958,7 @@
 ;; ### Log scale scatter
 ;; Source: [ECharts: Scatter Logarithmic](https://echarts.apache.org/examples/en/editor.html?c=scatter-logarithmic-regression)
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (tc/head 2000)
     (sk/lay-point :carat :price {:alpha 0.15})
     (sk/scale :y :log)
@@ -2044,7 +1989,7 @@
 ;; Note: stacked bar with many color categories may trigger a known
 ;; fmt-name bug. Using tips which has fewer categories:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day {:color :time})
     sk/lay-stacked-bar
     (sk/options {:title "Tips by Day and Meal Time (Stacked)"
@@ -2058,7 +2003,7 @@
 
 ;; Layering bar and point gives a dot-on-bar pattern:
 
-(-> tips
+(-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill)
     sk/lay-bar
     sk/lay-point
@@ -2078,7 +2023,7 @@
 ;; ### Iris density2d
 ;; Source: [Python Graph Gallery: 2D Density](https://python-graph-gallery.com/2d-density-plot-with-ggplot2/)
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-density2d
     (sk/options {:title "Iris: 2D Density by Species"
@@ -2090,7 +2035,7 @@
 ;; ### Iris contour with scatter
 ;; Source: [D3 Graph Gallery: Contour](https://d3-graph-gallery.com/graph/density2d_contour.html)
 
-(-> diamonds
+(-> (rdatasets/ggplot2-diamonds)
     (tc/head 1000)
     (sk/view :carat :price)
     sk/lay-contour

@@ -29,31 +29,30 @@
 ;; ## Quick example
 
 (ns readme
-  (:require [tablecloth.api :as tc]
-            [scicloj.napkinsketch.api :as sk]))
+  (:require [scicloj.napkinsketch.api :as sk]
+            [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
+;; Line chart with point markers from plain Clojure data:
 
-;; Scatter plot with color grouping:
-
-(-> iris
-    ;; scatterplot layer: 
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    ;; eager rendering (usually not needed):
-    sk/plot)
-
-;; Multiple layers — shared aesthetics via `sk/view`:
-
-(-> iris
-    ;; aesthetics shared across layers: 
-    (sk/view :sepal_length :sepal_width {:color :species})
-    ;; scatterplot layer: 
+(-> [{:month "Jan" :sales 120}
+     {:month "Feb" :sales 95}
+     {:month "Mar" :sales 140}
+     {:month "Apr" :sales 175}
+     {:month "May" :sales 160}
+     {:month "Jun" :sales 210}]
+    (sk/lay-line :month :sales)
     sk/lay-point
-    ;; linear model layer:
-    sk/lay-lm
-    ;; eager rendering (usually not needed):
-    sk/plot)
+    (sk/options {:title "Monthly Sales"}))
+
+;; Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping:
+
+(-> (rdatasets/datasets-iris)
+    (sk/view (sk/cross [:sepal-length :sepal-width
+                        :petal-length :petal-width]
+                       [:sepal-length :sepal-width
+                        :petal-length :petal-width])
+             {:color :species})
+    (sk/options {:title "Iris SPLOM"}))
 
 ;; ## Documentation
 ;;
