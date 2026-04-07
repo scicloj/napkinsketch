@@ -1,9 +1,0 @@
-view.clj:  :x-type (if x-temporal? :numerical x-type)
-
-
-dataset chapter - background: explain, refer to metamorph.ml, demonstrate various constructors.
- 
-
-readme examples: plain, dataset
-
-
