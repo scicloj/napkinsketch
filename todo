@@ -1,0 +1,19 @@
+view.clj:  :x-type (if x-temporal? :numerical x-type)
+
+no need to def datasets
+
+dataset chapter - background: explain, refer to metamorph.ml, demonstrate various constructors.
+ 
+
+readme examples: plain, dataset
+
+
+sleep depriivation line
+(-> sleepstudy
+    (sk/view :days :reaction {:color :subject})
+    sk/lay-line
+    sk/lay-point
+    (sk/options {:title "Sleep Deprivation: Reaction Time by Subject"
+                 :x-label "Days of Sleep Deprivation"
+                 :y-label "Reaction Time (ms)"}))
+needs visual review

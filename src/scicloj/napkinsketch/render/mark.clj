@@ -256,7 +256,7 @@
   (let [{:keys [style groups position]} layer
         {:keys [coord-fn y-domain-min]} ctx
         {:keys [opacity]} style
-        baseline (or y-domain-min 0)]
+        baseline 0]
     (if (and (#{:stack :fill} position) (some :y0s groups))
       ;; Stacked: use pre-computed y0s from position/apply-positions
       (vec
