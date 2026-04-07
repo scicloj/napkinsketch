@@ -552,7 +552,7 @@
 
 (-> (rdatasets/gapminder-gapminder)
     (tc/select-rows #(= 2007 (:year %)))
-    (sk/lay-point :gdpPercap :lifeExp {:color :continent :size :pop})
+    (sk/lay-point :gdp-percap :life-exp {:color :continent :size :pop})
     (sk/scale :x :log)
     (sk/options {:title "Gapminder 2007: Life Expectancy vs GDP"
                  :x-label "GDP per Capita (log)"
@@ -565,7 +565,7 @@
 
 (-> (rdatasets/gapminder-gapminder)
     (tc/select-rows #(#{"Japan" "United States" "China" "India" "Brazil"} (:country %)))
-    (sk/lay-line :year :lifeExp {:color :country})
+    (sk/lay-line :year :life-exp {:color :country})
     (sk/options {:title "Life Expectancy Over Time"
                  :x-label "Year"
                  :y-label "Life Expectancy"}))
