@@ -29,7 +29,7 @@
         (vec
          (concat
           (when title
-            [(ui/translate x (- y 12)
+            [(ui/translate x (- y 22)
                            (ui/with-color title-color
                              (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
           ;; Gradient bar: stack of small colored rectangles
@@ -54,7 +54,7 @@
         (vec
          (concat
           (when title
-            [(ui/translate x (- y 12)
+            [(ui/translate x (- y 22)
                            (ui/with-color title-color
                              (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
           (for [[i {:keys [label color]}] (map-indexed vector entries)
@@ -278,7 +278,7 @@
       ;; X-axis label
       (when x-label
         (let [fsize label-fsize]
-          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) (- total-height x-label-pad -2)
+          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) (- total-height x-label-pad -8)
                          (ui/with-color text-color
                            (assoc (ui/label x-label (ui/font nil fsize))
                                   :text-anchor "middle")))]))

@@ -29,7 +29,7 @@
  :domain-padding 0.05
 
  ;; Labels and titles
- :label-offset 18 :title-offset 18
+ :label-offset 32 :title-offset 18
 
  ;; Facet strips
  :strip-height 16
