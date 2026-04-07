@@ -184,10 +184,12 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:polygons s))))])
 
-;; Violin with embedded boxplot for summary statistics:
+;; Violin with embedded boxplot for summary statistics.
+;; Note: don't use {:color :day} here — it would trigger dodge
+;; positioning, offsetting violin and boxplot independently.
 
 (-> tips
-    (sk/view :day :total-bill {:color :day})
+    (sk/view :day :total-bill)
     sk/lay-violin
     sk/lay-boxplot
     (sk/options {:title "Total Bill Distribution by Day"
