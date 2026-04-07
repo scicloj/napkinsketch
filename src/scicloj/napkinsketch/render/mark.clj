@@ -362,8 +362,10 @@
         {:keys [box-width stroke-width]} style
         box-frac (or box-width 0.6)
         sw (or stroke-width 1.5)
-        {:keys [n-groups] :or {n-groups (if (seq color-categories)
-                                          (clojure.core/count color-categories) 1)}}
+        ;; n-groups comes from dodge-ctx (set by position.clj when dodge is active).
+        ;; When dodge-ctx is absent (position = :identity), use 1 — the mark
+        ;; should fill the full band, not subdivide by color-categories.
+        {:keys [n-groups] :or {n-groups 1}}
         (:dodge-ctx layer)]
     (vec
      (mapcat
@@ -430,8 +432,8 @@
   (let [{:keys [style violins color-categories]} layer
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
         {:keys [opacity stroke-width]} style
-        {:keys [n-groups] :or {n-groups (if (seq color-categories)
-                                          (clojure.core/count color-categories) 1)}}
+        ;; See boxplot comment — n-groups defaults to 1 when no dodge-ctx.
+        {:keys [n-groups] :or {n-groups 1}}
         (:dodge-ctx layer)]
     (vec
      (mapcat

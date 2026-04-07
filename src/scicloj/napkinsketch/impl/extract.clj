@@ -39,6 +39,17 @@
                     gs)))
     layer))
 
+(defn- default-position
+  "Default position for marks that normally dodge.
+   When :color is the same column as :x, dodge is suppressed — each x-band
+   already contains exactly one color group, so dodging just shrinks and
+   offsets the mark unnecessarily."
+  [view]
+  (or (:position view)
+      (if (and (:color view) (= (:color view) (:x view)))
+        :identity
+        :dodge)))
+
 (defn- check-stat
   "Assert that stat result contains expected key for the given mark.
    Raises a clear error instead of letting nil propagate to the renderer."
@@ -184,7 +195,7 @@
     ;; Categorical bars (from :count stat)
     {:mark :rect
      :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
-     :position (or (:position view) :dodge)
+     :position (default-position view)
      :categories (vec (:categories stat))
      :groups (vec
               (for [{:keys [color counts]} (:bars stat)]
@@ -194,7 +205,7 @@
     ;; Value bars (from :identity stat)
     {:mark :rect
      :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
-     :position (or (:position view) :dodge)
+     :position (default-position view)
      :groups (vec
               (for [{:keys [color xs ys]} (:points stat)]
                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
@@ -233,7 +244,7 @@
    :style {:radius (or (:fixed-size view) (:point-radius cfg))
            :stroke-width 1.5
            :opacity (or (:fixed-alpha view) 1.0)}
-   :position (or (:position view) :dodge)
+   :position (default-position view)
    :groups (extract-xy-groups view stat all-colors cfg)})
 
 (defmethod extract-layer :boxplot [view stat all-colors cfg]
@@ -242,7 +253,7 @@
     {:mark :boxplot
      :style {:box-width (or (:box-width view) 0.6)
              :stroke-width (or (:fixed-size view) 1.5)}
-     :position (or (:position view) :dodge)
+     :position (default-position view)
      :color-categories color-cats
      :boxes (vec
              (for [b (:boxes stat)]
@@ -259,7 +270,7 @@
     {:mark :violin
      :style {:opacity (or (:fixed-alpha view) 0.7)
              :stroke-width (or (:fixed-size view) 1.0)}
-     :position (or (:position view) :dodge)
+     :position (default-position view)
      :color-categories color-cats
      :violins (vec
                (for [v (:violins stat)]
