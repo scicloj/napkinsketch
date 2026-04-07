@@ -230,9 +230,13 @@
                     (scale/pad-domain [(reduce min vals) (reduce max vals)] scale-spec)
                     (distinct vals)))]
         (if (and needs-zero? (sequential? dom) (number? (first dom)))
-          (extend-to-zero (scale/pad-domain [(min 0.0 (double (first dom)))
-                                             (max 0.0 (double (second dom)))]
-                                            scale-spec))
+          ;; For baseline marks (area, lollipop, value-bar): ensure domain
+          ;; includes zero, and only pad the end away from zero.
+          (let [[lo hi] dom
+                lo (double lo) hi (double hi)
+                [plo phi] (scale/pad-domain [(min 0.0 lo) (max 0.0 hi)] scale-spec)]
+            [(if (>= lo 0.0) 0.0 plo)
+             (if (<= hi 0.0) 0.0 phi)])
           dom)))))
 
 ;; ---- Tick Computation ----
