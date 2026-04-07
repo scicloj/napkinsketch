@@ -1,14 +1,19 @@
 ;; # Datasets
 ;;
-;; You do not need to know about datasets to plot with napkinsketch —
+;; You do not need to know about datasets to plot with Napkinsketch —
 ;; you can pass plain Clojure data (maps, vectors of maps) directly.
-;; But understanding datasets is recommended background for two reasons:
+;; But understanding datasets is recommended background for three reasons:
 ;;
-;; - **Performance and ergonomics**: datasets are columnar, typed, and
-;;   memory-efficient. For anything beyond a handful of rows, they are
-;;   faster and more convenient than plain maps.
+;; - **Performance**: datasets are columnar and backed by typed arrays.
+;;   For large data (thousands of rows and above), they are significantly
+;;   faster than plain Clojure maps and vectors.
 ;;
-;; - **Understanding napkinsketch internals**: napkinsketch coerces your
+;; - **Ergonomics**: many people find that dataset operations — filtering,
+;;   grouping, aggregation — read more naturally as a pipeline than the
+;;   equivalent Clojure core code. This is a matter of taste, but the
+;;   convention is widespread in the Clojure data science ecosystem.
+;;
+;; - **Understanding Napkinsketch internals**: Napkinsketch coerces your
 ;;   data to a dataset internally. Knowing what a dataset is helps you
 ;;   understand column names, types, and the inference rules.
 ;;
@@ -50,7 +55,7 @@
 ;; [tech.ml.dataset](https://techascent.github.io/tech.ml.dataset/).
 ;; [Tablecloth](https://scicloj.github.io/tablecloth/) is a
 ;; higher-level wrapper with a more ergonomic API. Napkinsketch
-;; uses tablecloth internally and in its documentation.
+;; uses Tablecloth internally and in its documentation.
 
 ;; ## Creating datasets
 ;;
@@ -69,17 +74,25 @@
 
 (kind/test-last [(fn [ds] (= 3 (tc/row-count ds)))])
 
+;; ### From a sequence of row vectors
+
+(tc/dataset [["Alice" 92]
+             ["Bob"   85]
+             ["Carol" 97]]
+            {:column-names [:name :score]})
+
+(kind/test-last [(fn [ds] (= 3 (tc/row-count ds)))])
+
 ;; ### From a CSV or URL
-;;
-;; Use `:key-fn keyword` to convert string column headers to keywords:
 
-(def iris-from-url
-  (tc/dataset "https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv"
-              {:key-fn keyword}))
+(tc/dataset "https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv"
+            {:key-fn keyword})
 
-(tc/row-count iris-from-url)
+(kind/test-last [(fn [ds] (= 150 (tc/row-count ds)))])
 
-(kind/test-last [(fn [n] (= 150 n))])
+;; (The `:key-fn keyword` option converts CSV string headers like
+;; `"Sepal.Length"` to keywords like `:Sepal.Length`. Without it,
+;; column names remain strings.)
 
 ;; ## The RDatasets collection
 ;;
@@ -122,9 +135,9 @@
 ;; | `rdatasets/gapminder-gapminder` | 1,704 | Country-level life expectancy and GDP |
 ;; | `rdatasets/datasets-mtcars` | 32 | Motor Trend car road tests |
 
-;; ## Useful tablecloth operations
+;; ## Useful Tablecloth operations
 ;;
-;; The examples in this book use a handful of tablecloth functions.
+;; The examples in this book use a handful of Tablecloth functions.
 ;; Here is a quick reference:
 
 ;; `tc/head` — first N rows:
@@ -136,10 +149,9 @@
 ;; `tc/select-rows` — filter rows by predicate:
 
 (-> (rdatasets/datasets-iris)
-    (tc/select-rows #(= "setosa" (:species %)))
-    tc/row-count)
+    (tc/select-rows #(= "setosa" (:species %))))
 
-(kind/test-last [(fn [n] (= 50 n))])
+(kind/test-last [(fn [ds] (= 50 (tc/row-count ds)))])
 
 ;; `tc/group-by` and `tc/aggregate` — split and summarize:
 
@@ -170,9 +182,9 @@
 
 (kind/test-last [(fn [n] (= 53940 n))])
 
-;; ## Datasets and napkinsketch
+;; ## Datasets and Napkinsketch
 ;;
-;; When you pass plain data to napkinsketch, it is coerced to a dataset
+;; When you pass plain data to Napkinsketch, it is coerced to a dataset
 ;; internally. You can also pass a dataset directly — the result is the
 ;; same:
 
@@ -195,6 +207,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**The Sketch Model**](./napkinsketch_book.sketch_model.html) — how napkinsketch composes layers, aesthetics, and methods
+;; - [**The Sketch Model**](./napkinsketch_book.sketch_model.html) — how Napkinsketch composes layers, aesthetics, and methods
 ;; - [**Quickstart**](./napkinsketch_book.quickstart.html) — if you skipped straight here, go back and build your first plots
-

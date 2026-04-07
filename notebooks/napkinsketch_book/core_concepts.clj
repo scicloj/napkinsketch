@@ -27,8 +27,8 @@
 ;; [Tablecloth](https://scicloj.github.io/tablecloth/) API.
 ;;
 ;; We use the classic iris flower dataset throughout these examples.
-;; It is loaded in the [Datasets](./napkinsketch_book.datasets.html)
-;; chapter and available as `(rdatasets/datasets-iris)`.
+;; It comes from the RDatasets collection, introduced in the
+;; [Datasets](./napkinsketch_book.datasets.html) chapter.
 
 (rdatasets/datasets-iris)
 

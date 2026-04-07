@@ -80,7 +80,7 @@ graph LR
 
 ;; The sketch is a record with five fields:
 ;;
-;; - `:data` — the dataset (coerced to tablecloth)
+;; - `:data` — the dataset (coerced to Tablecloth)
 ;;
 ;; - `:shared` — options inherited by all entries (from `view`)
 ;;

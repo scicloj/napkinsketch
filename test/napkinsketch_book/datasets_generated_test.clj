@@ -9,7 +9,7 @@
 
 
 (def
- v3_l31
+ v3_l36
  (->
   [{:month "Jan", :temperature 5}
    {:month "Feb", :temperature 7}
@@ -20,72 +20,76 @@
 
 
 (deftest
- t4_l38
- (is ((fn [v] (= 4 (:points (sk/svg-summary v)))) v3_l31)))
+ t4_l43
+ (is ((fn [v] (= 4 (:points (sk/svg-summary v)))) v3_l36)))
 
 
-(def v6_l59 (tc/dataset {:x [1 2 3 4 5], :y [10 20 15 30 25]}))
+(def v6_l64 (tc/dataset {:x [1 2 3 4 5], :y [10 20 15 30 25]}))
 
 
-(deftest t7_l62 (is ((fn [ds] (= 5 (tc/row-count ds))) v6_l59)))
+(deftest t7_l67 (is ((fn [ds] (= 5 (tc/row-count ds))) v6_l64)))
 
 
 (def
- v9_l66
+ v9_l71
  (tc/dataset
   [{:name "Alice", :score 92}
    {:name "Bob", :score 85}
    {:name "Carol", :score 97}]))
 
 
-(deftest t10_l70 (is ((fn [ds] (= 3 (tc/row-count ds))) v9_l66)))
+(deftest t10_l75 (is ((fn [ds] (= 3 (tc/row-count ds))) v9_l71)))
 
 
 (def
- v12_l76
- (def
-  iris-from-url
-  (tc/dataset
-   "https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv"
-   {:key-fn keyword})))
+ v12_l79
+ (tc/dataset
+  [["Alice" 92] ["Bob" 85] ["Carol" 97]]
+  {:column-names [:name :score]}))
 
 
-(def v13_l80 (tc/row-count iris-from-url))
+(deftest t13_l84 (is ((fn [ds] (= 3 (tc/row-count ds))) v12_l79)))
 
 
-(deftest t14_l82 (is ((fn [n] (= 150 n)) v13_l80)))
+(def
+ v15_l88
+ (tc/dataset
+  "https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv"
+  {:key-fn keyword}))
 
 
-(def v16_l106 (rdatasets/datasets-iris))
+(deftest t16_l91 (is ((fn [ds] (= 150 (tc/row-count ds))) v15_l88)))
+
+
+(def v18_l119 (rdatasets/datasets-iris))
 
 
 (deftest
- t17_l108
+ t19_l121
  (is
   ((fn [ds] (and (tc/dataset? ds) (= 150 (tc/row-count ds))))
-   v16_l106)))
+   v18_l119)))
 
 
-(def v19_l132 (tc/head (rdatasets/datasets-iris) 3))
+(def v21_l145 (tc/head (rdatasets/datasets-iris) 3))
 
 
-(deftest t20_l134 (is ((fn [ds] (= 3 (tc/row-count ds))) v19_l132)))
+(deftest t22_l147 (is ((fn [ds] (= 3 (tc/row-count ds))) v21_l145)))
 
 
 (def
- v22_l138
+ v24_l151
  (->
   (rdatasets/datasets-iris)
   (tc/select-rows
-   (fn* [p1__1904461#] (= "setosa" (:species p1__1904461#))))
-  tc/row-count))
+   (fn* [p1__87418#] (= "setosa" (:species p1__87418#))))))
 
 
-(deftest t23_l142 (is ((fn [n] (= 50 n)) v22_l138)))
+(deftest t25_l154 (is ((fn [ds] (= 50 (tc/row-count ds))) v24_l151)))
 
 
 (def
- v25_l146
+ v27_l158
  (->
   (rdatasets/datasets-iris)
   (tc/group-by [:species])
@@ -94,45 +98,45 @@
     (fn [ds] (/ (reduce + (ds :sepal-length)) (tc/row-count ds)))})))
 
 
-(deftest t26_l151 (is ((fn [ds] (= 3 (tc/row-count ds))) v25_l146)))
+(deftest t28_l163 (is ((fn [ds] (= 3 (tc/row-count ds))) v27_l158)))
 
 
 (def
- v28_l155
+ v30_l167
  (->
   (rdatasets/datasets-mtcars)
   (tc/order-by [:mpg] :desc)
   (tc/head 3)))
 
 
-(deftest t29_l159 (is ((fn [ds] (= 3 (tc/row-count ds))) v28_l155)))
+(deftest t31_l171 (is ((fn [ds] (= 3 (tc/row-count ds))) v30_l167)))
 
 
-(def v31_l163 (tc/column-names (rdatasets/datasets-iris)))
+(def v33_l175 (tc/column-names (rdatasets/datasets-iris)))
 
 
-(deftest t32_l165 (is ((fn [cols] (= 6 (count cols))) v31_l163)))
+(deftest t34_l177 (is ((fn [cols] (= 6 (count cols))) v33_l175)))
 
 
-(def v34_l169 (tc/row-count (rdatasets/ggplot2-diamonds)))
+(def v36_l181 (tc/row-count (rdatasets/ggplot2-diamonds)))
 
 
-(deftest t35_l171 (is ((fn [n] (= 53940 n)) v34_l169)))
+(deftest t37_l183 (is ((fn [n] (= 53940 n)) v36_l181)))
 
 
-(def v37_l181 (-> {:x [1 2 3], :y [4 5 6]} (sk/lay-point :x :y)))
+(def v39_l193 (-> {:x [1 2 3], :y [4 5 6]} (sk/lay-point :x :y)))
 
 
 (deftest
- t38_l184
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v37_l181)))
+ t40_l196
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v39_l193)))
 
 
 (def
- v40_l188
+ v42_l200
  (-> (tc/dataset {:x [1 2 3], :y [4 5 6]}) (sk/lay-point :x :y)))
 
 
 (deftest
- t41_l191
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v40_l188)))
+ t43_l203
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v42_l200)))
