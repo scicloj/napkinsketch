@@ -448,168 +448,204 @@
   ([sk-or-data x y opts] (lay-method :point sk-or-data x y opts)))
 
 (defn lay-line
-  "Add :line method to a sketch."
+  "Add :line method — connected line through data points.
+   Requires x (numerical) and y (numerical).
+   Accepts :color, :alpha, :size (stroke width), :nudge-x, :nudge-y."
   ([sk-or-data] (lay-method :line sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :line sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :line sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :line sk-or-data x y opts)))
 
 (defn lay-step
-  "Add :step method to a sketch."
+  "Add :step method — staircase line (horizontal then vertical).
+   Requires x and y (both numerical)."
   ([sk-or-data] (lay-method :step sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :step sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :step sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :step sk-or-data x y opts)))
 
 (defn lay-area
-  "Add :area method to a sketch."
+  "Add :area method — filled region between y and the baseline.
+   Requires x and y (both numerical). Accepts :color, :alpha."
   ([sk-or-data] (lay-method :area sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :area sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :area sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :area sk-or-data x y opts)))
 
 (defn lay-stacked-area
-  "Add :stacked-area method to a sketch."
+  "Add :stacked-area method — areas stacked on top of each other.
+   Requires x, y, and :color (for grouping). Groups stack vertically."
   ([sk-or-data] (lay-method :stacked-area sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :stacked-area sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :stacked-area sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :stacked-area sk-or-data x y opts)))
 
 (defn lay-histogram
-  "Add :histogram method to a sketch."
+  "Add :histogram method — bin numerical values into bars.
+   X-only: pass one column. Accepts :bins (count), :binwidth, :color,
+   :normalize (:density for density-normalized heights)."
   ([sk-or-data] (lay-method :histogram sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :histogram sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :histogram sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :histogram sk-or-data x y opts)))
 
 (defn lay-bar
-  "Add :bar method to a sketch."
+  "Add :bar method — count occurrences of each category.
+   X-only: pass one categorical column. Accepts :color for grouped bars."
   ([sk-or-data] (lay-method :bar sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :bar sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :bar sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :bar sk-or-data x y opts)))
 
 (defn lay-stacked-bar
-  "Add :stacked-bar method to a sketch."
+  "Add :stacked-bar method — bars stacked by color group.
+   X-only with :color. Heights represent counts per category per group."
   ([sk-or-data] (lay-method :stacked-bar sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :stacked-bar sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :stacked-bar sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :stacked-bar sk-or-data x y opts)))
 
 (defn lay-stacked-bar-fill
-  "Add :stacked-bar-fill method to a sketch."
+  "Add :stacked-bar-fill method — 100% stacked bars (proportional).
+   Same as stacked-bar but normalized so each bar totals 100%."
   ([sk-or-data] (lay-method :stacked-bar-fill sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :stacked-bar-fill sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :stacked-bar-fill sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :stacked-bar-fill sk-or-data x y opts)))
 
 (defn lay-value-bar
-  "Add :value-bar method to a sketch."
+  "Add :value-bar method — bars with pre-computed heights.
+   Requires categorical x and numerical y. Unlike :bar (which counts),
+   :value-bar uses the y value directly as the bar height."
   ([sk-or-data] (lay-method :value-bar sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :value-bar sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :value-bar sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :value-bar sk-or-data x y opts)))
 
 (defn lay-lm
-  "Add :lm (linear model) method to a sketch."
+  "Add :lm method — linear regression line.
+   Requires x and y (both numerical). Accepts {:se true} for a
+   95% confidence band around the fit."
   ([sk-or-data] (lay-method :lm sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :lm sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :lm sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :lm sk-or-data x y opts)))
 
 (defn lay-loess
-  "Add :loess (local regression) method to a sketch."
+  "Add :loess method — local regression (LOESS) smooth curve.
+   Requires x and y (both numerical). Accepts {:se true} for a
+   confidence band, {:bandwidth 0.5} for smoothing control."
   ([sk-or-data] (lay-method :loess sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :loess sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :loess sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :loess sk-or-data x y opts)))
 
 (defn lay-density
-  "Add :density (KDE) method to a sketch."
+  "Add :density method — kernel density estimate curve.
+   X-only: pass one numerical column. Accepts :color, :bandwidth."
   ([sk-or-data] (lay-method :density sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :density sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :density sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :density sk-or-data x y opts)))
 
 (defn lay-tile
-  "Add :tile (heatmap) method to a sketch."
+  "Add :tile method — colored grid cells (heatmap).
+   With :fill option: pre-computed tile colors from a column.
+   Without :fill: auto-binned 2D histogram (stat :bin2d)."
   ([sk-or-data] (lay-method :tile sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :tile sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :tile sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :tile sk-or-data x y opts)))
 
 (defn lay-density2d
-  "Add :density2d (2D KDE heatmap) method to a sketch."
+  "Add :density2d method — 2D kernel density heatmap.
+   Requires x and y (both numerical). Produces a smoothed density
+   surface as colored tiles with a continuous gradient legend."
   ([sk-or-data] (lay-method :density2d sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :density2d sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :density2d sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :density2d sk-or-data x y opts)))
 
 (defn lay-contour
-  "Add :contour method to a sketch."
+  "Add :contour method — iso-density contour lines from 2D KDE.
+   Requires x and y (both numerical). Accepts {:levels 10} for
+   the number of contour levels."
   ([sk-or-data] (lay-method :contour sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :contour sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :contour sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :contour sk-or-data x y opts)))
 
 (defn lay-boxplot
-  "Add :boxplot method to a sketch."
+  "Add :boxplot method — box-and-whisker plot.
+   Requires categorical x and numerical y. Shows median, quartiles,
+   whiskers, and outliers. Accepts :color for grouped boxplots."
   ([sk-or-data] (lay-method :boxplot sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :boxplot sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :boxplot sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :boxplot sk-or-data x y opts)))
 
 (defn lay-violin
-  "Add :violin method to a sketch."
+  "Add :violin method — mirrored density estimate by category.
+   Requires categorical x and numerical y. Accepts :color, :bandwidth."
   ([sk-or-data] (lay-method :violin sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :violin sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :violin sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :violin sk-or-data x y opts)))
 
 (defn lay-ridgeline
-  "Add :ridgeline method to a sketch."
+  "Add :ridgeline method — stacked density curves by category.
+   Requires categorical x and numerical y. Categories stack vertically
+   with density curves rendered horizontally."
   ([sk-or-data] (lay-method :ridgeline sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :ridgeline sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :ridgeline sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :ridgeline sk-or-data x y opts)))
 
 (defn lay-summary
-  "Add :summary (mean ± SE) method to a sketch."
+  "Add :summary method — mean ± standard error per category.
+   Requires categorical x and numerical y. Shows a point at the mean
+   with error bars for ± 1 SE. Accepts :color for grouped summaries."
   ([sk-or-data] (lay-method :summary sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :summary sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :summary sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :summary sk-or-data x y opts)))
 
 (defn lay-errorbar
-  "Add :errorbar method to a sketch."
+  "Add :errorbar method — vertical error bars from pre-computed bounds.
+   Requires x, y, and {:ymin :col :ymax :col} for lower/upper bounds."
   ([sk-or-data] (lay-method :errorbar sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :errorbar sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :errorbar sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :errorbar sk-or-data x y opts)))
 
 (defn lay-lollipop
-  "Add :lollipop method to a sketch."
+  "Add :lollipop method — dot on a stem from the baseline.
+   Requires categorical x and numerical y. Like value-bar but with
+   a circle+line instead of a filled rectangle."
   ([sk-or-data] (lay-method :lollipop sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :lollipop sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :lollipop sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :lollipop sk-or-data x y opts)))
 
 (defn lay-text
-  "Add :text method to a sketch."
+  "Add :text method — text labels at data coordinates.
+   Requires x, y, and {:text :column} for label content."
   ([sk-or-data] (lay-method :text sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :text sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :text sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :text sk-or-data x y opts)))
 
 (defn lay-label
-  "Add :label method to a sketch."
+  "Add :label method — text labels with background box at data coordinates.
+   Like :text but with a rectangular background for readability."
   ([sk-or-data] (lay-method :label sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :label sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :label sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :label sk-or-data x y opts)))
 
 (defn lay-rug
-  "Add :rug method to a sketch."
+  "Add :rug method — short tick marks along the axis showing individual values.
+   X-only: pass one column. Often layered with density or scatter."
   ([sk-or-data] (lay-method :rug sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :rug sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :rug sk-or-data x y-or-opts))
