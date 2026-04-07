@@ -6,8 +6,8 @@
 
 (ns napkinsketch-book.faceting
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
+   ;; Datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -18,8 +18,8 @@
 ;; `sk/facet` splits views by one categorical column.
 ;; The default direction is `:col` — a horizontal row of panels:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -34,8 +34,8 @@
 ;;
 ;; Pass `:row` as the direction for a vertical column of panels:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/facet :species :row))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -46,8 +46,8 @@
 ;;
 ;; `sk/facet-grid` splits by two columns — one for rows, one for columns:
 
-(-> data/tips
-    (sk/lay-point :total_bill :tip {:color :sex})
+(-> (rdatasets/reshape2-tips)
+    (sk/lay-point :total-bill :tip {:color :sex})
     (sk/facet-grid :smoker :sex))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -58,8 +58,8 @@
 
 ;; ## Faceted Histogram
 
-(-> data/iris
-    (sk/lay-histogram :sepal_length {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram :sepal-length {:color :species})
     (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -70,8 +70,8 @@
 ;;
 ;; Layers compose with faceting — scatter plus regression per panel:
 
-(-> data/tips
-    (sk/view :total_bill :tip {:color :sex})
+(-> (rdatasets/reshape2-tips)
+    (sk/view :total-bill :tip {:color :sex})
     sk/lay-point
     sk/lay-lm
     (sk/facet-grid :smoker :sex))
@@ -88,8 +88,8 @@
 ;;
 ;; Shared (default) — all panels have the same y-range:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/facet :species)
     (sk/options {:scales :shared}))
 
@@ -99,8 +99,8 @@
 
 ;; Free y — each panel has its own y-range:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/facet :species)
     (sk/options {:scales :free-y}))
 
@@ -115,8 +115,8 @@
 ;; Under the hood, faceting produces multiple panels in the plan:
 
 (def faceted-pl
-  (-> data/iris
-      (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width {:color :species})
       (sk/facet :species)
       sk/plan))
 
@@ -139,9 +139,9 @@
 ;; `sk/cross` generates all pairs of columns. Combined with the
 ;; multi-variable layout, this produces a scatter plot matrix (SPLOM):
 
-(def cols [:sepal_length :sepal_width :petal_length :petal_width])
+(def cols [:sepal-length :sepal-width :petal-length :petal-width])
 
-(-> data/iris
+(-> (rdatasets/datasets-iris)
     (sk/view (sk/cross cols cols) {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -157,7 +157,7 @@
 ;;
 ;; Pass a vector of column names to create one panel per column:
 
-(sk/lay-histogram data/iris [:sepal_length :sepal_width :petal_length] {:color :species})
+(sk/lay-histogram (rdatasets/datasets-iris) [:sepal-length :sepal-width :petal-length] {:color :species})
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))
@@ -165,7 +165,7 @@
 
 ;; ## Faceted Bar Chart
 
-(-> data/penguins
+(-> (rdatasets/palmerpenguins-penguins)
     (sk/lay-bar :species {:color :species})
     (sk/facet :island))
 
@@ -177,8 +177,8 @@
 ;;
 ;; `sk/options` works with faceted plots:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/facet :species)
     (sk/options {:title "Iris by Species"
                  :x-label "Sepal Length (cm)" :y-label "Sepal Width (cm)"}))

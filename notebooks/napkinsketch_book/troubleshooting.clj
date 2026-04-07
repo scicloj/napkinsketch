@@ -4,8 +4,8 @@
 
 (ns napkinsketch-book.troubleshooting
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
+   ;; rdatasets — standard datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Tablecloth — dataset manipulation
@@ -20,7 +20,7 @@
 ;; **Cause**: The column name does not exist in the dataset. CSV
 ;; headers are strings by default — without `{:key-fn keyword}`,
 ;; columns have string names like `"sepal_length"` instead of
-;; `:sepal_length`.
+;; `:sepal-length`.
 ;;
 ;; **Fix**: Pass `{:key-fn keyword}` when loading the dataset:
 ;;
@@ -30,9 +30,9 @@
 ;;
 ;; You can check available columns with:
 
-(tc/column-names data/iris)
+(tc/column-names (rdatasets/datasets-iris))
 
-(kind/test-last [(fn [v] (some #{:sepal_length} v))])
+(kind/test-last [(fn [v] (some #{:sepal-length} v))])
 
 ;; ## Wrong Chart Type from Inference
 ;;
@@ -48,20 +48,44 @@
 
 ;; This infers a scatter (categorical x numerical):
 
-(-> data/iris
-    (sk/view :species :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/view :species :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; Use `sk/lay-boxplot` if you want a boxplot:
 
-(-> data/iris
-    (sk/lay-boxplot :species :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-boxplot :species :sepal-width))
 
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
 ;; See the [Inference Rules](./napkinsketch_book.inference_rules.html) chapter for the
 ;; full set of rules.
+
+;; ## Numeric IDs Treated as Continuous Color
+;;
+;; **Symptom**: You color by a subject/group ID column that contains
+;; numbers (e.g., 1, 2, 3), but instead of discrete colored groups you
+;; get a single continuous gradient.
+;;
+;; **Cause**: The inference system sees a numeric column and treats it
+;; as continuous. Continuous color means no grouping — all data stays
+;; in one group with a gradient legend.
+;;
+;; **Fix**: Add `:color-type :categorical` to override the inference:
+;;
+;; ```clojure
+;; ;; Gradient (wrong for IDs):
+;; (sk/lay-line data :day :score {:color :subject})
+;;
+;; ;; Discrete groups (correct):
+;; (sk/lay-line data :day :score {:color :subject
+;;                                :color-type :categorical})
+;; ```
+;;
+;; See [Inference Rules: Overriding color type](./napkinsketch_book.inference_rules.html)
+;; for a worked example.
 
 ;; ## x-Only Methods Do Not Accept a y Column
 ;;
@@ -74,10 +98,10 @@
 ;;
 ;; ```clojure
 ;; ;; Wrong:
-;; (sk/lay-histogram data :sepal_length :sepal_width)
+;; (sk/lay-histogram data :sepal-length :sepal-width)
 ;;
 ;; ;; Correct:
-;; (sk/lay-histogram data :sepal_length)
+;; (sk/lay-histogram data :sepal-length)
 ;; ```
 
 ;; ## Categorical Column with Log Scale
@@ -112,8 +136,8 @@
 ;; Kindly-compatible tool that supports `kind/hiccup` with embedded
 ;; scripts.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/options {:tooltip true}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])

@@ -12,8 +12,8 @@
 ;; reproducible and tested.
 
 (ns napkinsketch-book.sketch-rules
-  (:require [tablecloth.api :as tc]
-            [scicloj.kindly.v4.kind :as kind]
+  (:require [scicloj.kindly.v4.kind :as kind]
+            [scicloj.metamorph.ml.rdatasets :as rdatasets]
             [scicloj.napkinsketch.api :as sk]))
 
 ;; ## The Data Model
@@ -68,9 +68,6 @@
 
 ;; ## Setup
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
-
 ;; A helper to show the sketch structure without the dataset:
 
 (defn sk-summary
@@ -86,8 +83,8 @@
 ;; When `view` receives an opts map, those aesthetics merge into
 ;; `:shared` and apply to ALL methods on ALL entries.
 
-(-> iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     sk/lay-lm
     sk-summary kind/pprint)
@@ -98,8 +95,8 @@
                         (nil? (:color (first (:entries m))))
                         (= 2 (count (:methods m)))))])
 
-(-> iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     sk/lay-lm)
 
@@ -112,8 +109,8 @@
 
 ;; ## Rule 2: `lay-*` without `:x`/`:y` → global method
 
-(-> iris
-    (sk/view :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
     sk/lay-point
     sk/lay-lm
     sk-summary kind/pprint)
@@ -123,8 +120,8 @@
                         (= :point (:mark (first (:methods m))))
                         (nil? (:methods (first (:entries m))))))])
 
-(-> iris
-    (sk/view :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
     sk/lay-point
     sk/lay-lm)
 
@@ -136,8 +133,8 @@
 
 ;; ## Rule 3: `lay-*` with `:x`/`:y` → entry-specific method
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
@@ -146,8 +143,8 @@
                         (= 1 (count (:methods (first (:entries m)))))
                         (= :species (:color (first (:methods (first (:entries m))))))))])
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -156,8 +153,8 @@
 
 ;; ## Rule 4: entry-specific + global methods combine
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     sk/lay-lm
     sk-summary kind/pprint)
 
@@ -167,8 +164,8 @@
                         (= :point (:mark (first (:methods (first (:entries m))))))
                         (= :line (:mark (first (:methods m))))))])
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -180,9 +177,9 @@
 
 ;; ## Rule 5: find-or-create entry by matching `:x`/`:y`
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/lay-lm :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/lay-lm :sepal-length :sepal-width)
     sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
@@ -190,9 +187,9 @@
                         (= 0 (count (:methods m)))
                         (= 2 (count (:methods (first (:entries m)))))))])
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/lay-lm :sepal_length :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/lay-lm :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -204,21 +201,21 @@
 
 ;; ## Rule 6: different `:x`/`:y` → separate entries
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width)
-    (sk/lay-histogram :petal_length)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :petal-length)
     sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:entries m)))
                         (= 0 (count (:methods m)))
                         (= [1 1] (mapv #(count (:methods %)) (:entries m)))
-                        (= :sepal_length (:x (first (:entries m))))
-                        (= :petal_length (:x (second (:entries m))))))])
+                        (= :sepal-length (:x (first (:entries m))))
+                        (= :petal-length (:x (second (:entries m))))))])
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width)
-    (sk/lay-histogram :petal_length))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :petal-length))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
@@ -229,8 +226,8 @@
 
 ;; ## Rule 7: `sketch` opts go into `:shared`
 
-(-> (sk/sketch iris {:color :species})
-    (sk/view :sepal_length :sepal_width)
+(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
+    (sk/view :sepal-length :sepal-width)
     sk/lay-point
     sk/lay-lm
     sk-summary kind/pprint)
@@ -238,8 +235,8 @@
 (kind/test-last [(fn [m]
                    (= :species (get-in m [:shared :color])))])
 
-(-> (sk/sketch iris {:color :species})
-    (sk/view :sepal_length :sepal_width)
+(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
+    (sk/view :sepal-length :sepal-width)
     sk/lay-point
     sk/lay-lm)
 
@@ -251,8 +248,8 @@
 
 ;; ## Rule 8: method opts override shared (`nil` cancels)
 
-(-> iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     (sk/lay-lm {:color nil})
     sk-summary kind/pprint)
@@ -261,8 +258,8 @@
                    (and (= :species (get-in m [:shared :color]))
                         (nil? (:color (second (:methods m))))))])
 
-(-> iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     (sk/lay-lm {:color nil}))
 
@@ -274,9 +271,9 @@
 
 ;; ## Rule 9: shared affects all entries
 
-(-> (sk/sketch iris {:color :species})
-    (sk/view :sepal_length :sepal_width)
-    (sk/view :petal_length :petal_width)
+(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :petal-length :petal-width)
     sk/lay-point
     sk-summary kind/pprint)
 
@@ -285,9 +282,9 @@
                         (= 2 (count (:entries m)))
                         (= 1 (count (:methods m)))))])
 
-(-> (sk/sketch iris {:color :species})
-    (sk/view :sepal_length :sepal_width)
-    (sk/view :petal_length :petal_width)
+(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :petal-length :petal-width)
     sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -298,8 +295,8 @@
 
 ;; ## Rule 10: annotations are self-contained
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/annotate (sk/rule-h 3.0))
     sk-summary kind/pprint)
 
@@ -307,8 +304,8 @@
                    (and (= 2 (count (:entries m)))
                         (= :rule-h (:mark (second (:entries m))))))])
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/annotate (sk/rule-h 3.0)))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -319,18 +316,18 @@
 
 ;; ## Rule 11: `overlay` — entry with different columns + own method
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width)
-    (sk/overlay :sepal_length :petal_width :lm)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/overlay :sepal-length :petal-width :lm)
     sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:entries m)))
-                        (= :sepal_width (:y (first (:entries m))))
-                        (= :petal_width (:y (second (:entries m))))
+                        (= :sepal-width (:y (first (:entries m))))
+                        (= :petal-width (:y (second (:entries m))))
                         (= :line (:mark (first (:methods (second (:entries m))))))))])
 
-;; Two entries: scatter on sepal_width, lm on petal_width.
+;; Two entries: scatter on sepal-width, lm on petal-width.
 ;; Currently rendered as separate panels (same-panel is a future feature).
 
 ;; ## Rule 12: `lay-*` shorthand with auto-infer
@@ -363,18 +360,18 @@
 ;; Two `lay-*` with different columns → two separate panels.
 ;; No cross-product — scatter stays on its entry, histogram on its.
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width)
-    (sk/lay-histogram :petal_length)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :petal-length)
     sk-summary kind/pprint)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:entries m)))
                         (= 0 (count (:methods m)))))])
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width)
-    (sk/lay-histogram :petal_length))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :petal-length))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -388,9 +385,9 @@
 
 ;; Scatter and histogram of the same x-variable share the x-axis.
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width)
-    (sk/lay-histogram :sepal_length))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :sepal-length))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -405,9 +402,9 @@
 ;; Multiple methods on the same entry produce one panel with
 ;; overlaid layers — not separate panels.
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    (sk/lay-lm :sepal_length :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/lay-lm :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -419,9 +416,9 @@
 
 ;; ## Rule 16: global methods apply to all entries
 
-(-> iris
-    (sk/lay-point :sepal_length :sepal_width)
-    (sk/lay-point :petal_length :petal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-point :petal-length :petal-width)
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -434,9 +431,9 @@
 
 ;; ## Rule 17: SPLOM — cross product of columns
 
-(def splom-cols [:sepal_length :sepal_width :petal_length])
+(def splom-cols [:sepal-length :sepal-width :petal-length])
 
-(-> (sk/sketch iris {:color :species})
+(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
     (sk/view (sk/cross splom-cols splom-cols)))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -454,8 +451,8 @@
 ;; Each panel uses the scale/coord from its own entry's views.
 
 (def scale-plan
-  (-> iris
-      (sk/view :sepal_length :sepal_width)
+  (-> (rdatasets/datasets-iris)
+      (sk/view :sepal-length :sepal-width)
       sk/lay-point
       (sk/scale :x :log)
       (sk/scale :y {:domain [0 6]})
@@ -483,8 +480,8 @@
 (select-keys scale-plan [:x-label :y-label])
 
 (kind/test-last
- [(fn [m] (and (= "sepal_width" (:x-label m))
-               (= "sepal_length" (:y-label m))))])
+ [(fn [m] (and (= "sepal width" (:x-label m))
+               (= "sepal length" (:y-label m))))])
 
 ;; ## Summary
 ;;

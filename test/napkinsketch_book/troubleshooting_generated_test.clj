@@ -1,20 +1,22 @@
 (ns
  napkinsketch-book.troubleshooting-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
   [tablecloth.api :as tc]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l33 (tc/column-names data/iris))
+(def v3_l33 (tc/column-names (rdatasets/datasets-iris)))
 
 
-(deftest t4_l35 (is ((fn [v] (some #{:sepal_length} v)) v3_l33)))
+(deftest t4_l35 (is ((fn [v] (some #{:sepal-length} v)) v3_l33)))
 
 
-(def v6_l51 (-> data/iris (sk/view :species :sepal_width)))
+(def
+ v6_l51
+ (-> (rdatasets/datasets-iris) (sk/view :species :sepal-width)))
 
 
 (deftest
@@ -22,7 +24,9 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v6_l51)))
 
 
-(def v9_l58 (-> data/iris (sk/lay-boxplot :species :sepal_width)))
+(def
+ v9_l58
+ (-> (rdatasets/datasets-iris) (sk/lay-boxplot :species :sepal-width)))
 
 
 (deftest
@@ -31,13 +35,13 @@
 
 
 (def
- v12_l115
+ v12_l139
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   (sk/options {:tooltip true})))
 
 
 (deftest
- t13_l119
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v12_l115)))
+ t13_l143
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v12_l139)))

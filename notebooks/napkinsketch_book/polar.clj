@@ -7,8 +7,8 @@
 
 (ns napkinsketch-book.polar
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
+   ;; R datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -23,8 +23,8 @@
 ;; (clockwise from 12 o'clock), y maps to radius (center = minimum,
 ;; edge = maximum).
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -38,7 +38,7 @@
 ;; wedge area encodes count. Bars are arc-interpolated for smooth
 ;; curved edges.
 
-(-> data/iris
+(-> (rdatasets/datasets-iris)
     (sk/lay-bar :species)
     (sk/coord :polar))
 
@@ -63,7 +63,7 @@
 ;;
 ;; Stacked bars in polar show composition within each wedge.
 
-(-> data/penguins
+(-> (rdatasets/palmerpenguins-penguins)
     (sk/lay-stacked-bar :island {:color :species})
     (sk/coord :polar))
 
@@ -76,8 +76,8 @@
 ;; A histogram in polar wraps bins around the circle. Useful for
 ;; circular distributions (e.g., time of day, compass bearing).
 
-(-> data/iris
-    (sk/lay-histogram :sepal_length)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram :sepal-length)
     (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -89,8 +89,8 @@
 ;; By default, polar suppresses auto-generated axis labels (since there
 ;; are no rectangular axes). You can still set a title with `sk/options`:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/coord :polar)
     (sk/options {:title "Iris in Polar Space"}))
 

@@ -10,8 +10,8 @@
 
 (ns napkinsketch-book.extensibility
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
+   ;; Datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -147,8 +147,8 @@
 
 ;; A plan layer looks like this:
 
-(let [s (-> data/iris
-            (sk/lay-point :sepal_length :sepal_width {:color :species})
+(let [s (-> (rdatasets/datasets-iris)
+            (sk/lay-point :sepal-length :sepal-width {:color :species})
             sk/plan)
       layer (first (:layers (first (:panels s))))]
   layer)
@@ -241,8 +241,8 @@
 ;; Using `plan->figure` directly:
 
 (def my-plan
-  (-> data/iris
-      (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width {:color :species})
       sk/plan))
 
 (first (sk/plan->figure my-plan :svg {}))
@@ -372,7 +372,7 @@
 
 ;; A flipped bar chart uses `:flip` coordinates:
 
-(-> data/iris
+(-> (rdatasets/datasets-iris)
     (sk/lay-bar :species)
     (sk/coord :flip))
 

@@ -11,8 +11,8 @@
 
 (ns napkinsketch-book.sketch-model
   (:require
-   [napkinsketch-book.datasets :as data]
    [scicloj.kindly.v4.kind :as kind]
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Idea 1: The what/how split
@@ -27,8 +27,8 @@
 ;; The result of either verb is a **sketch** — a lightweight,
 ;; composable description of a plot.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -40,8 +40,8 @@
 ;; A sketch is a plain Clojure record. To see its structure
 ;; instead of its rendered plot, wrap with `kind/pprint`:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
     kind/pprint)
 
 (kind/test-last [(fn [v] (and (:data v) (vector? (:entries v)) (vector? (:methods v))))])
@@ -66,8 +66,8 @@
 ;; entry (what) and a method (how) in one step. But you can
 ;; separate the two with `sk/view`:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     sk/lay-lm)
 
@@ -89,15 +89,15 @@
 ;; When you omit a choice, napkinsketch infers it from the data.
 ;; Two numerical columns with no `lay-*` → scatter:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; One numerical column → histogram:
 
-(-> data/iris
-    (sk/view :sepal_length))
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -112,8 +112,8 @@
 ;; Every function in the API returns a sketch. This means they all
 ;; compose through Clojure's threading macro `->`:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     (sk/facet :species)
     sk/lay-point
     sk/lay-lm

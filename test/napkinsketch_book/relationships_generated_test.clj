@@ -1,8 +1,8 @@
 (ns
  napkinsketch-book.relationships-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.napkinsketch.api :as sk]
   [fastmath.random :as rng]
   [clojure.test :refer [deftest is]]))
@@ -10,7 +10,10 @@
 
 (def
  v3_l21
- (-> data/iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  sk/lay-lm))
 
 
 (deftest
@@ -27,8 +30,8 @@
 (def
  v6_l33
  (->
-  data/iris
-  (sk/view :petal_length :petal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/view :petal-length :petal-width {:color :species})
   sk/lay-point
   sk/lay-lm))
 
@@ -47,8 +50,8 @@
 (def
  v9_l46
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
   (sk/lay-lm {:se true})))
 
@@ -67,8 +70,8 @@
 (def
  v12_l59
  (->
-  data/tips
-  (sk/view :total_bill :tip {:color :smoker})
+  (rdatasets/reshape2-tips)
+  (sk/view :total-bill :tip {:color :smoker})
   sk/lay-point
   sk/lay-lm))
 
@@ -94,9 +97,9 @@
     :y
     (map
      (fn*
-      [p1__79395#]
+      [p1__1906436#]
       (+
-       (Math/sin (* p1__79395# 0.2))
+       (Math/sin (* p1__1906436# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -115,7 +118,11 @@
    v16_l77)))
 
 
-(def v19_l89 (-> data/iris (sk/lay-tile :sepal_length :sepal_width)))
+(def
+ v19_l89
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-tile :sepal-length :sepal-width)))
 
 
 (deftest
@@ -156,7 +163,9 @@
 
 (def
  v26_l117
- (-> data/iris (sk/lay-density2d :sepal_length :sepal_width)))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-density2d :sepal-length :sepal-width)))
 
 
 (deftest
@@ -173,8 +182,8 @@
 (def
  v29_l128
  (->
-  data/iris
-  (sk/lay-density2d :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/lay-density2d :sepal-length :sepal-width)
   (sk/lay-point {:alpha 0.5})))
 
 
@@ -191,7 +200,9 @@
 
 (def
  v32_l140
- (-> data/iris (sk/lay-contour :sepal_length :sepal_width)))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-contour :sepal-length :sepal-width)))
 
 
 (deftest
@@ -208,8 +219,8 @@
 (def
  v35_l151
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:alpha 0.3})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:alpha 0.3})
   (sk/lay-contour {:levels 8})))
 
 

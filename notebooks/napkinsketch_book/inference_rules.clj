@@ -16,8 +16,8 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Shared datasets
-   [napkinsketch-book.datasets :as data]))
+   ;; R datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## What Gets Inferred
 ;;
@@ -129,8 +129,8 @@ scatter-views
 ;; When you provide explicit columns, inference is skipped — you
 ;; are in full control:
 
-(-> data/iris
-    (sk/lay-point :petal_length :petal_width {:color :species}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :petal-length :petal-width {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -365,6 +365,65 @@ fixed-color-views
 ;; One group, continuous legend with 20 stops. No splitting occurred —
 ;; the color is a visual encoding, not a grouping variable.
 
+;; ### Overriding color type with `:color-type`
+;;
+;; Sometimes a numeric column is really a categorical identifier — for
+;; example, subject IDs in a repeated-measures study. The inference
+;; system sees numbers and treats them as continuous, but you want
+;; discrete groups. The `:color-type :categorical` override tells the
+;; library to treat the column as categorical despite its numeric dtype.
+;;
+;; This is a core principle of the library: **inference provides good
+;; defaults, but the user can always override**.
+
+;; Without override — one group, continuous gradient:
+
+(let [study {:subject [1 1 1 2 2 2 3 3 3]
+             :day     [1 2 3 1 2 3 1 2 3]
+             :score   [5 7 6 3 4 5 8 9 7]}
+      pl (-> study
+             (sk/lay-line :day :score {:color :subject})
+             sk/plan)
+      layer (first (:layers (first (:panels pl))))]
+  {:group-count (count (:groups layer))
+   :legend-type (:type (:legend pl))})
+
+(kind/test-last [(fn [m] (and (= 1 (:group-count m))
+                              (= :continuous (:legend-type m))))])
+
+;; With `:color-type :categorical` — three groups, one per subject:
+
+(let [study {:subject [1 1 1 2 2 2 3 3 3]
+             :day     [1 2 3 1 2 3 1 2 3]
+             :score   [5 7 6 3 4 5 8 9 7]}
+      pl (-> study
+             (sk/lay-line :day :score {:color :subject
+                                       :color-type :categorical})
+             sk/plan)
+      layer (first (:layers (first (:panels pl))))]
+  {:group-count (count (:groups layer))
+   :legend-entries (count (:entries (:legend pl)))})
+
+(kind/test-last [(fn [m] (and (= 3 (:group-count m))
+                              (= 3 (:legend-entries m))))])
+
+;; The same data, the same columns — but `:color-type :categorical`
+;; changes inference from "one gradient" to "three distinct groups."
+;; This affects grouping, line splitting, legend style, and palette
+;; assignment. The rendered plots look completely different:
+
+(-> {:subject [1 1 1 2 2 2 3 3 3]
+     :day     [1 2 3 1 2 3 1 2 3]
+     :score   [5 7 6 3 4 5 8 9 7]}
+    (sk/lay-line :day :score {:color :subject
+                              :color-type :categorical})
+    sk/lay-point
+    (sk/options {:title "Scores by Subject (categorical override)"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (pos? (:lines s))
+                                (pos? (:points s)))))])
+
 ;; ### Explicit grouping with `:group`
 ;;
 ;; The `:group` aesthetic splits data into groups without
@@ -589,10 +648,8 @@ count-views
 ;; Labels come from column names. Underscores and hyphens become spaces.
 ;; Internally, `resolve-labels` in `plan.clj` handles this.
 
-(def iris data/iris)
-
-(let [pl (-> iris
-             (sk/lay-point :sepal_length :sepal_width)
+(let [pl (-> (rdatasets/datasets-iris)
+             (sk/lay-point :sepal-length :sepal-width)
              sk/plan)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})

@@ -1,13 +1,17 @@
 (ns
  napkinsketch-book.scatter-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l19 (-> data/iris (sk/lay-point :sepal_length :sepal_width)))
+(def
+ v3_l19
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)))
 
 
 (deftest
@@ -24,8 +28,8 @@
 (def
  v6_l31
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
@@ -42,8 +46,8 @@
 (def
  v9_l43
  (->
-  data/iris
-  (sk/lay-point :petal_length :petal_width {:color :species})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :petal-length :petal-width {:color :species})))
 
 
 (deftest
@@ -60,8 +64,8 @@
 (def
  v12_l55
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color "#E74C3C"})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color "#E74C3C"})))
 
 
 (deftest
@@ -78,8 +82,8 @@
 (def
  v15_l66
  (->
-  data/tips
-  (sk/lay-point :total_bill :tip {:color :day})
+  (rdatasets/reshape2-tips)
+  (sk/lay-point :total-bill :tip {:color :day})
   (sk/options
    {:width 700,
     :height 300,
@@ -106,8 +110,8 @@
 (def
  v18_l84
  (->
-  data/tips
-  (sk/lay-point :total_bill :tip {:color :day, :size :size})))
+  (rdatasets/reshape2-tips)
+  (sk/lay-point :total-bill :tip {:color :day, :size :size})))
 
 
 (deftest
@@ -124,9 +128,9 @@
 (def
  v21_l93
  (->
-  data/tips
+  (rdatasets/reshape2-tips)
   (sk/lay-point
-   :total_bill
+   :total-bill
    :tip
    {:color :day, :size :size, :alpha 0.6})))
 
@@ -144,7 +148,9 @@
 
 (def
  v24_l105
- (-> data/iris (sk/lay-point :species :sepal_width {:jitter true})))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :species :sepal-width {:jitter true})))
 
 
 (deftest
@@ -161,8 +167,8 @@
 (def
  v27_l114
  (->
-  data/iris
-  (sk/lay-point :species :sepal_width {:jitter 10, :alpha 0.5})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :species :sepal-width {:jitter 10, :alpha 0.5})))
 
 
 (deftest
@@ -179,8 +185,8 @@
 (def
  v30_l126
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :petal_length})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :petal-length})))
 
 
 (deftest
@@ -200,11 +206,11 @@
 (def
  v33_l136
  (->
-  data/iris
+  (rdatasets/datasets-iris)
   (sk/lay-point
-   :sepal_length
-   :sepal_width
-   {:color :petal_length, :size :petal_width, :alpha 0.7})))
+   :sepal-length
+   :sepal-width
+   {:color :petal-length, :size :petal-width, :alpha 0.7})))
 
 
 (deftest
@@ -220,12 +226,14 @@
 
 (def
  v36_l150
- (def cols [:sepal_length :sepal_width :petal_length :petal_width]))
+ (def cols [:sepal-length :sepal-width :petal-length :petal-width]))
 
 
 (def
  v37_l152
- (-> data/iris (sk/view (sk/cross cols cols) {:color :species})))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/view (sk/cross cols cols) {:color :species})))
 
 
 (deftest

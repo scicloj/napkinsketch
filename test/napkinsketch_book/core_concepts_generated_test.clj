@@ -2,13 +2,13 @@
  napkinsketch-book.core-concepts-generated-test
  (:require
   [tablecloth.api :as tc]
-  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l33 data/iris)
+(def v3_l33 (rdatasets/datasets-iris))
 
 
 (deftest t4_l35 (is ((fn [ds] (= 150 (count (tc/rows ds)))) v3_l33)))
@@ -17,8 +17,8 @@
 (def
  v6_l47
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
@@ -90,8 +90,8 @@
 (def
  v24_l126
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
   sk/lay-lm
   kind/pprint))
@@ -112,9 +112,9 @@
 (def
  v27_l148
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width)
-  (sk/view :petal_length :petal_width)
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width)
+  (sk/view :petal-length :petal-width)
   sk/lay-point
   kind/pprint))
 
@@ -126,17 +126,17 @@
     [sk]
     (and
      (= 2 (count (:entries sk)))
-     (= :sepal_length (:x (first (:entries sk))))
-     (= :petal_length (:x (second (:entries sk))))))
+     (= :sepal-length (:x (first (:entries sk))))
+     (= :petal-length (:x (second (:entries sk))))))
    v27_l148)))
 
 
 (def
  v30_l163
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
-  (sk/lay-histogram :petal_length)
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  (sk/lay-histogram :petal-length)
   kind/pprint))
 
 
@@ -155,8 +155,8 @@
 (def
  v33_l180
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
   sk/lay-lm))
 
@@ -175,8 +175,8 @@
 (def
  v36_l194
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   sk/lay-lm))
 
 
@@ -194,10 +194,10 @@
 (def
  v39_l259
  (->
-  data/iris
+  (rdatasets/datasets-iris)
   (sk/lay-point
-   :sepal_length
-   :sepal_width
+   :sepal-length
+   :sepal-width
    {:color :species, :alpha 0.5})
   (sk/options
    {:title "Iris Measurements", :width 500, :palette :dark2})))
@@ -222,7 +222,9 @@
 (deftest t43_l279 (is ((fn [m] (= :bar (:mark m))) v42_l277)))
 
 
-(def v45_l283 (-> data/iris (sk/lay-histogram :sepal_length)))
+(def
+ v45_l283
+ (-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-length)))
 
 
 (deftest
@@ -238,7 +240,10 @@
 
 (def
  v51_l308
- (-> data/iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  sk/lay-lm))
 
 
 (deftest
@@ -272,7 +277,9 @@
  (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v57_l329)))
 
 
-(def v60_l348 (-> data/iris (sk/view :sepal_length :sepal_width)))
+(def
+ v60_l348
+ (-> (rdatasets/datasets-iris) (sk/view :sepal-length :sepal-width)))
 
 
 (deftest
@@ -280,7 +287,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v60_l348)))
 
 
-(def v63_l355 (-> data/iris (sk/view :sepal_length)))
+(def v63_l355 (-> (rdatasets/datasets-iris) (sk/view :sepal-length)))
 
 
 (deftest
@@ -291,8 +298,8 @@
 (def
  v66_l373
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width)
   sk/lay-point
   sk/lay-lm))
 
@@ -311,8 +318,8 @@
 (def
  v69_l385
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width)
   sk/lay-point
   sk/lay-loess))
 
@@ -331,8 +338,8 @@
 (def
  v72_l402
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
   sk/lay-lm))
 
@@ -351,8 +358,8 @@
 (def
  v75_l413
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   sk/lay-lm))
 
 
@@ -371,7 +378,9 @@
  v78_l441
  (def
   scatter-base
-  (-> data/iris (sk/lay-point :sepal_length :sepal_width))))
+  (->
+   (rdatasets/datasets-iris)
+   (sk/lay-point :sepal-length :sepal-width))))
 
 
 (def v80_l447 (-> scatter-base sk/lay-lm))
@@ -405,9 +414,9 @@
 (def
  v86_l466
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width)
-  (sk/view :petal_length :petal_width)
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width)
+  (sk/view :petal-length :petal-width)
   sk/lay-point))
 
 
@@ -425,8 +434,8 @@
 (def
  v89_l485
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
@@ -443,8 +452,8 @@
 (def
  v92_l497
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :petal_length})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :petal-length})))
 
 
 (deftest
@@ -455,8 +464,8 @@
 (def
  v95_l506
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color "steelblue"})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color "steelblue"})))
 
 
 (deftest
@@ -467,8 +476,8 @@
 (def
  v98_l517
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width {:group :species})
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width {:group :species})
   sk/lay-point
   sk/lay-lm))
 
@@ -487,8 +496,8 @@
 (def
  v101_l535
  (->
-  (sk/sketch data/iris {:color :species})
-  (sk/view :sepal_length :sepal_width)
+  (sk/sketch (rdatasets/datasets-iris) {:color :species})
+  (sk/view :sepal-length :sepal-width)
   sk/lay-point))
 
 
@@ -500,9 +509,9 @@
 (def
  v104_l549
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
-  (sk/overlay :sepal_length :petal_width :lm)))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  (sk/overlay :sepal-length :petal-width :lm)))
 
 
 (deftest
@@ -518,7 +527,9 @@
 
 (def
  v107_l569
- (-> data/iris (sk/lay-density :sepal_length {:color :species})))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-density :sepal-length {:color :species})))
 
 
 (deftest
@@ -529,8 +540,8 @@
 (def
  v110_l588
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width)
   (sk/facet :species)
   sk/lay-point
   sk/lay-lm))
@@ -550,8 +561,8 @@
 (def
  v113_l607
  (->
-  data/iris
-  (sk/lay-histogram [:sepal_length :sepal_width :petal_length])))
+  (rdatasets/datasets-iris)
+  (sk/lay-histogram [:sepal-length :sepal-width :petal-length])))
 
 
 (deftest
@@ -562,8 +573,8 @@
 (def
  v116_l614
  (->
-  data/iris
-  (sk/view [[:sepal_length :sepal_width] [:petal_length :petal_width]])
+  (rdatasets/datasets-iris)
+  (sk/view [[:sepal-length :sepal-width] [:petal-length :petal-width]])
   sk/lay-point))
 
 
@@ -572,7 +583,7 @@
  (is ((fn [v] (= 2 (:panels (sk/svg-summary v)))) v116_l614)))
 
 
-(def v119_l628 (def cols [:sepal_length :sepal_width :petal_length]))
+(def v119_l628 (def cols [:sepal-length :sepal-width :petal-length]))
 
 
 (def v120_l630 (sk/cross cols cols))
@@ -583,7 +594,10 @@
 
 (def
  v123_l637
- (-> data/iris (sk/view (sk/cross cols cols)) sk/lay-point))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/view (sk/cross cols cols))
+  sk/lay-point))
 
 
 (deftest
@@ -594,8 +608,8 @@
 (def
  v126_l660
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   (sk/coord :flip)))
 
 

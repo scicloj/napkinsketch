@@ -5,8 +5,8 @@
 
 (ns napkinsketch-book.distributions
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
+   ;; rdatasets — standard datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -16,8 +16,8 @@
 
 ;; Distribution of sepal length across all species.
 
-(-> data/iris
-    (sk/lay-histogram :sepal_length))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram :sepal-length))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -28,8 +28,8 @@
 
 ;; Split by species — each group gets its own color.
 
-(-> data/iris
-    (sk/lay-histogram :sepal_length {:color :species}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram :sepal-length {:color :species}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -40,8 +40,8 @@
 
 ;; Petal width has a bimodal distribution.
 
-(-> data/iris
-    (sk/lay-histogram :petal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram :petal-width))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -50,10 +50,10 @@
 
 ;; ## Histogram with Custom Title
 
-(-> data/tips
-    (sk/lay-histogram :total_bill)
+(-> (rdatasets/reshape2-tips)
+    (sk/lay-histogram :total-bill)
     (sk/options {:title "Distribution of Total Bill"
-                       :x-label "Amount ($)"}))
+                 :x-label "Amount ($)"}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -67,8 +67,8 @@
 ;; density instead of raw counts. This makes the histogram directly
 ;; comparable with a density curve overlay.
 
-(-> data/iris
-    (sk/lay-histogram :sepal_length {:normalize :density :alpha 0.5})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram :sepal-length {:normalize :density :alpha 0.5})
     sk/lay-density)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -79,8 +79,8 @@
 ;; A smooth curve estimating the probability density function.
 ;; Less sensitive to bin width than histograms.
 
-(-> data/iris
-    (sk/lay-density :sepal_length))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-density :sepal-length))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -91,8 +91,8 @@
 
 ;; Per-species density curves with automatic color mapping.
 
-(-> data/iris
-    (sk/lay-density :sepal_length {:color :species}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-density :sepal-length {:color :species}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -103,8 +103,8 @@
 
 ;; A narrow bandwidth reveals more detail; a wide bandwidth smooths more.
 
-(-> data/iris
-    (sk/lay-density :sepal_length {:bandwidth 0.3}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-density :sepal-length {:bandwidth 0.3}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -115,8 +115,8 @@
 
 ;; Median, quartiles, whiskers at 1.5×IQR (interquartile range), and outlier points.
 
-(-> data/iris
-    (sk/lay-boxplot :species :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-boxplot :species :sepal-width))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -128,8 +128,8 @@
 
 ;; Side-by-side boxplots colored by a grouping variable.
 
-(-> data/tips
-    (sk/lay-boxplot :day :total_bill {:color :smoker}))
+(-> (rdatasets/reshape2-tips)
+    (sk/lay-boxplot :day :total-bill {:color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -139,8 +139,8 @@
 
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
-(let [pl (-> data/tips
-             (sk/lay-boxplot :day :total_bill {:color :smoker})
+(let [pl (-> (rdatasets/reshape2-tips)
+             (sk/lay-boxplot :day :total-bill {:color :smoker})
              sk/plan)
       panel (first (:panels pl))
       box-layer (first (filter #(= :boxplot (:mark %)) (:layers panel)))
@@ -154,8 +154,8 @@
 
 ;; Flipped coordinate for horizontal orientation.
 
-(-> data/iris
-    (sk/lay-boxplot :species :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-boxplot :species :sepal-width)
     (sk/coord :flip))
 
 (kind/test-last
@@ -169,8 +169,8 @@
 ;; A violin shows the full density shape per category — more
 ;; informative than a boxplot for multimodal distributions.
 
-(-> data/tips
-    (sk/lay-violin :day :total_bill))
+(-> (rdatasets/reshape2-tips)
+    (sk/lay-violin :day :total-bill))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -181,8 +181,8 @@
 
 ;; Color splits each category into side-by-side violins.
 
-(-> data/tips
-    (sk/lay-violin :day :total_bill {:color :smoker}))
+(-> (rdatasets/reshape2-tips)
+    (sk/lay-violin :day :total-bill {:color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -191,8 +191,8 @@
 
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
-(let [pl (-> data/tips
-             (sk/lay-violin :day :total_bill {:color :smoker})
+(let [pl (-> (rdatasets/reshape2-tips)
+             (sk/lay-violin :day :total-bill {:color :smoker})
              sk/plan)
       panel (first (:panels pl))
       viol-layer (first (filter #(= :violin (:mark %)) (:layers panel)))
@@ -204,8 +204,8 @@
 
 ;; ## Horizontal Violin
 
-(-> data/iris
-    (sk/lay-violin :species :petal_length)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-violin :species :petal-length)
     (sk/coord :flip))
 
 (kind/test-last
@@ -218,8 +218,8 @@
 ;; Overlapping density curves stacked vertically by category — good
 ;; for comparing distribution shapes across many groups.
 
-(-> data/iris
-    (sk/lay-ridgeline :species :sepal_length))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-ridgeline :species :sepal-length))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -230,8 +230,8 @@
 
 ;; Map color to the same categorical column for distinct curves.
 
-(-> data/iris
-    (sk/lay-ridgeline :species :sepal_length {:color :species}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-ridgeline :species :sepal-length {:color :species}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -244,7 +244,7 @@
 ;; `lay-*` function) to create one panel per column. This is useful
 ;; for comparing the shape of different variables side by side.
 
-(sk/lay-histogram data/iris [:sepal_length :sepal_width :petal_length])
+(sk/lay-histogram (rdatasets/datasets-iris) [:sepal-length :sepal-width :petal-length])
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -253,8 +253,8 @@
 
 ;; The same works with `sk/view` and a separate `lay-*` step:
 
-(-> data/iris
-    (sk/view [:sepal_length :sepal_width :petal_length])
+(-> (rdatasets/datasets-iris)
+    (sk/view [:sepal-length :sepal-width :petal-length])
     sk/lay-histogram)
 
 (kind/test-last
@@ -264,7 +264,7 @@
 
 ;; Combine with `:color` to see group differences within each column.
 
-(sk/lay-density data/iris [:sepal_length :sepal_width :petal_length] {:color :species})
+(sk/lay-density (rdatasets/datasets-iris) [:sepal-length :sepal-width :petal-length] {:color :species})
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]

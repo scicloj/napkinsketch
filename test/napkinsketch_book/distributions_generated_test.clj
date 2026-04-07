@@ -1,13 +1,15 @@
 (ns
  napkinsketch-book.distributions-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l19 (-> data/iris (sk/lay-histogram :sepal_length)))
+(def
+ v3_l19
+ (-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-length)))
 
 
 (deftest
@@ -23,7 +25,9 @@
 
 (def
  v6_l31
- (-> data/iris (sk/lay-histogram :sepal_length {:color :species})))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-histogram :sepal-length {:color :species})))
 
 
 (deftest
@@ -37,7 +41,9 @@
    v6_l31)))
 
 
-(def v9_l43 (-> data/iris (sk/lay-histogram :petal_width)))
+(def
+ v9_l43
+ (-> (rdatasets/datasets-iris) (sk/lay-histogram :petal-width)))
 
 
 (deftest
@@ -54,8 +60,8 @@
 (def
  v12_l53
  (->
-  data/tips
-  (sk/lay-histogram :total_bill)
+  (rdatasets/reshape2-tips)
+  (sk/lay-histogram :total-bill)
   (sk/options
    {:title "Distribution of Total Bill", :x-label "Amount ($)"})))
 
@@ -71,7 +77,9 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__79063#] (= "Distribution of Total Bill" p1__79063#))
+       (fn*
+        [p1__1904557#]
+        (= "Distribution of Total Bill" p1__1904557#))
        (:texts s)))))
    v12_l53)))
 
@@ -79,8 +87,8 @@
 (def
  v15_l70
  (->
-  data/iris
-  (sk/lay-histogram :sepal_length {:normalize :density, :alpha 0.5})
+  (rdatasets/datasets-iris)
+  (sk/lay-histogram :sepal-length {:normalize :density, :alpha 0.5})
   sk/lay-density))
 
 
@@ -95,7 +103,9 @@
    v15_l70)))
 
 
-(def v18_l82 (-> data/iris (sk/lay-density :sepal_length)))
+(def
+ v18_l82
+ (-> (rdatasets/datasets-iris) (sk/lay-density :sepal-length)))
 
 
 (deftest
@@ -111,7 +121,9 @@
 
 (def
  v21_l94
- (-> data/iris (sk/lay-density :sepal_length {:color :species})))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-density :sepal-length {:color :species})))
 
 
 (deftest
@@ -127,7 +139,9 @@
 
 (def
  v24_l106
- (-> data/iris (sk/lay-density :sepal_length {:bandwidth 0.3})))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-density :sepal-length {:bandwidth 0.3})))
 
 
 (deftest
@@ -141,7 +155,9 @@
    v24_l106)))
 
 
-(def v27_l118 (-> data/iris (sk/lay-boxplot :species :sepal_width)))
+(def
+ v27_l118
+ (-> (rdatasets/datasets-iris) (sk/lay-boxplot :species :sepal-width)))
 
 
 (deftest
@@ -157,7 +173,9 @@
 
 (def
  v30_l131
- (-> data/tips (sk/lay-boxplot :day :total_bill {:color :smoker})))
+ (->
+  (rdatasets/reshape2-tips)
+  (sk/lay-boxplot :day :total-bill {:color :smoker})))
 
 
 (deftest
@@ -176,15 +194,15 @@
  (let
   [pl
    (->
-    data/tips
-    (sk/lay-boxplot :day :total_bill {:color :smoker})
+    (rdatasets/reshape2-tips)
+    (sk/lay-boxplot :day :total-bill {:color :smoker})
     sk/plan)
    panel
    (first (:panels pl))
    box-layer
    (first
     (filter
-     (fn* [p1__79064#] (= :boxplot (:mark p1__79064#)))
+     (fn* [p1__1904558#] (= :boxplot (:mark p1__1904558#)))
      (:layers panel)))
    cats
    (:color-categories box-layer)]
@@ -196,7 +214,10 @@
 
 (def
  v36_l157
- (-> data/iris (sk/lay-boxplot :species :sepal_width) (sk/coord :flip)))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-boxplot :species :sepal-width)
+  (sk/coord :flip)))
 
 
 (deftest
@@ -210,7 +231,9 @@
    v36_l157)))
 
 
-(def v39_l172 (-> data/tips (sk/lay-violin :day :total_bill)))
+(def
+ v39_l172
+ (-> (rdatasets/reshape2-tips) (sk/lay-violin :day :total-bill)))
 
 
 (deftest
@@ -226,7 +249,9 @@
 
 (def
  v42_l184
- (-> data/tips (sk/lay-violin :day :total_bill {:color :smoker})))
+ (->
+  (rdatasets/reshape2-tips)
+  (sk/lay-violin :day :total-bill {:color :smoker})))
 
 
 (deftest
@@ -245,15 +270,15 @@
  (let
   [pl
    (->
-    data/tips
-    (sk/lay-violin :day :total_bill {:color :smoker})
+    (rdatasets/reshape2-tips)
+    (sk/lay-violin :day :total-bill {:color :smoker})
     sk/plan)
    panel
    (first (:panels pl))
    viol-layer
    (first
     (filter
-     (fn* [p1__79065#] (= :violin (:mark p1__79065#)))
+     (fn* [p1__1904559#] (= :violin (:mark p1__1904559#)))
      (:layers panel)))
    cats
    (:color-categories viol-layer)]
@@ -265,7 +290,10 @@
 
 (def
  v48_l207
- (-> data/iris (sk/lay-violin :species :petal_length) (sk/coord :flip)))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-violin :species :petal-length)
+  (sk/coord :flip)))
 
 
 (deftest
@@ -279,7 +307,11 @@
    v48_l207)))
 
 
-(def v51_l221 (-> data/iris (sk/lay-ridgeline :species :sepal_length)))
+(def
+ v51_l221
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-ridgeline :species :sepal-length)))
 
 
 (deftest
@@ -296,8 +328,8 @@
 (def
  v54_l233
  (->
-  data/iris
-  (sk/lay-ridgeline :species :sepal_length {:color :species})))
+  (rdatasets/datasets-iris)
+  (sk/lay-ridgeline :species :sepal-length {:color :species})))
 
 
 (deftest
@@ -314,8 +346,8 @@
 (def
  v57_l247
  (sk/lay-histogram
-  data/iris
-  [:sepal_length :sepal_width :petal_length]))
+  (rdatasets/datasets-iris)
+  [:sepal-length :sepal-width :petal-length]))
 
 
 (deftest
@@ -332,8 +364,8 @@
 (def
  v60_l256
  (->
-  data/iris
-  (sk/view [:sepal_length :sepal_width :petal_length])
+  (rdatasets/datasets-iris)
+  (sk/view [:sepal-length :sepal-width :petal-length])
   sk/lay-histogram))
 
 
@@ -351,8 +383,8 @@
 (def
  v63_l267
  (sk/lay-density
-  data/iris
-  [:sepal_length :sepal_width :petal_length]
+  (rdatasets/datasets-iris)
+  [:sepal-length :sepal-width :petal-length]
   {:color :species}))
 
 

@@ -10,17 +10,17 @@
   (:require
    ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
-   [scicloj.napkinsketch.api :as sk]))
+   [scicloj.napkinsketch.api :as sk]
+   ;; RDatasets — standard datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## Data
 ;;
 ;; A **dataset** is a table of rows and columns — like a spreadsheet.
-;; Each column has a name (a keyword like `:sepal_length`) and holds
+;; Each column has a name (a keyword like `:sepal-length`) and holds
 ;; values of one type. Napkinsketch uses
 ;; [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset)
 ;; as its columnar data representation, typically through the
@@ -28,9 +28,9 @@
 ;;
 ;; We use the classic iris flower dataset throughout these examples.
 ;; It is loaded in the [Datasets](./napkinsketch_book.datasets.html)
-;; chapter and available as `data/iris`.
+;; chapter and available as `(rdatasets/datasets-iris)`.
 
-data/iris
+(rdatasets/datasets-iris)
 
 (kind/test-last [(fn [ds] (= 150 (count (tc/rows ds))))])
 
@@ -44,8 +44,8 @@ data/iris
 ;;
 ;; Here is a scatter plot of sepal dimensions, colored by species:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -123,8 +123,8 @@ data/iris
 ;;
 ;; Here is a concrete sketch:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     sk/lay-lm
     kind/pprint)
@@ -134,7 +134,7 @@ data/iris
                                (= 2 (count (:methods sk)))))])
 
 ;; `:shared` has `{:color :species}` — it applies to all layers.
-;; `:entries` has one entry `{:x :sepal_length :y :sepal_width}`.
+;; `:entries` has one entry `{:x :sepal-length :y :sepal-width}`.
 ;; `:methods` has two global methods: point and lm.
 
 ;; ## Entries
@@ -145,24 +145,24 @@ data/iris
 ;;
 ;; `sk/view` adds entries:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/view :petal_length :petal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :petal-length :petal-width)
     sk/lay-point
     kind/pprint)
 
 (kind/test-last [(fn [sk] (and (= 2 (count (:entries sk)))
-                               (= :sepal_length (:x (first (:entries sk))))
-                               (= :petal_length (:x (second (:entries sk))))))])
+                               (= :sepal-length (:x (first (:entries sk))))
+                               (= :petal-length (:x (second (:entries sk))))))])
 
 ;; Two entries, two panels. Each `sk/view` call adds one entry.
 ;; The global `sk/lay-point` applies to both.
 
 ;; `sk/lay-*` with columns also creates entries:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width)
-    (sk/lay-histogram :petal_length)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :petal-length)
     kind/pprint)
 
 (kind/test-last [(fn [sk] (and (= 2 (count (:entries sk)))
@@ -177,8 +177,8 @@ data/iris
 ;; The opts map in `sk/view` goes into `:shared` — these aesthetics
 ;; apply to ALL entries and ALL methods:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     sk/lay-lm)
 
@@ -191,8 +191,8 @@ data/iris
 ;;
 ;; Compare with per-method color:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -256,8 +256,8 @@ data/iris
 
 ;; Here is one option from each scope in a single pipeline:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.5}) ;; per-method
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species :alpha 0.5}) ;; per-method
     (sk/options {:title "Iris Measurements"                                ;; plot option
                  :width 500 :palette :dark2}))                             ;; config via options
 
@@ -280,8 +280,8 @@ data/iris
 
 ;; A histogram draws bar shapes filled to show binned counts:
 
-(-> data/iris
-    (sk/lay-histogram :sepal_length))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -305,8 +305,8 @@ data/iris
 
 ;; A [regression](https://en.wikipedia.org/wiki/Linear_regression) line fitted through the scatter data:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -345,15 +345,15 @@ data/iris
 ;; Two numerical columns produce a scatter plot; a single numerical
 ;; column produces a histogram.
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; A single column produces a histogram:
 
-(-> data/iris
-    (sk/view :sepal_length))
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -370,8 +370,8 @@ data/iris
 ;; Here we add a linear model regression line on top of scatter
 ;; points. Both layers share the same columns and aesthetics:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
     sk/lay-point
     sk/lay-lm)
 
@@ -382,8 +382,8 @@ data/iris
 ;; Or with a [LOESS](https://en.wikipedia.org/wiki/Local_regression) (local regression) smoother — a flexible curve that follows local
 ;; trends instead of fitting a straight line:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
     sk/lay-point
     sk/lay-loess)
 
@@ -399,8 +399,8 @@ data/iris
 
 ;; Shared color — both layers are colored:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     sk/lay-lm)
 
@@ -410,8 +410,8 @@ data/iris
 
 ;; Per-method color — only points are colored, lm fits one overall line:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -439,8 +439,8 @@ data/iris
 ;; changing the original.
 
 (def scatter-base
-  (-> data/iris
-      (sk/lay-point :sepal_length :sepal_width)))
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width)))
 
 ;; Add a regression line:
 
@@ -463,9 +463,9 @@ data/iris
 ;; You can also create a **multi-panel layout** by adding multiple
 ;; entries with `sk/view`, then a single method:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width)
-    (sk/view :petal_length :petal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :petal-length :petal-width)
     sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -482,20 +482,20 @@ data/iris
 ;; color from the **palette** (an ordered set of colors). A
 ;; **legend** appears alongside the plot, mapping labels to colors.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (some #{"setosa"} (:texts s)))))])
 
 ;; **Numeric column** — when `:color` refers to a numerical column
-;; (like `:petal_length`), values map to a continuous **gradient** —
+;; (like `:petal-length`), values map to a continuous **gradient** —
 ;; a smooth color ramp from low to high. The legend shows a color
 ;; bar instead of discrete entries.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :petal_length}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :petal-length}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -503,8 +503,8 @@ data/iris
 ;; colors all points uniformly. No legend appears because there is
 ;; nothing to distinguish.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color "steelblue"}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color "steelblue"}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -514,8 +514,8 @@ data/iris
 ;; This is useful when you want separate regression lines per group
 ;; but uniform color:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:group :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:group :species})
     sk/lay-point
     sk/lay-lm)
 
@@ -532,13 +532,13 @@ data/iris
 ;; without adding entries. This is useful when you want to set
 ;; shared options first, then add entries later:
 
-(-> (sk/sketch data/iris {:color :species})
-    (sk/view :sepal_length :sepal_width)
+(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
+    (sk/view :sepal-length :sepal-width)
     sk/lay-point)
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; Equivalent to `(-> data/iris (sk/view :sepal_length :sepal_width {:color :species}) sk/lay-point)`.
+;; Equivalent to `(-> (rdatasets/datasets-iris) (sk/view :sepal-length :sepal-width {:color :species}) sk/lay-point)`.
 
 ;; ## Overlay
 ;;
@@ -546,16 +546,16 @@ data/iris
 ;; method on the **same panel** as existing entries. Use it when
 ;; you want two column mappings sharing the same axes:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width)
-    (sk/overlay :sepal_length :petal_width :lm))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/overlay :sepal-length :petal-width :lm))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
                                 (pos? (:lines s)))))])
 
-;; Scatter on sepal_width, regression on petal_width — both use
-;; sepal_length as x.
+;; Scatter on sepal-width, regression on petal-width — both use
+;; sepal-length as x.
 
 ;; ## Grouping
 ;;
@@ -566,8 +566,8 @@ data/iris
 ;; We saw grouping with scatter + regression in the Shared Aesthetics
 ;; section above. Here is another example — grouped density curves:
 
-(-> data/iris
-    (sk/lay-density :sepal_length {:color :species}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-density :sepal-length {:color :species}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -585,8 +585,8 @@ data/iris
 ;;
 ;; `sk/facet` specifies which column to split on:
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
     (sk/facet :species)
     sk/lay-point
     sk/lay-lm)
@@ -604,16 +604,16 @@ data/iris
 ;; Pass a vector of column names to create one panel per variable.
 ;; Keywords create **univariate** panels (one column each):
 
-(-> data/iris
-    (sk/lay-histogram [:sepal_length :sepal_width :petal_length]))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram [:sepal-length :sepal-width :petal-length]))
 
 (kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
 
 ;; Pairs create **bivariate** panels:
 
-(-> data/iris
-    (sk/view [[:sepal_length :sepal_width]
-              [:petal_length :petal_width]])
+(-> (rdatasets/datasets-iris)
+    (sk/view [[:sepal-length :sepal-width]
+              [:petal-length :petal-width]])
     sk/lay-point)
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
@@ -625,7 +625,7 @@ data/iris
 ;; creates one panel per combination — a quick way to explore
 ;; relationships across many variables at once.
 
-(def cols [:sepal_length :sepal_width :petal_length])
+(def cols [:sepal-length :sepal-width :petal-length])
 
 (sk/cross cols cols)
 
@@ -634,7 +634,7 @@ data/iris
 ;; Three columns crossed with themselves produce nine panels —
 ;; a full grid where each row and column corresponds to a variable:
 
-(-> data/iris
+(-> (rdatasets/datasets-iris)
     (sk/view (sk/cross cols cols))
     sk/lay-point)
 
@@ -657,8 +657,8 @@ data/iris
 ;;
 ;; Here we flip a scatter plot so sepal length runs vertically:
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/coord :flip))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])

@@ -1,13 +1,17 @@
 (ns
  napkinsketch-book.sketch-model-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l30 (-> data/iris (sk/lay-point :sepal_length :sepal_width)))
+(def
+ v3_l30
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)))
 
 
 (deftest
@@ -17,7 +21,10 @@
 
 (def
  v6_l43
- (-> data/iris (sk/lay-point :sepal_length :sepal_width) kind/pprint))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  kind/pprint))
 
 
 (deftest
@@ -32,8 +39,8 @@
 (def
  v9_l69
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
   sk/lay-lm))
 
@@ -49,7 +56,9 @@
    v9_l69)))
 
 
-(def v12_l92 (-> data/iris (sk/view :sepal_length :sepal_width)))
+(def
+ v12_l92
+ (-> (rdatasets/datasets-iris) (sk/view :sepal-length :sepal-width)))
 
 
 (deftest
@@ -57,7 +66,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v12_l92)))
 
 
-(def v15_l99 (-> data/iris (sk/view :sepal_length)))
+(def v15_l99 (-> (rdatasets/datasets-iris) (sk/view :sepal-length)))
 
 
 (deftest
@@ -68,8 +77,8 @@
 (def
  v18_l115
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width {:color :species})
   (sk/facet :species)
   sk/lay-point
   sk/lay-lm

@@ -4,10 +4,10 @@
 
 (ns napkinsketch-book.ranking
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; R datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
@@ -18,7 +18,7 @@
 
 ;; Count occurrences of a categorical column.
 
-(-> data/iris
+(-> (rdatasets/datasets-iris)
     (sk/lay-bar :species))
 
 (kind/test-last
@@ -30,7 +30,7 @@
 
 ;; Grouped (dodged) bars — count by day, colored by smoking status.
 
-(-> data/tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-bar :day {:color :smoker}))
 
 (kind/test-last
@@ -42,7 +42,7 @@
 
 ;; Same data, stacked instead of dodged.
 
-(-> data/tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-stacked-bar :day {:color :smoker}))
 
 (kind/test-last
@@ -54,7 +54,7 @@
 
 ;; 100% stacked bars — shows proportions instead of counts.
 
-(-> data/penguins
+(-> (rdatasets/palmerpenguins-penguins)
     (sk/lay-stacked-bar-fill :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -65,7 +65,7 @@
 
 ;; Flip the bar chart for horizontal orientation.
 
-(-> data/iris
+(-> (rdatasets/datasets-iris)
     (sk/lay-bar :species)
     (sk/coord :flip))
 
@@ -78,7 +78,7 @@
 
 ;; Colored bars, flipped.
 
-(-> data/tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-bar :day {:color :time})
     (sk/coord :flip))
 

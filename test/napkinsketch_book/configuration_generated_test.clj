@@ -1,8 +1,8 @@
 (ns
  napkinsketch-book.configuration-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
 
@@ -13,8 +13,8 @@
   base-plot
   []
   (->
-   data/iris
-   (sk/lay-point :sepal_length :sepal_width {:color :species}))))
+   (rdatasets/datasets-iris)
+   (sk/lay-point :sepal-length :sepal-width {:color :species}))))
 
 
 (def v5_l39 (sk/config))

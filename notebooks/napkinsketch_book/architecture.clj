@@ -10,10 +10,10 @@
 
 (ns napkinsketch-book.architecture
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; rdatasets — standard datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
    ;; Sketch internals — record, resolution, and views→plan pipeline
@@ -257,11 +257,11 @@ graph LR
 ;; A sketch can hold multiple methods on the same entry.
 ;; Here, scatter points and per-species regression lines share
 ;; the same panel because both `lay-point` and `lay-lm`
-;; target the same `:petal_length`/`:petal_width` entry.
+;; target the same `:petal-length`/`:petal-width` entry.
 
 (def multi-sk
-  (-> data/iris
-      (sk/view :petal_length :petal_width {:color :species})
+  (-> (rdatasets/datasets-iris)
+      (sk/view :petal-length :petal-width {:color :species})
       sk/lay-point
       sk/lay-lm))
 
@@ -313,8 +313,8 @@ multi-plan
 
 ;; And the rendered result:
 
-(-> data/iris
-    (sk/view :petal_length :petal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :petal-length :petal-width {:color :species})
     sk/lay-point
     sk/lay-lm
     (sk/options {:title "Iris Petals with Regression"}))

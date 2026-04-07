@@ -1,7 +1,7 @@
 (ns
  napkinsketch-book.extensibility-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.method :as method]
@@ -77,8 +77,8 @@
  (let
   [s
    (->
-    data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     sk/plan)
    layer
    (first (:layers (first (:panels s))))]
@@ -120,8 +120,8 @@
  (def
   my-plan
   (->
-   data/iris
-   (sk/lay-point :sepal_length :sepal_width {:color :species})
+   (rdatasets/datasets-iris)
+   (sk/lay-point :sepal-length :sepal-width {:color :species})
    sk/plan)))
 
 
@@ -202,7 +202,9 @@
 (deftest t42_l368 (is ((fn [t] (= 4 (count (:row-maps t)))) v41_l358)))
 
 
-(def v44_l375 (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
+(def
+ v44_l375
+ (-> (rdatasets/datasets-iris) (sk/lay-bar :species) (sk/coord :flip)))
 
 
 (deftest

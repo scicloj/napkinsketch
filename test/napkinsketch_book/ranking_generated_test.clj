@@ -1,8 +1,8 @@
 (ns
  napkinsketch-book.ranking-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
 
@@ -15,7 +15,7 @@
    :revenue [120 340 210 95]}))
 
 
-(def v4_l21 (-> data/iris (sk/lay-bar :species)))
+(def v4_l21 (-> (rdatasets/datasets-iris) (sk/lay-bar :species)))
 
 
 (deftest
@@ -29,7 +29,9 @@
    v4_l21)))
 
 
-(def v7_l33 (-> data/tips (sk/lay-bar :day {:color :smoker})))
+(def
+ v7_l33
+ (-> (rdatasets/reshape2-tips) (sk/lay-bar :day {:color :smoker})))
 
 
 (deftest
@@ -43,7 +45,11 @@
    v7_l33)))
 
 
-(def v10_l45 (-> data/tips (sk/lay-stacked-bar :day {:color :smoker})))
+(def
+ v10_l45
+ (->
+  (rdatasets/reshape2-tips)
+  (sk/lay-stacked-bar :day {:color :smoker})))
 
 
 (deftest
@@ -59,7 +65,9 @@
 
 (def
  v13_l57
- (-> data/penguins (sk/lay-stacked-bar-fill :island {:color :species})))
+ (->
+  (rdatasets/palmerpenguins-penguins)
+  (sk/lay-stacked-bar-fill :island {:color :species})))
 
 
 (deftest
@@ -73,7 +81,9 @@
    v13_l57)))
 
 
-(def v16_l68 (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
+(def
+ v16_l68
+ (-> (rdatasets/datasets-iris) (sk/lay-bar :species) (sk/coord :flip)))
 
 
 (deftest
@@ -89,7 +99,10 @@
 
 (def
  v19_l81
- (-> data/tips (sk/lay-bar :day {:color :time}) (sk/coord :flip)))
+ (->
+  (rdatasets/reshape2-tips)
+  (sk/lay-bar :day {:color :time})
+  (sk/coord :flip)))
 
 
 (deftest

@@ -14,10 +14,10 @@
 
 (ns napkinsketch-book.configuration
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; rdatasets — standard datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
@@ -28,8 +28,8 @@
 ;; produces a fresh specification that picks up the current configuration.
 
 (defn base-plot
-  [] (-> data/iris
-         (sk/lay-point :sepal_length :sepal_width {:color :species})))
+  [] (-> (rdatasets/datasets-iris)
+         (sk/lay-point :sepal-length :sepal-width {:color :species})))
 
 ;; ## Inspecting the Current Configuration
 ;;

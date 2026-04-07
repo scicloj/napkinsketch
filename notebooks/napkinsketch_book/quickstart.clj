@@ -14,8 +14,8 @@
 
 (ns napkinsketch-book.quickstart
   (:require
-   ;; Tablecloth — dataset manipulation
-   [tablecloth.api :as tc]
+   ;; R datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -30,20 +30,17 @@
 ;; Load the classic [iris](https://en.wikipedia.org/wiki/Iris_flower_data_set) dataset and scatter two columns. That is all
 ;; it takes — one `def` and one pipeline:
 
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
+(def iris (rdatasets/datasets-iris))
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width))
+    (sk/lay-point :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; - `tc/dataset` loads a CSV into a
-;; [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset) dataset
-;; (which we typically use through
-;; [Tablecloth](https://scicloj.github.io/tablecloth/)).
-;; - The `:key-fn keyword` option converts
-;; the CSV header strings to Clojure keywords, which is conventional.
+;; - `rdatasets/datasets-iris` loads the classic iris dataset from
+;; [R datasets](https://vincentarelbundock.github.io/Rdatasets/) as a
+;; [Tablecloth](https://scicloj.github.io/tablecloth/) dataset with
+;; keyword column names.
 ;; - `sk/lay-point` draws each row as a dot (scatter plot).
 
 ;; ## Plain Data
@@ -80,7 +77,7 @@
 ;; Bind `:color` to a column to color points by group.
 
 (-> iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species}))
+    (sk/lay-point :sepal-length :sepal-width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -94,7 +91,7 @@
 ;; **Histogram** — pass a single column for automatic binning:
 
 (-> iris
-    (sk/lay-histogram :sepal_length))
+    (sk/lay-histogram :sepal-length))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -132,7 +129,7 @@
 ;; **Boxplot** — compare distributions across categories:
 
 (-> iris
-    (sk/lay-boxplot :species :sepal_width))
+    (sk/lay-boxplot :species :sepal-width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -146,7 +143,7 @@
 ;; Two numerical columns produce a scatter plot:
 
 (-> iris
-    (sk/view :sepal_length :sepal_width))
+    (sk/view :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -160,7 +157,7 @@
 ;; A single numerical column produces a histogram:
 
 (-> iris
-    (sk/view :sepal_length))
+    (sk/view :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -174,7 +171,7 @@
 ;; (regression line) per group:
 
 (-> iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     sk/lay-lm)
 
@@ -187,7 +184,7 @@
 ;; Use `sk/options` for width, height, title, and axis labels:
 
 (-> iris
-    (sk/lay-point :petal_length :petal_width {:color :species})
+    (sk/lay-point :petal-length :petal-width {:color :species})
     (sk/options {:width 500 :height 350
                  :title "Iris Petals"
                  :x-label "Petal Length (cm)"
@@ -202,8 +199,8 @@
 ;;
 ;; Combine multiple plots with `sk/arrange`:
 
-(sk/arrange [(sk/lay-point iris :sepal_length :sepal_width {:color :species})
-             (sk/lay-histogram iris :sepal_length {:color :species})]
+(sk/arrange [(sk/lay-point iris :sepal-length :sepal-width {:color :species})
+             (sk/lay-histogram iris :sepal-length {:color :species})]
             {:cols 2})
 
 (kind/test-last [(fn [v] (vector? v))])
@@ -214,7 +211,7 @@
 ;;
 ;; ```clojure
 ;; (-> iris
-;;     (sk/lay-point :sepal_length :sepal_width)
+;;     (sk/lay-point :sepal-length :sepal-width)
 ;;     (sk/save "my-plot.svg"))
 ;; ```
 ;;

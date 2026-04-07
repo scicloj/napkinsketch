@@ -1,7 +1,7 @@
 (ns
  napkinsketch-book.faceting-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
@@ -10,8 +10,8 @@
 (def
  v3_l21
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   (sk/facet :species)))
 
 
@@ -29,8 +29,8 @@
 (def
  v6_l37
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   (sk/facet :species :row)))
 
 
@@ -48,8 +48,8 @@
 (def
  v9_l49
  (->
-  data/tips
-  (sk/lay-point :total_bill :tip {:color :sex})
+  (rdatasets/reshape2-tips)
+  (sk/lay-point :total-bill :tip {:color :sex})
   (sk/facet-grid :smoker :sex)))
 
 
@@ -67,8 +67,8 @@
 (def
  v12_l61
  (->
-  data/iris
-  (sk/lay-histogram :sepal_length {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-histogram :sepal-length {:color :species})
   (sk/facet :species)))
 
 
@@ -86,8 +86,8 @@
 (def
  v15_l73
  (->
-  data/tips
-  (sk/view :total_bill :tip {:color :sex})
+  (rdatasets/reshape2-tips)
+  (sk/view :total-bill :tip {:color :sex})
   sk/lay-point
   sk/lay-lm
   (sk/facet-grid :smoker :sex)))
@@ -107,8 +107,8 @@
 (def
  v18_l91
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   (sk/facet :species)
   (sk/options {:scales :shared})))
 
@@ -127,8 +127,8 @@
 (def
  v21_l102
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   (sk/facet :species)
   (sk/options {:scales :free-y})))
 
@@ -149,8 +149,8 @@
  (def
   faceted-pl
   (->
-   data/iris
-   (sk/lay-point :sepal_length :sepal_width {:color :species})
+   (rdatasets/datasets-iris)
+   (sk/lay-point :sepal-length :sepal-width {:color :species})
    (sk/facet :species)
    sk/plan)))
 
@@ -177,12 +177,14 @@
 
 (def
  v33_l142
- (def cols [:sepal_length :sepal_width :petal_length :petal_width]))
+ (def cols [:sepal-length :sepal-width :petal-length :petal-width]))
 
 
 (def
  v34_l144
- (-> data/iris (sk/view (sk/cross cols cols) {:color :species})))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/view (sk/cross cols cols) {:color :species})))
 
 
 (deftest
@@ -202,8 +204,8 @@
 (def
  v37_l160
  (sk/lay-histogram
-  data/iris
-  [:sepal_length :sepal_width :petal_length]
+  (rdatasets/datasets-iris)
+  [:sepal-length :sepal-width :petal-length]
   {:color :species}))
 
 
@@ -221,7 +223,7 @@
 (def
  v40_l168
  (->
-  data/penguins
+  (rdatasets/palmerpenguins-penguins)
   (sk/lay-bar :species {:color :species})
   (sk/facet :island)))
 
@@ -240,8 +242,8 @@
 (def
  v43_l180
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   (sk/facet :species)
   (sk/options
    {:title "Iris by Species",

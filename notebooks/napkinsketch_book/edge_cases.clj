@@ -9,8 +9,8 @@
 
 (ns napkinsketch-book.edge-cases
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
+   ;; rdatasets — standard datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
    ;; Kindly — notebook rendering protocol
@@ -178,9 +178,9 @@
 
 ;; Derive a new column and plot it.
 
-(-> data/iris
-    (tc/map-columns :sepal_ratio [:sepal_length :sepal_width] /)
-    (sk/lay-point :sepal_length :sepal_ratio {:color :species})
+(-> (rdatasets/datasets-iris)
+    (tc/map-columns :sepal-ratio [:sepal-length :sepal-width] /)
+    (sk/lay-point :sepal-length :sepal-ratio {:color :species})
     (sk/options {:title "Sepal Length/Width Ratio"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -191,9 +191,9 @@
 
 ;; Plot only one species.
 
-(-> data/iris
+(-> (rdatasets/datasets-iris)
     (tc/select-rows #(= "setosa" (% :species)))
-    (sk/lay-point :sepal_length :sepal_width)
+    (sk/lay-point :sepal-length :sepal-width)
     sk/lay-lm
     (sk/options {:title "Setosa Only"}))
 
@@ -239,8 +239,8 @@
 
 ;; Nudge-x on continuous data — shifts points without error.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:nudge-x 0.1 :nudge-y -0.05}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:nudge-x 0.1 :nudge-y -0.05}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
@@ -419,8 +419,8 @@
 
 ;; ### Scale with explicit domain
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
     (sk/scale :y {:domain [0 6]}))
 
 (kind/test-last
@@ -444,8 +444,8 @@
 ;; `sk/cross` produces a full N×N grid of panels.
 ;; Strip labels must appear for every column and row.
 
-(-> data/iris
-    (sk/view (sk/cross [:sepal_length :sepal_width :petal_length] [:sepal_length :sepal_width :petal_length]))
+(-> (rdatasets/datasets-iris)
+    (sk/view (sk/cross [:sepal-length :sepal-width :petal-length] [:sepal-length :sepal-width :petal-length]))
     (sk/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)

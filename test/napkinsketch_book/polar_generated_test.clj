@@ -1,7 +1,7 @@
 (ns
  napkinsketch-book.polar-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [clojure.test :refer [deftest is]]))
@@ -18,8 +18,8 @@
 (def
  v4_l26
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   (sk/coord :polar)))
 
 
@@ -34,7 +34,9 @@
    v4_l26)))
 
 
-(def v7_l41 (-> data/iris (sk/lay-bar :species) (sk/coord :polar)))
+(def
+ v7_l41
+ (-> (rdatasets/datasets-iris) (sk/lay-bar :species) (sk/coord :polar)))
 
 
 (deftest
@@ -67,7 +69,7 @@
 (def
  v13_l66
  (->
-  data/penguins
+  (rdatasets/palmerpenguins-penguins)
   (sk/lay-stacked-bar :island {:color :species})
   (sk/coord :polar)))
 
@@ -85,7 +87,10 @@
 
 (def
  v16_l79
- (-> data/iris (sk/lay-histogram :sepal_length) (sk/coord :polar)))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-histogram :sepal-length)
+  (sk/coord :polar)))
 
 
 (deftest
@@ -102,8 +107,8 @@
 (def
  v19_l92
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   (sk/coord :polar)
   (sk/options {:title "Iris in Polar Space"})))
 

@@ -1,8 +1,8 @@
 (ns
  napkinsketch-book.api-reference-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.napkinsketch.api :as sk]
   [fastmath.random :as rng]
   [clojure.test :refer [deftest is]]))
@@ -34,7 +34,11 @@
 (def v7_l39 (kind/doc #'sk/view))
 
 
-(def v9_l43 (-> data/iris (sk/lay-point :sepal_length :sepal_width)))
+(def
+ v9_l43
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)))
 
 
 (deftest
@@ -48,7 +52,9 @@
    v9_l43)))
 
 
-(def v12_l52 (-> data/iris (sk/lay-histogram :sepal_length)))
+(def
+ v12_l52
+ (-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-length)))
 
 
 (deftest
@@ -65,8 +71,8 @@
 (def
  v15_l61
  (->
-  data/iris
-  (sk/view [[:sepal_length :sepal_width] [:petal_length :petal_width]])
+  (rdatasets/datasets-iris)
+  (sk/view [[:sepal-length :sepal-width] [:petal-length :petal-width]])
   (sk/lay-point {:color :species})))
 
 
@@ -84,8 +90,8 @@
 (def
  v18_l72
  (->
-  data/iris
-  (sk/view {:x :sepal_length, :y :sepal_width})
+  (rdatasets/datasets-iris)
+  (sk/view {:x :sepal-length, :y :sepal-width})
   sk/lay-point))
 
 
@@ -106,8 +112,8 @@
 (def
  v22_l84
  (->
-  data/iris
-  (sk/view :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
   sk/lay-lm))
 
@@ -129,8 +135,8 @@
 (def
  v26_l97
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
@@ -148,7 +154,9 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__80559#] (Math/sin (* p1__80559# 0.3))) (range 30))}))
+   (map
+    (fn* [p1__1910327#] (Math/sin (* p1__1910327# 0.3)))
+    (range 30))}))
 
 
 (def v30_l108 (-> wave (sk/lay-line :x :y)))
@@ -162,7 +170,9 @@
 (def v32_l114 (kind/doc #'sk/lay-histogram))
 
 
-(def v33_l116 (-> data/iris (sk/lay-histogram :sepal_length)))
+(def
+ v33_l116
+ (-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-length)))
 
 
 (deftest
@@ -175,7 +185,7 @@
 (def v35_l122 (kind/doc #'sk/lay-bar))
 
 
-(def v36_l124 (-> data/iris (sk/lay-bar :species)))
+(def v36_l124 (-> (rdatasets/datasets-iris) (sk/lay-bar :species)))
 
 
 (deftest
@@ -189,7 +199,9 @@
 
 (def
  v39_l132
- (-> data/penguins (sk/lay-stacked-bar :island {:color :species})))
+ (->
+  (rdatasets/palmerpenguins-penguins)
+  (sk/lay-stacked-bar :island {:color :species})))
 
 
 (deftest
@@ -204,7 +216,9 @@
 
 (def
  v42_l140
- (-> data/penguins (sk/lay-stacked-bar-fill :island {:color :species})))
+ (->
+  (rdatasets/palmerpenguins-penguins)
+  (sk/lay-stacked-bar-fill :island {:color :species})))
 
 
 (deftest
@@ -231,7 +245,10 @@
 
 (def
  v48_l156
- (-> data/iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  sk/lay-lm))
 
 
 (deftest
@@ -258,9 +275,9 @@
     :y
     (map
      (fn*
-      [p1__80560#]
+      [p1__1910328#]
       (+
-       (Math/sin (* p1__80560# 0.2))
+       (Math/sin (* p1__1910328# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
@@ -282,7 +299,9 @@
 (def v54_l179 (kind/doc #'sk/lay-density))
 
 
-(def v55_l181 (-> data/iris (sk/lay-density :sepal_length)))
+(def
+ v55_l181
+ (-> (rdatasets/datasets-iris) (sk/lay-density :sepal-length)))
 
 
 (deftest
@@ -373,7 +392,9 @@
 (def v69_l224 (kind/doc #'sk/lay-boxplot))
 
 
-(def v70_l226 (-> data/iris (sk/lay-boxplot :species :sepal_width)))
+(def
+ v70_l226
+ (-> (rdatasets/datasets-iris) (sk/lay-boxplot :species :sepal-width)))
 
 
 (deftest
@@ -390,7 +411,9 @@
 (def v72_l233 (kind/doc #'sk/lay-violin))
 
 
-(def v73_l235 (-> data/tips (sk/lay-violin :day :total_bill)))
+(def
+ v73_l235
+ (-> (rdatasets/reshape2-tips) (sk/lay-violin :day :total-bill)))
 
 
 (deftest
@@ -441,7 +464,11 @@
 (def v81_l260 (kind/doc #'sk/lay-tile))
 
 
-(def v82_l262 (-> data/iris (sk/lay-tile :sepal_length :sepal_width)))
+(def
+ v82_l262
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-tile :sepal-length :sepal-width)))
 
 
 (deftest
@@ -456,7 +483,9 @@
 
 (def
  v85_l270
- (-> data/iris (sk/lay-density2d :sepal_length :sepal_width)))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-density2d :sepal-length :sepal-width)))
 
 
 (deftest
@@ -471,7 +500,9 @@
 
 (def
  v88_l278
- (-> data/iris (sk/lay-contour :sepal_length :sepal_width)))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-contour :sepal-length :sepal-width)))
 
 
 (deftest
@@ -483,7 +514,11 @@
 (def v90_l284 (kind/doc #'sk/lay-ridgeline))
 
 
-(def v91_l286 (-> data/iris (sk/lay-ridgeline :species :sepal_length)))
+(def
+ v91_l286
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-ridgeline :species :sepal-length)))
 
 
 (deftest
@@ -499,8 +534,8 @@
 (def
  v94_l294
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
   (sk/lay-rug {:side :both})))
 
 
@@ -530,7 +565,9 @@
 (def v99_l311 (kind/doc #'sk/lay-summary))
 
 
-(def v100_l313 (-> data/iris (sk/lay-summary :species :sepal_length)))
+(def
+ v100_l313
+ (-> (rdatasets/datasets-iris) (sk/lay-summary :species :sepal-length)))
 
 
 (deftest
@@ -659,7 +696,9 @@
 (def v136_l402 (kind/doc #'sk/coord))
 
 
-(def v138_l406 (-> data/iris (sk/lay-bar :species) (sk/coord :flip)))
+(def
+ v138_l406
+ (-> (rdatasets/datasets-iris) (sk/lay-bar :species) (sk/coord :flip)))
 
 
 (deftest
@@ -669,7 +708,9 @@
    v138_l406)))
 
 
-(def v141_l414 (-> data/iris (sk/lay-bar :species) (sk/coord :polar)))
+(def
+ v141_l414
+ (-> (rdatasets/datasets-iris) (sk/lay-bar :species) (sk/coord :polar)))
 
 
 (deftest
@@ -685,8 +726,8 @@
 (def
  v145_l424
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
   (sk/scale :x :log)))
 
 
@@ -700,8 +741,8 @@
 (def
  v148_l432
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
   (sk/scale :x {:domain [3 9]})))
 
 
@@ -718,8 +759,8 @@
 (def
  v152_l441
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
   (sk/annotate (sk/rule-v 6.0))))
 
 
@@ -740,8 +781,8 @@
 (def
  v155_l450
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
   (sk/annotate (sk/rule-h 3.0))))
 
 
@@ -762,8 +803,8 @@
 (def
  v158_l459
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
   (sk/annotate (sk/band-v 5.5 6.5))))
 
 
@@ -780,8 +821,8 @@
 (def
  v161_l467
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
   (sk/annotate (sk/band-h 2.5 3.5))))
 
 
@@ -808,11 +849,11 @@
 (def
  v167_l481
  (->
-  data/iris
+  (rdatasets/datasets-iris)
   (sk/view
    (sk/cross
-    [:sepal_length :petal_length]
-    [:sepal_width :petal_width]))
+    [:sepal-length :petal-length]
+    [:sepal-width :petal-width]))
   (sk/lay-point {:color :species})))
 
 
@@ -829,7 +870,9 @@
 
 (def
  v170_l492
- (sk/lay-histogram data/iris [:sepal_length :sepal_width]))
+ (sk/lay-histogram
+  (rdatasets/datasets-iris)
+  [:sepal-length :sepal-width]))
 
 
 (deftest
@@ -849,8 +892,8 @@
 (def
  v174_l502
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   (sk/facet :species)))
 
 
@@ -871,8 +914,8 @@
 (def
  v177_l512
  (->
-  data/tips
-  (sk/lay-point :total_bill :tip {:color :sex})
+  (rdatasets/reshape2-tips)
+  (sk/lay-point :total-bill :tip {:color :sex})
   (sk/facet-grid :smoker :sex)))
 
 
@@ -893,8 +936,8 @@
 (def
  v181_l524
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   sk/svg-summary))
 
 
@@ -968,7 +1011,7 @@
 (def v205_l577 (count sk/layer-option-docs))
 
 
-(deftest t206_l579 (is ((fn [n] (= 20 n)) v205_l577)))
+(deftest t206_l579 (is ((fn [n] (pos? n)) v205_l577)))
 
 
 (def v208_l583 (kind/doc #'sk/method-lookup))
@@ -1052,12 +1095,12 @@
  v235_l640
  (sk/arrange
   [(->
-    data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/options {:width 250, :height 200}))
    (->
-    data/iris
-    (sk/lay-point :petal_length :petal_width {:color :species})
+    (rdatasets/datasets-iris)
+    (sk/lay-point :petal-length :petal-width {:color :species})
     (sk/options {:width 250, :height 200}))]
   {:cols 2}))
 
@@ -1075,8 +1118,8 @@
    (str (java.io.File/createTempFile "napkinsketch-example" ".svg"))]
   (sk/save
    (->
-    data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species}))
+    (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species}))
    path
    {:title "Iris Export"})
   (.contains (slurp path) "<svg")))

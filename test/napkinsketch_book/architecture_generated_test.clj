@@ -1,8 +1,8 @@
 (ns
  napkinsketch-book.architecture-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
   [scicloj.kindly.v4.kind :as kind]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.impl.sketch :as sketch-impl]
   [scicloj.napkinsketch.impl.sketch-schema :as ss]
@@ -163,8 +163,8 @@
  (def
   multi-sk
   (->
-   data/iris
-   (sk/view :petal_length :petal_width {:color :species})
+   (rdatasets/datasets-iris)
+   (sk/view :petal-length :petal-width {:color :species})
    sk/lay-point
    sk/lay-lm)))
 
@@ -245,8 +245,8 @@
 (def
  v70_l316
  (->
-  data/iris
-  (sk/view :petal_length :petal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/view :petal-length :petal-width {:color :species})
   sk/lay-point
   sk/lay-lm
   (sk/options {:title "Iris Petals with Regression"})))

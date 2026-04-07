@@ -1,7 +1,7 @@
 (ns
  napkinsketch-book.exploring-plans-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
   [scicloj.napkinsketch.method :as method]
@@ -129,8 +129,8 @@
 (def
  v38_l149
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width {:color :species})))
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
@@ -149,8 +149,8 @@
  (def
   iris-pl
   (->
-   data/iris
-   (sk/lay-point :sepal_length :sepal_width {:color :species})
+   (rdatasets/datasets-iris)
+   (sk/lay-point :sepal-length :sepal-width {:color :species})
    sk/plan)))
 
 
@@ -193,7 +193,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__81135#] (= 50 (:n-points p1__81135#))) gs)))
+     (every? (fn* [p1__1905048#] (= 50 (:n-points p1__1905048#))) gs)))
    v49_l177)))
 
 
@@ -210,8 +210,8 @@
  (def
   cont-pl
   (->
-   data/iris
-   (sk/lay-point :sepal_length :sepal_width {:color :petal_length})
+   (rdatasets/datasets-iris)
+   (sk/lay-point :sepal-length :sepal-width {:color :petal-length})
    sk/plan)))
 
 
@@ -241,7 +241,9 @@
 (deftest t63_l218 (is ((fn [n] (= 20 n)) v62_l216)))
 
 
-(def v65_l225 (-> data/iris (sk/lay-histogram :sepal_length)))
+(def
+ v65_l225
+ (-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-length)))
 
 
 (deftest
@@ -257,7 +259,12 @@
 
 (def
  v67_l232
- (def hist-pl (-> data/iris (sk/lay-histogram :sepal_length) sk/plan)))
+ (def
+  hist-pl
+  (->
+   (rdatasets/datasets-iris)
+   (sk/lay-histogram :sepal-length)
+   sk/plan)))
 
 
 (def v68_l236 hist-pl)
@@ -288,13 +295,17 @@
     (and
      (> (count bars) 3)
      (every?
-      (fn* [p1__81136#] (< (:lo p1__81136#) (:hi p1__81136#)))
+      (fn* [p1__1905049#] (< (:lo p1__1905049#) (:hi p1__1905049#)))
       bars)
-     (every? (fn* [p1__81137#] (pos? (:count p1__81137#))) bars)))
+     (every? (fn* [p1__1905050#] (pos? (:count p1__1905050#))) bars)))
    v74_l248)))
 
 
-(def v77_l263 (-> data/penguins (sk/lay-bar :island {:color :species})))
+(def
+ v77_l263
+ (->
+  (rdatasets/palmerpenguins-penguins)
+  (sk/lay-bar :island {:color :species})))
 
 
 (deftest
@@ -312,7 +323,10 @@
  v79_l270
  (def
   bar-pl
-  (-> data/penguins (sk/lay-bar :island {:color :species}) sk/plan)))
+  (->
+   (rdatasets/palmerpenguins-penguins)
+   (sk/lay-bar :island {:color :species})
+   sk/plan)))
 
 
 (def
@@ -350,7 +364,7 @@
  (def
   stacked-pl
   (->
-   data/penguins
+   (rdatasets/palmerpenguins-penguins)
    (sk/lay-stacked-bar :island {:color :species})
    sk/plan)))
 
@@ -368,7 +382,10 @@
 
 (def
  v93_l317
- (-> data/iris (sk/lay-point :sepal_length :sepal_width) sk/lay-lm))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  sk/lay-lm))
 
 
 (deftest
@@ -387,8 +404,8 @@
  (def
   lm-pl
   (->
-   data/iris
-   (sk/lay-point :sepal_length :sepal_width)
+   (rdatasets/datasets-iris)
+   (sk/lay-point :sepal-length :sepal-width)
    sk/lay-lm
    sk/plan)))
 
@@ -417,8 +434,8 @@
 (def
  v104_l352
  (->
-  data/iris
-  (sk/view :petal_length :petal_width {:color :species})
+  (rdatasets/datasets-iris)
+  (sk/view :petal-length :petal-width {:color :species})
   sk/lay-point
   sk/lay-lm))
 
@@ -439,8 +456,8 @@
  (def
   grp-pl
   (->
-   data/iris
-   (sk/view :petal_length :petal_width {:color :species})
+   (rdatasets/datasets-iris)
+   (sk/view :petal-length :petal-width {:color :species})
    sk/lay-point
    sk/lay-lm
    sk/plan)))
@@ -468,7 +485,9 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__81138#] (Math/sin (* p1__81138# 0.3))) (range 30))}))
+   (map
+    (fn* [p1__1905051#] (Math/sin (* p1__1905051# 0.3)))
+    (range 30))}))
 
 
 (def v111_l384 (-> wave (sk/lay-line :x :y)))
@@ -546,7 +565,11 @@
  v125_l434
  (def
   flip-pl
-  (-> data/iris (sk/lay-bar :species) (sk/coord :flip) sk/plan)))
+  (->
+   (rdatasets/datasets-iris)
+   (sk/lay-bar :species)
+   (sk/coord :flip)
+   sk/plan)))
 
 
 (def v126_l439 (:coord (first (:panels flip-pl))))
@@ -581,8 +604,8 @@
  (def
   opts-pl
   (->
-   data/iris
-   (sk/lay-point :sepal_length :sepal_width)
+   (rdatasets/datasets-iris)
+   (sk/lay-point :sepal-length :sepal-width)
    (sk/plan
     {:title "My Custom Title",
      :x-label "Length (cm)",
@@ -626,8 +649,8 @@
  (def
   final-sk
   (->
-   data/iris
-   (sk/view :petal_length :petal_width {:color :species})
+   (rdatasets/datasets-iris)
+   (sk/view :petal-length :petal-width {:color :species})
    sk/lay-point
    sk/lay-lm)))
 
@@ -672,8 +695,8 @@
  (def
   faceted-pl
   (->
-   data/iris
-   (sk/lay-point :sepal_length :sepal_width {:color :species})
+   (rdatasets/datasets-iris)
+   (sk/lay-point :sepal-length :sepal-width {:color :species})
    (sk/facet :species)
    sk/plan)))
 

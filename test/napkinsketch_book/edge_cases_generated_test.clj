@@ -1,7 +1,7 @@
 (ns
  napkinsketch-book.edge-cases-generated-test
  (:require
-  [napkinsketch-book.datasets :as data]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
@@ -217,7 +217,7 @@
    [r (rng/rng :jdk 99)]
    {:category
     (map
-     (fn* [p1__81915#] (keyword (str "cat-" p1__81915#)))
+     (fn* [p1__1904727#] (keyword (str "cat-" p1__1904727#)))
      (range 12)),
     :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))})
   (sk/lay-value-bar :category :value)))
@@ -237,9 +237,9 @@
 (def
  v42_l181
  (->
-  data/iris
-  (tc/map-columns :sepal_ratio [:sepal_length :sepal_width] /)
-  (sk/lay-point :sepal_length :sepal_ratio {:color :species})
+  (rdatasets/datasets-iris)
+  (tc/map-columns :sepal-ratio [:sepal-length :sepal-width] /)
+  (sk/lay-point :sepal-length :sepal-ratio {:color :species})
   (sk/options {:title "Sepal Length/Width Ratio"})))
 
 
@@ -257,10 +257,10 @@
 (def
  v45_l194
  (->
-  data/iris
+  (rdatasets/datasets-iris)
   (tc/select-rows
-   (fn* [p1__81916#] (= "setosa" (p1__81916# :species))))
-  (sk/lay-point :sepal_length :sepal_width)
+   (fn* [p1__1904728#] (= "setosa" (p1__1904728# :species))))
+  (sk/lay-point :sepal-length :sepal-width)
   sk/lay-lm
   (sk/options {:title "Setosa Only"})))
 
@@ -315,10 +315,10 @@
 (def
  v57_l242
  (->
-  data/iris
+  (rdatasets/datasets-iris)
   (sk/lay-point
-   :sepal_length
-   :sepal_width
+   :sepal-length
+   :sepal-width
    {:nudge-x 0.1, :nudge-y -0.05})))
 
 
@@ -422,8 +422,8 @@
  v78_l319
  (->
   {:x (range 20),
-   :y (map (fn* [p1__81917#] (- p1__81917# 10)) (range 20)),
-   :val (map (fn* [p1__81918#] (- p1__81918# 10.0)) (range 20))}
+   :y (map (fn* [p1__1904729#] (- p1__1904729# 10)) (range 20)),
+   :val (map (fn* [p1__1904730#] (- p1__1904730# 10.0)) (range 20))}
   (sk/lay-point :x :y {:color :val})
   (sk/options {:color-scale :diverging, :color-midpoint 0})))
 
@@ -452,11 +452,13 @@
   {:time
    (dt-dt/plus-temporal-amount
     (dtype/const-reader (jt/local-date-time 2025 3 15 8 0) 24)
-    (map (fn* [p1__81919#] (* (long p1__81919#) 15)) (range 24))
+    (map (fn* [p1__1904731#] (* (long p1__1904731#) 15)) (range 24))
     :minutes),
    :value
    (map
-    (fn* [p1__81920#] (+ 18.0 (* 4.0 (Math/sin (* p1__81920# 0.3)))))
+    (fn*
+     [p1__1904732#]
+     (+ 18.0 (* 4.0 (Math/sin (* p1__1904732# 0.3)))))
     (range 24))}
   (sk/lay-line :time :value)
   sk/lay-point))
@@ -483,7 +485,9 @@
     :hours),
    :temp
    (map
-    (fn* [p1__81921#] (+ 20.0 (* 5.0 (Math/sin (* p1__81921# 0.5)))))
+    (fn*
+     [p1__1904733#]
+     (+ 20.0 (* 5.0 (Math/sin (* p1__1904733# 0.5)))))
     (range 12))}
   (sk/lay-line :time :temp)
   sk/lay-point))
@@ -500,7 +504,7 @@
       (= 12 (:points s))
       (= 1 (:lines s))
       (some
-       (fn* [p1__81922#] (re-find #":\d\d" p1__81922#))
+       (fn* [p1__1904734#] (re-find #":\d\d" p1__1904734#))
        (:texts s)))))
    v87_l360)))
 
@@ -511,11 +515,11 @@
   {:date
    (dt-dt/plus-temporal-amount
     (dtype/const-reader (jt/local-date 2020 1 1) 20)
-    (map (fn* [p1__81923#] (* (long p1__81923#) 120)) (range 20))
+    (map (fn* [p1__1904735#] (* (long p1__1904735#) 120)) (range 20))
     :days),
    :value
    (map
-    (fn* [p1__81924#] (+ 100 (* 50 (Math/sin (* p1__81924# 0.4)))))
+    (fn* [p1__1904736#] (+ 100 (* 50 (Math/sin (* p1__1904736# 0.4)))))
     (range 20))}
   (sk/lay-line :date :value)
   sk/lay-point))
@@ -535,7 +539,8 @@
 (def
  v93_l391
  (->
-  {:cat (map (fn* [p1__81925#] (str "cat-" p1__81925#)) (range 12)),
+  {:cat
+   (map (fn* [p1__1904737#] (str "cat-" p1__1904737#)) (range 12)),
    :val (repeatedly 12 (fn* [] (rand-int 100)))}
   (sk/lay-value-bar :cat :val)
   (sk/coord :polar)))
@@ -573,8 +578,8 @@
 (def
  v99_l422
  (->
-  data/iris
-  (sk/lay-point :sepal_length :sepal_width)
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
   (sk/scale :y {:domain [0 6]})))
 
 
@@ -605,11 +610,11 @@
 (def
  v105_l447
  (->
-  data/iris
+  (rdatasets/datasets-iris)
   (sk/view
    (sk/cross
-    [:sepal_length :sepal_width :petal_length]
-    [:sepal_length :sepal_width :petal_length]))
+    [:sepal-length :sepal-width :petal-length]
+    [:sepal-length :sepal-width :petal-length]))
   (sk/lay-point {:color :species})))
 
 
@@ -625,7 +630,7 @@
       (:texts s)
       strip-labels
       (filter
-       (fn* [p1__81926#] (re-find #"sepal|petal" p1__81926#))
+       (fn* [p1__1904738#] (re-find #"sepal|petal" p1__1904738#))
        texts)]
      (and (= 9 (:panels s)) (= 6 (count strip-labels)))))
    v105_l447)))

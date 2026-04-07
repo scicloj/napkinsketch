@@ -16,8 +16,8 @@
 
 (ns napkinsketch-book.exploring-plans
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
+   ;; rdatasets — standard datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -146,15 +146,15 @@ tiny-layer
 ;; When we map a column to color, the plan splits data into groups
 ;; and adds a legend.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-(def iris-pl (-> data/iris
-                 (sk/lay-point :sepal_length :sepal_width {:color :species})
+(def iris-pl (-> (rdatasets/datasets-iris)
+                 (sk/lay-point :sepal-length :sepal-width {:color :species})
                  sk/plan))
 
 ;; Here is the full plan — notice the legend and three groups:
@@ -196,8 +196,8 @@ iris-pl
 ;; When `:color` maps to a **numeric** column, the plan stores
 ;; per-point colors and a continuous gradient legend.
 
-(def cont-pl (-> data/iris
-                 (sk/lay-point :sepal_length :sepal_width {:color :petal_length})
+(def cont-pl (-> (rdatasets/datasets-iris)
+                 (sk/lay-point :sepal-length :sepal-width {:color :petal-length})
                  sk/plan))
 
 (:legend cont-pl)
@@ -222,15 +222,15 @@ iris-pl
 ;; A histogram computes bins from the data. The plan stores the
 ;; bin edges and counts — still in data space.
 
-(-> data/iris
-    (sk/lay-histogram :sepal_length))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram :sepal-length))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-(def hist-pl (-> data/iris
-                 (sk/lay-histogram :sepal_length)
+(def hist-pl (-> (rdatasets/datasets-iris)
+                 (sk/lay-histogram :sepal-length)
                  sk/plan))
 
 hist-pl
@@ -260,14 +260,14 @@ hist-pl
 ;; A bar chart counts occurrences of each category. The plan records
 ;; the categories and counts per group.
 
-(-> data/penguins
+(-> (rdatasets/palmerpenguins-penguins)
     (sk/lay-bar :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-(def bar-pl (-> data/penguins
+(def bar-pl (-> (rdatasets/palmerpenguins-penguins)
                 (sk/lay-bar :island {:color :species})
                 sk/plan))
 
@@ -297,7 +297,7 @@ bar-layer
 ;;
 ;; Stacking changes the position field:
 
-(def stacked-pl (-> data/penguins
+(def stacked-pl (-> (rdatasets/palmerpenguins-penguins)
                     (sk/lay-stacked-bar :island {:color :species})
                     sk/plan))
 
@@ -314,16 +314,16 @@ bar-layer
 ;;
 ;; A regression produces line segments in data space.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-(def lm-pl (-> data/iris
-               (sk/lay-point :sepal_length :sepal_width)
+(def lm-pl (-> (rdatasets/datasets-iris)
+               (sk/lay-point :sepal-length :sepal-width)
                sk/lay-lm
                sk/plan))
 
@@ -349,16 +349,16 @@ bar-layer
 ;; When both points and regression have a color mapping, the line
 ;; layer gets one segment per group:
 
-(-> data/iris
-    (sk/view :petal_length :petal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :petal-length :petal-width {:color :species})
     sk/lay-point
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
-(def grp-pl (-> data/iris
-                (sk/view :petal_length :petal_width {:color :species})
+(def grp-pl (-> (rdatasets/datasets-iris)
+                (sk/view :petal-length :petal-width {:color :species})
                 sk/lay-point
                 sk/lay-lm
                 sk/plan))
@@ -431,7 +431,7 @@ bar-layer
 ;;
 ;; Setting `:coord :flip` swaps x and y in the plan's panel:
 
-(def flip-pl (-> data/iris
+(def flip-pl (-> (rdatasets/datasets-iris)
                  (sk/lay-bar :species)
                  (sk/coord :flip)
                  sk/plan))
@@ -456,8 +456,8 @@ bar-layer
 ;;
 ;; Title, labels, and dimensions are recorded in the plan:
 
-(def opts-pl (-> data/iris
-                 (sk/lay-point :sepal_length :sepal_width)
+(def opts-pl (-> (rdatasets/datasets-iris)
+                 (sk/lay-point :sepal-length :sepal-width)
                  (sk/plan {:title "My Custom Title"
                            :x-label "Length (cm)"
                            :y-label "Width (cm)"
@@ -486,8 +486,8 @@ opts-pl
 ;; The plan (a plain Clojure map):
 
 (def final-sk
-  (-> data/iris
-      (sk/view :petal_length :petal_width {:color :species})
+  (-> (rdatasets/datasets-iris)
+      (sk/view :petal-length :petal-width {:color :species})
       sk/lay-point
       sk/lay-lm))
 
@@ -520,8 +520,8 @@ final-pl
 ;; its own domains, ticks, and layers, plus grid positioning.
 
 (def faceted-pl
-  (-> data/iris
-      (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width {:color :species})
       (sk/facet :species)
       sk/plan))
 

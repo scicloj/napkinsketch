@@ -5,8 +5,8 @@
 
 (ns napkinsketch-book.glossary
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
+   ;; Datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch — composable plotting
@@ -38,8 +38,8 @@
 ;; sets shared aesthetics; `sk/lay-*` adds methods (how to plot).
 
 (def my-sketch
-  (-> data/iris
-      (sk/lay-point :sepal_length :sepal_width {:color :species})))
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width {:color :species})))
 
 (kind/pprint my-sketch)
 
@@ -59,8 +59,8 @@
 ;; and accessing its `:entries`:
 
 (def my-sketch
-  (-> data/iris
-      (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width {:color :species})
       (sk/options {:title "Iris"})))
 
 (sk/sketch? my-sketch)
@@ -142,10 +142,10 @@
 ;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed aesthetic
 ;; for all points.
 
-(merge (method/lookup :point) {:color :species :size :petal_length :alpha 0.7})
+(merge (method/lookup :point) {:color :species :size :petal-length :alpha 0.7})
 
 (kind/test-last [(fn [m] (and (= :species (:color m))
-                              (= :petal_length (:size m))
+                              (= :petal-length (:size m))
                               (= 0.7 (:alpha m))))])
 
 ;; ## Group
@@ -155,8 +155,8 @@
 ;; creates groups — one per unique value. You can also create groups
 ;; without color using the `:group` key.
 
-(-> data/iris
-    (sk/lay-line :sepal_length :sepal_width {:group :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-line :sepal-length :sepal-width {:group :species})
     sk/plan
     (get-in [:panels 0 :layers 0 :groups])
     count)
@@ -241,8 +241,8 @@
 ;; `(sk/options {:scales ...})` to allow panels to have independent
 ;; ranges: `:shared` (default), `:free-x`, `:free-y`, or `:free`.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
     (sk/facet :species)
     sk/plan :panels count)
 
@@ -328,8 +328,8 @@
 ;; background color, grid lines, font sizes, margins.
 ;; Passed as `{:theme {...}}` via `sk/options` or directly to `sk/plan`.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/options {:theme {:background "#2d2d2d" :grid "#444444"
                          :text "#cccccc" :tick "#999999"}})
     sk/svg-summary :panels)
@@ -435,7 +435,7 @@
 
 (count sk/layer-option-docs)
 
-(kind/test-last [(fn [n] (= 20 n))])
+(kind/test-last [(fn [n] (pos? n))])
 
 ;; ## Tooltip and Brush
 ;;

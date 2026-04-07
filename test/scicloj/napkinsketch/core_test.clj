@@ -11,7 +11,8 @@
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.sketch :as sketch]
-            [scicloj.napkinsketch.method :as method]))
+            [scicloj.napkinsketch.method :as method]
+            [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ============================================================
 ;; defaults.clj
@@ -547,7 +548,7 @@
       (is (= 13 (:label-font-size cfg)))
       (is (= 15 (:title-font-size cfg)))
       (is (= 10 (:strip-font-size cfg)))
-      (is (= 18 (:label-offset cfg)))
+      (is (= 32 (:label-offset cfg)))
       (is (= 18 (:title-offset cfg)))
       (is (= 16 (:strip-height cfg)))
       (is (true? (:validate cfg)))))
@@ -1215,10 +1216,9 @@
 
 (deftest facet-broadcast-test
   (testing "Global method (loess) applies to all facet panels"
-    (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                           {:key-fn keyword})
+    (let [iris (rdatasets/datasets-iris)
           s (-> iris
-                (sk/lay-point :sepal_length :sepal_width {:color :species})
+                (sk/lay-point :sepal-length :sepal-width {:color :species})
                 (sk/facet :species)
                 sk/lay-loess
                 sk/plot
@@ -1227,9 +1227,8 @@
       (is (= 3 (:lines s)) "LOESS should appear in all 3 panels")
       (is (= 150 (:points s)) "Scatter points still render")))
   (testing "Existing faceted behavior unchanged"
-    (let [s (-> (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                            {:key-fn keyword})
-                (sk/lay-point :sepal_length :sepal_width {:color :species})
+    (let [s (-> (rdatasets/datasets-iris)
+                (sk/lay-point :sepal-length :sepal-width {:color :species})
                 (sk/facet :species)
                 sk/plot
                 sk/svg-summary)]

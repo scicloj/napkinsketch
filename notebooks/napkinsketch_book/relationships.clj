@@ -5,10 +5,10 @@
 
 (ns napkinsketch-book.relationships
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
    ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; R datasets
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
    ;; Fastmath — random number generation
@@ -18,8 +18,8 @@
 
 ;; A single regression line through all data.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -30,8 +30,8 @@
 
 ;; Fit a regression line per group.
 
-(-> data/iris
-    (sk/view :petal_length :petal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :petal-length :petal-width {:color :species})
     sk/lay-point
     sk/lay-lm)
 
@@ -43,8 +43,8 @@
 
 ;; Pass `{:se true}` to show a 95% confidence band around the line.
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     (sk/lay-lm {:se true}))
 
@@ -56,8 +56,8 @@
 
 ;; Do smokers and non-smokers tip differently?
 
-(-> data/tips
-    (sk/view :total_bill :tip {:color :smoker})
+(-> (rdatasets/reshape2-tips)
+    (sk/view :total-bill :tip {:color :smoker})
     sk/lay-point
     sk/lay-lm)
 
@@ -86,8 +86,8 @@
 
 ;; Bin x and y into a grid, count points per cell.
 
-(-> data/iris
-    (sk/lay-tile :sepal_length :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-tile :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -114,8 +114,8 @@
 
 ;; [KDE](https://en.wikipedia.org/wiki/Kernel_density_estimation)-smoothed 2D density heatmap.
 
-(-> data/iris
-    (sk/lay-density2d :sepal_length :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-density2d :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -125,8 +125,8 @@
 
 ;; Overlay scatter points on the density heatmap.
 
-(-> data/iris
-    (sk/lay-density2d :sepal_length :sepal_width)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-density2d :sepal-length :sepal-width)
     (sk/lay-point {:alpha 0.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -137,8 +137,8 @@
 
 ;; Iso-density contour lines from 2D KDE.
 
-(-> data/iris
-    (sk/lay-contour :sepal_length :sepal_width))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-contour :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -148,8 +148,8 @@
 
 ;; Contour lines overlaid on scatter points.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:alpha 0.3})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:alpha 0.3})
     (sk/lay-contour {:levels 8}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

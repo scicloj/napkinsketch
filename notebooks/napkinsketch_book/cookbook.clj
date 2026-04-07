@@ -5,8 +5,6 @@
 
 (ns napkinsketch-book.cookbook
   (:require
-   ;; Shared datasets for these docs
-   [napkinsketch-book.datasets :as data]
    ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
    ;; Kindly — notebook rendering protocol
@@ -16,7 +14,9 @@
    ;; Fastmath — random number generation
    [fastmath.random :as rng]
    ;; Java-time — idiomatic date/time construction
-   [java-time.api :as jt]))
+   [java-time.api :as jt]
+   ;; RDatasets — additional datasets beyond the shared ones
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## Quick Recipes
 
@@ -25,8 +25,8 @@
 ;; Overlay raw observations on a boxplot summary. The auto-[jitter](https://en.wikipedia.org/wiki/Jitter)
 ;; detects the categorical axis and constrains points to the band width.
 
-(-> data/iris
-    (sk/lay-boxplot :species :sepal_length)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-boxplot :species :sepal-length)
     (sk/lay-point {:jitter true :alpha 0.3}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -38,8 +38,8 @@
 ;;
 ;; Normalize the histogram to density scale so it is comparable with the KDE (kernel density estimation) curve.
 
-(-> data/iris
-    (sk/lay-histogram :sepal_length {:normalize :density :alpha 0.5})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram :sepal-length {:normalize :density :alpha 0.5})
     sk/lay-density)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -50,8 +50,8 @@
 ;;
 ;; Fit a linear regression per group to reveal trends across species.
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     (sk/lay-point {:alpha 0.6})
     sk/lay-lm)
 
@@ -63,8 +63,8 @@
 ;;
 ;; Show the density shape and every observation together.
 
-(-> data/iris
-    (sk/lay-violin :species :petal_width {:alpha 0.3})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-violin :species :petal-width {:alpha 0.3})
     (sk/lay-point {:jitter true :alpha 0.4}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -96,8 +96,8 @@
 ;;
 ;; Split a scatter plot by species to compare patterns side by side.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -108,8 +108,8 @@
 ;; Add reference lines and shaded bands to highlight regions of interest.
 ;; Pass `{:alpha …}` to control band opacity.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/annotate (sk/rule-h 3.0) (sk/band-v 5.5 6.5 {:alpha 0.3})))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -121,8 +121,8 @@
 ;; Compare distribution shapes across categories with overlapping
 ;; density curves. Grid lines at each baseline aid comparison.
 
-(-> data/iris
-    (sk/lay-ridgeline :species :sepal_length {:color :species}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-ridgeline :species :sepal-length {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:polygons s))
@@ -132,7 +132,7 @@
 ;;
 ;; Show the proportion of each species per island using 100% stacked bars.
 
-(-> data/penguins
+(-> (rdatasets/palmerpenguins-penguins)
     (sk/lay-stacked-bar-fill :island {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -145,8 +145,8 @@
 ;;
 ;; Color points by group, but fit a single overall regression line.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/lay-lm {:color nil}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -188,8 +188,8 @@
 ;;
 ;; The `summary` method computes mean and SE (standard error) per category.
 
-(-> data/iris
-    (sk/lay-point :species :sepal_length {:alpha 0.3 :jitter 5})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :species :sepal-length {:alpha 0.3 :jitter 5})
     (sk/lay-summary {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -200,13 +200,13 @@
 ;;
 ;; Scatter + per-group regression to compare smoker tipping patterns.
 
-(-> data/tips
-    (sk/view :total_bill :tip {:color :smoker})
+(-> (rdatasets/reshape2-tips)
+    (sk/view :total-bill :tip {:color :smoker})
     sk/lay-point
     sk/lay-lm
     (sk/options {:title "Tipping Behavior"
-                       :x-label "Total Bill ($)"
-                       :y-label "Tip ($)"}))
+                 :x-label "Total Bill ($)"
+                 :y-label "Tip ($)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (pos? (:points s))
@@ -220,8 +220,8 @@
 ;; A scatter plot with per-group linear regressions and 95%
 ;; confidence ribbons.
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     (sk/lay-point {:alpha 0.5})
     (sk/lay-lm {:se true})
     (sk/options {:title "Sepal Regression with Confidence Bands"}))
@@ -235,13 +235,13 @@
 
 ;; Side-by-side comparison: default dodged bars vs stacked bars.
 
-(-> data/tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-bar :day {:color :sex})
     (sk/options {:title "Dodged Bars (default)"}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-(-> data/tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-stacked-bar :day {:color :sex})
     (sk/options {:title "Stacked Bars"}))
 
@@ -270,8 +270,8 @@
 ;; Density contour lines overlaid on a scatter plot — reveals
 ;; high-density regions in a point cloud.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species :alpha 0.4})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species :alpha 0.4})
     (sk/lay-contour {:levels 5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -282,10 +282,10 @@
 
 ;; Annotate specific data points with text labels.
 
-(def top5 (-> data/iris (tc/order-by :sepal_length :desc) (tc/head 5)))
+(def top5 (-> (rdatasets/datasets-iris) (tc/order-by :sepal-length :desc) (tc/head 5)))
 
 (-> top5
-    (sk/lay-point :sepal_length :sepal_width {:size 5})
+    (sk/lay-point :sepal-length :sepal-width {:size 5})
     (sk/lay-label {:text :species :nudge-y 0.15}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -296,12 +296,12 @@
 
 ;; Assign specific colors to each category using a palette map.
 
-(-> data/iris
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/options {:palette {:setosa "#E91E63"
-                                 :versicolor "#4CAF50"
-                                 :virginica "#2196F3"}
-                       :title "Custom Palette Map"}))
+                           :versicolor "#4CAF50"
+                           :virginica "#2196F3"}
+                 :title "Custom Palette Map"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -312,8 +312,8 @@
 ;; Use `sk/coord :fixed` so one unit on x equals one unit on y.
 ;; This makes the plot square when x and y have equal ranges.
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     sk/lay-lm
     (sk/coord :fixed)
@@ -333,8 +333,8 @@
      :change (map #(- % 10) (range 20))}
     (sk/lay-point :x :y {:color :change})
     (sk/options {:color-scale :diverging
-                       :color-midpoint 0
-                       :title "Diverging Color Scale"}))
+                 :color-midpoint 0
+                 :title "Diverging Color Scale"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -344,8 +344,8 @@
 ;;
 ;; Add `{:se true}` to a LOESS smoother for a bootstrap confidence band.
 
-(-> data/iris
-    (sk/view :sepal_length :sepal_width {:color :species})
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     (sk/lay-loess {:se true})
     (sk/options {:title "LOESS with 95% CI"}))
@@ -360,13 +360,13 @@
 ;; Use `sk/arrange` to combine independent plots into a grid layout.
 
 (def iris-sepal
-  (-> data/iris
-      (sk/lay-point :sepal_length :sepal_width {:color :species})
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width {:color :species})
       (sk/options {:title "Sepal" :width 300 :height 250})))
 
 (def iris-petal
-  (-> data/iris
-      (sk/lay-point :petal_length :petal_width {:color :species})
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :petal-length :petal-width {:color :species})
       (sk/options {:title "Petal" :width 300 :height 250})))
 
 (sk/arrange [iris-sepal iris-petal]
@@ -419,8 +419,8 @@
 
 ;; Bill dimensions separate the three species clearly.
 
-(-> data/penguins
-    (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
+(-> (rdatasets/palmerpenguins-penguins)
+    (sk/lay-point :bill-length-mm :bill-depth-mm {:color :species})
     (sk/options {:title "Palmer Penguins: Bill Dimensions"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -429,8 +429,8 @@
 
 ;; Per-species regression reveals different slopes.
 
-(-> data/penguins
-    (sk/view :bill_length_mm :bill_depth_mm {:color :species})
+(-> (rdatasets/palmerpenguins-penguins)
+    (sk/view :bill-length-mm :bill-depth-mm {:color :species})
     sk/lay-point
     sk/lay-lm
     (sk/options {:title "Bill Length vs Depth with Regression"}))
@@ -442,8 +442,8 @@
 ;; Without grouping, the overall trend appears negative — an example
 ;; of Simpson's paradox.
 
-(-> data/penguins
-    (sk/lay-point :bill_length_mm :bill_depth_mm {:color :species})
+(-> (rdatasets/palmerpenguins-penguins)
+    (sk/lay-point :bill-length-mm :bill-depth-mm {:color :species})
     (sk/lay-lm {:color nil})
     (sk/options {:title "Simpson's Paradox: Overall vs Per-Group Trend"}))
 
@@ -453,7 +453,7 @@
 
 ;; Species distribution across islands.
 
-(-> data/penguins
+(-> (rdatasets/palmerpenguins-penguins)
     (sk/lay-bar :island {:color :species})
     (sk/options {:title "Species by Island"}))
 
@@ -463,8 +463,8 @@
 
 ;; Flipper length vs body mass — a strong positive correlation.
 
-(-> data/penguins
-    (sk/view :flipper_length_mm :body_mass_g {:color :species})
+(-> (rdatasets/palmerpenguins-penguins)
+    (sk/view :flipper-length-mm :body-mass-g {:color :species})
     sk/lay-point
     sk/lay-lm
     (sk/options {:title "Flipper Length vs Body Mass"}))
@@ -475,8 +475,8 @@
 
 ;; Body mass distribution by species.
 
-(-> data/penguins
-    (sk/lay-histogram :body_mass_g {:color :species})
+(-> (rdatasets/palmerpenguins-penguins)
+    (sk/lay-histogram :body-mass-g {:color :species})
     (sk/options {:title "Body Mass Distribution"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -487,12 +487,12 @@
 
 ;; Tipping behavior: smokers vs non-smokers.
 
-(-> data/tips
-    (sk/view :total_bill :tip {:color :smoker})
+(-> (rdatasets/reshape2-tips)
+    (sk/view :total-bill :tip {:color :smoker})
     sk/lay-point
     sk/lay-lm
     (sk/options {:title "Tipping: Smokers vs Non-Smokers"
-                       :x-label "Total Bill ($)" :y-label "Tip ($)"}))
+                 :x-label "Total Bill ($)" :y-label "Tip ($)"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 244 (:points s))
@@ -500,7 +500,7 @@
 
 ;; Tip amounts by day, colored by meal time.
 
-(-> data/tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-bar :day {:color :time})
     (sk/options {:title "Visits by Day and Meal Time"}))
 
@@ -510,7 +510,7 @@
 
 ;; Stacked view of the same data.
 
-(-> data/tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-stacked-bar :day {:color :time})
     (sk/options {:title "Visits by Day (Stacked)"}))
 
@@ -520,7 +520,7 @@
 
 ;; Horizontal bar chart of party sizes.
 
-(-> data/tips
+(-> (rdatasets/reshape2-tips)
     (sk/lay-bar :day {:color :sex})
     (sk/coord :flip)
     (sk/options {:title "Day by Gender (Horizontal)"}))
@@ -531,37 +531,82 @@
 
 ;; ### MPG
 
-;; Horsepower vs fuel efficiency, colored by origin.
+;; Engine displacement vs highway fuel efficiency, colored by vehicle class.
 
-(-> data/mpg
-    (sk/view :horsepower :mpg {:color :origin})
+(-> (rdatasets/ggplot2-mpg)
+    (sk/view :displ :hwy {:color :class})
     sk/lay-point
     sk/lay-lm
-    (sk/options {:title "Horsepower vs MPG by Origin"}))
+    (sk/options {:title "Displacement vs Highway MPG by Class"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 392 (:points s))
-                                (= 3 (:lines s)))))])
+                           (and (= 234 (:points s))
+                                (pos? (:lines s)))))])
 
-;; Displacement vs MPG — another negative correlation.
+;; Displacement vs city MPG — a similar negative correlation.
 
-(-> data/mpg
-    (sk/lay-point :displacement :mpg {:color :origin})
-    (sk/options {:title "Engine Displacement vs Fuel Efficiency"}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 398 (:points s)))))])
-
-;; Count of cars by origin.
-
-(-> data/mpg
-    (sk/lay-bar :origin)
-    (sk/options {:title "Cars by Origin"}))
+(-> (rdatasets/ggplot2-mpg)
+    (sk/lay-point :displ :cty {:color :drv})
+    (sk/options {:title "Engine Displacement vs City Fuel Efficiency"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
-                                (= 3 (:polygons s)))))])
+                                (= 234 (:points s)))))])
+
+;; Count of cars by drive type.
+
+(-> (rdatasets/ggplot2-mpg)
+    (sk/lay-bar :drv)
+    (sk/options {:title "Cars by Drive Type"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:polygons s)))))])
+
+;; ## Large Datasets and Raster Output
+;;
+;; By default napkinsketch renders to SVG — great for crisp, scalable
+;; charts. But when a plot has tens of thousands of points, the browser
+;; must parse and layout a huge SVG DOM. For example, the full diamonds
+;; dataset (53,940 rows) produces an 11 MB SVG file.
+;;
+;; Setting `:format :bufimg` renders the plot to a
+;; `java.awt.image.BufferedImage` via membrane's Java2D backend instead.
+;; The resulting PNG is typically 100x smaller and loads instantly in the
+;; browser.
+
+;; ### SVG (default)
+
+;; This is the default SVG output for a smaller subset:
+
+(-> (rdatasets/ggplot2-diamonds)
+    (tc/head 500)
+    (sk/lay-point :carat :price {:color :cut})
+    (sk/options {:title "Diamonds (500 rows, SVG)"}))
+
+(kind/test-last [(fn [v] (= 500 (:points (sk/svg-summary v))))])
+
+;; ### BufferedImage output
+;;
+;; With `:format :bufimg`, even the full dataset renders quickly in the
+;; notebook:
+
+(-> (rdatasets/ggplot2-diamonds)
+    (sk/lay-point :carat :price {:color :cut :alpha 0.3})
+    (sk/options {:title "Diamonds (53,940 rows, BufferedImage)"
+                 :format :bufimg}))
+
+(kind/test-last [(fn [v] (some? v))])
+
+;; ### Saving to PNG
+;;
+;; Use `sk/save-png` to write a raster image to disk:
+
+;; ```clojure
+;; (-> (rdatasets/ggplot2-diamonds)
+;;     (sk/lay-point :carat :price {:color :cut})
+;;     (sk/save-png "diamonds.png"))
+;; ```
 
 ;; ## What's Next
 ;;
