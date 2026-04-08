@@ -339,15 +339,17 @@
 
 (defn- add-entry-method
   "Add a method to a specific entry (found by matching :x/:y, or created new).
+   Matches the *last* entry with the same position mappings, so that
+   `lay-*` naturally targets the most recently created view.
    Used when lay-* is called with structural columns."
   [sk entry-keys method-map]
   (let [entries (:entries sk)
-        idx (first (keep-indexed
-                    (fn [i e]
-                      (when (and (= (:x e) (:x entry-keys))
-                                 (= (:y e) (:y entry-keys)))
-                        i))
-                    entries))]
+        idx (last (keep-indexed
+                   (fn [i e]
+                     (when (and (= (:x e) (:x entry-keys))
+                                (= (:y e) (:y entry-keys)))
+                       i))
+                   entries))]
     (if idx
       ;; Found existing entry — append method to its :methods
       (update-in sk [:entries idx :methods]
