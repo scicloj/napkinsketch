@@ -26,9 +26,10 @@
                       :base-source-path "notebooks"
                       :source-path (into ["index.clj"] (chapters->parts (read-chapters)))
                       :book {:title "Napkinsketch"}
-                      :clean-up-target-dir true}
-                     (when docs
-                       {:base-target-path "docs"}))))
+                      :clean-up-target-dir true
+                      :base-target-path (if docs
+                                          "docs"
+                                          ".clay-temp-docs")})))
 
 (defn make-gfm!
   "Render all (or specified) notebooks as GitHub-flavored Markdown."
