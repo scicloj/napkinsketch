@@ -123,11 +123,13 @@
 ;;
 ;; Here is a concrete sketch:
 
-(-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width {:color :species})
-    sk/lay-point
-    sk/lay-lm
-    kind/pprint)
+(def iris-scatter
+  (-> (rdatasets/datasets-iris)
+      (sk/view :sepal-length :sepal-width {:color :species})
+      sk/lay-point
+      sk/lay-lm))
+
+(kind/pprint iris-scatter)
 
 (kind/test-last [(fn [sk] (and (= :species (get-in sk [:shared :color]))
                                (= 1 (count (:entries sk)))
@@ -136,6 +138,12 @@
 ;; `:shared` has `{:color :species}` — it applies to all layers.
 ;; `:entries` has one entry `{:x :sepal-length :y :sepal-width}`.
 ;; `:methods` has two global methods: point and lm.
+;;
+;; And here is what it looks like when rendered:
+
+iris-scatter
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; ## Entries
 ;;
@@ -145,32 +153,44 @@
 ;;
 ;; `sk/view` adds entries:
 
-(-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
-    (sk/view :petal-length :petal-width)
-    sk/lay-point
-    kind/pprint)
+(def two-panel-sketch
+  (-> (rdatasets/datasets-iris)
+      (sk/view :sepal-length :sepal-width)
+      (sk/view :petal-length :petal-width)
+      sk/lay-point))
+
+(kind/pprint two-panel-sketch)
 
 (kind/test-last [(fn [sk] (and (= 2 (count (:entries sk)))
                                (= :sepal-length (:x (first (:entries sk))))
                                (= :petal-length (:x (second (:entries sk))))))])
 
 ;; Two entries, two panels. Each `sk/view` call adds one entry.
-;; The global `sk/lay-point` applies to both.
+;; The global `sk/lay-point` applies to both:
+
+two-panel-sketch
+
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
 ;; `sk/lay-*` with columns also creates entries:
 
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-histogram :petal-length)
-    kind/pprint)
+(def entry-local-sketch
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width)
+      (sk/lay-histogram :petal-length)))
+
+(kind/pprint entry-local-sketch)
 
 (kind/test-last [(fn [sk] (and (= 2 (count (:entries sk)))
                                (= 0 (count (:methods sk)))
                                (= 1 (count (:methods (first (:entries sk)))))))])
 
 ;; Two entries — but here each entry carries its OWN method.
-;; The global `:methods` is empty. This is the entry-local pattern.
+;; The global `:methods` is empty. This is the entry-local pattern:
+
+entry-local-sketch
+
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
 ;; ## Shared Aesthetics
 ;;
