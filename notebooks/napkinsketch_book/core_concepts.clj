@@ -173,9 +173,9 @@ two-panel-sketch
 ;;
 ;; | Where you write it | What sees it |
 ;; |:-------------------|:-------------|
-;; | `(sk/sketch data {:color :c})` | All layers on all views |
-;; | `(sk/view data :x :y {:color :c})` | All layers on this view |
-;; | `(sk/lay-point {:color :c})` | This layer only |
+;; | `(sk/sketch ... {:color :c})` | All layers on all views |
+;; | `(sk/view ... {:color :c})` | All layers on this view |
+;; | `(sk/lay-point ... {:color :c})` | This layer only |
 ;;
 ;; This is **lexical scope** -- the same principle as in programming
 ;; languages. Lower levels override higher ones.
@@ -275,16 +275,19 @@ view-scoped
 ;; ## Scope Is the One Principle
 ;;
 ;; Scope governs more than mappings. Layers and data follow the
-;; same hierarchy: sketch -> view -> layer. Where you write it
-;; determines who sees it.
+;; same hierarchy. Where you write it determines who sees it.
 ;;
-;; **Mappings** -- sketch-level color reaches all views; view-level
-;; color reaches one view; layer-level color reaches one layer.
-;; (The examples above.)
+;; | What | Sketch level | View level | Layer level |
+;; |:-----|:-------------|:-----------|:------------|
+;; | Mapping | `sk/sketch` | `sk/view` opts | `sk/lay-*` opts |
+;; | Layer | `sk/lay-*` (bare) | `sk/lay-*` (with columns) | -- (leaf) |
+;; | Data | first argument | faceting, overlay | -- (rare) |
 ;;
-;; **Layers** -- a sketch-level layer applies to all views; a
-;; view-level layer applies to one.
+;; The examples above showed mappings at all three levels.
+;; Here are layers and data.
 
+;; ### Layer scope
+;;
 ;; Sketch-level lm -- both panels get a regression line:
 
 (-> (rdatasets/datasets-iris)
@@ -308,11 +311,68 @@ view-scoped
                            (and (= 2 (:panels s))
                                 (= 1 (:lines s)))))])
 
-;; **Data** -- sketch-level data flows to all views. Faceting
-;; creates per-view subsets automatically.
+;; ### Data scope
 ;;
-;; One principle, three things it governs. Where you write it
-;; determines who sees it.
+;; Data enters at sketch level -- the first argument to `sk/sketch`
+;; or `sk/lay-*`. All views see it:
+
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :petal-length :petal-width)
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 300 (:points s)))))])
+
+;; Both panels draw from the same 150-row dataset (300 points total).
+;;
+;; **View-level data** -- pass `:data` in the opts map of `sk/view`
+;; to give a view its own dataset:
+
+(def setosa
+  (tc/select-rows (rdatasets/datasets-iris)
+                  #(= "setosa" (:species %))))
+
+(def versicolor
+  (tc/select-rows (rdatasets/datasets-iris)
+                  #(= "versicolor" (:species %))))
+
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width {:data setosa})
+    (sk/view :sepal-length :sepal-width {:data versicolor})
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 100 (:points (sk/svg-summary v))))])
+
+;; 100 points -- each view draws from its own 50-row subset.
+;; Faceting does the same thing automatically:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/facet :species))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 150 (:points s)))))])
+
+;; Three panels, each with its own data subset.
+;;
+;; **Layer-level data** -- pass `:data` in the opts map of `sk/lay-*`:
+
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
+    (sk/lay-point {:data setosa})
+    (sk/lay-lm {:data versicolor}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 50 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; Points from setosa (50 rows), regression from versicolor.
+;; Same panel, different data per layer.
+;;
+;; One principle, three things it governs, each at every level.
 
 ;; ---
 ;; ## Identity

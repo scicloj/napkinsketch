@@ -285,6 +285,13 @@
   [sk data]
   (assoc sk :data (coerce-dataset data)))
 
+(defn- make-view
+  "Build a view map from a mapping, extracting :data if present."
+  [mapping]
+  (let [d (:data mapping)]
+    (cond-> {:mapping (dissoc mapping :data)}
+      d (assoc :data (coerce-dataset d)))))
+
 (defn view
   "Declare what to look at -- add a view with position mappings.
    Opts scope to this view (not to all views). For sketch-level
@@ -314,8 +321,8 @@
        (update sk :views conj {:mapping {:x x-or-cols}})
 
        (map? x-or-cols)
-       ;; Map form: all keys go into view mapping
-       (update sk :views conj {:mapping x-or-cols})
+       ;; Map form: all keys go into view mapping (extract :data if present)
+       (update sk :views conj (make-view x-or-cols))
 
        (sequential? x-or-cols)
        (let [first-el (first x-or-cols)]
@@ -331,18 +338,18 @@
        (and (sequential? x) (map? y))
        (let [first-el (first x)]
          (if (or (keyword? first-el) (string? first-el))
-           (update sk :views into (mapv (fn [col] {:mapping (assoc y :x col)}) x))
-           (update sk :views into (mapv (fn [[a b]] {:mapping (merge y {:x a :y b})}) x))))
+           (update sk :views into (mapv (fn [col] (make-view (assoc y :x col))) x))
+           (update sk :views into (mapv (fn [[a b]] (make-view (merge y {:x a :y b}))) x))))
        ;; Single column + view opts: (view data :x {:color :species})
        (map? y)
-       (update sk :views conj {:mapping (assoc y :x x)})
+       (update sk :views conj (make-view (assoc y :x x)))
        ;; Two columns: (view data :x :y)
        :else
        (update sk :views conj {:mapping {:x x :y y}}))))
   ([sk-or-data x y opts]
    (let [sk (ensure-sk sk-or-data)]
      ;; Opts merge into this view's mapping (view-level scope)
-     (update sk :views conj {:mapping (merge opts {:x x :y y})}))))
+     (update sk :views conj (make-view (merge opts {:x x :y y}))))))
 
 (defn- add-view-layer
   "Add a layer to a specific view (found by matching position mappings, or created new).
@@ -366,19 +373,21 @@
 
 (defn- build-layer
   "Build a layer map from a method-key and optional opts.
-   Warns on unrecognized option keys."
+   Extracts :data if present. Warns on unrecognized option keys."
   [method-key opts]
   (when (and opts (keyword? method-key))
     (let [reg (method/lookup method-key)
           accepted (into (set method/universal-layer-options)
                          (:accepts reg))
-          unknown (remove accepted (keys opts))]
+          unknown (remove accepted (keys (dissoc opts :data)))]
       (when (seq unknown)
         (println (str "Warning: lay-" (name method-key)
                       " does not recognize option(s): " (vec unknown)
                       ". Accepted: " (vec (sort accepted)))))))
-  {:method method-key
-   :mapping (or opts {})})
+  (let [d (:data opts)]
+    (cond-> {:method method-key
+             :mapping (dissoc (or opts {}) :data)}
+      d (assoc :data (coerce-dataset d)))))
 
 (defn lay
   "Add a sketch-level layer (applies to all views)."
