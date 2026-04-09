@@ -561,7 +561,7 @@ count-views
                               (== 5.2 (second (:x-domain m)))
                               (== 0.2 (:padding-each-side m))))])
 
-;; The domain `[0.8, 5.2]` = data range `[1.0, 5.0]` ± 0.2 (5% of 4.0).
+;; The domain `[0.8, 5.2]` = data range `[1.0, 5.0]` +/- 0.2 (5% of 4.0).
 ;;
 ;; Special domain rules apply in certain contexts:
 ;;

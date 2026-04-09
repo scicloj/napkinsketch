@@ -350,10 +350,10 @@
 
 (kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
 
-;; Small dataset (≤3 columns) -> columns auto-inferred, view-specific.
+;; Small dataset (<=3 columns) -> columns auto-inferred, view-specific.
 
 ;; ---
-;; # Grid Layout Rules
+;; ## Grid Layout Rules
 ;;
 ;; Each view produces its own panel. The grid is determined by
 ;; structural columns: views sharing an x-variable align in the

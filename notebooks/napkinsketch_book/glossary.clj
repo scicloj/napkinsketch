@@ -10,9 +10,7 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch -- composable plotting
-   [scicloj.napkinsketch.api :as sk]
-   ;; Method constructors -- for inspecting method maps
-   [scicloj.napkinsketch.method :as method]))
+   [scicloj.napkinsketch.api :as sk]))
 
 ;; ## View (sketch level)
 ;;
@@ -146,7 +144,7 @@
 ;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed aesthetic
 ;; for all points.
 
-(merge (method/lookup :point) {:color :species :size :petal-length :alpha 0.7})
+(merge (sk/method-lookup :point) {:color :species :size :petal-length :alpha 0.7})
 
 (kind/test-last [(fn [m] (and (= :species (:color m))
                               (= :petal-length (:size m))
@@ -190,7 +188,7 @@
 ;;
 ;; On categorical x-axes, jitter is applied along the band axis only.
 
-(merge (method/lookup :point) {:jitter true})
+(merge (sk/method-lookup :point) {:jitter true})
 
 (kind/test-last [(fn [m] (true? (:jitter m)))])
 
@@ -307,8 +305,8 @@
 ;; |:------------|:-----|
 ;; | `sk/rule-v` | Vertical line at x = value |
 ;; | `sk/rule-h` | Horizontal line at y = value |
-;; | `sk/band-v` | Vertical shaded region from x₁ to x₂ |
-;; | `sk/band-h` | Horizontal shaded region from y₁ to y₂ |
+;; | `sk/band-v` | Vertical shaded region from x1 to x2 |
+;; | `sk/band-h` | Horizontal shaded region from y1 to y2 |
 
 (:mark (sk/rule-h 5))
 
