@@ -93,6 +93,8 @@
 ;;
 ;; A view says "show me sepal length versus sepal width."
 ;; A layer says "draw it as points" or "fit a regression line."
+;; When you want multiple layers sharing the same axes, declare
+;; the axes with `sk/view`, then add layers with `sk/lay-*`:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width)
@@ -117,8 +119,9 @@
     (and (= 1 (count (:views sk)))
          (= 2 (count (:layers sk)))))])
 
-;; `:views` has one view (the panel). `:layers` has two sketch-level
-;; layers (point and lm). These layers apply to every view.
+;; `:views` has one view (the panel). `:layers` has two layers
+;; (point and lm). These layers apply to every view -- we will
+;; see why in the Scope section below.
 ;;
 ;; When `sk/lay-*` is called **with columns**, it creates a view with
 ;; a layer bound directly to it:
@@ -153,23 +156,15 @@ two-panel-sketch
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
-;; Two views, one sketch-level layer. Each view becomes a panel,
-;; and the point layer applies to both.
-;;
-;; The resolution rule:
-;;
-;; ```
-;; for each view:
-;;   layers = concat(view's own layers, sketch-level layers)
-;;   for each layer:
-;;     resolved = merge(sketch mapping, view mapping, layer mapping)
-;; ```
+;; Two views, one layer. Each view becomes a panel, and the
+;; point layer applies to both.
 
 ;; ---
 ;; ## Scope
 ;;
-;; Where you write a mapping determines who sees it.
-;; There are three levels:
+;; A **mapping** connects a column to a visual property -- like
+;; mapping `:species` to color. Where you write a mapping determines
+;; who sees it. There are three levels:
 ;;
 ;; | Where you write it | What sees it |
 ;; |:-------------------|:-------------|
@@ -338,7 +333,7 @@ view-scoped
   (tc/select-rows (rdatasets/datasets-iris)
                   #(= "versicolor" (:species %))))
 
-(-> (rdatasets/datasets-iris)
+(-> (sk/sketch (rdatasets/datasets-iris))
     (sk/view :sepal-length :sepal-width {:data setosa})
     (sk/view :sepal-length :sepal-width {:data versicolor})
     sk/lay-point)
@@ -578,7 +573,9 @@ my-sketch
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; The `:group` mapping creates groups without changing colors:
+;; Other visual properties include `:alpha` (transparency), `:size`,
+;; and `:shape`. The `:group` option creates groups without changing
+;; colors:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:group :species})
