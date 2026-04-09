@@ -31,27 +31,30 @@
 (deftest t10_l95 (is (true? v9_l93)))
 
 
-(def v12_l99 (count (:entries trace-sk)))
+(def v12_l99 (count (:views trace-sk)))
 
 
 (deftest t13_l101 (is ((fn [n] (= 1 n)) v12_l99)))
 
 
-(def v14_l103 (:entries trace-sk))
+(def v14_l103 (:views trace-sk))
 
 
 (deftest
  t15_l105
  (is
   ((fn
-    [entries]
+    [views]
     (let
-     [e (first entries)]
-     (and (= :x (:x e)) (= :y (:y e)) (= 1 (count (:methods e))))))
+     [v (first views)]
+     (and
+      (= :x (get-in v [:mapping :x]))
+      (= :y (get-in v [:mapping :y]))
+      (= 1 (count (:layers v))))))
    v14_l103)))
 
 
-(def v17_l114 (get-in (:entries trace-sk) [0 :methods 0 :mark]))
+(def v17_l114 (get-in (:views trace-sk) [0 :layers 0 :method]))
 
 
 (deftest t18_l116 (is ((fn [m] (= :point m)) v17_l114)))
@@ -169,19 +172,18 @@
    sk/lay-lm)))
 
 
-(def v52_l270 (count (:entries multi-sk)))
+(def v52_l270 (count (:views multi-sk)))
 
 
 (deftest t53_l272 (is ((fn [n] (= 1 n)) v52_l270)))
 
 
-(def v54_l274 (mapv :mark (:methods multi-sk)))
+(def v54_l274 (mapv :method (:layers multi-sk)))
 
 
 (deftest
  t55_l276
- (is
-  ((fn [v] (and (= :point (first v)) (= :line (second v)))) v54_l274)))
+ (is ((fn [v] (and (= :point (first v)) (= :lm (second v)))) v54_l274)))
 
 
 (def v57_l282 (def multi-views (sketch-impl/resolve-sketch multi-sk)))

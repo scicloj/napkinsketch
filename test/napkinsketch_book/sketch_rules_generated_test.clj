@@ -13,12 +13,10 @@
   sk-summary
   "Show the sketch fields that matter for understanding the rules."
   [sk]
-  {:shared (:shared sk),
-   :entries
-   (mapv
-    (fn* [p1__1906739#] (dissoc p1__1906739# :data))
-    (:entries sk)),
-   :methods (:methods sk),
+  {:mapping (:mapping sk),
+   :views
+   (mapv (fn* [p1__80485#] (dissoc p1__80485# :data)) (:views sk)),
+   :layers (:layers sk),
    :opts (:opts sk)}))
 
 
@@ -39,10 +37,10 @@
   ((fn
     [m]
     (and
-     (= :species (get-in m [:shared :color]))
-     (= 1 (count (:entries m)))
-     (nil? (:color (first (:entries m))))
-     (= 2 (count (:methods m)))))
+     (= :species (get-in m [:views 0 :mapping :color]))
+     (= 1 (count (:views m)))
+     (= {} (:mapping m))
+     (= 2 (count (:layers m)))))
    v5_l86)))
 
 
@@ -83,9 +81,9 @@
   ((fn
     [m]
     (and
-     (= 2 (count (:methods m)))
-     (= :point (:mark (first (:methods m))))
-     (nil? (:methods (first (:entries m))))))
+     (= 2 (count (:layers m)))
+     (= :point (:method (first (:layers m))))
+     (nil? (:layers (first (:views m))))))
    v10_l112)))
 
 
@@ -124,10 +122,10 @@
   ((fn
     [m]
     (and
-     (= 0 (count (:methods m)))
-     (= 1 (count (:entries m)))
-     (= 1 (count (:methods (first (:entries m)))))
-     (= :species (:color (first (:methods (first (:entries m))))))))
+     (= 0 (count (:layers m)))
+     (= 1 (count (:views m)))
+     (= 1 (count (:layers (first (:views m)))))
+     (= :species (get-in m [:views 0 :layers 0 :mapping :color]))))
    v15_l136)))
 
 
@@ -159,10 +157,10 @@
   ((fn
     [m]
     (and
-     (= 1 (count (:methods m)))
-     (= 1 (count (:methods (first (:entries m)))))
-     (= :point (:mark (first (:methods (first (:entries m))))))
-     (= :line (:mark (first (:methods m))))))
+     (= 1 (count (:layers m)))
+     (= 1 (count (:layers (first (:views m)))))
+     (= :point (:method (first (:layers (first (:views m))))))
+     (= :lm (:method (first (:layers m))))))
    v20_l156)))
 
 
@@ -201,9 +199,9 @@
   ((fn
     [m]
     (and
-     (= 1 (count (:entries m)))
-     (= 0 (count (:methods m)))
-     (= 2 (count (:methods (first (:entries m)))))))
+     (= 1 (count (:views m)))
+     (= 0 (count (:layers m)))
+     (= 2 (count (:layers (first (:views m)))))))
    v25_l180)))
 
 
@@ -242,15 +240,15 @@
   ((fn
     [m]
     (and
-     (= 2 (count (:entries m)))
-     (= 0 (count (:methods m)))
+     (= 2 (count (:views m)))
+     (= 0 (count (:layers m)))
      (=
       [1 1]
       (mapv
-       (fn* [p1__1906740#] (count (:methods p1__1906740#)))
-       (:entries m)))
-     (= :sepal-length (:x (first (:entries m))))
-     (= :petal-length (:x (second (:entries m))))))
+       (fn* [p1__80486#] (count (:layers p1__80486#)))
+       (:views m)))
+     (= :sepal-length (get-in m [:views 0 :mapping :x]))
+     (= :petal-length (get-in m [:views 1 :mapping :x]))))
    v30_l204)))
 
 
@@ -286,7 +284,7 @@
 
 (deftest
  t36_l235
- (is ((fn [m] (= :species (get-in m [:shared :color]))) v35_l229)))
+ (is ((fn [m] (= :species (get-in m [:mapping :color]))) v35_l229)))
 
 
 (def
@@ -310,7 +308,7 @@
 
 
 (def
- v40_l251
+ v40_l252
  (->
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
@@ -321,18 +319,18 @@
 
 
 (deftest
- t41_l257
+ t41_l258
  (is
   ((fn
     [m]
     (and
-     (= :species (get-in m [:shared :color]))
-     (nil? (:color (second (:methods m))))))
-   v40_l251)))
+     (= :species (get-in m [:views 0 :mapping :color]))
+     (nil? (get-in m [:layers 1 :mapping :color]))))
+   v40_l252)))
 
 
 (def
- v42_l261
+ v42_l262
  (->
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
@@ -341,18 +339,18 @@
 
 
 (deftest
- t43_l266
+ t43_l267
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v42_l261)))
+   v42_l262)))
 
 
 (def
- v45_l274
+ v45_l275
  (->
   (sk/sketch (rdatasets/datasets-iris) {:color :species})
   (sk/view :sepal-length :sepal-width)
@@ -363,19 +361,19 @@
 
 
 (deftest
- t46_l280
+ t46_l281
  (is
   ((fn
     [m]
     (and
-     (= :species (get-in m [:shared :color]))
-     (= 2 (count (:entries m)))
-     (= 1 (count (:methods m)))))
-   v45_l274)))
+     (= :species (get-in m [:mapping :color]))
+     (= 2 (count (:views m)))
+     (= 1 (count (:layers m)))))
+   v45_l275)))
 
 
 (def
- v47_l285
+ v47_l286
  (->
   (sk/sketch (rdatasets/datasets-iris) {:color :species})
   (sk/view :sepal-length :sepal-width)
@@ -384,18 +382,18 @@
 
 
 (deftest
- t48_l290
+ t48_l291
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v47_l285)))
+   v47_l286)))
 
 
 (def
- v50_l298
+ v50_l299
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -405,18 +403,18 @@
 
 
 (deftest
- t51_l303
+ t51_l304
  (is
   ((fn
     [m]
     (and
-     (= 2 (count (:entries m)))
-     (= :rule-h (:mark (second (:entries m))))))
-   v50_l298)))
+     (= 1 (count (:views m)))
+     (= :rule-h (:mark (first (get-in m [:opts :annotations]))))))
+   v50_l299)))
 
 
 (def
- v52_l307
+ v52_l308
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -424,18 +422,18 @@
 
 
 (deftest
- t53_l311
+ t53_l312
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v52_l307)))
+   v52_l308)))
 
 
 (def
- v55_l319
+ v55_l320
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -445,42 +443,44 @@
 
 
 (deftest
- t56_l324
+ t56_l325
  (is
   ((fn
     [m]
     (and
-     (= 2 (count (:entries m)))
-     (= :sepal-width (:y (first (:entries m))))
-     (= :petal-width (:y (second (:entries m))))
-     (= :line (:mark (first (:methods (second (:entries m))))))))
-   v55_l319)))
+     (= 2 (count (:views m)))
+     (= :sepal-width (get-in m [:views 0 :mapping :y]))
+     (= :petal-width (get-in m [:views 1 :mapping :y]))
+     (= :lm (:method (first (:layers (second (:views m))))))))
+   v55_l320)))
 
 
 (def
- v58_l335
+ v58_l336
  (-> {:x [1 2 3], :y [4 5 6]} sk/lay-point sk-summary kind/pprint))
 
 
 (deftest
- t59_l339
+ t59_l340
  (is
   ((fn
     [m]
-    (and (= 1 (count (:entries m))) (= :x (:x (first (:entries m))))))
-   v58_l335)))
+    (and
+     (= 1 (count (:views m)))
+     (= :x (get-in m [:views 0 :mapping :x]))))
+   v58_l336)))
 
 
-(def v60_l343 (-> {:x [1 2 3], :y [4 5 6]} sk/lay-point))
+(def v60_l344 (-> {:x [1 2 3], :y [4 5 6]} sk/lay-point))
 
 
 (deftest
- t61_l346
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v60_l343)))
+ t61_l347
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v60_l344)))
 
 
 (def
- v63_l363
+ v63_l364
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -490,14 +490,14 @@
 
 
 (deftest
- t64_l368
+ t64_l369
  (is
-  ((fn [m] (and (= 2 (count (:entries m))) (= 0 (count (:methods m)))))
-   v63_l363)))
+  ((fn [m] (and (= 2 (count (:views m))) (= 0 (count (:layers m)))))
+   v63_l364)))
 
 
 (def
- v65_l372
+ v65_l373
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -505,18 +505,18 @@
 
 
 (deftest
- t66_l376
+ t66_l377
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 150 (:points s)) (pos? (:polygons s)))))
-   v65_l372)))
+   v65_l373)))
 
 
 (def
- v68_l388
+ v68_l389
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -524,18 +524,18 @@
 
 
 (deftest
- t69_l392
+ t69_l393
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 150 (:points s)) (pos? (:polygons s)))))
-   v68_l388)))
+   v68_l389)))
 
 
 (def
- v71_l405
+ v71_l406
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -543,18 +543,18 @@
 
 
 (deftest
- t72_l409
+ t72_l410
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (= 1 (:lines s)))))
-   v71_l405)))
+   v71_l406)))
 
 
 (def
- v74_l419
+ v74_l420
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -563,30 +563,30 @@
 
 
 (deftest
- t75_l424
+ t75_l425
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (pos? (:panels s)) (pos? (:points s)) (pos? (:lines s)))))
-   v74_l419)))
+   v74_l420)))
 
 
 (def
- v77_l434
+ v77_l435
  (def splom-cols [:sepal-length :sepal-width :petal-length]))
 
 
 (def
- v78_l436
+ v78_l437
  (->
   (sk/sketch (rdatasets/datasets-iris) {:color :species})
   (sk/view (sk/cross splom-cols splom-cols))))
 
 
 (deftest
- t79_l439
+ t79_l440
  (is
   ((fn
     [v]
@@ -596,11 +596,11 @@
       (= 9 (:panels s))
       (= (* 6 150) (:points s))
       (pos? (:polygons s)))))
-   v78_l436)))
+   v78_l437)))
 
 
 (def
- v81_l453
+ v81_l454
  (def
   scale-plan
   (->
@@ -614,7 +614,7 @@
 
 
 (def
- v82_l462
+ v82_l463
  (let
   [panel (first (:panels scale-plan))]
   {:coord (:coord panel),
@@ -624,7 +624,7 @@
 
 
 (deftest
- t83_l468
+ t83_l469
  (is
   ((fn
     [m]
@@ -633,18 +633,18 @@
      (= [0 6] (:x-domain m))
      (= {:type :linear, :domain [0 6]} (:x-scale m))
      (= {:type :log} (:y-scale m))))
-   v82_l462)))
+   v82_l463)))
 
 
-(def v85_l480 (select-keys scale-plan [:x-label :y-label]))
+(def v85_l481 (select-keys scale-plan [:x-label :y-label]))
 
 
 (deftest
- t86_l482
+ t86_l483
  (is
   ((fn
     [m]
     (and
      (= "sepal width" (:x-label m))
      (= "sepal length" (:y-label m))))
-   v85_l480)))
+   v85_l481)))
