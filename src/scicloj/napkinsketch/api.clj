@@ -270,12 +270,15 @@
   (sketch/sketch? x))
 
 (defn sketch
-  "Create a sketch."
+  "Create a sketch with optional sketch-level mapping.
+   Use for sketch-level aesthetics that apply to all views and layers.
+   (sketch data)                     — sketch with data only
+   (sketch data {:color :species})   — sketch with sketch-level color mapping"
   ([] (wrap-autorender (sketch/->sketch nil {} [] [] {})))
   ([data] (sketch data {}))
-  ([data shared]
+  ([data mapping]
    (wrap-autorender
-    (sketch/->sketch (coerce-dataset data) shared [] [] {}))))
+    (sketch/->sketch (coerce-dataset data) mapping [] [] {}))))
 
 (defn with-data
   "Supply or replace data in a sketch."
@@ -283,109 +286,108 @@
   (assoc sk :data (coerce-dataset data)))
 
 (defn view
-  "Declare what to plot — add entries (column pairs) and shared aesthetics.
-   (view data :x :y)            — one bivariate entry
-   (view data :x)               — one univariate entry
-   (view data [[:a :b] [:c :d]])— multiple bivariate entries
-   (view data :x :y {:color :g})— entry with shared color grouping
-   (view sk)                    — auto-infer columns from small dataset"
+  "Declare what to look at — add a view with position mappings.
+   Opts scope to this view (not to all views). For sketch-level
+   mappings, use sk/sketch.
+   (view data :x :y)             — one bivariate view
+   (view data :x)                — one univariate view
+   (view data [[:a :b] [:c :d]]) — multiple bivariate views
+   (view data :x :y {:color :g}) — view with color mapping (view-level)
+   (view data {:x :a :y :b :color :c}) — view from map (view-level)
+   (view sk)                     — auto-infer columns from small dataset"
   ([sk-or-data]
    (let [sk (ensure-sk sk-or-data)]
      (if (:data sk)
        (let [cols (vec (tc/column-names (:data sk)))
              n (count cols)]
          (case n
-           1 (update sk :entries conj {:x (cols 0)})
-           2 (update sk :entries conj {:x (cols 0) :y (cols 1)})
-           3 (update sk :entries conj {:x (cols 0) :y (cols 1) :color (cols 2)})
+           1 (update sk :views conj {:mapping {:x (cols 0)}})
+           2 (update sk :views conj {:mapping {:x (cols 0) :y (cols 1)}})
+           3 (update sk :views conj {:mapping {:x (cols 0) :y (cols 1) :color (cols 2)}})
            (throw (ex-info (str "Cannot infer columns from " n " columns.") {:columns cols}))))
        sk)))
-  ([sk-or-data x-or-entries]
+  ([sk-or-data x-or-cols]
    (let [sk (ensure-sk sk-or-data)]
      (cond
-       (or (keyword? x-or-entries)
-           (string? x-or-entries)) (update sk :entries conj {:x x-or-entries})
-       (map? x-or-entries) (update sk :entries conj x-or-entries)
-       (sequential? x-or-entries)
-       (let [first-el (first x-or-entries)]
+       (or (keyword? x-or-cols)
+           (string? x-or-cols))
+       (update sk :views conj {:mapping {:x x-or-cols}})
+
+       (map? x-or-cols)
+       ;; Map form: all keys go into view mapping
+       (update sk :views conj {:mapping x-or-cols})
+
+       (sequential? x-or-cols)
+       (let [first-el (first x-or-cols)]
          (if (or (keyword? first-el) (string? first-el))
-           ;; Vector of keywords → univariate entries: [:a :b :c]
-           (update sk :entries into (mapv (fn [col] {:x col}) x-or-entries))
-           ;; Vector of pairs → bivariate entries: [[:x1 :y1] [:x2 :y2]]
-           (update sk :entries into (mapv (fn [[x y]] {:x x :y y}) x-or-entries)))))))
+           ;; Vector of keywords → univariate views: [:a :b :c]
+           (update sk :views into (mapv (fn [col] {:mapping {:x col}}) x-or-cols))
+           ;; Vector of pairs → bivariate views: [[:x1 :y1] [:x2 :y2]]
+           (update sk :views into (mapv (fn [[x y]] {:mapping {:x x :y y}}) x-or-cols)))))))
   ([sk-or-data x y]
    (let [sk (ensure-sk sk-or-data)]
      (cond
-       ;; Columns/pairs + shared opts: (view sk [:a :b :c] {:color :species})
+       ;; Columns/pairs + view opts: (view sk [:a :b :c] {:color :species})
        (and (sequential? x) (map? y))
-       (let [sk (update sk :shared merge y)
-             first-el (first x)]
+       (let [first-el (first x)]
          (if (or (keyword? first-el) (string? first-el))
-           (update sk :entries into (mapv (fn [col] {:x col}) x))
-           (update sk :entries into (mapv (fn [[a b]] {:x a :y b}) x))))
-       ;; Single column + shared opts: (view data :x {:color :species})
+           (update sk :views into (mapv (fn [col] {:mapping (assoc y :x col)}) x))
+           (update sk :views into (mapv (fn [[a b]] {:mapping (merge y {:x a :y b})}) x))))
+       ;; Single column + view opts: (view data :x {:color :species})
        (map? y)
-       (-> sk
-           (update :shared merge y)
-           (update :entries conj {:x x}))
+       (update sk :views conj {:mapping (assoc y :x x)})
        ;; Two columns: (view data :x :y)
        :else
-       (update sk :entries conj {:x x :y y}))))
+       (update sk :views conj {:mapping {:x x :y y}}))))
   ([sk-or-data x y opts]
    (let [sk (ensure-sk sk-or-data)]
-     (-> sk
-         (update :shared merge opts)
-         (update :entries conj {:x x :y y})))))
+     ;; Opts merge into this view's mapping (view-level scope)
+     (update sk :views conj {:mapping (merge opts {:x x :y y})}))))
 
-(defn- add-entry-method
-  "Add a method to a specific entry (found by matching :x/:y, or created new).
-   Matches the *last* entry with the same position mappings, so that
+(defn- add-view-layer
+  "Add a layer to a specific view (found by matching position mappings, or created new).
+   Matches the *last* view with the same :x/:y in its :mapping, so that
    `lay-*` naturally targets the most recently created view.
-   Used when lay-* is called with structural columns."
-  [sk entry-keys method-map]
-  (let [entries (:entries sk)
+   Used when lay-* is called with positional columns."
+  [sk position-mapping layer]
+  (let [views (:views sk)
         idx (last (keep-indexed
-                   (fn [i e]
-                     (when (and (= (:x e) (:x entry-keys))
-                                (= (:y e) (:y entry-keys)))
+                   (fn [i v]
+                     (when (and (= (:x (:mapping v)) (:x position-mapping))
+                                (= (:y (:mapping v)) (:y position-mapping)))
                        i))
-                   entries))]
+                   views))]
     (if idx
-      ;; Found existing entry — append method to its :methods
-      (update-in sk [:entries idx :methods]
-                 (fn [ms] (conj (or ms []) method-map)))
-      ;; No match — create new entry with this method
-      (update sk :entries conj (assoc entry-keys :methods [method-map])))))
+      ;; Found existing view — append layer to its :layers
+      (update-in sk [:views idx :layers]
+                 (fn [ls] (conj (or ls []) layer)))
+      ;; No match — create new view with this layer
+      (update sk :views conj {:mapping position-mapping :layers [layer]}))))
 
-(defn- build-method-map
-  "Build a method map from a method-key (keyword) or raw map, with optional opts.
+(defn- build-layer
+  "Build a layer map from a method-key and optional opts.
    Warns on unrecognized option keys."
   [method-key opts]
-  (let [base (if (keyword? method-key)
-               (let [m (method/lookup method-key)]
-                 (or (not-empty (select-keys (or m {}) [:mark :stat :position]))
-                     {:mark method-key :stat :identity}))
-               ;; Raw map — pass through as-is
-               method-key)]
-    (when (and opts (keyword? method-key))
-      (let [reg (method/lookup method-key)
-            accepted (into (set method/universal-layer-options)
-                           (:accepts reg))
-            unknown (remove accepted (keys opts))]
-        (when (seq unknown)
-          (println (str "Warning: lay-" (name method-key)
-                        " does not recognize option(s): " (vec unknown)
-                        ". Accepted: " (vec (sort accepted)))))))
-    (merge base opts)))
+  (when (and opts (keyword? method-key))
+    (let [reg (method/lookup method-key)
+          accepted (into (set method/universal-layer-options)
+                         (:accepts reg))
+          unknown (remove accepted (keys opts))]
+      (when (seq unknown)
+        (println (str "Warning: lay-" (name method-key)
+                      " does not recognize option(s): " (vec unknown)
+                      ". Accepted: " (vec (sort accepted)))))))
+  {:method method-key
+   :mapping (or opts {})})
 
 (defn lay
-  "Add a global method to a sketch (applies to all entries)."
+  "Add a sketch-level layer (applies to all views)."
   ([sk-or-data method-key]
    (let [sk (ensure-sk sk-or-data)]
-     (update sk :methods conj (build-method-map method-key nil))))
+     (update sk :layers conj (build-layer method-key nil))))
   ([sk-or-data method-key opts]
    (let [sk (ensure-sk sk-or-data)]
-     (update sk :methods conj (build-method-map method-key opts)))))
+     (update sk :layers conj (build-layer method-key opts)))))
 
 (defn- x-only?
   "True if method-key is registered as x-only (rejects :y column)."
@@ -394,30 +396,38 @@
 
 (defn- lay-method
   "Shared implementation for all lay-* functions.
-   1-arity: auto-infer columns for small datasets, otherwise global method.
-   2-arity: keyword/string → univariate entry-specific; vector → multi-column;
-            map → global with opts.
-   3-arity: two keywords → bivariate entry-specific; keyword+map → univariate+opts;
-            vector+map → multi-column with opts.
-   4-arity: bivariate entry-specific with opts."
+   1-arity: auto-infer columns for small datasets, otherwise sketch-level layer.
+   2-arity: keyword/string → view-specific; vector → view-specific per column;
+            map → sketch-level with opts.
+   3-arity: two keywords → bivariate view-specific; keyword+map → univariate+opts;
+            vector+map → view-specific per column with opts.
+   4-arity: bivariate view-specific with opts."
   ([method-key sk-or-data]
    (let [sk (ensure-sk sk-or-data)
          d (:data sk)
          col-count (when d (count (tc/column-names d)))]
-     (if (and (empty? (:entries sk)) d (<= col-count 3))
+     (if (and (empty? (:views sk)) d (<= col-count 3))
+       ;; Auto-infer: create view, then add layer to it
        (let [sk2 (view sk)]
-         (add-entry-method sk2 (first (:entries sk2))
-                           (build-method-map method-key nil)))
+         (add-view-layer sk2
+                         (:mapping (first (:views sk2)))
+                         (build-layer method-key nil)))
        (lay sk method-key))))
   ([method-key sk-or-data x-or-opts]
    (cond
      (or (keyword? x-or-opts) (string? x-or-opts))
-     (add-entry-method (ensure-sk sk-or-data)
-                       {:x x-or-opts}
-                       (build-method-map method-key nil))
+     (add-view-layer (ensure-sk sk-or-data)
+                     {:x x-or-opts}
+                     (build-layer method-key nil))
+     ;; Sequential → create view-specific layers (not global)
      (sequential? x-or-opts)
-     (-> (view sk-or-data x-or-opts)
-         (lay method-key))
+     (reduce (fn [sk col-or-pair]
+               (if (sequential? col-or-pair)
+                 (let [[x y] col-or-pair]
+                   (add-view-layer sk {:x x :y y} (build-layer method-key nil)))
+                 (add-view-layer sk {:x col-or-pair} (build-layer method-key nil))))
+             (ensure-sk sk-or-data)
+             x-or-opts)
      :else
      (lay sk-or-data method-key x-or-opts)))
   ([method-key sk-or-data x y-or-opts]
@@ -426,32 +436,38 @@
      (do (when (x-only? method-key)
            (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
                            {:method method-key :x x :y y-or-opts})))
-         (add-entry-method (ensure-sk sk-or-data)
-                           {:x x :y y-or-opts}
-                           (build-method-map method-key nil)))
+         (add-view-layer (ensure-sk sk-or-data)
+                         {:x x :y y-or-opts}
+                         (build-layer method-key nil)))
+     ;; Sequential + opts → view-specific layers with opts
      (and (sequential? x) (map? y-or-opts))
-     (-> (view sk-or-data x y-or-opts)
-         (lay method-key))
+     (reduce (fn [sk col-or-pair]
+               (if (sequential? col-or-pair)
+                 (let [[a b] col-or-pair]
+                   (add-view-layer sk {:x a :y b} (build-layer method-key y-or-opts)))
+                 (add-view-layer sk {:x col-or-pair} (build-layer method-key y-or-opts))))
+             (ensure-sk sk-or-data)
+             x)
      :else
-     (add-entry-method (ensure-sk sk-or-data)
-                       {:x x}
-                       (build-method-map method-key y-or-opts))))
+     (add-view-layer (ensure-sk sk-or-data)
+                     {:x x}
+                     (build-layer method-key y-or-opts))))
   ([method-key sk-or-data x y opts]
    (when (x-only? method-key)
      (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
                      {:method method-key :x x :y y})))
-   (add-entry-method (ensure-sk sk-or-data)
-                     {:x x :y y}
-                     (build-method-map method-key opts))))
+   (add-view-layer (ensure-sk sk-or-data)
+                   {:x x :y y}
+                   (build-layer method-key opts))))
 
 (defn lay-point
-  "Add :point method (scatter) to a sketch.
-   Without columns → global method (applies to all entries).
-   With columns → entry-specific (find or create entry).
-   (lay-point sk)                         — global method
-   (lay-point sk {:color :species})        — global with opts
-   (lay-point data :x :y)                 — entry-specific
-   (lay-point data :x :y {:color :c})     — entry-specific with opts"
+  "Add :point layer (scatter) to a sketch.
+   Without columns → sketch-level layer (applies to all views).
+   With columns → view-specific (find or create view).
+   (lay-point sk)                         — sketch-level layer
+   (lay-point sk {:color :species})        — sketch-level with opts
+   (lay-point data :x :y)                 — view-specific
+   (lay-point data :x :y {:color :c})     — view-specific with opts"
   ([sk-or-data] (lay-method :point sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :point sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :point sk-or-data x y-or-opts))
@@ -661,29 +677,22 @@
   ([sk-or-data x y-or-opts] (lay-method :rug sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :rug sk-or-data x y opts)))
 
-(defn- normalize-col
-  "Pass through column reference as-is (no string->keyword conversion)."
-  [col]
-  col)
-
 (defn facet
   "Facet a sketch by a column.
-   Direction is :col (default, horizontal row) or :row (vertical column)."
+   Direction is :col (default, horizontal row) or :row (vertical column).
+   Faceting is plot-level — all views are faceted the same way."
   ([sk col] (facet sk col :col))
   ([sk col direction]
    (let [sk (ensure-sk sk)
-         k (case direction :col :facet-col :row :facet-row)
-         col (normalize-col col)]
-     (update sk :entries (fn [entries] (mapv #(assoc % k col) entries))))))
+         k (case direction :col :facet-col :row :facet-row)]
+     (update sk :opts assoc k col))))
 
 (defn facet-grid
-  "Facet a sketch by two columns (2D grid)."
+  "Facet a sketch by two columns (2D grid).
+   Faceting is plot-level — all views are faceted the same way."
   [sk col-col row-col]
-  (let [sk (ensure-sk sk)
-        col-col (normalize-col col-col)
-        row-col (normalize-col row-col)]
-    (update sk :entries (fn [entries]
-                          (mapv #(assoc % :facet-col col-col :facet-row row-col) entries)))))
+  (let [sk (ensure-sk sk)]
+    (update sk :opts assoc :facet-col col-col :facet-row row-col)))
 
 (defn- deep-merge
   "Recursively merge maps. Non-map values are overwritten."
@@ -699,32 +708,30 @@
   (update (ensure-sk sk) :opts deep-merge opts))
 
 (defn scale
-  "Set axis scale on a sketch.
+  "Set axis scale on a sketch. Scale is plot-level — applies to all views.
    (scale sk :x :log) — log scale on x-axis."
   [sk channel scale-type]
   (let [sk (ensure-sk sk)
         k (case channel :x :x-scale :y :y-scale
                 (throw (ex-info (str "Scale channel must be :x or :y, got: " channel)
                                 {:channel channel})))]
-    (update sk :entries (fn [entries]
-                          (mapv #(assoc % k (if (map? scale-type)
-                                              (merge {:type :linear} scale-type)
-                                              {:type scale-type})) entries)))))
+    (update sk :opts assoc k (if (map? scale-type)
+                               (merge {:type :linear} scale-type)
+                               {:type scale-type}))))
 
 (defn coord
-  "Set coordinate transform on a sketch.
+  "Set coordinate transform on a sketch. Coord is plot-level — applies to all views.
    (coord sk :flip) — flipped coordinates."
   [sk coord-type]
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
                     {:coord coord-type})))
   (let [sk (ensure-sk sk)]
-    (update sk :entries (fn [entries]
-                          (mapv #(assoc % :coord coord-type) entries)))))
+    (update sk :opts assoc :coord coord-type)))
 
 (defn plan
-  "Resolve a sketch into a plan using entry-based grid layout.
-   Each entry = one panel. Grid position from structural columns.
+  "Resolve a sketch into a plan using view-based grid layout.
+   Each view = one panel. Grid position from structural columns.
    (plan sk)
    (plan sk {:title \"My Plot\"})"
   ([sk]
@@ -734,9 +741,9 @@
    (plan (options sk opts))))
 
 (defn annotate
-  "Add annotation entries to a sketch.
-   Annotations (rule-h, rule-v, band-h, band-v) are view maps that
-   don't participate in the entry × methods cross product.
+  "Add annotations to a sketch. Annotations are plot-level decorations
+   (reference lines and bands) that don't participate in the view × layer
+   cross product.
    (annotate sk (sk/rule-h 5) (sk/band-v 3 7))"
   [sk & annotations]
   (doseq [ann annotations]
@@ -744,23 +751,22 @@
       (throw (ex-info (str "annotate expects annotation maps (from rule-h, rule-v, band-h, band-v), got: "
                            (pr-str ann))
                       {:annotation ann}))))
-  (reduce (fn [sk ann]
-            (update sk :entries conj (assoc ann :methods [ann])))
-          (ensure-sk sk) annotations))
+  (update-in (ensure-sk sk) [:opts :annotations]
+             (fn [existing] (into (or existing []) annotations))))
 
 (defn overlay
-  "Add a layer with different columns on the same panel as an existing entry.
+  "Add a layer with different columns on the same panel as an existing view.
    Use when you want two different column mappings sharing the same axes —
    e.g., scatter of :x/:y with a line of :x/:y_predicted.
-   The overlay creates a new entry with its own :methods.
+   The overlay creates a new view with its own layer.
    (overlay sk :x :y_predicted :line)
    (overlay sk :x :y_predicted :line {:color \"red\"})"
   ([sk x y method-key]
    (overlay sk x y method-key {}))
   ([sk x y method-key opts]
-   (let [sk (ensure-sk sk)
-         method-map (build-method-map method-key opts)]
-     (update sk :entries conj {:x x :y y :methods [method-map]}))))
+   (let [sk (ensure-sk sk)]
+     (update sk :views conj {:mapping {:x x :y y}
+                             :layers [(build-layer method-key opts)]}))))
 
 (defn plot
   "Render a sketch to SVG (or interactive HTML if tooltip/brush is set).

@@ -1,7 +1,8 @@
 (ns scicloj.napkinsketch.impl.sketch
   "Sketch: the composable data model and views-to-plan pipeline.
-   A sketch is a record with :data :shared :entries :methods :opts.
-   Resolution: merge(shared, entry, method) → view maps → plan."
+   A sketch is a record with :data :mapping :views :layers :opts.
+   Resolution: merge(sketch-mapping, view-mapping, method-info, layer-mapping)
+   → flat view maps → plan."
   (:require [wadogo.scale :as ws]
             [java-time.api :as jt]
             [tablecloth.api :as tc]
@@ -17,13 +18,25 @@
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
             [scicloj.napkinsketch.impl.render :as render-impl]
+            [scicloj.napkinsketch.method :as method]
             [scicloj.kindly.v4.kind :as kind]))
 
 (declare views->plan)
 
 ;; ---- Record ----
+;;
+;; Sketch [data mapping views layers opts]
+;;
+;; :data     — dataset (sketch-level)
+;; :mapping  — sketch-level aesthetic mappings (visible to all views, all layers)
+;; :views    — vector of view maps, each with :mapping, :layers, optional :data
+;; :layers   — sketch-level layers (crossed with all views)
+;; :opts     — plot options + scale/coord/facet/annotations
+;;
+;; Three scope levels: sketch → view → layer.
+;; Mappings flow downward; lower overrides higher (lexical scope).
 
-(defrecord Sketch [data shared entries methods opts])
+(defrecord Sketch [data mapping views layers opts])
 
 (defn sketch?
   "True if x is a sketch."
@@ -38,94 +51,138 @@
   (when d (if (tc/dataset? d) d (tc/dataset d))))
 
 (defn- expand-facets
-  "Expand entries with column-ref :facet-col/:facet-row into per-value entries."
-  [entries data]
-  (let [ds (ensure-dataset data)]
-    (vec
-     (mapcat
-      (fn [entry]
-        (let [fcol (:facet-col entry)
-              frow (:facet-row entry)
-              nc? (view/column-ref? fcol)
-              nr? (view/column-ref? frow)]
-          (cond
-            (and nc? nr?)
-            (let [ed (ensure-dataset (or (:data entry) ds))
-                  fcol (view/resolve-col-name ed fcol)
-                  frow (view/resolve-col-name ed frow)]
-              (for [cv (distinct (ed fcol)) rv (distinct (ed frow))]
-                (-> entry
-                    (assoc :facet-col (str cv) :facet-row (str rv)
-                           :data (tc/select-rows ed (fn [r] (and (= (r fcol) cv) (= (r frow) rv))))))))
+  "Expand views by facet columns from opts into per-value views.
+   Each faceted view gets filtered :data and string :facet-col/:facet-row labels."
+  [views data facet-col facet-row]
+  (let [nc? (view/column-ref? facet-col)
+        nr? (view/column-ref? facet-row)]
+    (if-not (or nc? nr?)
+      views
+      (vec
+       (mapcat
+        (fn [view]
+          (let [ds (ensure-dataset (or (:data view) data))]
+            (cond
+              (and nc? nr?)
+              (let [fcol (view/resolve-col-name ds facet-col)
+                    frow (view/resolve-col-name ds facet-row)]
+                (for [cv (distinct (ds fcol)) rv (distinct (ds frow))]
+                  (assoc view
+                         :facet-col (str cv) :facet-row (str rv)
+                         :data (tc/select-rows ds (fn [r] (and (= (r fcol) cv) (= (r frow) rv)))))))
 
-            nc?
-            (let [ed (ensure-dataset (or (:data entry) ds))
-                  fcol (view/resolve-col-name ed fcol)]
-              (for [cv (distinct (ed fcol))]
-                (-> entry
-                    (assoc :facet-col (str cv)
-                           :data (tc/select-rows ed (fn [r] (= (r fcol) cv)))))))
+              nc?
+              (let [fcol (view/resolve-col-name ds facet-col)]
+                (for [cv (distinct (ds fcol))]
+                  (assoc view
+                         :facet-col (str cv)
+                         :data (tc/select-rows ds (fn [r] (= (r fcol) cv))))))
 
-            nr?
-            (let [ed (ensure-dataset (or (:data entry) ds))
-                  frow (view/resolve-col-name ed frow)]
-              (for [rv (distinct (ed frow))]
-                (-> entry
-                    (assoc :facet-row (str rv)
-                           :data (tc/select-rows ed (fn [r] (= (r frow) rv)))))))
+              nr?
+              (let [frow (view/resolve-col-name ds facet-row)]
+                (for [rv (distinct (ds frow))]
+                  (assoc view
+                         :facet-row (str rv)
+                         :data (tc/select-rows ds (fn [r] (= (r frow) rv)))))))))
+        views)))))
 
-            :else [entry])))
-      entries))))
+(defn- resolve-method-info
+  "Look up method info from a layer's :method key.
+   Keyword → registry lookup. Map → pass through. :infer → sentinel."
+  [method-key]
+  (cond
+    (= :infer method-key)
+    {:mark :infer}
+
+    (keyword? method-key)
+    (let [m (method/lookup method-key)]
+      (or (not-empty (select-keys (or m {}) [:mark :stat :position]))
+          {:mark method-key :stat :identity}))
+
+    :else ;; raw map — pass through
+    method-key))
+
+(defn- validate-columns
+  "Validate that referenced x/y columns exist in the dataset.
+   Checks both keyword and string forms for cross-type compatibility."
+  [resolved d]
+  (when d
+    (let [col-names (set (tc/column-names d))
+          x-col (:x resolved)
+          y-col (:y resolved)
+          check-pairs (cond-> []
+                        (and x-col (view/column-ref? x-col))
+                        (conj [:x x-col])
+                        (and y-col (view/column-ref? y-col) (not= y-col x-col))
+                        (conj [:y y-col]))]
+      (doseq [[role col] check-pairs
+              :when (and (not (col-names col))
+                         (not (and (keyword? col) (col-names (name col))))
+                         (not (and (string? col) (col-names (keyword col)))))]
+        (throw (ex-info (str "Column " col " (from " role ") not found in dataset. Available: " (sort col-names))
+                        {:key role :column col :available (sort col-names)}))))))
 
 (defn resolve-sketch
   "Resolve a sketch into a flat vector of view maps for views->plan.
-   Expands facets, crosses entries x methods, merges shared -> entry -> method.
-   Each entry uses: own :methods (if any) + global methods.
-   Entries without own :methods use global methods only.
-   If no global methods exist and entry has no own methods, {:mark :infer} is used."
-  [{:keys [data shared entries methods]}]
-  (let [expanded (expand-facets entries data)
-        global-methods methods]
+   Reads facet/scale/coord from opts. Expands facets on views.
+   Crosses views × layers: each view's own :layers ∪ sketch :layers.
+   Merges mappings downward: sketch-mapping < view-mapping < method-info < layer-mapping.
+   Annotation views (with annotation marks in own layers) skip sketch layers.
+   Views with no applicable layers get {:mark :infer} for downstream inference."
+  [{:keys [data mapping views layers opts]}]
+  (let [;; Plot-level settings from opts
+        x-scale (:x-scale opts)
+        y-scale (:y-scale opts)
+        coord-type (:coord opts)
+        ;; Expand facets
+        expanded (expand-facets views data (:facet-col opts) (:facet-row opts))
+        sketch-layers layers
+        sketch-mapping (or mapping {})]
     (let [idx (atom -1)]
       (vec
        (mapcat
-        (fn [entry]
-          (let [entry-idx (swap! idx inc)
-                own-methods (:methods entry)
-                ;; Annotation entries don't get global methods
-                ann-entry? (some #(view/annotation-marks (:mark %)) own-methods)
-                combined (if ann-entry?
-                           own-methods
-                           (concat (or own-methods nil) global-methods))
-                entry-methods (if (seq combined) (vec combined) [{:mark :infer}])
-                base (merge shared (dissoc entry :methods))]
-            (map (fn [m]
-                   (let [resolved (merge base m)
-                         d (ensure-dataset (or (:data resolved) data))]
-                     ;; Validate that referenced columns exist in the dataset.
-                     ;; Skip y when nil or same as x (diagonal/histogram case).
-                     (when d
-                       (let [col-names (set (tc/column-names d))
-                             x-col (:x resolved)
-                             y-col (:y resolved)
-                             check-pairs (cond-> []
-                                           (and x-col (view/column-ref? x-col))
-                                           (conj [:x x-col])
-                                           (and y-col (view/column-ref? y-col) (not= y-col x-col))
-                                           (conj [:y y-col]))]
-                         (doseq [[role col] check-pairs
-                                 :when (and (not (col-names col))
-                                            ;; Check cross-type match
-                                            (not (and (keyword? col) (col-names (name col))))
-                                            (not (and (string? col) (col-names (keyword col)))))]
-                           (throw (ex-info (str "Column " col " (from " role ") not found in dataset. Available: " (sort col-names))
-                                           {:key role :column col :available (sort col-names)})))))
+        (fn [view]
+          (let [view-idx (swap! idx inc)
+                view-mapping (or (:mapping view) {})
+                view-layers (:layers view)
+                view-data (:data view)
+                ;; Annotation views: own layers contain annotation marks
+                ann-view? (some (fn [layer]
+                                  (let [mk (:method layer)]
+                                    (view/annotation-marks
+                                     (if (keyword? mk) mk (:mark mk)))))
+                                view-layers)
+                ;; Combine: view layers ∪ sketch layers (unless annotation)
+                combined (if ann-view?
+                           view-layers
+                           (concat (or view-layers nil) sketch-layers))
+                applicable (if (seq combined) (vec combined) [{:method :infer}])]
+            (map (fn [layer]
+                   (let [method-info (resolve-method-info (:method layer))
+                         layer-mapping (or (:mapping layer) {})
+                         ;; Four-level merge: sketch < view < method < layer
+                         ;; Method sets mark/stat/position; layer can override all
+                         resolved (merge sketch-mapping
+                                         view-mapping
+                                         method-info
+                                         layer-mapping)
+                         ;; Data: layer > view > sketch
+                         d (ensure-dataset (or (:data layer) view-data data))]
+                     (validate-columns resolved d)
                      (-> resolved
                          (assoc :data d
-                                :__entry-idx entry-idx)
+                                :__entry-idx view-idx)
+                         ;; Stamp plot-level settings from opts
+                         (cond->
+                          x-scale (assoc :x-scale x-scale)
+                          y-scale (assoc :y-scale y-scale)
+                          coord-type (assoc :coord coord-type)
+                          (:facet-col view) (assoc :facet-col (:facet-col view))
+                          (:facet-row view) (assoc :facet-row (:facet-row view)))
+                         ;; Mark inference: remove :mark/:stat so downstream infers
                          (cond-> (= :infer (:mark resolved))
                            (-> (dissoc :mark :stat))))))
-                 entry-methods)))
+                 applicable)))
         expanded)))))
 
 ;; ---- Rendering ----
@@ -161,8 +218,8 @@
 (defn ->sketch
   "Create a sketch annotated with kind/fn for auto-rendering.
    Snapshots current *config* for with-config support."
-  [data shared entries methods opts]
-  (kind/fn (cond-> (assoc (->Sketch data shared entries methods opts)
+  [data mapping views layers opts]
+  (kind/fn (cond-> (assoc (->Sketch data mapping views layers opts)
                           :kindly/f #'render-sketch)
              defaults/*config* (assoc :config-snapshot defaults/*config*))))
 
@@ -586,7 +643,16 @@
                             multi?
                             (some :row-label panels))
         strip-h (if has-col-strips? (:strip-height cfg 16) 0)
-        strip-w (if has-row-strips? 60 0)
+        ;; Compute strip-w from actual row label text lengths
+        strip-w (if has-row-strips?
+                  (let [max-row-label-len (reduce max 0
+                                                  (for [p panels
+                                                        :let [rl (:row-label p)]
+                                                        :when rl]
+                                                    (count rl)))
+                        text-w (* max-row-label-len (/ (double tick-fsize) 1.8))]
+                    (max 40.0 (+ text-w 12.0)))
+                  0)
         top-legend-pad (if (= legend-pos :top) legend-h 0)]
     {:x-label-pad x-label-pad
      :y-label-pad y-label-pad
@@ -736,17 +802,16 @@
          height (:height cfg)
          views (if (map? views) [views] views)
 
-         ;; Separate annotations
-         ann-views (filter #(view/annotation-marks (:mark %)) views)
-         non-ann-views (remove #(view/annotation-marks (:mark %)) views)
+         ;; Annotations come from opts (not from resolved views)
+         non-ann-views views
 
-         ;; Group views by entry index
-         entry-groups (vec
-                       (for [[idx vs] (sort-by key (group-by :__entry-idx non-ann-views))]
-                         {:entry-idx idx :views (vec vs)}))
+         ;; Group resolved views by source view index
+         view-groups (vec
+                      (for [[idx vs] (sort-by key (group-by :__entry-idx non-ann-views))]
+                        {:entry-idx idx :views (vec vs)}))
 
-         ;; Infer grid from entries
-         grid (infer-grid entry-groups
+         ;; Infer grid from view groups
+         grid (infer-grid view-groups
                           (cond-> {}
                             grid-cols (assoc :grid-cols grid-cols)
                             grid-rows (assoc :grid-rows grid-rows)))
@@ -770,10 +835,9 @@
          _ (validate-polar-marks resolved-all rep-coord)
          _ (warn-conflicting-specs non-ann-views)
 
-         ;; Annotations
-         annotations (vec (for [a ann-views]
-                            (select-keys a [:mark :intercept :lo :hi :alpha
-                                            :facet-col :facet-row :x :y])))
+         ;; Annotations from opts
+         annotations (mapv #(select-keys % [:mark :intercept :lo :hi :alpha :x :y])
+                           (or (:annotations opts) []))
 
          ;; Panel dimensions (before fixed-aspect adjustment)
          {:keys [m pw ph]}
