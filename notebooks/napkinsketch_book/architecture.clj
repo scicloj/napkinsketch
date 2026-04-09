@@ -2,8 +2,8 @@
 ;;
 ;; The sketch pipeline extends napkinsketch's four-stage pipeline
 ;; with a composable front end. Instead of building view maps by hand,
-;; you compose a sketch — a declarative description of entries,
-;; methods, and shared options — that resolves into views automatically.
+;; you compose a sketch — a declarative description of views,
+;; layers, and shared mappings — that resolves into views automatically.
 ;;
 ;; This notebook traces a small example through every stage,
 ;; explains the plan boundary, and shows the namespace structure.
@@ -38,8 +38,8 @@ graph LR
 ")
 
 ;; - **sketch** — the composable user API. Functions like
-;;   `sketch`, `view`, `lay-point`, `options`, and
-;;   `facet` build up a sketch record. No computation has happened yet.
+;;   `sk/sketch`, `sk/view`, `sk/lay-point`, `sk/options`, `sk/facet`,
+;;   `sk/scale`, `sk/coord`, and `sk/annotate` build up a sketch record. No computation has happened yet.
 ;;
 ;; - **Views** — a flat vector of maps produced by resolving the sketch.
 ;;   Each view map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
@@ -82,11 +82,11 @@ graph LR
 ;;
 ;; - `:data` — the dataset (coerced to Tablecloth)
 ;;
-;; - `:shared` — options inherited by all entries (from `view`)
+;; - `:mapping` — mappings inherited by all views (from `view`)
 ;;
-;; - `:entries` — structural entries, each with `:x`, `:y`, and optional `:methods`
+;; - `:views` — structural views, each with `:mapping` and optional `:layers`
 ;;
-;; - `:methods` — global methods (from bare `lay-*` without columns)
+;; - `:layers` — global layers (from bare `lay-*` without columns)
 ;;
 ;; - `:opts` — rendering options (title, width, etc.)
 
@@ -94,32 +94,32 @@ graph LR
 
 (kind/test-last [true?])
 
-;; Let's look at the entries and methods inside the sketch:
+;; Let's look at the views and layers inside the sketch:
 
-(count (:entries trace-sk))
+(count (:views trace-sk))
 
 (kind/test-last [(fn [n] (= 1 n))])
 
-(:entries trace-sk)
+(:views trace-sk)
 
-(kind/test-last [(fn [entries]
-                   (let [e (first entries)]
-                     (and (= :x (:x e))
-                          (= :y (:y e))
-                          (= 1 (count (:methods e))))))])
+(kind/test-last [(fn [views]
+                   (let [v (first views)]
+                     (and (= :x (get-in v [:mapping :x]))
+                          (= :y (get-in v [:mapping :y]))
+                          (= 1 (count (:layers v))))))])
 
-;; The entry has one method — the point layer — attached directly
+;; The view has one layer — the point layer — attached directly
 ;; because `lay-point` was called with columns.
 
-(get-in (:entries trace-sk) [0 :methods 0 :mark])
+(get-in (:views trace-sk) [0 :layers 0 :method])
 
 (kind/test-last [(fn [m] (= :point m))])
 
 ;; ### Views
 ;;
 ;; `resolve-sketch` flattens the sketch into a vector of
-;; view maps. Each view merges shared options, entry columns,
-;; and method details into one map with `:data`, `:x`, `:y`, `:mark`, etc.
+;; view maps. Each view merges sketch-level mappings, view mappings,
+;; and layer details into one map with `:data`, `:x`, `:y`, `:mark`, etc.
 
 (def trace-views
   (sketch-impl/resolve-sketch trace-sk))
@@ -254,10 +254,10 @@ graph LR
 
 ;; ## Multi-Layer Example
 ;;
-;; A sketch can hold multiple methods on the same entry.
+;; A sketch can hold multiple layers on the same view.
 ;; Here, scatter points and per-species regression lines share
 ;; the same panel because both `lay-point` and `lay-lm`
-;; target the same `:petal-length`/`:petal-width` entry.
+;; target the same `:petal-length`/`:petal-width` view.
 
 (def multi-sk
   (-> (rdatasets/datasets-iris)
@@ -265,18 +265,18 @@ graph LR
       sk/lay-point
       sk/lay-lm))
 
-;; The sketch has one entry with two global methods:
+;; The sketch has one view with two global layers:
 
-(count (:entries multi-sk))
+(count (:views multi-sk))
 
 (kind/test-last [(fn [n] (= 1 n))])
 
-(mapv :mark (:methods multi-sk))
+(mapv :method (:layers multi-sk))
 
 (kind/test-last [(fn [v] (and (= :point (first v))
-                              (= :line (second v))))])
+                              (= :lm (second v))))])
 
-;; Resolving produces two views — one per method — both sharing
+;; Resolving produces two views — one per layer — both sharing
 ;; the same columns:
 
 (def multi-views (sketch-impl/resolve-sketch multi-sk))
@@ -349,7 +349,7 @@ graph TD
 ")
 
 ;; `impl/sketch.clj` is the core module. It holds the `Sketch` record,
-;; `resolve-sketch` (flattens entries and methods into view maps),
+;; `resolve-sketch` (flattens views and layers into view maps),
 ;; `views->plan` (resolves domains, ticks, layout), and `render-sketch`
 ;; (drives the full pipeline for auto-rendering in notebooks).
 ;;

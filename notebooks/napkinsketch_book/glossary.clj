@@ -14,28 +14,30 @@
    ;; Method constructors — for inspecting method maps
    [scicloj.napkinsketch.method :as method]))
 
-;; ## Entry
+;; ## View (sketch level)
 ;;
-;; An **entry** is a plain map in `sketch[:entries]` that declares
-;; **what** to plot — which columns map to x and y. Each entry
+;; A **view** is a plain map in `sketch[:views]` that declares
+;; **what** to plot — which columns map to x and y. Each view
 ;; becomes one panel in the rendered plot.
 ;;
 ;; Created by `sk/view` or by `sk/lay-*` with columns.
-;; An entry can optionally carry its own `:methods` (entry-local
-;; methods). Multiple entries produce multi-panel layouts.
+;; A view can optionally carry its own `:layers` (view-local
+;; layers). Multiple views produce multi-panel layouts.
 ;;
 ;; See [Core Concepts](./napkinsketch_book.core_concepts.html) and
 ;; [Sketch Rules](./napkinsketch_book.sketch_rules.html) for details.
 
-;; ## View (internal)
+;; ## Resolved view (internal)
 ;;
-;; A **view** is the internal resolved map produced during plan
-;; computation. Each entry in a sketch resolves to one or more views
-;; via `merge(shared, entry, method)`. Views carry all the information
-;; the pipeline needs: data, columns, mark, stat, color, grouping.
+;; A **resolved view** is the internal flat map produced during plan
+;; computation. Each view in a sketch resolves to one or more flat views
+;; via `merge(sketch mapping, view mapping, layer mapping)`. Resolved views
+;; carry all the information the pipeline needs: data, columns, mark, stat,
+;; color, grouping.
 ;;
-;; At the API level, `sk/view` adds entries (what to plot) and
-;; sets shared aesthetics; `sk/lay-*` adds methods (how to plot).
+;; At the API level, `sk/sketch` sets sketch-level mappings;
+;; `sk/view` adds views (what to plot) with view-scoped mappings;
+;; `sk/lay-*` adds layers (how to plot).
 
 (def my-sketch
   (-> (rdatasets/datasets-iris)
@@ -43,20 +45,22 @@
 
 (kind/pprint my-sketch)
 
-(kind/test-last [(fn [v] (and (sk/sketch? v) (= 1 (count (:entries v)))))])
+(kind/test-last [(fn [v] (and (sk/sketch? v) (= 1 (count (:views v)))))])
 
 ;; ## Sketch
 ;;
 ;; A **sketch** is a composable record with five fields: `:data`,
-;; `:shared`, `:entries`, `:methods`, and `:opts`. Every function in
+;; `:mapping`, `:views`, `:layers`, and `:opts`. Every function in
 ;; the API (`sk/view`, `sk/lay-*`, `sk/facet`, `sk/options`, `sk/scale`,
 ;; `sk/coord`, `sk/annotate`) takes a sketch and returns a sketch.
+;; `sk/sketch` creates a sketch and optionally sets sketch-level
+;; mappings visible to all views and layers.
 ;; Sketches auto-render in
 ;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).
 ;;
 ;; You can inspect or decompose a sketch by checking if it is a sketch
-;; and accessing its `:entries`:
+;; and accessing its `:views`:
 
 (def my-sketch
   (-> (rdatasets/datasets-iris)
@@ -67,7 +71,7 @@
 
 (kind/test-last [(fn [v] (true? v))])
 
-(count (:entries my-sketch))
+(count (:views my-sketch))
 
 (kind/test-last [(fn [n] (= 1 n))])
 
@@ -80,13 +84,13 @@
 ;;
 ;; Methods come in two scopes:
 ;;
-;; - **Global method** — stored in `sketch[:methods]`, applied to ALL
-;;   entries. Created by bare `sk/lay-*` (without columns).
+;; - **Global layer** — stored in `sketch[:layers]`, applied to ALL
+;;   views. Created by bare `sk/lay-*` (without columns).
 ;;
-;; - **Entry-local method** — stored in `entry[:methods]`, applied
-;;   only to that entry. Created by `sk/lay-*` with columns.
+;; - **View-local layer** — stored in `view[:layers]`, applied
+;;   only to that view. Created by `sk/lay-*` with columns.
 ;;
-;; Resolution: each entry uses `concat(own methods, global methods)`.
+;; Resolution: each view uses `concat(own layers, global layers)`.
 ;; See [Sketch Rules](./napkinsketch_book.sketch_rules.html) Rules 2-5.
 
 ;; ## Mark
@@ -449,18 +453,18 @@
 ;;
 ;; | Term | What | Key functions |
 ;; |:-----|:-----|:-------------|
-;; | Sketch | Composable value: data + shared + entries + methods + opts | All `sk/` functions return sketches |
-;; | Entry | Map in `:entries` declaring what to plot (column pairs) | `sk/view`, `sk/lay-*` with columns |
-;; | Shared aesthetics | Options in `:shared` that apply to all entries | `sk/view` opts map |
-;; | Global method | Method in `:methods` applied to all entries | `sk/lay-*` without columns |
-;; | Entry-local method | Method in `entry[:methods]` applied to one entry | `sk/lay-*` with columns |
-;; | Resolution | `merge(shared, entry, method)` → resolved view | Automatic during `sk/plan` |
+;; | Sketch | Composable value: data + mapping + views + layers + opts | All `sk/` functions return sketches |
+;; | View (sketch) | Map in `:views` declaring what to plot (column pairs) | `sk/view`, `sk/lay-*` with columns |
+;; | Sketch mapping | Mappings in `:mapping` that apply to all views | `sk/sketch` opts map |
+;; | Global layer | Layer in `:layers` applied to all views | `sk/lay-*` without columns |
+;; | View-local layer | Layer in `view[:layers]` applied to one view | `sk/lay-*` with columns |
+;; | Resolution | `merge(sketch mapping, view mapping, layer mapping)` → resolved view | Automatic during `sk/plan` |
 ;; | Method | Mark + stat + position bundle | `sk/method-lookup`, `sk/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in method map |
 ;; | Stat | Data transform: identity, bin, count, lm, kde, ... | Key in method map |
 ;; | Position | How groups share space: dodge, stack, fill, identity | Key in method map |
 ;; | Inference | Auto-choosing mark/stat from column types | When `sk/lay-*` is omitted |
-;; | Aesthetic | Data-driven visual property: color, size, alpha | Key in shared or method |
+;; | Aesthetic | Data-driven visual property: color, size, alpha | Key in mapping or layer |
 ;; | Group | Subset of data drawn together | From `:color` or `:group` |
 ;; | Plan | Fully resolved plot description | `sk/plan` |
 ;; | Panel | One plotting area (domain, ticks, layers) | One or more per plan |
@@ -478,7 +482,7 @@
 ;; | Palette | Ordered color set for categorical aesthetics | `:palette` in `sk/options` |
 ;; | Gradient | Continuous color ramp for numerical mappings | `:color-scale` in `sk/options` |
 ;; | Configuration | Global rendering defaults | `sk/config`, `sk/set-config!`, `sk/with-config` |
-;; | View (internal) | Resolved map from `merge(shared, entry, method)` | Internal to pipeline |
+;; | Resolved view (internal) | Resolved map from `merge(sketch mapping, view mapping, layer mapping)` | Internal to pipeline |
 ;; | Membrane | Drawable tree (membrane library) | Internal rendering step |
 ;; | Figure | Final output (SVG hiccup) | `sk/plot`, `sk/save` |
 ;; | Arrange | Compose multiple sketches into a grid | `sk/arrange` |

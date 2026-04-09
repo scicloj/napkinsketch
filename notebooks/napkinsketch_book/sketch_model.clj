@@ -11,8 +11,11 @@
 
 (ns napkinsketch-book.sketch-model
   (:require
+   ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; RDatasets — standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
+   ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Idea 1: The what/how split
@@ -44,14 +47,17 @@
     (sk/lay-point :sepal-length :sepal-width)
     kind/pprint)
 
-(kind/test-last [(fn [v] (and (:data v) (vector? (:entries v)) (vector? (:methods v))))])
+(kind/test-last [(fn [v] (and (:data v)
+                              (vector? (:views v))
+                              (empty? (:layers v))
+                              (seq (:layers (first (:views v))))))])
 
 ;; Five fields:
 ;;
 ;; - `:data` — the dataset
-;; - `:shared` — aesthetics that apply to all entries
-;; - `:entries` — what to plot (column pairs)
-;; - `:methods` — how to plot (mark + stat)
+;; - `:mapping` — aesthetics that apply to all views
+;; - `:views` — what to plot (column pairs)
+;; - `:layers` — how to draw it (layers: method + optional mappings)
 ;; - `:opts` — plot-level options (title, width, theme)
 ;;
 ;; [Core Concepts](./napkinsketch_book.core_concepts.html) explains
@@ -62,8 +68,8 @@
 
 ;; ## Idea 3: Separating what from how enables composition
 ;;
-;; When you call `sk/lay-point data :x :y`, it creates both an
-;; entry (what) and a method (how) in one step. But you can
+;; When you call `sk/lay-point data :x :y`, it creates both a
+;; view (what) and a layer (how) in one step. But you can
 ;; separate the two with `sk/view`:
 
 (-> (rdatasets/datasets-iris)
@@ -76,8 +82,8 @@
                                 (= 3 (:lines s)))))])
 
 ;; `sk/view` declares what to plot — columns and color grouping.
-;; Then `sk/lay-point` and `sk/lay-lm` each add a drawing method.
-;; Both methods share the same columns and aesthetics.
+;; Then `sk/lay-point` and `sk/lay-lm` each add a layer.
+;; Both layers share the same columns and aesthetics.
 ;;
 ;; **The key insight: `view` describes what, `lay-*` describes how.**
 ;; Separating them lets you add multiple layers that share the

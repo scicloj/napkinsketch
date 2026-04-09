@@ -350,15 +350,27 @@
 
 (kind/test-last [true?])
 
+(kind/doc #'sk/sketch)
+
+;; Create a sketch with sketch-level mappings visible to all views:
+
+(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
+    (sk/view :sepal-length :sepal-width)
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
+
 (kind/doc #'sk/plan)
 
-;; A sketch's entries — `lay-point :x :y` creates one entry-specific entry.
-;; `lay-lm` (bare) adds a global method.
+;; A sketch's views — `lay-point :x :y` creates one view with a view-local layer.
+;; `lay-lm` (bare) adds a global layer.
 
 (let [sk (-> tiny (sk/lay-point :x :y) sk/lay-lm)]
-  [(count (:entries sk)) (count (:methods sk))])
+  [(count (:views sk)) (count (:layers sk))])
 
-(kind/test-last [(fn [[entries globals]] (and (= 1 entries) (= 1 globals)))])
+(kind/test-last [(fn [[views globals]] (and (= 1 views) (= 1 globals)))])
 
 (kind/doc #'sk/plan)
 
