@@ -265,21 +265,16 @@ view-scoped
 ;; ```
 ;;
 ;; Later wins. `nil` cancels. This is the only rule.
-
-;; ---
-;; ## Scope Is the One Principle
 ;;
-;; Scope governs more than mappings. Layers and data follow the
-;; same hierarchy. Where you write it determines who sees it.
+;; ### Scope governs everything
+;;
+;; The same principle applies to layers and data -- not just mappings.
 ;;
 ;; | What | Sketch level | View level | Layer level |
 ;; |:-----|:-------------|:-----------|:------------|
 ;; | Mapping | `sk/sketch` | `sk/view` opts | `sk/lay-*` opts |
 ;; | Layer | `sk/lay-*` (bare) | `sk/lay-*` (with columns) | -- (leaf) |
 ;; | Data | first argument | `:data` in view opts, faceting | `:data` in layer opts |
-;;
-;; The examples above showed mappings at all three levels.
-;; Here are layers and data.
 
 ;; ### Layer scope
 ;;
@@ -372,7 +367,8 @@ view-scoped
 ;; ---
 ;; ## Identity
 ;;
-;; The two verbs handle identity differently:
+;; Scope determines what each view and layer sees. But how do views
+;; come into existence? The two verbs handle this differently:
 ;;
 ;; - `sk/view` **always creates** a new view.
 ;; - `sk/lay-*` with columns **finds the most recent** view that
@@ -677,15 +673,20 @@ my-sketch
 ;;
 ;; Three ideas explain the entire model:
 ;;
-;; **1. View and layer.** A view says what (position mappings -> panel).
-;; A layer says how (method + optional mappings). Views x applicable
-;; layers -> rendered result.
+;; **1. View and layer.** A view says what (which columns -> panel).
+;; A layer says how (which chart type, with what options). Views x
+;; applicable layers -> rendered result.
 ;;
-;; **2. Scope.** Mappings flow downward: sketch -> view -> layer.
-;; Lower overrides higher. Where you write it determines its scope.
+;; **2. Scope.** Where you write it determines who sees it.
+;; Mappings, layers, and data all flow downward: sketch -> view ->
+;; layer. Lower overrides higher.
 ;;
 ;; **3. Identity.** `view` always creates a new view. `lay-*` finds
 ;; the most recent view with the same x and y columns, or creates one.
+;;
+;; These ideas connect: scope determines what each view and layer
+;; inherits; identity determines which view a layer attaches to;
+;; and the view-layer split makes both possible.
 ;;
 ;; The [Sketch Rules](./napkinsketch_book.sketch_rules.html) chapter
 ;; formalizes these ideas as 18 tested rules.
