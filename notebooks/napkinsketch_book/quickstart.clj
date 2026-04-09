@@ -74,7 +74,7 @@
 
 ;; ## Color
 
-;; Bind `:color` to a column to color points by group.
+;; Map a column to `:color` to color points by group.
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species}))
@@ -165,9 +165,9 @@
 
 ;; ## Multiple Layers
 ;;
-;; Use `sk/view` to set shared column mappings and aesthetics,
-;; then add layers with `sk/lay-*`. All layers inherit the
-;; shared mappings. Here `sk/lay-lm` adds a linear model
+;; Use `sk/view` to set column mappings for a view,
+;; then add layers with `sk/lay-*`. All layers on this view
+;; inherit the view's mappings. Here `sk/lay-lm` adds a linear model
 ;; (regression line) per group:
 
 (-> iris

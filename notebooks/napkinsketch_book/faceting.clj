@@ -151,7 +151,7 @@
 
 ;; Diagonal panels (where x = y) show histograms — inference detects
 ;; same-column pairs. Off-diagonal panels show scatter plots. All
-;; panels are colored by species (shared via `view`).
+;; panels are colored by species (the color mapping is included in each view created by `sk/cross`).
 
 ;; ## Comparing Multiple Columns
 ;;

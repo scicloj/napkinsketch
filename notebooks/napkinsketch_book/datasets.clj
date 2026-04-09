@@ -23,9 +23,13 @@
 
 (ns napkinsketch-book.datasets
   (:require
+   ;; Tablecloth — dataset manipulation
    [tablecloth.api :as tc]
+   ;; Kindly — notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
+   ;; Napkinsketch — composable plotting
    [scicloj.napkinsketch.api :as sk]
+   ;; RDatasets — standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## Plain data works
