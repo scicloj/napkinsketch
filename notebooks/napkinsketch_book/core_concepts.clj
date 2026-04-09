@@ -19,16 +19,14 @@
 
 ;; ## Data
 ;;
-;; A **dataset** is a table of rows and columns — like a spreadsheet.
-;; Each column has a name (a keyword like `:sepal-length`) and holds
-;; values of one type. Napkinsketch uses
-;; [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset)
-;; as its columnar data representation, typically through the
-;; [Tablecloth](https://scicloj.github.io/tablecloth/) API.
+;; Napkinsketch accepts plain Clojure data — maps, vectors of maps —
+;; or columnar datasets. No wrapping needed for simple cases.
+;; The [Datasets](./napkinsketch_book.datasets.html) chapter covers
+;; data formats and loading in detail.
 ;;
 ;; We use the classic iris flower dataset throughout these examples.
-;; It comes from the RDatasets collection, introduced in the
-;; [Datasets](./napkinsketch_book.datasets.html) chapter.
+;; Each column has a name (a keyword like `:sepal-length`) and holds
+;; values of one type.
 
 (rdatasets/datasets-iris)
 
@@ -51,7 +49,6 @@
 
 ;; ### Input formats
 ;;
-;; You do not need to construct a Tablecloth dataset explicitly.
 ;; Napkinsketch accepts several common Clojure data shapes and
 ;; coerces them into a dataset internally.
 ;;
@@ -63,8 +60,7 @@
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; **Sequence of row maps** — each map is one row. Missing keys
-;; become nil:
+;; **Sequence of row maps** — each map is one row:
 
 (-> [{:city "Paris" :temperature 22}
      {:city "London" :temperature 18}
@@ -75,83 +71,72 @@
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
 ;; When the dataset has 1, 2, or 3 columns, you can omit the column
-;; names entirely — they are inferred by position (first → x,
-;; second → y, third → color):
+;; names entirely — they are inferred by position (first -> x,
+;; second -> y, third -> color):
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
     sk/lay-point)
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; With three columns, the third becomes the color grouping:
+;; Datasets with four or more columns require explicit column names.
+;; See the [Datasets](./napkinsketch_book.datasets.html) chapter for
+;; loading from CSV, URLs, and other file formats.
 
-(-> {:x [1 2 3 4] :y [4 5 6 7] :group ["a" "a" "b" "b"]}
-    sk/lay-point)
+;; ---
+;; ## Views and Layers
+;;
+;; A sketch is built from two kinds of content:
+;;
+;; - **View** — what to look at (which columns define the axes)
+;; - **Layer** — how to draw it (which method to use, with what options)
+;;
+;; A view says "show me sepal length versus sepal width."
+;; A layer says "draw it as points" or "fit a regression line."
+
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
+    sk/lay-point
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 4 (:points s))
-                                (some #{"a"} (:texts s)))))])
+                           (and (= 150 (:points s))
+                                (pos? (:lines s)))))])
 
-;; Datasets with four or more columns require explicit column names.
+;; One view, two layers: points and a regression line.
+;; Let us look at the sketch structure:
+
+(kind/pprint
+ (-> (rdatasets/datasets-iris)
+     (sk/view :sepal-length :sepal-width)
+     sk/lay-point
+     sk/lay-lm))
+
+(kind/test-last
+ [(fn [sk]
+    (and (= 1 (count (:views sk)))
+         (= 2 (count (:layers sk)))))])
+
+;; `:views` has one view (the panel). `:layers` has two sketch-level
+;; layers (point and lm). These layers apply to every view.
 ;;
-;; **Tablecloth dataset** — `tc/dataset` loads data from CSV files,
-;; URLs, and other file formats. The `:key-fn keyword` option converts
-;; string column headers to keywords. See the
-;; [Tablecloth documentation](https://scicloj.github.io/tablecloth/)
-;; for all supported formats (CSV, TSV, JSON, Parquet, and more).
+;; When `sk/lay-*` is called **with columns**, it creates a view with
+;; a layer bound directly to it:
 
-;; **Sequence of sequences** — each inner sequence is a row. Pass
-;; column names explicitly since there are no keys:
+(kind/pprint
+ (-> (rdatasets/datasets-iris)
+     (sk/lay-point :sepal-length :sepal-width)))
 
-(-> (tc/dataset [[1 10] [2 20] [3 15] [4 25]]
-                {:column-names [:x :y]})
-    (sk/lay-line :x :y))
+(kind/test-last
+ [(fn [sk]
+    (and (= 1 (count (:views sk)))
+         (= 0 (count (:layers sk)))
+         (= 1 (count (:layers (first (:views sk)))))))])
 
-(kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
-
-;; ## The Sketch Record
+;; The layer lives inside the view. No sketch-level layers.
 ;;
-;; A **sketch** is a composable value with five fields:
-;;
-;; | Field | Contains | Set by |
-;; |:------|:---------|:-------|
-;; | `:data` | the dataset | `sk/lay-*` or `sk/sketch` |
-;; | `:shared` | aesthetics for all entries | `sk/view` opts map |
-;; | `:entries` | what to plot (column pairs) | `sk/view`, `sk/lay-*` with columns |
-;; | `:methods` | how to plot (global methods) | `sk/lay-*` without columns |
-;; | `:opts` | title, width, theme | `sk/options` |
-;;
-;; Here is a concrete sketch:
-
-(def iris-scatter
-  (-> (rdatasets/datasets-iris)
-      (sk/view :sepal-length :sepal-width {:color :species})
-      sk/lay-point
-      sk/lay-lm))
-
-(kind/pprint iris-scatter)
-
-(kind/test-last [(fn [sk] (and (= :species (get-in sk [:shared :color]))
-                               (= 1 (count (:entries sk)))
-                               (= 2 (count (:methods sk)))))])
-
-;; `:shared` has `{:color :species}` — it applies to all layers.
-;; `:entries` has one entry `{:x :sepal-length :y :sepal-width}`.
-;; `:methods` has two global methods: point and lm.
-;;
-;; And here is what it looks like when rendered:
-
-iris-scatter
-
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
-
-;; ## Entries
-;;
-;; An **entry** is a plain map in `:entries` that declares **what** to
-;; plot — which columns map to x and y. Each entry becomes one panel
-;; in the rendered plot.
-;;
-;; `sk/view` adds entries:
+;; With multiple views, sketch-level layers apply to all of them —
+;; the cross product:
 
 (def two-panel-sketch
   (-> (rdatasets/datasets-iris)
@@ -161,55 +146,93 @@ iris-scatter
 
 (kind/pprint two-panel-sketch)
 
-(kind/test-last [(fn [sk] (and (= 2 (count (:entries sk)))
-                               (= :sepal-length (:x (first (:entries sk))))
-                               (= :petal-length (:x (second (:entries sk))))))])
-
-;; Two entries, two panels. Each `sk/view` call adds one entry.
-;; The global `sk/lay-point` applies to both:
+(kind/test-last [(fn [sk] (and (= 2 (count (:views sk)))
+                               (= 1 (count (:layers sk)))))])
 
 two-panel-sketch
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
-;; `sk/lay-*` with columns also creates entries:
-
-(def entry-local-sketch
-  (-> (rdatasets/datasets-iris)
-      (sk/lay-point :sepal-length :sepal-width)
-      (sk/lay-histogram :petal-length)))
-
-(kind/pprint entry-local-sketch)
-
-(kind/test-last [(fn [sk] (and (= 2 (count (:entries sk)))
-                               (= 0 (count (:methods sk)))
-                               (= 1 (count (:methods (first (:entries sk)))))))])
-
-;; Two entries — but here each entry carries its OWN method.
-;; The global `:methods` is empty. This is the entry-local pattern:
-
-entry-local-sketch
-
-(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
-
-;; ## Shared Aesthetics
+;; Two views, one sketch-level layer. Each view becomes a panel,
+;; and the point layer applies to both.
 ;;
-;; The opts map in `sk/view` goes into `:shared` — these aesthetics
-;; apply to ALL entries and ALL methods:
+;; The resolution rule:
+;;
+;; ```
+;; for each view:
+;;   layers = concat(view's own layers, sketch-level layers)
+;;   for each layer:
+;;     resolved = merge(sketch mapping, view mapping, layer mapping)
+;; ```
+
+;; ---
+;; ## Scope
+;;
+;; Where you write a mapping determines who sees it.
+;; There are three levels:
+;;
+;; | Where you write it | What sees it |
+;; |:-------------------|:-------------|
+;; | `(sk/sketch data {:color :c})` | All layers on all views |
+;; | `(sk/view data :x :y {:color :c})` | All layers on this view |
+;; | `(sk/lay-point {:color :c})` | This layer only |
+;;
+;; This is **lexical scope** — the same principle as in programming
+;; languages. Lower levels override higher ones.
+
+;; ### Sketch-level mapping
+;;
+;; `sk/sketch` sets mappings that flow to every view and every layer:
+
+(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
+    (sk/view :sepal-length :sepal-width)
+    sk/lay-point
+    sk/lay-lm)
+
+(kind/test-last [(fn [v] (= 3 (:lines (sk/svg-summary v))))])
+
+;; Both point and lm see `:color :species`. Three regression
+;; lines — one per species.
+
+;; ### View-level mapping
+;;
+;; The opts map in `sk/view` scopes to that view. All layers on
+;; the view inherit it, but other views do not:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
     sk/lay-lm)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s)))))])
+(kind/test-last [(fn [v] (= 3 (:lines (sk/svg-summary v))))])
 
-;; Both point and lm inherit `:color :species` from shared.
-;; Three regression lines — one per species.
+;; Same result here — one view, both layers see the color.
+;; The difference shows with two views:
+
+(def view-scoped
+  (-> (rdatasets/datasets-iris)
+      (sk/view :sepal-length :sepal-width {:color :species})
+      (sk/view :petal-length :petal-width)
+      sk/lay-point))
+
+(kind/pprint view-scoped)
+
+(kind/test-last
+ [(fn [sk]
+    (and (= {} (:mapping sk))
+         (= :species (:color (:mapping (first (:views sk)))))
+         (nil? (:color (:mapping (second (:views sk)))))))])
+
+view-scoped
+
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+
+;; Color is in the first view's mapping only. The second view
+;; has no color. Sketch-level mapping is empty.
+
+;; ### Layer-level mapping
 ;;
-;; Compare with per-method color:
+;; Opts in `sk/lay-*` scope to that layer alone:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -219,132 +242,176 @@ entry-local-sketch
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Here `:color :species` is in the point's entry-local method, not
-;; in shared. The lm (a global method) doesn't see it — one overall
-;; regression line instead of three.
+;; Color is in the point layer. The lm (a sketch-level layer)
+;; does not see it — one overall regression line.
 
-;; ## Global vs Entry-Local Methods
+;; ### Override
 ;;
-;; **Global methods** are stored in `sketch[:methods]` and apply to
-;; ALL entries. Created by bare `sk/lay-*` (without columns):
-;;
-;; ```clojure
-;; (-> data (sk/view :x :y) sk/lay-point sk/lay-lm)
-;; ;;                        ^^^^^^^^^^^^  ^^^^^^^^^^
-;; ;;                        global         global
-;; ```
-;;
-;; **Entry-local methods** are stored inside a specific entry's
-;; `:methods` key. Created by `sk/lay-*` with columns:
-;;
-;; ```clojure
-;; (-> data (sk/lay-point :x :y) (sk/lay-lm :x :y))
-;; ;;        ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
-;; ;;        entry-local            entry-local (same entry)
-;; ```
-;;
-;; When both exist, entry methods come first, then global methods:
-;;
-;; ```
-;; for each entry:
-;;   methods = concat(entry's :methods, global methods)
-;;   for each method:
-;;     resolved = merge(shared, entry, method)
-;; ```
-;;
-;; See [Sketch Rules](./napkinsketch_book.sketch_rules.html) for the
-;; full set of 18 tested rules.
+;; Lower scopes override higher ones. A layer can cancel a mapping
+;; by setting it to `nil`:
 
-;; ## Options
-;;
-;; There are three scopes for options in Napkinsketch:
-;;
-;; - **Shared** — aesthetics like `:color` and `:alpha` that apply to
-;;   all entries and methods. Set via `sk/view` opts map.
-;;
-;; - **Per-method** — aesthetics and parameters that apply to one
-;;   method only. Set via `sk/lay-*` opts map. Includes
-;;   `:color`, `:alpha`, `:size`, and method-specific parameters
-;;   like `:bandwidth`, `:se`, `:jitter`.
-;;   See the [Methods](./napkinsketch_book.methods.html) chapter.
-;;
-;; - **Plot options** — per-plot text content: `:title`, `:subtitle`,
-;;   `:caption`, and axis labels. Set via `sk/options`.
-;;
-;; Resolution order: `merge(shared, entry, method)` — later wins,
-;; `nil` cancels.
-
-;; Here is one option from each scope in a single pipeline:
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species :alpha 0.5}) ;; per-method
-    (sk/options {:title "Iris Measurements"                                ;; plot option
-                 :width 500 :palette :dark2}))                             ;; config via options
+(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
+    (sk/view :sepal-length :sepal-width)
+    (sk/lay-point {:color nil})
+    sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
-                                (some #{"Iris Measurements"} (:texts s)))))])
+                                (= 3 (:lines s)))))])
 
-;; ## Mark
+;; Sketch says `:color :species`. The point layer cancels it
+;; with `nil` — uncolored points. The lm layer has no override,
+;; so it keeps the sketch-level color — three lines.
+
+;; ### Resolution
 ;;
-;; The **mark** is the visual shape drawn on the plot. The scatter
-;; plot above used `:mark :point` — each data point became a dot.
+;; ```
+;; merge(sketch :mapping, view :mapping, layer :mapping)
+;; ```
 ;;
-;; A method's name describes its *intent* while the mark describes
-;; the *shape*. The `:histogram` method uses `:mark :bar` because a
-;; histogram is drawn with bar shapes:
+;; Later wins. `nil` cancels. This is the only rule.
+
+;; ---
+;; ## Scope Is the One Principle
+;;
+;; Scope governs more than mappings. Layers and data follow the
+;; same hierarchy: sketch -> view -> layer. Where you write it
+;; determines who sees it.
+;;
+;; **Mappings** — sketch-level color reaches all views; view-level
+;; color reaches one view; layer-level color reaches one layer.
+;; (The examples above.)
+;;
+;; **Layers** — a sketch-level layer applies to all views; a
+;; view-level layer applies to one.
+
+;; Sketch-level lm — both panels get a regression line:
+
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :petal-length :petal-width)
+    sk/lay-point
+    sk/lay-lm)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 2 (:lines s)))))])
+
+;; View-level lm — only the first panel gets one:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-lm :sepal-length :sepal-width)
+    (sk/lay-point :petal-length :petal-width))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 1 (:lines s)))))])
+
+;; **Data** — sketch-level data flows to all views. Faceting
+;; creates per-view subsets automatically.
+;;
+;; One principle, three things it governs. Where you write it
+;; determines who sees it.
+
+;; ---
+;; ## Identity
+;;
+;; The two verbs handle identity differently:
+;;
+;; - `sk/view` **always creates** a new view.
+;; - `sk/lay-*` with columns **finds the most recent** view that
+;;   has the same x and y columns, or creates a new one.
+;;
+;; This makes the threading pipeline sequential and predictable:
+;; each `lay-*` refers to the view you just established.
+
+(def targeted
+  (-> (rdatasets/datasets-iris)
+      (sk/view :sepal-width)
+      (sk/lay-histogram :sepal-width)
+      (sk/view :sepal-width)
+      (sk/lay-density :sepal-width)))
+
+(kind/pprint targeted)
+
+(kind/test-last
+ [(fn [sk]
+    (and (= 2 (count (:views sk)))
+         (= :histogram (:method (first (:layers (first (:views sk))))))
+         (= :density (:method (first (:layers (second (:views sk))))))))])
+
+targeted
+
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+
+;; Two views with the same column but different layers. The first
+;; `lay-histogram` found the first `view`. The second `lay-density`
+;; found the second `view` — the most recent match.
+
+;; ---
+;; ## The Sketch Record
+;;
+;; A sketch is a composable value with five fields:
+;;
+;; | Field | Contains | Set by |
+;; |:------|:---------|:-------|
+;; | `:data` | the dataset | `sk/lay-*` or `sk/sketch` |
+;; | `:mapping` | sketch-level mappings | `sk/sketch` |
+;; | `:views` | what to plot | `sk/view`, `sk/lay-*` with columns |
+;; | `:layers` | sketch-level layers | `sk/lay-*` without columns |
+;; | `:opts` | title, width, theme, scale, coord | `sk/options`, `sk/scale`, `sk/coord` |
+
+(def my-sketch
+  (-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
+      (sk/view :sepal-length :sepal-width)
+      sk/lay-point
+      sk/lay-lm
+      (sk/options {:title "Iris"})))
+
+(kind/pprint my-sketch)
+
+(kind/test-last
+ [(fn [sk]
+    (and (tc/dataset? (:data sk))
+         (= :species (:color (:mapping sk)))
+         (= 1 (count (:views sk)))
+         (= 2 (count (:layers sk)))
+         (= "Iris" (:title (:opts sk)))))])
+
+my-sketch
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; ---
+;; ## Mark, Stat, and Position
+;;
+;; Each layer contains a **method** — a rendering recipe with three parts:
+;;
+;; - **Mark** — the visual shape (point, bar, line, area, tile, ...)
+;; - **Stat** — the computation before drawing (identity, bin, lm, kde, ...)
+;; - **Position** — how overlapping groups share space (identity, dodge, stack, ...)
+;;
+;; A method's name describes its intent. The mark describes the shape:
 
 (sk/method-lookup :histogram)
 
 (kind/test-last [(fn [m] (= :bar (:mark m)))])
 
-;; A histogram draws bar shapes filled to show binned counts:
+;; A histogram: stat `:bin` computes ranges, mark `:bar` draws them:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-histogram :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; ## Stat
-;;
-;; The **stat** is the computation applied to data before drawing.
-;; The scatter plot used `:stat :identity` — every row became one
-;; point, unchanged.
-;;
-;; The `:histogram` method uses `:stat :bin` — it groups values into
-;; ranges and counts how many fall in each range. The stat transforms
-;; the data; the mark renders the result. Together, `:stat :bin` and
-;; `:mark :bar` produce the familiar histogram shape.
-;;
-;; The `:lm` (linear model) method uses `:stat :lm` — it fits a straight line to
-;; the data and returns a polyline of predicted values:
+;; A regression: stat `:lm` fits a line, mark `:line` draws it:
 
 (sk/method-lookup :lm)
 
 (kind/test-last [(fn [m] (= :lm (:stat m)))])
 
-;; A [regression](https://en.wikipedia.org/wiki/Linear_regression) line fitted through the scatter data:
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    sk/lay-lm)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
-
-;; ## Position
-;;
-;; The **position** controls how overlapping groups share space.
-;; Most methods leave it unset — groups are drawn independently
-;; (`:position :identity`). The `:stacked-bar` method includes
-;; `:position :stack`, which places groups on top of each other:
-
-(sk/method-lookup :stacked-bar)
-
-(kind/test-last [(fn [m] (= :stack (:position m)))])
-
-;; A stacked bar chart — each meal's count stacks on the previous:
+;; Position `:stack` places groups on top of each other:
 
 (-> {:day ["Mon" "Mon" "Tue" "Tue"]
      :count [30 20 45 15]
@@ -353,17 +420,20 @@ entry-local-sketch
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
+;; See the [Methods](./napkinsketch_book.methods.html) chapter for
+;; complete tables of every mark, stat, and position.
+
+;; ---
 ;; ## Inference
 ;;
 ;; Napkinsketch infers two things automatically:
 ;;
 ;; - **Columns** — when omitted, inferred from the dataset shape
-;;   (1 column → x, 2 → x y, 3 → x y color)
+;;   (1 column -> x, 2 -> x y, 3 -> x y color)
 ;; - **Method** — when using `sk/view` instead of an explicit
 ;;   `sk/lay-*`, the chart type is chosen from the column types
 ;;
-;; Two numerical columns produce a scatter plot; a single numerical
-;; column produces a histogram.
+;; Two numerical columns produce a scatter plot:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width))
@@ -377,86 +447,17 @@ entry-local-sketch
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; Use `sk/lay-point`, `sk/lay-histogram`, etc. when you
-;; want to choose a specific method, pass options like `:color`, or
-;; add multiple layers.
+;; Use `sk/lay-point`, `sk/lay-histogram`, etc. when you want to
+;; choose a specific method, pass options, or add multiple layers.
+;; See the [Inference Rules](./napkinsketch_book.inference_rules.html)
+;; chapter for the full decision logic.
 
-;; ## Layers
-;;
-;; A plot can have multiple **layers** — different methods drawn on
-;; the same axes. Use `sk/view` to set shared column mappings
-;; and aesthetics, then add methods with `sk/lay-*`.
-;;
-;; Here we add a linear model regression line on top of scatter
-;; points. Both layers share the same columns and aesthetics:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
-    sk/lay-point
-    sk/lay-lm)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
-
-;; Or with a [LOESS](https://en.wikipedia.org/wiki/Local_regression) (local regression) smoother — a flexible curve that follows local
-;; trends instead of fitting a straight line:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
-    sk/lay-point
-    sk/lay-loess)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
-
-;; ### Shared vs per-method aesthetics
-;;
-;; The key distinction: `sk/view` opts go into **shared**
-;; (all methods inherit), while `sk/lay-*` opts go into the
-;; **method** (only that method gets them).
-
-;; Shared color — both layers are colored:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width {:color :species})
-    sk/lay-point
-    sk/lay-lm)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s)))))])
-
-;; Per-method color — only points are colored, lm fits one overall line:
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    sk/lay-lm)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
-
-;; `sk/annotate` adds annotation entries (`sk/rule-h`,
-;; `sk/band-v`, etc.) — see the
-;; [Customization](./napkinsketch_book.customization.html) chapter.
-
-;; ### When to use `sk/view`
-;;
-;; There are five common patterns:
-;;
-;; - **Minimal** — `(sk/lay-point data)` — columns inferred from dataset shape
-;; - **Explicit columns** — `(sk/lay-point data :x :y)` — no `view` needed
-;; - **Per-method color** — `(sk/lay-point data :x :y {:color :c})` — color on this method only
-;; - **Inferred method** — `(sk/view data :x :y)` — the library picks the chart type
-;; - **Shared aesthetics** — `(-> data (sk/view :x :y {:color :c}) sk/lay-point sk/lay-lm)` — all methods inherit
-
+;; ---
 ;; ## Incremental Building
 ;;
 ;; Because sketches are plain data, you can save a partial plot and
-;; extend it later. Each `sk/lay-*` call adds a method without
-;; changing the original.
+;; extend it later. Each call returns a new sketch without changing
+;; the original.
 
 (def scatter-base
   (-> (rdatasets/datasets-iris)
@@ -464,8 +465,7 @@ entry-local-sketch
 
 ;; Add a regression line:
 
-(-> scatter-base
-    sk/lay-lm)
+(-> scatter-base sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -473,34 +473,20 @@ entry-local-sketch
 
 ;; Or a LOESS smoother instead:
 
-(-> scatter-base
-    sk/lay-loess)
+(-> scatter-base sk/lay-loess)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; You can also create a **multi-panel layout** by adding multiple
-;; entries with `sk/view`, then a single method:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
-    (sk/view :petal-length :petal-width)
-    sk/lay-point)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 2 (:panels s))
-                                (= 300 (:points s)))))])
-
-;; ## Color
+;; ---
+;; ## Color and Grouping
 ;;
-;; The `:color` option controls point and line colors. Its behavior
+;; The `:color` mapping controls point and line colors. Its behavior
 ;; depends on what you pass.
 ;;
-;; **Categorical column** — when `:color` refers to a column with
-;; text values (like `:species`), each unique value gets a distinct
-;; color from the **palette** (an ordered set of colors). A
-;; **legend** appears alongside the plot, mapping labels to colors.
+;; **Categorical column** — each unique value gets a distinct color.
+;; A legend maps labels to colors:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species}))
@@ -509,30 +495,30 @@ entry-local-sketch
                            (and (= 150 (:points s))
                                 (some #{"setosa"} (:texts s)))))])
 
-;; **Numeric column** — when `:color` refers to a numerical column
-;; (like `:petal-length`), values map to a continuous **gradient** —
-;; a smooth color ramp from low to high. The legend shows a color
-;; bar instead of discrete entries.
+;; **Numeric column** — values map to a continuous gradient:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :petal-length}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; **Fixed color string** — a literal color name like `"steelblue"`
-;; colors all points uniformly. No legend appears because there is
-;; nothing to distinguish.
+;; **Fixed color string** — all points colored uniformly:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color "steelblue"}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; ## Explicit Grouping
-;;
-;; The `:group` aesthetic creates groups **without** changing colors.
-;; This is useful when you want separate regression lines per group
-;; but uniform color:
+;; Categorical color does more than set colors — it creates
+;; **groups**. Each group is processed independently: it gets its
+;; own regression line, density curve, or boxplot:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-density :sepal-length {:color :species}))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; The `:group` mapping creates groups without changing colors:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:group :species})
@@ -543,139 +529,37 @@ entry-local-sketch
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; Three regression lines (one per species) but all the same color.
-;; Compare with `{:color :species}` which would also color them.
+;; Three regression lines but all the same color.
 
-;; ## The `sk/sketch` Constructor
+;; ---
+;; ## Plot Options and Annotations
 ;;
-;; `sk/sketch` creates a sketch from data and shared aesthetics
-;; without adding entries. This is useful when you want to set
-;; shared options first, then add entries later:
+;; `sk/options` sets plot-level settings — title, axis labels, size,
+;; theme overrides:
 
-(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
-    (sk/view :sepal-length :sepal-width)
-    sk/lay-point)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/options {:title "Iris Measurements"
+                 :width 500 :palette :dark2}))
+
+(kind/test-last [(fn [v] (some #{"Iris Measurements"} (:texts (sk/svg-summary v))))])
+
+;; `sk/annotate` adds reference lines and bands as plot decorations:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/annotate (sk/rule-h 3.0)
+                 (sk/band-v 5.0 6.0 {:alpha 0.1})))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; Equivalent to `(-> (rdatasets/datasets-iris) (sk/view :sepal-length :sepal-width {:color :species}) sk/lay-point)`.
+;; See the [Customization](./napkinsketch_book.customization.html)
+;; chapter for themes, palettes, and annotation details.
 
-;; ## Overlay
-;;
-;; `sk/overlay` adds an entry with different columns and its own
-;; method on the **same panel** as existing entries. Use it when
-;; you want two column mappings sharing the same axes:
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/overlay :sepal-length :petal-width :lm))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (pos? (:points s))
-                                (pos? (:lines s)))))])
-
-;; Scatter on sepal-width, regression on petal-width — both use
-;; sepal-length as x.
-
-;; ## Grouping
-;;
-;; Categorical color does more than set colors — it creates
-;; **groups**. Each group is processed independently: it gets its
-;; own regression line, density curve, bar, or boxplot.
-;;
-;; We saw grouping with scatter + regression in the Shared Aesthetics
-;; section above. Here is another example — grouped density curves:
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-density :sepal-length {:color :species}))
-
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
-
-;; Each species gets its own KDE curve. Without `:color`, there would
-;; be one density for all 150 values combined.
-;;
-;; Grouping works with every mark that supports color: scatter, line,
-;; area, histogram, density, boxplot, violin, and more.
-
-;; ## Faceting
-;;
-;; **Faceting** splits a plot into multiple **panels** — separate
-;; plotting areas, one per value of a column. All panels share the
-;; same axes, making it easy to compare subsets side by side.
-;;
-;; `sk/facet` specifies which column to split on:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
-    (sk/facet :species)
-    sk/lay-point
-    sk/lay-lm)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 3 (:panels s))
-                                (= 150 (:points s))
-                                (= 3 (:lines s)))))])
-
-;; Three panels, one per species. The shared axes let you compare
-;; sepal dimensions across species at a glance.
-
-;; ## Multiple Variables
-;;
-;; Pass a vector of column names to create one panel per variable.
-;; Keywords create **univariate** panels (one column each):
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-histogram [:sepal-length :sepal-width :petal-length]))
-
-(kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
-
-;; Pairs create **bivariate** panels:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view [[:sepal-length :sepal-width]
-              [:petal-length :petal-width]])
-    sk/lay-point)
-
-(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
-
-;; ## Column Combinations (SPLOM)
-;;
-;; `sk/cross` generates all combinations of two lists. Passing
-;; column names to `sk/cross` and the result to `sk/view`
-;; creates one panel per combination — a quick way to explore
-;; relationships across many variables at once.
-
-(def cols [:sepal-length :sepal-width :petal-length])
-
-(sk/cross cols cols)
-
-(kind/test-last [(fn [v] (= 9 (count v)))])
-
-;; Three columns crossed with themselves produce nine panels —
-;; a full grid where each row and column corresponds to a variable:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross cols cols))
-    sk/lay-point)
-
-(kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
-
-;; Notice the diagonal: when x and y are the same column,
-;; Napkinsketch infers a histogram instead of a scatter plot.
-;; This is inference at work — each panel gets the method that
-;; fits its column types.
-
+;; ---
 ;; ## Coordinates and Scales
 ;;
-;; **Coordinates** and **scales** are composable modifiers. They
-;; change how data maps to visual space without changing the data
-;; itself.
-;;
-;; `sk/coord` sets the coordinate system. `:flip` swaps the
-;; x and y axes — useful for horizontal layouts or when axis labels
-;; are long.
-;;
-;; Here we flip a scatter plot so sepal length runs vertically:
+;; `sk/coord` sets the coordinate system. `:flip` swaps the axes:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -683,11 +567,8 @@ entry-local-sketch
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; `sk/scale` changes how a numeric axis is drawn. `:log`
-;; applies a [logarithmic](https://en.wikipedia.org/wiki/Logarithmic_scale) transformation — useful when values span a
-;; wide range, so that small and large values are both visible.
-;;
-;; Here we use a dataset where values vary by orders of magnitude:
+;; `sk/scale` changes how a numeric axis is drawn. `:log` applies
+;; a logarithmic transformation:
 
 (-> {:population [1000 5000 50000 200000 1000000 5000000]
      :area [2 8 30 120 500 2100]}
@@ -697,14 +578,57 @@ entry-local-sketch
 
 (kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
 
-;; Without log scales, the small values would be crushed together
-;; near the origin. Log scales spread them out proportionally.
+;; Both are plot-level — they apply to all views uniformly.
 
-;; ## What's Next
+;; ---
+;; ## Faceting and Multi-Panel Layouts
 ;;
-;; This chapter covered the core building blocks. The rest of the
-;; book builds on them:
+;; **Faceting** splits a plot into panels by a column's values:
+
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
+    (sk/facet :species)
+    sk/lay-point
+    sk/lay-lm)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 3 (:panels s))
+                                (= 150 (:points s)))))])
+
+;; A vector of column names creates one panel per variable:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram [:sepal-length :sepal-width :petal-length]))
+
+(kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
+
+;; `sk/cross` generates all combinations for a scatter matrix:
+
+(def cols [:sepal-length :sepal-width :petal-length])
+
+(-> (rdatasets/datasets-iris)
+    (sk/view (sk/cross cols cols))
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
+
+;; Nine panels. On the diagonal, where x and y are the same column,
+;; Napkinsketch infers a histogram instead of a scatter plot.
+
+;; ---
+;; ## Summary
 ;;
-;; - [**Inference Rules**](./napkinsketch_book.inference_rules.html) — how napkinsketch chooses defaults for marks, stats, and domains
-;; - [**Methods**](./napkinsketch_book.methods.html) — complete tables of every mark, stat, and position
-;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — the most common chart type, a good place to start exploring
+;; Three ideas explain the entire model:
+;;
+;; **1. View and layer.** A view says what (position mappings -> panel).
+;; A layer says how (method + optional mappings). Views x applicable
+;; layers -> rendered result.
+;;
+;; **2. Scope.** Mappings flow downward: sketch -> view -> layer.
+;; Lower overrides higher. Where you write it determines its scope.
+;;
+;; **3. Identity.** `view` always creates a new view. `lay-*` finds
+;; the most recent view with the same x and y columns, or creates one.
+;;
+;; The [Sketch Rules](./napkinsketch_book.sketch_rules.html) chapter
+;; formalizes these ideas as 18 tested rules.
