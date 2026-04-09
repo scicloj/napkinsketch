@@ -1,5 +1,5 @@
 (ns scicloj.napkinsketch.api
-  "Public API for napkinsketch — composable plotting in Clojure."
+  "Public API for napkinsketch -- composable plotting in Clojure."
   (:require [scicloj.napkinsketch.impl.view :as view]
             [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
@@ -59,7 +59,7 @@
   "Return the effective resolved configuration as a map.
    Merges: library defaults < napkinsketch.edn < set-config! < *config*.
    Useful for inspecting which values are in effect.
-   (config)  — show current resolved config"
+   (config)  -- show current resolved config"
   []
   (defaults/config))
 
@@ -84,7 +84,7 @@
 (defn set-config!
   "Set global config overrides. Persists across calls until reset.
    (set-config! {:palette :dark2 :theme {:bg \"#FFFFFF\"}})
-   (set-config! nil)  — reset to defaults"
+   (set-config! nil)  -- reset to defaults"
   [m]
   (defaults/set-config! m))
 
@@ -96,7 +96,7 @@
   (method/lookup k))
 
 (defn registered-methods
-  "Return all registered methods as a map of keyword → method map.
+  "Return all registered methods as a map of keyword -> method map.
    Useful for generating documentation tables."
   []
   (method/registered))
@@ -154,7 +154,7 @@
 (defn coord-doc
   "Return the prose description for a coordinate type keyword.
    Returns \"(no description)\" if no [:key :doc] defmethod is registered.
-   (coord-doc :polar) => \"Radial mapping: x→angle, y→radius\""
+   (coord-doc :polar) => \"Radial mapping: x->angle, y->radius\""
   [k]
   (try
     (let [r (coord/make-coord [k :doc] nil nil nil nil nil)]
@@ -165,27 +165,27 @@
 
 (defn rule-v
   "Vertical reference line at x = intercept.
-   (rule-v 5)  — line at x=5"
+   (rule-v 5)  -- line at x=5"
   [intercept]
   (view/rule-v intercept))
 
 (defn rule-h
   "Horizontal reference line at y = intercept.
-   (rule-h 3)  — line at y=3"
+   (rule-h 3)  -- line at y=3"
   [intercept]
   (view/rule-h intercept))
 
 (defn band-v
   "Vertical shaded band from x = lo to x = hi.
-   (band-v 4 6)              — shaded region between x=4 and x=6
-   (band-v 4 6 {:alpha 0.3}) — with custom opacity"
+   (band-v 4 6)              -- shaded region between x=4 and x=6
+   (band-v 4 6 {:alpha 0.3}) -- with custom opacity"
   ([lo hi] (view/band-v lo hi))
   ([lo hi opts] (view/band-v lo hi opts)))
 
 (defn band-h
   "Horizontal shaded band from y = lo to y = hi.
-   (band-h 2 4)              — shaded region between y=2 and y=4
-   (band-h 2 4 {:alpha 0.3}) — with custom opacity"
+   (band-h 2 4)              -- shaded region between y=2 and y=4
+   (band-h 2 4 {:alpha 0.3}) -- with custom opacity"
   ([lo hi] (view/band-h lo hi))
   ([lo hi opts] (view/band-h lo hi opts)))
 
@@ -226,7 +226,7 @@
 
 (defn valid-plan?
   "Check if a plan conforms to the Malli schema.
-   (valid-plan? (plan views))  — true if valid"
+   (valid-plan? (plan views))  -- true if valid"
   [plan]
   (ss/valid? plan))
 
@@ -272,8 +272,8 @@
 (defn sketch
   "Create a sketch with optional sketch-level mapping.
    Use for sketch-level aesthetics that apply to all views and layers.
-   (sketch data)                     — sketch with data only
-   (sketch data {:color :species})   — sketch with sketch-level color mapping"
+   (sketch data)                     -- sketch with data only
+   (sketch data {:color :species})   -- sketch with sketch-level color mapping"
   ([] (wrap-autorender (sketch/->sketch nil {} [] [] {})))
   ([data] (sketch data {}))
   ([data mapping]
@@ -286,15 +286,15 @@
   (assoc sk :data (coerce-dataset data)))
 
 (defn view
-  "Declare what to look at — add a view with position mappings.
+  "Declare what to look at -- add a view with position mappings.
    Opts scope to this view (not to all views). For sketch-level
    mappings, use sk/sketch.
-   (view data :x :y)             — one bivariate view
-   (view data :x)                — one univariate view
-   (view data [[:a :b] [:c :d]]) — multiple bivariate views
-   (view data :x :y {:color :g}) — view with color mapping (view-level)
-   (view data {:x :a :y :b :color :c}) — view from map (view-level)
-   (view sk)                     — auto-infer columns from small dataset"
+   (view data :x :y)             -- one bivariate view
+   (view data :x)                -- one univariate view
+   (view data [[:a :b] [:c :d]]) -- multiple bivariate views
+   (view data :x :y {:color :g}) -- view with color mapping (view-level)
+   (view data {:x :a :y :b :color :c}) -- view from map (view-level)
+   (view sk)                     -- auto-infer columns from small dataset"
   ([sk-or-data]
    (let [sk (ensure-sk sk-or-data)]
      (if (:data sk)
@@ -320,9 +320,9 @@
        (sequential? x-or-cols)
        (let [first-el (first x-or-cols)]
          (if (or (keyword? first-el) (string? first-el))
-           ;; Vector of keywords → univariate views: [:a :b :c]
+           ;; Vector of keywords -> univariate views: [:a :b :c]
            (update sk :views into (mapv (fn [col] {:mapping {:x col}}) x-or-cols))
-           ;; Vector of pairs → bivariate views: [[:x1 :y1] [:x2 :y2]]
+           ;; Vector of pairs -> bivariate views: [[:x1 :y1] [:x2 :y2]]
            (update sk :views into (mapv (fn [[x y]] {:mapping {:x x :y y}}) x-or-cols)))))))
   ([sk-or-data x y]
    (let [sk (ensure-sk sk-or-data)]
@@ -358,10 +358,10 @@
                        i))
                    views))]
     (if idx
-      ;; Found existing view — append layer to its :layers
+      ;; Found existing view -- append layer to its :layers
       (update-in sk [:views idx :layers]
                  (fn [ls] (conj (or ls []) layer)))
-      ;; No match — create new view with this layer
+      ;; No match -- create new view with this layer
       (update sk :views conj {:mapping position-mapping :layers [layer]}))))
 
 (defn- build-layer
@@ -397,10 +397,10 @@
 (defn- lay-method
   "Shared implementation for all lay-* functions.
    1-arity: auto-infer columns for small datasets, otherwise sketch-level layer.
-   2-arity: keyword/string → view-specific; vector → view-specific per column;
-            map → sketch-level with opts.
-   3-arity: two keywords → bivariate view-specific; keyword+map → univariate+opts;
-            vector+map → view-specific per column with opts.
+   2-arity: keyword/string -> view-specific; vector -> view-specific per column;
+            map -> sketch-level with opts.
+   3-arity: two keywords -> bivariate view-specific; keyword+map -> univariate+opts;
+            vector+map -> view-specific per column with opts.
    4-arity: bivariate view-specific with opts."
   ([method-key sk-or-data]
    (let [sk (ensure-sk sk-or-data)
@@ -419,7 +419,7 @@
      (add-view-layer (ensure-sk sk-or-data)
                      {:x x-or-opts}
                      (build-layer method-key nil))
-     ;; Sequential → create view-specific layers (not global)
+     ;; Sequential -> create view-specific layers (not global)
      (sequential? x-or-opts)
      (reduce (fn [sk col-or-pair]
                (if (sequential? col-or-pair)
@@ -439,7 +439,7 @@
          (add-view-layer (ensure-sk sk-or-data)
                          {:x x :y y-or-opts}
                          (build-layer method-key nil)))
-     ;; Sequential + opts → view-specific layers with opts
+     ;; Sequential + opts -> view-specific layers with opts
      (and (sequential? x) (map? y-or-opts))
      (reduce (fn [sk col-or-pair]
                (if (sequential? col-or-pair)
@@ -462,19 +462,19 @@
 
 (defn lay-point
   "Add :point layer (scatter) to a sketch.
-   Without columns → sketch-level layer (applies to all views).
-   With columns → view-specific (find or create view).
-   (lay-point sk)                         — sketch-level layer
-   (lay-point sk {:color :species})        — sketch-level with opts
-   (lay-point data :x :y)                 — view-specific
-   (lay-point data :x :y {:color :c})     — view-specific with opts"
+   Without columns -> sketch-level layer (applies to all views).
+   With columns -> view-specific (find or create view).
+   (lay-point sk)                         -- sketch-level layer
+   (lay-point sk {:color :species})        -- sketch-level with opts
+   (lay-point data :x :y)                 -- view-specific
+   (lay-point data :x :y {:color :c})     -- view-specific with opts"
   ([sk-or-data] (lay-method :point sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :point sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-method :point sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :point sk-or-data x y opts)))
 
 (defn lay-line
-  "Add :line method — connected line through data points.
+  "Add :line method -- connected line through data points.
    Requires x (numerical) and y (numerical).
    Accepts :color, :alpha, :size (stroke width), :nudge-x, :nudge-y."
   ([sk-or-data] (lay-method :line sk-or-data))
@@ -483,7 +483,7 @@
   ([sk-or-data x y opts] (lay-method :line sk-or-data x y opts)))
 
 (defn lay-step
-  "Add :step method — staircase line (horizontal then vertical).
+  "Add :step method -- staircase line (horizontal then vertical).
    Requires x and y (both numerical)."
   ([sk-or-data] (lay-method :step sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :step sk-or-data x-or-opts))
@@ -491,7 +491,7 @@
   ([sk-or-data x y opts] (lay-method :step sk-or-data x y opts)))
 
 (defn lay-area
-  "Add :area method — filled region between y and the baseline.
+  "Add :area method -- filled region between y and the baseline.
    Requires x and y (both numerical). Accepts :color, :alpha."
   ([sk-or-data] (lay-method :area sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :area sk-or-data x-or-opts))
@@ -499,7 +499,7 @@
   ([sk-or-data x y opts] (lay-method :area sk-or-data x y opts)))
 
 (defn lay-stacked-area
-  "Add :stacked-area method — areas stacked on top of each other.
+  "Add :stacked-area method -- areas stacked on top of each other.
    Requires x, y, and :color (for grouping). Groups stack vertically."
   ([sk-or-data] (lay-method :stacked-area sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :stacked-area sk-or-data x-or-opts))
@@ -507,7 +507,7 @@
   ([sk-or-data x y opts] (lay-method :stacked-area sk-or-data x y opts)))
 
 (defn lay-histogram
-  "Add :histogram method — bin numerical values into bars.
+  "Add :histogram method -- bin numerical values into bars.
    X-only: pass one column. Accepts :bins (count), :binwidth, :color,
    :normalize (:density for density-normalized heights)."
   ([sk-or-data] (lay-method :histogram sk-or-data))
@@ -516,7 +516,7 @@
   ([sk-or-data x y opts] (lay-method :histogram sk-or-data x y opts)))
 
 (defn lay-bar
-  "Add :bar method — count occurrences of each category.
+  "Add :bar method -- count occurrences of each category.
    X-only: pass one categorical column. Accepts :color for grouped bars."
   ([sk-or-data] (lay-method :bar sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :bar sk-or-data x-or-opts))
@@ -524,7 +524,7 @@
   ([sk-or-data x y opts] (lay-method :bar sk-or-data x y opts)))
 
 (defn lay-stacked-bar
-  "Add :stacked-bar method — bars stacked by color group.
+  "Add :stacked-bar method -- bars stacked by color group.
    X-only with :color. Heights represent counts per category per group."
   ([sk-or-data] (lay-method :stacked-bar sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :stacked-bar sk-or-data x-or-opts))
@@ -532,7 +532,7 @@
   ([sk-or-data x y opts] (lay-method :stacked-bar sk-or-data x y opts)))
 
 (defn lay-stacked-bar-fill
-  "Add :stacked-bar-fill method — 100% stacked bars (proportional).
+  "Add :stacked-bar-fill method -- 100% stacked bars (proportional).
    Same as stacked-bar but normalized so each bar totals 100%."
   ([sk-or-data] (lay-method :stacked-bar-fill sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :stacked-bar-fill sk-or-data x-or-opts))
@@ -540,7 +540,7 @@
   ([sk-or-data x y opts] (lay-method :stacked-bar-fill sk-or-data x y opts)))
 
 (defn lay-value-bar
-  "Add :value-bar method — bars with pre-computed heights.
+  "Add :value-bar method -- bars with pre-computed heights.
    Requires categorical x and numerical y. Unlike :bar (which counts),
    :value-bar uses the y value directly as the bar height."
   ([sk-or-data] (lay-method :value-bar sk-or-data))
@@ -549,7 +549,7 @@
   ([sk-or-data x y opts] (lay-method :value-bar sk-or-data x y opts)))
 
 (defn lay-lm
-  "Add :lm method — linear regression line.
+  "Add :lm method -- linear regression line.
    Requires x and y (both numerical). Accepts {:se true} for a
    95% confidence band around the fit."
   ([sk-or-data] (lay-method :lm sk-or-data))
@@ -558,7 +558,7 @@
   ([sk-or-data x y opts] (lay-method :lm sk-or-data x y opts)))
 
 (defn lay-loess
-  "Add :loess method — local regression (LOESS) smooth curve.
+  "Add :loess method -- local regression (LOESS) smooth curve.
    Requires x and y (both numerical). Accepts {:se true} for a
    confidence band, {:bandwidth 0.5} for smoothing control."
   ([sk-or-data] (lay-method :loess sk-or-data))
@@ -567,7 +567,7 @@
   ([sk-or-data x y opts] (lay-method :loess sk-or-data x y opts)))
 
 (defn lay-density
-  "Add :density method — kernel density estimate curve.
+  "Add :density method -- kernel density estimate curve.
    X-only: pass one numerical column. Accepts :color, :bandwidth."
   ([sk-or-data] (lay-method :density sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :density sk-or-data x-or-opts))
@@ -575,7 +575,7 @@
   ([sk-or-data x y opts] (lay-method :density sk-or-data x y opts)))
 
 (defn lay-tile
-  "Add :tile method — colored grid cells (heatmap).
+  "Add :tile method -- colored grid cells (heatmap).
    With :fill option: pre-computed tile colors from a column.
    Without :fill: auto-binned 2D histogram (stat :bin2d)."
   ([sk-or-data] (lay-method :tile sk-or-data))
@@ -584,7 +584,7 @@
   ([sk-or-data x y opts] (lay-method :tile sk-or-data x y opts)))
 
 (defn lay-density2d
-  "Add :density2d method — 2D kernel density heatmap.
+  "Add :density2d method -- 2D kernel density heatmap.
    Requires x and y (both numerical). Produces a smoothed density
    surface as colored tiles with a continuous gradient legend."
   ([sk-or-data] (lay-method :density2d sk-or-data))
@@ -593,7 +593,7 @@
   ([sk-or-data x y opts] (lay-method :density2d sk-or-data x y opts)))
 
 (defn lay-contour
-  "Add :contour method — iso-density contour lines from 2D KDE.
+  "Add :contour method -- iso-density contour lines from 2D KDE.
    Requires x and y (both numerical). Accepts {:levels 10} for
    the number of contour levels."
   ([sk-or-data] (lay-method :contour sk-or-data))
@@ -602,7 +602,7 @@
   ([sk-or-data x y opts] (lay-method :contour sk-or-data x y opts)))
 
 (defn lay-boxplot
-  "Add :boxplot method — box-and-whisker plot.
+  "Add :boxplot method -- box-and-whisker plot.
    Requires categorical x and numerical y. Shows median, quartiles,
    whiskers, and outliers. Accepts :color for grouped boxplots."
   ([sk-or-data] (lay-method :boxplot sk-or-data))
@@ -611,7 +611,7 @@
   ([sk-or-data x y opts] (lay-method :boxplot sk-or-data x y opts)))
 
 (defn lay-violin
-  "Add :violin method — mirrored density estimate by category.
+  "Add :violin method -- mirrored density estimate by category.
    Requires categorical x and numerical y. Accepts :color, :bandwidth."
   ([sk-or-data] (lay-method :violin sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :violin sk-or-data x-or-opts))
@@ -619,7 +619,7 @@
   ([sk-or-data x y opts] (lay-method :violin sk-or-data x y opts)))
 
 (defn lay-ridgeline
-  "Add :ridgeline method — stacked density curves by category.
+  "Add :ridgeline method -- stacked density curves by category.
    Requires categorical x and numerical y. Categories stack vertically
    with density curves rendered horizontally."
   ([sk-or-data] (lay-method :ridgeline sk-or-data))
@@ -628,7 +628,7 @@
   ([sk-or-data x y opts] (lay-method :ridgeline sk-or-data x y opts)))
 
 (defn lay-summary
-  "Add :summary method — mean ± standard error per category.
+  "Add :summary method -- mean ± standard error per category.
    Requires categorical x and numerical y. Shows a point at the mean
    with error bars for ± 1 SE. Accepts :color for grouped summaries."
   ([sk-or-data] (lay-method :summary sk-or-data))
@@ -637,7 +637,7 @@
   ([sk-or-data x y opts] (lay-method :summary sk-or-data x y opts)))
 
 (defn lay-errorbar
-  "Add :errorbar method — vertical error bars from pre-computed bounds.
+  "Add :errorbar method -- vertical error bars from pre-computed bounds.
    Requires x, y, and {:ymin :col :ymax :col} for lower/upper bounds."
   ([sk-or-data] (lay-method :errorbar sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :errorbar sk-or-data x-or-opts))
@@ -645,7 +645,7 @@
   ([sk-or-data x y opts] (lay-method :errorbar sk-or-data x y opts)))
 
 (defn lay-lollipop
-  "Add :lollipop method — dot on a stem from the baseline.
+  "Add :lollipop method -- dot on a stem from the baseline.
    Requires categorical x and numerical y. Like value-bar but with
    a circle+line instead of a filled rectangle."
   ([sk-or-data] (lay-method :lollipop sk-or-data))
@@ -654,7 +654,7 @@
   ([sk-or-data x y opts] (lay-method :lollipop sk-or-data x y opts)))
 
 (defn lay-text
-  "Add :text method — text labels at data coordinates.
+  "Add :text method -- text labels at data coordinates.
    Requires x, y, and {:text :column} for label content."
   ([sk-or-data] (lay-method :text sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :text sk-or-data x-or-opts))
@@ -662,7 +662,7 @@
   ([sk-or-data x y opts] (lay-method :text sk-or-data x y opts)))
 
 (defn lay-label
-  "Add :label method — text labels with background box at data coordinates.
+  "Add :label method -- text labels with background box at data coordinates.
    Like :text but with a rectangular background for readability."
   ([sk-or-data] (lay-method :label sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :label sk-or-data x-or-opts))
@@ -670,7 +670,7 @@
   ([sk-or-data x y opts] (lay-method :label sk-or-data x y opts)))
 
 (defn lay-rug
-  "Add :rug method — short tick marks along the axis showing individual values.
+  "Add :rug method -- short tick marks along the axis showing individual values.
    X-only: pass one column. Often layered with density or scatter."
   ([sk-or-data] (lay-method :rug sk-or-data))
   ([sk-or-data x-or-opts] (lay-method :rug sk-or-data x-or-opts))
@@ -680,7 +680,7 @@
 (defn facet
   "Facet a sketch by a column.
    Direction is :col (default, horizontal row) or :row (vertical column).
-   Faceting is plot-level — all views are faceted the same way."
+   Faceting is plot-level -- all views are faceted the same way."
   ([sk col] (facet sk col :col))
   ([sk col direction]
    (let [sk (ensure-sk sk)
@@ -689,7 +689,7 @@
 
 (defn facet-grid
   "Facet a sketch by two columns (2D grid).
-   Faceting is plot-level — all views are faceted the same way."
+   Faceting is plot-level -- all views are faceted the same way."
   [sk col-col row-col]
   (let [sk (ensure-sk sk)]
     (update sk :opts assoc :facet-col col-col :facet-row row-col)))
@@ -708,8 +708,8 @@
   (update (ensure-sk sk) :opts deep-merge opts))
 
 (defn scale
-  "Set axis scale on a sketch. Scale is plot-level — applies to all views.
-   (scale sk :x :log) — log scale on x-axis."
+  "Set axis scale on a sketch. Scale is plot-level -- applies to all views.
+   (scale sk :x :log) -- log scale on x-axis."
   [sk channel scale-type]
   (let [sk (ensure-sk sk)
         k (case channel :x :x-scale :y :y-scale
@@ -720,8 +720,8 @@
                                {:type scale-type}))))
 
 (defn coord
-  "Set coordinate transform on a sketch. Coord is plot-level — applies to all views.
-   (coord sk :flip) — flipped coordinates."
+  "Set coordinate transform on a sketch. Coord is plot-level -- applies to all views.
+   (coord sk :flip) -- flipped coordinates."
   [sk coord-type]
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
@@ -742,7 +742,7 @@
 
 (defn annotate
   "Add annotations to a sketch. Annotations are plot-level decorations
-   (reference lines and bands) that don't participate in the view × layer
+   (reference lines and bands) that don't participate in the view x layer
    cross product.
    (annotate sk (sk/rule-h 5) (sk/band-v 3 7))"
   [sk & annotations]
@@ -756,7 +756,7 @@
 
 (defn overlay
   "Add a layer with different columns on the same panel as an existing view.
-   Use when you want two different column mappings sharing the same axes —
+   Use when you want two different column mappings sharing the same axes --
    e.g., scatter of :x/:y with a line of :x/:y_predicted.
    The overlay creates a new view with its own layer.
    (overlay sk :x :y_predicted :line)
@@ -783,11 +783,11 @@
 (defn svg-summary
   "Extract structural summary from SVG hiccup for testing.
    Returns a map with :width, :height, :panels, :points, :lines,
-   :polygons, :tiles, :visible-tiles, and :texts — useful for asserting
+   :polygons, :tiles, :visible-tiles, and :texts -- useful for asserting
    plot structure.
    Accepts SVG hiccup or a sketch (auto-renders to SVG first).
-   (svg-summary (plot sk))  — summary of rendered SVG
-   (svg-summary my-sketch)              — auto-renders sketch, then summarizes"
+   (svg-summary (plot sk))  -- summary of rendered SVG
+   (svg-summary my-sketch)              -- auto-renders sketch, then summarizes"
   ([svg-or-sketch]
    (if (sketch/sketch? svg-or-sketch)
      (svg/svg-summary (plot svg-or-sketch))
@@ -803,9 +803,9 @@
   "Arrange multiple plots in a CSS grid layout.
    plots: a flat vector of plots or sketches, or a vector of vectors (explicit rows).
    opts:  {:cols N, :title \"...\", :gap \"8px\"}.
-   (arrange [plot-a plot-b])                — 1x2 row
-   (arrange [plot-a plot-b plot-c] {:cols 2}) — 2-column grid, wraps
-   (arrange [[plot-a plot-b] [plot-c plot-d]]) — explicit 2x2 grid"
+   (arrange [plot-a plot-b])                -- 1x2 row
+   (arrange [plot-a plot-b plot-c] {:cols 2}) -- 2-column grid, wraps
+   (arrange [[plot-a plot-b] [plot-c plot-d]]) -- explicit 2x2 grid"
   ([plots] (arrange plots {}))
   ([plots opts]
    (let [{:keys [cols title gap]} opts
@@ -839,9 +839,9 @@
 
 (defn save
   "Save a plot to an SVG file.
-   sk — a sketch.
-   path     — file path (string or java.io.File).
-   opts     — same options as plot (:width, :height, :title, :theme, etc.).
+   sk -- a sketch.
+   path     -- file path (string or java.io.File).
+   opts     -- same options as plot (:width, :height, :title, :theme, etc.).
    Tooltip and brush interactivity are not included in saved files.
    Returns the path.
    (save my-sketch \"plot.svg\")
@@ -862,9 +862,9 @@
 
 (defn save-png
   "Save a plot to a PNG file via membrane's Java2D backend.
-   sk — a sketch.
-   path     — file path (string or java.io.File).
-   opts     — same options as save (:width, :height, :title, :theme, etc.).
+   sk -- a sketch.
+   path     -- file path (string or java.io.File).
+   opts     -- same options as save (:width, :height, :title, :theme, etc.).
    Returns the path.
    (save-png my-sketch \"plot.png\")
    (save-png my-sketch \"plot.png\" {:width 800 :height 600})"

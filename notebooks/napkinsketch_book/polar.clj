@@ -9,9 +9,9 @@
   (:require
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 (def wind {:direction ["N" "NE" "E" "SE" "S" "SW" "W" "NW"]
@@ -34,7 +34,7 @@
 ;; ## Rose Chart (Coxcomb Diagram)
 ;;
 ;; A bar chart in polar coordinates produces a
-;; [rose chart](https://en.wikipedia.org/wiki/Coxcomb_diagram) —
+;; [rose chart](https://en.wikipedia.org/wiki/Coxcomb_diagram) --
 ;; wedge area encodes count. Bars are arc-interpolated for smooth
 ;; curved edges.
 
@@ -48,7 +48,7 @@
 
 ;; ## Wind Rose
 ;;
-;; A value-bar chart in polar makes a wind rose — each direction
+;; A value-bar chart in polar makes a wind rose -- each direction
 ;; gets a wedge proportional to wind speed.
 
 (-> wind
@@ -100,5 +100,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Cookbook**](./napkinsketch_book.cookbook.html) — recipes for common multi-layer plots
-;; - [**Customization**](./napkinsketch_book.customization.html) — colors, annotations, and interactive features
+;; - [**Cookbook**](./napkinsketch_book.cookbook.html) -- recipes for common multi-layer plots
+;; - [**Customization**](./napkinsketch_book.customization.html) -- colors, annotations, and interactive features

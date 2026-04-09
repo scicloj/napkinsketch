@@ -1,21 +1,21 @@
 ;; # Cookbook
 ;;
-;; Practical plotting recipes — how to combine marks, overlay stats,
+;; Practical plotting recipes -- how to combine marks, overlay stats,
 ;; and build publication-ready charts.
 
 (ns napkinsketch-book.cookbook
   (:require
-   ;; Tablecloth — dataset manipulation
+   ;; Tablecloth -- dataset manipulation
    [tablecloth.api :as tc]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Fastmath — random number generation
+   ;; Fastmath -- random number generation
    [fastmath.random :as rng]
-   ;; Java-time — idiomatic date/time construction
+   ;; Java-time -- idiomatic date/time construction
    [java-time.api :as jt]
-   ;; RDatasets — additional datasets beyond the shared ones
+   ;; RDatasets -- additional datasets beyond the shared ones
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## Quick Recipes
@@ -74,7 +74,7 @@
 ;; ### Time series with multiple layers
 ;;
 ;; Combine area, line, and points. Date columns are detected
-;; automatically — ticks snap to calendar boundaries.
+;; automatically -- ticks snap to calendar boundaries.
 
 (def ts-dates (take 52 (jt/iterate jt/plus (jt/local-date 2020 1 6) (jt/weeks 1))))
 
@@ -249,7 +249,7 @@
 
 ;; ### Step line
 
-;; A step plot for discrete time series data — useful when values
+;; A step plot for discrete time series data -- useful when values
 ;; hold constant between observations.
 
 (def daily-temps
@@ -267,7 +267,7 @@
 
 ;; ### Contour + scatter
 
-;; Density contour lines overlaid on a scatter plot — reveals
+;; Density contour lines overlaid on a scatter plot -- reveals
 ;; high-density regions in a point cloud.
 
 (-> (rdatasets/datasets-iris)
@@ -439,7 +439,7 @@
                            (and (= 342 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; Without grouping, the overall trend appears negative — an example
+;; Without grouping, the overall trend appears negative -- an example
 ;; of Simpson's paradox.
 
 (-> (rdatasets/palmerpenguins-penguins)
@@ -461,7 +461,7 @@
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-;; Flipper length vs body mass — a strong positive correlation.
+;; Flipper length vs body mass -- a strong positive correlation.
 
 (-> (rdatasets/palmerpenguins-penguins)
     (sk/view :flipper-length-mm :body-mass-g {:color :species})
@@ -543,7 +543,7 @@
                            (and (= 234 (:points s))
                                 (pos? (:lines s)))))])
 
-;; Displacement vs city MPG — a similar negative correlation.
+;; Displacement vs city MPG -- a similar negative correlation.
 
 (-> (rdatasets/ggplot2-mpg)
     (sk/lay-point :displ :cty {:color :drv})
@@ -565,7 +565,7 @@
 
 ;; ## Large Datasets and Raster Output
 ;;
-;; By default napkinsketch renders to SVG — great for crisp, scalable
+;; By default napkinsketch renders to SVG -- great for crisp, scalable
 ;; charts. But when a plot has tens of thousands of points, the browser
 ;; must parse and layout a huge SVG DOM. For example, the full diamonds
 ;; dataset (53,940 rows) produces an 11 MB SVG file.
@@ -610,5 +610,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Configuration**](./napkinsketch_book.configuration.html) — control dimensions, palettes, and themes at every scope
-;; - [**Customization**](./napkinsketch_book.customization.html) — annotations, tooltips, and brush selection
+;; - [**Configuration**](./napkinsketch_book.configuration.html) -- control dimensions, palettes, and themes at every scope
+;; - [**Customization**](./napkinsketch_book.customization.html) -- annotations, tooltips, and brush selection

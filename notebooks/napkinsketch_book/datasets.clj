@@ -1,6 +1,6 @@
 ;; # Datasets
 ;;
-;; You do not need to know about datasets to plot with Napkinsketch —
+;; You do not need to know about datasets to plot with Napkinsketch --
 ;; you can pass plain Clojure data (maps, vectors of maps) directly.
 ;; But understanding datasets is recommended background for three reasons:
 ;;
@@ -8,8 +8,8 @@
 ;;   For large data (thousands of rows and above), they are significantly
 ;;   faster than plain Clojure maps and vectors.
 ;;
-;; - **Ergonomics**: many people find that dataset operations — filtering,
-;;   grouping, aggregation — read more naturally as a pipeline than the
+;; - **Ergonomics**: many people find that dataset operations -- filtering,
+;;   grouping, aggregation -- read more naturally as a pipeline than the
 ;;   equivalent Clojure core code. This is a matter of taste, but the
 ;;   convention is widespread in the Clojure data science ecosystem.
 ;;
@@ -23,18 +23,18 @@
 
 (ns napkinsketch-book.datasets
   (:require
-   ;; Tablecloth — dataset manipulation
+   ;; Tablecloth -- dataset manipulation
    [tablecloth.api :as tc]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; RDatasets — standard datasets
+   ;; RDatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## Plain data works
 ;;
-;; Napkinsketch accepts plain Clojure data — a map of columns or a
+;; Napkinsketch accepts plain Clojure data -- a map of columns or a
 ;; vector of row maps. No dataset wrapping needed:
 
 (-> [{:month "Jan" :temperature 5}
@@ -102,7 +102,7 @@
 ;;
 ;; Many examples in this book use datasets from the
 ;; [RDatasets](https://vincentarelbundock.github.io/Rdatasets/articles/data.html)
-;; collection — over 2,300 datasets from R packages, available as CSV
+;; collection -- over 2,300 datasets from R packages, available as CSV
 ;; files.
 ;;
 ;; The Clojure bridge is provided by the
@@ -144,20 +144,20 @@
 ;; The examples in this book use a handful of Tablecloth functions.
 ;; Here is a quick reference:
 
-;; `tc/head` — first N rows:
+;; `tc/head` -- first N rows:
 
 (tc/head (rdatasets/datasets-iris) 3)
 
 (kind/test-last [(fn [ds] (= 3 (tc/row-count ds)))])
 
-;; `tc/select-rows` — filter rows by predicate:
+;; `tc/select-rows` -- filter rows by predicate:
 
 (-> (rdatasets/datasets-iris)
     (tc/select-rows #(= "setosa" (:species %))))
 
 (kind/test-last [(fn [ds] (= 50 (tc/row-count ds)))])
 
-;; `tc/group-by` and `tc/aggregate` — split and summarize:
+;; `tc/group-by` and `tc/aggregate` -- split and summarize:
 
 (-> (rdatasets/datasets-iris)
     (tc/group-by [:species])
@@ -166,7 +166,7 @@
 
 (kind/test-last [(fn [ds] (= 3 (tc/row-count ds)))])
 
-;; `tc/order-by` — sort rows:
+;; `tc/order-by` -- sort rows:
 
 (-> (rdatasets/datasets-mtcars)
     (tc/order-by [:mpg] :desc)
@@ -174,13 +174,13 @@
 
 (kind/test-last [(fn [ds] (= 3 (tc/row-count ds)))])
 
-;; `tc/column-names` — list columns:
+;; `tc/column-names` -- list columns:
 
 (tc/column-names (rdatasets/datasets-iris))
 
 (kind/test-last [(fn [cols] (= 6 (count cols)))])
 
-;; `tc/row-count` — number of rows:
+;; `tc/row-count` -- number of rows:
 
 (tc/row-count (rdatasets/ggplot2-diamonds))
 
@@ -189,7 +189,7 @@
 ;; ## Datasets and Napkinsketch
 ;;
 ;; When you pass plain data to Napkinsketch, it is coerced to a dataset
-;; internally. You can also pass a dataset directly — the result is the
+;; internally. You can also pass a dataset directly -- the result is the
 ;; same:
 
 ;; Plain data:
@@ -211,5 +211,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**The Sketch Model**](./napkinsketch_book.sketch_model.html) — how Napkinsketch composes layers, aesthetics, and methods
-;; - [**Quickstart**](./napkinsketch_book.quickstart.html) — if you skipped straight here, go back and build your first plots
+;; - [**The Sketch Model**](./napkinsketch_book.sketch_model.html) -- how Napkinsketch composes layers, aesthetics, and methods
+;; - [**Quickstart**](./napkinsketch_book.quickstart.html) -- if you skipped straight here, go back and build your first plots

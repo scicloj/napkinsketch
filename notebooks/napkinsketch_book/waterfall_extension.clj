@@ -1,33 +1,33 @@
 ;; # Extension Example: Waterfall Chart
 ;;
 ;; This notebook walks through building a custom chart type from
-;; scratch — a **[waterfall chart](https://en.wikipedia.org/wiki/Waterfall_chart)** that shows running totals as
+;; scratch -- a **[waterfall chart](https://en.wikipedia.org/wiki/Waterfall_chart)** that shows running totals as
 ;; colored bars (green for increases, red for decreases).
 ;;
 ;; It demonstrates all three extension points needed for a new mark:
 ;;
-;; - `compute-stat` — transform raw values into cumulative bars
-;; - `extract-layer` — convert stat output into plan geometry
-;; - `layer->membrane` — render bars as membrane drawables
+;; - `compute-stat` -- transform raw values into cumulative bars
+;; - `extract-layer` -- convert stat output into plan geometry
+;; - `layer->membrane` -- render bars as membrane drawables
 ;;
 ;; After reading this, you should be able to add any custom chart
 ;; type to napkinsketch.
 
 (ns napkinsketch-book.waterfall-extension
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — public API
+   ;; Napkinsketch -- public API
    [scicloj.napkinsketch.api :as sk]
-   ;; Extension points — the multimethods we will extend
+   ;; Extension points -- the multimethods we will extend
    [scicloj.napkinsketch.impl.stat :as stat]
    [scicloj.napkinsketch.impl.extract :as extract]
    [scicloj.napkinsketch.render.mark :as mark]
-   ;; Method registry — to register our new chart type
+   ;; Method registry -- to register our new chart type
    [scicloj.napkinsketch.method :as method]
-   ;; Membrane — drawing primitives
+   ;; Membrane -- drawing primitives
    [membrane.ui :as ui]
-   ;; Tablecloth — dataset operations
+   ;; Tablecloth -- dataset operations
    [tablecloth.api :as tc]))
 
 ;; ## Sample Data
@@ -47,7 +47,7 @@
 ;;
 ;; The stat must always return `:x-domain` and `:y-domain`. Beyond
 ;; that, the shape is a contract between the stat and its paired
-;; extractor — here we use `:waterfall-bars`.
+;; extractor -- here we use `:waterfall-bars`.
 
 (defmethod stat/compute-stat :waterfall [{:keys [data x y x-type] :as view}]
   (let [clean (tc/drop-missing data [x y])
@@ -69,7 +69,7 @@
      :x-domain categories
      :y-domain [y-min y-max]}))
 
-;; Test the stat in isolation — always a good idea before wiring
+;; Test the stat in isolation -- always a good idea before wiring
 ;; into the full pipeline:
 
 (stat/compute-stat {:stat :waterfall :data (tc/dataset pnl-data) :x :category :y :amount :x-type :categorical})
@@ -82,7 +82,7 @@
 ;; ## Step 2: The Extractor
 ;;
 ;; `extract-layer` converts the stat output into a plan layer
-;; descriptor — a plain map with `:mark`, `:style`, and geometry
+;; descriptor -- a plain map with `:mark`, `:style`, and geometry
 ;; data. Colors are resolved here using the library's color system.
 ;;
 ;; We color bars green for positive amounts and red for negative.
@@ -106,9 +106,9 @@
 ;; `layer->membrane` turns the plan layer into membrane drawable
 ;; primitives. The rendering context (`ctx`) provides:
 ;;
-;; - `:sx` — the x scale function (data value → pixel x)
-;; - `:sy` — the y scale function (data value → pixel y)
-;; - `:panel-height`, `:panel-width`, `:margin` — layout dimensions
+;; - `:sx` -- the x scale function (data value -> pixel x)
+;; - `:sy` -- the y scale function (data value -> pixel y)
+;; - `:panel-height`, `:panel-width`, `:margin` -- layout dimensions
 ;;
 ;; For a band (categorical) x-scale, `(sx category true)` returns
 ;; band info including `:rstart`, `:rend`, and `:point`.
@@ -144,7 +144,7 @@
 
 (method/register! :waterfall
                   {:mark :waterfall :stat :waterfall
-                   :doc "Waterfall — running total with increase/decrease bars."})
+                   :doc "Waterfall -- running total with increase/decrease bars."})
 
 ;; Now we can plot it using the sketch API. Since there is
 ;; no built-in `sk/lay-waterfall`, we use `sk/lay` with
@@ -165,7 +165,7 @@
                            (and (= 1 (:panels s))
                                 (= 6 (:polygons s)))))])
 
-;; Six bars — one per category. Green for positive amounts (Revenue,
+;; Six bars -- one per category. Green for positive amounts (Revenue,
 ;; Gross Profit, Net Income), red for negative (COGS, OpEx, Tax).
 
 ;; ## Optional: Convenience Function
@@ -226,5 +226,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Extensibility**](./napkinsketch_book.extensibility.html) — reference for all seven extension points
-;; - [**Architecture**](./napkinsketch_book.architecture.html) — the four-stage pipeline in detail
+;; - [**Extensibility**](./napkinsketch_book.extensibility.html) -- reference for all seven extension points
+;; - [**Architecture**](./napkinsketch_book.architecture.html) -- the four-stage pipeline in detail

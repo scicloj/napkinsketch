@@ -11,13 +11,13 @@
   :kindly/options {:kinds-that-hide-code #{:kind/doc}}}
 (ns napkinsketch-book.api-reference
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; rdatasets — standard datasets
+   ;; rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Fastmath — random number generation
+   ;; Fastmath -- random number generation
    [fastmath.random :as rng]))
 
 ;; ## Sample Data
@@ -38,7 +38,7 @@
 
 (kind/doc #'sk/view)
 
-;; Single scatter view — two columns as `[x y]`:
+;; Single scatter view -- two columns as `[x y]`:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width))
@@ -47,7 +47,7 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-;; Histogram view — a single keyword means x = y (diagonal):
+;; Histogram view -- a single keyword means x = y (diagonal):
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-histogram :sepal-length))
@@ -56,7 +56,7 @@
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-;; Multiple views — a vector of `[x y]` pairs:
+;; Multiple views -- a vector of `[x y]` pairs:
 
 (-> (rdatasets/datasets-iris)
     (sk/view [[:sepal-length :sepal-width]
@@ -67,7 +67,7 @@
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
-;; Map form — explicit keys:
+;; Map form -- explicit keys:
 
 (-> (rdatasets/datasets-iris)
     (sk/view {:x :sepal-length :y :sepal-width})
@@ -364,7 +364,7 @@
 
 (kind/doc #'sk/plan)
 
-;; A sketch's views — `lay-point :x :y` creates one view with a view-local layer.
+;; A sketch's views -- `lay-point :x :y` creates one view with a view-local layer.
 ;; `lay-lm` (bare) adds a global layer.
 
 (let [sk (-> tiny (sk/lay-point :x :y) sk/lay-lm)]

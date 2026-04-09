@@ -8,15 +8,15 @@
   (:require
    ;; Datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Facet Wrap
 ;;
 ;; `sk/facet` splits views by one categorical column.
-;; The default direction is `:col` — a horizontal row of panels:
+;; The default direction is `:col` -- a horizontal row of panels:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -27,7 +27,7 @@
                                 (= 150 (:points s)))))])
 
 ;; Each species gets its own panel with a strip label on top.
-;; Scales are shared by default — all panels use the same x and y range,
+;; Scales are shared by default -- all panels use the same x and y range,
 ;; making direct comparison easy.
 
 ;; ## Vertical Facet
@@ -44,7 +44,7 @@
 
 ;; ## Facet Grid
 ;;
-;; `sk/facet-grid` splits by two columns — one for rows, one for columns:
+;; `sk/facet-grid` splits by two columns -- one for rows, one for columns:
 
 (-> (rdatasets/reshape2-tips)
     (sk/lay-point :total-bill :tip {:color :sex})
@@ -68,7 +68,7 @@
 
 ;; ## Faceted Regression
 ;;
-;; Layers compose with faceting — scatter plus regression per panel:
+;; Layers compose with faceting -- scatter plus regression per panel:
 
 (-> (rdatasets/reshape2-tips)
     (sk/view :total-bill :tip {:color :sex})
@@ -86,7 +86,7 @@
 ;; By default all panels share the same axis ranges. Use the `:scales`
 ;; option to let axes vary per panel.
 ;;
-;; Shared (default) — all panels have the same y-range:
+;; Shared (default) -- all panels have the same y-range:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -97,7 +97,7 @@
                            (and (= 3 (:panels s))
                                 (= 150 (:points s)))))])
 
-;; Free y — each panel has its own y-range:
+;; Free y -- each panel has its own y-range:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -149,7 +149,7 @@
                                 (= (* 12 150) (:points s))
                                 (pos? (:polygons s)))))])
 
-;; Diagonal panels (where x = y) show histograms — inference detects
+;; Diagonal panels (where x = y) show histograms -- inference detects
 ;; same-column pairs. Off-diagonal panels show scatter plots. All
 ;; panels are colored by species (the color mapping is included in each view created by `sk/cross`).
 
@@ -191,5 +191,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Troubleshooting**](./napkinsketch_book.troubleshooting.html) — common issues and how to fix them
-;; - [**API Reference**](./napkinsketch_book.api_reference.html) — complete function listing with docstrings
+;; - [**Troubleshooting**](./napkinsketch_book.troubleshooting.html) -- common issues and how to fix them
+;; - [**API Reference**](./napkinsketch_book.api_reference.html) -- complete function listing with docstrings

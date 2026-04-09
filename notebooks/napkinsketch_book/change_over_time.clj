@@ -1,14 +1,14 @@
 ;; # Change Over Time
 ;;
-;; Line charts and their variants — showing change over a sequence.
+;; Line charts and their variants -- showing change over a sequence.
 
 (ns napkinsketch-book.change-over-time
   (:require
-   ;; Tablecloth — dataset manipulation
+   ;; Tablecloth -- dataset manipulation
    [tablecloth.api :as tc]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Line
@@ -125,5 +125,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Relationships**](./napkinsketch_book.relationships.html) — heatmaps, contours, and 2D density
-;; - [**Polar**](./napkinsketch_book.polar.html) — radial charts for cyclical data
+;; - [**Relationships**](./napkinsketch_book.relationships.html) -- heatmaps, contours, and 2D density
+;; - [**Polar**](./napkinsketch_book.polar.html) -- radial charts for cyclical data

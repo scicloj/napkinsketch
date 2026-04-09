@@ -1,17 +1,17 @@
 ;; # Relationships
 ;;
-;; Regression, smoothing, density estimation, and heatmaps —
+;; Regression, smoothing, density estimation, and heatmaps --
 ;; revealing structure between two variables.
 
 (ns napkinsketch-book.relationships
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Fastmath — random number generation
+   ;; Fastmath -- random number generation
    [fastmath.random :as rng]))
 
 ;; ## Linear Regression
@@ -158,5 +158,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Polar**](./napkinsketch_book.polar.html) — radial charts and pie-style visualizations
-;; - [**Faceting**](./napkinsketch_book.faceting.html) — split any chart into panels by category
+;; - [**Polar**](./napkinsketch_book.polar.html) -- radial charts and pie-style visualizations
+;; - [**Faceting**](./napkinsketch_book.faceting.html) -- split any chart into panels by category

@@ -34,10 +34,10 @@
 ;;
 ;; There are two kinds of tests:
 ;;
-;; - **Hand-written tests** in `test/scicloj/napkinsketch/` — unit tests for
+;; - **Hand-written tests** in `test/scicloj/napkinsketch/` -- unit tests for
 ;; core logic (view resolution, plan resolution, rendering, etc.)
 ;;
-;; - **Generated tests** in `test/napkinsketch_book/` — produced from notebooks
+;; - **Generated tests** in `test/napkinsketch_book/` -- produced from notebooks
 ;; every time [Clay](https://scicloj.github.io/clay/) renders notebooks
 ;; using Clay's [test generation](https://scicloj.github.io/clay/clay_book.test_generation.html).
 ;; Every `kind/test-last` form in a notebook becomes
@@ -66,7 +66,7 @@
 ;; (kind/test-last [= 3])
 ;; ```
 ;;
-;; `kind/test-last` forms are invisible in rendered output — they only
+;; `kind/test-last` forms are invisible in rendered output -- they only
 ;; generate test assertions. Do not add comments to them.
 ;;
 ;; ## Regenerating Tests
@@ -118,7 +118,7 @@
 ;; This produces:
 ;;
 ;; - `README.md` at the repo root
-;; - `readme_files/*.svg` — rendered plot images referenced by the README
+;; - `readme_files/*.svg` -- rendered plot images referenced by the README
 ;;
 ;; The book's `index.clj` reads `README.md` and copies `readme_files/`
 ;; into `notebooks/` so that the book's front page shows the same images.

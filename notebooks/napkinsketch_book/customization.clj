@@ -5,13 +5,13 @@
 
 (ns napkinsketch-book.customization
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; RDatasets — standard datasets
+   ;; RDatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Clojure2d — palette and gradient discovery
+   ;; Clojure2d -- palette and gradient discovery
    [clojure2d.color :as c2d]))
 
 ;; ## Dimensions
@@ -71,7 +71,7 @@
   {:x (range 1 50)
    :y (map #(* 2 (Math/pow 1.1 %)) (range 1 50))})
 
-;; Linear scale — hard to see the structure.
+;; Linear scale -- hard to see the structure.
 
 (-> exponential-data
     (sk/lay-point :x :y)
@@ -81,7 +81,7 @@
                            (and (= 1 (:panels s))
                                 (= 49 (:points s)))))])
 
-;; Log y-scale — reveals the exponential trend.
+;; Log y-scale -- reveals the exponential trend.
 
 (-> exponential-data
     (sk/lay-point :x :y)
@@ -200,13 +200,13 @@
 ;;
 ;; Common examples:
 ;;
-;; - `:set1`, `:set2`, `:set3` — ColorBrewer qualitative
-;; - `:pastel1`, `:pastel2` — ColorBrewer pastel
-;; - `:dark2`, `:paired`, `:accent` — ColorBrewer
-;; - `:tableau10` — Tableau default
-;; - `:category10` — D3 default
+;; - `:set1`, `:set2`, `:set3` -- ColorBrewer qualitative
+;; - `:pastel1`, `:pastel2` -- ColorBrewer pastel
+;; - `:dark2`, `:paired`, `:accent` -- ColorBrewer
+;; - `:tableau10` -- Tableau default
+;; - `:category10` -- D3 default
 ;;
-;; This is a small sample — thousands more are available.
+;; This is a small sample -- thousands more are available.
 ;; See the Discovering Palettes and Gradients section below for how to
 ;; search all available names.
 
@@ -255,7 +255,7 @@
 (kind/test-last [(fn [v] (and (sequential? v) (some #{:viridis/viridis} v)))])
 
 ;; `c2d/palette` returns the colors for a given name.
-;; Each color is a clojure2d `Vec4` (RGBA, 0–255 range).
+;; Each color is a clojure2d `Vec4` (RGBA, 0-255 range).
 
 (c2d/palette :grand-budapest-1)
 
@@ -266,10 +266,10 @@
 ;; For presentations and publications, consider palettes designed for
 ;; colorblind readers. Several good options are built in:
 ;;
-;; - `:set2` — muted qualitative, 8 colors
-;; - `:dark2` — dark qualitative, 8 colors
-;; - `:khroma/okabeito` — designed specifically for color vision deficiency
-;; - `:tableau-10` — Tableau default, high contrast
+;; - `:set2` -- muted qualitative, 8 colors
+;; - `:dark2` -- dark qualitative, 8 colors
+;; - `:khroma/okabeito` -- designed specifically for color vision deficiency
+;; - `:tableau-10` -- Tableau default, high contrast
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -323,7 +323,7 @@
 (kind/test-last [(fn [v] (= :div (first (sk/plot v))))])
 
 ;; Brushing becomes especially useful in a SPLOM (scatter plot matrix).
-;; Drag to select points in any panel — the selection
+;; Drag to select points in any panel -- the selection
 ;; highlights across all panels, revealing multivariate structure.
 
 (def splom-cols [:sepal-length :sepal-width :petal-length :petal-width])
@@ -337,5 +337,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Faceting**](./napkinsketch_book.faceting.html) — split any chart into panels by one or two variables
-;; - [**API Reference**](./napkinsketch_book.api_reference.html) — complete function listing with docstrings
+;; - [**Faceting**](./napkinsketch_book.faceting.html) -- split any chart into panels by one or two variables
+;; - [**API Reference**](./napkinsketch_book.api_reference.html) -- complete function listing with docstrings

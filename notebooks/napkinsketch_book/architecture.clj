@@ -2,21 +2,21 @@
 ;;
 ;; The sketch pipeline extends napkinsketch's four-stage pipeline
 ;; with a composable front end. Instead of building view maps by hand,
-;; you compose a sketch — a declarative description of views,
-;; layers, and shared mappings — that resolves into views automatically.
+;; you compose a sketch -- a declarative description of views,
+;; layers, and shared mappings -- that resolves into views automatically.
 ;;
 ;; This notebook traces a small example through every stage,
 ;; explains the plan boundary, and shows the namespace structure.
 
 (ns napkinsketch-book.architecture
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; rdatasets — standard datasets
+   ;; rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Sketch internals — record, resolution, and views→plan pipeline
+   ;; Sketch internals -- record, resolution, and views->plan pipeline
    [scicloj.napkinsketch.impl.sketch :as sketch-impl]
    ;; Malli schema validation
    [scicloj.napkinsketch.impl.sketch-schema :as ss]))
@@ -37,21 +37,21 @@ graph LR
   style F fill:#fce4ec
 ")
 
-;; - **sketch** — the composable user API. Functions like
+;; - **sketch** -- the composable user API. Functions like
 ;;   `sk/sketch`, `sk/view`, `sk/lay-point`, `sk/options`, `sk/facet`,
 ;;   `sk/scale`, `sk/coord`, and `sk/annotate` build up a sketch record. No computation has happened yet.
 ;;
-;; - **Views** — a flat vector of maps produced by resolving the sketch.
+;; - **Views** -- a flat vector of maps produced by resolving the sketch.
 ;;   Each view map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
 ;;   keys.
 ;;
-;; - **Plan** — fully resolved plan. Data-space geometry, domains, tick info,
+;; - **Plan** -- fully resolved plan. Data-space geometry, domains, tick info,
 ;;   legend. Plain Clojure maps and dtype-next buffers. No rendering primitives.
 ;;
-;; - **Membrane** — positioned drawing primitives in pixel space
+;; - **Membrane** -- positioned drawing primitives in pixel space
 ;;   (Translate, WithColor, Path, Label, etc.).
 ;;
-;; - **Figure** — final output. A tree walk converts membrane records
+;; - **Figure** -- final output. A tree walk converts membrane records
 ;;   to SVG hiccup, which Clay/Kindly renders in notebooks.
 
 ;; Most users only interact with the sketch stage and never need to
@@ -80,15 +80,15 @@ graph LR
 
 ;; The sketch is a record with five fields:
 ;;
-;; - `:data` — the dataset (coerced to Tablecloth)
+;; - `:data` -- the dataset (coerced to Tablecloth)
 ;;
-;; - `:mapping` — mappings inherited by all views (from `view`)
+;; - `:mapping` -- mappings inherited by all views (from `view`)
 ;;
-;; - `:views` — structural views, each with `:mapping` and optional `:layers`
+;; - `:views` -- structural views, each with `:mapping` and optional `:layers`
 ;;
-;; - `:layers` — global layers (from bare `lay-*` without columns)
+;; - `:layers` -- global layers (from bare `lay-*` without columns)
 ;;
-;; - `:opts` — rendering options (title, width, etc.)
+;; - `:opts` -- rendering options (title, width, etc.)
 
 (sketch-impl/sketch? trace-sk)
 
@@ -108,7 +108,7 @@ graph LR
                           (= :y (get-in v [:mapping :y]))
                           (= 1 (count (:layers v))))))])
 
-;; The view has one layer — the point layer — attached directly
+;; The view has one layer -- the point layer -- attached directly
 ;; because `lay-point` was called with columns.
 
 (get-in (:views trace-sk) [0 :layers 0 :method])
@@ -137,7 +137,7 @@ graph LR
 
 ;; ### Plan
 ;;
-;; `views->plan` resolves the views into a plan — a pure-data map
+;; `views->plan` resolves the views into a plan -- a pure-data map
 ;; with data-space geometry, resolved colors, computed domains, and tick info.
 ;; The values are still in data space.
 
@@ -189,7 +189,7 @@ trace-membrane
 ;; ### Shortcut: sketch to Plan
 ;;
 ;; In practice, `sk/plan` does the sketch-to-plan conversion
-;; in one step — resolving the sketch and running `views->plan`
+;; in one step -- resolving the sketch and running `views->plan`
 ;; internally.
 
 (def shortcut-plan (sk/plan trace-sk))
@@ -217,14 +217,14 @@ trace-membrane
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  subgraph WHAT [\"WHAT — data + semantics\"]
+  subgraph WHAT [\"WHAT -- data + semantics\"]
     B[\"sketch\"]
     V[\"Views\"]
     ST[\"Statistics\"]
     D[\"Domains\"]
     C[\"Colors\"]
   end
-  subgraph HOW [\"HOW — pixels + rendering\"]
+  subgraph HOW [\"HOW -- pixels + rendering\"]
     SC[\"Scales (wadogo)\"]
     CO[\"Coord transforms\"]
     MS[\"Membrane tree\"]
@@ -235,12 +235,12 @@ graph LR
   style HOW fill:#e3f2fd
 ")
 
-;; The plan is **plain inspectable data** — maps, numbers, strings,
+;; The plan is **plain inspectable data** -- maps, numbers, strings,
 ;; keywords, and dtype-next buffers for numeric arrays. No membrane
 ;; types, no datasets, no scale objects. It validates against a Malli
 ;; schema.
 ;;
-;; The membrane tree is **Java objects** — `Translate`, `WithColor`,
+;; The membrane tree is **Java objects** -- `Translate`, `WithColor`,
 ;; `RoundedRectangle`, `Label`, etc. All positions are resolved to
 ;; pixel coordinates. Not serializable.
 ;;
@@ -276,7 +276,7 @@ graph LR
 (kind/test-last [(fn [v] (and (= :point (first v))
                               (= :lm (second v))))])
 
-;; Resolving produces two views — one per layer — both sharing
+;; Resolving produces two views -- one per layer -- both sharing
 ;; the same columns:
 
 (def multi-views (sketch-impl/resolve-sketch multi-sk))
@@ -353,7 +353,7 @@ graph TD
 ;; `views->plan` (resolves domains, ticks, layout), and `render-sketch`
 ;; (drives the full pipeline for auto-rendering in notebooks).
 ;;
-;; The `impl/` directory is pure data — no membrane dependency.
+;; The `impl/` directory is pure data -- no membrane dependency.
 ;; The `render/` directory uses membrane for pixel-space layout and
 ;; SVG conversion.
 
@@ -362,20 +362,20 @@ graph TD
 ;; Napkinsketch builds on several excellent Clojure libraries:
 ;;
 ;; - [Tablecloth](https://scicloj.github.io/tablecloth/) &
-;;   [dtype-next](https://github.com/cnuernber/dtype-next) —
+;;   [dtype-next](https://github.com/cnuernber/dtype-next) --
 ;;   dataset manipulation and high-performance numeric arrays
 ;;
-;; - [Membrane](https://github.com/phronmophobic/membrane) —
+;; - [Membrane](https://github.com/phronmophobic/membrane) --
 ;;   rendering and layout
 ;;
-;; - [Wadogo](https://github.com/scicloj/wadogo) — scales
+;; - [Wadogo](https://github.com/scicloj/wadogo) -- scales
 ;;
-;; - [Clojure2d](https://github.com/Clojure2D/clojure2d) —
+;; - [Clojure2d](https://github.com/Clojure2D/clojure2d) --
 ;;   color palettes and gradients
 ;;
-;; - [Fastmath](https://github.com/generateme/fastmath) — statistics
+;; - [Fastmath](https://github.com/generateme/fastmath) -- statistics
 ;;
-;; - [Malli](https://github.com/metosin/malli) — schema validation
+;; - [Malli](https://github.com/metosin/malli) -- schema validation
 ;;
 ;; - [Kindly](https://scicloj.github.io/kindly/) &
-;;   [Clay](https://scicloj.github.io/clay/) — notebook rendering
+;;   [Clay](https://scicloj.github.io/clay/) -- notebook rendering

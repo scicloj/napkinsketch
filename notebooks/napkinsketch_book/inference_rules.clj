@@ -2,7 +2,7 @@
 ;;
 ;; Napkinsketch infers many parameters automatically so you can write
 ;; less and get reasonable defaults. This notebook shows those rules
-;; in action by examining the **plan** — the resolved data structure
+;; in action by examining the **plan** -- the resolved data structure
 ;; that captures every inference decision.
 ;;
 ;; The examples use small inline datasets so the full plan is
@@ -10,33 +10,33 @@
 
 (ns napkinsketch-book.inference-rules
   (:require
-   ;; Tablecloth — dataset manipulation
+   ;; Tablecloth -- dataset manipulation
    [tablecloth.api :as tc]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## What Gets Inferred
 ;;
-;; When you write `(-> data (sk/lay-point :x :y))` — or even just
-;; `(sk/lay-point data)` — the library fills
+;; When you write `(-> data (sk/lay-point :x :y))` -- or even just
+;; `(sk/lay-point data)` -- the library fills
 ;; in everything needed to render a plot. Here is the full list of
 ;; inference steps, in the order they happen:
 ;;
-;; 1. **Column selection** — which columns map to x, y, and color (inferred from dataset shape when omitted)
-;; 2. **Column types** — numerical, categorical, or temporal
-;; 3. **Aesthetic resolution** — is `:color` a column reference, a hex string, or a CSS name?
-;; 4. **Grouping** — which column(s) split data into subsets
-;; 5. **Method** — which mark and stat to use (scatter, histogram, bar, ...)
-;; 6. **Domains** — data extent for each axis, with padding
-;; 7. **Ticks** — nice round values and formatted labels
-;; 8. **Axis labels** — derived from column names
-;; 9. **Legend** — type, entries, and layout space
-;; 10. **Layout** — single panel, facet grid, or multi-variable
-;; 11. **Coordinate transform** — cartesian, flip, or polar
+;; 1. **Column selection** -- which columns map to x, y, and color (inferred from dataset shape when omitted)
+;; 2. **Column types** -- numerical, categorical, or temporal
+;; 3. **Aesthetic resolution** -- is `:color` a column reference, a hex string, or a CSS name?
+;; 4. **Grouping** -- which column(s) split data into subsets
+;; 5. **Method** -- which mark and stat to use (scatter, histogram, bar, ...)
+;; 6. **Domains** -- data extent for each axis, with padding
+;; 7. **Ticks** -- nice round values and formatted labels
+;; 8. **Axis labels** -- derived from column names
+;; 9. **Legend** -- type, entries, and layout space
+;; 10. **Layout** -- single panel, facet grid, or multi-variable
+;; 11. **Coordinate transform** -- cartesian, flip, or polar
 ;;
 ;; Each rule has a sensible default and an explicit override.
 ;; The sections below demonstrate each rule with live examples.
@@ -44,7 +44,7 @@
 ;; ## Inspecting the Plan
 ;;
 ;; Every call to `sk/plan` returns a plain Clojure map: the **plan**.
-;; It contains everything needed to render a plot — domains, ticks,
+;; It contains everything needed to render a plot -- domains, ticks,
 ;; scales, layers with positioned data, legend, layout dimensions.
 ;;
 ;; To understand what Napkinsketch inferred, look at the plan.
@@ -81,13 +81,13 @@ scatter-views
 
 ;; Notice in the plan above:
 ;;
-;; - `:x-domain` is `[0.8 5.2]` — wider than the data range `[1.0, 5.0]`
+;; - `:x-domain` is `[0.8 5.2]` -- wider than the data range `[1.0, 5.0]`
 ;;   because of 5% padding
-;; - `:x-scale` is `{:type :linear}` — inferred from numeric data
+;; - `:x-scale` is `{:type :linear}` -- inferred from numeric data
 ;; - `:x-ticks` has nice round values: `1.0, 1.5, 2.0, ...`
-;; - `:x-label` is `"x"` — derived from the column keyword
-;; - `:legend` is `nil` — no color mapping
-;; - `:layout` has `:legend-w 0` — no space reserved for a legend
+;; - `:x-label` is `"x"` -- derived from the column keyword
+;; - `:legend` is `nil` -- no color mapping
+;; - `:layout` has `:legend-w 0` -- no space reserved for a legend
 ;; - The single layer has `:mark :point` and a single `:groups` entry with all 5 data
 ;;   points, colored in the default color (steel blue)
 
@@ -98,10 +98,10 @@ scatter-views
 ;;
 ;; | Number of columns | Inferred mapping |
 ;; |:------------------|:-----------------|
-;; | 1 | first → x |
-;; | 2 | first → x, second → y |
-;; | 3 | first → x, second → y, third → color |
-;; | 4+ | error — specify columns explicitly |
+;; | 1 | first -> x |
+;; | 2 | first -> x, second -> y |
+;; | 3 | first -> x, second -> y, third -> color |
+;; | 4+ | error -- specify columns explicitly |
 ;;
 ;; One column:
 
@@ -117,7 +117,7 @@ scatter-views
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; Three columns — the third becomes `:color`:
+;; Three columns -- the third becomes `:color`:
 
 (-> {:x [1 2 3 4] :y [4 5 6 7] :g ["a" "a" "b" "b"]}
     sk/lay-point)
@@ -126,7 +126,7 @@ scatter-views
                            (and (= 4 (:points s))
                                 (some #{"a"} (:texts s)))))])
 
-;; When you provide explicit columns, inference is skipped — you
+;; When you provide explicit columns, inference is skipped -- you
 ;; are in full control:
 
 (-> (rdatasets/datasets-iris)
@@ -144,7 +144,7 @@ scatter-views
 ;; |:-------------|:--------------|
 ;; | float, int | `:numerical` |
 ;; | string, keyword, boolean, symbol, text | `:categorical` |
-;; | LocalDate, LocalDateTime, Instant, java.util.Date | `:temporal` → numerical with calendar-aware ticks |
+;; | LocalDate, LocalDateTime, Instant, java.util.Date | `:temporal` -> numerical with calendar-aware ticks |
 ;;
 ;; Internally, `infer-column-types` in `view.clj` handles this step.
 ;;
@@ -169,7 +169,7 @@ bar-views
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
-;; The x-domain is `["cat" "dog" "bird" "fish"]` — strings in order of
+;; The x-domain is `["cat" "dog" "bird" "fish"]` -- strings in order of
 ;; appearance. The ticks have `:categorical? true`. The y-domain starts
 ;; at zero because this is a bar chart.
 
@@ -195,7 +195,7 @@ bar-views
 ;; The x-domain contains epoch-millisecond numbers, but the 10 tick
 ;; labels show human-readable dates like `"Feb-01"`. Napkinsketch accepts
 ;; `java.util.Date` (from `#inst`), `LocalDate`, `LocalDateTime`,
-;; and `Instant` — all are converted to epoch-milliseconds for
+;; and `Instant` -- all are converted to epoch-milliseconds for
 ;; plotting, with calendar-aware tick formatting.
 
 ;; ## Aesthetic Resolution
@@ -205,7 +205,7 @@ bar-views
 ;; classifies each aesthetic channel (`:color`, `:size`, `:alpha`,
 ;; `:text`) as either a column reference or a fixed literal.
 
-;; ### Column reference — colored by palette
+;; ### Column reference -- colored by palette
 
 (def colored-views
   (-> {:x [1 2 3 4 5 6]
@@ -226,12 +226,12 @@ colored-views
 
 ;; Two entries in `:groups`, each with its own `:color` (RGBA),
 ;; `:xs`, `:ys`, and `:label`. A `:legend` appeared with 2 entries.
-;; The `:layout` now has `:legend-w 100` — space reserved on the right.
+;; The `:layout` now has `:legend-w 100` -- space reserved on the right.
 ;;
 ;; Why two entries? Because `:g` is a categorical column. The next
 ;; section explores this mechanism in detail.
 
-;; ### Fixed color string — single color, no legend
+;; ### Fixed color string -- single color, no legend
 
 (def fixed-color-views
   (-> five-points
@@ -273,16 +273,16 @@ fixed-color-views
 ;;
 ;; The rule is: **check the dataset first**. If the string matches
 ;; a column name in the dataset, it is treated as a column reference.
-;; Otherwise, it is treated as a color value — first trying hex
+;; Otherwise, it is treated as a color value -- first trying hex
 ;; parsing, then CSS color name lookup.
 ;;
 ;; Here is the full resolution order for a string `:color` value:
 ;;
-;; 1. If the string matches a dataset column → column reference (grouping)
-;; 2. If it starts with `#` → hex color (`"#E74C3C"`, `"#F00"`)
-;; 3. If it parses as hex without `#` → hex color (`"00FF00"`)
-;; 4. If it matches a CSS color name → named color (`"red"`, `"steelblue"`)
-;; 5. Otherwise → error with a helpful message
+;; 1. If the string matches a dataset column -> column reference (grouping)
+;; 2. If it starts with `#` -> hex color (`"#E74C3C"`, `"#F00"`)
+;; 3. If it parses as hex without `#` -> hex color (`"00FF00"`)
+;; 4. If it matches a CSS color name -> named color (`"red"`, `"steelblue"`)
+;; 5. Otherwise -> error with a helpful message
 ;;
 ;; In practice, ambiguity is rare. Column names like `"species"` or
 ;; `"temperature"` are not valid CSS colors, and color names like
@@ -301,18 +301,18 @@ fixed-color-views
 (kind/test-last [(fn [m] (and (nil? (:legend m))
                               (> (first (:color m)) 0.9)))])
 
-;; No legend, red RGBA — treated as a fixed color, not a column.
+;; No legend, red RGBA -- treated as a fixed color, not a column.
 
-;; ### No color — default gray
+;; ### No color -- default gray
 
-;; Look back at the first scatter plan above — its single `:groups`
+;; Look back at the first scatter plan above -- its single `:groups`
 ;; entry has the default color (steel blue). No legend.
 
 ;; ## Grouping
 ;;
 ;; The `:groups` entries you saw above reflect a key concept:
 ;; **grouping** controls how data is split into independent subsets.
-;; Each group gets its own visual elements — its own set of points,
+;; Each group gets its own visual elements -- its own set of points,
 ;; its own regression line, its own density curve, its own bar in a
 ;; dodged layout.
 ;;
@@ -362,12 +362,12 @@ fixed-color-views
                               (= :continuous (:legend-type m))
                               (= 20 (:color-stops m))))])
 
-;; One group, continuous legend with 20 stops. No splitting occurred —
+;; One group, continuous legend with 20 stops. No splitting occurred --
 ;; the color is a visual encoding, not a grouping variable.
 
 ;; ### Overriding color type with `:color-type`
 ;;
-;; Sometimes a numeric column is really a categorical identifier — for
+;; Sometimes a numeric column is really a categorical identifier -- for
 ;; example, subject IDs in a repeated-measures study. The inference
 ;; system sees numbers and treats them as continuous, but you want
 ;; discrete groups. The `:color-type :categorical` override tells the
@@ -376,7 +376,7 @@ fixed-color-views
 ;; This is a core principle of the library: **inference provides good
 ;; defaults, but the user can always override**.
 
-;; Without override — one group, continuous gradient:
+;; Without override -- one group, continuous gradient:
 
 (let [study {:subject [1 1 1 2 2 2 3 3 3]
              :day     [1 2 3 1 2 3 1 2 3]
@@ -391,7 +391,7 @@ fixed-color-views
 (kind/test-last [(fn [m] (and (= 1 (:group-count m))
                               (= :continuous (:legend-type m))))])
 
-;; With `:color-type :categorical` — three groups, one per subject:
+;; With `:color-type :categorical` -- three groups, one per subject:
 
 (let [study {:subject [1 1 1 2 2 2 3 3 3]
              :day     [1 2 3 1 2 3 1 2 3]
@@ -407,7 +407,7 @@ fixed-color-views
 (kind/test-last [(fn [m] (and (= 3 (:group-count m))
                               (= 3 (:legend-entries m))))])
 
-;; The same data, the same columns — but `:color-type :categorical`
+;; The same data, the same columns -- but `:color-type :categorical`
 ;; changes inference from "one gradient" to "three distinct groups."
 ;; This affects grouping, line splitting, legend style, and palette
 ;; assignment. The rendered plots look completely different:
@@ -455,7 +455,7 @@ fixed-color-views
 ;; Without grouping, `sk/lay-lm` (linear model) fits one regression line through
 ;; all the data. With grouping, it fits one line per group.
 
-;; One regression line — no grouping:
+;; One regression line -- no grouping:
 
 (-> grouped-data
     (sk/view :x :y)
@@ -466,7 +466,7 @@ fixed-color-views
                            (and (= 6 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Two regression lines — grouped by color:
+;; Two regression lines -- grouped by color:
 
 (-> grouped-data
     (sk/view :x :y {:color :g})
@@ -484,7 +484,7 @@ fixed-color-views
 ;; ## Method Inference
 ;;
 ;; When you use `sk/view` without an explicit `sk/lay-*` call,
-;; Napkinsketch infers the **method** — a mark + stat bundle —
+;; Napkinsketch infers the **method** -- a mark + stat bundle --
 ;; from the column types. Internally, `infer-method` in `view.clj`
 ;; implements these rules:
 ;;
@@ -496,7 +496,7 @@ fixed-color-views
 ;; | mixed (categorical + numerical) | `:point` | `:identity` (scatter) |
 ;;
 ;; When you use `sk/lay-point`, `sk/lay-histogram`, etc., the method's
-;; stat takes precedence — column-type inference is bypassed.
+;; stat takes precedence -- column-type inference is bypassed.
 ;;
 ;; A single numerical column:
 
@@ -513,9 +513,9 @@ hist-views
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; The layer mark is `:bar` — inferred because a single numerical column
+;; The layer mark is `:bar` -- inferred because a single numerical column
 ;; means histogram. The layer data contains `:bins` with `:x0`, `:x1`,
-;; `:count` — the result of the `:bin` stat.
+;; `:count` -- the result of the `:bin` stat.
 ;;
 ;; A single categorical column:
 
@@ -532,7 +532,7 @@ count-views
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
-;; Mark is `:rect` with `:counts` — the `:count` stat tallied each
+;; Mark is `:rect` with `:counts` -- the `:count` stat tallied each
 ;; of the 4 categories.
 ;;
 ;; Mixed column types (categorical x, numerical y) default to `:point`:
@@ -585,9 +585,9 @@ count-views
 (kind/test-last [(fn [d] (and (== 0.0 (first d))
                               (== 1.0 (second d))))])
 
-;; The y-domain is exactly `[0.0, 1.0]` — each category sums to 100%.
+;; The y-domain is exactly `[0.0, 1.0]` -- each category sums to 100%.
 
-;; Multi-layer plots merge domains across layers — see
+;; Multi-layer plots merge domains across layers -- see
 ;; "Multi-Layer Plans" below.
 
 ;; ## Tick Inference
@@ -595,12 +595,12 @@ count-views
 ;; Once domains are computed, Napkinsketch selects "nice" round tick
 ;; values. The logic depends on the scale type:
 ;;
-;; - **Linear** — wadogo selects ticks at round intervals (1, 2, 2.5, 5, ...)
-;; - **Log** — ggplot2-style 1-2-5 nice numbers: powers of 10 when they
+;; - **Linear** -- wadogo selects ticks at round intervals (1, 2, 2.5, 5, ...)
+;; - **Log** -- ggplot2-style 1-2-5 nice numbers: powers of 10 when they
 ;;   give at least 3 ticks, otherwise intermediates at 1-2-5 or 1-2-3-5
 ;;   multiples per decade
-;; - **Categorical** — tick at each category, in order of appearance
-;; - **Temporal** — calendar-aware snapping (year, month, day, hour)
+;; - **Categorical** -- tick at each category, in order of appearance
+;; - **Temporal** -- calendar-aware snapping (year, month, day, hour)
 ;;   with adaptive formatting
 ;;
 ;; Linear ticks for the scatter example:
@@ -615,7 +615,7 @@ count-views
                               (= ["1.0" "1.5" "2.0" "2.5" "3.0" "3.5" "4.0" "4.5" "5.0"]
                                  (:x-tick-labels m))))])
 
-;; Nine ticks from 1.0 to 5.0 at 0.5 intervals — round and readable.
+;; Nine ticks from 1.0 to 5.0 at 0.5 intervals -- round and readable.
 ;;
 ;; Log ticks for a multi-decade range:
 
@@ -631,7 +631,7 @@ count-views
 (kind/test-last [(fn [m] (and (= [0.1 1.0 10.0 100.0 1000.0] (:tick-values m))
                               (= ["0.1" "1" "10" "100" "1000"] (:tick-labels m))))])
 
-;; Five ticks at exact powers of 10 — no irrational intermediates.
+;; Five ticks at exact powers of 10 -- no irrational intermediates.
 ;; Whole numbers display without decimals, sub-1 values use minimal
 ;; decimal places.
 
@@ -685,7 +685,7 @@ count-views
 ;; `build-legend` in `plan.clj` constructs the legend from
 ;; the collected color information. Three cases:
 ;;
-;; Categorical color → discrete legend with one entry per category:
+;; Categorical color -> discrete legend with one entry per category:
 
 (:legend (sk/plan colored-views))
 
@@ -694,19 +694,19 @@ count-views
 
 ;; Title is the column name. Each entry has a `:label` and `:color` (RGBA).
 ;;
-;; No color mapping → no legend:
+;; No color mapping -> no legend:
 
 (:legend (sk/plan scatter-views))
 
 (kind/test-last [nil?])
 
-;; Fixed color string → no legend:
+;; Fixed color string -> no legend:
 
 (:legend (sk/plan fixed-color-views))
 
 (kind/test-last [nil?])
 
-;; Numeric color → continuous legend (gradient bar):
+;; Numeric color -> continuous legend (gradient bar):
 
 (:legend (-> {:x [1 2 3] :y [4 5 6] :val [10 20 30]}
              (sk/lay-point :x :y {:color :val})
@@ -729,7 +729,7 @@ count-views
                                 (= :s (:title leg))
                                 (= 5 (count (:entries leg)))))])
 
-;; Each entry has a `:value` and `:radius`. No size mapping → no size legend:
+;; Each entry has a `:value` and `:radius`. No size mapping -> no size legend:
 
 (:size-legend (sk/plan scatter-views))
 
@@ -749,7 +749,7 @@ count-views
                                 (= :a (:title leg))
                                 (= 5 (count (:entries leg)))))])
 
-;; No alpha mapping → no alpha legend:
+;; No alpha mapping -> no alpha legend:
 
 (:alpha-legend (sk/plan scatter-views))
 
@@ -785,9 +785,9 @@ count-views
 
 ;; Layout type is also inferred from the view structure:
 ;;
-;; - Single panel → `:single`
-;; - Facet grid (`:facet-row` or `:facet-col`) → `:facet-grid`
-;; - Multiple x-y pairs (scatter plot matrix) → `:multi-variable`
+;; - Single panel -> `:single`
+;; - Facet grid (`:facet-row` or `:facet-col`) -> `:facet-grid`
+;; - Multiple x-y pairs (scatter plot matrix) -> `:multi-variable`
 
 (let [pl (sk/plan scatter-views)]
   (:layout-type pl))
@@ -797,7 +797,7 @@ count-views
 ;; ## Coordinate Flipping
 ;;
 ;; Setting `:coord :flip` swaps axes in the plan. The layer data
-;; stays the same — the panel-level domains and ticks are swapped.
+;; stays the same -- the panel-level domains and ticks are swapped.
 ;; Internally, `make-coord` in `coord.clj` handles the transformation.
 
 (def normal-pl
@@ -831,7 +831,7 @@ count-views
 
 ;; The categorical axis moved from x to y.
 ;;
-;; Labels are also swapped — the x-label and y-label follow their
+;; Labels are also swapped -- the x-label and y-label follow their
 ;; visual axis, not the data axis:
 
 (let [pl (-> five-points
@@ -845,7 +845,7 @@ count-views
                               (= "x" (:y-label m))))])
 
 ;; After flipping, the visual x-axis shows "y" and the visual y-axis
-;; shows "x" — labels track the visual axes.
+;; shows "x" -- labels track the visual axes.
 
 ;; ## Multi-Layer Plans
 ;;
@@ -868,9 +868,9 @@ multi-views
                            (and (= 5 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Two layers — one `:point`, one `:line` — sharing the same domain.
+;; Two layers -- one `:point`, one `:line` -- sharing the same domain.
 ;; The `:line` layer has `:mark :line` and its groups contain
-;; `:polyline-xs` and `:polyline-ys` — the regression curve.
+;; `:polyline-xs` and `:polyline-ys` -- the regression curve.
 
 ;; ## Resolution Overview
 ;;
@@ -920,8 +920,8 @@ graph TD
 ")
 
 ;; Each box corresponds to a named function in the codebase.
-;; The top four boxes — Column Types, Aesthetics, Grouping, and
-;; Method — are the per-view inference steps (in `view.clj`).
+;; The top four boxes -- Column Types, Aesthetics, Grouping, and
+;; Method -- are the per-view inference steps (in `view.clj`).
 ;; The remaining boxes are the plan-level orchestration steps
 ;; (in `plan.clj` and `scale.clj`).
 
@@ -931,7 +931,7 @@ graph TD
 ;;
 ;; | What is inferred | Default | Override |
 ;; |:-----------------|:--------|:---------|
-;; | Column selection | 1→x, 2→x y, 3→x y color | explicit column args in `sk/view` or `sk/lay-*` |
+;; | Column selection | 1->x, 2->x y, 3->x y color | explicit column args in `sk/view` or `sk/lay-*` |
 ;; | Column type | dtype inspection | `:x-type`, `:y-type`, `:color-type` in view options |
 ;; | Aesthetic classification | keyword = column, string = color/column | explicit `:color` keyword vs hex string |
 ;; | Grouping | categorical color column | `:group` aesthetic |
@@ -941,7 +941,7 @@ graph TD
 ;; | Fill domain | `[0.0, 1.0]` for fill position | `(sk/scale views :y {:domain [0 2]})` |
 ;; | Tick values | round intervals (linear), powers of 10 (log) | wadogo scale configuration |
 ;; | Tick labels | number formatting, calendar formatting | wadogo label formatting |
-;; | Axis labels | column name, underscores → spaces | `(sk/options {:x-label "Custom"})` |
+;; | Axis labels | column name, underscores -> spaces | `(sk/options {:x-label "Custom"})` |
 ;; | Color legend | categorical = discrete, numerical = continuous, none = no legend | `:color` mapping controls presence |
 ;; | Size legend | 5 graduated circles when `:size` maps to numerical column | `:size` mapping controls presence |
 ;; | Alpha legend | 5 graduated opacity squares when `:alpha` maps to numerical column | `:alpha` mapping controls presence |
@@ -954,5 +954,5 @@ graph TD
 
 ;; ## What's Next
 ;;
-;; - [**Methods**](./napkinsketch_book.methods.html) — the full registry of marks, stats, and positions that inference selects from
-;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — see inference in action with the most common chart type
+;; - [**Methods**](./napkinsketch_book.methods.html) -- the full registry of marks, stats, and positions that inference selects from
+;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) -- see inference in action with the most common chart type

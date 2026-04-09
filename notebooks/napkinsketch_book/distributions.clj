@@ -5,11 +5,11 @@
 
 (ns napkinsketch-book.distributions
   (:require
-   ;; rdatasets — standard datasets
+   ;; rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Histogram
@@ -26,7 +26,7 @@
 
 ;; ## Colored Histogram
 
-;; Split by species — each group gets its own color.
+;; Split by species -- each group gets its own color.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-histogram :sepal-length {:color :species}))
@@ -113,7 +113,7 @@
 
 ;; ## Boxplot
 
-;; Median, quartiles, whiskers at 1.5×IQR (interquartile range), and outlier points.
+;; Median, quartiles, whiskers at 1.5xIQR (interquartile range), and outlier points.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-boxplot :species :sepal-width))
@@ -166,7 +166,7 @@
 
 ;; ## Violin Plot
 ;;
-;; A violin shows the full density shape per category — more
+;; A violin shows the full density shape per category -- more
 ;; informative than a boxplot for multimodal distributions.
 
 (-> (rdatasets/reshape2-tips)
@@ -215,7 +215,7 @@
 
 ;; ## [Ridgeline](https://en.wikipedia.org/wiki/Ridgeline_plot) Plot
 ;;
-;; Overlapping density curves stacked vertically by category — good
+;; Overlapping density curves stacked vertically by category -- good
 ;; for comparing distribution shapes across many groups.
 
 (-> (rdatasets/datasets-iris)
@@ -271,10 +271,10 @@
             (and (= 3 (:panels s))
                  (pos? (:polygons s)))))])
 
-;; The multi-column vector works with any `lay-*` function — histograms,
+;; The multi-column vector works with any `lay-*` function -- histograms,
 ;; density curves, boxplots, violin plots, and more.
 
 ;; ## What's Next
 ;;
-;; - [**Ranking**](./napkinsketch_book.ranking.html) — bar charts and lollipop plots for categorical comparisons
-;; - [**Faceting**](./napkinsketch_book.faceting.html) — split distributions by groups into separate panels
+;; - [**Ranking**](./napkinsketch_book.ranking.html) -- bar charts and lollipop plots for categorical comparisons
+;; - [**Faceting**](./napkinsketch_book.faceting.html) -- split distributions by groups into separate panels

@@ -3,23 +3,23 @@
 ;; This chapter covers the core concepts you need for daily use.
 ;; If you have not read the
 ;; [Sketch Model](./napkinsketch_book.sketch_model.html)
-;; chapter, start there — it introduces the mental model behind
+;; chapter, start there -- it introduces the mental model behind
 ;; composable plotting.
 
 (ns napkinsketch-book.core-concepts
   (:require
-   ;; Tablecloth — dataset manipulation
+   ;; Tablecloth -- dataset manipulation
    [tablecloth.api :as tc]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; RDatasets — standard datasets
+   ;; RDatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## Data
 ;;
-;; Napkinsketch accepts plain Clojure data — maps, vectors of maps —
+;; Napkinsketch accepts plain Clojure data -- maps, vectors of maps --
 ;; or columnar datasets. No wrapping needed for simple cases.
 ;; The [Datasets](./napkinsketch_book.datasets.html) chapter covers
 ;; data formats and loading in detail.
@@ -34,7 +34,7 @@
 
 ;; The dataset has 150 rows and 5 columns. Four columns are
 ;; **numerical** (measurements in centimeters) and one is
-;; **categorical** (the species name — one of three strings).
+;; **categorical** (the species name -- one of three strings).
 ;;
 ;; This distinction matters: Napkinsketch treats numerical and
 ;; categorical columns differently when choosing axes, colors, and
@@ -52,7 +52,7 @@
 ;; Napkinsketch accepts several common Clojure data shapes and
 ;; coerces them into a dataset internally.
 ;;
-;; **Map of columns** — keys are column names, values are sequences:
+;; **Map of columns** -- keys are column names, values are sequences:
 
 (-> {:x [1 2 3 4 5]
      :y [2 4 3 5 4]}
@@ -60,7 +60,7 @@
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; **Sequence of row maps** — each map is one row:
+;; **Sequence of row maps** -- each map is one row:
 
 (-> [{:city "Paris" :temperature 22}
      {:city "London" :temperature 18}
@@ -71,7 +71,7 @@
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
 ;; When the dataset has 1, 2, or 3 columns, you can omit the column
-;; names entirely — they are inferred by position (first -> x,
+;; names entirely -- they are inferred by position (first -> x,
 ;; second -> y, third -> color):
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
@@ -88,8 +88,8 @@
 ;;
 ;; A sketch is built from two kinds of content:
 ;;
-;; - **View** — what to look at (which columns define the axes)
-;; - **Layer** — how to draw it (which method to use, with what options)
+;; - **View** -- what to look at (which columns define the axes)
+;; - **Layer** -- how to draw it (which method to use, with what options)
 ;;
 ;; A view says "show me sepal length versus sepal width."
 ;; A layer says "draw it as points" or "fit a regression line."
@@ -135,7 +135,7 @@
 
 ;; The layer lives inside the view. No sketch-level layers.
 ;;
-;; With multiple views, sketch-level layers apply to all of them —
+;; With multiple views, sketch-level layers apply to all of them --
 ;; the cross product:
 
 (def two-panel-sketch
@@ -177,7 +177,7 @@ two-panel-sketch
 ;; | `(sk/view data :x :y {:color :c})` | All layers on this view |
 ;; | `(sk/lay-point {:color :c})` | This layer only |
 ;;
-;; This is **lexical scope** — the same principle as in programming
+;; This is **lexical scope** -- the same principle as in programming
 ;; languages. Lower levels override higher ones.
 
 ;; ### Sketch-level mapping
@@ -192,7 +192,7 @@ two-panel-sketch
 (kind/test-last [(fn [v] (= 3 (:lines (sk/svg-summary v))))])
 
 ;; Both point and lm see `:color :species`. Three regression
-;; lines — one per species.
+;; lines -- one per species.
 
 ;; ### View-level mapping
 ;;
@@ -206,7 +206,7 @@ two-panel-sketch
 
 (kind/test-last [(fn [v] (= 3 (:lines (sk/svg-summary v))))])
 
-;; Same result here — one view, both layers see the color.
+;; Same result here -- one view, both layers see the color.
 ;; The difference shows with two views:
 
 (def view-scoped
@@ -243,7 +243,7 @@ view-scoped
                                 (= 1 (:lines s)))))])
 
 ;; Color is in the point layer. The lm (a sketch-level layer)
-;; does not see it — one overall regression line.
+;; does not see it -- one overall regression line.
 
 ;; ### Override
 ;;
@@ -260,8 +260,8 @@ view-scoped
                                 (= 3 (:lines s)))))])
 
 ;; Sketch says `:color :species`. The point layer cancels it
-;; with `nil` — uncolored points. The lm layer has no override,
-;; so it keeps the sketch-level color — three lines.
+;; with `nil` -- uncolored points. The lm layer has no override,
+;; so it keeps the sketch-level color -- three lines.
 
 ;; ### Resolution
 ;;
@@ -278,14 +278,14 @@ view-scoped
 ;; same hierarchy: sketch -> view -> layer. Where you write it
 ;; determines who sees it.
 ;;
-;; **Mappings** — sketch-level color reaches all views; view-level
+;; **Mappings** -- sketch-level color reaches all views; view-level
 ;; color reaches one view; layer-level color reaches one layer.
 ;; (The examples above.)
 ;;
-;; **Layers** — a sketch-level layer applies to all views; a
+;; **Layers** -- a sketch-level layer applies to all views; a
 ;; view-level layer applies to one.
 
-;; Sketch-level lm — both panels get a regression line:
+;; Sketch-level lm -- both panels get a regression line:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width)
@@ -297,7 +297,7 @@ view-scoped
                            (and (= 2 (:panels s))
                                 (= 2 (:lines s)))))])
 
-;; View-level lm — only the first panel gets one:
+;; View-level lm -- only the first panel gets one:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
@@ -308,7 +308,7 @@ view-scoped
                            (and (= 2 (:panels s))
                                 (= 1 (:lines s)))))])
 
-;; **Data** — sketch-level data flows to all views. Faceting
+;; **Data** -- sketch-level data flows to all views. Faceting
 ;; creates per-view subsets automatically.
 ;;
 ;; One principle, three things it governs. Where you write it
@@ -347,7 +347,7 @@ targeted
 
 ;; Two views with the same column but different layers. The first
 ;; `lay-histogram` found the first `view`. The second `lay-density`
-;; found the second `view` — the most recent match.
+;; found the second `view` -- the most recent match.
 
 ;; ---
 ;; ## The Sketch Record
@@ -386,11 +386,11 @@ my-sketch
 ;; ---
 ;; ## Mark, Stat, and Position
 ;;
-;; Each layer contains a **method** — a rendering recipe with three parts:
+;; Each layer contains a **method** -- a rendering recipe with three parts:
 ;;
-;; - **Mark** — the visual shape (point, bar, line, area, tile, ...)
-;; - **Stat** — the computation before drawing (identity, bin, lm, kde, ...)
-;; - **Position** — how overlapping groups share space (identity, dodge, stack, ...)
+;; - **Mark** -- the visual shape (point, bar, line, area, tile, ...)
+;; - **Stat** -- the computation before drawing (identity, bin, lm, kde, ...)
+;; - **Position** -- how overlapping groups share space (identity, dodge, stack, ...)
 ;;
 ;; A method's name describes its intent. The mark describes the shape:
 
@@ -428,9 +428,9 @@ my-sketch
 ;;
 ;; Napkinsketch infers two things automatically:
 ;;
-;; - **Columns** — when omitted, inferred from the dataset shape
+;; - **Columns** -- when omitted, inferred from the dataset shape
 ;;   (1 column -> x, 2 -> x y, 3 -> x y color)
-;; - **Method** — when using `sk/view` instead of an explicit
+;; - **Method** -- when using `sk/view` instead of an explicit
 ;;   `sk/lay-*`, the chart type is chosen from the column types
 ;;
 ;; Two numerical columns produce a scatter plot:
@@ -485,7 +485,7 @@ my-sketch
 ;; The `:color` mapping controls point and line colors. Its behavior
 ;; depends on what you pass.
 ;;
-;; **Categorical column** — each unique value gets a distinct color.
+;; **Categorical column** -- each unique value gets a distinct color.
 ;; A legend maps labels to colors:
 
 (-> (rdatasets/datasets-iris)
@@ -495,21 +495,21 @@ my-sketch
                            (and (= 150 (:points s))
                                 (some #{"setosa"} (:texts s)))))])
 
-;; **Numeric column** — values map to a continuous gradient:
+;; **Numeric column** -- values map to a continuous gradient:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :petal-length}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; **Fixed color string** — all points colored uniformly:
+;; **Fixed color string** -- all points colored uniformly:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color "steelblue"}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; Categorical color does more than set colors — it creates
+;; Categorical color does more than set colors -- it creates
 ;; **groups**. Each group is processed independently: it gets its
 ;; own regression line, density curve, or boxplot:
 
@@ -534,7 +534,7 @@ my-sketch
 ;; ---
 ;; ## Plot Options and Annotations
 ;;
-;; `sk/options` sets plot-level settings — title, axis labels, size,
+;; `sk/options` sets plot-level settings -- title, axis labels, size,
 ;; theme overrides:
 
 (-> (rdatasets/datasets-iris)
@@ -578,7 +578,7 @@ my-sketch
 
 (kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
 
-;; Both are plot-level — they apply to all views uniformly.
+;; Both are plot-level -- they apply to all views uniformly.
 
 ;; ---
 ;; ## Faceting and Multi-Panel Layouts

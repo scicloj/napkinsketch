@@ -3,24 +3,24 @@
 ;; A **method** is the bundle that determines how data becomes a visual element.
 ;; It combines three concepts:
 ;;
-;; - **mark** — what shape to draw (points, bars, lines, ...)
-;; - **stat** — what computation to apply first (pass through, bin, count, regress, ...)
-;; - **position** — how overlapping groups share space (identity, dodge, stack, fill)
+;; - **mark** -- what shape to draw (points, bars, lines, ...)
+;; - **stat** -- what computation to apply first (pass through, bin, count, regress, ...)
+;; - **position** -- how overlapping groups share space (identity, dodge, stack, fill)
 ;;
 ;; Layer functions (`sk/lay-point`, `sk/lay-histogram`, `sk/lay-bar`, `sk/lay-lm`, etc.)
 ;; each add a layer with the corresponding method. When no layer is added,
 ;; napkinsketch infers a method from the column types.
 ;;
 ;; All built-in methods are registered in a data registry. The tables below
-;; are generated from that registry — they stay in sync with the code.
+;; are generated from that registry -- they stay in sync with the code.
 
 (ns napkinsketch-book.methods
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Method registry — for inspecting method data
+   ;; Method registry -- for inspecting method data
    [scicloj.napkinsketch.method :as method]
    ;; String utilities
    [clojure.string :as str]))
@@ -67,7 +67,7 @@
 ;; ## Marks
 ;;
 ;; A **mark** is the visual shape drawn for each data point or group.
-;; Several methods may share the same mark — for instance, `histogram`
+;; Several methods may share the same mark -- for instance, `histogram`
 ;; and `value-bar` both draw bars, and `lm` (linear model) and `loess` (local regression) both draw lines.
 
 (kind/table
@@ -120,7 +120,7 @@
 ;; You can override the default position by passing `:position` in
 ;; the layer options.
 ;; When multiple layers share `:position :dodge`, they are coordinated
-;; together — error bars automatically align with bars.
+;; together -- error bars automatically align with bars.
 
 ;; ## Layer Options
 ;;
@@ -173,6 +173,6 @@
 
 ;; ## What's Next
 ;;
-;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — see point, line, and regression methods in action
-;; - [**Distributions**](./napkinsketch_book.distributions.html) — histograms, density, boxplots, violins
-;; - [**Customization**](./napkinsketch_book.customization.html) — colors, palettes, themes, and per-layer options
+;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) -- see point, line, and regression methods in action
+;; - [**Distributions**](./napkinsketch_book.distributions.html) -- histograms, density, boxplots, violins
+;; - [**Customization**](./napkinsketch_book.customization.html) -- colors, palettes, themes, and per-layer options

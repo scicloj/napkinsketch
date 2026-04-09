@@ -2,22 +2,22 @@
 ;;
 ;; This chapter is the definitive reference for how sketches behave.
 ;; It specifies the data model, verb rules, and resolution semantics
-;; through 18 rules — each demonstrated with a printed sketch
+;; through 18 rules -- each demonstrated with a printed sketch
 ;; structure, a rendered plot, and a verified assertion.
 ;;
 ;; Read [The Sketch Model](./napkinsketch_book.sketch_model.html) first
 ;; for the mental model. Read
 ;; [Core Concepts](./napkinsketch_book.core_concepts.html) for detailed
-;; explanations. This chapter is the "proof" layer — every rule is
+;; explanations. This chapter is the "proof" layer -- every rule is
 ;; reproducible and tested.
 
 (ns napkinsketch-book.sketch-rules
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; RDatasets — standard datasets
+   ;; RDatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## The Data Model
@@ -34,7 +34,7 @@
 ;;
 ;; ## Resolution
 ;;
-;; Resolution converts a sketch into a **plan** — the fully resolved
+;; Resolution converts a sketch into a **plan** -- the fully resolved
 ;; data structure that `sk/plan` returns. See
 ;; [Inference Rules](./napkinsketch_book.inference_rules.html) for
 ;; a full walkthrough of the plan.
@@ -56,19 +56,19 @@
 ;;
 ;; | Verb | `:x`/`:y`? | What it does |
 ;; |:-----|:-----------|:-------------|
-;; | `sketch` | — | Set data + sketch-level mapping |
+;; | `sketch` | -- | Set data + sketch-level mapping |
 ;; | `view` | yes | Add view (opts go into the view's mapping) |
 ;; | `lay-*` | no | Add **sketch-level** layer (all views get it) |
 ;; | `lay-*` | yes | Add **view-specific** layer (find or create view) |
 ;; | `overlay` | yes | Add view with own layer (different columns, future: same panel) |
-;; | `annotate` | — | Add annotations to `:opts` |
+;; | `annotate` | -- | Add annotations to `:opts` |
 ;; | `distribution` | yes | Add diagonal views for SPLOM |
-;; | `options` | — | Set plot-level options |
+;; | `options` | -- | Set plot-level options |
 ;;
 ;; The structural/non-structural distinction:
 ;;
-;; - `:x`, `:y` → **structural** (define what data to plot, create views)
-;; - `:color`, `:alpha`, `:size`, `:se`, etc. → **non-structural** (aesthetics/parameters)
+;; - `:x`, `:y` -> **structural** (define what data to plot, create views)
+;; - `:color`, `:alpha`, `:size`, `:se`, etc. -> **non-structural** (aesthetics/parameters)
 
 ;; ## Setup
 
@@ -109,9 +109,9 @@
                                 (= 3 (:lines s)))))])
 
 ;; Both point and lm inherit `:color :species` from the view's mapping.
-;; Three regression lines — one per species.
+;; Three regression lines -- one per species.
 
-;; ## Rule 2: `lay-*` without `:x`/`:y` → sketch-level layer
+;; ## Rule 2: `lay-*` without `:x`/`:y` -> sketch-level layer
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width)
@@ -133,9 +133,9 @@
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; View has no own layers → uses the two sketch-level layers.
+;; View has no own layers -> uses the two sketch-level layers.
 
-;; ## Rule 3: `lay-*` with `:x`/`:y` → view-specific layer
+;; ## Rule 3: `lay-*` with `:x`/`:y` -> view-specific layer
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -200,10 +200,10 @@
                                 (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Same `:x`/`:y` → lm found the existing view and appended.
+;; Same `:x`/`:y` -> lm found the existing view and appended.
 ;; One view with two view-specific layers.
 
-;; ## Rule 6: different `:x`/`:y` → separate views
+;; ## Rule 6: different `:x`/`:y` -> separate views
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
@@ -226,7 +226,7 @@
                                 (pos? (:polygons s)))))])
 
 ;; Two views with different columns, each with its own layer.
-;; No cross product — scatter on view 1, histogram on view 2.
+;; No cross product -- scatter on view 1, histogram on view 2.
 
 ;; ## Rule 7: `sketch` opts go into sketch-level `:mapping`
 
@@ -272,7 +272,7 @@
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; View mapping has color. Lm layer has `:color nil` → cancels.
+;; View mapping has color. Lm layer has `:color nil` -> cancels.
 
 ;; ## Rule 9: sketch mapping affects all views
 
@@ -319,7 +319,7 @@
 
 ;; Annotations live in `:opts`, separate from views and layers.
 
-;; ## Rule 11: `overlay` — view with different columns + own layer
+;; ## Rule 11: `overlay` -- view with different columns + own layer
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
@@ -350,7 +350,7 @@
 
 (kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
 
-;; Small dataset (≤3 columns) → columns auto-inferred, view-specific.
+;; Small dataset (≤3 columns) -> columns auto-inferred, view-specific.
 
 ;; ---
 ;; # Grid Layout Rules
@@ -358,12 +358,12 @@
 ;; Each view produces its own panel. The grid is determined by
 ;; structural columns: views sharing an x-variable align in the
 ;; same grid column; views sharing a y-variable align in the same
-;; grid row. Per-view axes — no range leaking.
+;; grid row. Per-view axes -- no range leaking.
 
 ;; ## Rule 13: each view = one panel
 
-;; Two `lay-*` with different columns → two separate panels.
-;; No cross-product — scatter stays on its view, histogram on its.
+;; Two `lay-*` with different columns -> two separate panels.
+;; No cross-product -- scatter stays on its view, histogram on its.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
@@ -384,9 +384,9 @@
                                 (pos? (:polygons s)))))])
 
 ;; Two panels: scatter (150 points) and histogram (polygons).
-;; Each view has its own axis range — no leaking.
+;; Each view has its own axis range -- no leaking.
 
-;; ## Rule 14: shared x-variable → same grid column
+;; ## Rule 14: shared x-variable -> same grid column
 
 ;; Scatter and histogram of the same x-variable share the x-axis.
 
@@ -402,10 +402,10 @@
 ;; Two panels stacked vertically (same x-column), shared x-axis.
 ;; This is a marginal distribution layout.
 
-;; ## Rule 15: layers within one view → one panel (overlay)
+;; ## Rule 15: layers within one view -> one panel (overlay)
 
 ;; Multiple layers on the same view produce one panel with
-;; overlaid layers — not separate panels.
+;; overlaid layers -- not separate panels.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -417,7 +417,7 @@
                                 (= 1 (:lines s)))))])
 
 ;; One panel: colored scatter + overall regression line.
-;; Both layers are view-specific (same :x/:y → found same view).
+;; Both layers are view-specific (same :x/:y -> found same view).
 
 ;; ## Rule 16: sketch-level layers apply to all views
 
@@ -434,7 +434,7 @@
 ;; Two views (different columns), each gets the sketch-level lm layer.
 ;; Both panels have scatter + regression line.
 
-;; ## Rule 17: SPLOM — cross product of columns
+;; ## Rule 17: SPLOM -- cross product of columns
 
 (def splom-cols [:sepal-length :sepal-width :petal-length])
 
@@ -446,8 +446,8 @@
                                 (= (* 6 150) (:points s))
                                 (pos? (:polygons s)))))])
 
-;; 9 panels (3×3 grid), colored by species.
-;; Off-diagonal: scatter (6 × 150 = 900 points).
+;; 9 panels (3x3 grid), colored by species.
+;; Off-diagonal: scatter (6 x 150 = 900 points).
 ;; Diagonal: histograms (inferred when x=y).
 
 ;; ## Rule 18: per-panel scale and coord specs
@@ -494,24 +494,24 @@
 ;;
 ;; | Scope | Set by | Affects |
 ;; |:------|:-------|:--------|
-;; | **sketch mapping** | `sketch` | all views × all layers |
+;; | **sketch mapping** | `sketch` | all views x all layers |
 ;; | **view mapping** | `view` (opts map), `lay-*` (with `:x`/`:y`) | one view's own layers |
 ;; | **layer mapping** | `lay-*` opts map | one layer only |
 ;; | **sketch-level** | `lay-*` (no `:x`/`:y`) | all views |
 ;;
-;; Resolution: `merge(sketch mapping, view mapping, layer mapping)` — later wins, `nil` cancels.
+;; Resolution: `merge(sketch mapping, view mapping, layer mapping)` -- later wins, `nil` cancels.
 ;;
 ;; View layers = `concat(own-layers, sketch-level-layers)`.
 ;; Views without own layers use sketch-level layers only.
 ;;
-;; Structural aesthetics (`:x`, `:y`) → view-specific.
-;; Non-structural aesthetics (`:color`, `:alpha`, etc.) → layer-level.
+;; Structural aesthetics (`:x`, `:y`) -> view-specific.
+;; Non-structural aesthetics (`:color`, `:alpha`, etc.) -> layer-level.
 ;;
 ;; ### Grid layout
 ;;
 ;; - Each view = one panel
 ;; - Layers within one view = overlay (same panel)
-;; - Views sharing x-variable → same grid column (shared x-axis)
-;; - Views sharing y-variable → same grid row (shared y-axis)
-;; - Same position → stacked sub-panels
+;; - Views sharing x-variable -> same grid column (shared x-axis)
+;; - Views sharing y-variable -> same grid row (shared y-axis)
+;; - Same position -> stacked sub-panels
 ;; - User override: `{:grid-cols [...] :grid-rows [...]}`

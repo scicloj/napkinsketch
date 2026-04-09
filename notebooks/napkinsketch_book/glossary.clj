@@ -7,17 +7,17 @@
   (:require
    ;; Datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Method constructors — for inspecting method maps
+   ;; Method constructors -- for inspecting method maps
    [scicloj.napkinsketch.method :as method]))
 
 ;; ## View (sketch level)
 ;;
 ;; A **view** is a plain map in `sketch[:views]` that declares
-;; **what** to plot — which columns map to x and y. Each view
+;; **what** to plot -- which columns map to x and y. Each view
 ;; becomes one panel in the rendered plot.
 ;;
 ;; Created by `sk/view` or by `sk/lay-*` with columns.
@@ -84,10 +84,10 @@
 ;;
 ;; Methods come in two scopes:
 ;;
-;; - **Global layer** — stored in `sketch[:layers]`, applied to ALL
+;; - **Global layer** -- stored in `sketch[:layers]`, applied to ALL
 ;;   views. Created by bare `sk/lay-*` (without columns).
 ;;
-;; - **View-local layer** — stored in `view[:layers]`, applied
+;; - **View-local layer** -- stored in `view[:layers]`, applied
 ;;   only to that view. Created by `sk/lay-*` with columns.
 ;;
 ;; Resolution: each view uses `concat(own layers, global layers)`.
@@ -96,7 +96,7 @@
 ;; ## Mark
 ;;
 ;; The **mark** is the visual shape drawn for each data point or group.
-;; Several methods may share the same mark — for instance, `lm` and `loess`
+;; Several methods may share the same mark -- for instance, `lm` and `loess`
 ;; both draw lines, and `area`, `stacked-area`, and `density` all draw
 ;; filled regions.
 ;; See the [Methods](./napkinsketch_book.methods.html) chapter for a table of all built-in marks.
@@ -115,7 +115,7 @@
 ;; You can override the default position by passing `:position` in
 ;; the layer options.
 ;; When multiple layers share `:position :dodge`, they are coordinated
-;; together — error bars automatically align with bars.
+;; together -- error bars automatically align with bars.
 ;; See the [Methods](./napkinsketch_book.methods.html) chapter for a table of all built-in positions.
 
 (def tips {:day ["Mon" "Mon" "Tue" "Tue"]
@@ -156,7 +156,7 @@
 ;;
 ;; A **group** is a subset of data that is processed and drawn
 ;; together. Mapping `:color` to a categorical column automatically
-;; creates groups — one per unique value. You can also create groups
+;; creates groups -- one per unique value. You can also create groups
 ;; without color using the `:group` key.
 
 (-> (rdatasets/datasets-iris)
@@ -170,7 +170,7 @@
 ;; ## Nudge
 ;;
 ;; A **nudge** shifts data coordinates by a constant offset.
-;; It is orthogonal to position — you can nudge within a dodge,
+;; It is orthogonal to position -- you can nudge within a dodge,
 ;; or nudge at identity. Applied via `:nudge-x` and `:nudge-y`
 ;; keys in the layer options.
 
@@ -185,7 +185,7 @@
 ;;
 ;; **Jitter** adds random pixel-space offsets to reduce overplotting.
 ;; Unlike position and nudge, jitter operates in pixel space (not
-;; data space) and is deterministic — seeded by group color for
+;; data space) and is deterministic -- seeded by group color for
 ;; reproducibility.
 ;;
 ;; On categorical x-axes, jitter is applied along the band axis only.
@@ -196,7 +196,7 @@
 
 ;; ## Plan
 ;;
-;; A **plan** is the fully resolved intermediate representation —
+;; A **plan** is the fully resolved intermediate representation --
 ;; a plain Clojure map containing everything needed to render a plot:
 ;; data-space geometry, domains, tick info, legend, layout dimensions.
 ;; No membrane types, no datasets, no scale objects.
@@ -239,7 +239,7 @@
 ;; scales for easy comparison.
 ;;
 ;; - `sk/facet` creates a row or column of panels
-;; - `sk/facet-grid` creates a row × column grid from two columns
+;; - `sk/facet-grid` creates a row x column grid from two columns
 ;;
 ;; By default all panels share the same axis ranges. Use
 ;; `(sk/options {:scales ...})` to allow panels to have independent
@@ -282,7 +282,7 @@
 ;;
 ;; **Temporal columns** (`LocalDate`, `LocalDateTime`, `Instant`,
 ;; `java.util.Date`) are automatically detected and treated as
-;; numerical. Tick labels are calendar-aware — snapped to year,
+;; numerical. Tick labels are calendar-aware -- snapped to year,
 ;; month, day, or hour boundaries depending on the time span.
 
 ;; ## Coord
@@ -292,15 +292,15 @@
 ;;
 ;; | Type | Behavior |
 ;; |:-----|:---------|
-;; | `:cartesian` | Standard x→right, y→up |
+;; | `:cartesian` | Standard x->right, y->up |
 ;; | `:flip` | Swap x and y axes |
-;; | `:polar` | Radial: x→angle, y→radius |
+;; | `:polar` | Radial: x->angle, y->radius |
 ;; | `:fixed` | Equal aspect ratio: 1 data unit = 1 data unit |
 
 ;; ## Annotation
 ;;
 ;; An **annotation** is a non-data mark that adds visual reference
-;; to a plot. Annotations are not connected to data columns — they
+;; to a plot. Annotations are not connected to data columns -- they
 ;; overlay fixed positions.
 ;;
 ;; | Constructor | What |
@@ -343,12 +343,12 @@
 ;; ## Membrane
 ;;
 ;; A **membrane** is a value of the
-;; [Membrane](https://github.com/phronmophobic/membrane) library —
+;; [Membrane](https://github.com/phronmophobic/membrane) library --
 ;; a tree of layout and drawing primitives (`Translate`, `WithColor`,
 ;; `RoundedRectangle`, `Label`, etc.) that represents a complete plot.
 ;;
 ;; The membrane is an intermediate step in the SVG rendering path:
-;; plan → membrane → SVG hiccup. Direct renderers (e.g., Plotly)
+;; plan -> membrane -> SVG hiccup. Direct renderers (e.g., Plotly)
 ;; skip the membrane entirely.
 
 (def my-membrane (sk/plan->membrane my-plan))
@@ -363,7 +363,7 @@
 
 ;; ## Figure
 ;;
-;; A **figure** is the final rendered output — the result of rendering
+;; A **figure** is the final rendered output -- the result of rendering
 ;; a plan to a specific format. For SVG, the figure is hiccup markup
 ;; wrapped in `kind/hiccup`.
 ;;
@@ -381,7 +381,7 @@
 ;; aesthetics. When `:color` maps to a categorical column, colors
 ;; are assigned from the active palette in order.
 ;;
-;; Napkinsketch uses clojure2d for palettes — over 7,000 named palettes
+;; Napkinsketch uses clojure2d for palettes -- over 7,000 named palettes
 ;; are available. Set via `{:palette :set2}` in options.
 
 ;; ## Gradient
@@ -396,9 +396,9 @@
 
 ;; ## Configuration
 ;;
-;; **Configuration** controls rendering behavior — dimensions, theme,
+;; **Configuration** controls rendering behavior -- dimensions, theme,
 ;; palette, color scale, margins, and more. It is one of three option
-;; scopes — the others are [plot options](#plot-options) and
+;; scopes -- the others are [plot options](#plot-options) and
 ;; [layer options](#layer-options). Configuration follows a
 ;; precedence chain:
 ;;
@@ -414,7 +414,7 @@
 ;; **Plot options** are per-plot settings passed to `sk/options`,
 ;; `sk/plan`, or `sk/plot`. They include text content (title,
 ;; subtitle, caption, axis labels) and a nested `:config` override.
-;; Unlike configuration keys, plot options are inherently per-plot —
+;; Unlike configuration keys, plot options are inherently per-plot --
 ;; a title does not make sense as a global default.
 ;;
 ;; See `sk/plot-option-docs` for the full list, or the
@@ -432,7 +432,7 @@
 ;; grouping (`:group`), position adjustment (`:position`), and
 ;; method-specific parameters (`:bandwidth`, `:se`, `:normalize`, etc.).
 ;;
-;; Four keys are universal — accepted by every layer — and each method
+;; Four keys are universal -- accepted by every layer -- and each method
 ;; may accept additional keys. The [Methods](./napkinsketch_book.methods.html) chapter lists
 ;; which options each method accepts. See also `sk/layer-option-docs`
 ;; for descriptions, or inspect a specific method with `sk/method-lookup`.
@@ -458,7 +458,7 @@
 ;; | Sketch mapping | Mappings in `:mapping` that apply to all views | `sk/sketch` opts map |
 ;; | Global layer | Layer in `:layers` applied to all views | `sk/lay-*` without columns |
 ;; | View-local layer | Layer in `view[:layers]` applied to one view | `sk/lay-*` with columns |
-;; | Resolution | `merge(sketch mapping, view mapping, layer mapping)` → resolved view | Automatic during `sk/plan` |
+;; | Resolution | `merge(sketch mapping, view mapping, layer mapping)` -> resolved view | Automatic during `sk/plan` |
 ;; | Method | Mark + stat + position bundle | `sk/method-lookup`, `sk/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in method map |
 ;; | Stat | Data transform: identity, bin, count, lm, kde, ... | Key in method map |
@@ -471,7 +471,7 @@
 ;; | Layer | Resolved geometry + style for one mark | Inside plan panels |
 ;; | Domain | Data range on an axis | Part of panel |
 ;; | Tick | Axis mark with label at a domain value | Part of panel |
-;; | Scale | Data → pixel mapping (linear, log, categorical) | `sk/scale` |
+;; | Scale | Data -> pixel mapping (linear, log, categorical) | `sk/scale` |
 ;; | Coord | Coordinate system (cartesian, flip, polar, fixed) | `sk/coord` |
 ;; | Facet | Split into panels by a categorical column | `sk/facet`, `sk/facet-grid` |
 ;; | Annotation | Non-data reference marks (rules, bands) | `sk/annotate` |

@@ -2,7 +2,7 @@
   "Sketch: the composable data model and views-to-plan pipeline.
    A sketch is a record with :data :mapping :views :layers :opts.
    Resolution: merge(sketch-mapping, view-mapping, method-info, layer-mapping)
-   → flat view maps → plan."
+   -> flat view maps -> plan."
   (:require [wadogo.scale :as ws]
             [java-time.api :as jt]
             [tablecloth.api :as tc]
@@ -27,13 +27,13 @@
 ;;
 ;; Sketch [data mapping views layers opts]
 ;;
-;; :data     — dataset (sketch-level)
-;; :mapping  — sketch-level aesthetic mappings (visible to all views, all layers)
-;; :views    — vector of view maps, each with :mapping, :layers, optional :data
-;; :layers   — sketch-level layers (crossed with all views)
-;; :opts     — plot options + scale/coord/facet/annotations
+;; :data     -- dataset (sketch-level)
+;; :mapping  -- sketch-level aesthetic mappings (visible to all views, all layers)
+;; :views    -- vector of view maps, each with :mapping, :layers, optional :data
+;; :layers   -- sketch-level layers (crossed with all views)
+;; :opts     -- plot options + scale/coord/facet/annotations
 ;;
-;; Three scope levels: sketch → view → layer.
+;; Three scope levels: sketch -> view -> layer.
 ;; Mappings flow downward; lower overrides higher (lexical scope).
 
 (defrecord Sketch [data mapping views layers opts])
@@ -88,7 +88,7 @@
 
 (defn- resolve-method-info
   "Look up method info from a layer's :method key.
-   Keyword → registry lookup. Map → pass through. :infer → sentinel."
+   Keyword -> registry lookup. Map -> pass through. :infer -> sentinel."
   [method-key]
   (cond
     (= :infer method-key)
@@ -99,7 +99,7 @@
       (or (not-empty (select-keys (or m {}) [:mark :stat :position]))
           {:mark method-key :stat :identity}))
 
-    :else ;; raw map — pass through
+    :else ;; raw map -- pass through
     method-key))
 
 (defn- validate-columns
@@ -125,7 +125,7 @@
 (defn resolve-sketch
   "Resolve a sketch into a flat vector of view maps for views->plan.
    Reads facet/scale/coord from opts. Expands facets on views.
-   Crosses views × layers: each view's own :layers ∪ sketch :layers.
+   Crosses views x layers: each view's own :layers ∪ sketch :layers.
    Merges mappings downward: sketch-mapping < view-mapping < method-info < layer-mapping.
    Annotation views (with annotation marks in own layers) skip sketch layers.
    Views with no applicable layers get {:mark :infer} for downstream inference."
@@ -276,7 +276,7 @@
                                (when-not (#{:stack :fill} (:position l))
                                  (:y-domain l)))
                              layers)
-            ;; Always include 0 — stacked bars are drawn from the baseline
+            ;; Always include 0 -- stacked bars are drawn from the baseline
             all-vals (concat rect-vals area-vals other-yd [0])
             lo (double (reduce min all-vals))
             hi (double (reduce max all-vals))]
@@ -688,7 +688,7 @@
 
 (defn- warn-conflicting-specs
   "Warn when views disagree about scale or coord specs.
-   Only the first view's specs are used — conflicting specs are silently ignored
+   Only the first view's specs are used -- conflicting specs are silently ignored
    without this warning."
   [views]
   (let [x-types (distinct (keep (comp :type :x-scale) views))
@@ -711,8 +711,8 @@
 (defn- infer-grid
   "Infer grid structure from entry-grouped views.
    Each entry = one panel. Grid position determined by:
-   - Faceted entries: :facet-col → grid col, :facet-row → grid row
-   - Non-faceted entries: :x column → grid col, :y column → grid row
+   - Faceted entries: :facet-col -> grid col, :facet-row -> grid row
+   - Non-faceted entries: :x column -> grid col, :y column -> grid row
    Returns {:grid-cols N :grid-rows N :panels [{:views [...] :row R :col C ...}]}"
   [entry-groups {:keys [grid-cols grid-rows] :as user-grid}]
   (let [;; Detect faceting: check if any entry has :facet-col or :facet-row
@@ -762,7 +762,7 @@
                                 [(max 0 i) (when (and yv show-label?) (defaults/fmt-name yv))]))
                             ;; Stacking: when multiple entries share the same
                             ;; grid position, offset each by one row below the base.
-                            ;; sub=0 → base position; sub>0 → stacked below.
+                            ;; sub=0 -> base position; sub>0 -> stacked below.
                             stack-key [ri ci]
                             sub (get @stack-counts stack-key 0)
                             _ (swap! stack-counts update stack-key (fnil inc 0))]]
@@ -870,7 +870,7 @@
                          x-scale-spec (or (:x-scale panel-view) default-x-scale)
                          y-scale-spec (or (:y-scale panel-view) default-y-scale)
                          coord-type (or (:coord panel-view) default-coord)
-                         ;; Per-entry domains — each panel gets its own
+                         ;; Per-entry domains -- each panel gets its own
                          x-dom (or (:domain x-scale-spec)
                                    (collect-domain local-srs :x-domain x-scale-spec))
                          y-dom (or (:domain y-scale-spec)
@@ -915,7 +915,7 @@
                        (:row-label pd) (assoc :row-label (:row-label pd))
                        (:col-label pd) (assoc :col-label (:col-label pd))))))
 
-         ;; Ridgeline axis swap — the user specifies category on x and
+         ;; Ridgeline axis swap -- the user specifies category on x and
          ;; numeric values on y, but a ridgeline renders categories
          ;; vertically (stacked rows) and density horizontally.
          ;; The pipeline resolves everything in the normal orientation

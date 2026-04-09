@@ -8,21 +8,21 @@
 ;;
 ;; You would explore plans when:
 ;;
-;; - **Debugging** — a plot looks wrong and you want to see what data
+;; - **Debugging** -- a plot looks wrong and you want to see what data
 ;;   the renderer received (domains, groups, tick values)
-;; - **Building a custom renderer** — you need to understand the plan
+;; - **Building a custom renderer** -- you need to understand the plan
 ;;   structure to consume it
-;; - **Validating** — you want to assert plan properties in tests
+;; - **Validating** -- you want to assert plan properties in tests
 
 (ns napkinsketch-book.exploring-plans
   (:require
-   ;; rdatasets — standard datasets
+   ;; rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Method registry — lookup mark/stat/position by keyword
+   ;; Method registry -- lookup mark/stat/position by keyword
    [scicloj.napkinsketch.method :as method]))
 
 ;; ## A Minimal Scatter Plot
@@ -42,7 +42,7 @@
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; And here is the plan — the data structure that drives the rendering.
+;; And here is the plan -- the data structure that drives the rendering.
 ;; We'll use `sk/plan` with the same sketch:
 
 (def tiny-pl (-> tiny
@@ -52,7 +52,7 @@
 ;; ### What's in a plan?
 ;;
 ;; At the top level, a plan describes dimensions and layout.
-;; Here is the entire plan — a plain Clojure map:
+;; Here is the entire plan -- a plain Clojure map:
 
 tiny-pl
 
@@ -66,7 +66,7 @@ tiny-pl
 
 ;; Notice:
 ;;
-;; - Dimensions are 600×400 with a 30-pixel margin
+;; - Dimensions are 600x400 with a 30-pixel margin
 ;; - Labels `"x"` and `"y"` are inferred from column names
 ;; - No legend (we didn't map a column to color)
 ;; - One panel with `:x-domain`, `:y-domain`, ticks, and layers
@@ -82,7 +82,7 @@ tiny-pl
 
 (kind/test-last [(fn [ks] (every? (set ks) [:x-domain :y-domain :layers]))])
 
-;; **Domains** — the numeric range of the data, with a small padding:
+;; **Domains** -- the numeric range of the data, with a small padding:
 
 (:x-domain tiny-panel)
 
@@ -92,13 +92,13 @@ tiny-pl
 
 (kind/test-last [(fn [d] (and (<= (first d) 1) (>= (second d) 5)))])
 
-;; **Scale specs** — what kind of scale to use:
+;; **Scale specs** -- what kind of scale to use:
 
 (:x-scale tiny-panel)
 
 (kind/test-last [(fn [s] (= :linear (:type s)))])
 
-;; **Ticks** — pre-computed tick positions and their text labels:
+;; **Ticks** -- pre-computed tick positions and their text labels:
 
 (:x-ticks tiny-panel)
 
@@ -107,7 +107,7 @@ tiny-pl
                               (= (count (:values t)) (count (:labels t)))))])
 
 ;; These are the actual numbers that will appear on the axis.
-;; They are in data space — not pixel positions.
+;; They are in data space -- not pixel positions.
 
 ;; ### The layer
 ;;
@@ -127,7 +127,7 @@ tiny-layer
 
 (kind/test-last [(fn [n] (= 1 n))])
 
-;; The group contains the actual data — x/y coordinates in data space,
+;; The group contains the actual data -- x/y coordinates in data space,
 ;; plus a resolved RGBA color:
 
 (first (:groups tiny-layer))
@@ -136,7 +136,7 @@ tiny-layer
                               (= [1 2 3 4 5] (mapv int (:xs g)))
                               (= [2 4 1 5 3] (mapv int (:ys g)))))])
 
-;; These are the original data values — not pixel positions.
+;; These are the original data values -- not pixel positions.
 ;; The renderer maps them through scales to get pixel coordinates.
 ;;
 ;; In other words, the plan describes geometry in data space.
@@ -157,14 +157,14 @@ tiny-layer
                  (sk/lay-point :sepal-length :sepal-width {:color :species})
                  sk/plan))
 
-;; Here is the full plan — notice the legend and three groups:
+;; Here is the full plan -- notice the legend and three groups:
 
 iris-pl
 
 (kind/test-last [(fn [m] (and (= 3 (count (:entries (:legend m))))
                               (= 1 (count (:panels m)))))])
 
-;; Now we have three groups — one per species:
+;; Now we have three groups -- one per species:
 
 (def iris-layer (first (:layers (first (:panels iris-pl)))))
 
@@ -188,7 +188,7 @@ iris-pl
 
 (kind/test-last [(fn [leg] (= 3 (count (:entries leg))))])
 
-;; Colors are resolved to `[r g b a]` vectors — no symbolic references.
+;; Colors are resolved to `[r g b a]` vectors -- no symbolic references.
 ;; The same color appears in both the layer groups and the legend entries.
 
 ;; ### Continuous Color
@@ -204,7 +204,7 @@ iris-pl
 
 (kind/test-last [(fn [m] (= :continuous (:type m)))])
 
-;; The legend has pre-computed gradient stops — no functions:
+;; The legend has pre-computed gradient stops -- no functions:
 
 (select-keys (:legend cont-pl) [:title :type :min :max :color-scale])
 
@@ -220,7 +220,7 @@ iris-pl
 ;; ## Histograms
 ;;
 ;; A histogram computes bins from the data. The plan stores the
-;; bin edges and counts — still in data space.
+;; bin edges and counts -- still in data space.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-histogram :sepal-length))
@@ -243,7 +243,7 @@ hist-pl
 
 (kind/test-last [(fn [m] (= :bar m))])
 
-;; The geometry is in `:bars` — each bin has a lo edge, hi edge, and count:
+;; The geometry is in `:bars` -- each bin has a lo edge, hi edge, and count:
 
 (let [g (first (:groups hist-layer))]
   (:bars g))
@@ -307,7 +307,7 @@ bar-layer
 
 (kind/test-last [(fn [p] (= :stack p))])
 
-;; The counts are the same — only the rendering instruction differs.
+;; The counts are the same -- only the rendering instruction differs.
 ;; The plan describes *what* to draw; the renderer decides *how*.
 
 ;; ## Regression Lines
@@ -327,13 +327,13 @@ bar-layer
                sk/lay-lm
                sk/plan))
 
-;; Two layers — points and line:
+;; Two layers -- points and line:
 
 (mapv :mark (:layers (first (:panels lm-pl))))
 (kind/test-last [(fn [marks] (= [:point :line] marks))])
 (def lm-layer (second (:layers (first (:panels lm-pl)))))
 
-;; Its group has endpoints — a line segment in data space:
+;; Its group has endpoints -- a line segment in data space:
 
 (first (:groups lm-layer))
 
@@ -372,7 +372,7 @@ bar-layer
 
 (kind/test-last [(fn [gs] (= 3 (count gs)))])
 
-;; Three line segments, each with its own color — one per species.
+;; Three line segments, each with its own color -- one per species.
 
 ;; ## Connected Lines (Polylines)
 ;;
@@ -440,7 +440,7 @@ bar-layer
 
 (kind/test-last [(fn [c] (= :flip c))])
 
-;; The domains are swapped — the categorical axis is now y:
+;; The domains are swapped -- the categorical axis is now y:
 
 (let [p (first (:panels flip-pl))]
   {:x-domain-type (if (number? (first (:x-domain p))) :numeric :categorical)
@@ -449,7 +449,7 @@ bar-layer
 (kind/test-last [(fn [m] (and (= :numeric (:x-domain-type m))
                               (= :categorical (:y-domain-type m))))])
 
-;; The layer data is unchanged — the coord type tells the renderer
+;; The layer data is unchanged -- the coord type tells the renderer
 ;; to swap axes during mapping.
 
 ;; ## Options Affect the Plan
@@ -478,7 +478,7 @@ opts-pl
                                 (pos? (:x-label-pad lay))
                                 (pos? (:y-label-pad lay))))])
 
-;; ## Plan vs sketch — Side by Side
+;; ## Plan vs sketch -- Side by Side
 ;;
 ;; `sk/plan` and `sk/plot` accept the same sketch.
 ;; `sk/plan` returns the intermediate data map; `sk/plot` returns the final SVG.
@@ -531,7 +531,7 @@ final-pl
 
 (kind/test-last [(fn [g] (and (= 1 (:rows g)) (= 3 (:cols g))))])
 
-;; Three panels — one per species:
+;; Three panels -- one per species:
 
 (count (:panels faceted-pl))
 
@@ -605,7 +605,7 @@ final-pl
 
 ;; ## Data Types
 ;;
-;; Plans are plain inspectable data — maps, numbers, strings,
+;; Plans are plain inspectable data -- maps, numbers, strings,
 ;; keywords, and dtype-next buffers for numeric arrays (see [Architecture](./napkinsketch_book.architecture.html)) (`:xs`, `:ys`,
 ;; etc.). The buffers support `nth`, `count`, `seq`, and all standard
 ;; sequence operations.
@@ -622,5 +622,5 @@ final-pl
 
 ;; ## What's Next
 ;;
-;; - [**Architecture**](./napkinsketch_book.architecture.html) — the four-stage pipeline in detail
-;; - [**Extensibility**](./napkinsketch_book.extensibility.html) — add custom marks, stats, and renderers
+;; - [**Architecture**](./napkinsketch_book.architecture.html) -- the four-stage pipeline in detail
+;; - [**Extensibility**](./napkinsketch_book.extensibility.html) -- add custom marks, stats, and renderers

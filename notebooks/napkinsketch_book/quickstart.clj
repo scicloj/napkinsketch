@@ -16,9 +16,9 @@
   (:require
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; Use [Clay](https://scicloj.github.io/clay/) or other
@@ -28,7 +28,7 @@
 ;; ## Your First Plot
 ;;
 ;; Load the classic [iris](https://en.wikipedia.org/wiki/Iris_flower_data_set) dataset and scatter two columns. That is all
-;; it takes — one `def` and one pipeline:
+;; it takes -- one `def` and one pipeline:
 
 (def iris (rdatasets/datasets-iris))
 
@@ -45,7 +45,7 @@
 
 ;; ## Plain Data
 ;;
-;; You do not need to load a CSV — Napkinsketch accepts plain Clojure
+;; You do not need to load a CSV -- Napkinsketch accepts plain Clojure
 ;; data and coerces it into a dataset internally.
 ;; A map of columns works directly:
 
@@ -54,7 +54,7 @@
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; When the dataset has few columns, you can skip the column names —
+;; When the dataset has few columns, you can skip the column names --
 ;; Napkinsketch infers them from the dataset shape:
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
@@ -64,7 +64,7 @@
 
 ;; See [**Core Concepts**](./napkinsketch_book.core_concepts.html) for more input formats.
 
-;; String column names also work — keywords are conventional but not
+;; String column names also work -- keywords are conventional but not
 ;; required:
 
 (-> {"x" [1 2 3 4 5] "y" [2 4 3 5 4]}
@@ -88,7 +88,7 @@
 ;;
 ;; Each `sk/lay-*` function adds a different chart type.
 ;;
-;; **Histogram** — pass a single column for automatic binning:
+;; **Histogram** -- pass a single column for automatic binning:
 
 (-> iris
     (sk/lay-histogram :sepal-length))
@@ -98,7 +98,7 @@
                                 (pos? (:polygons s))
                                 (zero? (:points s)))))])
 
-;; **Bar chart** — count occurrences of a categorical column:
+;; **Bar chart** -- count occurrences of a categorical column:
 
 (-> iris
     (sk/lay-bar :species))
@@ -107,7 +107,7 @@
                            (and (= 1 (:panels s))
                                 (= 3 (:polygons s)))))])
 
-;; **Horizontal bars** — flip with `sk/coord`:
+;; **Horizontal bars** -- flip with `sk/coord`:
 
 (-> iris
     (sk/lay-bar :species)
@@ -116,7 +116,7 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:polygons s))))])
 
-;; **Line chart** — connect points in order:
+;; **Line chart** -- connect points in order:
 
 (-> {:x [1 2 3 4 5 6 7 8]
      :y [3 5 4 7 6 8 7 9]}
@@ -126,7 +126,7 @@
                            (and (= 1 (:lines s))
                                 (zero? (:points s)))))])
 
-;; **Boxplot** — compare distributions across categories:
+;; **Boxplot** -- compare distributions across categories:
 
 (-> iris
     (sk/lay-boxplot :species :sepal-width))
@@ -217,7 +217,7 @@
 ;;
 ;; ## What's Next
 ;;
-;; - [**The Sketch Model**](./napkinsketch_book.sketch_model.html) — the mental model behind composable plotting
-;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) — data formats, marks, stats, color, grouping, coordinates
-;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — the most common starting point for chart types
-;; - [**Cookbook**](./napkinsketch_book.cookbook.html) — recipes for common multi-layer plots
+;; - [**The Sketch Model**](./napkinsketch_book.sketch_model.html) -- the mental model behind composable plotting
+;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) -- data formats, marks, stats, color, grouping, coordinates
+;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) -- the most common starting point for chart types
+;; - [**Cookbook**](./napkinsketch_book.cookbook.html) -- recipes for common multi-layer plots

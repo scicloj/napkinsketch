@@ -3,19 +3,19 @@
 ;; Napkinsketch is a composable plotting library inspired by
 ;; Wilkinson's [Grammar of Graphics](https://link.springer.com/book/10.1007/0-387-28695-0)
 ;; and Julia's [AlgebraOfGraphics.jl](https://aog.makie.org/stable/).
-;; Its operators are shaped by Clojure idioms — threading, merge,
-;; plain maps — rather than a custom DSL.
+;; Its operators are shaped by Clojure idioms -- threading, merge,
+;; plain maps -- rather than a custom DSL.
 ;;
 ;; This chapter introduces the mental model. Five ideas, and
 ;; everything else in the book is details.
 
 (ns napkinsketch-book.sketch-model
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; RDatasets — standard datasets
+   ;; RDatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Idea 1: The what/how split
@@ -24,10 +24,10 @@
 ;;
 ;; | Verb | What it does | Example |
 ;; |:-----|:-------------|:--------|
-;; | `sk/view` | Declare **what** to plot — columns and aesthetics | `(sk/view data :x :y)` |
-;; | `sk/lay-*` | Choose **how** to draw it — the chart type | `sk/lay-point`, `sk/lay-histogram` |
+;; | `sk/view` | Declare **what** to plot -- columns and aesthetics | `(sk/view data :x :y)` |
+;; | `sk/lay-*` | Choose **how** to draw it -- the chart type | `sk/lay-point`, `sk/lay-histogram` |
 ;;
-;; The result of either verb is a **sketch** — a lightweight,
+;; The result of either verb is a **sketch** -- a lightweight,
 ;; composable description of a plot.
 
 (-> (rdatasets/datasets-iris)
@@ -54,11 +54,11 @@
 
 ;; Five fields:
 ;;
-;; - `:data` — the dataset
-;; - `:mapping` — aesthetics that apply to all views
-;; - `:views` — what to plot (column pairs)
-;; - `:layers` — how to draw it (layers: method + optional mappings)
-;; - `:opts` — plot-level options (title, width, theme)
+;; - `:data` -- the dataset
+;; - `:mapping` -- aesthetics that apply to all views
+;; - `:views` -- what to plot (column pairs)
+;; - `:layers` -- how to draw it (layers: method + optional mappings)
+;; - `:opts` -- plot-level options (title, width, theme)
 ;;
 ;; [Core Concepts](./napkinsketch_book.core_concepts.html) explains
 ;; each field in detail.
@@ -81,26 +81,26 @@
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; `sk/view` declares what to plot — columns and color grouping.
+;; `sk/view` declares what to plot -- columns and color grouping.
 ;; Then `sk/lay-point` and `sk/lay-lm` each add a layer.
 ;; Both layers share the same columns and aesthetics.
 ;;
 ;; **The key insight: `view` describes what, `lay-*` describes how.**
 ;; Separating them lets you add multiple layers that share the
-;; same data mapping — scatter points and regression lines here,
+;; same data mapping -- scatter points and regression lines here,
 ;; each species getting its own color and fitted line.
 
 ;; ## Idea 4: Inference fills the gaps
 ;;
 ;; When you omit a choice, napkinsketch infers it from the data.
-;; Two numerical columns with no `lay-*` → scatter:
+;; Two numerical columns with no `lay-*` -> scatter:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; One numerical column → histogram:
+;; One numerical column -> histogram:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length))
@@ -131,7 +131,7 @@
                                 (some #{"Iris by Species"} (:texts s)))))])
 
 ;; `view`, `lay-*`, `facet`, `options`, `scale`, `coord`,
-;; `annotate` — all take a sketch and return a sketch. Order
+;; `annotate` -- all take a sketch and return a sketch. Order
 ;; is flexible. The pipeline reads like a sentence: "take this
 ;; data, view these columns with color, facet by species, add
 ;; points and regression lines, set a title."
@@ -140,14 +140,14 @@
 ;;
 ;; | Idea | In code |
 ;; |:-----|:--------|
-;; | The what/how split | `sk/view` (what) + `sk/lay-*` (how) → sketch |
-;; | Sketches are data | Plain records — inspect with `kind/pprint` |
+;; | The what/how split | `sk/view` (what) + `sk/lay-*` (how) -> sketch |
+;; | Sketches are data | Plain records -- inspect with `kind/pprint` |
 ;; | What/how separation | Share columns across layers |
 ;; | Inference fills gaps | Omit choices, library infers from data |
 ;; | Everything composes | All functions return sketches, thread with `->` |
 ;;
 ;; ## What's Next
 ;;
-;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) — data formats, marks, stats, color, grouping, coordinates
-;; - [**Inference Rules**](./napkinsketch_book.inference_rules.html) — how napkinsketch chooses defaults
-;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) — chart type examples to explore
+;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) -- data formats, marks, stats, color, grouping, coordinates
+;; - [**Inference Rules**](./napkinsketch_book.inference_rules.html) -- how napkinsketch chooses defaults
+;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) -- chart type examples to explore

@@ -1,6 +1,6 @@
 ;; # Extensibility
 ;;
-;; Napkinsketch is built on multimethods — open dispatch points that let
+;; Napkinsketch is built on multimethods -- open dispatch points that let
 ;; you add new marks, statistics, scales, coordinate systems, and
 ;; output formats without modifying the core library.
 ;;
@@ -12,13 +12,13 @@
   (:require
    ;; Datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Method registry — for inspecting method data
+   ;; Method registry -- for inspecting method data
    [scicloj.napkinsketch.method :as method]
-   ;; Implementation namespaces — for extension points
+   ;; Implementation namespaces -- for extension points
    [scicloj.napkinsketch.impl.stat :as stat]
    [scicloj.napkinsketch.impl.extract :as extract]
    [scicloj.napkinsketch.render.mark :as mark]
@@ -38,7 +38,7 @@
 ;;                        ↓
 ;;                      views
 ;;                        ↓
-;; views → views->plan (compute-stat, extract-layer, ...)
+;; views -> views->plan (compute-stat, extract-layer, ...)
 ;;                                              ↓
 ;;                                           plan
 ;;                                              ↓
@@ -46,9 +46,9 @@
 ;;                                              ↓
 ;;                              ┌───────────────┴───────────────┐
 ;;                     membrane path                     direct path
-;;                  plan→membrane                   plan→figure
+;;                  plan->membrane                   plan->figure
 ;;                        ↓
-;;                  membrane→figure
+;;                  membrane->figure
 ;;                        ↓
 ;;                      figure                           figure
 ;; ```
@@ -56,10 +56,10 @@
 ;; | Multimethod | Namespace | Dispatches on | Purpose |
 ;; |:------------|:----------|:--------------|:--------|
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
-;; | `extract-layer` | `impl/extract.clj` | `:mark` key | Convert stat result → plan layer descriptor |
-;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render plan layer → membrane drawables |
-;; | `plan->figure` | `impl/render.clj` | format keyword | Orchestrate plan → figure (full path) |
-;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert membrane tree → figure |
+;; | `extract-layer` | `impl/extract.clj` | `:mark` key | Convert stat result -> plan layer descriptor |
+;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render plan layer -> membrane drawables |
+;; | `plan->figure` | `impl/render.clj` | format keyword | Orchestrate plan -> figure (full path) |
+;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert membrane tree -> figure |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
 ;; | `apply-position` | `impl/position.clj` | position keyword | Adjust group layout (dodge, stack, fill) |
@@ -117,17 +117,17 @@
 ;;
 ;; The return value must always include `:x-domain` and `:y-domain`.
 ;; The rest of the shape depends on what the paired `extract-layer`
-;; expects — the stat and extractor are a matched pair. For
+;; expects -- the stat and extractor are a matched pair. For
 ;; point-like marks, return `:points` (groups of `:xs`, `:ys`).
 ;; For other marks, study a similar existing pair as a template:
 ;;
-;; - `:identity` → `{:points [...] :x-domain [...] :y-domain [...]}`
-;; - `:bin` → `{:bins [...] :max-count ... :x-domain [...] :y-domain [...]}`
-;; - `:boxplot` → `{:boxes [...] :categories [...] :x-domain [...] :y-domain [...]}`
+;; - `:identity` -> `{:points [...] :x-domain [...] :y-domain [...]}`
+;; - `:bin` -> `{:bins [...] :max-count ... :x-domain [...] :y-domain [...]}`
+;; - `:boxplot` -> `{:boxes [...] :categories [...] :x-domain [...] :y-domain [...]}`
 
 ;; ## `extract-layer`
 ;;
-;; Converts a stat result into a plan layer descriptor — a plain
+;; Converts a stat result into a plan layer descriptor -- a plain
 ;; map with data-space geometry and resolved colors.
 ;;
 (kind/table
@@ -159,7 +159,7 @@
 ;; ## `layer->membrane`
 ;;
 ;; Renders a plan layer descriptor into membrane drawable primitives.
-;; This is the "membrane path" — used when the target format goes through
+;; This is the "membrane path" -- used when the target format goes through
 ;; membrane (e.g., SVG).
 ;;
 (kind/table
@@ -207,7 +207,7 @@
 ;; ;; Register the method
 ;; (method/register! :waterfall
 ;;   {:mark :waterfall :stat :waterfall
-;;    :doc "Waterfall — running total with increase/decrease bars."})
+;;    :doc "Waterfall -- running total with increase/decrease bars."})
 ;;
 ;; ;; Users can then call:
 ;; ;; (sk/lay data (method/lookup :waterfall))
@@ -227,14 +227,14 @@
 
 ;; ## `plan->figure`
 ;;
-;; Orchestrates the full plan → figure path. The `:svg` implementation
-;; goes through the membrane path: `plan → membrane → figure`.
+;; Orchestrates the full plan -> figure path. The `:svg` implementation
+;; goes through the membrane path: `plan -> membrane -> figure`.
 ;; Other renderers can skip membrane and go directly from plan
 ;; to their target format.
 ;;
 ;; | Dispatch value | Path |
 ;; |:---------------|:-----|
-;; | `:svg` | plan → membrane → `membrane->figure :svg` |
+;; | `:svg` | plan -> membrane -> `membrane->figure :svg` |
 ;;
 ;; Dispatch function: `(fn [plan format opts] format)`
 
@@ -268,7 +268,7 @@
 ;;
 ;; (defmethod render/plan->figure :plotly [plan _ opts]
 ;;   ;; Read plan domains, layers, legend, layout
-;;   ;; Build a Plotly.js spec directly — no membrane needed
+;;   ;; Build a Plotly.js spec directly -- no membrane needed
 ;;   {:data (mapcat plan-layer->plotly-traces
 ;;                  (:layers (first (:panels plan))))
 ;;    :layout {:xaxis {:title (:x-label plan)}
@@ -285,7 +285,7 @@
 ;; ## `membrane->figure`
 ;;
 ;; Converts a membrane drawable tree into a figure for a given format.
-;; This is the extensibility point for membrane-based output formats —
+;; This is the extensibility point for membrane-based output formats --
 ;; formats that share the same drawable tree but walk it differently.
 ;;
 ;; | Dispatch value | Output |
@@ -347,7 +347,7 @@
 (kind/test-last [(fn [t] (= 3 (count (:row-maps t))))])
 ;;
 ;; Dispatch: inferred from the domain type and scale spec.
-;; Categorical domains → `:categorical`. Numerical domains default to
+;; Categorical domains -> `:categorical`. Numerical domains default to
 ;; `:linear`, overridden to `:log` by `(sk/scale sketch :x :log)`.
 
 ;; ## `make-coord`
@@ -367,7 +367,7 @@
 
 (kind/test-last [(fn [t] (= 4 (count (:row-maps t))))])
 ;;
-;; All four use the same scales — `:flip` swaps which scale
+;; All four use the same scales -- `:flip` swaps which scale
 ;; maps to which pixel axis, and `:polar` maps x to angle and y to radius.
 
 ;; A flipped bar chart uses `:flip` coordinates:
@@ -406,7 +406,7 @@
 
 ;; ### Missing documentation degrades gracefully
 ;;
-;; If you skip the `[:key :doc]` defmethod, the table still renders —
+;; If you skip the `[:key :doc]` defmethod, the table still renders --
 ;; the description falls back to "(no description)" instead of
 ;; throwing an error. Let us remove the doc defmethod and verify:
 
@@ -440,5 +440,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Architecture**](./napkinsketch_book.architecture.html) — the four-stage pipeline and key libraries
-;; - [**Edge Cases**](./napkinsketch_book.edge_cases.html) — how the library handles unusual inputs
+;; - [**Architecture**](./napkinsketch_book.architecture.html) -- the four-stage pipeline and key libraries
+;; - [**Edge Cases**](./napkinsketch_book.edge_cases.html) -- how the library handles unusual inputs

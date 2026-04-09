@@ -4,13 +4,13 @@
 
 (ns napkinsketch-book.troubleshooting
   (:require
-   ;; rdatasets — standard datasets
+   ;; rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Tablecloth — dataset manipulation
+   ;; Tablecloth -- dataset manipulation
    [tablecloth.api :as tc]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Column Not Found
@@ -18,7 +18,7 @@
 ;; **Symptom**: `"Column :foo not found in dataset"` error.
 ;;
 ;; **Cause**: The column name does not exist in the dataset. CSV
-;; headers are strings by default — without `{:key-fn keyword}`,
+;; headers are strings by default -- without `{:key-fn keyword}`,
 ;; columns have string names like `"sepal_length"` instead of
 ;; `:sepal-length`.
 ;;
@@ -70,7 +70,7 @@
 ;; get a single continuous gradient.
 ;;
 ;; **Cause**: The inference system sees a numeric column and treats it
-;; as continuous. Continuous color means no grouping — all data stays
+;; as continuous. Continuous color means no grouping -- all data stays
 ;; in one group with a gradient legend.
 ;;
 ;; **Fix**: Add `:color-type :categorical` to override the inference:
@@ -144,5 +144,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**API Reference**](./napkinsketch_book.api_reference.html) — complete function listing with docstrings
-;; - [**Exploring Plans**](./napkinsketch_book.exploring_plans.html) — inspect the data structures behind your plots
+;; - [**API Reference**](./napkinsketch_book.api_reference.html) -- complete function listing with docstrings
+;; - [**Exploring Plans**](./napkinsketch_book.exploring_plans.html) -- inspect the data structures behind your plots

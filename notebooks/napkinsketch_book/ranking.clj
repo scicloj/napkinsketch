@@ -1,14 +1,14 @@
 ;; # Ranking
 ;;
-;; Bar charts and their variants — comparing quantities across categories.
+;; Bar charts and their variants -- comparing quantities across categories.
 
 (ns napkinsketch-book.ranking
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 (def sales {:product [:widget :gadget :gizmo :doohickey]
@@ -28,7 +28,7 @@
 
 ;; ## Colored Bar Chart
 
-;; Grouped (dodged) bars — count by day, colored by smoking status.
+;; Grouped (dodged) bars -- count by day, colored by smoking status.
 
 (-> (rdatasets/reshape2-tips)
     (sk/lay-bar :day {:color :smoker}))
@@ -52,7 +52,7 @@
 
 ;; ## Stacked Bar (Proportions)
 
-;; 100% stacked bars — shows proportions instead of counts.
+;; 100% stacked bars -- shows proportions instead of counts.
 
 (-> (rdatasets/palmerpenguins-penguins)
     (sk/lay-stacked-bar-fill :island {:color :species}))
@@ -112,7 +112,7 @@
 
 ;; ## [Lollipop](https://en.wikipedia.org/wiki/Lollipop_chart)
 
-;; Stem + dot — a lighter alternative to bar charts.
+;; Stem + dot -- a lighter alternative to bar charts.
 
 (-> sales
     (sk/lay-lollipop :product :revenue))
@@ -135,5 +135,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Change over Time**](./napkinsketch_book.change_over_time.html) — line charts, step functions, and stacked areas
-;; - [**Configuration**](./napkinsketch_book.configuration.html) — control dimensions, palettes, and themes
+;; - [**Change over Time**](./napkinsketch_book.change_over_time.html) -- line charts, step functions, and stacked areas
+;; - [**Configuration**](./napkinsketch_book.configuration.html) -- control dimensions, palettes, and themes

@@ -1,20 +1,20 @@
 ;; # Scatter
 ;;
-;; Point mark variations — color, size, alpha, shape, jitter,
+;; Point mark variations -- color, size, alpha, shape, jitter,
 ;; and continuous color scale.
 
 (ns napkinsketch-book.scatter
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; ## Basic Scatter
 
-;; Sepal dimensions, no color — the default mark.
+;; Sepal dimensions, no color -- the default mark.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width))
@@ -38,7 +38,7 @@
 
 ;; ## Petal Dimensions
 
-;; Petal length vs width — a strongly correlated pair.
+;; Petal length vs width -- a strongly correlated pair.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :petal-length :petal-width {:color :species}))
@@ -131,7 +131,7 @@
                                 (= 150 (:points s))
                                 (some #{"petal length"} (:texts s)))))])
 
-;; Continuous color with size — a color-size bubble plot.
+;; Continuous color with size -- a color-size bubble plot.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :petal-length :size :petal-width :alpha 0.7}))
@@ -143,7 +143,7 @@
 ;; ## Scatter Plot Matrix (SPLOM)
 ;;
 ;; `sk/cross` generates all combinations of two lists. Passing
-;; column names produces a grid of scatter plots — one per pair of
+;; column names produces a grid of scatter plots -- one per pair of
 ;; variables. The diagonal shows histograms (automatic inference
 ;; for same-column pairs).
 
@@ -162,6 +162,6 @@
 
 ;; ## What's Next
 ;;
-;; - [**Distributions**](./napkinsketch_book.distributions.html) — histograms, density curves, boxplots, violins
-;; - [**Relationships**](./napkinsketch_book.relationships.html) — heatmaps, contours, and 2D density
-;; - [**Customization**](./napkinsketch_book.customization.html) — colors, palettes, themes, and annotations
+;; - [**Distributions**](./napkinsketch_book.distributions.html) -- histograms, density curves, boxplots, violins
+;; - [**Relationships**](./napkinsketch_book.relationships.html) -- heatmaps, contours, and 2D density
+;; - [**Customization**](./napkinsketch_book.customization.html) -- colors, palettes, themes, and annotations

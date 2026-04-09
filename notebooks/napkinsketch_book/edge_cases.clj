@@ -1,7 +1,7 @@
 ;; # Edge Cases
 ;;
 ;; This chapter tests how napkinsketch handles unusual or boundary
-;; inputs — missing values, extreme numbers, degenerate datasets,
+;; inputs -- missing values, extreme numbers, degenerate datasets,
 ;; and uncommon configurations.
 ;;
 ;; Testing robustness: missing data, extreme values, small datasets,
@@ -9,21 +9,21 @@
 
 (ns napkinsketch-book.edge-cases
   (:require
-   ;; rdatasets — standard datasets
+   ;; rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Tablecloth — dataset manipulation
+   ;; Tablecloth -- dataset manipulation
    [tablecloth.api :as tc]
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Fastmath — random number generation
+   ;; Fastmath -- random number generation
    [fastmath.random :as rng]
-   ;; Java-time — idiomatic date/time construction
+   ;; Java-time -- idiomatic date/time construction
    [java-time.api :as jt]
-   ;; dtype-next datetime — vectorized temporal arithmetic
+   ;; dtype-next datetime -- vectorized temporal arithmetic
    [tech.v3.datatype.datetime :as dt-dt]
-   ;; dtype-next core — const-reader for temporal sequences
+   ;; dtype-next core -- const-reader for temporal sequences
    [tech.v3.datatype :as dtype]))
 
 ;; ## Missing Data
@@ -44,7 +44,7 @@
 ;; ## Infinite Values
 ;;
 ;; Rows with `Double/POSITIVE_INFINITY` or `Double/NEGATIVE_INFINITY`
-;; are filtered automatically with a warning — similar to log-scale filtering.
+;; are filtered automatically with a warning -- similar to log-scale filtering.
 
 (def with-infinity
   {:x [1 2 3 4 5]
@@ -95,7 +95,7 @@
 
 ;; ## Constant X
 
-;; All x values are the same — the plot should still render.
+;; All x values are the same -- the plot should still render.
 
 (-> {:x [5 5 5 5 5] :y [1 2 3 4 5]}
     (sk/lay-point :x :y))
@@ -203,9 +203,9 @@
 
 ;; ## Position Edge Cases
 
-;; ### Stacked bar — single group
+;; ### Stacked bar -- single group
 
-;; Stack with only one color value — no actual stacking needed.
+;; Stack with only one color value -- no actual stacking needed.
 
 (-> {:category ["a" "b" "c"]
      :count [10 20 15]}
@@ -213,7 +213,7 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; ### Dodge — missing category in one group
+;; ### Dodge -- missing category in one group
 
 ;; Group "g1" has data for "a" and "b", but "g2" only has "a".
 ;; Dodge should still align correctly.
@@ -224,7 +224,7 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; ### Fill — zero count category
+;; ### Fill -- zero count category
 
 ;; One group has zero count for a category.
 ;; Fill should handle the zero gracefully.
@@ -237,17 +237,17 @@
 
 ;; ### Nudge on scatter
 
-;; Nudge-x on continuous data — shifts points without error.
+;; Nudge-x on continuous data -- shifts points without error.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:nudge-x 0.1 :nudge-y -0.05}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; ### Confidence ribbon — small n
+;; ### Confidence ribbon -- small n
 
 ;; Linear regression with se=true on exactly 3 points
-;; (minimum for lm — linear model).
+;; (minimum for lm -- linear model).
 
 (-> {:x [1 2 3] :y [2 4 5]}
     (sk/lay-point :x :y)
@@ -257,9 +257,9 @@
                            (and (= 3 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; ### Stacked area — single series
+;; ### Stacked area -- single series
 
-;; Stack with a single color group — should render as a plain area.
+;; Stack with a single color group -- should render as a plain area.
 
 (-> (let [r (rng/rng :jdk 55)]
       {:x (range 10)
@@ -304,7 +304,7 @@
 
 ;; ## Continuous Color Edge Cases
 
-;; ### Continuous color — constant value
+;; ### Continuous color -- constant value
 ;;
 ;; All points have the same numeric color value. The gradient
 ;; should still render and not divide by zero.
@@ -439,9 +439,9 @@
 
 ;; ## Multi-Panel Edge Cases
 
-;; ### Full grid — cross plot
+;; ### Full grid -- cross plot
 ;;
-;; `sk/cross` produces a full N×N grid of panels.
+;; `sk/cross` produces a full NxN grid of panels.
 ;; Strip labels must appear for every column and row.
 
 (-> (rdatasets/datasets-iris)

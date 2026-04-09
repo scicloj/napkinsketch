@@ -2,29 +2,29 @@
 ;;
 ;; Napkinsketch has three kinds of options:
 ;;
-;; - **Layer options** control individual layers — aesthetics like `:color`,
+;; - **Layer options** control individual layers -- aesthetics like `:color`,
 ;;   statistical parameters like `:bandwidth`. See the [Methods](./napkinsketch_book.methods.html) chapter.
 ;;
-;; - **Plot options** set per-plot text — `:title`, `:subtitle`, `:caption`, axis labels.
+;; - **Plot options** set per-plot text -- `:title`, `:subtitle`, `:caption`, axis labels.
 ;;
-;; - **Configuration** controls everything else — dimensions, theme, palette,
-;;   color scale, and more — via a layered precedence chain.
+;; - **Configuration** controls everything else -- dimensions, theme, palette,
+;;   color scale, and more -- via a layered precedence chain.
 ;;
 ;; This chapter covers configuration and plot options.
 
 (ns napkinsketch-book.configuration
   (:require
-   ;; Kindly — notebook rendering protocol
+   ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; rdatasets — standard datasets
+   ;; rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   ;; Napkinsketch — composable plotting
+   ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
 ;; We use the iris dataset throughout.
 
 ;; We define `base-plot` as a function because
-;; sketches render at display time — calling the function
+;; sketches render at display time -- calling the function
 ;; produces a fresh specification that picks up the current configuration.
 
 (defn base-plot
@@ -73,7 +73,7 @@
 ;; ### Plot Options
 ;;
 ;; These options are accepted by `sk/options`, `sk/plan`, and `sk/plot`
-;; but are inherently per-plot — text content or nested config override.
+;; but are inherently per-plot -- text content or nested config override.
 
 (kind/table
  {:column-names ["Key" "Category" "Description"]
@@ -90,10 +90,10 @@
 ;; ## Using Plot Options
 ;;
 ;; Pass an options map to `sk/options` to override any setting for a
-;; single plot. Plot options have the highest priority — they
+;; single plot. Plot options have the highest priority -- they
 ;; override everything else.
 
-;; Custom dimensions — the defaults are:
+;; Custom dimensions -- the defaults are:
 
 (select-keys (sk/config) [:width :height])
 
@@ -108,7 +108,7 @@
       (and (= 150 (:points s))
            (> (:width s) 800))))])
 
-;; Theme deep-merge — only the specified keys change. Here we set a
+;; Theme deep-merge -- only the specified keys change. Here we set a
 ;; white background; `:grid` and `:font-size` keep their defaults:
 
 (-> (base-plot)
@@ -130,7 +130,7 @@
 
 ;; ## Global Overrides with set-config!
 ;;
-;; `sk/set-config!` sets overrides that persist across calls — useful
+;; `sk/set-config!` sets overrides that persist across calls -- useful
 ;; when you want a consistent style for an entire session or notebook.
 
 ;; Set a global width override and render:
@@ -168,7 +168,7 @@
  [(fn [v]
     (= 150 (:points (sk/svg-summary v))))])
 
-;; Partial theme override — only `:bg` changes; `:grid` and `:font-size`
+;; Partial theme override -- only `:bg` changes; `:grid` and `:font-size`
 ;; are deep-merged from the defaults:
 
 (sk/with-config {:theme {:bg "#F5F5DC"}}
@@ -224,7 +224,7 @@ precedence-result
     (and (= 900 (:plan-width m)) ;; plot options win over with-config (1200) and set-config! (800)
          (= 500 (:plan-height m))))]) ;; with-config wins over set-config! (350)
 
-;; We can verify point-radius too — only set-config! touched it,
+;; We can verify point-radius too -- only set-config! touched it,
 ;; so it wins over the library default (3.0):
 
 (def precedence-point-radius
@@ -265,8 +265,8 @@ precedence-plot
 ;; | Key | Library default | set-config! | with-config | plot options | Winner |
 ;; |:----|:---------------|:------------|:------------|:---------|:-------|
 ;; | `:width` | 600 | 800 | 1200 | 900 | **900** (plot options) |
-;; | `:height` | 400 | 350 | 500 | — | **500** (with-config) |
-;; | `:point-radius` | 3.0 | 5.0 | — | — | **5.0** (set-config!) |
+;; | `:height` | 400 | 350 | 500 | -- | **500** (with-config) |
+;; | `:point-radius` | 3.0 | 5.0 | -- | -- | **5.0** (set-config!) |
 
 ;; ## Project-Level Defaults with napkinsketch.edn
 ;;
@@ -285,22 +285,22 @@ precedence-plot
 ;; ```
 ;;
 ;; This layer sits between library defaults and `set-config!` in the
-;; precedence chain — it overrides defaults but is overridden by any
+;; precedence chain -- it overrides defaults but is overridden by any
 ;; programmatic configuration.
 
 ;; ## Theme Customization
 ;;
 ;; The `:theme` key is a nested map with three entries:
 ;;
-;; - `:bg` — panel background color (hex string)
-;; - `:grid` — grid line color (hex string)
-;; - `:font-size` — tick label font size (number)
+;; - `:bg` -- panel background color (hex string)
+;; - `:grid` -- grid line color (hex string)
+;; - `:font-size` -- tick label font size (number)
 
 (count (:theme (sk/config)))
 
 (kind/test-last [(fn [n] (= 3 n))])
 
-;; All configuration merging uses **deep-merge** — nested maps like `:theme`
+;; All configuration merging uses **deep-merge** -- nested maps like `:theme`
 ;; are merged recursively at every level (`sk/options`, `sk/with-config`,
 ;; `sk/set-config!`, and `napkinsketch.edn`). You only need to specify the
 ;; keys you want to change.
@@ -356,7 +356,7 @@ precedence-plot
 ;; The `:palette` key controls the color cycle for categorical
 ;; color mappings.  It accepts:
 ;;
-;; - a keyword — any palette name from the
+;; - a keyword -- any palette name from the
 ;;   [clojure2d](https://github.com/Clojure2D/clojure2d) color library
 ;;   (hundreds available: [ColorBrewer](https://colorbrewer2.org/), Wes Anderson, thi.ng, paletteer, etc.)
 ;; - a vector of hex strings: `["#E74C3C" "#3498DB" "#2ECC71"]`
@@ -426,7 +426,7 @@ precedence-plot
 
 (kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
 
-;; Color scale override via plot options — inferno gradient:
+;; Color scale override via plot options -- inferno gradient:
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
     (sk/lay-point :x :y {:color :c})
@@ -463,10 +463,10 @@ precedence-plot
 ;;
 ;; Two helper functions let you inspect plans manually:
 ;;
-;; - `sk/valid-plan?` — returns true or false
-;; - `sk/explain-plan` — returns nil if valid, or a [Malli](https://github.com/metosin/malli) explanation map
+;; - `sk/valid-plan?` -- returns true or false
+;; - `sk/explain-plan` -- returns nil if valid, or a [Malli](https://github.com/metosin/malli) explanation map
 
-;; Default behavior (validate = true) — a valid plan passes silently:
+;; Default behavior (validate = true) -- a valid plan passes silently:
 
 (sk/plan (base-plot))
 
@@ -494,7 +494,7 @@ precedence-plot
 
 (kind/test-last [(fn [v] (true? v))])
 
-;; Now corrupt the `:width` to a string — this violates the schema,
+;; Now corrupt the `:width` to a string -- this violates the schema,
 ;; which requires a positive integer:
 
 (def bad-plan (assoc good-plan :width "not-a-number"))
@@ -571,5 +571,5 @@ precedence-plot
 
 ;; ## What's Next
 ;;
-;; - [**Customization**](./napkinsketch_book.customization.html) — annotations, color scales, tooltips, and brush selection
-;; - [**Faceting**](./napkinsketch_book.faceting.html) — split plots into panels by category
+;; - [**Customization**](./napkinsketch_book.customization.html) -- annotations, color scales, tooltips, and brush selection
+;; - [**Faceting**](./napkinsketch_book.faceting.html) -- split plots into panels by category
