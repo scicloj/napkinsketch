@@ -89,7 +89,7 @@
 ;; A sketch is built from two kinds of content:
 ;;
 ;; - **View** -- what to look at (which columns define the axes)
-;; - **Layer** -- how to draw it (which method to use, with what options)
+;; - **Layer** -- how to draw it (which chart type, with what options)
 ;;
 ;; A view says "show me sepal length versus sepal width."
 ;; A layer says "draw it as points" or "fit a regression line."
@@ -281,7 +281,7 @@ view-scoped
 ;; |:-----|:-------------|:-----------|:------------|
 ;; | Mapping | `sk/sketch` | `sk/view` opts | `sk/lay-*` opts |
 ;; | Layer | `sk/lay-*` (bare) | `sk/lay-*` (with columns) | -- (leaf) |
-;; | Data | first argument | faceting, overlay | -- (rare) |
+;; | Data | first argument | `:data` in view opts, faceting | `:data` in layer opts |
 ;;
 ;; The examples above showed mappings at all three levels.
 ;; Here are layers and data.
@@ -542,8 +542,8 @@ my-sketch
 ;; ---
 ;; ## Color and Grouping
 ;;
-;; The `:color` mapping controls point and line colors. Its behavior
-;; depends on what you pass.
+;; `:color` controls point and line colors. Its behavior depends on
+;; what you pass.
 ;;
 ;; **Categorical column** -- each unique value gets a distinct color.
 ;; A legend maps labels to colors:
