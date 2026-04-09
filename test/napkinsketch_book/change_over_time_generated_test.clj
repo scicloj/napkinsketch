@@ -13,7 +13,7 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__81766#] (Math/sin (* p1__81766# 0.3))) (range 30))}))
+   (map (fn* [p1__87490#] (Math/sin (* p1__87490# 0.3))) (range 30))}))
 
 
 (def v4_l21 (-> wave (sk/lay-line :x :y)))
@@ -37,8 +37,8 @@
   {:x (concat (range 30) (range 30)),
    :y
    (concat
-    (map (fn* [p1__81767#] (Math/sin (* p1__81767# 0.3))) (range 30))
-    (map (fn* [p1__81768#] (Math/cos (* p1__81768# 0.3))) (range 30))),
+    (map (fn* [p1__87491#] (Math/sin (* p1__87491# 0.3))) (range 30))
+    (map (fn* [p1__87492#] (Math/cos (* p1__87492# 0.3))) (range 30))),
    :fn (concat (repeat 30 :sin) (repeat 30 :cos))}))
 
 
@@ -140,7 +140,7 @@
  (->
   {:x (range 30),
    :y
-   (map (fn* [p1__81769#] (Math/sin (* p1__81769# 0.3))) (range 30))}
+   (map (fn* [p1__87493#] (Math/sin (* p1__87493# 0.3))) (range 30))}
   (sk/lay-area :x :y)))
 
 

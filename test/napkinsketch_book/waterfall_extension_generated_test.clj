@@ -166,7 +166,7 @@
   :waterfall
   {:mark :waterfall,
    :stat :waterfall,
-   :doc "Waterfall — running total with increase/decrease bars."}))
+   :doc "Waterfall -- running total with increase/decrease bars."}))
 
 
 (def
