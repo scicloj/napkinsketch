@@ -526,8 +526,15 @@
 
 (defn ridgeline-positions
   "Compute ridgeline band positions for a list of categories.
-   Returns {category-name -> {:mid pixel-y :bw band-width}}.
-   Used by both the ridgeline renderer and panel tick label placement."
+   Returns a vector of [category-name {:mid pixel-y :bw band-width}]
+   pairs, preserving the input category order. Used by both the
+   ridgeline renderer and panel tick label placement.
+
+   Returns a vector (not a map) so iteration order is deterministic
+   regardless of category count -- `(into (array-map) ...)` quietly
+   promotes to PersistentHashMap on the 9th key, scrambling the
+   order via Clojure hash. Callers do `(get pos cat)` style lookup
+   so they need to convert to a map locally if random access matters."
   [categories panel-height margin]
   (let [n-cats (count categories)
         m (or margin 25)
@@ -536,11 +543,11 @@
         usable (- (double ph) (* 2.0 m))
         bw (/ usable (+ (double n-cats) (* 2.0 overlap) -1.0))
         pad (* bw (- overlap 0.5))]
-    (into (array-map) (map-indexed
-                       (fn [i cat]
-                         [cat {:mid (+ m pad (* bw (+ (double i) 0.5)))
-                               :bw bw}])
-                       categories))))
+    (vec (map-indexed
+          (fn [i cat]
+            [cat {:mid (+ m pad (* bw (+ (double i) 0.5)))
+                  :bw bw}])
+          categories))))
 
 (defmethod layer->membrane :ridgeline [layer ctx]
   (if (empty? (:ridges layer))
@@ -550,10 +557,11 @@
           {:keys [opacity]} style
           m (or margin 25)
           ph (or panel-height 400)
-          cat-positions (ridgeline-positions categories ph m)
+          cat-pos-pairs (ridgeline-positions categories ph m)
+          cat-positions (into {} cat-pos-pairs)
           ;; Overlap factor and normalization
           overlap 1.5
-          bw (or (:bw (first (vals cat-positions))) 1.0)
+          bw (or (:bw (second (first cat-pos-pairs))) 1.0)
           ;; Max density across all ridges for normalization
           all-densities (seq (keep #(when (seq (:densities %)) (:densities %)) ridges))
           max-d (if all-densities
