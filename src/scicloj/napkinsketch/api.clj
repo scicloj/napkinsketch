@@ -306,6 +306,15 @@
   ([data] (sketch data {}))
   ([data mapping]
    (warn-unknown-opts! "sketch" mapping view-mapping-keys)
+   ;; sk/sketch's mapping is for *appearance* aesthetics (color/size/etc.) that
+   ;; flow into all views; it does not create a view. Reject :x/:y here so a
+   ;; ggplot2-style `(ggplot data, aes(x, y))` pattern fails loudly instead of
+   ;; producing a 0-panel plot.
+   (when (or (:x mapping) (:y mapping))
+     (throw (ex-info (str "sk/sketch does not create a view -- :x and :y are not allowed "
+                          "in its mapping. Use (sk/view sk :x :y) to declare position "
+                          "mappings, or (sk/lay-point sk :x :y) for a one-shot view+layer.")
+                     {:mapping mapping})))
    (if (sketch/sketch? data)
      ;; Merge new mapping into existing sketch, preserving views/layers/opts
      (update data :mapping merge mapping)

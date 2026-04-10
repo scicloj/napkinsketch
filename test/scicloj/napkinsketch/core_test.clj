@@ -1318,6 +1318,25 @@
     (testing "4+ column with explicit x/y still works"
       (is (= 1 (-> four-col (sk/lay-point :a :b) sk/plan :panels count))))))
 
+(deftest sketch-rejects-x-y-mapping-test
+  ;; persona-03-R2 Footgun 1: (sk/sketch data {:x :a :y :b}) used to
+  ;; silently produce a 0-panel plot because sk/sketch doesn't create a
+  ;; view. ggplot2 users coming from (ggplot data, aes(x, y)) will try
+  ;; this incantation. Now throws with a redirect to sk/view.
+  (let [data {:a [1 2 3] :b [4 5 6]}]
+    (testing "sk/sketch with :x throws"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"sk/sketch does not create a view"
+                            (sk/sketch data {:x :a :y :b}))))
+
+    (testing "sk/sketch with only :y throws"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"sk/sketch does not create a view"
+                            (sk/sketch data {:y :b}))))
+
+    (testing "sk/sketch with appearance mappings is fine"
+      (is (some? (sk/sketch data {:color :a}))))))
+
 (deftest aesthetic-cross-type-lookup-test
   ;; persona-skeptical-round-4 F2: aesthetic columns must work whether
   ;; the dataset has keyword or string column names. Build-legend used
