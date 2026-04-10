@@ -20,32 +20,37 @@ and friends) -- no explicit render call required.
 
 ### Features
 
-**Composable pipeline.** Position mappings (`sk/view`), layers
-(`sk/lay-*`), aesthetics, scales, coordinate transforms, faceting, and
-plot options all flow through `->`. Every function takes a sketch and
-returns a sketch, so users never have to remember plot assembly rules.
+**Composable pipeline.** Everything you do to build a plot -- define
+views (`sk/view`), add layers (`sk/lay-*`), set aesthetic mappings,
+apply scales and coordinate transforms, add facets, attach
+annotations, set plot options -- flows through `->`. Every function
+takes a sketch and returns a sketch, so there is no plot-assembly
+order to memorize.
 
-**Four-level scope.** Aesthetic mappings (color, size, alpha, shape,
-group, text) flow sketch -> view -> method -> layer. Lower scopes
-override higher ones with `nil` as explicit cancellation. The scope
-model is lexical and uniform across all layer functions.
+**Three-level scope.** Aesthetic mappings (color, size, alpha,
+shape, group, text) flow sketch -> view -> layer. Lower scopes
+override higher ones; `nil` is an explicit cancellation. Scope is
+lexical: you set a mapping where you want it to apply.
 
 **25 layer functions** covering the common chart types: point, line,
 step, area, stacked-area, histogram, bar, stacked-bar,
 stacked-bar-fill, value-bar, lm (linear model), loess, text, label,
-density, tile/heatmap, density2d, contour, boxplot, violin, ridgeline,
-rug, summary (mean + SE), errorbar, lollipop.
+density, tile, density2d, contour, boxplot, violin, ridgeline, rug,
+summary (mean + SE), errorbar, lollipop.
 
-**Statistics built in.** Histogram binning, OLS regression (with
-optional confidence ribbons), LOESS with bootstrap confidence bands,
-1D and 2D kernel density estimation (Silverman bandwidth), boxplot
-five-number summary with R type 7 quartiles, categorical counts, and
-mean + standard error summaries. Every stat is a multimethod — you
-can register new ones.
+**Statistics built in.** Histogram binning, categorical counts, OLS
+regression (with optional confidence ribbons), LOESS with bootstrap
+confidence bands, 1D and 2D kernel density estimation (the 2D case
+uses Silverman's rule for the product-kernel bandwidth), 2D binning
+for heatmaps, boxplot five-number summary with R type 7 quartiles,
+violin density per category, and mean + standard error summaries.
+Every stat is a multimethod — you can register new ones.
 
-**Faceting.** `sk/facet` for wrap-style paneling, `sk/facet-grid` for
-row x column grids, `sk/cross` for scatter-plot matrices (SPLOM), and
-`sk/distribution` for diagonal histograms on a SPLOM.
+**Faceting.** `sk/facet` for single-variable paneling (one row or
+column of panels), `sk/facet-grid` for row x column grids, `sk/cross`
+as a helper for building scatter-plot matrices (SPLOM), and
+`sk/distribution` for the diagonal of a SPLOM (univariate
+distributions).
 
 **Coordinate systems.** Cartesian (default), flip, polar, and fixed
 (1:1 aspect ratio).
@@ -54,9 +59,11 @@ row x column grids, `sk/cross` for scatter-plot matrices (SPLOM), and
 auto-detected from the column and can be overridden via `sk/scale`.
 
 **Continuous and categorical color.** Numeric columns map to a
-viridis gradient with a color bar legend; categorical columns use one
-of 7000+ palettes via clojure2d. Diverging color scales with custom
-midpoints are supported.
+continuous gradient (ggplot2-style dark-to-light blue by default;
+`:viridis`, `:inferno`, `:plasma`, `:magma`, `:turbo`, etc. available
+via `:color-scale`) with a color bar legend. Categorical columns draw
+from one of ~7000 palettes exposed by clojure2d. Diverging color
+scales with custom midpoints are also supported.
 
 **Annotations.** Reference lines (`rule-v`, `rule-h`) and shaded
 bands (`band-v`, `band-h`) as plot-level decorations.
@@ -117,7 +124,7 @@ Twenty-seven executable chapters:
 - **How-to Guides** — cookbook, configuration, customization,
   faceting, troubleshooting
 - **Reference** — api reference
-- **Gallery** — ~130 examples reproducing charts from the R Graph
+- **Gallery** — ~140 examples reproducing charts from the R Graph
   Gallery, Vega-Lite Examples, Python Graph Gallery, ECharts, and D3
 - **Internals** — exploring plans, architecture, extensibility,
   waterfall extension, edge cases, development
