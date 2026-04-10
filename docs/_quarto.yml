@@ -65,6 +65,8 @@ book:
     chapters: [napkinsketch_book.cookbook.qmd, napkinsketch_book.configuration.qmd, napkinsketch_book.customization.qmd, napkinsketch_book.faceting.qmd, napkinsketch_book.troubleshooting.qmd]
   - part: 📖 Reference
     chapters: [napkinsketch_book.api_reference.qmd]
+  - part: 🖼 Gallery
+    chapters: [napkinsketch_book.gallery.qmd]
   - part: 🔬 Internals
     chapters: [napkinsketch_book.exploring_plans.qmd, napkinsketch_book.architecture.qmd, napkinsketch_book.extensibility.qmd, napkinsketch_book.waterfall_extension.qmd, napkinsketch_book.edge_cases.qmd, napkinsketch_book.development.qmd]
   title: Napkinsketch
