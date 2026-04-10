@@ -767,6 +767,12 @@
    Nested maps (e.g. :theme) are deep-merged."
   [sk opts]
   (warn-unknown-opts! "options" opts plot-options-keys)
+  (doseq [k [:width :height]
+          :let [v (get opts k)]
+          :when v]
+    (when-not (and (number? v) (pos? v))
+      (throw (ex-info (str k " must be a positive number, got: " (pr-str v))
+                      {:option k :value v}))))
   (update (ensure-sk sk) :opts deep-merge opts))
 
 (def ^:private valid-scale-types

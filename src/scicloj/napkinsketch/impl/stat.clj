@@ -138,6 +138,14 @@
 
 (defmethod compute-stat :bin [{:keys [data x x-type group cfg normalize] :as view}]
   (validate-numeric-column view :x :bin)
+  (when-let [b (:bins view)]
+    (when-not (and (number? b) (pos? b))
+      (throw (ex-info (str ":bins must be a positive number, got: " (pr-str b))
+                      {:bins b}))))
+  (when-let [bw (:binwidth view)]
+    (when-not (and (number? bw) (pos? bw))
+      (throw (ex-info (str ":binwidth must be a positive number, got: " (pr-str bw))
+                      {:binwidth bw}))))
   (let [clean (cond-> (tc/drop-missing data [x])
                 (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))
         xs-col (clean x)]

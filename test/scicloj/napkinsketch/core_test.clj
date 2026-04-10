@@ -1318,6 +1318,47 @@
     (testing "4+ column with explicit x/y still works"
       (is (= 1 (-> four-col (sk/lay-point :a :b) sk/plan :panels count))))))
 
+(deftest input-validation-misc-test
+  ;; persona-09-R2 F10/F11/F12. Low-severity input validation.
+  (testing "rule-v / rule-h with nil intercept throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"rule-v intercept requires a number"
+                          (sk/rule-v nil)))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"rule-h intercept requires a number"
+                          (sk/rule-h nil))))
+
+  (testing "band-v / band-h with nil bounds throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"band-v lo requires a number"
+                          (sk/band-v nil 5)))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"band-h hi requires a number"
+                          (sk/band-h 1 nil))))
+
+  (testing "options with width/height = 0 throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #":width must be a positive number"
+                          (-> {:a [1 2 3] :b [4 5 6]} (sk/lay-point :a :b)
+                              (sk/options {:width 0}))))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #":height must be a positive number"
+                          (-> {:a [1 2 3] :b [4 5 6]} (sk/lay-point :a :b)
+                              (sk/options {:height -100})))))
+
+  (testing "histogram with :bins <= 0 throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #":bins must be a positive number"
+                          (-> {:x [1 2 3]} (sk/lay-histogram :x {:bins 0}) sk/plan)))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #":bins must be a positive number"
+                          (-> {:x [1 2 3]} (sk/lay-histogram :x {:bins -1}) sk/plan))))
+
+  (testing "histogram with :binwidth <= 0 throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #":binwidth must be a positive number"
+                          (-> {:x [1 2 3]} (sk/lay-histogram :x {:binwidth 0}) sk/plan)))))
+
 (deftest alpha-on-marks-test
   ;; persona-16 H4 + H7. Closes P11-R2 F1, F2.
   ;; H4: line/step/lm/loess/errorbar/lollipop -- alpha was put in style but

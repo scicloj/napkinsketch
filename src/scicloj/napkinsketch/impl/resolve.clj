@@ -210,27 +210,40 @@
 
 ;; ---- Annotation Constructors ----
 
+(defn- check-annotation-arg [name v]
+  (when-not (number? v)
+    (throw (ex-info (str name " requires a number, got: " (pr-str v))
+                    {:argument v}))))
+
 (defn rule-v
   "Vertical reference line at x = intercept."
   [intercept]
+  (check-annotation-arg "rule-v intercept" intercept)
   {:mark :rule-v :intercept intercept})
 
 (defn rule-h
   "Horizontal reference line at y = intercept."
   [intercept]
+  (check-annotation-arg "rule-h intercept" intercept)
   {:mark :rule-h :intercept intercept})
 
 (defn band-v
   "Vertical shaded band from x = lo to x = hi.
   Optional opts map: {:alpha 0.3} overrides band opacity."
   ([lo hi] (band-v lo hi {}))
-  ([lo hi opts] (merge {:mark :band-v :lo lo :hi hi} opts)))
+  ([lo hi opts]
+   (check-annotation-arg "band-v lo" lo)
+   (check-annotation-arg "band-v hi" hi)
+   (merge {:mark :band-v :lo lo :hi hi} opts)))
 
 (defn band-h
   "Horizontal shaded band from y = lo to y = hi.
   Optional opts map: {:alpha 0.3} overrides band opacity."
   ([lo hi] (band-h lo hi {}))
-  ([lo hi opts] (merge {:mark :band-h :lo lo :hi hi} opts)))
+  ([lo hi opts]
+   (check-annotation-arg "band-h lo" lo)
+   (check-annotation-arg "band-h hi" hi)
+   (merge {:mark :band-h :lo lo :hi hi} opts)))
 
 ;; ---- Cross ----
 
