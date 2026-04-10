@@ -192,7 +192,7 @@
 
 (defmethod extract-layer :rect [view stat all-colors cfg]
   (if (:bars stat)
-    ;; Categorical bars (from :count stat)
+    ;; Categorical bars (from :count stat) -- :count stat already validated
     {:mark :rect
      :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
      :position (default-position view)
@@ -202,25 +202,34 @@
                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
                  :label (defaults/fmt-category-label color)
                  :counts (vec counts)}))}
-    ;; Value bars (from :identity stat)
-    {:mark :rect
-     :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
-     :position (default-position view)
-     :groups (vec
-              (for [{:keys [color xs ys]} (:points stat)]
-                {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                 :label (defaults/fmt-category-label color)
-                 :xs xs :ys ys}))}))
+    ;; Value bars (from :identity stat) -- need categorical x for band layout
+    (do
+      (when-not (= (:x-type view) :categorical)
+        (throw (ex-info (str "Mark :rect (lay-value-bar) requires a categorical column for :x, "
+                             "but " (:x view) " is " (name (or (:x-type view) :unknown))
+                             ". Use lay-line/lay-point for numeric x, or convert " (:x view)
+                             " to a string column.")
+                        {:mark :rect :x (:x view) :x-type (:x-type view)})))
+      {:mark :rect
+       :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
+       :position (default-position view)
+       :groups (vec
+                (for [{:keys [color xs ys]} (:points stat)]
+                  {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                   :label (defaults/fmt-category-label color)
+                   :xs xs :ys ys}))})))
 
 (defmethod extract-layer :text [view stat all-colors cfg]
   (-> {:mark :text
-       :style {:font-size (or (:font-size view) 10)}
+       :style {:font-size (or (:font-size view) 10)
+               :opacity (or (:fixed-alpha view) 1.0)}
        :groups (extract-xy-groups view stat all-colors cfg :with-labels? true)}
       (apply-nudge view)))
 
 (defmethod extract-layer :label [view stat all-colors cfg]
   (-> {:mark :label
-       :style {:font-size (or (:font-size view) 10)}
+       :style {:font-size (or (:font-size view) 10)
+               :opacity (or (:fixed-alpha view) 1.0)}
        :groups (extract-xy-groups view stat all-colors cfg :with-labels? true)}
       (apply-nudge view)))
 
@@ -252,7 +261,8 @@
   (let [color-cats (:color-categories stat)]
     {:mark :boxplot
      :style {:box-width (or (:box-width view) 0.6)
-             :stroke-width (or (:fixed-size view) 1.5)}
+             :stroke-width (or (:fixed-size view) 1.5)
+             :opacity (or (:fixed-alpha view) 1.0)}
      :position (default-position view)
      :color-categories color-cats
      :boxes (vec
@@ -518,7 +528,8 @@
 (defmethod extract-layer :pointrange [view stat all-colors cfg]
   {:mark :pointrange
    :style {:radius (or (:fixed-size view) 3.5)
-           :stroke-width 1.5}
+           :stroke-width 1.5
+           :opacity (or (:fixed-alpha view) 1.0)}
    :groups (extract-xy-groups view stat all-colors cfg :with-range? true)})
 
 (defmethod extract-layer :default [view stat all-colors cfg]

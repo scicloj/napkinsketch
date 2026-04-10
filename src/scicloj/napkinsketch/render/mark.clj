@@ -212,8 +212,9 @@
 (defmethod layer->membrane :text [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn]} ctx
-        {:keys [font-size]} style
-        fsize (or font-size 10)]
+        {:keys [font-size opacity]} style
+        fsize (or font-size 10)
+        op (or opacity 1.0)]
     (vec
      (for [{:keys [color xs ys labels]} groups
            i (range (count xs))
@@ -221,14 +222,15 @@
                  label (if labels (labels i) "")
                  [cr cg cb _] color]]
        (ui/translate (double px) (- (double py) (/ fsize 2.0))
-                     (ui/with-color [cr cg cb 1.0]
+                     (ui/with-color [cr cg cb op]
                        (ui/label label (ui/font nil fsize))))))))
 
 (defmethod layer->membrane :label [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn]} ctx
-        {:keys [font-size]} style
+        {:keys [font-size opacity]} style
         fsize (or font-size 10)
+        op (or opacity 1.0)
         pad-x 3 pad-y 2
         char-w (* fsize 0.6)]
     (vec
@@ -243,11 +245,11 @@
                  rect-h (+ fsize (* 2 pad-y))]]
        (ui/translate (double px) text-y
                      [(ui/translate (- pad-x) (- pad-y)
-                                    (ui/filled-rectangle [1.0 1.0 1.0 0.85] rect-w rect-h))
+                                    (ui/filled-rectangle [1.0 1.0 1.0 (* 0.85 op)] rect-w rect-h))
                       (ui/translate (- pad-x) (- pad-y)
-                                    (ui/with-color [0.7 0.7 0.7 0.5]
+                                    (ui/with-color [0.7 0.7 0.7 (* 0.5 op)]
                                       (ui/rectangle rect-w rect-h)))
-                      (ui/with-color [cr cg cb 1.0]
+                      (ui/with-color [cr cg cb op]
                         (ui/label label (ui/font nil fsize)))])))))
 
 ;; ---- Area ----
@@ -288,8 +290,9 @@
 (defmethod layer->membrane :errorbar [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn sx]} ctx
-        {:keys [stroke-width cap-width]} style
+        {:keys [stroke-width cap-width opacity]} style
         sw (or stroke-width 1.5)
+        op (or opacity 1.0)
         cap-hw (/ (or cap-width 6) 2.0)
         ;; Dodge support: when dodge-ctx is present, use band-position
         {:keys [n-groups]} (:dodge-ctx layer)
@@ -307,7 +310,7 @@
                  [_ py-min] (coord-fn x ymin-val)
                  [_ py-max] (coord-fn x ymax-val)
                  [cr cg cb _] color]]
-       (ui/with-color [cr cg cb 1.0]
+       (ui/with-color [cr cg cb op]
          [(ui/with-style ::ui/style-stroke
             (ui/with-stroke-width sw
               ;; Vertical line from ymin to ymax
@@ -328,9 +331,10 @@
 (defmethod layer->membrane :lollipop [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
-        {:keys [radius stroke-width]} style
+        {:keys [radius stroke-width opacity]} style
         {:keys [n-groups] :or {n-groups (clojure.core/count groups)}} (:dodge-ctx layer)
-        r (or radius 4)]
+        r (or radius 4)
+        op (or opacity 1.0)]
     (vec
      (for [group groups
            i (range (clojure.core/count (:xs group)))
@@ -342,7 +346,7 @@
                  cat-pos (:mid bp)
                  val-base (num-s 0)
                  val-top (num-s val)]]
-       [(ui/with-color [cr cg cb 1.0]
+       [(ui/with-color [cr cg cb op]
           (ui/with-style ::ui/style-stroke
             (ui/with-stroke-width (or stroke-width 1.5)
               (if flipped?
@@ -350,7 +354,7 @@
                 (ui/path [cat-pos val-base] [cat-pos val-top])))))
         (ui/translate (if flipped? (- (double val-top) r) (- (double cat-pos) r))
                       (if flipped? (- (double cat-pos) r) (- (double val-top) r))
-                      (ui/with-color [cr cg cb 1.0]
+                      (ui/with-color [cr cg cb op]
                         (ui/with-style ::ui/style-fill
                           (ui/rounded-rectangle (* 2 r) (* 2 r) r))))]))))
 
@@ -359,9 +363,10 @@
 (defmethod layer->membrane :boxplot [layer ctx]
   (let [{:keys [style boxes color-categories]} layer
         {:keys [flipped? band-s num-s]} (orient-scales ctx)
-        {:keys [box-width stroke-width]} style
+        {:keys [box-width stroke-width opacity]} style
         box-frac (or box-width 0.6)
         sw (or stroke-width 1.5)
+        op (or opacity 1.0)
         ;; n-groups comes from dodge-ctx (set by position.clj when dodge is active).
         ;; When dodge-ctx is absent (position = :identity), use 1 — the mark
         ;; should fill the full band, not subdivide by color-categories.
@@ -385,22 +390,22 @@
               py-whi (num-s whisker-hi)
               ;; Build primitives depending on orientation
               mk-box (fn [x1 y1 x2 y2 x3 y3 x4 y4]
-                       [(ui/with-color [cr cg cb 0.7]
+                       [(ui/with-color [cr cg cb (* 0.7 op)]
                           (ui/with-style ::ui/style-fill
                             (ui/path [x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1])))
-                        (ui/with-color [cr cg cb 1.0]
+                        (ui/with-color [cr cg cb op]
                           (ui/with-stroke-width sw
                             (ui/with-style ::ui/style-stroke
                               (ui/path [x1 y1] [x2 y2] [x3 y3] [x4 y4] [x1 y1]))))])
               mk-line (fn [xa ya xb yb]
-                        (ui/with-color [cr cg cb 1.0]
+                        (ui/with-color [cr cg cb op]
                           (ui/with-stroke-width sw
                             (ui/with-style ::ui/style-stroke
                               (ui/path [xa ya] [xb yb])))))
               mk-point (fn [px py]
                          (let [r 2.5 d (* 2 r)]
                            (ui/translate (- (double px) r) (- (double py) r)
-                                         (ui/with-color [cr cg cb 1.0]
+                                         (ui/with-color [cr cg cb op]
                                            (ui/with-style ::ui/style-fill
                                              (ui/rounded-rectangle d d r))))))]
           (if flipped?
@@ -618,9 +623,10 @@
 (defmethod layer->membrane :pointrange [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn sx]} ctx
-        {:keys [radius stroke-width]} style
+        {:keys [radius stroke-width opacity]} style
         r (or radius 3.5)
         sw (or stroke-width 1.5)
+        op (or opacity 1.0)
         ;; Dodge support: when dodge-ctx is present, use band-position
         {:keys [n-groups]} (:dodge-ctx layer)
         band-scale? (and n-groups (try (ws/data sx :bandwidth) (catch Exception _ nil)))]
@@ -639,12 +645,12 @@
                  [_ py] (coord-fn x y)
                  [_ py-min] (coord-fn x ymin-val)
                  [_ py-max] (coord-fn x ymax-val)]]
-       [(ui/with-color [cr cg cb 1.0]
+       [(ui/with-color [cr cg cb op]
           (ui/with-stroke-width sw
             (ui/with-style ::ui/style-stroke
               (ui/path [px py-min] [px py-max]))))
         (ui/translate (- (double px) r) (- (double py) r)
-                      (ui/with-color [cr cg cb 1.0]
+                      (ui/with-color [cr cg cb op]
                         (ui/with-style ::ui/style-fill
                           (ui/rounded-rectangle (* 2 r) (* 2 r) r))))]))))
 
@@ -677,7 +683,8 @@
 (defmethod layer->membrane :line [layer ctx]
   (let [{:keys [style groups ribbons position]} layer
         {:keys [coord-fn]} ctx
-        {:keys [stroke-width]} style
+        {:keys [stroke-width opacity]} style
+        op (or opacity 1.0)
         ;; Render ribbons first (behind lines)
         ribbon-elems
         (when ribbons
@@ -686,7 +693,7 @@
                       top-pts (mapv (fn [x y] (coord-fn x y)) xs ymaxs)
                       bot-pts (reverse (mapv (fn [x y] (coord-fn x y)) xs ymins))
                       all-pts (concat top-pts bot-pts)]]
-            (ui/with-color [cr cg cb 0.2]
+            (ui/with-color [cr cg cb (* 0.2 op)]
               (ui/with-style ::ui/style-fill
                 (apply ui/path all-pts)))))
         ;; Stacked fill areas (behind lines, when position is :stack/:fill)
@@ -697,7 +704,7 @@
                       base-pts (reverse (map (fn [x y0] (coord-fn x y0)) xs y0s))
                       all-pts (concat top-pts base-pts)
                       [cr cg cb _] color]]
-            (ui/with-color [cr cg cb 0.3]
+            (ui/with-color [cr cg cb (* 0.3 op)]
               (ui/with-style ::ui/style-fill
                 (apply ui/path all-pts)))))
         ;; Render lines on top
@@ -709,14 +716,14 @@
             (let [{:keys [x1 y1 x2 y2]} group
                   [px1 py1] (coord-fn x1 y1)
                   [px2 py2] (coord-fn x2 y2)]
-              (ui/with-color [cr cg cb 1.0]
+              (ui/with-color [cr cg cb op]
                 (ui/with-stroke-width (or stroke-width 2)
                   (ui/with-style ::ui/style-stroke
                     (ui/path [px1 py1] [px2 py2])))))
             ;; Polyline (connected points)
             (let [{:keys [xs ys]} group
                   projected (sort-by first (map coord-fn xs ys))]
-              (ui/with-color [cr cg cb 1.0]
+              (ui/with-color [cr cg cb op]
                 (ui/with-stroke-width (or stroke-width 2)
                   (ui/with-style ::ui/style-stroke
                     (apply ui/path projected)))))))]
@@ -727,7 +734,8 @@
 (defmethod layer->membrane :step [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [coord-fn]} ctx
-        {:keys [stroke-width]} style]
+        {:keys [stroke-width opacity]} style
+        op (or opacity 1.0)]
     (vec
      (for [{:keys [color xs ys]} groups
            :let [[cr cg cb _] color
@@ -747,7 +755,7 @@
                                     (recur (conj pts [px (second (last pts))] [px py])
                                            (rest remaining)))))))]]
        (when (>= (count step-pts) 2)
-         (ui/with-color [cr cg cb 1.0]
+         (ui/with-color [cr cg cb op]
            (ui/with-stroke-width (or stroke-width 2)
              (ui/with-style ::ui/style-stroke
                (apply ui/path step-pts)))))))))

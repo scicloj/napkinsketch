@@ -185,6 +185,11 @@
 ;; ---- Counting ----
 
 (defmethod compute-stat :count [view]
+  (when-not (= (:x-type view) :categorical)
+    (throw (ex-info (str "Stat :count (used by lay-bar) requires a categorical column for :x, "
+                         "but " (:x view) " is " (name (or (:x-type view) :unknown))
+                         ". Use lay-histogram for numeric data, or convert " (:x view) " to a string column.")
+                    {:stat :count :x (:x view) :x-type (:x-type view)})))
   (let [{:keys [data x x-type group]} view
         group-cols (or group [])
         clean (cond-> (tc/drop-missing data [x])

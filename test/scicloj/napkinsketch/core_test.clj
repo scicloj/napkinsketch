@@ -1318,6 +1318,78 @@
     (testing "4+ column with explicit x/y still works"
       (is (= 1 (-> four-col (sk/lay-point :a :b) sk/plan :panels count))))))
 
+(deftest alpha-on-marks-test
+  ;; persona-16 H4 + H7. Closes P11-R2 F1, F2.
+  ;; H4: line/step/lm/loess/errorbar/lollipop -- alpha was put in style but
+  ;;     hardcoded to 1.0 in the renderer.
+  ;; H7: boxplot/pointrange/text/label -- alpha wasn't in style at all.
+  (let [data {:x [1.0 2.0 3.0 4.0 5.0] :y [10.0 20.0 15.0 25.0 18.0]
+              :lab ["A" "B" "C" "D" "E"]
+              :cat ["a" "b" "a" "b" "a"]}
+        tmp (java.io.File/createTempFile "napkinsketch-alpha-test" ".svg")
+        renders-with-opacity? (fn [sketch op-pattern]
+                                (sk/save sketch (.getAbsolutePath tmp))
+                                (boolean (re-find op-pattern (slurp tmp))))]
+    (testing "alpha 0.5 propagates to :line"
+      (is (renders-with-opacity? (-> data (sk/lay-line :x :y {:alpha 0.5}))
+                                 #"opacity=\"0.5\"")))
+
+    (testing "alpha 0.5 propagates to :step"
+      (is (renders-with-opacity? (-> data (sk/lay-step :x :y {:alpha 0.5}))
+                                 #"opacity=\"0.5\"")))
+
+    (testing "alpha 0.5 propagates to :lm regression line"
+      (is (renders-with-opacity? (-> data (sk/lay-lm :x :y {:alpha 0.5}))
+                                 #"opacity=\"0.5\"")))
+
+    (testing "alpha 0.4 propagates to :errorbar"
+      (is (renders-with-opacity? (-> {:x [1.0 2.0] :y [10.0 20.0]
+                                      :lo [5.0 15.0] :hi [15.0 25.0]}
+                                     (sk/lay-errorbar :x :y {:ymin :lo :ymax :hi :alpha 0.4}))
+                                 #"opacity=\"0.4\"")))
+
+    (testing "alpha 0.6 propagates to :lollipop"
+      (is (renders-with-opacity? (-> data (sk/lay-lollipop :cat :y {:alpha 0.6}))
+                                 #"opacity=\"0.6\"")))
+
+    (testing "alpha 0.3 propagates to :text"
+      (is (renders-with-opacity? (-> data (sk/lay-text :x :y {:text :lab :alpha 0.3}))
+                                 #"opacity=\"0.3\"")))
+
+    (testing "alpha 0.7 propagates to :label"
+      (is (renders-with-opacity? (-> data (sk/lay-label :x :y {:text :lab :alpha 0.7}))
+                                 #"opacity=\"0.7\"")))
+
+    (testing "alpha 0.4 propagates to :boxplot"
+      (is (renders-with-opacity? (-> data (sk/lay-boxplot :cat :y {:alpha 0.4}))
+                                 #"opacity=\"0.4\"")))
+
+    (testing "alpha 0.8 propagates to :pointrange (via :summary)"
+      (is (renders-with-opacity? (-> data (sk/lay-summary :cat :y {:alpha 0.8}))
+                                 #"opacity=\"0.8\"")))
+
+    (.delete tmp)))
+
+(deftest bar-numeric-x-test
+  ;; persona-16 H9. Closes P9-R2 F7.
+  (testing "lay-bar with numeric x throws clear error"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"Stat :count.*requires a categorical column for :x"
+                          (-> {:x [1 2 3 4 5]} (sk/lay-bar :x) sk/plan))))
+
+  (testing "lay-value-bar with numeric x throws clear error"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"Mark :rect.*requires a categorical column for :x"
+                          (-> {:x [1.0 2.0 3.0] :y [10 20 30]}
+                              (sk/lay-value-bar :x :y) sk/plan))))
+
+  (testing "lay-bar with categorical x still works"
+    (is (some? (-> {:cat ["a" "b" "c"]} (sk/lay-bar :cat) sk/plan))))
+
+  (testing "lay-value-bar with categorical x still works"
+    (is (some? (-> {:cat ["a" "b" "c"] :y [10 20 30]}
+                   (sk/lay-value-bar :cat :y) sk/plan)))))
+
 (deftest unknown-option-warning-test
   ;; persona-16 H1. Closes P1-R3 F2/F3/F4, Skept-R4 F4, P5-R2 L4.
   (let [data {:x [1 2 3] :y [10 20 30]}]
