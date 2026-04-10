@@ -146,7 +146,7 @@ scatter-views
 ;; | string, keyword, boolean, symbol, text | `:categorical` |
 ;; | LocalDate, LocalDateTime, Instant, java.util.Date | `:temporal` -> numerical with calendar-aware ticks |
 ;;
-;; Internally, `infer-column-types` in `view.clj` handles this step.
+;; Internally, `infer-column-types` in `resolve.clj` handles this step.
 ;;
 ;; A categorical column produces a band scale with string domain values.
 ;; Compare:
@@ -201,7 +201,7 @@ bar-views
 ;; ## Aesthetic Resolution
 ;;
 ;; The `:color` parameter triggers different behaviors depending on
-;; what you pass. Internally, `resolve-aesthetics` in `view.clj`
+;; what you pass. Internally, `resolve-aesthetics` in `resolve.clj`
 ;; classifies each aesthetic channel (`:color`, `:size`, `:alpha`,
 ;; `:text`) as either a column reference or a fixed literal.
 
@@ -316,7 +316,7 @@ fixed-color-views
 ;; its own regression line, its own density curve, its own bar in a
 ;; dodged layout.
 ;;
-;; Internally, `infer-grouping` in `view.clj` builds the grouping
+;; Internally, `infer-grouping` in `resolve.clj` builds the grouping
 ;; vector from explicit `:group` and categorical color.
 ;;
 ;; Grouping can be **derived** (from a categorical `:color` mapping)
@@ -485,7 +485,7 @@ fixed-color-views
 ;;
 ;; When you use `sk/view` without an explicit `sk/lay-*` call,
 ;; Napkinsketch infers the **method** -- a mark + stat bundle --
-;; from the column types. Internally, `infer-method` in `view.clj`
+;; from the column types. Internally, `infer-method` in `resolve.clj`
 ;; implements these rules:
 ;;
 ;; | Columns | Inferred mark | Inferred stat |
@@ -921,7 +921,7 @@ graph TD
 
 ;; Each box corresponds to a named function in the codebase.
 ;; The top four boxes -- Column Types, Aesthetics, Grouping, and
-;; Method -- are the per-view inference steps (in `view.clj`).
+;; Method -- are the per-view inference steps (in `resolve.clj`).
 ;; The remaining boxes are the plan-level orchestration steps
 ;; (in `plan.clj` and `scale.clj`).
 
