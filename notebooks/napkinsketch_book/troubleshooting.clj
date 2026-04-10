@@ -15,7 +15,7 @@
 
 ;; ## Column Not Found
 ;;
-;; **Symptom**: `"Column :foo not found in dataset"` error.
+;; **Symptom**: `"Column :foo (from :x) not found in dataset"` error.
 ;;
 ;; **Cause**: The column name does not exist in the dataset. CSV
 ;; headers are strings by default -- without `{:key-fn keyword}`,
@@ -106,7 +106,7 @@
 
 ;; ## Categorical Column with Log Scale
 ;;
-;; **Symptom**: `"Log scale requires numerical data"` error.
+;; **Symptom**: `"Log scale requires numeric data"` error.
 ;;
 ;; **Cause**: Log scales only work with numerical columns. Categorical
 ;; columns (strings, keywords) cannot be log-transformed.
