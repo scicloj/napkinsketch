@@ -37,7 +37,10 @@
         grid-rgba (defaults/hex->rgba (:grid theme))
         grid-w (:grid-stroke-width cfg)
         cx (/ pw 2.0) cy (/ ph 2.0)
-        r-max (- (min cx cy) (double m))
+        ;; Clamp to a small positive minimum so tiny panels with large
+        ;; margins don't produce inverted grid circles. Mirrors the
+        ;; equivalent clamp in coord.clj.
+        r-max (max 1.0 (- (min cx cy) (double m)))
         ;; Concentric circles (approximated as 40-segment polygons)
         n-seg 40
         circles (for [i (range 1 6)

@@ -818,7 +818,7 @@
                                 (recur (inc k) (+ acc w)))
                               acc))]
                     (aset densities (+ (* gi n-grid) gj) d))))
-            max-d (reduce max 0.0 densities)
+            max-d (dfn/reduce-max densities)
             ;; Build tile dataset with density as fill value
             tile-data (reduce (fn [acc [gi gj]]
                                 (let [d (aget densities (+ (* gi n-grid) gj))]

@@ -363,10 +363,10 @@
   "Apply marching squares to a density grid for a given threshold.
    Returns a sequence of line segments [[x1 y1] [x2 y2]] in data coordinates.
    Grid is n×n with densities[i*n+j] at cell (i,j)."
-  [densities n-grid threshold x-lo y-lo x-step y-step]
+  [^doubles densities n-grid threshold x-lo y-lo x-step y-step]
   (let [grid-val (fn [i j]
                    (if (and (< i n-grid) (< j n-grid) (>= i 0) (>= j 0))
-                     (nth densities (+ (* i n-grid) j))
+                     (aget densities (+ (* i n-grid) j))
                      0.0))
         interp (fn [v1 v2 p1 p2]
                  ;; Linear interpolation between two points based on threshold.
