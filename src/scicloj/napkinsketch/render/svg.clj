@@ -365,10 +365,13 @@
       (str/replace "\"" "&quot;")))
 
 (defn- attrs->str
-  "Convert a map of attributes to an SVG attribute string."
+  "Convert a map of attributes to an SVG attribute string. Keys are
+   sorted by name so the output is deterministic regardless of map type
+   (PersistentArrayMap vs PersistentHashMap, which differs at >8 keys
+   and depends on hash order)."
   [attrs]
   (when (seq attrs)
-    (str/join " " (for [[k v] attrs
+    (str/join " " (for [[k v] (sort-by (comp name key) attrs)
                         :when (some? v)]
                     (str (name k) "=\"" (if (string? v) (escape-xml v) v) "\"")))))
 
