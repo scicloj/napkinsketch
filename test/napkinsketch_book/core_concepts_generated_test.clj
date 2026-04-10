@@ -323,7 +323,7 @@
   setosa
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__1959981#] (= "setosa" (:species p1__1959981#))))))
+   (fn* [p1__80323#] (= "setosa" (:species p1__80323#))))))
 
 
 (def
@@ -332,7 +332,7 @@
   versicolor
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__1959982#] (= "versicolor" (:species p1__1959982#))))))
+   (fn* [p1__80324#] (= "versicolor" (:species p1__80324#))))))
 
 
 (def
@@ -720,12 +720,9 @@
 
 (def
  v145_l667
- (->
-  (rdatasets/datasets-iris)
-  (sk/view (sk/cross cols cols))
-  sk/lay-point))
+ (-> (rdatasets/datasets-iris) (sk/view (sk/cross cols cols))))
 
 
 (deftest
- t146_l671
+ t146_l670
  (is ((fn [v] (= 9 (:panels (sk/svg-summary v)))) v145_l667)))
