@@ -37,6 +37,13 @@
 (defmethod make-coord [:flip :doc] [_ _ _ _ _ _] "Swap x and y axes")
 (defmethod make-coord [:polar :doc] [_ _ _ _ _ _] "Radial mapping: x→angle, y→radius")
 
+(defmethod make-coord :default [coord-type _ _ _ _ _]
+  (throw (ex-info (str "Unknown coord type: " (pr-str coord-type)
+                       ". Supported: " (vec (sort (filter keyword?
+                                                          (remove #(or (vector? %) (= :default %))
+                                                                  (keys (methods make-coord)))))))
+                  {:coord-type coord-type})))
+
 ;; ---- Pixel-space reprojection (for arc interpolation) ----
 
 (defmulti make-coord-px

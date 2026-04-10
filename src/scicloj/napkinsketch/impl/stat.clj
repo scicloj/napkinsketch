@@ -112,6 +112,15 @@
   "Compute a statistical transform for a view."
   (fn [view] (or (:stat view) :identity)))
 
+(defmethod compute-stat :default [view]
+  (let [stat-key (or (:stat view) :identity)
+        registered (sort (filter keyword?
+                                 (remove #(or (vector? %) (= :default %))
+                                         (keys (methods compute-stat)))))]
+    (throw (ex-info (str "Unknown stat: " (pr-str stat-key)
+                         ". Supported stats: " (vec registered))
+                    {:stat stat-key :supported (vec registered)}))))
+
 ;; ---- Doc methods (dispatching on [stat-key :doc]) ----
 
 (defmethod compute-stat [:identity :doc] [_] "Pass-through — no transform")

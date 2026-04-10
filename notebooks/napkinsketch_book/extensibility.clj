@@ -75,6 +75,7 @@
   (->> (methods stat/compute-stat)
        keys
        (filter keyword?)
+       (remove #{:default})
        sort
        (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
                       "What it does" (sk/stat-doc k)})))})
@@ -361,6 +362,7 @@
   (->> (methods scicloj.napkinsketch.impl.coord/make-coord)
        keys
        (filter keyword?)
+       (remove #{:default})
        sort
        (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
                       "Behavior" (sk/coord-doc k)})))})
@@ -422,7 +424,7 @@
 
 (remove-method stat/compute-stat :quantile)
 
-(count (filter keyword? (keys (methods stat/compute-stat))))
+(count (remove #{:default} (filter keyword? (keys (methods stat/compute-stat)))))
 
 (kind/test-last [(fn [v] (= 11 v))])
 

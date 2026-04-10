@@ -532,6 +532,12 @@
            :opacity (or (:fixed-alpha view) 1.0)}
    :groups (extract-xy-groups view stat all-colors cfg :with-range? true)})
 
-(defmethod extract-layer :default [view stat all-colors cfg]
-  (extract-layer (assoc view :mark :point) stat all-colors cfg))
+(defmethod extract-layer :default [view _stat _all-colors _cfg]
+  (let [mark (:mark view)
+        registered (sort (filter keyword?
+                                 (remove #(or (vector? %) (= :default %))
+                                         (keys (methods extract-layer)))))]
+    (throw (ex-info (str "Unknown mark: " (pr-str mark)
+                         ". Supported marks: " (vec registered))
+                    {:mark mark :supported (vec registered)}))))
 
