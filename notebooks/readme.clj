@@ -42,7 +42,8 @@
      {:month "Jun" :sales 210}]
     (sk/lay-line :month :sales)
     sk/lay-point
-    (sk/options {:title "Monthly Sales"}))
+    (sk/options {:title "Monthly Sales"})
+    sk/plot)
 
 ;; Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping:
 
@@ -52,7 +53,8 @@
                        [:sepal-length :sepal-width
                         :petal-length :petal-width])
              {:color :species})
-    (sk/options {:title "Iris SPLOM"}))
+    (sk/options {:title "Iris SPLOM"})
+    sk/plot)
 
 ;; ## Documentation
 ;;

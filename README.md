@@ -33,32 +33,33 @@ such as [Clay](https://scicloj.github.io/clay/).
 ## Quick example
 ```clj
 (ns readme
-  (:require [tablecloth.api :as tc]
-            [scicloj.napkinsketch.api :as sk]))
-
-(def iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                      {:key-fn keyword}))
+  (:require [scicloj.napkinsketch.api :as sk]
+            [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 ```
-Scatter plot with color grouping:
+Line chart with point markers from plain Clojure data:
 ```clj
-(-> iris
-    ;; scatterplot layer: 
-    (sk/lay-point :sepal_length :sepal_width {:color :species})
-    ;; eager rendering (usually not needed):
+(-> [{:month "Jan" :sales 120}
+     {:month "Feb" :sales 95}
+     {:month "Mar" :sales 140}
+     {:month "Apr" :sales 175}
+     {:month "May" :sales 160}
+     {:month "Jun" :sales 210}]
+    (sk/lay-line :month :sales)
+    sk/lay-point
+    (sk/options {:title "Monthly Sales"})
     sk/plot)
 ```
 ![](readme_files/image0.svg)
 
-Multiple layers — shared aesthetics via `sk/view`:
+Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping:
 ```clj
-(-> iris
-    ;; aesthetics shared across layers: 
-    (sk/view :sepal_length :sepal_width {:color :species})
-    ;; scatterplot layer: 
-    sk/lay-point
-    ;; linear model layer:
-    sk/lay-lm
-    ;; eager rendering (usually not needed):
+(-> (rdatasets/datasets-iris)
+    (sk/view (sk/cross [:sepal-length :sepal-width
+                        :petal-length :petal-width]
+                       [:sepal-length :sepal-width
+                        :petal-length :petal-width])
+             {:color :species})
+    (sk/options {:title "Iris SPLOM"})
     sk/plot)
 ```
 ![](readme_files/image1.svg)
