@@ -303,9 +303,10 @@
         n (tc/row-count clean)]
     (if (or (< n 3)
             (= (dfn/reduce-min (clean x)) (dfn/reduce-max (clean x))))
-      {:lines []
-       :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
-       :y-domain (if (pos? n) (numeric-extent (clean y)) [0 1])}
+      (cond-> {:lines []
+               :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
+               :y-domain (if (pos? n) (numeric-extent (clean y)) [0 1])}
+        se (assoc :ribbons []))
       (if se
         ;; With confidence band
         (let [results (group-by-columns
@@ -458,9 +459,10 @@
         bandwidth (or (:loess-bandwidth (or cfg defaults/defaults)) 0.75)]
     (if (or (< n 4)
             (= (dfn/reduce-min (clean x)) (dfn/reduce-max (clean x))))
-      {:points []
-       :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
-       :y-domain (if (pos? n) (numeric-extent (clean y)) [0 1])}
+      (cond-> {:points []
+               :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
+               :y-domain (if (pos? n) (numeric-extent (clean y)) [0 1])}
+        se (assoc :ribbons []))
       (if se
         ;; With confidence band (bootstrap)
         (let [results (group-by-columns
