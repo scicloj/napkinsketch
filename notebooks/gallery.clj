@@ -1495,7 +1495,7 @@
 ;; Using faithfuld which has pre-computed density on a grid:
 
 (-> (rdatasets/ggplot2-faithfuld)
-    (sk/view :eruptions :waiting {:color :density})
+    (sk/view :eruptions :waiting {:fill :density})
     sk/lay-tile
     (sk/options {:title "Old Faithful: Pre-computed Density Heatmap"
                  :x-label "Eruption Duration"
@@ -1537,7 +1537,7 @@
 (-> (tc/dataset {:row (mapcat #(repeat 6 %) (range 6))
                  :col (flatten (repeat 6 (range 6)))
                  :value (map #(Math/sin (* % 0.5)) (range 36))})
-    (sk/view :col :row {:color :value})
+    (sk/view :col :row {:fill :value})
     sk/lay-tile
     (sk/options {:title "Synthetic Heatmap (sin wave)"
                  :x-label "Column"

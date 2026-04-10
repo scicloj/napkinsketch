@@ -575,9 +575,24 @@
                      (-> resolved (dissoc :bandwidth)
                          (assoc-in [:cfg :kde-bandwidth] bw))
                      resolved)
-          ;; Tile with explicit :fill → override stat to :identity
-          resolved (if (and (= (:mark resolved) :tile) (:fill resolved))
-                     (assoc resolved :stat :identity)
+          ;; Tile + default bin2d stat with a user-supplied :fill (or
+          ;; :color as a synonym) → override stat to :identity so the
+          ;; pre-computed fill values drive the tile colors directly.
+          ;; Only applies to lay-tile (which defaults to :bin2d) -- NOT
+          ;; to lay-density2d (:kde2d) or lay-contour, which intentionally
+          ;; compute their own fill values from x/y.
+          ;; Accepting :color keeps lay-tile friendly for users who
+          ;; reach for :color by habit from the other marks. :fill wins
+          ;; when both are set.
+          tile-override? (and (= (:mark resolved) :tile)
+                              (= (:stat resolved) :bin2d)
+                              (or (:fill resolved) (:color resolved)))
+          resolved (if tile-override?
+                     (cond-> (assoc resolved :stat :identity)
+                       ;; Promote :color to :fill when :fill is absent so
+                       ;; the downstream extract path finds the data.
+                       (and (not (:fill resolved)) (:color resolved))
+                       (assoc :fill (:color resolved)))
                      resolved)]
       resolved)))
 

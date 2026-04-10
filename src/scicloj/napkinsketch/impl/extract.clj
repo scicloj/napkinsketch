@@ -3,6 +3,7 @@
    Produces layer descriptor maps — plain Clojure maps with mark type,
    style, and groups of data-space coordinates."
   (:require [scicloj.napkinsketch.impl.defaults :as defaults]
+            [scicloj.napkinsketch.impl.resolve :as resolve]
             [tech.v3.datatype.functional :as dfn]
             [tablecloth.api :as tc]
             [tech.v3.datatype :as dtype]))
@@ -302,7 +303,12 @@
                        (range (dec n)))))))
 
 (defmethod extract-layer :tile [view stat all-colors cfg]
-  (let [fill-col (:fill view)
+  (let [;; Accept :color as a synonym for :fill on tiles -- users coming
+        ;; from the other marks reach for :color by default. If both are
+        ;; set, :fill wins (explicit).
+        fill-col (or (:fill view)
+                     (when (let [c (:color view)] (and c (or (keyword? c) (string? c))))
+                       (:color view)))
         grad-fn (:gradient-fn cfg)
         midpoint (:color-midpoint cfg)
         ;; Two paths: bin2d/kde2d stat produces :tiles as a dataset;
@@ -325,7 +331,10 @@
                                 :as-maps)))
                 ;; identity path — derive tile bounds from point coordinates
                 (let [data (:data view)
-                      fill-vals (when fill-col (data fill-col))
+                      ;; Resolve col ref against the dataset so keyword/string
+                      ;; mismatches still find the column.
+                      resolved-fill (when fill-col (resolve/resolve-col-name data fill-col))
+                      fill-vals (when resolved-fill (data resolved-fill))
                       f-lo (when (seq fill-vals) (dfn/reduce-min fill-vals))
                       f-hi (when (seq fill-vals) (dfn/reduce-max fill-vals))
                       all-xs (mapcat :xs (:points stat))

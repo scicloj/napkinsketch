@@ -1318,6 +1318,39 @@
     (testing "4+ column with explicit x/y still works"
       (is (= 1 (-> four-col (sk/lay-point :a :b) sk/plan :panels count))))))
 
+(deftest tile-color-synonym-test
+  ;; persona-11-R2 F8: lay-tile used to silently paint every tile the
+  ;; midpoint color when the user passed {:color :value} instead of
+  ;; {:fill :value}. Now :color is accepted as a synonym (only when
+  ;; stat is :bin2d, i.e. from `sk/lay-tile` -- NOT for density2d/
+  ;; contour which have their own intentional kde2d stat).
+  (let [data (tc/dataset {:row (mapcat #(repeat 6 %) (range 6))
+                          :col (flatten (repeat 6 (range 6)))
+                          :value (map #(Math/sin (* % 0.5)) (range 36))})]
+
+    (testing "lay-tile with :color produces the same plan as :fill"
+      (let [p-color (-> data (sk/view :col :row {:color :value})
+                        sk/lay-tile sk/plan)
+            p-fill (-> data (sk/view :col :row {:fill :value})
+                       sk/lay-tile sk/plan)
+            tiles-color (-> p-color :panels first :layers first :tiles)
+            tiles-fill (-> p-fill :panels first :layers first :tiles)]
+        (is (= (count tiles-color) (count tiles-fill))
+            "same number of tiles in both paths")
+        (is (= (distinct (map :color tiles-color))
+               (distinct (map :color tiles-fill)))
+            "same distinct colors in both paths")
+        (is (> (count (distinct (map :color tiles-color))) 1)
+            ":color path produces varying tile colors, not uniform")))
+
+    (testing "lay-density2d with :color :species (categorical) still works"
+      ;; This used to hit the over-broad tile-override; must stay :kde2d.
+      (is (some? (-> (tc/dataset {:x [1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0]
+                                  :y [1.0 2.1 3.0 4.2 5.1 6.0 7.0 8.1 9.0 10.0]
+                                  :g ["a" "a" "a" "a" "a" "b" "b" "b" "b" "b"]})
+                     (sk/view :x :y {:color :g})
+                     sk/lay-density2d sk/plan))))))
+
 (deftest mixed-type-column-test
   ;; persona-skeptical-round-4 F5: a column whose values are heterogeneous
   ;; (number + string + keyword) used to crash with a multi-KB Malli
