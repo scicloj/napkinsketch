@@ -3,7 +3,7 @@
    Methods are plain data maps. The registry makes them discoverable
    and extensible. Use `lookup` to get a method by keyword, `registered`
    to enumerate all methods, and `register!` to add new ones."
-  (:require [scicloj.napkinsketch.impl.view :as view]))
+  (:require [scicloj.napkinsketch.impl.resolve :as resolve]))
 
 ;; ---- Registry ----
 
@@ -44,7 +44,7 @@
    :mark, :stat, and optionally :position and :doc.
    Position defaults to nil (identity) — only :dodge, :stack, :fill are explicit."
   [k entry]
-  (swap! registry* assoc k (view/map->Method entry))
+  (swap! registry* assoc k (resolve/map->Method entry))
   k)
 
 (defn lookup

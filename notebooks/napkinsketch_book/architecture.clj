@@ -16,8 +16,10 @@
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Sketch internals -- record, resolution, and views->plan pipeline
+   ;; Sketch internals -- record and resolution
    [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+   ;; Plan pipeline -- views->plan, domains, ticks, legends, layout
+   [scicloj.napkinsketch.impl.plan :as plan-impl]
    ;; Malli schema validation
    [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
@@ -142,7 +144,7 @@ graph LR
 ;; The values are still in data space.
 
 (def trace-plan
-  (sketch-impl/views->plan trace-views {}))
+  (plan-impl/views->plan trace-views {}))
 
 trace-plan
 
@@ -329,13 +331,16 @@ multi-plan
 (kind/mermaid "
 graph TD
   API[\"api.clj\"] --> SK[\"impl/sketch.clj\"]
-  API --> VIEW[\"impl/view.clj\"]
-  SK --> VIEW
+  API --> RES[\"impl/resolve.clj\"]
+  API --> PL[\"impl/plan.clj\"]
+  SK --> RES
+  SK --> PL
+  PL --> RES
+  PL --> STAT[\"impl/stat.clj\"]
+  PL --> SCALE[\"impl/scale.clj\"]
+  PL --> DEFAULTS[\"impl/defaults.clj\"]
+  PL --> SS[\"impl/sketch_schema.clj\"]
   SK --> RENDER[\"impl/render.clj\"]
-  SK --> STAT[\"impl/stat.clj\"]
-  SK --> SCALE[\"impl/scale.clj\"]
-  SK --> DEFAULTS[\"impl/defaults.clj\"]
-  SK --> SS[\"impl/sketch_schema.clj\"]
   RENDER --> SVG[\"render/svg.clj\"]
   SVG --> MEMBRANE[\"render/membrane.clj\"]
   MEMBRANE --> PANEL[\"render/panel.clj\"]
@@ -344,14 +349,17 @@ graph TD
   PANEL --> COORD[\"impl/coord.clj\"]
   style API fill:#c8e6c9
   style SK fill:#d1c4e9
+  style PL fill:#d1c4e9
   style SVG fill:#f8bbd0
   style MEMBRANE fill:#f8bbd0
 ")
 
-;; `impl/sketch.clj` is the core module. It holds the `Sketch` record,
-;; `resolve-sketch` (flattens views and layers into view maps),
-;; `views->plan` (resolves domains, ticks, layout), and `render-sketch`
+;; `impl/sketch.clj` holds the `Sketch` record, `resolve-sketch`
+;; (flattens views and layers into view maps), and `render-sketch`
 ;; (drives the full pipeline for auto-rendering in notebooks).
+;; `impl/plan.clj` holds `views->plan` (domains, ticks, legends, layout).
+;; `impl/resolve.clj` holds `resolve-view` (single-view resolution,
+;; column type inference, grouping).
 ;;
 ;; The `impl/` directory is pure data -- no membrane dependency.
 ;; The `render/` directory uses membrane for pixel-space layout and

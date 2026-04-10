@@ -1,7 +1,8 @@
 (ns scicloj.napkinsketch.api
   "Public API for napkinsketch -- composable plotting in Clojure."
-  (:require [scicloj.napkinsketch.impl.view :as view]
+  (:require [scicloj.napkinsketch.impl.resolve :as resolve]
             [scicloj.napkinsketch.impl.sketch :as sketch]
+            [scicloj.napkinsketch.impl.plan :as plan]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.render :as render-impl]
@@ -23,24 +24,24 @@
 (defn plan?
   "Return true if x is a plan (the resolved data-space geometry from sk/plan)."
   [x]
-  (view/plan? x))
+  (resolve/plan? x))
 
 (defn layer?
   "Return true if x is a layer (resolved geometry for one mark in a plan)."
   [x]
-  (view/layer? x))
+  (resolve/layer? x))
 
 (defn method?
   "Return true if x is a method (mark + stat + position bundle from the registry)."
   [x]
-  (view/method? x))
+  (resolve/method? x))
 
 (defn- expect-type
   "Validate that x is of the expected type. Throws with helpful message if not."
   [x pred expected-name fn-name]
   (when-not (pred x)
     (throw (ex-info (str fn-name " expects a " expected-name ". "
-                         (cond (view/plan? x) "Got a plan."
+                         (cond (resolve/plan? x) "Got a plan."
                                :else (str "Got: " (type x) ".")))
                     {:function fn-name :expected expected-name :got-type (str (type x))}))))
 
@@ -167,34 +168,34 @@
   "Vertical reference line at x = intercept.
    (rule-v 5)  -- line at x=5"
   [intercept]
-  (view/rule-v intercept))
+  (resolve/rule-v intercept))
 
 (defn rule-h
   "Horizontal reference line at y = intercept.
    (rule-h 3)  -- line at y=3"
   [intercept]
-  (view/rule-h intercept))
+  (resolve/rule-h intercept))
 
 (defn band-v
   "Vertical shaded band from x = lo to x = hi.
    (band-v 4 6)              -- shaded region between x=4 and x=6
    (band-v 4 6 {:alpha 0.3}) -- with custom opacity"
-  ([lo hi] (view/band-v lo hi))
-  ([lo hi opts] (view/band-v lo hi opts)))
+  ([lo hi] (resolve/band-v lo hi))
+  ([lo hi opts] (resolve/band-v lo hi opts)))
 
 (defn band-h
   "Horizontal shaded band from y = lo to y = hi.
    (band-h 2 4)              -- shaded region between y=2 and y=4
    (band-h 2 4 {:alpha 0.3}) -- with custom opacity"
-  ([lo hi] (view/band-h lo hi))
-  ([lo hi opts] (view/band-h lo hi opts)))
+  ([lo hi] (resolve/band-h lo hi))
+  ([lo hi opts] (resolve/band-h lo hi opts)))
 
 ;; ---- Cross ----
 
 (defn cross
   "Cartesian product of two sequences."
   [xs ys]
-  (view/cross xs ys))
+  (resolve/cross xs ys))
 
 ;; ---- Pipeline Internals ----
 
@@ -202,7 +203,7 @@
   "Convert a plan into a membrane drawable tree.
    (plan->membrane (plan sketch))"
   [plan-data & {:as opts}]
-  (expect-type plan-data view/plan? "plan (from sk/plan)" "sk/plan->membrane")
+  (expect-type plan-data resolve/plan? "plan (from sk/plan)" "sk/plan->membrane")
   (membrane/plan->membrane plan-data opts))
 
 (defn membrane->figure
@@ -219,7 +220,7 @@
    (plan->figure (plan sketch) :svg {})
    (plan->figure (plan sketch) :plotly {})"
   [plan format opts]
-  (expect-type plan view/plan? "plan (from sk/plan)" "sk/plan->figure")
+  (expect-type plan resolve/plan? "plan (from sk/plan)" "sk/plan->figure")
   (render-impl/plan->figure plan format opts))
 
 ;; ---- Plan Validation ----
@@ -745,7 +746,7 @@
    (plan sk {:title \"My Plot\"})"
   ([sk]
    (let [views (sketch/resolve-sketch sk)]
-     (sketch/views->plan views (:opts sk {}))))
+     (plan/views->plan views (:opts sk {}))))
   ([sk opts]
    (plan (options sk opts))))
 
@@ -756,7 +757,7 @@
    (annotate sk (sk/rule-h 5) (sk/band-v 3 7))"
   [sk & annotations]
   (doseq [ann annotations]
-    (when-not (and (map? ann) (view/annotation-marks (:mark ann)))
+    (when-not (and (map? ann) (resolve/annotation-marks (:mark ann)))
       (throw (ex-info (str "annotate expects annotation maps (from rule-h, rule-v, band-h, band-v), got: "
                            (pr-str ann))
                       {:annotation ann}))))

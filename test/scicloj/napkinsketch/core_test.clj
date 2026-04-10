@@ -9,8 +9,9 @@
             [scicloj.napkinsketch.impl.scale :as scale]
             [scicloj.napkinsketch.impl.position :as position]
             [scicloj.napkinsketch.impl.extract :as extract]
-            [scicloj.napkinsketch.impl.view :as view]
+            [scicloj.napkinsketch.impl.resolve :as resolve]
             [scicloj.napkinsketch.impl.sketch :as sketch]
+            [scicloj.napkinsketch.impl.plan :as plan]
             [scicloj.napkinsketch.method :as method]
             [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
@@ -333,7 +334,7 @@
 (deftest extract-layer-point-test
   (let [view {:mark :point :data tiny-ds :x :x :y :y
               :x-type :numerical :y-type :numerical}
-        rv (view/resolve-view view)
+        rv (resolve/resolve-view view)
         stat-result (stat/compute-stat (assoc rv :cfg defaults/defaults))
         layer (extract/extract-layer rv stat-result [] defaults/defaults)]
     (is (= :point (:mark layer)))
@@ -343,7 +344,7 @@
 (deftest extract-layer-bar-test
   (let [view {:mark :bar :stat :bin :data tiny-ds :x :x
               :x-type :numerical}
-        rv (view/resolve-view view)
+        rv (resolve/resolve-view view)
         stat-result (stat/compute-stat (assoc rv :cfg defaults/defaults))
         layer (extract/extract-layer rv stat-result [] defaults/defaults)]
     (is (= :bar (:mark layer)))
@@ -354,13 +355,13 @@
   (testing "nudge-x shifts xs"
     (let [view {:mark :point :data (tc/dataset {:x [1.0 2.0] :y [3.0 4.0]})
                 :x :x :y :y :x-type :numerical :nudge-x 0.5}
-          rv (view/resolve-view view)
+          rv (resolve/resolve-view view)
           stat-result (stat/compute-stat (assoc rv :cfg defaults/defaults))
           layer (extract/extract-layer rv stat-result [] defaults/defaults)]
       (is (= [1.5 2.5] (:xs (first (:groups layer)))))))
   (testing "no nudge is no-op"
     (let [view {:mark :point :data tiny-ds :x :x :y :y :x-type :numerical}
-          rv (view/resolve-view view)
+          rv (resolve/resolve-view view)
           stat-result (stat/compute-stat (assoc rv :cfg defaults/defaults))
           layer (extract/extract-layer rv stat-result [] defaults/defaults)]
       (is (= [1 2 3 4 5] (:xs (first (:groups layer))))))))
@@ -1038,15 +1039,15 @@
 (deftest temporal-epoch-ms-test
   (testing "LocalDate converts to epoch-ms"
     (let [d (jt/local-date 2025 1 1)
-          ms (view/temporal->epoch-ms d)]
+          ms (resolve/temporal->epoch-ms d)]
       (is (double? ms))
       (is (== ms (* (.toEpochDay d) 86400000)))))
   (testing "LocalDateTime preserves sub-day precision"
     (let [dt (jt/local-date-time 2025 3 15 12 30 0)
-          ms (view/temporal->epoch-ms dt)]
+          ms (resolve/temporal->epoch-ms dt)]
       (is (double? ms))
       ;; Should differ from midnight by 12.5 hours in ms
-      (let [midnight-ms (view/temporal->epoch-ms (jt/local-date 2025 3 15))]
+      (let [midnight-ms (resolve/temporal->epoch-ms (jt/local-date 2025 3 15))]
         (is (== (- ms midnight-ms) (* 12.5 3600000))))))
   (testing "Temporal plan has datetime ticks"
     (let [pl (-> (tc/dataset {:date [(jt/local-date 2025 1 1)
@@ -1243,7 +1244,7 @@
   "Resolve a sketch and get svg-summary."
   [sk]
   (let [views (sketch/resolve-sketch sk)
-        fig (sk/plan->figure (sketch/views->plan views (:opts sk {})) :svg {})]
+        fig (sk/plan->figure (plan/views->plan views (:opts sk {})) :svg {})]
     (sk/svg-summary fig)))
 
 (deftest basic-test
