@@ -533,13 +533,13 @@
 ;; ================================================================
 
 (defn- infer-grid
-  "Infer grid structure from entry-grouped views.
-   Each entry = one panel. Grid position determined by:
-   - Faceted entries: :facet-col -> grid col, :facet-row -> grid row
-   - Non-faceted entries: :x column -> grid col, :y column -> grid row
+  "Infer grid structure from view groups.
+   Each view group = one panel. Grid position determined by:
+   - Faceted views: :facet-col -> grid col, :facet-row -> grid row
+   - Non-faceted views: :x column -> grid col, :y column -> grid row
    Returns {:grid-cols N :grid-rows N :panels [{:views [...] :row R :col C ...}]}"
   [entry-groups {:keys [grid-cols grid-rows] :as user-grid}]
-  (let [;; Detect faceting: check if any entry has :facet-col or :facet-row
+  (let [;; Detect faceting: check if any view group has :facet-col or :facet-row
         first-views (mapv #(first (:views %)) entry-groups)
         has-facet-col? (some :facet-col first-views)
         has-facet-row? (some :facet-row first-views)
@@ -584,7 +584,7 @@
                                     ;; (avoids redundant y-label on single-row facets)
                                     show-label? (> (count row-vals) 1)]
                                 [(max 0 i) (when (and yv show-label?) (defaults/fmt-name yv))]))
-                            ;; Stacking: when multiple entries share the same
+                            ;; Stacking: when multiple view groups share the same
                             ;; grid position, offset each by one row below the base.
                             ;; sub=0 -> base position; sub>0 -> stacked below.
                             stack-key [ri ci]
@@ -683,7 +683,7 @@
                            pg)))
                      (:panels grid))
 
-         ;; Build panels with per-entry domains
+         ;; Build panels with per-panel domains
          panels (vec
                  (for [pd panel-data
                        :when (seq (:views pd))]

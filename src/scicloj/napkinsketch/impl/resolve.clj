@@ -103,8 +103,9 @@
 
 (defn view
   "Create views from data and column specs.
-   An optional opts map sets shared aesthetics (e.g. {:color :species})
-   that all layers inherit. Layer opts override view-level aesthetics.
+   An optional opts map sets view-level aesthetic mappings (e.g.
+   {:color :species}) that all layers in this view inherit. Layer
+   mappings override view-level mappings.
    The 1-arity infers columns from the dataset shape:
    1 column → x, 2 columns → x y, 3 columns → x y + color."
   ([data]

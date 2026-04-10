@@ -1637,7 +1637,7 @@
         (is (= 150 (:points s)))
         (is (= 4 (:lines s)))))
 
-    (testing "Faceted + per-entry methods via view"
+    (testing "Faceted + per-view layers"
       (let [s (summary (-> (sk/sketch iris)
                            (sk/view :sepal_length :sepal_width)
                            sk/lay-point
