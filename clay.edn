@@ -49,5 +49,5 @@
         });
         </script>
 "}
-                          :theme [:cosmo "notebooks/custom.scss"]}}}
+                          :theme [:cosmo "custom.scss"]}}}
  :base-target-path ".clay-temp"}
