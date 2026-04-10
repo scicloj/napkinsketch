@@ -66,7 +66,7 @@
 
 (def column-keys
   "Set of keywords that can reference dataset columns in view maps."
-  #{:x :y :color :size :alpha :shape :group :text :ymin :ymax})
+  #{:x :y :color :size :alpha :shape :group :text :ymin :ymax :fill})
 
 ;; ---- Shape Symbols ----
 

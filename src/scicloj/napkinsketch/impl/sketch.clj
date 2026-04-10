@@ -91,24 +91,30 @@
     method-key))
 
 (defn- validate-columns
-  "Validate that referenced x/y columns exist in the dataset.
-   Checks both keyword and string forms for cross-type compatibility."
+  "Validate that every aesthetic column reference in the resolved mapping
+   names a real column in the dataset. Covers :x, :y, :color, :size, :alpha,
+   :shape, :group, :text, :ymin, :ymax, :fill. Accepts both keyword and
+   string refs with cross-type matching.
+
+   String values for :color are left alone: literal colors like \"red\" or
+   \"#FF0000\" are legitimate. For other aesthetic keys, string values are
+   treated as column refs and validated."
   [resolved d]
   (when d
     (let [col-names (set (tc/column-names d))
-          x-col (:x resolved)
-          y-col (:y resolved)
-          check-pairs (cond-> []
-                        (and x-col (resolve/column-ref? x-col))
-                        (conj [:x x-col])
-                        (and y-col (resolve/column-ref? y-col) (not= y-col x-col))
-                        (conj [:y y-col]))]
-      (doseq [[role col] check-pairs
-              :when (and (not (col-names col))
-                         (not (and (keyword? col) (col-names (name col))))
-                         (not (and (string? col) (col-names (keyword col)))))]
-        (throw (ex-info (str "Column " col " (from " role ") not found in dataset. Available: " (sort col-names))
-                        {:key role :column col :available (sort col-names)}))))))
+          col-exists? (fn [col]
+                        (or (col-names col)
+                            (and (keyword? col) (col-names (name col)))
+                            (and (string? col) (col-names (keyword col)))))]
+      (doseq [k defaults/column-keys
+              :let [col (get resolved k)]
+              :when (and col
+                         (resolve/column-ref? col)
+                         ;; :color strings are legitimate literals (color names, hex codes)
+                         (not (and (= k :color) (string? col)))
+                         (not (col-exists? col)))]
+        (throw (ex-info (str "Column " col " (from " k ") not found in dataset. Available: " (sort col-names))
+                        {:key k :column col :available (sort col-names)}))))))
 
 (defn resolve-sketch
   "Resolve a sketch into a flat vector of view maps for views->plan.

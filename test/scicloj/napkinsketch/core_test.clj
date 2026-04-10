@@ -1215,6 +1215,58 @@
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Coordinate"
                           (sk/coord [] :invalid)))))
 
+(deftest aesthetic-column-validation-test
+  ;; persona-16 B1: validate-columns covers :color/:size/:alpha/:shape/:group/
+  ;; :text/:ymin/:ymax/:fill, not just :x/:y. Closes the C2 epic:
+  ;; P5-R2 C1, P9-R2 F5/F6, Skept-R4 F2/F5/F6, P7-R2 F1/F2/F3, P11-R2 F5,
+  ;; P3-R2 footgun.
+  (let [data {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0] :g ["a" "b" "c"]}]
+    (testing "typoed :color keyword throws with key and column name"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Column :speices \(from :color\) not found"
+                            (-> data (sk/lay-point :x :y {:color :speices}) sk/plan))))
+
+    (testing "typoed :size keyword throws"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Column :bogus \(from :size\) not found"
+                            (-> data (sk/lay-point :x :y {:size :bogus}) sk/plan))))
+
+    (testing "typoed :alpha keyword throws"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Column :bogus \(from :alpha\) not found"
+                            (-> data (sk/lay-point :x :y {:alpha :bogus}) sk/plan))))
+
+    (testing "typoed :group keyword throws"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Column :bogus \(from :group\) not found"
+                            (-> data (sk/lay-point :x :y {:group :bogus}) sk/plan))))
+
+    (testing "typoed :ymax keyword throws"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Column :bogus2 \(from :ymax\) not found"
+                            (-> data (sk/lay-errorbar :x :y {:ymin :bogus1 :ymax :bogus2}) sk/plan))))
+
+    (testing "literal :color string is not flagged (named color)"
+      (is (some? (-> data (sk/lay-point :x :y {:color "red"}) sk/plan :panels))))
+
+    (testing "literal :color hex is not flagged"
+      (is (some? (-> data (sk/lay-point :x :y {:color "#FF0000"}) sk/plan :panels))))
+
+    (testing "good :color column still works"
+      (is (some? (-> data (sk/lay-point :x :y {:color :g}) sk/plan :panels))))
+
+    (testing "nil :color (explicit cancellation) skipped by validator"
+      (is (some? (-> data (sk/lay-point :x :y {:color nil}) sk/plan :panels))))
+
+    (testing "string column ref in :color resolves correctly"
+      (is (some? (-> {"a" [1 2 3] "b" [10 20 30] "g" ["x" "y" "z"]}
+                     (sk/lay-point "a" "b" {:color "g"}) sk/plan :panels))))
+
+    (testing "available columns listed in error for typo recovery"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Available: \(:g :x :y\)"
+                            (-> data (sk/lay-point :x :y {:color :typo}) sk/plan))))))
+
 (deftest facet-broadcast-test
   (testing "Global method (loess) applies to all facet panels"
     (let [iris (rdatasets/datasets-iris)
