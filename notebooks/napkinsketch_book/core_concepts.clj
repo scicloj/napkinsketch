@@ -665,8 +665,7 @@ my-sketch
 (def cols [:sepal-length :sepal-width :petal-length])
 
 (-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross cols cols))
-    sk/lay-point)
+    (sk/view (sk/cross cols cols)))
 
 (kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
 
