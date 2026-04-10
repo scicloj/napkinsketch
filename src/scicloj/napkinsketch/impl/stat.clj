@@ -42,12 +42,25 @@
                       {:stat stat-name :column (get view col-key) :column-type col-type})))))
 
 (defn prepare-points
-  "Clean data, compute domains, group by columns."
+  "Clean data, compute domains, group by columns.
+   Drops rows with missing values in x/y AND in any referenced numeric
+   aesthetic column (color/size/alpha/ymin/ymax/fill) so downstream code
+   never sees nil/NaN values where it tries to coerce to double."
   [view]
-  (let [{:keys [data x y color color-type size alpha shape text-col x-type y-type group mark ymin ymax]} view
+  (let [{:keys [data x y color color-type size alpha shape text-col x-type y-type group mark ymin ymax fill]} view
         x-only? (or (nil? y) (= x y))
         data-idx (tc/add-column data :__row-idx (range (tc/row-count data)))
-        drop-cols (if x-only? [x] [x y])
+        ds-cols (set (tc/column-names data-idx))
+        col-ref? (fn [v] (and v (or (keyword? v) (string? v)) (contains? ds-cols v)))
+        ;; Referenced numeric aesthetic columns that exist in the dataset
+        aesthetic-cols (cond-> []
+                         (col-ref? color) (conj color)
+                         (col-ref? size)  (conj size)
+                         (col-ref? alpha) (conj alpha)
+                         (col-ref? ymin)  (conj ymin)
+                         (col-ref? ymax)  (conj ymax)
+                         (col-ref? fill)  (conj fill))
+        drop-cols (vec (distinct (concat (if x-only? [x] [x y]) aesthetic-cols)))
         clean (cond-> (tc/drop-missing data-idx drop-cols)
                 (= x-type :categorical) (tc/map-columns x [x] str))]
     (if (zero? (tc/row-count clean))

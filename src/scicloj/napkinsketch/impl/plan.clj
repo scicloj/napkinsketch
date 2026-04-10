@@ -189,38 +189,42 @@
           (assoc rv :data ds)
           rv)))))
 
+(defn- numeric-col-ref
+  "If the value at `k` in resolved-view `rv` is a column ref that exists in
+   `ds` and has a numeric dtype, return the resolved column name; else nil."
+  [rv ds k]
+  (let [v (get rv k)]
+    (when (and v (resolve/column-ref? v))
+      (let [col (resolve/resolve-col-name ds v)]
+        (when (and col (ds col)
+                   (casting/numeric-type? (dtype/elemwise-datatype (ds col))))
+          col)))))
+
 (defn- filter-infinities
-  "Filter rows containing non-finite values on numeric x or y columns.
-   Removes rows where the x or y column contains nil, NaN, Inf, or -Inf
-   and prints an appropriate warning. Non-numeric columns are skipped.
+  "Filter rows containing non-finite values on numeric x/y and numeric
+   aesthetic columns (color/size/alpha/ymin/ymax/fill). Removes rows where
+   any of these columns contain nil, NaN, Inf, or -Inf and prints an
+   appropriate warning. Non-numeric and non-referenced columns are skipped.
    Returns the resolved view with filtered :data."
   [rv]
   (let [ds (:data rv)]
     (if-not (tc/dataset? ds)
       rv
-      (let [x-col (when (keyword? (:x rv)) (:x rv))
-            y-col (when (keyword? (:y rv)) (:y rv))
-            x-numeric? (and x-col (ds x-col)
-                            (casting/numeric-type? (dtype/elemwise-datatype (ds x-col))))
-            y-numeric? (and y-col (ds y-col)
-                            (casting/numeric-type? (dtype/elemwise-datatype (ds y-col))))
+      (let [numeric-cols (distinct
+                          (keep #(numeric-col-ref rv ds %)
+                                [:x :y :color :size :alpha :ymin :ymax :fill]))
             n-before (tc/row-count ds)
-            ;; First pass: drop missing (nil/NaN)
-            cols-to-check (cond-> []
-                            x-numeric? (conj x-col)
-                            y-numeric? (conj y-col))
-            ds (if (seq cols-to-check)
-                 (tc/drop-missing ds cols-to-check)
+            ;; First pass: drop missing (nil)
+            ds (if (seq numeric-cols)
+                 (tc/drop-missing ds numeric-cols)
                  ds)
             n-after-missing (tc/row-count ds)
             n-missing (- n-before n-after-missing)
-            ;; Second pass: drop infinite
-            ds (if x-numeric?
-                 (tc/select-rows ds (dfn/finite? (ds x-col)))
-                 ds)
-            ds (if y-numeric?
-                 (tc/select-rows ds (dfn/finite? (ds y-col)))
-                 ds)
+            ;; Second pass: drop NaN/Inf on each numeric column
+            ds (reduce (fn [ds col]
+                         (tc/select-rows ds (dfn/finite? (ds col))))
+                       ds
+                       numeric-cols)
             n-after (tc/row-count ds)
             n-infinite (- n-after-missing n-after)
             removed (+ n-missing n-infinite)]
@@ -319,27 +323,37 @@
                           (when (not= y (first x-vars))
                             (defaults/fmt-name y)))))}))
 
+(defn- finite-vals
+  "Concatenate a seq of column buffers into a single Clojure vector with
+   nil/NaN/Inf stripped. Returns nil when the result is empty. Used to
+   compute min/max for numeric-aesthetic legends without tripping over
+   missing values or boolean-typed all-nil columns."
+  [bufs]
+  (let [out (into [] (comp cat (filter #(and (some? %) (number? %) (Double/isFinite (double %))))) bufs)]
+    (when (seq out) out)))
+
 (defn- build-legend
-  "Build legend from resolved views and color info."
+  "Build legend from resolved views and color info. Returns nil when the
+   legend would be empty (no data, or all nil/NaN in the color column)."
   [resolved-all numeric-color? all-colors color-cols cfg]
   (let [grad-fn (:gradient-fn cfg)]
     (cond
       numeric-color?
       (let [color-views (filter #(and (resolve/column-ref? (:color %))
                                       (:data %)) resolved-all)
-            all-bufs (map #((:data %) (:color %)) color-views)
-            all-vals (dtype/concat-buffers all-bufs)
-            c-min (dfn/reduce-min all-vals)
-            c-max (dfn/reduce-max all-vals)
-            n-stops 20]
-        {:title (first color-cols)
-         :type :continuous
-         :min c-min :max c-max
-         :color-scale (:color-scale cfg)
-         :stops (vec (for [i (range n-stops)
-                           :let [t (/ (double i) (dec n-stops))]]
-                       {:t t :color (grad-fn t)}))})
-      all-colors
+            all-bufs (map #((:data %) (:color %)) color-views)]
+        (when-let [all-vals (finite-vals all-bufs)]
+          (let [c-min (dfn/reduce-min all-vals)
+                c-max (dfn/reduce-max all-vals)
+                n-stops 20]
+            {:title (first color-cols)
+             :type :continuous
+             :min c-min :max c-max
+             :color-scale (:color-scale cfg)
+             :stops (vec (for [i (range n-stops)
+                               :let [t (/ (double i) (dec n-stops))]]
+                           {:t t :color (grad-fn t)}))})))
+      (seq all-colors)
       {:title (first color-cols)
        :entries (vec (for [cat all-colors]
                        {:label (str cat)
@@ -362,46 +376,48 @@
           (range n))))
 
 (defn- build-size-legend
-  "Build size legend when :size maps to a numerical column."
+  "Build size legend when :size maps to a numerical column. Returns nil
+   when all values are nil/NaN (suppressing the legend)."
   [resolved-all]
   (let [size-views (filter #(and (resolve/column-ref? (:size %))
                                  (nil? (:fixed-size %))
                                  (:data %)) resolved-all)]
     (when (seq size-views)
       (let [size-col (:size (first size-views))
-            all-bufs (map #((:data %) (:size %)) size-views)
-            all-vals (dtype/concat-buffers all-bufs)
-            s-min (dfn/reduce-min all-vals)
-            s-max (dfn/reduce-max all-vals)
-            span (max 1e-6 (- (double s-max) (double s-min)))
-            values (nice-legend-values s-min s-max 5)]
-        {:title size-col
-         :type :size
-         :min s-min :max s-max
-         :entries (vec (for [v values]
-                         {:value v
-                          :radius (+ 2.0 (* 6.0 (/ (- (double v) (double s-min)) span)))}))}))))
+            all-bufs (map #((:data %) (:size %)) size-views)]
+        (when-let [all-vals (finite-vals all-bufs)]
+          (let [s-min (dfn/reduce-min all-vals)
+                s-max (dfn/reduce-max all-vals)
+                span (max 1e-6 (- (double s-max) (double s-min)))
+                values (nice-legend-values s-min s-max 5)]
+            {:title size-col
+             :type :size
+             :min s-min :max s-max
+             :entries (vec (for [v values]
+                             {:value v
+                              :radius (+ 2.0 (* 6.0 (/ (- (double v) (double s-min)) span)))}))}))))))
 
 (defn- build-alpha-legend
-  "Build alpha legend when :alpha maps to a numerical column."
+  "Build alpha legend when :alpha maps to a numerical column. Returns nil
+   when all values are nil/NaN (suppressing the legend)."
   [resolved-all]
   (let [alpha-views (filter #(and (resolve/column-ref? (:alpha %))
                                   (nil? (:fixed-alpha %))
                                   (:data %)) resolved-all)]
     (when (seq alpha-views)
       (let [alpha-col (:alpha (first alpha-views))
-            all-bufs (map #((:data %) (:alpha %)) alpha-views)
-            all-vals (dtype/concat-buffers all-bufs)
-            a-min (dfn/reduce-min all-vals)
-            a-max (dfn/reduce-max all-vals)
-            span (max 1e-6 (- (double a-max) (double a-min)))
-            values (nice-legend-values a-min a-max 5)]
-        {:title alpha-col
-         :type :alpha
-         :min a-min :max a-max
-         :entries (vec (for [v values]
-                         {:value v
-                          :alpha (+ 0.2 (* 0.8 (/ (- (double v) (double a-min)) span)))}))}))))
+            all-bufs (map #((:data %) (:alpha %)) alpha-views)]
+        (when-let [all-vals (finite-vals all-bufs)]
+          (let [a-min (dfn/reduce-min all-vals)
+                a-max (dfn/reduce-max all-vals)
+                span (max 1e-6 (- (double a-max) (double a-min)))
+                values (nice-legend-values a-min a-max 5)]
+            {:title alpha-col
+             :type :alpha
+             :min a-min :max a-max
+             :entries (vec (for [v values]
+                             {:value v
+                              :alpha (+ 0.2 (* 0.8 (/ (- (double v) (double a-min)) span)))}))}))))))
 
 (defn- compute-layout-dims
   "Compute layout dimensions: padding, legend width, total size."

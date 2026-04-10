@@ -1318,6 +1318,47 @@
     (testing "4+ column with explicit x/y still works"
       (is (= 1 (-> four-col (sk/lay-point :a :b) sk/plan :panels count))))))
 
+(deftest nil-in-aesthetic-columns-test
+  ;; persona-16 B2. Closes C3 epic: P5-R2 C1, P9-R2 F1/F2,
+  ;; P7-R2 F1/F2/F3, P11-R2 F5.
+  (testing "nil in numeric :size column drops rows cleanly"
+    (let [p (-> {:x [1.0 2.0 3.0 4.0] :y [10.0 20.0 30.0 40.0]
+                 :sz [1.0 nil 3.0 nil]}
+                (sk/lay-point :x :y {:size :sz}) sk/plan)]
+      (is (= 1 (count (:panels p))))
+      (is (some? (:size-legend p)) "size legend still built from 2 valid rows")))
+
+  (testing "nil in numeric :color column drops rows cleanly"
+    (let [p (-> {:x [1.0 2.0 3.0 4.0] :y [10.0 20.0 30.0 40.0]
+                 :c [1.0 2.0 nil 4.0]}
+                (sk/lay-point :x :y {:color :c}) sk/plan)]
+      (is (= 1 (count (:panels p))))
+      (is (some? (:legend p)) "numeric color legend still built")))
+
+  (testing "NaN in numeric :size column drops rows cleanly"
+    (let [p (-> {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0]
+                 :sz [1.0 ##NaN 3.0]}
+                (sk/lay-point :x :y {:size :sz}) sk/plan)]
+      (is (= 1 (count (:panels p))))))
+
+  (testing "all-nil :size column renders without legend"
+    (let [p (-> {:x [1.0 2.0] :y [10.0 20.0] :sz [nil nil]}
+                (sk/lay-point :x :y {:size :sz}) sk/plan)]
+      (is (= 1 (count (:panels p))))
+      (is (nil? (:size-legend p)) "size legend suppressed when all nil")))
+
+  (testing "all-nil :alpha column renders without legend"
+    (let [p (-> {:x [1.0 2.0] :y [10.0 20.0] :a [nil nil]}
+                (sk/lay-point :x :y {:alpha :a}) sk/plan)]
+      (is (= 1 (count (:panels p))))
+      (is (nil? (:alpha-legend p)) "alpha legend suppressed when all nil")))
+
+  (testing "nil in :ymin / :ymax drops rows for errorbar"
+    (let [p (-> {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0]
+                 :lo [5.0 nil 25.0] :hi [15.0 nil 35.0]}
+                (sk/lay-errorbar :x :y {:ymin :lo :ymax :hi}) sk/plan)]
+      (is (= 1 (count (:panels p)))))))
+
 (deftest sketch-threading-test
   ;; persona-16 B5. Closes P1-R3 F1, P9-R2 F14.
   (let [data {:x [1 2 3] :y [10 20 30] :g ["a" "b" "c"]}]
