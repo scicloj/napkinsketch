@@ -38,10 +38,30 @@
   [d]
   (when d (if (tc/dataset? d) d (tc/dataset d))))
 
+(defn- resolve-facet-col
+  "Resolve a facet column ref against a dataset; throw with a clear error
+   message if the column is missing."
+  [ds role ref]
+  (let [col-names (set (tc/column-names ds))
+        fname (resolve/resolve-col-name ds ref)]
+    (when-not (contains? col-names fname)
+      (throw (ex-info (str "Facet column " ref " (from " role ") not found in dataset. Available: " (sort col-names))
+                      {:role role :column ref :available (sort col-names)})))
+    fname))
+
 (defn- expand-facets
   "Expand views by facet columns from opts into per-value views.
    Each faceted view gets filtered :data and string :facet-col/:facet-row labels."
   [views data facet-col facet-row]
+  ;; Reject vector facet specs with a clear error until nested faceting is a feature.
+  (when (and facet-col (sequential? facet-col))
+    (throw (ex-info (str "Facet column must be a single keyword or string, got vector: " (pr-str facet-col)
+                         ". For 2D grids use (sk/facet-grid sk col-col row-col).")
+                    {:facet-col facet-col})))
+  (when (and facet-row (sequential? facet-row))
+    (throw (ex-info (str "Facet row must be a single keyword or string, got vector: " (pr-str facet-row)
+                         ". For 2D grids use (sk/facet-grid sk col-col row-col).")
+                    {:facet-row facet-row})))
   (let [nc? (resolve/column-ref? facet-col)
         nr? (resolve/column-ref? facet-row)]
     (if-not (or nc? nr?)
@@ -52,22 +72,22 @@
           (let [ds (ensure-dataset (or (:data view) data))]
             (cond
               (and nc? nr?)
-              (let [fcol (resolve/resolve-col-name ds facet-col)
-                    frow (resolve/resolve-col-name ds facet-row)]
+              (let [fcol (resolve-facet-col ds :facet-col facet-col)
+                    frow (resolve-facet-col ds :facet-row facet-row)]
                 (for [cv (distinct (ds fcol)) rv (distinct (ds frow))]
                   (assoc view
                          :facet-col (str cv) :facet-row (str rv)
                          :data (tc/select-rows ds (fn [r] (and (= (r fcol) cv) (= (r frow) rv)))))))
 
               nc?
-              (let [fcol (resolve/resolve-col-name ds facet-col)]
+              (let [fcol (resolve-facet-col ds :facet-col facet-col)]
                 (for [cv (distinct (ds fcol))]
                   (assoc view
                          :facet-col (str cv)
                          :data (tc/select-rows ds (fn [r] (= (r fcol) cv))))))
 
               nr?
-              (let [frow (resolve/resolve-col-name ds facet-row)]
+              (let [frow (resolve-facet-col ds :facet-row facet-row)]
                 (for [rv (distinct (ds frow))]
                   (assoc view
                          :facet-row (str rv)

@@ -271,15 +271,23 @@
   (sketch/sketch? x))
 
 (defn sketch
-  "Create a sketch with optional sketch-level mapping.
+  "Create or augment a sketch with an optional sketch-level mapping.
    Use for sketch-level aesthetics that apply to all views and layers.
+
+   (sketch)                          -- empty sketch
    (sketch data)                     -- sketch with data only
-   (sketch data {:color :species})   -- sketch with sketch-level color mapping"
+   (sketch data {:color :species})   -- sketch with sketch-level color mapping
+   (sketch existing-sketch {:color :c}) -- merge mapping into existing sketch
+                                          (preserves :views/:layers/:opts)"
   ([] (wrap-autorender (sketch/->sketch nil {} [] [] {})))
   ([data] (sketch data {}))
   ([data mapping]
-   (wrap-autorender
-    (sketch/->sketch (coerce-dataset data) mapping [] [] {}))))
+   (if (sketch/sketch? data)
+     ;; Merge new mapping into existing sketch, preserving views/layers/opts
+     (update data :mapping merge mapping)
+     ;; Fresh sketch from raw data (or nil)
+     (wrap-autorender
+      (sketch/->sketch (coerce-dataset data) mapping [] [] {})))))
 
 (defn with-data
   "Supply or replace data in a sketch."
@@ -415,13 +423,31 @@
   ([method-key sk-or-data]
    (let [sk (ensure-sk sk-or-data)
          d (:data sk)
-         col-count (when d (count (tc/column-names d)))]
-     (if (and (empty? (:views sk)) d (<= col-count 3))
-       ;; Auto-infer: create view, then add layer to it
+         col-count (when d (count (tc/column-names d)))
+         fresh? (and (empty? (:views sk)) (empty? (:layers sk)))]
+     (cond
+       ;; Fresh sketch, small dataset -> auto-infer columns
+       (and fresh? d (<= col-count 3))
        (let [sk2 (view sk)]
          (add-view-layer sk2
                          (:mapping (first (:views sk2)))
                          (build-layer method-key nil)))
+
+       ;; Fresh sketch, 4+ columns -> reject with a clear error (was: silent empty plot).
+       ;; This only fires on the very first lay-* call on a fresh sketch; the
+       ;; "lay-first, view-later" pattern keeps working because it has layers
+       ;; by the time subsequent 1-arity lay-* calls arrive.
+       (and fresh? d (> col-count 3))
+       (throw (ex-info (str "Cannot auto-infer columns from " col-count " columns. "
+                            "Pass explicit x and y: (sk/lay-" (name method-key)
+                            " data :x :y). Available columns: "
+                            (sort (tc/column-names d)))
+                       {:method method-key
+                        :column-count col-count
+                        :columns (sort (tc/column-names d))}))
+
+       ;; Has views, has sketch-level layers, or no data: sketch-level layer
+       :else
        (lay sk method-key))))
   ([method-key sk-or-data x-or-opts]
    (cond

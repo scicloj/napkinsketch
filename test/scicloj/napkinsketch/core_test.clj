@@ -1267,6 +1267,87 @@
                             #"Available: \(:g :x :y\)"
                             (-> data (sk/lay-point :x :y {:color :typo}) sk/plan))))))
 
+(deftest facet-validation-test
+  ;; persona-16 B3. Closes P9-R2 F9, Skept-R4 F7, P3-R2 Footgun 5.
+  (let [data {:x [1 2 3 4 5 6] :y [10 20 30 40 50 60]
+              :g ["a" "b" "a" "b" "a" "b"]
+              :h ["x" "y" "x" "y" "x" "y"]}]
+    (testing "typoed facet column throws with available columns"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Facet column :speices.*not found"
+                            (-> data (sk/lay-point :x :y) (sk/facet :speices) sk/plan))))
+
+    (testing "vector facet spec is rejected, points at facet-grid"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"facet-grid"
+                            (-> data (sk/lay-point :x :y) (sk/facet [:g :h]) sk/plan))))
+
+    (testing "valid facet column still works"
+      (is (= 2 (-> data (sk/lay-point :x :y) (sk/facet :g) sk/plan :panels count))))
+
+    (testing "facet-grid with valid columns still works"
+      (is (= 4 (-> data (sk/lay-point :x :y) (sk/facet-grid :g :h) sk/plan :panels count))))
+
+    (testing "typoed facet-grid column throws"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Facet column :speices.*not found"
+                            (-> data (sk/lay-point :x :y) (sk/facet-grid :speices :h) sk/plan))))))
+
+(deftest lay-method-auto-infer-test
+  ;; persona-16 B4. Closes Skept-R4 F1, P5-R2 C2.
+  (let [four-col {:a [1 2 3] :b [4 5 6] :c [7 8 9] :d [10 11 12]}
+        three-col {:x [1 2 3] :y [10 20 30] :g ["a" "b" "c"]}]
+    (testing "4+ column auto-infer throws with helpful message"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Cannot auto-infer columns from 4 columns"
+                            (-> four-col sk/lay-point sk/plan))))
+
+    (testing "error message suggests explicit x/y"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"sk/lay-point data :x :y"
+                            (-> four-col sk/lay-point sk/plan))))
+
+    (testing "error message lists available columns"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Available columns: \(:a :b :c :d\)"
+                            (-> four-col sk/lay-point sk/plan))))
+
+    (testing "3-column auto-infer still works"
+      (is (= 1 (-> three-col sk/lay-point sk/plan :panels count))))
+
+    (testing "4+ column with explicit x/y still works"
+      (is (= 1 (-> four-col (sk/lay-point :a :b) sk/plan :panels count))))))
+
+(deftest sketch-threading-test
+  ;; persona-16 B5. Closes P1-R3 F1, P9-R2 F14.
+  (let [data {:x [1 2 3] :y [10 20 30] :g ["a" "b" "c"]}]
+    (testing "threading sketch through sk/sketch preserves views"
+      (let [s (-> data (sk/view :x :y) (sk/sketch {:color :g}))]
+        (is (= 1 (count (:views s))))
+        (is (= {:color :g} (:mapping s)))
+        (is (some? (:data s)))))
+
+    (testing "threading sketch through sk/sketch preserves layers"
+      (let [s (-> data (sk/lay-point :x :y) (sk/sketch {:color :g}))]
+        (is (seq (get-in s [:views 0 :layers])))
+        (is (= {:color :g} (:mapping s)))))
+
+    (testing "raw data path unchanged"
+      (let [s (sk/sketch data {:color :g})]
+        (is (= 0 (count (:views s))))
+        (is (= {:color :g} (:mapping s)))))
+
+    (testing "sketch + empty mapping is idempotent on structure"
+      (let [s1 (-> data (sk/view :x :y) sk/lay-point)
+            s2 (sk/sketch s1)]
+        (is (= (:views s1) (:views s2)))
+        (is (= (:mapping s1) (:mapping s2)))))
+
+    (testing "end-to-end: threaded sketch renders with merged color mapping"
+      (let [p (-> data (sk/view :x :y) (sk/sketch {:color :g}) sk/lay-point sk/plan)
+            layer (first (:layers (first (:panels p))))]
+        (is (= 3 (count (:groups layer))) "one group per :g value")))))
+
 (deftest facet-broadcast-test
   (testing "Global method (loess) applies to all facet panels"
     (let [iris (rdatasets/datasets-iris)
