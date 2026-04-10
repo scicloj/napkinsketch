@@ -62,7 +62,7 @@
                          (col-ref? fill)  (conj fill))
         drop-cols (vec (distinct (concat (if x-only? [x] [x y]) aesthetic-cols)))
         clean (cond-> (tc/drop-missing data-idx drop-cols)
-                (= x-type :categorical) (tc/map-columns x [x] str))]
+                (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))]
     (if (zero? (tc/row-count clean))
       {:points [] :x-domain [0 1] :y-domain [0 1]}
       (let [xs-col (clean x)
@@ -139,7 +139,7 @@
 (defmethod compute-stat :bin [{:keys [data x x-type group cfg normalize] :as view}]
   (validate-numeric-column view :x :bin)
   (let [clean (cond-> (tc/drop-missing data [x])
-                (= x-type :categorical) (tc/map-columns x [x] str))
+                (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))
         xs-col (clean x)]
     (if (zero? (tc/row-count clean))
       {:bins [] :max-count 0 :x-domain [0 1] :y-domain [0 1]}
@@ -188,7 +188,7 @@
   (let [{:keys [data x x-type group]} view
         group-cols (or group [])
         clean (cond-> (tc/drop-missing data [x])
-                (= x-type :categorical) (tc/map-columns x [x] str))
+                (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))
         categories (distinct (clean x))]
     (if (empty? categories)
       {:categories [] :bars [] :max-count 0 :x-domain ["?"] :y-domain [0 1]}
@@ -543,7 +543,7 @@
   [view min-n per-group-fn]
   (let [{:keys [data x y x-type group]} view
         clean (cond-> (tc/drop-missing data [x y])
-                (= x-type :categorical) (tc/map-columns x [x] str))
+                (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))
         categories (distinct (clean x))]
     (if (empty? categories)
       {:items [] :categories [] :color-categories nil
@@ -676,7 +676,7 @@
 (defmethod compute-stat :summary [{:keys [data x y x-type group] :as view}]
   (validate-numeric-column view :y :summary)
   (let [clean (cond-> (tc/drop-missing data [x y])
-                (= x-type :categorical) (tc/map-columns x [x] str))
+                (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))
         categories (distinct (clean x))]
     (if (empty? categories)
       {:points [] :x-domain ["?"] :y-domain [0 1]}

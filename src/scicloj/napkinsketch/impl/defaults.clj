@@ -218,6 +218,17 @@
   [k]
   (str/replace (name k) #"[-_]" " "))
 
+(defn fmt-category-label
+  "Format a category value (keyword, string, number, etc.) for display.
+   Keywords are rendered without their leading colon: :widget -> \"widget\".
+   Used for axis tick labels, legend entries, facet strip labels, and any
+   other user-visible category text."
+  [v]
+  (cond
+    (nil? v) ""
+    (keyword? v) (name v)
+    :else (str v)))
+
 ;; ---- Configuration Precedence Chain ----
 ;;
 ;; Resolved with precedence (highest to lowest):

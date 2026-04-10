@@ -76,27 +76,29 @@
                     frow (resolve-facet-col ds :facet-row facet-row)]
                 (for [cv (distinct (ds fcol)) rv (distinct (ds frow))]
                   (assoc view
-                         :facet-col (str cv) :facet-row (str rv)
+                         :facet-col (defaults/fmt-category-label cv)
+                         :facet-row (defaults/fmt-category-label rv)
                          :data (tc/select-rows ds (fn [r] (and (= (r fcol) cv) (= (r frow) rv)))))))
 
               nc?
               (let [fcol (resolve-facet-col ds :facet-col facet-col)]
                 (for [cv (distinct (ds fcol))]
                   (assoc view
-                         :facet-col (str cv)
+                         :facet-col (defaults/fmt-category-label cv)
                          :data (tc/select-rows ds (fn [r] (= (r fcol) cv))))))
 
               nr?
               (let [frow (resolve-facet-col ds :facet-row facet-row)]
                 (for [rv (distinct (ds frow))]
                   (assoc view
-                         :facet-row (str rv)
+                         :facet-row (defaults/fmt-category-label rv)
                          :data (tc/select-rows ds (fn [r] (= (r frow) rv)))))))))
         views)))))
 
 (defn- resolve-method-info
   "Look up method info from a layer's :method key.
-   Keyword -> registry lookup. Map -> pass through. :infer -> sentinel."
+   Keyword -> registry lookup (throws on unknown). Map -> pass through.
+   :infer -> sentinel."
   [method-key]
   (cond
     (= :infer method-key)
@@ -104,8 +106,14 @@
 
     (keyword? method-key)
     (let [m (method/lookup method-key)]
-      (or (not-empty (select-keys (or m {}) [:mark :stat :position]))
-          {:mark method-key :stat :identity}))
+      (if m
+        (select-keys m [:mark :stat :position])
+        (let [registered (sort (keys (method/registered)))]
+          (throw (ex-info (str "Unknown method: " method-key
+                               ". Use sk/lay-* with a registered method, or "
+                               "(sk/method-lookup ...) to inspect. Registered methods: "
+                               (vec registered))
+                          {:method method-key :registered registered})))))
 
     :else ;; raw map -- pass through
     method-key))

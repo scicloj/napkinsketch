@@ -270,6 +270,29 @@
   [x]
   (sketch/sketch? x))
 
+(def ^:private view-mapping-keys
+  "Keys accepted in view/sketch mapping options."
+  (into defaults/column-keys #{:data :color-type}))
+
+(def ^:private plot-options-keys
+  "Keys accepted by sk/options (top-level only; nested theme/config keys
+   are validated separately by deep-merge)."
+  (into (set (keys defaults/plot-option-docs))
+        (keys defaults/config-key-docs)))
+
+(defn- warn-unknown-opts!
+  "Print a warning when `opts` contains keys outside `accepted`.
+   `caller` is used in the warning to disambiguate sk/view, sk/sketch,
+   sk/options, etc. Mirrors the unknown-option warning that
+   `build-layer` already emits for sk/lay-* calls."
+  [caller opts accepted]
+  (when (and (map? opts) (seq opts))
+    (let [unknown (remove accepted (keys opts))]
+      (when (seq unknown)
+        (println (str "Warning: sk/" caller
+                      " does not recognize option(s): " (vec unknown)
+                      ". Accepted: " (vec (sort accepted))))))))
+
 (defn sketch
   "Create or augment a sketch with an optional sketch-level mapping.
    Use for sketch-level aesthetics that apply to all views and layers.
@@ -282,6 +305,7 @@
   ([] (wrap-autorender (sketch/->sketch nil {} [] [] {})))
   ([data] (sketch data {}))
   ([data mapping]
+   (warn-unknown-opts! "sketch" mapping view-mapping-keys)
    (if (sketch/sketch? data)
      ;; Merge new mapping into existing sketch, preserving views/layers/opts
      (update data :mapping merge mapping)
@@ -292,11 +316,12 @@
 (defn with-data
   "Supply or replace data in a sketch."
   [sk data]
-  (assoc sk :data (coerce-dataset data)))
+  (assoc (ensure-sk sk) :data (coerce-dataset data)))
 
 (defn- make-view
   "Build a view map from a mapping, extracting :data if present."
   [mapping]
+  (warn-unknown-opts! "view" mapping view-mapping-keys)
   (let [d (:data mapping)]
     (cond-> {:mapping (dissoc mapping :data)}
       d (assoc :data (coerce-dataset d)))))
@@ -741,7 +766,13 @@
   "Set plot-level options (title, labels, width, height, etc.).
    Nested maps (e.g. :theme) are deep-merged."
   [sk opts]
+  (warn-unknown-opts! "options" opts plot-options-keys)
   (update (ensure-sk sk) :opts deep-merge opts))
+
+(def ^:private valid-scale-types
+  "Scale types accepted by sk/scale. Categorical is inferred from data,
+   not user-passed."
+  #{:linear :log})
 
 (defn scale
   "Set axis scale on a sketch. Scale is plot-level -- applies to all views.
@@ -750,7 +781,12 @@
   (let [sk (ensure-sk sk)
         k (case channel :x :x-scale :y :y-scale
                 (throw (ex-info (str "Scale channel must be :x or :y, got: " channel)
-                                {:channel channel})))]
+                                {:channel channel})))
+        type-kw (if (map? scale-type) (:type scale-type) scale-type)]
+    (when-not (or (nil? type-kw) (valid-scale-types type-kw))
+      (throw (ex-info (str "Unknown scale type: " type-kw
+                           ". Supported: " (vec (sort valid-scale-types)))
+                      {:scale-type type-kw :supported (vec (sort valid-scale-types))})))
     (update sk :opts assoc k (if (map? scale-type)
                                (merge {:type :linear} scale-type)
                                {:type scale-type}))))
@@ -771,7 +807,8 @@
    (plan sk)
    (plan sk {:title \"My Plot\"})"
   ([sk]
-   (let [views (sketch/resolve-sketch sk)]
+   (let [sk (ensure-sk sk)
+         views (sketch/resolve-sketch sk)]
      (plan/views->plan views (:opts sk {}))))
   ([sk opts]
    (plan (options sk opts))))
@@ -809,7 +846,8 @@
    (plot sk)
    (plot sk {:width 800 :title \"My Plot\"})"
   ([sk]
-   (let [p (plan sk)]
+   (let [sk (ensure-sk sk)
+         p (plan sk)]
      (render-impl/plan->figure p :svg (:opts sk {}))))
   ([sk opts]
    (plot (options sk opts))))

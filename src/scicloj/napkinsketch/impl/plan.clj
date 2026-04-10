@@ -120,7 +120,7 @@
    (if (scale/categorical-domain? domain)
      (let [s (scale/make-scale domain pixel-range scale-spec)]
        {:values (vec (ws/ticks s))
-        :labels (mapv str (ws/ticks s))
+        :labels (mapv defaults/fmt-category-label (ws/ticks s))
         :categorical? true})
      (let [n (scale/tick-count (Math/abs (double (- (second pixel-range) (first pixel-range)))) spacing)
            log? (= :log (:type scale-spec))]
@@ -356,7 +356,7 @@
       (seq all-colors)
       {:title (first color-cols)
        :entries (vec (for [cat all-colors]
-                       {:label (str cat)
+                       {:label (defaults/fmt-category-label cat)
                         :color (defaults/color-for all-colors cat (:palette cfg))}))})))
 
 (defn- nice-legend-values

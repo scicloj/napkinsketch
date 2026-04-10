@@ -70,10 +70,10 @@
                 (for [{:keys [color xs ys ymins ymaxs labels]} (:points stat)]
                   (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
                            :xs xs :ys ys}
-                    (some? color) (assoc :label (str color))
+                    (some? color) (assoc :label (defaults/fmt-category-label color))
                     (and with-range? ymins) (assoc :ymins ymins)
                     (and with-range? ymaxs) (assoc :ymaxs ymaxs)
-                    (and with-labels? labels) (assoc :labels (mapv str labels)))))]
+                    (and with-labels? labels) (assoc :labels (mapv defaults/fmt-category-label labels)))))]
     (when (and with-range? (seq groups)
                (not-any? :ymins groups))
       (throw (ex-info (str "errorbar/pointrange requires :ymin and :ymax columns. "
@@ -132,7 +132,7 @@
                   (for [{:keys [color xs ys sizes alphas shapes row-indices color-values]} (:points stat)]
                     (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
                              :xs xs :ys ys}
-                      (some? color) (assoc :label (str color))
+                      (some? color) (assoc :label (defaults/fmt-category-label color))
                       (and numeric-color? color-values)
                       (assoc :colors (vec (map (fn [v]
                                                  (let [t (defaults/normalize-midpoint v (or c-min 0) (or c-max 1) (:color-midpoint cfg))
@@ -166,13 +166,13 @@
                          (when-let [lines (:lines stat)]
                            (for [{:keys [color x1 y1 x2 y2]} lines]
                              {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                              :label (str color)
+                              :label (defaults/fmt-category-label color)
                               :x1 x1 :y1 y1 :x2 x2 :y2 y2}))
                          ;; Polylines
                          (when-let [pts (:points stat)]
                            (for [{:keys [color xs ys]} pts]
                              {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                              :label (str color)
+                              :label (defaults/fmt-category-label color)
                               :xs xs :ys ys}))))}
         ;; Confidence ribbons from :lm {:se true}
         (:ribbons stat)
@@ -200,7 +200,7 @@
      :groups (vec
               (for [{:keys [color counts]} (:bars stat)]
                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                 :label (str color)
+                 :label (defaults/fmt-category-label color)
                  :counts (vec counts)}))}
     ;; Value bars (from :identity stat)
     {:mark :rect
@@ -209,7 +209,7 @@
      :groups (vec
               (for [{:keys [color xs ys]} (:points stat)]
                 {:color (resolve-color all-colors color (:fixed-color view) cfg)
-                 :label (str color)
+                 :label (defaults/fmt-category-label color)
                  :xs xs :ys ys}))}))
 
 (defmethod extract-layer :text [view stat all-colors cfg]

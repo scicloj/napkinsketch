@@ -1318,6 +1318,80 @@
     (testing "4+ column with explicit x/y still works"
       (is (= 1 (-> four-col (sk/lay-point :a :b) sk/plan :panels count))))))
 
+(deftest unknown-option-warning-test
+  ;; persona-16 H1. Closes P1-R3 F2/F3/F4, Skept-R4 F4, P5-R2 L4.
+  (let [data {:x [1 2 3] :y [10 20 30]}]
+    (testing "sk/view warns on unknown option key"
+      (let [out (with-out-str (-> data (sk/view :x :y {:colour :y}) sk/lay-point))]
+        (is (re-find #"Warning: sk/view does not recognize option" out))
+        (is (re-find #":colour" out))))
+
+    (testing "sk/sketch warns on unknown option key"
+      (let [out (with-out-str (sk/sketch data {:colour :y}))]
+        (is (re-find #"Warning: sk/sketch does not recognize option" out))))
+
+    (testing "sk/options warns on unknown option key"
+      (let [out (with-out-str (-> data (sk/lay-point :x :y) (sk/options {:titel "Hi"})))]
+        (is (re-find #"Warning: sk/options does not recognize option" out))
+        (is (re-find #":titel" out))))
+
+    (testing "valid options stay quiet"
+      (is (= "" (with-out-str (-> data (sk/view :x :y {:color :y}))))))))
+
+(deftest ensure-sk-on-with-data-plan-plot-test
+  ;; persona-16 H2. Closes P1-R3 F2/F3, P9-R2 L2.
+  (let [data {:x [1 2 3] :y [10 20 30]}]
+    (testing "sk/with-data on raw data returns a Sketch"
+      (is (sketch/sketch? (sk/with-data data {:x [4 5] :y [40 50]}))))
+
+    (testing "sk/plan on raw data does not throw"
+      (is (some? (-> data sk/plan))))
+
+    (testing "sk/plot on raw data does not throw"
+      (is (some? (-> data sk/plot))))))
+
+(deftest unknown-method-test
+  ;; persona-16 H3. Closes Skept-R4 F3.
+  (let [data {:x [1 2 3] :y [10 20 30]}]
+    (testing "unknown method keyword throws with registered list"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Unknown method: :stackedbar.*Registered methods"
+                            (-> data (sk/view :x :y) (sk/lay :stackedbar) sk/plan))))))
+
+(deftest scale-type-validation-test
+  ;; persona-16 H12. Closes P1-R3 F5.
+  (let [data {:x [1 2 3] :y [10 20 30]}]
+    (testing "sk/scale with bogus type throws at API call time"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Unknown scale type: :bogus.*linear.*log"
+                            (-> data (sk/lay-point :x :y) (sk/scale :x :bogus)))))
+
+    (testing "sk/scale :linear and :log accepted"
+      (is (some? (-> data (sk/lay-point :x :y) (sk/scale :x :linear))))
+      (is (some? (-> data (sk/lay-point :x :y) (sk/scale :y :log)))))))
+
+(deftest keyword-category-label-test
+  ;; persona-16 H10. Closes P17 #9, #11.
+  (let [data {:cat [:widget :gadget :sprocket] :n [10 20 15]}]
+    (testing "keyword categorical x-axis labels render without leading colons"
+      (let [svg (-> data (sk/lay-bar :cat) sk/plot pr-str)]
+        (is (zero? (count (re-seq #":(widget|gadget|sprocket)" svg))))
+        (is (= 3 (count (re-seq #"\"widget\"|\"gadget\"|\"sprocket\"" svg))))))
+
+    (testing "keyword categorical legend labels render without leading colons"
+      (let [svg (-> {:x [1 2 3] :y [10 20 30] :g [:cat-0 :cat-1 :cat-2]}
+                    (sk/lay-point :x :y {:color :g}) sk/plot pr-str)]
+        (is (zero? (count (re-seq #":cat-[0-9]" svg))))))
+
+    (testing "facet strip labels strip keyword colons"
+      (let [svg (-> {:x [1 2 3 4] :y [10 20 30 40] :grp [:a :b :a :b]}
+                    (sk/lay-point :x :y) (sk/facet :grp) sk/plot pr-str)]
+        (is (zero? (count (re-seq #":(a|b)" svg))))))
+
+    (testing "string categories still work (regression check)"
+      (let [svg (-> {:cat ["widget" "gadget"] :n [10 20]} (sk/lay-bar :cat) sk/plot pr-str)]
+        (is (= 2 (count (re-seq #"\"widget\"|\"gadget\"" svg))))))))
+
 (deftest nil-in-aesthetic-columns-test
   ;; persona-16 B2. Closes C3 epic: P5-R2 C1, P9-R2 F1/F2,
   ;; P7-R2 F1/F2/F3, P11-R2 F5.

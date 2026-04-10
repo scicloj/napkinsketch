@@ -207,7 +207,7 @@
                           (let [fsize (get-in cfg [:theme :font-size] 8)
                                 tick-color [0.4 0.4 0.4 1.0]]
                             (vec (for [[cat {:keys [mid]}] ridge-pos]
-                                   (let [label (str cat)
+                                   (let [label (defaults/fmt-category-label cat)
                                          lw (* (count label) (/ fsize 2.0))]
                                      (ui/translate (- (double m) lw 3)
                                                    (- (double mid) (/ fsize 2.0))
