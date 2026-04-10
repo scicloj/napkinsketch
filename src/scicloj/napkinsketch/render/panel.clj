@@ -70,7 +70,7 @@
   "Render tick labels from pre-computed tick info in a plan."
   [axis tick-info scale pw ph m cfg]
   (let [{:keys [values labels]} tick-info
-        fsize (get-in cfg [:theme :font-size] 8)
+        fsize (get-in cfg [:theme :font-size] (get-in defaults/defaults [:theme :font-size]))
         tick-color [0.4 0.4 0.4 1.0]]
     (when (seq values)
       (vec
@@ -207,7 +207,7 @@
         x-tick-labels (when show-x? (render-tick-labels :x x-ticks sx pw ph m cfg))
         y-tick-labels (when show-y?
                         (if has-ridgeline?
-                          (let [fsize (get-in cfg [:theme :font-size] 8)
+                          (let [fsize (get-in cfg [:theme :font-size] (get-in defaults/defaults [:theme :font-size]))
                                 tick-color [0.4 0.4 0.4 1.0]]
                             (vec (for [[cat {:keys [mid]}] ridge-pos]
                                    (let [label (defaults/fmt-category-label cat)

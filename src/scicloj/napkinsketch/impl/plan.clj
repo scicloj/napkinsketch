@@ -21,17 +21,29 @@
 ;; ---- Domain Helpers ----
 
 (defn collect-domain
-  "Collect and merge domains from stat results along axis-key."
+  "Collect and merge domains from stat results along axis-key.
+   Throws if some stat results contribute numeric domains and others
+   contribute categorical domains -- mixing the two on one axis is
+   ambiguous."
   [stat-results axis-key scale-spec]
-  (let [vals (mapcat (fn [sr]
-                       (let [d (axis-key sr)]
-                         (if (and (= 2 (count d)) (number? (first d)))
-                           d (map str d))))
-                     stat-results)]
-    (when (seq vals)
-      (if (number? (first vals))
-        (scale/pad-domain [(reduce min vals) (reduce max vals)] scale-spec)
-        (distinct vals)))))
+  (let [parsed (keep (fn [sr]
+                       (when-let [d (axis-key sr)]
+                         {:vals (if (and (= 2 (count d)) (number? (first d)))
+                                  d
+                                  (mapv str d))
+                          :numeric? (and (= 2 (count d)) (number? (first d)))}))
+                     stat-results)
+        types (distinct (map :numeric? parsed))]
+    (when (seq parsed)
+      (when (> (count types) 1)
+        (throw (ex-info (str "Cannot merge numeric and categorical domains on " axis-key
+                             ". Each view must use a consistent column type for this axis.")
+                        {:axis axis-key
+                         :domains (mapv :vals parsed)})))
+      (let [vals (mapcat :vals parsed)]
+        (if (number? (first vals))
+          (scale/pad-domain [(reduce min vals) (reduce max vals)] scale-spec)
+          (distinct vals))))))
 
 (defn compute-global-y-domain
   "Compute global y-domain from position-adjusted layers.
@@ -428,7 +440,8 @@
    grid-rows grid-cols pw ph multi? panels legend-position]
   (let [x-label-pad (if eff-x-label (:label-offset cfg) 0)
         ;; y-label-pad must account for y-tick label width (e.g. category names)
-        tick-fsize (get-in cfg [:theme :font-size] 8)
+        tick-fsize (get-in cfg [:theme :font-size]
+                           (get-in defaults/defaults [:theme :font-size]))
         max-y-tick-len (reduce max 0
                                (for [p panels
                                      :let [labels (get-in p [:y-ticks :labels])]

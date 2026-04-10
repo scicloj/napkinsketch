@@ -62,6 +62,7 @@
 (def RectValueGroup
   [:map
    [:color Color]
+   [:label {:optional true} string?]
    [:xs [:sequential any?]]
    [:ys [:sequential number?]]])
 
