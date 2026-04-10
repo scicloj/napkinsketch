@@ -12,7 +12,7 @@
 ;; [RDatasets](https://vincentarelbundock.github.io/Rdatasets/) via
 ;; `scicloj.metamorph.ml.rdatasets`.
 
-(ns gallery
+(ns napkinsketch-book.gallery
   (:require
    [scicloj.napkinsketch.api :as sk]
    [scicloj.kindly.v4.kind :as kind]
