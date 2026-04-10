@@ -1318,6 +1318,25 @@
     (testing "4+ column with explicit x/y still works"
       (is (= 1 (-> four-col (sk/lay-point :a :b) sk/plan :panels count))))))
 
+(deftest mixed-type-column-test
+  ;; persona-skeptical-round-4 F5: a column whose values are heterogeneous
+  ;; (number + string + keyword) used to crash with a multi-KB Malli
+  ;; "Plan does not conform to schema" dump. Now thrown with a clear
+  ;; column name and the discovered types.
+  (testing "mixed-type :y column throws with type list"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"has mixed value types"
+                          (-> (tc/dataset {:x [1 2 3 4 5]
+                                           :y [1.0 "two" 3.0 :four 5.0]})
+                              (sk/lay-point :x :y) sk/plan))))
+
+  (testing "all-string column is fine (categorical)"
+    (is (some? (-> {:x [1 2 3] :g ["a" "b" "c"]} (sk/lay-bar :g) sk/plan))))
+
+  (testing "all-numeric column is fine"
+    (is (some? (-> {:x [1.0 2.0 3.0] :y [4.0 5.0 6.0]}
+                   (sk/lay-point :x :y) sk/plan)))))
+
 (deftest sketch-rejects-x-y-mapping-test
   ;; persona-03-R2 Footgun 1: (sk/sketch data {:x :a :y :b}) used to
   ;; silently produce a 0-panel plot because sk/sketch doesn't create a

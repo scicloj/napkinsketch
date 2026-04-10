@@ -4,6 +4,7 @@
    Resolution: merge(sketch-mapping, view-mapping, method-info, layer-mapping)
    -> flat view maps -> plan (via plan.clj)."
   (:require [tablecloth.api :as tc]
+            [tech.v3.datatype :as dtype]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.resolve :as resolve]
             [scicloj.napkinsketch.impl.plan :as plan]
@@ -118,11 +119,27 @@
     :else ;; raw map -- pass through
     method-key))
 
+(defn- heterogeneous-types
+  "If the column has :object dtype and the first 100 values have more
+   than one distinct (clojure.core/type), return a sorted list of those
+   type names. Otherwise nil."
+  [col]
+  (when (and col (= :object (dtype/elemwise-datatype col)))
+    (let [sample (take 100 col)
+          types (->> sample
+                     (remove nil?)
+                     (map type)
+                     distinct)]
+      (when (> (count types) 1)
+        (sort (map #(.getSimpleName ^Class %) types))))))
+
 (defn- validate-columns
   "Validate that every aesthetic column reference in the resolved mapping
    names a real column in the dataset. Covers :x, :y, :color, :size, :alpha,
    :shape, :group, :text, :ymin, :ymax, :fill. Accepts both keyword and
-   string refs with cross-type matching.
+   string refs with cross-type matching. Also rejects columns whose values
+   are heterogeneous in type (mixed numbers/strings/keywords) -- these would
+   produce a Malli schema dump deeper in the pipeline.
 
    String values for :color are left alone: literal colors like \"red\" or
    \"#FF0000\" are legitimate. For other aesthetic keys, string values are
@@ -133,16 +150,24 @@
           col-exists? (fn [col]
                         (or (col-names col)
                             (and (keyword? col) (col-names (name col)))
-                            (and (string? col) (col-names (keyword col)))))]
+                            (and (string? col) (col-names (keyword col)))))
+          col-lookup (fn [col]
+                       (or (get d col)
+                           (and (keyword? col) (get d (name col)))
+                           (and (string? col) (get d (keyword col)))))]
       (doseq [k defaults/column-keys
               :let [col (get resolved k)]
               :when (and col
                          (resolve/column-ref? col)
                          ;; :color strings are legitimate literals (color names, hex codes)
-                         (not (and (= k :color) (string? col)))
-                         (not (col-exists? col)))]
-        (throw (ex-info (str "Column " col " (from " k ") not found in dataset. Available: " (sort col-names))
-                        {:key k :column col :available (sort col-names)}))))))
+                         (not (and (= k :color) (string? col))))]
+        (when-not (col-exists? col)
+          (throw (ex-info (str "Column " col " (from " k ") not found in dataset. Available: " (sort col-names))
+                          {:key k :column col :available (sort col-names)})))
+        (when-let [types (heterogeneous-types (col-lookup col))]
+          (throw (ex-info (str "Column " col " (from " k ") has mixed value types: " (vec types)
+                               ". Convert it to a single type (number, string, etc.) before plotting.")
+                          {:key k :column col :types types})))))))
 
 (defn resolve-sketch
   "Resolve a sketch into a flat vector of view maps for views->plan.
