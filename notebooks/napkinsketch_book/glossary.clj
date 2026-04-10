@@ -41,6 +41,10 @@
   (-> (rdatasets/datasets-iris)
       (sk/lay-point :sepal-length :sepal-width {:color :species})))
 
+my-sketch
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
 (kind/pprint my-sketch)
 
 (kind/test-last [(fn [v] (and (sk/sketch? v) (= 1 (count (:views v)))))])

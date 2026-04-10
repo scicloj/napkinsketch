@@ -126,6 +126,11 @@
 ;; When `sk/lay-*` is called **with columns**, it creates a view with
 ;; a layer bound directly to it:
 
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
 (kind/pprint
  (-> (rdatasets/datasets-iris)
      (sk/lay-point :sepal-length :sepal-width)))
@@ -147,14 +152,14 @@
       (sk/view :petal-length :petal-width)
       sk/lay-point))
 
+two-panel-sketch
+
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+
 (kind/pprint two-panel-sketch)
 
 (kind/test-last [(fn [sk] (and (= 2 (count (:views sk)))
                                (= 1 (count (:layers sk)))))])
-
-two-panel-sketch
-
-(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
 ;; Two views, one layer. Each view becomes a panel, and the
 ;; point layer applies to both.
@@ -210,6 +215,10 @@ two-panel-sketch
       (sk/view :petal-length :petal-width)
       sk/lay-point))
 
+view-scoped
+
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+
 (kind/pprint view-scoped)
 
 (kind/test-last
@@ -217,10 +226,6 @@ two-panel-sketch
     (and (= {} (:mapping sk))
          (= :species (:color (:mapping (first (:views sk)))))
          (nil? (:color (:mapping (second (:views sk)))))))])
-
-view-scoped
-
-(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
 ;; Color is in the first view's mapping only. The second view
 ;; has no color. Sketch-level mapping is empty.
@@ -384,6 +389,10 @@ view-scoped
       (sk/view :sepal-width)
       (sk/lay-density :sepal-width)))
 
+targeted
+
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+
 (kind/pprint targeted)
 
 (kind/test-last
@@ -391,10 +400,6 @@ view-scoped
     (and (= 2 (count (:views sk)))
          (= :histogram (:method (first (:layers (first (:views sk))))))
          (= :density (:method (first (:layers (second (:views sk))))))))])
-
-targeted
-
-(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
 ;; Two views with the same column but different layers. The first
 ;; `lay-histogram` found the first `view`. The second `lay-density`
@@ -420,6 +425,8 @@ targeted
       sk/lay-lm
       (sk/options {:title "Iris"})))
 
+my-sketch
+
 (kind/pprint my-sketch)
 
 (kind/test-last
@@ -429,8 +436,6 @@ targeted
          (= 1 (count (:views sk)))
          (= 2 (count (:layers sk)))
          (= "Iris" (:title (:opts sk)))))])
-
-my-sketch
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
