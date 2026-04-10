@@ -19,13 +19,34 @@
   [(dfn/reduce-min col) (dfn/reduce-max col)])
 
 (defn group-by-columns
-  "Split dataset by grouping columns, apply f to each group."
+  "Split dataset by grouping columns, apply f to each group.
+   Iterates groups in the order they first appear in the dataset, so
+   results are deterministic regardless of `tc/group-by`'s underlying
+   map type (which is a PersistentHashMap, scrambled by murmur3 hash
+   for >8 groups). This also preserves user-visible stacking and
+   draw order."
   [ds group-cols f]
   (if (seq group-cols)
-    (for [[gk gds] (tc/group-by ds group-cols {:result-type :as-map})]
-      (f gds (if (= 1 (count group-cols))
-               (get gk (first group-cols))
-               (mapv gk group-cols))))
+    (let [grouped (tc/group-by ds group-cols {:result-type :as-map})
+          ;; Determine canonical order: zip the group columns and walk
+          ;; the dataset rows in order, taking the first occurrence of
+          ;; each composite key.
+          canonical-keys
+          (let [n (tc/row-count ds)
+                cols (mapv #(get ds %) group-cols)]
+            (loop [i 0, seen #{}, out (transient [])]
+              (if (>= i n)
+                (persistent! out)
+                (let [k (zipmap group-cols (mapv #(nth % i) cols))]
+                  (if (contains? seen k)
+                    (recur (inc i) seen out)
+                    (recur (inc i) (conj seen k) (conj! out k)))))))]
+      (for [gk canonical-keys
+            :let [gds (get grouped gk)]
+            :when gds]
+        (f gds (if (= 1 (count group-cols))
+                 (get gk (first group-cols))
+                 (mapv gk group-cols)))))
     [(f ds nil)]))
 
 ;; ---- Prepare Points ----
