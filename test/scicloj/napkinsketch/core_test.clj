@@ -1318,6 +1318,53 @@
     (testing "4+ column with explicit x/y still works"
       (is (= 1 (-> four-col (sk/lay-point :a :b) sk/plan :panels count))))))
 
+(deftest aesthetic-cross-type-lookup-test
+  ;; persona-skeptical-round-4 F2: aesthetic columns must work whether
+  ;; the dataset has keyword or string column names. Build-legend used
+  ;; to crash with "No implementation of method :elemwise-datatype" when
+  ;; given a string-keyed dataset and a keyword color ref.
+  (testing "string-keyed dataset + keyword :color produces a working plot"
+    (let [str-ds (tc/dataset {"x" [1.0 2.0 3.0]
+                              "y" [10.0 20.0 30.0]
+                              "g" ["A" "B" "A"]})
+          pl (-> str-ds (sk/lay-point :x :y {:color :g}) sk/plan)]
+      (is (= 1 (count (:panels pl))))
+      (is (some? (:legend pl)) "legend built without crash")))
+
+  (testing "keyword-keyed dataset + string :color produces a working plot"
+    (let [kw-ds (tc/dataset {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0] :g ["A" "B" "A"]})
+          pl (-> kw-ds (sk/lay-point :x :y {:color "g"}) sk/plan)]
+      (is (= 1 (count (:panels pl)))))))
+
+(deftest layer-x-y-override-test
+  ;; persona-skeptical-round-4 F9: layer-level :x/:y overrides used to
+  ;; warn as unknown options even though they actually worked. Now :x/:y
+  ;; are accepted on layer opts (universal-layer-options).
+  (testing "layer-level :x / :y on lay-* doesn't trigger an unknown-opt warning"
+    (let [out (with-out-str
+                (-> {:a [1 2 3] :b [4 5 6] :c [7 8 9] :d [10 11 12]}
+                    (sk/view :a :b)
+                    (sk/lay-point {:x :c :y :d})))]
+      (is (not (re-find #"does not recognize option" out))))))
+
+(deftest view-level-facet-rejected-test
+  ;; persona-skeptical-round-4 F12: view-level :facet-col / :facet-row
+  ;; in a map-form view used to be silently ignored. Now throws,
+  ;; redirecting to sk/facet.
+  (testing "view-level :facet-col throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"Faceting is plot-level"
+                          (-> {:x [1 2 3] :y [4 5 6] :g ["a" "b" "a"]}
+                              (sk/view {:x :x :y :y :facet-col :g})
+                              sk/lay-point))))
+
+  (testing "view-level :facet-row throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"Faceting is plot-level"
+                          (-> {:x [1 2 3] :y [4 5 6] :g ["a" "b" "a"]}
+                              (sk/view {:x :x :y :y :facet-row :g})
+                              sk/lay-point)))))
+
 (deftest input-validation-misc-test
   ;; persona-09-R2 F10/F11/F12. Low-severity input validation.
   (testing "rule-v / rule-h with nil intercept throws"

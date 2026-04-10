@@ -212,6 +212,17 @@
                    (casting/numeric-type? (dtype/elemwise-datatype (ds col))))
           col)))))
 
+(defn- aesthetic-col
+  "Look up an aesthetic column from a resolved view's :data, handling
+   keyword/string column-name mismatches transparently. Returns nil when
+   the view has no :data, no value at `k`, or the column doesn't exist."
+  [view k]
+  (let [ds (:data view)
+        ref (get view k)]
+    (when (and ds ref)
+      (let [resolved-name (resolve/resolve-col-name ds ref)]
+        (get ds resolved-name)))))
+
 (defn- filter-infinities
   "Filter rows containing non-finite values on numeric x/y and numeric
    aesthetic columns (color/size/alpha/ymin/ymax/fill). Removes rows where
@@ -278,7 +289,7 @@
                      (let [color-views (filter #(and (resolve/column-ref? (:color %))
                                                      (:data %)) resolved-all)]
                        (when (seq color-views)
-                         (vec (distinct (remove nil? (mapcat #((:data %) (:color %)) color-views)))))))
+                         (vec (distinct (remove nil? (mapcat #(aesthetic-col % :color) color-views)))))))
         color-cols (distinct (keep #(when (resolve/column-ref? (:color %)) (:color %)) resolved-all))]
     {:resolved-all resolved-all
      :numeric-color? numeric-color?
@@ -353,7 +364,7 @@
       numeric-color?
       (let [color-views (filter #(and (resolve/column-ref? (:color %))
                                       (:data %)) resolved-all)
-            all-bufs (map #((:data %) (:color %)) color-views)]
+            all-bufs (map #(aesthetic-col % :color) color-views)]
         (when-let [all-vals (finite-vals all-bufs)]
           (let [c-min (dfn/reduce-min all-vals)
                 c-max (dfn/reduce-max all-vals)
@@ -396,7 +407,7 @@
                                  (:data %)) resolved-all)]
     (when (seq size-views)
       (let [size-col (:size (first size-views))
-            all-bufs (map #((:data %) (:size %)) size-views)]
+            all-bufs (map #(aesthetic-col % :size) size-views)]
         (when-let [all-vals (finite-vals all-bufs)]
           (let [s-min (dfn/reduce-min all-vals)
                 s-max (dfn/reduce-max all-vals)
@@ -418,7 +429,7 @@
                                   (:data %)) resolved-all)]
     (when (seq alpha-views)
       (let [alpha-col (:alpha (first alpha-views))
-            all-bufs (map #((:data %) (:alpha %)) alpha-views)]
+            all-bufs (map #(aesthetic-col % :alpha) alpha-views)]
         (when-let [all-vals (finite-vals all-bufs)]
           (let [a-min (dfn/reduce-min all-vals)
                 a-max (dfn/reduce-max all-vals)

@@ -322,12 +322,16 @@
 ;; ---- Column Type Detection ----
 
 (defn column-type
-  "Classify a dataset column as :categorical, :numerical, or :temporal."
+  "Classify a dataset column as :categorical, :numerical, or :temporal.
+   Resolves keyword/string column-name mismatches via resolve-col-name
+   so callers don't have to."
   [ds col]
-  (let [c (ds col)
+  (let [resolved (resolve-col-name ds col)
+        c (when resolved (ds resolved))
         n (count c)]
-    (if (zero? n)
-      ;; Empty column — treat as numerical (can't infer, let downstream handle gracefully)
+    (if (or (nil? c) (zero? n))
+      ;; Missing or empty column — treat as numerical (can't infer, let
+      ;; downstream handle gracefully)
       :numerical
       (let [dt (dtype/elemwise-datatype c)
             t (try (tcc/typeof c) (catch Exception _ nil))

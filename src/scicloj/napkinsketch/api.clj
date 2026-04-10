@@ -322,6 +322,12 @@
   "Build a view map from a mapping, extracting :data if present."
   [mapping]
   (warn-unknown-opts! "view" mapping view-mapping-keys)
+  (when (or (:facet-col mapping) (:facet-row mapping))
+    (throw (ex-info (str "Faceting is plot-level, not view-level. "
+                         "Use (sk/facet sk col) or (sk/facet-grid sk col-col row-col) "
+                         "instead of putting :facet-col / :facet-row in a view's mapping.")
+                    {:facet-col (:facet-col mapping)
+                     :facet-row (:facet-row mapping)})))
   (let [d (:data mapping)]
     (cond-> {:mapping (dissoc mapping :data)}
       d (assoc :data (coerce-dataset d)))))
