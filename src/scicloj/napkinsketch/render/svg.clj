@@ -364,6 +364,41 @@
       (str/replace ">" "&gt;")
       (str/replace "\"" "&quot;")))
 
+(defn- format-num
+  "Format a number for SVG output. Integers (including Long and Integer)
+   are emitted verbatim. Doubles are rounded to 3 decimal places and
+   trailing zeros are stripped, avoiding output like `300.00000000000006`
+   and keeping byte-exact determinism across JVMs."
+  [^double x]
+  (cond
+    (or (Double/isNaN x) (Double/isInfinite x))
+    (str x)
+
+    (== x (Math/floor x))
+    ;; Integer value — emit without decimal point when it fits in a long.
+    (if (and (>= x Long/MIN_VALUE) (<= x Long/MAX_VALUE))
+      (str (long x))
+      (str x))
+
+    :else
+    (let [rounded (/ (Math/round (* x 1000.0)) 1000.0)
+          s (str rounded)]
+      ;; Strip trailing zeros in the fractional part, keep at least one digit.
+      (if (re-find #"\." s)
+        (-> s
+            (str/replace #"0+$" "")
+            (str/replace #"\.$" ""))
+        s))))
+
+(defn- attr-val->str
+  "Stringify an attribute value. Numbers go through `format-num`; strings
+   are XML-escaped; everything else falls back to `str`."
+  [v]
+  (cond
+    (string? v) (escape-xml v)
+    (number? v) (format-num (double v))
+    :else (str v)))
+
 (defn- attrs->str
   "Convert a map of attributes to an SVG attribute string. Keys are
    sorted by name so the output is deterministic regardless of map type
@@ -373,7 +408,7 @@
   (when (seq attrs)
     (str/join " " (for [[k v] (sort-by (comp name key) attrs)
                         :when (some? v)]
-                    (str (name k) "=\"" (if (string? v) (escape-xml v) v) "\"")))))
+                    (str (name k) "=\"" (attr-val->str v) "\"")))))
 
 (defn hiccup->svg-str
   "Convert SVG hiccup to an SVG string.

@@ -41,10 +41,17 @@
   (let [all-labels (vec (distinct (mapcat layer-group-labels layers)))
         n-groups (max 1 (count all-labels))
         label->idx (zipmap all-labels (range))
-        dodge-ctx {:n-groups n-groups}]
+        dodge-ctx {:n-groups n-groups}
+        dodge-compatible? (fn [layer]
+                            (or (:groups layer) (:boxes layer) (:violins layer)))]
     (mapv
      (fn [layer]
-       (cond-> (assoc layer :dodge-ctx dodge-ctx)
+       ;; Only attach :dodge-ctx to layers that will actually use it.
+       ;; Marks like :tile, :contour, and :ridgeline have neither :groups,
+       ;; :boxes, nor :violins — they ignore dodge silently, so don't
+       ;; pollute their layer maps with a context they'll never read.
+       (cond-> layer
+         (dodge-compatible? layer) (assoc :dodge-ctx dodge-ctx)
          (:groups layer)
          (update :groups
                  (fn [gs]
@@ -95,11 +102,23 @@
 
 (defn- stack-area-layer
   "Apply stack to an :area layer.
-   Adds :y0s baseline vector to each group."
+   Adds :y0s baseline vector to each group.
+   NaN y-values are dropped before accumulation — otherwise a single
+   NaN would propagate through the cumulative sum and corrupt every
+   subsequent category in the stack.
+   Duplicate x-values within a group are summed rather than dropped:
+   `(into sorted-map ...)` would otherwise silently keep only the last
+   (x, y) pair for each x."
   [layer]
   (let [{:keys [groups]} layer
+        finite? (fn [v] (and (number? v) (not (Double/isNaN (double v)))))
         group-maps (mapv (fn [{:keys [xs ys]}]
-                           (into (sorted-map) (map vector xs ys)))
+                           (reduce (fn [m [x y]]
+                                     (if (finite? y)
+                                       (update m x (fnil + 0.0) (double y))
+                                       m))
+                                   (sorted-map)
+                                   (map vector xs ys)))
                          groups)
         all-xs (vec (sort (distinct (mapcat keys group-maps))))
         {:keys [adjusted-groups]}
@@ -117,10 +136,14 @@
     (assoc layer :groups adjusted-groups)))
 
 (defmethod apply-position :stack [_ layers]
+  ;; Stacking rewrites y-values in every group/bar, so the layer's cached
+  ;; :y-domain (populated by extract-layer from the pre-stack stat output)
+  ;; is no longer correct. Strip it so consumers only trust the panel-level
+  ;; domain computed by compute-global-y-domain.
   (mapv (fn [layer]
           (cond
-            (:categories layer) (stack-rect-layer layer)
-            (:groups layer) (stack-area-layer layer)
+            (:categories layer) (dissoc (stack-rect-layer layer) :y-domain)
+            (:groups layer) (dissoc (stack-area-layer layer) :y-domain)
             :else layer))
         layers))
 
@@ -151,10 +174,12 @@
     (assoc layer :groups normalized)))
 
 (defmethod apply-position :fill [_ layers]
+  ;; Fill normalizes to [0, 1] — the cached :y-domain is always stale after
+  ;; this transform. Strip it (same reasoning as :stack).
   (mapv (fn [layer]
           (cond
-            (:categories layer) (-> layer normalize-fill-rect stack-rect-layer)
-            (:groups layer) (stack-area-layer layer)
+            (:categories layer) (dissoc (-> layer normalize-fill-rect stack-rect-layer) :y-domain)
+            (:groups layer) (dissoc (stack-area-layer layer) :y-domain)
             :else layer))
         layers))
 
@@ -166,11 +191,25 @@
     (throw (ex-info (str "Position must be :dodge, :stack, :fill, or nil, got: " (pr-str position))
                     {:position position}))))
 
+(def ^:private position-order
+  "Deterministic iteration order for apply-positions. Avoids non-determinism
+   from group-by's hash-based map when a panel mixes position types."
+  [:identity :dodge :stack :fill])
+
 (defn apply-positions
   "Apply position adjustments to all layers in a panel.
    Groups layers by position type and applies adjustments per group.
    Stack/fill: modifies y-values (data transform).
-   Dodge: annotates groups with indices (layout annotation)."
+   Dodge: annotates groups with indices (layout annotation).
+   Layer order within each position bucket is preserved from the input."
   [layers]
-  (let [by-pos (group-by #(or (:position %) :identity) layers)]
-    (vec (mapcat (fn [[pos ls]] (apply-position pos ls)) by-pos))))
+  (let [by-pos (group-by #(or (:position %) :identity) layers)
+        ;; Emit known positions in canonical order first, then any
+        ;; unknown ones so nothing is silently dropped.
+        known (set position-order)
+        ordered (concat position-order
+                        (filter (complement known) (keys by-pos)))]
+    (vec (mapcat (fn [pos]
+                   (when-let [ls (seq (get by-pos pos))]
+                     (apply-position pos ls)))
+                 ordered))))

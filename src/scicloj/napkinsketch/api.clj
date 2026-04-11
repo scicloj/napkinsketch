@@ -247,10 +247,19 @@
              defaults/*config* (assoc :config-snapshot defaults/*config*))))
 
 (defn- coerce-dataset
-  "Coerce data to a tablecloth dataset. Returns nil for nil."
+  "Coerce data to a tablecloth dataset. Returns nil for nil.
+   Rejects Sketch records to prevent silent coercion to a bogus
+   6-column dataset made of the sketch's own fields."
   [d]
   (when d
-    (if (tc/dataset? d) d (tc/dataset d))))
+    (cond
+      (sketch/sketch? d)
+      (throw (ex-info (str ":data must be a dataset or map of columns, not a sketch. "
+                           "Pass tabular data (dataset, map of columns, or row maps), "
+                           "or remove the :data override.")
+                      {:data-type 'Sketch}))
+      (tc/dataset? d) d
+      :else (tc/dataset d))))
 
 (defn- ensure-sk
   "Coerce first arg to a sketch if it isn't one already.
@@ -400,17 +409,30 @@
      ;; Opts merge into this view's mapping (view-level scope)
      (update sk :views conj (make-view (merge opts {:x x :y y}))))))
 
+(defn- col-key
+  "Canonicalize a column reference to a string key for view matching.
+   `:x` and `\"x\"` are semantically the same column, so matching should
+   treat them as equal. Returns nil for nil (x-only cases)."
+  [col]
+  (cond
+    (nil? col) nil
+    (keyword? col) (name col)
+    :else (str col)))
+
 (defn- add-view-layer
   "Add a layer to a specific view (found by matching position mappings, or created new).
    Matches the *last* view with the same :x/:y in its :mapping, so that
    `lay-*` naturally targets the most recently created view.
+   Matching is kewyord/string tolerant — `:x` matches `\"x\"`.
    Used when lay-* is called with positional columns."
   [sk position-mapping layer]
   (let [views (:views sk)
+        px (col-key (:x position-mapping))
+        py (col-key (:y position-mapping))
         idx (last (keep-indexed
                    (fn [i v]
-                     (when (and (= (:x (:mapping v)) (:x position-mapping))
-                                (= (:y (:mapping v)) (:y position-mapping)))
+                     (when (and (= (col-key (:x (:mapping v))) px)
+                                (= (col-key (:y (:mapping v))) py))
                        i))
                    views))]
     (if idx
@@ -515,6 +537,14 @@
          (add-view-layer (ensure-sk sk-or-data)
                          {:x x :y y-or-opts}
                          (build-layer method-key nil)))
+     ;; Parallel vectors -> bivariate view-specific layers per (x_i, y_i) pair.
+     ;; Supports (lay-point data [:x1 :x2] [:y1 :y2]) which previously
+     ;; ClassCastException-d in build-layer.
+     (and (sequential? x) (sequential? y-or-opts))
+     (reduce (fn [sk [a b]]
+               (add-view-layer sk {:x a :y b} (build-layer method-key nil)))
+             (ensure-sk sk-or-data)
+             (map vector x y-or-opts))
      ;; Sequential + opts -> view-specific layers with opts
      (and (sequential? x) (map? y-or-opts))
      (reduce (fn [sk col-or-pair]
@@ -791,13 +821,15 @@
   (update (ensure-sk sk) :opts deep-merge opts))
 
 (def ^:private valid-scale-types
-  "Scale types accepted by sk/scale. Categorical is inferred from data,
-   not user-passed."
-  #{:linear :log})
+  "Scale types accepted by sk/scale. :linear and :log are the two
+   continuous types; :categorical lets users supply an explicit ordering
+   via a :domain spec for categorical axes."
+  #{:linear :log :categorical})
 
 (defn scale
   "Set axis scale on a sketch. Scale is plot-level -- applies to all views.
-   (scale sk :x :log) -- log scale on x-axis."
+   (scale sk :x :log)                                -- log scale on x-axis
+   (scale sk :x {:type :categorical :domain [...]})  -- explicit category order"
   [sk channel scale-type]
   (let [sk (ensure-sk sk)
         k (case channel :x :x-scale :y :y-scale

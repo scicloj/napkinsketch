@@ -24,7 +24,7 @@
   "Short aliases for clojure2d palette names that differ from our old naming."
   {:tableau10 :tableau-10})
 
-(defn- resolve-palette
+(defn resolve-palette
   "Resolve a keyword to a clojure2d palette, trying aliases.
    Returns a non-empty palette vector, falling back to the default palette."
   [k]
@@ -100,18 +100,36 @@
                             {:color color}))))))
     (c2d->rgba color)))
 
+(defn- spread-idx
+  "Map category index `i` of `n` categories into a palette index across
+   `p` palette entries, spreading evenly so that 3 categories against a
+   256-entry gradient pick the endpoints and midpoint rather than three
+   near-identical values from the start. When n >= p the indices
+   collapse to modulo, so wrapping still works."
+  [^long i ^long n ^long p]
+  (cond
+    (<= p 0) 0
+    (<= n 1) (mod i p)
+    (>= n p) (mod i p)
+    :else (mod (long (Math/round (* (double i) (/ (double (dec p)) (double (dec n))))))
+               p)))
+
 (defn color-for
   "Look up the color for a categorical value from the palette.
    Returns [r g b a] in 0-1 range.
    palette can be: nil (default), a keyword (any clojure2d palette name),
    a vector of hex strings, or a map of {category-value color}.
    Map lookup is tolerant of string/keyword mismatch: {:setosa \"#F00\"}
-   matches both :setosa and \"setosa\" data values."
+   matches both :setosa and \"setosa\" data values.
+   For keyword/vector palettes, indices are spread across the palette so
+   3 categories on a large gradient (e.g., :viridis) pick
+   endpoints + midpoint rather than three near-identical hues."
   ([categories val]
    (color-for categories val nil))
   ([categories val palette]
-   (let [idx (if categories (.indexOf ^java.util.List categories val) -1)
-         idx (if (neg? idx) 0 idx)]
+   (let [n (count categories)
+         raw-idx (if categories (.indexOf ^java.util.List categories val) -1)
+         idx (if (neg? raw-idx) 0 raw-idx)]
      (if (map? palette)
        ;; Explicit mapping: look up value, try alternate string/keyword form,
        ;; fall back to index in default palette
@@ -123,17 +141,17 @@
          (if cv
            (hex->rgba cv)
            (let [pal (resolve-palette default-palette-name)]
-             (c2d->rgba (nth pal (mod idx (count pal)))))))
+             (c2d->rgba (nth pal (spread-idx idx n (count pal)))))))
        ;; Index-based: keyword → c/palette, vector → use directly, nil → default
        (cond
          (keyword? palette)
          (let [pal (resolve-palette palette)]
-           (c2d->rgba (nth pal (mod idx (count pal)))))
+           (c2d->rgba (nth pal (spread-idx idx n (count pal)))))
          (sequential? palette)
-         (hex->rgba (nth palette (mod idx (count palette))))
+         (hex->rgba (nth palette (spread-idx idx n (count palette))))
          :else
          (let [pal (resolve-palette default-palette-name)]
-           (c2d->rgba (nth pal (mod idx (count pal))))))))))
+           (c2d->rgba (nth pal (spread-idx idx n (count pal))))))))))
 
 ;; ---- Continuous Color ----
 
@@ -349,6 +367,20 @@
       from-atom (kindly/deep-merge from-atom)
       from-binding (kindly/deep-merge from-binding))))
 
+(defn- backfill-nil-theme-values
+  "Replace any nil entries in the resolved theme with the library defaults.
+   A user passing `{:theme {:bg nil}}` through `with-config`/plot-opts
+   would otherwise see their nil merged on top of the default and reach
+   renderers that call `hex->rgba`, causing NPEs. Backfilling keeps the
+   baseline visible while still honoring non-nil overrides."
+  [cfg]
+  (let [default-theme (:theme @library-defaults)]
+    (update cfg :theme
+            (fn [t]
+              (reduce-kv (fn [m k v] (if (nil? v) (assoc m k (get default-theme k)) m))
+                         t
+                         t)))))
+
 (defn resolve-config
   "Resolve config with plot options deep-merged on top of the precedence chain.
    Plot options have the highest priority. Nested maps (e.g. :theme) are
@@ -356,24 +388,25 @@
    are ignored."
   [plot-opts]
   (let [cfg (config)]
-    (if (seq plot-opts)
-      (let [{:keys [config width height palette theme
-                    color-scale color-midpoint validate
-                    legend-position tooltip brush format]} plot-opts]
-        (let [{:keys [point-stroke point-stroke-width]} plot-opts]
-          (cond-> cfg
-            config (kindly/deep-merge config)
-            width (assoc :width width)
-            height (assoc :height height)
-            palette (assoc :palette palette)
-            theme (update :theme kindly/deep-merge theme)
-            (some? color-scale) (assoc :color-scale color-scale)
-            (some? color-midpoint) (assoc :color-midpoint color-midpoint)
-            (some? validate) (assoc :validate validate)
-            (some? legend-position) (assoc :legend-position legend-position)
-            (some? tooltip) (assoc :tooltip tooltip)
-            (some? brush) (assoc :brush brush)
-            (some? format) (assoc :format format)
-            (some? point-stroke) (assoc :point-stroke point-stroke)
-            (some? point-stroke-width) (assoc :point-stroke-width point-stroke-width))))
-      cfg)))
+    (-> (if (seq plot-opts)
+          (let [{:keys [config width height palette theme
+                        color-scale color-midpoint validate
+                        legend-position tooltip brush format]} plot-opts]
+            (let [{:keys [point-stroke point-stroke-width]} plot-opts]
+              (cond-> cfg
+                config (kindly/deep-merge config)
+                width (assoc :width width)
+                height (assoc :height height)
+                palette (assoc :palette palette)
+                theme (update :theme kindly/deep-merge theme)
+                (some? color-scale) (assoc :color-scale color-scale)
+                (some? color-midpoint) (assoc :color-midpoint color-midpoint)
+                (some? validate) (assoc :validate validate)
+                (some? legend-position) (assoc :legend-position legend-position)
+                (some? tooltip) (assoc :tooltip tooltip)
+                (some? brush) (assoc :brush brush)
+                (some? format) (assoc :format format)
+                (some? point-stroke) (assoc :point-stroke point-stroke)
+                (some? point-stroke-width) (assoc :point-stroke-width point-stroke-width))))
+          cfg)
+        backfill-nil-theme-values)))

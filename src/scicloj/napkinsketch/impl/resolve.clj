@@ -410,8 +410,13 @@
   (let [x-res (resolve-col-name ds (:x v))
         y-res (resolve-col-name ds (:y v))
         x-type (or (:x-type v) (column-type ds x-res))
-        y-type (or (:y-type v) (when (and y-res (not= x-res y-res))
-                                 (column-type ds y-res)))
+        ;; When x and y reference the same column, propagate x-type to y-type
+        ;; rather than returning nil — callers (e.g., `validate-numeric-column`)
+        ;; rely on y-type being populated for validation.
+        y-type (or (:y-type v) (when y-res
+                                 (if (= x-res y-res)
+                                   x-type
+                                   (column-type ds y-res))))
         x-temporal? (= x-type :temporal)
         y-temporal? (= y-type :temporal)
         x-temp-extent (when x-temporal? (temporal-extent ds x-res))
@@ -491,6 +496,13 @@
                                      (when (and color-group explicit-group) color-group))))]
     group))
 
+(def ^:private x-only-stats
+  "Stats that consume only an x column and synthesize y themselves
+   (counts, bins, densities). Used to permit x-only views for marks
+   driven by these stats even when the method registry's :x-only flag
+   is missing (e.g., tests that construct views directly)."
+  #{:bin :count :kde})
+
 (defn infer-method
   "Choose mark and stat from column types when the user hasn't specified them.
    Rules:
@@ -559,6 +571,24 @@
                                    (pr-str (:x v)) " is numerical. Use a categorical column "
                                    "(e.g., species names) for the x-axis.")
                               {:mark mark :x (:x v) :x-type x-type})))
+          ;; Reject x-only views (no :y) for methods that require y.
+          ;; Otherwise prepare-points silently fabricates y=0 for every
+          ;; point and renders a flat line at the bottom of a [0, 1] domain.
+          ;; Three sources of x-only permission:
+          ;;   1. :x-only true from the method registry (e.g., :histogram, :rug)
+          ;;   2. stat is in `x-only-stats` — :bin/:count/:kde synthesize y
+          ;;      from x alone (covers the :rect mark + bar stat too)
+          ;;   3. mark is :rug, which is structurally x-only even when
+          ;;      constructed without the method registry
+          _ (when (and (nil? y-resolved)
+                       (not (:x-only v))
+                       (not (contains? x-only-stats stat))
+                       (not= :rug mark))
+              (throw (ex-info (str ":" (name mark) " requires both :x and :y columns. "
+                                   "Either pass a y column (e.g., (sk/lay-" (name mark)
+                                   " data :x :y)) or use an x-only mark like histogram, "
+                                   "density, bar, or rug.")
+                              {:mark mark :x (:x v)})))
           resolved (cond-> (assoc v :data resolved-ds :x-type x-type :y-type y-type
                                   :color-type color-type :group group :mark mark :stat stat
                                   :color color :fixed-color fixed-color

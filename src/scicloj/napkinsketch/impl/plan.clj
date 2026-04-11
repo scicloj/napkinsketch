@@ -297,6 +297,24 @@
      :color-cols color-cols
      :tagged-views tagged-views}))
 
+(defn- warn-palette-wrap!
+  "Warn once if the number of color categories exceeds the resolved
+   palette's size, since the mod-index scheme will silently reuse
+   colors and mask 'two categories with the same color' as a bug."
+  [all-colors cfg]
+  (when (seq all-colors)
+    (let [palette (:palette cfg)
+          n-cats (count all-colors)
+          pal-size (cond
+                     (map? palette) nil ;; explicit mapping — no wrap possible
+                     (sequential? palette) (count palette)
+                     (keyword? palette) (count (defaults/resolve-palette palette))
+                     :else (count (defaults/resolve-palette defaults/default-palette-name)))]
+      (when (and pal-size (> n-cats pal-size))
+        (println (str "Warning: " n-cats " color categories exceeds palette size "
+                      pal-size ". Colors will repeat. Use a larger palette via "
+                      ":palette, or reduce the number of categories."))))))
+
 (defn- adjust-fixed-aspect
   "Adjust panel dimensions for coord :fixed so that 1 data unit = 1 data unit
    on both axes. Shrinks the larger dimension to match the data aspect ratio."
@@ -657,6 +675,7 @@
          ;; Colors
          {:keys [resolved-all numeric-color? all-colors color-cols tagged-views]}
          (collect-colors non-ann-views)
+         _ (warn-palette-wrap! all-colors cfg)
 
          ;; Default scale & coord specs (fallback for panels that don't specify)
          default-x-scale {:type :linear}

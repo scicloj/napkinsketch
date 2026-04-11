@@ -35,9 +35,20 @@
 ;; ---- Resolution ----
 
 (defn- ensure-dataset
-  "Coerce raw data to a Tablecloth dataset. Returns nil for nil input."
+  "Coerce raw data to a Tablecloth dataset. Returns nil for nil input.
+   Rejects Sketch records to prevent silent coercion to a bogus
+   6-column dataset (:data :mapping :views :layers :opts :kindly/f)."
   [d]
-  (when d (if (tc/dataset? d) d (tc/dataset d))))
+  (when d
+    (cond
+      (instance? Sketch d)
+      (throw (ex-info (str ":data must be a dataset or map of columns, not a sketch. "
+                           "Pass tabular data (dataset, map of columns, or row maps), "
+                           "or remove the :data override.")
+                      {:data-type 'Sketch}))
+
+      (tc/dataset? d) d
+      :else (tc/dataset d))))
 
 (defn- resolve-facet-col
   "Resolve a facet column ref against a dataset; throw with a clear error
@@ -108,7 +119,7 @@
     (keyword? method-key)
     (let [m (method/lookup method-key)]
       (if m
-        (select-keys m [:mark :stat :position])
+        (select-keys m [:mark :stat :position :x-only])
         (let [registered (sort (keys (method/registered)))]
           (throw (ex-info (str "Unknown method: " method-key
                                ". Use sk/lay-* with a registered method, or "

@@ -18,6 +18,20 @@
   [col]
   [(dfn/reduce-min col) (dfn/reduce-max col)])
 
+(defn- near-constant?
+  "True if the span of the column is numerically negligible. Used to detect
+   degenerate inputs (single point, or near-identical x values like
+   [1.0000001 1.0000002]) that would otherwise make OLS try to invert a
+   singular matrix or LOESS divide by a tiny step.
+   Empirically, fastmath OLS becomes singular when span/scale < ~1e-4
+   in double precision, so we use that as the cutoff."
+  [col]
+  (let [lo (double (dfn/reduce-min col))
+        hi (double (dfn/reduce-max col))
+        span (- hi lo)
+        scale (max (Math/abs lo) (Math/abs hi) 1.0)]
+    (<= span (* 1e-4 scale))))
+
 (defn group-by-columns
   "Split dataset by grouping columns, apply f to each group.
    Iterates groups in the order they first appear in the dataset, so
@@ -302,7 +316,7 @@
         a11 (.getEntry xtxinv 1 1)
         x-min (dfn/reduce-min xs-col)
         x-max (dfn/reduce-max xs-col)
-        step (/ (- x-max x-min) (dec (double n-grid)))
+        step (if (<= n-grid 1) 0.0 (/ (- x-max x-min) (dec (double n-grid))))
         grid-xs (dfn/+ x-min (dfn/* step (range n-grid)))
         grid-ys (dtype/emap #(regr/predict model [%]) :float64 grid-xs)
         h (dfn/+ a00 (dfn/* 2.0 a01 grid-xs) (dfn/* a11 grid-xs grid-xs))
@@ -323,7 +337,7 @@
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)]
     (if (or (< n 3)
-            (= (dfn/reduce-min (clean x)) (dfn/reduce-max (clean x))))
+            (near-constant? (clean x)))
       (cond-> {:lines []
                :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
                :y-domain (if (pos? n) (numeric-extent (clean y)) [0 1])}
@@ -334,8 +348,7 @@
                        clean (or group [])
                        (fn [ds gv]
                          (when (and (>= (tc/row-count ds) 3)
-                                    (not= (dfn/reduce-min (ds x))
-                                          (dfn/reduce-max (ds x))))
+                                    (not (near-constant? (ds x))))
                            (cond-> (fit-lm-with-se (ds x) (ds y) n-grid level)
                              (some? gv) (assoc :color gv)))))
               results (remove nil? results)
@@ -361,8 +374,7 @@
                      clean (or group [])
                      (fn [ds gv]
                        (when (and (>= (tc/row-count ds) 3)
-                                  (not= (dfn/reduce-min (ds x))
-                                        (dfn/reduce-max (ds x))))
+                                  (not (near-constant? (ds x))))
                          (cond-> (fit-lm (ds x) (ds y))
                            (some? gv) (assoc :color gv)))))]
           {:lines (vec (remove nil? lines))
@@ -411,10 +423,12 @@
         sorted-xs (dtype/->double-array (dtype/indexed-buffer order xs-col))
         sorted-ys (dtype/->double-array (dtype/indexed-buffer order ys-col))
         [uxs uys] (dedup-xy sorted-xs sorted-ys)
-        loess-fn (interp/loess uxs uys {:bandwidth bandwidth})
+        ;; iters 4 matches R's loess default; Apache Commons' default of 2
+        ;; is less robust against outliers.
+        loess-fn (interp/loess uxs uys {:bandwidth bandwidth :iters 4})
         x-min (dfn/reduce-min xs-col)
         x-max (dfn/reduce-max xs-col)
-        step (/ (- x-max x-min) (dec (double n-grid)))
+        step (if (<= n-grid 1) 0.0 (/ (- x-max x-min) (dec (double n-grid))))
         grid-xs (dfn/+ x-min (dfn/* step (range n-grid)))
         grid-ys (dtype/emap loess-fn :float64 grid-xs)]
     {:xs grid-xs :ys grid-ys}))
@@ -428,10 +442,12 @@
         sorted-xs (dtype/->double-array (dtype/indexed-buffer order xs-col))
         sorted-ys (dtype/->double-array (dtype/indexed-buffer order ys-col))
         [uxs uys] (dedup-xy sorted-xs sorted-ys)
-        loess-fn (interp/loess uxs uys {:bandwidth bandwidth})
+        ;; iters 4 matches R's loess default; Apache Commons' default of 2
+        ;; is less robust against outliers.
+        loess-fn (interp/loess uxs uys {:bandwidth bandwidth :iters 4})
         x-min (dfn/reduce-min xs-col)
         x-max (dfn/reduce-max xs-col)
-        step (/ (- x-max x-min) (dec (double n-grid)))
+        step (if (<= n-grid 1) 0.0 (/ (- x-max x-min) (dec (double n-grid))))
         grid-xs (dfn/+ x-min (dfn/* step (range n-grid)))
         grid-ys (dtype/emap loess-fn :float64 grid-xs)
 
@@ -449,24 +465,29 @@
                              [bsx bsy] (dedup-xy sorted-xs sorted-ys)]
                          (when (>= (alength bsx) 4)
                            (try
-                             (let [bfn (interp/loess bsx bsy {:bandwidth bandwidth})]
+                             (let [bfn (interp/loess bsx bsy {:bandwidth bandwidth :iters 4})]
                                (dtype/emap bfn :float64 grid-xs))
                              (catch Exception _ nil)))))
         valid-boots (vec (remove nil? boot-grid-ys))
-        n-valid (count valid-boots)
-        alpha (- 1.0 (double level))
-        lo-idx (max 0 (long (* (/ alpha 2.0) n-valid)))
-        hi-idx (min (dec (max 1 n-valid))
-                    (long (* (- 1.0 (/ alpha 2.0)) n-valid)))
-        ymins (mapv (fn [i]
-                      (let [vals (sort (map #(% i) valid-boots))]
-                        (nth vals lo-idx)))
-                    (range n-grid))
-        ymaxs (mapv (fn [i]
-                      (let [vals (sort (map #(% i) valid-boots))]
-                        (nth vals hi-idx)))
-                    (range n-grid))]
-    {:xs grid-xs :ys grid-ys :ymins ymins :ymaxs ymaxs}))
+        n-valid (count valid-boots)]
+    (if (zero? n-valid)
+      ;; No valid bootstrap samples — fall back to the point estimate curve
+      ;; with zero-width ribbons so downstream code has shape stability.
+      {:xs grid-xs :ys grid-ys
+       :ymins (vec grid-ys) :ymaxs (vec grid-ys)}
+      (let [alpha (- 1.0 (double level))
+            lo-idx (max 0 (long (* (/ alpha 2.0) n-valid)))
+            hi-idx (min (dec n-valid)
+                        (long (* (- 1.0 (/ alpha 2.0)) n-valid)))
+            ymins (mapv (fn [i]
+                          (let [vals (sort (map #(% i) valid-boots))]
+                            (nth vals lo-idx)))
+                        (range n-grid))
+            ymaxs (mapv (fn [i]
+                          (let [vals (sort (map #(% i) valid-boots))]
+                            (nth vals hi-idx)))
+                        (range n-grid))]
+        {:xs grid-xs :ys grid-ys :ymins ymins :ymaxs ymaxs}))))
 
 (defmethod compute-stat :loess [{:keys [data x y group cfg] :as view}]
   (validate-numeric-column view :x :loess)
@@ -479,7 +500,7 @@
         n-grid (or (:loess-n-grid (or cfg defaults/defaults)) 80)
         bandwidth (or (:loess-bandwidth (or cfg defaults/defaults)) 0.75)]
     (if (or (< n 4)
-            (= (dfn/reduce-min (clean x)) (dfn/reduce-max (clean x))))
+            (near-constant? (clean x)))
       (cond-> {:points []
                :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
                :y-domain (if (pos? n) (numeric-extent (clean y)) [0 1])}
@@ -490,8 +511,7 @@
                        clean (or group [])
                        (fn [ds gv]
                          (when (and (>= (tc/row-count ds) 4)
-                                    (not= (dfn/reduce-min (ds x))
-                                          (dfn/reduce-max (ds x))))
+                                    (not (near-constant? (ds x))))
                            (cond-> (fit-loess-with-se (ds x) (ds y)
                                                       n-grid bandwidth level n-boot)
                              (some? gv) (assoc :color gv)))))
@@ -518,8 +538,7 @@
                       clean (or group [])
                       (fn [ds gv]
                         (when (and (>= (tc/row-count ds) 4)
-                                   (not= (dfn/reduce-min (ds x))
-                                         (dfn/reduce-max (ds x))))
+                                   (not (near-constant? (ds x))))
                           (cond-> (fit-loess (ds x) (ds y) n-grid bandwidth)
                             (some? gv) (assoc :color gv)))))
               curves (remove nil? curves)
@@ -544,7 +563,7 @@
         range-w (- (double x-max) (double x-min))
         lo (- (double x-min) (* 0.5 range-w))
         hi (+ (double x-max) (* 0.5 range-w))
-        step (/ (- hi lo) (double (dec n-grid)))
+        step (if (<= n-grid 1) 0.0 (/ (- hi lo) (double (dec n-grid))))
         grid-xs (dfn/+ lo (dfn/* step (range n-grid)))
         grid-ys (dtype/emap kd :float64 grid-xs)]
     {:xs grid-xs :ys grid-ys}))
@@ -557,7 +576,7 @@
         n-grid (or (:kde-n-grid (or cfg defaults/defaults)) 100)
         bandwidth (:kde-bandwidth (or cfg defaults/defaults))]
     (if (or (< n 2)
-            (= (dfn/reduce-min (clean x)) (dfn/reduce-max (clean x))))
+            (near-constant? (clean x)))
       {:points []
        :x-domain (if (pos? n) (numeric-extent (clean x)) [0 1])
        :y-domain [0 1]}
@@ -781,16 +800,21 @@
                            {}
                            (range n))
             max-count (reduce max 1 (vals counts))
-            ;; Build tile dataset — each tile is an observation with bounds and fill
-            tile-data (reduce (fn [acc [[xi yi] cnt]]
-                                (-> acc
-                                    (update :x-lo conj (+ x-min (* xi x-step)))
-                                    (update :x-hi conj (+ x-min (* (inc xi) x-step)))
-                                    (update :y-lo conj (+ y-min (* yi y-step)))
-                                    (update :y-hi conj (+ y-min (* (inc yi) y-step)))
-                                    (update :fill conj cnt)))
+            ;; Build tile dataset — each tile is an observation with bounds and fill.
+            ;; Iterate in row-major order (yi, xi) so the output is deterministic
+            ;; regardless of the hash map's internal key ordering.
+            tile-data (reduce (fn [acc [xi yi]]
+                                (let [cnt (get counts [xi yi])]
+                                  (if cnt
+                                    (-> acc
+                                        (update :x-lo conj (+ x-min (* xi x-step)))
+                                        (update :x-hi conj (+ x-min (* (inc xi) x-step)))
+                                        (update :y-lo conj (+ y-min (* yi y-step)))
+                                        (update :y-hi conj (+ y-min (* (inc yi) y-step)))
+                                        (update :fill conj cnt))
+                                    acc)))
                               {:x-lo [] :x-hi [] :y-lo [] :y-hi [] :fill []}
-                              counts)
+                              (for [yi (range n-bins) xi (range n-bins)] [xi yi]))
             tiles (tc/dataset tile-data)]
         {:tiles tiles
          :x-domain [x-min x-max]
@@ -804,7 +828,9 @@
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)]
     (if (< n 2)
-      {:tiles [] :x-domain [0 1] :y-domain [0 1] :fill-range [0 1]}
+      ;; Empty-data branch: return :grid nil explicitly so downstream
+      ;; contour extraction (which reads :grid) has shape stability.
+      {:tiles [] :x-domain [0 1] :y-domain [0 1] :fill-range [0 1] :grid nil}
       (let [xs-col (clean x)
             ys-col (clean y)
             xs (double-array xs-col)

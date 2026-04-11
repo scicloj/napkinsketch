@@ -1213,7 +1213,14 @@
 
   (testing "coord validation"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Coordinate"
-                          (sk/coord [] :invalid)))))
+                          (sk/coord [] :invalid))))
+
+  (testing "y-type propagated when x and y reference the same column"
+    ;; Regression: previously (= x-res y-res) returned nil for y-type,
+    ;; letting ClassCastException escape instead of a clear error.
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
+                          (-> {:species ["a" "b" "c"]}
+                              (sk/lay-summary :species :species) sk/plan)))))
 
 (deftest aesthetic-column-validation-test
   ;; persona-16 B1: validate-columns covers :color/:size/:alpha/:shape/:group/
