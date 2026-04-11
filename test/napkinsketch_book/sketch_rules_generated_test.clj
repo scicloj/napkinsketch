@@ -15,7 +15,7 @@
   [sk]
   {:mapping (:mapping sk),
    :views
-   (mapv (fn* [p1__80756#] (dissoc p1__80756# :data)) (:views sk)),
+   (mapv (fn* [p1__80754#] (dissoc p1__80754# :data)) (:views sk)),
    :layers (:layers sk),
    :opts (:opts sk)}))
 
@@ -245,7 +245,7 @@
      (=
       [1 1]
       (mapv
-       (fn* [p1__80757#] (count (:layers p1__80757#)))
+       (fn* [p1__80755#] (count (:layers p1__80755#)))
        (:views m)))
      (= :sepal-length (get-in m [:views 0 :mapping :x]))
      (= :petal-length (get-in m [:views 1 :mapping :x]))))

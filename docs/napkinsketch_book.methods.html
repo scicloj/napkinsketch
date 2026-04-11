@@ -400,7 +400,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#methods" id="toc-methods" class="nav-link active" data-scroll-target="#methods">Methods</a></li>
+  <li><a href="#reading-the-registry" id="toc-reading-the-registry" class="nav-link active" data-scroll-target="#reading-the-registry">Reading the Registry</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
   <li><a href="#marks" id="toc-marks" class="nav-link" data-scroll-target="#marks">Marks</a></li>
   <li><a href="#stats" id="toc-stats" class="nav-link" data-scroll-target="#stats">Stats</a></li>
   <li><a href="#positions" id="toc-positions" class="nav-link" data-scroll-target="#positions">Positions</a></li>
@@ -468,7 +469,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; String utilities</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>   [clojure.string <span class="at">:as</span> <span class="kw">str</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Two helpers used by several tables below.</p>
+<section id="reading-the-registry" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-registry">Reading the Registry</h2>
+<p>The tables below are generated directly from the method registry, so they track whatever is currently registered. Two small helpers query the registry: <code>used-by</code> returns the comma-separated list of methods whose given field equals a value, and <code>distinct-in-order</code> returns each distinct field value in the order methods were registered. Both are used to populate the Mark, Stat, and Position tables further down.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> used-by</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Sorted comma-separated method names whose `field` equals `value`."</span></span>
@@ -490,6 +493,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                    (<span class="kw">do</span> (vswap! seen <span class="kw">conj</span> v) (<span class="kw">conj</span> acc v)))))</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>            [] method/method-order)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+</section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <p>Each row is a registered method showing its mark, stat, and position.</p>
