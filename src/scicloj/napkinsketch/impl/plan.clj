@@ -390,6 +390,32 @@
   (let [out (into [] (comp cat (filter #(and (some? %) (number? %) (Double/isFinite (double %))))) bufs)]
     (when (seq out) out)))
 
+(def ^:private monochrome-marks
+  "Marks that draw strokes or polygons in a single solid color per group
+   and therefore can't show a continuous color ramp along the mark
+   itself. When a numeric :color mapping is supplied on one of these
+   marks, the mark still renders in a single color (there is no
+   per-vertex coloring). We emit the legend anyway -- readers can
+   still see which value the line's representative color maps to --
+   but we print a one-line warning so users realise the gradient they
+   see in the legend is not what's painted on the line."
+  #{:line :step :area :density :stacked-area :lm :loess})
+
+(defn- warn-monochrome-numeric-color!
+  "Warn once per plan when a numeric :color is paired with a mark that
+   cannot render per-point colors. The user's color column is being
+   used only to pick a single representative color; they may have
+   meant to set `:color-type :categorical` to split into groups."
+  [resolved-all]
+  (when-let [affected (seq (filter #(and (= :numerical (:color-type %))
+                                         (contains? monochrome-marks (:mark %)))
+                                   resolved-all))]
+    (let [marks (vec (distinct (map :mark affected)))]
+      (println (str "Warning: " marks " with a numeric :color render as a "
+                    "single line per group. The color column picks one "
+                    "representative color from the gradient legend; use "
+                    ":color-type :categorical to split into multiple lines.")))))
+
 (defn- build-legend
   "Build legend from resolved views and color info. Returns nil when the
    legend would be empty (no data, or all nil/NaN in the color column).
@@ -421,20 +447,31 @@
                         :color (defaults/color-for all-colors cat (:palette cfg))}))})))
 
 (defn- nice-legend-values
-  "Generate n nicely-spaced values spanning [lo, hi].
-   Uses enough decimal places so that adjacent values are distinct."
+  "Generate ~n nicely-rounded tick-like values spanning [lo, hi].
+   Delegates to wadogo's linear scale so the breaks are 1/2/5-aligned
+   (e.g., [17, 83] → [20 40 60 80] rather than [17.0 33.5 50.0 66.5 83.0]).
+   Falls back to evenly-spaced rounded values when wadogo returns fewer
+   than two ticks."
   [lo hi n]
-  (let [lo (double lo) hi (double hi)
-        step (/ (- hi lo) (dec n))
-        ;; Use 1 more decimal than the step magnitude to avoid collisions
-        decimals (if (pos? step)
-                   (min 6 (max 1 (+ 1 (long (Math/ceil (- (Math/log10 step)))))))
-                   1)
-        factor (Math/pow 10.0 decimals)]
-    (mapv (fn [i]
-            (let [v (+ lo (* i step))]
-              (/ (Math/round (* v factor)) factor)))
-          (range n))))
+  (let [lo (double lo) hi (double hi)]
+    (if (= lo hi)
+      [lo]
+      (let [s (ws/scale :linear {:domain [lo hi] :range [0.0 1.0]})
+            nice (vec (ws/ticks s n))]
+        (if (>= (count nice) 2)
+          nice
+          ;; Fallback: evenly-spaced with enough decimals to distinguish
+          ;; adjacent values. Preserves backward-compatible behavior for
+          ;; pathological inputs (tiny spans, NaN-ish).
+          (let [step (/ (- hi lo) (dec n))
+                decimals (if (pos? step)
+                           (min 6 (max 1 (+ 1 (long (Math/ceil (- (Math/log10 step)))))))
+                           1)
+                factor (Math/pow 10.0 decimals)]
+            (mapv (fn [i]
+                    (let [v (+ lo (* i step))]
+                      (/ (Math/round (* v factor)) factor)))
+                  (range n))))))))
 
 (defn- build-size-legend
   "Build size legend when :size maps to a numerical column. Returns nil
@@ -700,6 +737,7 @@
          {:keys [resolved-all numeric-color? all-colors color-cols tagged-views]}
          (collect-colors non-ann-views)
          _ (warn-palette-wrap! all-colors cfg)
+         _ (warn-monochrome-numeric-color! resolved-all)
 
          ;; Default scale & coord specs (fallback for panels that don't specify)
          default-x-scale {:type :linear}

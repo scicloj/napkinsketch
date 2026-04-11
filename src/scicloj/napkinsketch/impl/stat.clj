@@ -180,6 +180,45 @@
 
 ;; ---- Binning ----
 
+(defn- exact-width-bins
+  "Build exact-`bw`-wide bin maps for a numeric column, in the ggplot2
+   style (bins anchored at `lo`, extending in both directions to cover
+   the data). Returns a vector of maps `{:min :max :count}`. Each bin
+   covers the half-open interval `[min, max)` except for the last bin,
+   which is closed on the right so the max value is included.
+   `lo-anchor` is the anchor of the first bin's left edge — typically
+   the column's min value, so bin 0 starts exactly at the minimum."
+  [col lo-anchor bw]
+  (let [lo (double lo-anchor)
+        bw (double bw)
+        [data-lo data-hi] (numeric-extent col)
+        dlo (double data-lo)
+        dhi (double data-hi)
+        ;; Pick the lowest bin index that covers data-lo.
+        i0 (long (Math/floor (/ (- dlo lo) bw)))
+        ;; And the highest bin index that covers data-hi. When data-hi
+        ;; sits exactly on a boundary, fold it into the previous bin
+        ;; (right-closed on the last bin).
+        raw-i1 (long (Math/floor (/ (- dhi lo) bw)))
+        i1 (if (and (> raw-i1 i0)
+                    (== (+ lo (* bw raw-i1)) dhi))
+             (dec raw-i1)
+             raw-i1)
+        n-bins (inc (- i1 i0))
+        edges (mapv (fn [k] (+ lo (* bw (double (+ i0 k))))) (range (inc n-bins)))
+        counts (long-array n-bins)
+        n (dtype/ecount col)]
+    (dotimes [k n]
+      (let [v (double (col k))
+            idx (long (Math/floor (/ (- v lo) bw)))
+            idx (min (dec n-bins) (max 0 (- idx i0)))]
+        (aset counts idx (inc (aget counts idx)))))
+    (mapv (fn [k]
+            {:min (nth edges k)
+             :max (nth edges (inc k))
+             :count (aget counts k)})
+          (range n-bins))))
+
 (defmethod compute-stat :bin [{:keys [data x x-type group cfg normalize] :as view}]
   (validate-numeric-column view :x :bin)
   (when-let [b (:bins view)]
@@ -192,23 +231,33 @@
                       {:binwidth bw}))))
   (let [clean (cond-> (tc/drop-missing data [x])
                 (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))
-        xs-col (clean x)]
+        xs-col (clean x)
+        user-binwidth (:binwidth view)
+        ;; Compute a shared anchor when :binwidth is supplied, so every
+        ;; group uses the same bin boundaries (important for stacked and
+        ;; colored histograms — otherwise groups with different minima
+        ;; produce misaligned bars).
+        shared-lo (when user-binwidth
+                    (when (pos? (tc/row-count clean))
+                      (double (dfn/reduce-min xs-col))))]
     (if (zero? (tc/row-count clean))
       {:bins [] :max-count 0 :x-domain [0 1] :y-domain [0 1]}
-      (let [;; Determine bin method: explicit :bins count > :binwidth > cfg heuristic
+      (let [;; Determine bin method: :bins (exact count) > :binwidth
+            ;; (exact width) > cfg heuristic.
             bin-arg (or (:bins view)
-                        (when-let [bw (:binwidth view)]
-                          (let [[lo hi] (numeric-extent xs-col)
-                                span (- (double hi) (double lo))]
-                            (if (pos? span)
-                              (max 1 (long (Math/ceil (/ span (double bw)))))
-                              1)))
                         (:bin-method (or cfg defaults/defaults)))
             all-bin-data (group-by-columns
                           clean (or group [])
                           (fn [ds gv]
-                            (let [hist (stats/histogram (ds x) bin-arg)]
-                              (cond-> {:bin-maps (:bins-maps hist)}
+                            (let [bin-maps (if user-binwidth
+                                             ;; Exact-width path: respects the
+                                             ;; user's :binwidth literally.
+                                             (exact-width-bins (ds x) shared-lo user-binwidth)
+                                             ;; Equal-count path (default or
+                                             ;; explicit :bins): lets fastmath
+                                             ;; pick bin edges.
+                                             (:bins-maps (stats/histogram (ds x) bin-arg)))]
+                              (cond-> {:bin-maps bin-maps}
                                 (some? gv) (assoc :color gv)))))
             ;; When normalize=:density, convert counts to density (area integrates to 1)
             all-bin-data (if (= normalize :density)

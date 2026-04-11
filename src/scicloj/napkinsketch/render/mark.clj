@@ -289,42 +289,65 @@
 
 (defmethod layer->membrane :errorbar [layer ctx]
   (let [{:keys [style groups]} layer
-        {:keys [coord-fn sx]} ctx
+        {:keys [coord-fn sx sy]} ctx
+        {:keys [flipped?]} (orient-scales ctx)
         {:keys [stroke-width cap-width opacity]} style
         sw (or stroke-width 1.5)
         op (or opacity 1.0)
         cap-hw (/ (or cap-width 6) 2.0)
-        ;; Dodge support: when dodge-ctx is present, use band-position
+        ;; Dodge support: when dodge-ctx is present, use band-position on
+        ;; the categorical axis. Under flip the categorical axis is y.
         {:keys [n-groups]} (:dodge-ctx layer)
-        band-scale? (and n-groups (try (ws/data sx :bandwidth) (catch Exception _ nil)))]
+        cat-scale (if flipped? sy sx)
+        band-scale? (and n-groups (try (ws/data cat-scale :bandwidth) (catch Exception _ nil)))]
     (vec
      (for [{:keys [color xs ys ymins ymaxs dodge-idx]} groups
            i (range (clojure.core/count xs))
            :let [x (xs i)
                  ymin-val (ymins i)
                  ymax-val (ymaxs i)
-                 ;; For dodged errorbars on categorical axis, use band-position
-                 px (if band-scale?
-                      (:mid (band-position sx x (or dodge-idx 0) n-groups 0.8))
-                      (first (coord-fn x ymin-val)))
-                 [_ py-min] (coord-fn x ymin-val)
-                 [_ py-max] (coord-fn x ymax-val)
+                 ;; Pixel coords of the endpoints: coord-fn already
+                 ;; swaps x and y under :coord :flip, so we just read
+                 ;; the two ends from coord-fn and use them directly.
+                 [px-min py-min] (coord-fn x ymin-val)
+                 [px-max py-max] (coord-fn x ymax-val)
+                 ;; For dodged errorbars on the categorical band, override
+                 ;; the category coordinate with band-position.
+                 [px-min py-min px-max py-max]
+                 (if band-scale?
+                   (let [bp (:mid (band-position cat-scale x (or dodge-idx 0) n-groups 0.8))]
+                     (if flipped?
+                       [px-min bp px-max bp]
+                       [bp py-min bp py-max]))
+                   [px-min py-min px-max py-max])
                  [cr cg cb _] color]]
        (ui/with-color [cr cg cb op]
-         [(ui/with-style ::ui/style-stroke
-            (ui/with-stroke-width sw
-              ;; Vertical line from ymin to ymax
-              (ui/path [px py-min] [px py-max])))
-          ;; Bottom cap
-          (ui/with-style ::ui/style-stroke
-            (ui/with-stroke-width sw
-              (ui/path [(- (double px) cap-hw) py-min]
-                       [(+ (double px) cap-hw) py-min])))
-          ;; Top cap
-          (ui/with-style ::ui/style-stroke
-            (ui/with-stroke-width sw
-              (ui/path [(- (double px) cap-hw) py-max]
-                       [(+ (double px) cap-hw) py-max])))])))))
+         (if flipped?
+           ;; Horizontal range bar: line from (px-min, py) to (px-max, py),
+           ;; caps at each end drawn as short vertical segments.
+           [(ui/with-style ::ui/style-stroke
+              (ui/with-stroke-width sw
+                (ui/path [px-min py-min] [px-max py-max])))
+            (ui/with-style ::ui/style-stroke
+              (ui/with-stroke-width sw
+                (ui/path [px-min (- (double py-min) cap-hw)]
+                         [px-min (+ (double py-min) cap-hw)])))
+            (ui/with-style ::ui/style-stroke
+              (ui/with-stroke-width sw
+                (ui/path [px-max (- (double py-max) cap-hw)]
+                         [px-max (+ (double py-max) cap-hw)])))]
+           ;; Vertical range bar (normal orientation).
+           [(ui/with-style ::ui/style-stroke
+              (ui/with-stroke-width sw
+                (ui/path [px-min py-min] [px-max py-max])))
+            (ui/with-style ::ui/style-stroke
+              (ui/with-stroke-width sw
+                (ui/path [(- (double px-min) cap-hw) py-min]
+                         [(+ (double px-min) cap-hw) py-min])))
+            (ui/with-style ::ui/style-stroke
+              (ui/with-stroke-width sw
+                (ui/path [(- (double px-max) cap-hw) py-max]
+                         [(+ (double px-max) cap-hw) py-max])))]))))))
 
 ;; ---- Lollipop ----
 
@@ -630,14 +653,17 @@
 
 (defmethod layer->membrane :pointrange [layer ctx]
   (let [{:keys [style groups]} layer
-        {:keys [coord-fn sx]} ctx
+        {:keys [coord-fn sx sy]} ctx
+        {:keys [flipped?]} (orient-scales ctx)
         {:keys [radius stroke-width opacity]} style
         r (or radius 3.5)
         sw (or stroke-width 1.5)
         op (or opacity 1.0)
-        ;; Dodge support: when dodge-ctx is present, use band-position
+        ;; Dodge support: band scale is on the categorical axis, which
+        ;; is y under :coord :flip.
         {:keys [n-groups]} (:dodge-ctx layer)
-        band-scale? (and n-groups (try (ws/data sx :bandwidth) (catch Exception _ nil)))]
+        cat-scale (if flipped? sy sx)
+        band-scale? (and n-groups (try (ws/data cat-scale :bandwidth) (catch Exception _ nil)))]
     (vec
      (for [{:keys [color xs ys ymins ymaxs dodge-idx]} groups
            i (range (count xs))
@@ -646,17 +672,20 @@
                  y (ys i)
                  ymin-val (ymins i)
                  ymax-val (ymaxs i)
-                 ;; For dodged pointranges on categorical axis, use band-position
-                 px (if band-scale?
-                      (:mid (band-position sx x (or dodge-idx 0) n-groups 0.8))
-                      (first (coord-fn x y)))
-                 [_ py] (coord-fn x y)
-                 [_ py-min] (coord-fn x ymin-val)
-                 [_ py-max] (coord-fn x ymax-val)]]
+                 [px py] (coord-fn x y)
+                 [px-min py-min] (coord-fn x ymin-val)
+                 [px-max py-max] (coord-fn x ymax-val)
+                 [px py px-min py-min px-max py-max]
+                 (if band-scale?
+                   (let [bp (:mid (band-position cat-scale x (or dodge-idx 0) n-groups 0.8))]
+                     (if flipped?
+                       [px bp px-min bp px-max bp]
+                       [bp py bp py-min bp py-max]))
+                   [px py px-min py-min px-max py-max])]]
        [(ui/with-color [cr cg cb op]
           (ui/with-stroke-width sw
             (ui/with-style ::ui/style-stroke
-              (ui/path [px py-min] [px py-max]))))
+              (ui/path [px-min py-min] [px-max py-max]))))
         (ui/translate (- (double px) r) (- (double py) r)
                       (ui/with-color [cr cg cb op]
                         (ui/with-style ::ui/style-fill
