@@ -58,7 +58,7 @@ tiny-pl
 
 (kind/test-last [(fn [m] (and (= 600 (:width m))
                               (= 400 (:height m))
-                              (== 30 (:margin m))
+                              (== 10 (:margin m))
                               (nil? (:title m))
                               (= "x" (:x-label m))
                               (= "y" (:y-label m))
@@ -66,7 +66,7 @@ tiny-pl
 
 ;; Notice:
 ;;
-;; - Dimensions are 600x400 with a 30-pixel margin
+;; - Dimensions are 600x400 with a 10-pixel margin
 ;; - Labels `"x"` and `"y"` are inferred from column names
 ;; - No legend (we didn't map a column to color)
 ;; - One panel with `:x-domain`, `:y-domain`, ticks, and layers

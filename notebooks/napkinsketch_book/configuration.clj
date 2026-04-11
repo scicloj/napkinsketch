@@ -43,7 +43,7 @@
     (and (map? cfg)
          (= 600 (:width cfg))
          (= 400 (:height cfg))
-         (= 30 (:margin cfg))
+         (= 10 (:margin cfg))
          (map? (:theme cfg))))])
 
 ;; ### Configuration Keys
@@ -201,7 +201,7 @@
 
 (:point-radius (sk/config))
 
-(kind/test-last [(fn [v] (= 3.0 v))])
+(kind/test-last [(fn [v] (= 2.0 v))])
 
 ;; Now set a global override for width, height, and point-radius:
 
@@ -225,7 +225,7 @@ precedence-result
          (= 500 (:plan-height m))))]) ;; with-config wins over set-config! (350)
 
 ;; We can verify point-radius too -- only set-config! touched it,
-;; so it wins over the library default (3.0):
+;; so it wins over the library default (2.0):
 
 (def precedence-point-radius
   (sk/with-config {:width 1200 :height 500}
@@ -258,7 +258,7 @@ precedence-plot
 
 (select-keys (sk/config) [:width :height :point-radius])
 
-(kind/test-last [(fn [m] (= {:width 600 :height 400 :point-radius 3.0} m))])
+(kind/test-last [(fn [m] (= {:width 600 :height 400 :point-radius 2.0} m))])
 
 ;; To summarize what happened:
 ;;
@@ -266,7 +266,7 @@ precedence-plot
 ;; |:----|:---------------|:------------|:------------|:---------|:-------|
 ;; | `:width` | 600 | 800 | 1200 | 900 | **900** (plot options) |
 ;; | `:height` | 400 | 350 | 500 | -- | **500** (with-config) |
-;; | `:point-radius` | 3.0 | 5.0 | -- | -- | **5.0** (set-config!) |
+;; | `:point-radius` | 2.0 | 5.0 | -- | -- | **5.0** (set-config!) |
 
 ;; ## Project-Level Defaults with napkinsketch.edn
 ;;
