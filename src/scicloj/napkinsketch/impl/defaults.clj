@@ -102,10 +102,14 @@
 
 (defn- spread-idx
   "Map category index `i` of `n` categories into a palette index across
-   `p` palette entries, spreading evenly so that 3 categories against a
-   256-entry gradient pick the endpoints and midpoint rather than three
-   near-identical values from the start. When n >= p the indices
-   collapse to modulo, so wrapping still works."
+   `p` palette entries, spreading evenly so that n categories against
+   a p-entry palette pick values stretched across the whole range
+   instead of the first n entries.
+
+   Currently unused by `color-for` — the canonical path for continuous
+   color is `:color-scale`, not `:palette` with a gradient name. This
+   helper stays as a dormant utility in case we later expose a
+   `:palette-sampling :spread` escape hatch."
   [^long i ^long n ^long p]
   (cond
     (<= p 0) 0
@@ -119,16 +123,21 @@
    Returns [r g b a] in 0-1 range.
    palette can be: nil (default), a keyword (any clojure2d palette name),
    a vector of hex strings, or a map of {category-value color}.
+
    Map lookup is tolerant of string/keyword mismatch: {:setosa \"#F00\"}
    matches both :setosa and \"setosa\" data values.
-   For keyword/vector palettes, indices are spread across the palette so
-   3 categories on a large gradient (e.g., :viridis) pick
-   endpoints + midpoint rather than three near-identical hues."
+
+   For keyword/vector palettes, the i-th category gets the i-th
+   palette entry (wrapping modulo the palette size). This preserves
+   the authorial ordering of designed-categorical palettes like
+   :set1, :dark2, :tableau-10. If you want a continuous color ramp
+   (viridis, inferno, etc.) for a numeric column, use the dedicated
+   `:color-scale` option instead -- that's the canonical gradient
+   path and interpolates the full color range smoothly."
   ([categories val]
    (color-for categories val nil))
   ([categories val palette]
-   (let [n (count categories)
-         raw-idx (if categories (.indexOf ^java.util.List categories val) -1)
+   (let [raw-idx (if categories (.indexOf ^java.util.List categories val) -1)
          idx (if (neg? raw-idx) 0 raw-idx)]
      (if (map? palette)
        ;; Explicit mapping: look up value, try alternate string/keyword form,
@@ -141,17 +150,17 @@
          (if cv
            (hex->rgba cv)
            (let [pal (resolve-palette default-palette-name)]
-             (c2d->rgba (nth pal (spread-idx idx n (count pal)))))))
+             (c2d->rgba (nth pal (mod idx (count pal)))))))
        ;; Index-based: keyword → c/palette, vector → use directly, nil → default
        (cond
          (keyword? palette)
          (let [pal (resolve-palette palette)]
-           (c2d->rgba (nth pal (spread-idx idx n (count pal)))))
+           (c2d->rgba (nth pal (mod idx (count pal)))))
          (sequential? palette)
-         (hex->rgba (nth palette (spread-idx idx n (count palette))))
+         (hex->rgba (nth palette (mod idx (count palette))))
          :else
          (let [pal (resolve-palette default-palette-name)]
-           (c2d->rgba (nth pal (spread-idx idx n (count pal))))))))))
+           (c2d->rgba (nth pal (mod idx (count pal))))))))))
 
 ;; ---- Continuous Color ----
 
