@@ -51,7 +51,11 @@
 (def CountEntry
   [:map
    [:category any?]
-   [:count number?]])
+   [:count number?]
+   ;; :y0 / :y1 are populated by apply-position :stack to describe the
+   ;; cumulative baseline and top of each stacked bar segment.
+   [:y0 {:optional true} number?]
+   [:y1 {:optional true} number?]])
 
 (def RectCountGroup
   [:map
@@ -108,7 +112,10 @@
    [:q3 number?]
    [:whisker-lo number?]
    [:whisker-hi number?]
-   [:outliers {:optional true} [:sequential number?]]])
+   [:outliers {:optional true} [:sequential number?]]
+   ;; :dodge-idx is populated by apply-position :dodge when multiple
+   ;; boxplots share an x-category (side-by-side layout).
+   [:dodge-idx {:optional true} int?]])
 
 (def ViolinEntry
   "A single violin curve with category and mirrored density."
@@ -117,7 +124,10 @@
    [:color Color]
    [:color-category {:optional true} any?]
    [:ys [:sequential number?]]
-   [:densities [:sequential number?]]])
+   [:densities [:sequential number?]]
+   ;; Same rationale as BoxplotBox: dodged violin layouts annotate
+   ;; each entry with its position in the dodge group.
+   [:dodge-idx {:optional true} int?]])
 
 (def TileEntry
   "A single tile (heatmap cell) with bounds and fill color."

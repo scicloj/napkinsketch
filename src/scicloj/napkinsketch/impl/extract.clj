@@ -21,23 +21,31 @@
 (defn- apply-nudge
   "Apply nudge-x/nudge-y offsets to a layer's groups.
    Nudge shifts data coordinates by a constant amount — orthogonal to
-   position adjustment (dodge/stack). Works on any layer with groups
-   containing :xs/:ys numeric buffers."
+   position adjustment (dodge/stack). Handles three group shapes:
+     - polyline groups with :xs/:ys (and optional :ymins/:ymaxs)
+     - line-segment groups with :x1/:y1/:x2/:y2 (from :lm regression)
+     - any group with any subset of the above
+
+   Previously, `:lm` and `:loess` listed `:nudge-x`/`:nudge-y` in their
+   `:accepts` but the segment-style groups they produced were silently
+   untouched because only :xs/:ys were updated."
   [layer {:keys [nudge-x nudge-y]}]
   (if (or nudge-x nudge-y)
-    (update layer :groups
-            (fn [gs]
-              (mapv (fn [g]
-                      (cond-> g
-                        (and nudge-x (:xs g))
-                        (update :xs dfn/+ (double nudge-x))
-                        (and nudge-y (:ys g))
-                        (update :ys dfn/+ (double nudge-y))
-                        (and nudge-y (:ymins g))
-                        (update :ymins dfn/+ (double nudge-y))
-                        (and nudge-y (:ymaxs g))
-                        (update :ymaxs dfn/+ (double nudge-y))))
-                    gs)))
+    (let [nx (when nudge-x (double nudge-x))
+          ny (when nudge-y (double nudge-y))]
+      (update layer :groups
+              (fn [gs]
+                (mapv (fn [g]
+                        (cond-> g
+                          (and nx (:xs g))    (update :xs dfn/+ nx)
+                          (and ny (:ys g))    (update :ys dfn/+ ny)
+                          (and ny (:ymins g)) (update :ymins dfn/+ ny)
+                          (and ny (:ymaxs g)) (update :ymaxs dfn/+ ny)
+                          (and nx (:x1 g))    (update :x1 + nx)
+                          (and ny (:y1 g))    (update :y1 + ny)
+                          (and nx (:x2 g))    (update :x2 + nx)
+                          (and ny (:y2 g))    (update :y2 + ny)))
+                      gs))))
     layer))
 
 (defn- default-position

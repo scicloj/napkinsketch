@@ -51,10 +51,19 @@
 ;; for each view:
 ;;   layers = concat(view's :layers, sketch :layers)
 ;;   for each layer:
-;;     resolved = merge(sketch :mapping, view :mapping, layer :mapping)
+;;     resolved = merge(sketch :mapping, view :mapping,
+;;                      method-info, layer :mapping)
 ;; ```
 ;;
 ;; Later maps win. `nil` values cancel earlier keys.
+;;
+;; The user-facing model has **three** scopes -- sketch, view, layer --
+;; but the internal merge slots `method-info` (the `{:mark :stat :position
+;; :x-only}` looked up from the method registry) between view and layer.
+;; This means the method you chose with `sk/lay-*` wins over a view-level
+;; `:mark` override, but a layer-level `:mark` still wins over the method.
+;; In practice you should not set `:mark` at the view level -- pick it
+;; via the `sk/lay-*` function instead.
 ;;
 ;; ## Verb Rules
 ;;
