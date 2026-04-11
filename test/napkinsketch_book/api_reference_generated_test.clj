@@ -843,7 +843,7 @@
 
 (def v206_l583 (count sk/plot-option-docs))
 
-(deftest t207_l585 (is ((fn [n] (= 9 n)) v206_l583)))
+(deftest t207_l585 (is ((fn [n] (= 11 n)) v206_l583)))
 
 (def v208_l587 (kind/doc #'sk/layer-option-docs))
 

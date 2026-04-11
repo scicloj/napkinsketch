@@ -477,13 +477,16 @@
          polylines (collect-elements svg :polyline)
          polygons (collect-elements svg :polygon)
          texts (collect-elements svg :text)
-         ;; Panels: large rects with theme background fill color
+         ;; Panels: rects filled with the theme's background color.
+         ;; Under the total-dimensions layout semantics, panel inner
+         ;; rects can be as small as 20-30px in dense facet grids, so
+         ;; we no longer require a 50px minimum -- the bg-color match
+         ;; is strong enough on its own, since no regular tile has
+         ;; theme-bg color as its data-derived fill.
          panel-rects (filter #(let [a (second %)]
                                 (and (nil? (:rx a))
                                      (number? (:width a))
-                                     (> (double (:width a)) 50)
                                      (number? (:height a))
-                                     (> (double (:height a)) 50)
                                      (= bg-color (:fill a))))
                              rects)
          panel-set (set panel-rects)

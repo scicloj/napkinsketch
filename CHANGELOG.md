@@ -10,6 +10,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 First public alpha release. The API and visual defaults are still
 subject to change based on early adopter feedback.
 
+### Breaking: `:width`/`:height` are now total SVG dimensions
+
+Prior to this release, `:width` and `:height` in plot options
+referred to the **panel drawing area** only -- the actual SVG came
+out wider and taller than the user asked for, once axis labels,
+legends, and facet strips were added. This never matched the
+convention in matplotlib, plotly, vega-lite, or ggplot2's `ggsave`.
+
+As of this release, `:width` and `:height` are the **total SVG
+dimensions**. Panel dimensions are derived by subtracting layout
+overhead (y-axis label + tick labels, x-axis label, title, legend,
+facet strips) from the total. The plot you ask for is the plot you
+get.
+
+Two new escape-hatch options, `:panel-width` and `:panel-height`,
+pin the panel size on their axis when you do want a specific panel
+size regardless of overhead. Either or both can be set. SPLOMs
+(multi-variable layouts) continue to use the `:panel-size` config
+default for each panel.
+
+`sk/arrange` now re-plans each sub-sketch at the derived per-cell
+dimensions when you pass a container `:width`/`:height` and the
+inputs are sketches ("sketch-mode"). Pre-rendered hiccup plots
+pass through unchanged and are scaled by the browser via CSS
+("figure-mode"), same as before.
+
+The layout pipeline was rewritten around three pure functions
+(`compute-scene` / `compute-padding` / `compute-dims`, in
+`impl/layout.clj`) that feed off the data-derived scene and never
+touch pixel math twice. A single reformulation -- running the tick
+picker at a pixel budget equal to `:height` instead of the unknown
+real panel height -- breaks the classic
+`y-label-pad ↔ panel-width` cycle. Label widths are monotonic
+non-decreasing in tick count for every supported scale type, so
+the over-estimate is always safe. See
+`dev-notes/design-width-inference.md` for the full design.
+
+Most existing plots shrink visibly (panels previously ~600x400 now
+render around ~560x368 at the default total size). Generated tests
+count panel/point/line counts rather than pixel positions, so the
+test suite passes with no changes beyond updating a handful of
+explicit width assertions.
+
 ### Overview
 
 Napkinsketch is a composable plotting library for Clojure, inspired by
@@ -161,8 +204,6 @@ The pipeline's layering is strict: data transformations live under
 These are documented and tracked for post-alpha work. None of them
 produce crashes on canonical inputs.
 
-- `:coord :flip` renders `errorbar`/`pointrange` (and thus `summary`)
-  incorrectly. Workaround: don't flip these marks.
 - `:position :dodge` is silently ignored on nine marks including
   `summary`. Workaround: pre-compute dodge offsets via `tc/group-by`.
 - Polar plots for bar-family marks don't auto-emit category labels.

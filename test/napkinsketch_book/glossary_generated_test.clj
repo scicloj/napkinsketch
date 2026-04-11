@@ -189,7 +189,7 @@
 
 (def v66_l425 (count sk/plot-option-docs))
 
-(deftest t67_l427 (is ((fn [n] (= 9 n)) v66_l425)))
+(deftest t67_l427 (is ((fn [n] (= 11 n)) v66_l425)))
 
 (def v69_l442 (count sk/layer-option-docs))
 

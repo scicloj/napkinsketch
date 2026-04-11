@@ -2,8 +2,21 @@
 ;; Users can override by creating napkinsketch.edn in their project root (or on classpath),
 ;; by calling set-config!, or by binding *config*.
 {;; Layout
+ ;; :width and :height are TOTAL SVG dimensions. Panel dimensions are
+ ;; derived by subtracting layout overhead (labels, legend, strips,
+ ;; titles). Use :panel-width / :panel-height (per-plot opts) as an
+ ;; escape hatch to pin a specific panel size regardless of overhead.
  :width 600 :height 400
  :margin 30 :margin-multi 30 :panel-size 200 :legend-width 100
+ ;; Minimum derived panel size before compute-dims throws a helpful
+ ;; error. Acts as a sanity guard against "overhead > total dimension"
+ ;; layouts. Set at 20px so dense 18-column facet grids still fit in
+ ;; a 600px total width without tripping the check.
+ :min-panel-size 20
+ ;; Top/bottom legend layout: header pad + per-entry row height.
+ ;; Previously hardcoded as magic numbers in compute-layout-dims.
+ :legend-header-pad 20
+ :legend-entry-height 18
 
  ;; Theme (visual identity — ggplot2-inspired with friendly feel)
  :theme {:bg "#E8E8E8" :grid "#F5F5F5" :font-size 11}

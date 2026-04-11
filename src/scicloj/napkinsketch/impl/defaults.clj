@@ -353,6 +353,8 @@
    :color-label ["Content" "Color legend title (overrides inferred column name)"]
    :size-label ["Content" "Size legend title (overrides inferred column name)"]
    :alpha-label ["Content" "Alpha legend title (overrides inferred column name)"]
+   :panel-width ["Layout" "Pin panel width in pixels (escape hatch; :width becomes derived total)"]
+   :panel-height ["Layout" "Pin panel height in pixels (escape hatch; :height becomes derived total)"]
    :config ["Config" "Nested config map merged into resolved config"]})
 
 (defn config

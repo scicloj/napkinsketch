@@ -84,7 +84,7 @@
          "Category" cat,
          "Description" desc})))}))
 
-(deftest t13_l88 (is ((fn [t] (= 9 (count (:row-maps t)))) v12_l78)))
+(deftest t13_l88 (is ((fn [t] (= 11 (count (:row-maps t)))) v12_l78)))
 
 (def v15_l98 (select-keys (sk/config) [:width :height]))
 
@@ -216,7 +216,7 @@
       [v]
       (let
        [s (sk/svg-summary v)]
-        (and (= 150 (:points s)) (> (:width s) 900) (< (:width s) 1100))))
+        (and (= 150 (:points s)) (= 900.0 (double (:width s))))))
     v58_l245)))
 
 (def v61_l257 (sk/set-config! nil))

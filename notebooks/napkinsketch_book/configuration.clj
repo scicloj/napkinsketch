@@ -85,7 +85,7 @@
                 "Category" cat
                 "Description" desc})))})
 
-(kind/test-last [(fn [t] (= 9 (count (:row-maps t))))])
+(kind/test-last [(fn [t] (= 11 (count (:row-maps t))))])
 
 ;; ## Using Plot Options
 ;;
@@ -248,9 +248,9 @@ precedence-plot
  [(fn [v]
     (let [s (sk/svg-summary v)]
       (and (= 150 (:points s))
-           ;; width = 900 + legend padding, not 1200
-           (> (:width s) 900)
-           (< (:width s) 1100))))])
+           ;; :width is the TOTAL SVG width, so the plot option
+           ;; value 900 shows up exactly in the output viewBox.
+           (= 900.0 (double (:width s))))))])
 
 ;; Clean up the global override.
 

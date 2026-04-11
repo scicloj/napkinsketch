@@ -747,9 +747,12 @@
             s (str svg)]
         (is (clojure.string/includes? s "rgb(255,0,0)"))))
     (testing "per-call width changes SVG viewBox"
+      ;; Under the total-dimensions semantics, :width is the TOTAL
+      ;; SVG width; the panel is derived by subtracting overhead.
+      ;; So the output viewBox width equals :width exactly.
       (let [svg (sk/plot views {:width 800})
             attrs (second svg)]
-        (is (> (:width attrs) 800))))))
+        (is (= 800.0 (double (:width attrs))))))))
 
 ;; ---- Config with palette ----
 

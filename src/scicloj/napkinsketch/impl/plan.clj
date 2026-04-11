@@ -16,6 +16,7 @@
             [scicloj.napkinsketch.impl.coord :as coord]
             [scicloj.napkinsketch.impl.position :as position]
             [scicloj.napkinsketch.impl.extract :as extract]
+            [scicloj.napkinsketch.impl.layout :as layout]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]))
 
 ;; ---- Domain Helpers ----
@@ -346,19 +347,6 @@
           {:pw (* ph data-ratio) :ph ph}
           {:pw pw :ph (/ pw data-ratio)})))))
 
-(defn- compute-panel-dims
-  "Compute per-panel pixel dimensions and margin."
-  [cfg layout-type grid-rows grid-cols width height]
-  (let [multi? (and (= layout-type :multi-variable) (> grid-cols 1) (> grid-rows 1))
-        m (if multi? (:margin-multi cfg) (:margin cfg))
-        pw (if multi?
-             (double (:panel-size cfg))
-             (double (/ width grid-cols)))
-        ph (if multi?
-             (double (:panel-size cfg))
-             (double (/ height grid-rows)))]
-    {:m m :pw pw :ph ph}))
-
 (defn- resolve-labels
   "Resolve effective title and axis labels.
    Title comes from opts only; axis labels fall back to view-level :x-label/:y-label
@@ -521,67 +509,6 @@
                              {:value v
                               :alpha (+ 0.2 (* 0.8 (/ (- (double v) (double a-min)) span)))}))}))))))
 
-(defn- compute-layout-dims
-  "Compute layout dimensions: padding, legend width, total size."
-  [cfg layout-type eff-title eff-x-label eff-y-label
-   subtitle caption
-   legend size-legend alpha-legend
-   facet-row-vals facet-col-vals
-   grid-rows grid-cols pw ph multi? panels legend-position]
-  (let [x-label-pad (if eff-x-label (:label-offset cfg) 0)
-        ;; y-label-pad must account for y-tick label width (e.g. category names)
-        tick-fsize (get-in cfg [:theme :font-size]
-                           (get-in defaults/defaults [:theme :font-size]))
-        max-y-tick-len (reduce max 0
-                               (for [p panels
-                                     :let [labels (get-in p [:y-ticks :labels])]
-                                     label (or labels [])]
-                                 (count label)))
-        y-tick-width (* max-y-tick-len (/ (double tick-fsize) 2.0))
-        y-label-pad (if eff-y-label
-                      (+ (:label-offset cfg) (max 0.0 (- y-tick-width 12.0)))
-                      0)
-        title-pad (if eff-title
-                    (+ (:title-offset cfg) (:title-font-size cfg))
-                    0)
-        subtitle-pad (if subtitle 16 0)
-        caption-pad (if caption 18 0)
-        legend-pos (or legend-position :right)
-        any-legend? (or legend size-legend alpha-legend)
-        legend-w (if (and any-legend? (= legend-pos :right)) (:legend-width cfg) 0)
-        legend-h (if (and any-legend? (#{:bottom :top} legend-pos)) 30 0)
-        has-col-strips? (or (and (= layout-type :facet-grid) (seq facet-col-vals))
-                            multi?
-                            (some :col-label panels))
-        has-row-strips? (or (and (= layout-type :facet-grid) (seq facet-row-vals))
-                            multi?
-                            (some :row-label panels))
-        strip-h (if has-col-strips? (:strip-height cfg 16) 0)
-        ;; Compute strip-w from actual row label text lengths
-        strip-w (if has-row-strips?
-                  (let [max-row-label-len (reduce max 0
-                                                  (for [p panels
-                                                        :let [rl (:row-label p)]
-                                                        :when rl]
-                                                    (count rl)))
-                        text-w (* max-row-label-len (/ (double tick-fsize) 1.8))]
-                    (max 40.0 (+ text-w 12.0)))
-                  0)
-        top-legend-pad (if (= legend-pos :top) legend-h 0)]
-    {:x-label-pad x-label-pad
-     :y-label-pad y-label-pad
-     :title-pad (+ title-pad subtitle-pad top-legend-pad)
-     :subtitle-pad subtitle-pad
-     :caption-pad caption-pad
-     :legend-w legend-w
-     :legend-h legend-h
-     :strip-h strip-h
-     :strip-w strip-w
-     :total-w (+ y-label-pad (* grid-cols pw) strip-w legend-w)
-     :total-h (+ title-pad subtitle-pad top-legend-pad strip-h (* grid-rows ph) x-label-pad
-                 caption-pad
-                 (if (= legend-pos :bottom) legend-h 0))}))
-
 ;; ---- Main Entry Point ----
 
 (def ^:private polar-supported-marks
@@ -702,21 +629,144 @@
      :facet-row-vals (when has-facet-row? row-vals)
      :panels panels}))
 
+(defn- resolve-panel-domains
+  "Given a panel-data map (with :stat-results, :layers, and :views),
+   compute the oriented x/y domains, scale specs, and temporal extents.
+   Applies the :coord :flip swap so downstream code doesn't have to.
+   Does NOT compute ticks -- that happens after panel dimensions are
+   known."
+  [pd default-x-scale default-y-scale default-coord]
+  (let [local-srs (:stat-results pd)
+        local-layers (:layers pd)
+        panel-view (first (:views pd))
+        x-scale-spec (or (:x-scale panel-view) default-x-scale)
+        y-scale-spec (or (:y-scale panel-view) default-y-scale)
+        coord-type (or (:coord panel-view) default-coord)
+        x-dom (or (:domain x-scale-spec)
+                  (collect-domain local-srs :x-domain x-scale-spec))
+        y-dom (or (:domain y-scale-spec)
+                  (compute-global-y-domain local-layers y-scale-spec)
+                  [0 1])
+        [x-dom' y-dom'] (if (= coord-type :flip)
+                          [y-dom x-dom]
+                          [x-dom y-dom])
+        [x-sspec' y-sspec'] (if (= coord-type :flip)
+                              [y-scale-spec x-scale-spec]
+                              [x-scale-spec y-scale-spec])
+        resolved-views (:resolved pd)
+        x-temp-ext (merge-temporal-extents (map :x-temporal-extent resolved-views))
+        y-temp-ext (merge-temporal-extents (map :y-temporal-extent resolved-views))
+        [x-te y-te] (if (= coord-type :flip)
+                      [y-temp-ext x-temp-ext]
+                      [x-temp-ext y-temp-ext])]
+    {:x-dom x-dom'
+     :y-dom y-dom'
+     :x-scale x-sspec'
+     :y-scale y-sspec'
+     :coord coord-type
+     :x-te x-te
+     :y-te y-te
+     :layers (or local-layers [])
+     :row (:row pd)
+     :col (:col pd)
+     :row-label (:row-label pd)
+     :col-label (:col-label pd)
+     :var-x (:var-x pd)
+     :var-y (:var-y pd)}))
+
+(defn- finalize-panel
+  "Given a pre-tick panel domain map and pixel dimensions, compute the
+   tick sets for both axes and assemble the final panel map."
+  [{:keys [x-dom y-dom x-scale y-scale coord x-te y-te
+           layers row col row-label col-label var-x var-y]}
+   pw ph m cfg annotations]
+  (let [x-px [m (- pw m)]
+        y-px [(- ph m) m]
+        x-ticks (when x-dom (compute-ticks x-dom x-px x-scale (:tick-spacing-x cfg) x-te))
+        y-ticks (when y-dom (compute-ticks y-dom y-px y-scale (:tick-spacing-y cfg) y-te))]
+    (cond-> {:x-domain (vec (if (sequential? x-dom) x-dom [x-dom]))
+             :y-domain (vec (if (sequential? y-dom) y-dom [y-dom]))
+             :x-scale x-scale
+             :y-scale y-scale
+             :coord coord
+             :x-ticks (or x-ticks {:values [] :labels [] :categorical? false})
+             :y-ticks (or y-ticks {:values [] :labels [] :categorical? false})
+             :layers layers
+             :row row
+             :col col}
+      (seq annotations)
+      (assoc :annotations
+             (let [panel-anns
+                   (filterv
+                    (fn [a]
+                      (and (or (nil? (:x a)) (= (:x a) var-x))
+                           (or (nil? (:y a)) (= (:y a) var-y))))
+                    annotations)]
+               (mapv #(dissoc % :facet-col :facet-row :x :y) panel-anns)))
+      row-label (assoc :row-label row-label)
+      col-label (assoc :col-label col-label))))
+
+(defn- build-fill-fallback-legend
+  "If no color legend was built (no :color column), check for tile
+   layers with computed fill ranges (:bin2d, :kde2d, or identity tiles
+   with :fill). Returns a continuous legend map or nil."
+  [panel-data resolved-all cfg]
+  (let [stat-fill-range (some (fn [pd]
+                                (some :fill-range (:stat-results pd)))
+                              panel-data)
+        stat-kind (when stat-fill-range
+                    (some (fn [rv]
+                            (when (#{:bin2d :kde2d} (:stat rv))
+                              (:stat rv)))
+                          resolved-all))
+        view-fill-range (when-not stat-fill-range
+                          (some (fn [rv]
+                                  (when (and (= :tile (:mark rv)) (:fill rv) (:data rv))
+                                    (let [vals ((:data rv) (:fill rv))]
+                                      (when (seq vals)
+                                        [(dfn/reduce-min vals) (dfn/reduce-max vals)]))))
+                                resolved-all))
+        [f-lo f-hi] (or stat-fill-range view-fill-range)]
+    (when f-lo
+      (let [grad-fn (:gradient-fn cfg)
+            title (cond
+                    (= stat-kind :bin2d) :count
+                    (= stat-kind :kde2d) :relative-density
+                    :else :fill)
+            n-stops 20]
+        {:title title
+         :type :continuous
+         :min f-lo :max f-hi
+         :color-scale (:color-scale cfg)
+         :stops (vec (for [i (range n-stops)
+                           :let [t (/ (double i) (dec n-stops))]]
+                       {:t t :color (grad-fn t)}))}))))
+
 (defn views->plan
   "Pipeline: resolve views into a plan using entry-based grid layout.
    Each entry = one panel. Grid position from structural columns.
-   Reuses existing stat computation, domain, tick, legend, and layout logic."
+
+   New layout pipeline (2026-04-11): stats first, then scene → padding →
+   dimensions, then per-panel ticks at the now-known panel dimensions.
+   `:width`/`:height` are total SVG dimensions; panel dimensions are
+   derived by subtracting layout overhead. See dev-notes/design-width-inference.md
+   for the full design. `:panel-width`/`:panel-height` in opts are
+   escape hatches that pin panel size on their axis."
   ([views] (views->plan views {}))
   ([views {:keys [x-label y-label title subtitle caption
                   scales legend-position grid-cols grid-rows] :as opts}]
    (let [cfg (defaults/resolve-config opts)
          cfg (assoc cfg :gradient-fn (defaults/resolve-gradient-fn (:color-scale cfg)))
          validate? (:validate cfg true)
-         width (:width cfg)
-         height (:height cfg)
+         ;; Effective width/height: user opts override cfg. These are
+         ;; total SVG dimensions under the new semantics.
+         width (or (:width opts) (:width cfg))
+         height (or (:height opts) (:height cfg))
+         ;; Build the opts map that layout/compute-dims sees. It must
+         ;; contain the effective :width, :height, and any explicit
+         ;; :panel-width / :panel-height escape-hatch keys.
+         layout-opts (assoc opts :width width :height height)
          views (if (map? views) [views] views)
-
-         ;; Annotations come from opts (not from resolved views)
          non-ann-views views
 
          ;; Group resolved views by source view index
@@ -733,36 +783,28 @@
          grid-rows-n (:grid-rows grid)
          grid-cols-n (:grid-cols grid)
 
-         ;; Colors
+         ;; Colors + warnings
          {:keys [resolved-all numeric-color? all-colors color-cols tagged-views]}
          (collect-colors non-ann-views)
          _ (warn-palette-wrap! all-colors cfg)
          _ (warn-monochrome-numeric-color! resolved-all)
 
-         ;; Default scale & coord specs (fallback for panels that don't specify)
+         ;; Representative scale/coord (first view) for plot-level decisions
          default-x-scale {:type :linear}
          default-y-scale {:type :linear}
          default-coord :cartesian
-         ;; Representative specs for plot-level decisions (labels, ridgeline, fixed-aspect).
-         ;; Per-panel specs override these in the panel-building loop below.
          rep-x-scale (or (:x-scale (first non-ann-views)) default-x-scale)
          rep-y-scale (or (:y-scale (first non-ann-views)) default-y-scale)
          rep-coord (or (:coord (first non-ann-views)) default-coord)
          _ (validate-polar-marks resolved-all rep-coord)
          _ (warn-conflicting-specs non-ann-views)
 
-         ;; Annotations from opts
+         ;; Plot-level annotations
          annotations (mapv #(select-keys % [:mark :intercept :lo :hi :alpha :x :y])
                            (or (:annotations opts) []))
 
-         ;; Panel dimensions (before fixed-aspect adjustment)
-         {:keys [m pw ph]}
-         (compute-panel-dims cfg layout-type grid-rows-n grid-cols-n width height)
-
-         ;; Tag views for reuse (match tagged-views back to panels)
+         ;; --- Phase 1: compute stats for every panel (no pixel math) ---
          tagged-by-idx (group-by :__entry-idx tagged-views)
-
-         ;; Resolve each panel's views using tagged (color-resolved) versions
          panel-data (mapv
                      (fn [pg]
                        (let [eidx (:__entry-idx (first (:views pg)))
@@ -775,91 +817,26 @@
                            pg)))
                      (:panels grid))
 
-         ;; Build panels with per-panel domains
-         panels (vec
-                 (for [pd panel-data
-                       :when (seq (:views pd))]
-                   (let [local-srs (:stat-results pd)
-                         local-layers (:layers pd)
-                         ;; Per-panel scale/coord from the panel's own views
-                         panel-view (first (:views pd))
-                         x-scale-spec (or (:x-scale panel-view) default-x-scale)
-                         y-scale-spec (or (:y-scale panel-view) default-y-scale)
-                         coord-type (or (:coord panel-view) default-coord)
-                         ;; Per-entry domains -- each panel gets its own
-                         x-dom (or (:domain x-scale-spec)
-                                   (collect-domain local-srs :x-domain x-scale-spec))
-                         y-dom (or (:domain y-scale-spec)
-                                   (compute-global-y-domain local-layers y-scale-spec)
-                                   [0 1]) ;; fallback for x-only panels (rug, histogram alone)
-                         [x-dom' y-dom'] (if (= coord-type :flip)
-                                           [y-dom x-dom]
-                                           [x-dom y-dom])
-                         [x-sspec' y-sspec'] (if (= coord-type :flip)
-                                               [y-scale-spec x-scale-spec]
-                                               [x-scale-spec y-scale-spec])
-                         ;; Temporal extents
-                         resolved-views (:resolved pd)
-                         x-temp-ext (merge-temporal-extents (map :x-temporal-extent resolved-views))
-                         y-temp-ext (merge-temporal-extents (map :y-temporal-extent resolved-views))
-                         [x-te y-te] (if (= coord-type :flip)
-                                       [y-temp-ext x-temp-ext]
-                                       [x-temp-ext y-temp-ext])
-                         x-px [m (- pw m)]
-                         y-px [(- ph m) m]
-                         x-ticks (when x-dom' (compute-ticks x-dom' x-px x-sspec' (:tick-spacing-x cfg) x-te))
-                         y-ticks (when y-dom' (compute-ticks y-dom' y-px y-sspec' (:tick-spacing-y cfg) y-te))]
-                     (cond-> {:x-domain (vec (if (sequential? x-dom') x-dom' [x-dom']))
-                              :y-domain (vec (if (sequential? y-dom') y-dom' [y-dom']))
-                              :x-scale x-sspec'
-                              :y-scale y-sspec'
-                              :coord coord-type
-                              :x-ticks (or x-ticks {:values [] :labels [] :categorical? false})
-                              :y-ticks (or y-ticks {:values [] :labels [] :categorical? false})
-                              :layers (or local-layers [])
-                              :row (:row pd)
-                              :col (:col pd)}
-                       (seq annotations)
-                       (assoc :annotations
-                              (let [panel-anns
-                                    (filterv
-                                     (fn [a]
-                                       (and (or (nil? (:x a)) (= (:x a) (:var-x pd)))
-                                            (or (nil? (:y a)) (= (:y a) (:var-y pd)))))
-                                     annotations)]
-                                (mapv #(dissoc % :facet-col :facet-row :x :y) panel-anns)))
-                       (:row-label pd) (assoc :row-label (:row-label pd))
-                       (:col-label pd) (assoc :col-label (:col-label pd))))))
+         ;; --- Phase 2: per-panel domains (still no pixel math) ---
+         panel-domains (vec
+                        (for [pd panel-data
+                              :when (seq (:views pd))]
+                          (resolve-panel-domains pd default-x-scale default-y-scale default-coord)))
 
-         ;; Ridgeline axis swap -- the user specifies category on x and
-         ;; numeric values on y, but a ridgeline renders categories
-         ;; vertically (stacked rows) and density horizontally.
-         ;; The pipeline resolves everything in the normal orientation
-         ;; first, then swaps x/y here so the renderer draws curves
-         ;; left-to-right with categories top-to-bottom.
+         ;; Ridgeline swap: categories go on y, density on x. Swap
+         ;; per-panel domains/scales/temporal extents before anything
+         ;; reads them for layout or rendering.
          has-ridgeline? (some #(= :ridgeline (:mark %)) non-ann-views)
-         panels (if has-ridgeline?
-                  (mapv (fn [p]
-                          (-> p
-                              (assoc :x-domain (:y-domain p) :y-domain (:x-domain p)
-                                     :x-ticks (:y-ticks p) :y-ticks (:x-ticks p)
-                                     :x-scale (:y-scale p) :y-scale (:x-scale p))))
-                        panels)
-                  panels)
+         panel-domains (if has-ridgeline?
+                         (mapv (fn [d]
+                                 (-> d
+                                     (assoc :x-dom (:y-dom d) :y-dom (:x-dom d)
+                                            :x-scale (:y-scale d) :y-scale (:x-scale d)
+                                            :x-te (:y-te d) :y-te (:x-te d))))
+                               panel-domains)
+                         panel-domains)
 
-         ;; Adjust panel dims for coord :fixed
-         [pw ph] (if (= rep-coord :fixed)
-                   (let [p1 (first panels)
-                         gx (:x-domain p1)
-                         gy (:y-domain p1)]
-                     (if (and (sequential? gx) (= 2 (count gx)) (number? (first gx))
-                              (sequential? gy) (= 2 (count gy)) (number? (first gy)))
-                       (let [{pw' :pw ph' :ph} (adjust-fixed-aspect pw ph gx gy)]
-                         [pw' ph'])
-                       [pw ph]))
-                   [pw ph])
-
-         ;; Labels
+         ;; --- Phase 3: labels, legends, and the three layout fns ---
          multi? (and (= layout-type :multi-variable) (> grid-cols-n 1) (> grid-rows-n 1))
          auto-label? (and (not multi?) (coord/show-ticks? rep-coord))
          {:keys [eff-title eff-x-label eff-y-label]}
@@ -870,75 +847,86 @@
                                      [eff-y-label eff-x-label]
                                      [eff-x-label eff-y-label])
 
-         ;; Legends
+         ;; Legends -- depend on resolved views + cfg, not on pixel math.
          legend (build-legend resolved-all numeric-color? all-colors color-cols cfg (:color-label opts))
-         ;; If no color legend was built, check for tile layers with computed
-         ;; fill colors (e.g., density2d, bin2d, or identity tiles with :fill).
-         legend (or legend
-                    (let [;; Path 1: stat produces :fill-range (kde2d, bin2d)
-                          stat-fill-range (some (fn [pd]
-                                                  (some :fill-range (:stat-results pd)))
-                                                panel-data)
-                          ;; Which stat produced the fill-range? Used to pick
-                          ;; a truthful legend title: :bin2d counts points,
-                          ;; :kde2d estimates a (relative) density.
-                          stat-kind (when stat-fill-range
-                                      (some (fn [rv]
-                                              (when (#{:bin2d :kde2d} (:stat rv))
-                                                (:stat rv)))
-                                            resolved-all))
-                          ;; Path 2: resolved view has a :fill column (identity tiles)
-                          view-fill-range (when-not stat-fill-range
-                                            (some (fn [rv]
-                                                    (when (and (= :tile (:mark rv)) (:fill rv) (:data rv))
-                                                      (let [vals ((:data rv) (:fill rv))]
-                                                        (when (seq vals)
-                                                          [(dfn/reduce-min vals) (dfn/reduce-max vals)]))))
-                                                  resolved-all))
-                          [f-lo f-hi] (or stat-fill-range view-fill-range)]
-                      (when f-lo
-                        (let [grad-fn (:gradient-fn cfg)
-                              ;; :bin2d reports raw counts; :kde2d reports a
-                              ;; relative (unnormalized) density. Keep the
-                              ;; titles honest so users don't assume the
-                              ;; values integrate to 1.
-                              title (cond
-                                      (= stat-kind :bin2d) :count
-                                      (= stat-kind :kde2d) :relative-density
-                                      :else :fill)
-                              n-stops 20]
-                          {:title title
-                           :type :continuous
-                           :min f-lo :max f-hi
-                           :color-scale (:color-scale cfg)
-                           :stops (vec (for [i (range n-stops)
-                                             :let [t (/ (double i) (dec n-stops))]]
-                                         {:t t :color (grad-fn t)}))}))))
+         legend (or legend (build-fill-fallback-legend panel-data resolved-all cfg))
          size-legend (build-size-legend resolved-all (:size-label opts))
          alpha-legend (build-alpha-legend resolved-all (:alpha-label opts))
 
-         ;; Layout dims
-         layout-dims (compute-layout-dims cfg layout-type eff-title eff-x-label eff-y-label
-                                          subtitle caption
-                                          legend size-legend alpha-legend
-                                          (:facet-row-vals grid) (:facet-col-vals grid)
-                                          grid-rows-n grid-cols-n pw ph multi? panels legend-position)
+         ;; Scene: everything compute-padding + compute-dims need to
+         ;; know about the data and options, all data-derived or
+         ;; opts-derived. No pixel math yet.
+         scene (layout/compute-scene
+                {:layout-type layout-type
+                 :grid-rows grid-rows-n
+                 :grid-cols grid-cols-n
+                 :eff-title eff-title
+                 :subtitle subtitle
+                 :caption caption
+                 :eff-x-label eff-x-label
+                 :eff-y-label eff-y-label
+                 :facet-row-vals (:facet-row-vals grid)
+                 :facet-col-vals (:facet-col-vals grid)
+                 :coord-type rep-coord
+                 :panel-x-domains (mapv :x-dom panel-domains)
+                 :panel-y-domains (mapv :y-dom panel-domains)
+                 :x-scale-spec rep-x-scale
+                 :y-scale-spec rep-y-scale
+                 :x-temporal (some :x-te panel-domains)
+                 :y-temporal (some :y-te panel-domains)
+                 :panel-row-labels (mapv :row-label panel-domains)
+                 :panel-col-labels (mapv :col-label panel-domains)
+                 :legend legend
+                 :size-legend size-legend
+                 :alpha-legend alpha-legend})
+
+         padding (layout/compute-padding scene cfg layout-opts)
+
+         dims (layout/compute-dims scene padding cfg layout-opts)
+         {:keys [pw ph total-w total-h]} dims
+
+         ;; --- Phase 4: :coord :fixed aspect adjustment ---
+         ;; When the user asked for a 1:1 data-unit aspect ratio, shrink
+         ;; the larger panel axis so that one data unit on x equals one
+         ;; data unit on y. This runs AFTER compute-dims so we have real
+         ;; pw/ph to adjust. If the adjustment fires we also recompute
+         ;; total-w/total-h to reflect the shrink.
+         fixed-result (when (and (= rep-coord :fixed) (seq panel-domains))
+                        (let [p1 (first panel-domains)
+                              gx (:x-dom p1)
+                              gy (:y-dom p1)]
+                          (when (and (sequential? gx) (= 2 (count gx)) (number? (first gx))
+                                     (sequential? gy) (= 2 (count gy)) (number? (first gy)))
+                            (adjust-fixed-aspect pw ph gx gy))))
+         [pw ph] (if fixed-result
+                   [(:pw fixed-result) (:ph fixed-result)]
+                   [pw ph])
+         total-w (if fixed-result
+                   (+ (:horiz-overhead dims) (* grid-cols-n pw))
+                   total-w)
+         total-h (if fixed-result
+                   (+ (:vert-overhead dims) (* grid-rows-n ph))
+                   total-h)
+
+         ;; --- Phase 5: compute ticks at the final panel dimensions ---
+         m (if multi? (:margin-multi cfg) (:margin cfg))
+         panels (mapv #(finalize-panel % pw ph m cfg annotations) panel-domains)
 
          plan
          (resolve/map->Plan
           {:width width :height height :margin m
-           :total-width (:total-w layout-dims) :total-height (:total-h layout-dims)
+           :total-width total-w :total-height total-h
            :panel-width pw :panel-height ph
            :grid {:rows grid-rows-n :cols grid-cols-n}
            :layout-type layout-type
            :title eff-title :subtitle subtitle :caption caption
            :x-label eff-x-label :y-label eff-y-label
            :legend legend :size-legend size-legend :alpha-legend alpha-legend
-           :legend-position (or legend-position :right)
+           :legend-position (:legend-position padding)
            :panels panels
-           :layout (select-keys layout-dims [:x-label-pad :y-label-pad :title-pad
-                                             :subtitle-pad :caption-pad
-                                             :legend-w :legend-h :strip-h :strip-w])})]
+           :layout (select-keys padding [:x-label-pad :y-label-pad :title-pad
+                                         :subtitle-pad :caption-pad
+                                         :legend-w :legend-h :strip-h :strip-w])})]
      (when validate?
        (when-let [explanation (ss/explain plan)]
          (throw (ex-info "Plan does not conform to schema" {:explanation explanation}))))
