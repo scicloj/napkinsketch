@@ -25,7 +25,15 @@
    ;; String utilities
    [clojure.string :as str]))
 
-;; Two helpers used by several tables below.
+;; ## Reading the Registry
+;;
+;; The tables below are generated directly from the method registry,
+;; so they track whatever is currently registered. Two small helpers
+;; query the registry: `used-by` returns the comma-separated list of
+;; methods whose given field equals a value, and `distinct-in-order`
+;; returns each distinct field value in the order methods were
+;; registered. Both are used to populate the Mark, Stat, and Position
+;; tables further down.
 
 (defn used-by
   "Sorted comma-separated method names whose `field` equals `value`."

@@ -35,9 +35,13 @@
 ;; ## Resolution
 ;;
 ;; Resolution converts a sketch into a **plan** -- the fully resolved
-;; data structure that `sk/plan` returns. See
-;; [Inference Rules](./napkinsketch_book.inference_rules.html) for
-;; a full walkthrough of the plan.
+;; data structure used to render the plot. Call `sk/plan` on any
+;; sketch to get this plan as a plain Clojure map; it is a public
+;; API, not an internal detail, and the rules in this chapter are
+;; verified against its contents.
+;;
+;; See [Inference Rules](./napkinsketch_book.inference_rules.html)
+;; for a full walkthrough of what a plan contains.
 ;;
 ;; Each view gets its own layers (if any) PLUS the sketch-level layers.
 ;; Views without own layers use sketch-level layers only.
