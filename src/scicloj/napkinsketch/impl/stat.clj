@@ -494,9 +494,20 @@
   (validate-numeric-column view :y :loess)
   (let [se (:se view)
         level (or (:level view) 0.95)
-        n-boot (or (:se-boot view) 200)
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)
+        ;; Adaptive bootstrap count: LOESS fits are O(n^1.7), so running
+        ;; 200 bootstraps on 100k rows is prohibitive. Scale the sample
+        ;; count down for large inputs while preserving good CI coverage
+        ;; on small/medium datasets. Clamp to at least 20 so the
+        ;; quantile estimates remain usable. Users can still override
+        ;; via an explicit `:se-boot N` on the view.
+        n-boot (or (:se-boot view)
+                   (cond
+                     (<= n 500)    200
+                     (<= n 2000)   100
+                     (<= n 10000)  50
+                     :else         30))
         n-grid (or (:loess-n-grid (or cfg defaults/defaults)) 80)
         bandwidth (or (:loess-bandwidth (or cfg defaults/defaults)) 0.75)]
     (if (or (< n 4)

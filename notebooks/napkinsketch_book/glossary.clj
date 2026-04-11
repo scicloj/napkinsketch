@@ -424,7 +424,7 @@ my-sketch
 
 (count sk/plot-option-docs)
 
-(kind/test-last [(fn [n] (= 6 n))])
+(kind/test-last [(fn [n] (= 9 n))])
 
 ;; ## Layer Options
 ;;

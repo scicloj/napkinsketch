@@ -85,7 +85,7 @@
                 "Category" cat
                 "Description" desc})))})
 
-(kind/test-last [(fn [t] (= 6 (count (:row-maps t))))])
+(kind/test-last [(fn [t] (= 9 (count (:row-maps t))))])
 
 ;; ## Using Plot Options
 ;;

@@ -350,6 +350,9 @@
    :caption ["Content" "Plot caption string (bottom)"]
    :x-label ["Content" "X-axis label (overrides inferred)"]
    :y-label ["Content" "Y-axis label (overrides inferred)"]
+   :color-label ["Content" "Color legend title (overrides inferred column name)"]
+   :size-label ["Content" "Size legend title (overrides inferred column name)"]
+   :alpha-label ["Content" "Alpha legend title (overrides inferred column name)"]
    :config ["Config" "Nested config map merged into resolved config"]})
 
 (defn config

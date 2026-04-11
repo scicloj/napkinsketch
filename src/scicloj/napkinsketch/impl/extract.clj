@@ -416,10 +416,29 @@
                                   (2 13) (conj! segs [bottom right])
                                   (3 12) (conj! segs [left right])
                                   (4 11) (conj! segs [top right])
-                                  5 (-> segs (conj! [left top]) (conj! [bottom right]))
+                                  ;; Cases 5 and 10 are saddle points — the
+                                  ;; level curve has two valid topologies.
+                                  ;; Pick by comparing the cell-center value
+                                  ;; (average of the 4 corners) to the
+                                  ;; threshold: if the center is above, the
+                                  ;; two "above" corners connect through the
+                                  ;; center and the curve encloses each
+                                  ;; "below" corner separately. Otherwise the
+                                  ;; roles flip.
+                                  5 (let [avg (/ (+ tl tr br bl) 4.0)]
+                                      (if (>= avg threshold)
+                                        ;; Center above: curves isolate TL and BR (below corners)
+                                        (-> segs (conj! [left top]) (conj! [bottom right]))
+                                        ;; Center below: curves isolate TR and BL (above corners)
+                                        (-> segs (conj! [top right]) (conj! [left bottom]))))
                                   (6 9) (conj! segs [top bottom])
                                   (7 8) (conj! segs [left top])
-                                  10 (-> segs (conj! [top right]) (conj! [left bottom]))
+                                  10 (let [avg (/ (+ tl tr br bl) 4.0)]
+                                       (if (>= avg threshold)
+                                         ;; Center above: curves isolate TR and BL (below corners)
+                                         (-> segs (conj! [top right]) (conj! [left bottom]))
+                                         ;; Center below: curves isolate TL and BR (above corners)
+                                         (-> segs (conj! [left top]) (conj! [bottom right]))))
                                   segs)))))]
           (recur (inc i) segs))))))
 

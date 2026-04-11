@@ -125,7 +125,10 @@
 (defn compute-ticks
   "Compute tick values and labels for a domain+pixel range, using wadogo transiently.
    When temporal-extent is provided (a [min max] pair of temporal objects),
-   uses wadogo :datetime scale for calendar-aware ticks and formatting."
+   uses wadogo :datetime scale for calendar-aware ticks and formatting.
+   When `scale-spec` contains `:breaks` (a vector of numbers), those
+   exact values are used as ticks instead of the auto-computed ones
+   -- ggplot2's `scale_*_continuous(breaks = ...)` equivalent."
   ([domain pixel-range scale-spec spacing]
    (compute-ticks domain pixel-range scale-spec spacing nil))
   ([domain pixel-range scale-spec spacing temporal-extent]
@@ -135,8 +138,20 @@
         :labels (mapv defaults/fmt-category-label (ws/ticks s))
         :categorical? true})
      (let [n (scale/tick-count (Math/abs (double (- (second pixel-range) (first pixel-range)))) spacing)
-           log? (= :log (:type scale-spec))]
-       (if temporal-extent
+           log? (= :log (:type scale-spec))
+           user-breaks (:breaks scale-spec)]
+       (cond
+         ;; User-supplied breaks override everything — use the exact values
+         ;; they asked for, labelled with the same format the scale uses.
+         (and user-breaks (sequential? user-breaks) (seq user-breaks))
+         (let [vs (vec user-breaks)
+               labels (if log?
+                        (vec (scale/format-log-ticks vs))
+                        (let [s (scale/make-scale domain pixel-range scale-spec)]
+                          (vec (scale/format-ticks s vs))))]
+           {:values vs :labels labels :categorical? false})
+
+         temporal-extent
          ;; Temporal: use wadogo :datetime scale for calendar-aware ticks
          (if (= (first temporal-extent) (second temporal-extent))
            ;; Single-value temporal domain: one tick at the single value
@@ -146,17 +161,19 @@
                  labels (vec (ws/format dt-scale dt-ticks))
                  values (mapv resolve/temporal->epoch-ms dt-ticks)]
              {:values values :labels labels :categorical? false}))
-         ;; Numeric: use linear/log scale
-         (if log?
-           ;; Log: use ggplot2-style 1-2-5 nice breaks
-           (let [ticks (scale/log-ticks domain n)
-                 labels (scale/format-log-ticks ticks)]
-             {:values (vec ticks) :labels (vec labels) :categorical? false})
-           ;; Linear: use wadogo
-           (let [s (scale/make-scale domain pixel-range scale-spec)
-                 ticks (ws/ticks s n)
-                 labels (scale/format-ticks s ticks)]
-             {:values (vec ticks) :labels (vec labels) :categorical? false})))))))
+
+         log?
+         ;; Log: use ggplot2-style 1-2-5 nice breaks
+         (let [ticks (scale/log-ticks domain n)
+               labels (scale/format-log-ticks ticks)]
+           {:values (vec ticks) :labels (vec labels) :categorical? false})
+
+         :else
+         ;; Linear: use wadogo
+         (let [s (scale/make-scale domain pixel-range scale-spec)
+               ticks (ws/ticks s n)
+               labels (scale/format-ticks s ticks)]
+           {:values (vec ticks) :labels (vec labels) :categorical? false}))))))
 
 ;; ---- Per-Panel Resolution ----
 
@@ -375,9 +392,12 @@
 
 (defn- build-legend
   "Build legend from resolved views and color info. Returns nil when the
-   legend would be empty (no data, or all nil/NaN in the color column)."
-  [resolved-all numeric-color? all-colors color-cols cfg]
-  (let [grad-fn (:gradient-fn cfg)]
+   legend would be empty (no data, or all nil/NaN in the color column).
+   `opts-title` overrides the inferred column-name title (from a
+   user-supplied `:color-label` plot option)."
+  [resolved-all numeric-color? all-colors color-cols cfg opts-title]
+  (let [grad-fn (:gradient-fn cfg)
+        title (or opts-title (first color-cols))]
     (cond
       numeric-color?
       (let [color-views (filter #(and (resolve/column-ref? (:color %))
@@ -387,7 +407,7 @@
           (let [c-min (dfn/reduce-min all-vals)
                 c-max (dfn/reduce-max all-vals)
                 n-stops 20]
-            {:title (first color-cols)
+            {:title title
              :type :continuous
              :min c-min :max c-max
              :color-scale (:color-scale cfg)
@@ -395,7 +415,7 @@
                                :let [t (/ (double i) (dec n-stops))]]
                            {:t t :color (grad-fn t)}))})))
       (seq all-colors)
-      {:title (first color-cols)
+      {:title title
        :entries (vec (for [cat all-colors]
                        {:label (defaults/fmt-category-label cat)
                         :color (defaults/color-for all-colors cat (:palette cfg))}))})))
@@ -418,8 +438,10 @@
 
 (defn- build-size-legend
   "Build size legend when :size maps to a numerical column. Returns nil
-   when all values are nil/NaN (suppressing the legend)."
-  [resolved-all]
+   when all values are nil/NaN (suppressing the legend).
+   `opts-title` overrides the inferred column-name title (from a
+   user-supplied `:size-label` plot option)."
+  [resolved-all opts-title]
   (let [size-views (filter #(and (resolve/column-ref? (:size %))
                                  (nil? (:fixed-size %))
                                  (:data %)) resolved-all)]
@@ -431,7 +453,7 @@
                 s-max (dfn/reduce-max all-vals)
                 span (max 1e-6 (- (double s-max) (double s-min)))
                 values (nice-legend-values s-min s-max 5)]
-            {:title size-col
+            {:title (or opts-title size-col)
              :type :size
              :min s-min :max s-max
              :entries (vec (for [v values]
@@ -440,8 +462,10 @@
 
 (defn- build-alpha-legend
   "Build alpha legend when :alpha maps to a numerical column. Returns nil
-   when all values are nil/NaN (suppressing the legend)."
-  [resolved-all]
+   when all values are nil/NaN (suppressing the legend).
+   `opts-title` overrides the inferred column-name title (from a
+   user-supplied `:alpha-label` plot option)."
+  [resolved-all opts-title]
   (let [alpha-views (filter #(and (resolve/column-ref? (:alpha %))
                                   (nil? (:fixed-alpha %))
                                   (:data %)) resolved-all)]
@@ -453,7 +477,7 @@
                 a-max (dfn/reduce-max all-vals)
                 span (max 1e-6 (- (double a-max) (double a-min)))
                 values (nice-legend-values a-min a-max 5)]
-            {:title alpha-col
+            {:title (or opts-title alpha-col)
              :type :alpha
              :min a-min :max a-max
              :entries (vec (for [v values]
@@ -809,7 +833,7 @@
                                      [eff-x-label eff-y-label])
 
          ;; Legends
-         legend (build-legend resolved-all numeric-color? all-colors color-cols cfg)
+         legend (build-legend resolved-all numeric-color? all-colors color-cols cfg (:color-label opts))
          ;; If no color legend was built, check for tile layers with computed
          ;; fill colors (e.g., density2d, bin2d, or identity tiles with :fill).
          legend (or legend
@@ -817,6 +841,14 @@
                           stat-fill-range (some (fn [pd]
                                                   (some :fill-range (:stat-results pd)))
                                                 panel-data)
+                          ;; Which stat produced the fill-range? Used to pick
+                          ;; a truthful legend title: :bin2d counts points,
+                          ;; :kde2d estimates a (relative) density.
+                          stat-kind (when stat-fill-range
+                                      (some (fn [rv]
+                                              (when (#{:bin2d :kde2d} (:stat rv))
+                                                (:stat rv)))
+                                            resolved-all))
                           ;; Path 2: resolved view has a :fill column (identity tiles)
                           view-fill-range (when-not stat-fill-range
                                             (some (fn [rv]
@@ -828,7 +860,14 @@
                           [f-lo f-hi] (or stat-fill-range view-fill-range)]
                       (when f-lo
                         (let [grad-fn (:gradient-fn cfg)
-                              title (if stat-fill-range :density :fill)
+                              ;; :bin2d reports raw counts; :kde2d reports a
+                              ;; relative (unnormalized) density. Keep the
+                              ;; titles honest so users don't assume the
+                              ;; values integrate to 1.
+                              title (cond
+                                      (= stat-kind :bin2d) :count
+                                      (= stat-kind :kde2d) :relative-density
+                                      :else :fill)
                               n-stops 20]
                           {:title title
                            :type :continuous
@@ -837,8 +876,8 @@
                            :stops (vec (for [i (range n-stops)
                                              :let [t (/ (double i) (dec n-stops))]]
                                          {:t t :color (grad-fn t)}))}))))
-         size-legend (build-size-legend resolved-all)
-         alpha-legend (build-alpha-legend resolved-all)
+         size-legend (build-size-legend resolved-all (:size-label opts))
+         alpha-legend (build-alpha-legend resolved-all (:alpha-label opts))
 
          ;; Layout dims
          layout-dims (compute-layout-dims cfg layout-type eff-title eff-x-label eff-y-label
