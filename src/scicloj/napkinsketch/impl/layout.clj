@@ -332,22 +332,27 @@
    the user's size intent and the computed padding.
 
    Precedence:
-     1. Multi-variable layout (SPLOM with rows>1 and cols>1): panel
-        dimensions come from `:panel-size` in cfg. `:width`/`:height`
-        are ignored; total dimensions are derived from the panel size.
-     2. Explicit `:panel-width` in opts: pins the panel width. The
+     1. Explicit `:panel-width` in opts: pins the panel width. The
         user's `:width` becomes the derived total (which can be
         smaller or larger than what they asked for). `:panel-height`
-        is symmetric — the two axes are independent.
-     3. Otherwise `:width` and `:height` are the total SVG dimensions;
-        panel dimensions are derived by subtracting layout overhead
-        (labels, legend, facet strips, title, etc.) from the total.
+        is symmetric -- the two axes are independent.
+     2. Otherwise `:width` and `:height` are the total SVG dimensions
+        and apply to every layout type including SPLOMs. Panel
+        dimensions are derived by subtracting layout overhead
+        (labels, legend, facet strips, title, etc.) from the total
+        and dividing by the grid size.
 
-   Throws with a detailed error when the derived panel is smaller than
-   `:min-panel-size` (cfg, default 40) — the user gave more overhead
-   budget than they left space for."
+   SPLOMs with many variables may end up with very small panels at
+   the default 600x400 total -- raise `:width` / `:height` or set
+   `:panel-width` / `:panel-height` explicitly when that happens.
+   The `:panel-size` cfg key is no longer consulted; it lingers as
+   an ignored legacy key for now.
+
+   Throws with a detailed error when the derived panel is smaller
+   than `:min-panel-size` (cfg, default 20) -- the user gave more
+   overhead budget than they left space for."
   [scene padding cfg opts]
-  (let [{:keys [multi? grid-rows grid-cols]} scene
+  (let [{:keys [grid-rows grid-cols]} scene
         {:keys [title-pad subtitle-pad caption-pad x-label-pad y-label-pad
                 strip-h strip-w legend-w legend-h
                 top-legend-pad bottom-legend-pad]} padding
@@ -357,18 +362,15 @@
 
         panel-width-opt  (:panel-width opts)
         panel-height-opt (:panel-height opts)
-        panel-size-cfg   (:panel-size cfg)
 
         horiz-overhead (+ y-label-pad strip-w legend-w)
         vert-overhead  (+ title-pad subtitle-pad top-legend-pad
                           strip-h x-label-pad caption-pad bottom-legend-pad)
 
         pw (cond
-             multi?            (double panel-size-cfg)
              panel-width-opt   (double panel-width-opt)
              :else             (/ (- width horiz-overhead) grid-cols))
         ph (cond
-             multi?            (double panel-size-cfg)
              panel-height-opt  (double panel-height-opt)
              :else             (/ (- height vert-overhead) grid-rows))
 
@@ -387,10 +389,13 @@
                          ", strip-h=" (Math/round (double strip-h))
                          ", legend-h=" (Math/round (double legend-h))))))
 
-        total-w (if (or multi? panel-width-opt)
+        ;; When :panel-width is pinned explicitly, the user's :width
+        ;; becomes the derived total (horiz-overhead + grid * pw).
+        ;; Otherwise :width is the total and we return it unchanged.
+        total-w (if panel-width-opt
                   (+ horiz-overhead (* grid-cols pw))
                   width)
-        total-h (if (or multi? panel-height-opt)
+        total-h (if panel-height-opt
                   (+ vert-overhead (* grid-rows ph))
                   height)]
     {:pw pw :ph ph

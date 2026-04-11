@@ -943,18 +943,27 @@
    plots: a flat vector of plots or sketches, or a vector of vectors (explicit rows).
    opts:  {:cols N, :title \"...\", :gap \"8px\", :width W, :height H}.
 
-   When a `:width` (or `:height`) is supplied and the inputs are
-   sketches, each sketch is re-planned at the derived per-cell
-   dimensions so text and line widths stay at native resolution
-   (\"sketch-mode\"). Pre-rendered hiccup plots pass through unchanged
-   and the browser scales them via CSS (\"figure-mode\").
+   `:width` and `:height` are total-dashboard dimensions. They default
+   to the cfg defaults (600 and 400) when not passed, so the returned
+   arrangement always fits within a predictable bounding box. Every
+   sub-sketch is re-planned at the derived per-cell dimensions so
+   text and line widths stay at native resolution (\"sketch-mode\").
+   Pre-rendered hiccup plots pass through unchanged -- they inherit
+   the container's CSS grid cell size (\"figure-mode\").
 
-   (arrange [plot-a plot-b])                       -- 1x2 row
-   (arrange [sk-a sk-b sk-c] {:cols 2 :width 900}) -- re-planned cells
+   To restore the old \"each plot at its own full size\" behavior,
+   pre-render each sketch with `sk/plot` and pass the hiccup in.
+
+   (arrange [plot-a plot-b])                       -- 1x2 row at default width
+   (arrange [sk-a sk-b sk-c] {:cols 2 :width 900}) -- 2x2 grid (wraps)
    (arrange [[plot-a plot-b] [plot-c plot-d]])     -- explicit 2x2 grid"
   ([plots] (arrange plots {}))
   ([plots opts]
-   (let [{:keys [cols title gap width height]} opts
+   (let [cfg (defaults/config)
+         {:keys [cols title gap]
+          :or {gap "8px"}} opts
+         width  (or (:width opts)  (:width cfg))
+         height (or (:height opts) (:height cfg))
          nested? (and (sequential? (first plots))
                       (not (keyword? (ffirst plots))))
          flat-plots (if nested? (vec (apply concat plots)) (vec plots))
@@ -964,37 +973,33 @@
          n-rows (if (pos? n-cols)
                   (long (Math/ceil (/ (double n-plots) (double n-cols))))
                   1)
-         gap-str (or gap "8px")
          ;; Derive a numeric pixel gap from the CSS-string gap.
          ;; Falls back to 8 when the value doesn't match a "NNpx" pattern.
-         gap-px (or (when (string? gap-str)
-                      (when-let [m (re-find #"(\d+)\s*px" gap-str)]
+         gap-px (or (when (string? gap)
+                      (when-let [m (re-find #"(\d+)\s*px" gap)]
                         (Long/parseLong (second m))))
                     8)
          title-reserve 28
-         ;; The plan schema requires :width/:height to be positive
-         ;; integers, so round the derived sizes at the hand-off.
-         cell-w (when width  (long (Math/round (derived-cell-width width  n-cols gap-px))))
-         cell-h (when height (long (Math/round (derived-cell-height height n-rows gap-px
-                                                                    (if title title-reserve 0)))))
-         ;; Sketch-mode: if a container dim is given and the input is
-         ;; a sketch, re-plan it at the cell size so it renders at the
-         ;; target resolution natively. Figure-mode (pre-rendered
-         ;; hiccup) falls back to the browser scaling the SVG.
+         ;; Cell sizes derived from the total dashboard dims. Schema
+         ;; requires :width/:height to be positive integers, so round.
+         cell-w (long (Math/round (derived-cell-width width n-cols gap-px)))
+         cell-h (long (Math/round (derived-cell-height height n-rows gap-px
+                                                       (if title title-reserve 0))))
+         ;; Sketch-mode: every sub-sketch is re-planned at the cell
+         ;; size so it renders at the target resolution natively.
+         ;; Figure-mode (pre-rendered hiccup) passes through -- the
+         ;; browser sizes it via the CSS grid cell.
          flat-plots (mapv
                      (fn [p]
                        (cond
                          (sketch/sketch? p)
-                         (let [cell-opts (cond-> {}
-                                           cell-w (assoc :width cell-w)
-                                           cell-h (assoc :height cell-h))]
-                           (plot (if (seq cell-opts) (options p cell-opts) p)))
+                         (plot (options p {:width cell-w :height cell-h}))
                          :else p))
                      flat-plots)
-         grid-style (cond-> {:display "grid"
-                             :grid-template-columns (str "repeat(" n-cols ", 1fr)")
-                             :gap gap-str}
-                      width (assoc :width (str (long width) "px")))
+         grid-style {:display "grid"
+                     :grid-template-columns (str "repeat(" n-cols ", 1fr)")
+                     :gap gap
+                     :width (str (long width) "px")}
          title-div (when title
                      [:div {:style {:grid-column "1 / -1"
                                     :text-align "center"

@@ -9,7 +9,7 @@
 
 
 (def
- v3_l30
+ v3_l38
  (defn
   used-by
   "Sorted comma-separated method names whose `field` equals `value`."
@@ -23,7 +23,7 @@
 
 
 (def
- v4_l39
+ v4_l47
  (defn
   distinct-in-order
   "Distinct values of `field` across methods, in first-seen order."
@@ -41,7 +41,7 @@
 
 
 (def
- v6_l53
+ v6_l61
  (kind/table
   {:column-names ["Method" "Mark" "Stat" "Position"],
    :row-maps
@@ -53,11 +53,11 @@
      "Position" (kind/code (pr-str (or (:position m) :identity)))})}))
 
 
-(deftest t7_l63 (is ((fn [t] (= 25 (count (:row-maps t)))) v6_l53)))
+(deftest t7_l71 (is ((fn [t] (= 25 (count (:row-maps t)))) v6_l61)))
 
 
 (def
- v9_l73
+ v9_l81
  (kind/table
   {:column-names ["Mark" "Shape" "Used by"],
    :row-maps
@@ -68,11 +68,11 @@
      "Used by" (used-by :mark mk)})}))
 
 
-(deftest t10_l81 (is ((fn [t] (= 17 (count (:row-maps t)))) v9_l73)))
+(deftest t10_l89 (is ((fn [t] (= 17 (count (:row-maps t)))) v9_l81)))
 
 
 (def
- v12_l91
+ v12_l99
  (kind/table
   {:column-names ["Stat" "What it computes" "Used by"],
    :row-maps
@@ -83,11 +83,11 @@
      "Used by" (used-by :stat st)})}))
 
 
-(deftest t13_l99 (is ((fn [t] (= 11 (count (:row-maps t)))) v12_l91)))
+(deftest t13_l107 (is ((fn [t] (= 11 (count (:row-maps t)))) v12_l99)))
 
 
 (def
- v15_l108
+ v15_l116
  (kind/table
   {:column-names ["Position" "What it does" "Used by"],
    :row-maps
@@ -98,11 +98,11 @@
      "Used by" (used-by :position pos)})}))
 
 
-(deftest t16_l116 (is ((fn [t] (pos? (count (:row-maps t)))) v15_l108)))
+(deftest t16_l124 (is ((fn [t] (pos? (count (:row-maps t)))) v15_l116)))
 
 
 (def
- v18_l134
+ v18_l142
  (kind/table
   {:column-names ["Option" "Description"],
    :row-maps
@@ -112,11 +112,11 @@
      "Description" (get method/layer-option-docs k)})}))
 
 
-(deftest t19_l141 (is ((fn [t] (pos? (count (:row-maps t)))) v18_l134)))
+(deftest t19_l149 (is ((fn [t] (pos? (count (:row-maps t)))) v18_l142)))
 
 
 (def
- v21_l149
+ v21_l157
  (kind/table
   {:column-names ["Method" "Additional options"],
    :row-maps
@@ -130,11 +130,11 @@
     {"Method" (kind/code (pr-str k)), "Additional options" accepts})}))
 
 
-(deftest t22_l159 (is ((fn [t] (pos? (count (:row-maps t)))) v21_l149)))
+(deftest t22_l167 (is ((fn [t] (pos? (count (:row-maps t)))) v21_l157)))
 
 
 (def
- v24_l164
+ v24_l172
  (kind/table
   {:column-names ["Option" "Description"],
    :row-maps
@@ -143,4 +143,4 @@
     {"Option" (kind/code (pr-str k)), "Description" desc})}))
 
 
-(deftest t25_l171 (is ((fn [t] (pos? (count (:row-maps t)))) v24_l164)))
+(deftest t25_l179 (is ((fn [t] (pos? (count (:row-maps t)))) v24_l172)))

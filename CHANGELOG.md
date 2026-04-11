@@ -26,15 +26,26 @@ get.
 
 Two new escape-hatch options, `:panel-width` and `:panel-height`,
 pin the panel size on their axis when you do want a specific panel
-size regardless of overhead. Either or both can be set. SPLOMs
-(multi-variable layouts) continue to use the `:panel-size` config
-default for each panel.
+size regardless of overhead. Either or both can be set.
 
-`sk/arrange` now re-plans each sub-sketch at the derived per-cell
-dimensions when you pass a container `:width`/`:height` and the
-inputs are sketches ("sketch-mode"). Pre-rendered hiccup plots
-pass through unchanged and are scaled by the browser via CSS
-("figure-mode"), same as before.
+The new semantics apply to every layout type: single-panel plots,
+facet grids, SPLOMs, and `sk/arrange` dashboards all honor the
+total `:width`/`:height` as a hard bound. SPLOMs in particular
+used to use `:panel-size` from cfg and silently ignore
+`:width`/`:height`; now they derive panel dimensions from the
+total the same way faceted layouts do. Large SPLOMs (6+ variables)
+at the default 600x400 will end up with small panels -- bump
+`:width`/`:height` or pin `:panel-width`/`:panel-height`
+explicitly. The `:panel-size` cfg key still exists for backwards
+compatibility but is no longer consulted by the layout pipeline.
+
+`sk/arrange` defaults `:width`/`:height` from cfg (600 and 400)
+when they aren't passed, always re-plans sub-sketches at the
+derived per-cell size so text stays at native resolution, and
+wraps the result in a fixed-width CSS grid. Pre-rendered hiccup
+plots pass through unchanged and inherit the CSS grid cell size.
+To restore the old "each plot at its own full size" behavior,
+pre-render each sketch with `sk/plot` before passing to arrange.
 
 The layout pipeline was rewritten around three pure functions
 (`compute-scene` / `compute-padding` / `compute-dims`, in
