@@ -306,21 +306,6 @@
 
 ;; ---- Column Type Detection ----
 
-(defn resolve-col-name
-  "Find the actual column name in a dataset that matches a column reference.
-   Handles keyword/string mismatch: if ref is :x, checks for both :x and \"x\".
-   Returns the matching name, or ref unchanged if no match is found."
-  [ds ref]
-  (when (and ds ref)
-    (let [names (set (tc/column-names ds))]
-      (cond
-        (contains? names ref) ref
-        (and (keyword? ref) (contains? names (name ref))) (name ref)
-        (and (string? ref) (contains? names (keyword ref))) (keyword ref)
-        :else ref))))
-
-;; ---- Column Type Detection ----
-
 (defn column-type
   "Classify a dataset column as :categorical, :numerical, or :temporal.
    Resolves keyword/string column-name mismatches via resolve-col-name

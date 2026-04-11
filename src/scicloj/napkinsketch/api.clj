@@ -423,7 +423,7 @@
   "Add a layer to a specific view (found by matching position mappings, or created new).
    Matches the *last* view with the same :x/:y in its :mapping, so that
    `lay-*` naturally targets the most recently created view.
-   Matching is kewyord/string tolerant — `:x` matches `\"x\"`.
+   Matching is keyword/string tolerant — `:x` matches `\"x\"`.
    Used when lay-* is called with positional columns."
   [sk position-mapping layer]
   (let [views (:views sk)

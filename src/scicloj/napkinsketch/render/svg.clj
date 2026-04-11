@@ -365,30 +365,35 @@
       (str/replace "\"" "&quot;")))
 
 (defn- format-num
-  "Format a number for SVG output. Integers (including Long and Integer)
-   are emitted verbatim. Doubles are rounded to 3 decimal places and
-   trailing zeros are stripped, avoiding output like `300.00000000000006`
-   and keeping byte-exact determinism across JVMs."
+  "Format a number for SVG output. Avoids floating-point noise like
+   `300.00000000000006` while preserving legitimate small values like
+   `0.0001` (which would lose precision under a 3-decimal rounding).
+   Integer-valued doubles are emitted without a decimal point; other
+   values use up to 6 decimals with trailing zeros stripped. The ROOT
+   locale avoids the comma-as-decimal-separator issue some JVMs default
+   to, which would produce invalid SVG."
   [^double x]
   (cond
     (or (Double/isNaN x) (Double/isInfinite x))
     (str x)
 
-    (== x (Math/floor x))
-    ;; Integer value — emit without decimal point when it fits in a long.
-    (if (and (>= x Long/MIN_VALUE) (<= x Long/MAX_VALUE))
-      (str (long x))
-      (str x))
+    ;; Collapse -0.0 to 0 so the string form is canonical.
+    (zero? x)
+    "0"
+
+    ;; Integer-valued doubles that fit in a long: emit without decimal
+    ;; point. Huge integer doubles fall through to the else branch and
+    ;; use %f (no scientific notation in SVG).
+    (and (== x (Math/floor x))
+         (>= x Long/MIN_VALUE) (<= x Long/MAX_VALUE))
+    (str (long x))
 
     :else
-    (let [rounded (/ (Math/round (* x 1000.0)) 1000.0)
-          s (str rounded)]
-      ;; Strip trailing zeros in the fractional part, keep at least one digit.
-      (if (re-find #"\." s)
-        (-> s
-            (str/replace #"0+$" "")
-            (str/replace #"\.$" ""))
-        s))))
+    (let [s (String/format java.util.Locale/ROOT "%.6f" (object-array [x]))]
+      ;; Strip trailing zeros and, if present, the lone decimal point.
+      (-> s
+          (str/replace #"0+$" "")
+          (str/replace #"\.$" "")))))
 
 (defn- attr-val->str
   "Stringify an attribute value. Numbers go through `format-num`; strings
