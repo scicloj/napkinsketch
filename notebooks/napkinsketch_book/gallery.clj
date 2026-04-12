@@ -1585,12 +1585,11 @@
 ;; ### Two variables on one axis
 ;; Source: [Vega-Lite: Layered Line](https://vega.github.io/vega-lite/examples/layer_line_color_rule.html)
 
-;; Using overlay to put two different y-variables on the same axes:
+;; Two different y-variables, each in its own panel:
 
 (-> (rdatasets/ggplot2-economics)
-    (sk/view :date :unemploy)
-    sk/lay-line
-    (sk/overlay :date :uempmed :line)
+    (sk/lay-line :date :unemploy)
+    (sk/lay-line :date :uempmed)
     (sk/options {:title "Unemployment: Total vs Median Duration"
                  :x-label "Date"
                  :y-label "Value"}))
@@ -1601,10 +1600,9 @@
 ;; Source: [ECharts: Multi Line](https://echarts.apache.org/examples/en/editor.html?c=line-smooth)
 
 (-> (rdatasets/ggplot2-economics)
-    (sk/view :date :unemploy)
-    sk/lay-line
-    (sk/overlay :date :uempmed :line)
-    (sk/overlay :date :psavert :line)
+    (sk/lay-line :date :unemploy)
+    (sk/lay-line :date :uempmed)
+    (sk/lay-line :date :psavert)
     (sk/options {:title "US Economic Indicators (Three Series)"
                  :x-label "Date"
                  :y-label "Value"}))
@@ -1617,9 +1615,8 @@
 ;; Highway MPG as scatter, city MPG as line, both against displacement:
 
 (-> (rdatasets/ggplot2-mpg)
-    (sk/view :displ :hwy)
-    sk/lay-point
-    (sk/overlay :displ :cty :line)
+    (sk/lay-point :displ :hwy)
+    (sk/lay-line :displ :cty)
     (sk/options {:title "MPG: Highway (points) vs City (line)"
                  :x-label "Displacement (L)"
                  :y-label "MPG"}))

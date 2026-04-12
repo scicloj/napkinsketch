@@ -884,20 +884,6 @@
   (update-in (ensure-sk sk) [:opts :annotations]
              (fn [existing] (into (or existing []) annotations))))
 
-(defn overlay
-  "Add a layer with different columns on the same panel as an existing view.
-   Use when you want two different column mappings sharing the same axes --
-   e.g., scatter of :x/:y with a line of :x/:y_predicted.
-   The overlay creates a new view with its own layer.
-   (overlay sk :x :y_predicted :line)
-   (overlay sk :x :y_predicted :line {:color \"red\"})"
-  ([sk x y method-key]
-   (overlay sk x y method-key {}))
-  ([sk x y method-key opts]
-   (let [sk (ensure-sk sk)]
-     (update sk :views conj {:mapping {:x x :y y}
-                             :layers [(build-layer method-key opts)]}))))
-
 (defn plot
   "Render a sketch to SVG (or interactive HTML if tooltip/brush is set).
    (plot sk)

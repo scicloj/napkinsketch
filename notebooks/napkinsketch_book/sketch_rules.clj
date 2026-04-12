@@ -332,23 +332,7 @@
 
 ;; Annotations live in `:opts`, separate from views and layers.
 
-;; ## Rule 11: `overlay` -- view with different columns + own layer
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/overlay :sepal-length :petal-width :lm)
-    sk-summary kind/pprint)
-
-(kind/test-last [(fn [m]
-                   (and (= 2 (count (:views m)))
-                        (= :sepal-width (get-in m [:views 0 :mapping :y]))
-                        (= :petal-width (get-in m [:views 1 :mapping :y]))
-                        (= :lm (:method (first (:layers (second (:views m))))))))])
-
-;; Two views: scatter on sepal-width, lm on petal-width.
-;; Currently rendered as separate panels (same-panel is a future feature).
-
-;; ## Rule 12: `lay-*` shorthand with auto-infer
+;; ## Rule 11: `lay-*` shorthand with auto-infer
 
 (-> {:x [1 2 3] :y [4 5 6]}
     sk/lay-point
@@ -373,7 +357,7 @@
 ;; same grid column; views sharing a y-variable align in the same
 ;; grid row. Per-view axes -- no range leaking.
 
-;; ## Rule 13: each view = one panel
+;; ## Rule 12: each view = one panel
 
 ;; Two `lay-*` with different columns -> two separate panels.
 ;; No cross-product -- scatter stays on its view, histogram on its.
@@ -399,7 +383,7 @@
 ;; Two panels: scatter (150 points) and histogram (polygons).
 ;; Each view has its own axis range -- no leaking.
 
-;; ## Rule 14: shared x-variable -> same grid column
+;; ## Rule 13: shared x-variable -> same grid column
 
 ;; Scatter and histogram of the same x-variable share the x-axis.
 
@@ -415,7 +399,7 @@
 ;; Two panels stacked vertically (same x-column), shared x-axis.
 ;; This is a marginal distribution layout.
 
-;; ## Rule 15: layers within one view -> one panel (overlay)
+;; ## Rule 14: layers within one view -> one panel
 
 ;; Multiple layers on the same view produce one panel with
 ;; overlaid layers -- not separate panels.
@@ -432,7 +416,7 @@
 ;; One panel: colored scatter + overall regression line.
 ;; Both layers are view-specific (same :x/:y -> found same view).
 
-;; ## Rule 16: sketch-level layers apply to all views
+;; ## Rule 15: sketch-level layers apply to all views
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
@@ -447,7 +431,7 @@
 ;; Two views (different columns), each gets the sketch-level lm layer.
 ;; Both panels have scatter + regression line.
 
-;; ## Rule 17: SPLOM -- cross product of columns
+;; ## Rule 16: SPLOM -- cross product of columns
 
 (def splom-cols [:sepal-length :sepal-width :petal-length])
 
@@ -463,7 +447,7 @@
 ;; Off-diagonal: scatter (6 x 150 = 900 points).
 ;; Diagonal: histograms (inferred when x=y).
 
-;; ## Rule 18: per-panel scale and coord specs
+;; ## Rule 17: per-panel scale and coord specs
 
 ;; Scale and coord specs are stored in `:opts` and applied per-panel.
 ;; Each panel uses the scale/coord from the sketch's options.

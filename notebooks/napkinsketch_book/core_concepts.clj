@@ -535,23 +535,6 @@ my-sketch
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; To add a second view that uses *different columns* and its own
-;; method in one step, use `sk/overlay`. It creates a new view and
-;; attaches a single layer to it, without affecting existing views:
-
-(-> scatter-base
-    (sk/overlay :sepal-length :petal-width :lm))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 2 (:panels s))
-                                (= 150 (:points s))
-                                (= 1 (:lines s)))))])
-
-;; Two panels: the original scatter and a separate lm view on a
-;; different y column. `overlay` is useful when you want a second
-;; view with different data mappings but don't want to build it
-;; up with a separate `sk/view` + `sk/lay-*`.
-
 ;; ---
 ;; ## Color and Grouping
 ;;
