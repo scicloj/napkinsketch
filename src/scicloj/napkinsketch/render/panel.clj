@@ -83,7 +83,7 @@
               (if (= axis :x)
                 (let [px (scale t)]
                   (ui/translate (double px)
-                                (- (double ph) (double fsize) 1)
+                                (+ (double ph) 2)
                                 (ui/with-color tick-color
                                   (assoc (ui/label label (ui/font nil fsize))
                                          :text-anchor "middle"))))
