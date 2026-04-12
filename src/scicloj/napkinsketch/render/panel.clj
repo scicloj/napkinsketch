@@ -67,7 +67,12 @@
 ;; ---- Tick Labels ----
 
 (defn render-tick-labels
-  "Render tick labels from pre-computed tick info in a plan."
+  "Render tick labels from pre-computed tick info in a plan.
+   X-axis labels are emitted with `text-anchor=\"middle\"` so they
+   center on the tick; Y-axis labels with `text-anchor=\"end\"` so
+   they right-align against the panel margin. This delegates label
+   width measurement to the renderer (browser for SVG) instead of
+   guessing with a char-count heuristic."
   [axis tick-info scale pw ph m cfg]
   (let [{:keys [values labels]} tick-info
         fsize (get-in cfg [:theme :font-size] (get-in defaults/defaults [:theme :font-size]))
@@ -77,16 +82,17 @@
        (map (fn [t label]
               (if (= axis :x)
                 (let [px (scale t)]
-                  (ui/translate (- (double px) (* (count label) (/ fsize 3.5)))
+                  (ui/translate (double px)
                                 (- (double ph) (double fsize) 1)
                                 (ui/with-color tick-color
-                                  (ui/label label (ui/font nil fsize)))))
-                (let [py (scale t)
-                      lw (* (count label) (/ fsize 2.0))]
-                  (ui/translate (- (double m) lw 3)
+                                  (assoc (ui/label label (ui/font nil fsize))
+                                         :text-anchor "middle"))))
+                (let [py (scale t)]
+                  (ui/translate (- (double m) 3)
                                 (- (double py) (/ fsize 2.0))
                                 (ui/with-color tick-color
-                                  (ui/label label (ui/font nil fsize)))))))
+                                  (assoc (ui/label label (ui/font nil fsize))
+                                         :text-anchor "end"))))))
             values labels)))))
 
 ;; ---- Panel Rendering ----
@@ -210,11 +216,11 @@
                           (let [fsize (get-in cfg [:theme :font-size] (get-in defaults/defaults [:theme :font-size]))
                                 tick-color [0.4 0.4 0.4 1.0]]
                             (vec (for [[cat {:keys [mid]}] ridge-pos]
-                                   (let [label (defaults/fmt-category-label cat)
-                                         lw (* (count label) (/ fsize 2.0))]
-                                     (ui/translate (- (double m) lw 3)
+                                   (let [label (defaults/fmt-category-label cat)]
+                                     (ui/translate (- (double m) 3)
                                                    (- (double mid) (/ fsize 2.0))
                                                    (ui/with-color tick-color
-                                                     (ui/label label (ui/font nil fsize))))))))
+                                                     (assoc (ui/label label (ui/font nil fsize))
+                                                            :text-anchor "end")))))))
                           (render-tick-labels :y y-ticks sy pw ph m cfg)))]
     (vec (concat [background] grid marks ann-marks x-tick-labels y-tick-labels))))

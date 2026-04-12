@@ -29,9 +29,9 @@
         (vec
          (concat
           (when title
-            [(ui/translate x (- y 22)
+            [(ui/translate x (- y 18)
                            (ui/with-color title-color
-                             (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
+                             (ui/label (defaults/fmt-name title) (ui/font nil 11))))])
           ;; Gradient bar: stack of small colored rectangles
           (for [i (range n-stops)
                 :let [{:keys [t color]} (nth stops i)
@@ -45,18 +45,18 @@
           ;; Min/max labels
           [(ui/translate (+ x bar-w 4) (+ y bar-h -4)
                          (ui/with-color title-color
-                           (ui/label (format "%.4g" (double min)) (ui/font nil 8))))
+                           (ui/label (format "%.4g" (double min)) (ui/font nil 10))))
            (ui/translate (+ x bar-w 4) (+ y 6)
                          (ui/with-color title-color
-                           (ui/label (format "%.4g" (double max)) (ui/font nil 8))))])))
+                           (ui/label (format "%.4g" (double max)) (ui/font nil 10))))])))
       ;; Categorical swatch legend
       (let [{:keys [entries]} legend]
         (vec
          (concat
           (when title
-            [(ui/translate x (- y 22)
+            [(ui/translate x (- y 18)
                            (ui/with-color title-color
-                             (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
+                             (ui/label (defaults/fmt-name title) (ui/font nil 11))))])
           (for [[i {:keys [label color]}] (map-indexed vector entries)
                 :let [[cr cg cb _] color]]
             (ui/translate x (+ y (* i 16))
@@ -88,7 +88,7 @@
           (when title
             [(ui/translate x (- y 1)
                            (ui/with-color title-color
-                             (ui/label (defaults/fmt-name title) (ui/font nil 9))))])
+                             (ui/label (defaults/fmt-name title) (ui/font nil 11))))])
           (let [{:keys [elems]}
                 (reduce (fn [{:keys [elems cur-x]} {:keys [label color]}]
                           (let [[cr cg cb _] color
@@ -118,9 +118,9 @@
     (vec
      (concat
       (when title
-        [(assoc (ui/translate x (- y 12)
+        [(assoc (ui/translate x (- y 16)
                               (ui/with-color title-color
-                                (ui/label (defaults/fmt-name title) (ui/font nil 9))))
+                                (ui/label (defaults/fmt-name title) (ui/font nil 11))))
                 :legend true)])
       (for [[i {:keys [value radius]}] (map-indexed vector entries)
             :let [cy (+ y (* i row-h))
@@ -135,7 +135,7 @@
                                :legend true)
                         (ui/translate (+ x (* 2 max-r) 6) cy
                                       (ui/with-color title-color
-                                        (ui/label (str value) (ui/font nil 9))))])
+                                        (ui/label (str value) (ui/font nil 10))))])
          :legend true))))))
 
 (defn- render-alpha-legend
@@ -149,9 +149,9 @@
     (vec
      (concat
       (when title
-        [(assoc (ui/translate x (- y 12)
+        [(assoc (ui/translate x (- y 16)
                               (ui/with-color title-color
-                                (ui/label (defaults/fmt-name title) (ui/font nil 9))))
+                                (ui/label (defaults/fmt-name title) (ui/font nil 11))))
                 :legend true)])
       (for [[i {:keys [value alpha]}] (map-indexed vector entries)
             :let [cy (+ y (* i row-h))]]
@@ -164,7 +164,7 @@
                                :legend true)
                         (ui/translate (+ x sw 6) cy
                                       (ui/with-color title-color
-                                        (ui/label (str value) (ui/font nil 9))))])
+                                        (ui/label (str value) (ui/font nil 10))))])
          :legend true))))))
 
 ;; ---- Plan → Membrane ----

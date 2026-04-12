@@ -64,6 +64,45 @@ count panel/point/line counts rather than pixel positions, so the
 test suite passes with no changes beyond updating a handful of
 explicit width assertions.
 
+### Visual default changes
+
+Alongside the width/height rewrite, the inner spacing was tuned
+down after visual review:
+
+- `:margin` **30 -> 10** (inner panel breathing room)
+- `:margin-multi` **30 -> 10** (inner padding for multi-panel layouts)
+
+`:point-radius` stays at 3.0 (the original default). Tick labels
+are drawn outside the panel (in `x-label-pad` / `y-label-pad`),
+so `:margin` only reserves breathing room for point radius -- 10px
+is plenty.
+
+Legend text font sizes were rebalanced: title 11 (was 9), entries
+10 (unchanged), continuous endpoints 10 (was 8). The legend title
+no longer clips at the top of the canvas.
+
+Tick-label positioning now emits proper SVG `text-anchor` --
+`"middle"` for x-axis tick labels, `"end"` for y-axis tick labels.
+The previous approach guessed at label width from a char-count
+heuristic and offset the translation; the browser now handles
+centering with exact glyph metrics.
+
+### Palette vs color-scale
+
+Passing a continuous-gradient keyword (`:viridis`, `:inferno`,
+`:plasma`, `:magma`, `:turbo`, `:rocket`, `:mako`, `:cividis`,
+`:RdBu`, `:RdYlBu`, `:BrBG`, `:coolwarm`) to `:palette` on
+categorical data now prints a warning pointing at `:color-scale`
+(the canonical continuous-color path) or at a designed-discrete
+palette like `:set1`, `:dark2`, or `:tableau-10`. Unknown palette
+keywords (typos like `:tableu-10`) also warn and identify the
+fallback instead of silently returning the default.
+
+The spread-index palette sampling from an earlier draft was
+reverted. Authorial ordering of discrete palettes (the first N
+colors of `:set1` etc.) is preserved, so existing categorical
+plots look identical to pre-rewrite renders.
+
 ### Overview
 
 Napkinsketch is a composable plotting library for Clojure, inspired by
@@ -215,15 +254,55 @@ The pipeline's layering is strict: data transformations live under
 These are documented and tracked for post-alpha work. None of them
 produce crashes on canonical inputs.
 
+**Layout and visuals:**
+
+- Multi-layer overlays like `(-> data (sk/lay-point ...) (sk/lay-lm ...)
+  (sk/lay-loess ...))` do not auto-generate a layer-kind legend to
+  distinguish the two regression curves. Workaround: color each
+  layer explicitly.
+- SPLOM row labels render left-anchored instead of right-anchored
+  (column labels are centered correctly).
+- Histograms, stacked bars, step plots, and other stat-derived
+  marks do not default to a `"count"` or `"density"` y-label.
+- SPLOMs with 6+ variables at the default 600x400 have tight panels.
+  Bump `:width`/`:height` or pin `:panel-width`/`:panel-height`.
+
+**Marks:**
+
 - `:position :dodge` is silently ignored on nine marks including
   `summary`. Workaround: pre-compute dodge offsets via `tc/group-by`.
-- Polar plots for bar-family marks don't auto-emit category labels.
+- Polar plots for bar-family marks don't auto-emit category labels
+  -- rose charts currently render with zero text.
+- Stacked bars don't split positive and negative values; all-positive
+  data works, but mixed-sign data stacks incorrectly.
+- `:shape` has no literal form -- `{:shape :triangle}` is a silent
+  no-op. Only column mappings to `:shape` take effect.
 - Faceted panels default to free scales per panel (ggplot2's default
   is fixed); an explicit `:facet-scales :fixed` option is pending.
 - Large scatters produce large SVGs (~220 bytes/point). For >10k
   points, use `:format :bufimg` for raster output.
 - LOESS with confidence bands is O(n^2); subsample above ~5k rows.
-- A number of ggplot2 features are not yet implemented: per-layer
-  `data`, `guides()` for per-aesthetic legend control, named theme
-  presets, `scale_*_sqrt`/`reverse`/`date`. All tracked in the
-  backlog.
+
+**Options and config:**
+
+- `:panel-size` is a legacy config key from the pre-total-first
+  layout. It now emits a deprecation warning and is ignored. Use
+  `:panel-width` / `:panel-height` (total-first escape hatches).
+- The `:width` key on a `sk/plan` result preserves the user's
+  original request even when `:panel-width` pins the real size --
+  inspect `:total-width`/`:total-height` for the rendered canvas.
+- `sk/plan` called on a plan or on a hiccup value now throws a
+  clear error. Call `sk/plan` only on sketches.
+
+**Schema errors that could be friendlier:**
+
+- Non-integer `:width`/`:height` (e.g. `(/ 800 2.0)` = 400.0)
+  fails with a Malli schema dump. Use `long` or integer literals.
+- Boolean columns in `:x`/`:y` fail with a Malli schema dump.
+  Convert to 0/1 or use as `:color` / `:shape` categorical.
+
+**ggplot2 features not yet implemented:**
+
+- Per-layer `data`, `guides()` for per-aesthetic legend control,
+  named theme presets, `scale_*_sqrt`/`reverse`/`date`. All tracked
+  in the backlog.

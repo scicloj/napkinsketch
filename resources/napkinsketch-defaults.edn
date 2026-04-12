@@ -32,11 +32,7 @@
  :label-font-size 13 :title-font-size 15 :strip-font-size 10
 
  ;; Points
- ;; :point-radius is the default dot size. Lowered from 3.0 to 2.0
- ;; so SPLOM-sized panels (~100px) aren't dominated by overplotting.
- ;; Visual review confirmed radius=2 is readable for both single-panel
- ;; scatter at 600x400 and 4x4 SPLOMs at the same total size.
- :point-radius 2.0 :point-opacity 0.75
+ :point-radius 3.0 :point-opacity 0.75
  :point-stroke "none" :point-stroke-width 0
 
  ;; Bars and lines

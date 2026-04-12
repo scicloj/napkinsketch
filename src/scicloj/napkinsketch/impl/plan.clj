@@ -315,48 +315,51 @@
      :color-cols color-cols
      :tagged-views tagged-views}))
 
-(def ^:private gradient-like-palette-names
-  "Unqualified clojure2d palette keywords whose underlying colors are
-   actually a sampled continuous gradient, not a designed-categorical
-   palette. Using any of these via `:palette` gives the first N nearly
-   identical colors from the gradient's dark end, which is almost
-   never what the user meant -- they probably wanted `:color-scale`
-   with a numeric color column instead.
-
-   Verified via clojure2d's palettes-list-: among unqualified palette
-   keywords, these four are the only ones > 20 entries (all 256-entry
-   sampled viridis variants)."
-  #{:viridis :viridis-inferno :viridis-magma :viridis-plasma})
-
 (defn- warn-palette-wrap!
   "Warn if:
      (1) the number of color categories exceeds the resolved palette's
-         size, so colors will visibly repeat; or
-     (2) the user passed a gradient-family palette name (:viridis and
-         friends) to `:palette`, which produces near-identical dark
-         colors for a handful of categories. In that case the user
-         probably wants `:color-scale` with a numeric color column."
+         size, so colors will visibly repeat;
+     (2) the user passed a gradient-family palette name (`:viridis`,
+         `:plasma`, `:inferno`, `:magma`, `:turbo`, `:rocket`, `:mako`,
+         `:cividis`, `:RdBu`, `:RdYlBu`, `:BrBG`, `:coolwarm`) to
+         `:palette`. These are continuous gradients, not categorical
+         palettes -- the user probably wanted `:color-scale` with a
+         numeric color column; or
+     (3) the user passed an explicit palette keyword that resolves
+         to nothing (typo or unknown name). `resolve-palette` silently
+         falls back to the default; we warn here so the user knows."
   [all-colors cfg]
   (when (seq all-colors)
     (let [palette (:palette cfg)
           n-cats (count all-colors)
+          resolved (when (keyword? palette) (defaults/resolve-palette palette))
           pal-size (cond
                      (map? palette) nil ;; explicit mapping — no wrap possible
                      (sequential? palette) (count palette)
-                     (keyword? palette) (count (defaults/resolve-palette palette))
-                     :else (count (defaults/resolve-palette defaults/default-palette-name)))]
+                     (keyword? palette) (count resolved)
+                     :else (count (defaults/resolve-palette defaults/default-palette-name)))
+          gradient? (and (keyword? palette)
+                         (contains? defaults/gradient-palette-keywords palette))
+          unknown? (and (keyword? palette)
+                        (not gradient?)
+                        (= resolved (defaults/resolve-palette defaults/default-palette-name))
+                        (not= palette defaults/default-palette-name))]
       (when (and pal-size (> n-cats pal-size))
         (println (str "Warning: " n-cats " color categories exceeds palette size "
                       pal-size ". Colors will repeat. Use a larger palette via "
                       ":palette, or reduce the number of categories.")))
-      (when (and (keyword? palette)
-                 (contains? gradient-like-palette-names palette))
+      (when gradient?
         (println (str "Warning: :palette " palette " is a continuous gradient, "
                       "not a categorical palette, so the first " n-cats " colors "
                       "will look nearly identical. For continuous color mapping "
                       "use a numeric :color column with :color-scale "
                       palette " instead. For a discrete palette, try "
-                      ":set1, :dark2, or :tableau-10."))))))
+                      ":set1, :dark2, or :tableau-10.")))
+      (when unknown?
+        (println (str "Warning: :palette " palette " is not a known categorical "
+                      "palette; using default (" defaults/default-palette-name
+                      "). Try :set1, :dark2, :tableau-10, or pass an explicit "
+                      "vector of hex colors."))))))
 
 (defn- adjust-fixed-aspect
   "Adjust panel dimensions for coord :fixed so that 1 data unit = 1 data unit

@@ -38,10 +38,13 @@
 ;; ---- Visual Defaults ----
 
 (def defaults
-  "Default configuration: layout dimensions, spacing, visual properties."
-  {;; Layout
+  "In-code fallback for keys not present in the EDN resource. The EDN
+   file (`resources/napkinsketch-defaults.edn`) is the canonical source;
+   this map is consulted only when the EDN load fails or as a secondary
+   lookup in `(or cfg defaults)` patterns in stat/layout code."
+  {;; Layout — must match EDN
    :width 600 :height 400
-   :margin 30 :margin-multi 30 :panel-size 200 :legend-width 100
+   :margin 10 :margin-multi 10 :panel-size 200 :legend-width 100
    ;; Ticks
    :tick-spacing-x 60 :tick-spacing-y 40
    ;; Points
@@ -186,6 +189,13 @@
    :rocket :viridis/rocket :mako :viridis/mako
    :RdBu :grDevices/RdBu :RdYlBu :grDevices/RdYlBu
    :BrBG :grDevices/BrBG :coolwarm :pals/coolwarm})
+
+(def gradient-palette-keywords
+  "Set of keywords that resolve to a continuous gradient rather than a
+   categorical palette. Users who pass these to `:palette` almost always
+   meant `:color-scale` with a numeric color column. `plan/warn-palette-wrap!`
+   fires a warning when it sees one of these on the `:palette` slot."
+  (set (keys gradient-aliases)))
 
 (defn- resolve-gradient-name
   "Resolve a keyword to a clojure2d gradient, trying aliases then direct lookup."
@@ -395,32 +405,39 @@
                          t
                          t)))))
 
+(def ^:private flat-config-keys
+  "Config keys that are forwarded as flat scalars from plot-opts to cfg.
+   :theme is excluded (deep-merged separately) and :config is excluded
+   (it's the nested escape hatch, not a config key itself)."
+  (disj (set (keys config-key-docs)) :theme :config))
+
 (defn resolve-config
   "Resolve config with plot options deep-merged on top of the precedence chain.
-   Plot options have the highest priority. Nested maps (e.g. :theme) are
-   merged recursively. Keys relevant to config are extracted; unknown keys
-   are ignored."
+   Plot options have the highest priority. Any key from `config-key-docs`
+   passed directly in plot-opts is forwarded to the resolved cfg. Nested
+   maps (:theme) are merged recursively. The `:config` key is a deep-merge
+   escape hatch for arbitrary overrides."
   [plot-opts]
   (let [cfg (config)]
+    (when (:panel-size plot-opts)
+      (println "Warning: :panel-size is a legacy option and no longer used by the layout pipeline. Use :panel-width and/or :panel-height, or :width/:height for total SVG size."))
     (-> (if (seq plot-opts)
-          (let [{:keys [config width height palette theme
-                        color-scale color-midpoint validate
-                        legend-position tooltip brush format]} plot-opts]
-            (let [{:keys [point-stroke point-stroke-width]} plot-opts]
-              (cond-> cfg
-                config (kindly/deep-merge config)
-                width (assoc :width width)
-                height (assoc :height height)
-                palette (assoc :palette palette)
-                theme (update :theme kindly/deep-merge theme)
-                (some? color-scale) (assoc :color-scale color-scale)
-                (some? color-midpoint) (assoc :color-midpoint color-midpoint)
-                (some? validate) (assoc :validate validate)
-                (some? legend-position) (assoc :legend-position legend-position)
-                (some? tooltip) (assoc :tooltip tooltip)
-                (some? brush) (assoc :brush brush)
-                (some? format) (assoc :format format)
-                (some? point-stroke) (assoc :point-stroke point-stroke)
-                (some? point-stroke-width) (assoc :point-stroke-width point-stroke-width))))
+          (let [;; Deep-merge the nested :config escape hatch first (lowest priority
+                ;; among plot-opts, highest priority over the cfg chain).
+                cfg (if-let [nested (:config plot-opts)]
+                      (kindly/deep-merge cfg nested)
+                      cfg)
+                ;; Deep-merge :theme (map value, not scalar)
+                cfg (if-let [th (:theme plot-opts)]
+                      (update cfg :theme kindly/deep-merge th)
+                      cfg)]
+            ;; Forward every flat config key the user passed.
+            (reduce-kv (fn [m k v]
+                         (if (and (contains? flat-config-keys k)
+                                  (some? v))
+                           (assoc m k v)
+                           m))
+                       cfg
+                       plot-opts))
           cfg)
         backfill-nil-theme-values)))

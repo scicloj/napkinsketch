@@ -860,6 +860,10 @@
    (plan sk)
    (plan sk {:title \"My Plot\"})"
   ([sk]
+   (when (plan? sk)
+     (throw (ex-info (str "sk/plan expects a sketch, not a plan. "
+                          "Use the plan directly, or call sk/plot on a sketch.")
+                     {:got :plan})))
    (let [sk (ensure-sk sk)
          views (sketch/resolve-sketch sk)]
      (plan/views->plan views (:opts sk {}))))
@@ -968,8 +972,12 @@
                       (not (keyword? (ffirst plots))))
          flat-plots (if nested? (vec (apply concat plots)) (vec plots))
          n-plots (count flat-plots)
+         _ (when (zero? n-plots)
+             (throw (ex-info "sk/arrange requires at least one plot."
+                             {:plots plots})))
          n-cols (or cols
-                    (if nested? (count (first plots)) n-plots))
+                    (if nested? (count (first plots))
+                        (min 4 n-plots)))
          n-rows (if (pos? n-cols)
                   (long (Math/ceil (/ (double n-plots) (double n-cols))))
                   1)

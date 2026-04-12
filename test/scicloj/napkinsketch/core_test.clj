@@ -535,7 +535,7 @@
       (is (= 600 (:width cfg)))
       (is (= 400 (:height cfg)))
       (is (= 10 (:margin cfg)))
-      (is (= 2.0 (:point-radius cfg)))
+      (is (= 3.0 (:point-radius cfg)))
       (is (= 0.75 (:point-opacity cfg)))
       (is (= 0.85 (:bar-opacity cfg)))
       (is (= 2.5 (:line-width cfg)))
@@ -633,7 +633,7 @@
     (binding [defaults/*config* {:point-radius 5.0}]
       (is (= 5.0 (:point-radius (defaults/config)))))
     ;; Outside binding, back to defaults
-    (is (= 2.0 (:point-radius (defaults/config))))))
+    (is (= 3.0 (:point-radius (defaults/config))))))
 
 (deftest resolve-config-test
   (testing "per-call opts override everything"
