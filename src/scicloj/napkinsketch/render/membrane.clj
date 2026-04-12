@@ -278,7 +278,7 @@
       ;; X-axis label
       (when x-label
         (let [fsize label-fsize]
-          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) (- total-height x-label-pad -8)
+          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) (- total-height x-label-pad -20)
                          (ui/with-color text-color
                            (assoc (ui/label x-label (ui/font nil fsize))
                                   :text-anchor "middle")))]))
