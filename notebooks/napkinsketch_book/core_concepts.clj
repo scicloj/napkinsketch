@@ -677,9 +677,14 @@ my-sketch
 
 (kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
 
-;; `sk/cross` generates all combinations for a scatter matrix:
+;; `sk/cross` generates all pairwise combinations for a scatter matrix:
 
 (def cols [:sepal-length :sepal-width :petal-length])
+
+(sk/cross cols cols)
+
+;; Nine `[x y]` pairs -- one per panel. Passing this to `sk/view`
+;; creates a 3x3 grid:
 
 (-> (rdatasets/datasets-iris)
     (sk/view (sk/cross cols cols)))
