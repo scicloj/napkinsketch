@@ -59,7 +59,7 @@
    :domain-padding 0.05
    ;; Labels and titles
    :label-font-size 13 :title-font-size 15
-   :label-offset 32 :title-offset 18
+   :label-offset 38 :title-offset 18
    ;; Facet strips
    :strip-font-size 10 :strip-height 16
    ;; Fallback
