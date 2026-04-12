@@ -677,22 +677,33 @@ my-sketch
 
 (kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
 
-;; `sk/cross` generates all pairwise combinations for a scatter matrix:
+;; `sk/view` also accepts a vector of `[x y]` pairs -- each pair
+;; becomes one panel:
+
+(-> (rdatasets/datasets-iris)
+    (sk/view [[:sepal-length :sepal-width]
+              [:petal-length :petal-width]])
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+
+;; Two panels, each with its own x/y columns. `sk/cross` automates
+;; this for every combination of columns -- useful for scatter
+;; matrices:
 
 (def cols [:sepal-length :sepal-width :petal-length])
 
 (sk/cross cols cols)
 
-;; Nine `[x y]` pairs -- one per panel. Passing this to `sk/view`
-;; creates a 3x3 grid:
+;; Nine `[x y]` pairs. Passing them to `sk/view` creates a 3x3 grid:
 
 (-> (rdatasets/datasets-iris)
     (sk/view (sk/cross cols cols)))
 
 (kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
 
-;; Nine panels. On the diagonal, where x and y are the same column,
-;; Napkinsketch infers a histogram instead of a scatter plot.
+;; On the diagonal, where x and y are the same column, Napkinsketch
+;; infers a histogram instead of a scatter plot.
 
 ;; ---
 ;; ## Summary
