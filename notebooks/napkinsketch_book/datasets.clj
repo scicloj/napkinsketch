@@ -1,6 +1,6 @@
 ;; # Datasets
 ;;
-;; You do not need to know about datasets to plot with Napkinsketch --
+;; **You do not need to know about datasets to plot with Napkinsketch** --
 ;; you can pass plain Clojure data (maps, vectors of maps) directly.
 ;; But understanding datasets is recommended background for three reasons:
 ;;
@@ -12,6 +12,14 @@
 ;;   grouping, aggregation -- read more naturally as a pipeline than the
 ;;   equivalent Clojure core code. This is a matter of taste, but the
 ;;   convention is widespread in the Clojure data science ecosystem.
+;;
+;; - **Column types matter for plotting**: dataset columns carry type
+;;   information (numeric, categorical, temporal) that Napkinsketch uses
+;;   to choose scales, axis formatting, and statistical methods. A column
+;;   of doubles gets a continuous axis; a column of strings gets a
+;;   categorical axis. When you pass plain Clojure data, types are
+;;   inferred on coercion -- sometimes not the way you expect. Working
+;;   with datasets gives you explicit control.
 ;;
 ;; - **Understanding Napkinsketch internals**: Napkinsketch coerces your
 ;;   data to a dataset internally. Knowing what a dataset is helps you
