@@ -263,23 +263,16 @@ view-scoped
 ;; with `nil` -- uncolored points. The lm layer has no override,
 ;; so it keeps the sketch-level color -- three lines.
 
-;; ### Resolution
+;; ### How scope is applied
 ;;
-;; ```
-;; merge(sketch :mapping, view :mapping, layer :mapping)
-;; ```
+;; The same scoping principle governs three things -- mappings,
+;; layers, and data -- each with its own combination rule:
 ;;
-;; Later wins. `nil` cancels. This is the only rule.
-;;
-;; ### Scope governs everything
-;;
-;; The same principle applies to layers and data -- not just mappings.
-;;
-;; | What | Sketch level | View level | Layer level |
-;; |:-----|:-------------|:-----------|:------------|
-;; | Mapping | `sk/sketch` | `sk/view` opts | `sk/lay-*` opts |
-;; | Layer | `sk/lay-*` (bare) | `sk/lay-*` (with columns) | -- (leaf) |
-;; | Data | first argument | `:data` in view opts, faceting | `:data` in layer opts |
+;; | What | Sketch level | View level | Layer level | Combination |
+;; |:-----|:-------------|:-----------|:------------|:------------|
+;; | Mapping | `sk/sketch` | `sk/view` opts | `sk/lay-*` opts | `merge` -- innermost wins, `nil` erases |
+;; | Layer | `sk/lay-*` (bare) | `sk/lay-*` (with columns) | -- (leaf) | `concat` -- both apply |
+;; | Data | first argument | `:data` in view opts | `:data` in layer opts | `or` -- innermost non-nil wins |
 
 ;; ### Layer scope
 ;;
