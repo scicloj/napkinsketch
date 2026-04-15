@@ -99,7 +99,7 @@
 
 (defn panel->membrane
   "Convert a plan panel into a membrane drawable tree.
-   Takes a panel map from views->plan and pixel dimensions.
+   Takes a panel map from draft->plan and pixel dimensions.
    show-x? and show-y? control whether tick labels are drawn
    (grid lines always render). cfg is the resolved config map."
   [panel pw ph m cfg & {:keys [show-x? show-y? tooltip x-col-name y-col-name]

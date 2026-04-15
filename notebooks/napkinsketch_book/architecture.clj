@@ -357,7 +357,7 @@ graph TD
 ;; (flattens views and layers into draft maps), and `render-sketch`
 ;; (drives the full pipeline for auto-rendering in notebooks).
 ;; `impl/plan.clj` holds `draft->plan` (domains, ticks, legends, layout).
-;; `impl/resolve.clj` holds `resolve-view` (single-view resolution,
+;; `impl/resolve.clj` holds `resolve-draft-layer` (single draft layer resolution,
 ;; column type inference, grouping).
 ;;
 ;; The `impl/` directory is pure data -- no membrane dependency.

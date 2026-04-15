@@ -323,7 +323,7 @@
       (let [ldts (mapv temporal->local-date-time vals)]
         [(apply jt/min ldts) (apply jt/max ldts)]))))
 
-;; ---- Resolve View ----
+;; ---- Resolve Draft Layer ----
 
 (defn infer-column-types
   "Detect x and y column types (:categorical, :numerical, :temporal).
@@ -451,8 +451,8 @@
         stat (or (:stat v) (if (:mark v) :identity default-stat))]
     {:mark mark :stat stat}))
 
-(defn resolve-view
-  "Resolve a single view: infer column types, aesthetics, grouping, and method.
+(defn resolve-draft-layer
+  "Resolve a single draft layer: infer column types, aesthetics, grouping, and method.
    Delegates to `infer-column-types`, `resolve-aesthetics`, `infer-grouping`,
    and `infer-method` — each named for the inference step it performs.
    Resolves column names to match the dataset's actual names (keyword/string).

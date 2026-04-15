@@ -25,11 +25,11 @@
 ;; See [Core Concepts](./napkinsketch_book.core_concepts.html) and
 ;; [Sketch Rules](./napkinsketch_book.sketch_rules.html) for details.
 
-;; ## Resolved view (internal)
+;; ## Draft layer (internal)
 ;;
-;; A **resolved view** is the internal flat map produced during plan
-;; computation. Each view in a sketch resolves to one or more flat views
-;; via `merge(sketch mapping, view mapping, layer mapping)`. Resolved views
+;; A **draft layer** is the internal flat map produced by `sk/draft`.
+;; Each view x layer combination in a sketch resolves to one draft layer
+;; via `merge(sketch mapping, view mapping, layer mapping)`. Draft layers
 ;; carry all the information the pipeline needs: data, columns, mark, stat,
 ;; color, grouping.
 ;;
@@ -460,7 +460,7 @@ my-sketch
 ;; | Sketch mapping | Mappings in `:mapping` that apply to all views | `sk/sketch` opts map |
 ;; | Global layer | Layer in `:layers` applied to all views | `sk/lay-*` without columns |
 ;; | View-local layer | Layer in `view[:layers]` applied to one view | `sk/lay-*` with columns |
-;; | Resolution | `merge(sketch mapping, view mapping, layer mapping)` -> resolved view | Automatic during `sk/plan` |
+;; | Draft | `merge(sketch mapping, view mapping, layer mapping)` -> draft layer | `sk/draft`, automatic during `sk/plan` |
 ;; | Method | Mark + stat + position bundle | `sk/method-lookup`, `sk/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in method map |
 ;; | Stat | Data transform: identity, bin, count, lm, kde, ... | Key in method map |
@@ -484,7 +484,7 @@ my-sketch
 ;; | Palette | Ordered color set for categorical aesthetics | `:palette` in `sk/options` |
 ;; | Gradient | Continuous color ramp for numerical mappings | `:color-scale` in `sk/options` |
 ;; | Configuration | Global rendering defaults | `sk/config`, `sk/set-config!`, `sk/with-config` |
-;; | Resolved view (internal) | Resolved map from `merge(sketch mapping, view mapping, layer mapping)` | Internal to pipeline |
+;; | Draft layer (internal) | Flat map from `merge(sketch mapping, view mapping, layer mapping)` | `sk/draft`, internal to `sk/plan` |
 ;; | Membrane | Drawable tree (membrane library) | Internal rendering step |
 ;; | Figure | Final output (SVG hiccup) | `sk/plot`, `sk/save` |
 ;; | Arrange | Compose multiple sketches into a grid | `sk/arrange` |

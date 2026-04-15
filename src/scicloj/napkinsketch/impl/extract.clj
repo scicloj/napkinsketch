@@ -1,5 +1,5 @@
 (ns scicloj.napkinsketch.impl.extract
-  "Extract data-space geometry from resolved views and stat results.
+  "Extract data-space geometry from resolved draft layers and stat results.
    Produces layer descriptor maps — plain Clojure maps with mark type,
    style, and groups of data-space coordinates."
   (:require [scicloj.napkinsketch.impl.defaults :as defaults]
@@ -98,7 +98,7 @@
 ;; ---- Geometry Extraction (stat → layer descriptors) ----
 
 (defmulti extract-layer
-  "Extract data-space geometry from a resolved view and its stat result.
+  "Extract data-space geometry from a resolved draft layer and its stat result.
    Returns a layer descriptor map."
   (fn [view stat all-colors cfg] (:mark view)))
 

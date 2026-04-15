@@ -19,7 +19,7 @@
 
    Pipeline:
 
-     compute-scene    scene data from resolved views + opts (no pixels)
+     compute-scene    scene data from resolved draft layers + opts (no pixels)
      compute-padding  scene + cfg + opts -> padding map (no pixel dims yet)
      compute-dims     scene + padding + cfg + opts -> pw/ph/total-w/total-h
 
@@ -119,7 +119,7 @@
 ;; ---- compute-scene ----
 
 (defn compute-scene
-  "Pull layout-relevant facts out of the resolved views, grid, labels,
+  "Pull layout-relevant facts out of the resolved draft layers, grid, labels,
    and legends. Result depends only on the data and the user's options,
    never on pixel math.
 

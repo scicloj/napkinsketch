@@ -334,7 +334,7 @@
 (deftest extract-layer-point-test
   (let [view {:mark :point :data tiny-ds :x :x :y :y
               :x-type :numerical :y-type :numerical}
-        rv (resolve/resolve-view view)
+        rv (resolve/resolve-draft-layer view)
         stat-result (stat/compute-stat (assoc rv :cfg defaults/defaults))
         layer (extract/extract-layer rv stat-result [] defaults/defaults)]
     (is (= :point (:mark layer)))
@@ -344,7 +344,7 @@
 (deftest extract-layer-bar-test
   (let [view {:mark :bar :stat :bin :data tiny-ds :x :x
               :x-type :numerical}
-        rv (resolve/resolve-view view)
+        rv (resolve/resolve-draft-layer view)
         stat-result (stat/compute-stat (assoc rv :cfg defaults/defaults))
         layer (extract/extract-layer rv stat-result [] defaults/defaults)]
     (is (= :bar (:mark layer)))
@@ -355,13 +355,13 @@
   (testing "nudge-x shifts xs"
     (let [view {:mark :point :data (tc/dataset {:x [1.0 2.0] :y [3.0 4.0]})
                 :x :x :y :y :x-type :numerical :nudge-x 0.5}
-          rv (resolve/resolve-view view)
+          rv (resolve/resolve-draft-layer view)
           stat-result (stat/compute-stat (assoc rv :cfg defaults/defaults))
           layer (extract/extract-layer rv stat-result [] defaults/defaults)]
       (is (= [1.5 2.5] (:xs (first (:groups layer)))))))
   (testing "no nudge is no-op"
     (let [view {:mark :point :data tiny-ds :x :x :y :y :x-type :numerical}
-          rv (resolve/resolve-view view)
+          rv (resolve/resolve-draft-layer view)
           stat-result (stat/compute-stat (assoc rv :cfg defaults/defaults))
           layer (extract/extract-layer rv stat-result [] defaults/defaults)]
       (is (= [1 2 3 4 5] (:xs (first (:groups layer))))))))

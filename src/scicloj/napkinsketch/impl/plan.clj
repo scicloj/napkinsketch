@@ -52,11 +52,11 @@
    include 0 for marks that draw from baseline (area, lollipop, value-bar).
    Clamps the lower bound to 0 for these marks so padding doesn't extend
    below the baseline."
-  [layers scale-spec]
-  (let [fill-layers (filter #(= :fill (:position %)) layers)
-        stack-layers (filter #(= :stack (:position %)) layers)
+  [plan-layers scale-spec]
+  (let [fill-layers (filter #(= :fill (:position %)) plan-layers)
+        stack-layers (filter #(= :stack (:position %)) plan-layers)
         zero-baseline-marks #{:lollipop :value-bar :area}
-        needs-zero? (some #(zero-baseline-marks (:mark %)) layers)
+        needs-zero? (some #(zero-baseline-marks (:mark %)) plan-layers)
         extend-to-zero (fn [[lo hi]] [(min 0.0 (double lo)) (max 0.0 (double hi))])]
     (cond
       ;; Fill mode: normalized to [0, 1]
@@ -83,7 +83,7 @@
             other-yd (mapcat (fn [l]
                                (when-not (#{:stack :fill} (:position l))
                                  (:y-domain l)))
-                             layers)
+                             plan-layers)
             ;; Always include 0 -- stacked bars are drawn from the baseline
             all-vals (concat rect-vals area-vals other-yd [0])
             lo (double (reduce min all-vals))
@@ -94,7 +94,7 @@
 
       ;; Normal: collect y-domains from layers
       :else
-      (let [all-yds (keep :y-domain layers)
+      (let [all-yds (keep :y-domain plan-layers)
             vals (mapcat (fn [d]
                            (if (and (= 2 (count d)) (number? (first d)))
                              d (map str d)))
@@ -116,7 +116,7 @@
 ;; ---- Tick Computation ----
 
 (defn- merge-temporal-extents
-  "Merge temporal extents from multiple views into a single [min max] pair."
+  "Merge temporal extents from multiple draft layers into a single [min max] pair."
   [extents]
   (let [extents (remove nil? extents)]
     (when (seq extents)
@@ -183,7 +183,7 @@
    When :x-scale or :y-scale is {:type :log}, removes rows where
    the corresponding column has values <= 0 and prints a warning.
    Throws a clear error if log scale is applied to non-numeric data.
-   Returns the resolved view with filtered :data."
+   Returns the resolved draft layer with filtered :data."
   [rv]
   (let [ds (:data rv)]
     (if-not (tc/dataset? ds)
@@ -220,7 +220,7 @@
           rv)))))
 
 (defn- numeric-col-ref
-  "If the value at `k` in resolved-view `rv` is a column ref that exists in
+  "If the value at `k` in resolved draft layer `rv` is a column ref that exists in
    `ds` and has a numeric dtype, return the resolved column name; else nil."
   [rv ds k]
   (let [v (get rv k)]
@@ -231,7 +231,7 @@
           col)))))
 
 (defn- aesthetic-col
-  "Look up an aesthetic column from a resolved view's :data, handling
+  "Look up an aesthetic column from a resolved draft layer's :data, handling
    keyword/string column-name mismatches transparently. Returns nil when
    the view has no :data, no value at `k`, or the column doesn't exist."
   [view k]
@@ -246,7 +246,7 @@
    aesthetic columns (color/size/alpha/ymin/ymax/fill). Removes rows where
    any of these columns contain nil, NaN, Inf, or -Inf and prints an
    appropriate warning. Non-numeric and non-referenced columns are skipped.
-   Returns the resolved view with filtered :data."
+   Returns the resolved draft layer with filtered :data."
   [rv]
   (let [ds (:data rv)]
     (if-not (tc/dataset? ds)
@@ -279,41 +279,41 @@
           (assoc rv :data ds)
           rv)))))
 
-(defn resolve-panel-views
-  "Resolve views and compute stats for a group of views belonging to one panel.
-   If pre-resolved views are provided, skips resolve-view.
+(defn resolve-panel-draft-layers
+  "Resolve draft layers and compute stats for a group of draft layers belonging to one panel.
+   If pre-resolved draft layers are provided, skips resolve-draft-layer.
    Returns {:resolved [...] :stat-results [...] :layers [...]}."
-  [panel-views all-colors cfg & {:keys [resolved]}]
-  (let [resolved (or resolved (mapv (comp filter-log-nonpositive filter-infinities resolve/resolve-view) panel-views))
+  [panel-draft-layers all-colors cfg & {:keys [resolved]}]
+  (let [resolved (or resolved (mapv (comp filter-log-nonpositive filter-infinities resolve/resolve-draft-layer) panel-draft-layers))
         stat-results (mapv #(stat/compute-stat (assoc % :cfg (merge cfg (:cfg %)))) resolved)
-        raw-layers (vec (map (fn [rv sr]
-                               (-> (resolve/map->Layer (extract/extract-layer rv sr all-colors cfg))
-                                   (assoc :y-domain (:y-domain sr)
-                                          :x-domain (:x-domain sr))))
-                             resolved stat-results))
-        layers (position/apply-positions raw-layers)]
-    {:resolved resolved :stat-results stat-results :layers layers}))
+        raw-plan-layers (vec (map (fn [rv sr]
+                                    (-> (resolve/map->Layer (extract/extract-layer rv sr all-colors cfg))
+                                        (assoc :y-domain (:y-domain sr)
+                                               :x-domain (:x-domain sr))))
+                                  resolved stat-results))
+        plan-layers (position/apply-positions raw-plan-layers)]
+    {:resolved resolved :stat-results stat-results :layers plan-layers}))
 
 (defn- collect-colors
-  "Resolve views and collect color categories across all views.
-   Attaches :__resolved to each view for downstream re-use.
+  "Resolve draft layers and collect color categories across all draft layers.
+   Attaches :__resolved to each draft layer for downstream re-use.
    Filters infinite values and non-positive values on log-scaled axes.
-   Returns {:resolved-all :numeric-color? :all-colors :color-cols :tagged-views}."
-  [non-ann-views]
-  (let [resolved-all (mapv (comp filter-log-nonpositive filter-infinities resolve/resolve-view) non-ann-views)
-        tagged-views (mapv (fn [v rv] (assoc v :__resolved rv)) non-ann-views resolved-all)
+   Returns {:resolved-all :numeric-color? :all-colors :color-cols :tagged-draft-layers}."
+  [draft-layers]
+  (let [resolved-all (mapv (comp filter-log-nonpositive filter-infinities resolve/resolve-draft-layer) draft-layers)
+        tagged-draft-layers (mapv (fn [v rv] (assoc v :__resolved rv)) draft-layers resolved-all)
         numeric-color? (some #(= :numerical (:color-type %)) resolved-all)
         all-colors (when-not numeric-color?
-                     (let [color-views (filter #(and (resolve/column-ref? (:color %))
-                                                     (:data %)) resolved-all)]
-                       (when (seq color-views)
-                         (vec (distinct (remove nil? (mapcat #(aesthetic-col % :color) color-views)))))))
+                     (let [color-draft-layers (filter #(and (resolve/column-ref? (:color %))
+                                                            (:data %)) resolved-all)]
+                       (when (seq color-draft-layers)
+                         (vec (distinct (remove nil? (mapcat #(aesthetic-col % :color) color-draft-layers)))))))
         color-cols (distinct (keep #(when (resolve/column-ref? (:color %)) (:color %)) resolved-all))]
     {:resolved-all resolved-all
      :numeric-color? numeric-color?
      :all-colors all-colors
      :color-cols color-cols
-     :tagged-views tagged-views}))
+     :tagged-draft-layers tagged-draft-layers}))
 
 (defn- warn-palette-wrap!
   "Warn if:
@@ -379,10 +379,10 @@
   "Resolve effective title and axis labels.
    Title comes from opts only; axis labels fall back to view-level :x-label/:y-label
    (set via sk/options), then scale :label, then auto-inferred column name."
-  [non-ann-views x-vars y-vars x-scale-spec y-scale-spec
+  [draft-layers x-vars y-vars x-scale-spec y-scale-spec
    title x-label y-label auto-label?]
-  (let [view-x-label (:x-label (first non-ann-views))
-        view-y-label (:y-label (first non-ann-views))]
+  (let [view-x-label (:x-label (first draft-layers))
+        view-y-label (:y-label (first draft-layers))]
     {:eff-title title
      :eff-x-label (or x-label
                       view-x-label
@@ -433,7 +433,7 @@
                     ":color-type :categorical to split into multiple lines.")))))
 
 (defn- build-legend
-  "Build legend from resolved views and color info. Returns nil when the
+  "Build legend from resolved draft layers and color info. Returns nil when the
    legend would be empty (no data, or all nil/NaN in the color column).
    `opts-title` overrides the inferred column-name title (from a
    user-supplied `:color-label` plot option)."
@@ -442,9 +442,9 @@
         title (or opts-title (first color-cols))]
     (cond
       numeric-color?
-      (let [color-views (filter #(and (resolve/column-ref? (:color %))
-                                      (:data %)) resolved-all)
-            all-bufs (map #(aesthetic-col % :color) color-views)]
+      (let [color-draft-layers (filter #(and (resolve/column-ref? (:color %))
+                                             (:data %)) resolved-all)
+            all-bufs (map #(aesthetic-col % :color) color-draft-layers)]
         (when-let [all-vals (finite-vals all-bufs)]
           (let [c-min (dfn/reduce-min all-vals)
                 c-max (dfn/reduce-max all-vals)
@@ -495,12 +495,12 @@
    `opts-title` overrides the inferred column-name title (from a
    user-supplied `:size-label` plot option)."
   [resolved-all opts-title]
-  (let [size-views (filter #(and (resolve/column-ref? (:size %))
-                                 (nil? (:fixed-size %))
-                                 (:data %)) resolved-all)]
-    (when (seq size-views)
-      (let [size-col (:size (first size-views))
-            all-bufs (map #(aesthetic-col % :size) size-views)]
+  (let [size-draft-layers (filter #(and (resolve/column-ref? (:size %))
+                                        (nil? (:fixed-size %))
+                                        (:data %)) resolved-all)]
+    (when (seq size-draft-layers)
+      (let [size-col (:size (first size-draft-layers))
+            all-bufs (map #(aesthetic-col % :size) size-draft-layers)]
         (when-let [all-vals (finite-vals all-bufs)]
           (let [s-min (dfn/reduce-min all-vals)
                 s-max (dfn/reduce-max all-vals)
@@ -519,12 +519,12 @@
    `opts-title` overrides the inferred column-name title (from a
    user-supplied `:alpha-label` plot option)."
   [resolved-all opts-title]
-  (let [alpha-views (filter #(and (resolve/column-ref? (:alpha %))
-                                  (nil? (:fixed-alpha %))
-                                  (:data %)) resolved-all)]
-    (when (seq alpha-views)
-      (let [alpha-col (:alpha (first alpha-views))
-            all-bufs (map #(aesthetic-col % :alpha) alpha-views)]
+  (let [alpha-draft-layers (filter #(and (resolve/column-ref? (:alpha %))
+                                         (nil? (:fixed-alpha %))
+                                         (:data %)) resolved-all)]
+    (when (seq alpha-draft-layers)
+      (let [alpha-col (:alpha (first alpha-draft-layers))
+            all-bufs (map #(aesthetic-col % :alpha) alpha-draft-layers)]
         (when-let [all-vals (finite-vals all-bufs)]
           (let [a-min (dfn/reduce-min all-vals)
                 a-max (dfn/reduce-max all-vals)
@@ -544,11 +544,11 @@
   #{:point :bar :rect :text :rug})
 
 (defn- validate-polar-marks
-  "Check that all resolved views use marks compatible with polar coordinates.
+  "Check that all resolved draft layers use marks compatible with polar coordinates.
    Throws an ex-info with details when an unsupported mark is found."
-  [resolved-views coord-type]
+  [resolved-draft-layers coord-type]
   (when (= coord-type :polar)
-    (doseq [v resolved-views
+    (doseq [v resolved-draft-layers
             :let [m (:mark v)]
             :when (and m (not (polar-supported-marks m)))]
       (throw (ex-info (str "Mark :" (name m) " is not supported with polar coordinates. "
@@ -556,13 +556,13 @@
                       {:mark m :supported polar-supported-marks})))))
 
 (defn- warn-conflicting-specs
-  "Warn when views disagree about scale or coord specs.
-   Only the first view's specs are used -- conflicting specs are silently ignored
+  "Warn when draft layers disagree about scale or coord specs.
+   Only the first draft layer's specs are used -- conflicting specs are silently ignored
    without this warning."
-  [views]
-  (let [x-types (distinct (keep (comp :type :x-scale) views))
-        y-types (distinct (keep (comp :type :y-scale) views))
-        coords (distinct (keep :coord views))]
+  [draft-layers]
+  (let [x-types (distinct (keep (comp :type :x-scale) draft-layers))
+        y-types (distinct (keep (comp :type :y-scale) draft-layers))
+        coords (distinct (keep :coord draft-layers))]
     (when (> (count x-types) 1)
       (println (str "Warning: Views have conflicting x-scale types " (vec x-types)
                     ". Using first view's scale: " (first x-types) ".")))
@@ -580,23 +580,23 @@
 (defn- infer-grid
   "Infer grid structure from view groups.
    Each view group = one panel. Grid position determined by:
-   - Faceted views: :facet-col -> grid col, :facet-row -> grid row
-   - Non-faceted views: :x column -> grid col, :y column -> grid row
-   Returns {:grid-cols N :grid-rows N :panels [{:views [...] :row R :col C ...}]}"
+   - Faceted draft layers: :facet-col -> grid col, :facet-row -> grid row
+   - Non-faceted draft layers: :x column -> grid col, :y column -> grid row
+   Returns {:grid-cols N :grid-rows N :panels [{:draft-layers [...] :row R :col C ...}]}"
   [entry-groups {:keys [grid-cols grid-rows] :as user-grid}]
-  (let [;; Detect faceting: check if any view group has :facet-col or :facet-row
-        first-views (mapv #(first (:views %)) entry-groups)
-        has-facet-col? (some :facet-col first-views)
-        has-facet-row? (some :facet-row first-views)
+  (let [;; Detect faceting: check if any entry group has :facet-col or :facet-row
+        first-draft-layers (mapv #(first (:draft-layers %)) entry-groups)
+        has-facet-col? (some :facet-col first-draft-layers)
+        has-facet-row? (some :facet-row first-draft-layers)
         faceted? (or has-facet-col? has-facet-row?)
 
         ;; Collect grid axis values
         col-vals (if faceted?
-                   (vec (distinct (keep :facet-col first-views)))
-                   (or grid-cols (vec (distinct (map :x first-views)))))
+                   (vec (distinct (keep :facet-col first-draft-layers)))
+                   (or grid-cols (vec (distinct (map :x first-draft-layers)))))
         row-vals (if faceted?
-                   (vec (distinct (keep :facet-row first-views)))
-                   (or grid-rows (vec (distinct (map :y first-views)))))
+                   (vec (distinct (keep :facet-row first-draft-layers)))
+                   (or grid-rows (vec (distinct (map :y first-draft-layers)))))
         ;; For non-faceted with single x/y, use nil sentinels
         col-vals (if (empty? col-vals) [nil] col-vals)
         row-vals (if (empty? row-vals) [nil] row-vals)
@@ -605,7 +605,7 @@
         stack-counts (atom {})
         panels (vec
                 (for [eg entry-groups
-                      :let [v (first (:views eg))
+                      :let [v (first (:draft-layers eg))
                             ;; Determine grid position
                             [ci col-label]
                             (if has-facet-col?
@@ -635,7 +635,7 @@
                             stack-key [ri ci]
                             sub (get @stack-counts stack-key 0)
                             _ (swap! stack-counts update stack-key (fnil inc 0))]]
-                  {:views (:views eg)
+                  {:draft-layers (:draft-layers eg)
                    :row (if (> sub 0) (+ (* ri (count col-vals)) sub) ri)
                    :col ci
                    :var-x (:x v) :var-y (:y v)
@@ -651,29 +651,29 @@
     {:grid-cols max-col
      :grid-rows max-row
      :layout-type layout-type
-     :x-vars (vec (distinct (map :x first-views)))
-     :y-vars (vec (distinct (map :y first-views)))
+     :x-vars (vec (distinct (map :x first-draft-layers)))
+     :y-vars (vec (distinct (map :y first-draft-layers)))
      :facet-col-vals (when has-facet-col? col-vals)
      :facet-row-vals (when has-facet-row? row-vals)
      :panels panels}))
 
 (defn- resolve-panel-domains
-  "Given a panel-data map (with :stat-results, :layers, and :views),
+  "Given a panel-data map (with :stat-results, :layers, and :draft-layers),
    compute the oriented x/y domains, scale specs, and temporal extents.
    Applies the :coord :flip swap so downstream code doesn't have to.
    Does NOT compute ticks -- that happens after panel dimensions are
    known."
   [pd default-x-scale default-y-scale default-coord]
   (let [local-srs (:stat-results pd)
-        local-layers (:layers pd)
-        panel-view (first (:views pd))
-        x-scale-spec (or (:x-scale panel-view) default-x-scale)
-        y-scale-spec (or (:y-scale panel-view) default-y-scale)
-        coord-type (or (:coord panel-view) default-coord)
+        local-plan-layers (:layers pd)
+        first-draft-layer (first (:draft-layers pd))
+        x-scale-spec (or (:x-scale first-draft-layer) default-x-scale)
+        y-scale-spec (or (:y-scale first-draft-layer) default-y-scale)
+        coord-type (or (:coord first-draft-layer) default-coord)
         x-dom (or (:domain x-scale-spec)
                   (collect-domain local-srs :x-domain x-scale-spec))
         y-dom (or (:domain y-scale-spec)
-                  (compute-global-y-domain local-layers y-scale-spec)
+                  (compute-global-y-domain local-plan-layers y-scale-spec)
                   [0 1])
         [x-dom' y-dom'] (if (= coord-type :flip)
                           [y-dom x-dom]
@@ -681,9 +681,9 @@
         [x-sspec' y-sspec'] (if (= coord-type :flip)
                               [y-scale-spec x-scale-spec]
                               [x-scale-spec y-scale-spec])
-        resolved-views (:resolved pd)
-        x-temp-ext (merge-temporal-extents (map :x-temporal-extent resolved-views))
-        y-temp-ext (merge-temporal-extents (map :y-temporal-extent resolved-views))
+        resolved-draft-layers (:resolved pd)
+        x-temp-ext (merge-temporal-extents (map :x-temporal-extent resolved-draft-layers))
+        y-temp-ext (merge-temporal-extents (map :y-temporal-extent resolved-draft-layers))
         [x-te y-te] (if (= coord-type :flip)
                       [y-temp-ext x-temp-ext]
                       [x-temp-ext y-temp-ext])]
@@ -694,7 +694,7 @@
      :coord coord-type
      :x-te x-te
      :y-te y-te
-     :layers (or local-layers [])
+     :layers (or local-plan-layers [])
      :row (:row pd)
      :col (:col pd)
      :row-label (:row-label pd)
@@ -706,7 +706,8 @@
   "Given a pre-tick panel domain map and pixel dimensions, compute the
    tick sets for both axes and assemble the final panel map."
   [{:keys [x-dom y-dom x-scale y-scale coord x-te y-te
-           layers row col row-label col-label var-x var-y]}
+           row col row-label col-label var-x var-y]
+    plan-layers :layers}
    pw ph m cfg annotations]
   (let [x-px [m (- pw m)]
         y-px [(- ph m) m]
@@ -719,7 +720,7 @@
              :coord coord
              :x-ticks (or x-ticks {:values [] :labels [] :categorical? false})
              :y-ticks (or y-ticks {:values [] :labels [] :categorical? false})
-             :layers layers
+             :layers plan-layers
              :row row
              :col col}
       (seq annotations)
@@ -794,16 +795,15 @@
          ;; contain the effective :width, :height, and any explicit
          ;; :panel-width / :panel-height escape-hatch keys.
          layout-opts (assoc opts :width width :height height)
-         views (if (map? draft) [draft] draft)
-         non-ann-views views
+         draft-layers (if (map? draft) [draft] draft)
 
-         ;; Group resolved views by source view index
-         view-groups (vec
-                      (for [[idx vs] (sort-by key (group-by :__entry-idx non-ann-views))]
-                        {:entry-idx idx :views (vec vs)}))
+         ;; Group draft layers by source entry index
+         draft-layer-groups (vec
+                             (for [[idx vs] (sort-by key (group-by :__entry-idx draft-layers))]
+                               {:entry-idx idx :draft-layers (vec vs)}))
 
-         ;; Infer grid from view groups
-         grid (infer-grid view-groups
+         ;; Infer grid from draft layer groups
+         grid (infer-grid draft-layer-groups
                           (cond-> {}
                             grid-cols (assoc :grid-cols grid-cols)
                             grid-rows (assoc :grid-rows grid-rows)))
@@ -812,49 +812,49 @@
          grid-cols-n (:grid-cols grid)
 
          ;; Colors + warnings
-         {:keys [resolved-all numeric-color? all-colors color-cols tagged-views]}
-         (collect-colors non-ann-views)
+         {:keys [resolved-all numeric-color? all-colors color-cols tagged-draft-layers]}
+         (collect-colors draft-layers)
          _ (warn-palette-wrap! all-colors cfg)
          _ (warn-monochrome-numeric-color! resolved-all)
 
-         ;; Representative scale/coord (first view) for plot-level decisions
+         ;; Representative scale/coord (first draft layer) for plot-level decisions
          default-x-scale {:type :linear}
          default-y-scale {:type :linear}
          default-coord :cartesian
-         rep-x-scale (or (:x-scale (first non-ann-views)) default-x-scale)
-         rep-y-scale (or (:y-scale (first non-ann-views)) default-y-scale)
-         rep-coord (or (:coord (first non-ann-views)) default-coord)
+         rep-x-scale (or (:x-scale (first draft-layers)) default-x-scale)
+         rep-y-scale (or (:y-scale (first draft-layers)) default-y-scale)
+         rep-coord (or (:coord (first draft-layers)) default-coord)
          _ (validate-polar-marks resolved-all rep-coord)
-         _ (warn-conflicting-specs non-ann-views)
+         _ (warn-conflicting-specs draft-layers)
 
          ;; Plot-level annotations
          annotations (mapv #(select-keys % [:mark :intercept :lo :hi :alpha :x :y])
                            (or (:annotations opts) []))
 
          ;; --- Phase 1: compute stats for every panel (no pixel math) ---
-         tagged-by-idx (group-by :__entry-idx tagged-views)
+         tagged-by-idx (group-by :__entry-idx tagged-draft-layers)
          panel-data (mapv
                      (fn [pg]
-                       (let [eidx (:__entry-idx (first (:views pg)))
+                       (let [eidx (:__entry-idx (first (:draft-layers pg)))
                              panel-tagged (or (get tagged-by-idx eidx)
-                                              (:views pg))
+                                              (:draft-layers pg))
                              pre-resolved (mapv :__resolved panel-tagged)]
                          (if (seq panel-tagged)
-                           (merge pg (resolve-panel-views panel-tagged all-colors cfg
-                                                          :resolved pre-resolved))
+                           (merge pg (resolve-panel-draft-layers panel-tagged all-colors cfg
+                                                                 :resolved pre-resolved))
                            pg)))
                      (:panels grid))
 
          ;; --- Phase 2: per-panel domains (still no pixel math) ---
          panel-domains (vec
                         (for [pd panel-data
-                              :when (seq (:views pd))]
+                              :when (seq (:draft-layers pd))]
                           (resolve-panel-domains pd default-x-scale default-y-scale default-coord)))
 
          ;; Ridgeline swap: categories go on y, density on x. Swap
          ;; per-panel domains/scales/temporal extents before anything
          ;; reads them for layout or rendering.
-         has-ridgeline? (some #(= :ridgeline (:mark %)) non-ann-views)
+         has-ridgeline? (some #(= :ridgeline (:mark %)) draft-layers)
          panel-domains (if has-ridgeline?
                          (mapv (fn [d]
                                  (-> d
@@ -868,14 +868,14 @@
          multi? (and (= layout-type :multi-variable) (> grid-cols-n 1) (> grid-rows-n 1))
          auto-label? (and (not multi?) (coord/show-ticks? rep-coord))
          {:keys [eff-title eff-x-label eff-y-label]}
-         (resolve-labels non-ann-views x-vars y-vars rep-x-scale rep-y-scale
+         (resolve-labels draft-layers x-vars y-vars rep-x-scale rep-y-scale
                          title x-label y-label auto-label?)
          swap-labels? (or (= rep-coord :flip) has-ridgeline?)
          [eff-x-label eff-y-label] (if swap-labels?
                                      [eff-y-label eff-x-label]
                                      [eff-x-label eff-y-label])
 
-         ;; Legends -- depend on resolved views + cfg, not on pixel math.
+         ;; Legends -- depend on resolved draft layers + cfg, not on pixel math.
          legend (build-legend resolved-all numeric-color? all-colors color-cols cfg (:color-label opts))
          legend (or legend (build-fill-fallback-legend panel-data resolved-all cfg))
          size-legend (build-size-legend resolved-all (:size-label opts))
