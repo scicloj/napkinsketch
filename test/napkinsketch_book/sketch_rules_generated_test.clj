@@ -21,7 +21,7 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__2807378#] (dissoc p1__2807378# :data))))
+    (partial mapv (fn* [p1__80719#] (dissoc p1__80719# :data))))
    kind/pprint)))
 
 
@@ -391,7 +391,7 @@
      (sk/view :sepal-length :sepal-width)
      (sk/view :petal-length :petal-width)
      sk/lay-point))]
-  (mapv (fn* [p1__2807379#] (tc/row-count (:data p1__2807379#))) d)))
+  (mapv (fn* [p1__80720#] (tc/row-count (:data p1__80720#))) d)))
 
 
 (deftest t58_l353 (is ((fn [v] (= [150 150] v)) v57_l347)))
@@ -455,7 +455,7 @@
 (deftest
  t66_l397
  (is
-  ((fn [v] (every? (fn* [p1__2807380#] (= :species p1__2807380#)) v))
+  ((fn [v] (every? (fn* [p1__80721#] (= :species p1__80721#)) v))
    v65_l391)))
 
 
