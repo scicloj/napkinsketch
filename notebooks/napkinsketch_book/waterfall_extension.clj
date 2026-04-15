@@ -158,7 +158,7 @@
     (sk/view :category :amount)
     (sk/lay (method/lookup :waterfall))
     (sk/options {:title "Profit & Loss Waterfall"
-                       :width 500 :height 350})
+                 :width 500 :height 350})
     sk/plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -227,4 +227,4 @@
 ;; ## What's Next
 ;;
 ;; - [**Extensibility**](./napkinsketch_book.extensibility.html) -- reference for all seven extension points
-;; - [**Architecture**](./napkinsketch_book.architecture.html) -- the four-stage pipeline in detail
+;; - [**Architecture**](./napkinsketch_book.architecture.html) -- the five-stage pipeline in detail

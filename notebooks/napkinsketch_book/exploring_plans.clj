@@ -622,5 +622,5 @@ final-pl
 
 ;; ## What's Next
 ;;
-;; - [**Architecture**](./napkinsketch_book.architecture.html) -- the four-stage pipeline in detail
+;; - [**Architecture**](./napkinsketch_book.architecture.html) -- the five-stage pipeline in detail
 ;; - [**Extensibility**](./napkinsketch_book.extensibility.html) -- add custom marks, stats, and renderers

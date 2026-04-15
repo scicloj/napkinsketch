@@ -34,11 +34,11 @@
 ;; ```
 ;; sketch (view, lay-*, options, ...)
 ;;                        ↓
-;;                     resolve
+;;                  sketch->draft
 ;;                        ↓
-;;                      views
+;;                      draft
 ;;                        ↓
-;; views -> views->plan (compute-stat, extract-layer, ...)
+;; draft -> draft->plan (compute-stat, extract-layer, ...)
 ;;                                              ↓
 ;;                                           plan
 ;;                                              ↓
@@ -442,5 +442,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Architecture**](./napkinsketch_book.architecture.html) -- the four-stage pipeline and key libraries
+;; - [**Architecture**](./napkinsketch_book.architecture.html) -- the five-stage pipeline and key libraries
 ;; - [**Edge Cases**](./napkinsketch_book.edge_cases.html) -- how the library handles unusual inputs

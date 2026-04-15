@@ -231,13 +231,13 @@ tests / ~1200 assertions.
 Five-stage pipeline:
 
 ```
-sketch -> views -> plan -> membrane -> figure
+sketch -> draft -> plan -> membrane -> figure
 ```
 
 - **Sketch** — user-facing composable value (`data + mapping + views
   + layers + opts`)
-- **Views** — flat view maps produced by `resolve-sketch`, the bridge
-  between API composition and planning
+- **Draft** — flat maps produced by `sk/draft` (one per view-layer
+  combination), the bridge between API composition and planning
 - **Plan** — plain Clojure data with dtype-next buffers (domains,
   ticks, legends, layout, resolved layers); serializable, inspectable,
   rendered by multiple backends

@@ -1,8 +1,8 @@
 (ns scicloj.napkinsketch.impl.sketch
   "Sketch: the composable data model.
    A sketch is a record with :data :mapping :views :layers :opts.
-   Resolution: merge(sketch-mapping, view-mapping, method-info, layer-mapping)
-   -> flat view maps -> plan (via plan.clj)."
+   sketch->draft: merge(sketch-mapping, view-mapping, method-info, layer-mapping)
+   -> flat draft maps -> plan (via plan.clj)."
   (:require [tablecloth.api :as tc]
             [tech.v3.datatype :as dtype]
             [scicloj.napkinsketch.impl.defaults :as defaults]
@@ -32,7 +32,7 @@
   [x]
   (instance? Sketch x))
 
-;; ---- Resolution ----
+;; ---- Draft (sketch -> flat view maps) ----
 
 (defn- ensure-dataset
   "Coerce raw data to a Tablecloth dataset. Returns nil for nil input.
@@ -180,8 +180,10 @@
                                ". Convert it to a single type (number, string, etc.) before plotting.")
                           {:key k :column col :types types})))))))
 
-(defn resolve-sketch
-  "Resolve a sketch into a flat vector of view maps for views->plan.
+(defn sketch->draft
+  "Flatten a sketch into a draft -- a vector of flat maps, one per
+   view-layer combination, with all scope merged. The draft is the
+   bridge between composable sketches and the plan pipeline.
    Reads facet/scale/coord from opts. Expands facets on views.
    Crosses views x layers: each view's own :layers ∪ sketch :layers.
    Merges mappings downward: sketch-mapping < view-mapping < method-info < layer-mapping.
@@ -257,8 +259,8 @@
         render-fn (fn []
                     (let [opts (:opts sk {})
                           fmt (or (:format opts) :svg)
-                          views (resolve-sketch sk)
-                          p (plan/views->plan views opts)]
+                          draft (sketch->draft sk)
+                          p (plan/draft->plan draft opts)]
                       (if (= fmt :bufimg)
                         (do
                           ;; Ensure the bufimg renderer is loaded

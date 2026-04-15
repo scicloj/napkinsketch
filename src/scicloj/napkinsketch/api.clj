@@ -854,8 +854,17 @@
   (let [sk (ensure-sk sk)]
     (update sk :opts assoc :coord coord-type)))
 
+(defn draft
+  "Flatten a sketch into a draft -- a vector of flat maps, one per
+   view-layer combination, with all scope merged: data, mappings,
+   and method fully determined.
+   (draft sk)"
+  [sk]
+  (let [sk (ensure-sk sk)]
+    (sketch/sketch->draft sk)))
+
 (defn plan
-  "Resolve a sketch into a plan using view-based grid layout.
+  "Convert a sketch into a plan using view-based grid layout.
    Each view = one panel. Grid position from structural columns.
    (plan sk)
    (plan sk {:title \"My Plot\"})"
@@ -865,8 +874,8 @@
                           "Use the plan directly, or call sk/plot on a sketch.")
                      {:got :plan})))
    (let [sk (ensure-sk sk)
-         views (sketch/resolve-sketch sk)]
-     (plan/views->plan views (:opts sk {}))))
+         d (sketch/sketch->draft sk)]
+     (plan/draft->plan d (:opts sk {}))))
   ([sk opts]
    (plan (options sk opts))))
 

@@ -10,7 +10,7 @@
 (def universal-layer-options
   "Layer options accepted by all methods. :x and :y are included so a
    layer can override the view's position mapping (an overlay-like
-   pattern); the four-level merge in resolve-sketch already honors
+   pattern); the four-level merge in sketch->draft already honors
    layer-level x/y, this list just keeps build-layer's unknown-option
    warning consistent with that behavior."
   [:x :y :color :color-type :alpha :group :position :data])

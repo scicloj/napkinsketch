@@ -1,7 +1,7 @@
 (ns scicloj.napkinsketch.impl.plan
-  "Views-to-plan pipeline: domains, ticks, legends, layout, and grid inference.
-   Takes resolved flat view maps (from resolve-sketch) and produces a Plan
-   record with all geometry needed for rendering."
+  "Draft-to-plan pipeline: domains, ticks, legends, layout, and grid inference.
+   Takes draft maps (from sketch->draft) and produces a Plan record
+   with all geometry needed for rendering."
   (:require [wadogo.scale :as ws]
             [java-time.api :as jt]
             [tablecloth.api :as tc]
@@ -770,8 +770,8 @@
                            :let [t (/ (double i) (dec n-stops))]]
                        {:t t :color (grad-fn t)}))}))))
 
-(defn views->plan
-  "Pipeline: resolve views into a plan using entry-based grid layout.
+(defn draft->plan
+  "Pipeline: convert a draft into a plan using entry-based grid layout.
    Each entry = one panel. Grid position from structural columns.
 
    New layout pipeline (2026-04-11): stats first, then scene → padding →
@@ -780,8 +780,8 @@
    derived by subtracting layout overhead. See dev-notes/design-width-inference.md
    for the full design. `:panel-width`/`:panel-height` in opts are
    escape hatches that pin panel size on their axis."
-  ([views] (views->plan views {}))
-  ([views {:keys [x-label y-label title subtitle caption
+  ([draft] (draft->plan draft {}))
+  ([draft {:keys [x-label y-label title subtitle caption
                   scales legend-position grid-cols grid-rows] :as opts}]
    (let [cfg (defaults/resolve-config opts)
          cfg (assoc cfg :gradient-fn (defaults/resolve-gradient-fn (:color-scale cfg)))
@@ -794,7 +794,7 @@
          ;; contain the effective :width, :height, and any explicit
          ;; :panel-width / :panel-height escape-hatch keys.
          layout-opts (assoc opts :width width :height height)
-         views (if (map? views) [views] views)
+         views (if (map? draft) [draft] draft)
          non-ann-views views
 
          ;; Group resolved views by source view index

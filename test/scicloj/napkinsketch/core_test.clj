@@ -400,7 +400,7 @@
       :lollipop :lollipop)))
 
 ;; ============================================================
-;; views->plan (integration)
+;; draft->plan (integration)
 ;; ============================================================
 
 (deftest views-to-plan-test
@@ -1732,8 +1732,8 @@
 (defn- summary
   "Resolve a sketch and get svg-summary."
   [sk]
-  (let [views (sketch/resolve-sketch sk)
-        fig (sk/plan->figure (plan/views->plan views (:opts sk {})) :svg {})]
+  (let [views (sketch/sketch->draft sk)
+        fig (sk/plan->figure (plan/draft->plan views (:opts sk {})) :svg {})]
     (sk/svg-summary fig)))
 
 (deftest basic-test

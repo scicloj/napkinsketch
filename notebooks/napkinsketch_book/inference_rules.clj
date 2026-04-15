@@ -879,7 +879,7 @@ multi-views
 
 ;; ## Resolution Overview
 ;;
-;; All of the inference rules above feed into `views->plan`, which
+;; All of the inference rules above feed into `draft->plan`, which
 ;; orchestrates a resolution pipeline. The diagram below shows the
 ;; key steps and their data dependencies:
 

@@ -1,9 +1,8 @@
 ;; # Sketch Architecture
 ;;
-;; The sketch pipeline extends napkinsketch's four-stage pipeline
-;; with a composable front end. Instead of building view maps by hand,
-;; you compose a sketch -- a declarative description of views,
-;; layers, and shared mappings -- that resolves into views automatically.
+;; Napkinsketch has a five-stage pipeline. You compose a sketch --
+;; a declarative description of views, layers, and shared mappings --
+;; that flattens into a draft automatically.
 ;;
 ;; This notebook traces a small example through every stage,
 ;; explains the plan boundary, and shows the namespace structure.
@@ -16,9 +15,9 @@
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Sketch internals -- record and resolution
+   ;; Sketch internals -- record and draft
    [scicloj.napkinsketch.impl.sketch :as sketch-impl]
-   ;; Plan pipeline -- views->plan, domains, ticks, legends, layout
+   ;; Plan pipeline -- draft->plan, domains, ticks, legends, layout
    [scicloj.napkinsketch.impl.plan :as plan-impl]
    ;; Malli schema validation
    [scicloj.napkinsketch.impl.sketch-schema :as ss]))
@@ -28,12 +27,12 @@
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  B[\"sketch<br/>(composable API)\"] -->|resolve| V[\"Views<br/>(flat maps)\"]
-  V -->|views->plan| P[\"Plan<br/>(data-space)\"]
+  B[\"sketch<br/>(composable API)\"] -->|sketch->draft| D[\"Draft<br/>(flat maps)\"]
+  D -->|draft->plan| P[\"Plan<br/>(data-space)\"]
   P -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]
   M -->|tree walk| F[\"Figure<br/>(output)\"]
   style B fill:#d1c4e9
-  style V fill:#e8f5e9
+  style D fill:#e8f5e9
   style P fill:#fff3e0
   style M fill:#e3f2fd
   style F fill:#fce4ec
@@ -43,9 +42,9 @@ graph LR
 ;;   `sk/sketch`, `sk/view`, `sk/lay-point`, `sk/options`, `sk/facet`,
 ;;   `sk/scale`, `sk/coord`, and `sk/annotate` build up a sketch record. No computation has happened yet.
 ;;
-;; - **Views** -- a flat vector of maps produced by resolving the sketch.
-;;   Each view map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
-;;   keys.
+;; - **Draft** -- a flat vector of maps produced by `sk/draft`.
+;;   Each map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
+;;   keys -- one per view-layer combination, with all scope merged.
 ;;
 ;; - **Plan** -- fully resolved plan. Data-space geometry, domains, tick info,
 ;;   legend. Plain Clojure maps and dtype-next buffers. No rendering primitives.
@@ -117,20 +116,20 @@ graph LR
 
 (kind/test-last [(fn [m] (= :point m))])
 
-;; ### Views
+;; ### Draft
 ;;
-;; `resolve-sketch` flattens the sketch into a vector of
-;; view maps. Each view merges sketch-level mappings, view mappings,
-;; and layer details into one map with `:data`, `:x`, `:y`, `:mark`, etc.
+;; `sk/draft` flattens the sketch into a vector of
+;; maps. Each map merges sketch-level mappings, view mappings,
+;; and layer details into one flat map with `:data`, `:x`, `:y`, `:mark`, etc.
 
-(def trace-views
-  (sketch-impl/resolve-sketch trace-sk))
+(def trace-draft
+  (sk/draft trace-sk))
 
-(count trace-views)
+(count trace-draft)
 
 (kind/test-last [(fn [n] (= 1 n))])
 
-(select-keys (first trace-views) [:x :y :mark :color])
+(select-keys (first trace-draft) [:x :y :mark :color])
 
 (kind/test-last [(fn [m] (and (= :x (:x m))
                               (= :y (:y m))
@@ -139,12 +138,12 @@ graph LR
 
 ;; ### Plan
 ;;
-;; `views->plan` resolves the views into a plan -- a pure-data map
+;; `draft->plan` converts the draft into a plan -- a pure-data map
 ;; with data-space geometry, resolved colors, computed domains, and tick info.
 ;; The values are still in data space.
 
 (def trace-plan
-  (plan-impl/views->plan trace-views {}))
+  (plan-impl/draft->plan trace-draft {}))
 
 trace-plan
 
@@ -191,7 +190,7 @@ trace-membrane
 ;; ### Shortcut: sketch to Plan
 ;;
 ;; In practice, `sk/plan` does the sketch-to-plan conversion
-;; in one step -- resolving the sketch and running `views->plan`
+;; in one step -- computing the draft and running `draft->plan`
 ;; internally.
 
 (def shortcut-plan (sk/plan trace-sk))
@@ -205,7 +204,7 @@ trace-membrane
 ;; | Stage | Type | Coordinates |
 ;; |:------|:-----|:------------|
 ;; | sketch | sketch record | N/A (declarative) |
-;; | Views | Vector of maps | N/A (declarative) |
+;; | Draft | Vector of maps | N/A (declarative) |
 ;; | Plan | Clojure maps + dtype buffers | Data space |
 ;; | Membrane | Record tree | Pixel space |
 ;; | Figure | Hiccup vectors | Pixel space |
@@ -213,7 +212,7 @@ trace-membrane
 ;; ## The Plan Boundary
 ;;
 ;; The plan separates **what** to draw from **how** to
-;; draw it. The sketch and view stages describe intent;
+;; draw it. The sketch and draft stages describe intent;
 ;; the membrane and figure stages handle rendering.
 
 ^:kindly/hide-code
@@ -221,7 +220,7 @@ trace-membrane
 graph LR
   subgraph WHAT [\"WHAT -- data + semantics\"]
     B[\"sketch\"]
-    V[\"Views\"]
+    D[\"Draft\"]
     ST[\"Statistics\"]
     D[\"Domains\"]
     C[\"Colors\"]
@@ -278,16 +277,16 @@ graph LR
 (kind/test-last [(fn [v] (and (= :point (first v))
                               (= :lm (second v))))])
 
-;; Resolving produces two views -- one per layer -- both sharing
+;; The draft produces two maps -- one per layer -- both sharing
 ;; the same columns:
 
-(def multi-views (sketch-impl/resolve-sketch multi-sk))
+(def multi-draft (sk/draft multi-sk))
 
-(count multi-views)
+(count multi-draft)
 
 (kind/test-last [(fn [n] (= 2 n))])
 
-(mapv :mark multi-views)
+(mapv :mark multi-draft)
 
 (kind/test-last [(fn [v] (and (= :point (first v))
                               (= :line (second v))))])
@@ -354,10 +353,10 @@ graph TD
   style MEMBRANE fill:#f8bbd0
 ")
 
-;; `impl/sketch.clj` holds the `Sketch` record, `resolve-sketch`
-;; (flattens views and layers into view maps), and `render-sketch`
+;; `impl/sketch.clj` holds the `Sketch` record, `sketch->draft`
+;; (flattens views and layers into draft maps), and `render-sketch`
 ;; (drives the full pipeline for auto-rendering in notebooks).
-;; `impl/plan.clj` holds `views->plan` (domains, ticks, legends, layout).
+;; `impl/plan.clj` holds `draft->plan` (domains, ticks, legends, layout).
 ;; `impl/resolve.clj` holds `resolve-view` (single-view resolution,
 ;; column type inference, grouping).
 ;;

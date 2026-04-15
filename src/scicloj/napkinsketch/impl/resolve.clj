@@ -71,13 +71,6 @@
        (let [fst (first specs)]
          (or (sequential? fst) (map? fst)))))
 
-(defrecord View [data x])
-
-(defn views?
-  "True if x is a vector of View records (i.e., output of `view` or `lay`)."
-  [x]
-  (and (sequential? x) (seq x) (instance? View (first x))))
-
 (defrecord Plan [panels width height])
 
 (defn plan?
@@ -98,57 +91,6 @@
   "True if x is a method (mark + stat + position bundle)."
   [x]
   (instance? Method x))
-
-;; ---- View ----
-
-(defn view
-  "Create views from data and column specs.
-   An optional opts map sets view-level aesthetic mappings (e.g.
-   {:color :species}) that all layers in this view inherit. Layer
-   mappings override view-level mappings.
-   The 1-arity infers columns from the dataset shape:
-   1 column → x, 2 columns → x y, 3 columns → x y + color."
-  ([data]
-   (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))
-         cols (vec (tc/column-names ds))
-         n (count cols)]
-     (case n
-       1 (view data (cols 0))
-       2 (view data (cols 0) (cols 1))
-       3 (view data (cols 0) (cols 1) {:color (cols 2)})
-       (throw (ex-info (str "Cannot infer columns from a " n "-column dataset. "
-                            "Specify columns explicitly: (view data :x :y)")
-                       {:column-count n :columns cols})))))
-  ([data spec-or-x]
-   (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))]
-     (if (multi-spec? spec-or-x)
-       (mapv (fn [spec]
-               (let [parsed (parse-view-spec spec)]
-                 (validate-columns ds parsed)
-                 (map->View (assoc parsed :data ds))))
-             spec-or-x)
-       (let [parsed (parse-view-spec spec-or-x)]
-         (validate-columns ds parsed)
-         [(map->View (assoc parsed :data ds))]))))
-  ([data x-or-spec y-or-opts]
-   (if (map? y-or-opts)
-     ;; (view data :x {:color :species}) or (view data [pairs] {:color :species})
-     (let [opts (normalize-col-refs y-or-opts)
-           base-views (view data x-or-spec)]
-       (doseq [v base-views]
-         (validate-columns (:data v) opts))
-       (mapv #(merge % opts) base-views))
-     ;; (view data :x :y) — two column refs (keywords or strings)
-     (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))
-           v {:x (normalize-col-ref x-or-spec) :y (normalize-col-ref y-or-opts)}]
-       (validate-columns ds v)
-       [(map->View (assoc v :data ds))])))
-  ([data x y opts]
-   (let [ds (ensure-keyword-columns (if (tc/dataset? data) data (tc/dataset data)))
-         v (merge {:x (normalize-col-ref x) :y (normalize-col-ref y)}
-                  (normalize-col-refs opts))]
-     (validate-columns ds v)
-     [(map->View (assoc v :data ds))])))
 
 ;; ---- Layer ----
 
