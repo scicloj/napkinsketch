@@ -2,6 +2,7 @@
  "🧱 Foundations" ["datasets"
                    "sketch_model"
                    "core_concepts"
+                   "options_and_scopes"
                    "sketch_rules"
                    "inference_rules"
                    "methods"

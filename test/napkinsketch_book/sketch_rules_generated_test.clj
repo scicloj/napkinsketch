@@ -21,7 +21,7 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__98941#] (dissoc p1__98941# :data))))
+    (partial mapv (fn* [p1__2888306#] (dissoc p1__2888306# :data))))
    kind/pprint)))
 
 
@@ -546,7 +546,9 @@
      (and
       (= 2 (:panels s))
       (= 300 (:points s))
-      (every? (fn* [p1__98942#] (= :species (:color p1__98942#))) d))))
+      (every?
+       (fn* [p1__2888307#] (= :species (:color p1__2888307#)))
+       d))))
    v71_l456)))
 
 
@@ -708,7 +710,7 @@
 
 
 (def
- v92_l590
+ v92_l593
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -717,18 +719,18 @@
 
 
 (deftest
- t93_l595
+ t93_l598
  (is
   ((fn
     [m]
     (and
      (= "Iris Scatter" (get-in m [:opts :title]))
      (= {} (:mapping m))))
-   v92_l590)))
+   v92_l593)))
 
 
 (def
- v94_l599
+ v94_l602
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -736,14 +738,14 @@
 
 
 (deftest
- t95_l603
+ t95_l606
  (is
   ((fn [v] (let [p (sk/plan v)] (= "Iris Scatter" (:title p))))
-   v94_l599)))
+   v94_l602)))
 
 
 (def
- v97_l610
+ v97_l613
  (->
   iris
   (sk/view :sepal-length :sepal-width)
@@ -754,18 +756,18 @@
 
 
 (deftest
- t98_l617
+ t98_l620
  (is
   ((fn
     [m]
     (and
      (= {:type :log} (get-in m [:opts :x-scale]))
      (= :flip (get-in m [:opts :coord]))))
-   v97_l610)))
+   v97_l613)))
 
 
 (def
- v99_l621
+ v99_l624
  (->
   iris
   (sk/view :sepal-length :sepal-width)
@@ -775,7 +777,7 @@
 
 
 (deftest
- t100_l627
+ t100_l630
  (is
   ((fn
     [v]
@@ -785,11 +787,11 @@
       (= 150 (:points s))
       (= :flip (:coord panel))
       (= :log (:type (:y-scale panel))))))
-   v99_l621)))
+   v99_l624)))
 
 
 (def
- v102_l642
+ v102_l645
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -798,18 +800,18 @@
 
 
 (deftest
- t103_l647
+ t103_l650
  (is
   ((fn
     [m]
     (and
      (= 1 (count (get-in m [:opts :annotations])))
      (= :rule-h (:mark (first (get-in m [:opts :annotations]))))))
-   v102_l642)))
+   v102_l645)))
 
 
 (def
- v104_l651
+ v104_l654
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -817,18 +819,18 @@
 
 
 (deftest
- t105_l655
+ t105_l658
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
-   v104_l651)))
+   v104_l654)))
 
 
 (def
- v107_l664
+ v107_l667
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -837,12 +839,12 @@
 
 
 (deftest
- t108_l669
- (is ((fn [m] (= :species (get-in m [:opts :facet-col]))) v107_l664)))
+ t108_l672
+ (is ((fn [m] (= :species (get-in m [:opts :facet-col]))) v107_l667)))
 
 
 (def
- v109_l672
+ v109_l675
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -850,12 +852,12 @@
 
 
 (deftest
- t110_l676
- (is ((fn [v] (= 3 (count (:panels (sk/plan v))))) v109_l672)))
+ t110_l679
+ (is ((fn [v] (= 3 (count (:panels (sk/plan v))))) v109_l675)))
 
 
 (def
- v111_l678
+ v111_l681
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -864,18 +866,18 @@
 
 
 (deftest
- t112_l683
+ t112_l686
  (is
   ((fn
     [m]
     (and
      (= :species (get-in m [:opts :facet-col]))
      (= :species (get-in m [:opts :facet-row]))))
-   v111_l678)))
+   v111_l681)))
 
 
 (def
- v113_l687
+ v113_l690
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -883,12 +885,12 @@
 
 
 (deftest
- t114_l691
- (is ((fn [v] (= 9 (count (:panels (sk/plan v))))) v113_l687)))
+ t114_l694
+ (is ((fn [v] (= 9 (count (:panels (sk/plan v))))) v113_l690)))
 
 
 (def
- v116_l725
+ v116_l728
  (def
   assembly-sketch
   (->
@@ -898,11 +900,11 @@
    sk/lay-lm)))
 
 
-(def v117_l731 (sk-summary assembly-sketch))
+(def v117_l734 (sk-summary assembly-sketch))
 
 
 (deftest
- t118_l733
+ t118_l736
  (is
   ((fn
     [m]
@@ -911,14 +913,14 @@
      (= 2 (count (:views m)))
      (= 1 (count (:layers (first (:views m)))))
      (nil? (:layers (second (:views m))))))
-   v117_l731)))
+   v117_l734)))
 
 
-(def v119_l739 assembly-sketch)
+(def v119_l742 assembly-sketch)
 
 
 (deftest
- t120_l741
+ t120_l744
  (is
   ((fn
     [v]
@@ -930,11 +932,11 @@
       (= 2 (:lines s))
       (= 3 (count d))
       (= [:point :line :line] (mapv :mark d)))))
-   v119_l739)))
+   v119_l742)))
 
 
 (def
- v122_l755
+ v122_l758
  (->
   (sk/sketch iris {:color :species})
   (sk/lay-point :sepal-length :sepal-width)
@@ -942,7 +944,7 @@
 
 
 (deftest
- t123_l759
+ t123_l762
  (is
   ((fn
     [m]
@@ -950,18 +952,18 @@
      (= :species (:color (:mapping m)))
      (= 1 (count (:views m)))
      (= 1 (count (:layers (first (:views m)))))))
-   v122_l755)))
+   v122_l758)))
 
 
 (def
- v124_l764
+ v124_l767
  (->
   (sk/sketch iris {:color :species})
   (sk/lay-point :sepal-length :sepal-width)))
 
 
 (deftest
- t125_l767
+ t125_l770
  (is
   ((fn
     [v]
@@ -973,11 +975,11 @@
       (= :sepal-width (:y d))
       (= :species (:color d))
       (= :point (:mark d)))))
-   v124_l764)))
+   v124_l767)))
 
 
 (def
- v127_l790
+ v127_l793
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -986,14 +988,14 @@
 
 
 (deftest
- t128_l795
+ t128_l798
  (is
   ((fn [m] (and (= 2 (count (:views m))) (= 0 (count (:layers m)))))
-   v127_l790)))
+   v127_l793)))
 
 
 (def
- v129_l799
+ v129_l802
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -1001,13 +1003,13 @@
 
 
 (deftest
- t130_l803
+ t130_l806
  (is
-  ((fn [v] (let [p (sk/plan v)] (= 2 (count (:panels p))))) v129_l799)))
+  ((fn [v] (let [p (sk/plan v)] (= 2 (count (:panels p))))) v129_l802)))
 
 
 (def
- v132_l811
+ v132_l814
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -1016,18 +1018,18 @@
 
 
 (deftest
- t133_l816
+ t133_l819
  (is
   ((fn
     [m]
     (and
      (= 1 (count (:views m)))
      (= 2 (count (:layers (first (:views m)))))))
-   v132_l811)))
+   v132_l814)))
 
 
 (def
- v134_l820
+ v134_l823
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -1035,7 +1037,7 @@
 
 
 (deftest
- t135_l824
+ t135_l827
  (is
   ((fn
     [v]
@@ -1044,11 +1046,11 @@
      (and
       (= 1 (count (:panels p)))
       (= 2 (count (:layers (first (:panels p))))))))
-   v134_l820)))
+   v134_l823)))
 
 
 (def
- v137_l836
+ v137_l839
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -1057,18 +1059,18 @@
 
 
 (deftest
- t138_l841
+ t138_l844
  (is
   ((fn
     [m]
     (and
      (= 1 (count (:views m)))
      (= :species (get-in m [:opts :facet-col]))))
-   v137_l836)))
+   v137_l839)))
 
 
 (def
- v139_l845
+ v139_l848
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -1076,13 +1078,13 @@
 
 
 (deftest
- t140_l849
+ t140_l852
  (is
-  ((fn [v] (let [p (sk/plan v)] (= 3 (count (:panels p))))) v139_l845)))
+  ((fn [v] (let [p (sk/plan v)] (= 3 (count (:panels p))))) v139_l848)))
 
 
 (def
- v142_l860
+ v142_l863
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -1091,7 +1093,7 @@
 
 
 (deftest
- t143_l865
+ t143_l868
  (is
   ((fn
     [m]
@@ -1099,11 +1101,11 @@
      (= 2 (count (:views m)))
      (= :sepal-length (get-in m [:views 0 :mapping :x]))
      (= :sepal-length (get-in m [:views 1 :mapping :x]))))
-   v142_l860)))
+   v142_l863)))
 
 
 (def
- v144_l870
+ v144_l873
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width)
@@ -1111,23 +1113,23 @@
 
 
 (deftest
- t145_l874
+ t145_l877
  (is
   ((fn
     [v]
     (let
      [p (sk/plan v)]
      (and (= 2 (count (:panels p))) (= 1 (get-in p [:grid :cols])))))
-   v144_l870)))
+   v144_l873)))
 
 
 (def
- v147_l886
+ v147_l889
  (def splom-cols [:sepal-length :sepal-width :petal-length]))
 
 
 (def
- v148_l888
+ v148_l891
  (->
   (sk/sketch iris {:color :species})
   (sk/view (sk/cross splom-cols splom-cols))
@@ -1135,23 +1137,23 @@
 
 
 (deftest
- t149_l892
+ t149_l895
  (is
   ((fn
     [m]
     (and (= 9 (count (:views m))) (= :species (:color (:mapping m)))))
-   v148_l888)))
+   v148_l891)))
 
 
 (def
- v150_l896
+ v150_l899
  (->
   (sk/sketch iris {:color :species})
   (sk/view (sk/cross splom-cols splom-cols))))
 
 
 (deftest
- t151_l899
+ t151_l902
  (is
   ((fn
     [v]
@@ -1161,4 +1163,4 @@
       (= 9 (count (:panels p)))
       (= 3 (get-in p [:grid :rows]))
       (= 3 (get-in p [:grid :cols])))))
-   v150_l896)))
+   v150_l899)))

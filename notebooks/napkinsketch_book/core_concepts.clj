@@ -585,6 +585,13 @@ my-sketch
 ;; ---
 ;; ## Plot Options and Annotations
 ;;
+;; So far you've seen mappings, layers, and data -- all scoped at
+;; sketch, view, or layer level. The functions in this section set
+;; **plot-level options** instead: values that configure the whole
+;; rendered plot and cannot be scoped down. See
+;; [Options and Scopes](./napkinsketch_book.options_and_scopes.html)
+;; for the full picture.
+;;
 ;; `sk/options` sets plot-level settings -- title, axis labels, size,
 ;; theme overrides:
 

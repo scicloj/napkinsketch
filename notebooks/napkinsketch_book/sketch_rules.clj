@@ -578,8 +578,11 @@
 ;; ---
 ;; ## Options and Modifiers
 ;;
-;; Functions that set plot-level options in `:opts`. These do not
-;; create views or layers -- they configure how the sketch renders.
+;; Functions that set plot-level options in `:opts`. Unlike
+;; mappings, layers, and data -- which live in the scope hierarchy
+;; (see [Options and Scopes](./napkinsketch_book.options_and_scopes.html))
+;; -- plot-level options configure the whole rendered plot and
+;; cannot be scoped down to a view or layer.
 
 ;; ### Rule 14: `sk/options` sets plot-level options
 ;;
