@@ -3,7 +3,7 @@
 ;; This chapter is the definitive specification for how sketches
 ;; behave. It covers 24 rules in seven sections -- each demonstrated
 ;; with a printed sketch structure, a rendered plot, and verified
-;; assertions that reach into `sk/draft` and `sk/plan` for precision.
+;; behavior.
 ;;
 ;; Read [The Sketch Model](./napkinsketch_book.sketch_model.html)
 ;; and [Core Concepts](./napkinsketch_book.core_concepts.html) first.
@@ -33,11 +33,12 @@
 ;; | `:layers` | vector of layer maps | `lay-*` without x/y columns |
 ;; | `:opts` | map | `options`, `scale`, `coord`, `annotate`, `facet` |
 ;;
-;; The API builds this record through lexical scope:
+;; The API builds this record through lexical scope -- where you
+;; write something determines who sees it:
 ;;
-;; - **layers** -- inside a view, or at sketch level
-;; - **data** -- at sketch or view level
-;; - **mappings** -- at sketch, view, or layer level
+;; - **data** -- at sketch, view, or layer level; narrower wins
+;; - **mappings** -- at sketch, view, or layer level; narrower wins
+;; - **layers** -- at sketch or view level; sketch layers apply to every view
 ;;
 ;; The 24 rules below make this precise.
 
@@ -86,7 +87,7 @@
 
 ;; The layer lives inside the view. Sketch-level `:layers` is empty.
 
-;; ### Rule 2: `lay-*` without columns is sketch-level
+;; ### Rule 2: `lay-*` without columns places the layer at sketch level
 ;;
 ;; When `lay-*` is called without column names, the layer goes into
 ;; the sketch's `:layers` vector, not into any view.
@@ -108,9 +109,19 @@
     sk/lay-point
     sk/lay-lm)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
                            (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
+                                (= 1 (:lines s))
+                                (= 2 (count d))
+                                (= :point (:mark (first d)))
+                                (= :sepal-length (:x (first d)))
+                                (= :sepal-width (:y (first d)))
+                                (= :identity (:stat (first d)))
+                                (= :line (:mark (second d)))
+                                (= :sepal-length (:x (second d)))
+                                (= :sepal-width (:y (second d)))
+                                (= :lm (:stat (second d))))))])
 
 ;; Two sketch-level layers (point and lm). The view has no own
 ;; layers -- it uses the sketch's.
@@ -118,7 +129,7 @@
 ;; ### Rule 3: view layers and sketch layers combine
 ;;
 ;; When a view has its own layers AND sketch-level layers exist,
-;; the draft includes both. View layers come first, then sketch
+;; both apply to that view. View layers come first, then sketch
 ;; layers are appended.
 
 (-> iris
@@ -136,33 +147,19 @@
     (sk/lay-point :sepal-length :sepal-width {:color :species})
     sk/lay-lm)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
                            (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
+                                (= 1 (:lines s))
+                                (= 2 (count d))
+                                (= :point (:mark (first d)))
+                                (= :species (:color (first d)))
+                                (= :line (:mark (second d)))
+                                (nil? (:color (second d))))))])
 
 ;; Point is view-level (has columns); lm is sketch-level (no
-;; columns). The rendered plot shows colored scatter plus one overall
-;; regression line.
-;;
-;; The draft confirms the combination -- two draft layers, one per
-;; (view, layer) pair. The point draft layer inherits `:color :species`
-;; from its layer mapping; the lm draft layer does not.
-
-(let [d (sk/draft (-> iris
-                      (sk/lay-point :sepal-length :sepal-width {:color :species})
-                      sk/lay-lm))]
-  {:count (count d)
-   :first-mark (:mark (first d))
-   :first-color (:color (first d))
-   :second-mark (:mark (second d))
-   :second-color (:color (second d))})
-
-(kind/test-last [(fn [m]
-                   (and (= 2 (:count m))
-                        (= :point (:first-mark m))
-                        (= :species (:first-color m))
-                        (= :line (:second-mark m))
-                        (nil? (:second-color m))))])
+;; columns). Colored scatter plus one overall regression line --
+;; two layers rendered on one panel, one per (view, layer) pair.
 
 ;; ### Rule 4: sketch layers apply to every view
 ;;
@@ -173,25 +170,31 @@
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
     (sk/lay-point :petal-length :petal-width)
+    sk/lay-lm
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 1 (count (:layers m)))
+                        (= :lm (:method (first (:layers m))))
+                        (= 2 (count (:views m)))
+                        (= 1 (count (:layers (first (:views m)))))
+                        (= 1 (count (:layers (second (:views m)))))))])
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-point :petal-length :petal-width)
     sk/lay-lm)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
                            (and (= 2 (:panels s))
                                 (= 300 (:points s))
-                                (= 2 (:lines s)))))])
+                                (= 2 (:lines s))
+                                (= 4 (count d)))))])
 
 ;; Two views with different columns, each with its own point layer.
-;; The sketch-level lm produces a regression line in each panel.
-;;
-;; The draft has four layers: 2 views x 2 layers (point + lm) each.
-
-(let [d (sk/draft (-> iris
-                      (sk/lay-point :sepal-length :sepal-width)
-                      (sk/lay-point :petal-length :petal-width)
-                      sk/lay-lm))]
-  (count d))
-
-(kind/test-last [(fn [n] (= 4 n))])
+;; The sketch-level lm produces a regression line in each panel --
+;; four (view, layer) combinations total (2 views x 2 layers each).
 
 ;; ---
 ;; ## View Identity
@@ -223,40 +226,48 @@
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
-;; Two views with identical columns -- two panels. This is how you
-;; place different chart types on the same data column: create
-;; separate views with `sk/view`, then target each with `lay-*`.
+;; Two views with identical columns -- two panels. `sk/view` always
+;; creates, so repeated calls produce separate panels even when the
+;; columns match.
 
 ;; ### Rule 6: `lay-*` finds the most recent matching view
 ;;
 ;; When `lay-*` receives columns that match an existing view, it
-;; adds the layer to that view instead of creating a new one. It
-;; matches the most recent (last) view with the same x and y.
+;; adds the layer to that view instead of creating a new one. When
+;; several views match, it picks the most recent (last) one.
 
 (-> iris
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/view :sepal-length :sepal-width)
     (sk/lay-lm :sepal-length :sepal-width)
     sk-summary)
 
 (kind/test-last [(fn [m]
-                   (and (= 1 (count (:views m)))
+                   (and (= 2 (count (:views m)))
                         (= 0 (count (:layers m)))
-                        (= 2 (count (:layers (first (:views m)))))
+                        (= 1 (count (:layers (first (:views m)))))
                         (= :point (:method (first (:layers (first (:views m))))))
-                        (= :lm (:method (second (:layers (first (:views m))))))))])
+                        (= 1 (count (:layers (second (:views m)))))
+                        (= :lm (:method (first (:layers (second (:views m))))))))])
 
 (-> iris
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/view :sepal-length :sepal-width)
     (sk/lay-lm :sepal-length :sepal-width))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
+                           (and (= 2 (:panels s))
                                 (= 150 (:points s))
-                                (= 1 (:lines s)))))])
+                                (= 1 (:lines s))
+                                (= 2 (count d))
+                                (= :point (:mark (first d)))
+                                (= :line (:mark (second d))))))])
 
-;; Same columns -- lm found the existing view and appended as the
-;; second layer. One panel with colored scatter plus overall
-;; regression.
+;; Two views with identical columns. `lay-point` created the first
+;; view and placed itself there. `sk/view` created the second view.
+;; `lay-lm` had two matches -- it appended to the most recent, so
+;; one panel shows the scatter and the other shows the regression.
 
 ;; ### Rule 7: different columns create a new view
 ;;
@@ -285,7 +296,7 @@
 
 ;; Two views, two panels: scatter on one, histogram on the other.
 
-;; ### Rule 8: small datasets -- columns auto-inferred
+;; ### Rule 8: few-column datasets -- columns auto-inferred
 ;;
 ;; When the dataset has three or fewer columns and `lay-*` is called
 ;; without column names, columns are inferred by position:
@@ -319,17 +330,38 @@
                         (= :y (get-in m [:views 0 :mapping :y]))
                         (= :c (get-in m [:views 0 :mapping :color]))))])
 
+(-> {:x [1 2 3] :y [4 5 6] :c ["a" "b" "a"]}
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+
 ;; Datasets with four or more columns require explicit column names.
 
 ;; ---
 ;; ## Data Scoping
 ;;
-;; The sketch carries one dataset, shared by all views.
+;; Data follows the same scope rules as mappings. The sketch carries
+;; a default dataset. A view or layer can override it with `:data`
+;; in its options. Narrower wins.
 
-;; ### Rule 9: sketch data is shared by all views
+;; ### Rule 9: data scopes like mappings -- narrower wins
 ;;
-;; The dataset is set once -- by the first argument to `sk/sketch`,
-;; `sk/view`, or `sk/lay-*`. All views in the sketch use it.
+;; The sketch dataset is the default for all views and layers. A
+;; view can carry its own dataset with `:data` in its options map.
+;; A layer can do the same. Resolution order:
+;; layer data > view data > sketch data.
+
+;; Sketch data is the default -- all views share it:
+
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :petal-length :petal-width)
+    sk/lay-point
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 2 (count (:views m)))
+                        (= 1 (count (:layers m)))))])
 
 (-> iris
     (sk/view :sepal-length :sepal-width)
@@ -340,17 +372,64 @@
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
-;; Two views, one sketch-level point layer, both using iris -- 150
-;; points per panel, 300 total. The draft confirms both draft layers
-;; share the same dataset:
+;; Both views use iris -- 150 points per panel, 300 total.
 
-(let [d (sk/draft (-> iris
-                      (sk/view :sepal-length :sepal-width)
-                      (sk/view :petal-length :petal-width)
-                      sk/lay-point))]
-  (mapv #(tc/row-count (:data %)) d))
+;; View-level `:data` overrides sketch data for that view:
 
-(kind/test-last [(fn [v] (= [150 150] v))])
+(def tiny {:x [1 2 3] :y [3 5 4]})
+
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :x :y {:data tiny})
+    sk/lay-point
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 2 (count (:views m)))
+                        (= 1 (count (:layers m)))))])
+
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :x :y {:data tiny})
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
+                           (and (= 2 (:panels s))
+                                (= 153 (:points s))
+                                (= 150 (tc/row-count (:data (first d))))
+                                (= 3 (tc/row-count (:data (second d)))))))])
+
+;; First view uses iris (150 points), second uses tiny (3 points).
+
+;; Layer-level `:data` overrides view and sketch data for that layer:
+
+(def iris-small (tc/head iris 10))
+
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    (sk/lay-point {:data iris-small})
+    sk/lay-lm
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 1 (count (:views m)))
+                        (= 2 (count (:layers m)))))])
+
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    (sk/lay-point {:data iris-small})
+    sk/lay-lm)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
+                           (and (= 10 (:points s))
+                                (= 1 (:lines s))
+                                (= 10 (tc/row-count (:data (first d))))
+                                (= 150 (tc/row-count (:data (second d)))))))])
+
+;; The point layer uses iris-small (10 rows); the lm layer uses
+;; iris (150 rows).
 
 ;; ---
 ;; ## Mapping Scope
@@ -379,22 +458,14 @@
     (sk/view :petal-length :petal-width)
     sk/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
                            (and (= 2 (:panels s))
-                                (= 300 (:points s)))))])
+                                (= 300 (:points s))
+                                (every? #(= :species (:color %)) d))))])
 
 ;; Two views, one sketch-level layer, sketch-level color. Both
 ;; panels colored by species.
-;;
-;; The draft confirms every draft layer inherits the sketch mapping:
-
-(let [d (sk/draft (-> (sk/sketch iris {:color :species})
-                      (sk/view :sepal-length :sepal-width)
-                      (sk/view :petal-length :petal-width)
-                      sk/lay-point))]
-  (mapv :color d))
-
-(kind/test-last [(fn [v] (every? #(= :species %) v))])
 
 ;; ### Rule 11: `view` options set view-level mapping
 ;;
@@ -417,23 +488,15 @@
     (sk/view :petal-length :petal-width)
     sk/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
                            (and (= 2 (:panels s))
-                                (= 300 (:points s)))))])
+                                (= 300 (:points s))
+                                (= :species (:color (first d)))
+                                (nil? (:color (second d))))))])
 
 ;; Color is in the first view's mapping only. The first panel is
 ;; colored by species; the second has no color grouping.
-;;
-;; The draft confirms: first view's draft layer has color, second
-;; view's does not.
-
-(let [d (sk/draft (-> iris
-                      (sk/view :sepal-length :sepal-width {:color :species})
-                      (sk/view :petal-length :petal-width)
-                      sk/lay-point))]
-  (mapv :color d))
-
-(kind/test-last [(fn [v] (= [:species nil] v))])
 
 ;; ### Rule 12: `lay-*` options set layer-level mapping
 ;;
@@ -454,21 +517,15 @@
     (sk/lay-point :sepal-length :sepal-width {:color :species})
     sk/lay-lm)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
                            (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
+                                (= 1 (:lines s))
+                                (= :species (:color (first d)))
+                                (nil? (:color (second d))))))])
 
 ;; Color is in the point layer's mapping. The sketch-level lm does
 ;; not see it -- one overall regression line, not three.
-;;
-;; The draft confirms the scope difference:
-
-(let [d (sk/draft (-> iris
-                      (sk/lay-point :sepal-length :sepal-width {:color :species})
-                      sk/lay-lm))]
-  (mapv :color d))
-
-(kind/test-last [(fn [v] (= [:species nil] v))])
 
 ;; ### Rule 13: innermost scope wins; `nil` cancels
 ;;
@@ -495,23 +552,12 @@
     sk/lay-point
     (sk/lay-lm {:color nil}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
                            (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
-
-;; The draft confirms the merge result -- the lm draft layer has
-;; `:color nil` (overriding the view mapping):
-
-(let [d (sk/draft (-> iris
-                      (sk/view :sepal-length :sepal-width {:color :species})
-                      sk/lay-point
-                      (sk/lay-lm {:color nil})))]
-  {:point-color (:color (first d))
-   :lm-color (:color (second d))})
-
-(kind/test-last [(fn [m]
-                   (and (= :species (:point-color m))
-                        (nil? (:lm-color m))))])
+                                (= 1 (:lines s))
+                                (= :species (:color (first d)))
+                                (nil? (:color (second d))))))])
 
 ;; Cancellation works across any scope boundary. Here a layer-level
 ;; `nil` cancels a sketch-level mapping:
@@ -572,21 +618,21 @@
                    (and (= {:type :log} (get-in m [:opts :x-scale]))
                         (= :flip (get-in m [:opts :coord]))))])
 
-;; The plan confirms the specs propagate to the panel. Coord `:flip`
-;; swaps axes -- the original x-scale (log) becomes the y-scale:
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    sk/lay-point
+    (sk/scale :x :log)
+    (sk/coord :flip))
 
-(let [plan (sk/plan (-> iris
-                        (sk/view :sepal-length :sepal-width)
-                        sk/lay-point
-                        (sk/scale :x :log)
-                        (sk/coord :flip)))
-      panel (first (:panels plan))]
-  {:coord (:coord panel)
-   :y-scale-type (:type (:y-scale panel))})
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               p (sk/plan v)
+                               panel (first (:panels p))]
+                           (and (= 150 (:points s))
+                                (= :flip (:coord panel))
+                                (= :log (:type (:y-scale panel))))))])
 
-(kind/test-last [(fn [m]
-                   (and (= :flip (:coord m))
-                        (= :log (:y-scale-type m))))])
+;; Coord `:flip` swaps axes -- the original x-scale (log) becomes
+;; the y-scale in the rendered plot.
 
 ;; ### Rule 16: `sk/annotate` adds reference marks
 ;;
@@ -613,7 +659,7 @@
 ;; ### Rule 17: `sk/facet` sets the faceting column
 ;;
 ;; `sk/facet` and `sk/facet-grid` write facet specs into `:opts`.
-;; The layout effect is in Section 7.
+;; The layout effect is in the Layout section below.
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
@@ -625,6 +671,12 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
+    (sk/facet :species))
+
+(kind/test-last [(fn [v] (= 3 (count (:panels (sk/plan v)))))])
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
     (sk/facet-grid :species :species)
     sk-summary)
 
@@ -632,32 +684,42 @@
                    (and (= :species (get-in m [:opts :facet-col]))
                         (= :species (get-in m [:opts :facet-row]))))])
 
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/facet-grid :species :species))
+
+(kind/test-last [(fn [v] (= 9 (count (:panels (sk/plan v)))))])
+
 ;; ---
 ;; ## Assembly
 ;;
-;; The rules above determine what `sk/draft` produces. The assembly
-;; is a cross product of views and their applicable layers, with all
-;; scope merged:
+;; The rules above determine how the sketch turns into rendered
+;; panels. Each view is crossed with its applicable layers, and all
+;; scope is merged for every (view, layer) pair:
 ;;
-;; ```
-;; for each view:
-;;   layers = concat(view-layers, sketch-layers)
-;;   for each layer:
-;;     data     = or(view-data, sketch-data)
-;;     mappings = merge(sketch-mapping, view-mapping, layer-mapping)
-;;     --> one draft layer
+;; Pseudocode (Clojure syntax):
+;;
+;; ```clojure
+;; (for [view  (:views sketch)
+;;       :let  [layers (concat (:layers view) (:layers sketch))]
+;;       layer layers]
+;;   {:data     (or (:data layer) (:data view) (:data sketch))
+;;    :mappings (merge (:mapping sketch)
+;;                     (:mapping view)
+;;                     (:mapping layer))})
 ;; ```
 ;;
-;; `concat` joins both layer lists. `merge` combines mappings --
-;; innermost wins, `nil` erases. `sk/draft` makes this inspectable.
+;; `concat` places view layers first, then sketch layers.
+;; `or` picks the narrowest data. `merge` combines mappings --
+;; innermost wins, `nil` erases.
 
-;; ### Rule 18: one draft layer per view x applicable-layer combination
+;; ### Rule 18: one rendered layer per view x applicable-layer combination
 ;;
-;; The draft layer count is predictable from the sketch structure:
-;; for each view, count its own layers plus the sketch-level layers.
+;; For each view, the number of layers rendered equals its own
+;; layers plus the sketch-level layers.
 
 ;; Two views: view 1 has one own layer (point), view 2 has none.
-;; One sketch-level layer (lm). Draft: view 1 gets point + lm = 2,
+;; One sketch-level layer (lm). View 1 gets point + lm = 2,
 ;; view 2 gets lm = 1. Total: 3.
 
 (def assembly-sketch
@@ -666,48 +728,73 @@
       (sk/view :petal-length :petal-width)
       sk/lay-lm))
 
-(count (sk/draft assembly-sketch))
-
-(kind/test-last [(fn [n] (= 3 n))])
-
-;; Verify the marks in order: view 1 gets point (own) then lm
-;; (sketch), view 2 gets lm (sketch):
-
-(mapv :mark (sk/draft assembly-sketch))
-
-(kind/test-last [(fn [v] (= [:point :line :line] v))])
-
-;; ### Rule 19: each draft layer carries fully merged scope
-;;
-;; All scope levels are merged into each draft layer. The draft
-;; layer has the resolved data, columns, mark, stat, and all
-;; aesthetic mappings.
-
-(let [sk (-> (sk/sketch iris {:color :species})
-             (sk/lay-point :sepal-length :sepal-width))
-      d (first (sk/draft sk))]
-  (select-keys d [:x :y :color :mark]))
+(sk-summary assembly-sketch)
 
 (kind/test-last [(fn [m]
-                   (and (= :sepal-length (:x m))
-                        (= :sepal-width (:y m))
-                        (= :species (:color m))
-                        (= :point (:mark m))))])
+                   (and (= 1 (count (:layers m)))
+                        (= 2 (count (:views m)))
+                        (= 1 (count (:layers (first (:views m)))))
+                        (nil? (:layers (second (:views m))))))])
+
+assembly-sketch
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
+                           (and (= 2 (:panels s))
+                                (= 150 (:points s))
+                                (= 2 (:lines s))
+                                (= 3 (count d))
+                                (= [:point :line :line] (mapv :mark d)))))])
+
+;; ### Rule 19: each rendered layer carries fully merged scope
+;;
+;; All scope levels are merged for each rendered layer. The layer
+;; sees the resolved data, columns, mark, stat, and all aesthetic
+;; mappings.
+
+(-> (sk/sketch iris {:color :species})
+    (sk/lay-point :sepal-length :sepal-width)
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= :species (:color (:mapping m)))
+                        (= 1 (count (:views m)))
+                        (= 1 (count (:layers (first (:views m)))))))])
+
+(-> (sk/sketch iris {:color :species})
+    (sk/lay-point :sepal-length :sepal-width))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (first (sk/draft v))]
+                           (and (= 150 (:points s))
+                                (= :sepal-length (:x d))
+                                (= :sepal-width (:y d))
+                                (= :species (:color d))
+                                (= :point (:mark d)))))])
 
 ;; The sketch-level color, view-level columns, and layer-level mark
-;; are all present in one flat map.
+;; are all present when the layer is rendered.
 
 ;; ---
 ;; ## Layout
 ;;
 ;; How views become panels in the rendered plot. These rules describe
-;; what you see -- the decisions the plan makes from the sketch you
-;; built.
+;; what you see -- the decisions the renderer makes from the sketch
+;; you built.
 
 ;; ### Rule 20: each view becomes one panel
 ;;
 ;; Each view in the sketch produces one panel in the rendered plot.
 ;; Two views, two panels -- each with its own axis ranges.
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :petal-length)
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 2 (count (:views m)))
+                        (= 0 (count (:layers m)))))])
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
@@ -720,6 +807,15 @@
 ;;
 ;; Multiple layers on the same view produce one panel with overlaid
 ;; marks -- not separate panels.
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/lay-lm :sepal-length :sepal-width)
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 1 (count (:views m)))
+                        (= 2 (count (:layers (first (:views m)))))))])
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -739,6 +835,15 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
+    (sk/facet :species)
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 1 (count (:views m)))
+                        (= :species (get-in m [:opts :facet-col]))))])
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
     (sk/facet :species))
 
 (kind/test-last [(fn [v] (let [p (sk/plan v)]
@@ -751,6 +856,16 @@
 ;; When two views share the same x-column, they are placed in the
 ;; same grid column (stacked vertically). When they share the same
 ;; y-column, they are placed in the same grid row.
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :sepal-length)
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 2 (count (:views m)))
+                        (= :sepal-length (get-in m [:views 0 :mapping :x]))
+                        (= :sepal-length (get-in m [:views 1 :mapping :x]))))])
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
@@ -769,6 +884,14 @@
 ;; `sk/view`, it creates a SPLOM (scatter plot matrix).
 
 (def splom-cols [:sepal-length :sepal-width :petal-length])
+
+(-> (sk/sketch iris {:color :species})
+    (sk/view (sk/cross splom-cols splom-cols))
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 9 (count (:views m)))
+                        (= :species (:color (:mapping m)))))])
 
 (-> (sk/sketch iris {:color :species})
     (sk/view (sk/cross splom-cols splom-cols)))
@@ -796,8 +919,8 @@
 ;; | View identity | 5 | `view` always creates a new view |
 ;; | | 6 | `lay-*` finds most recent matching view |
 ;; | | 7 | Different columns create a new view |
-;; | | 8 | Small datasets -- columns auto-inferred |
-;; | Data scoping | 9 | View data overrides sketch data |
+;; | | 8 | Few-column datasets -- columns auto-inferred |
+;; | Data scoping | 9 | Data scopes like mappings -- narrower wins |
 ;; | Mapping scope | 10 | `sketch` -- sketch-level mapping (all views, all layers) |
 ;; | | 11 | `view` options -- view-level mapping (one view) |
 ;; | | 12 | `lay-*` options -- layer-level mapping (one layer) |
@@ -811,8 +934,8 @@
 ;;
 ;; | Section | Rule | Statement |
 ;; |:--------|:-----|:----------|
-;; | Assembly | 18 | One draft layer per view x applicable-layer combination |
-;; | | 19 | Each draft layer carries fully merged scope |
+;; | Assembly | 18 | One rendered layer per view x applicable-layer combination |
+;; | | 19 | Each rendered layer carries fully merged scope |
 ;; | Layout | 20 | Each view becomes one panel |
 ;; | | 21 | Layers within one view overlay in one panel |
 ;; | | 22 | Faceting splits views into panels by category |
@@ -821,9 +944,13 @@
 ;;
 ;; ### The scope merge
 ;;
-;; ```
-;; data     = or(view-data, sketch-data)
-;; mappings = merge(sketch-mapping, view-mapping, layer-mapping)
+;; Pseudocode (Clojure syntax):
+;;
+;; ```clojure
+;; {:data     (or (:data layer) (:data view) (:data sketch))
+;;  :mappings (merge (:mapping sketch)
+;;                   (:mapping view)
+;;                   (:mapping layer))}
 ;; ```
 ;;
 ;; `merge` -- later wins. `nil` -- erases the key.
