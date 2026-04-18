@@ -196,14 +196,24 @@
                      (defaults/hex->rgba tc)
                      [0.2 0.2 0.2 1.0])
 
+        ;; Tick-axis placement per populated cell. In a dense SPLOM this
+        ;; matches the global "last row / col 0" rule, but in sparse
+        ;; layouts (diagonal, triangular) we place x-ticks on the
+        ;; bottommost populated panel of each column and y-ticks on the
+        ;; leftmost populated panel of each row, so no axis is orphaned.
+        bottom-row-per-col (into {} (for [[ci ps] (group-by :col panels)]
+                                      [ci (apply max (map :row ps))]))
+        leftmost-col-per-row (into {} (for [[ri ps] (group-by :row panels)]
+                                        [ri (apply min (map :col ps))]))
+
         ;; Render each panel, positioned in the grid
         panel-elems
         (vec
          (for [p panels
                :let [ri (:row p)
                      ci (:col p)
-                     show-x? (= ri (dec grid-rows))
-                     show-y? (zero? ci)
+                     show-x? (= ri (get bottom-row-per-col ci))
+                     show-y? (= ci (get leftmost-col-per-row ri))
                      x-off (+ y-label-pad (* ci pw))
                      y-off (+ title-pad strip-h (* ri ph))]]
            (ui/translate x-off y-off
