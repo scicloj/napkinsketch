@@ -721,7 +721,7 @@
 ;; `or` picks the narrowest data. `merge` combines mappings --
 ;; innermost wins, `nil` erases.
 
-;; ### Rule 18: one rendered layer per view-layer combination
+;; ### Rule 18: one rendered layer per applicable (view, layer) pair
 ;;
 ;; For each view, the number of layers rendered equals its own
 ;; layers plus the sketch-level layers.
@@ -942,7 +942,7 @@ assembly-sketch
 ;;
 ;; | Section | Rule | Statement |
 ;; |:--------|:-----|:----------|
-;; | Assembly | 18 | One rendered layer per view-layer combination |
+;; | Assembly | 18 | One rendered layer per applicable (view, layer) pair |
 ;; | | 19 | Each rendered layer carries fully merged scope |
 ;; | Layout | 20 | Each view becomes one panel |
 ;; | | 21 | Layers within one view overlay in one panel |

@@ -28,8 +28,8 @@
 ;; ## Draft layer (internal)
 ;;
 ;; A **draft layer** is the internal flat map produced by `sk/draft`.
-;; Each view-layer combination in a sketch resolves to one draft layer
-;; by merging the sketch, view, and layer mappings. Draft layers
+;; Each applicable (view, layer) pair in a sketch resolves to one draft
+;; layer by merging the sketch, view, and layer mappings. Draft layers
 ;; carry all the information the pipeline needs: data, columns, mark, stat,
 ;; color, grouping.
 ;;
