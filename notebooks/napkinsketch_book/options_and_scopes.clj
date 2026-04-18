@@ -121,6 +121,12 @@
 ;; - `sk/facet` and `sk/facet-grid` -- split the plot into panels
 ;;   by a column.
 ;; - `sk/annotate` -- reference lines and shaded bands.
+;;
+;; **Planned refactor:** Before 0.1.0, annotations will become
+;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
+;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
+;; layer. The current `sk/annotate` API will be replaced, and
+;; annotations will no longer be plot options.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)

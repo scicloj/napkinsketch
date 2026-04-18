@@ -311,6 +311,11 @@ my-sketch
 ;; | `sk/rule-h` | Horizontal line at y = value |
 ;; | `sk/band-v` | Vertical shaded region from x1 to x2 |
 ;; | `sk/band-h` | Horizontal shaded region from y1 to y2 |
+;;
+;; **Planned refactor:** Before 0.1.0, these constructors will be
+;; replaced by `sk/lay-rule-v`, `sk/lay-rule-h`, `sk/lay-band-v`,
+;; `sk/lay-band-h` -- annotations become regular layers, scopable
+;; like any other layer.
 
 (:mark (sk/rule-h 5))
 

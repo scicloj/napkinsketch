@@ -17,7 +17,7 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__2896480#] (dissoc p1__2896480# :data))))
+    (partial mapv (fn* [p1__2900136#] (dissoc p1__2900136# :data))))
    kind/pprint)))
 
 
@@ -39,7 +39,7 @@
 
 
 (def
- v8_l125
+ v8_l131
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -49,21 +49,21 @@
 
 
 (deftest
- t9_l131
+ t9_l137
  (is
   ((fn
     [m]
     (and
      (= "Iris" (get-in m [:opts :title]))
      (= :flip (get-in m [:opts :coord]))))
-   v8_l125)))
+   v8_l131)))
 
 
-(def v11_l193 (select-keys (sk/config) [:width :height :margin]))
+(def v11_l199 (select-keys (sk/config) [:width :height :margin]))
 
 
 (deftest
- t12_l195
+ t12_l201
  (is
   ((fn
     [m]
@@ -71,11 +71,11 @@
      (number? (:width m))
      (number? (:height m))
      (number? (:margin m))))
-   v11_l193)))
+   v11_l199)))
 
 
 (def
- v14_l207
+ v14_l213
  (def
   demo
   (->
@@ -85,14 +85,14 @@
    (sk/coord :flip))))
 
 
-(def v16_l217 demo)
+(def v16_l223 demo)
 
 
-(def v18_l221 (sk-summary demo))
+(def v18_l227 (sk-summary demo))
 
 
 (deftest
- t19_l223
+ t19_l229
  (is
   ((fn
     [m]
@@ -100,4 +100,4 @@
      (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
      (= "Iris measurements" (get-in m [:opts :title]))
      (= :flip (get-in m [:opts :coord]))))
-   v18_l221)))
+   v18_l227)))

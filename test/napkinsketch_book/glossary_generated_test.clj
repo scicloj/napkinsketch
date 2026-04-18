@@ -178,22 +178,22 @@
    v44_l264)))
 
 
-(def v47_l315 (:mark (sk/rule-h 5)))
+(def v47_l320 (:mark (sk/rule-h 5)))
 
 
-(deftest t48_l317 (is ((fn [m] (= :rule-h m)) v47_l315)))
+(deftest t48_l322 (is ((fn [m] (= :rule-h m)) v47_l320)))
 
 
-(def v50_l326 (:legend my-plan))
+(def v50_l331 (:legend my-plan))
 
 
 (deftest
- t51_l328
- (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v50_l326)))
+ t51_l333
+ (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v50_l331)))
 
 
 (def
- v53_l337
+ v53_l342
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -207,40 +207,40 @@
   :panels))
 
 
-(deftest t54_l343 (is ((fn [n] (= 1 n)) v53_l337)))
+(deftest t54_l348 (is ((fn [n] (= 1 n)) v53_l342)))
 
 
-(def v56_l356 (def my-membrane (sk/plan->membrane my-plan)))
+(def v56_l361 (def my-membrane (sk/plan->membrane my-plan)))
 
 
-(def v57_l358 (vector? my-membrane))
+(def v57_l363 (vector? my-membrane))
 
 
-(deftest t58_l360 (is ((fn [v] (true? v)) v57_l358)))
+(deftest t58_l365 (is ((fn [v] (true? v)) v57_l363)))
 
 
-(def v59_l362 (count my-membrane))
+(def v59_l367 (count my-membrane))
 
 
-(deftest t60_l364 (is ((fn [n] (pos? n)) v59_l362)))
+(deftest t60_l369 (is ((fn [n] (pos? n)) v59_l367)))
 
 
-(def v62_l374 (def my-figure (sk/plan->figure my-plan :svg {})))
+(def v62_l379 (def my-figure (sk/plan->figure my-plan :svg {})))
 
 
-(def v63_l376 (first my-figure))
+(def v63_l381 (first my-figure))
 
 
-(deftest t64_l378 (is ((fn [v] (= :svg v)) v63_l376)))
+(deftest t64_l383 (is ((fn [v] (= :svg v)) v63_l381)))
 
 
-(def v66_l425 (count sk/plot-option-docs))
+(def v66_l430 (count sk/plot-option-docs))
 
 
-(deftest t67_l427 (is ((fn [n] (= 11 n)) v66_l425)))
+(deftest t67_l432 (is ((fn [n] (= 11 n)) v66_l430)))
 
 
-(def v69_l442 (count sk/layer-option-docs))
+(def v69_l447 (count sk/layer-option-docs))
 
 
-(deftest t70_l444 (is ((fn [n] (pos? n)) v69_l442)))
+(deftest t70_l449 (is ((fn [n] (pos? n)) v69_l447)))

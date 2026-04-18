@@ -133,6 +133,12 @@
 
 ;; Add reference lines and shaded bands to highlight regions of interest.
 
+;; **Planned refactor:** Before 0.1.0, annotations will become
+;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
+;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
+;; layer. The `sk/annotate` + `sk/rule-*` / `sk/band-*` API shown
+;; here will be replaced.
+
 ;; Horizontal and vertical reference lines.
 
 (-> (rdatasets/datasets-iris)

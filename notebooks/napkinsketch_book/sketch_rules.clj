@@ -641,6 +641,11 @@
 ;;
 ;; Annotations go into `:opts :annotations`. They are self-contained
 ;; -- no interaction with views or layers.
+;;
+;; **Planned refactor:** Before 0.1.0, annotations will become
+;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
+;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
+;; layer. This rule will change accordingly.
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})

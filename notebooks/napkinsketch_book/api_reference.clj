@@ -448,6 +448,12 @@ plan1
                            (= 150 (:points s))))])
 ;; ## Annotations
 
+;; **Planned refactor:** Before 0.1.0, annotations will become
+;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
+;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
+;; layer. The `sk/annotate` + `sk/rule-*` / `sk/band-*` API
+;; documented here will be replaced.
+
 (kind/doc #'sk/rule-v)
 
 (-> (rdatasets/datasets-iris)

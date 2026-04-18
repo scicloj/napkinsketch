@@ -475,31 +475,86 @@ my-sketch
 ;; ---
 ;; ## Inference
 ;;
-;; Napkinsketch infers two things automatically:
+;; Napkinsketch tries to make small sketches work without you
+;; having to specify everything. You give it what you know -- a
+;; dataset, perhaps a column or two -- and it fills in the rest
+;; by looking at the data.
 ;;
-;; - **Columns** -- when omitted, inferred from the dataset shape
-;;   (1 column -> x, 2 -> x y, 3 -> x y color)
-;; - **Method** -- when using `sk/view` instead of an explicit
-;;   `sk/lay-*`, the chart type is chosen from the column types
+;; The underlying principle is short: **resolved = your-choice,
+;; or else inferred-from-data**. Wherever you make a choice it
+;; wins; wherever you don't, the library picks something
+;; sensible.
 ;;
-;; Two numerical columns produce a scatter plot:
+;; Among the things that get inferred this way are the columns
+;; used for aesthetics, the chart type, the type of each column
+;; (numerical, categorical, or temporal), the scale applied to
+;; each axis, and the palette or gradient chosen for the color
+;; aesthetic. Other details -- legend structure, scale domain,
+;; tick placement, stat parameters, grouping -- are inferred
+;; too, but mostly stay out of the way until you want to adjust
+;; them.
+;;
+;; Two kinds of inference show up often enough to be worth
+;; seeing directly: column inference and method inference.
+;;
+;; **Column inference** kicks in when a dataset has up to three
+;; columns and you call `sk/view` (or a `sk/lay-*`) without
+;; naming any column. Napkinsketch pairs the columns with
+;; aesthetics in dataset order:
+;;
+;; | Columns in data | Inferred mapping |
+;; |:----------------|:-----------------|
+;; | 1 | `:x` |
+;; | 2 | `:x`, `:y` |
+;; | 3 | `:x`, `:y`, `:color` |
+;;
+;; With four or more columns the library does not guess -- you
+;; have to name the columns you want. Column inference is most
+;; useful for quick sketches of small, focused datasets. Here,
+;; a dataset with two columns named `:height` and `:weight`:
+;; napkinsketch pairs them with the `:x` and `:y` aesthetics in
+;; order.
+
+(-> {:height [170 180 165 175] :weight [70 80 65 75]}
+    sk/view)
+
+(kind/test-last
+ [(fn [v]
+    (and (= 4 (:points (sk/svg-summary v)))
+         (= {:x :height :y :weight}
+            (get-in v [:views 0 :mapping]))))])
+
+;; **Method inference** fires when a view has no explicit
+;; layer. The library inspects the types of the columns the
+;; view refers to and picks a chart type that fits. Two
+;; numerical columns produce a scatter plot:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; A single column produces a histogram:
+;; A single numerical column produces a histogram:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; Use `sk/lay-point`, `sk/lay-histogram`, etc. when you want to
-;; choose a specific method, pass options, or add multiple layers.
-;; See the [Inference Rules](./napkinsketch_book.inference_rules.html)
-;; chapter for the full decision logic.
+;; In both cases the inferred plot is the same one you would
+;; draw by hand with `sk/lay-point` or `sk/lay-histogram`.
+;; Inference is a shorthand, not a separate rendering path.
+;;
+;; Every inferred choice can be overridden. Want a specific
+;; chart type? Use the matching `sk/lay-*` function instead of
+;; leaving the view bare. Want a particular scale? Pass
+;; `sk/scale`. Want a numeric column to be treated as
+;; categorical? Add `{:color-type :categorical}` to the layer or
+;; view. Inference exists so small sketches stay small, not to
+;; take decisions away from you. The
+;; [Inference Rules](./napkinsketch_book.inference_rules.html)
+;; chapter lists the full decision logic and the override for
+;; each case.
 
 ;; ---
 ;; ## Incremental Building
@@ -611,6 +666,11 @@ my-sketch
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
+;; **Planned refactor:** Before 0.1.0, annotations will become
+;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
+;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
+;; layer. The `sk/annotate` API shown here will be replaced.
+;;
 ;; See the [Customization](./napkinsketch_book.customization.html)
 ;; chapter for themes, palettes, and annotation details.
 
