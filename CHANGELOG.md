@@ -207,11 +207,11 @@ through a complete end-to-end custom mark.
 
 ### Book
 
-Twenty-seven executable chapters:
+Twenty-eight executable chapters:
 
 - **Getting Started** — quickstart
-- **Foundations** — datasets, sketch model, core concepts, sketch
-  rules, inference rules, methods, glossary
+- **Foundations** — datasets, sketch model, core concepts, options
+  and scopes, sketch rules, inference rules, methods, glossary
 - **Chart Types** — scatter, distributions, ranking, change over
   time, relationships, polar
 - **How-to Guides** — cookbook, configuration, customization,

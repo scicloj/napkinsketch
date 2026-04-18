@@ -34,10 +34,13 @@
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
-;; A helper to inspect sketch structure without the dataset.
+;; A helper to inspect sketch structure. It shows `:mapping`,
+;; `:views`, `:layers`, and `:opts` -- the full record also has
+;; `:data` and `:kindly/f`, which this helper omits for
+;; readability.
 
 (defn sk-summary
-  "Print sketch structure without :data (for readability)."
+  "Print sketch structure without :data and :kindly/f (for readability)."
   [sk]
   (-> (select-keys sk [:mapping :views :layers :opts])
       (update :views (partial mapv #(dissoc % :data)))
@@ -174,6 +177,9 @@
 ;; The [Configuration](./napkinsketch_book.configuration.html)
 ;; chapter covers each source in depth and lists every
 ;; configuration key.
+;;
+;; `sk/config` returns the resolved configuration -- the merged
+;; result of all five sources above.
 
 (select-keys (sk/config) [:width :height :margin])
 

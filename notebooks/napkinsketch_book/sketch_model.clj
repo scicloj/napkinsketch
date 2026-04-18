@@ -58,7 +58,7 @@
 ;; - `:mapping` -- aesthetics that apply to all views
 ;; - `:views` -- what to plot (column pairs)
 ;; - `:layers` -- how to draw it (layers: method + optional mappings)
-;; - `:opts` -- plot-level options (title, width, theme)
+;; - `:opts` -- options for the plot as a whole (title, width, theme)
 ;;
 ;; [Core Concepts](./napkinsketch_book.core_concepts.html) explains
 ;; each field in detail.
