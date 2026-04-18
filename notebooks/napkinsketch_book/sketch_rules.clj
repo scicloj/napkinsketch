@@ -705,7 +705,7 @@
 ;; panels. Each view is crossed with its applicable layers, and all
 ;; scope is merged for every (view, layer) pair:
 ;;
-;; Pseudocode (Clojure syntax):
+;; Pseudocode:
 ;;
 ;; ```clojure
 ;; (for [view  (:views sketch)
@@ -952,7 +952,7 @@ assembly-sketch
 ;;
 ;; ### The scope merge
 ;;
-;; Pseudocode (Clojure syntax):
+;; Pseudocode:
 ;;
 ;; ```clojure
 ;; {:data     (or (:data layer) (:data view) (:data sketch))
