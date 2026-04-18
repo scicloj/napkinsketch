@@ -136,11 +136,20 @@
 ;; Both the title and the coordinate system landed in `:opts`.
 ;; Neither is at a scope; they belong to the plot as a whole.
 ;;
-;; A note on faceted plots: the panels of a faceted sketch share
-;; scale types (all x-axes log, for example), but their scale
-;; domains are computed per panel by default. So "the plot has
-;; one scale" is true for the scale type, while the numeric
-;; domain shown on each panel may differ.
+;; A note on faceted plots: a scale has two parts that behave
+;; differently across panels.
+;;
+;; - Scale **type** (log, categorical, linear, etc.) is shared
+;;   across all panels -- if you set `sk/scale :x :log` on a
+;;   faceted sketch, every panel has a log x-axis.
+;; - Scale **domain** (the numeric range actually shown) is
+;;   computed per panel by default, so different panels may
+;;   display different numeric ranges.
+;;
+;; A note on scope of scales and coord: whether `sk/scale` and
+;; `sk/coord` should support scope variation is an open design
+;; question; the underlying plan structure allows per-panel
+;; scales, but the current API treats them as plot-level.
 ;;
 ;; A note on terminology: other chapters may refer to these
 ;; values as **plot-level** -- a category name. That is not the
