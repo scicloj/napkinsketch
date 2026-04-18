@@ -1446,6 +1446,58 @@
                               (sk/view {:x :x :y :y :facet-row :g})
                               sk/lay-point)))))
 
+(deftest plot-level-keys-stripped-from-wrong-scope-test
+  ;; persona-skeptical-round-6 F1/F5/F6: plot-level keys like
+  ;; :x-scale and :coord used to emit an "unrecognized option"
+  ;; warning but still propagate into the layer's or view's
+  ;; mapping and leak into the final panel (identical output to
+  ;; the canonical sk/scale / sk/coord form). Now the warning is
+  ;; honest: unknown keys are stripped from the mapping, so the
+  ;; panel uses default scales/coord.
+  (let [ds {:x [1 10 100] :y [1 2 3]}]
+
+    (testing "layer-level :x-scale is stripped, not honored"
+      (let [sk (-> ds
+                   (sk/lay-point :x :y {:x-scale {:type :log}}))
+            panel (first (:panels (sk/plan sk)))]
+        (is (= {} (get-in sk [:views 0 :layers 0 :mapping]))
+            ":x-scale should not appear in layer mapping")
+        (is (= :linear (get-in panel [:x-scale :type]))
+            "panel x-scale should stay at default :linear")))
+
+    (testing "view-level :x-scale is stripped, not honored"
+      (let [sk (-> ds
+                   (sk/view :x :y {:x-scale {:type :log}})
+                   sk/lay-point)
+            panel (first (:panels (sk/plan sk)))]
+        (is (= {:x :x :y :y} (get-in sk [:views 0 :mapping]))
+            ":x-scale should not appear in view mapping")
+        (is (= :linear (get-in panel [:x-scale :type]))
+            "panel x-scale should stay at default :linear")))
+
+    (testing "layer-level :coord is stripped, not honored"
+      (let [sk (-> ds
+                   (sk/lay-point :x :y {:coord :flip}))
+            panel (first (:panels (sk/plan sk)))]
+        (is (not (contains? (get-in sk [:views 0 :layers 0 :mapping]) :coord))
+            ":coord should not appear in layer mapping")
+        (is (not= :flip (:coord panel))
+            "panel coord should not reflect a stripped layer-level :flip")))
+
+    (testing "canonical sk/scale still works"
+      (let [sk (-> ds
+                   (sk/lay-point :x :y)
+                   (sk/scale :x :log))
+            panel (first (:panels (sk/plan sk)))]
+        (is (= :log (get-in panel [:x-scale :type])))))
+
+    (testing "canonical sk/coord still works"
+      (let [sk (-> ds
+                   (sk/lay-point :x :y)
+                   (sk/coord :flip))
+            panel (first (:panels (sk/plan sk)))]
+        (is (= :flip (:coord panel)))))))
+
 (deftest input-validation-misc-test
   ;; persona-09-R2 F10/F11/F12. Low-severity input validation.
   (testing "rule-v / rule-h with nil intercept throws"

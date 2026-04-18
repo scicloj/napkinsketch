@@ -289,18 +289,25 @@
   (into (set (keys defaults/plot-option-docs))
         (keys defaults/config-key-docs)))
 
-(defn- warn-unknown-opts!
-  "Print a warning when `opts` contains keys outside `accepted`.
-   `caller` is used in the warning to disambiguate sk/view, sk/sketch,
-   sk/options, etc. Mirrors the unknown-option warning that
-   `build-layer` already emits for sk/lay-* calls."
+(defn- warn-and-strip-unknown-opts
+  "Warn if `opts` contains keys outside `accepted` and return `opts`
+   with only the accepted keys retained. `caller` is used in the
+   warning message (e.g. \"sk/sketch\", \"lay-point\"). If opts is
+   nil or not a map, returns it unchanged. Stripping makes the
+   warning honest: keys the library does not recognize are dropped
+   rather than silently propagated into mapping maps, where they
+   could leak into downstream resolution."
   [caller opts accepted]
-  (when (and (map? opts) (seq opts))
+  (if-not (and (map? opts) (seq opts))
+    opts
     (let [unknown (remove accepted (keys opts))]
       (when (seq unknown)
-        (println (str "Warning: sk/" caller
+        (println (str "Warning: " caller
                       " does not recognize option(s): " (vec unknown)
-                      ". Accepted: " (vec (sort accepted))))))))
+                      ". Accepted: " (vec (sort accepted)))))
+      (if (seq unknown)
+        (select-keys opts (filter accepted (keys opts)))
+        opts))))
 
 (defn sketch
   "Create or augment a sketch with an optional sketch-level mapping.
@@ -314,7 +321,6 @@
   ([] (wrap-autorender (sketch/->sketch nil {} [] [] {})))
   ([data] (sketch data {}))
   ([data mapping]
-   (warn-unknown-opts! "sketch" mapping view-mapping-keys)
    ;; sk/sketch's mapping is for *appearance* aesthetics (color/size/etc.) that
    ;; flow into all views; it does not create a view. Reject :x/:y here so a
    ;; ggplot2-style `(ggplot data, aes(x, y))` pattern fails loudly instead of
@@ -324,12 +330,13 @@
                           "in its mapping. Use (sk/view sk :x :y) to declare position "
                           "mappings, or (sk/lay-point sk :x :y) for a one-shot view+layer.")
                      {:mapping mapping})))
-   (if (sketch/sketch? data)
-     ;; Merge new mapping into existing sketch, preserving views/layers/opts
-     (update data :mapping merge mapping)
-     ;; Fresh sketch from raw data (or nil)
-     (wrap-autorender
-      (sketch/->sketch (coerce-dataset data) mapping [] [] {})))))
+   (let [mapping (warn-and-strip-unknown-opts "sk/sketch" mapping view-mapping-keys)]
+     (if (sketch/sketch? data)
+       ;; Merge new mapping into existing sketch, preserving views/layers/opts
+       (update data :mapping merge mapping)
+       ;; Fresh sketch from raw data (or nil)
+       (wrap-autorender
+        (sketch/->sketch (coerce-dataset data) mapping [] [] {}))))))
 
 (defn with-data
   "Supply or replace data in a sketch."
@@ -339,14 +346,14 @@
 (defn- make-view
   "Build a view map from a mapping, extracting :data if present."
   [mapping]
-  (warn-unknown-opts! "view" mapping view-mapping-keys)
   (when (or (:facet-col mapping) (:facet-row mapping))
     (throw (ex-info (str "Faceting is plot-level, not view-level. "
                          "Use (sk/facet sk col) or (sk/facet-grid sk col-col row-col) "
                          "instead of putting :facet-col / :facet-row in a view's mapping.")
                     {:facet-col (:facet-col mapping)
                      :facet-row (:facet-row mapping)})))
-  (let [d (:data mapping)]
+  (let [mapping (warn-and-strip-unknown-opts "sk/view" mapping view-mapping-keys)
+        d (:data mapping)]
     (cond-> {:mapping (dissoc mapping :data)}
       d (assoc :data (coerce-dataset d)))))
 
@@ -444,18 +451,16 @@
 
 (defn- build-layer
   "Build a layer map from a method-key and optional opts.
-   Extracts :data if present. Warns on unrecognized option keys."
+   Extracts :data if present. Warns and strips unrecognized option keys."
   [method-key opts]
-  (when (and opts (keyword? method-key))
-    (let [reg (method/lookup method-key)
-          accepted (into (set method/universal-layer-options)
-                         (:accepts reg))
-          unknown (remove accepted (keys (dissoc opts :data)))]
-      (when (seq unknown)
-        (println (str "Warning: lay-" (name method-key)
-                      " does not recognize option(s): " (vec unknown)
-                      ". Accepted: " (vec (sort accepted)))))))
-  (let [d (:data opts)]
+  (let [opts (if (and opts (keyword? method-key))
+               (let [reg (method/lookup method-key)
+                     accepted (into (set method/universal-layer-options)
+                                    (:accepts reg))]
+                 (warn-and-strip-unknown-opts (str "lay-" (name method-key))
+                                              opts accepted))
+               opts)
+        d (:data opts)]
     (cond-> {:method method-key
              :mapping (dissoc (or opts {}) :data)}
       d (assoc :data (coerce-dataset d)))))
@@ -811,14 +816,14 @@
   "Set plot-level options (title, labels, width, height, etc.).
    Nested maps (e.g. :theme) are deep-merged."
   [sk opts]
-  (warn-unknown-opts! "options" opts plot-options-keys)
-  (doseq [k [:width :height]
-          :let [v (get opts k)]
-          :when v]
-    (when-not (and (number? v) (pos? v))
-      (throw (ex-info (str k " must be a positive number, got: " (pr-str v))
-                      {:option k :value v}))))
-  (update (ensure-sk sk) :opts deep-merge opts))
+  (let [opts (warn-and-strip-unknown-opts "sk/options" opts plot-options-keys)]
+    (doseq [k [:width :height]
+            :let [v (get opts k)]
+            :when v]
+      (when-not (and (number? v) (pos? v))
+        (throw (ex-info (str k " must be a positive number, got: " (pr-str v))
+                        {:option k :value v}))))
+    (update (ensure-sk sk) :opts deep-merge opts)))
 
 (def ^:private valid-scale-types
   "Scale types accepted by sk/scale. :linear and :log are the two
