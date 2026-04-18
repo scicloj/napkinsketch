@@ -1,20 +1,29 @@
 ;; # Options and Scopes
 ;;
-;; When you build a sketch, the values you set land in one of three
-;; places:
+;; Napkinsketch has three kinds of values you set, each answering
+;; a different question:
 ;;
-;; - **The scope hierarchy** -- mappings, layers, and data, scoped at
-;;   sketch, view, or layer level.
-;; - **The `:opts` field** -- plot-level options that configure the
-;;   whole rendered plot.
-;; - **Configuration** -- defaults that live outside any single sketch
-;;   (library defaults, project file, session overrides).
+;; - **Layer options** -- *how is this layer drawn?* Its
+;;   aesthetics (`:color`, `:size`), its method parameters
+;;   (`:bandwidth`, `:bins`), its data, its grouping and
+;;   position. Per-layer by nature, but scopable up to apply
+;;   across multiple layers.
+;; - **Plot options** -- *what describes this plot as a whole?*
+;;   Its title and labels, its axis scales, its coordinate
+;;   system, its facets, its annotations. Per-plot by nature;
+;;   there is one of each per plot.
+;; - **Configuration** -- *what are the rendering defaults?*
+;;   Palette, theme, default dimensions, color scale. Shared
+;;   across every plot you render; any one plot can override a
+;;   configuration key.
 ;;
-;; Earlier chapters introduced the scope hierarchy ([Core Concepts](./napkinsketch_book.core_concepts.html))
-;; and the configuration precedence chain is covered in the
-;; [Configuration](./napkinsketch_book.configuration.html) chapter.
-;; This chapter is the bridge -- it places the three together and
-;; shows which knob belongs where.
+;; The distinguishing test is simple: **can this kind of value
+;; meaningfully have a cross-plot default?** A title cannot --
+;; each plot needs its own. A palette can -- a whole project can
+;; share one. A layer's color mapping is per-layer, but when
+;; several layers should share it, you lift it to a wider scope.
+
+;; ## Setup
 
 (ns napkinsketch-book.options-and-scopes
   (:require
@@ -24,10 +33,6 @@
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
-
-;; ## Setup
-
-(def iris (rdatasets/datasets-iris))
 
 ;; A helper to inspect sketch structure without the dataset.
 
@@ -39,120 +44,158 @@
       kind/pprint))
 
 ;; ---
-;; ## The scope hierarchy
+;; ## Layer options
 ;;
-;; Mappings, layers, and data each have a three-level scope. Values
-;; at a higher scope flow down into every lower scope; values at a
-;; lower scope override values at a higher one.
+;; Layer options describe a specific layer. They include:
 ;;
-;; | Scope | How to set | Who sees it |
-;; |:------|:-----------|:------------|
-;; | Sketch | `sk/sketch` mapping, bare `sk/lay-*`, first argument as data | every view, every layer |
-;; | View | `sk/view` opts, `sk/lay-*` with columns | layers on that view |
-;; | Layer | `sk/lay-*` opts | that layer only |
+;; - **The method** -- the drawing recipe: a mark (point, line,
+;;   bar, histogram, ...), a stat (identity, lm, density,
+;;   binning, ...), and a position adjustment (dodge, stack,
+;;   jitter). The method is chosen by which `sk/lay-*` function
+;;   you call; its constituents can be overridden via `:mark`,
+;;   `:stat`, and `:position` keys in the opts map.
+;; - **Method parameters** -- knobs specific to the method, like
+;;   `:bandwidth` for `sk/lay-kde` or `:bins` for
+;;   `sk/lay-histogram`.
+;; - **Aesthetics** -- how the method maps data to visuals:
+;;   `:color`, `:size`, `:alpha`, `:shape`, `:group`. Either
+;;   mapped from a column (`:color :species`) or given as a
+;;   constant (`:alpha 0.3`).
+;; - **Data** -- a per-layer `:data` key, if the layer should
+;;   use a different dataset from the rest of the sketch.
 ;;
-;; A `:color` mapping placed in the options map of `sk/lay-*` becomes
-;; a layer-level mapping. The same `:color` placed in `sk/sketch`
-;; becomes a sketch-level mapping and flows into every layer.
+;; The primary way to set them is in the opts map of `sk/lay-*`:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    sk-summary)
+
+(kind/test-last
+ [(fn [m]
+    (= :species (get-in m [:views 0 :layers 0 :mapping :color])))])
+
+;; ### Scope: generalizing layer options upward
 ;;
-;; [Core Concepts](./napkinsketch_book.core_concepts.html) teaches
-;; this hierarchy in full. The key point here: scope is about
-;; **how far a value flows inside the sketch**.
+;; Method parameters, aesthetics, and per-layer data can also be
+;; set at wider **scopes** when they should apply to more than
+;; one layer. The scope hierarchy has three levels, from narrow
+;; to broad:
+;;
+;; | Scope  | Set via           | Reaches                    |
+;; |:-------|:------------------|:---------------------------|
+;; | Layer  | `sk/lay-*` opts   | that one layer             |
+;; | View   | `sk/view` opts    | every layer on that view   |
+;; | Sketch | `sk/sketch` opts  | every layer on every view  |
+;;
+;; When the same key is set at multiple scopes, narrower scope
+;; wins.
+;;
+;; The method itself is chosen per layer -- you pick which
+;; `sk/lay-*` to call, and that is where the method belongs.
+;; [Core Concepts](./napkinsketch_book.core_concepts.html)
+;; teaches how layers themselves (sketch-level vs view-level)
+;; combine, and the detailed combination rules for each category
+;; of layer option.
 
 ;; ---
-;; ## The `:opts` field
+;; ## Plot options
 ;;
-;; The sketch's fifth field, `:opts`, holds **plot-level options** --
-;; values that configure the whole rendered plot and cannot be scoped
-;; down to a view or layer.
+;; Plot options describe the plot as a whole: its title, labels,
+;; axis scales, coordinate system, facets, annotations. A plot
+;; has one of each -- there is no scope here, because there is
+;; nothing to vary over.
 ;;
-;; Plot-level options are set by:
+;; Five functions write plot options to the sketch's `:opts`
+;; field:
 ;;
-;; - `sk/options` -- title, subtitle, caption, axis labels, width,
-;;   height, theme overrides, palette, legend position.
-;; - `sk/scale` -- axis scales (log, categorical, fixed domain).
-;; - `sk/coord` -- coordinate system (cartesian, flipped, polar, fixed).
-;; - `sk/facet` and `sk/facet-grid` -- panel splits by column.
-;; - `sk/annotate` -- reference lines and bands.
-;;
-;; A plot-level option applies to the whole plot uniformly. There is
-;; no "view-level title" or "layer-level log scale" -- the title is
-;; a property of the plot, and the scale applies to every panel that
-;; shares the aesthetic.
+;; - `sk/options` -- plot text (title, subtitle, caption, axis
+;;   and legend labels) and panel dimensions. It also accepts
+;;   configuration keys as per-plot overrides (see Configuration
+;;   below).
+;; - `sk/scale` -- axis scale (log, categorical, fixed domain).
+;; - `sk/coord` -- coordinate system (cartesian, flipped, polar,
+;;   fixed).
+;; - `sk/facet` and `sk/facet-grid` -- split the plot into panels
+;;   by a column.
+;; - `sk/annotate` -- reference lines and shaded bands.
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
     (sk/options {:title "Iris"})
-    (sk/scale :x :log)
+    (sk/coord :flip)
     sk-summary)
 
 (kind/test-last
  [(fn [m]
     (and (= "Iris" (get-in m [:opts :title]))
-         (= {:type :log} (get-in m [:opts :x-scale]))))])
+         (= :flip (get-in m [:opts :coord]))))])
 
-;; Both the title and the log scale landed in `:opts`. Neither
-;; belongs to the scope hierarchy.
+;; Both the title and the coordinate system landed in `:opts`.
+;; Neither is at a scope; they belong to the plot as a whole.
+;;
+;; A note on faceted plots: the panels of a faceted sketch share
+;; scale types (all x-axes log, for example), but their scale
+;; domains are computed per panel by default. So "the plot has
+;; one scale" is true for the scale type, while the numeric
+;; domain shown on each panel may differ.
+;;
+;; A note on terminology: other chapters may refer to these
+;; values as **plot-level** -- a category name. That is not the
+;; same as **sketch-level**, which names a scope position (the
+;; top of the layer-options scope hierarchy) within another
+;; category. Trying to set a plot option inside an `sk/lay-*`
+;; opts map -- for example `{:x-scale {:type :log}}` -- is a
+;; category mistake: plot options belong in `:opts` via their
+;; dedicated functions above.
 
 ;; ---
 ;; ## Configuration
 ;;
-;; **Configuration** controls rendering behavior that carries across
-;; many plots: palette defaults, theme defaults, default dimensions,
-;; color scale defaults. It lives **outside** the sketch entirely.
+;; Configuration controls the rendering defaults -- palette,
+;; theme, default dimensions, color scale. A configuration value
+;; is resolved at render time from a layered stack of sources,
+;; from highest priority to lowest:
 ;;
-;; Configuration is layered, with the following precedence (highest
-;; first):
+;; 1. **Plot options** on the sketch (`sk/options`) -- a
+;;    per-plot override that wins for that one plot.
+;; 2. **Thread-local overrides** via `sk/with-config`.
+;; 3. **Global overrides** via `sk/set-config!`.
+;; 4. **Project file** (`napkinsketch.edn`), if present.
+;; 5. **Library defaults** -- the baseline shipped with
+;;    Napkinsketch.
 ;;
-;; 1. Plot options set on the sketch (`sk/options`).
-;; 2. Thread-local overrides (`sk/with-config`).
-;; 3. Global overrides (`sk/set-config!`).
-;; 4. Project file (`napkinsketch.edn`).
-;; 5. Library defaults.
-;;
-;; A configuration key can be overridden on a specific plot by
-;; writing it as a plot option. For example, `:palette` is a
-;; configuration key; `(sk/options {:palette :dark2})` sets it for
-;; one plot only.
+;; Sources 2-5 sit outside any specific sketch and carry across
+;; every plot you render. Source 1 is how a specific sketch dips
+;; into the chain to override a configuration key for itself --
+;; `(sk/options {:palette :dark2})` sets `:palette` on one
+;; sketch, and at render time wins over any palette set through
+;; the other four sources.
 ;;
 ;; The [Configuration](./napkinsketch_book.configuration.html)
-;; chapter covers the precedence chain and lists every configuration
-;; key.
+;; chapter covers each source in depth and lists every
+;; configuration key.
 
-;; ---
-;; ## Where each concept lives
-;;
-;; | Concept | Lives in | Notes |
-;; |:--------|:---------|:------|
-;; | Aesthetic mapping | scope hierarchy (sketch, view, or layer) | `:color`, `:size`, `:alpha`, `:shape`, `:group` |
-;; | Layer | scope hierarchy (sketch or view) | structural, not an option |
-;; | Data | scope hierarchy (sketch, view, or layer) | `:data` key at any scope |
-;; | Title, subtitle, labels, width, height, theme | `:opts` | plot-level |
-;; | Axis scale, coordinate system, facets, annotations | `:opts` | plot-level, set via dedicated functions |
-;; | Palette, theme, dimension defaults | configuration | carries across plots |
-;;
-;; The three columns of "lives in" correspond to the three places
-;; from the chapter opening. The distinction matters because it
-;; determines **how** you change each value:
-;;
-;; - To change an aesthetic for one group of layers -- pick a scope
-;;   in the hierarchy.
-;; - To change something about the whole plot -- use a plot-level
-;;   option.
-;; - To change a default for many plots -- use configuration.
+(select-keys (sk/config) [:width :height :margin])
+
+(kind/test-last
+ [(fn [m]
+    (and (number? (:width m))
+         (number? (:height m))
+         (number? (:margin m))))])
 
 ;; ---
 ;; ## A worked example
 ;;
-;; The sketch below touches all three places: a layer-level
-;; aesthetic mapping, a plot-level title and scale, and (at render
-;; time) configuration for palette and theme.
+;; The sketch below touches two categories explicitly. The third,
+;; configuration, shows up at render time.
 
 (def demo
-  (-> iris
+  (-> (rdatasets/datasets-iris)
+      ;; layer option -> layer-scope color mapping
       (sk/lay-point :sepal-length :sepal-width {:color :species})
+      ;; plot options -> :opts
       (sk/options {:title "Iris measurements"})
-      (sk/scale :x :log)))
+      (sk/coord :flip)))
 
 ;; The rendered plot:
 
@@ -165,62 +208,45 @@ demo
 (kind/test-last
  [(fn [m]
     (and
-     ;; layer-level mapping
+     ;; layer-scope mapping
      (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
-     ;; plot-level options
+     ;; plot options
      (= "Iris measurements" (get-in m [:opts :title]))
-     (= {:type :log} (get-in m [:opts :x-scale]))))])
+     (= :flip (get-in m [:opts :coord]))))])
 
 ;; Reading the summary:
 ;;
-;; - `:color :species` landed inside the layer's mapping -- it is a
-;;   layer-level mapping, so it is scoped to this one layer.
-;; - `:title` and `:x-scale` landed in `:opts` -- they are
-;;   plot-level, so they apply to the whole rendered plot.
-;;
-;; Configuration does not appear in the sketch structure. The
-;; theme, default dimensions, and other defaults are consulted by
-;; the renderer from the resolved configuration:
-
-(select-keys (sk/config) [:width :height :margin])
-
-(kind/test-last
- [(fn [m]
-    (and (number? (:width m))
-         (number? (:height m))
-         (number? (:margin m))))])
-
-;; Pseudocode (Clojure syntax) for setting a configuration override
-;; that would carry across many plots:
-;;
-;;     (sk/set-config! {:palette :dark2})
-;;
-;; The sketch would not change; the rendered result would pick up
-;; the new palette because rendering consults configuration.
+;; - `:color :species` is inside the layer's mapping -- a layer
+;;   option at layer scope.
+;; - `:title` and `:coord` are in `:opts` -- plot options, no
+;;   scope.
+;; - Configuration does not appear in the sketch. The renderer
+;;   will consult `(sk/config)` for theme, default dimensions,
+;;   and other defaults.
 
 ;; ---
-;; ## When to use which
+;; ## Coming from ggplot2
 ;;
-;; A short decision guide:
+;; For readers familiar with ggplot2, the three categories map
+;; roughly as follows:
 ;;
-;; - A visual property that varies by data point or group (color by
-;;   species, size by population) -- an aesthetic mapping. Choose a
-;;   scope based on how widely it should apply.
-;; - A property of the whole plot that does not depend on row-level
-;;   data (title, log axis, flipped coordinates, facets, annotation
-;;   lines) -- a plot-level option.
-;; - A default to carry across many plots (palette, theme, default
-;;   dimensions) -- configuration.
+;; | ggplot2 construct                            | napkinsketch category       |
+;; |:---------------------------------------------|:----------------------------|
+;; | `geom_*(aes(...))`                           | layer option (layer scope)  |
+;; | `ggplot(aes(...))`                           | layer option (sketch scope) |
+;; | `+ geom_*()`                                 | a layer                     |
+;; | `+ scale_*()`, `+ coord_*()`, `+ facet_*()`  | plot option                 |
+;; | `+ labs(...)`, one-off `+ theme(...)`        | plot option                 |
+;; | `theme_set(...)`, `options(...)`             | configuration               |
 
 ;; ---
 ;; ## See also
 ;;
 ;; - [Core Concepts](./napkinsketch_book.core_concepts.html) --
-;;   the scope hierarchy in full.
+;;   the scope hierarchy for layer options in full.
 ;; - [Sketch Rules](./napkinsketch_book.sketch_rules.html) --
-;;   precise rules for each category, rule by rule.
+;;   precise rules for each option function.
 ;; - [Configuration](./napkinsketch_book.configuration.html) --
-;;   the configuration precedence chain, with the full list of keys
-;;   and plot options.
+;;   the four configuration sources and every configuration key.
 ;; - [Glossary](./napkinsketch_book.glossary.html) -- definitions
-;;   of "aesthetic", "mapping", "plot option", "configuration".
+;;   of layer option, plot option, and configuration.

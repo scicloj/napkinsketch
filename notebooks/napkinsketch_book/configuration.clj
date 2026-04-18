@@ -1,11 +1,12 @@
 ;; # Configuration
 ;;
-;; Napkinsketch has three kinds of options:
+;; Napkinsketch has three kinds of values you set:
 ;;
 ;; - **Layer options** control individual layers -- aesthetics like `:color`,
 ;;   statistical parameters like `:bandwidth`. See the [Methods](./napkinsketch_book.methods.html) chapter.
 ;;
-;; - **Plot options** set per-plot text -- `:title`, `:subtitle`, `:caption`, axis labels.
+;; - **Plot options** describe the plot as a whole -- title, subtitle,
+;;   caption, axis labels, axis scales, coordinate system, facets, annotations.
 ;;
 ;; - **Configuration** controls everything else -- dimensions, theme, palette,
 ;;   color scale, and more -- via a layered precedence chain.
@@ -72,8 +73,11 @@
 
 ;; ### Plot Options
 ;;
-;; These options are accepted by `sk/options`, `sk/plan`, and `sk/plot`
-;; but are inherently per-plot -- text content or nested config override.
+;; These options are accepted directly by `sk/options`, `sk/plan`, and
+;; `sk/plot`; they are inherently per-plot, with no cross-plot defaults.
+;; (Other plot options -- axis scales, coordinate system, facets,
+;; annotations -- are set by their dedicated functions and live in the
+;; same `:opts` field.)
 
 (kind/table
  {:column-names ["Key" "Category" "Description"]

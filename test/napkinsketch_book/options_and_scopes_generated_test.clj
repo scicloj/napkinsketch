@@ -7,11 +7,8 @@
   [clojure.test :refer [deftest is]]))
 
 
-(def v3_l30 (def iris (rdatasets/datasets-iris)))
-
-
 (def
- v5_l34
+ v3_l39
  (defn
   sk-summary
   "Print sketch structure without :data (for readability)."
@@ -20,65 +17,53 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__2887938#] (dissoc p1__2887938# :data))))
+    (partial mapv (fn* [p1__2895657#] (dissoc p1__2895657# :data))))
    kind/pprint)))
 
 
 (def
- v7_l83
+ v5_l69
  (->
-  iris
-  (sk/lay-point :sepal-length :sepal-width)
-  (sk/options {:title "Iris"})
-  (sk/scale :x :log)
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})
   sk-summary))
 
 
 (deftest
- t8_l89
+ t6_l73
+ (is
+  ((fn
+    [m]
+    (= :species (get-in m [:views 0 :layers 0 :mapping :color])))
+   v5_l69)))
+
+
+(def
+ v8_l122
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  (sk/options {:title "Iris"})
+  (sk/coord :flip)
+  sk-summary))
+
+
+(deftest
+ t9_l128
  (is
   ((fn
     [m]
     (and
      (= "Iris" (get-in m [:opts :title]))
-     (= {:type :log} (get-in m [:opts :x-scale]))))
-   v7_l83)))
+     (= :flip (get-in m [:opts :coord]))))
+   v8_l122)))
 
 
-(def
- v10_l151
- (def
-  demo
-  (->
-   iris
-   (sk/lay-point :sepal-length :sepal-width {:color :species})
-   (sk/options {:title "Iris measurements"})
-   (sk/scale :x :log))))
-
-
-(def v12_l159 demo)
-
-
-(def v14_l163 (sk-summary demo))
+(def v11_l178 (select-keys (sk/config) [:width :height :margin]))
 
 
 (deftest
- t15_l165
- (is
-  ((fn
-    [m]
-    (and
-     (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
-     (= "Iris measurements" (get-in m [:opts :title]))
-     (= {:type :log} (get-in m [:opts :x-scale]))))
-   v14_l163)))
-
-
-(def v17_l185 (select-keys (sk/config) [:width :height :margin]))
-
-
-(deftest
- t18_l187
+ t12_l180
  (is
   ((fn
     [m]
@@ -86,4 +71,33 @@
      (number? (:width m))
      (number? (:height m))
      (number? (:margin m))))
-   v17_l185)))
+   v11_l178)))
+
+
+(def
+ v14_l192
+ (def
+  demo
+  (->
+   (rdatasets/datasets-iris)
+   (sk/lay-point :sepal-length :sepal-width {:color :species})
+   (sk/options {:title "Iris measurements"})
+   (sk/coord :flip))))
+
+
+(def v16_l202 demo)
+
+
+(def v18_l206 (sk-summary demo))
+
+
+(deftest
+ t19_l208
+ (is
+  ((fn
+    [m]
+    (and
+     (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
+     (= "Iris measurements" (get-in m [:opts :title]))
+     (= :flip (get-in m [:opts :coord]))))
+   v18_l206)))
