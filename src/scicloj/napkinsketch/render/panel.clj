@@ -101,9 +101,14 @@
   "Convert a plan panel into a membrane drawable tree.
    Takes a panel map from draft->plan and pixel dimensions.
    show-x? and show-y? control whether tick labels are drawn
-   (grid lines always render). cfg is the resolved config map."
-  [panel pw ph m cfg & {:keys [show-x? show-y? tooltip x-col-name y-col-name]
-                        :or {show-x? true show-y? true}}]
+   (grid lines always render). include-bg? controls whether the
+   panel background rectangle is included; when the caller is
+   rendering backgrounds in a separate pass (sparse grids), set
+   it to false so foreground elements from earlier panels do not
+   get painted over by later panels' backgrounds. cfg is the
+   resolved config map."
+  [panel pw ph m cfg & {:keys [show-x? show-y? include-bg? tooltip x-col-name y-col-name]
+                        :or {show-x? true show-y? true include-bg? true}}]
   (let [{:keys [x-domain y-domain x-scale y-scale coord
                 x-ticks y-ticks layers annotations]} panel
         coord-type (or coord :cartesian)
@@ -223,4 +228,5 @@
                                                      (assoc (ui/label label (ui/font nil fsize))
                                                             :text-anchor "end")))))))
                           (render-tick-labels :y y-ticks sy pw ph m cfg)))]
-    (vec (concat [background] grid marks ann-marks x-tick-labels y-tick-labels))))
+    (vec (concat (when include-bg? [background])
+                 grid marks ann-marks x-tick-labels y-tick-labels))))

@@ -206,7 +206,27 @@
         leftmost-col-per-row (into {} (for [[ri ps] (group-by :row panels)]
                                         [ri (apply min (map :col ps))]))
 
-        ;; Render each panel, positioned in the grid
+        ;; Two-pass rendering: draw every panel's background first, then
+        ;; foreground content on top. In sparse grids an earlier panel's
+        ;; x-tick labels sit just below its own plot area, which overlaps
+        ;; the cell below it. Without this split, that cell's panel
+        ;; background (drawn later in a single pass) would paint over
+        ;; those ticks.
+        theme-bg (defaults/hex->rgba (:bg theme))
+        panel-bgs
+        (vec
+         (for [p panels
+               :let [ri (:row p)
+                     ci (:col p)
+                     x-off (+ y-label-pad (* ci pw))
+                     y-off (+ title-pad strip-h (* ri ph))]]
+           (ui/translate (+ x-off margin) (+ y-off margin)
+                         (ui/with-color theme-bg
+                           (ui/with-style ::ui/style-fill
+                             (ui/rectangle (- pw margin margin)
+                                           (- ph margin margin)))))))
+
+        ;; Render each panel's foreground (grid, marks, ticks -- no bg)
         panel-elems
         (vec
          (for [p panels
@@ -220,6 +240,7 @@
                          (panel/panel->membrane p pw ph margin cfg
                                                 :show-x? show-x?
                                                 :show-y? show-y?
+                                                :include-bg? false
                                                 :tooltip tooltip
                                                 :x-col-name (or x-label "x")
                                                 :y-col-name (or y-label "y")))))
@@ -331,7 +352,10 @@
               ;; Fallback to right
               (when legend
                 (render-legend-from-plan legend legend-x base-y cfg))))))
-      ;; Panels
+      ;; Panels: all backgrounds first, then foregrounds, so that
+      ;; x-tick labels that land in the cell below their panel are
+      ;; not overpainted by that cell's background.
+      panel-bgs
       panel-elems
       ;; Strip labels
       (or col-strips [])
