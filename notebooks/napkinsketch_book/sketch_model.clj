@@ -142,7 +142,7 @@
 ;; |:-----|:--------|
 ;; | The what/how split | `sk/view` (what) + `sk/lay-*` (how) -> sketch |
 ;; | Sketches are data | Plain records -- inspect with `kind/pprint` |
-;; | What/how separation | Share columns across layers |
+;; | Composition | Share columns across layers |
 ;; | Inference fills gaps | Omit choices, library infers from data |
 ;; | Everything composes | All functions return sketches, thread with `->` |
 ;;
