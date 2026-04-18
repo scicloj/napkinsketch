@@ -102,9 +102,9 @@ scatter-views
 ;;
 ;; | Number of columns | Inferred mapping |
 ;; |:------------------|:-----------------|
-;; | 1 | first -> x |
-;; | 2 | first -> x, second -> y |
-;; | 3 | first -> x, second -> y, third -> color |
+;; | 1 | first column becomes x |
+;; | 2 | first becomes x, second becomes y |
+;; | 3 | first becomes x, second becomes y, third becomes color |
 ;; | 4+ | error -- specify columns explicitly |
 ;;
 ;; One column:
@@ -148,7 +148,7 @@ scatter-views
 ;; |:-------------|:--------------|
 ;; | float, int | `:numerical` |
 ;; | string, keyword, boolean, symbol, text | `:categorical` |
-;; | LocalDate, LocalDateTime, Instant, java.util.Date | `:temporal` -> numerical with calendar-aware ticks |
+;; | LocalDate, LocalDateTime, Instant, java.util.Date | `:temporal` (numerical, with calendar-aware ticks) |
 ;;
 ;; Internally, `infer-column-types` in `resolve.clj` handles this step.
 ;;
@@ -282,11 +282,11 @@ fixed-color-views
 ;;
 ;; Here is the full resolution order for a string `:color` value:
 ;;
-;; 1. If the string matches a dataset column -> column reference (grouping)
-;; 2. If it starts with `#` -> hex color (`"#E74C3C"`, `"#F00"`)
-;; 3. If it parses as hex without `#` -> hex color (`"00FF00"`)
-;; 4. If it matches a CSS color name -> named color (`"red"`, `"steelblue"`)
-;; 5. Otherwise -> error with a helpful message
+;; 1. If the string matches a dataset column, it is a column reference (grouping)
+;; 2. If it starts with `#`, it is a hex color (`"#E74C3C"`, `"#F00"`)
+;; 3. If it parses as hex without `#`, it is a hex color (`"00FF00"`)
+;; 4. If it matches a CSS color name, it is a named color (`"red"`, `"steelblue"`)
+;; 5. Otherwise, error with a helpful message
 ;;
 ;; In practice, ambiguity is rare. Column names like `"species"` or
 ;; `"temperature"` are not valid CSS colors, and color names like
@@ -689,7 +689,7 @@ count-views
 ;; `build-legend` in `plan.clj` constructs the legend from
 ;; the collected color information. Three cases:
 ;;
-;; Categorical color -> discrete legend with one entry per category:
+;; A categorical color mapping produces a discrete legend with one entry per category:
 
 (:legend (sk/plan colored-views))
 
@@ -698,19 +698,19 @@ count-views
 
 ;; Title is the column name. Each entry has a `:label` and `:color` (RGBA).
 ;;
-;; No color mapping -> no legend:
+;; No color mapping means no legend:
 
 (:legend (sk/plan scatter-views))
 
 (kind/test-last [nil?])
 
-;; Fixed color string -> no legend:
+;; A fixed color string also suppresses the legend:
 
 (:legend (sk/plan fixed-color-views))
 
 (kind/test-last [nil?])
 
-;; Numeric color -> continuous legend (gradient bar):
+;; A numeric color mapping produces a continuous legend (gradient bar):
 
 (:legend (-> {:x [1 2 3] :y [4 5 6] :val [10 20 30]}
              (sk/lay-point :x :y {:color :val})
@@ -733,7 +733,7 @@ count-views
                                 (= :s (:title leg))
                                 (= 5 (count (:entries leg)))))])
 
-;; Each entry has a `:value` and `:radius`. No size mapping -> no size legend:
+;; Each entry has a `:value` and `:radius`. No size mapping means no size legend:
 
 (:size-legend (sk/plan scatter-views))
 
@@ -754,7 +754,7 @@ count-views
                                 (= :a (:title leg))
                                 (pos? (count (:entries leg)))))])
 
-;; No alpha mapping -> no alpha legend:
+;; No alpha mapping means no alpha legend:
 
 (:alpha-legend (sk/plan scatter-views))
 
@@ -790,9 +790,9 @@ count-views
 
 ;; Layout type is also inferred from the view structure:
 ;;
-;; - Single panel -> `:single`
-;; - Facet grid (`:facet-row` or `:facet-col`) -> `:facet-grid`
-;; - Multiple x-y pairs (scatter plot matrix) -> `:multi-variable`
+;; - A single panel is `:single`
+;; - A facet grid (`:facet-row` or `:facet-col`) is `:facet-grid`
+;; - Multiple x-y pairs (scatter plot matrix) are `:multi-variable`
 
 (let [pl (sk/plan scatter-views)]
   (:layout-type pl))
@@ -936,7 +936,7 @@ graph TD
 ;;
 ;; | What is inferred | Default | Override |
 ;; |:-----------------|:--------|:---------|
-;; | Column selection | 1->x, 2->x y, 3->x y color | explicit column args in `sk/view` or `sk/lay-*` |
+;; | Column selection | one column fills x; two fill x, y; three fill x, y, color | explicit column args in `sk/view` or `sk/lay-*` |
 ;; | Column type | dtype inspection | `:x-type`, `:y-type`, `:color-type` in view options |
 ;; | Aesthetic classification | keyword = column, string = color/column | explicit `:color` keyword vs hex string |
 ;; | Grouping | categorical color column | `:group` aesthetic |
@@ -946,7 +946,7 @@ graph TD
 ;; | Fill domain | `[0.0, 1.0]` for fill position | `(sk/scale views :y {:domain [0 2]})` |
 ;; | Tick values | round intervals (linear), powers of 10 (log) | wadogo scale configuration |
 ;; | Tick labels | number formatting, calendar formatting | wadogo label formatting |
-;; | Axis labels | column name, underscores -> spaces | `(sk/options {:x-label "Custom"})` |
+;; | Axis labels | column name, with underscores replaced by spaces | `(sk/options {:x-label "Custom"})` |
 ;; | Color legend | categorical = discrete, numerical = continuous, none = no legend | `:color` mapping controls presence |
 ;; | Size legend | 5 graduated circles when `:size` maps to numerical column | `:size` mapping controls presence |
 ;; | Alpha legend | 5 graduated opacity squares when `:alpha` maps to numerical column | `:alpha` mapping controls presence |

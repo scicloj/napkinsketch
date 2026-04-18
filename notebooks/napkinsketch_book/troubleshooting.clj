@@ -46,7 +46,7 @@
 ;; **Fix**: Use an explicit `sk/lay-*` function instead of relying
 ;; on inference:
 
-;; This infers a scatter (categorical x numerical):
+;; This infers a scatter (categorical crossed with numerical):
 
 (-> (rdatasets/datasets-iris)
     (sk/view :species :sepal-width))

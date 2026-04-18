@@ -28,8 +28,8 @@
 ;; ## Draft layer (internal)
 ;;
 ;; A **draft layer** is the internal flat map produced by `sk/draft`.
-;; Each view x layer combination in a sketch resolves to one draft layer
-;; via `merge(sketch mapping, view mapping, layer mapping)`. Draft layers
+;; Each view-layer combination in a sketch resolves to one draft layer
+;; by merging the sketch, view, and layer mappings. Draft layers
 ;; carry all the information the pipeline needs: data, columns, mark, stat,
 ;; color, grouping.
 ;;
@@ -241,7 +241,7 @@ my-sketch
 ;; scales for easy comparison.
 ;;
 ;; - `sk/facet` creates a row or column of panels
-;; - `sk/facet-grid` creates a row x column grid from two columns
+;; - `sk/facet-grid` creates a row-by-column grid from two columns
 ;;
 ;; By default all panels share the same axis ranges. Use
 ;; `(sk/options {:scales ...})` to allow panels to have independent
@@ -294,9 +294,9 @@ my-sketch
 ;;
 ;; | Type | Behavior |
 ;; |:-----|:---------|
-;; | `:cartesian` | Standard x->right, y->up |
+;; | `:cartesian` | Standard: x rightward, y upward |
 ;; | `:flip` | Swap x and y axes |
-;; | `:polar` | Radial: x->angle, y->radius |
+;; | `:polar` | Radial: x as angle, y as radius |
 ;; | `:fixed` | Equal aspect ratio: 1 data unit = 1 data unit |
 
 ;; ## Annotation
@@ -355,8 +355,8 @@ my-sketch
 ;; `RoundedRectangle`, `Label`, etc.) that represents a complete plot.
 ;;
 ;; The membrane is an intermediate step in the SVG rendering path:
-;; plan -> membrane -> SVG hiccup. Direct renderers (e.g., Plotly)
-;; skip the membrane entirely.
+;; the plan becomes a membrane, which becomes SVG hiccup. Direct
+;; renderers (e.g., Plotly) skip the membrane entirely.
 
 (def my-membrane (sk/plan->membrane my-plan))
 
@@ -465,7 +465,7 @@ my-sketch
 ;; | Sketch mapping | Mappings in `:mapping` that apply to all views | `sk/sketch` opts map |
 ;; | Global layer | Layer in `:layers` applied to all views | `sk/lay-*` without columns |
 ;; | View-local layer | Layer in `view[:layers]` applied to one view | `sk/lay-*` with columns |
-;; | Draft | `merge(sketch mapping, view mapping, layer mapping)` -> draft layer | `sk/draft`, automatic during `sk/plan` |
+;; | Draft | Draft layer from merging sketch, view, and layer mappings | `sk/draft`, automatic during `sk/plan` |
 ;; | Method | Mark + stat + position bundle | `sk/method-lookup`, `sk/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in method map |
 ;; | Stat | Data transform: identity, bin, count, lm, kde, ... | Key in method map |
@@ -478,7 +478,7 @@ my-sketch
 ;; | Layer | Resolved geometry + style for one mark | Inside plan panels |
 ;; | Domain | Data range on an axis | Part of panel |
 ;; | Tick | Axis mark with label at a domain value | Part of panel |
-;; | Scale | Data -> pixel mapping (linear, log, categorical) | `sk/scale` |
+;; | Scale | Data-to-pixel mapping (linear, log, categorical) | `sk/scale` |
 ;; | Coord | Coordinate system (cartesian, flip, polar, fixed) | `sk/coord` |
 ;; | Facet | Split into panels by a categorical column | `sk/facet`, `sk/facet-grid` |
 ;; | Annotation | Non-data reference marks (rules, bands) | `sk/annotate` |

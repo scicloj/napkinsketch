@@ -56,10 +56,10 @@
 ;; | Multimethod | Namespace | Dispatches on | Purpose |
 ;; |:------------|:----------|:--------------|:--------|
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
-;; | `extract-layer` | `impl/extract.clj` | `:mark` key | Convert stat result -> plan layer descriptor |
-;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render plan layer -> membrane drawables |
-;; | `plan->figure` | `impl/render.clj` | format keyword | Orchestrate plan -> figure (full path) |
-;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert membrane tree -> figure |
+;; | `extract-layer` | `impl/extract.clj` | `:mark` key | Convert a stat result into a plan layer descriptor |
+;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render a plan layer as membrane drawables |
+;; | `plan->figure` | `impl/render.clj` | format keyword | Orchestrate the full path from plan to figure |
+;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert a membrane tree into a figure |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
 ;; | `apply-position` | `impl/position.clj` | position keyword | Adjust group layout (dodge, stack, fill) |
@@ -122,9 +122,9 @@
 ;; point-like marks, return `:points` (groups of `:xs`, `:ys`).
 ;; For other marks, study a similar existing pair as a template:
 ;;
-;; - `:identity` -> `{:points [...] :x-domain [...] :y-domain [...]}`
-;; - `:bin` -> `{:bins [...] :max-count ... :x-domain [...] :y-domain [...]}`
-;; - `:boxplot` -> `{:boxes [...] :categories [...] :x-domain [...] :y-domain [...]}`
+;; - `:identity` returns `{:points [...] :x-domain [...] :y-domain [...]}`
+;; - `:bin` returns `{:bins [...] :max-count ... :x-domain [...] :y-domain [...]}`
+;; - `:boxplot` returns `{:boxes [...] :categories [...] :x-domain [...] :y-domain [...]}`
 
 ;; ## `extract-layer`
 ;;
@@ -228,14 +228,14 @@
 
 ;; ## `plan->figure`
 ;;
-;; Orchestrates the full plan -> figure path. The `:svg` implementation
-;; goes through the membrane path: `plan -> membrane -> figure`.
-;; Other renderers can skip membrane and go directly from plan
-;; to their target format.
+;; Orchestrates the full path from plan to figure. The `:svg`
+;; implementation goes through the membrane path: plan, then membrane,
+;; then figure. Other renderers can skip membrane and go directly from
+;; plan to their target format.
 ;;
 ;; | Dispatch value | Path |
 ;; |:---------------|:-----|
-;; | `:svg` | plan -> membrane -> `membrane->figure :svg` |
+;; | `:svg` | plan, then membrane, then `membrane->figure :svg` |
 ;;
 ;; Dispatch function: `(fn [plan format opts] format)`
 
@@ -348,7 +348,7 @@
 (kind/test-last [(fn [t] (= 3 (count (:row-maps t))))])
 ;;
 ;; Dispatch: inferred from the domain type and scale spec.
-;; Categorical domains -> `:categorical`. Numerical domains default to
+;; Categorical domains dispatch to `:categorical`. Numerical domains default to
 ;; `:linear`, overridden to `:log` by `(sk/scale sketch :x :log)`.
 
 ;; ## `make-coord`

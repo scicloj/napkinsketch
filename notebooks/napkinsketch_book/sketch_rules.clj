@@ -721,7 +721,7 @@
 ;; `or` picks the narrowest data. `merge` combines mappings --
 ;; innermost wins, `nil` erases.
 
-;; ### Rule 18: one rendered layer per view x applicable-layer combination
+;; ### Rule 18: one rendered layer per view-layer combination
 ;;
 ;; For each view, the number of layers rendered equals its own
 ;; layers plus the sketch-level layers.
@@ -839,7 +839,7 @@ assembly-sketch
 ;; ### Rule 22: faceting splits each view into panels by category
 ;;
 ;; `sk/facet` produces one panel per category value. `sk/facet-grid`
-;; produces a row x column grid.
+;; produces a row-by-column grid.
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
@@ -942,7 +942,7 @@ assembly-sketch
 ;;
 ;; | Section | Rule | Statement |
 ;; |:--------|:-----|:----------|
-;; | Assembly | 18 | One rendered layer per view x applicable-layer combination |
+;; | Assembly | 18 | One rendered layer per view-layer combination |
 ;; | | 19 | Each rendered layer carries fully merged scope |
 ;; | Layout | 20 | Each view becomes one panel |
 ;; | | 21 | Layers within one view overlay in one panel |

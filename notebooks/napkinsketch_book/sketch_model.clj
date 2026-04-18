@@ -93,14 +93,14 @@
 ;; ## Idea 4: Inference fills the gaps
 ;;
 ;; When you omit a choice, napkinsketch infers it from the data.
-;; Two numerical columns with no `lay-*` -> scatter:
+;; Two numerical columns with no `lay-*` are inferred as a scatter:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; One numerical column -> histogram:
+;; One numerical column is inferred as a histogram:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length))
@@ -140,7 +140,7 @@
 ;;
 ;; | Idea | In code |
 ;; |:-----|:--------|
-;; | The what/how split | `sk/view` (what) + `sk/lay-*` (how) -> sketch |
+;; | The what/how split | `sk/view` says what; `sk/lay-*` says how |
 ;; | Sketches are data | Plain records -- inspect with `kind/pprint` |
 ;; | Composition | Share columns across layers |
 ;; | Inference fills gaps | Omit choices, library infers from data |

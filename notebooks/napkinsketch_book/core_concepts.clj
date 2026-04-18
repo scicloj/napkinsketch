@@ -71,8 +71,8 @@
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
 ;; When the dataset has 1, 2, or 3 columns, you can omit the column
-;; names entirely -- they are inferred by position (first -> x,
-;; second -> y, third -> color):
+;; names entirely -- they are inferred by position: the first column
+;; becomes x, the second becomes y, the third becomes color.
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
     sk/lay-point)
@@ -753,13 +753,13 @@ my-sketch
 ;;
 ;; Three ideas explain the entire model:
 ;;
-;; **1. View and layer.** A view says what (which columns -> panel).
-;; A layer says how (which chart type, with what options). Views x
-;; applicable layers -> rendered result.
+;; **1. View and layer.** A view says *what*: which columns define a
+;; panel. A layer says *how*: which chart type, with what options.
+;; Each applicable layer, rendered on each view, gives the final plot.
 ;;
 ;; **2. Scope.** Where you write it determines who sees it.
-;; Mappings, layers, and data all flow downward: sketch -> view ->
-;; layer. Lower overrides higher.
+;; Mappings, layers, and data all flow downward from the sketch, to
+;; each view, to each layer -- lower overrides higher.
 ;;
 ;; **3. Identity.** `view` always creates a new view. `lay-*` finds
 ;; the most recent view with the same x and y columns, or creates one.

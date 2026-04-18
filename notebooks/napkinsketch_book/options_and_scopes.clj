@@ -212,9 +212,9 @@
 
 (def demo
   (-> (rdatasets/datasets-iris)
-      ;; layer option -> layer-scope color mapping
+      ;; layer option: a layer-scope color mapping
       (sk/lay-point :sepal-length :sepal-width {:color :species})
-      ;; plot options -> :opts
+      ;; plot options: stored in :opts
       (sk/options {:title "Iris measurements"})
       (sk/coord :flip)))
 
