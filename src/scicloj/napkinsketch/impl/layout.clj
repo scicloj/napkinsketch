@@ -200,12 +200,22 @@
 (defn- pad-caption [{:keys [caption?]} _cfg]
   (if caption? 18 0))
 
-(defn- pad-x-label [{:keys [x-label?]} cfg]
-  (if x-label? (:label-offset cfg) 0))
-
 (defn- tick-font-size [cfg]
   (get-in cfg [:theme :font-size]
           (get-in defaults/defaults [:theme :font-size])))
+
+(defn- pad-x-label
+  "Vertical space reserved below the bottom row of panels. When a
+   global x-label is shown, `:label-offset` covers both the x-axis
+   title and the tick labels above it. When there is no global
+   x-label (e.g. a multi-variable grid whose columns have different
+   x axes, each titled by a strip label at the top), we still need
+   room for the x-tick labels themselves; reserve tick-font-size
+   plus a small padding."
+  [{:keys [x-label?]} cfg]
+  (cond
+    x-label? (:label-offset cfg)
+    :else    (+ (tick-font-size cfg) 6)))
 
 (defn- y-tick-text-width
   "Over-estimate of the widest y-tick label in pixels. Runs the tick
