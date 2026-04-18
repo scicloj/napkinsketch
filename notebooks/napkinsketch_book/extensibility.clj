@@ -107,7 +107,9 @@
 ;; ### How to extend: add a new stat
 ;;
 ;; To add a new statistical transform (e.g., `:loess` for local
-;; regression), define a new `defmethod`:
+;; regression), define a new `defmethod`.
+;;
+;; Pseudocode (Clojure syntax):
 ;;
 ;; ```clojure
 ;; (defmethod stat/compute-stat :loess [view]
@@ -181,7 +183,9 @@
 ;; ### How to extend: add a new mark type
 ;;
 ;; Adding a new mark (e.g., `:area` for area charts) requires methods
-;; on both `extract-layer` and `layer->membrane`:
+;; on both `extract-layer` and `layer->membrane`.
+;;
+;; Pseudocode (Clojure syntax):
 ;;
 ;; ```clojure
 ;; ;; 1. Extract geometry from stat result
@@ -261,7 +265,9 @@
 ;; ### How to extend: add a new direct format
 ;;
 ;; To add a Plotly renderer that reads plan data directly
-;; (no membrane needed), register a `plan->figure` defmethod:
+;; (no membrane needed), register a `plan->figure` defmethod.
+;;
+;; Pseudocode (Clojure syntax):
 ;;
 ;; ```clojure
 ;; (ns mylib.render.plotly
@@ -312,7 +318,9 @@
 ;; ### How to extend: add a new membrane-based format
 ;;
 ;; To add a format that reuses the membrane tree (e.g., Canvas, PDF),
-;; register a `membrane->figure` defmethod:
+;; register a `membrane->figure` defmethod.
+;;
+;; Pseudocode (Clojure syntax):
 ;;
 ;; ```clojure
 ;; (ns mylib.render.canvas
