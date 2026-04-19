@@ -5,8 +5,11 @@
 ;; in action by examining the **plan** -- the resolved data structure
 ;; that captures every inference decision.
 ;;
-;; The examples use small inline datasets so the full plan is
-;; readable.
+;; This chapter is a reference: each rule in detail, with its default,
+;; its override, and a plan-level check. For the conceptual overview,
+;; read [The Sketch Model](./napkinsketch_book.sketch_model.html) and
+;; [Core Concepts](./napkinsketch_book.core_concepts.html) first. The
+;; examples here use small inline datasets so the full plan is readable.
 
 (ns napkinsketch-book.inference-rules
   (:require
@@ -34,12 +37,15 @@
 ;; 6. **Domains** -- data extent for each axis, with padding
 ;; 7. **Ticks** -- nice round values and formatted labels
 ;; 8. **Axis labels** -- derived from column names
-;; 9. **Legend** -- type, entries, and layout space
+;; 9. **Legends** -- color, size, and alpha legends with their entries
 ;; 10. **Layout** -- single panel, facet grid, or multi-variable
-;; 11. **Coordinate transform** -- cartesian, flip, or polar
+;; 11. **Coordinate flipping** -- swap axes after layout (polar has its own chapter)
 ;;
 ;; Each rule has a sensible default and an explicit override.
 ;; The sections below demonstrate each rule with live examples.
+;; Two cross-cutting sections follow the rule-by-rule tour: how the
+;; rules combine in multi-layer plots, and a diagram of the full
+;; resolution pipeline.
 
 ;; ## Inspecting the Plan
 ;;
@@ -138,7 +144,7 @@ scatter-views
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; ## Column Type Detection
+;; ## Column Types
 ;;
 ;; Once columns are selected, the next step is determining the type of each column: **numerical**, **categorical**,
 ;; or **temporal**? This determines the scale type, domain, tick style,
@@ -485,7 +491,7 @@ fixed-color-views
 ;; smoothers, boxplots, and dodge/stack positioning all operate
 ;; per group.
 
-;; ## Method Inference
+;; ## Method
 ;;
 ;; When you use `sk/view` without an explicit `sk/lay-*` call,
 ;; Napkinsketch infers the **method** -- a mark + stat bundle --
@@ -549,7 +555,7 @@ count-views
 
 (kind/test-last [(fn [m] (= :point m))])
 
-;; ## Domain Inference
+;; ## Domains
 ;;
 ;; Numerical domains extend 5% beyond the data range so points
 ;; aren't clipped at the edges. Internally, `pad-domain` in
@@ -594,7 +600,7 @@ count-views
 ;; Multi-layer plots merge domains across layers -- see
 ;; "Multi-Layer Plans" below.
 
-;; ## Tick Inference
+;; ## Ticks
 ;;
 ;; Once domains are computed, Napkinsketch selects "nice" round tick
 ;; values. The logic depends on the scale type:
@@ -647,7 +653,7 @@ count-views
 
 (kind/test-last [(fn [v] (= ["cat" "dog" "bird" "fish"] v))])
 
-;; ## Axis Label Inference
+;; ## Axis Labels
 ;;
 ;; Labels come from column names. Underscores and hyphens become spaces.
 ;; Internally, `resolve-labels` in `plan.clj` handles this.
@@ -683,7 +689,7 @@ count-views
 (kind/test-last [(fn [m] (and (= "Length (cm)" (:x-label m))
                               (= "Width (cm)" (:y-label m))))])
 
-;; ## Legend Inference
+;; ## Legends
 ;;
 ;; A legend appears when a column is mapped to color. Internally,
 ;; `build-legend` in `plan.clj` constructs the legend from
@@ -760,7 +766,7 @@ count-views
 
 (kind/test-last [nil?])
 
-;; ## Layout Inference
+;; ## Layout
 ;;
 ;; The `:layout` map adjusts padding based on what elements are
 ;; present. Internally, `compute-layout-dims` in `plan.clj`
@@ -851,6 +857,10 @@ count-views
 
 ;; After flipping, the visual x-axis shows "y" and the visual y-axis
 ;; shows "x" -- labels track the visual axes.
+;;
+;; Polar coordinates (`:coord :polar`) are a larger transform -- rose
+;; charts, radial bars, and related plots. The
+;; [Polar](./napkinsketch_book.polar.html) chapter covers them in depth.
 
 ;; ## Multi-Layer Plans
 ;;
