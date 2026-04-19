@@ -33,7 +33,7 @@
 ;; 2. **Column types** -- whether x and y are numerical, categorical, or temporal
 ;; 3. **Aesthetic resolution** -- whether `:color`, `:size`, `:alpha`, and `:text` are column references or fixed values
 ;; 4. **Grouping** -- which columns split data into subsets (explicit `:group` plus a categorical `:color`)
-;; 5. **Method** -- which mark and stat to use (e.g., scatter, histogram, bar)
+;; 5. **Method** -- which mark and stat to use (e.g., scatter, histogram, bar, line, boxplot)
 ;; 6. **Domains** -- data extent for each axis, with padding
 ;; 7. **Ticks** -- nice round values and formatted labels
 ;; 8. **Axis labels** -- derived from column names
@@ -495,22 +495,36 @@ fixed-color-views
 ;;
 ;; When you use `sk/view` without an explicit `sk/lay-*` call,
 ;; Napkinsketch infers the **method** -- a mark + stat bundle --
-;; from the column types. Internally, `infer-method` in `resolve.clj`
-;; implements these rules:
+;; from the column types of the referenced columns. Internally,
+;; `infer-method` in `resolve.clj` applies these rules.
 ;;
-;; | Columns | Inferred mark | Inferred stat |
-;; |:--------|:--------------|:--------------|
-;; | one numerical | `:bar` | `:bin` (histogram) |
-;; | one categorical | `:rect` | `:count` (bar chart) |
-;; | two numerical | `:point` | `:identity` (scatter) |
-;; | temporal x + numerical y | `:line` | `:identity` (time series) |
-;; | categorical x + numerical y | `:boxplot` | `:boxplot` |
-;; | other pairs | `:point` | `:identity` (scatter) |
+;; ### Single-column cases (or x = y on the diagonal)
+;;
+;; | Column type | Inferred | Mark + stat |
+;; |:------------|:---------|:------------|
+;; | numerical | histogram | `:bar` + `:bin` |
+;; | temporal | histogram (over epoch-ms, with calendar-aware ticks) | `:bar` + `:bin` |
+;; | categorical | bar chart of category counts | `:rect` + `:count` |
+;;
+;; ### Two-column cases
+;;
+;; | x type | y type | Inferred | Mark + stat |
+;; |:-------|:-------|:---------|:------------|
+;; | numerical | numerical | scatter | `:point` + `:identity` |
+;; | temporal | numerical | time-series line | `:line` + `:identity` |
+;; | categorical | numerical | boxplot | `:boxplot` + `:boxplot` |
+;; | any other pair | | scatter (fallback) | `:point` + `:identity` |
+;;
+;; Fallback pairs include numerical x + categorical y, temporal x +
+;; categorical y, categorical x + categorical y, and temporal x +
+;; temporal y. These are rarer in practice, and giving them a
+;; dedicated inference is deferred. You can always override with an
+;; explicit `sk/lay-*` call; the inferred method is only a default.
 ;;
 ;; When you use `sk/lay-point`, `sk/lay-histogram`, etc., the method's
 ;; stat takes precedence -- column-type inference is bypassed.
 ;;
-;; A single numerical column:
+;; A single numerical column produces a histogram:
 
 (def hist-views
   (-> five-points
@@ -525,11 +539,22 @@ hist-views
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; The layer mark is `:bar` -- inferred because a single numerical column
-;; means histogram. The layer data contains `:bins` with `:x0`, `:x1`,
-;; `:count` -- the result of the `:bin` stat.
-;;
-;; A single categorical column:
+;; The layer mark is `:bar` -- the layer data contains `:bins` with
+;; `:x0`, `:x1`, `:count` -- the result of the `:bin` stat.
+
+;; A single temporal column also becomes a histogram, binned over
+;; epoch-milliseconds with calendar-aware tick labels:
+
+(let [pl (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
+                     #inst "2024-04-01" #inst "2024-05-01"]}
+             (sk/view :date)
+             sk/plan)
+      layer (first (:layers (first (:panels pl))))]
+  (:mark layer))
+
+(kind/test-last [(fn [m] (= :bar m))])
+
+;; A single categorical column produces a bar chart of counts:
 
 (def count-views
   (-> animals
@@ -546,7 +571,30 @@ count-views
 
 ;; Mark is `:rect` with `:counts` -- the `:count` stat tallied each
 ;; of the 4 categories.
-;;
+
+;; Two numerical columns produce a scatter (the chapter's opening
+;; `scatter-views` shows this):
+
+(let [pl (-> five-points
+             (sk/view :x :y)
+             sk/plan)
+      layer (first (:layers (first (:panels pl))))]
+  (:mark layer))
+
+(kind/test-last [(fn [m] (= :point m))])
+
+;; A temporal x with a numerical y infers a time-series line. Row
+;; order is preserved, so pre-sort temporal data to avoid zigzag:
+
+(let [pl (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"]
+              :val  [10 25 18]}
+             (sk/view :date :val)
+             sk/plan)
+      layer (first (:layers (first (:panels pl))))]
+  (:mark layer))
+
+(kind/test-last [(fn [m] (= :line m))])
+
 ;; A categorical x with a numerical y infers a boxplot -- the default
 ;; for summarizing a distribution across groups:
 
@@ -559,17 +607,11 @@ count-views
 
 (kind/test-last [(fn [m] (= :boxplot m))])
 
-;; A temporal x with a numerical y infers a time-series line -- order
-;; is preserved from the row order, so pre-sort temporal data:
-
-(let [pl (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"]
-              :val  [10 25 18]}
-             (sk/view :date :val)
-             sk/plan)
-      layer (first (:layers (first (:panels pl))))]
-  (:mark layer))
-
-(kind/test-last [(fn [m] (= :line m))])
+;; Pairs without a dedicated rule (numerical x + categorical y,
+;; categorical x + categorical y, and so on) fall back to scatter
+;; via the `:else` branch. Some of these orientations are awkward in
+;; the current plan construction; in practice you will name an
+;; explicit `sk/lay-*` when you reach for them.
 
 ;; ## Domains
 ;;
