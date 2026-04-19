@@ -546,14 +546,19 @@ hist-views
 ;; A single temporal column also becomes a histogram, binned over
 ;; epoch-milliseconds with calendar-aware tick labels:
 
-(let [pl (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
-                     #inst "2024-04-01" #inst "2024-05-01"]}
-             (sk/view :date)
-             sk/plan)
-      layer (first (:layers (first (:panels pl))))]
-  (:mark layer))
+(def temporal-hist-sketch
+  (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
+              #inst "2024-04-01" #inst "2024-05-01"]}
+      (sk/view :date)))
 
-(kind/test-last [(fn [m] (= :bar m))])
+temporal-hist-sketch
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+(kind/pprint temporal-hist-sketch)
+
+(kind/test-last [(fn [sk]
+                   (= :bar (:mark (first (:layers (first (:panels (sk/plan sk))))))))])
 
 ;; A single categorical column produces a bar chart of counts:
 
@@ -574,53 +579,74 @@ count-views
 ;; of the 4 categories.
 
 ;; Two numerical columns produce a scatter (the chapter's opening
-;; `scatter-views` shows this):
+;; `scatter-views` is such a sketch):
 
-(let [pl (-> five-points
-             (sk/view :x :y)
-             sk/plan)
-      layer (first (:layers (first (:panels pl))))]
-  (:mark layer))
+(def num-num-sketch
+  (-> five-points (sk/view :x :y)))
 
-(kind/test-last [(fn [m] (= :point m))])
+num-num-sketch
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
+(kind/pprint num-num-sketch)
+
+(kind/test-last [(fn [sk]
+                   (= :point (:mark (first (:layers (first (:panels (sk/plan sk))))))))])
 
 ;; A temporal x with a numerical y infers a time-series line. Row
 ;; order is preserved, so pre-sort temporal data to avoid zigzag:
 
-(let [pl (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"]
-              :val  [10 25 18]}
-             (sk/view :date :val)
-             sk/plan)
-      layer (first (:layers (first (:panels pl))))]
-  (:mark layer))
+(def ts-line-sketch
+  (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"]
+       :val  [10 25 18]}
+      (sk/view :date :val)))
 
-(kind/test-last [(fn [m] (= :line m))])
+ts-line-sketch
+
+(kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
+
+(kind/pprint ts-line-sketch)
+
+(kind/test-last [(fn [sk]
+                   (= :line (:mark (first (:layers (first (:panels (sk/plan sk))))))))])
 
 ;; A categorical x with a numerical y infers a boxplot -- the default
 ;; for summarizing a distribution across groups:
 
-(let [pl (-> {:species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]
-              :val     [8  10  12  18  20  22  14  15  17]}
-             (sk/view :species :val)
-             sk/plan)
-      layer (first (:layers (first (:panels pl))))]
-  (:mark layer))
+(def boxplot-sketch
+  (-> {:species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]
+       :val     [8  10  12  18  20  22  14  15  17]}
+      (sk/view :species :val)))
 
-(kind/test-last [(fn [m] (= :boxplot m))])
+boxplot-sketch
+
+(kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
+
+(kind/pprint boxplot-sketch)
+
+(kind/test-last [(fn [sk]
+                   (let [layer (first (:layers (first (:panels (sk/plan sk)))))]
+                     (and (= :boxplot (:mark layer))
+                          (= 3 (count (:boxes layer))))))])
 
 ;; A numerical x with a categorical y infers a horizontal boxplot --
 ;; the same summary laid out with the category axis on y:
 
-(let [pl (-> {:val     [8  10  12  18  20  22  14  15  17]
-              :species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]}
-             (sk/view :val :species)
-             sk/plan)
-      layer (first (:layers (first (:panels pl))))]
-  {:mark (:mark layer)
-   :box-count (count (:boxes layer))})
+(def horizontal-boxplot-sketch
+  (-> {:val     [8  10  12  18  20  22  14  15  17]
+       :species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]}
+      (sk/view :val :species)))
 
-(kind/test-last [(fn [m] (and (= :boxplot (:mark m))
-                              (= 3 (:box-count m))))])
+horizontal-boxplot-sketch
+
+(kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
+
+(kind/pprint horizontal-boxplot-sketch)
+
+(kind/test-last [(fn [sk]
+                   (let [layer (first (:layers (first (:panels (sk/plan sk)))))]
+                     (and (= :boxplot (:mark layer))
+                          (= 3 (count (:boxes layer))))))])
 
 ;; ## Domains
 ;;
