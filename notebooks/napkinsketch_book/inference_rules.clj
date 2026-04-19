@@ -30,16 +30,16 @@
 ;; inference steps, in the order they happen:
 ;;
 ;; 1. **Column selection** -- which columns map to x, y, and color (inferred from dataset shape when omitted)
-;; 2. **Column types** -- numerical, categorical, or temporal
-;; 3. **Aesthetic resolution** -- is `:color` a column reference, a hex string, or a CSS name?
+;; 2. **Column types** -- whether each column is numerical, categorical, or temporal
+;; 3. **Aesthetic resolution** -- whether a string like `"red"` is a column reference, a hex color, or a CSS color name
 ;; 4. **Grouping** -- which column(s) split data into subsets
-;; 5. **Method** -- which mark and stat to use (scatter, histogram, bar, ...)
+;; 5. **Method** -- which mark and stat to use (e.g., scatter, histogram, bar)
 ;; 6. **Domains** -- data extent for each axis, with padding
 ;; 7. **Ticks** -- nice round values and formatted labels
 ;; 8. **Axis labels** -- derived from column names
-;; 9. **Legends** -- color, size, and alpha legends with their entries
-;; 10. **Layout** -- single panel, facet grid, or multi-variable
-;; 11. **Coordinate flipping** -- swap axes after layout (polar has its own chapter)
+;; 9. **Legends** -- entries and layout space for color, size, and alpha legends
+;; 10. **Layout** -- whether panels form a single plot, a facet grid, or a multi-variable grid
+;; 11. **Coordinate flipping** -- whether axes are swapped after layout (polar has its own chapter)
 ;;
 ;; Each rule has a sensible default and an explicit override.
 ;; The sections below demonstrate each rule with live examples.
