@@ -58,7 +58,7 @@ book:
   - part: 🚀 Getting Started
     chapters: [napkinsketch_book.quickstart.qmd]
   - part: 🧱 Foundations
-    chapters: [napkinsketch_book.datasets.qmd, napkinsketch_book.sketch_model.qmd, napkinsketch_book.core_concepts.qmd, napkinsketch_book.sketch_rules.qmd, napkinsketch_book.inference_rules.qmd, napkinsketch_book.methods.qmd, napkinsketch_book.glossary.qmd]
+    chapters: [napkinsketch_book.datasets.qmd, napkinsketch_book.sketch_model.qmd, napkinsketch_book.core_concepts.qmd, napkinsketch_book.options_and_scopes.qmd, napkinsketch_book.sketch_rules.qmd, napkinsketch_book.inference_rules.qmd, napkinsketch_book.methods.qmd, napkinsketch_book.glossary.qmd]
   - part: 📊 Chart Types
     chapters: [napkinsketch_book.scatter.qmd, napkinsketch_book.distributions.qmd, napkinsketch_book.ranking.qmd, napkinsketch_book.change_over_time.qmd, napkinsketch_book.relationships.qmd, napkinsketch_book.polar.qmd]
   - part: 🍳 How-to Guides
