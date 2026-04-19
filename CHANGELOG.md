@@ -264,6 +264,10 @@ produce crashes on canonical inputs.
   (column labels are centered correctly).
 - Histograms, stacked bars, step plots, and other stat-derived
   marks do not default to a `"count"` or `"density"` y-label.
+- Continuous color legends (numeric `:color` mapping) label only
+  the endpoint tick marks on the gradient bar. Intermediate
+  values are unlabeled, making it hard to map interior colors
+  back to data values.
 - SPLOMs with 6+ variables at the default 600x400 have tight panels.
   Bump `:width`/`:height` or pin `:panel-width`/`:panel-height`.
 
