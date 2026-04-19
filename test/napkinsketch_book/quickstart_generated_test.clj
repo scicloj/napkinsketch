@@ -130,32 +130,32 @@
    v31_l131)))
 
 
-(def v34_l145 (-> iris (sk/view :sepal-length :sepal-width)))
+(def v34_l147 (-> iris (sk/view :sepal-length :sepal-width)))
 
 
 (deftest
- t35_l148
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v34_l145)))
+ t35_l150
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v34_l147)))
 
 
-(def v37_l152 (-> iris (sk/view :species)))
-
-
-(deftest
- t38_l155
- (is ((fn [v] (= 3 (:polygons (sk/svg-summary v)))) v37_l152)))
-
-
-(def v40_l159 (-> iris (sk/view :sepal-length)))
+(def v37_l154 (-> iris (sk/view :species)))
 
 
 (deftest
- t41_l162
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v40_l159)))
+ t38_l157
+ (is ((fn [v] (= 3 (:polygons (sk/svg-summary v)))) v37_l154)))
+
+
+(def v40_l161 (-> iris (sk/view :sepal-length)))
+
+
+(deftest
+ t41_l164
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v40_l161)))
 
 
 (def
- v43_l173
+ v43_l175
  (->
   iris
   (sk/view :sepal-length :sepal-width {:color :species})
@@ -164,18 +164,18 @@
 
 
 (deftest
- t44_l178
+ t44_l180
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v43_l173)))
+   v43_l175)))
 
 
 (def
- v46_l186
+ v46_l188
  (->
   iris
   (sk/lay-point :petal-length :petal-width {:color :species})
@@ -188,7 +188,7 @@
 
 
 (deftest
- t47_l193
+ t47_l195
  (is
   ((fn
     [v]
@@ -198,15 +198,28 @@
       (= 150 (:points s))
       (some #{"Iris Petals"} (:texts s))
       (some #{"Petal Length (cm)"} (:texts s)))))
-   v46_l186)))
+   v46_l188)))
 
 
 (def
- v49_l202
+ v49_l204
  (sk/arrange
   [(sk/lay-point iris :sepal-length :sepal-width {:color :species})
    (sk/lay-histogram iris :sepal-length {:color :species})]
   {:cols 2}))
 
 
-(deftest t50_l206 (is ((fn [v] (vector? v)) v49_l202)))
+(deftest t50_l208 (is ((fn [v] (vector? v)) v49_l204)))
+
+
+(def
+ v52_l214
+ (->
+  iris
+  (sk/lay-point :sepal-length :sepal-width)
+  (sk/save "/tmp/iris-scatter.svg")))
+
+
+(deftest
+ t53_l218
+ (is ((fn [p] (and (string? p) (.endsWith p ".svg"))) v52_l214)))

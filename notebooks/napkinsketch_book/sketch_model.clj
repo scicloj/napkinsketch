@@ -55,7 +55,8 @@
 ;; Five fields:
 ;;
 ;; - `:data` -- the dataset
-;; - `:mapping` -- aesthetics that apply to all views
+;; - `:mapping` -- aesthetic mappings (column-to-visual, like
+;;   `:color :species`) that apply to all views
 ;; - `:views` -- what to plot (column pairs)
 ;; - `:layers` -- how to draw it (layers: method + optional mappings)
 ;; - `:opts` -- options for the plot as a whole (title, width, theme)
@@ -109,7 +110,9 @@
 
 ;; The principle: **`resolved` = `(or your-choice (inferred-from-data))`**.
 ;;
-;; This works for marks, stats, color types, and grouping.
+;; This works for marks (the shape drawn, like points or bars),
+;; stats (the computation before drawing, like binning), color
+;; types, and grouping.
 ;; See [Inference Rules](./napkinsketch_book.inference_rules.html)
 ;; for the full set.
 

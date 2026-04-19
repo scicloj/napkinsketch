@@ -139,7 +139,9 @@
 
 ;; ## Inference
 ;;
-;; `sk/view` can pick the chart type for you based on column types.
+;; `sk/view` declares which columns to plot without committing to a
+;; chart type. When a pipeline ends at `sk/view` (no `sk/lay-*`),
+;; Napkinsketch picks the chart type from the column types.
 ;; Two numerical columns produce a scatter plot:
 
 (-> iris
@@ -207,17 +209,21 @@
 
 ;; ## Export
 
-;; Save a plot to SVG with `sk/save`:
-;;
-;; ```clojure
-;; (-> iris
-;;     (sk/lay-point :sepal-length :sepal-width)
-;;     (sk/save "my-plot.svg"))
-;; ```
-;;
+;; Save a plot to SVG with `sk/save`. It writes the file and returns the path:
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/save "/tmp/iris-scatter.svg"))
+
+(kind/test-last [(fn [p] (and (string? p) (.endsWith ^String p ".svg")))])
+
+;; For PNG output, `sk/save-png` goes through a raster backend;
+;; see the Cookbook for other export paths.
+
 ;; ## What's Next
 ;;
 ;; - [**The Sketch Model**](./napkinsketch_book.sketch_model.html) -- the mental model behind composable plotting
 ;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) -- data formats, marks, stats, color, grouping, coordinates
 ;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) -- the most common starting point for chart types
 ;; - [**Cookbook**](./napkinsketch_book.cookbook.html) -- recipes for common multi-layer plots
+;; - [**Configuration**](./napkinsketch_book.configuration.html) -- themes, backgrounds, palettes, and other plot-level defaults
