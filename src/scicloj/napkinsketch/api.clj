@@ -281,7 +281,7 @@
 
 (def ^:private view-mapping-keys
   "Keys accepted in view/sketch mapping options."
-  (into defaults/column-keys #{:data :color-type}))
+  (into defaults/column-keys #{:data :color-type :x-type :y-type}))
 
 (def ^:private plot-options-keys
   "Keys accepted by sk/options (top-level only; nested theme/config keys

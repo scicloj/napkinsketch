@@ -12,8 +12,11 @@
    layer can override the view's position mapping (an overlay-like
    pattern); the four-level merge in sketch->draft already honors
    layer-level x/y, this list just keeps build-layer's unknown-option
-   warning consistent with that behavior."
-  [:x :y :color :color-type :alpha :group :position :data])
+   warning consistent with that behavior. :x-type/:y-type/:color-type
+   override the inferred column types (e.g. :x-type :categorical
+   treats a numeric x as categorical)."
+  [:x :y :color :color-type :alpha :group :position :data
+   :x-type :y-type])
 
 (def layer-option-docs
   "Documentation for layer option keys. Maps key to description string."

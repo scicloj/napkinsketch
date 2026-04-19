@@ -213,6 +213,33 @@ temporal-sketch
 ;; and `Instant` -- all are converted to epoch-milliseconds for
 ;; plotting, with calendar-aware tick formatting.
 
+;; ### Overriding inferred types with `:x-type` / `:y-type`
+;;
+;; Sometimes a numeric column is really categorical -- for example,
+;; hours of the day, years, or subject IDs. The inference system sees
+;; numbers and treats them as numerical, but you may want discrete
+;; categorical bands. Pass `:x-type :categorical` (or `:y-type`) to
+;; the view or layer options to override:
+
+(def hour-bar-sketch
+  (-> {:hour [9 10 11 12] :count [5 8 12 7]}
+      (sk/lay-value-bar :hour :count {:x-type :categorical})))
+
+hour-bar-sketch
+
+(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
+
+(:x-domain (first (:panels (sk/plan hour-bar-sketch))))
+
+(kind/test-last [(fn [d] (= ["9" "10" "11" "12"] d))])
+
+;; Four bars at discrete hour bands. Without the override,
+;; `lay-value-bar` would reject the numeric `:hour` column; with
+;; it, the column is treated as categorical (values cast to strings
+;; for display). The same override exists for `:y-type` and for
+;; `:color-type` (see the Grouping section below for a `:color-type`
+;; example).
+
 ;; ## Aesthetic Resolution
 ;;
 ;; The `:color` parameter triggers different behaviors depending on
