@@ -436,7 +436,8 @@
      - x only, categorical       → :rect    + :count    (bar chart)
      - x only, non-categorical   → :bar     + :bin      (histogram)
      - temporal x + numerical y  → :line    + :identity (time-series line)
-     - categorical x + numerical y → :boxplot + :boxplot
+     - categorical x + numerical y → :boxplot + :boxplot (vertical)
+     - numerical x + categorical y → :boxplot + :boxplot (horizontal)
      - otherwise                 → :point   + :identity (scatter)
    `x-type`/`y-type` come from `infer-column-types`, which reports
    temporal columns as `:numerical` (they're stored as epoch-ms);
@@ -455,6 +456,9 @@
           [:line :identity]
           ;; categorical x + numerical y → boxplot
           (and (= x-type :categorical) (= y-type :numerical))
+          [:boxplot :boxplot]
+          ;; numerical x + categorical y → horizontal boxplot
+          (and (= x-type :numerical) (= y-type :categorical))
           [:boxplot :boxplot]
           ;; everything else: scatter
           :else [:point :identity])
@@ -497,14 +501,25 @@
                   size fixed-size alpha fixed-alpha text-col]} (resolve-aesthetics resolved-ds v)
           group (infer-grouping v color-type color)
           {:keys [mark stat]} (infer-method v x-type y-type x-temporal? y-temporal?)
-          ;; Validate that marks requiring categorical x are not given numeric x.
-          ;; Only check when stat is the natural stat for the mark (not an explicit override).
-          categorical-x-marks {:boxplot :boxplot :violin :violin
-                               :lollipop :identity :summary :summary
-                               :ridgeline :violin :pointrange :summary}
-          _ (when (and (= x-type :numerical)
-                       (contains? categorical-x-marks mark)
-                       (= stat (categorical-x-marks mark)))
+          ;; Validate that category-grouping marks have a categorical axis.
+          ;; :boxplot and :violin accept a categorical axis on either x or y
+          ;; (boxplot renders horizontally when y is categorical). The others
+          ;; currently only support categorical x; they will crash the plan
+          ;; otherwise, so the pre-check produces a friendlier error.
+          both-axes-marks  {:boxplot :boxplot :violin :violin}
+          x-only-cat-marks {:lollipop :identity :summary :summary
+                            :ridgeline :violin :pointrange :summary}
+          both-numerical?  (and (= x-type :numerical) (= y-type :numerical))
+          _ (when (and (contains? both-axes-marks mark)
+                       (= stat (both-axes-marks mark))
+                       both-numerical?)
+              (throw (ex-info (str "lay-" (name mark) " requires a categorical column on either :x or :y, "
+                                   "but both " (pr-str (:x v)) " and " (pr-str (:y v))
+                                   " are numerical.")
+                              {:mark mark :x (:x v) :y (:y v)})))
+          _ (when (and (contains? x-only-cat-marks mark)
+                       (= stat (x-only-cat-marks mark))
+                       (= x-type :numerical))
               (throw (ex-info (str "lay-" (name mark) " requires a categorical :x column, but "
                                    (pr-str (:x v)) " is numerical. Use a categorical column "
                                    "(e.g., species names) for the x-axis.")

@@ -512,14 +512,15 @@ fixed-color-views
 ;; |:-------|:-------|:---------|:------------|
 ;; | numerical | numerical | scatter | `:point` + `:identity` |
 ;; | temporal | numerical | time-series line | `:line` + `:identity` |
-;; | categorical | numerical | boxplot | `:boxplot` + `:boxplot` |
+;; | categorical | numerical | boxplot (vertical) | `:boxplot` + `:boxplot` |
+;; | numerical | categorical | boxplot (horizontal) | `:boxplot` + `:boxplot` |
 ;; | any other pair | | scatter (fallback) | `:point` + `:identity` |
 ;;
-;; Fallback pairs include numerical x + categorical y, temporal x +
-;; categorical y, categorical x + categorical y, and temporal x +
-;; temporal y. These are rarer in practice, and giving them a
-;; dedicated inference is deferred. You can always override with an
-;; explicit `sk/lay-*` call; the inferred method is only a default.
+;; Fallback pairs include temporal x + categorical y, categorical x +
+;; categorical y, and temporal x + temporal y. These are rarer in
+;; practice, and giving them a dedicated inference is deferred. You
+;; can always override with an explicit `sk/lay-*` call; the
+;; inferred method is only a default.
 ;;
 ;; When you use `sk/lay-point`, `sk/lay-histogram`, etc., the method's
 ;; stat takes precedence -- column-type inference is bypassed.
@@ -607,19 +608,19 @@ count-views
 
 (kind/test-last [(fn [m] (= :boxplot m))])
 
-;; Pairs without a dedicated rule fall back to scatter via the
-;; `:else` branch. One example is numerical x + categorical y, which
-;; renders as a stripchart -- points spread along x, grouped onto
-;; category bands on y:
+;; A numerical x with a categorical y infers a horizontal boxplot --
+;; the same summary laid out with the category axis on y:
 
 (let [pl (-> {:val     [8  10  12  18  20  22  14  15  17]
               :species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]}
              (sk/view :val :species)
              sk/plan)
       layer (first (:layers (first (:panels pl))))]
-  (:mark layer))
+  {:mark (:mark layer)
+   :box-count (count (:boxes layer))})
 
-(kind/test-last [(fn [m] (= :point m))])
+(kind/test-last [(fn [m] (and (= :boxplot (:mark m))
+                              (= 3 (:box-count m))))])
 
 ;; ## Domains
 ;;

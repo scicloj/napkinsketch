@@ -660,37 +660,46 @@
 
 (defn- per-category-stat
   "Shared iteration for boxplot/violin: clean data, group by category and
-   optional color, apply per-group-fn to each subset's y-column.
-   Uses tc/group-by for efficient O(n) grouping instead of per-category filtering.
-   per-group-fn: (fn [y-col category color-or-nil]) -> map
+   optional color, apply per-group-fn to each subset's numeric column.
+   Works in both orientations -- categorical x + numerical y (vertical,
+   the traditional shape) and numerical x + categorical y (horizontal).
+   The returned :x-domain / :y-domain are swapped accordingly so the
+   downstream panel layout picks the right scale type on each axis.
+   per-group-fn: (fn [num-col category color-or-nil]) -> map
    min-n: minimum row count to include a group."
   [view min-n per-group-fn]
-  (let [{:keys [data x y x-type group]} view
-        clean (cond-> (tc/drop-missing data [x y])
-                (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))
-        categories (distinct (clean x))]
+  (let [{:keys [data x y x-type y-type group]} view
+        ;; Pick the categorical axis. When y is categorical (and x isn't),
+        ;; the plot is horizontal; otherwise default to x as the cat axis.
+        flipped? (and (= y-type :categorical) (not= x-type :categorical))
+        cat-col (if flipped? y x)
+        num-col (if flipped? x y)
+        clean (-> (tc/drop-missing data [x y])
+                  (tc/map-columns cat-col [cat-col] defaults/fmt-category-label))
+        categories (distinct (clean cat-col))]
     (if (empty? categories)
       {:items [] :categories [] :color-categories nil
-       :x-domain ["?"] :y-domain [0 1]}
+       :x-domain (if flipped? [0 1] ["?"])
+       :y-domain (if flipped? ["?"] [0 1])}
       (let [group-cols (or group [])
             color-col (first group-cols)
             has-color? (and (seq group-cols) color-col)
             clean-c (if has-color? (tc/drop-missing clean group-cols) clean)
             color-cats (when has-color? (vec (sort (distinct (clean-c color-col)))))
             ;; Single tc/group-by replaces O(cats × colors) select-rows calls
-            group-keys (if has-color? [x color-col] [x])
+            group-keys (if has-color? [cat-col color-col] [cat-col])
             grouped (tc/group-by clean-c group-keys {:result-type :as-map})
-            ;; When x == color-col, each category IS its own color group
+            ;; When cat-col == color-col, each category IS its own color group
             ;; (no cross-product — a "setosa" category can only have "setosa" color)
-            x-is-color? (and has-color? (= x color-col))
+            cat-is-color? (and has-color? (= cat-col color-col))
             items (vec
                    (cond
-                     x-is-color?
+                     cat-is-color?
                      (for [cat categories
-                           :let [gk {x cat}
+                           :let [gk {cat-col cat}
                                  ds (get grouped gk)]
                            :when (and ds (>= (tc/row-count ds) min-n))]
-                       (per-group-fn (ds y) cat cat))
+                       (per-group-fn (ds num-col) cat cat))
 
                      has-color?
                      (for [cat categories
@@ -698,22 +707,22 @@
                            :let [gk (zipmap group-keys [cat cc])
                                  ds (get grouped gk)]
                            :when (and ds (>= (tc/row-count ds) min-n))]
-                       (per-group-fn (ds y) cat cc))
+                       (per-group-fn (ds num-col) cat cc))
 
                      :else
                      (for [cat categories
-                           :let [gk {x cat}
+                           :let [gk {cat-col cat}
                                  ds (get grouped gk)]
                            :when (and ds (>= (tc/row-count ds) min-n))]
-                       (per-group-fn (ds y) cat nil))))
-            all-ys (clean y)
-            y-min (dfn/reduce-min all-ys)
-            y-max (dfn/reduce-max all-ys)]
+                       (per-group-fn (ds num-col) cat nil))))
+            all-nums (clean num-col)
+            num-min (dfn/reduce-min all-nums)
+            num-max (dfn/reduce-max all-nums)]
         {:items items
          :categories categories
          :color-categories color-cats
-         :x-domain categories
-         :y-domain [y-min y-max]}))))
+         :x-domain (if flipped? [num-min num-max] categories)
+         :y-domain (if flipped? categories [num-min num-max])}))))
 
 (defn- quantile-r7
   "R type 7 quantile (ggplot2/R default). Uses linear interpolation:
@@ -771,7 +780,11 @@
 ;; ---- Violin ----
 
 (defmethod compute-stat :violin [view]
-  (validate-numeric-column view :y :violin)
+  ;; Validate the numeric axis -- y in vertical orientation, x in horizontal.
+  (let [num-axis (if (and (= (:y-type view) :categorical)
+                          (not= (:x-type view) :categorical))
+                   :x :y)]
+    (validate-numeric-column view num-axis :violin))
   (let [{:keys [cfg]} view
         n-grid (or (:kde-n-grid (or cfg defaults/defaults)) 80)
         bandwidth (:kde-bandwidth (or cfg defaults/defaults))
@@ -781,16 +794,25 @@
                                       (cond-> {:category cat
                                                :ys (:xs kde) :densities (:ys kde)}
                                         cc (assoc :color cc)))))
-        ;; Expand y-domain to cover full KDE curve extent (tails beyond raw data)
-        kde-ys-bufs (seq (map :ys (:items result)))
-        y-domain (if kde-ys-bufs
-                   (let [all-kde-ys (dtype/concat-buffers kde-ys-bufs)]
-                     [(dfn/reduce-min all-kde-ys) (dfn/reduce-max all-kde-ys)])
+        ;; Expand the numeric-axis domain to cover the full KDE curve
+        ;; (tails beyond raw data). Which axis is numeric depends on
+        ;; orientation: y for vertical, x for horizontal.
+        flipped? (and (= (:y-type view) :categorical)
+                      (not= (:x-type view) :categorical))
+        kde-nums-bufs (seq (map :ys (:items result)))
+        kde-num-domain (when kde-nums-bufs
+                         (let [all (dtype/concat-buffers kde-nums-bufs)]
+                           [(dfn/reduce-min all) (dfn/reduce-max all)]))
+        x-domain (if (and flipped? kde-num-domain)
+                   kde-num-domain
+                   (:x-domain result))
+        y-domain (if (and (not flipped?) kde-num-domain)
+                   kde-num-domain
                    (:y-domain result))]
     {:violins (:items result)
      :categories (:categories result)
      :color-categories (:color-categories result)
-     :x-domain (:x-domain result)
+     :x-domain x-domain
      :y-domain y-domain}))
 
 ;; ---- 2D Binning (for heatmap/tile) ----

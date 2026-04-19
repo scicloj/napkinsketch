@@ -13,12 +13,17 @@
   "Extract oriented scales from rendering context.
    For categorical marks that need band positioning, returns the
    categorical (band) scale and numeric scale, swapped when flipped.
+   Flipped means either `:coord :flip` is in effect, or the panel's
+   y-axis is itself a band scale (numerical x + categorical y).
    Returns {:flipped? :band-s :num-s}."
   [ctx]
-  (let [flipped? (= (:coord-type ctx) :flip)]
+  (let [sx (:sx ctx) sy (:sy ctx)
+        coord-flipped? (= (:coord-type ctx) :flip)
+        y-is-band? (boolean (try (ws/data sy :bandwidth) (catch Exception _ nil)))
+        flipped? (or coord-flipped? y-is-band?)]
     {:flipped? flipped?
-     :band-s (if flipped? (:sy ctx) (:sx ctx))
-     :num-s (if flipped? (:sx ctx) (:sy ctx))}))
+     :band-s (if flipped? sy sx)
+     :num-s (if flipped? sx sy)}))
 
 (defn arc-interpolate
   "Subdivide a line segment in pixel space through coord-px reprojection.
