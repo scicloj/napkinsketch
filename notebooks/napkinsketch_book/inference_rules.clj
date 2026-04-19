@@ -503,7 +503,9 @@ fixed-color-views
 ;; | one numerical | `:bar` | `:bin` (histogram) |
 ;; | one categorical | `:rect` | `:count` (bar chart) |
 ;; | two numerical | `:point` | `:identity` (scatter) |
-;; | mixed (categorical + numerical) | `:point` | `:identity` (scatter) |
+;; | temporal x + numerical y | `:line` | `:identity` (time series) |
+;; | categorical x + numerical y | `:boxplot` | `:boxplot` |
+;; | other pairs | `:point` | `:identity` (scatter) |
 ;;
 ;; When you use `sk/lay-point`, `sk/lay-histogram`, etc., the method's
 ;; stat takes precedence -- column-type inference is bypassed.
@@ -545,15 +547,29 @@ count-views
 ;; Mark is `:rect` with `:counts` -- the `:count` stat tallied each
 ;; of the 4 categories.
 ;;
-;; Mixed column types (categorical x, numerical y) default to `:point`:
+;; A categorical x with a numerical y infers a boxplot -- the default
+;; for summarizing a distribution across groups:
 
-(let [pl (-> {:species ["a" "b" "c"] :val [10 20 15]}
+(let [pl (-> {:species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]
+              :val     [8  10  12  18  20  22  14  15  17]}
              (sk/view :species :val)
              sk/plan)
       layer (first (:layers (first (:panels pl))))]
   (:mark layer))
 
-(kind/test-last [(fn [m] (= :point m))])
+(kind/test-last [(fn [m] (= :boxplot m))])
+
+;; A temporal x with a numerical y infers a time-series line -- order
+;; is preserved from the row order, so pre-sort temporal data:
+
+(let [pl (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"]
+              :val  [10 25 18]}
+             (sk/view :date :val)
+             sk/plan)
+      layer (first (:layers (first (:panels pl))))]
+  (:mark layer))
+
+(kind/test-last [(fn [m] (= :line m))])
 
 ;; ## Domains
 ;;

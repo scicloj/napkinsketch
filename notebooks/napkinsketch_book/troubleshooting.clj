@@ -36,32 +36,29 @@
 
 ;; ## Wrong Chart Type from Inference
 ;;
-;; **Symptom**: `sk/view` produces a scatter when you expected a
-;; boxplot, or a histogram when you expected a bar chart.
+;; **Symptom**: `sk/view` produces a chart type that isn't what you
+;; wanted -- a boxplot when you wanted individual points, a line
+;; when you wanted a scatter.
 ;;
-;; **Cause**: `sk/view` infers the chart type from column types.
-;; Mixed types (categorical x, numerical y) produce a scatter,
-;; not a boxplot.
+;; **Cause**: `sk/view` infers the method from column types. The
+;; defaults fit the most common use case for each column-type pair
+;; (see [Inference Rules](./napkinsketch_book.inference_rules.html)),
+;; but they can be overridden.
 ;;
-;; **Fix**: Use an explicit `sk/lay-*` function instead of relying
-;; on inference:
-
-;; This infers a scatter (categorical crossed with numerical):
+;; **Fix**: Use an explicit `sk/lay-*` function. For example, a
+;; categorical x with a numerical y defaults to a boxplot:
 
 (-> (rdatasets/datasets-iris)
     (sk/view :species :sepal-width))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
-
-;; Use `sk/lay-boxplot` if you want a boxplot:
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-boxplot :species :sepal-width))
-
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
-;; See the [Inference Rules](./napkinsketch_book.inference_rules.html) chapter for the
-;; full set of rules.
+;; Use `sk/lay-point` if you want the individual points instead:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :species :sepal-width))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; ## Numeric IDs Treated as Continuous Color
 ;;

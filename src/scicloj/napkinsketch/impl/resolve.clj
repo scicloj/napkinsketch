@@ -433,19 +433,30 @@
 (defn infer-method
   "Choose mark and stat from column types when the user hasn't specified them.
    Rules:
-     - x only, categorical → :rect + :count (bar chart)
-     - x only, numerical   → :bar  + :bin  (histogram)
-     - x and y, mixed types → :point + :identity (scatter)
-     - x and y, same type   → :point + :identity (scatter)
+     - x only, categorical       → :rect    + :count    (bar chart)
+     - x only, non-categorical   → :bar     + :bin      (histogram)
+     - temporal x + numerical y  → :line    + :identity (time-series line)
+     - categorical x + numerical y → :boxplot + :boxplot
+     - otherwise                 → :point   + :identity (scatter)
+   `x-type`/`y-type` come from `infer-column-types`, which reports
+   temporal columns as `:numerical` (they're stored as epoch-ms);
+   `x-temporal?`/`y-temporal?` flag the original temporal classification.
    When the user provides an explicit mark, stat defaults to :identity
    unless they also provided an explicit stat."
-  [v x-type y-type]
+  [v x-type y-type x-temporal? y-temporal?]
   (let [diagonal? (= (:x v) (:y v))
         [default-mark default-stat]
         (cond
+          ;; x only (or diagonal): count categories or bin numbers
           (or diagonal? (nil? (:y v)))
           (if (= x-type :categorical) [:rect :count] [:bar :bin])
-          (not= x-type y-type) [:point :identity]
+          ;; temporal x + numerical y → time-series line
+          (and x-temporal? (= y-type :numerical) (not y-temporal?))
+          [:line :identity]
+          ;; categorical x + numerical y → boxplot
+          (and (= x-type :categorical) (= y-type :numerical))
+          [:boxplot :boxplot]
+          ;; everything else: scatter
           :else [:point :identity])
         mark (or (:mark v) default-mark)
         stat (or (:stat v) (if (:mark v) :identity default-stat))]
@@ -485,7 +496,7 @@
           {:keys [color color-type fixed-color
                   size fixed-size alpha fixed-alpha text-col]} (resolve-aesthetics resolved-ds v)
           group (infer-grouping v color-type color)
-          {:keys [mark stat]} (infer-method v x-type y-type)
+          {:keys [mark stat]} (infer-method v x-type y-type x-temporal? y-temporal?)
           ;; Validate that marks requiring categorical x are not given numeric x.
           ;; Only check when stat is the natural stat for the mark (not an explicit override).
           categorical-x-marks {:boxplot :boxplot :violin :violin

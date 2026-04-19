@@ -21,21 +21,21 @@
 
 (deftest
  t7_l54
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v6_l51)))
+ (is ((fn [v] (pos? (:lines (sk/svg-summary v)))) v6_l51)))
 
 
 (def
  v9_l58
- (-> (rdatasets/datasets-iris) (sk/lay-boxplot :species :sepal-width)))
+ (-> (rdatasets/datasets-iris) (sk/lay-point :species :sepal-width)))
 
 
 (deftest
  t10_l61
- (is ((fn [v] (pos? (:lines (sk/svg-summary v)))) v9_l58)))
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v9_l58)))
 
 
 (def
- v12_l139
+ v12_l136
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -43,5 +43,5 @@
 
 
 (deftest
- t13_l143
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v12_l139)))
+ t13_l140
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v12_l136)))
