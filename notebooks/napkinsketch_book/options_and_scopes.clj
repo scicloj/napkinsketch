@@ -70,6 +70,13 @@
 ;; The primary way to set them is in the opts map of `sk/lay-*`:
 
 (-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species}))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; And the sketch structure:
+
+(-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
     sk-summary)
 
@@ -127,6 +134,15 @@
 ;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
 ;; layer. The current `sk/annotate` API will be replaced, and
 ;; annotations will no longer be plot options.
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/options {:title "Iris"})
+    (sk/coord :flip))
+
+(kind/test-last [(fn [v] (some #{"Iris"} (:texts (sk/svg-summary v))))])
+
+;; And the sketch structure:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)

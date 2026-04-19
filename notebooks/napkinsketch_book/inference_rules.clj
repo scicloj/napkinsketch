@@ -67,7 +67,13 @@
   (-> five-points
       (sk/lay-point :x :y)))
 
-;; Here is the full plan:
+;; Here is the rendered plot:
+
+scatter-views
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
+;; And the full plan that produced it:
 
 (sk/plan scatter-views)
 
@@ -82,12 +88,6 @@
                                  (and (= :linear (get-in p [:x-scale :type]))
                                       (= 1 (count (:groups (first (:layers p)))))
                                       (= (scicloj.napkinsketch.impl.defaults/hex->rgba (:default-color (scicloj.napkinsketch.impl.defaults/config))) (:color g))))))])
-
-;; And the resulting plot:
-
-scatter-views
-
-(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; Notice in the plan above:
 ;;
@@ -169,15 +169,17 @@ scatter-views
   (-> animals
       (sk/lay-value-bar :animal :count)))
 
+bar-views
+
+(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
+
+;; And the plan:
+
 (sk/plan bar-views)
 
 (kind/test-last [(fn [pl] (let [p (first (:panels pl))]
                             (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
                                  (true? (:categorical? (:x-ticks p))))))])
-
-bar-views
-
-(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
 ;; The x-domain is `["cat" "dog" "bird" "fish"]` -- strings in order of
 ;; appearance. The ticks have `:categorical? true`. The y-domain starts
@@ -223,16 +225,18 @@ bar-views
        :g ["a" "a" "a" "b" "b" "b"]}
       (sk/lay-point :x :y {:color :g})))
 
+colored-views
+
+(kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
+
+;; And the plan:
+
 (sk/plan colored-views)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (and (= 2 (count (:groups layer)))
                                  (some? (:legend pl))
                                  (= 100 (get-in pl [:layout :legend-w])))))])
-
-colored-views
-
-(kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
 
 ;; Two entries in `:groups`, each with its own `:color` (RGBA),
 ;; `:xs`, `:ys`, and `:label`. A `:legend` appeared with 2 entries.
@@ -247,6 +251,12 @@ colored-views
   (-> five-points
       (sk/lay-point :x :y {:color "#E74C3C"})))
 
+fixed-color-views
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
+;; And the plan:
+
 (sk/plan fixed-color-views)
 
 (kind/test-last [(fn [pl] (and (nil? (:legend pl))
@@ -258,10 +268,6 @@ colored-views
                                       (< (nth c 1) 0.35)
                                       (< (nth c 2) 0.30)
                                       (== 1.0 (nth c 3))))))])
-
-fixed-color-views
-
-(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; A single `:groups` entry with red RGBA values. No `:legend`,
 ;; `:legend-w` is 0. The hex string was converted to
@@ -531,14 +537,16 @@ fixed-color-views
   (-> five-points
       (sk/view :x)))
 
+hist-views
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; The plan shows the inferred method:
+
 (sk/plan hist-views)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :bar (:mark layer))))])
-
-hist-views
-
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 ;; The layer mark is `:bar` -- the layer data contains `:bins` with
 ;; `:x0`, `:x1`, `:count` -- the result of the `:bin` stat.
@@ -566,14 +574,16 @@ temporal-hist-sketch
   (-> animals
       (sk/view :animal)))
 
+count-views
+
+(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
+
+;; The plan shows the inferred method:
+
 (sk/plan count-views)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :rect (:mark layer))))])
-
-count-views
-
-(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
 ;; Mark is `:rect` with `:counts` -- the `:count` stat tallied each
 ;; of the 4 categories.
@@ -965,16 +975,18 @@ horizontal-boxplot-sketch
       sk/lay-point
       sk/lay-lm))
 
-(sk/plan multi-views)
-
-(kind/test-last [(fn [pl] (let [p (first (:panels pl))]
-                            (= 2 (count (:layers p)))))])
-
 multi-views
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 5 (:points s))
                                 (= 1 (:lines s)))))])
+
+;; And the plan:
+
+(sk/plan multi-views)
+
+(kind/test-last [(fn [pl] (let [p (first (:panels pl))]
+                            (= 2 (count (:layers p)))))])
 
 ;; Two layers -- one `:point`, one `:line` -- sharing the same domain.
 ;; The `:line` layer has `:mark :line` and its groups contain

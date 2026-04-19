@@ -71,6 +71,11 @@
 ;; sketch-level `:layers` is unaffected.
 
 (-> iris
+    (sk/lay-point :sepal-length :sepal-width))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+(-> iris
     (sk/lay-point :sepal-length :sepal-width)
     sk-summary)
 
@@ -80,29 +85,12 @@
                         (= 1 (count (:layers (first (:views m)))))
                         (= :point (:method (first (:layers (first (:views m))))))))])
 
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width))
-
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
-
 ;; The layer lives inside the view. Sketch-level `:layers` is empty.
 
 ;; ### Rule 2: `lay-*` without columns places the layer at sketch level
 ;;
 ;; When `lay-*` is called without column names, the layer goes into
 ;; the sketch's `:layers` vector, not into any view.
-
-(-> iris
-    (sk/view :sepal-length :sepal-width)
-    sk/lay-point
-    sk/lay-lm
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= 2 (count (:layers m)))
-                        (= :point (:method (first (:layers m))))
-                        (= :lm (:method (second (:layers m))))
-                        (nil? (:layers (first (:views m))))))])
 
 (-> iris
     (sk/view :sepal-length :sepal-width)
@@ -123,6 +111,18 @@
                                 (= :sepal-width (:y (second d)))
                                 (= :lm (:stat (second d))))))])
 
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    sk/lay-point
+    sk/lay-lm
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 2 (count (:layers m)))
+                        (= :point (:method (first (:layers m))))
+                        (= :lm (:method (second (:layers m))))
+                        (nil? (:layers (first (:views m))))))])
+
 ;; Two sketch-level layers (point and lm). The view has no own
 ;; layers -- it uses the sketch's.
 
@@ -131,17 +131,6 @@
 ;; When a view has its own layers AND sketch-level layers exist,
 ;; both apply to that view. View layers come first, then sketch
 ;; layers are appended.
-
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    sk/lay-lm
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= 1 (count (:layers m)))
-                        (= :lm (:method (first (:layers m))))
-                        (= 1 (count (:layers (first (:views m)))))
-                        (= :point (:method (first (:layers (first (:views m))))))))])
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -157,6 +146,17 @@
                                 (= :line (:mark (second d)))
                                 (nil? (:color (second d))))))])
 
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    sk/lay-lm
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 1 (count (:layers m)))
+                        (= :lm (:method (first (:layers m))))
+                        (= 1 (count (:layers (first (:views m)))))
+                        (= :point (:method (first (:layers (first (:views m))))))))])
+
 ;; Point is view-level (has columns); lm is sketch-level (no
 ;; columns). Colored scatter plus one overall regression line --
 ;; two layers rendered on one panel, one per (view, layer) pair.
@@ -170,6 +170,18 @@
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
     (sk/lay-point :petal-length :petal-width)
+    sk/lay-lm)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+                               d (sk/draft v)]
+                           (and (= 2 (:panels s))
+                                (= 300 (:points s))
+                                (= 2 (:lines s))
+                                (= 4 (count d)))))])
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-point :petal-length :petal-width)
     sk/lay-lm
     sk-summary)
 
@@ -179,18 +191,6 @@
                         (= 2 (count (:views m)))
                         (= 1 (count (:layers (first (:views m)))))
                         (= 1 (count (:layers (second (:views m)))))))])
-
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-point :petal-length :petal-width)
-    sk/lay-lm)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
-                               d (sk/draft v)]
-                           (and (= 2 (:panels s))
-                                (= 300 (:points s))
-                                (= 2 (:lines s))
-                                (= 4 (count d)))))])
 
 ;; Two views with different columns, each with its own point layer.
 ;; The sketch-level lm produces a regression line in each panel --
@@ -210,21 +210,21 @@
 (-> iris
     (sk/view :sepal-length :sepal-width)
     (sk/view :sepal-length :sepal-width)
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 300 (:points s)))))])
+
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :sepal-length :sepal-width)
     sk/lay-point
     sk-summary)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:views m)))
                         (= 1 (count (:layers m)))))])
-
-(-> iris
-    (sk/view :sepal-length :sepal-width)
-    (sk/view :sepal-length :sepal-width)
-    sk/lay-point)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 2 (:panels s))
-                                (= 300 (:points s)))))])
 
 ;; Two views with identical columns -- two panels. `sk/view` always
 ;; creates, so repeated calls produce separate panels even when the
@@ -235,20 +235,6 @@
 ;; When `lay-*` receives columns that match an existing view, it
 ;; adds the layer to that view instead of creating a new one. When
 ;; several views match, it picks the most recent (last) one.
-
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/view :sepal-length :sepal-width)
-    (sk/lay-lm :sepal-length :sepal-width)
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= 2 (count (:views m)))
-                        (= 0 (count (:layers m)))
-                        (= 1 (count (:layers (first (:views m)))))
-                        (= :point (:method (first (:layers (first (:views m))))))
-                        (= 1 (count (:layers (second (:views m)))))
-                        (= :lm (:method (first (:layers (second (:views m))))))))])
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
@@ -264,6 +250,20 @@
                                 (= :point (:mark (first d)))
                                 (= :line (:mark (second d))))))])
 
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/view :sepal-length :sepal-width)
+    (sk/lay-lm :sepal-length :sepal-width)
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 2 (count (:views m)))
+                        (= 0 (count (:layers m)))
+                        (= 1 (count (:layers (first (:views m)))))
+                        (= :point (:method (first (:layers (first (:views m))))))
+                        (= 1 (count (:layers (second (:views m)))))
+                        (= :lm (:method (first (:layers (second (:views m))))))))])
+
 ;; Two views with identical columns. `lay-point` created the first
 ;; view and placed itself there. `sk/view` created the second view.
 ;; `lay-lm` had two matches -- it appended to the most recent, so
@@ -276,6 +276,15 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :petal-length))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 150 (:points s))
+                                (pos? (:polygons s)))))])
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
     (sk/lay-histogram :petal-length)
     sk-summary)
 
@@ -284,15 +293,6 @@
                         (= 0 (count (:layers m)))
                         (= :sepal-length (get-in m [:views 0 :mapping :x]))
                         (= :petal-length (get-in m [:views 1 :mapping :x]))))])
-
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-histogram :petal-length))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 2 (:panels s))
-                                (= 150 (:points s))
-                                (pos? (:polygons s)))))])
 
 ;; Two views, two panels: scatter on one, histogram on the other.
 
@@ -305,6 +305,11 @@
 ;; Two columns -- inferred as x and y:
 
 (-> {:x [1 2 3] :y [4 5 6]}
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+
+(-> {:x [1 2 3] :y [4 5 6]}
     sk/lay-point
     sk-summary)
 
@@ -314,12 +319,12 @@
                         (= :y (get-in m [:views 0 :mapping :y]))
                         (= 1 (count (:layers (first (:views m)))))))])
 
-(-> {:x [1 2 3] :y [4 5 6]}
+;; Three columns -- third inferred as color:
+
+(-> {:x [1 2 3] :y [4 5 6] :c ["a" "b" "a"]}
     sk/lay-point)
 
 (kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
-
-;; Three columns -- third inferred as color:
 
 (-> {:x [1 2 3] :y [4 5 6] :c ["a" "b" "a"]}
     sk/lay-point
@@ -329,11 +334,6 @@
                    (and (= :x (get-in m [:views 0 :mapping :x]))
                         (= :y (get-in m [:views 0 :mapping :y]))
                         (= :c (get-in m [:views 0 :mapping :color]))))])
-
-(-> {:x [1 2 3] :y [4 5 6] :c ["a" "b" "a"]}
-    sk/lay-point)
-
-(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
 
 ;; Datasets with four or more columns require explicit column names.
 
@@ -356,37 +356,27 @@
 (-> iris
     (sk/view :sepal-length :sepal-width)
     (sk/view :petal-length :petal-width)
-    sk/lay-point
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= 2 (count (:views m)))
-                        (= 1 (count (:layers m)))))])
-
-(-> iris
-    (sk/view :sepal-length :sepal-width)
-    (sk/view :petal-length :petal-width)
     sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
-;; Both views use iris -- 150 points per panel, 300 total.
-
-;; View-level `:data` overrides sketch data for that view:
-
-(def tiny {:x [1 2 3] :y [3 5 4]})
-
 (-> iris
     (sk/view :sepal-length :sepal-width)
-    (sk/view :x :y {:data tiny})
+    (sk/view :petal-length :petal-width)
     sk/lay-point
     sk-summary)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:views m)))
                         (= 1 (count (:layers m)))))])
+
+;; Both views use iris -- 150 points per panel, 300 total.
+
+;; View-level `:data` overrides sketch data for that view:
+
+(def tiny {:x [1 2 3] :y [3 5 4]})
 
 (-> iris
     (sk/view :sepal-length :sepal-width)
@@ -400,21 +390,21 @@
                                 (= 150 (tc/row-count (:data (first d))))
                                 (= 3 (tc/row-count (:data (second d)))))))])
 
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :x :y {:data tiny})
+    sk/lay-point
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 2 (count (:views m)))
+                        (= 1 (count (:layers m)))))])
+
 ;; First view uses iris (150 points), second uses tiny (3 points).
 
 ;; Layer-level `:data` overrides view and sketch data for that layer:
 
 (def iris-small (tc/head iris 10))
-
-(-> iris
-    (sk/view :sepal-length :sepal-width)
-    (sk/lay-point {:data iris-small})
-    sk/lay-lm
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= 1 (count (:views m)))
-                        (= 2 (count (:layers m)))))])
 
 (-> iris
     (sk/view :sepal-length :sepal-width)
@@ -427,6 +417,16 @@
                                 (= 1 (:lines s))
                                 (= 10 (tc/row-count (:data (first d))))
                                 (= 150 (tc/row-count (:data (second d)))))))])
+
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    (sk/lay-point {:data iris-small})
+    sk/lay-lm
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 1 (count (:views m)))
+                        (= 2 (count (:layers m)))))])
 
 ;; The point layer uses iris-small (10 rows); the lm layer uses
 ;; iris (150 rows).
@@ -445,17 +445,6 @@
 (-> (sk/sketch iris {:color :species})
     (sk/view :sepal-length :sepal-width)
     (sk/view :petal-length :petal-width)
-    sk/lay-point
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= :species (:color (:mapping m)))
-                        (= 2 (count (:views m)))
-                        (= 1 (count (:layers m)))))])
-
-(-> (sk/sketch iris {:color :species})
-    (sk/view :sepal-length :sepal-width)
-    (sk/view :petal-length :petal-width)
     sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
@@ -463,6 +452,17 @@
                            (and (= 2 (:panels s))
                                 (= 300 (:points s))
                                 (every? #(= :species (:color %)) d))))])
+
+(-> (sk/sketch iris {:color :species})
+    (sk/view :sepal-length :sepal-width)
+    (sk/view :petal-length :petal-width)
+    sk/lay-point
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= :species (:color (:mapping m)))
+                        (= 2 (count (:views m)))
+                        (= 1 (count (:layers m)))))])
 
 ;; Two views, one sketch-level layer, sketch-level color. Both
 ;; panels colored by species.
@@ -475,17 +475,6 @@
 (-> iris
     (sk/view :sepal-length :sepal-width {:color :species})
     (sk/view :petal-length :petal-width)
-    sk/lay-point
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= {} (:mapping m))
-                        (= :species (get-in m [:views 0 :mapping :color]))
-                        (nil? (get-in m [:views 1 :mapping :color]))))])
-
-(-> iris
-    (sk/view :sepal-length :sepal-width {:color :species})
-    (sk/view :petal-length :petal-width)
     sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
@@ -494,6 +483,17 @@
                                 (= 300 (:points s))
                                 (= :species (:color (first d)))
                                 (nil? (:color (second d))))))])
+
+(-> iris
+    (sk/view :sepal-length :sepal-width {:color :species})
+    (sk/view :petal-length :petal-width)
+    sk/lay-point
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= {} (:mapping m))
+                        (= :species (get-in m [:views 0 :mapping :color]))
+                        (nil? (get-in m [:views 1 :mapping :color]))))])
 
 ;; Color is in the first view's mapping only. The first panel is
 ;; colored by species; the second has no color grouping.
@@ -505,16 +505,6 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    sk/lay-lm
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
-                        (= 1 (count (:layers m)))
-                        (= {} (:mapping (first (:layers m))))))])
-
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
     sk/lay-lm)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
@@ -523,6 +513,16 @@
                                 (= 1 (:lines s))
                                 (= :species (:color (first d)))
                                 (nil? (:color (second d))))))])
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    sk/lay-lm
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
+                        (= 1 (count (:layers m)))
+                        (= {} (:mapping (first (:layers m))))))])
 
 ;; Color is in the point layer's mapping. The sketch-level lm does
 ;; not see it -- one overall regression line, not three.
@@ -538,18 +538,6 @@
 (-> iris
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    (sk/lay-lm {:color nil})
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= :species (get-in m [:views 0 :mapping :color]))
-                        (= 2 (count (:layers m)))
-                        (contains? (:mapping (second (:layers m))) :color)
-                        (nil? (get-in m [:layers 1 :mapping :color]))))])
-
-(-> iris
-    (sk/view :sepal-length :sepal-width {:color :species})
-    sk/lay-point
     (sk/lay-lm {:color nil}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
@@ -558,6 +546,18 @@
                                 (= 1 (:lines s))
                                 (= :species (:color (first d)))
                                 (nil? (:color (second d))))))])
+
+(-> iris
+    (sk/view :sepal-length :sepal-width {:color :species})
+    sk/lay-point
+    (sk/lay-lm {:color nil})
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= :species (get-in m [:views 0 :mapping :color]))
+                        (= 2 (count (:layers m)))
+                        (contains? (:mapping (second (:layers m))) :color)
+                        (nil? (get-in m [:layers 1 :mapping :color]))))])
 
 ;; Cancellation works across any scope boundary. Here a layer-level
 ;; `nil` cancels a sketch-level mapping:
@@ -591,6 +591,13 @@
 ;; do not flow into layers.
 
 (-> iris
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/options {:title "Iris Scatter"}))
+
+(kind/test-last [(fn [v] (let [p (sk/plan v)]
+                           (= "Iris Scatter" (:title p))))])
+
+(-> iris
     (sk/lay-point :sepal-length :sepal-width)
     (sk/options {:title "Iris Scatter"})
     sk-summary)
@@ -599,27 +606,9 @@
                    (and (= "Iris Scatter" (get-in m [:opts :title]))
                         (= {} (:mapping m))))])
 
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:title "Iris Scatter"}))
-
-(kind/test-last [(fn [v] (let [p (sk/plan v)]
-                           (= "Iris Scatter" (:title p))))])
-
 ;; ### Rule 15: `sk/scale` and `sk/coord` are plot-level
 ;;
 ;; Scale and coord go into `:opts`. They apply to all views.
-
-(-> iris
-    (sk/view :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/scale :x :log)
-    (sk/coord :flip)
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= {:type :log} (get-in m [:opts :x-scale]))
-                        (= :flip (get-in m [:opts :coord]))))])
 
 (-> iris
     (sk/view :sepal-length :sepal-width)
@@ -633,6 +622,17 @@
                            (and (= 150 (:points s))
                                 (= :flip (:coord panel))
                                 (= :log (:type (:y-scale panel))))))])
+
+(-> iris
+    (sk/view :sepal-length :sepal-width)
+    sk/lay-point
+    (sk/scale :x :log)
+    (sk/coord :flip)
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= {:type :log} (get-in m [:opts :x-scale]))
+                        (= :flip (get-in m [:opts :coord]))))])
 
 ;; Coord `:flip` swaps axes -- the original x-scale (log) becomes
 ;; the y-scale in the rendered plot.
@@ -649,6 +649,14 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/annotate (sk/rule-h 3.0)))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 1 (:lines s)))))])
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/annotate (sk/rule-h 3.0))
     sk-summary)
 
@@ -656,18 +664,16 @@
                    (and (= 1 (count (get-in m [:opts :annotations])))
                         (= :rule-h (:mark (first (get-in m [:opts :annotations]))))))])
 
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/annotate (sk/rule-h 3.0)))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 1 (:lines s)))))])
-
 ;; ### Rule 17: `sk/facet` sets the faceting column
 ;;
 ;; `sk/facet` and `sk/facet-grid` write facet specs into `:opts`.
 ;; The layout effect is in the Layout section below.
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/facet :species))
+
+(kind/test-last [(fn [v] (= 3 (count (:panels (sk/plan v)))))])
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
@@ -679,9 +685,9 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
-    (sk/facet :species))
+    (sk/facet-grid :species :species))
 
-(kind/test-last [(fn [v] (= 3 (count (:panels (sk/plan v)))))])
+(kind/test-last [(fn [v] (= 9 (count (:panels (sk/plan v)))))])
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
@@ -691,12 +697,6 @@
 (kind/test-last [(fn [m]
                    (and (= :species (get-in m [:opts :facet-col]))
                         (= :species (get-in m [:opts :facet-row]))))])
-
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/facet-grid :species :species))
-
-(kind/test-last [(fn [v] (= 9 (count (:panels (sk/plan v)))))])
 
 ;; ---
 ;; ## Assembly
@@ -736,14 +736,6 @@
       (sk/view :petal-length :petal-width)
       sk/lay-lm))
 
-(sk-summary assembly-sketch)
-
-(kind/test-last [(fn [m]
-                   (and (= 1 (count (:layers m)))
-                        (= 2 (count (:views m)))
-                        (= 1 (count (:layers (first (:views m)))))
-                        (nil? (:layers (second (:views m))))))])
-
 assembly-sketch
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
@@ -754,20 +746,19 @@ assembly-sketch
                                 (= 3 (count d))
                                 (= [:point :line :line] (mapv :mark d)))))])
 
+(sk-summary assembly-sketch)
+
+(kind/test-last [(fn [m]
+                   (and (= 1 (count (:layers m)))
+                        (= 2 (count (:views m)))
+                        (= 1 (count (:layers (first (:views m)))))
+                        (nil? (:layers (second (:views m))))))])
+
 ;; ### Rule 19: each rendered layer carries fully merged scope
 ;;
 ;; All scope levels are merged for each rendered layer. The layer
 ;; sees the resolved data, columns, mark, stat, and all aesthetic
 ;; mappings.
-
-(-> (sk/sketch iris {:color :species})
-    (sk/lay-point :sepal-length :sepal-width)
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= :species (:color (:mapping m)))
-                        (= 1 (count (:views m)))
-                        (= 1 (count (:layers (first (:views m)))))))])
 
 (-> (sk/sketch iris {:color :species})
     (sk/lay-point :sepal-length :sepal-width))
@@ -779,6 +770,15 @@ assembly-sketch
                                 (= :sepal-width (:y d))
                                 (= :species (:color d))
                                 (= :point (:mark d)))))])
+
+(-> (sk/sketch iris {:color :species})
+    (sk/lay-point :sepal-length :sepal-width)
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= :species (:color (:mapping m)))
+                        (= 1 (count (:views m)))
+                        (= 1 (count (:layers (first (:views m)))))))])
 
 ;; The sketch-level color, view-level columns, and layer-level mark
 ;; are all present when the layer is rendered.
@@ -797,6 +797,13 @@ assembly-sketch
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :petal-length))
+
+(kind/test-last [(fn [v] (let [p (sk/plan v)]
+                           (= 2 (count (:panels p)))))])
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
     (sk/lay-histogram :petal-length)
     sk-summary)
 
@@ -804,17 +811,18 @@ assembly-sketch
                    (and (= 2 (count (:views m)))
                         (= 0 (count (:layers m)))))])
 
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-histogram :petal-length))
-
-(kind/test-last [(fn [v] (let [p (sk/plan v)]
-                           (= 2 (count (:panels p)))))])
-
 ;; ### Rule 21: layers within one view overlay in one panel
 ;;
 ;; Multiple layers on the same view produce one panel with overlaid
 ;; marks -- not separate panels.
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/lay-lm :sepal-length :sepal-width))
+
+(kind/test-last [(fn [v] (let [p (sk/plan v)]
+                           (and (= 1 (count (:panels p)))
+                                (= 2 (count (:layers (first (:panels p))))))))])
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -824,14 +832,6 @@ assembly-sketch
 (kind/test-last [(fn [m]
                    (and (= 1 (count (:views m)))
                         (= 2 (count (:layers (first (:views m)))))))])
-
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-lm :sepal-length :sepal-width))
-
-(kind/test-last [(fn [v] (let [p (sk/plan v)]
-                           (and (= 1 (count (:panels p)))
-                                (= 2 (count (:layers (first (:panels p))))))))])
 
 ;; One panel: colored scatter plus overall regression line. Both
 ;; layers share the same axes.
@@ -843,19 +843,19 @@ assembly-sketch
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
+    (sk/facet :species))
+
+(kind/test-last [(fn [v] (let [p (sk/plan v)]
+                           (= 3 (count (:panels p)))))])
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
     (sk/facet :species)
     sk-summary)
 
 (kind/test-last [(fn [m]
                    (and (= 1 (count (:views m)))
                         (= :species (get-in m [:opts :facet-col]))))])
-
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/facet :species))
-
-(kind/test-last [(fn [v] (let [p (sk/plan v)]
-                           (= 3 (count (:panels p)))))])
 
 ;; Three species, three panels.
 
@@ -867,6 +867,14 @@ assembly-sketch
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :sepal-length))
+
+(kind/test-last [(fn [v] (let [p (sk/plan v)]
+                           (and (= 2 (count (:panels p)))
+                                (= 1 (get-in p [:grid :cols])))))])
+
+(-> iris
+    (sk/lay-point :sepal-length :sepal-width)
     (sk/lay-histogram :sepal-length)
     sk-summary)
 
@@ -874,14 +882,6 @@ assembly-sketch
                    (and (= 2 (count (:views m)))
                         (= :sepal-length (get-in m [:views 0 :mapping :x]))
                         (= :sepal-length (get-in m [:views 1 :mapping :x]))))])
-
-(-> iris
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-histogram :sepal-length))
-
-(kind/test-last [(fn [v] (let [p (sk/plan v)]
-                           (and (= 2 (count (:panels p)))
-                                (= 1 (get-in p [:grid :cols])))))])
 
 ;; Two panels in one grid column -- shared x-axis for
 ;; sepal-length. This is a marginal distribution layout.
@@ -894,20 +894,20 @@ assembly-sketch
 (def splom-cols [:sepal-length :sepal-width :petal-length])
 
 (-> (sk/sketch iris {:color :species})
-    (sk/view (sk/cross splom-cols splom-cols))
-    sk-summary)
-
-(kind/test-last [(fn [m]
-                   (and (= 9 (count (:views m)))
-                        (= :species (:color (:mapping m)))))])
-
-(-> (sk/sketch iris {:color :species})
     (sk/view (sk/cross splom-cols splom-cols)))
 
 (kind/test-last [(fn [v] (let [p (sk/plan v)]
                            (and (= 9 (count (:panels p)))
                                 (= 3 (get-in p [:grid :rows]))
                                 (= 3 (get-in p [:grid :cols])))))])
+
+(-> (sk/sketch iris {:color :species})
+    (sk/view (sk/cross splom-cols splom-cols))
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= 9 (count (:views m)))
+                        (= :species (:color (:mapping m)))))])
 
 ;; Nine panels (3 x 3 grid), colored by species. Off-diagonal panels
 ;; are scatter plots; diagonal panels are histograms (inferred when

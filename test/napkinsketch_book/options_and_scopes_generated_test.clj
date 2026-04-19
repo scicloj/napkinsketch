@@ -17,7 +17,7 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__2900136#] (dissoc p1__2900136# :data))))
+    (partial mapv (fn* [p1__82404#] (dissoc p1__82404# :data))))
    kind/pprint)))
 
 
@@ -25,21 +25,47 @@
  v5_l72
  (->
   (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width {:color :species})))
+
+
+(deftest
+ t6_l75
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v5_l72)))
+
+
+(def
+ v8_l79
+ (->
+  (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
   sk-summary))
 
 
 (deftest
- t6_l76
+ t9_l83
  (is
   ((fn
     [m]
     (= :species (get-in m [:views 0 :layers 0 :mapping :color])))
-   v5_l72)))
+   v8_l79)))
 
 
 (def
- v8_l131
+ v11_l138
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  (sk/options {:title "Iris"})
+  (sk/coord :flip)))
+
+
+(deftest
+ t12_l143
+ (is ((fn [v] (some #{"Iris"} (:texts (sk/svg-summary v)))) v11_l138)))
+
+
+(def
+ v14_l147
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -49,21 +75,21 @@
 
 
 (deftest
- t9_l137
+ t15_l153
  (is
   ((fn
     [m]
     (and
      (= "Iris" (get-in m [:opts :title]))
      (= :flip (get-in m [:opts :coord]))))
-   v8_l131)))
+   v14_l147)))
 
 
-(def v11_l199 (select-keys (sk/config) [:width :height :margin]))
+(def v17_l215 (select-keys (sk/config) [:width :height :margin]))
 
 
 (deftest
- t12_l201
+ t18_l217
  (is
   ((fn
     [m]
@@ -71,11 +97,11 @@
      (number? (:width m))
      (number? (:height m))
      (number? (:margin m))))
-   v11_l199)))
+   v17_l215)))
 
 
 (def
- v14_l213
+ v20_l229
  (def
   demo
   (->
@@ -85,14 +111,14 @@
    (sk/coord :flip))))
 
 
-(def v16_l223 demo)
+(def v22_l239 demo)
 
 
-(def v18_l227 (sk-summary demo))
+(def v24_l243 (sk-summary demo))
 
 
 (deftest
- t19_l229
+ t25_l245
  (is
   ((fn
     [m]
@@ -100,4 +126,4 @@
      (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
      (= "Iris measurements" (get-in m [:opts :title]))
      (= :flip (get-in m [:opts :coord]))))
-   v18_l227)))
+   v24_l243)))
