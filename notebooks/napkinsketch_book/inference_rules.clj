@@ -30,9 +30,9 @@
 ;; inference steps, in the order they happen:
 ;;
 ;; 1. **Column selection** -- which columns map to x, y, and color (inferred from dataset shape when omitted)
-;; 2. **Column types** -- whether each column is numerical, categorical, or temporal
-;; 3. **Aesthetic resolution** -- whether a string like `"red"` is a column reference, a hex color, or a CSS color name
-;; 4. **Grouping** -- which column(s) split data into subsets
+;; 2. **Column types** -- whether x and y are numerical, categorical, or temporal
+;; 3. **Aesthetic resolution** -- whether `:color`, `:size`, `:alpha`, and `:text` are column references or fixed values
+;; 4. **Grouping** -- which columns split data into subsets (explicit `:group` plus a categorical `:color`)
 ;; 5. **Method** -- which mark and stat to use (e.g., scatter, histogram, bar)
 ;; 6. **Domains** -- data extent for each axis, with padding
 ;; 7. **Ticks** -- nice round values and formatted labels
