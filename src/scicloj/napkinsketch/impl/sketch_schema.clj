@@ -25,10 +25,14 @@
 ;; ---- Layer Groups (per mark type) ----
 
 (def PointGroup
+  "Data-space positions for a :point layer. :xs and :ys are
+  :sequential any? rather than number? because either axis may be
+  categorical (strings travel through a band scale); per-panel
+  scales enforce what values are valid at render time."
   [:map
    [:color Color]
-   [:xs [:sequential number?]]
-   [:ys [:sequential number?]]
+   [:xs [:sequential any?]]
+   [:ys [:sequential any?]]
    [:colors {:optional true} [:sequential Color]]
    [:sizes {:optional true} [:sequential number?]]
    [:alphas {:optional true} [:sequential number?]]
@@ -78,18 +82,18 @@
    [:x2 number?] [:y2 number?]])
 
 (def PolylineGroup
-  "Connected points."
+  "Connected points. :xs/:ys are any? for the same reason as PointGroup."
   [:map
    [:color Color]
-   [:xs [:sequential number?]]
-   [:ys [:sequential number?]]])
+   [:xs [:sequential any?]]
+   [:ys [:sequential any?]]])
 
 (def TextGroup
-  "Text labels at data positions."
+  "Text labels at data positions. :xs/:ys are any? for the same reason as PointGroup."
   [:map
    [:color Color]
-   [:xs [:sequential number?]]
-   [:ys [:sequential number?]]
+   [:xs [:sequential any?]]
+   [:ys [:sequential any?]]
    [:labels {:optional true} [:vector string?]]])
 
 (def ErrorbarGroup

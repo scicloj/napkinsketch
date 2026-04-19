@@ -607,11 +607,19 @@ count-views
 
 (kind/test-last [(fn [m] (= :boxplot m))])
 
-;; Pairs without a dedicated rule (numerical x + categorical y,
-;; categorical x + categorical y, and so on) fall back to scatter
-;; via the `:else` branch. Some of these orientations are awkward in
-;; the current plan construction; in practice you will name an
-;; explicit `sk/lay-*` when you reach for them.
+;; Pairs without a dedicated rule fall back to scatter via the
+;; `:else` branch. One example is numerical x + categorical y, which
+;; renders as a stripchart -- points spread along x, grouped onto
+;; category bands on y:
+
+(let [pl (-> {:val     [8  10  12  18  20  22  14  15  17]
+              :species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]}
+             (sk/view :val :species)
+             sk/plan)
+      layer (first (:layers (first (:panels pl))))]
+  (:mark layer))
+
+(kind/test-last [(fn [m] (= :point m))])
 
 ;; ## Domains
 ;;
