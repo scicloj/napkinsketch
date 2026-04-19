@@ -227,3 +227,4 @@
 ;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) -- the most common starting point for chart types
 ;; - [**Cookbook**](./napkinsketch_book.cookbook.html) -- recipes for common multi-layer plots
 ;; - [**Configuration**](./napkinsketch_book.configuration.html) -- themes, backgrounds, palettes, and other plot-level defaults
+;; - [**Gallery**](./napkinsketch_book.gallery.html) -- many more chart variations with side-by-side code

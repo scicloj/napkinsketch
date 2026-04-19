@@ -123,7 +123,51 @@
                            (and (= 1 (:panels s))
                                 (= 3 (:polygons s)))))])
 
+;; ## Dates on the x-axis
+
+;; Real time-series usually have an actual date column, not an
+;; integer step. Napkinsketch detects temporal columns
+;; (`java.util.Date` via `#inst`, `java.time.LocalDate`,
+;; `LocalDateTime`, `Instant`) and picks calendar-aware tick
+;; labels automatically.
+
+(-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
+            #inst "2024-04-01" #inst "2024-05-01" #inst "2024-06-01"]
+     :temperature [3 5 9 14 19 23]}
+    (sk/lay-line :date :temperature)
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 6 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; ## Multiple Series Over Time
+
+;; Pass `{:color :group}` to get one line per category. Rows are
+;; drawn in their given order, so pre-sort by date if your data
+;; is not already sorted.
+
+(def months
+  [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
+   #inst "2024-04-01" #inst "2024-05-01" #inst "2024-06-01"])
+
+(-> {:date        (concat months months)
+     :temperature [3  5  9 14 19 23
+                   15 17 19 22 25 28]
+     :city        (concat (repeat 6 "Zurich")
+                          (repeat 6 "Athens"))}
+    (sk/lay-line :date :temperature {:color :city})
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 12 (:points s))
+                                (= 2 (:lines s)))))])
+
+;; See [Inference Rules: Temporal columns](./napkinsketch_book.inference_rules.html)
+;; for details on how dates are detected and formatted.
+
 ;; ## What's Next
 ;;
 ;; - [**Relationships**](./napkinsketch_book.relationships.html) -- heatmaps, contours, and 2D density
 ;; - [**Polar**](./napkinsketch_book.polar.html) -- radial charts for cyclical data
+;; - [**Gallery**](./napkinsketch_book.gallery.html) -- more chart variations with side-by-side code

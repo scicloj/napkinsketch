@@ -74,6 +74,12 @@
             (and (= 1 (:panels s))
                  (pos? (:polygons s)))))])
 
+;; `(sk/coord :flip)` draws categories **bottom-to-top in data
+;; order**, matching ggplot2's `coord_flip()`. For a ranking chart
+;; where the biggest value should appear at the top, sort the data
+;; ascending before plotting, e.g.
+;; `(tc/order-by data [:value] [:asc])`.
+
 ;; ## Horizontal Colored Bars
 
 ;; Colored bars, flipped.

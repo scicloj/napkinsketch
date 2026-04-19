@@ -13,7 +13,7 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__95051#] (Math/sin (* p1__95051# 0.3))) (range 30))}))
+   (map (fn* [p1__72048#] (Math/sin (* p1__72048# 0.3))) (range 30))}))
 
 
 (def v4_l21 (-> wave (sk/lay-line :x :y)))
@@ -37,8 +37,8 @@
   {:x (concat (range 30) (range 30)),
    :y
    (concat
-    (map (fn* [p1__95052#] (Math/sin (* p1__95052# 0.3))) (range 30))
-    (map (fn* [p1__95053#] (Math/cos (* p1__95053# 0.3))) (range 30))),
+    (map (fn* [p1__72049#] (Math/sin (* p1__72049# 0.3))) (range 30))
+    (map (fn* [p1__72050#] (Math/cos (* p1__72050# 0.3))) (range 30))),
    :fn (concat (repeat 30 :sin) (repeat 30 :cos))}))
 
 
@@ -140,7 +140,7 @@
  (->
   {:x (range 30),
    :y
-   (map (fn* [p1__95054#] (Math/sin (* p1__95054# 0.3))) (range 30))}
+   (map (fn* [p1__72051#] (Math/sin (* p1__72051# 0.3))) (range 30))}
   (sk/lay-area :x :y)))
 
 
@@ -177,3 +177,62 @@
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
    v27_l115)))
+
+
+(def
+ v30_l134
+ (->
+  {:date
+   [#inst "2024-01-01T00:00:00.000-00:00"
+    #inst "2024-02-01T00:00:00.000-00:00"
+    #inst "2024-03-01T00:00:00.000-00:00"
+    #inst "2024-04-01T00:00:00.000-00:00"
+    #inst "2024-05-01T00:00:00.000-00:00"
+    #inst "2024-06-01T00:00:00.000-00:00"],
+   :temperature [3 5 9 14 19 23]}
+  (sk/lay-line :date :temperature)
+  sk/lay-point))
+
+
+(deftest
+ t31_l140
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 6 (:points s)) (= 1 (:lines s)))))
+   v30_l134)))
+
+
+(def
+ v33_l150
+ (def
+  months
+  [#inst "2024-01-01T00:00:00.000-00:00"
+   #inst "2024-02-01T00:00:00.000-00:00"
+   #inst "2024-03-01T00:00:00.000-00:00"
+   #inst "2024-04-01T00:00:00.000-00:00"
+   #inst "2024-05-01T00:00:00.000-00:00"
+   #inst "2024-06-01T00:00:00.000-00:00"]))
+
+
+(def
+ v34_l154
+ (->
+  {:date (concat months months),
+   :temperature [3 5 9 14 19 23 15 17 19 22 25 28],
+   :city (concat (repeat 6 "Zurich") (repeat 6 "Athens"))}
+  (sk/lay-line :date :temperature {:color :city})
+  sk/lay-point))
+
+
+(deftest
+ t35_l162
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 12 (:points s)) (= 2 (:lines s)))))
+   v34_l154)))

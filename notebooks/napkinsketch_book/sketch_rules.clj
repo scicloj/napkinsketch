@@ -2,7 +2,7 @@
 ;;
 ;; This chapter is the definitive specification for how sketches
 ;; behave. It covers 24 rules in seven sections -- each demonstrated
-;; with a printed sketch structure, a rendered plot, and verified
+;; with a rendered plot, a printed sketch structure, and verified
 ;; behavior.
 ;;
 ;; Read [The Sketch Model](./napkinsketch_book.sketch_model.html)

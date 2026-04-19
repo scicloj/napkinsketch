@@ -98,7 +98,7 @@
 
 
 (def
- v19_l81
+ v19_l87
  (->
   (rdatasets/reshape2-tips)
   (sk/lay-bar :day {:color :time})
@@ -106,71 +106,71 @@
 
 
 (deftest
- t20_l85
+ t20_l91
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v19_l81)))
+   v19_l87)))
 
 
-(def v22_l94 (-> sales (sk/lay-value-bar :product :revenue)))
+(def v22_l100 (-> sales (sk/lay-value-bar :product :revenue)))
 
 
 (deftest
- t23_l97
+ t23_l103
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v22_l94)))
+   v22_l100)))
 
 
 (def
- v25_l105
+ v25_l111
  (-> sales (sk/lay-value-bar :product :revenue) (sk/coord :flip)))
 
 
 (deftest
- t26_l109
+ t26_l115
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v25_l105)))
+   v25_l111)))
 
 
-(def v28_l117 (-> sales (sk/lay-lollipop :product :revenue)))
+(def v28_l123 (-> sales (sk/lay-lollipop :product :revenue)))
 
 
 (deftest
- t29_l120
+ t29_l126
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
-   v28_l117)))
+   v28_l123)))
 
 
 (def
- v31_l128
+ v31_l134
  (-> sales (sk/lay-lollipop :product :revenue) (sk/coord :flip)))
 
 
 (deftest
- t32_l132
+ t32_l138
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
-   v31_l128)))
+   v31_l134)))

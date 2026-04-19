@@ -37,7 +37,7 @@
 ;; 6. **Domains** -- data extent for each axis, with padding
 ;; 7. **Ticks** -- nice round values and formatted labels
 ;; 8. **Axis labels** -- derived from column names
-;; 9. **Legends** -- entries and layout space for color, size, and alpha legends
+;; 9. **Legends** -- entries for color, size, and alpha legends, plus the room they take in the plot margin
 ;; 10. **Layout** -- whether panels form a single plot, a facet grid, or a multi-variable grid
 ;; 11. **Coordinate flipping** -- whether axes are swapped after layout (polar has its own chapter)
 ;;
