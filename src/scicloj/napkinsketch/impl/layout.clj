@@ -161,7 +161,15 @@
         legend-entry-count (cond
                              (:entries legend) (count (:entries legend))
                              (= :continuous (:type legend)) 5
-                             :else 0)]
+                             :else 0)
+        ;; Widest label across title + entry labels. Used to extend
+        ;; the legend column width when a category name is longer
+        ;; than the fixed default.
+        legend-title-chars (count (str (some-> legend :title name)))
+        legend-entry-max-chars (reduce max 0
+                                       (map #(count (str (:label %)))
+                                            (:entries legend)))
+        legend-max-chars (max legend-title-chars legend-entry-max-chars)]
     {:layout-type layout-type
      :multi? multi?
      :grid-rows grid-rows
@@ -183,6 +191,7 @@
      :y-temporal y-temporal
      :legend-present? (boolean (or legend size-legend alpha-legend))
      :legend-entry-count legend-entry-count
+     :legend-max-chars legend-max-chars
      :size-legend-entry-count (count (:entries size-legend))
      :alpha-legend-entry-count (count (:entries alpha-legend))}))
 
@@ -268,9 +277,21 @@
       :none
       raw)))
 
-(defn- pad-legend-w [legend-pos cfg]
+(defn- pad-legend-w
+  "Width reserved for a left- or right-positioned legend column.
+   The base width from config (default 100) is extended when the
+   longest legend label (title or category) exceeds what fits there,
+   so long category names like 'tech.ml.dataset.dev' don't clip at
+   the SVG right edge."
+  [legend-pos scene cfg]
   (if (#{:left :right} legend-pos)
-    (:legend-width cfg 100)
+    (let [base (:legend-width cfg 100)
+          ;; Swatch + gap takes ~24px; estimate label font advance as
+          ;; ~7px per char; leave ~8px right margin.
+          char-px 7
+          chrome  32
+          estimated (+ chrome (* char-px (:legend-max-chars scene 0)))]
+      (max base estimated))
     0))
 
 (defn- pad-legend-h
@@ -309,7 +330,7 @@
      :y-label-pad        (pad-y-label scene cfg opts)
      :strip-h            (pad-strip-h scene cfg)
      :strip-w            (pad-strip-w scene cfg)
-     :legend-w           (pad-legend-w legend-pos cfg)
+     :legend-w           (pad-legend-w legend-pos scene cfg)
      :legend-h           legend-h
      :legend-position    legend-pos
      :top-legend-pad     top-pad
