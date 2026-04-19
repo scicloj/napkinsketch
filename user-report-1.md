@@ -113,11 +113,16 @@ Note: napkinsketch's own `notebooks/napkinsketch_book/ranking.clj` omits `sk/plo
 
 ## Issue 3 — `(sk/coord :flip)` draws the first row at the bottom, not the top
 
-> **OPEN — design discussion.** The behavior matches ggplot2's
+> **DEFERRED (post-alpha).** The behavior matches ggplot2's
 > `coord_flip()`; changing the default would also change every existing
-> ranking plot. A targeted option like `(sk/coord :flip {:reverse-categorical true})`
-> or top-level `(sk/options {:categorical-order :reverse})` is the
-> likely path. Not fixed pre-alpha pending the design call.
+> ranking plot. A targeted opt-in such as
+> `(sk/coord :flip {:reverse-categorical true})` or
+> `(sk/options {:categorical-order :reverse})` is the likely path,
+> pending the design call.
+>
+> Logged in `CHANGELOG.md` under Known limitations → Layout and visuals
+> (see "Horizontal bars from `(sk/coord :flip)` render the first row
+> ... at the bottom").
 
 
 **Severity:** Low/medium — usability / principle-of-least-surprise for ranking charts.
@@ -153,12 +158,18 @@ This is familiar to ggplot2 users (ggplot2's `coord_flip()` has the same behavio
 
 ## Issue 4 — `sk/save-png` truncates the y-axis label to ~6 characters
 
-> **OPEN — upstream bug.** The SVG path is correct; the `:bufimg`
-> / Java2D rasterisation path (`membrane.java2d/draw-to-image`)
-> produces the truncation. This lives in `membrane` rather than
-> napkinsketch's own code. Needs a reproducer against membrane and
-> either a fix there or a workaround in `render/bufimg.clj`. Not
-> fixed pre-alpha.
+> **DEFERRED (post-alpha, upstream bug).** The SVG path is correct;
+> the `:bufimg` / Java2D rasterisation path
+> (`membrane.java2d/draw-to-image`) truncates the rotated y-label
+> after ~6 characters. The bug lives in `membrane`, not in
+> napkinsketch's own code. A clean fix needs a reproducer against
+> membrane and either a fix there or a local workaround in
+> `render/bufimg.clj` (for example, widening the Java2D raster target
+> before rasterising so the rotated-text bounding box is not clipped).
+>
+> Logged in `CHANGELOG.md` under Known limitations → Marks (see "`sk/save-png`
+> ... truncates the rotated y-axis label"). Workarounds: render to SVG
+> and rasterize externally, or keep `:y-label` short.
 
 
 **Severity:** Medium — affects any PNG export where the y-axis column name is longer than ~6 chars.

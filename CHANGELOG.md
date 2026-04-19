@@ -270,6 +270,14 @@ produce crashes on canonical inputs.
   back to data values.
 - SPLOMs with 6+ variables at the default 600x400 have tight panels.
   Bump `:width`/`:height` or pin `:panel-width`/`:panel-height`.
+- Horizontal bars from `(sk/coord :flip)` render the first row of
+  data at the bottom of the chart, so a dataset sorted descending
+  (natural "top N" order) produces the biggest bar at the bottom.
+  The behavior matches ggplot2's `coord_flip()`. Workaround: sort
+  the dataset ascending before plotting, e.g.
+  `(tc/order-by data [:value] [:asc])`. A future opt-in flag such
+  as `(sk/coord :flip {:reverse-categorical true})` would spare
+  users the sort. Reported in user-report-1 Issue 3.
 
 **Marks:**
 
@@ -285,6 +293,14 @@ produce crashes on canonical inputs.
   is fixed); an explicit `:facet-scales :fixed` option is pending.
 - Large scatters produce large SVGs (~220 bytes/point). For >10k
   points, use `:format :bufimg` for raster output.
+- `sk/save-png` (and the `:bufimg` raster path generally) truncates
+  the rotated y-axis label after ~6 characters. The SVG path
+  (`sk/plot` + Clay GFM, or `rsvg-convert` on the saved SVG)
+  renders the full label. Root cause lives in membrane's Java2D
+  backend (the rotated-text bounding box is clipped). Workaround:
+  render to SVG and rasterize externally, or pad `:y-label` to
+  stay short. Reported in user-report-1 Issue 4; needs an upstream
+  fix in `membrane`.
 - LOESS with confidence bands is O(n^2); subsample above ~5k rows.
 
 **Options and config:**
