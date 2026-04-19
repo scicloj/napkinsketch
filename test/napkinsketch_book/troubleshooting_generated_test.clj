@@ -35,7 +35,19 @@
 
 
 (def
- v12_l136
+ v12_l102
+ (->
+  {:hour [9 10 11 12], :count [5 8 12 7]}
+  (sk/lay-value-bar :hour :count {:x-type :categorical})))
+
+
+(deftest
+ t13_l105
+ (is ((fn [v] (= 4 (:polygons (sk/svg-summary v)))) v12_l102)))
+
+
+(def
+ v15_l164
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -43,5 +55,5 @@
 
 
 (deftest
- t13_l140
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v12_l136)))
+ t16_l168
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v15_l164)))

@@ -84,6 +84,34 @@
 ;; See [Inference Rules: Overriding color type](./napkinsketch_book.inference_rules.html)
 ;; for a worked example.
 
+;; ## Numeric Column Rejected by a Categorical-Axis Mark
+;;
+;; **Symptom**: An error like `"lay-value-bar requires a categorical
+;; column for :x, but :hour is numerical"`, or the equivalent for
+;; `:boxplot`, `:violin`, `:lollipop`, or similar marks that need a
+;; categorical axis.
+;;
+;; **Cause**: The column you passed (e.g., hour of day, year, subject
+;; ID) contains numbers, so column-type inference classifies it as
+;; `:numerical`. The mark needs `:categorical`.
+;;
+;; **Fix**: Add `:x-type :categorical` (or `:y-type :categorical` for
+;; horizontal layouts) to override the inferred type. No need to
+;; convert the column itself:
+
+(-> {:hour [9 10 11 12] :count [5 8 12 7]}
+    (sk/lay-value-bar :hour :count {:x-type :categorical}))
+
+(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
+
+;; The override propagates into `infer-column-types`, so every
+;; downstream step (scale type, tick placement, domain) treats
+;; `:hour` as categorical. The same switch works for `:y-type` when
+;; a numeric column is on the y axis of a horizontal boxplot or
+;; similar layout. See
+;; [Inference Rules: Overriding inferred types](./napkinsketch_book.inference_rules.html)
+;; for a worked example.
+
 ;; ## x-Only Methods Do Not Accept a y Column
 ;;
 ;; **Symptom**: `"lay-histogram uses only the x column"` error.

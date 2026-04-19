@@ -548,10 +548,11 @@ my-sketch
 ;; Every inferred choice can be overridden. Want a specific
 ;; chart type? Use the matching `sk/lay-*` function instead of
 ;; leaving the view bare. Want a particular scale? Pass
-;; `sk/scale`. Want a numeric column to be treated as
-;; categorical? Add `{:color-type :categorical}` to the layer or
-;; view. Inference exists so small sketches stay small, not to
-;; take decisions away from you. The
+;; `sk/scale`. Want a numeric column to be treated as categorical?
+;; Add `{:x-type :categorical}`, `{:y-type :categorical}`, or
+;; `{:color-type :categorical}` to the view or layer, depending on
+;; which axis the column feeds. Inference exists so small sketches
+;; stay small, not to take decisions away from you. The
 ;; [Inference Rules](./napkinsketch_book.inference_rules.html)
 ;; chapter lists the full decision logic and the override for
 ;; each case.
