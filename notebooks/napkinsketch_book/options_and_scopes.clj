@@ -238,6 +238,8 @@
 
 demo
 
+(kind/test-last [(fn [v] (some #{"Iris measurements"} (:texts (sk/svg-summary v))))])
+
 ;; The sketch structure:
 
 (sk-summary demo)

@@ -571,6 +571,19 @@
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
+(-> (sk/sketch iris {:color :species})
+    (sk/view :sepal-length :sepal-width)
+    (sk/lay-point {:color nil})
+    sk/lay-lm
+    sk-summary)
+
+(kind/test-last [(fn [m]
+                   (and (= :species (:color (:mapping m)))
+                        (= 2 (count (:layers m)))
+                        (contains? (:mapping (first (:layers m))) :color)
+                        (nil? (get-in m [:layers 0 :mapping :color]))
+                        (= {} (:mapping (second (:layers m))))))])
+
 ;; Points are uncolored (layer `nil` cancels sketch color). The lm
 ;; layer has no override, so it inherits the sketch color -- three
 ;; lines, one per species.

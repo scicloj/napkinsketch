@@ -563,10 +563,12 @@ temporal-hist-sketch
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-(kind/pprint temporal-hist-sketch)
+;; The plan shows the inferred method:
 
-(kind/test-last [(fn [sk]
-                   (= :bar (:mark (first (:layers (first (:panels (sk/plan sk))))))))])
+(sk/plan temporal-hist-sketch)
+
+(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+                            (= :bar (:mark layer))))])
 
 ;; A single categorical column produces a bar chart of counts:
 
@@ -598,10 +600,12 @@ num-num-sketch
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-(kind/pprint num-num-sketch)
+;; The plan shows the inferred method:
 
-(kind/test-last [(fn [sk]
-                   (= :point (:mark (first (:layers (first (:panels (sk/plan sk))))))))])
+(sk/plan num-num-sketch)
+
+(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+                            (= :point (:mark layer))))])
 
 ;; A temporal x with a numerical y infers a time-series line. Row
 ;; order is preserved, so pre-sort temporal data to avoid zigzag:
@@ -615,10 +619,12 @@ ts-line-sketch
 
 (kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
 
-(kind/pprint ts-line-sketch)
+;; The plan shows the inferred method:
 
-(kind/test-last [(fn [sk]
-                   (= :line (:mark (first (:layers (first (:panels (sk/plan sk))))))))])
+(sk/plan ts-line-sketch)
+
+(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+                            (= :line (:mark layer))))])
 
 ;; A categorical x with a numerical y infers a boxplot -- the default
 ;; for summarizing a distribution across groups:
@@ -632,12 +638,13 @@ boxplot-sketch
 
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
-(kind/pprint boxplot-sketch)
+;; The plan shows the inferred method:
 
-(kind/test-last [(fn [sk]
-                   (let [layer (first (:layers (first (:panels (sk/plan sk)))))]
-                     (and (= :boxplot (:mark layer))
-                          (= 3 (count (:boxes layer))))))])
+(sk/plan boxplot-sketch)
+
+(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+                            (and (= :boxplot (:mark layer))
+                                 (= 3 (count (:boxes layer))))))])
 
 ;; A numerical x with a categorical y infers a horizontal boxplot --
 ;; the same summary laid out with the category axis on y:
@@ -651,12 +658,13 @@ horizontal-boxplot-sketch
 
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
-(kind/pprint horizontal-boxplot-sketch)
+;; The plan shows the inferred method:
 
-(kind/test-last [(fn [sk]
-                   (let [layer (first (:layers (first (:panels (sk/plan sk)))))]
-                     (and (= :boxplot (:mark layer))
-                          (= 3 (count (:boxes layer))))))])
+(sk/plan horizontal-boxplot-sketch)
+
+(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+                            (and (= :boxplot (:mark layer))
+                                 (= 3 (count (:boxes layer))))))])
 
 ;; ## Domains
 ;;

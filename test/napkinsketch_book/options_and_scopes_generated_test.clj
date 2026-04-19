@@ -17,7 +17,7 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__82404#] (dissoc p1__82404# :data))))
+    (partial mapv (fn* [p1__82872#] (dissoc p1__82872# :data))))
    kind/pprint)))
 
 
@@ -114,11 +114,18 @@
 (def v22_l239 demo)
 
 
-(def v24_l243 (sk-summary demo))
+(deftest
+ t23_l241
+ (is
+  ((fn [v] (some #{"Iris measurements"} (:texts (sk/svg-summary v))))
+   v22_l239)))
+
+
+(def v25_l245 (sk-summary demo))
 
 
 (deftest
- t25_l245
+ t26_l247
  (is
   ((fn
     [m]
@@ -126,4 +133,4 @@
      (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
      (= "Iris measurements" (get-in m [:opts :title]))
      (= :flip (get-in m [:opts :coord]))))
-   v24_l243)))
+   v25_l245)))
