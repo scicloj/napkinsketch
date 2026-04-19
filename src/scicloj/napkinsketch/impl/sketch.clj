@@ -253,7 +253,14 @@
    Restores config snapshot if present.
    When opts contain :format :bufimg, renders to BufferedImage (via
    membrane's Java2D backend) instead of SVG. Clay displays BufferedImage
-   values as inline images automatically."
+   values as inline images automatically.
+
+   The SVG case returns the raw kind/hiccup [:svg ...] directly.
+   An earlier version wrapped it in a [:div ...] for inter-plot spacing
+   in interactive HTML, but that wrapper prevented Clay's GFM renderer
+   from recognizing the SVG and extracting it to a file, so bare sketches
+   rendered blank in :format [:gfm]. Spacing is now handled downstream by
+   the consumer / stylesheet."
   [sk]
   (let [captured (:config-snapshot sk)
         render-fn (fn []
@@ -266,8 +273,7 @@
                           ;; Ensure the bufimg renderer is loaded
                           (require 'scicloj.napkinsketch.render.bufimg)
                           (render-impl/plan->figure p :bufimg opts))
-                        (let [rendered (render-impl/plan->figure p :svg opts)]
-                          (kind/hiccup [:div {:style {:margin-bottom "1em"}} rendered])))))]
+                        (render-impl/plan->figure p :svg opts))))]
     (if captured
       (binding [defaults/*config* captured]
         (render-fn))
