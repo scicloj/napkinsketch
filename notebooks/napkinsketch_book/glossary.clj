@@ -363,17 +363,26 @@ my-sketch
 
 ;; ## Theme
 ;;
-;; A **theme** controls the visual appearance of non-data elements:
-;; background color, grid lines, font sizes, margins.
-;; Passed as `{:theme {...}}` via `sk/options` or directly to `sk/plan`.
+;; A **theme** controls the visual appearance of non-data elements.
+;; It is a nested map under `:theme` with three keys:
+;;
+;; | Key | Controls |
+;; |:----|:---------|
+;; | `:bg` | Panel background color |
+;; | `:grid` | Gridline color |
+;; | `:font-size` | Base font size in pixels |
+;;
+;; Passed as `{:theme {...}}` via `sk/options`, `sk/with-config`, or
+;; `sk/set-config!`. Other visual knobs (margins, legend width, tick
+;; spacing) are top-level configuration keys, not theme entries --
+;; see `sk/config-key-docs`.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:theme {:background "#2d2d2d" :grid "#444444"
-                         :text "#cccccc" :tick "#999999"}})
-    sk/svg-summary :panels)
+    (sk/options {:theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}})
+    sk/svg-summary :points)
 
-(kind/test-last [(fn [n] (= 1 n))])
+(kind/test-last [(fn [n] (= 150 n))])
 
 ;; ## Membrane
 ;;

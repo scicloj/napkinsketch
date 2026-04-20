@@ -215,54 +215,49 @@
 
 
 (def
- v59_l370
+ v59_l380
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/options
-   {:theme
-    {:background "#2d2d2d",
-     :grid "#444444",
-     :text "#cccccc",
-     :tick "#999999"}})
+  (sk/options {:theme {:bg "#2d2d2d", :grid "#444444", :font-size 10}})
   sk/svg-summary
-  :panels))
+  :points))
 
 
-(deftest t60_l376 (is ((fn [n] (= 1 n)) v59_l370)))
+(deftest t60_l385 (is ((fn [n] (= 150 n)) v59_l380)))
 
 
-(def v62_l389 (def my-membrane (sk/plan->membrane my-plan)))
+(def v62_l398 (def my-membrane (sk/plan->membrane my-plan)))
 
 
-(def v63_l391 (vector? my-membrane))
+(def v63_l400 (vector? my-membrane))
 
 
-(deftest t64_l393 (is (true? v63_l391)))
+(deftest t64_l402 (is (true? v63_l400)))
 
 
-(def v65_l395 (count my-membrane))
+(def v65_l404 (count my-membrane))
 
 
-(deftest t66_l397 (is ((fn [n] (pos? n)) v65_l395)))
+(deftest t66_l406 (is ((fn [n] (pos? n)) v65_l404)))
 
 
-(def v68_l407 (def my-figure (sk/plan->figure my-plan :svg {})))
+(def v68_l416 (def my-figure (sk/plan->figure my-plan :svg {})))
 
 
-(def v69_l409 (first my-figure))
+(def v69_l418 (first my-figure))
 
 
-(deftest t70_l411 (is ((fn [v] (= :svg v)) v69_l409)))
+(deftest t70_l420 (is ((fn [v] (= :svg v)) v69_l418)))
 
 
-(def v72_l458 (count sk/plot-option-docs))
+(def v72_l467 (count sk/plot-option-docs))
 
 
-(deftest t73_l460 (is ((fn [n] (= 11 n)) v72_l458)))
+(deftest t73_l469 (is ((fn [n] (= 11 n)) v72_l467)))
 
 
-(def v75_l475 (count sk/layer-option-docs))
+(def v75_l484 (count sk/layer-option-docs))
 
 
-(deftest t76_l477 (is ((fn [n] (pos? n)) v75_l475)))
+(deftest t76_l486 (is ((fn [n] (pos? n)) v75_l484)))
