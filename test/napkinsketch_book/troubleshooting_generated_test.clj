@@ -60,7 +60,49 @@
 
 
 (def
- v18_l189
+ v18_l149
+ (-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-length)))
+
+
+(deftest
+ t19_l152
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v18_l149)))
+
+
+(def
+ v21_l164
+ (try
+  (->
+   (rdatasets/datasets-iris)
+   (sk/lay-bar :species)
+   (sk/scale :x :log)
+   sk/plan)
+  (catch Exception e (.getMessage e))))
+
+
+(deftest
+ t22_l171
+ (is
+  ((fn [msg] (and (string? msg) (re-find #"[Ll]og scale" msg)))
+   v21_l164)))
+
+
+(def
+ v24_l184
+ (->
+  (rdatasets/datasets-chickwts)
+  (sk/view :feed)
+  sk/lay-bar
+  (sk/coord :polar)))
+
+
+(deftest
+ t25_l189
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v24_l184)))
+
+
+(def
+ v27_l207
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -68,5 +110,82 @@
 
 
 (deftest
- t19_l193
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v18_l189)))
+ t28_l211
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v27_l207)))
+
+
+(def
+ v30_l227
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  (sk/facet :species)))
+
+
+(deftest
+ t31_l231
+ (is ((fn [v] (= 3 (:panels (sk/svg-summary v)))) v30_l227)))
+
+
+(def
+ v33_l247
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  (sk/lay-text
+   {:data
+    (->
+     (tc/dataset {:sepal-length [6.5], :species ["mean"]})
+     (tc/add-column :yy (constantly 3.5))),
+    :x :sepal-length,
+    :y :yy,
+    :text :species})))
+
+
+(deftest
+ t34_l254
+ (is ((fn [v] (some #{"mean"} (:texts (sk/svg-summary v)))) v33_l247)))
+
+
+(def
+ v36_l271
+ (def template (-> (sk/sketch) (sk/view :x :y) sk/lay-point)))
+
+
+(def v37_l276 (-> template (sk/with-data {:x [1 2 3], :y [4 5 6]})))
+
+
+(deftest
+ t38_l279
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v37_l276)))
+
+
+(def
+ v40_l296
+ (->
+  [{:category "A", :value 100}
+   {:category "B", :value 50}
+   {:category "C", :value 25}]
+  (tc/dataset)
+  (tc/order-by [:value] :asc)
+  (sk/lay-value-bar :category :value)
+  (sk/coord :flip)))
+
+
+(deftest
+ t41_l304
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v40_l296)))
+
+
+(def
+ v43_l326
+ (->
+  {:x (concat (range 5) (range 5)),
+   :y [1 2 3 4 5 2 2 2 3 3],
+   :group (concat (repeat 5 "A") (repeat 5 "B"))}
+  (sk/lay-stacked-area :x :y {:color :group})))
+
+
+(deftest
+ t44_l331
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v43_l326)))

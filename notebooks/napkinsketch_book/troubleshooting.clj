@@ -145,24 +145,31 @@
 ;; x column. Passing a y column is an error.
 ;;
 ;; **Fix**: Remove the y column:
-;;
-;; ```clojure
-;; ;; Wrong:
-;; (sk/lay-histogram data :sepal-length :sepal-width)
-;;
-;; ;; Correct:
-;; (sk/lay-histogram data :sepal-length)
-;; ```
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram :sepal-length))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 ;; ## Categorical Column with Log Scale
 ;;
 ;; **Symptom**: `"Log scale requires numeric data"` error.
 ;;
 ;; **Cause**: Log scales only work with numerical columns. Categorical
-;; columns (strings, keywords) cannot be log-transformed.
+;; columns (strings, keywords) have no meaningful log transform.
 ;;
-;; **Fix**: Use a numerical column for log scale, or remove the log
-;; scale for categorical data.
+;; **Fix**: Use a numerical column for the log-scaled axis, or drop
+;; the log scale on the categorical axis:
+
+(try
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-bar :species)
+      (sk/scale :x :log)
+      sk/plan)
+  (catch Exception e (.getMessage e)))
+
+(kind/test-last [(fn [msg] (and (string? msg)
+                                (re-find #"[Ll]og scale" msg)))])
 
 ;; ## Polar Coordinates with Unsupported Marks
 ;;
@@ -171,7 +178,18 @@
 ;; **Cause**: Not all marks support polar coordinates. Currently
 ;; `:point`, `:bar`, and `:line` work well with polar.
 ;;
-;; **Fix**: Check the [Polar](./napkinsketch_book.polar.html) chapter for supported marks.
+;; **Fix**: Use a supported mark. A bar chart flipped to polar
+;; becomes a rose chart:
+
+(-> (rdatasets/datasets-chickwts)
+    (sk/view :feed)
+    sk/lay-bar
+    (sk/coord :polar))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; See the [Polar](./napkinsketch_book.polar.html) chapter for the
+;; full set of supported marks and examples.
 
 ;; ## Tooltip and Brush Not Working
 ;;
@@ -192,7 +210,147 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
+;; ## Faceting Keys in a Layer or View Options Map
+;;
+;; **Symptom**: An error like
+;; `"Faceting is plot-level, not layer-level. Use (sk/facet sk col) ..."`
+;; when you put `:facet-col`, `:facet-row`, `:facet-x`, or
+;; `:facet-y` inside a `sk/view` or `sk/lay-*` options map.
+;;
+;; **Cause**: Faceting configures the plot as a whole, not a single
+;; view or layer. Those keys are not accepted in view/layer
+;; mappings.
+;;
+;; **Fix**: Use `sk/facet` (single-axis) or `sk/facet-grid`
+;; (two-axis) as a top-level step in the pipeline:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/facet :species))
+
+(kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
+
+;; ## Constant `:x` or `:y` in a Layer's Options
+;;
+;; **Symptom**: An error like
+;; `"lay-text :y must be a column reference (keyword or string),
+;; but got 200"`, typically when adding an annotation layer with
+;; a fixed horizontal or vertical position.
+;;
+;; **Cause**: `:x` and `:y` are position **mappings** -- they must
+;; name a column that the stat can index into, not hold a scalar
+;; constant.
+;;
+;; **Fix**: Add a column to the annotation dataset with that
+;; constant value, then reference the column:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-text {:data (-> (tc/dataset {:sepal-length [6.5]
+                                         :species     ["mean"]})
+                            (tc/add-column :yy (constantly 3.5)))
+                  :x :sepal-length :y :yy :text :species}))
+
+(kind/test-last [(fn [v] (some #{"mean"} (:texts (sk/svg-summary v))))])
+
+;; ## Dataset Missing Columns a Template References
+;;
+;; **Symptom**: An error like
+;; `"Cannot attach data: sketch references column(s) [:group] not
+;; present in the dataset. Available columns: [:x :y]"` when
+;; calling `sk/with-data` on a dataless template sketch.
+;;
+;; **Cause**: `sk/with-data` validates at attach time -- every
+;; keyword column reference in the template must exist in the
+;; dataset, or the attachment fails fast.
+;;
+;; **Fix**: Either rename the dataset columns to match the
+;; template (`tc/rename-columns`), or adjust the template to
+;; reference the columns the dataset has.
+
+(def template
+  (-> (sk/sketch)
+      (sk/view :x :y)
+      sk/lay-point))
+
+(-> template
+    (sk/with-data {:x [1 2 3] :y [4 5 6]}))
+
+(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+
+;; ## Horizontal Ranking Bars Draw Biggest-at-Bottom
+;;
+;; **Symptom**: A horizontal bar chart made with `(sk/coord :flip)`
+;; shows the first row of the data at the bottom of the chart.
+;; A descending-sorted "top-N" dataset ends up with the biggest
+;; bar at the bottom instead of the top.
+;;
+;; **Cause**: `coord :flip` draws categories bottom-to-top in the
+;; order they appear in the data (matching ggplot2's
+;; `coord_flip()`).
+;;
+;; **Fix**: Sort the dataset ascending before plotting -- the
+;; ascending order shows up top-to-bottom on the flipped axis,
+;; so the biggest value lands at the top:
+
+(-> [{:category "A" :value 100}
+     {:category "B" :value 50}
+     {:category "C" :value 25}]
+    (tc/dataset)
+    (tc/order-by [:value] :asc)
+    (sk/lay-value-bar :category :value)
+    (sk/coord :flip))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; A future opt-in option (e.g. `(sk/coord :flip
+;; {:reverse-categorical true})`) would spare the sort dance.
+;; Tracked in `CHANGELOG.md` Known limitations.
+
+;; ## Stacked Bar Rejects Pre-Aggregated Counts
+;;
+;; **Symptom**: `"lay-stacked-bar uses only the x column; do not
+;; pass a y column"` when you have already grouped and aggregated
+;; the data and want a stacked bar chart of the computed values.
+;;
+;; **Cause**: `lay-stacked-bar` and `lay-stacked-bar-fill` are
+;; count-only -- they bin by `x` internally and sum counts. They
+;; have no mode that accepts a pre-computed `y`.
+;;
+;; **Fix for now**: Either use `lay-stacked-area` on a numeric x
+;; (it accepts pre-aggregated `y`), or expand aggregated rows
+;; back into count-many duplicates so the count stat sums to the
+;; pre-aggregated value. A proper `lay-stacked-value-bar` is
+;; tracked in `CHANGELOG.md` Known limitations.
+
+(-> {:x     (concat (range 5) (range 5))
+     :y     [1  2  3  4  5  2  2  2  3  3]
+     :group (concat (repeat 5 "A") (repeat 5 "B"))}
+    (sk/lay-stacked-area :x :y {:color :group}))
+
+(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; ## Heatmap with Categorical Axes
+;;
+;; **Symptom**: `"class java.lang.String cannot be cast to class
+;; java.lang.Number"` when passing a string column to
+;; `sk/lay-tile`.
+;;
+;; **Cause**: `sk/lay-tile` (and the underlying `:bin2d` stat)
+;; requires numeric x and y columns -- the tile boundaries are
+;; numeric intervals. Categorical axes are not yet supported for
+;; tile.
+;;
+;; **Fix for now**: Either render a numeric-indexed grid (convert
+;; categorical labels to integer ticks and reposition the tick
+;; labels afterwards), or approach the problem with
+;; `sk/lay-value-bar` coloured by value for a
+;; "categorical-heatmap" effect. A proper categorical-axis tile
+;; is tracked in `CHANGELOG.md` Known limitations.
+
 ;; ## What's Next
 ;;
+;; - [**Inference Rules**](./napkinsketch_book.inference_rules.html) -- how defaults are chosen and overridden
 ;; - [**API Reference**](./napkinsketch_book.api_reference.html) -- complete function listing with docstrings
 ;; - [**Exploring Plans**](./napkinsketch_book.exploring_plans.html) -- inspect the data structures behind your plots
+;; - [**Gallery**](./napkinsketch_book.gallery.html) -- more working examples by chart type
