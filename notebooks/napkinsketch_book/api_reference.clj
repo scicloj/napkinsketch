@@ -31,10 +31,37 @@
 
 (def measurements {:treatment ["A" "B" "C" "D"]
                    :mean [10.0 15.0 12.0 18.0]
-                   :ci_lo [8.0 12.0 9.5 15.5]
-                   :ci_hi [12.0 18.0 14.5 20.5]})
+                   :ci-lo [8.0 12.0 9.5 15.5]
+                   :ci-hi [12.0 18.0 14.5 20.5]})
 
-;; ## Data Setup
+;; ## Construction
+
+(kind/doc #'sk/sketch)
+
+;; Create a sketch with sketch-level mappings visible to all views:
+
+(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
+    (sk/view :sepal-length :sepal-width)
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
+
+(kind/doc #'sk/with-data)
+
+;; Attach or replace the sketch-level dataset. Useful for building a
+;; template sketch without data and applying it to many datasets:
+
+(def scatter-template
+  (-> (sk/sketch)
+      (sk/view :x :y {:color :group})
+      sk/lay-point))
+
+(-> scatter-template
+    (sk/with-data tiny))
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 (kind/doc #'sk/view)
 
@@ -77,18 +104,28 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-(kind/doc #'sk/annotate)
+(kind/doc #'sk/cross)
 
-;; Add layers with `sk/lay-point`, `sk/lay-lm`, etc.:
+(sk/cross [:a :b] [1 2 3])
+
+(kind/test-last [(fn [v] (= [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]] v))])
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width {:color :species})
-    sk/lay-point
-    sk/lay-lm)
+    (sk/view (sk/cross [:sepal-length :petal-length]
+                       [:sepal-width :petal-width]))
+    (sk/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s)))))])
+                           (and (= 4 (:panels s))
+                                (= 600 (:points s)))))])
+
+;; Multi-column vector creates one panel per column:
+
+(sk/lay-histogram (rdatasets/datasets-iris) [:sepal-length :sepal-width])
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (pos? (:polygons s)))))])
 
 ;; ## Layer Functions
 
@@ -235,6 +272,7 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
                                 (every? (set (:texts s)) ["A" "B" "C" "D"]))))])
+
 (kind/doc #'sk/lay-boxplot)
 
 (-> (rdatasets/datasets-iris)
@@ -256,7 +294,7 @@
 
 (-> measurements
     (sk/lay-point :treatment :mean)
-    (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
+    (sk/lay-errorbar {:ymin :ci-lo :ymax :ci-hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -331,149 +369,61 @@
                            (and (= 3 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; ## Rendering
+;; ## Annotations
 
-(kind/doc #'sk/plot)
+;; **Planned refactor:** Before 0.1.0, annotations will become
+;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
+;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
+;; layer. The `sk/annotate` + `sk/rule-*` / `sk/band-*` API
+;; documented here will be replaced.
 
-;; See the Customization notebook for options (title, theme,
-;; tooltip, brush, legend position, palette).
+(kind/doc #'sk/annotate)
 
-(-> tiny
-    (sk/lay-point :x :y))
+;; `sk/annotate` adds decorative marks (rules, bands) to a sketch.
+;; The helpers `sk/rule-v`, `sk/rule-h`, `sk/band-v`, `sk/band-h`
+;; build annotation specs:
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (= 5 (:points s))))])
-
-(kind/doc #'sk/options)
-
-;; Set render options on a sketch:
-
-(-> tiny
-    (sk/lay-point :x :y)
-    (sk/options {:width 400 :height 200 :title "Small Plot"}))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/annotate (sk/rule-v 6.0)))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (< (:width s) 500)
-                                (some #{"Small Plot"} (:texts s)))))])
+                           (and (= 150 (:points s))
+                                (pos? (:lines s)))))])
 
-(kind/doc #'sk/sketch?)
+(kind/doc #'sk/rule-v)
 
-;; Check whether a value is a sketch:
-
-(sk/sketch? (sk/lay-point tiny :x :y))
-
-(kind/test-last [true?])
-
-(kind/doc #'sk/plan?)
-
-;; Check whether a value is a plan (from `sk/plan`):
-
-(sk/plan? (sk/plan (sk/lay-point tiny :x :y)))
-
-(kind/test-last [true?])
-
-(kind/doc #'sk/layer?)
-
-;; Check whether a value is a resolved plan layer:
-
-(sk/layer? (first (:layers (first (:panels (sk/plan (sk/lay-point tiny :x :y)))))))
-
-(kind/test-last [true?])
-
-(kind/doc #'sk/method?)
-
-;; Check whether a value is a registered method map:
-
-(sk/method? (sk/method-lookup :point))
-
-(kind/test-last [true?])
-
-(kind/doc #'sk/sketch)
-
-;; Create a sketch with sketch-level mappings visible to all views:
-
-(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
-    (sk/view :sepal-length :sepal-width)
-    sk/lay-point)
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/rule-v 6.0)))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
+                           (and (= 150 (:points s))
+                                (pos? (:lines s)))))])
 
-(kind/doc #'sk/with-data)
+(kind/doc #'sk/rule-h)
 
-;; Attach or replace the sketch-level dataset. Useful for building a
-;; template sketch without data and applying it to many datasets:
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/rule-h 3.0)))
 
-(def scatter-template
-  (-> (sk/sketch)
-      (sk/view :x :y {:color :group})
-      sk/lay-point))
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (pos? (:lines s)))))])
 
-(-> scatter-template
-    (sk/with-data {:x [1 2 3 4] :y [2 4 3 5] :group ["a" "a" "b" "b"]}))
+(kind/doc #'sk/band-v)
 
-(kind/test-last [(fn [v] (= 4 (:points (sk/svg-summary v))))])
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/band-v 5.5 6.5)))
 
-(kind/doc #'sk/draft)
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 150 (:points s))))])
 
-;; Flatten a sketch into a vector of draft layers -- one per
-;; (view, applicable-layer) pair, with all scope merged. Useful
-;; for inspecting exactly what the renderer will draw:
+(kind/doc #'sk/band-h)
 
-(sk/draft (-> (rdatasets/datasets-iris)
-              (sk/lay-point :sepal-length :sepal-width)))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/band-h 2.5 3.5)))
 
-(kind/test-last [(fn [d] (and (vector? d)
-                              (= 1 (count d))
-                              (= :point (:mark (first d)))))])
-
-(kind/doc #'sk/plan)
-
-;; A sketch's views -- `lay-point :x :y` creates one view with a view-local layer.
-;; `lay-lm` (bare) adds a global layer.
-
-(let [sk (-> tiny (sk/lay-point :x :y) sk/lay-lm)]
-  [(count (:views sk)) (count (:layers sk))])
-
-(kind/test-last [(fn [[views globals]] (and (= 1 views) (= 1 globals)))])
-
-(kind/doc #'sk/plan)
-
-;; Returns the intermediate plan data structure:
-
-(def plan1 (-> tiny
-               (sk/lay-point :x :y)
-               sk/plan))
-
-plan1
-
-(kind/test-last [(fn [m] (and (= 600 (:width m))
-                              (= "x" (:x-label m))))])
-
-;; ## Pipeline
-
-(kind/doc #'sk/plan->membrane)
-
-(def m1 (sk/plan->membrane plan1))
-
-(vector? m1)
-
-(kind/test-last [true?])
-
-(kind/doc #'sk/membrane->figure)
-
-(first (sk/membrane->figure m1 :svg
-                            {:total-width (:total-width plan1)
-                             :total-height (:total-height plan1)}))
-
-(kind/test-last [(fn [v] (= :svg v))])
-
-(kind/doc #'sk/plan->figure)
-
-(first (sk/plan->figure plan1 :svg {}))
-
-(kind/test-last [(fn [v] (= :svg v))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 150 (:points s))))])
 
 ;; ## Transforms
 
@@ -512,72 +462,6 @@ plan1
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])
-;; ## Annotations
-
-;; **Planned refactor:** Before 0.1.0, annotations will become
-;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
-;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
-;; layer. The `sk/annotate` + `sk/rule-*` / `sk/band-*` API
-;; documented here will be replaced.
-
-(kind/doc #'sk/rule-v)
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/rule-v 6.0)))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (pos? (:lines s)))))])
-
-(kind/doc #'sk/rule-h)
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/rule-h 3.0)))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (pos? (:lines s)))))])
-
-(kind/doc #'sk/band-v)
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/band-v 5.5 6.5)))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (= 150 (:points s))))])
-
-(kind/doc #'sk/band-h)
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/band-h 2.5 3.5)))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (= 150 (:points s))))])
-
-;; ## Utilities
-
-(kind/doc #'sk/cross)
-
-(sk/cross [:a :b] [1 2 3])
-
-(kind/test-last [(fn [v] (= [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]] v))])
-
-(-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross [:sepal-length :petal-length]
-                       [:sepal-width :petal-width]))
-    (sk/lay-point {:color :species}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 4 (:panels s))
-                                (= 600 (:points s)))))])
-
-;; Multi-column vector creates one panel per column:
-
-(sk/lay-histogram (rdatasets/datasets-iris) [:sepal-length :sepal-width])
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 2 (:panels s))
-                                (pos? (:polygons s)))))])
 
 ;; ## Faceting
 
@@ -601,7 +485,106 @@ plan1
                            (and (= 4 (:panels s))
                                 (= 244 (:points s)))))])
 
+;; ## Composition
+
+(kind/doc #'sk/arrange)
+
+(sk/arrange [(-> (rdatasets/datasets-iris)
+                 (sk/lay-point :sepal-length :sepal-width {:color :species})
+                 (sk/options {:width 250 :height 200}))
+             (-> (rdatasets/datasets-iris)
+                 (sk/lay-point :petal-length :petal-width {:color :species})
+                 (sk/options {:width 250 :height 200}))]
+            {:cols 2})
+
+(kind/test-last [(fn [v] (= :div (first v)))])
+
+;; ## Rendering
+
+(kind/doc #'sk/plot)
+
+;; See the Customization notebook for options (title, theme,
+;; tooltip, brush, legend position, palette).
+
+(-> tiny
+    (sk/lay-point :x :y))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (= 5 (:points s))))])
+
+(kind/doc #'sk/options)
+
+;; Set render options on a sketch:
+
+(-> tiny
+    (sk/lay-point :x :y)
+    (sk/options {:width 400 :height 200 :title "Small Plot"}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (< (:width s) 500)
+                                (some #{"Small Plot"} (:texts s)))))])
+
+;; ## Predicates
+
+(kind/doc #'sk/sketch?)
+
+;; Check whether a value is a sketch:
+
+(sk/sketch? (sk/lay-point tiny :x :y))
+
+(kind/test-last [true?])
+
+(kind/doc #'sk/plan?)
+
+;; Check whether a value is a plan (from `sk/plan`):
+
+(sk/plan? (sk/plan (sk/lay-point tiny :x :y)))
+
+(kind/test-last [true?])
+
+(kind/doc #'sk/layer?)
+
+;; Check whether a value is a resolved plan layer:
+
+(sk/layer? (first (:layers (first (:panels (sk/plan (sk/lay-point tiny :x :y)))))))
+
+(kind/test-last [true?])
+
+(kind/doc #'sk/method?)
+
+;; Check whether a value is a registered method map:
+
+(sk/method? (sk/method-lookup :point))
+
+(kind/test-last [true?])
+
 ;; ## Inspection
+
+(kind/doc #'sk/draft)
+
+;; Flatten a sketch into a vector of draft layers -- one per
+;; (view, applicable-layer) pair, with all scope merged. Useful
+;; for inspecting exactly what the renderer will draw:
+
+(sk/draft (-> (rdatasets/datasets-iris)
+              (sk/lay-point :sepal-length :sepal-width)))
+
+(kind/test-last [(fn [d] (and (vector? d)
+                              (= 1 (count d))
+                              (= :point (:mark (first d)))))])
+
+(kind/doc #'sk/plan)
+
+;; Returns the intermediate plan data structure:
+
+(def plan1 (-> tiny
+               (sk/lay-point :x :y)
+               sk/plan))
+
+plan1
+
+(kind/test-last [(fn [m] (and (= 600 (:width m))
+                              (= "x" (:x-label m))))])
 
 (kind/doc #'sk/svg-summary)
 
@@ -622,6 +605,30 @@ plan1
 (sk/explain-plan plan1)
 
 (kind/test-last [nil?])
+
+;; ## Pipeline
+
+(kind/doc #'sk/plan->membrane)
+
+(def m1 (sk/plan->membrane plan1))
+
+(vector? m1)
+
+(kind/test-last [true?])
+
+(kind/doc #'sk/membrane->figure)
+
+(first (sk/membrane->figure m1 :svg
+                            {:total-width (:total-width plan1)
+                             :total-height (:total-height plan1)}))
+
+(kind/test-last [(fn [v] (= :svg v))])
+
+(kind/doc #'sk/plan->figure)
+
+(first (sk/plan->figure plan1 :svg {}))
+
+(kind/test-last [(fn [v] (= :svg v))])
 
 ;; ## Configuration
 
@@ -717,17 +724,6 @@ plan1
 
 (kind/test-last [(fn [s] (string? s))])
 
-;; ## Composition
-
-(kind/doc #'sk/arrange)
-
-(sk/arrange [(-> (rdatasets/datasets-iris)
-                 (sk/lay-point :sepal-length :sepal-width {:color :species}) (sk/options {:width 250 :height 200}))
-             (-> (rdatasets/datasets-iris)
-                 (sk/lay-point :petal-length :petal-width {:color :species}) (sk/options {:width 250 :height 200}))]
-            {:cols 2})
-
-(kind/test-last [(fn [v] (= :div (first v)))])
 ;; ## Export
 
 (kind/doc #'sk/save)
@@ -735,7 +731,8 @@ plan1
 ;; Save a plot to an SVG file:
 
 (let [path (str (java.io.File/createTempFile "napkinsketch-example" ".svg"))]
-  (sk/save (-> (rdatasets/datasets-iris) (sk/lay-point :sepal-length :sepal-width {:color :species}))
+  (sk/save (-> (rdatasets/datasets-iris)
+               (sk/lay-point :sepal-length :sepal-width {:color :species}))
            path
            {:title "Iris Export"})
   (.contains (slurp path) "<svg"))
@@ -748,7 +745,8 @@ plan1
 ;; Returns the path:
 
 (let [path (str (java.io.File/createTempFile "napkinsketch-example" ".png"))]
-  (sk/save-png (-> (rdatasets/datasets-iris) (sk/lay-point :sepal-length :sepal-width {:color :species}))
+  (sk/save-png (-> (rdatasets/datasets-iris)
+                   (sk/lay-point :sepal-length :sepal-width {:color :species}))
                path)
   (.exists (java.io.File. ^String path)))
 
