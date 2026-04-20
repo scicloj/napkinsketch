@@ -510,19 +510,27 @@
           x-only-cat-marks {:lollipop :identity :summary :summary
                             :ridgeline :violin :pointrange :summary}
           both-numerical?  (and (= x-type :numerical) (= y-type :numerical))
+          ;; Prefer the user-facing layer-function name (:method) over the
+          ;; internal :mark for error messages. The :method key is stamped
+          ;; onto the draft layer by resolve-method-info in sketch.clj;
+          ;; fall back to :mark if it is missing (e.g. a raw method map).
+          user-fn-name (or (:method v) mark)
           _ (when (and (contains? both-axes-marks mark)
                        (= stat (both-axes-marks mark))
                        both-numerical?)
-              (throw (ex-info (str "lay-" (name mark) " requires a categorical column on either :x or :y, "
+              (throw (ex-info (str "lay-" (name user-fn-name) " requires a categorical column on either :x or :y, "
                                    "but both " (pr-str (:x v)) " and " (pr-str (:y v))
-                                   " are numerical.")
+                                   " are numerical. Override with "
+                                   "{:x-type :categorical} or {:y-type :categorical} "
+                                   "to treat a numeric column as categorical.")
                               {:mark mark :x (:x v) :y (:y v)})))
           _ (when (and (contains? x-only-cat-marks mark)
                        (= stat (x-only-cat-marks mark))
                        (= x-type :numerical))
-              (throw (ex-info (str "lay-" (name mark) " requires a categorical :x column, but "
+              (throw (ex-info (str "lay-" (name user-fn-name) " requires a categorical :x column, but "
                                    (pr-str (:x v)) " is numerical. Use a categorical column "
-                                   "(e.g., species names) for the x-axis.")
+                                   "(e.g., species names) for the x-axis, or pass "
+                                   "{:x-type :categorical} to treat a numeric column as categorical.")
                               {:mark mark :x (:x v) :x-type x-type})))
           ;; Reject x-only views (no :y) for methods that require y.
           ;; Otherwise prepare-points silently fabricates y=0 for every

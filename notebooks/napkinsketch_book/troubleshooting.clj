@@ -112,6 +112,31 @@
 ;; [Inference Rules: Overriding inferred types](./napkinsketch_book.inference_rules.html)
 ;; for a worked example.
 
+;; ## Log Scale via `:scale-x` / `:scale-y` Options
+;;
+;; **Symptom**: Passing `{:scale-x :log}` (or `{:scale-y :log}`)
+;; to a layer or to `sk/options` prints a warning --
+;; `"does not recognize option(s): [:scale-x]"` -- and the chart
+;; comes out on a linear axis.
+;;
+;; **Cause**: Scales are plot-level, not layer-level or option-map
+;; keys. They are set by the `sk/scale` function, not by a
+;; `:scale-*` key.
+;;
+;; **Fix**: Use `sk/scale`:
+
+(-> (rdatasets/ggplot2-diamonds)
+    (sk/lay-point :carat :price {:alpha 0.1})
+    (sk/scale :y :log))
+
+(kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
+
+;; `sk/scale` takes the sketch, the axis (`:x` or `:y`), and
+;; either a type keyword (`:linear`, `:log`) or a scale spec
+;; map with `:type` and an optional `:domain` override.
+;; See [Inference Rules: Domains and Ticks](./napkinsketch_book.inference_rules.html)
+;; for the full set of options.
+
 ;; ## x-Only Methods Do Not Accept a y Column
 ;;
 ;; **Symptom**: `"lay-histogram uses only the x column"` error.

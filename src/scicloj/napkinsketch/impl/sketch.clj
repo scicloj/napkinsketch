@@ -119,7 +119,11 @@
     (keyword? method-key)
     (let [m (method/lookup method-key)]
       (if m
-        (select-keys m [:mark :stat :position :x-only])
+        ;; Keep the method-key itself so downstream error messages
+        ;; (e.g. in resolve.clj) can blame the lay-* function the
+        ;; user called, not the internal :mark.
+        (-> (select-keys m [:mark :stat :position :x-only])
+            (assoc :method method-key))
         (let [registered (sort (keys (method/registered)))]
           (throw (ex-info (str "Unknown method: " method-key
                                ". Use sk/lay-* with a registered method, or "

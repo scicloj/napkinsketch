@@ -293,6 +293,25 @@ produce crashes on canonical inputs.
   bin externally and render with explicit numeric bin centers, or
   use `sk/lay-value-bar` with `{:color :value}` for a
   categorical-axis "heatmap" look.
+- `sk/lay-stacked-bar` / `sk/lay-stacked-bar-fill` are count-only
+  and reject a `y` column -- there is no clean way to render a
+  stacked bar chart of pre-aggregated values (e.g. a "messages
+  per year broken down by tenure bucket" chart where the counts
+  are already computed). `sk/lay-stacked-area` does accept
+  pre-aggregated `y`, so the pattern works there. Workarounds:
+  lift the aggregation (expand each row back into count-many
+  duplicate rows so `:count` sums to the pre-aggregated value),
+  or use `sk/lay-stacked-area` on a numeric x. A proper fix
+  (either lift the restriction when `y` is supplied, or add a
+  `sk/lay-stacked-value-bar`) is planned. Reported in
+  user-report-2 Issue 2.
+- Stack order in `sk/lay-stacked-area` and
+  `sk/lay-stacked-bar` follows the sort order of the `:color`
+  column. There is no `:stack-order` / `:color-order` option yet,
+  so forcing a specific bottom-to-top order requires prefixing
+  category labels with sort-stable ordinal characters
+  (`"01: ..."`, `"02: ..."`), which leaks into the legend.
+  Reported in user-report-2 minor observation.
 - `:shape` has no literal form -- `{:shape :triangle}` is a silent
   no-op. Only column mappings to `:shape` take effect.
 - Faceted panels default to free scales per panel (ggplot2's default

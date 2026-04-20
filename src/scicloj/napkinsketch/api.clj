@@ -15,6 +15,7 @@
             [scicloj.napkinsketch.render.mark :as mark]
             [scicloj.napkinsketch.render.svg :as svg]
             [scicloj.napkinsketch.method :as method]
+            [clojure.string :as str]
             [tablecloth.api :as tc]
             [scicloj.kindly.v4.api :as kindly]
             [scicloj.kindly.v4.kind :as kind]))
@@ -343,15 +344,26 @@
   [sk data]
   (assoc (ensure-sk sk) :data (coerce-dataset data)))
 
+(defn- check-facet-keys
+  "Throw a helpful error if a mapping or layer-options map contains
+   :facet-col / :facet-row / :facet-x / :facet-y. Faceting is
+   plot-level and is set via sk/facet or sk/facet-grid, never via a
+   view or layer options map -- the silent-strip behaviour on such
+   keys confused users (user-report-2 Issue 5)."
+  [context m]
+  (let [fk (select-keys m [:facet-col :facet-row :facet-x :facet-y])]
+    (when (seq fk)
+      (throw (ex-info (str "Faceting is plot-level, not " context "-level. "
+                           "Use (sk/facet sk col) or (sk/facet-grid sk col-col row-col) "
+                           "instead of putting "
+                           (str/join " / " (map name (keys fk)))
+                           " in a " context "'s options map.")
+                      fk)))))
+
 (defn- make-view
   "Build a view map from a mapping, extracting :data if present."
   [mapping]
-  (when (or (:facet-col mapping) (:facet-row mapping))
-    (throw (ex-info (str "Faceting is plot-level, not view-level. "
-                         "Use (sk/facet sk col) or (sk/facet-grid sk col-col row-col) "
-                         "instead of putting :facet-col / :facet-row in a view's mapping.")
-                    {:facet-col (:facet-col mapping)
-                     :facet-row (:facet-row mapping)})))
+  (check-facet-keys "view" mapping)
   (let [mapping (warn-and-strip-unknown-opts "sk/view" mapping view-mapping-keys)
         d (:data mapping)]
     (cond-> {:mapping (dissoc mapping :data)}
@@ -449,10 +461,34 @@
       ;; No match -- create new view with this layer
       (update sk :views conj {:mapping position-mapping :layers [layer]}))))
 
+(defn- check-position-mapping
+  "Throw a helpful error if :x or :y in a layer's options is a
+   non-column-reference value (e.g. a scalar number). Positions
+   must be column references (keyword or string); fixed scalars are
+   a common mistake from annotation-style usage and previously
+   produced an opaque ClassCastException deep in the stat pipeline
+   (user-report-2 Issue 3)."
+  [context opts]
+  (doseq [k [:x :y]]
+    (when-let [v (get opts k)]
+      (when-not (or (keyword? v) (string? v))
+        (throw (ex-info (str context " " k " must be a column reference "
+                             "(keyword or string), but got "
+                             (pr-str v) ". For a constant position, add a "
+                             "column to :data with that value, e.g. "
+                             "`(tc/add-column data " k " (constantly "
+                             (pr-str v) "))` and pass "
+                             k " "
+                             (pr-str (keyword (name k))) ".")
+                        {:option k :value v}))))))
+
 (defn- build-layer
   "Build a layer map from a method-key and optional opts.
    Extracts :data if present. Warns and strips unrecognized option keys."
   [method-key opts]
+  (when opts
+    (check-facet-keys "layer" opts)
+    (check-position-mapping (str "lay-" (name method-key)) opts))
   (let [opts (if (and opts (keyword? method-key))
                (let [reg (method/lookup method-key)
                      accepted (into (set method/universal-layer-options)

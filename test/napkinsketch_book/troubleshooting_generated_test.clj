@@ -47,7 +47,20 @@
 
 
 (def
- v15_l164
+ v15_l128
+ (->
+  (rdatasets/ggplot2-diamonds)
+  (sk/lay-point :carat :price {:alpha 0.1})
+  (sk/scale :y :log)))
+
+
+(deftest
+ t16_l132
+ (is ((fn [v] (pos? (:points (sk/svg-summary v)))) v15_l128)))
+
+
+(def
+ v18_l189
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -55,5 +68,5 @@
 
 
 (deftest
- t16_l168
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v15_l164)))
+ t19_l193
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v18_l189)))
