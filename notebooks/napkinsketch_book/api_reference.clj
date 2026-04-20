@@ -92,6 +92,20 @@
 
 ;; ## Layer Functions
 
+(kind/doc #'sk/lay)
+
+;; The generic layer adder. `sk/lay-point`, `sk/lay-bar`, etc. are
+;; convenience wrappers around `sk/lay` with a registered method
+;; key. Use `sk/lay` directly when you have a custom method (from
+;; `sk/method-lookup` on a registered key, or a raw method map from
+;; an extension):
+
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
+    (sk/lay :point))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
 (kind/doc #'sk/lay-point)
 
 (-> (rdatasets/datasets-iris)
@@ -350,6 +364,30 @@
 
 (kind/test-last [true?])
 
+(kind/doc #'sk/plan?)
+
+;; Check whether a value is a plan (from `sk/plan`):
+
+(sk/plan? (sk/plan (sk/lay-point tiny :x :y)))
+
+(kind/test-last [true?])
+
+(kind/doc #'sk/layer?)
+
+;; Check whether a value is a resolved plan layer:
+
+(sk/layer? (first (:layers (first (:panels (sk/plan (sk/lay-point tiny :x :y)))))))
+
+(kind/test-last [true?])
+
+(kind/doc #'sk/method?)
+
+;; Check whether a value is a registered method map:
+
+(sk/method? (sk/method-lookup :point))
+
+(kind/test-last [true?])
+
 (kind/doc #'sk/sketch)
 
 ;; Create a sketch with sketch-level mappings visible to all views:
@@ -361,6 +399,34 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
+
+(kind/doc #'sk/with-data)
+
+;; Attach or replace the sketch-level dataset. Useful for building a
+;; template sketch without data and applying it to many datasets:
+
+(def scatter-template
+  (-> (sk/sketch)
+      (sk/view :x :y {:color :group})
+      sk/lay-point))
+
+(-> scatter-template
+    (sk/with-data {:x [1 2 3 4] :y [2 4 3 5] :group ["a" "a" "b" "b"]}))
+
+(kind/test-last [(fn [v] (= 4 (:points (sk/svg-summary v))))])
+
+(kind/doc #'sk/draft)
+
+;; Flatten a sketch into a vector of draft layers -- one per
+;; (view, applicable-layer) pair, with all scope merged. Useful
+;; for inspecting exactly what the renderer will draw:
+
+(sk/draft (-> (rdatasets/datasets-iris)
+              (sk/lay-point :sepal-length :sepal-width)))
+
+(kind/test-last [(fn [d] (and (vector? d)
+                              (= 1 (count d))
+                              (= :point (:mark (first d)))))])
 
 (kind/doc #'sk/plan)
 
@@ -673,5 +739,17 @@ plan1
            path
            {:title "Iris Export"})
   (.contains (slurp path) "<svg"))
+
+(kind/test-last [true?])
+
+(kind/doc #'sk/save-png)
+
+;; Save a plot to a PNG file via the membrane Java2D raster path.
+;; Returns the path:
+
+(let [path (str (java.io.File/createTempFile "napkinsketch-example" ".png"))]
+  (sk/save-png (-> (rdatasets/datasets-iris) (sk/lay-point :sepal-length :sepal-width {:color :species}))
+               path)
+  (.exists (java.io.File. ^String path)))
 
 (kind/test-last [true?])
