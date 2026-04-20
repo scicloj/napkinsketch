@@ -585,6 +585,49 @@ my-sketch
                                 (= 1 (:lines s)))))])
 
 ;; ---
+;; ## Dataless Sketches as Reusable Instruments
+;;
+;; A sketch does not need to carry data. `(sk/sketch)` creates an
+;; empty sketch you can evolve like any other -- adding views,
+;; layers, options -- and then attach a dataset at the end with
+;; `sk/with-data`. The result is a plotting *instrument* that can
+;; be applied to many datasets:
+
+(def scatter-with-regression
+  (-> (sk/sketch)
+      (sk/view :x :y {:color :group})
+      sk/lay-point
+      sk/lay-lm
+      (sk/options {:title "Scatter with Regression"})))
+
+;; Apply to one dataset:
+
+(-> scatter-with-regression
+    (sk/with-data {:x [1 2 3 4 5 6]
+                   :y [2 4 3 5 6 8]
+                   :group ["a" "a" "a" "b" "b" "b"]}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 6 (:points s))
+                                (= 2 (:lines s)))))])
+
+;; Apply the same template to a different dataset:
+
+(-> scatter-with-regression
+    (sk/with-data {:x [10 20 30 40 50 60]
+                   :y [15 18 22 20 25 28]
+                   :group ["x" "x" "x" "y" "y" "y"]}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 6 (:points s))
+                                (= 2 (:lines s)))))])
+
+;; `sk/with-data` validates at attach time: if the dataset is
+;; missing a column the sketch references, you get a clear error
+;; naming the missing columns -- no cryptic failure deep in the
+;; rendering path.
+
+;; ---
 ;; ## Color and Grouping
 ;;
 ;; `:color` controls point and line colors. Its behavior depends on

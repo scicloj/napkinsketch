@@ -339,10 +339,83 @@
        (wrap-autorender
         (sketch/->sketch (coerce-dataset data) mapping [] [] {}))))))
 
+(def ^:private position-aesthetic-keys
+  "Mapping keys whose keyword values are always column references
+   (no literal-value path). Used by with-data's attach-time
+   validation. :color / :size / :alpha keyword values are also
+   column refs, but the validator ignores string values since
+   those are ambiguous (\"red\" might be a CSS color)."
+  [:x :y :color :size :alpha :group :text :ymin :ymax :fill :shape])
+
+(defn- column-refs-in-mapping [m]
+  (keep #(let [v (get m %)]
+           (when (keyword? v) v))
+        position-aesthetic-keys))
+
+(defn- column-refs-in-sketch
+  "Collect every keyword column reference used by the sketch's
+   mapping, views, layers, and facet options. Returns a distinct
+   sequence of keywords."
+  [sk]
+  (let [views (:views sk)
+        from-views (mapcat (fn [v]
+                             (concat (column-refs-in-mapping (:mapping v))
+                                     (mapcat #(column-refs-in-mapping (:mapping %))
+                                             (:layers v))))
+                           views)
+        from-layers (mapcat #(column-refs-in-mapping (:mapping %))
+                            (:layers sk))
+        facet-refs (keep #(when (keyword? (get-in sk [:opts %]))
+                            (get-in sk [:opts %]))
+                         [:facet-col :facet-row])]
+    (distinct (concat (column-refs-in-mapping (:mapping sk))
+                      from-views
+                      from-layers
+                      facet-refs))))
+
+(defn- validate-columns-present
+  "Throw a helpful error if any of `refs` is absent from the
+   dataset's column-name set. Tolerates keyword/string mismatches
+   the same way resolve-col-name does."
+  [refs ds]
+  (let [cols (set (tc/column-names ds))
+        matches? (fn [r]
+                   (or (contains? cols r)
+                       (and (keyword? r) (contains? cols (name r)))
+                       (and (string? r) (contains? cols (keyword r)))))
+        missing (vec (remove matches? refs))]
+    (when (seq missing)
+      (throw (ex-info (str "Cannot attach data: sketch references column(s) "
+                           missing
+                           " not present in the dataset. Available columns: "
+                           (vec (sort cols)) ".")
+                      {:missing missing :available (vec (sort cols))})))))
+
 (defn with-data
-  "Supply or replace data in a sketch."
+  "Supply or replace the sketch-level dataset on a sketch. Useful
+   for building a template once and applying it to different
+   datasets:
+
+       (def template (-> (sk/sketch)
+                         (sk/view :x :y {:color :group})
+                         sk/lay-point
+                         sk/lay-lm))
+
+       (-> template (sk/with-data my-data))
+       (-> template (sk/with-data other-data))
+
+   At attach time, every keyword column reference in the sketch's
+   mapping, views, layers, and facet options must exist in the
+   dataset -- otherwise an error is thrown naming the missing
+   columns and listing what is available. Per-view / per-layer
+   `:data` still overrides the sketch-level data.
+   (with-data sk data)"
   [sk data]
-  (assoc (ensure-sk sk) :data (coerce-dataset data)))
+  (let [sk (ensure-sk sk)
+        ds (coerce-dataset data)]
+    (when ds
+      (validate-columns-present (column-refs-in-sketch sk) ds))
+    (assoc sk :data ds)))
 
 (defn- check-facet-keys
   "Throw a helpful error if a mapping or layer-options map contains
