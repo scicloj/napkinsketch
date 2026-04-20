@@ -103,7 +103,7 @@ scatter-views
 
 ;; ## Column Selection
 ;;
-;; When column names are omitted, napkinsketch infers them from
+;; When column names are omitted, Napkinsketch infers them from
 ;; the dataset shape:
 ;;
 ;; | Number of columns | Inferred mapping |

@@ -370,9 +370,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__84434#]
+    [p1__85001#]
     (#{"Australia" "Brazil" "Japan" "Nigeria" "Germany"}
-     (:country p1__84434#))))
+     (:country p1__85001#))))
   (sk/view :year :life-exp {:color :country})
   sk/lay-line
   sk/lay-point
@@ -698,7 +698,7 @@
  v106_l547
  (->
   (rdatasets/gapminder-gapminder)
-  (tc/select-rows (fn* [p1__84435#] (= 2007 (:year p1__84435#))))
+  (tc/select-rows (fn* [p1__85002#] (= 2007 (:year p1__85002#))))
   (sk/lay-point :gdp-percap :life-exp {:color :continent, :size :pop})
   (sk/scale :x :log)
   (sk/options
@@ -718,9 +718,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__84436#]
+    [p1__85003#]
     (#{"Brazil" "United States" "Japan" "China" "India"}
-     (:country p1__84436#))))
+     (:country p1__85003#))))
   (sk/lay-line :year :life-exp {:color :country})
   (sk/options
    {:title "Life Expectancy Over Time",
@@ -970,7 +970,7 @@
  (->
   (rdatasets/datasets-iris)
   (sk/lay-summary :species :sepal-length)
-  (sk/options {:title "Mean Sepal Length ± SE by Species"})))
+  (sk/options {:title "Mean Sepal Length +/- SE by Species"})))
 
 
 (deftest
@@ -1072,8 +1072,8 @@
   (rdatasets/ggplot2-txhousing)
   (tc/select-rows
    (fn*
-    [p1__84437#]
-    (#{"Houston" "Dallas" "San Antonio" "Austin"} (:city p1__84437#))))
+    [p1__85004#]
+    (#{"Houston" "Dallas" "San Antonio" "Austin"} (:city p1__85004#))))
   (sk/view :date :median {:color :city})
   sk/lay-line
   (sk/options
@@ -1116,7 +1116,7 @@
  (->
   (rdatasets/lme4-sleepstudy)
   (tc/select-rows
-   (fn* [p1__84438#] (= "308" (str (:subject p1__84438#)))))
+   (fn* [p1__85005#] (= "308" (str (:subject p1__85005#)))))
   (sk/view :days :reaction)
   sk/lay-step
   sk/lay-point
@@ -1231,7 +1231,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__84439#] (= 2007 (:year p1__84439#))))
+   (fn* [p1__85006#] (= 2007 (:year p1__85006#))))
   (sk/lay-point
    :gdp-percap
    :life-exp
@@ -1759,8 +1759,8 @@
      [ds]
      (map
       (fn*
-       [p1__84440#]
-       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__84440#))
+       [p1__85007#]
+       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__85007#))
       (ds :month)))))))
 
 
@@ -2062,10 +2062,10 @@
  v315_l1537
  (->
   (tc/dataset
-   {:row (mapcat (fn* [p1__84441#] (repeat 6 p1__84441#)) (range 6)),
+   {:row (mapcat (fn* [p1__85008#] (repeat 6 p1__85008#)) (range 6)),
     :col (flatten (repeat 6 (range 6))),
     :value
-    (map (fn* [p1__84442#] (Math/sin (* p1__84442# 0.5))) (range 36))})
+    (map (fn* [p1__85009#] (Math/sin (* p1__85009# 0.5))) (range 36))})
   (sk/view :col :row {:fill :value})
   sk/lay-tile
   (sk/options
@@ -2101,7 +2101,7 @@
   (sk/lay-errorbar :species :mean {:ymin :ymin, :ymax :ymax})
   (sk/lay-point :species :mean)
   (sk/options
-   {:title "Mean Sepal Length ± SD by Species",
+   {:title "Mean Sepal Length +/- SD by Species",
     :x-label "Species",
     :y-label "Sepal Length (cm)"})))
 
@@ -2123,7 +2123,7 @@
   (rdatasets/reshape2-tips)
   (sk/lay-summary :day :tip {:color :sex})
   (sk/options
-   {:title "Mean Tip ± SE by Day and Gender",
+   {:title "Mean Tip +/- SE by Day and Gender",
     :x-label "Day",
     :y-label "Tip ($)"})))
 
@@ -2502,7 +2502,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__84443#] (= 2007 (:year p1__84443#))))
+   (fn* [p1__85010#] (= 2007 (:year p1__85010#))))
   (sk/view :gdp-percap :life-exp)
   sk/lay-point
   (sk/scale :x :log)

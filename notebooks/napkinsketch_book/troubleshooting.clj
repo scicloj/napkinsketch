@@ -134,8 +134,9 @@
 ;; `sk/scale` takes the sketch, the axis (`:x` or `:y`), and
 ;; either a type keyword (`:linear`, `:log`) or a scale spec
 ;; map with `:type` and an optional `:domain` override.
-;; See [Inference Rules: Domains and Ticks](./napkinsketch_book.inference_rules.html)
-;; for the full set of options.
+;; See the [Inference Rules](./napkinsketch_book.inference_rules.html)
+;; chapter for how scale types and domains interact with column
+;; inference.
 
 ;; ## x-Only Methods Do Not Accept a y Column
 ;;

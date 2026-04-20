@@ -269,7 +269,7 @@ demo
 ;; For readers familiar with ggplot2, the three categories map
 ;; roughly as follows:
 ;;
-;; | ggplot2 construct                            | napkinsketch category       |
+;; | ggplot2 construct                            | Napkinsketch category       |
 ;; |:---------------------------------------------|:----------------------------|
 ;; | `geom_*(aes(...))`                           | layer option (layer scope)  |
 ;; | `ggplot(aes(...))`                           | layer option (sketch scope) |

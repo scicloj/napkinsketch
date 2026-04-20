@@ -1,6 +1,6 @@
 ;; # Edge Cases
 ;;
-;; This chapter tests how napkinsketch handles unusual or boundary
+;; This chapter tests how Napkinsketch handles unusual or boundary
 ;; inputs -- missing values, extreme numbers, degenerate datasets,
 ;; and uncommon configurations.
 ;;

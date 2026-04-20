@@ -316,6 +316,10 @@ produce crashes on canonical inputs.
   no-op. Only column mappings to `:shape` take effect.
 - Faceted panels default to free scales per panel (ggplot2's default
   is fixed); an explicit `:facet-scales :fixed` option is pending.
+- `sk/facet` and `sk/facet-grid` require a categorical column --
+  passing a numeric column (e.g. mpg's `:cyl`) produces empty
+  panels. Workaround: convert to string or keyword before faceting,
+  or pick an already-categorical column.
 - Large scatters produce large SVGs (~220 bytes/point). For >10k
   points, use `:format :bufimg` for raster output.
 - `sk/save-png` (and the `:bufimg` raster path generally) truncates

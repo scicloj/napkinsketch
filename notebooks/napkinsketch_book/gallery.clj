@@ -23,7 +23,7 @@
 
 ;; ## Scatter
 
-;; Colored scatter with LOESS smoothing — one curve per vehicle class:
+;; Colored scatter with LOESS smoothing -- one curve per vehicle class:
 
 (-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy {:color :class})
@@ -57,7 +57,7 @@
 ;; ### Scatter by category
 ;; Source: [R Graph Gallery: Scatter Plot](https://r-graph-gallery.com/scatterplot.html)
 
-;; Categorical x-axis with points — useful for comparing groups:
+;; Categorical x-axis with points -- useful for comparing groups:
 
 (-> (rdatasets/reshape2-tips)
     (sk/view :day :total-bill {:color :sex})
@@ -287,7 +287,7 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:lines s))))])
 
-;; Multi-series line chart — life expectancy for selected countries:
+;; Multi-series line chart -- life expectancy for selected countries:
 
 (-> (rdatasets/gapminder-gapminder)
     (tc/select-rows #(#{"Japan" "Brazil" "Germany" "Nigeria" "Australia"}
@@ -388,7 +388,7 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 3 (:panels s))))])
 
-;; Faceted histogram — highway MPG distribution by drive type:
+;; Faceted histogram -- highway MPG distribution by drive type:
 
 (-> (rdatasets/ggplot2-mpg)
     (sk/view :hwy)
@@ -531,7 +531,7 @@
 
 (kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
 
-;; ### Summary with error bars (mean ± SE)
+;; ### Summary with error bars (mean +/- SE)
 ;; Source: [Vega-Lite: Error Bars with CI](https://vega.github.io/vega-lite/examples/layer_point_errorbar_ci.html)
 
 (-> (rdatasets/reshape2-tips)
@@ -683,28 +683,28 @@
 ;; ---
 ;; ## Gaps and Low-Hanging Fruits
 ;;
-;; Examples from the galleries that napkinsketch CANNOT reproduce yet,
+;; Examples from the galleries that Napkinsketch cannot reproduce yet,
 ;; but could with modest effort:
 ;;
-;; - **Pie / Donut chart** — could work with polar coord + stacked bar
-;;   if bar rendering supported 360° arcs. Currently polar only does
+;; - **Pie / Donut chart** -- could work with polar coord + stacked bar
+;;   if bar rendering supported 360-degree arcs. Currently polar only does
 ;;   rose charts (one wedge per bar).
 ;;
-;; - **Slope chart / Dumbbell** — needs two x positions per row connected
+;; - **Slope chart / Dumbbell** -- needs two x positions per row connected
 ;;   by a line segment. Could be done with a new `:segment` mark that
 ;;   draws from (x1,y) to (x2,y).
 ;;
-;; - **Strip plot / Bee swarm** — needs jitter on a categorical axis.
+;; - **Strip plot / Bee swarm** -- needs jitter on a categorical axis.
 ;;   Currently jitter is pixel-based random offset on point marks,
 ;;   not category-aware layout.
 ;;
-;; - **Marginal plots** — side panels with density/histogram along scatter
+;; - **Marginal plots** -- side panels with density/histogram along scatter
 ;;   axes. Needs layout support for panels with different sizes.
 ;;
-;; - **Free scales** — faceted panels with independent y ranges. One of
+;; - **Free scales** -- faceted panels with independent y ranges. One of
 ;;   the most requested missing features (Persona 3).
 ;;
-;; - **Gradient line** — line where color varies along the path (e.g.,
+;; - **Gradient line** -- line where color varies along the path (e.g.,
 ;;   temperature over time). Needs per-segment coloring.
 
 ;; ### Equal aspect ratio scatter
@@ -756,7 +756,7 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-summary :species :sepal-length)
-    (sk/options {:title "Mean Sepal Length ± SE by Species"}))
+    (sk/options {:title "Mean Sepal Length +/- SE by Species"}))
 
 (kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
 
@@ -774,26 +774,26 @@
 ;; ---
 ;; ## Additional Gaps
 ;;
-;; More patterns from these galleries that napkinsketch cannot yet do:
+;; More patterns from these galleries that Napkinsketch cannot yet do:
 ;;
-;; - **Grouped boxplot side-by-side** — ECharts and Vega-Lite show
+;; - **Grouped boxplot side-by-side** -- ECharts and Vega-Lite show
 ;;   multiple boxplots per category with dodge positioning.
-;;   napkinsketch has dodge for bars but not boxplots with a separate
+;;   Napkinsketch has dodge for bars but not boxplots with a separate
 ;;   color group. (Partial support: `{:color :smoker}` on boxplot works
 ;;   but visual quality needs checking.)
 ;;
-;; - **Candlestick / OHLC** — common in ECharts for financial data.
+;; - **Candlestick / OHLC** -- common in ECharts for financial data.
 ;;   Needs a new mark type with open/high/low/close channels.
 ;;
-;; - **Gauge chart** — ECharts specialty. Not a statistical graphic.
+;; - **Gauge chart** -- ECharts specialty. Not a statistical graphic.
 ;;
-;; - **Funnel chart** — ECharts. Could approximate with horizontal
+;; - **Funnel chart** -- ECharts. Could approximate with horizontal
 ;;   bars of decreasing width, but not natively supported.
 ;;
-;; - **Radar / Spider chart** — Vega-Lite and ECharts. Needs a new
+;; - **Radar / Spider chart** -- Vega-Lite and ECharts. Needs a new
 ;;   coordinate system (radial with fixed angles per category).
 ;;
-;; - **Diverging bar** — Python Graph Gallery. Bars extending in both
+;; - **Diverging bar** -- Python Graph Gallery. Bars extending in both
 ;;   directions from a center line. Could approximate with value-bar
 ;;   using negative values if clamp-zero is handled correctly (now fixed).
 
@@ -1560,7 +1560,7 @@
                                      (fstats/stddev (ds :sepal-length))))})
     (sk/lay-errorbar :species :mean {:ymin :ymin :ymax :ymax})
     (sk/lay-point :species :mean)
-    (sk/options {:title "Mean Sepal Length ± SD by Species"
+    (sk/options {:title "Mean Sepal Length +/- SD by Species"
                  :x-label "Species"
                  :y-label "Sepal Length (cm)"}))
 
@@ -1573,7 +1573,7 @@
 
 (-> (rdatasets/reshape2-tips)
     (sk/lay-summary :day :tip {:color :sex})
-    (sk/options {:title "Mean Tip ± SE by Day and Gender"
+    (sk/options {:title "Mean Tip +/- SE by Day and Gender"
                  :x-label "Day"
                  :y-label "Tip ($)"}))
 
@@ -1730,12 +1730,12 @@
 
 (kind/test-last [(fn [v] (= 6 (:panels (sk/svg-summary v))))])
 
-;; ### Facet-grid: rows by drive, columns by cylinders
+;; ### Facet-grid: rows by drive, columns by class
 ;; Source: [Vega-Lite: Trellis Grid Multi](https://vega.github.io/vega-lite/examples/trellis_scatter.html)
-
-;; TODO: facet-grid with numeric :cyl column produces empty panels.
-;; Faceting currently requires keyword/string values; numeric facet
-;; values don't expand correctly. This is a known limitation.
+;;
+;; The Vega-Lite original facets by `:cyl` (a numeric column). Faceting
+;; currently requires categorical values, so this example uses `:class`
+;; instead -- see CHANGELOG's Known Limitations.
 
 (-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy)

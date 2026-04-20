@@ -106,7 +106,7 @@
 ;; ### Annotated chart
 ;;
 ;; Add reference lines and shaded bands to highlight regions of interest.
-;; Pass `{:alpha …}` to control band opacity.
+;; Pass `{:alpha ...}` to control band opacity.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -184,7 +184,7 @@
                            (and (= 4 (:points s))
                                 (= 16 (:lines s)))))])
 
-;; ### Summary (Mean ± SE) with Raw Data
+;; ### Summary (Mean +/- SE) with Raw Data
 ;;
 ;; The `summary` method computes mean and SE (standard error) per category.
 

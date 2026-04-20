@@ -60,17 +60,17 @@
 
 
 (def
- v18_l149
+ v18_l150
  (-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-length)))
 
 
 (deftest
- t19_l152
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v18_l149)))
+ t19_l153
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v18_l150)))
 
 
 (def
- v21_l164
+ v21_l165
  (try
   (->
    (rdatasets/datasets-iris)
@@ -81,14 +81,14 @@
 
 
 (deftest
- t22_l171
+ t22_l172
  (is
   ((fn [msg] (and (string? msg) (re-find #"[Ll]og scale" msg)))
-   v21_l164)))
+   v21_l165)))
 
 
 (def
- v24_l184
+ v24_l185
  (->
   (rdatasets/datasets-chickwts)
   (sk/view :feed)
@@ -97,12 +97,12 @@
 
 
 (deftest
- t25_l189
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v24_l184)))
+ t25_l190
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v24_l185)))
 
 
 (def
- v27_l207
+ v27_l208
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -110,12 +110,12 @@
 
 
 (deftest
- t28_l211
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v27_l207)))
+ t28_l212
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v27_l208)))
 
 
 (def
- v30_l227
+ v30_l228
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -123,12 +123,12 @@
 
 
 (deftest
- t31_l231
- (is ((fn [v] (= 3 (:panels (sk/svg-summary v)))) v30_l227)))
+ t31_l232
+ (is ((fn [v] (= 3 (:panels (sk/svg-summary v)))) v30_l228)))
 
 
 (def
- v33_l247
+ v33_l248
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -143,25 +143,25 @@
 
 
 (deftest
- t34_l254
- (is ((fn [v] (some #{"mean"} (:texts (sk/svg-summary v)))) v33_l247)))
+ t34_l255
+ (is ((fn [v] (some #{"mean"} (:texts (sk/svg-summary v)))) v33_l248)))
 
 
 (def
- v36_l271
+ v36_l272
  (def template (-> (sk/sketch) (sk/view :x :y) sk/lay-point)))
 
 
-(def v37_l276 (-> template (sk/with-data {:x [1 2 3], :y [4 5 6]})))
+(def v37_l277 (-> template (sk/with-data {:x [1 2 3], :y [4 5 6]})))
 
 
 (deftest
- t38_l279
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v37_l276)))
+ t38_l280
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v37_l277)))
 
 
 (def
- v40_l296
+ v40_l297
  (->
   [{:category "A", :value 100}
    {:category "B", :value 50}
@@ -173,12 +173,12 @@
 
 
 (deftest
- t41_l304
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v40_l296)))
+ t41_l305
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v40_l297)))
 
 
 (def
- v43_l326
+ v43_l327
  (->
   {:x (concat (range 5) (range 5)),
    :y [1 2 3 4 5 2 2 2 3 3],
@@ -187,5 +187,5 @@
 
 
 (deftest
- t44_l331
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v43_l326)))
+ t44_l332
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v43_l327)))
