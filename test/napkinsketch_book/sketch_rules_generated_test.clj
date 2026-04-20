@@ -21,7 +21,7 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__72882#] (dissoc p1__72882# :data))))
+    (partial mapv (fn* [p1__87858#] (dissoc p1__87858# :data))))
    kind/pprint)))
 
 
@@ -524,7 +524,7 @@
      (and
       (= 2 (:panels s))
       (= 300 (:points s))
-      (every? (fn* [p1__72883#] (= :species (:color p1__72883#))) d))))
+      (every? (fn* [p1__87859#] (= :species (:color p1__87859#))) d))))
    v69_l445)))
 
 

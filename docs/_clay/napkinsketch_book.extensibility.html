@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>26&nbsp; Extensibility – Napkinsketch</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./napkinsketch_book.waterfall_extension.html" rel="next">
+<link href="./napkinsketch_book.architecture.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-7fe93b6278088d83a8942670f25c821e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./napkinsketch_book.exploring_plans.html">🔬 Internals</a></li><li class="breadcrumb-item"><a href="./napkinsketch_book.extensibility.html"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Extensibility</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Napkinsketch</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">🚀 Getting Started</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.quickstart.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Quickstart</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">🧱 Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.sketch_model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">The Sketch Model</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.core_concepts.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Core Concepts</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.options_and_scopes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Options and Scopes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.sketch_rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Sketch Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.inference_rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Inference Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.glossary.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Glossary</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">📊 Chart Types</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.scatter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Scatter</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.ranking.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Ranking</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.change_over_time.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Change Over Time</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Relationships</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.polar.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Polar Coordinates</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">🍳 How-to Guides</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.cookbook.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Cookbook</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.configuration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Configuration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.customization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Customization</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.faceting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Faceting</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.troubleshooting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Troubleshooting</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">📖 Reference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.api_reference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">API Reference</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">🖼 Gallery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.gallery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Gallery</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">🔬 Internals</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.exploring_plans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Exploring Plans</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.architecture.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Sketch Architecture</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.extensibility.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Extensibility</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.waterfall_extension.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Extension Example: Waterfall Chart</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.edge_cases.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Edge Cases</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.development.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Development</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#compute-stat" id="toc-compute-stat" class="nav-link" data-scroll-target="#compute-stat"><code>compute-stat</code></a>
+  <ul>
+  <li><a href="#how-to-extend-add-a-new-stat" id="toc-how-to-extend-add-a-new-stat" class="nav-link" data-scroll-target="#how-to-extend-add-a-new-stat">How to extend: add a new stat</a></li>
+  </ul></li>
+  <li><a href="#extract-layer" id="toc-extract-layer" class="nav-link" data-scroll-target="#extract-layer"><code>extract-layer</code></a></li>
+  <li><a href="#layer-membrane" id="toc-layer-membrane" class="nav-link" data-scroll-target="#layer-membrane"><code>layer-&gt;membrane</code></a>
+  <ul>
+  <li><a href="#how-to-extend-add-a-new-mark-type" id="toc-how-to-extend-add-a-new-mark-type" class="nav-link" data-scroll-target="#how-to-extend-add-a-new-mark-type">How to extend: add a new mark type</a></li>
+  <li><a href="#how-to-extend-register-a-method-and-create-a-sketch-compatible-layer-function" id="toc-how-to-extend-register-a-method-and-create-a-sketch-compatible-layer-function" class="nav-link" data-scroll-target="#how-to-extend-register-a-method-and-create-a-sketch-compatible-layer-function">How to extend: register a method and create a sketch-compatible layer function</a></li>
+  </ul></li>
+  <li><a href="#plan-figure" id="toc-plan-figure" class="nav-link" data-scroll-target="#plan-figure"><code>plan-&gt;figure</code></a>
+  <ul>
+  <li><a href="#how-to-extend-add-a-new-direct-format" id="toc-how-to-extend-add-a-new-direct-format" class="nav-link" data-scroll-target="#how-to-extend-add-a-new-direct-format">How to extend: add a new direct format</a></li>
+  </ul></li>
+  <li><a href="#membrane-figure" id="toc-membrane-figure" class="nav-link" data-scroll-target="#membrane-figure"><code>membrane-&gt;figure</code></a>
+  <ul>
+  <li><a href="#how-to-extend-add-a-new-membrane-based-format" id="toc-how-to-extend-add-a-new-membrane-based-format" class="nav-link" data-scroll-target="#how-to-extend-add-a-new-membrane-based-format">How to extend: add a new membrane-based format</a></li>
+  </ul></li>
+  <li><a href="#make-scale" id="toc-make-scale" class="nav-link" data-scroll-target="#make-scale"><code>make-scale</code></a></li>
+  <li><a href="#make-coord" id="toc-make-coord" class="nav-link" data-scroll-target="#make-coord"><code>make-coord</code></a></li>
+  <li><a href="#self-documenting-extensions" id="toc-self-documenting-extensions" class="nav-link" data-scroll-target="#self-documenting-extensions">Self-Documenting Extensions</a>
+  <ul>
+  <li><a href="#adding-a-documented-extension" id="toc-adding-a-documented-extension" class="nav-link" data-scroll-target="#adding-a-documented-extension">Adding a documented extension</a></li>
+  <li><a href="#missing-documentation-degrades-gracefully" id="toc-missing-documentation-degrades-gracefully" class="nav-link" data-scroll-target="#missing-documentation-degrades-gracefully">Missing documentation degrades gracefully</a></li>
+  <li><a href="#cleanup" id="toc-cleanup" class="nav-link" data-scroll-target="#cleanup">Cleanup</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s Next</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./napkinsketch_book.exploring_plans.html">🔬 Internals</a></li><li class="breadcrumb-item"><a href="./napkinsketch_book.extensibility.html"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Extensibility</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Extensibility</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<style></style>
+<style>.printedClojure .sourceCode {
+  background-color: transparent;
+  border-style: none;
+}
+</style>
+<style>.clay-limit-image-width .clay-image {max-width: 100%}
+.clay-side-by-side .sourceCode {margin: 0}
+.clay-side-by-side {margin: 1em 0}
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" type="text/javascript"></script>
+<p>Napkinsketch is built on multimethods – open dispatch points that let you add new marks, statistics, scales, coordinate systems, and output formats without modifying the core library.</p>
+<p>This notebook catalogs every multimethod, shows its dispatch mechanism, lists the built-in implementations, and demonstrates how to extend each one.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> napkinsketch-book.extensibility</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Datasets</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>   [scicloj.metamorph.ml.rdatasets <span class="at">:as</span> rdatasets]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Kindly -- notebook rendering protocol</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>   [scicloj.kindly.v4.kind <span class="at">:as</span> kind]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Napkinsketch -- composable plotting</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.api <span class="at">:as</span> sk]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Method registry -- for inspecting method data</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.method <span class="at">:as</span> method]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Implementation namespaces -- for extension points</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.impl.stat <span class="at">:as</span> stat]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.impl.extract <span class="at">:as</span> extract]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.render.mark <span class="at">:as</span> mark]</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.render.svg <span class="at">:as</span> svg]</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.impl.render <span class="at">:as</span> render]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>The pipeline from data to figure has several stages, each governed by a multimethod. The sketch API adds a composable front-end that resolves into the same pipeline:</p>
+<pre><code>sketch (view, lay-*, options, ...)
+                       ↓
+                 sketch-&gt;draft
+                       ↓
+                     draft
+                       ↓
+draft -&gt; draft-&gt;plan (compute-stat, extract-layer, ...)
+                                             ↓
+                                          plan
+                                             ↓
+                         plan-&gt;figure (orchestrates full path)
+                                             ↓
+                             ┌───────────────┴───────────────┐
+                    membrane path                     direct path
+                 plan-&gt;membrane                   plan-&gt;figure
+                       ↓
+                 membrane-&gt;figure
+                       ↓
+                     figure                           figure</code></pre>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 22%">
+<col style="width: 31%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Multimethod</th>
+<th style="text-align: left;">Namespace</th>
+<th style="text-align: left;">Dispatches on</th>
+<th style="text-align: left;">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>compute-stat</code></td>
+<td style="text-align: left;"><code>impl/stat.clj</code></td>
+<td style="text-align: left;"><code>:stat</code> key</td>
+<td style="text-align: left;">Transform data (identity, bin, count, lm, loess, kde, boxplot)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>extract-layer</code></td>
+<td style="text-align: left;"><code>impl/extract.clj</code></td>
+<td style="text-align: left;"><code>:mark</code> key</td>
+<td style="text-align: left;">Convert a stat result into a plan layer descriptor</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>layer-&gt;membrane</code></td>
+<td style="text-align: left;"><code>render/mark.clj</code></td>
+<td style="text-align: left;"><code>:mark</code> key</td>
+<td style="text-align: left;">Render a plan layer as membrane drawables</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>plan-&gt;figure</code></td>
+<td style="text-align: left;"><code>impl/render.clj</code></td>
+<td style="text-align: left;">format keyword</td>
+<td style="text-align: left;">Orchestrate the full path from plan to figure</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>membrane-&gt;figure</code></td>
+<td style="text-align: left;"><code>impl/render.clj</code></td>
+<td style="text-align: left;">format keyword</td>
+<td style="text-align: left;">Convert a membrane tree into a figure</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>make-scale</code></td>
+<td style="text-align: left;"><code>impl/scale.clj</code></td>
+<td style="text-align: left;">domain type + spec</td>
+<td style="text-align: left;">Build a wadogo scale</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>make-coord</code></td>
+<td style="text-align: left;"><code>impl/coord.clj</code></td>
+<td style="text-align: left;">coord-type keyword</td>
+<td style="text-align: left;">Build a coordinate function</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>apply-position</code></td>
+<td style="text-align: left;"><code>impl/position.clj</code></td>
+<td style="text-align: left;">position keyword</td>
+<td style="text-align: left;">Adjust group layout (dodge, stack, fill)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="compute-stat" class="level2">
+<h2 class="anchored" data-anchor-id="compute-stat"><code>compute-stat</code></h2>
+<p>Transforms raw data into a statistical summary. Each method uses a stat to prepare data for rendering.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(kind/table</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> {<span class="at">:column-names</span> [<span class="st">"Dispatch value"</span> <span class="st">"What it does"</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">:row-maps</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;&gt;</span> (<span class="kw">methods</span> stat/compute-stat)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>       <span class="kw">keys</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">filter</span> <span class="kw">keyword?</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">remove</span> #{<span class="at">:default</span>})</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>       <span class="kw">sort</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">mapv</span> (<span class="kw">fn</span> [k] {<span class="st">"Dispatch value"</span> (kind/code (<span class="kw">pr-str</span> k))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"What it does"</span> (sk/stat-doc k)})))})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="clay-table">
+<div class="table-responsive">
+<table class="table table-hover clay-table caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Dispatch value</th>
+<th data-quarto-table-cell-role="th">What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:bin</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Bin numerical values into ranges</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:bin2d</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>2D grid binning (heatmap counts)</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:boxplot</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Five-number summary + outliers</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:count</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Count occurrences per category</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:identity</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Pass-through — no transform</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:kde</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>KDE (kernel density estimation) — 1D</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:kde2d</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>2D Gaussian KDE (kernel density estimation)</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:lm</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Linear model (lm) — OLS regression line + optional confidence band</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:loess</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>LOESS (local regression) smoothing</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:summary</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Mean ± standard error per category</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:violin</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>KDE per category (density profile)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Dispatch function: <code>(fn [view] (or (:stat view) :identity))</code></p>
+<p>The stat is part of the <strong>method</strong> returned by the mark map. For example, <code>(method/lookup :histogram)</code> returns a method with <code>:stat :bin</code>:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>(method/lookup <span class="at">:histogram</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:mark</span> <span class="at">:bar</span>,</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:stat</span> <span class="at">:bin</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:x-only</span> <span class="va">true</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a> <span class="at">:accepts</span> [<span class="at">:normalize</span> <span class="at">:bins</span> <span class="at">:binwidth</span>],</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a> <span class="at">:doc</span> <span class="st">"Histogram — bins numerical data into bars."</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><code>(method/lookup :bar)</code> returns a method with <code>:stat :count</code>:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>(method/lookup <span class="at">:bar</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:mark</span> <span class="at">:rect</span>,</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:stat</span> <span class="at">:count</span>,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:x-only</span> <span class="va">true</span>,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a> <span class="at">:accepts</span> [],</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a> <span class="at">:doc</span> <span class="st">"Bar — counts categorical values."</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><code>(method/lookup :point)</code> returns a method with <code>:stat :identity</code>:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>(method/lookup <span class="at">:point</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:mark</span> <span class="at">:point</span>,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:stat</span> <span class="at">:identity</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:accepts</span> [<span class="at">:size</span> <span class="at">:shape</span> <span class="at">:jitter</span> <span class="at">:text</span> <span class="at">:nudge-x</span> <span class="at">:nudge-y</span>],</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a> <span class="at">:doc</span> <span class="st">"Scatter — individual data points."</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="how-to-extend-add-a-new-stat" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-extend-add-a-new-stat">How to extend: add a new stat</h3>
+<p>To add a new statistical transform (e.g., <code>:loess</code> for local regression), define a new <code>defmethod</code>.</p>
+<p>Pseudocode:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> stat/compute-stat </span><span class="at">:loess</span> [view]</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Compute LOESS smoothing from view's :data, :x, :y</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Return {:points [...] :x-domain [...] :y-domain [...]}</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  ...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The return value must always include <code>:x-domain</code> and <code>:y-domain</code>. The rest of the shape depends on what the paired <code>extract-layer</code> expects – the stat and extractor are a matched pair. For point-like marks, return <code>:points</code> (groups of <code>:xs</code>, <code>:ys</code>). For other marks, study a similar existing pair as a template:</p>
+<ul>
+<li><code>:identity</code> returns <code>{:points [...] :x-domain [...] :y-domain [...]}</code></li>
+<li><code>:bin</code> returns <code>{:bins [...] :max-count ... :x-domain [...] :y-domain [...]}</code></li>
+<li><code>:boxplot</code> returns <code>{:boxes [...] :categories [...] :x-domain [...] :y-domain [...]}</code></li>
+</ul>
+</section>
+</section>
+<section id="extract-layer" class="level2">
+<h2 class="anchored" data-anchor-id="extract-layer"><code>extract-layer</code></h2>
+<p>Converts a stat result into a plan layer descriptor – a plain map with data-space geometry and resolved colors.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>(kind/table</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a> {<span class="at">:column-names</span> [<span class="st">"Dispatch value"</span> <span class="st">"Output"</span>]</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">:row-maps</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;&gt;</span> (<span class="kw">methods</span> extract/extract-layer)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>       <span class="kw">keys</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">filter</span> <span class="kw">keyword?</span>)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">remove</span> #{<span class="at">:default</span>})</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>       <span class="kw">sort</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">mapv</span> (<span class="kw">fn</span> [k] {<span class="st">"Dispatch value"</span> (kind/code (<span class="kw">pr-str</span> k))</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Output"</span> (sk/mark-doc k)})))})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="clay-table">
+<div class="table-responsive">
+<table class="table table-hover clay-table caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Dispatch value</th>
+<th data-quarto-table-cell-role="th">Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:area</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Filled region under a curve</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:bar</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Vertical rectangles (binned)</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:boxplot</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Box-and-whisker</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:contour</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Iso-value polylines</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:errorbar</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Vertical error bar</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:label</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Label with background box</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:line</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Connected path</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:lollipop</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Stem with dot</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:point</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Filled circle</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:pointrange</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Point with error bar</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:rect</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Positioned rectangles</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:ridgeline</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Stacked density curves</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:rug</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Axis-margin tick marks</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:step</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Horizontal-then-vertical path</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:text</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Data-driven label</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:tile</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Grid of colored cells</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:violin</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Mirrored density shape</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Dispatch function: <code>(fn [view stat all-colors cfg] (:mark view))</code></p>
+<p>A plan layer looks like this:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [s (<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>            (sk/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>            sk/plan)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>      layer (<span class="kw">first</span> (<span class="at">:layers</span> (<span class="kw">first</span> (<span class="at">:panels</span> s))))]</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  layer)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:mark</span> <span class="at">:point</span>,</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:style</span> {<span class="at">:opacity</span> <span class="fl">0.75</span>, <span class="at">:radius</span> <span class="fl">3.0</span>},</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:groups</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:color</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.8941176470588236</span> <span class="fl">0.10196078431372549</span> <span class="fl">0.10980392156862745</span> <span class="fl">1.0</span>],</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>   <span class="at">:xs</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-length</span></span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>[<span class="fl">5.100</span>, <span class="fl">4.900</span>, <span class="fl">4.700</span>, <span class="fl">4.600</span>, <span class="fl">5.000</span>, <span class="fl">5.400</span>, <span class="fl">4.600</span>, <span class="fl">5.000</span>, <span class="fl">4.400</span>, <span class="fl">4.900</span>, <span class="fl">5.400</span>, <span class="fl">4.800</span>, <span class="fl">4.800</span>, <span class="fl">4.300</span>, <span class="fl">5.800</span>, <span class="fl">5.700</span>, <span class="fl">5.400</span>, <span class="fl">5.100</span>, <span class="fl">5.700</span>, <span class="dv">5</span>.<span class="dv">100</span>...],</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>   <span class="at">:ys</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-width</span></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>[<span class="fl">3.500</span>, <span class="fl">3.000</span>, <span class="fl">3.200</span>, <span class="fl">3.100</span>, <span class="fl">3.600</span>, <span class="fl">3.900</span>, <span class="fl">3.400</span>, <span class="fl">3.400</span>, <span class="fl">2.900</span>, <span class="fl">3.100</span>, <span class="fl">3.700</span>, <span class="fl">3.400</span>, <span class="fl">3.000</span>, <span class="fl">3.000</span>, <span class="fl">4.000</span>, <span class="fl">4.400</span>, <span class="fl">3.900</span>, <span class="fl">3.500</span>, <span class="fl">3.800</span>, <span class="dv">3</span>.<span class="dv">800</span>...],</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>   <span class="at">:label</span> <span class="st">"setosa"</span>,</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>   <span class="at">:row-indices</span> #tech.v3.dataset.column&lt;int64&gt;[<span class="dv">50</span>]</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>:__row-idx</span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>[<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">10</span>, <span class="dv">11</span>, <span class="dv">12</span>, <span class="dv">13</span>, <span class="dv">14</span>, <span class="dv">15</span>, <span class="dv">16</span>, <span class="dv">17</span>, <span class="dv">18</span>, <span class="dv">19</span>...]}</span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:color</span></span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.21568627450980393</span> <span class="fl">0.49411764705882355</span> <span class="fl">0.7215686274509804</span> <span class="fl">1.0</span>],</span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a>   <span class="at">:xs</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-length</span></span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a>[<span class="fl">7.000</span>, <span class="fl">6.400</span>, <span class="fl">6.900</span>, <span class="fl">5.500</span>, <span class="fl">6.500</span>, <span class="fl">5.700</span>, <span class="fl">6.300</span>, <span class="fl">4.900</span>, <span class="fl">6.600</span>, <span class="fl">5.200</span>, <span class="fl">5.000</span>, <span class="fl">5.900</span>, <span class="fl">6.000</span>, <span class="fl">6.100</span>, <span class="fl">5.600</span>, <span class="fl">6.700</span>, <span class="fl">5.600</span>, <span class="fl">5.800</span>, <span class="fl">6.200</span>, <span class="dv">5</span>.<span class="dv">600</span>...],</span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a>   <span class="at">:ys</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-width</span></span>
+<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a>[<span class="fl">3.200</span>, <span class="fl">3.200</span>, <span class="fl">3.100</span>, <span class="fl">2.300</span>, <span class="fl">2.800</span>, <span class="fl">2.800</span>, <span class="fl">3.300</span>, <span class="fl">2.400</span>, <span class="fl">2.900</span>, <span class="fl">2.700</span>, <span class="fl">2.000</span>, <span class="fl">3.000</span>, <span class="fl">2.200</span>, <span class="fl">2.900</span>, <span class="fl">2.900</span>, <span class="fl">3.100</span>, <span class="fl">3.000</span>, <span class="fl">2.700</span>, <span class="fl">2.200</span>, <span class="dv">2</span>.<span class="dv">500</span>...],</span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a>   <span class="at">:label</span> <span class="st">"versicolor"</span>,</span>
+<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a>   <span class="at">:row-indices</span> #tech.v3.dataset.column&lt;int64&gt;[<span class="dv">50</span>]</span>
+<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a>:__row-idx</span>
+<span id="cb41-27"><a href="#cb41-27" aria-hidden="true" tabindex="-1"></a>[<span class="dv">50</span>, <span class="dv">51</span>, <span class="dv">52</span>, <span class="dv">53</span>, <span class="dv">54</span>, <span class="dv">55</span>, <span class="dv">56</span>, <span class="dv">57</span>, <span class="dv">58</span>, <span class="dv">59</span>, <span class="dv">60</span>, <span class="dv">61</span>, <span class="dv">62</span>, <span class="dv">63</span>, <span class="dv">64</span>, <span class="dv">65</span>, <span class="dv">66</span>, <span class="dv">67</span>, <span class="dv">68</span>, <span class="dv">69</span>...]}</span>
+<span id="cb41-28"><a href="#cb41-28" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:color</span></span>
+<span id="cb41-29"><a href="#cb41-29" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.30196078431372547</span> <span class="fl">0.6862745098039216</span> <span class="fl">0.2901960784313726</span> <span class="fl">1.0</span>],</span>
+<span id="cb41-30"><a href="#cb41-30" aria-hidden="true" tabindex="-1"></a>   <span class="at">:xs</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb41-31"><a href="#cb41-31" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-length</span></span>
+<span id="cb41-32"><a href="#cb41-32" aria-hidden="true" tabindex="-1"></a>[<span class="fl">6.300</span>, <span class="fl">5.800</span>, <span class="fl">7.100</span>, <span class="fl">6.300</span>, <span class="fl">6.500</span>, <span class="fl">7.600</span>, <span class="fl">4.900</span>, <span class="fl">7.300</span>, <span class="fl">6.700</span>, <span class="fl">7.200</span>, <span class="fl">6.500</span>, <span class="fl">6.400</span>, <span class="fl">6.800</span>, <span class="fl">5.700</span>, <span class="fl">5.800</span>, <span class="fl">6.400</span>, <span class="fl">6.500</span>, <span class="fl">7.700</span>, <span class="fl">7.700</span>, <span class="dv">6</span>.<span class="dv">000</span>...],</span>
+<span id="cb41-33"><a href="#cb41-33" aria-hidden="true" tabindex="-1"></a>   <span class="at">:ys</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-width</span></span>
+<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a>[<span class="fl">3.300</span>, <span class="fl">2.700</span>, <span class="fl">3.000</span>, <span class="fl">2.900</span>, <span class="fl">3.000</span>, <span class="fl">3.000</span>, <span class="fl">2.500</span>, <span class="fl">2.900</span>, <span class="fl">2.500</span>, <span class="fl">3.600</span>, <span class="fl">3.200</span>, <span class="fl">2.700</span>, <span class="fl">3.000</span>, <span class="fl">2.500</span>, <span class="fl">2.800</span>, <span class="fl">3.200</span>, <span class="fl">3.000</span>, <span class="fl">3.800</span>, <span class="fl">2.600</span>, <span class="dv">2</span>.<span class="dv">200</span>...],</span>
+<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a>   <span class="at">:label</span> <span class="st">"virginica"</span>,</span>
+<span id="cb41-37"><a href="#cb41-37" aria-hidden="true" tabindex="-1"></a>   <span class="at">:row-indices</span> #tech.v3.dataset.column&lt;int64&gt;[<span class="dv">50</span>]</span>
+<span id="cb41-38"><a href="#cb41-38" aria-hidden="true" tabindex="-1"></a>:__row-idx</span>
+<span id="cb41-39"><a href="#cb41-39" aria-hidden="true" tabindex="-1"></a>[<span class="dv">100</span>, <span class="dv">101</span>, <span class="dv">102</span>, <span class="dv">103</span>, <span class="dv">104</span>, <span class="dv">105</span>, <span class="dv">106</span>, <span class="dv">107</span>, <span class="dv">108</span>, <span class="dv">109</span>, <span class="dv">110</span>, <span class="dv">111</span>, <span class="dv">112</span>, <span class="dv">113</span>, <span class="dv">114</span>, <span class="dv">115</span>, <span class="dv">116</span>, <span class="dv">117</span>, <span class="dv">118</span>, <span class="dv">119</span>...]}],</span>
+<span id="cb41-40"><a href="#cb41-40" aria-hidden="true" tabindex="-1"></a> <span class="at">:y-domain</span> [<span class="fl">2.0</span> <span class="fl">4.4</span>],</span>
+<span id="cb41-41"><a href="#cb41-41" aria-hidden="true" tabindex="-1"></a> <span class="at">:x-domain</span> [<span class="fl">4.3</span> <span class="fl">7.9</span>]}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="layer-membrane" class="level2">
+<h2 class="anchored" data-anchor-id="layer-membrane"><code>layer-&gt;membrane</code></h2>
+<p>Renders a plan layer descriptor into membrane drawable primitives. This is the “membrane path” – used when the target format goes through membrane (e.g., SVG).</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>(kind/table</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a> {<span class="at">:column-names</span> [<span class="st">"Dispatch value"</span> <span class="st">"Membrane output"</span>]</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">:row-maps</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;&gt;</span> (<span class="kw">methods</span> mark/layer-&gt;membrane)</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>       <span class="kw">keys</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">filter</span> <span class="kw">keyword?</span>)</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">remove</span> #{<span class="at">:default</span>})</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>       <span class="kw">sort</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">mapv</span> (<span class="kw">fn</span> [k] {<span class="st">"Dispatch value"</span> (kind/code (<span class="kw">pr-str</span> k))</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Membrane output"</span> (sk/membrane-mark-doc k)})))})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="clay-table">
+<div class="table-responsive">
+<table class="table table-hover clay-table caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Dispatch value</th>
+<th data-quarto-table-cell-role="th">Membrane output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:area</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Closed filled polygons with baseline</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:bar</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Filled polygons (histogram bars)</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:boxplot</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Box + whiskers + median line + outlier points</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:contour</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Stroked iso-density polylines</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:errorbar</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Vertical lines with caps</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:label</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Text label with filled background box</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:line</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Stroked polylines</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:lollipop</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Stems with dots at category positions</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:point</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Translated colored rounded-rectangles</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:pointrange</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Point at mean + vertical SE line</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:rect</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Filled polygons (categorical/value bars)</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:ridgeline</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Overlapping filled density curves</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:rug</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Short stroked tick marks at axis margins</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:step</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Stroked step polylines</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:text</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Translated text labels</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:tile</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Translated colored rectangles (heatmap cells)</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:violin</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Mirrored filled density polygon</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Dispatch function: <code>(fn [layer ctx] (:mark layer))</code></p>
+<section id="how-to-extend-add-a-new-mark-type" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-extend-add-a-new-mark-type">How to extend: add a new mark type</h3>
+<p>Adding a new mark (e.g., <code>:area</code> for area charts) requires methods on both <code>extract-layer</code> and <code>layer-&gt;membrane</code>.</p>
+<p>Pseudocode:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb60"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co">;; 1. Extract geometry from stat result</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> extract/extract-layer </span><span class="at">:area</span> [view stat all-colors cfg]</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:mark</span> <span class="at">:area</span></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>   <span class="at">:style</span> {<span class="at">:opacity</span> <span class="fl">0.5</span>}</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>   <span class="at">:groups</span> (<span class="kw">vec</span> (<span class="kw">for</span> [{<span class="at">:keys</span> [color xs ys]} (<span class="at">:points</span> stat)]</span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>                  {<span class="at">:color</span> (extract/resolve-color ...)</span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>                   <span class="at">:xs</span> xs <span class="at">:ys</span> ys}))})</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a><span class="co">;; 2. Render to membrane drawables</span></span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> mark/layer-&gt;membrane </span><span class="at">:area</span> [layer ctx]</span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Build filled polygon from xs/ys + baseline</span></span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a>  ...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="how-to-extend-register-a-method-and-create-a-sketch-compatible-layer-function" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-extend-register-a-method-and-create-a-sketch-compatible-layer-function">How to extend: register a method and create a sketch-compatible layer function</h3>
+<p>After defining <code>compute-stat</code> and <code>extract-layer</code> for your custom mark, register a method and create a convenience function that works with the sketch API:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb61"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co">;; Register the method</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>(method/register! <span class="at">:waterfall</span></span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:mark</span> <span class="at">:waterfall</span> <span class="at">:stat</span> <span class="at">:waterfall</span></span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>   <span class="at">:doc</span> <span class="st">"Waterfall -- running total with increase/decrease bars."</span>})</span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a><span class="co">;; Users can then call:</span></span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a><span class="co">;; (sk/lay data (method/lookup :waterfall))</span></span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a><span class="co">;; Or create a convenience function using lay:</span></span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> lay-waterfall</span></span>
+<span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a>  ([sk] (sk/lay sk (method/lookup <span class="at">:waterfall</span>)))</span>
+<span id="cb61-12"><a href="#cb61-12" aria-hidden="true" tabindex="-1"></a>  ([data x y] (<span class="kw">-&gt;</span> data (sk/view x y) (sk/lay (method/lookup <span class="at">:waterfall</span>))))</span>
+<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a>  ([data x y opts] (<span class="kw">-&gt;</span> data (sk/view x y) (sk/lay (<span class="kw">merge</span> (method/lookup <span class="at">:waterfall</span>) opts)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Users can then call <code>(lay-waterfall data :category :amount)</code>.</p>
+<p>Note: if your custom mark is not one of the built-in marks, you also need a <code>layer-&gt;membrane</code> defmethod for the SVG renderer. Without one, the library throws an error explaining which defmethod to add.</p>
+</section>
+</section>
+<section id="plan-figure" class="level2">
+<h2 class="anchored" data-anchor-id="plan-figure"><code>plan-&gt;figure</code></h2>
+<p>Orchestrates the full path from plan to figure. The <code>:svg</code> implementation goes through the membrane path: plan, then membrane, then figure. Other renderers can skip membrane and go directly from plan to their target format.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dispatch value</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>:svg</code></td>
+<td style="text-align: left;">plan, then membrane, then <code>membrane-&gt;figure :svg</code></td>
+</tr>
+</tbody>
+</table>
+<p>Dispatch function: <code>(fn [plan format opts] format)</code></p>
+<p>Using <code>plan-&gt;figure</code> directly:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-plan</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>      (sk/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>      sk/plan))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb63"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (sk/plan-&gt;figure my-plan <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb64"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="at">:svg</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The same plan can be rendered to different formats:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb65"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-figure </span>(sk/plan-&gt;figure my-plan <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb66"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">vector?</span> my-figure)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb67"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="how-to-extend-add-a-new-direct-format" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-extend-add-a-new-direct-format">How to extend: add a new direct format</h3>
+<p>To add a Plotly renderer that reads plan data directly (no membrane needed), register a <code>plan-&gt;figure</code> defmethod.</p>
+<p>Pseudocode:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb68"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> mylib.render.plotly</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span> [scicloj.napkinsketch.impl.render <span class="at">:as</span> render]))</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/plan-&gt;figure </span><span class="at">:plotly</span> [plan _ opts]</span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Read plan domains, layers, legend, layout</span></span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Build a Plotly.js spec directly -- no membrane needed</span></span>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:data</span> (<span class="kw">mapcat</span> plan-layer-&gt;plotly-traces</span>
+<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>                 (<span class="at">:layers</span> (<span class="kw">first</span> (<span class="at">:panels</span> plan))))</span>
+<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>   <span class="at">:layout</span> {<span class="at">:xaxis</span> {<span class="at">:title</span> (<span class="at">:x-label</span> plan)}</span>
+<span id="cb68-10"><a href="#cb68-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">:yaxis</span> {<span class="at">:title</span> (<span class="at">:y-label</span> plan)}}})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Then users opt in by requiring the namespace:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb69"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> '[mylib.render.plotly])</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>(sk/plot views {<span class="at">:format</span> <span class="at">:plotly</span>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="membrane-figure" class="level2">
+<h2 class="anchored" data-anchor-id="membrane-figure"><code>membrane-&gt;figure</code></h2>
+<p>Converts a membrane drawable tree into a figure for a given format. This is the extensibility point for membrane-based output formats – formats that share the same drawable tree but walk it differently.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dispatch value</th>
+<th style="text-align: left;">Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>:svg</code></td>
+<td style="text-align: left;">SVG hiccup wrapped in <code>kind/hiccup</code></td>
+</tr>
+</tbody>
+</table>
+<p>Dispatch function: <code>(fn [membrane-tree format opts] format)</code></p>
+<p><code>sk/plan-&gt;membrane</code> builds the tree, <code>sk/membrane-&gt;figure</code> converts it:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb70"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-membrane </span>(sk/plan-&gt;membrane my-plan))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb71"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">vector?</span> my-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb72"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (sk/membrane-&gt;figure my-membrane <span class="at">:svg</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>                            {<span class="at">:total-width</span> (<span class="at">:total-width</span> my-plan)</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>                             <span class="at">:total-height</span> (<span class="at">:total-height</span> my-plan)}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb74"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="at">:svg</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="how-to-extend-add-a-new-membrane-based-format" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-extend-add-a-new-membrane-based-format">How to extend: add a new membrane-based format</h3>
+<p>To add a format that reuses the membrane tree (e.g., Canvas, PDF), register a <code>membrane-&gt;figure</code> defmethod.</p>
+<p>Pseudocode:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb75"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> mylib.render.canvas</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span> [scicloj.napkinsketch.impl.render <span class="at">:as</span> render]</span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>            [scicloj.napkinsketch.render.membrane <span class="at">:as</span> membrane]))</span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/membrane-&gt;figure </span><span class="at">:canvas</span> [membrane-tree _ opts]</span>
+<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Walk the same drawable tree, emit canvas draw calls</span></span>
+<span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a>  (canvas-walk membrane-tree))</span>
+<span id="cb75-8"><a href="#cb75-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a><span class="co">;; Also register plan-&gt;figure to orchestrate the full path:</span></span>
+<span id="cb75-10"><a href="#cb75-10" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/plan-&gt;figure </span><span class="at">:canvas</span> [plan _ opts]</span>
+<span id="cb75-11"><a href="#cb75-11" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [mt (membrane/plan-&gt;membrane plan)]</span>
+<span id="cb75-12"><a href="#cb75-12" aria-hidden="true" tabindex="-1"></a>    (render/membrane-&gt;figure mt <span class="at">:canvas</span></span>
+<span id="cb75-13"><a href="#cb75-13" aria-hidden="true" tabindex="-1"></a>                              {<span class="at">:total-width</span> (<span class="at">:total-width</span> plan)</span>
+<span id="cb75-14"><a href="#cb75-14" aria-hidden="true" tabindex="-1"></a>                               <span class="at">:total-height</span> (<span class="at">:total-height</span> plan)})))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="make-scale" class="level2">
+<h2 class="anchored" data-anchor-id="make-scale"><code>make-scale</code></h2>
+<p>Builds a wadogo scale from a domain and pixel range.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb76"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>(kind/table</span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a> {<span class="at">:column-names</span> [<span class="st">"Dispatch value"</span> <span class="st">"Scale type"</span>]</span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">:row-maps</span></span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;&gt;</span> (<span class="kw">methods</span> scicloj.napkinsketch.impl.scale/make-scale)</span>
+<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>       <span class="kw">keys</span></span>
+<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">filter</span> <span class="kw">keyword?</span>)</span>
+<span id="cb76-7"><a href="#cb76-7" aria-hidden="true" tabindex="-1"></a>       <span class="kw">sort</span></span>
+<span id="cb76-8"><a href="#cb76-8" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">mapv</span> (<span class="kw">fn</span> [k] {<span class="st">"Dispatch value"</span> (kind/code (<span class="kw">pr-str</span> k))</span>
+<span id="cb76-9"><a href="#cb76-9" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Scale type"</span> (sk/scale-doc k)})))})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="clay-table">
+<div class="table-responsive">
+<table class="table table-hover clay-table caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Dispatch value</th>
+<th data-quarto-table-cell-role="th">Scale type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:categorical</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Band scale (one band per category)</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:linear</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Continuous linear mapping</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:log</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Logarithmic mapping</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Dispatch: inferred from the domain type and scale spec. Categorical domains dispatch to <code>:categorical</code>. Numerical domains default to <code>:linear</code>, overridden to <code>:log</code> by <code>(sk/scale sketch :x :log)</code>.</p>
+</section>
+<section id="make-coord" class="level2">
+<h2 class="anchored" data-anchor-id="make-coord"><code>make-coord</code></h2>
+<p>Builds a coordinate function that maps data-space (x, y) to pixel-space (px, py).</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb80"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>(kind/table</span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a> {<span class="at">:column-names</span> [<span class="st">"Dispatch value"</span> <span class="st">"Behavior"</span>]</span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">:row-maps</span></span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;&gt;</span> (<span class="kw">methods</span> scicloj.napkinsketch.impl.coord/make-coord)</span>
+<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a>       <span class="kw">keys</span></span>
+<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">filter</span> <span class="kw">keyword?</span>)</span>
+<span id="cb80-7"><a href="#cb80-7" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">remove</span> #{<span class="at">:default</span>})</span>
+<span id="cb80-8"><a href="#cb80-8" aria-hidden="true" tabindex="-1"></a>       <span class="kw">sort</span></span>
+<span id="cb80-9"><a href="#cb80-9" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">mapv</span> (<span class="kw">fn</span> [k] {<span class="st">"Dispatch value"</span> (kind/code (<span class="kw">pr-str</span> k))</span>
+<span id="cb80-10"><a href="#cb80-10" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Behavior"</span> (sk/coord-doc k)})))})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="clay-table">
+<div class="table-responsive">
+<table class="table table-hover clay-table caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Dispatch value</th>
+<th data-quarto-table-cell-role="th">Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:cartesian</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Standard x-right, y-up mapping</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:fixed</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Fixed aspect ratio (1 data unit = 1 data unit)</td>
+</tr>
+<tr class="odd">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:flip</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Swap x and y axes</td>
+</tr>
+<tr class="even">
+<td><div class="code-copy-outer-scaffold"><div>
+<pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:polar</code></pre>
+</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
+<td>Radial mapping: x→angle, y→radius</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>All four use the same scales – <code>:flip</code> swaps which scale maps to which pixel axis, and <code>:polar</code> maps x to angle and y to radius.</p>
+<p>A flipped bar chart uses <code>:flip</code> coordinates:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb85"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-bar <span class="at">:species</span>)</span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>    (sk/coord <span class="at">:flip</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<svg font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" height="400.0" role="img" viewbox="0 0 600.0 400.0" width="600.0" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(12.00,191.50)"><g transform="rotate(-90.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">species</text></g></g></g><g transform="translate(91.00,10.00)"><g><g><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="363.0" stroke="none" width="499.0" x="0" y="0"></rect></g></g></g><g transform="translate(81.00,0.00)"><g><g><g><g><polyline fill="none" points="32.68,10.00 32.68,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="78.05,10.00 78.05,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="123.41,10.00 123.41,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="168.77,10.00 168.77,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="214.14,10.00 214.14,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="259.50,10.00 259.50,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="304.86,10.00 304.86,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="350.23,10.00 350.23,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="395.59,10.00 395.59,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="440.95,10.00 440.95,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="486.32,10.00 486.32,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.85" points="32.68,360.90 486.32,360.90 486.32,264.10 32.68,264.10 32.68,360.90" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.85" points="32.68,239.90 486.32,239.90 486.32,143.10 32.68,143.10 32.68,239.90" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.85" points="32.68,118.90 486.32,118.90 486.32,22.10 32.68,22.10 32.68,118.90" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g transform="translate(32.68,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">0</text></g></g><g transform="translate(78.05,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">5</text></g></g><g transform="translate(123.41,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">10</text></g></g><g transform="translate(168.77,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">15</text></g></g><g transform="translate(214.14,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">20</text></g></g><g transform="translate(259.50,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">25</text></g></g><g transform="translate(304.86,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">30</text></g></g><g transform="translate(350.23,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">35</text></g></g><g transform="translate(395.59,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">40</text></g></g><g transform="translate(440.95,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">45</text></g></g><g transform="translate(486.32,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">50</text></g></g><g transform="translate(7.00,307.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">setosa</text></g></g><g transform="translate(7.00,186.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">versicolor</text></g></g><g transform="translate(7.00,65.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">virginica</text></g></g></g></g></g></svg>
+</section>
+<section id="self-documenting-extensions" class="level2">
+<h2 class="anchored" data-anchor-id="self-documenting-extensions">Self-Documenting Extensions</h2>
+<p>Every generated dispatch table in this notebook is built by introspecting multimethod keys at render time. When you extend a multimethod, your new dispatch value automatically appears in the table. You can also register a <code>[:key :doc]</code> defmethod to provide a description.</p>
+<section id="adding-a-documented-extension" class="level3">
+<h3 class="anchored" data-anchor-id="adding-a-documented-extension">Adding a documented extension</h3>
+<p>Register both the implementation and a <code>[:key :doc]</code> defmethod:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb86"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> stat/compute-stat </span><span class="at">:quantile</span> [view]</span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:points</span> [] <span class="at">:x-domain</span> [<span class="dv">0</span> <span class="dv">1</span>] <span class="at">:y-domain</span> [<span class="dv">0</span> <span class="dv">1</span>]})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb87"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> stat/compute-stat </span>[<span class="at">:quantile</span> <span class="at">:doc</span>] [_]</span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Quantile regression bands"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The doc helper picks it up immediately:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb88"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>(sk/stat-doc <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb89"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="st">"Quantile regression bands"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="missing-documentation-degrades-gracefully" class="level3">
+<h3 class="anchored" data-anchor-id="missing-documentation-degrades-gracefully">Missing documentation degrades gracefully</h3>
+<p>If you skip the <code>[:key :doc]</code> defmethod, the table still renders – the description falls back to “(no description)” instead of throwing an error. Let us remove the doc defmethod and verify:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb90"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">remove-method</span> stat/compute-stat [<span class="at">:quantile</span> <span class="at">:doc</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb91"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>#multifn[compute-stat <span class="bn">0x7ee5444b</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb92"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>(sk/stat-doc <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb93"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="st">"(no description)"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="cleanup" class="level3">
+<h3 class="anchored" data-anchor-id="cleanup">Cleanup</h3>
+<p>Remove the example extension so it does not affect other tests:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb94"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">remove-method</span> stat/compute-stat <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb95"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>#multifn[compute-stat <span class="bn">0x7ee5444b</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb96"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> (<span class="kw">remove</span> #{<span class="at">:default</span>} (<span class="kw">filter</span> <span class="kw">keyword?</span> (<span class="kw">keys</span> (<span class="kw">methods</span> stat/compute-stat)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb97"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">To add…</th>
+<th style="text-align: left;">Extend…</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">A new statistical transform</td>
+<td style="text-align: left;"><code>compute-stat</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">A new mark type</td>
+<td style="text-align: left;"><code>extract-layer</code> + <code>layer-&gt;membrane</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">A new output format (direct)</td>
+<td style="text-align: left;"><code>plan-&gt;figure</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">A new output format (membrane-based)</td>
+<td style="text-align: left;"><code>membrane-&gt;figure</code> + <code>plan-&gt;figure</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">A new scale type</td>
+<td style="text-align: left;"><code>make-scale</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">A new coordinate system</td>
+<td style="text-align: left;"><code>make-coord</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">A new position adjustment</td>
+<td style="text-align: left;"><code>apply-position</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s Next</h2>
+<ul>
+<li><a href="./napkinsketch_book.architecture.html"><strong>Architecture</strong></a> – the five-stage pipeline and key libraries</li>
+<li><a href="./napkinsketch_book.edge_cases.html"><strong>Edge Cases</strong></a> – how the library handles unusual inputs</li>
+</ul>
+<div style="background-color:grey;height:2px;width:100%;"></div>
+<div><pre><small><small>source: <a href="https://github.com/scicloj/napkinsketch/blob/main/notebooks/napkinsketch_book/extensibility.clj">notebooks/napkinsketch_book/extensibility.clj</a></small></small></pre></div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./napkinsketch_book.architecture.html" class="pagination-link" aria-label="Sketch Architecture">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Sketch Architecture</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./napkinsketch_book.waterfall_extension.html" class="pagination-link" aria-label="Extension Example: Waterfall Chart">
+        <span class="nav-page-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Extension Example: Waterfall Chart</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const toc = document.getElementById('TOC');
+          if (toc) {
+            const tocHeading = toc.querySelector('h2');
+            if (tocHeading) tocHeading.style.display = 'none';
+
+            const topList = toc.querySelector('ul');
+
+            const btn = document.createElement('button');
+            btn.textContent = '⌃';
+            btn.style.cssText = `
+              display: block;
+              width: 100%;
+              padding: 4px 8px;
+              margin-bottom: 8px;
+              font-size: 2em;
+              cursor: pointer;
+              border: none;
+              outline: none;
+              box-shadow: none;
+              background: transparent;
+              color: #2780e3;
+              text-align: left;
+              transition: transform 0.25s ease;
+              transform-origin: center;
+              -webkit-appearance: none;
+              appearance: none;
+            `;
+
+            let expanded = true;
+
+            btn.addEventListener('click', function () {
+              expanded = !expanded;
+              if (topList) topList.style.display = expanded ? 'block' : 'none';
+              btn.style.transform = expanded ? 'rotate(0deg)' : 'rotate(180deg)';
+            });
+
+            toc.insertBefore(btn, toc.firstChild);
+          }
+        });
+        </script>
+
+
+
+
+</body></html>

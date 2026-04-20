@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>6&nbsp; Options and Scopes – Napkinsketch</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./napkinsketch_book.sketch_rules.html" rel="next">
+<link href="./napkinsketch_book.core_concepts.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-7fe93b6278088d83a8942670f25c821e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./napkinsketch_book.datasets.html">🧱 Foundations</a></li><li class="breadcrumb-item"><a href="./napkinsketch_book.options_and_scopes.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Options and Scopes</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Napkinsketch</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">🚀 Getting Started</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.quickstart.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Quickstart</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">🧱 Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.datasets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Datasets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.sketch_model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">The Sketch Model</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.core_concepts.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Core Concepts</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.options_and_scopes.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Options and Scopes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.sketch_rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Sketch Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.inference_rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Inference Rules</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Methods</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.glossary.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Glossary</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">📊 Chart Types</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.scatter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Scatter</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.distributions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Distributions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.ranking.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Ranking</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.change_over_time.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Change Over Time</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.relationships.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Relationships</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.polar.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Polar Coordinates</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">🍳 How-to Guides</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.cookbook.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Cookbook</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.configuration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Configuration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.customization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Customization</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.faceting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Faceting</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.troubleshooting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Troubleshooting</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">📖 Reference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.api_reference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">API Reference</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">🖼 Gallery</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.gallery.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Gallery</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">🔬 Internals</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.exploring_plans.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Exploring Plans</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.architecture.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Sketch Architecture</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.extensibility.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Extensibility</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.waterfall_extension.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Extension Example: Waterfall Chart</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.edge_cases.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Edge Cases</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./napkinsketch_book.development.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Development</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#layer-options" id="toc-layer-options" class="nav-link" data-scroll-target="#layer-options">Layer options</a>
+  <ul>
+  <li><a href="#scope-generalizing-layer-options-upward" id="toc-scope-generalizing-layer-options-upward" class="nav-link" data-scroll-target="#scope-generalizing-layer-options-upward">Scope: generalizing layer options upward</a></li>
+  </ul></li>
+  <li><a href="#plot-options" id="toc-plot-options" class="nav-link" data-scroll-target="#plot-options">Plot options</a></li>
+  <li><a href="#configuration" id="toc-configuration" class="nav-link" data-scroll-target="#configuration">Configuration</a></li>
+  <li><a href="#a-worked-example" id="toc-a-worked-example" class="nav-link" data-scroll-target="#a-worked-example">A worked example</a></li>
+  <li><a href="#coming-from-ggplot2" id="toc-coming-from-ggplot2" class="nav-link" data-scroll-target="#coming-from-ggplot2">Coming from ggplot2</a></li>
+  <li><a href="#see-also" id="toc-see-also" class="nav-link" data-scroll-target="#see-also">See also</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./napkinsketch_book.datasets.html">🧱 Foundations</a></li><li class="breadcrumb-item"><a href="./napkinsketch_book.options_and_scopes.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Options and Scopes</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Options and Scopes</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<style></style>
+<style>.printedClojure .sourceCode {
+  background-color: transparent;
+  border-style: none;
+}
+</style>
+<style>.clay-limit-image-width .clay-image {max-width: 100%}
+.clay-side-by-side .sourceCode {margin: 0}
+.clay-side-by-side {margin: 1em 0}
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" type="text/javascript"></script>
+<p>Napkinsketch has three kinds of values you set, each answering a different question:</p>
+<ul>
+<li><p><strong>Layer options</strong> – <em>how is this layer drawn?</em> Its aesthetics (<code>:color</code>, <code>:size</code>), its method parameters (<code>:bandwidth</code>, <code>:bins</code>), its data, its grouping and position. Per-layer by nature, but scopable up to apply across multiple layers.</p></li>
+<li><p><strong>Plot options</strong> – <em>what describes this plot as a whole?</em> Its title and labels, its axis scales, its coordinate system, its facets, its annotations. Per-plot by nature; there is one of each per plot.</p></li>
+<li><p><strong>Configuration</strong> – <em>what are the rendering defaults?</em> Palette, theme, default dimensions, color scale. Shared across every plot you render; any one plot can override a configuration key.</p></li>
+</ul>
+<p>The distinguishing test is simple: <strong>can this kind of value meaningfully have a cross-plot default?</strong> A title cannot – each plot needs its own. A palette can – a whole project can share one. A layer’s color mapping is per-layer, but when several layers should share it, you lift it to a wider scope.</p>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> napkinsketch-book.options-and-scopes</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Kindly -- notebook rendering protocol</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>   [scicloj.kindly.v4.kind <span class="at">:as</span> kind]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; RDatasets -- standard datasets</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>   [scicloj.metamorph.ml.rdatasets <span class="at">:as</span> rdatasets]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Napkinsketch -- composable plotting</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.api <span class="at">:as</span> sk]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>A helper to inspect sketch structure. It shows <code>:mapping</code>, <code>:views</code>, <code>:layers</code>, and <code>:opts</code> – the full record also has <code>:data</code> and <code>:kindly/f</code>, which this helper omits for readability.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> sk-summary</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Print sketch structure without :data and :kindly/f (for readability)."</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  [sk]</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> (<span class="kw">select-keys</span> sk [<span class="at">:mapping</span> <span class="at">:views</span> <span class="at">:layers</span> <span class="at">:opts</span>])</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">update</span> <span class="at">:views</span> (<span class="kw">partial</span> <span class="kw">mapv</span> #(<span class="kw">dissoc</span> <span class="va">%</span> <span class="at">:data</span>)))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>      kind/pprint))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+</section>
+<section id="layer-options" class="level2">
+<h2 class="anchored" data-anchor-id="layer-options">Layer options</h2>
+<p>Layer options describe a specific layer. They include:</p>
+<ul>
+<li><p><strong>The method</strong> – the drawing recipe: a mark (point, line, bar, histogram, …), a stat (identity, lm, density, binning, …), and a position adjustment (dodge, stack, jitter). The method is chosen by which <code>sk/lay-*</code> function you call; its constituents can be overridden via <code>:mark</code>, <code>:stat</code>, and <code>:position</code> keys in the opts map.</p></li>
+<li><p><strong>Method parameters</strong> – knobs specific to the method, like <code>:bandwidth</code> for <code>sk/lay-kde</code> or <code>:bins</code> for <code>sk/lay-histogram</code>.</p></li>
+<li><p><strong>Aesthetics</strong> – how the method maps data to visuals: <code>:color</code>, <code>:size</code>, <code>:alpha</code>, <code>:shape</code>, <code>:group</code>. Either mapped from a column (<code>:color :species</code>) or given as a constant (<code>:alpha 0.3</code>).</p></li>
+<li><p><strong>Data</strong> – a per-layer <code>:data</code> key, if the layer should use a different dataset from the rest of the sketch.</p></li>
+</ul>
+<p>The primary way to set them is in the opts map of <code>sk/lay-*</code>:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<svg font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" height="400.0" role="img" viewbox="0 0 600.0 400.0" width="600.0" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(12.00,181.00)"><g transform="rotate(-90.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal width</text></g></g></g><g transform="translate(270.25,382.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal length</text></g></g><g transform="translate(508.00,2.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="11">species</text></g></g><g transform="translate(508.00,20.00)"><g><g transform="translate(0.00,0.00)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.00,0.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">setosa</text></g></g></g></g><g transform="translate(508.00,36.00)"><g><g transform="translate(0.00,0.00)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.00,0.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">versicolor</text></g></g></g></g><g transform="translate(508.00,52.00)"><g><g transform="translate(0.00,0.00)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.00,0.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">virginica</text></g></g></g></g><g transform="translate(52.50,10.00)"><g><g><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="342.0" stroke="none" width="435.5" x="0" y="0"></rect></g></g></g><g transform="translate(42.50,0.00)"><g><g><g><g><polyline fill="none" points="51.79,10.00 51.79,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="106.78,10.00 106.78,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="161.77,10.00 161.77,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="216.75,10.00 216.75,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="271.74,10.00 271.74,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="326.73,10.00 326.73,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="381.71,10.00 381.71,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="436.70,10.00 436.70,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,336.45 445.50,336.45" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,271.68 445.50,271.68" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,206.91 445.50,206.91" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,142.14 445.50,142.14" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,77.36 445.50,77.36" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,12.59 445.50,12.59" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g data-row-idx="0" transform="translate(114.78,139.14)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="1" transform="translate(92.78,203.91)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="2" transform="translate(70.79,178.00)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="3" transform="translate(59.79,190.95)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="4" transform="translate(103.78,126.18)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="5" transform="translate(147.77,87.32)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="6" transform="translate(59.79,152.09)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="7" transform="translate(103.78,152.09)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="8" transform="translate(37.79,216.86)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="9" transform="translate(92.78,190.95)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="10" transform="translate(147.77,113.23)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="11" transform="translate(81.78,152.09)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="12" transform="translate(81.78,203.91)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="13" transform="translate(26.80,203.91)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="14" transform="translate(191.76,74.36)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="15" transform="translate(180.76,22.55)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="16" transform="translate(147.77,87.32)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="17" transform="translate(114.78,139.14)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="18" transform="translate(180.76,100.27)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="19" transform="translate(114.78,100.27)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="20" transform="translate(147.77,152.09)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="21" transform="translate(114.78,113.23)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="22" transform="translate(59.79,126.18)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="23" transform="translate(114.78,165.05)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="24" transform="translate(81.78,152.09)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="25" transform="translate(103.78,203.91)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="26" transform="translate(103.78,152.09)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="27" transform="translate(125.77,139.14)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="28" transform="translate(125.77,152.09)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="29" transform="translate(70.79,178.00)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="30" transform="translate(81.78,190.95)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="31" transform="translate(147.77,152.09)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="32" transform="translate(125.77,61.41)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="33" transform="translate(158.77,48.45)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="34" transform="translate(92.78,190.95)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="35" transform="translate(103.78,178.00)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="36" transform="translate(158.77,139.14)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="37" transform="translate(92.78,126.18)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="38" transform="translate(37.79,203.91)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="39" transform="translate(114.78,152.09)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="40" transform="translate(103.78,139.14)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="41" transform="translate(48.79,294.59)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="42" transform="translate(37.79,178.00)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="43" transform="translate(103.78,139.14)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="44" transform="translate(114.78,100.27)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="45" transform="translate(81.78,203.91)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="46" transform="translate(114.78,100.27)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="47" transform="translate(59.79,178.00)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="48" transform="translate(136.77,113.23)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="49" transform="translate(103.78,165.05)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="50" transform="translate(323.73,178.00)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="51" transform="translate(257.74,178.00)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="52" transform="translate(312.73,190.95)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="53" transform="translate(158.77,294.59)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="54" transform="translate(268.74,229.82)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="55" transform="translate(180.76,229.82)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="56" transform="translate(246.74,165.05)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="57" transform="translate(92.78,281.64)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="58" transform="translate(279.74,216.86)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="59" transform="translate(125.77,242.77)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="60" transform="translate(103.78,333.45)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="61" transform="translate(202.76,203.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="62" transform="translate(213.75,307.55)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="63" transform="translate(224.75,216.86)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="64" transform="translate(169.76,216.86)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="65" transform="translate(290.73,190.95)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="66" transform="translate(169.76,203.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="67" transform="translate(191.76,242.77)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="68" transform="translate(235.75,307.55)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="69" transform="translate(169.76,268.68)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="70" transform="translate(202.76,178.00)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="71" transform="translate(224.75,229.82)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="72" transform="translate(246.74,268.68)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="73" transform="translate(224.75,229.82)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="74" transform="translate(257.74,216.86)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="75" transform="translate(279.74,203.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="76" transform="translate(301.73,229.82)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="77" transform="translate(290.73,203.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="78" transform="translate(213.75,216.86)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="79" transform="translate(180.76,255.73)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="80" transform="translate(158.77,281.64)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="81" transform="translate(158.77,281.64)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="82" transform="translate(191.76,242.77)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="83" transform="translate(213.75,242.77)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="84" transform="translate(147.77,203.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="85" transform="translate(213.75,152.09)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="86" transform="translate(290.73,190.95)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="87" transform="translate(246.74,294.59)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="88" transform="translate(169.76,203.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="89" transform="translate(158.77,268.68)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="90" transform="translate(158.77,255.73)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="91" transform="translate(224.75,203.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="92" transform="translate(191.76,255.73)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="93" transform="translate(103.78,294.59)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="94" transform="translate(169.76,242.77)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="95" transform="translate(180.76,203.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="96" transform="translate(180.76,216.86)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="97" transform="translate(235.75,216.86)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="98" transform="translate(114.78,268.68)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="99" transform="translate(180.76,229.82)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="100" transform="translate(246.74,165.05)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="101" transform="translate(191.76,242.77)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="102" transform="translate(334.72,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="103" transform="translate(246.74,216.86)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="104" transform="translate(268.74,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="105" transform="translate(389.71,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="106" transform="translate(92.78,268.68)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="107" transform="translate(356.72,216.86)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="108" transform="translate(290.73,268.68)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="109" transform="translate(345.72,126.18)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="110" transform="translate(268.74,178.00)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="111" transform="translate(257.74,242.77)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="112" transform="translate(301.73,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="113" transform="translate(180.76,268.68)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="114" transform="translate(191.76,229.82)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="115" transform="translate(257.74,178.00)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="116" transform="translate(268.74,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="117" transform="translate(400.71,100.27)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="118" transform="translate(400.71,255.73)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="119" transform="translate(213.75,307.55)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="120" transform="translate(312.73,178.00)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="121" transform="translate(169.76,229.82)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="122" transform="translate(400.71,229.82)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="123" transform="translate(246.74,242.77)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="124" transform="translate(290.73,165.05)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="125" transform="translate(345.72,178.00)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="126" transform="translate(235.75,229.82)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="127" transform="translate(224.75,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="128" transform="translate(257.74,229.82)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="129" transform="translate(345.72,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="130" transform="translate(367.72,229.82)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="131" transform="translate(422.70,100.27)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="132" transform="translate(257.74,229.82)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="133" transform="translate(246.74,229.82)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="134" transform="translate(224.75,255.73)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="135" transform="translate(400.71,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="136" transform="translate(246.74,152.09)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="137" transform="translate(257.74,190.95)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="138" transform="translate(213.75,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="139" transform="translate(312.73,190.95)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="140" transform="translate(290.73,190.95)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="141" transform="translate(312.73,190.95)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="142" transform="translate(191.76,242.77)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="143" transform="translate(301.73,178.00)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="144" transform="translate(290.73,165.05)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="145" transform="translate(290.73,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="146" transform="translate(246.74,268.68)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="147" transform="translate(268.74,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="148" transform="translate(235.75,152.09)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="149" transform="translate(202.76,203.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g transform="translate(51.79,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">4.5</text></g></g><g transform="translate(106.78,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">5.0</text></g></g><g transform="translate(161.77,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">5.5</text></g></g><g transform="translate(216.75,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">6.0</text></g></g><g transform="translate(271.74,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">6.5</text></g></g><g transform="translate(326.73,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">7.0</text></g></g><g transform="translate(381.71,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">7.5</text></g></g><g transform="translate(436.70,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">8.0</text></g></g><g transform="translate(7.00,330.95)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">2.0</text></g></g><g transform="translate(7.00,266.18)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">2.5</text></g></g><g transform="translate(7.00,201.41)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">3.0</text></g></g><g transform="translate(7.00,136.64)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">3.5</text></g></g><g transform="translate(7.00,71.86)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">4.0</text></g></g><g transform="translate(7.00,7.09)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">4.5</text></g></g></g></g></g></svg>
+<p>And the sketch structure:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    sk-summary)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:mapping</span> {},</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:views</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:mapping</span> {<span class="at">:x</span> <span class="at">:sepal-length</span>, <span class="at">:y</span> <span class="at">:sepal-width</span>},</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>   <span class="at">:layers</span> [{<span class="at">:method</span> <span class="at">:point</span>, <span class="at">:mapping</span> {<span class="at">:color</span> <span class="at">:species</span>}}]}],</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a> <span class="at">:layers</span> [],</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="scope-generalizing-layer-options-upward" class="level3">
+<h3 class="anchored" data-anchor-id="scope-generalizing-layer-options-upward">Scope: generalizing layer options upward</h3>
+<p>Method parameters, aesthetics, and per-layer data can also be set at wider <strong>scopes</strong> when they should apply to more than one layer. The scope hierarchy has three levels, from narrow to broad:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Scope</th>
+<th style="text-align: left;">Set via</th>
+<th style="text-align: left;">Reaches</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Layer</td>
+<td style="text-align: left;"><code>sk/lay-*</code> opts</td>
+<td style="text-align: left;">that one layer</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">View</td>
+<td style="text-align: left;"><code>sk/view</code> opts</td>
+<td style="text-align: left;">every layer on that view</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sketch</td>
+<td style="text-align: left;"><code>sk/sketch</code> opts</td>
+<td style="text-align: left;">every layer on every view</td>
+</tr>
+</tbody>
+</table>
+<p>When the same key is set at multiple scopes, narrower scope wins.</p>
+<p>The method itself is chosen per layer – you pick which <code>sk/lay-*</code> to call, and that is where the method belongs. <a href="./napkinsketch_book.core_concepts.html">Core Concepts</a> teaches how layers themselves (sketch-level vs view-level) combine, and the detailed combination rules for each category of layer option.</p>
+<hr>
+</section>
+</section>
+<section id="plot-options" class="level2">
+<h2 class="anchored" data-anchor-id="plot-options">Plot options</h2>
+<p>Plot options describe the plot as a whole: its title, labels, axis scales, coordinate system, facets, annotations. A plot has one of each – there is no scope here, because there is nothing to vary over.</p>
+<p>Five functions write plot options to the sketch’s <code>:opts</code> field:</p>
+<ul>
+<li><p><code>sk/options</code> – plot text (title, subtitle, caption, axis and legend labels) and panel dimensions. It also accepts configuration keys as per-plot overrides (see Configuration below).</p></li>
+<li><p><code>sk/scale</code> – axis scale (log, categorical, fixed domain).</p></li>
+<li><p><code>sk/coord</code> – coordinate system (cartesian, flipped, polar, fixed).</p></li>
+<li><p><code>sk/facet</code> and <code>sk/facet-grid</code> – split the plot into panels by a column.</p></li>
+<li><p><code>sk/annotate</code> – reference lines and shaded bands.</p></li>
+</ul>
+<p><strong>Planned refactor:</strong> Before 0.1.0, annotations will become regular layers (<code>sk/lay-rule-h</code>, <code>sk/lay-rule-v</code>, <code>sk/lay-band-h</code>, <code>sk/lay-band-v</code>), scopable like any other layer. The current <code>sk/annotate</code> API will be replaced, and annotations will no longer be plot options.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    (sk/options {<span class="at">:title</span> <span class="st">"Iris"</span>})</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    (sk/coord <span class="at">:flip</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<svg aria-label="Iris" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" height="400.0" role="img" viewbox="0 0 600.0 400.0" width="600.0" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(321.25,14.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="15" text-anchor="middle">Iris</text></g></g><g transform="translate(12.00,197.50)"><g transform="rotate(-90.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal length</text></g></g></g><g transform="translate(321.25,382.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal width</text></g></g><g transform="translate(52.50,43.00)"><g><g><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="309.0" stroke="none" width="537.5" x="0" y="0"></rect></g></g></g><g transform="translate(42.50,33.00)"><g><g><g><g><polyline fill="none" points="34.43,10.00 34.43,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="136.23,10.00 136.23,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="238.03,10.00 238.03,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="339.83,10.00 339.83,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="441.63,10.00 441.63,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="543.43,10.00 543.43,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,289.35 547.50,289.35" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,250.33 547.50,250.33" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,211.32 547.50,211.32" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,172.30 547.50,172.30" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,133.29 547.50,133.29" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,94.27 547.50,94.27" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,55.26 547.50,55.26" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,16.24 547.50,16.24" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g data-row-idx="0" transform="translate(336.83,239.53)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="1" transform="translate(235.03,255.14)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="2" transform="translate(275.75,270.74)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="3" transform="translate(255.39,278.55)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="4" transform="translate(357.19,247.33)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="5" transform="translate(418.27,216.12)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="6" transform="translate(316.47,278.55)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="7" transform="translate(316.47,247.33)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="8" transform="translate(214.67,294.15)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="9" transform="translate(255.39,255.14)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="10" transform="translate(377.55,216.12)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="11" transform="translate(316.47,262.94)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="12" transform="translate(235.03,262.94)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="13" transform="translate(235.03,301.95)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="14" transform="translate(438.63,184.91)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="15" transform="translate(520.07,192.71)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="16" transform="translate(418.27,216.12)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="17" transform="translate(336.83,239.53)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="18" transform="translate(397.91,192.71)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="19" transform="translate(397.91,239.53)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="20" transform="translate(316.47,216.12)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="21" transform="translate(377.55,239.53)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="22" transform="translate(357.19,278.55)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="23" transform="translate(296.11,239.53)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="24" transform="translate(316.47,262.94)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="25" transform="translate(235.03,247.33)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="26" transform="translate(316.47,247.33)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="27" transform="translate(336.83,231.73)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="28" transform="translate(316.47,231.73)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="29" transform="translate(275.75,270.74)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="30" transform="translate(255.39,262.94)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="31" transform="translate(316.47,216.12)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="32" transform="translate(458.99,231.73)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="33" transform="translate(479.35,208.32)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="34" transform="translate(255.39,255.14)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="35" transform="translate(275.75,247.33)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="36" transform="translate(336.83,208.32)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="37" transform="translate(357.19,255.14)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="38" transform="translate(235.03,294.15)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="39" transform="translate(316.47,239.53)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="40" transform="translate(336.83,247.33)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="41" transform="translate(92.51,286.35)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="42" transform="translate(275.75,294.15)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="43" transform="translate(336.83,247.33)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="44" transform="translate(397.91,239.53)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="45" transform="translate(235.03,262.94)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="46" transform="translate(397.91,239.53)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="47" transform="translate(275.75,278.55)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="48" transform="translate(377.55,223.92)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="49" transform="translate(296.11,247.33)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="50" transform="translate(275.75,91.27)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="51" transform="translate(275.75,138.09)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="52" transform="translate(255.39,99.08)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="53" transform="translate(92.51,208.32)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="54" transform="translate(194.31,130.29)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="55" transform="translate(194.31,192.71)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="56" transform="translate(296.11,145.89)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="57" transform="translate(112.87,255.14)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="58" transform="translate(214.67,122.48)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="59" transform="translate(173.95,231.73)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="60" transform="translate(31.43,247.33)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="61" transform="translate(235.03,177.11)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="62" transform="translate(72.15,169.30)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="63" transform="translate(214.67,161.50)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="64" transform="translate(214.67,200.52)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="65" transform="translate(255.39,114.68)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="66" transform="translate(235.03,200.52)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="67" transform="translate(173.95,184.91)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="68" transform="translate(72.15,153.70)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="69" transform="translate(133.23,200.52)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="70" transform="translate(275.75,177.11)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="71" transform="translate(194.31,161.50)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="72" transform="translate(133.23,145.89)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="73" transform="translate(194.31,161.50)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="74" transform="translate(214.67,138.09)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="75" transform="translate(235.03,122.48)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="76" transform="translate(194.31,106.88)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="77" transform="translate(235.03,114.68)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="78" transform="translate(214.67,169.30)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="79" transform="translate(153.59,192.71)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="80" transform="translate(112.87,208.32)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="81" transform="translate(112.87,208.32)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="82" transform="translate(173.95,184.91)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="83" transform="translate(173.95,169.30)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="84" transform="translate(235.03,216.12)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="85" transform="translate(316.47,169.30)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="86" transform="translate(255.39,114.68)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="87" transform="translate(92.51,145.89)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="88" transform="translate(235.03,200.52)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="89" transform="translate(133.23,208.32)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="90" transform="translate(153.59,208.32)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="91" transform="translate(235.03,161.50)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="92" transform="translate(153.59,184.91)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="93" transform="translate(92.51,247.33)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="94" transform="translate(173.95,200.52)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="95" transform="translate(235.03,192.71)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="96" transform="translate(214.67,192.71)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="97" transform="translate(214.67,153.70)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="98" transform="translate(133.23,239.53)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="99" transform="translate(194.31,192.71)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="100" transform="translate(296.11,145.89)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="101" transform="translate(173.95,184.91)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="102" transform="translate(235.03,83.47)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="103" transform="translate(214.67,145.89)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="104" transform="translate(235.03,130.29)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="105" transform="translate(235.03,44.45)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="106" transform="translate(133.23,255.14)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="107" transform="translate(214.67,67.86)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="108" transform="translate(133.23,114.68)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="109" transform="translate(357.19,75.67)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="110" transform="translate(275.75,130.29)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="111" transform="translate(173.95,138.09)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="112" transform="translate(235.03,106.88)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="113" transform="translate(133.23,192.71)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="114" transform="translate(194.31,184.91)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="115" transform="translate(275.75,138.09)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="116" transform="translate(235.03,130.29)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="117" transform="translate(397.91,36.65)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="118" transform="translate(153.59,36.65)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="119" transform="translate(72.15,169.30)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="120" transform="translate(275.75,99.08)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="121" transform="translate(194.31,200.52)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="122" transform="translate(194.31,36.65)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="123" transform="translate(173.95,145.89)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="124" transform="translate(296.11,114.68)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="125" transform="translate(275.75,75.67)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="126" transform="translate(194.31,153.70)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="127" transform="translate(235.03,161.50)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="128" transform="translate(194.31,138.09)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="129" transform="translate(235.03,75.67)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="130" transform="translate(194.31,60.06)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="131" transform="translate(397.91,21.05)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="132" transform="translate(194.31,138.09)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="133" transform="translate(194.31,145.89)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="134" transform="translate(153.59,161.50)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="135" transform="translate(235.03,36.65)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="136" transform="translate(316.47,145.89)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="137" transform="translate(255.39,138.09)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="138" transform="translate(235.03,169.30)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="139" transform="translate(255.39,99.08)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="140" transform="translate(255.39,114.68)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="141" transform="translate(255.39,99.08)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="142" transform="translate(173.95,184.91)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="143" transform="translate(275.75,106.88)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="144" transform="translate(296.11,114.68)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="145" transform="translate(235.03,114.68)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="146" transform="translate(133.23,145.89)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="147" transform="translate(235.03,130.29)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="148" transform="translate(316.47,153.70)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="149" transform="translate(235.03,177.11)"><g><g><rect fill="rgb(51,51,51)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g transform="translate(34.43,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">2.0</text></g></g><g transform="translate(136.23,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">2.5</text></g></g><g transform="translate(238.03,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">3.0</text></g></g><g transform="translate(339.83,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">3.5</text></g></g><g transform="translate(441.63,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">4.0</text></g></g><g transform="translate(543.43,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">4.5</text></g></g><g transform="translate(7.00,283.85)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">4.5</text></g></g><g transform="translate(7.00,244.83)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">5.0</text></g></g><g transform="translate(7.00,205.82)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">5.5</text></g></g><g transform="translate(7.00,166.80)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">6.0</text></g></g><g transform="translate(7.00,127.79)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">6.5</text></g></g><g transform="translate(7.00,88.77)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">7.0</text></g></g><g transform="translate(7.00,49.76)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">7.5</text></g></g><g transform="translate(7.00,10.74)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">8.0</text></g></g></g></g></g></svg>
+<p>And the sketch structure:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    (sk/options {<span class="at">:title</span> <span class="st">"Iris"</span>})</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    (sk/coord <span class="at">:flip</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    sk-summary)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:mapping</span> {},</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:views</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:mapping</span> {<span class="at">:x</span> <span class="at">:sepal-length</span>, <span class="at">:y</span> <span class="at">:sepal-width</span>},</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>   <span class="at">:layers</span> [{<span class="at">:method</span> <span class="at">:point</span>, <span class="at">:mapping</span> {}}]}],</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a> <span class="at">:layers</span> [],</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {<span class="at">:title</span> <span class="st">"Iris"</span>, <span class="at">:coord</span> <span class="at">:flip</span>}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Both the title and the coordinate system landed in <code>:opts</code>. Neither is at a scope; they belong to the plot as a whole.</p>
+<p>A note on faceted plots: a scale has two parts that behave differently across panels.</p>
+<ul>
+<li><p>Scale <strong>type</strong> (log, categorical, linear, etc.) is shared across all panels – if you set <code>sk/scale :x :log</code> on a faceted sketch, every panel has a log x-axis.</p></li>
+<li><p>Scale <strong>domain</strong> (the numeric range actually shown) is computed per panel by default, so different panels may display different numeric ranges.</p></li>
+</ul>
+<p>A note on scope of scales and coord: whether <code>sk/scale</code> and <code>sk/coord</code> should support scope variation is an open design question; the underlying plan structure allows per-panel scales, but the current API treats them as plot-level.</p>
+<p>A note on terminology: other chapters may refer to these values as <strong>plot-level</strong> – a category name. That is not the same as <strong>sketch-level</strong>, which names a scope position (the top of the layer-options scope hierarchy) within another category. Trying to set a plot option inside an <code>sk/lay-*</code> opts map – for example <code>{:x-scale {:type :log}}</code> – is a category mistake: plot options belong in <code>:opts</code> via their dedicated functions above.</p>
+<hr>
+</section>
+<section id="configuration" class="level2">
+<h2 class="anchored" data-anchor-id="configuration">Configuration</h2>
+<p>Configuration controls the rendering defaults – palette, theme, default dimensions, color scale. A configuration value is resolved at render time from a layered stack of sources, from highest priority to lowest:</p>
+<ol type="1">
+<li><strong>Plot options</strong> on the sketch (<code>sk/options</code>) – a per-plot override that wins for that one plot.</li>
+<li><strong>Thread-local overrides</strong> via <code>sk/with-config</code>.</li>
+<li><strong>Global overrides</strong> via <code>sk/set-config!</code>.</li>
+<li><strong>Project file</strong> (<code>napkinsketch.edn</code>), if present.</li>
+<li><strong>Library defaults</strong> – the baseline shipped with Napkinsketch.</li>
+</ol>
+<p>Sources 2-5 sit outside any specific sketch and carry across every plot you render. Source 1 is how a specific sketch dips into the chain to override a configuration key for itself – <code>(sk/options {:palette :dark2})</code> sets <code>:palette</code> on one sketch, and at render time wins over any palette set through the other four sources.</p>
+<p>The <a href="./napkinsketch_book.configuration.html">Configuration</a> chapter covers each source in depth and lists every configuration key.</p>
+<p><code>sk/config</code> returns the resolved configuration – the merged result of all five sources above.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">select-keys</span> (sk/config) [<span class="at">:width</span> <span class="at">:height</span> <span class="at">:margin</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:width</span> <span class="dv">600</span>, <span class="at">:height</span> <span class="dv">400</span>, <span class="at">:margin</span> <span class="dv">10</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+</section>
+<section id="a-worked-example" class="level2">
+<h2 class="anchored" data-anchor-id="a-worked-example">A worked example</h2>
+<p>The sketch below touches two categories explicitly. The third, configuration, shows up at render time.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> demo</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>      <span class="co">;; layer option: a layer-scope color mapping</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>      (sk/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>      <span class="co">;; plot options: stored in :opts</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>      (sk/options {<span class="at">:title</span> <span class="st">"Iris measurements"</span>})</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>      (sk/coord <span class="at">:flip</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The rendered plot:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>demo</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<svg aria-label="Iris measurements" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" height="400.0" role="img" viewbox="0 0 600.0 400.0" width="600.0" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(270.25,14.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="15" text-anchor="middle">Iris measurements</text></g></g><g transform="translate(12.00,197.50)"><g transform="rotate(-90.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal length</text></g></g></g><g transform="translate(270.25,382.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">sepal width</text></g></g><g transform="translate(508.00,35.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="11">species</text></g></g><g transform="translate(508.00,53.00)"><g><g transform="translate(0.00,0.00)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.00,0.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">setosa</text></g></g></g></g><g transform="translate(508.00,69.00)"><g><g transform="translate(0.00,0.00)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.00,0.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">versicolor</text></g></g></g></g><g transform="translate(508.00,85.00)"><g><g transform="translate(0.00,0.00)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.00,0.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">virginica</text></g></g></g></g><g transform="translate(52.50,43.00)"><g><g><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="309.0" stroke="none" width="435.5" x="0" y="0"></rect></g></g></g><g transform="translate(42.50,33.00)"><g><g><g><g><polyline fill="none" points="29.80,10.00 29.80,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="112.28,10.00 112.28,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="194.76,10.00 194.76,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="277.24,10.00 277.24,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="359.72,10.00 359.72,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="442.20,10.00 442.20,319.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,289.35 445.50,289.35" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,250.33 445.50,250.33" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,211.32 445.50,211.32" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,172.30 445.50,172.30" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,133.29 445.50,133.29" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,94.27 445.50,94.27" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,55.26 445.50,55.26" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,16.24 445.50,16.24" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g data-row-idx="0" transform="translate(274.24,239.53)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="1" transform="translate(191.76,255.14)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="2" transform="translate(224.75,270.74)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="3" transform="translate(208.25,278.55)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="4" transform="translate(290.73,247.33)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="5" transform="translate(340.22,216.12)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="6" transform="translate(257.74,278.55)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="7" transform="translate(257.74,247.33)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="8" transform="translate(175.26,294.15)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="9" transform="translate(208.25,255.14)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="10" transform="translate(307.23,216.12)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="11" transform="translate(257.74,262.94)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="12" transform="translate(191.76,262.94)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="13" transform="translate(191.76,301.95)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="14" transform="translate(356.72,184.91)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="15" transform="translate(422.70,192.71)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="16" transform="translate(340.22,216.12)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="17" transform="translate(274.24,239.53)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="18" transform="translate(323.73,192.71)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="19" transform="translate(323.73,239.53)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="20" transform="translate(257.74,216.12)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="21" transform="translate(307.23,239.53)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="22" transform="translate(290.73,278.55)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="23" transform="translate(241.25,239.53)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="24" transform="translate(257.74,262.94)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="25" transform="translate(191.76,247.33)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="26" transform="translate(257.74,247.33)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="27" transform="translate(274.24,231.73)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="28" transform="translate(257.74,231.73)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="29" transform="translate(224.75,270.74)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="30" transform="translate(208.25,262.94)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="31" transform="translate(257.74,216.12)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="32" transform="translate(373.22,231.73)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="33" transform="translate(389.71,208.32)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="34" transform="translate(208.25,255.14)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="35" transform="translate(224.75,247.33)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="36" transform="translate(274.24,208.32)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="37" transform="translate(290.73,255.14)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="38" transform="translate(191.76,294.15)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="39" transform="translate(257.74,239.53)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="40" transform="translate(274.24,247.33)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="41" transform="translate(76.28,286.35)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="42" transform="translate(224.75,294.15)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="43" transform="translate(274.24,247.33)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="44" transform="translate(323.73,239.53)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="45" transform="translate(191.76,262.94)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="46" transform="translate(323.73,239.53)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="47" transform="translate(224.75,278.55)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="48" transform="translate(307.23,223.92)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="49" transform="translate(241.25,247.33)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="50" transform="translate(224.75,91.27)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="51" transform="translate(224.75,138.09)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="52" transform="translate(208.25,99.08)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="53" transform="translate(76.28,208.32)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="54" transform="translate(158.77,130.29)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="55" transform="translate(158.77,192.71)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="56" transform="translate(241.25,145.89)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="57" transform="translate(92.78,255.14)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="58" transform="translate(175.26,122.48)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="59" transform="translate(142.27,231.73)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="60" transform="translate(26.80,247.33)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="61" transform="translate(191.76,177.11)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="62" transform="translate(59.79,169.30)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="63" transform="translate(175.26,161.50)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="64" transform="translate(175.26,200.52)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="65" transform="translate(208.25,114.68)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="66" transform="translate(191.76,200.52)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="67" transform="translate(142.27,184.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="68" transform="translate(59.79,153.70)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="69" transform="translate(109.28,200.52)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="70" transform="translate(224.75,177.11)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="71" transform="translate(158.77,161.50)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="72" transform="translate(109.28,145.89)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="73" transform="translate(158.77,161.50)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="74" transform="translate(175.26,138.09)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="75" transform="translate(191.76,122.48)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="76" transform="translate(158.77,106.88)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="77" transform="translate(191.76,114.68)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="78" transform="translate(175.26,169.30)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="79" transform="translate(125.77,192.71)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="80" transform="translate(92.78,208.32)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="81" transform="translate(92.78,208.32)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="82" transform="translate(142.27,184.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="83" transform="translate(142.27,169.30)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="84" transform="translate(191.76,216.12)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="85" transform="translate(257.74,169.30)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="86" transform="translate(208.25,114.68)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="87" transform="translate(76.28,145.89)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="88" transform="translate(191.76,200.52)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="89" transform="translate(109.28,208.32)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="90" transform="translate(125.77,208.32)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="91" transform="translate(191.76,161.50)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="92" transform="translate(125.77,184.91)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="93" transform="translate(76.28,247.33)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="94" transform="translate(142.27,200.52)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="95" transform="translate(191.76,192.71)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="96" transform="translate(175.26,192.71)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="97" transform="translate(175.26,153.70)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="98" transform="translate(109.28,239.53)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="99" transform="translate(158.77,192.71)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="100" transform="translate(241.25,145.89)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="101" transform="translate(142.27,184.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="102" transform="translate(191.76,83.47)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="103" transform="translate(175.26,145.89)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="104" transform="translate(191.76,130.29)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="105" transform="translate(191.76,44.45)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="106" transform="translate(109.28,255.14)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="107" transform="translate(175.26,67.86)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="108" transform="translate(109.28,114.68)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="109" transform="translate(290.73,75.67)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="110" transform="translate(224.75,130.29)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="111" transform="translate(142.27,138.09)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="112" transform="translate(191.76,106.88)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="113" transform="translate(109.28,192.71)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="114" transform="translate(158.77,184.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="115" transform="translate(224.75,138.09)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="116" transform="translate(191.76,130.29)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="117" transform="translate(323.73,36.65)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="118" transform="translate(125.77,36.65)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="119" transform="translate(59.79,169.30)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="120" transform="translate(224.75,99.08)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="121" transform="translate(158.77,200.52)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="122" transform="translate(158.77,36.65)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="123" transform="translate(142.27,145.89)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="124" transform="translate(241.25,114.68)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="125" transform="translate(224.75,75.67)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="126" transform="translate(158.77,153.70)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="127" transform="translate(191.76,161.50)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="128" transform="translate(158.77,138.09)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="129" transform="translate(191.76,75.67)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="130" transform="translate(158.77,60.06)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="131" transform="translate(323.73,21.05)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="132" transform="translate(158.77,138.09)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="133" transform="translate(158.77,145.89)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="134" transform="translate(125.77,161.50)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="135" transform="translate(191.76,36.65)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="136" transform="translate(257.74,145.89)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="137" transform="translate(208.25,138.09)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="138" transform="translate(191.76,169.30)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="139" transform="translate(208.25,99.08)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="140" transform="translate(208.25,114.68)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="141" transform="translate(208.25,99.08)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="142" transform="translate(142.27,184.91)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="143" transform="translate(224.75,106.88)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="144" transform="translate(241.25,114.68)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="145" transform="translate(191.76,114.68)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="146" transform="translate(109.28,145.89)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="147" transform="translate(191.76,130.29)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="148" transform="translate(257.74,153.70)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="149" transform="translate(191.76,177.11)"><g><g><rect fill="rgb(77,175,74)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g transform="translate(29.80,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">2.0</text></g></g><g transform="translate(112.28,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">2.5</text></g></g><g transform="translate(194.76,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">3.0</text></g></g><g transform="translate(277.24,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">3.5</text></g></g><g transform="translate(359.72,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">4.0</text></g></g><g transform="translate(442.20,331.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">4.5</text></g></g><g transform="translate(7.00,283.85)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">4.5</text></g></g><g transform="translate(7.00,244.83)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">5.0</text></g></g><g transform="translate(7.00,205.82)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">5.5</text></g></g><g transform="translate(7.00,166.80)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">6.0</text></g></g><g transform="translate(7.00,127.79)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">6.5</text></g></g><g transform="translate(7.00,88.77)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">7.0</text></g></g><g transform="translate(7.00,49.76)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">7.5</text></g></g><g transform="translate(7.00,10.74)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">8.0</text></g></g></g></g></g></svg>
+<p>The sketch structure:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>(sk-summary demo)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:mapping</span> {},</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:views</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:mapping</span> {<span class="at">:x</span> <span class="at">:sepal-length</span>, <span class="at">:y</span> <span class="at">:sepal-width</span>},</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>   <span class="at">:layers</span> [{<span class="at">:method</span> <span class="at">:point</span>, <span class="at">:mapping</span> {<span class="at">:color</span> <span class="at">:species</span>}}]}],</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a> <span class="at">:layers</span> [],</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {<span class="at">:title</span> <span class="st">"Iris measurements"</span>, <span class="at">:coord</span> <span class="at">:flip</span>}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Reading the summary:</p>
+<ul>
+<li><p><code>:color :species</code> is inside the layer’s mapping – a layer option at layer scope.</p></li>
+<li><p><code>:title</code> and <code>:coord</code> are in <code>:opts</code> – plot options, no scope.</p></li>
+<li><p>Configuration does not appear in the sketch. The renderer will consult <code>(sk/config)</code> for theme, default dimensions, and other defaults.</p></li>
+</ul>
+<hr>
+</section>
+<section id="coming-from-ggplot2" class="level2">
+<h2 class="anchored" data-anchor-id="coming-from-ggplot2">Coming from ggplot2</h2>
+<p>For readers familiar with ggplot2, the three categories map roughly as follows:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 61%">
+<col style="width: 38%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">ggplot2 construct</th>
+<th style="text-align: left;">napkinsketch category</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>geom_*(aes(...))</code></td>
+<td style="text-align: left;">layer option (layer scope)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>ggplot(aes(...))</code></td>
+<td style="text-align: left;">layer option (sketch scope)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>+ geom_*()</code></td>
+<td style="text-align: left;">a layer</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>+ scale_*()</code>, <code>+ coord_*()</code>, <code>+ facet_*()</code></td>
+<td style="text-align: left;">plot option</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>+ labs(...)</code>, one-off <code>+ theme(...)</code></td>
+<td style="text-align: left;">plot option</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>theme_set(...)</code>, <code>options(...)</code></td>
+<td style="text-align: left;">configuration</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="see-also" class="level2">
+<h2 class="anchored" data-anchor-id="see-also">See also</h2>
+<ul>
+<li><p><a href="./napkinsketch_book.core_concepts.html">Core Concepts</a> – the scope hierarchy for layer options in full.</p></li>
+<li><p><a href="./napkinsketch_book.sketch_rules.html">Sketch Rules</a> – precise rules for each option function.</p></li>
+<li><p><a href="./napkinsketch_book.configuration.html">Configuration</a> – the four configuration sources and every configuration key.</p></li>
+<li><p><a href="./napkinsketch_book.glossary.html">Glossary</a> – definitions of layer option, plot option, and configuration.</p></li>
+</ul>
+<div style="background-color:grey;height:2px;width:100%;"></div>
+<div><pre><small><small>source: <a href="https://github.com/scicloj/napkinsketch/blob/main/notebooks/napkinsketch_book/options_and_scopes.clj">notebooks/napkinsketch_book/options_and_scopes.clj</a></small></small></pre></div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./napkinsketch_book.core_concepts.html" class="pagination-link" aria-label="Core Concepts">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Core Concepts</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./napkinsketch_book.sketch_rules.html" class="pagination-link" aria-label="Sketch Rules">
+        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Sketch Rules</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const toc = document.getElementById('TOC');
+          if (toc) {
+            const tocHeading = toc.querySelector('h2');
+            if (tocHeading) tocHeading.style.display = 'none';
+
+            const topList = toc.querySelector('ul');
+
+            const btn = document.createElement('button');
+            btn.textContent = '⌃';
+            btn.style.cssText = `
+              display: block;
+              width: 100%;
+              padding: 4px 8px;
+              margin-bottom: 8px;
+              font-size: 2em;
+              cursor: pointer;
+              border: none;
+              outline: none;
+              box-shadow: none;
+              background: transparent;
+              color: #2780e3;
+              text-align: left;
+              transition: transform 0.25s ease;
+              transform-origin: center;
+              -webkit-appearance: none;
+              appearance: none;
+            `;
+
+            let expanded = true;
+
+            btn.addEventListener('click', function () {
+              expanded = !expanded;
+              if (topList) topList.style.display = expanded ? 'block' : 'none';
+              btn.style.transform = expanded ? 'rotate(0deg)' : 'rotate(180deg)';
+            });
+
+            toc.insertBefore(btn, toc.firstChild);
+          }
+        });
+        </script>
+
+
+
+
+</body></html>

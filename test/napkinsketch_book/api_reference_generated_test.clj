@@ -154,7 +154,7 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__76457#] (Math/sin (* p1__76457# 0.3))) (range 30))}))
+   (map (fn* [p1__90756#] (Math/sin (* p1__90756# 0.3))) (range 30))}))
 
 
 (def v30_l108 (-> wave (sk/lay-line :x :y)))
@@ -273,9 +273,9 @@
     :y
     (map
      (fn*
-      [p1__76458#]
+      [p1__90757#]
       (+
-       (Math/sin (* p1__76458# 0.2))
+       (Math/sin (* p1__90757# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      (range 50))})))
 
