@@ -5,7 +5,7 @@ All notable changes to napkinsketch will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] - 2026-04-20
 
 First public alpha release. The API and visual defaults are still
 subject to change based on early adopter feedback.
@@ -287,6 +287,12 @@ produce crashes on canonical inputs.
   -- rose charts currently render with zero text.
 - Stacked bars don't split positive and negative values; all-positive
   data works, but mixed-sign data stacks incorrectly.
+- `sk/lay-tile` (and the underlying `:bin2d` stat) requires numeric
+  x and y columns. Passing categorical axes throws
+  `ClassCastException: String cannot be cast to Number`. Workaround:
+  bin externally and render with explicit numeric bin centers, or
+  use `sk/lay-value-bar` with `{:color :value}` for a
+  categorical-axis "heatmap" look.
 - `:shape` has no literal form -- `{:shape :triangle}` is a silent
   no-op. Only column mappings to `:shape` take effect.
 - Faceted panels default to free scales per panel (ggplot2's default
