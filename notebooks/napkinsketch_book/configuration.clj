@@ -1,17 +1,15 @@
 ;; # Configuration
 ;;
-;; Napkinsketch has three kinds of values you set:
+;; This chapter is the reference for **configuration** and
+;; **plot options** -- the two categories of settings that sit above
+;; individual layers. See
+;; [Options and Scopes](./napkinsketch_book.options_and_scopes.html)
+;; for the taxonomy (why some settings are per-plot and others
+;; are per-project defaults).
 ;;
-;; - **Layer options** control individual layers -- aesthetics like `:color`,
-;;   statistical parameters like `:bandwidth`. See the [Methods](./napkinsketch_book.methods.html) chapter.
-;;
-;; - **Plot options** describe the plot as a whole -- title, subtitle,
-;;   caption, axis labels, axis scales, coordinate system, facets, annotations.
-;;
-;; - **Configuration** controls everything else -- dimensions, theme, palette,
-;;   color scale, and more -- via a layered precedence chain.
-;;
-;; This chapter covers configuration and plot options.
+;; Here you will find the tables of every key, the precedence chain,
+;; and worked examples for theme, palette, color scale, and
+;; validation.
 
 (ns napkinsketch-book.configuration
   (:require

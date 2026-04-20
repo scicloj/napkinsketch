@@ -150,7 +150,7 @@
                                 (= 2 (:lines s)))))])
 
 ;; Shaded bands use a default opacity of 0.15.
-;; Pass `{:alpha …}` to override.
+;; Pass `{:alpha ...}` to override.
 
 (:band-opacity (sk/config))
 
@@ -163,76 +163,33 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])
 
-;; ## Custom Palette
+;; ## Palettes
 ;;
-;; Pass `:palette` to override the default color cycle.
+;; Pass `:palette` to override the default color cycle. It accepts a
+;; vector of hex strings, a map from category to hex, or a keyword
+;; naming one of the built-in palettes (`:set1`, `:set2`, `:dark2`,
+;; `:tableau10`, `:category10`, `:pastel1`, `:accent`, `:paired`, and
+;; many more).
+;;
+;; For the full list of forms, the project-level / thread-local /
+;; plot-level precedence chain, and the key table, see the
+;; [Configuration](./napkinsketch_book.configuration.html) chapter.
+
+;; Custom vector:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; The palette applies to all color-mapped marks.
-
-(-> (rdatasets/palmerpenguins-penguins)
-    (sk/lay-stacked-bar :island {:color :species})
-    (sk/options {:palette ["#8B5CF6" "#F59E0B" "#10B981"]}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (pos? (:polygons s)))))])
-
-;; Pass a map to assign specific colors to specific categories.
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:palette {:setosa "#E74C3C"
-                           :versicolor "#3498DB"
-                           :virginica "#2ECC71"}}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
-;; ## Named Palette Presets
-;;
-;; Use a keyword to select a predefined palette.  Napkinsketch accepts
-;; any palette name from the
-;; [clojure2d](https://github.com/Clojure2D/clojure2d) color library,
-;; which includes hundreds of palettes from [ColorBrewer](https://colorbrewer2.org/), Wes Anderson,
-;; thi.ng, paletteer (R packages), and more.
-;;
-;; Common examples:
-;;
-;; - `:set1`, `:set2`, `:set3` -- ColorBrewer qualitative
-;; - `:pastel1`, `:pastel2` -- ColorBrewer pastel
-;; - `:dark2`, `:paired`, `:accent` -- ColorBrewer
-;; - `:tableau10` -- Tableau default
-;; - `:category10` -- D3 default
-;;
-;; This is a small sample -- thousands more are available.
-;; See the Discovering Palettes and Gradients section below for how to
-;; search all available names.
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:palette :set2}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
-
-;; Dark, high-contrast palette.
+;; Named preset -- here `:dark2` for a high-contrast qualitative palette:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
     (sk/options {:palette :dark2}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; ## Discovering Palettes and Gradients
 ;;

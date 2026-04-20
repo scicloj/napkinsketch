@@ -1,11 +1,11 @@
 {"🚀 Getting Started" ["quickstart"]
- "🧱 Foundations" ["datasets"
-                   "sketch_model"
+ "🧱 Foundations" ["sketch_model"
                    "core_concepts"
                    "options_and_scopes"
                    "sketch_rules"
                    "inference_rules"
                    "methods"
+                   "datasets"
                    "glossary"]
  "📊 Chart Types" ["scatter"
                    "distributions"
