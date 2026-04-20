@@ -12,43 +12,6 @@
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
-;; ## View (sketch level)
-;;
-;; A **view** is a plain map in `sketch[:views]` that declares
-;; **what** to plot -- which columns map to x and y. Each view
-;; becomes one panel in the rendered plot.
-;;
-;; Created by `sk/view` or by `sk/lay-*` with columns.
-;; A view can optionally carry its own `:layers` (view-local
-;; layers). Multiple views produce multi-panel layouts.
-;;
-;; See [Core Concepts](./napkinsketch_book.core_concepts.html) and
-;; [Sketch Rules](./napkinsketch_book.sketch_rules.html) for details.
-
-;; ## Draft layer (internal)
-;;
-;; A **draft layer** is the internal flat map produced by `sk/draft`.
-;; Each applicable (view, layer) pair in a sketch resolves to one draft
-;; layer by merging the sketch, view, and layer mappings. Draft layers
-;; carry all the information the pipeline needs: data, columns, mark, stat,
-;; color, grouping.
-;;
-;; At the API level, `sk/sketch` sets sketch-level mappings;
-;; `sk/view` adds views (what to plot) with view-scoped mappings;
-;; `sk/lay-*` adds layers (how to plot).
-
-(def my-sketch
-  (-> (rdatasets/datasets-iris)
-      (sk/lay-point :sepal-length :sepal-width {:color :species})))
-
-my-sketch
-
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
-
-(kind/pprint my-sketch)
-
-(kind/test-last [(fn [v] (and (sk/sketch? v) (= 1 (count (:views v)))))])
-
 ;; ## Sketch
 ;;
 ;; A **sketch** is a composable record with five fields: `:data`,
@@ -60,22 +23,39 @@ my-sketch
 ;; Sketches auto-render in
 ;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).
-;;
-;; You can inspect or decompose a sketch by checking if it is a sketch
-;; and accessing its `:views`:
 
 (def my-sketch
   (-> (rdatasets/datasets-iris)
       (sk/lay-point :sepal-length :sepal-width {:color :species})
       (sk/options {:title "Iris"})))
 
+my-sketch
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; A sketch is a plain Clojure value -- inspect it with `sk/sketch?`
+;; and by reaching into its fields:
+
 (sk/sketch? my-sketch)
 
-(kind/test-last [(fn [v] (true? v))])
+(kind/test-last [true?])
 
 (count (:views my-sketch))
 
 (kind/test-last [(fn [n] (= 1 n))])
+
+;; ## View
+;;
+;; A **view** is a plain map in `sketch[:views]` that declares
+;; **what** to plot -- which columns map to x and y. Each view
+;; becomes one panel in the rendered plot.
+;;
+;; Created by `sk/view` or by `sk/lay-*` with columns.
+;; A view can optionally carry its own `:layers` (view-local
+;; layers). Multiple views produce multi-panel layouts.
+;;
+;; See [Core Concepts](./napkinsketch_book.core_concepts.html) and
+;; [Sketch Rules](./napkinsketch_book.sketch_rules.html) for details.
 
 ;; ## Method
 ;;
@@ -130,6 +110,24 @@ my-sketch
     (get-in [:panels 0 :layers 0 :groups 1 :y0s]))
 
 (kind/test-last [(fn [y0s] (every? pos? y0s))])
+
+;; ## Draft
+;;
+;; A **draft** is a vector of flat maps produced by `sk/draft`. Each
+;; applicable (view, layer) pair in a sketch resolves to one draft
+;; element by merging the sketch, view, and layer mappings. Draft
+;; elements carry all the information the pipeline needs: data,
+;; columns, mark, stat, color, grouping.
+;;
+;; `sk/draft` is useful for inspecting exactly what the renderer will
+;; consume before any domains, ticks, or pixel math are computed.
+
+(sk/draft my-sketch)
+
+(kind/test-last [(fn [d] (and (vector? d)
+                              (= 1 (count d))
+                              (= :point (:mark (first d)))))])
+
 ;; ## Aesthetic
 ;;
 ;; An **aesthetic** is a visual property of a mark that can be mapped
@@ -187,14 +185,29 @@ my-sketch
 ;;
 ;; **Jitter** adds random pixel-space offsets to reduce overplotting.
 ;; Unlike position and nudge, jitter operates in pixel space (not
-;; data space) and is deterministic -- seeded by group color for
-;; reproducibility.
+;; data space) and is deterministic -- seeded by a hash of the group's
+;; color so repeated renders produce identical output.
 ;;
 ;; On categorical x-axes, jitter is applied along the band axis only.
 
 (merge (sk/method-lookup :point) {:jitter true})
 
 (kind/test-last [(fn [m] (true? (:jitter m)))])
+
+;; ## Inference
+;;
+;; **Inference** is the automatic selection of a method (mark + stat
+;; + position) when you bypass `sk/lay-*` and just pass columns to
+;; `sk/view` or rely on sketch-level data. Napkinsketch picks a method
+;; based on column types: numerical x and y defaults to `:point`,
+;; categorical x with numerical y to `:boxplot`, a single numerical
+;; column to `:histogram`, and so on. Use `:x-type` / `:y-type` on a
+;; view or layer to override the detected type.
+
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width))
+
+(kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
 
 ;; ## Plan
 ;;
@@ -234,26 +247,6 @@ my-sketch
 
 (kind/test-last [(fn [m] (= :point (:mark m)))])
 
-;; ## Facet
-;;
-;; A **facet** splits data into multiple panels by a categorical
-;; column. Each panel shows a subset of the data, sharing the same
-;; scales for easy comparison.
-;;
-;; - `sk/facet` creates a row or column of panels
-;; - `sk/facet-grid` creates a row-by-column grid from two columns
-;;
-;; By default all panels share the same axis ranges. Use
-;; `(sk/options {:scales ...})` to allow panels to have independent
-;; ranges: `:shared` (default), `:free-x`, `:free-y`, or `:free`.
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/facet :species)
-    sk/plan :panels count)
-
-(kind/test-last [(fn [n] (= 3 n))])
-
 ;; ## Domain
 ;;
 ;; A **domain** is the range of data values along an axis.
@@ -267,6 +260,21 @@ my-sketch
 
 (kind/test-last [(fn [m] (and (= 2 (count (:x-domain m)))
                               (number? (first (:x-domain m)))))])
+
+;; ## Tick
+;;
+;; A **tick** is an axis mark with a label at a domain value. Ticks
+;; are chosen at layout time to fit the available pixel budget --
+;; label widths, minimum spacing, and calendar boundaries (for
+;; temporal axes) all feed into the selection. Each panel in the
+;; plan carries its own `:x-ticks` and `:y-ticks` maps with parallel
+;; `:values` and `:labels` vectors.
+
+(-> my-plan :panels first :x-ticks (select-keys [:values :labels]))
+
+(kind/test-last [(fn [m] (and (vector? (:values m))
+                              (vector? (:labels m))
+                              (= (count (:values m)) (count (:labels m)))))])
 
 ;; ## Scale
 ;;
@@ -298,6 +306,26 @@ my-sketch
 ;; | `:flip` | Swap x and y axes |
 ;; | `:polar` | Radial: x as angle, y as radius |
 ;; | `:fixed` | Equal aspect ratio: 1 data unit = 1 data unit |
+
+;; ## Facet
+;;
+;; A **facet** splits data into multiple panels by a categorical
+;; column. Each panel shows a subset of the data.
+;;
+;; - `sk/facet` creates a row or column of panels
+;; - `sk/facet-grid` creates a row-by-column grid from two columns
+;;
+;; By default each panel has its own domains, derived from the data
+;; in that panel -- so scales are independent per panel. To force
+;; shared axis ranges across panels, pin the domain explicitly with
+;; `(sk/scale :x {:domain [lo hi]})` (and/or `:y`).
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/facet :species)
+    sk/plan :panels count)
+
+(kind/test-last [(fn [n] (= 3 n))])
 
 ;; ## Annotation
 ;;
@@ -362,7 +390,7 @@ my-sketch
 
 (vector? my-membrane)
 
-(kind/test-last [(fn [v] (true? v))])
+(kind/test-last [true?])
 
 (count my-membrane)
 
@@ -465,7 +493,7 @@ my-sketch
 ;; | Sketch mapping | Mappings in `:mapping` that apply to all views | `sk/sketch` opts map |
 ;; | Global layer | Layer in `:layers` applied to all views | `sk/lay-*` without columns |
 ;; | View-local layer | Layer in `view[:layers]` applied to one view | `sk/lay-*` with columns |
-;; | Draft | Draft layer from merging sketch, view, and layer mappings | `sk/draft`, automatic during `sk/plan` |
+;; | Draft | Vector of flat maps from merging sketch, view, and layer mappings | `sk/draft`, automatic during `sk/plan` |
 ;; | Method | Mark + stat + position bundle | `sk/method-lookup`, `sk/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in method map |
 ;; | Stat | Data transform: identity, bin, count, lm, kde, ... | Key in method map |
@@ -489,7 +517,6 @@ my-sketch
 ;; | Palette | Ordered color set for categorical aesthetics | `:palette` in `sk/options` |
 ;; | Gradient | Continuous color ramp for numerical mappings | `:color-scale` in `sk/options` |
 ;; | Configuration | Global rendering defaults | `sk/config`, `sk/set-config!`, `sk/with-config` |
-;; | Draft layer (internal) | Flat map from `merge(sketch mapping, view mapping, layer mapping)` | `sk/draft`, internal to `sk/plan` |
 ;; | Membrane | Drawable tree (membrane library) | Internal rendering step |
 ;; | Figure | Final output (SVG hiccup) | `sk/plot`, `sk/save` |
 ;; | Arrange | Compose multiple sketches into a grid | `sk/arrange` |

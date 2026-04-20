@@ -8,32 +8,7 @@
 
 
 (def
- v3_l40
- (def
-  my-sketch
-  (->
-   (rdatasets/datasets-iris)
-   (sk/lay-point :sepal-length :sepal-width {:color :species}))))
-
-
-(def v4_l44 my-sketch)
-
-
-(deftest
- t5_l46
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v4_l44)))
-
-
-(def v6_l48 (kind/pprint my-sketch))
-
-
-(deftest
- t7_l50
- (is ((fn [v] (and (sk/sketch? v) (= 1 (count (:views v))))) v6_l48)))
-
-
-(def
- v9_l67
+ v3_l27
  (def
   my-sketch
   (->
@@ -42,20 +17,28 @@
    (sk/options {:title "Iris"}))))
 
 
-(def v10_l72 (sk/sketch? my-sketch))
+(def v4_l32 my-sketch)
 
 
-(deftest t11_l74 (is ((fn [v] (true? v)) v10_l72)))
+(deftest
+ t5_l34
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v4_l32)))
 
 
-(def v12_l76 (count (:views my-sketch)))
+(def v7_l39 (sk/sketch? my-sketch))
 
 
-(deftest t13_l78 (is ((fn [n] (= 1 n)) v12_l76)))
+(deftest t8_l41 (is (true? v7_l39)))
+
+
+(def v9_l43 (count (:views my-sketch)))
+
+
+(deftest t10_l45 (is ((fn [n] (= 1 n)) v9_l43)))
 
 
 (def
- v15_l123
+ v12_l103
  (def
   tips
   {:day ["Mon" "Mon" "Tue" "Tue"],
@@ -64,7 +47,7 @@
 
 
 (def
- v16_l127
+ v13_l107
  (->
   tips
   (sk/lay-value-bar :day :count {:color :meal, :position :stack})
@@ -72,18 +55,30 @@
   (get-in [:panels 0 :layers 0 :groups 1 :y0s])))
 
 
-(deftest t17_l132 (is ((fn [y0s] (every? pos? y0s)) v16_l127)))
+(deftest t14_l112 (is ((fn [y0s] (every? pos? y0s)) v13_l107)))
+
+
+(def v16_l125 (sk/draft my-sketch))
+
+
+(deftest
+ t17_l127
+ (is
+  ((fn
+    [d]
+    (and (vector? d) (= 1 (count d)) (= :point (:mark (first d)))))
+   v16_l125)))
 
 
 (def
- v19_l151
+ v19_l149
  (merge
   (sk/method-lookup :point)
   {:color :species, :size :petal-length, :alpha 0.7}))
 
 
 (deftest
- t20_l153
+ t20_l151
  (is
   ((fn
     [m]
@@ -91,11 +86,11 @@
      (= :species (:color m))
      (= :petal-length (:size m))
      (= 0.7 (:alpha m))))
-   v19_l151)))
+   v19_l149)))
 
 
 (def
- v22_l164
+ v22_l162
  (->
   (rdatasets/datasets-iris)
   (sk/lay-line :sepal-length :sepal-width {:group :species})
@@ -104,11 +99,11 @@
   count))
 
 
-(deftest t23_l170 (is ((fn [n] (= 3 n)) v22_l164)))
+(deftest t23_l168 (is ((fn [n] (= 3 n)) v22_l162)))
 
 
 (def
- v25_l179
+ v25_l177
  (->
   {:x [1 2 3], :y [4 5 6]}
   (sk/lay-point :x :y {:nudge-x 0.5})
@@ -116,40 +111,83 @@
   (get-in [:panels 0 :layers 0 :groups 0 :xs])))
 
 
-(deftest t26_l184 (is ((fn [xs] (= [1.5 2.5 3.5] xs)) v25_l179)))
+(deftest t26_l182 (is ((fn [xs] (= [1.5 2.5 3.5] xs)) v25_l177)))
 
 
-(def v28_l195 (merge (sk/method-lookup :point) {:jitter true}))
+(def v28_l193 (merge (sk/method-lookup :point) {:jitter true}))
 
 
-(deftest t29_l197 (is ((fn [m] (true? (:jitter m))) v28_l195)))
-
-
-(def v31_l209 (def my-plan (sk/plan my-sketch)))
-
-
-(def v32_l211 (sort (keys my-plan)))
-
-
-(deftest t33_l213 (is ((fn [ks] (every? keyword? ks)) v32_l211)))
-
-
-(def v35_l221 (sort (keys (first (:panels my-plan)))))
-
-
-(deftest
- t36_l223
- (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v35_l221)))
-
-
-(def v38_l231 (-> my-sketch sk/plan (get-in [:panels 0 :layers 0])))
-
-
-(deftest t39_l235 (is ((fn [m] (= :point (:mark m))) v38_l231)))
+(deftest t29_l195 (is ((fn [m] (true? (:jitter m))) v28_l193)))
 
 
 (def
- v41_l250
+ v31_l207
+ (-> (rdatasets/datasets-iris) (sk/view :sepal-length :sepal-width)))
+
+
+(deftest
+ t32_l210
+ (is ((fn [v] (pos? (:points (sk/svg-summary v)))) v31_l207)))
+
+
+(def v34_l222 (def my-plan (sk/plan my-sketch)))
+
+
+(def v35_l224 (sort (keys my-plan)))
+
+
+(deftest t36_l226 (is ((fn [ks] (every? keyword? ks)) v35_l224)))
+
+
+(def v38_l234 (sort (keys (first (:panels my-plan)))))
+
+
+(deftest
+ t39_l236
+ (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v38_l234)))
+
+
+(def v41_l244 (-> my-sketch sk/plan (get-in [:panels 0 :layers 0])))
+
+
+(deftest t42_l248 (is ((fn [m] (= :point (:mark m))) v41_l244)))
+
+
+(def
+ v44_l257
+ (let
+  [p (first (:panels my-plan))]
+  {:x-domain (:x-domain p), :y-domain (:y-domain p)}))
+
+
+(deftest
+ t45_l261
+ (is
+  ((fn
+    [m]
+    (and (= 2 (count (:x-domain m))) (number? (first (:x-domain m)))))
+   v44_l257)))
+
+
+(def
+ v47_l273
+ (-> my-plan :panels first :x-ticks (select-keys [:values :labels])))
+
+
+(deftest
+ t48_l275
+ (is
+  ((fn
+    [m]
+    (and
+     (vector? (:values m))
+     (vector? (:labels m))
+     (= (count (:values m)) (count (:labels m)))))
+   v47_l273)))
+
+
+(def
+ v50_l323
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -159,41 +197,25 @@
   count))
 
 
-(deftest t42_l255 (is ((fn [n] (= 3 n)) v41_l250)))
+(deftest t51_l328 (is ((fn [n] (= 3 n)) v50_l323)))
 
 
-(def
- v44_l264
- (let
-  [p (first (:panels my-plan))]
-  {:x-domain (:x-domain p), :y-domain (:y-domain p)}))
+(def v53_l348 (:mark (sk/rule-h 5)))
 
 
-(deftest
- t45_l268
- (is
-  ((fn
-    [m]
-    (and (= 2 (count (:x-domain m))) (number? (first (:x-domain m)))))
-   v44_l264)))
+(deftest t54_l350 (is ((fn [m] (= :rule-h m)) v53_l348)))
 
 
-(def v47_l320 (:mark (sk/rule-h 5)))
-
-
-(deftest t48_l322 (is ((fn [m] (= :rule-h m)) v47_l320)))
-
-
-(def v50_l331 (:legend my-plan))
+(def v56_l359 (:legend my-plan))
 
 
 (deftest
- t51_l333
- (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v50_l331)))
+ t57_l361
+ (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v56_l359)))
 
 
 (def
- v53_l342
+ v59_l370
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -207,40 +229,40 @@
   :panels))
 
 
-(deftest t54_l348 (is ((fn [n] (= 1 n)) v53_l342)))
+(deftest t60_l376 (is ((fn [n] (= 1 n)) v59_l370)))
 
 
-(def v56_l361 (def my-membrane (sk/plan->membrane my-plan)))
+(def v62_l389 (def my-membrane (sk/plan->membrane my-plan)))
 
 
-(def v57_l363 (vector? my-membrane))
+(def v63_l391 (vector? my-membrane))
 
 
-(deftest t58_l365 (is ((fn [v] (true? v)) v57_l363)))
+(deftest t64_l393 (is (true? v63_l391)))
 
 
-(def v59_l367 (count my-membrane))
+(def v65_l395 (count my-membrane))
 
 
-(deftest t60_l369 (is ((fn [n] (pos? n)) v59_l367)))
+(deftest t66_l397 (is ((fn [n] (pos? n)) v65_l395)))
 
 
-(def v62_l379 (def my-figure (sk/plan->figure my-plan :svg {})))
+(def v68_l407 (def my-figure (sk/plan->figure my-plan :svg {})))
 
 
-(def v63_l381 (first my-figure))
+(def v69_l409 (first my-figure))
 
 
-(deftest t64_l383 (is ((fn [v] (= :svg v)) v63_l381)))
+(deftest t70_l411 (is ((fn [v] (= :svg v)) v69_l409)))
 
 
-(def v66_l430 (count sk/plot-option-docs))
+(def v72_l458 (count sk/plot-option-docs))
 
 
-(deftest t67_l432 (is ((fn [n] (= 11 n)) v66_l430)))
+(deftest t73_l460 (is ((fn [n] (= 11 n)) v72_l458)))
 
 
-(def v69_l447 (count sk/layer-option-docs))
+(def v75_l475 (count sk/layer-option-docs))
 
 
-(deftest t70_l449 (is ((fn [n] (pos? n)) v69_l447)))
+(deftest t76_l477 (is ((fn [n] (pos? n)) v75_l475)))
