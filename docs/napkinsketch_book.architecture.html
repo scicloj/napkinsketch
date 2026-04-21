@@ -492,7 +492,7 @@ graph LR
   style F fill:#fce4ec
 </div>
 <ul>
-<li><p><strong>sketch</strong> – the composable user API. Functions like <code>sk/sketch</code>, <code>sk/view</code>, <code>sk/lay-point</code>, <code>sk/options</code>, <code>sk/facet</code>, <code>sk/scale</code>, <code>sk/coord</code>, and <code>sk/annotate</code> build up a sketch record. No computation has happened yet.</p></li>
+<li><p><strong>sketch</strong> – the composable user API. Functions like <code>sk/sketch</code>, <code>sk/view</code>, <code>sk/lay-point</code>, <code>sk/lay-rule-h</code>, <code>sk/options</code>, <code>sk/facet</code>, <code>sk/scale</code>, and <code>sk/coord</code> build up a sketch record. No computation has happened yet.</p></li>
 <li><p><strong>Draft</strong> – a flat vector of maps produced by <code>sk/draft</code>. Each map has <code>:data</code>, <code>:x</code>, <code>:y</code>, <code>:mark</code>, <code>:stat</code>, and aesthetic keys – one per view-layer combination, with all scope merged.</p></li>
 <li><p><strong>Plan</strong> – fully resolved plan. Data-space geometry, domains, tick info, legend. Plain Clojure maps and dtype-next buffers. No rendering primitives.</p></li>
 <li><p><strong>Membrane</strong> – positioned drawing primitives in pixel space (Translate, WithColor, Path, Label, etc.).</p></li>

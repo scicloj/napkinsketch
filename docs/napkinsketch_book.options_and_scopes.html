@@ -456,7 +456,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Napkinsketch has three kinds of values you set, each answering a different question:</p>
 <ul>
 <li><p><strong>Layer options</strong> – <em>how is this layer drawn?</em> Its aesthetics (<code>:color</code>, <code>:size</code>), its method parameters (<code>:bandwidth</code>, <code>:bins</code>), its data, its grouping and position. Per-layer by nature, but scopable up to apply across multiple layers.</p></li>
-<li><p><strong>Plot options</strong> – <em>what describes this plot as a whole?</em> Its title and labels, its axis scales, its coordinate system, its facets, its annotations. Per-plot by nature; there is one of each per plot.</p></li>
+<li><p><strong>Plot options</strong> – <em>what describes this plot as a whole?</em> Its title and labels, its axis scales, its coordinate system, its facets. Per-plot by nature; there is one of each per plot.</p></li>
 <li><p><strong>Configuration</strong> – <em>what are the rendering defaults?</em> Palette, theme, default dimensions, color scale. Shared across every plot you render; any one plot can override a configuration key.</p></li>
 </ul>
 <p>The distinguishing test is simple: <strong>can this kind of value meaningfully have a cross-plot default?</strong> A title cannot – each plot needs its own. A palette can – a whole project can share one. A layer’s color mapping is per-layer, but when several layers should share it, you lift it to a wider scope.</p>
@@ -548,16 +548,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="plot-options" class="level2">
 <h2 class="anchored" data-anchor-id="plot-options">Plot options</h2>
-<p>Plot options describe the plot as a whole: its title, labels, axis scales, coordinate system, facets, annotations. A plot has one of each – there is no scope here, because there is nothing to vary over.</p>
-<p>Five functions write plot options to the sketch’s <code>:opts</code> field:</p>
+<p>Plot options describe the plot as a whole: its title, labels, axis scales, coordinate system, facets. A plot has one of each – there is no scope here, because there is nothing to vary over.</p>
+<p>Four functions write plot options to the sketch’s <code>:opts</code> field:</p>
 <ul>
 <li><p><code>sk/options</code> – plot text (title, subtitle, caption, axis and legend labels) and panel dimensions. It also accepts configuration keys as per-plot overrides (see Configuration below).</p></li>
 <li><p><code>sk/scale</code> – axis scale (log, categorical, fixed domain).</p></li>
 <li><p><code>sk/coord</code> – coordinate system (cartesian, flipped, polar, fixed).</p></li>
 <li><p><code>sk/facet</code> and <code>sk/facet-grid</code> – split the plot into panels by a column.</p></li>
-<li><p><code>sk/annotate</code> – reference lines and shaded bands.</p></li>
 </ul>
-<p><strong>Planned refactor:</strong> Before 0.1.0, annotations will become regular layers (<code>sk/lay-rule-h</code>, <code>sk/lay-rule-v</code>, <code>sk/lay-band-h</code>, <code>sk/lay-band-v</code>), scopable like any other layer. The current <code>sk/annotate</code> API will be replaced, and annotations will no longer be plot options.</p>
+<p>Reference lines and shaded bands – <code>sk/lay-rule-h</code>, <code>sk/lay-rule-v</code>, <code>sk/lay-band-h</code>, <code>sk/lay-band-v</code> – are layers, not plot options. They scope like any other <code>lay-*</code>: bare calls attach to the sketch, while passing <code>:x</code>/<code>:y</code> columns attaches to a specific view.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
@@ -660,7 +659,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <thead>
 <tr class="header">
 <th style="text-align: left;">ggplot2 construct</th>
-<th style="text-align: left;">napkinsketch category</th>
+<th style="text-align: left;">Napkinsketch category</th>
 </tr>
 </thead>
 <tbody>
