@@ -1094,8 +1094,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="annotation" class="level2">
 <h2 class="anchored" data-anchor-id="annotation">Annotation</h2>
-<p>An <strong>annotation</strong> is a non-data mark that adds visual reference to a plot. Annotations are not connected to data columns – they overlay fixed positions passed via opts (<code>:intercept</code>, or <code>:lo</code>/<code>:hi</code>). They are regular layers, so they scope like any other <code>lay-*</code> – bare call attaches to the sketch, columns attach to a view.</p>
+<p>An <strong>annotation</strong> is a non-data mark that adds visual reference to a plot. Annotations are not connected to data columns – they overlay fixed positions passed via opts (<code>:y-intercept</code> or <code>:x-intercept</code> for rules; <code>:y-min</code>/<code>:y-max</code> or <code>:x-min</code>/<code>:x-max</code> for bands). They are regular layers, so they scope like any other <code>lay-*</code> – bare call attaches to the sketch, columns attach to a view.</p>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 68%">
+<col style="width: 31%">
+</colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: left;">Constructor</th>
@@ -1105,26 +1109,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td style="text-align: left;"><code>sk/lay-rule-v</code></td>
-<td style="text-align: left;">Vertical line at x = intercept</td>
+<td style="text-align: left;">Vertical line at x = x-intercept</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><code>sk/lay-rule-h</code></td>
-<td style="text-align: left;">Horizontal line at y = intercept</td>
+<td style="text-align: left;">Horizontal line at y = y-intercept</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><code>sk/lay-band-v</code></td>
-<td style="text-align: left;">Vertical shaded region from x = lo to x = hi</td>
+<td style="text-align: left;">Vertical shaded region from x = x-min to x = x-max</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><code>sk/lay-band-h</code></td>
-<td style="text-align: left;">Horizontal shaded region from y = lo to y = hi</td>
+<td style="text-align: left;">Horizontal shaded region from y = y-min to y = y-max</td>
 </tr>
 </tbody>
 </table>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    (sk/lay-rule-h {<span class="at">:intercept</span> <span class="fl">3.0</span>})</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    (sk/lay-rule-h {<span class="at">:y-intercept</span> <span class="fl">3.0</span>})</span>
 <span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">:layers</span> <span class="kw">first</span> <span class="at">:method</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
@@ -1257,7 +1261,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> sk/layer-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="dv">26</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="dv">29</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="tooltip-and-brush" class="level2">
