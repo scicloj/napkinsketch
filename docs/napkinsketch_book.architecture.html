@@ -1678,28 +1678,16 @@ graph LR
 </section>
 <section id="the-plan-boundary" class="level2">
 <h2 class="anchored" data-anchor-id="the-plan-boundary">The Plan Boundary</h2>
-<p>The plan separates <strong>what</strong> to draw from <strong>how</strong> to draw it. The sketch and draft stages describe intent; the membrane and figure stages handle rendering.</p>
+<p>The plan is the boundary between description and rendering. The sketch and draft stages assemble the description. The plan resolves it into computed geometry, domains, ticks, and legend – still as plain data, before any pixel layout. The membrane and figure stages then produce pixel output.</p>
 <div class="mermaid">
 graph LR
-  subgraph WHAT ["WHAT -- data + semantics"]
-    B["sketch"]
-    D["Draft"]
-    ST["Statistics"]
-    D["Domains"]
-    C["Colors"]
-  end
-  subgraph HOW ["HOW -- pixels + rendering"]
-    SC["Scales (wadogo)"]
-    CO["Coord transforms"]
-    MS["Membrane tree"]
-    SV["SVG conversion"]
-  end
-  WHAT --&gt;|plan| HOW
-  style WHAT fill:#e8f5e9
-  style HOW fill:#e3f2fd
+  A["sketch + draft"] --&gt;|plan| P["Plan"]
+  P --&gt; R["membrane + figure"]
+  style A fill:#e8f5e9
+  style P fill:#fff3e0
+  style R fill:#e3f2fd
 </div>
-<p>The plan is <strong>plain inspectable data</strong> – maps, numbers, strings, keywords, and dtype-next buffers for numeric arrays. No membrane types, no datasets, no scale objects. It validates against a Malli schema.</p>
-<p>The membrane tree is <strong>Java objects</strong> – <code>Translate</code>, <code>WithColor</code>, <code>RoundedRectangle</code>, <code>Label</code>, etc. All positions are resolved to pixel coordinates. Not serializable.</p>
+<p>The plan is plain inspectable data – maps, numbers, strings, keywords, and dtype-next buffers for numeric arrays. It validates against a Malli schema.</p>
 <p>This separation enables:</p>
 <ul>
 <li><p>Inspecting the plan without rendering</p></li>

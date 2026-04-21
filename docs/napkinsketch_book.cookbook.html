@@ -982,7 +982,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="large-datasets-and-raster-output" class="level2">
 <h2 class="anchored" data-anchor-id="large-datasets-and-raster-output">Large Datasets and Raster Output</h2>
 <p>By default napkinsketch renders to SVG – great for crisp, scalable charts. But when a plot has tens of thousands of points, the browser must parse and layout a huge SVG DOM. For example, the full diamonds dataset (53,940 rows) produces an 11 MB SVG file.</p>
-<p>Setting <code>:format :bufimg</code> renders the plot to a <code>java.awt.image.BufferedImage</code> via membrane’s Java2D backend instead. The resulting PNG is typically 100x smaller and loads instantly in the browser.</p>
+<p>Setting <code>:format :bufimg</code> renders the plot to a <code>java.awt.image.BufferedImage</code> via membrane’s Java2D backend instead of SVG. For plots with many thousands of points, the raster output is substantially smaller than the equivalent SVG.</p>
 <section id="svg-default" class="level3">
 <h3 class="anchored" data-anchor-id="svg-default">SVG (default)</h3>
 <p>This is the default SVG output for a smaller subset:</p>
@@ -996,7 +996,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="bufferedimage-output" class="level3">
 <h3 class="anchored" data-anchor-id="bufferedimage-output">BufferedImage output</h3>
-<p>With <code>:format :bufimg</code>, even the full dataset renders quickly in the notebook:</p>
+<p>With <code>:format :bufimg</code>, the full dataset renders as a raster image in the notebook:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/ggplot2-diamonds)</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>    (sk/lay-point <span class="at">:carat</span> <span class="at">:price</span> {<span class="at">:color</span> <span class="at">:cut</span> <span class="at">:alpha</span> <span class="fl">0.3</span>})</span>
@@ -1004,7 +1004,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">:format</span> <span class="at">:bufimg</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="clay-image">
-<p><img src="napkinsketch_book.cookbook_files/image0.png" class="img-fluid"></p>
+<p><img src="napkinsketch_book.cookbook_files/image1.png" class="img-fluid"></p>
 </div>
 </section>
 <section id="saving-to-png" class="level3">

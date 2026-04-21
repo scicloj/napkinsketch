@@ -484,7 +484,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Kindly -- notebook rendering protocol</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>   [scicloj.kindly.v4.kind <span class="at">:as</span> kind]</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Napkinsketch -- composable plotting</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.api <span class="at">:as</span> sk]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.api <span class="at">:as</span> sk]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; clojure2d -- color palettes and gradients</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>   [clojure2d.color <span class="at">:as</span> c2d]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="sketch" class="level2">
 <h2 class="anchored" data-anchor-id="sketch">Sketch</h2>
@@ -560,218 +562,45 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>A <strong>draft</strong> is a vector of flat maps produced by <code>sk/draft</code>. Each applicable (view, layer) pair in a sketch resolves to one draft element by merging the sketch, view, and layer mappings. Draft elements carry all the information the pipeline needs: data, columns, mark, stat, color, grouping.</p>
 <p><code>sk/draft</code> is useful for inspecting exactly what the renderer will consume before any domains, ticks, or pixel math are computed.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(sk/draft my-sketch)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> my-sketch sk/draft kind/pprint)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div><p>[</p><div class="clay-sequential" style="margin-left:10%;width:110%;"><div><p>{</p><div class="clay-map" style="margin-left:10%;width:110%;"><div><pre><code class="sourceCode language-clojure printed-clojure">:x :sepal-length</code></pre></div><div><pre><code class="sourceCode language-clojure printed-clojure">:y :sepal-width</code></pre></div><div><pre><code class="sourceCode language-clojure printed-clojure">:mark :point</code></pre></div><div><pre><code class="sourceCode language-clojure printed-clojure">:stat :identity</code></pre></div><div><pre><code class="sourceCode language-clojure printed-clojure">:method :point</code></pre></div><div><pre><code class="sourceCode language-clojure printed-clojure">:color :species</code></pre></div>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<tbody>
-<tr class="odd">
-<td data-valign="top"><div class="code-copy-outer-scaffold"><div>
-<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>:data</code></pre>
-</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
-<td><div style="margin-left:10px;">
-<div class="clay-dataset">
-<p><a href="https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv">https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv</a> [150 6]:</p>
-<table class="table caption-top">
-<thead>
-<tr class="header">
-<th style="text-align: right;" data-quarto-table-cell-role="th">:rownames</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">:sepal-length</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">:sepal-width</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">:petal-length</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">:petal-width</th>
-<th data-quarto-table-cell-role="th">:species</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">5.1</td>
-<td style="text-align: right;">3.5</td>
-<td style="text-align: right;">1.4</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">4.9</td>
-<td style="text-align: right;">3.0</td>
-<td style="text-align: right;">1.4</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">4.7</td>
-<td style="text-align: right;">3.2</td>
-<td style="text-align: right;">1.3</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">4.6</td>
-<td style="text-align: right;">3.1</td>
-<td style="text-align: right;">1.5</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">5.0</td>
-<td style="text-align: right;">3.6</td>
-<td style="text-align: right;">1.4</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">5.4</td>
-<td style="text-align: right;">3.9</td>
-<td style="text-align: right;">1.7</td>
-<td style="text-align: right;">0.4</td>
-<td>setosa</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">4.6</td>
-<td style="text-align: right;">3.4</td>
-<td style="text-align: right;">1.4</td>
-<td style="text-align: right;">0.3</td>
-<td>setosa</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">5.0</td>
-<td style="text-align: right;">3.4</td>
-<td style="text-align: right;">1.5</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">4.4</td>
-<td style="text-align: right;">2.9</td>
-<td style="text-align: right;">1.4</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">4.9</td>
-<td style="text-align: right;">3.1</td>
-<td style="text-align: right;">1.5</td>
-<td style="text-align: right;">0.1</td>
-<td>setosa</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">...</td>
-<td style="text-align: right;">...</td>
-<td style="text-align: right;">...</td>
-<td style="text-align: right;">...</td>
-<td style="text-align: right;">...</td>
-<td>...</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">140</td>
-<td style="text-align: right;">6.9</td>
-<td style="text-align: right;">3.1</td>
-<td style="text-align: right;">5.4</td>
-<td style="text-align: right;">2.1</td>
-<td>virginica</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">141</td>
-<td style="text-align: right;">6.7</td>
-<td style="text-align: right;">3.1</td>
-<td style="text-align: right;">5.6</td>
-<td style="text-align: right;">2.4</td>
-<td>virginica</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">142</td>
-<td style="text-align: right;">6.9</td>
-<td style="text-align: right;">3.1</td>
-<td style="text-align: right;">5.1</td>
-<td style="text-align: right;">2.3</td>
-<td>virginica</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">143</td>
-<td style="text-align: right;">5.8</td>
-<td style="text-align: right;">2.7</td>
-<td style="text-align: right;">5.1</td>
-<td style="text-align: right;">1.9</td>
-<td>virginica</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">144</td>
-<td style="text-align: right;">6.8</td>
-<td style="text-align: right;">3.2</td>
-<td style="text-align: right;">5.9</td>
-<td style="text-align: right;">2.3</td>
-<td>virginica</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">145</td>
-<td style="text-align: right;">6.7</td>
-<td style="text-align: right;">3.3</td>
-<td style="text-align: right;">5.7</td>
-<td style="text-align: right;">2.5</td>
-<td>virginica</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">146</td>
-<td style="text-align: right;">6.7</td>
-<td style="text-align: right;">3.0</td>
-<td style="text-align: right;">5.2</td>
-<td style="text-align: right;">2.3</td>
-<td>virginica</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">147</td>
-<td style="text-align: right;">6.3</td>
-<td style="text-align: right;">2.5</td>
-<td style="text-align: right;">5.0</td>
-<td style="text-align: right;">1.9</td>
-<td>virginica</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">148</td>
-<td style="text-align: right;">6.5</td>
-<td style="text-align: right;">3.0</td>
-<td style="text-align: right;">5.2</td>
-<td style="text-align: right;">2.0</td>
-<td>virginica</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">149</td>
-<td style="text-align: right;">6.2</td>
-<td style="text-align: right;">3.4</td>
-<td style="text-align: right;">5.4</td>
-<td style="text-align: right;">2.3</td>
-<td>virginica</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">150</td>
-<td style="text-align: right;">5.9</td>
-<td style="text-align: right;">3.0</td>
-<td style="text-align: right;">5.1</td>
-<td style="text-align: right;">1.8</td>
-<td>virginica</td>
-</tr>
-</tbody>
-</table>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>[{<span class="at">:x</span> <span class="at">:sepal-length</span>,</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">:y</span> <span class="at">:sepal-width</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">:mark</span> <span class="at">:point</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">:stat</span> <span class="at">:identity</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">:method</span> <span class="at">:point</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">:color</span> <span class="at">:species</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">:data</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  https<span class="at">://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv</span> [<span class="dv">150</span> <span class="dv">6</span>]:</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>| <span class="at">:rownames</span> | <span class="at">:sepal-length</span> | <span class="at">:sepal-width</span> | <span class="at">:petal-length</span> | <span class="at">:petal-width</span> |  <span class="at">:species</span> |</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>|----------:|--------------:|-------------:|--------------:|-------------:|-----------|</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>|         <span class="dv">1</span> |           <span class="fl">5.1</span> |          <span class="fl">3.5</span> |           <span class="fl">1.4</span> |          <span class="fl">0.2</span> |    setosa |</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>|         <span class="dv">2</span> |           <span class="fl">4.9</span> |          <span class="fl">3.0</span> |           <span class="fl">1.4</span> |          <span class="fl">0.2</span> |    setosa |</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>|         <span class="dv">3</span> |           <span class="fl">4.7</span> |          <span class="fl">3.2</span> |           <span class="fl">1.3</span> |          <span class="fl">0.2</span> |    setosa |</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>|         <span class="dv">4</span> |           <span class="fl">4.6</span> |          <span class="fl">3.1</span> |           <span class="fl">1.5</span> |          <span class="fl">0.2</span> |    setosa |</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>|         <span class="dv">5</span> |           <span class="fl">5.0</span> |          <span class="fl">3.6</span> |           <span class="fl">1.4</span> |          <span class="fl">0.2</span> |    setosa |</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>|         <span class="dv">6</span> |           <span class="fl">5.4</span> |          <span class="fl">3.9</span> |           <span class="fl">1.7</span> |          <span class="fl">0.4</span> |    setosa |</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>|         <span class="dv">7</span> |           <span class="fl">4.6</span> |          <span class="fl">3.4</span> |           <span class="fl">1.4</span> |          <span class="fl">0.3</span> |    setosa |</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>|         <span class="dv">8</span> |           <span class="fl">5.0</span> |          <span class="fl">3.4</span> |           <span class="fl">1.5</span> |          <span class="fl">0.2</span> |    setosa |</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>|         <span class="dv">9</span> |           <span class="fl">4.4</span> |          <span class="fl">2.9</span> |           <span class="fl">1.4</span> |          <span class="fl">0.2</span> |    setosa |</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>|        <span class="dv">10</span> |           <span class="fl">4.9</span> |          <span class="fl">3.1</span> |           <span class="fl">1.5</span> |          <span class="fl">0.1</span> |    setosa |</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>|       ... |           ... |          ... |           ... |          ... |       ... |</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">140</span> |           <span class="fl">6.9</span> |          <span class="fl">3.1</span> |           <span class="fl">5.4</span> |          <span class="fl">2.1</span> | virginica |</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">141</span> |           <span class="fl">6.7</span> |          <span class="fl">3.1</span> |           <span class="fl">5.6</span> |          <span class="fl">2.4</span> | virginica |</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">142</span> |           <span class="fl">6.9</span> |          <span class="fl">3.1</span> |           <span class="fl">5.1</span> |          <span class="fl">2.3</span> | virginica |</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">143</span> |           <span class="fl">5.8</span> |          <span class="fl">2.7</span> |           <span class="fl">5.1</span> |          <span class="fl">1.9</span> | virginica |</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">144</span> |           <span class="fl">6.8</span> |          <span class="fl">3.2</span> |           <span class="fl">5.9</span> |          <span class="fl">2.3</span> | virginica |</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">145</span> |           <span class="fl">6.7</span> |          <span class="fl">3.3</span> |           <span class="fl">5.7</span> |          <span class="fl">2.5</span> | virginica |</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">146</span> |           <span class="fl">6.7</span> |          <span class="fl">3.0</span> |           <span class="fl">5.2</span> |          <span class="fl">2.3</span> | virginica |</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">147</span> |           <span class="fl">6.3</span> |          <span class="fl">2.5</span> |           <span class="fl">5.0</span> |          <span class="fl">1.9</span> | virginica |</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">148</span> |           <span class="fl">6.5</span> |          <span class="fl">3.0</span> |           <span class="fl">5.2</span> |          <span class="fl">2.0</span> | virginica |</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">149</span> |           <span class="fl">6.2</span> |          <span class="fl">3.4</span> |           <span class="fl">5.4</span> |          <span class="fl">2.3</span> | virginica |</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">150</span> |           <span class="fl">5.9</span> |          <span class="fl">3.0</span> |           <span class="fl">5.1</span> |          <span class="fl">1.8</span> | virginica |</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>,</span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>  :__entry-idx <span class="dv">0</span>}]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-</div></td>
-</tr>
-</tbody>
-</table>
-<div><pre><code class="sourceCode language-clojure printed-clojure">:__entry-idx 0</code></pre></div></div><p>}</p></div></div><p>]</p></div>
 </section>
 <section id="aesthetic" class="level2">
 <h2 class="anchored" data-anchor-id="aesthetic">Aesthetic</h2>
@@ -1228,7 +1057,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="palette" class="level2">
 <h2 class="anchored" data-anchor-id="palette">Palette</h2>
 <p>A <strong>palette</strong> is an ordered set of colors used for categorical aesthetics. When <code>:color</code> maps to a categorical column, colors are assigned from the active palette in order.</p>
-<p>Napkinsketch uses clojure2d for palettes – over 7,000 named palettes are available. Set via <code>{:palette :set2}</code> in options.</p>
+<p>Napkinsketch uses <a href="https://github.com/Clojure2D/clojure2d">clojure2d</a> for palettes. Set via <code>{:palette :set2}</code> in options. The number of named palettes available:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> (c2d/find-palette <span class="ss">#".*"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="dv">7024</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
 <section id="gradient" class="level2">
 <h2 class="anchored" data-anchor-id="gradient">Gradient</h2>
@@ -1247,10 +1082,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Plot options</strong> are per-plot settings passed to <code>sk/options</code>, <code>sk/plan</code>, or <code>sk/plot</code>. They include text content (title, subtitle, caption, axis labels) and a nested <code>:config</code> override. Unlike configuration keys, plot options are inherently per-plot – a title does not make sense as a global default.</p>
 <p>See <code>sk/plot-option-docs</code> for the full list, or the <a href="./napkinsketch_book.configuration.html">Configuration</a> chapter for usage examples.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> sk/plot-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> sk/plot-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="layer-options" class="level2">
@@ -1258,10 +1093,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Layer options</strong> are per-layer settings passed in the options map of layer functions (<code>sk/lay-point</code>, <code>sk/lay-histogram</code>, etc.). They control aesthetics (<code>:color</code>, <code>:size</code>, <code>:alpha</code>, <code>:shape</code>), grouping (<code>:group</code>), position adjustment (<code>:position</code>), and method-specific parameters (<code>:bandwidth</code>, <code>:se</code>, <code>:normalize</code>, etc.).</p>
 <p>Four keys are universal – accepted by every layer – and each method may accept additional keys. The <a href="./napkinsketch_book.methods.html">Methods</a> chapter lists which options each method accepts. See also <code>sk/layer-option-docs</code> for descriptions, or inspect a specific method with <code>sk/method-lookup</code>.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> sk/layer-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> sk/layer-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="dv">29</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="dv">29</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="tooltip-and-brush" class="level2">

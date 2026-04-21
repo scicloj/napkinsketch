@@ -79,12 +79,12 @@
 
 (def
  v21_l111
- (kind/pprint
-  (->
-   (rdatasets/datasets-iris)
-   (sk/view :sepal-length :sepal-width)
-   sk/lay-point
-   sk/lay-lm)))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/view :sepal-length :sepal-width)
+  sk/lay-point
+  sk/lay-lm
+  kind/pprint))
 
 
 (deftest
@@ -108,10 +108,10 @@
 
 (def
  v26_l134
- (kind/pprint
-  (->
-   (rdatasets/datasets-iris)
-   (sk/lay-point :sepal-length :sepal-width))))
+ (->
+  (rdatasets/datasets-iris)
+  (sk/lay-point :sepal-length :sepal-width)
+  kind/pprint))
 
 
 (deftest
@@ -323,7 +323,7 @@
   setosa
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__80908#] (= "setosa" (:species p1__80908#))))))
+   (fn* [p1__88222#] (= "setosa" (:species p1__88222#))))))
 
 
 (def
@@ -332,7 +332,7 @@
   versicolor
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__80909#] (= "versicolor" (:species p1__80909#))))))
+   (fn* [p1__88223#] (= "versicolor" (:species p1__88223#))))))
 
 
 (def

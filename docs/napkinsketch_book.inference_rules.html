@@ -2030,7 +2030,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Once domains are computed, Napkinsketch selects “nice” round tick values. The logic depends on the scale type:</p>
 <ul>
 <li><p><strong>Linear</strong> – wadogo selects ticks at round intervals (1, 2, 2.5, 5, …)</p></li>
-<li><p><strong>Log</strong> – ggplot2-style 1-2-5 nice numbers: powers of 10 when they give at least 3 ticks, otherwise intermediates at 1-2-5 or 1-2-3-5 multiples per decade</p></li>
+<li><p><strong>Log</strong> – 1-2-5 nice numbers: powers of 10 when they give at least 3 ticks, otherwise intermediates at 1-2-5 or 1-2-3-5 multiples per decade</p></li>
 <li><p><strong>Categorical</strong> – tick at each category, in order of appearance</p></li>
 <li><p><strong>Temporal</strong> – calendar-aware snapping (year, month, day, hour) with adaptive formatting</p></li>
 </ul>
