@@ -102,7 +102,7 @@
   {:x (range 1 50),
    :y
    (map
-    (fn* [p1__94294#] (* 2 (Math/pow 1.1 p1__94294#)))
+    (fn* [p1__78856#] (* 2 (Math/pow 1.1 p1__78856#)))
     (range 1 50))}))
 
 
@@ -208,44 +208,44 @@
 
 
 (def
- v35_l142
+ v35_l143
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/lay-rule-h {:intercept 3.0})
-  (sk/lay-rule-v {:intercept 6.0})))
+  (sk/lay-rule-h {:y-intercept 3.0})
+  (sk/lay-rule-v {:x-intercept 6.0})))
 
 
 (deftest
- t36_l147
+ t36_l148
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 2 (:lines s)))))
-   v35_l142)))
+   v35_l143)))
 
 
-(def v38_l154 (:band-opacity (sk/config)))
+(def v38_l155 (:band-opacity (sk/config)))
 
 
-(deftest t39_l156 (is ((fn [v] (= 0.15 v)) v38_l154)))
+(deftest t39_l157 (is ((fn [v] (= 0.15 v)) v38_l155)))
 
 
 (def
- v40_l158
+ v40_l159
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/lay-band-v {:lo 5.5, :hi 6.5})
-  (sk/lay-band-h {:lo 3.0, :hi 3.5, :alpha 0.3})))
+  (sk/lay-band-v {:x-min 5.5, :x-max 6.5})
+  (sk/lay-band-h {:y-min 3.0, :y-max 3.5, :alpha 0.3})))
 
 
 (deftest
- t41_l163
+ t41_l164
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v40_l158)))
+  ((fn [v] (let [s (sk/svg-summary v)] (= 150 (:points s)))) v40_l159)))
 
 
 (def

@@ -703,14 +703,15 @@ my-sketch
 
 ;; Reference lines and shaded bands are themselves layers, added with
 ;; `sk/lay-rule-h`, `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v`.
-;; Positions come from the opts map (`:intercept`, or `:lo`/`:hi`);
-;; appearance aesthetics like `:color` and `:alpha` work the same way
-;; they do on any other layer.
+;; Positions come from the opts map (`:y-intercept` / `:x-intercept` for
+;; rules; `:y-min`/`:y-max` or `:x-min`/`:x-max` for bands); appearance
+;; aesthetics like `:color` and `:alpha` work the same way they do on
+;; any other layer.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-rule-h {:intercept 3.0})
-    (sk/lay-band-v {:lo 5.0 :hi 6.0 :alpha 0.1}))
+    (sk/lay-rule-h {:y-intercept 3.0})
+    (sk/lay-band-v {:x-min 5.0 :x-max 6.0 :alpha 0.1}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 

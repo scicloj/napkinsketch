@@ -201,29 +201,29 @@
 
 
 (def
- v53_l346
+ v53_l347
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
-  (sk/lay-rule-h {:intercept 3.0})
+  (sk/lay-rule-h {:y-intercept 3.0})
   :layers
   first
   :method))
 
 
-(deftest t54_l351 (is ((fn [m] (= :rule-h m)) v53_l346)))
+(deftest t54_l352 (is ((fn [m] (= :rule-h m)) v53_l347)))
 
 
-(def v56_l360 (:legend my-plan))
+(def v56_l361 (:legend my-plan))
 
 
 (deftest
- t57_l362
- (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v56_l360)))
+ t57_l363
+ (is ((fn [leg] (and (map? leg) (contains? leg :entries))) v56_l361)))
 
 
 (def
- v59_l381
+ v59_l382
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -232,40 +232,40 @@
   :points))
 
 
-(deftest t60_l386 (is ((fn [n] (= 150 n)) v59_l381)))
+(deftest t60_l387 (is ((fn [n] (= 150 n)) v59_l382)))
 
 
-(def v62_l399 (def my-membrane (sk/plan->membrane my-plan)))
+(def v62_l400 (def my-membrane (sk/plan->membrane my-plan)))
 
 
-(def v63_l401 (vector? my-membrane))
+(def v63_l402 (vector? my-membrane))
 
 
-(deftest t64_l403 (is (true? v63_l401)))
+(deftest t64_l404 (is (true? v63_l402)))
 
 
-(def v65_l405 (count my-membrane))
+(def v65_l406 (count my-membrane))
 
 
-(deftest t66_l407 (is ((fn [n] (pos? n)) v65_l405)))
+(deftest t66_l408 (is ((fn [n] (pos? n)) v65_l406)))
 
 
-(def v68_l417 (def my-figure (sk/plan->figure my-plan :svg {})))
+(def v68_l418 (def my-figure (sk/plan->figure my-plan :svg {})))
 
 
-(def v69_l419 (first my-figure))
+(def v69_l420 (first my-figure))
 
 
-(deftest t70_l421 (is ((fn [v] (= :svg v)) v69_l419)))
+(deftest t70_l422 (is ((fn [v] (= :svg v)) v69_l420)))
 
 
-(def v72_l468 (count sk/plot-option-docs))
+(def v72_l469 (count sk/plot-option-docs))
 
 
-(deftest t73_l470 (is ((fn [n] (= 11 n)) v72_l468)))
+(deftest t73_l471 (is ((fn [n] (= 11 n)) v72_l469)))
 
 
-(def v75_l485 (count sk/layer-option-docs))
+(def v75_l486 (count sk/layer-option-docs))
 
 
-(deftest t76_l487 (is ((fn [n] (pos? n)) v75_l485)))
+(deftest t76_l488 (is ((fn [n] (pos? n)) v75_l486)))

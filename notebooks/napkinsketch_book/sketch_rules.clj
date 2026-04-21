@@ -654,14 +654,15 @@
 ;;
 ;; Reference lines and shaded bands are layers, added with
 ;; `sk/lay-rule-h`, `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v`.
-;; Position comes from the opts map (`:intercept`, or `:lo`/`:hi`),
-;; not from data columns. They scope like any other `lay-*`: a bare
-;; call applies to every panel; passing `:x`/`:y` columns attaches
-;; the annotation to one view.
+;; Position comes from the opts map (`:y-intercept` or `:x-intercept`
+;; for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max` for bands), not
+;; from data columns. They scope like any other `lay-*`: a bare call
+;; applies to every panel; passing `:x`/`:y` columns attaches the
+;; annotation to one view.
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-rule-h {:intercept 3.0}))
+    (sk/lay-rule-h {:y-intercept 3.0}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -669,14 +670,14 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-rule-h {:intercept 3.0})
+    (sk/lay-rule-h {:y-intercept 3.0})
     sk-summary)
 
 (kind/test-last [(fn [m]
                    (let [layers (:layers m)
                          rule (some #(when (= :rule-h (:method %)) %) layers)]
                      (and (some? rule)
-                          (= 3.0 (get-in rule [:mapping :intercept])))))])
+                          (= 3.0 (get-in rule [:mapping :y-intercept])))))])
 
 ;; ### Rule 17: `sk/facet` sets the faceting column
 ;;

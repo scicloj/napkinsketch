@@ -187,7 +187,7 @@
                  :rule-v (let [color (if-let [c (:color a)]
                                        (defaults/hex->rgba c)
                                        default-ann-color)
-                               [px _] (coord-fn (:intercept a) 0)]
+                               [px _] (coord-fn (:x-intercept a) 0)]
                            (ui/with-color color
                              (ui/with-stroke-width 1.5
                                (ui/with-style ::ui/style-stroke
@@ -195,13 +195,13 @@
                  :rule-h (let [color (if-let [c (:color a)]
                                        (defaults/hex->rgba c)
                                        default-ann-color)
-                               [_ py] (coord-fn 0 (:intercept a))]
+                               [_ py] (coord-fn 0 (:y-intercept a))]
                            (ui/with-color color
                              (ui/with-stroke-width 1.5
                                (ui/with-style ::ui/style-stroke
                                  (ui/path [m py] [(- pw m) py])))))
-                 :band-v (let [[px1 _] (coord-fn (:lo a) 0)
-                               [px2 _] (coord-fn (:hi a) 0)
+                 :band-v (let [[px1 _] (coord-fn (:x-min a) 0)
+                               [px2 _] (coord-fn (:x-max a) 0)
                                alpha (or (:alpha a) band-alpha)
                                rgba (if-let [c (:color a)]
                                       (let [[r g b _] (defaults/hex->rgba c)]
@@ -212,8 +212,8 @@
                                (ui/translate (min px1 px2) m
                                              (ui/rectangle (Math/abs (double (- px2 px1)))
                                                            (- ph m m))))))
-                 :band-h (let [[_ py1] (coord-fn 0 (:lo a))
-                               [_ py2] (coord-fn 0 (:hi a))
+                 :band-h (let [[_ py1] (coord-fn 0 (:y-min a))
+                               [_ py2] (coord-fn 0 (:y-max a))
                                alpha (or (:alpha a) band-alpha)
                                rgba (if-let [c (:color a)]
                                       (let [[r g b _] (defaults/hex->rgba c)]

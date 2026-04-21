@@ -133,7 +133,8 @@
 
 ;; Reference lines and shaded bands are layers added with
 ;; `sk/lay-rule-h`, `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v`.
-;; Position comes from the opts map (`:intercept`, or `:lo`/`:hi`);
+;; Position comes from the opts map (`:y-intercept` or `:x-intercept`
+;; for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max` for bands);
 ;; appearance aesthetics (`:color`, `:alpha`) work the same way they
 ;; do on any other layer.
 
@@ -141,8 +142,8 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-rule-h {:intercept 3.0})
-    (sk/lay-rule-v {:intercept 6.0}))
+    (sk/lay-rule-h {:y-intercept 3.0})
+    (sk/lay-rule-v {:x-intercept 6.0}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -157,18 +158,17 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-band-v {:lo 5.5 :hi 6.5})
-    (sk/lay-band-h {:lo 3.0 :hi 3.5 :alpha 0.3}))
+    (sk/lay-band-v {:x-min 5.5 :x-max 6.5})
+    (sk/lay-band-h {:y-min 3.0 :y-max 3.5 :alpha 0.3}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])
 
-;; Note: `:intercept`, `:lo`, and `:hi` accept literal numbers only in
-;; this release. A faceted plot with a different reference value per
-;; panel (column-mapped intercept, ggplot2's
-;; `geom_hline(aes(yintercept=...))`) is on the post-alpha roadmap.
-;; Today, an annotation added once with the same intercept appears on
-;; every panel that shares the view.
+;; Note: position values must be literal numbers in this release. A
+;; faceted plot with a different reference value per panel (column-mapped
+;; intercept, ggplot2's `geom_hline(aes(yintercept=...))`) is on the
+;; post-alpha roadmap. Today, an annotation added once with the same
+;; intercept appears on every panel that shares the view.
 
 ;; ## Palettes
 ;;

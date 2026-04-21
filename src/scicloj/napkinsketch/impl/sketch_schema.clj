@@ -163,30 +163,31 @@
 
 (def Annotation
   "A reference line or band annotation. Dispatched on :mark:
-   rule-h/rule-v require :intercept; band-h/band-v require :lo and :hi.
+   rule-h requires :y-intercept; rule-v requires :x-intercept;
+   band-h requires :y-min and :y-max; band-v requires :x-min and :x-max.
    :color must be a literal string (not a column reference); sketch-level
    column-mapped aesthetics are filtered before annotations reach the plan."
   [:multi {:dispatch :mark}
    [:rule-h [:map
              [:mark [:= :rule-h]]
-             [:intercept FiniteNumber]
+             [:y-intercept FiniteNumber]
              [:color {:optional true} string?]
              [:alpha {:optional true} number?]]]
    [:rule-v [:map
              [:mark [:= :rule-v]]
-             [:intercept FiniteNumber]
+             [:x-intercept FiniteNumber]
              [:color {:optional true} string?]
              [:alpha {:optional true} number?]]]
    [:band-h [:map
              [:mark [:= :band-h]]
-             [:lo FiniteNumber]
-             [:hi FiniteNumber]
+             [:y-min FiniteNumber]
+             [:y-max FiniteNumber]
              [:color {:optional true} string?]
              [:alpha {:optional true} number?]]]
    [:band-v [:map
              [:mark [:= :band-v]]
-             [:lo FiniteNumber]
-             [:hi FiniteNumber]
+             [:x-min FiniteNumber]
+             [:x-max FiniteNumber]
              [:color {:optional true} string?]
              [:alpha {:optional true} number?]]]])
 

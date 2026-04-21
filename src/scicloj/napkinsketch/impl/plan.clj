@@ -779,14 +779,15 @@
   "For an annotation draft layer in an annotation-only panel, compute
    a synthetic stat-result whose :x-domain / :y-domain come from the
    view's data columns plus the annotation's own position values
-   (:intercept for rules, :lo/:hi for bands) so the panel's axes are
-   well-defined even when no data layer is attached to the view.
-   Falls back to [0 1] on the axis perpendicular to a rule (where the
-   annotation alone supplies no extent) so the line still draws.
-   Skips non-numeric columns (string/keyword/temporal) and nil cells
-   so a categorical or partly-missing column on a view-scope
-   annotation-only panel doesn't crash the reducer."
-  [{:keys [mark data x y intercept lo hi]}]
+   (:y-intercept / :x-intercept for rules, :y-min/:y-max or
+   :x-min/:x-max for bands) so the panel's axes are well-defined even
+   when no data layer is attached to the view. Falls back to [0 1] on
+   the axis perpendicular to a rule (where the annotation alone supplies
+   no extent) so the line still draws. Skips non-numeric columns
+   (string/keyword/temporal) and nil cells so a categorical or
+   partly-missing column on a view-scope annotation-only panel doesn't
+   crash the reducer."
+  [{:keys [mark data x y y-intercept x-intercept y-min y-max x-min x-max]}]
   (let [col-vals (fn [col]
                    (when (and data col (tc/dataset? data))
                      (let [resolved (resolve/resolve-col-name data col)]
@@ -798,12 +799,12 @@
         x-col-vals (col-vals x)
         y-col-vals (col-vals y)
         x-extra (case mark
-                  :rule-v (when (number? intercept) [intercept])
-                  :band-v (when (and (number? lo) (number? hi)) [lo hi])
+                  :rule-v (when (number? x-intercept) [x-intercept])
+                  :band-v (when (and (number? x-min) (number? x-max)) [x-min x-max])
                   nil)
         y-extra (case mark
-                  :rule-h (when (number? intercept) [intercept])
-                  :band-h (when (and (number? lo) (number? hi)) [lo hi])
+                  :rule-h (when (number? y-intercept) [y-intercept])
+                  :band-h (when (and (number? y-min) (number? y-max)) [y-min y-max])
                   nil)
         x-all (cond-> []
                 x-col-vals (into x-col-vals)
@@ -914,10 +915,11 @@
                             (cond-> m
                               (not (string? (:color m))) (dissoc :color)
                               (not (number? (:alpha m))) (dissoc :alpha)))
+         annotation-position-keys [:y-intercept :x-intercept :y-min :y-max :x-min :x-max]
          sketch-scope-anns (->> layer-annotations
                                 (filter :__sketch-scope)
                                 (map #(-> %
-                                          (select-keys [:mark :intercept :lo :hi :color :alpha])
+                                          (select-keys (into [:mark :color :alpha] annotation-position-keys))
                                           clean-aesthetics))
                                 distinct
                                 vec)
@@ -928,7 +930,7 @@
          view-scope-anns (->> layer-annotations
                               (remove :__sketch-scope)
                               (map #(-> %
-                                        (select-keys [:mark :intercept :lo :hi :color :alpha :x :y])
+                                        (select-keys (into [:mark :color :alpha :x :y] annotation-position-keys))
                                         clean-aesthetics))
                               distinct
                               vec)

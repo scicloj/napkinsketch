@@ -331,21 +331,22 @@ my-sketch
 ;;
 ;; An **annotation** is a non-data mark that adds visual reference
 ;; to a plot. Annotations are not connected to data columns -- they
-;; overlay fixed positions passed via opts (`:intercept`, or
-;; `:lo`/`:hi`). They are regular layers, so they scope like any
-;; other `lay-*` -- bare call attaches to the sketch, columns
-;; attach to a view.
+;; overlay fixed positions passed via opts (`:y-intercept` or
+;; `:x-intercept` for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max`
+;; for bands). They are regular layers, so they scope like any other
+;; `lay-*` -- bare call attaches to the sketch, columns attach to a
+;; view.
 ;;
 ;; | Constructor | What |
 ;; |:------------|:-----|
-;; | `sk/lay-rule-v` | Vertical line at x = intercept |
-;; | `sk/lay-rule-h` | Horizontal line at y = intercept |
-;; | `sk/lay-band-v` | Vertical shaded region from x = lo to x = hi |
-;; | `sk/lay-band-h` | Horizontal shaded region from y = lo to y = hi |
+;; | `sk/lay-rule-v` | Vertical line at x = x-intercept |
+;; | `sk/lay-rule-h` | Horizontal line at y = y-intercept |
+;; | `sk/lay-band-v` | Vertical shaded region from x = x-min to x = x-max |
+;; | `sk/lay-band-h` | Horizontal shaded region from y = y-min to y = y-max |
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-rule-h {:intercept 3.0})
+    (sk/lay-rule-h {:y-intercept 3.0})
     :layers first :method)
 
 (kind/test-last [(fn [m] (= :rule-h m))])

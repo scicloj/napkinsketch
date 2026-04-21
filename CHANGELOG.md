@@ -23,8 +23,10 @@ This release replaces that entire path with first-class layers:
 These are ordinary `lay-*` functions: bare arity is sketch-scope (every
 panel), the four-argument arity with column refs is view-scope (only
 panels matching the view's x/y mapping), and the position lives in the
-opts map (`:intercept` for rules, `:lo` and `:hi` for bands). Appearance
-aesthetics (`:color`, `:alpha`) are literal values in the same opts map.
+opts map (`:y-intercept` for `lay-rule-h`, `:x-intercept` for
+`lay-rule-v`, `:y-min`/`:y-max` for `lay-band-h`, `:x-min`/`:x-max` for
+`lay-band-v`). Appearance aesthetics (`:color`, `:alpha`) are literal
+values in the same opts map.
 
 The old API is removed: `sk/annotate`, `sk/rule-h`, `sk/rule-v`,
 `sk/band-h`, `sk/band-v`, and the `[:opts :annotations]` slot no longer

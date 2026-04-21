@@ -102,8 +102,8 @@
    :value
    (map
     (fn*
-     [p1__82862#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__82862#) 0.12)))))
+     [p1__79384#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__79384#) 0.12)))))
     (range 52))}))
 
 
@@ -145,8 +145,8 @@
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/lay-rule-h {:intercept 3.0})
-  (sk/lay-band-v {:lo 5.5, :hi 6.5, :alpha 0.3})))
+  (sk/lay-rule-h {:y-intercept 3.0})
+  (sk/lay-band-v {:x-min 5.5, :x-max 6.5, :alpha 0.3})))
 
 
 (deftest
@@ -434,7 +434,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__82863#] (= "virginica" p1__82863#))
+       (fn* [p1__79385#] (= "virginica" p1__79385#))
        (:texts s)))))
    v64_l288)))
 
@@ -488,8 +488,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__82864#] (Math/sin (/ p1__82864# 3.0))) (range 20)),
-   :change (map (fn* [p1__82865#] (- p1__82865# 10)) (range 20))}
+   (map (fn* [p1__79386#] (Math/sin (/ p1__79386# 3.0))) (range 20)),
+   :change (map (fn* [p1__79387#] (- p1__79387# 10)) (range 20))}
   (sk/lay-point :x :y {:color :change})
   (sk/options
    {:color-scale :diverging,
@@ -606,8 +606,8 @@
    ys
    (map
     (fn*
-     [p1__82866#]
-     (+ (* 3 p1__82866#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__79388#]
+     (+ (* 3 p1__79388#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}

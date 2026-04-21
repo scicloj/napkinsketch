@@ -1891,11 +1891,11 @@
     (testing "sketch-scope rule-h attaches a single annotation"
       (let [p (sk/plan (-> ds
                            (sk/lay-point :x :y)
-                           (sk/lay-rule-h {:intercept 3})))
+                           (sk/lay-rule-h {:y-intercept 3})))
             panel (first (:panels p))]
         (is (= 1 (count (:annotations panel))))
         (is (= :rule-h (:mark (first (:annotations panel)))))
-        (is (= 3 (:intercept (first (:annotations panel)))))))
+        (is (= 3 (:y-intercept (first (:annotations panel)))))))
 
     (testing "sketch-scope rule applies to every facet panel (deduped)"
       ;; Without dedupe the cross-product would emit N copies per panel.
@@ -1904,7 +1904,7 @@
             p (sk/plan (-> iris
                            (sk/lay-point :Sepal.Length :Sepal.Width)
                            (sk/facet :Species)
-                           (sk/lay-rule-h {:intercept 3})))]
+                           (sk/lay-rule-h {:y-intercept 3})))]
         (is (= 3 (count (:panels p))))
         (doseq [panel (:panels p)]
           (is (= 1 (count (:annotations panel)))
@@ -1914,25 +1914,25 @@
     (testing "sk/lay-rule-v with :color and :alpha flows into the plan"
       (let [p (sk/plan (-> ds
                            (sk/lay-point :x :y)
-                           (sk/lay-rule-v {:intercept 2 :color "red" :alpha 0.5})))
+                           (sk/lay-rule-v {:x-intercept 2 :color "red" :alpha 0.5})))
             a (first (:annotations (first (:panels p))))]
         (is (= :rule-v (:mark a)))
-        (is (= 2 (:intercept a)))
+        (is (= 2 (:x-intercept a)))
         (is (= "red" (:color a)))
         (is (= 0.5 (:alpha a)))))
 
-    (testing "sk/lay-band-h / sk/lay-band-v carry :lo / :hi"
+    (testing "sk/lay-band-h / sk/lay-band-v carry their min/max bounds"
       (let [p (sk/plan (-> ds
                            (sk/lay-point :x :y)
-                           (sk/lay-band-h {:lo 2 :hi 4})
-                           (sk/lay-band-v {:lo 1 :hi 3})))
+                           (sk/lay-band-h {:y-min 2 :y-max 4})
+                           (sk/lay-band-v {:x-min 1 :x-max 3})))
             anns (:annotations (first (:panels p)))
             band-h (first (filter #(= :band-h (:mark %)) anns))
             band-v (first (filter #(= :band-v (:mark %)) anns))]
-        (is (= 2 (:lo band-h)))
-        (is (= 4 (:hi band-h)))
-        (is (= 1 (:lo band-v)))
-        (is (= 3 (:hi band-v)))))
+        (is (= 2 (:y-min band-h)))
+        (is (= 4 (:y-max band-h)))
+        (is (= 1 (:x-min band-v)))
+        (is (= 3 (:x-max band-v)))))
 
     (testing "view-scope rule with sketch-level data layer renders both"
       ;; Regression: ann-view? in sketch.clj used to suppress sketch
@@ -1941,7 +1941,7 @@
       (let [p (sk/plan (-> ds
                            (sk/view :x :y)
                            sk/lay-point
-                           (sk/lay-rule-h :x :y {:intercept 3})))
+                           (sk/lay-rule-h :x :y {:y-intercept 3})))
             panel (first (:panels p))]
         (is (= 1 (count (:layers panel))))
         (is (= :point (:mark (first (:layers panel)))))
@@ -1950,17 +1950,17 @@
     (testing "plan with annotation layer validates against schema"
       (let [p (sk/plan (-> ds
                            (sk/lay-point :x :y)
-                           (sk/lay-rule-h {:intercept 3 :color "red" :alpha 0.5})
-                           (sk/lay-band-v {:lo 1 :hi 3 :color "blue" :alpha 0.2})))]
+                           (sk/lay-rule-h {:y-intercept 3 :color "red" :alpha 0.5})
+                           (sk/lay-band-v {:x-min 1 :x-max 3 :color "blue" :alpha 0.2})))]
         (is (sk/valid-plan? p))))
 
     (testing "rendered SVG uses :color override for rule"
       (let [sk-red (-> ds
                        (sk/lay-point :x :y)
-                       (sk/lay-rule-h {:intercept 3 :color "red"}))
+                       (sk/lay-rule-h {:y-intercept 3 :color "red"}))
             sk-default (-> ds
                            (sk/lay-point :x :y)
-                           (sk/lay-rule-h {:intercept 3}))
+                           (sk/lay-rule-h {:y-intercept 3}))
             svg-red (str (sk/plan->figure (sk/plan sk-red) :svg {}))
             svg-default (str (sk/plan->figure (sk/plan sk-default) :svg {}))]
         (is (clojure.string/includes? svg-red "rgb(255,0,0)"))
@@ -1973,7 +1973,7 @@
       ;; columns plus the annotation's own position.
       (let [p (sk/plan (-> ds
                            (sk/view :x :y)
-                           (sk/lay-rule-h :x :y {:intercept 3})))
+                           (sk/lay-rule-h :x :y {:y-intercept 3})))
             panel (first (:panels p))]
         (is (= 1 (count (:panels p))))
         (is (= 0 (count (:layers panel))))
@@ -1987,7 +1987,7 @@
     (testing "annotation-only panel with band extends domain to include band"
       (let [p (sk/plan (-> ds
                            (sk/view :x :y)
-                           (sk/lay-band-h :x :y {:lo 10 :hi 20})))
+                           (sk/lay-band-h :x :y {:y-min 10 :y-max 20})))
             panel (first (:panels p))
             [y-lo y-hi] (:y-domain panel)]
         (is (<= y-lo 2))

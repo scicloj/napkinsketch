@@ -682,84 +682,90 @@
     (str " Got " (pr-str (last args)) " as the last argument; did you forget"
          " to wrap it in an opts map?")))
 
+(def ^:private rule-position-key
+  "Per-method required position key for sk/lay-rule-*."
+  {:rule-h :y-intercept :rule-v :x-intercept})
+
+(def ^:private band-position-keys
+  "Per-method required [lo-key hi-key] for sk/lay-band-*."
+  {:band-h [:y-min :y-max] :band-v [:x-min :x-max]})
+
 (defn- assert-rule-opts! [method-key args]
   (let [opts (last-opts args)
-        v (:intercept opts)]
+        k (rule-position-key method-key)
+        v (get opts k)]
     (when-not (and (number? v) (Double/isFinite (double v)))
-      (throw (ex-info (str "lay-" (name method-key) " requires a finite numeric :intercept in its opts map. "
-                           "Example: (sk/lay-" (name method-key) " sk {:intercept 3.0})."
+      (throw (ex-info (str "lay-" (name method-key) " requires a finite numeric " k " in its opts map. "
+                           "Example: (sk/lay-" (name method-key) " sk {" k " 3.0})."
                            (positional-hint args))
                       {:method method-key :opts opts})))))
 
 (defn- assert-band-opts! [method-key args]
   (let [opts (last-opts args)
-        lo (:lo opts) hi (:hi opts)]
+        [lo-k hi-k] (band-position-keys method-key)
+        lo (get opts lo-k) hi (get opts hi-k)]
     (when-not (and (number? lo) (number? hi)
                    (Double/isFinite (double lo))
                    (Double/isFinite (double hi)))
-      (throw (ex-info (str "lay-" (name method-key) " requires finite numeric :lo and :hi in its opts map. "
-                           "Example: (sk/lay-" (name method-key) " sk {:lo 2.0 :hi 4.0})."
+      (throw (ex-info (str "lay-" (name method-key) " requires finite numeric " lo-k " and " hi-k " in its opts map. "
+                           "Example: (sk/lay-" (name method-key) " sk {" lo-k " 2.0 " hi-k " 4.0})."
                            (positional-hint args))
                       {:method method-key :opts opts})))
     (when-not (<= (double lo) (double hi))
-      (throw (ex-info (str "lay-" (name method-key) " requires :lo <= :hi, got :lo " lo " :hi " hi ". "
+      (throw (ex-info (str "lay-" (name method-key) " requires " lo-k " <= " hi-k ", got " lo-k " " lo " " hi-k " " hi ". "
                            "Swap the arguments or check the source of the values.")
                       {:method method-key :opts opts})))))
 
 (defn lay-rule-h
-  "Add :rule-h layer -- horizontal reference line at y = intercept.
-   Position comes from opts (not data columns); :intercept is required.
-   Accepts :intercept (required), :color (literal string), :alpha.
+  "Add :rule-h layer -- horizontal reference line at y = y-intercept.
+   Position comes from opts (not data columns); :y-intercept is required.
+   Accepts :y-intercept (required), :color (literal string), :alpha.
    The 4-arity finds or creates a view with these x/y columns and
    attaches the rule there (only panels matching that view show it).
-   (lay-rule-h sk {:intercept 3})           -- sketch-level, all panels
-   (lay-rule-h sk :x :y {:intercept 3})     -- view-scope (columns pick or create the view)
-   (lay-rule-h sk {:intercept 3 :color \"red\" :alpha 0.5})"
-  ([sk-or-data] (assert-rule-opts! :rule-h []))
+   (lay-rule-h sk {:y-intercept 3})           -- sketch-level, all panels
+   (lay-rule-h sk :x :y {:y-intercept 3})     -- view-scope (columns pick or create the view)
+   (lay-rule-h sk {:y-intercept 3 :color \"red\" :alpha 0.5})"
   ([sk-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-method :rule-h sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-method :rule-h sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (assert-rule-opts! :rule-h [opts]) (lay-method :rule-h sk-or-data x y opts)))
 
 (defn lay-rule-v
-  "Add :rule-v layer -- vertical reference line at x = intercept.
-   Position comes from opts (not data columns); :intercept is required.
-   Accepts :intercept (required), :color (literal string), :alpha.
+  "Add :rule-v layer -- vertical reference line at x = x-intercept.
+   Position comes from opts (not data columns); :x-intercept is required.
+   Accepts :x-intercept (required), :color (literal string), :alpha.
    The 4-arity finds or creates a view with these x/y columns and
    attaches the rule there (only panels matching that view show it).
-   (lay-rule-v sk {:intercept 5})           -- sketch-level, all panels
-   (lay-rule-v sk :x :y {:intercept 5})     -- view-scope (columns pick or create the view)
-   (lay-rule-v sk {:intercept 5 :color \"red\" :alpha 0.5})"
-  ([sk-or-data] (assert-rule-opts! :rule-v []))
+   (lay-rule-v sk {:x-intercept 5})           -- sketch-level, all panels
+   (lay-rule-v sk :x :y {:x-intercept 5})     -- view-scope (columns pick or create the view)
+   (lay-rule-v sk {:x-intercept 5 :color \"red\" :alpha 0.5})"
   ([sk-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-method :rule-v sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-method :rule-v sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (assert-rule-opts! :rule-v [opts]) (lay-method :rule-v sk-or-data x y opts)))
 
 (defn lay-band-h
-  "Add :band-h layer -- horizontal shaded band between y = lo and y = hi.
-   Position comes from opts (not data columns); :lo and :hi are
-   required and :lo must be <= :hi.
-   Accepts :lo (required), :hi (required), :color (literal string), :alpha.
+  "Add :band-h layer -- horizontal shaded band between y = y-min and y = y-max.
+   Position comes from opts (not data columns); :y-min and :y-max are
+   required and :y-min must be <= :y-max.
+   Accepts :y-min (required), :y-max (required), :color (literal string), :alpha.
    The 4-arity finds or creates a view with these x/y columns and
    attaches the band there (only panels matching that view show it).
-   (lay-band-h sk {:lo 2 :hi 4})            -- sketch-level, all panels
-   (lay-band-h sk :x :y {:lo 2 :hi 4})      -- view-scope (columns pick or create the view)
-   (lay-band-h sk {:lo 2 :hi 4 :color \"blue\" :alpha 0.3})"
-  ([sk-or-data] (assert-band-opts! :band-h []))
+   (lay-band-h sk {:y-min 2 :y-max 4})            -- sketch-level, all panels
+   (lay-band-h sk :x :y {:y-min 2 :y-max 4})      -- view-scope (columns pick or create the view)
+   (lay-band-h sk {:y-min 2 :y-max 4 :color \"blue\" :alpha 0.3})"
   ([sk-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-method :band-h sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-method :band-h sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (assert-band-opts! :band-h [opts]) (lay-method :band-h sk-or-data x y opts)))
 
 (defn lay-band-v
-  "Add :band-v layer -- vertical shaded band between x = lo and x = hi.
-   Position comes from opts (not data columns); :lo and :hi are
-   required and :lo must be <= :hi.
-   Accepts :lo (required), :hi (required), :color (literal string), :alpha.
+  "Add :band-v layer -- vertical shaded band between x = x-min and x = x-max.
+   Position comes from opts (not data columns); :x-min and :x-max are
+   required and :x-min must be <= :x-max.
+   Accepts :x-min (required), :x-max (required), :color (literal string), :alpha.
    The 4-arity finds or creates a view with these x/y columns and
    attaches the band there (only panels matching that view show it).
-   (lay-band-v sk {:lo 4 :hi 6})            -- sketch-level, all panels
-   (lay-band-v sk :x :y {:lo 4 :hi 6})      -- view-scope (columns pick or create the view)
-   (lay-band-v sk {:lo 4 :hi 6 :color \"blue\" :alpha 0.3})"
-  ([sk-or-data] (assert-band-opts! :band-v []))
+   (lay-band-v sk {:x-min 4 :x-max 6})            -- sketch-level, all panels
+   (lay-band-v sk :x :y {:x-min 4 :x-max 6})      -- view-scope (columns pick or create the view)
+   (lay-band-v sk {:x-min 4 :x-max 6 :color \"blue\" :alpha 0.3})"
   ([sk-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-method :band-v sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-method :band-v sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (assert-band-opts! :band-v [opts]) (lay-method :band-v sk-or-data x y opts)))

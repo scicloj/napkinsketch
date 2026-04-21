@@ -110,8 +110,8 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-rule-h {:intercept 3.0})
-    (sk/lay-band-v {:lo 5.5 :hi 6.5 :alpha 0.3}))
+    (sk/lay-rule-h {:y-intercept 3.0})
+    (sk/lay-band-v {:x-min 5.5 :x-max 6.5 :alpha 0.3}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

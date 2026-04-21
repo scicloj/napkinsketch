@@ -619,9 +619,9 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-rule-h {:intercept 3.0})
-    (sk/lay-rule-v {:intercept 6.0})
-    (sk/lay-band-v {:lo 5.0 :hi 6.0 :alpha 0.1})
+    (sk/lay-rule-h {:y-intercept 3.0})
+    (sk/lay-rule-v {:x-intercept 6.0})
+    (sk/lay-band-v {:x-min 5.0 :x-max 6.0 :alpha 0.1})
     (sk/options {:title "Iris with Reference Lines and Band"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -1390,7 +1390,7 @@
 (-> (tc/dataset {:metric ["Quality" "Speed" "Usability" "Reliability" "Support" "Price" "Design" "Docs"]
                  :score [-30 -20 -10 5 15 25 35 45]})
     (sk/lay-value-bar :metric :score)
-    (sk/lay-rule-h {:intercept 0})
+    (sk/lay-rule-h {:y-intercept 0})
     (sk/coord :flip)
     (sk/options {:title "Customer Satisfaction Scores"
                  :x-label "Metric"
@@ -1634,10 +1634,10 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width)
     sk/lay-point
-    (sk/lay-rule-h {:intercept 3.0})
-    (sk/lay-rule-h {:intercept 4.0})
-    (sk/lay-rule-v {:intercept 5.0})
-    (sk/lay-rule-v {:intercept 7.0})
+    (sk/lay-rule-h {:y-intercept 3.0})
+    (sk/lay-rule-h {:y-intercept 4.0})
+    (sk/lay-rule-v {:x-intercept 5.0})
+    (sk/lay-rule-v {:x-intercept 7.0})
     (sk/options {:title "Iris: Scatter with Grid Lines"
                  :x-label "Sepal Length"
                  :y-label "Sepal Width"}))
@@ -1652,8 +1652,8 @@
 (-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
-    (sk/lay-band-h {:lo 20 :hi 30})
-    (sk/lay-band-v {:lo 2.5 :hi 3.5})
+    (sk/lay-band-h {:y-min 20 :y-max 30})
+    (sk/lay-band-v {:x-min 2.5 :x-max 3.5})
     (sk/options {:title "Cars: Scatter with Highlight Bands"
                  :x-label "Weight (1000 lbs)"
                  :y-label "MPG"}))
@@ -1666,7 +1666,7 @@
 (-> (rdatasets/ggplot2-economics)
     (sk/view :date :unemploy)
     sk/lay-area
-    (sk/lay-rule-h {:intercept 8000})
+    (sk/lay-rule-h {:y-intercept 8000})
     (sk/options {:title "US Unemployment with 8000 Threshold"
                  :x-label "Date"
                  :y-label "Unemployed (thousands)"}))
@@ -1680,7 +1680,7 @@
 
 (-> airquality
     (sk/lay-line :rownames :ozone)
-    (sk/lay-rule-h {:intercept 60})
+    (sk/lay-rule-h {:y-intercept 60})
     (sk/options {:title "NYC Ozone with Threshold at 60 ppb"
                  :x-label "Observation"
                  :y-label "Ozone (ppb)"}))
@@ -1694,7 +1694,7 @@
 (-> airquality
     (sk/view :wind :ozone)
     sk/lay-point
-    (sk/lay-band-h {:lo 0 :hi 40})
+    (sk/lay-band-h {:y-min 0 :y-max 40})
     (sk/options {:title "Ozone vs Wind: Safe Zone Highlighted"
                  :x-label "Wind Speed (mph)"
                  :y-label "Ozone (ppb)"}))

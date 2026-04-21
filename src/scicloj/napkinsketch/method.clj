@@ -43,9 +43,12 @@
    :ymax "Column keyword for upper error bound"
    :side "Rug tick position — :x (default), :y, or :both"
    :kde2d-grid "2D KDE grid resolution — number of bins per axis (default 25)"
-   :intercept "Numeric data-space position for a reference line"
-   :lo "Lower bound of a shaded band (data space)"
-   :hi "Upper bound of a shaded band (data space)"})
+   :y-intercept "Numeric y-axis position for a horizontal reference line"
+   :x-intercept "Numeric x-axis position for a vertical reference line"
+   :y-min "Lower y bound of a horizontal shaded band"
+   :y-max "Upper y bound of a horizontal shaded band"
+   :x-min "Lower x bound of a vertical shaded band"
+   :x-max "Upper x bound of a vertical shaded band"})
 
 (def ^:private registry*
   "Atom holding keyword → method entry map."
@@ -115,8 +118,8 @@
 (def ^:private annotation-rejects
   [:position :group :x-type :y-type :color-type])
 
-(register! :rule-h {:mark :rule-h :stat :identity :accepts [:intercept] :rejects annotation-rejects :doc "Horizontal reference line at y = intercept."})
-(register! :rule-v {:mark :rule-v :stat :identity :accepts [:intercept] :rejects annotation-rejects :doc "Vertical reference line at x = intercept."})
-(register! :band-h {:mark :band-h :stat :identity :accepts [:lo :hi] :rejects annotation-rejects :doc "Horizontal shaded band between y = lo and y = hi."})
-(register! :band-v {:mark :band-v :stat :identity :accepts [:lo :hi] :rejects annotation-rejects :doc "Vertical shaded band between x = lo and x = hi."})
+(register! :rule-h {:mark :rule-h :stat :identity :accepts [:y-intercept] :rejects annotation-rejects :doc "Horizontal reference line at y = y-intercept."})
+(register! :rule-v {:mark :rule-v :stat :identity :accepts [:x-intercept] :rejects annotation-rejects :doc "Vertical reference line at x = x-intercept."})
+(register! :band-h {:mark :band-h :stat :identity :accepts [:y-min :y-max] :rejects annotation-rejects :doc "Horizontal shaded band between y = y-min and y = y-max."})
+(register! :band-v {:mark :band-v :stat :identity :accepts [:x-min :x-max] :rejects annotation-rejects :doc "Vertical shaded band between x = x-min and x = x-max."})
 

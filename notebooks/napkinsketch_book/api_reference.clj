@@ -371,17 +371,19 @@
 
 ;; ## Annotations
 
-;; Reference lines and shaded bands are regular layers. Position
-;; comes from the opts map (`:intercept`, or `:lo`/`:hi`);
-;; appearance aesthetics like `:color` and `:alpha` work the same
-;; as on any other layer. Without x/y columns they attach to the
-;; sketch (every panel); with x/y columns they attach to one view.
+;; Reference lines and shaded bands are regular layers. Position comes
+;; from the opts map (`:y-intercept` for `lay-rule-h`, `:x-intercept`
+;; for `lay-rule-v`; `:y-min`/`:y-max` for `lay-band-h`,
+;; `:x-min`/`:x-max` for `lay-band-v`); appearance aesthetics like
+;; `:color` and `:alpha` work the same as on any other layer. Without
+;; x/y columns they attach to the sketch (every panel); with x/y
+;; columns they attach to one view.
 
 (kind/doc #'sk/lay-rule-v)
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-rule-v {:intercept 6.0}))
+    (sk/lay-rule-v {:x-intercept 6.0}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -391,7 +393,7 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-rule-h {:intercept 3.0}))
+    (sk/lay-rule-h {:y-intercept 3.0}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -401,7 +403,7 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-band-v {:lo 5.5 :hi 6.5}))
+    (sk/lay-band-v {:x-min 5.5 :x-max 6.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])
@@ -410,7 +412,7 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-band-h {:lo 2.5 :hi 3.5}))
+    (sk/lay-band-h {:y-min 2.5 :y-max 3.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])

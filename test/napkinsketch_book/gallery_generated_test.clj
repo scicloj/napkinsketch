@@ -370,9 +370,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__85219#]
+    [p1__81061#]
     (#{"Australia" "Brazil" "Japan" "Nigeria" "Germany"}
-     (:country p1__85219#))))
+     (:country p1__81061#))))
   (sk/view :year :life-exp {:color :country})
   sk/lay-line
   sk/lay-point
@@ -698,7 +698,7 @@
  v106_l547
  (->
   (rdatasets/gapminder-gapminder)
-  (tc/select-rows (fn* [p1__85220#] (= 2007 (:year p1__85220#))))
+  (tc/select-rows (fn* [p1__81062#] (= 2007 (:year p1__81062#))))
   (sk/lay-point :gdp-percap :life-exp {:color :continent, :size :pop})
   (sk/scale :x :log)
   (sk/options
@@ -718,9 +718,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__85221#]
+    [p1__81063#]
     (#{"Brazil" "United States" "Japan" "China" "India"}
-     (:country p1__85221#))))
+     (:country p1__81063#))))
   (sk/lay-line :year :life-exp {:color :country})
   (sk/options
    {:title "Life Expectancy Over Time",
@@ -808,9 +808,9 @@
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/lay-rule-h {:intercept 3.0})
-  (sk/lay-rule-v {:intercept 6.0})
-  (sk/lay-band-v {:lo 5.0, :hi 6.0, :alpha 0.1})
+  (sk/lay-rule-h {:y-intercept 3.0})
+  (sk/lay-rule-v {:x-intercept 6.0})
+  (sk/lay-band-v {:x-min 5.0, :x-max 6.0, :alpha 0.1})
   (sk/options {:title "Iris with Reference Lines and Band"})))
 
 
@@ -1071,8 +1071,8 @@
   (rdatasets/ggplot2-txhousing)
   (tc/select-rows
    (fn*
-    [p1__85222#]
-    (#{"Houston" "Dallas" "San Antonio" "Austin"} (:city p1__85222#))))
+    [p1__81064#]
+    (#{"Houston" "Dallas" "San Antonio" "Austin"} (:city p1__81064#))))
   (sk/view :date :median {:color :city})
   sk/lay-line
   (sk/options
@@ -1115,7 +1115,7 @@
  (->
   (rdatasets/lme4-sleepstudy)
   (tc/select-rows
-   (fn* [p1__85223#] (= "308" (str (:subject p1__85223#)))))
+   (fn* [p1__81065#] (= "308" (str (:subject p1__81065#)))))
   (sk/view :days :reaction)
   sk/lay-step
   sk/lay-point
@@ -1230,7 +1230,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__85224#] (= 2007 (:year p1__85224#))))
+   (fn* [p1__81066#] (= 2007 (:year p1__81066#))))
   (sk/lay-point
    :gdp-percap
    :life-exp
@@ -1758,8 +1758,8 @@
      [ds]
      (map
       (fn*
-       [p1__85225#]
-       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__85225#))
+       [p1__81067#]
+       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__81067#))
       (ds :month)))))))
 
 
@@ -1847,7 +1847,7 @@
      "Docs"],
     :score [-30 -20 -10 5 15 25 35 45]})
   (sk/lay-value-bar :metric :score)
-  (sk/lay-rule-h {:intercept 0})
+  (sk/lay-rule-h {:y-intercept 0})
   (sk/coord :flip)
   (sk/options
    {:title "Customer Satisfaction Scores",
@@ -2061,10 +2061,10 @@
  v315_l1537
  (->
   (tc/dataset
-   {:row (mapcat (fn* [p1__85226#] (repeat 6 p1__85226#)) (range 6)),
+   {:row (mapcat (fn* [p1__81068#] (repeat 6 p1__81068#)) (range 6)),
     :col (flatten (repeat 6 (range 6))),
     :value
-    (map (fn* [p1__85227#] (Math/sin (* p1__85227# 0.5))) (range 36))})
+    (map (fn* [p1__81069#] (Math/sin (* p1__81069# 0.5))) (range 36))})
   (sk/view :col :row {:fill :value})
   sk/lay-tile
   (sk/options
@@ -2196,10 +2196,10 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width)
   sk/lay-point
-  (sk/lay-rule-h {:intercept 3.0})
-  (sk/lay-rule-h {:intercept 4.0})
-  (sk/lay-rule-v {:intercept 5.0})
-  (sk/lay-rule-v {:intercept 7.0})
+  (sk/lay-rule-h {:y-intercept 3.0})
+  (sk/lay-rule-h {:y-intercept 4.0})
+  (sk/lay-rule-v {:x-intercept 5.0})
+  (sk/lay-rule-v {:x-intercept 7.0})
   (sk/options
    {:title "Iris: Scatter with Grid Lines",
     :x-label "Sepal Length",
@@ -2223,8 +2223,8 @@
   (rdatasets/datasets-mtcars)
   (sk/view :wt :mpg)
   sk/lay-point
-  (sk/lay-band-h {:lo 20, :hi 30})
-  (sk/lay-band-v {:lo 2.5, :hi 3.5})
+  (sk/lay-band-h {:y-min 20, :y-max 30})
+  (sk/lay-band-v {:x-min 2.5, :x-max 3.5})
   (sk/options
    {:title "Cars: Scatter with Highlight Bands",
     :x-label "Weight (1000 lbs)",
@@ -2242,7 +2242,7 @@
   (rdatasets/ggplot2-economics)
   (sk/view :date :unemploy)
   sk/lay-area
-  (sk/lay-rule-h {:intercept 8000})
+  (sk/lay-rule-h {:y-intercept 8000})
   (sk/options
    {:title "US Unemployment with 8000 Threshold",
     :x-label "Date",
@@ -2265,7 +2265,7 @@
  (->
   airquality
   (sk/lay-line :rownames :ozone)
-  (sk/lay-rule-h {:intercept 60})
+  (sk/lay-rule-h {:y-intercept 60})
   (sk/options
    {:title "NYC Ozone with Threshold at 60 ppb",
     :x-label "Observation",
@@ -2285,7 +2285,7 @@
   airquality
   (sk/view :wind :ozone)
   sk/lay-point
-  (sk/lay-band-h {:lo 0, :hi 40})
+  (sk/lay-band-h {:y-min 0, :y-max 40})
   (sk/options
    {:title "Ozone vs Wind: Safe Zone Highlighted",
     :x-label "Wind Speed (mph)",
@@ -2501,7 +2501,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__85228#] (= 2007 (:year p1__85228#))))
+   (fn* [p1__81070#] (= 2007 (:year p1__81070#))))
   (sk/view :gdp-percap :life-exp)
   sk/lay-point
   (sk/scale :x :log)
