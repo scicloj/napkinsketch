@@ -665,49 +665,73 @@
   ([sk-or-data x y-or-opts] (lay-method :point sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :point sk-or-data x y opts)))
 
+(defn- last-opts
+  "Return the trailing opts map from a lay-* arg list (or nil)."
+  [args]
+  (let [last-arg (last args)]
+    (when (map? last-arg) last-arg)))
+
+(defn- assert-rule-opts! [method-key args]
+  (let [opts (last-opts args)
+        v (:intercept opts)]
+    (when-not (and (number? v) (Double/isFinite (double v)))
+      (throw (ex-info (str "lay-" (name method-key) " requires a finite numeric :intercept in its opts map. "
+                           "Example: (sk/lay-" (name method-key) " sk {:intercept 3.0}).")
+                      {:method method-key :opts opts})))))
+
+(defn- assert-band-opts! [method-key args]
+  (let [opts (last-opts args)
+        lo (:lo opts) hi (:hi opts)]
+    (when-not (and (number? lo) (number? hi)
+                   (Double/isFinite (double lo))
+                   (Double/isFinite (double hi)))
+      (throw (ex-info (str "lay-" (name method-key) " requires finite numeric :lo and :hi in its opts map. "
+                           "Example: (sk/lay-" (name method-key) " sk {:lo 2.0 :hi 4.0}).")
+                      {:method method-key :opts opts})))))
+
 (defn lay-rule-h
   "Add :rule-h layer -- horizontal reference line at y = intercept.
-   Position comes from opts (not data columns).
+   Position comes from opts (not data columns); :intercept is required.
    (lay-rule-h sk {:intercept 3})           -- sketch-level, all panels
    (lay-rule-h sk :x :y {:intercept 3})     -- view-specific (columns pick the view)
    (lay-rule-h sk {:intercept 3 :color \"red\" :alpha 0.5})"
-  ([sk-or-data] (lay-method :rule-h sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :rule-h sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :rule-h sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :rule-h sk-or-data x y opts)))
+  ([sk-or-data] (assert-rule-opts! :rule-h []))
+  ([sk-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-method :rule-h sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-method :rule-h sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (assert-rule-opts! :rule-h [opts]) (lay-method :rule-h sk-or-data x y opts)))
 
 (defn lay-rule-v
   "Add :rule-v layer -- vertical reference line at x = intercept.
-   Position comes from opts (not data columns).
+   Position comes from opts (not data columns); :intercept is required.
    (lay-rule-v sk {:intercept 5})           -- sketch-level, all panels
    (lay-rule-v sk :x :y {:intercept 5})     -- view-specific (columns pick the view)
    (lay-rule-v sk {:intercept 5 :color \"red\" :alpha 0.5})"
-  ([sk-or-data] (lay-method :rule-v sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :rule-v sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :rule-v sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :rule-v sk-or-data x y opts)))
+  ([sk-or-data] (assert-rule-opts! :rule-v []))
+  ([sk-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-method :rule-v sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-method :rule-v sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (assert-rule-opts! :rule-v [opts]) (lay-method :rule-v sk-or-data x y opts)))
 
 (defn lay-band-h
   "Add :band-h layer -- horizontal shaded band between y = lo and y = hi.
-   Position comes from opts (not data columns).
+   Position comes from opts (not data columns); :lo and :hi are required.
    (lay-band-h sk {:lo 2 :hi 4})            -- sketch-level, all panels
    (lay-band-h sk :x :y {:lo 2 :hi 4})      -- view-specific (columns pick the view)
    (lay-band-h sk {:lo 2 :hi 4 :color \"blue\" :alpha 0.3})"
-  ([sk-or-data] (lay-method :band-h sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :band-h sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :band-h sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :band-h sk-or-data x y opts)))
+  ([sk-or-data] (assert-band-opts! :band-h []))
+  ([sk-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-method :band-h sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-method :band-h sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (assert-band-opts! :band-h [opts]) (lay-method :band-h sk-or-data x y opts)))
 
 (defn lay-band-v
   "Add :band-v layer -- vertical shaded band between x = lo and x = hi.
-   Position comes from opts (not data columns).
+   Position comes from opts (not data columns); :lo and :hi are required.
    (lay-band-v sk {:lo 4 :hi 6})            -- sketch-level, all panels
    (lay-band-v sk :x :y {:lo 4 :hi 6})      -- view-specific (columns pick the view)
    (lay-band-v sk {:lo 4 :hi 6 :color \"blue\" :alpha 0.3})"
-  ([sk-or-data] (lay-method :band-v sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :band-v sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :band-v sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :band-v sk-or-data x y opts)))
+  ([sk-or-data] (assert-band-opts! :band-v []))
+  ([sk-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-method :band-v sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-method :band-v sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (assert-band-opts! :band-v [opts]) (lay-method :band-v sk-or-data x y opts)))
 
 (defn lay-line
   "Add :line method -- connected line through data points.

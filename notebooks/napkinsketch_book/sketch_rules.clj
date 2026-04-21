@@ -31,7 +31,7 @@
 ;; | `:mapping` | map | `sketch` |
 ;; | `:views` | vector of view maps | `view`, `lay-*` with x/y columns |
 ;; | `:layers` | vector of layer maps | `lay-*` without x/y columns |
-;; | `:opts` | map | `options`, `scale`, `coord`, `annotate`, `facet` |
+;; | `:opts` | map | `options`, `scale`, `coord`, `facet` |
 ;;
 ;; The API builds this record through lexical scope -- where you
 ;; write something determines who sees it:

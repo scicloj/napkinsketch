@@ -163,6 +163,13 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])
 
+;; Note: `:intercept`, `:lo`, and `:hi` accept literal numbers only in
+;; this release. A faceted plot with a different reference value per
+;; panel (column-mapped intercept, ggplot2's
+;; `geom_hline(aes(yintercept=...))`) is on the post-alpha roadmap.
+;; Today, an annotation added once with the same intercept appears on
+;; every panel that shares the view.
+
 ;; ## Palettes
 ;;
 ;; Pass `:palette` to override the default color cycle. It accepts a

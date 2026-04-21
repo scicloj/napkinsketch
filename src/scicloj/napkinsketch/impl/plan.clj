@@ -780,7 +780,9 @@
    a synthetic stat-result whose :x-domain / :y-domain come from the
    view's data columns plus the annotation's own position values
    (:intercept for rules, :lo/:hi for bands) so the panel's axes are
-   well-defined even when no data layer is attached to the view."
+   well-defined even when no data layer is attached to the view.
+   Falls back to [0 1] on the axis perpendicular to a rule (where the
+   annotation alone supplies no extent) so the line still draws."
   [{:keys [mark data x y intercept lo hi]}]
   (let [col-vals (fn [col]
                    (when (and data col (tc/dataset? data))
@@ -802,10 +804,17 @@
                 x-extra (into x-extra))
         y-all (cond-> []
                 y-col-vals (into y-col-vals)
-                y-extra (into y-extra))]
+                y-extra (into y-extra))
+        ;; The axis perpendicular to a rule has no annotation-supplied
+        ;; extent. If no data column fills it either, default to [0 1]
+        ;; so the line is drawable.
+        x-fallback? (and (empty? x-all) (#{:rule-h :band-h} mark))
+        y-fallback? (and (empty? y-all) (#{:rule-v :band-v} mark))]
     (cond-> {}
       (seq x-all) (assoc :x-domain [(reduce min x-all) (reduce max x-all)])
-      (seq y-all) (assoc :y-domain [(reduce min y-all) (reduce max y-all)]))))
+      (seq y-all) (assoc :y-domain [(reduce min y-all) (reduce max y-all)])
+      x-fallback? (assoc :x-domain [0.0 1.0])
+      y-fallback? (assoc :y-domain [0.0 1.0]))))
 
 (defn draft->plan
   "Pipeline: convert a draft into a plan using entry-based grid layout.
@@ -891,14 +900,32 @@
          ;; dedupe them here and strip :x/:y so they apply to all
          ;; panels. View-scope annotations keep their :x/:y so
          ;; finalize-panel can match them to the right panel.
+         ;; Annotations only support literal :color (string) and
+         ;; literal :alpha (number); column-mapped aesthetics inherited
+         ;; from sketch/view scope are silently dropped (annotations
+         ;; don't participate in column-mapped scales).
+         clean-aesthetics (fn [m]
+                            (cond-> m
+                              (not (string? (:color m))) (dissoc :color)
+                              (not (number? (:alpha m))) (dissoc :alpha)))
          sketch-scope-anns (->> layer-annotations
                                 (filter :__sketch-scope)
-                                (map #(select-keys % [:mark :intercept :lo :hi :color :alpha]))
+                                (map #(-> %
+                                          (select-keys [:mark :intercept :lo :hi :color :alpha])
+                                          clean-aesthetics))
                                 distinct
                                 vec)
+         ;; View-scope annotations also cross-product when a view is
+         ;; expanded by sk/facet (one identical copy per facet panel).
+         ;; Dedup by content so finalize-panel matches a single
+         ;; annotation against every panel that shares the view's x/y.
          view-scope-anns (->> layer-annotations
                               (remove :__sketch-scope)
-                              (mapv #(select-keys % [:mark :intercept :lo :hi :color :alpha :x :y])))
+                              (map #(-> %
+                                        (select-keys [:mark :intercept :lo :hi :color :alpha :x :y])
+                                        clean-aesthetics))
+                              distinct
+                              vec)
          annotations (into sketch-scope-anns view-scope-anns)
 
          ;; --- Phase 1: compute stats for every panel (no pixel math) ---

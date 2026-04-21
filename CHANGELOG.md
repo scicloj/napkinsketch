@@ -5,10 +5,33 @@ All notable changes to napkinsketch will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026-04-20
+## [0.1.0] - 2026-04-21
 
 First public alpha release. The API and visual defaults are still
 subject to change based on early adopter feedback.
+
+### Breaking: annotations are now layers
+
+Reference lines and shaded bands used to live in `[:opts :annotations]`,
+applied uniformly to every panel, and were attached with a separate
+`sk/annotate` wrapper around `sk/rule-h`/`sk/rule-v`/`sk/band-h`/`sk/band-v`.
+This release replaces that entire path with first-class layers:
+
+- `sk/lay-rule-h` / `sk/lay-rule-v` -- horizontal / vertical reference line
+- `sk/lay-band-h` / `sk/lay-band-v` -- horizontal / vertical shaded band
+
+These are ordinary `lay-*` functions: bare arity is sketch-scope (every
+panel), the four-argument arity with column refs is view-scope (only
+panels matching the view's x/y mapping), and the position lives in the
+opts map (`:intercept` for rules, `:lo` and `:hi` for bands). Appearance
+aesthetics (`:color`, `:alpha`) are literal values in the same opts map.
+
+The old API is removed: `sk/annotate`, `sk/rule-h`, `sk/rule-v`,
+`sk/band-h`, `sk/band-v`, and the `[:opts :annotations]` slot no longer
+exist. Migration is mechanical -- replace each call with the corresponding
+`sk/lay-*` form. Column-mapped positions (one rule per row, ggplot2's
+`geom_hline(aes(yintercept=...))`) are deferred to a future milestone;
+literal positions only in this release.
 
 ### Breaking: `:width`/`:height` are now total SVG dimensions
 
@@ -125,11 +148,12 @@ shape, group, text) flow sketch -> view -> layer. Lower scopes
 override higher ones; `nil` is an explicit cancellation. Scope is
 lexical: you set a mapping where you want it to apply.
 
-**25 layer functions** covering the common chart types: point, line,
+**29 layer functions** covering the common chart types: point, line,
 step, area, stacked-area, histogram, bar, stacked-bar,
 stacked-bar-fill, value-bar, lm (linear model), loess, text, label,
 density, tile, density2d, contour, boxplot, violin, ridgeline, rug,
-summary (mean + SE), errorbar, lollipop.
+summary (mean + SE), errorbar, lollipop, plus four annotation layers
+(lay-rule-h, lay-rule-v, lay-band-h, lay-band-v).
 
 **Statistics built in.** Histogram binning, categorical counts, OLS
 regression (with optional confidence ribbons), LOESS with bootstrap
@@ -158,8 +182,10 @@ via `:color-scale`) with a color bar legend. Categorical columns draw
 from one of ~7000 palettes exposed by clojure2d. Diverging color
 scales with custom midpoints are also supported.
 
-**Annotations.** Reference lines (`rule-v`, `rule-h`) and shaded
-bands (`band-v`, `band-h`) as plot-level decorations.
+**Annotations.** Reference lines (`sk/lay-rule-h`, `sk/lay-rule-v`)
+and shaded bands (`sk/lay-band-h`, `sk/lay-band-v`) as first-class
+layers. Sketch-scope annotations apply to every panel; view-scope
+annotations apply only to panels matching the view's x/y mapping.
 
 **Per-scope data override.** `:data` can be set at sketch, view, or
 layer level for mixed-data composites like
@@ -223,8 +249,8 @@ Twenty-eight executable chapters:
   waterfall extension, edge cases, development
 
 Every notebook embeds runnable regression tests via `kind/test-last`.
-Combined with a hand-written core test suite, the project runs ~850
-tests / ~1200 assertions.
+Combined with a hand-written core test suite, the project runs ~920
+tests / ~1340 assertions.
 
 ### Architecture
 
@@ -349,6 +375,15 @@ produce crashes on canonical inputs.
   fails with a Malli schema dump. Use `long` or integer literals.
 - Boolean columns in `:x`/`:y` fail with a Malli schema dump.
   Convert to 0/1 or use as `:color` / `:shape` categorical.
+
+**Mixing keyword and string column references:**
+
+- Mapping the same column with a keyword in one place and a string
+  in another (e.g. `(sk/sketch ds {:color :group})` then
+  `(sk/lay-point :x :y {:color "group"})`) is not normalized: the
+  scope hierarchy treats them as different keys and the result is a
+  silent empty plot. Workaround: pick one form (keyword or string)
+  and use it consistently within a sketch.
 
 **ggplot2 features not yet implemented:**
 

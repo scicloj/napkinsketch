@@ -128,7 +128,7 @@
 
 
 (def
- v33_l248
+ v33_l249
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -143,25 +143,25 @@
 
 
 (deftest
- t34_l255
- (is ((fn [v] (some #{"mean"} (:texts (sk/svg-summary v)))) v33_l248)))
+ t34_l256
+ (is ((fn [v] (some #{"mean"} (:texts (sk/svg-summary v)))) v33_l249)))
 
 
 (def
- v36_l272
+ v36_l273
  (def template (-> (sk/sketch) (sk/view :x :y) sk/lay-point)))
 
 
-(def v37_l277 (-> template (sk/with-data {:x [1 2 3], :y [4 5 6]})))
+(def v37_l278 (-> template (sk/with-data {:x [1 2 3], :y [4 5 6]})))
 
 
 (deftest
- t38_l280
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v37_l277)))
+ t38_l281
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v37_l278)))
 
 
 (def
- v40_l297
+ v40_l298
  (->
   [{:category "A", :value 100}
    {:category "B", :value 50}
@@ -173,12 +173,12 @@
 
 
 (deftest
- t41_l305
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v40_l297)))
+ t41_l306
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v40_l298)))
 
 
 (def
- v43_l327
+ v43_l328
  (->
   {:x (concat (range 5) (range 5)),
    :y [1 2 3 4 5 2 2 2 3 3],
@@ -187,5 +187,5 @@
 
 
 (deftest
- t44_l332
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v43_l327)))
+ t44_l333
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v43_l328)))

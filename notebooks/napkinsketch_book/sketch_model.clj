@@ -133,11 +133,11 @@
                                 (= 150 (:points s))
                                 (some #{"Iris by Species"} (:texts s)))))])
 
-;; `view`, `lay-*`, `facet`, `options`, `scale`, `coord`,
-;; `annotate` -- all take a sketch and return a sketch. Order
-;; is flexible. The pipeline reads like a sentence: "take this
-;; data, view these columns with color, facet by species, add
-;; points and regression lines, set a title."
+;; `view`, `lay-*`, `facet`, `options`, `scale`, `coord` -- all
+;; take a sketch and return a sketch. Order is flexible. The
+;; pipeline reads like a sentence: "take this data, view these
+;; columns with color, facet by species, add points and regression
+;; lines, set a title."
 
 ;; ## Summary
 ;;

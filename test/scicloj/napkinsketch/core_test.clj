@@ -1880,12 +1880,12 @@
                            (sk/view)))]
         (is (= 5 (:points s)))))))
 
-;; ---- Annotations-as-layers Stage 1 (sk/lay-rule-*, sk/lay-band-*) ----
+;; ---- Annotations-as-layers (sk/lay-rule-*, sk/lay-band-*) ----
 
 (deftest lay-rule-band-test
-  ;; Stage 1: new sk/lay-rule-*/sk/lay-band-* API alongside the old
-  ;; sk/annotate + sk/rule-*/sk/band-* path. Both should produce the
-  ;; same plot-level annotations so existing tests stay green.
+  ;; Reference lines and shaded bands are first-class layers; these
+  ;; tests cover sketch-scope vs view-scope, facet interaction,
+  ;; color/alpha overrides, and annotation-only view domain synthesis.
   (let [ds (tc/dataset {:x [1 2 3 4 5] :y [2 4 3 5 4]})]
 
     (testing "sketch-scope rule-h attaches a single annotation"

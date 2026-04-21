@@ -20,7 +20,7 @@
 ;; :mapping  -- sketch-level aesthetic mappings (visible to all views, all layers)
 ;; :views    -- vector of view maps, each with :mapping, :layers, optional :data
 ;; :layers   -- sketch-level layers (crossed with all views)
-;; :opts     -- plot options + scale/coord/facet/annotations
+;; :opts     -- plot options + scale/coord/facet
 ;;
 ;; Three scope levels: sketch -> view -> layer.
 ;; Mappings flow downward; lower overrides higher (lexical scope).
@@ -184,15 +184,19 @@
                                ". Convert it to a single type (number, string, etc.) before plotting.")
                           {:key k :column col :types types})))))))
 
+(defn- annotation-method? [layer]
+  (contains? resolve/annotation-marks (:mark (method/lookup (:method layer)))))
+
 (defn sketch->draft
   "Flatten a sketch into a draft -- a vector of flat maps, one per
    view-layer combination, with all scope merged. The draft is the
    bridge between composable sketches and the plan pipeline.
    Reads facet/scale/coord from opts. Expands facets on views.
-   Crosses views x layers: each view's own :layers ∪ sketch :layers.
+   Crosses views x layers: each view's own :layers union sketch :layers.
    Merges mappings downward: sketch-mapping < view-mapping < method-info < layer-mapping.
-   Annotation views (with annotation marks in own layers) skip sketch layers.
-   Views with no applicable layers get {:mark :infer} for downstream inference."
+   Views with no applicable layers get {:mark :infer} for downstream inference.
+   A sketch with only sketch-level annotation layers and no views gets
+   one synthesized empty view so the annotations land in a panel."
   [{:keys [data mapping views layers opts]}]
   (let [;; Plot-level settings from opts
         x-scale (:x-scale opts)
@@ -201,7 +205,16 @@
         ;; Expand facets
         expanded (expand-facets views data (:facet-col opts) (:facet-row opts))
         sketch-layers layers
-        sketch-mapping (or mapping {})]
+        sketch-mapping (or mapping {})
+        ;; Annotation-only sketches (no views, only annotation layers) need
+        ;; one synthesized empty view so the annotations get a panel.
+        ;; synthesize-annotation-domain in plan.clj derives the domain from
+        ;; the sketch's data + annotation positions.
+        expanded (if (and (empty? expanded)
+                          (seq sketch-layers)
+                          (every? annotation-method? sketch-layers))
+                   [{:mapping {} :layers []}]
+                   expanded)]
     (let [idx (atom -1)]
       (vec
        (mapcat

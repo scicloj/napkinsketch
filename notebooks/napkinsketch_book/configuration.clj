@@ -73,9 +73,9 @@
 ;;
 ;; These options are accepted directly by `sk/options`, `sk/plan`, and
 ;; `sk/plot`; they are inherently per-plot, with no cross-plot defaults.
-;; (Other plot options -- axis scales, coordinate system, facets,
-;; annotations -- are set by their dedicated functions and live in the
-;; same `:opts` field.)
+;; (Other plot options -- axis scales, coordinate system, facets --
+;; are set by their dedicated functions and live in the same `:opts`
+;; field.)
 
 (kind/table
  {:column-names ["Key" "Category" "Description"]

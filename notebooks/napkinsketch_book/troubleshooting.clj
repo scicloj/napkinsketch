@@ -235,8 +235,9 @@
 ;;
 ;; **Symptom**: An error like
 ;; `"lay-text :y must be a column reference (keyword or string),
-;; but got 200"`, typically when adding an annotation layer with
-;; a fixed horizontal or vertical position.
+;; but got 200"`, typically when adding a text or label layer at a
+;; fixed horizontal or vertical position. (Reference lines use
+;; `sk/lay-rule-h` / `sk/lay-rule-v` with `:intercept` instead.)
 ;;
 ;; **Cause**: `:x` and `:y` are position **mappings** -- they must
 ;; name a column that the stat can index into, not hold a scalar
