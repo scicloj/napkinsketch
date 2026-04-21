@@ -122,7 +122,7 @@ my-sketch
 ;; `sk/draft` is useful for inspecting exactly what the renderer will
 ;; consume before any domains, ticks, or pixel math are computed.
 
-(sk/draft my-sketch)
+(-> my-sketch sk/draft kind/pprint)
 
 (kind/test-last [(fn [d] (and (vector? d)
                               (= 1 (count d))

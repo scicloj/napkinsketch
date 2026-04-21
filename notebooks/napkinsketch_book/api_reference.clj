@@ -558,8 +558,10 @@
 ;; (view, applicable-layer) pair, with all scope merged. Useful
 ;; for inspecting exactly what the renderer will draw:
 
-(sk/draft (-> (rdatasets/datasets-iris)
-              (sk/lay-point :sepal-length :sepal-width)))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    sk/draft
+    kind/pprint)
 
 (kind/test-last [(fn [d] (and (vector? d)
                               (= 1 (count d))
