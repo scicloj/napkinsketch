@@ -1116,7 +1116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="scale" class="level3">
 <h3 class="anchored" data-anchor-id="scale"><code>scale</code></h3>
 <p><code>[sk channel scale-type]</code></p>
-<p>Set axis scale on a sketch. Scale is plot-level – applies to all views. (scale sk :x :log) – log scale on x-axis (scale sk :x {:type :categorical :domain […]}) – explicit category order</p>
+<p>Set axis scale on a sketch. Scale is plot-level – applies to all views. Accepts a type keyword or a scale spec map with :type, optional :domain, and optional :breaks (explicit tick locations). (scale sk :x :log) – log scale on x-axis (scale sk :x {:type :categorical :domain […]}) – explicit category order (scale sk :y {:type :linear :breaks [0 5 10]}) – pin tick locations (scale sk :y {:type :log :domain [1 1000]}) – log scale with explicit range</p>
 <p>Log scale:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
