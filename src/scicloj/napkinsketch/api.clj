@@ -1019,8 +1019,12 @@
 
 (defn scale
   "Set axis scale on a sketch. Scale is plot-level -- applies to all views.
+   Accepts a type keyword or a scale spec map with :type, optional
+   :domain, and optional :breaks (explicit tick locations).
    (scale sk :x :log)                                -- log scale on x-axis
-   (scale sk :x {:type :categorical :domain [...]})  -- explicit category order"
+   (scale sk :x {:type :categorical :domain [...]})  -- explicit category order
+   (scale sk :y {:type :linear :breaks [0 5 10]})    -- pin tick locations
+   (scale sk :y {:type :log :domain [1 1000]})       -- log scale with explicit range"
   [sk channel scale-type]
   (let [sk (ensure-sk sk)
         k (case channel :x :x-scale :y :y-scale

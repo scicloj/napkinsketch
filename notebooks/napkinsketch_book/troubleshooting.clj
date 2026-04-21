@@ -244,8 +244,8 @@
 ;; name a column that the stat can index into, not hold a scalar
 ;; constant.
 ;;
-;; **Fix**: Add a column to the annotation dataset with that
-;; constant value, then reference the column:
+;; **Fix**: Provide a small one-row dataset via `:data` whose columns
+;; hold the constant values, then reference those columns:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)

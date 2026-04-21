@@ -154,6 +154,21 @@
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
+;; ### Different data per layer
+;;
+;; Each `lay-*` accepts `{:data ...}` to override the sketch-level
+;; dataset. This lets you overlay marks from two different tables --
+;; ggplot2's `geom_line(data=df2) + geom_point(data=df1)` pattern.
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:alpha 0.3})
+    (sk/lay-point {:data {:sepal-length [5.0 6.5]
+                          :sepal-width [3.5 3.0]}
+                   :x :sepal-length :y :sepal-width
+                   :color "red" :size 6}))
+
+(kind/test-last [(fn [v] (= 152 (:points (sk/svg-summary v))))])
+
 ;; ### Points with [Error Bars](https://en.wikipedia.org/wiki/Error_bar)
 ;;
 ;; Combining `point` and `errorbar` layers shows measurements

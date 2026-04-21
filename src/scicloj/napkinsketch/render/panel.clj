@@ -180,50 +180,65 @@
         ann-marks
         (when (seq annotations)
           (let [default-ann-color (defaults/hex->rgba (:annotation-stroke cfg))
-                band-alpha (:band-opacity cfg)]
+                band-alpha (:band-opacity cfg)
+                flip? (= coord-type :flip)
+                ;; Annotation-specific scales. :rule-h / :band-h annotate a
+                ;; value on the y-data axis; under :flip that axis is
+                ;; horizontal, so we scale with sx and draw a vertical
+                ;; line/band. :rule-v / :band-v annotate a value on the
+                ;; x-data axis; under :flip that axis is vertical.
+                ;; Under :polar, annotations would need circle/spoke
+                ;; shapes and are skipped for now (see backlog).
+                y-data-scale (if flip? sx sy)
+                x-data-scale (if flip? sy sx)
+                horizontal-y-data? (not flip?)
+                draw-rule (fn [pixel color horizontal?]
+                            (ui/with-color color
+                              (ui/with-stroke-width 1.5
+                                (ui/with-style ::ui/style-stroke
+                                  (if horizontal?
+                                    (ui/path [m pixel] [(- pw m) pixel])
+                                    (ui/path [pixel m] [pixel (- ph m)]))))))
+                draw-band (fn [p1 p2 rgba horizontal?]
+                            (ui/with-color rgba
+                              (ui/with-style ::ui/style-fill
+                                (if horizontal?
+                                  (ui/translate m (min p1 p2)
+                                                (ui/rectangle (- pw m m)
+                                                              (Math/abs (double (- p2 p1)))))
+                                  (ui/translate (min p1 p2) m
+                                                (ui/rectangle (Math/abs (double (- p2 p1)))
+                                                              (- ph m m)))))))]
             (vec
-             (for [a annotations]
+             (for [a annotations
+                   :when (not= coord-type :polar)]
                (case (:mark a)
                  :rule-v (let [color (if-let [c (:color a)]
                                        (defaults/hex->rgba c)
                                        default-ann-color)
-                               [px _] (coord-fn (:x-intercept a) 0)]
-                           (ui/with-color color
-                             (ui/with-stroke-width 1.5
-                               (ui/with-style ::ui/style-stroke
-                                 (ui/path [px m] [px (- ph m)])))))
+                               pixel (x-data-scale (:x-intercept a))]
+                           (draw-rule pixel color flip?))
                  :rule-h (let [color (if-let [c (:color a)]
                                        (defaults/hex->rgba c)
                                        default-ann-color)
-                               [_ py] (coord-fn 0 (:y-intercept a))]
-                           (ui/with-color color
-                             (ui/with-stroke-width 1.5
-                               (ui/with-style ::ui/style-stroke
-                                 (ui/path [m py] [(- pw m) py])))))
-                 :band-v (let [[px1 _] (coord-fn (:x-min a) 0)
-                               [px2 _] (coord-fn (:x-max a) 0)
+                               pixel (y-data-scale (:y-intercept a))]
+                           (draw-rule pixel color horizontal-y-data?))
+                 :band-v (let [p1 (x-data-scale (:x-min a))
+                               p2 (x-data-scale (:x-max a))
                                alpha (or (:alpha a) band-alpha)
                                rgba (if-let [c (:color a)]
                                       (let [[r g b _] (defaults/hex->rgba c)]
                                         [r g b alpha])
                                       [0.5 0.5 0.5 alpha])]
-                           (ui/with-color rgba
-                             (ui/with-style ::ui/style-fill
-                               (ui/translate (min px1 px2) m
-                                             (ui/rectangle (Math/abs (double (- px2 px1)))
-                                                           (- ph m m))))))
-                 :band-h (let [[_ py1] (coord-fn 0 (:y-min a))
-                               [_ py2] (coord-fn 0 (:y-max a))
+                           (draw-band p1 p2 rgba flip?))
+                 :band-h (let [p1 (y-data-scale (:y-min a))
+                               p2 (y-data-scale (:y-max a))
                                alpha (or (:alpha a) band-alpha)
                                rgba (if-let [c (:color a)]
                                       (let [[r g b _] (defaults/hex->rgba c)]
                                         [r g b alpha])
                                       [0.5 0.5 0.5 alpha])]
-                           (ui/with-color rgba
-                             (ui/with-style ::ui/style-fill
-                               (ui/translate m (min py1 py2)
-                                             (ui/rectangle (- pw m m)
-                                                           (Math/abs (double (- py2 py1))))))))
+                           (draw-band p1 p2 rgba horizontal-y-data?))
                  nil)))))
 
         ;; Tick labels (conditional)

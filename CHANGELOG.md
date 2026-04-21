@@ -344,6 +344,16 @@ produce crashes on canonical inputs.
   no-op. Only column mappings to `:shape` take effect.
 - Faceted panels default to free scales per panel (ggplot2's default
   is fixed); an explicit `:facet-scales :fixed` option is pending.
+  A consequence: a sketch-scope annotation (`sk/lay-rule-*` /
+  `sk/lay-band-*`) is invisible in any panel whose per-panel domain
+  doesn't contain the intercept -- for example, `{:y-intercept 6.0}`
+  on a species-faceted scatter won't appear in setosa if setosa's
+  y-range is [4, 5.5]. Workaround: pin the y-domain explicitly via
+  `(sk/scale :y {:domain [...]})`.
+- Annotations are silently skipped under `(sk/coord :polar)`. A polar
+  rule would need to render as a circle (fixed radius) or spoke
+  (fixed angle); those shapes are not implemented. Use Cartesian or
+  flip coords for annotated plots.
 - `sk/facet` and `sk/facet-grid` require a categorical column --
   passing a numeric column (e.g. mpg's `:cyl`) produces empty
   panels. Workaround: convert to string or keyword before faceting,

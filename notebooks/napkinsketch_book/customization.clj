@@ -103,6 +103,18 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
+;; Pin exact tick locations with `:breaks` (ggplot2's
+;; `scale_*_continuous(breaks=...)`).
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/scale :y {:type :linear :breaks [2.0 3.0 4.0]}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"2"} (:texts s))
+                                (some #{"4"} (:texts s)))))])
+
 ;; ## Mark Styling
 
 ;; Pass `:alpha` and `:size` directly to methods.
