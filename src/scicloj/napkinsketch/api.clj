@@ -214,16 +214,10 @@
 
 ;; ---- API ----
 
-(defn- wrap-autorender
-  "Wrap a sketch with kind/fn for auto-rendering in Clay."
-  [sk]
-  (kind/fn (cond-> (assoc sk :kindly/f #'sketch/render-sketch)
-             defaults/*config* (assoc :config-snapshot defaults/*config*))))
-
 (defn- coerce-dataset
   "Coerce data to a tablecloth dataset. Returns nil for nil.
    Rejects Sketch records to prevent silent coercion to a bogus
-   6-column dataset made of the sketch's own fields."
+   5-column dataset made of the sketch's own fields."
   [d]
   (when d
     (cond
@@ -244,9 +238,8 @@
     (sketch/sketch? x) x
     (or (tc/dataset? x)
         (map? x)
-        (sequential? x)) (wrap-autorender
-                          (sketch/->sketch (coerce-dataset x) {} [] [] {}))
-    :else (wrap-autorender (sketch/->sketch nil {} [] [] {}))))
+        (sequential? x)) (sketch/->sketch (coerce-dataset x) {} [] [] {})
+    :else (sketch/->sketch nil {} [] [] {})))
 
 (defn sketch?
   "Return true if x is a sketch."
@@ -292,7 +285,7 @@
    (sketch data {:color :species})   -- sketch with sketch-level color mapping
    (sketch existing-sketch {:color :c}) -- merge mapping into existing sketch
                                           (preserves :views/:layers/:opts)"
-  ([] (wrap-autorender (sketch/->sketch nil {} [] [] {})))
+  ([] (sketch/->sketch nil {} [] [] {}))
   ([data] (sketch data {}))
   ([data mapping]
    ;; sk/sketch's mapping is for *appearance* aesthetics (color/size/etc.) that
@@ -309,8 +302,7 @@
        ;; Merge new mapping into existing sketch, preserving views/layers/opts
        (update data :mapping merge mapping)
        ;; Fresh sketch from raw data (or nil)
-       (wrap-autorender
-        (sketch/->sketch (coerce-dataset data) mapping [] [] {}))))))
+       (sketch/->sketch (coerce-dataset data) mapping [] [] {})))))
 
 (def ^:private position-aesthetic-keys
   "Mapping keys whose keyword values are always column references

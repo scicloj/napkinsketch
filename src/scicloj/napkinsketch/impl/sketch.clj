@@ -37,7 +37,7 @@
 (defn- ensure-dataset
   "Coerce raw data to a Tablecloth dataset. Returns nil for nil input.
    Rejects Sketch records to prevent silent coercion to a bogus
-   6-column dataset (:data :mapping :views :layers :opts :kindly/f)."
+   5-column dataset (:data :mapping :views :layers :opts)."
   [d]
   (when d
     (cond
@@ -264,7 +264,6 @@
 (defn render-sketch
   "Render a sketch via the grid pipeline.
    Called by Clay via kind/fn at display time.
-   Restores config snapshot if present.
    When opts contain :format :bufimg, renders to BufferedImage (via
    membrane's Java2D backend) instead of SVG. Clay displays BufferedImage
    values as inline images automatically.
@@ -276,29 +275,31 @@
    rendered blank in :format [:gfm]. Spacing is now handled downstream by
    the consumer / stylesheet."
   [sk]
-  (let [captured (:config-snapshot sk)
-        render-fn (fn []
-                    (let [opts (:opts sk {})
-                          fmt (or (:format opts) :svg)
-                          draft (sketch->draft sk)
-                          p (plan/draft->plan draft opts)]
-                      (if (= fmt :bufimg)
-                        (do
-                          ;; Ensure the bufimg renderer is loaded
-                          (require 'scicloj.napkinsketch.render.bufimg)
-                          (render-impl/plan->figure p :bufimg opts))
-                        (render-impl/plan->figure p :svg opts))))]
-    (if captured
-      (binding [defaults/*config* captured]
-        (render-fn))
-      (render-fn))))
+  (let [opts (:opts sk {})
+        fmt (or (:format opts) :svg)
+        draft (sketch->draft sk)
+        p (plan/draft->plan draft opts)]
+    (if (= fmt :bufimg)
+      (do
+        ;; Ensure the bufimg renderer is loaded
+        (require 'scicloj.napkinsketch.render.bufimg)
+        (render-impl/plan->figure p :bufimg opts))
+      (render-impl/plan->figure p :svg opts))))
 
 ;; ---- Constructor ----
 
 (defn ->sketch
   "Create a sketch annotated with kind/fn for auto-rendering.
-   Snapshots current *config* for with-config support."
+   The sketch record stays clean; Clay's :kindly/f lives in the
+   kindly-options metadata channel. A with-config snapshot is
+   captured in a closure so restoration happens at render time
+   without mutating the sketch."
   [data mapping views layers opts]
-  (kind/fn (cond-> (assoc (->Sketch data mapping views layers opts)
-                          :kindly/f #'render-sketch)
-             defaults/*config* (assoc :config-snapshot defaults/*config*))))
+  (let [sk (->Sketch data mapping views layers opts)
+        captured defaults/*config*]
+    (kind/fn sk
+      {:kindly/f (if captured
+                   (fn [sk]
+                     (binding [defaults/*config* captured]
+                       (render-sketch sk)))
+                   #'render-sketch)})))

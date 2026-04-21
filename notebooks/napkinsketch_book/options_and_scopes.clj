@@ -36,11 +36,10 @@
 
 ;; A helper to inspect sketch structure. It shows `:mapping`,
 ;; `:views`, `:layers`, and `:opts` -- the full record also has
-;; `:data` and `:kindly/f`, which this helper omits for
-;; readability.
+;; `:data`, which this helper omits for readability.
 
 (defn sk-summary
-  "Print sketch structure without :data and :kindly/f (for readability)."
+  "Print sketch structure without :data (for readability)."
   [sk]
   (-> (select-keys sk [:mapping :views :layers :opts])
       (update :views (partial mapv #(dissoc % :data)))
