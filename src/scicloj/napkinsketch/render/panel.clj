@@ -179,33 +179,47 @@
         ;; Annotation marks
         ann-marks
         (when (seq annotations)
-          (let [ann-color (defaults/hex->rgba (:annotation-stroke cfg))
+          (let [default-ann-color (defaults/hex->rgba (:annotation-stroke cfg))
                 band-alpha (:band-opacity cfg)]
             (vec
              (for [a annotations]
                (case (:mark a)
-                 :rule-v (let [[px _] (coord-fn (:intercept a) 0)]
-                           (ui/with-color ann-color
+                 :rule-v (let [color (if-let [c (:color a)]
+                                       (defaults/hex->rgba c)
+                                       default-ann-color)
+                               [px _] (coord-fn (:intercept a) 0)]
+                           (ui/with-color color
                              (ui/with-stroke-width 1.5
                                (ui/with-style ::ui/style-stroke
                                  (ui/path [px m] [px (- ph m)])))))
-                 :rule-h (let [[_ py] (coord-fn 0 (:intercept a))]
-                           (ui/with-color ann-color
+                 :rule-h (let [color (if-let [c (:color a)]
+                                       (defaults/hex->rgba c)
+                                       default-ann-color)
+                               [_ py] (coord-fn 0 (:intercept a))]
+                           (ui/with-color color
                              (ui/with-stroke-width 1.5
                                (ui/with-style ::ui/style-stroke
                                  (ui/path [m py] [(- pw m) py])))))
                  :band-v (let [[px1 _] (coord-fn (:lo a) 0)
                                [px2 _] (coord-fn (:hi a) 0)
-                               alpha (or (:alpha a) band-alpha)]
-                           (ui/with-color [0.5 0.5 0.5 alpha]
+                               alpha (or (:alpha a) band-alpha)
+                               rgba (if-let [c (:color a)]
+                                      (let [[r g b _] (defaults/hex->rgba c)]
+                                        [r g b alpha])
+                                      [0.5 0.5 0.5 alpha])]
+                           (ui/with-color rgba
                              (ui/with-style ::ui/style-fill
                                (ui/translate (min px1 px2) m
                                              (ui/rectangle (Math/abs (double (- px2 px1)))
                                                            (- ph m m))))))
                  :band-h (let [[_ py1] (coord-fn 0 (:lo a))
                                [_ py2] (coord-fn 0 (:hi a))
-                               alpha (or (:alpha a) band-alpha)]
-                           (ui/with-color [0.5 0.5 0.5 alpha]
+                               alpha (or (:alpha a) band-alpha)
+                               rgba (if-let [c (:color a)]
+                                      (let [[r g b _] (defaults/hex->rgba c)]
+                                        [r g b alpha])
+                                      [0.5 0.5 0.5 alpha])]
+                           (ui/with-color rgba
                              (ui/with-style ::ui/style-fill
                                (ui/translate m (min py1 py2)
                                              (ui/rectangle (- pw m m)

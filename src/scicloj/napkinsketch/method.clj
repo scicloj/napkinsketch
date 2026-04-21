@@ -42,7 +42,10 @@
    :ymin "Column keyword for lower error bound"
    :ymax "Column keyword for upper error bound"
    :side "Rug tick position — :x (default), :y, or :both"
-   :kde2d-grid "2D KDE grid resolution — number of bins per axis (default 25)"})
+   :kde2d-grid "2D KDE grid resolution — number of bins per axis (default 25)"
+   :intercept "Numeric data-space position for a reference line"
+   :lo "Lower bound of a shaded band (data space)"
+   :hi "Upper bound of a shaded band (data space)"})
 
 (def ^:private registry*
   "Atom holding keyword → method entry map."
@@ -75,7 +78,8 @@
    :tile :density2d :contour
    :boxplot :violin :ridgeline
    :summary :errorbar :lollipop
-   :text :label :rug])
+   :text :label :rug
+   :rule-h :rule-v :band-h :band-v])
 
 ;; ---- Built-in methods ----
 
@@ -104,4 +108,8 @@
 (register! :text {:mark :text :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Text — data-driven labels."})
 (register! :label {:mark :label :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Label — text with background box."})
 (register! :rug {:mark :rug :stat :identity :x-only true :accepts [:side] :doc "Rug — axis-margin tick marks."})
+(register! :rule-h {:mark :rule-h :stat :identity :accepts [:intercept] :doc "Horizontal reference line at y = intercept."})
+(register! :rule-v {:mark :rule-v :stat :identity :accepts [:intercept] :doc "Vertical reference line at x = intercept."})
+(register! :band-h {:mark :band-h :stat :identity :accepts [:lo :hi] :doc "Horizontal shaded band between y = lo and y = hi."})
+(register! :band-v {:mark :band-v :stat :identity :accepts [:lo :hi] :doc "Vertical shaded band between x = lo and x = hi."})
 

@@ -39,8 +39,9 @@ graph LR
 ")
 
 ;; - **sketch** -- the composable user API. Functions like
-;;   `sk/sketch`, `sk/view`, `sk/lay-point`, `sk/options`, `sk/facet`,
-;;   `sk/scale`, `sk/coord`, and `sk/annotate` build up a sketch record. No computation has happened yet.
+;;   `sk/sketch`, `sk/view`, `sk/lay-point`, `sk/lay-rule-h`,
+;;   `sk/options`, `sk/facet`, `sk/scale`, and `sk/coord` build up a
+;;   sketch record. No computation has happened yet.
 ;;
 ;; - **Draft** -- a flat vector of maps produced by `sk/draft`.
 ;;   Each map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic

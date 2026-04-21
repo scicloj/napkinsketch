@@ -131,19 +131,18 @@
 
 ;; ## Annotations
 
-;; Add reference lines and shaded bands to highlight regions of interest.
-
-;; **Planned refactor:** Before 0.1.0, annotations will become
-;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
-;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
-;; layer. The `sk/annotate` + `sk/rule-*` / `sk/band-*` API shown
-;; here will be replaced.
+;; Reference lines and shaded bands are layers added with
+;; `sk/lay-rule-h`, `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v`.
+;; Position comes from the opts map (`:intercept`, or `:lo`/`:hi`);
+;; appearance aesthetics (`:color`, `:alpha`) work the same way they
+;; do on any other layer.
 
 ;; Horizontal and vertical reference lines.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/annotate (sk/rule-h 3.0) (sk/rule-v 6.0)))
+    (sk/lay-rule-h {:intercept 3.0})
+    (sk/lay-rule-v {:intercept 6.0}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -158,7 +157,8 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/annotate (sk/band-v 5.5 6.5) (sk/band-h 3.0 3.5 {:alpha 0.3})))
+    (sk/lay-band-v {:lo 5.5 :hi 6.5})
+    (sk/lay-band-h {:lo 3.0 :hi 3.5 :alpha 0.3}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])

@@ -98,49 +98,6 @@
   "Mark types that render as annotations (rules, bands) rather than data layers."
   #{:rule-h :rule-v :band-h :band-v})
 
-(defn merge-layer
-  "Merge a layer into each view, preserving :__base for additive lay."
-  [views overrides]
-  (let [overrides (normalize-col-refs overrides)]
-    (mapv (fn [v]
-            (when (:data v)
-              (validate-columns (:data v) overrides))
-            (let [base (or (:__base v) v)]
-              (assoc (merge v overrides) :__base base)))
-          views)))
-
-(defn lay
-  "Apply one or more methods to views. Additive: calling lay on
-   already-layered views appends new methods rather than overwriting."
-  [base-views & layer-specs]
-  (doseq [spec layer-specs]
-    (when-not (map? spec)
-      (throw (ex-info (str "Layer spec must be a map, got: " (type spec)
-                           ". Use lay-point, lay-line, etc. to add layers.")
-                      {:spec spec}))))
-  (let [ann-specs (filter #(and (map? %) (annotation-marks (:mark %))) layer-specs)
-        data-specs (remove #(and (map? %) (annotation-marks (:mark %))) layer-specs)
-        ;; Separate existing annotations from data views
-        existing-anns (filter #(annotation-marks (:mark %)) base-views)
-        data-views (remove #(annotation-marks (:mark %)) base-views)
-        has-marks? (some :mark data-views)
-        ;; Recover unique bare bases — strip mark/stat/position but keep
-        ;; facet keys and faceted dataset so new layers inherit the facet split.
-        ;; Only fall back to __base when there are no facet keys (pre-facet case).
-        bare-views (if has-marks?
-                     (let [bases (map (fn [v]
-                                        (if (or (:facet-row v) (:facet-col v))
-                                          (dissoc v :mark :stat :position)
-                                          (or (:__base v) (dissoc v :mark :stat :position))))
-                                      data-views)]
-                       (vec (distinct bases)))
-                     data-views)
-        new-layers (apply concat (map #(merge-layer bare-views %) data-specs))]
-    (vec (concat (when has-marks? data-views)
-                 new-layers
-                 existing-anns
-                 ann-specs))))
-
 ;; ---- Coord ----
 
 (defn coord
@@ -150,43 +107,6 @@
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " (pr-str c))
                     {:coord c})))
   (mapv #(assoc % :coord c) views))
-
-;; ---- Annotation Constructors ----
-
-(defn- check-annotation-arg [name v]
-  (when-not (number? v)
-    (throw (ex-info (str name " requires a number, got: " (pr-str v))
-                    {:argument v}))))
-
-(defn rule-v
-  "Vertical reference line at x = intercept."
-  [intercept]
-  (check-annotation-arg "rule-v intercept" intercept)
-  {:mark :rule-v :intercept intercept})
-
-(defn rule-h
-  "Horizontal reference line at y = intercept."
-  [intercept]
-  (check-annotation-arg "rule-h intercept" intercept)
-  {:mark :rule-h :intercept intercept})
-
-(defn band-v
-  "Vertical shaded band from x = lo to x = hi.
-  Optional opts map: {:alpha 0.3} overrides band opacity."
-  ([lo hi] (band-v lo hi {}))
-  ([lo hi opts]
-   (check-annotation-arg "band-v lo" lo)
-   (check-annotation-arg "band-v hi" hi)
-   (merge {:mark :band-v :lo lo :hi hi} opts)))
-
-(defn band-h
-  "Horizontal shaded band from y = lo to y = hi.
-  Optional opts map: {:alpha 0.3} overrides band opacity."
-  ([lo hi] (band-h lo hi {}))
-  ([lo hi opts]
-   (check-annotation-arg "band-h lo" lo)
-   (check-annotation-arg "band-h hi" hi)
-   (merge {:mark :band-h :lo lo :hi hi} opts)))
 
 ;; ---- Cross ----
 

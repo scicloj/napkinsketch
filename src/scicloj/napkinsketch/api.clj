@@ -163,34 +163,6 @@
       (if (string? r) r "(no description)"))
     (catch Exception _ "(no description)")))
 
-;; ---- Annotations ----
-
-(defn rule-v
-  "Vertical reference line at x = intercept.
-   (rule-v 5)  -- line at x=5"
-  [intercept]
-  (resolve/rule-v intercept))
-
-(defn rule-h
-  "Horizontal reference line at y = intercept.
-   (rule-h 3)  -- line at y=3"
-  [intercept]
-  (resolve/rule-h intercept))
-
-(defn band-v
-  "Vertical shaded band from x = lo to x = hi.
-   (band-v 4 6)              -- shaded region between x=4 and x=6
-   (band-v 4 6 {:alpha 0.3}) -- with custom opacity"
-  ([lo hi] (resolve/band-v lo hi))
-  ([lo hi opts] (resolve/band-v lo hi opts)))
-
-(defn band-h
-  "Horizontal shaded band from y = lo to y = hi.
-   (band-h 2 4)              -- shaded region between y=2 and y=4
-   (band-h 2 4 {:alpha 0.3}) -- with custom opacity"
-  ([lo hi] (resolve/band-h lo hi))
-  ([lo hi opts] (resolve/band-h lo hi opts)))
-
 ;; ---- Cross ----
 
 (defn cross
@@ -693,6 +665,50 @@
   ([sk-or-data x y-or-opts] (lay-method :point sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-method :point sk-or-data x y opts)))
 
+(defn lay-rule-h
+  "Add :rule-h layer -- horizontal reference line at y = intercept.
+   Position comes from opts (not data columns).
+   (lay-rule-h sk {:intercept 3})           -- sketch-level, all panels
+   (lay-rule-h sk :x :y {:intercept 3})     -- view-specific (columns pick the view)
+   (lay-rule-h sk {:intercept 3 :color \"red\" :alpha 0.5})"
+  ([sk-or-data] (lay-method :rule-h sk-or-data))
+  ([sk-or-data x-or-opts] (lay-method :rule-h sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-method :rule-h sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-method :rule-h sk-or-data x y opts)))
+
+(defn lay-rule-v
+  "Add :rule-v layer -- vertical reference line at x = intercept.
+   Position comes from opts (not data columns).
+   (lay-rule-v sk {:intercept 5})           -- sketch-level, all panels
+   (lay-rule-v sk :x :y {:intercept 5})     -- view-specific (columns pick the view)
+   (lay-rule-v sk {:intercept 5 :color \"red\" :alpha 0.5})"
+  ([sk-or-data] (lay-method :rule-v sk-or-data))
+  ([sk-or-data x-or-opts] (lay-method :rule-v sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-method :rule-v sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-method :rule-v sk-or-data x y opts)))
+
+(defn lay-band-h
+  "Add :band-h layer -- horizontal shaded band between y = lo and y = hi.
+   Position comes from opts (not data columns).
+   (lay-band-h sk {:lo 2 :hi 4})            -- sketch-level, all panels
+   (lay-band-h sk :x :y {:lo 2 :hi 4})      -- view-specific (columns pick the view)
+   (lay-band-h sk {:lo 2 :hi 4 :color \"blue\" :alpha 0.3})"
+  ([sk-or-data] (lay-method :band-h sk-or-data))
+  ([sk-or-data x-or-opts] (lay-method :band-h sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-method :band-h sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-method :band-h sk-or-data x y opts)))
+
+(defn lay-band-v
+  "Add :band-v layer -- vertical shaded band between x = lo and x = hi.
+   Position comes from opts (not data columns).
+   (lay-band-v sk {:lo 4 :hi 6})            -- sketch-level, all panels
+   (lay-band-v sk :x :y {:lo 4 :hi 6})      -- view-specific (columns pick the view)
+   (lay-band-v sk {:lo 4 :hi 6 :color \"blue\" :alpha 0.3})"
+  ([sk-or-data] (lay-method :band-v sk-or-data))
+  ([sk-or-data x-or-opts] (lay-method :band-v sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-method :band-v sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-method :band-v sk-or-data x y opts)))
+
 (defn lay-line
   "Add :line method -- connected line through data points.
    Requires x (numerical) and y (numerical).
@@ -992,20 +1008,6 @@
      (plan/draft->plan d (:opts sk {}))))
   ([sk opts]
    (plan (options sk opts))))
-
-(defn annotate
-  "Add annotations to a sketch. Annotations are plot-level decorations
-   (reference lines and bands) that don't participate in the view x layer
-   cross product.
-   (annotate sk (sk/rule-h 5) (sk/band-v 3 7))"
-  [sk & annotations]
-  (doseq [ann annotations]
-    (when-not (and (map? ann) (resolve/annotation-marks (:mark ann)))
-      (throw (ex-info (str "annotate expects annotation maps (from rule-h, rule-v, band-h, band-v), got: "
-                           (pr-str ann))
-                      {:annotation ann}))))
-  (update-in (ensure-sk sk) [:opts :annotations]
-             (fn [existing] (into (or existing []) annotations))))
 
 (defn plot
   "Render a sketch to SVG (or interactive HTML if tooltip/brush is set).

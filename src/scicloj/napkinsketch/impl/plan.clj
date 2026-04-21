@@ -797,6 +797,14 @@
          layout-opts (assoc opts :width width :height height)
          draft-layers (if (map? draft) [draft] draft)
 
+         ;; Stage 1 of annotations-as-layers: split annotation draft
+         ;; layers (created by sk/lay-rule-*/sk/lay-band-*) from data
+         ;; draft layers. Annotations skip the stat/extract-layer
+         ;; pipeline and join the plot-level :annotations list merged
+         ;; below. Data pipeline downstream sees only data layers.
+         layer-annotations (filterv #(resolve/annotation-marks (:mark %)) draft-layers)
+         draft-layers (filterv #(not (resolve/annotation-marks (:mark %))) draft-layers)
+
          ;; Group draft layers by source entry index
          draft-layer-groups (vec
                              (for [[idx vs] (sort-by key (group-by :__entry-idx draft-layers))]
@@ -827,9 +835,21 @@
          _ (validate-polar-marks resolved-all rep-coord)
          _ (warn-conflicting-specs draft-layers)
 
-         ;; Plot-level annotations
-         annotations (mapv #(select-keys % [:mark :intercept :lo :hi :alpha :x :y])
-                           (or (:annotations opts) []))
+         ;; Plot-level annotations -- from sk/lay-rule-* / sk/lay-band-*
+         ;; layers extracted above. Sketch-scope annotations get
+         ;; duplicated by the view cross-product in sketch->draft;
+         ;; dedupe them here and strip :x/:y so they apply to all
+         ;; panels. View-scope annotations keep their :x/:y so
+         ;; finalize-panel can match them to the right panel.
+         sketch-scope-anns (->> layer-annotations
+                                (filter :__sketch-scope)
+                                (map #(select-keys % [:mark :intercept :lo :hi :color :alpha]))
+                                distinct
+                                vec)
+         view-scope-anns (->> layer-annotations
+                              (remove :__sketch-scope)
+                              (mapv #(select-keys % [:mark :intercept :lo :hi :color :alpha :x :y])))
+         annotations (into sketch-scope-anns view-scope-anns)
 
          ;; --- Phase 1: compute stats for every panel (no pixel math) ---
          tagged-by-idx (group-by :__entry-idx tagged-draft-layers)

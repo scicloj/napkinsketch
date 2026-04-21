@@ -210,16 +210,8 @@
                 view-mapping (or (:mapping view) {})
                 view-layers (:layers view)
                 view-data (:data view)
-                ;; Annotation views: own layers contain annotation marks
-                ann-view? (some (fn [layer]
-                                  (let [mk (:method layer)]
-                                    (resolve/annotation-marks
-                                     (if (keyword? mk) mk (:mark mk)))))
-                                view-layers)
-                ;; Combine: view layers ∪ sketch layers (unless annotation)
-                combined (if ann-view?
-                           view-layers
-                           (concat (or view-layers nil) sketch-layers))
+                ;; Combine: view layers ∪ sketch layers
+                combined (concat (or view-layers nil) sketch-layers)
                 applicable (if (seq combined) (vec combined) [{:method :infer}])]
             (map (fn [layer]
                    (let [method-info (resolve-method-info (:method layer))
@@ -231,7 +223,11 @@
                                          method-info
                                          layer-mapping)
                          ;; Data: layer > view > sketch
-                         d (ensure-dataset (or (:data layer) view-data data))]
+                         d (ensure-dataset (or (:data layer) view-data data))
+                         ;; Sketch-scope marker: annotations coming from
+                         ;; sketch :layers get duplicated by the view cross-
+                         ;; product. Tag them so plan.clj can dedupe.
+                         sketch-scope? (some #(identical? % layer) sketch-layers)]
                      (validate-columns resolved d)
                      (-> resolved
                          (assoc :data d
@@ -242,7 +238,8 @@
                           y-scale (assoc :y-scale y-scale)
                           coord-type (assoc :coord coord-type)
                           (:facet-col view) (assoc :facet-col (:facet-col view))
-                          (:facet-row view) (assoc :facet-row (:facet-row view)))
+                          (:facet-row view) (assoc :facet-row (:facet-row view))
+                          sketch-scope? (assoc :__sketch-scope true))
                          ;; Mark inference: remove :mark/:stat so downstream infers
                          (cond-> (= :infer (:mark resolved))
                            (-> (dissoc :mark :stat))))))

@@ -137,7 +137,7 @@
      (= 3 (count (:views sk)))
      (= 0 (count (:layers sk)))
      (every?
-      (fn* [p1__80208#] (= 1 (count (:layers p1__80208#))))
+      (fn* [p1__100750#] (= 1 (count (:layers p1__100750#))))
       (:views sk))))
    v24_l124)))
 
@@ -189,7 +189,8 @@
   (->
    iris
    (sk/lay-point :sepal-length :sepal-width {:color :species})
-   (sk/annotate (sk/rule-h 3.0) (sk/band-v 5.0 6.0 {:alpha 0.1})))))
+   (sk/lay-rule-h {:intercept 3.0})
+   (sk/lay-band-v {:lo 5.0, :hi 6.0, :alpha 0.1}))))
 
 
 (def v36_l176 (kind/pprint annotated))
@@ -198,11 +199,7 @@
 (deftest
  t37_l178
  (is
-  ((fn
-    [sk]
-    (and
-     (= 1 (count (:views sk)))
-     (= 2 (count (:annotations (:opts sk))))))
+  ((fn [sk] (and (= 1 (count (:views sk))) (= 2 (count (:layers sk)))))
    v36_l176)))
 
 

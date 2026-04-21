@@ -371,56 +371,46 @@
 
 ;; ## Annotations
 
-;; **Planned refactor:** Before 0.1.0, annotations will become
-;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
-;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
-;; layer. The `sk/annotate` + `sk/rule-*` / `sk/band-*` API
-;; documented here will be replaced.
+;; Reference lines and shaded bands are regular layers. Position
+;; comes from the opts map (`:intercept`, or `:lo`/`:hi`);
+;; appearance aesthetics like `:color` and `:alpha` work the same
+;; as on any other layer. Without x/y columns they attach to the
+;; sketch (every panel); with x/y columns they attach to one view.
 
-(kind/doc #'sk/annotate)
-
-;; `sk/annotate` adds decorative marks (rules, bands) to a sketch.
-;; The helpers `sk/rule-v`, `sk/rule-h`, `sk/band-v`, `sk/band-h`
-;; build annotation specs:
+(kind/doc #'sk/lay-rule-v)
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
-    (sk/annotate (sk/rule-v 6.0)))
+    (sk/lay-rule-v {:intercept 6.0}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
 
-(kind/doc #'sk/rule-v)
+(kind/doc #'sk/lay-rule-h)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/rule-v 6.0)))
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-rule-h {:intercept 3.0}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
 
-(kind/doc #'sk/rule-h)
+(kind/doc #'sk/lay-band-v)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/rule-h 3.0)))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (pos? (:lines s)))))])
-
-(kind/doc #'sk/band-v)
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/band-v 5.5 6.5)))
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-band-v {:lo 5.5 :hi 6.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])
 
-(kind/doc #'sk/band-h)
+(kind/doc #'sk/lay-band-h)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width) (sk/annotate (sk/band-h 2.5 3.5)))
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-band-h {:lo 2.5 :hi 3.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (= 150 (:points s))))])
@@ -682,7 +672,7 @@ plan1
 
 (count (sk/registered-methods))
 
-(kind/test-last [(fn [n] (= 25 n))])
+(kind/test-last [(fn [n] (= 29 n))])
 
 ;; ## Documentation Helpers
 ;;

@@ -701,20 +701,19 @@ my-sketch
 
 (kind/test-last [(fn [v] (some #{"Iris Measurements"} (:texts (sk/svg-summary v))))])
 
-;; `sk/annotate` adds reference lines and bands as plot decorations:
+;; Reference lines and shaded bands are themselves layers, added with
+;; `sk/lay-rule-h`, `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v`.
+;; Positions come from the opts map (`:intercept`, or `:lo`/`:hi`);
+;; appearance aesthetics like `:color` and `:alpha` work the same way
+;; they do on any other layer.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/annotate (sk/rule-h 3.0)
-                 (sk/band-v 5.0 6.0 {:alpha 0.1})))
+    (sk/lay-rule-h {:intercept 3.0})
+    (sk/lay-band-v {:lo 5.0 :hi 6.0 :alpha 0.1}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; **Planned refactor:** Before 0.1.0, annotations will become
-;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
-;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
-;; layer. The `sk/annotate` API shown here will be replaced.
-;;
 ;; See the [Customization](./napkinsketch_book.customization.html)
 ;; chapter for themes, palettes, and annotation details.
 

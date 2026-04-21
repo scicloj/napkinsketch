@@ -17,7 +17,7 @@
 ;; A **sketch** is a composable record with five fields: `:data`,
 ;; `:mapping`, `:views`, `:layers`, and `:opts`. Every function in
 ;; the API (`sk/view`, `sk/lay-*`, `sk/facet`, `sk/options`, `sk/scale`,
-;; `sk/coord`, `sk/annotate`) takes a sketch and returns a sketch.
+;; `sk/coord`) takes a sketch and returns a sketch.
 ;; `sk/sketch` creates a sketch and optionally sets sketch-level
 ;; mappings visible to all views and layers.
 ;; Sketches auto-render in
@@ -331,21 +331,22 @@ my-sketch
 ;;
 ;; An **annotation** is a non-data mark that adds visual reference
 ;; to a plot. Annotations are not connected to data columns -- they
-;; overlay fixed positions.
+;; overlay fixed positions passed via opts (`:intercept`, or
+;; `:lo`/`:hi`). They are regular layers, so they scope like any
+;; other `lay-*` -- bare call attaches to the sketch, columns
+;; attach to a view.
 ;;
 ;; | Constructor | What |
 ;; |:------------|:-----|
-;; | `sk/rule-v` | Vertical line at x = value |
-;; | `sk/rule-h` | Horizontal line at y = value |
-;; | `sk/band-v` | Vertical shaded region from x1 to x2 |
-;; | `sk/band-h` | Horizontal shaded region from y1 to y2 |
-;;
-;; **Planned refactor:** Before 0.1.0, these constructors will be
-;; replaced by `sk/lay-rule-v`, `sk/lay-rule-h`, `sk/lay-band-v`,
-;; `sk/lay-band-h` -- annotations become regular layers, scopable
-;; like any other layer.
+;; | `sk/lay-rule-v` | Vertical line at x = intercept |
+;; | `sk/lay-rule-h` | Horizontal line at y = intercept |
+;; | `sk/lay-band-v` | Vertical shaded region from x = lo to x = hi |
+;; | `sk/lay-band-h` | Horizontal shaded region from y = lo to y = hi |
 
-(:mark (sk/rule-h 5))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-rule-h {:intercept 3.0})
+    :layers first :method)
 
 (kind/test-last [(fn [m] (= :rule-h m))])
 
@@ -518,7 +519,7 @@ my-sketch
 ;; | Scale | Data-to-pixel mapping (linear, log, categorical) | `sk/scale` |
 ;; | Coord | Coordinate system (cartesian, flip, polar, fixed) | `sk/coord` |
 ;; | Facet | Split into panels by a categorical column | `sk/facet`, `sk/facet-grid` |
-;; | Annotation | Non-data reference marks (rules, bands) | `sk/annotate` |
+;; | Annotation | Non-data reference marks (rules, bands) | `sk/lay-rule-*`, `sk/lay-band-*` |
 ;; | Legend | Color/size/alpha key from aesthetic mappings | Automatic in plan |
 ;; | Plot options | Title, subtitle, caption, labels, dimensions | `sk/options` |
 ;; | Layer options | Per-layer aesthetics and method parameters | `sk/lay-*` opts map |

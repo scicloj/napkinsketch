@@ -1500,22 +1500,6 @@
 
 (deftest input-validation-misc-test
   ;; persona-09-R2 F10/F11/F12. Low-severity input validation.
-  (testing "rule-v / rule-h with nil intercept throws"
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #"rule-v intercept requires a number"
-                          (sk/rule-v nil)))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #"rule-h intercept requires a number"
-                          (sk/rule-h nil))))
-
-  (testing "band-v / band-h with nil bounds throws"
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #"band-v lo requires a number"
-                          (sk/band-v nil 5)))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #"band-h hi requires a number"
-                          (sk/band-h 1 nil))))
-
   (testing "options with width/height = 0 throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
                           #":width must be a positive number"
@@ -1895,4 +1879,90 @@
       (let [s (summary (-> (sk/sketch {:a [1 2 3 4 5] :b [2 4 3 5 4]})
                            (sk/view)))]
         (is (= 5 (:points s)))))))
+
+;; ---- Annotations-as-layers Stage 1 (sk/lay-rule-*, sk/lay-band-*) ----
+
+(deftest lay-rule-band-test
+  ;; Stage 1: new sk/lay-rule-*/sk/lay-band-* API alongside the old
+  ;; sk/annotate + sk/rule-*/sk/band-* path. Both should produce the
+  ;; same plot-level annotations so existing tests stay green.
+  (let [ds (tc/dataset {:x [1 2 3 4 5] :y [2 4 3 5 4]})]
+
+    (testing "sketch-scope rule-h attaches a single annotation"
+      (let [p (sk/plan (-> ds
+                           (sk/lay-point :x :y)
+                           (sk/lay-rule-h {:intercept 3})))
+            panel (first (:panels p))]
+        (is (= 1 (count (:annotations panel))))
+        (is (= :rule-h (:mark (first (:annotations panel)))))
+        (is (= 3 (:intercept (first (:annotations panel)))))))
+
+    (testing "sketch-scope rule applies to every facet panel (deduped)"
+      ;; Without dedupe the cross-product would emit N copies per panel.
+      (let [iris (tc/dataset "https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv"
+                             {:key-fn keyword})
+            p (sk/plan (-> iris
+                           (sk/lay-point :Sepal.Length :Sepal.Width)
+                           (sk/facet :Species)
+                           (sk/lay-rule-h {:intercept 3})))]
+        (is (= 3 (count (:panels p))))
+        (doseq [panel (:panels p)]
+          (is (= 1 (count (:annotations panel)))
+              (str "panel " (:row panel) "/" (:col panel) " had "
+                   (count (:annotations panel)) " annotations")))))
+
+    (testing "sk/lay-rule-v with :color and :alpha flows into the plan"
+      (let [p (sk/plan (-> ds
+                           (sk/lay-point :x :y)
+                           (sk/lay-rule-v {:intercept 2 :color "red" :alpha 0.5})))
+            a (first (:annotations (first (:panels p))))]
+        (is (= :rule-v (:mark a)))
+        (is (= 2 (:intercept a)))
+        (is (= "red" (:color a)))
+        (is (= 0.5 (:alpha a)))))
+
+    (testing "sk/lay-band-h / sk/lay-band-v carry :lo / :hi"
+      (let [p (sk/plan (-> ds
+                           (sk/lay-point :x :y)
+                           (sk/lay-band-h {:lo 2 :hi 4})
+                           (sk/lay-band-v {:lo 1 :hi 3})))
+            anns (:annotations (first (:panels p)))
+            band-h (first (filter #(= :band-h (:mark %)) anns))
+            band-v (first (filter #(= :band-v (:mark %)) anns))]
+        (is (= 2 (:lo band-h)))
+        (is (= 4 (:hi band-h)))
+        (is (= 1 (:lo band-v)))
+        (is (= 3 (:hi band-v)))))
+
+    (testing "view-scope rule with sketch-level data layer renders both"
+      ;; Regression: ann-view? in sketch.clj used to suppress sketch
+      ;; layers when a view contained an annotation method. Stage 3
+      ;; removed that check.
+      (let [p (sk/plan (-> ds
+                           (sk/view :x :y)
+                           sk/lay-point
+                           (sk/lay-rule-h :x :y {:intercept 3})))
+            panel (first (:panels p))]
+        (is (= 1 (count (:layers panel))))
+        (is (= :point (:mark (first (:layers panel)))))
+        (is (= 1 (count (:annotations panel))))))
+
+    (testing "plan with annotation layer validates against schema"
+      (let [p (sk/plan (-> ds
+                           (sk/lay-point :x :y)
+                           (sk/lay-rule-h {:intercept 3 :color "red" :alpha 0.5})
+                           (sk/lay-band-v {:lo 1 :hi 3 :color "blue" :alpha 0.2})))]
+        (is (sk/valid-plan? p))))
+
+    (testing "rendered SVG uses :color override for rule"
+      (let [sk-red (-> ds
+                       (sk/lay-point :x :y)
+                       (sk/lay-rule-h {:intercept 3 :color "red"}))
+            sk-default (-> ds
+                           (sk/lay-point :x :y)
+                           (sk/lay-rule-h {:intercept 3}))
+            svg-red (str (sk/plan->figure (sk/plan sk-red) :svg {}))
+            svg-default (str (sk/plan->figure (sk/plan sk-default) :svg {}))]
+        (is (clojure.string/includes? svg-red "rgb(255,0,0)"))
+        (is (not (clojure.string/includes? svg-default "rgb(255,0,0)")))))))
 

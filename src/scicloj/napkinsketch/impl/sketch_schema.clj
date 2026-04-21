@@ -161,7 +161,9 @@
    [:mark [:enum :rule-v :rule-h :band-v :band-h]]
    [:intercept {:optional true} number?]
    [:lo {:optional true} number?]
-   [:hi {:optional true} number?]])
+   [:hi {:optional true} number?]
+   [:color {:optional true} string?]
+   [:alpha {:optional true} number?]])
 
 (def Layer
   "A rendered mark layer with data-space geometry."

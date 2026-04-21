@@ -10,8 +10,8 @@
 ;;   across multiple layers.
 ;; - **Plot options** -- *what describes this plot as a whole?*
 ;;   Its title and labels, its axis scales, its coordinate
-;;   system, its facets, its annotations. Per-plot by nature;
-;;   there is one of each per plot.
+;;   system, its facets. Per-plot by nature; there is one of each
+;;   per plot.
 ;; - **Configuration** -- *what are the rendering defaults?*
 ;;   Palette, theme, default dimensions, color scale. Shared
 ;;   across every plot you render; any one plot can override a
@@ -111,11 +111,10 @@
 ;; ## Plot options
 ;;
 ;; Plot options describe the plot as a whole: its title, labels,
-;; axis scales, coordinate system, facets, annotations. A plot
-;; has one of each -- there is no scope here, because there is
-;; nothing to vary over.
+;; axis scales, coordinate system, facets. A plot has one of each
+;; -- there is no scope here, because there is nothing to vary over.
 ;;
-;; Five functions write plot options to the sketch's `:opts`
+;; Four functions write plot options to the sketch's `:opts`
 ;; field:
 ;;
 ;; - `sk/options` -- plot text (title, subtitle, caption, axis
@@ -127,13 +126,12 @@
 ;;   fixed).
 ;; - `sk/facet` and `sk/facet-grid` -- split the plot into panels
 ;;   by a column.
-;; - `sk/annotate` -- reference lines and shaded bands.
 ;;
-;; **Planned refactor:** Before 0.1.0, annotations will become
-;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
-;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
-;; layer. The current `sk/annotate` API will be replaced, and
-;; annotations will no longer be plot options.
+;; Reference lines and shaded bands -- `sk/lay-rule-h`,
+;; `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v` -- are layers,
+;; not plot options. They scope like any other `lay-*`: bare calls
+;; attach to the sketch, while passing `:x`/`:y` columns attaches
+;; to a specific view.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)

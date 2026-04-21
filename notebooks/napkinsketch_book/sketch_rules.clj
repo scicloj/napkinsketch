@@ -650,19 +650,18 @@
 ;; Coord `:flip` swaps axes -- the original x-scale (log) becomes
 ;; the y-scale in the rendered plot.
 
-;; ### Rule 16: `sk/annotate` adds reference marks
+;; ### Rule 16: `sk/lay-rule-*` and `sk/lay-band-*` add reference marks
 ;;
-;; Annotations go into `:opts :annotations`. They are self-contained
-;; -- no interaction with views or layers.
-;;
-;; **Planned refactor:** Before 0.1.0, annotations will become
-;; regular layers (`sk/lay-rule-h`, `sk/lay-rule-v`,
-;; `sk/lay-band-h`, `sk/lay-band-v`), scopable like any other
-;; layer. This rule will change accordingly.
+;; Reference lines and shaded bands are layers, added with
+;; `sk/lay-rule-h`, `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v`.
+;; Position comes from the opts map (`:intercept`, or `:lo`/`:hi`),
+;; not from data columns. They scope like any other `lay-*`: a bare
+;; call applies to every panel; passing `:x`/`:y` columns attaches
+;; the annotation to one view.
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/annotate (sk/rule-h 3.0)))
+    (sk/lay-rule-h {:intercept 3.0}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -670,12 +669,14 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/annotate (sk/rule-h 3.0))
+    (sk/lay-rule-h {:intercept 3.0})
     sk-summary)
 
 (kind/test-last [(fn [m]
-                   (and (= 1 (count (get-in m [:opts :annotations])))
-                        (= :rule-h (:mark (first (get-in m [:opts :annotations]))))))])
+                   (let [layers (:layers m)
+                         rule (some #(when (= :rule-h (:method %)) %) layers)]
+                     (and (some? rule)
+                          (= 3.0 (get-in rule [:mapping :intercept])))))])
 
 ;; ### Rule 17: `sk/facet` sets the faceting column
 ;;
@@ -948,7 +949,7 @@ assembly-sketch
 ;; | | 13 | Innermost scope wins; `nil` cancels |
 ;; | Options | 14 | `sk/options` -- plot options in `:opts` |
 ;; | | 15 | `sk/scale` and `sk/coord` -- plot-level rendering specs |
-;; | | 16 | `sk/annotate` -- reference marks in `:opts` |
+;; | | 16 | `sk/lay-rule-*` / `sk/lay-band-*` -- reference marks as layers |
 ;; | | 17 | `sk/facet` -- faceting column in `:opts` |
 ;;
 ;; ### Assembly and layout rules
