@@ -472,10 +472,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Napkinsketch -- composable plotting</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>   [scicloj.napkinsketch.api <span class="at">:as</span> sk]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>A helper to inspect sketch structure. It shows <code>:mapping</code>, <code>:views</code>, <code>:layers</code>, and <code>:opts</code> – the full record also has <code>:data</code> and <code>:kindly/f</code>, which this helper omits for readability.</p>
+<p>A helper to inspect sketch structure. It shows <code>:mapping</code>, <code>:views</code>, <code>:layers</code>, and <code>:opts</code> – the full record also has <code>:data</code>, which this helper omits for readability.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> sk-summary</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Print sketch structure without :data and :kindly/f (for readability)."</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Print sketch structure without :data (for readability)."</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  [sk]</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> (<span class="kw">select-keys</span> sk [<span class="at">:mapping</span> <span class="at">:views</span> <span class="at">:layers</span> <span class="at">:opts</span>])</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">update</span> <span class="at">:views</span> (<span class="kw">partial</span> <span class="kw">mapv</span> #(<span class="kw">dissoc</span> <span class="va">%</span> <span class="at">:data</span>)))</span>

@@ -782,8 +782,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a> <span class="at">:mapping</span> {},</span>
 <span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a> <span class="at">:views</span> [{<span class="at">:mapping</span> {<span class="at">:x</span> <span class="at">:sepal-length</span>, <span class="at">:y</span> <span class="at">:sepal-width</span>}}],</span>
 <span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a> <span class="at">:layers</span> [{<span class="at">:method</span> <span class="at">:point</span>, <span class="at">:mapping</span> {}} {<span class="at">:method</span> <span class="at">:lm</span>, <span class="at">:mapping</span> {}}],</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {},</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a> <span class="at">:kindly/f</span> <span class="va">#'scicloj.napkinsketch.impl.sketch/render-sketch</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><code>:views</code> has one view (the panel). <code>:layers</code> has two layers (point and lm). These layers apply to every view – we will see why in the Scope section below.</p>
 <p>When <code>sk/lay-*</code> is called <strong>with columns</strong>, it creates a view with a layer bound directly to it:</p>
@@ -831,8 +830,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:mapping</span> {<span class="at">:x</span> <span class="at">:sepal-length</span>, <span class="at">:y</span> <span class="at">:sepal-width</span>},</span>
 <span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>   <span class="at">:layers</span> [{<span class="at">:method</span> <span class="at">:point</span>, <span class="at">:mapping</span> {}}]}],</span>
 <span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a> <span class="at">:layers</span> [],</span>
-<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {},</span>
-<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a> <span class="at">:kindly/f</span> <span class="va">#'scicloj.napkinsketch.impl.sketch/render-sketch</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The layer lives inside the view. No sketch-level layers.</p>
 <p>With multiple views, sketch-level layers apply to all of them – the cross product:</p>
@@ -884,8 +882,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:mapping</span> {<span class="at">:x</span> <span class="at">:sepal-length</span>, <span class="at">:y</span> <span class="at">:sepal-width</span>}}</span>
 <span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:mapping</span> {<span class="at">:x</span> <span class="at">:petal-length</span>, <span class="at">:y</span> <span class="at">:petal-width</span>}}],</span>
 <span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a> <span class="at">:layers</span> [{<span class="at">:method</span> <span class="at">:point</span>, <span class="at">:mapping</span> {}}],</span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {},</span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a> <span class="at">:kindly/f</span> <span class="va">#'scicloj.napkinsketch.impl.sketch/render-sketch</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Two views, one layer. Each view becomes a panel, and the point layer applies to both.</p>
 <hr>
@@ -987,8 +984,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:mapping</span> {<span class="at">:color</span> <span class="at">:species</span>, <span class="at">:x</span> <span class="at">:sepal-length</span>, <span class="at">:y</span> <span class="at">:sepal-width</span>}}</span>
 <span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:mapping</span> {<span class="at">:x</span> <span class="at">:petal-length</span>, <span class="at">:y</span> <span class="at">:petal-width</span>}}],</span>
 <span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a> <span class="at">:layers</span> [{<span class="at">:method</span> <span class="at">:point</span>, <span class="at">:mapping</span> {}}],</span>
-<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {},</span>
-<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a> <span class="at">:kindly/f</span> <span class="va">#'scicloj.napkinsketch.impl.sketch/render-sketch</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Color is in the first view’s mapping only. The second view has no color. Sketch-level mapping is empty.</p>
 </section>
@@ -1189,8 +1185,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:mapping</span> {<span class="at">:x</span> <span class="at">:sepal-width</span>},</span>
 <span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a>   <span class="at">:layers</span> [{<span class="at">:method</span> <span class="at">:density</span>, <span class="at">:mapping</span> {}}]}],</span>
 <span id="cb36-35"><a href="#cb36-35" aria-hidden="true" tabindex="-1"></a> <span class="at">:layers</span> [],</span>
-<span id="cb36-36"><a href="#cb36-36" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {},</span>
-<span id="cb36-37"><a href="#cb36-37" aria-hidden="true" tabindex="-1"></a> <span class="at">:kindly/f</span> <span class="va">#'scicloj.napkinsketch.impl.sketch/render-sketch</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb36-36"><a href="#cb36-36" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Two views with the same column but different layers. The first <code>lay-histogram</code> found the first <code>view</code>. The second <code>lay-density</code> found the second <code>view</code> – the most recent match.</p>
 <hr>
@@ -1286,8 +1281,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a> <span class="at">:mapping</span> {<span class="at">:color</span> <span class="at">:species</span>},</span>
 <span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a> <span class="at">:views</span> [{<span class="at">:mapping</span> {<span class="at">:x</span> <span class="at">:sepal-length</span>, <span class="at">:y</span> <span class="at">:sepal-width</span>}}],</span>
 <span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a> <span class="at">:layers</span> [{<span class="at">:method</span> <span class="at">:point</span>, <span class="at">:mapping</span> {}} {<span class="at">:method</span> <span class="at">:lm</span>, <span class="at">:mapping</span> {}}],</span>
-<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {<span class="at">:title</span> <span class="st">"Iris"</span>},</span>
-<span id="cb40-33"><a href="#cb40-33" aria-hidden="true" tabindex="-1"></a> <span class="at">:kindly/f</span> <span class="va">#'scicloj.napkinsketch.impl.sketch/render-sketch</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a> <span class="at">:opts</span> {<span class="at">:title</span> <span class="st">"Iris"</span>}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <hr>
 </section>
