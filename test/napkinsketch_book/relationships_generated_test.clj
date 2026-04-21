@@ -89,55 +89,53 @@
 
 (def
  v15_l72
- (def
-  noisy-wave
+ (->
   (let
-   [r (rng/rng :jdk 42)]
-   {:x (range 50),
+   [r (rng/rng :jdk 42) xs (vec (range 50))]
+   {:x xs,
     :y
-    (map
+    (mapv
      (fn*
-      [p1__90311#]
+      [p1__110340#]
       (+
-       (Math/sin (* p1__90311# 0.2))
+       (Math/sin (* p1__110340# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
-     (range 50))})))
-
-
-(def v16_l77 (-> noisy-wave (sk/lay-point :x :y) sk/lay-loess))
+     xs)})
+  (sk/lay-point :x :y)
+  (sk/lay-loess {:bandwidth 0.2})))
 
 
 (deftest
- t17_l81
+ t16_l81
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 50 (:points s)) (= 1 (:lines s)))))
-   v16_l77)))
+   v15_l72)))
 
 
 (def
- v19_l89
+ v18_l89
  (->
   (rdatasets/datasets-iris)
   (sk/lay-tile :sepal-length :sepal-width)))
 
 
 (deftest
- t20_l92
+ t19_l92
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:visible-tiles s)))))
-   v19_l89)))
+   v18_l89)))
 
 
 (def
- v22_l100
+ v21_l100
  (def
   grid-data
   (let
@@ -147,40 +145,40 @@
     :value (repeatedly 25 (fn* [] (rng/irandom r 100)))})))
 
 
-(def v23_l106 (-> grid-data (sk/lay-tile :x :y {:fill :value})))
+(def v22_l106 (-> grid-data (sk/lay-tile :x :y {:fill :value})))
 
 
 (deftest
- t24_l109
+ t23_l109
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:visible-tiles s)))))
-   v23_l106)))
+   v22_l106)))
 
 
 (def
- v26_l117
+ v25_l117
  (->
   (rdatasets/datasets-iris)
   (sk/lay-density2d :sepal-length :sepal-width)))
 
 
 (deftest
- t27_l120
+ t26_l120
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:visible-tiles s)))))
-   v26_l117)))
+   v25_l117)))
 
 
 (def
- v29_l128
+ v28_l128
  (->
   (rdatasets/datasets-iris)
   (sk/lay-density2d :sepal-length :sepal-width)
@@ -188,36 +186,36 @@
 
 
 (deftest
- t30_l132
+ t29_l132
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:visible-tiles s)))))
-   v29_l128)))
+   v28_l128)))
 
 
 (def
- v32_l140
+ v31_l140
  (->
   (rdatasets/datasets-iris)
   (sk/lay-contour :sepal-length :sepal-width)))
 
 
 (deftest
- t33_l143
+ t32_l143
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:lines s)))))
-   v32_l140)))
+   v31_l140)))
 
 
 (def
- v35_l151
+ v34_l151
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:alpha 0.3})
@@ -225,11 +223,11 @@
 
 
 (deftest
- t36_l155
+ t35_l155
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:lines s)))))
-   v35_l151)))
+   v34_l151)))
