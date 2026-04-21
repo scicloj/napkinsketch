@@ -15,6 +15,7 @@
             [scicloj.napkinsketch.render.mark :as mark]
             [scicloj.napkinsketch.render.svg :as svg]
             [scicloj.napkinsketch.method :as method]
+            [clojure.set :as set]
             [clojure.string :as str]
             [tablecloth.api :as tc]
             [scicloj.kindly.v4.api :as kindly]
@@ -536,8 +537,9 @@
     (check-position-mapping (str "lay-" (name method-key)) opts))
   (let [opts (if (and opts (keyword? method-key))
                (let [reg (method/lookup method-key)
-                     accepted (into (set method/universal-layer-options)
-                                    (:accepts reg))]
+                     accepted (-> (set method/universal-layer-options)
+                                  (into (:accepts reg))
+                                  (set/difference (set (:rejects reg))))]
                  (warn-and-strip-unknown-opts (str "lay-" (name method-key))
                                               opts accepted))
                opts)
@@ -671,12 +673,22 @@
   (let [last-arg (last args)]
     (when (map? last-arg) last-arg)))
 
+(defn- positional-hint
+  "If the user passed a non-map last arg (e.g. a bare number), suggest
+   wrapping it in an opts map. args here are the trailing args after
+   the sketch -- so the bad shape is `(lay-rule-h sk 3)` not `(lay-rule-h sk)`."
+  [args]
+  (when (and (seq args) (not (map? (last args))))
+    (str " Got " (pr-str (last args)) " as the last argument; did you forget"
+         " to wrap it in an opts map?")))
+
 (defn- assert-rule-opts! [method-key args]
   (let [opts (last-opts args)
         v (:intercept opts)]
     (when-not (and (number? v) (Double/isFinite (double v)))
       (throw (ex-info (str "lay-" (name method-key) " requires a finite numeric :intercept in its opts map. "
-                           "Example: (sk/lay-" (name method-key) " sk {:intercept 3.0}).")
+                           "Example: (sk/lay-" (name method-key) " sk {:intercept 3.0})."
+                           (positional-hint args))
                       {:method method-key :opts opts})))))
 
 (defn- assert-band-opts! [method-key args]
@@ -686,14 +698,22 @@
                    (Double/isFinite (double lo))
                    (Double/isFinite (double hi)))
       (throw (ex-info (str "lay-" (name method-key) " requires finite numeric :lo and :hi in its opts map. "
-                           "Example: (sk/lay-" (name method-key) " sk {:lo 2.0 :hi 4.0}).")
+                           "Example: (sk/lay-" (name method-key) " sk {:lo 2.0 :hi 4.0})."
+                           (positional-hint args))
+                      {:method method-key :opts opts})))
+    (when-not (<= (double lo) (double hi))
+      (throw (ex-info (str "lay-" (name method-key) " requires :lo <= :hi, got :lo " lo " :hi " hi ". "
+                           "Swap the arguments or check the source of the values.")
                       {:method method-key :opts opts})))))
 
 (defn lay-rule-h
   "Add :rule-h layer -- horizontal reference line at y = intercept.
    Position comes from opts (not data columns); :intercept is required.
+   Accepts :intercept (required), :color (literal string), :alpha.
+   The 4-arity finds or creates a view with these x/y columns and
+   attaches the rule there (only panels matching that view show it).
    (lay-rule-h sk {:intercept 3})           -- sketch-level, all panels
-   (lay-rule-h sk :x :y {:intercept 3})     -- view-specific (columns pick the view)
+   (lay-rule-h sk :x :y {:intercept 3})     -- view-scope (columns pick or create the view)
    (lay-rule-h sk {:intercept 3 :color \"red\" :alpha 0.5})"
   ([sk-or-data] (assert-rule-opts! :rule-h []))
   ([sk-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-method :rule-h sk-or-data x-or-opts))
@@ -703,8 +723,11 @@
 (defn lay-rule-v
   "Add :rule-v layer -- vertical reference line at x = intercept.
    Position comes from opts (not data columns); :intercept is required.
+   Accepts :intercept (required), :color (literal string), :alpha.
+   The 4-arity finds or creates a view with these x/y columns and
+   attaches the rule there (only panels matching that view show it).
    (lay-rule-v sk {:intercept 5})           -- sketch-level, all panels
-   (lay-rule-v sk :x :y {:intercept 5})     -- view-specific (columns pick the view)
+   (lay-rule-v sk :x :y {:intercept 5})     -- view-scope (columns pick or create the view)
    (lay-rule-v sk {:intercept 5 :color \"red\" :alpha 0.5})"
   ([sk-or-data] (assert-rule-opts! :rule-v []))
   ([sk-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-method :rule-v sk-or-data x-or-opts))
@@ -713,9 +736,13 @@
 
 (defn lay-band-h
   "Add :band-h layer -- horizontal shaded band between y = lo and y = hi.
-   Position comes from opts (not data columns); :lo and :hi are required.
+   Position comes from opts (not data columns); :lo and :hi are
+   required and :lo must be <= :hi.
+   Accepts :lo (required), :hi (required), :color (literal string), :alpha.
+   The 4-arity finds or creates a view with these x/y columns and
+   attaches the band there (only panels matching that view show it).
    (lay-band-h sk {:lo 2 :hi 4})            -- sketch-level, all panels
-   (lay-band-h sk :x :y {:lo 2 :hi 4})      -- view-specific (columns pick the view)
+   (lay-band-h sk :x :y {:lo 2 :hi 4})      -- view-scope (columns pick or create the view)
    (lay-band-h sk {:lo 2 :hi 4 :color \"blue\" :alpha 0.3})"
   ([sk-or-data] (assert-band-opts! :band-h []))
   ([sk-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-method :band-h sk-or-data x-or-opts))
@@ -724,9 +751,13 @@
 
 (defn lay-band-v
   "Add :band-v layer -- vertical shaded band between x = lo and x = hi.
-   Position comes from opts (not data columns); :lo and :hi are required.
+   Position comes from opts (not data columns); :lo and :hi are
+   required and :lo must be <= :hi.
+   Accepts :lo (required), :hi (required), :color (literal string), :alpha.
+   The 4-arity finds or creates a view with these x/y columns and
+   attaches the band there (only panels matching that view show it).
    (lay-band-v sk {:lo 4 :hi 6})            -- sketch-level, all panels
-   (lay-band-v sk :x :y {:lo 4 :hi 6})      -- view-specific (columns pick the view)
+   (lay-band-v sk :x :y {:lo 4 :hi 6})      -- view-scope (columns pick or create the view)
    (lay-band-v sk {:lo 4 :hi 6 :color \"blue\" :alpha 0.3})"
   ([sk-or-data] (assert-band-opts! :band-v []))
   ([sk-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-method :band-v sk-or-data x-or-opts))

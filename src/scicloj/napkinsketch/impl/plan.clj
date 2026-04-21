@@ -782,13 +782,19 @@
    (:intercept for rules, :lo/:hi for bands) so the panel's axes are
    well-defined even when no data layer is attached to the view.
    Falls back to [0 1] on the axis perpendicular to a rule (where the
-   annotation alone supplies no extent) so the line still draws."
+   annotation alone supplies no extent) so the line still draws.
+   Skips non-numeric columns (string/keyword/temporal) and nil cells
+   so a categorical or partly-missing column on a view-scope
+   annotation-only panel doesn't crash the reducer."
   [{:keys [mark data x y intercept lo hi]}]
   (let [col-vals (fn [col]
                    (when (and data col (tc/dataset? data))
                      (let [resolved (resolve/resolve-col-name data col)]
-                       (try (seq (data resolved))
-                            (catch Exception _ nil)))))
+                       (try
+                         (let [vs (seq (data resolved))
+                               numeric (->> vs (remove nil?) (filter number?) seq)]
+                           numeric)
+                         (catch Exception _ nil)))))
         x-col-vals (col-vals x)
         y-col-vals (col-vals y)
         x-extra (case mark

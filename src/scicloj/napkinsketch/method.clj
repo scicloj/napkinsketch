@@ -108,8 +108,15 @@
 (register! :text {:mark :text :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Text — data-driven labels."})
 (register! :label {:mark :label :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Label — text with background box."})
 (register! :rug {:mark :rug :stat :identity :x-only true :accepts [:side] :doc "Rug — axis-margin tick marks."})
-(register! :rule-h {:mark :rule-h :stat :identity :accepts [:intercept] :doc "Horizontal reference line at y = intercept."})
-(register! :rule-v {:mark :rule-v :stat :identity :accepts [:intercept] :doc "Vertical reference line at x = intercept."})
-(register! :band-h {:mark :band-h :stat :identity :accepts [:lo :hi] :doc "Horizontal shaded band between y = lo and y = hi."})
-(register! :band-v {:mark :band-v :stat :identity :accepts [:lo :hi] :doc "Vertical shaded band between x = lo and x = hi."})
+;; Annotation methods reject the universal options that have no
+;; meaning for a single rule/band: there are no groups to dodge or
+;; stack, no shape/jitter to vary across an aggregated mark, and the
+;; column-type overrides only matter for stat-based marks.
+(def ^:private annotation-rejects
+  [:position :group :x-type :y-type :color-type])
+
+(register! :rule-h {:mark :rule-h :stat :identity :accepts [:intercept] :rejects annotation-rejects :doc "Horizontal reference line at y = intercept."})
+(register! :rule-v {:mark :rule-v :stat :identity :accepts [:intercept] :rejects annotation-rejects :doc "Vertical reference line at x = intercept."})
+(register! :band-h {:mark :band-h :stat :identity :accepts [:lo :hi] :rejects annotation-rejects :doc "Horizontal shaded band between y = lo and y = hi."})
+(register! :band-v {:mark :band-v :stat :identity :accepts [:lo :hi] :rejects annotation-rejects :doc "Vertical shaded band between x = lo and x = hi."})
 
