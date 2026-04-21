@@ -392,7 +392,7 @@
    and `infer-method` — each named for the inference step it performs.
    Resolves column names to match the dataset's actual names (keyword/string).
    Also normalizes user-facing shorthand options:
-     - :bandwidth → :cfg {:kde-bandwidth ...}
+     - :bandwidth → :cfg {:<stat>-bandwidth ...} (routed per stat)
      - :tile with :fill → stat :identity"
   [v]
   (if-not (:data v)
@@ -480,11 +480,17 @@
                      y-temporal? (assoc :y-temporal? true)
                      x-temporal-extent (assoc :x-temporal-extent x-temporal-extent)
                      y-temporal-extent (assoc :y-temporal-extent y-temporal-extent))
-          ;; Normalize :bandwidth shorthand for KDE-based stats
+          ;; Normalize :bandwidth shorthand to the stat-specific cfg key.
+          ;; :loess -> :loess-bandwidth; :kde2d -> :kde2d-bandwidth;
+          ;; :kde and :violin read :kde-bandwidth.
           bw (:bandwidth resolved)
           resolved (if bw
-                     (-> resolved (dissoc :bandwidth)
-                         (assoc-in [:cfg :kde-bandwidth] bw))
+                     (let [cfg-key (case (:stat resolved)
+                                     :loess :loess-bandwidth
+                                     :kde2d :kde2d-bandwidth
+                                     :kde-bandwidth)]
+                       (-> resolved (dissoc :bandwidth)
+                           (assoc-in [:cfg cfg-key] bw)))
                      resolved)
           ;; Tile + default bin2d stat with a user-supplied :fill (or
           ;; :color as a synonym) → override stat to :identity so the

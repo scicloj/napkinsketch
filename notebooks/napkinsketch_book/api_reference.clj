@@ -214,14 +214,14 @@
 
 (kind/doc #'sk/lay-loess)
 
-(def noisy-wave (let [r (rng/rng :jdk 42)]
-                  {:x (range 50)
-                   :y (map #(+ (Math/sin (* % 0.2)) (* 0.3 (- (rng/drandom r) 0.5)))
-                           (range 50))}))
-
-(-> noisy-wave
+(-> (let [r (rng/rng :jdk 42)
+          xs (vec (range 50))]
+      {:x xs
+       :y (mapv #(+ (Math/sin (* % 0.2))
+                    (* 0.3 (- (rng/drandom r) 0.5)))
+                xs)})
     (sk/lay-point :x :y)
-    sk/lay-loess)
+    (sk/lay-loess {:bandwidth 0.2}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 50 (:points s))
