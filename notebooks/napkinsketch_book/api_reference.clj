@@ -725,10 +725,9 @@ plan1
 ;; Save a plot to an SVG file:
 
 (let [path (str (java.io.File/createTempFile "napkinsketch-example" ".svg"))]
-  (sk/save (-> (rdatasets/datasets-iris)
-               (sk/lay-point :sepal-length :sepal-width {:color :species}))
-           path
-           {:title "Iris Export"})
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width {:color :species})
+      (sk/save path {:title "Iris Export"}))
   (.contains (slurp path) "<svg"))
 
 (kind/test-last [true?])
@@ -739,9 +738,9 @@ plan1
 ;; Returns the path:
 
 (let [path (str (java.io.File/createTempFile "napkinsketch-example" ".png"))]
-  (sk/save-png (-> (rdatasets/datasets-iris)
-                   (sk/lay-point :sepal-length :sepal-width {:color :species}))
-               path)
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width {:color :species})
+      (sk/save-png path))
   (.exists (java.io.File. ^String path)))
 
 (kind/test-last [true?])

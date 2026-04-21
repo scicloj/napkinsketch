@@ -108,11 +108,11 @@
 ;; One view, two layers: points and a regression line.
 ;; Let us look at the sketch structure:
 
-(kind/pprint
- (-> (rdatasets/datasets-iris)
-     (sk/view :sepal-length :sepal-width)
-     sk/lay-point
-     sk/lay-lm))
+(-> (rdatasets/datasets-iris)
+    (sk/view :sepal-length :sepal-width)
+    sk/lay-point
+    sk/lay-lm
+    kind/pprint)
 
 (kind/test-last
  [(fn [sk]
@@ -131,9 +131,9 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-(kind/pprint
- (-> (rdatasets/datasets-iris)
-     (sk/lay-point :sepal-length :sepal-width)))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    kind/pprint)
 
 (kind/test-last
  [(fn [sk]
