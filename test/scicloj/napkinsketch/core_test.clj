@@ -1964,5 +1964,32 @@
             svg-red (str (sk/plan->figure (sk/plan sk-red) :svg {}))
             svg-default (str (sk/plan->figure (sk/plan sk-default) :svg {}))]
         (is (clojure.string/includes? svg-red "rgb(255,0,0)"))
-        (is (not (clojure.string/includes? svg-default "rgb(255,0,0)")))))))
+        (is (not (clojure.string/includes? svg-default "rgb(255,0,0)")))))
+
+    (testing "annotation-only view still produces a panel"
+      ;; Edge case: a view declared via sk/view with only a view-scope
+      ;; annotation (no data layer) should still infer a panel and
+      ;; render the annotation. Domain comes from the view's data
+      ;; columns plus the annotation's own position.
+      (let [p (sk/plan (-> ds
+                           (sk/view :x :y)
+                           (sk/lay-rule-h :x :y {:intercept 3})))
+            panel (first (:panels p))]
+        (is (= 1 (count (:panels p))))
+        (is (= 0 (count (:layers panel))))
+        (is (= 1 (count (:annotations panel))))
+        (is (= :rule-h (:mark (first (:annotations panel)))))
+        ;; Domain spans both the column data and the intercept.
+        (let [[y-lo y-hi] (:y-domain panel)]
+          (is (<= y-lo 2))
+          (is (>= y-hi 5)))))
+
+    (testing "annotation-only panel with band extends domain to include band"
+      (let [p (sk/plan (-> ds
+                           (sk/view :x :y)
+                           (sk/lay-band-h :x :y {:lo 10 :hi 20})))
+            panel (first (:panels p))
+            [y-lo y-hi] (:y-domain panel)]
+        (is (<= y-lo 2))
+        (is (>= y-hi 20))))))
 

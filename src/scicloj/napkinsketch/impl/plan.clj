@@ -674,6 +674,10 @@
                   (collect-domain local-srs :x-domain x-scale-spec))
         y-dom (or (:domain y-scale-spec)
                   (compute-global-y-domain local-plan-layers y-scale-spec)
+                  ;; Annotation-only panels have no plan layers; their
+                  ;; y-domain lives in the synthesized stat-results.
+                  (when (empty? local-plan-layers)
+                    (collect-domain local-srs :y-domain y-scale-spec))
                   [0 1])
         [x-dom' y-dom'] (if (= coord-type :flip)
                           [y-dom x-dom]
@@ -771,6 +775,38 @@
                            :let [t (/ (double i) (dec n-stops))]]
                        {:t t :color (grad-fn t)}))}))))
 
+(defn- synthesize-annotation-domain
+  "For an annotation draft layer in an annotation-only panel, compute
+   a synthetic stat-result whose :x-domain / :y-domain come from the
+   view's data columns plus the annotation's own position values
+   (:intercept for rules, :lo/:hi for bands) so the panel's axes are
+   well-defined even when no data layer is attached to the view."
+  [{:keys [mark data x y intercept lo hi]}]
+  (let [col-vals (fn [col]
+                   (when (and data col (tc/dataset? data))
+                     (let [resolved (resolve/resolve-col-name data col)]
+                       (try (seq (data resolved))
+                            (catch Exception _ nil)))))
+        x-col-vals (col-vals x)
+        y-col-vals (col-vals y)
+        x-extra (case mark
+                  :rule-v (when (number? intercept) [intercept])
+                  :band-v (when (and (number? lo) (number? hi)) [lo hi])
+                  nil)
+        y-extra (case mark
+                  :rule-h (when (number? intercept) [intercept])
+                  :band-h (when (and (number? lo) (number? hi)) [lo hi])
+                  nil)
+        x-all (cond-> []
+                x-col-vals (into x-col-vals)
+                x-extra (into x-extra))
+        y-all (cond-> []
+                y-col-vals (into y-col-vals)
+                y-extra (into y-extra))]
+    (cond-> {}
+      (seq x-all) (assoc :x-domain [(reduce min x-all) (reduce max x-all)])
+      (seq y-all) (assoc :y-domain [(reduce min y-all) (reduce max y-all)]))))
+
 (defn draft->plan
   "Pipeline: convert a draft into a plan using entry-based grid layout.
    Each entry = one panel. Grid position from structural columns.
@@ -797,18 +833,32 @@
          layout-opts (assoc opts :width width :height height)
          draft-layers (if (map? draft) [draft] draft)
 
-         ;; Stage 1 of annotations-as-layers: split annotation draft
-         ;; layers (created by sk/lay-rule-*/sk/lay-band-*) from data
-         ;; draft layers. Annotations skip the stat/extract-layer
-         ;; pipeline and join the plot-level :annotations list merged
-         ;; below. Data pipeline downstream sees only data layers.
+         ;; Annotations-as-layers: split annotation draft layers
+         ;; (created by sk/lay-rule-*/sk/lay-band-*) from data draft
+         ;; layers. Annotations skip the stat/extract-layer pipeline
+         ;; and join the plot-level :annotations list merged below.
+         ;; A view with only annotations (no data layer) still needs
+         ;; a panel inferred for it, so annotation-only entry-idx
+         ;; groups are threaded into grid inference separately.
          layer-annotations (filterv #(resolve/annotation-marks (:mark %)) draft-layers)
          draft-layers (filterv #(not (resolve/annotation-marks (:mark %))) draft-layers)
+         data-entry-ids (set (map :__entry-idx draft-layers))
+         ann-only-by-idx (->> layer-annotations
+                              (remove #(contains? data-entry-ids (:__entry-idx %)))
+                              (group-by :__entry-idx))
 
-         ;; Group draft layers by source entry index
+         ;; Group draft layers by source entry index. Annotation-only
+         ;; entries get their own groups tagged :__annotation-only?
+         ;; so downstream Phase 1 synthesizes their domains instead of
+         ;; running the stat pipeline.
          draft-layer-groups (vec
-                             (for [[idx vs] (sort-by key (group-by :__entry-idx draft-layers))]
-                               {:entry-idx idx :draft-layers (vec vs)}))
+                             (concat
+                              (for [[idx vs] (sort-by key (group-by :__entry-idx draft-layers))]
+                                {:entry-idx idx :draft-layers (vec vs)})
+                              (for [[idx vs] (sort-by key ann-only-by-idx)]
+                                {:entry-idx idx
+                                 :draft-layers (vec vs)
+                                 :__annotation-only? true})))
 
          ;; Infer grid from draft layer groups
          grid (infer-grid draft-layer-groups
@@ -855,14 +905,25 @@
          tagged-by-idx (group-by :__entry-idx tagged-draft-layers)
          panel-data (mapv
                      (fn [pg]
-                       (let [eidx (:__entry-idx (first (:draft-layers pg)))
-                             panel-tagged (or (get tagged-by-idx eidx)
-                                              (:draft-layers pg))
-                             pre-resolved (mapv :__resolved panel-tagged)]
-                         (if (seq panel-tagged)
-                           (merge pg (resolve-panel-draft-layers panel-tagged all-colors cfg
-                                                                 :resolved pre-resolved))
-                           pg)))
+                       (let [dls (:draft-layers pg)
+                             annotation-only? (and (seq dls)
+                                                   (every? #(resolve/annotation-marks (:mark %)) dls))]
+                         (cond
+                           ;; Annotation-only panel: no stat pipeline,
+                           ;; synthesize domains from the annotation's
+                           ;; view data plus the annotation's positions.
+                           annotation-only?
+                           (merge pg {:resolved []
+                                      :stat-results (mapv synthesize-annotation-domain dls)
+                                      :layers []})
+                           :else
+                           (let [eidx (:__entry-idx (first dls))
+                                 panel-tagged (or (get tagged-by-idx eidx) dls)
+                                 pre-resolved (mapv :__resolved panel-tagged)]
+                             (if (seq panel-tagged)
+                               (merge pg (resolve-panel-draft-layers panel-tagged all-colors cfg
+                                                                     :resolved pre-resolved))
+                               pg)))))
                      (:panels grid))
 
          ;; --- Phase 2: per-panel domains (still no pixel math) ---
