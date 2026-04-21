@@ -3,9 +3,6 @@
 ;; This chapter tests how Napkinsketch handles unusual or boundary
 ;; inputs -- missing values, extreme numbers, degenerate datasets,
 ;; and uncommon configurations.
-;;
-;; Testing robustness: missing data, extreme values, small datasets,
-;; many categories, computed columns, and other tricky scenarios.
 
 (ns napkinsketch-book.edge-cases
   (:require
@@ -28,7 +25,7 @@
 
 ;; ## Missing Data
 
-;; Rows with `nil` values are dropped gracefully.
+;; Rows with `nil` values are dropped before rendering.
 
 (def with-missing
   {:x [1 2 nil 4 5 nil 7]
@@ -71,7 +68,7 @@
 ;; ## Two Points with Regression
 
 ;; Regression requires at least 3 points. With only 2,
-;; the line is gracefully omitted.
+;; the line is omitted and the points still render.
 
 (-> {:x [1 10] :y [5 50]}
     (sk/lay-point :x :y)
@@ -293,8 +290,8 @@
 
 ;; ### Log scale with non-positive values
 ;;
-;; Non-positive values are filtered on log-scaled axes
-;; (following ggplot2 behavior). Here x includes 0 and -1:
+;; Non-positive values are filtered on log-scaled axes, since `log`
+;; requires positive inputs. Here x includes 0 and -1:
 
 (-> {:x [0 -1 1 10 100] :y [1 2 3 4 5]}
     (sk/lay-point :x :y)

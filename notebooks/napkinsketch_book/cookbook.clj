@@ -587,9 +587,9 @@
 ;; dataset (53,940 rows) produces an 11 MB SVG file.
 ;;
 ;; Setting `:format :bufimg` renders the plot to a
-;; `java.awt.image.BufferedImage` via membrane's Java2D backend instead.
-;; The resulting PNG is typically 100x smaller and loads instantly in the
-;; browser.
+;; `java.awt.image.BufferedImage` via membrane's Java2D backend instead
+;; of SVG. For plots with many thousands of points, the raster output
+;; is substantially smaller than the equivalent SVG.
 
 ;; ### SVG (default)
 
@@ -604,8 +604,8 @@
 
 ;; ### BufferedImage output
 ;;
-;; With `:format :bufimg`, even the full dataset renders quickly in the
-;; notebook:
+;; With `:format :bufimg`, the full dataset renders as a raster image
+;; in the notebook:
 
 (-> (rdatasets/ggplot2-diamonds)
     (sk/lay-point :carat :price {:color :cut :alpha 0.3})

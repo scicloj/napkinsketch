@@ -360,7 +360,7 @@ precedence-plot
 ;;
 ;; - a keyword -- any palette name from the
 ;;   [clojure2d](https://github.com/Clojure2D/clojure2d) color library
-;;   (hundreds available: [ColorBrewer](https://colorbrewer2.org/), Wes Anderson, thi.ng, paletteer, etc.)
+;;   (thousands available: [ColorBrewer](https://colorbrewer2.org/), Wes Anderson, thi.ng, paletteer, etc.)
 ;; - a vector of hex strings: `["#E74C3C" "#3498DB" "#2ECC71"]`
 ;; - a map of `{category-value "#hex"}` for explicit assignment
 ;;

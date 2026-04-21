@@ -607,7 +607,7 @@ final-pl
 ;;
 ;; Plans are plain inspectable data -- maps, numbers, strings,
 ;; keywords, and dtype-next buffers for numeric arrays (see [Architecture](./napkinsketch_book.architecture.html)) (`:xs`, `:ys`,
-;; etc.). The buffers support `nth`, `count`, `seq`, and all standard
+;; etc.). The buffers support `nth`, `count`, `seq`, and standard
 ;; sequence operations.
 
 (type (:xs (first (:groups (first (:layers (first (:panels tiny-pl))))))))

@@ -792,25 +792,6 @@ my-sketch
 ;; On the diagonal, where x and y are the same column, Napkinsketch
 ;; infers a histogram instead of a scatter plot.
 
-;; ---
-;; ## Summary
+;; ## What's Next
 ;;
-;; Three ideas explain the entire model:
-;;
-;; **1. View and layer.** A view says *what*: which columns define a
-;; panel. A layer says *how*: which chart type, with what options.
-;; Each applicable layer, rendered on each view, gives the final plot.
-;;
-;; **2. Scope.** Where you write it determines who sees it.
-;; Mappings, layers, and data all flow downward from the sketch, to
-;; each view, to each layer -- lower overrides higher.
-;;
-;; **3. Identity.** `view` always creates a new view. `lay-*` finds
-;; the most recent view with the same x and y columns, or creates one.
-;;
-;; These ideas connect: scope determines what each view and layer
-;; inherits; identity determines which view a layer attaches to;
-;; and the view-layer split makes both possible.
-;;
-;; The [Sketch Rules](./napkinsketch_book.sketch_rules.html) chapter
-;; formalizes these ideas as 18 tested rules.
+;; - [**Sketch Rules**](./napkinsketch_book.sketch_rules.html) -- 24 rules that formalize the model

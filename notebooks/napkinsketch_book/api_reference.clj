@@ -734,7 +734,7 @@ plan1
 
 (kind/doc #'sk/save-png)
 
-;; Save a plot to a PNG file via the membrane Java2D raster path.
+;; Save a plot to a PNG file via membrane's Java2D backend.
 ;; Returns the path:
 
 (let [path (str (java.io.File/createTempFile "napkinsketch-example" ".png"))]

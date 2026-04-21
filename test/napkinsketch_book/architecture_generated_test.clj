@@ -157,13 +157,13 @@
 
 
 (def
- v48_l219
+ v48_l221
  (kind/mermaid
-  "\ngraph LR\n  subgraph WHAT [\"WHAT -- data + semantics\"]\n    B[\"sketch\"]\n    D[\"Draft\"]\n    ST[\"Statistics\"]\n    D[\"Domains\"]\n    C[\"Colors\"]\n  end\n  subgraph HOW [\"HOW -- pixels + rendering\"]\n    SC[\"Scales (wadogo)\"]\n    CO[\"Coord transforms\"]\n    MS[\"Membrane tree\"]\n    SV[\"SVG conversion\"]\n  end\n  WHAT -->|plan| HOW\n  style WHAT fill:#e8f5e9\n  style HOW fill:#e3f2fd\n"))
+  "\ngraph LR\n  A[\"sketch + draft\"] -->|plan| P[\"Plan\"]\n  P --> R[\"membrane + figure\"]\n  style A fill:#e8f5e9\n  style P fill:#fff3e0\n  style R fill:#e3f2fd\n"))
 
 
 (def
- v50_l264
+ v50_l250
  (def
   multi-sk
   (->
@@ -173,54 +173,54 @@
    sk/lay-lm)))
 
 
-(def v52_l272 (count (:views multi-sk)))
+(def v52_l258 (count (:views multi-sk)))
 
 
-(deftest t53_l274 (is ((fn [n] (= 1 n)) v52_l272)))
+(deftest t53_l260 (is ((fn [n] (= 1 n)) v52_l258)))
 
 
-(def v54_l276 (mapv :method (:layers multi-sk)))
-
-
-(deftest
- t55_l278
- (is ((fn [v] (and (= :point (first v)) (= :lm (second v)))) v54_l276)))
-
-
-(def v57_l284 (def multi-draft (sk/draft multi-sk)))
-
-
-(def v58_l286 (count multi-draft))
-
-
-(deftest t59_l288 (is ((fn [n] (= 2 n)) v58_l286)))
-
-
-(def v60_l290 (mapv :mark multi-draft))
+(def v54_l262 (mapv :method (:layers multi-sk)))
 
 
 (deftest
- t61_l292
+ t55_l264
+ (is ((fn [v] (and (= :point (first v)) (= :lm (second v)))) v54_l262)))
+
+
+(def v57_l270 (def multi-draft (sk/draft multi-sk)))
+
+
+(def v58_l272 (count multi-draft))
+
+
+(deftest t59_l274 (is ((fn [n] (= 2 n)) v58_l272)))
+
+
+(def v60_l276 (mapv :mark multi-draft))
+
+
+(deftest
+ t61_l278
  (is
-  ((fn [v] (and (= :point (first v)) (= :line (second v)))) v60_l290)))
+  ((fn [v] (and (= :point (first v)) (= :line (second v)))) v60_l276)))
 
 
 (def
- v63_l297
+ v63_l283
  (def
   multi-plan
   (sk/plan multi-sk {:title "Iris Petals with Regression"})))
 
 
 (def
- v64_l300
+ v64_l286
  (mapv
   (fn [layer] {:mark (:mark layer), :n-groups (count (:groups layer))})
   (:layers (first (:panels multi-plan)))))
 
 
 (deftest
- t65_l305
+ t65_l291
  (is
   ((fn
     [v]
@@ -228,25 +228,25 @@
      (= :point (:mark (first v)))
      (= :line (:mark (second v)))
      (= 3 (:n-groups (first v)))))
-   v64_l300)))
+   v64_l286)))
 
 
-(def v67_l311 multi-plan)
+(def v67_l297 multi-plan)
 
 
 (deftest
- t68_l313
+ t68_l299
  (is
   ((fn
     [m]
     (and
      (= "Iris Petals with Regression" (:title m))
      (= 3 (count (get-in m [:legend :entries])))))
-   v67_l311)))
+   v67_l297)))
 
 
 (def
- v70_l318
+ v70_l304
  (->
   (rdatasets/datasets-iris)
   (sk/view :petal-length :petal-width {:color :species})
@@ -256,17 +256,17 @@
 
 
 (deftest
- t71_l324
+ t71_l310
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v70_l318)))
+   v70_l304)))
 
 
 (def
- v73_l330
+ v73_l316
  (kind/mermaid
   "\ngraph TD\n  API[\"api.clj\"] --> SK[\"impl/sketch.clj\"]\n  API --> RES[\"impl/resolve.clj\"]\n  API --> PL[\"impl/plan.clj\"]\n  SK --> RES\n  SK --> PL\n  PL --> RES\n  PL --> STAT[\"impl/stat.clj\"]\n  PL --> SCALE[\"impl/scale.clj\"]\n  PL --> DEFAULTS[\"impl/defaults.clj\"]\n  PL --> SS[\"impl/sketch_schema.clj\"]\n  SK --> RENDER[\"impl/render.clj\"]\n  RENDER --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SK fill:#d1c4e9\n  style PL fill:#d1c4e9\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))

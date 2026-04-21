@@ -774,8 +774,8 @@ fill-sketch
 ;; values. The logic depends on the scale type:
 ;;
 ;; - **Linear** -- wadogo selects ticks at round intervals (1, 2, 2.5, 5, ...)
-;; - **Log** -- ggplot2-style 1-2-5 nice numbers: powers of 10 when they
-;;   give at least 3 ticks, otherwise intermediates at 1-2-5 or 1-2-3-5
+;; - **Log** -- 1-2-5 nice numbers: powers of 10 when they give at
+;;   least 3 ticks, otherwise intermediates at 1-2-5 or 1-2-3-5
 ;;   multiples per decade
 ;; - **Categorical** -- tick at each category, in order of appearance
 ;; - **Temporal** -- calendar-aware snapping (year, month, day, hour)

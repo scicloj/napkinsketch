@@ -27,8 +27,7 @@
 
 ;; ## Your First Plot
 ;;
-;; Load the classic [iris](https://en.wikipedia.org/wiki/Iris_flower_data_set) dataset and scatter two columns. That is all
-;; it takes -- one `def` and one pipeline:
+;; Load the classic [iris](https://en.wikipedia.org/wiki/Iris_flower_data_set) dataset and scatter two columns:
 
 (def iris (rdatasets/datasets-iris))
 

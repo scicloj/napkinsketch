@@ -10,7 +10,9 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch -- composable plotting
-   [scicloj.napkinsketch.api :as sk]))
+   [scicloj.napkinsketch.api :as sk]
+   ;; clojure2d -- color palettes and gradients
+   [clojure2d.color :as c2d]))
 
 ;; ## Sketch
 ;;
@@ -427,8 +429,13 @@ my-sketch
 ;; aesthetics. When `:color` maps to a categorical column, colors
 ;; are assigned from the active palette in order.
 ;;
-;; Napkinsketch uses clojure2d for palettes -- over 7,000 named palettes
-;; are available. Set via `{:palette :set2}` in options.
+;; Napkinsketch uses [clojure2d](https://github.com/Clojure2D/clojure2d)
+;; for palettes. Set via `{:palette :set2}` in options. The number of
+;; named palettes available:
+
+(count (c2d/find-palette #".*"))
+
+(kind/test-last [(fn [n] (< 1000 n))])
 
 ;; ## Gradient
 ;;

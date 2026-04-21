@@ -701,8 +701,7 @@
 ;; - **Marginal plots** -- side panels with density/histogram along scatter
 ;;   axes. Needs layout support for panels with different sizes.
 ;;
-;; - **Free scales** -- faceted panels with independent y ranges. One of
-;;   the most requested missing features (Persona 3).
+;; - **Free scales** -- faceted panels with independent y ranges.
 ;;
 ;; - **Gradient line** -- line where color varies along the path (e.g.,
 ;;   temperature over time). Needs per-segment coloring.

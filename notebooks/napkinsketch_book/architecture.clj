@@ -212,39 +212,25 @@ trace-membrane
 
 ;; ## The Plan Boundary
 ;;
-;; The plan separates **what** to draw from **how** to
-;; draw it. The sketch and draft stages describe intent;
-;; the membrane and figure stages handle rendering.
+;; The plan is the boundary between description and rendering. The
+;; sketch and draft stages assemble the description. The plan resolves
+;; it into computed geometry, domains, ticks, and legend -- still as
+;; plain data, before any pixel layout. The membrane and figure stages
+;; then produce pixel output.
 
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  subgraph WHAT [\"WHAT -- data + semantics\"]
-    B[\"sketch\"]
-    D[\"Draft\"]
-    ST[\"Statistics\"]
-    D[\"Domains\"]
-    C[\"Colors\"]
-  end
-  subgraph HOW [\"HOW -- pixels + rendering\"]
-    SC[\"Scales (wadogo)\"]
-    CO[\"Coord transforms\"]
-    MS[\"Membrane tree\"]
-    SV[\"SVG conversion\"]
-  end
-  WHAT -->|plan| HOW
-  style WHAT fill:#e8f5e9
-  style HOW fill:#e3f2fd
+  A[\"sketch + draft\"] -->|plan| P[\"Plan\"]
+  P --> R[\"membrane + figure\"]
+  style A fill:#e8f5e9
+  style P fill:#fff3e0
+  style R fill:#e3f2fd
 ")
 
-;; The plan is **plain inspectable data** -- maps, numbers, strings,
-;; keywords, and dtype-next buffers for numeric arrays. No membrane
-;; types, no datasets, no scale objects. It validates against a Malli
-;; schema.
-;;
-;; The membrane tree is **Java objects** -- `Translate`, `WithColor`,
-;; `RoundedRectangle`, `Label`, etc. All positions are resolved to
-;; pixel coordinates. Not serializable.
+;; The plan is plain inspectable data -- maps, numbers, strings,
+;; keywords, and dtype-next buffers for numeric arrays. It validates
+;; against a Malli schema.
 ;;
 ;; This separation enables:
 ;;
