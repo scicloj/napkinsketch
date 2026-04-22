@@ -20,7 +20,7 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -33,7 +33,7 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :petal-length :petal-width {:color :species})
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -46,7 +46,7 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    (sk/lay-lm {:confidence-band true}))
+    (sk/lay-smooth {:stat :linear-model :confidence-band true}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -59,7 +59,7 @@
 (-> (rdatasets/reshape2-tips)
     (sk/view :total-bill :tip {:color :smoker})
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 244 (:points s))
@@ -76,7 +76,7 @@
                     (* 0.3 (- (rng/drandom r) 0.5)))
                 xs)})
     (sk/lay-point :x :y)
-    (sk/lay-loess {:bandwidth 0.2}))
+    (sk/lay-smooth {:bandwidth 0.2}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 50 (:points s))

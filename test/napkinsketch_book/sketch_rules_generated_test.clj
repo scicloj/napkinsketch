@@ -21,7 +21,7 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__234457#] (dissoc p1__234457# :data))))
+    (partial mapv (fn* [p1__253792#] (dissoc p1__253792# :data))))
    kind/pprint)))
 
 
@@ -53,7 +53,11 @@
 
 (def
  v12_l95
- (-> iris (sk/view :sepal-length :sepal-width) sk/lay-point sk/lay-lm))
+ (->
+  iris
+  (sk/view :sepal-length :sepal-width)
+  sk/lay-point
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -84,7 +88,7 @@
   iris
   (sk/view :sepal-length :sepal-width)
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   sk-summary))
 
 
@@ -96,7 +100,7 @@
     (and
      (= 2 (count (:layers m)))
      (= :point (:layer-type (first (:layers m))))
-     (= :lm (:layer-type (second (:layers m))))
+     (= :smooth (:layer-type (second (:layers m))))
      (nil? (:layers (first (:views m))))))
    v14_l114)))
 
@@ -106,7 +110,7 @@
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -132,7 +136,7 @@
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   sk-summary))
 
 
@@ -143,7 +147,7 @@
     [m]
     (and
      (= 1 (count (:layers m)))
-     (= :lm (:layer-type (first (:layers m))))
+     (= :smooth (:layer-type (first (:layers m))))
      (= 1 (count (:layers (first (:views m)))))
      (= :point (:layer-type (first (:layers (first (:views m))))))))
    v19_l149)))
@@ -155,7 +159,7 @@
   iris
   (sk/lay-point :sepal-length :sepal-width)
   (sk/lay-point :petal-length :petal-width)
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -179,7 +183,7 @@
   iris
   (sk/lay-point :sepal-length :sepal-width)
   (sk/lay-point :petal-length :petal-width)
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   sk-summary))
 
 
@@ -190,7 +194,7 @@
     [m]
     (and
      (= 1 (count (:layers m)))
-     (= :lm (:layer-type (first (:layers m))))
+     (= :smooth (:layer-type (first (:layers m))))
      (= 2 (count (:views m)))
      (= 1 (count (:layers (first (:views m)))))
      (= 1 (count (:layers (second (:views m)))))))
@@ -240,7 +244,7 @@
   iris
   (sk/lay-point :sepal-length :sepal-width)
   (sk/view :sepal-length :sepal-width)
-  (sk/lay-lm :sepal-length :sepal-width)))
+  (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model})))
 
 
 (deftest
@@ -266,7 +270,7 @@
   iris
   (sk/lay-point :sepal-length :sepal-width)
   (sk/view :sepal-length :sepal-width)
-  (sk/lay-lm :sepal-length :sepal-width)
+  (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model})
   sk-summary))
 
 
@@ -281,7 +285,7 @@
      (= 1 (count (:layers (first (:views m)))))
      (= :point (:layer-type (first (:layers (first (:views m))))))
      (= 1 (count (:layers (second (:views m)))))
-     (= :lm (:layer-type (first (:layers (second (:views m))))))))
+     (= :smooth (:layer-type (first (:layers (second (:views m))))))))
    v34_l253)))
 
 
@@ -470,7 +474,7 @@
   iris
   (sk/view :sepal-length :sepal-width)
   (sk/lay-point {:data iris-small})
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -494,7 +498,7 @@
   iris
   (sk/view :sepal-length :sepal-width)
   (sk/lay-point {:data iris-small})
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   sk-summary))
 
 
@@ -525,7 +529,7 @@
       (= 2 (:panels s))
       (= 300 (:points s))
       (every?
-       (fn* [p1__234458#] (= :species (:color p1__234458#)))
+       (fn* [p1__253793#] (= :species (:color p1__253793#)))
        d))))
    v69_l445)))
 
@@ -603,7 +607,7 @@
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -626,7 +630,7 @@
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   sk-summary))
 
 
@@ -638,7 +642,7 @@
     (and
      (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
      (= 1 (count (:layers m)))
-     (= {} (:mapping (first (:layers m))))))
+     (nil? (:color (:mapping (first (:layers m)))))))
    v81_l517)))
 
 
@@ -648,7 +652,7 @@
   iris
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  (sk/lay-lm {:color nil})))
+  (sk/lay-smooth {:stat :linear-model, :color nil})))
 
 
 (deftest
@@ -672,7 +676,7 @@
   iris
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  (sk/lay-lm {:color nil})
+  (sk/lay-smooth {:stat :linear-model, :color nil})
   sk-summary))
 
 
@@ -695,7 +699,7 @@
   (sk/sketch iris {:color :species})
   (sk/view :sepal-length :sepal-width)
   (sk/lay-point {:color nil})
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -715,7 +719,7 @@
   (sk/sketch iris {:color :species})
   (sk/view :sepal-length :sepal-width)
   (sk/lay-point {:color nil})
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   sk-summary))
 
 
@@ -729,7 +733,7 @@
      (= 2 (count (:layers m)))
      (contains? (:mapping (first (:layers m))) :color)
      (nil? (get-in m [:layers 0 :mapping :color]))
-     (= {} (:mapping (second (:layers m))))))
+     (nil? (:color (:mapping (second (:layers m)))))))
    v91_l574)))
 
 
@@ -853,8 +857,8 @@
       rule
       (some
        (fn*
-        [p1__234459#]
-        (when (= :rule-h (:layer-type p1__234459#)) p1__234459#))
+        [p1__253794#]
+        (when (= :rule-h (:layer-type p1__253794#)) p1__253794#))
        layers)]
      (and (some? rule) (= 3.0 (get-in rule [:mapping :y-intercept])))))
    v106_l671)))
@@ -928,7 +932,7 @@
    iris
    (sk/lay-point :sepal-length :sepal-width)
    (sk/view :petal-length :petal-width)
-   sk/lay-lm)))
+   (sk/lay-smooth {:stat :linear-model}))))
 
 
 (def v119_l754 assembly-sketch)
@@ -1044,7 +1048,7 @@
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/lay-lm :sepal-length :sepal-width)))
+  (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model})))
 
 
 (deftest
@@ -1065,7 +1069,7 @@
  (->
   iris
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/lay-lm :sepal-length :sepal-width)
+  (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model})
   sk-summary))
 
 

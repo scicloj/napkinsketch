@@ -28,7 +28,7 @@
 (-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy {:color :class})
     sk/lay-point
-    sk/lay-loess
+    sk/lay-smooth
     (sk/options {:title "Fuel Efficiency by Engine Size"
                  :x-label "Engine Displacement (L)"
                  :y-label "Highway MPG"}))
@@ -344,7 +344,7 @@
 (-> (rdatasets/reshape2-tips)
     (sk/view :total-bill :tip {:color :sex})
     sk/lay-point
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     (sk/options {:title "Tip vs Total Bill (with regression)"
                  :x-label "Total Bill (USD)"
                  :y-label "Tip (USD)"}))
@@ -425,7 +425,7 @@
 
 (-> (rdatasets/reshape2-tips)
     (sk/view :day {:color :sex})
-    sk/lay-stacked-bar
+    (sk/lay-bar {:position :stack})
     (sk/options {:title "Tips by Day and Sex (stacked bar)"
                  :x-label "Day"
                  :y-label "Count"}))
@@ -436,7 +436,7 @@
 
 (-> (rdatasets/reshape2-tips)
     (sk/view :day {:color :sex})
-    sk/lay-stacked-bar-fill
+    (sk/lay-bar {:position :fill})
     (sk/options {:title "Proportion by Day and Sex"
                  :x-label "Day"
                  :y-label "Proportion"}))
@@ -453,7 +453,7 @@
     (tc/aggregate {:pop (fn [ds] (reduce + (ds :pop)))})
     (tc/order-by [:year :continent])
     (sk/view :year :pop {:color :continent})
-    sk/lay-stacked-area
+    (sk/lay-area {:position :stack})
     (sk/options {:title "World Population by Continent"
                  :x-label "Year"
                  :y-label "Population"}))
@@ -501,7 +501,7 @@
 (-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
-    (sk/lay-lm {:confidence-band true})
+    (sk/lay-smooth {:stat :linear-model :confidence-band true})
     (sk/options {:title "Weight vs MPG with Linear Fit"
                  :x-label "Weight (1000 lbs)"
                  :y-label "Miles per Gallon"}))
@@ -594,7 +594,7 @@
 (-> (rdatasets/reshape2-tips)
     (sk/view :total-bill :tip {:color :smoker})
     sk/lay-point
-    (sk/lay-loess {:confidence-band true})
+    (sk/lay-smooth {:confidence-band true})
     (sk/options {:title "Tips: Bill vs Tip by Smoking Status"
                  :x-label "Total Bill ($)"
                  :y-label "Tip ($)"}))
@@ -654,7 +654,7 @@
 ;; Source: [Vega-Lite: Stacked Bar Normalized](https://vega.github.io/vega-lite/examples/stacked_bar_normalize.html)
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-stacked-bar-fill :day {:color :sex})
+    (sk/lay-bar :day {:position :fill :color :sex})
     (sk/options {:title "Gender Proportion by Day (100% stacked)"}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
@@ -743,7 +743,7 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    (sk/lay-loess {:confidence-band true})
+    (sk/lay-smooth {:confidence-band true})
     (sk/options {:title "Iris: Scatter + LOESS by Species"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -920,7 +920,7 @@
 (-> (rdatasets/datasets-faithful)
     (sk/view :eruptions :waiting)
     sk/lay-point
-    sk/lay-loess
+    sk/lay-smooth
     (sk/options {:title "Old Faithful with LOESS"
                  :x-label "Eruption Duration (min)"
                  :y-label "Waiting Time (min)"}))
@@ -1041,7 +1041,7 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :petal-length :petal-width {:color :species})
     sk/lay-point
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     (sk/options {:title "Iris Petals with Linear Fit per Species"
                  :x-label "Petal Length"
                  :y-label "Petal Width"}))
@@ -1056,7 +1056,7 @@
 (-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
-    (sk/lay-lm {:confidence-band true})
+    (sk/lay-smooth {:stat :linear-model :confidence-band true})
     (sk/options {:title "Weight vs MPG with 95% Confidence Band"
                  :x-label "Weight (1000 lbs)"
                  :y-label "Miles per Gallon"}))
@@ -1074,8 +1074,8 @@
 (-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
-    sk/lay-lm
-    sk/lay-loess
+    (sk/lay-smooth {:stat :linear-model})
+    sk/lay-smooth
     (sk/options {:title "Cars: LM and LOESS Smoothers"
                  :x-label "Weight (1000 lbs)"
                  :y-label "Miles per Gallon"}))
@@ -1821,7 +1821,7 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :petal-length :petal-width)
     sk/lay-point
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     (sk/facet :species)
     (sk/options {:title "Iris Petals: Faceted Regression"
                  :x-label "Petal Length"
@@ -1881,7 +1881,7 @@
 (-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy)
     sk/lay-point
-    sk/lay-loess
+    sk/lay-smooth
     (sk/facet :cyl)
     (sk/options {:title "MPG: Scatter + LOESS by Cylinder Count"
                  :x-label "Displacement"
@@ -1987,7 +1987,7 @@
 
 (-> (rdatasets/reshape2-tips)
     (sk/view :day {:color :time})
-    sk/lay-stacked-bar
+    (sk/lay-bar {:position :stack})
     (sk/options {:title "Tips by Day and Meal Time (Stacked)"
                  :x-label "Day"
                  :y-label "Count"}))

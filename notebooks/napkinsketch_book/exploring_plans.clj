@@ -298,7 +298,7 @@ bar-layer
 ;; Stacking changes the position field:
 
 (def stacked-pl (-> (rdatasets/palmerpenguins-penguins)
-                    (sk/lay-stacked-bar :island {:color :species})
+                    (sk/lay-bar :island {:position :stack :color :species})
                     sk/plan))
 
 (def stacked-layer (first (:layers (first (:panels stacked-pl)))))
@@ -316,7 +316,7 @@ bar-layer
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -324,7 +324,7 @@ bar-layer
 
 (def lm-pl (-> (rdatasets/datasets-iris)
                (sk/lay-point :sepal-length :sepal-width)
-               sk/lay-lm
+               (sk/lay-smooth {:stat :linear-model})
                sk/plan))
 
 ;; Two layers -- points and line:
@@ -352,7 +352,7 @@ bar-layer
 (-> (rdatasets/datasets-iris)
     (sk/view :petal-length :petal-width {:color :species})
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -360,7 +360,7 @@ bar-layer
 (def grp-pl (-> (rdatasets/datasets-iris)
                 (sk/view :petal-length :petal-width {:color :species})
                 sk/lay-point
-                sk/lay-lm
+                (sk/lay-smooth {:stat :linear-model})
                 sk/plan))
 
 (let [line-layer (second (:layers (first (:panels grp-pl))))]
@@ -489,7 +489,7 @@ opts-pl
   (-> (rdatasets/datasets-iris)
       (sk/view :petal-length :petal-width {:color :species})
       sk/lay-point
-      sk/lay-lm))
+      (sk/lay-smooth {:stat :linear-model})))
 
 (def final-pl (sk/plan final-sk {:title "Iris Petals"}))
 

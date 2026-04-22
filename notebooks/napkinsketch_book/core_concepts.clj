@@ -99,7 +99,7 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width)
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -111,7 +111,7 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width)
     sk/lay-point
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     kind/pprint)
 
 (kind/test-last
@@ -187,7 +187,7 @@ two-panel-sketch
 (-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
     (sk/view :sepal-length :sepal-width)
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (= 3 (:lines (sk/svg-summary v))))])
 
@@ -202,7 +202,7 @@ two-panel-sketch
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (= 3 (:lines (sk/svg-summary v))))])
 
@@ -236,7 +236,7 @@ view-scoped
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -253,7 +253,7 @@ view-scoped
 (-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
     (sk/view :sepal-length :sepal-width)
     (sk/lay-point {:color nil})
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -282,7 +282,7 @@ view-scoped
     (sk/view :sepal-length :sepal-width)
     (sk/view :petal-length :petal-width)
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -292,7 +292,7 @@ view-scoped
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-lm :sepal-length :sepal-width)
+    (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model})
     (sk/lay-point :petal-length :petal-width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -351,7 +351,7 @@ view-scoped
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width)
     (sk/lay-point {:data setosa})
-    (sk/lay-lm {:data versicolor}))
+    (sk/lay-smooth {:stat :linear-model :data versicolor}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 50 (:points s))
@@ -415,7 +415,7 @@ targeted
   (-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
       (sk/view :sepal-length :sepal-width)
       sk/lay-point
-      sk/lay-lm
+      (sk/lay-smooth {:stat :linear-model})
       (sk/options {:title "Iris"})))
 
 my-sketch
@@ -456,9 +456,9 @@ my-sketch
 
 ;; A regression: stat `:linear-model` fits a line, mark `:line` draws it:
 
-(sk/layer-type-lookup :lm)
+(sk/layer-type-lookup :smooth)
 
-(kind/test-last [(fn [m] (= :linear-model (:stat m)))])
+(kind/test-last [(fn [m] (= :loess (:stat m)))])
 
 ;; Position `:stack` places groups on top of each other:
 
@@ -570,7 +570,7 @@ my-sketch
 
 ;; Add a regression line:
 
-(-> scatter-base sk/lay-lm)
+(-> scatter-base (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -578,7 +578,7 @@ my-sketch
 
 ;; Or a LOESS smoother instead:
 
-(-> scatter-base sk/lay-loess)
+(-> scatter-base sk/lay-smooth)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -597,7 +597,7 @@ my-sketch
   (-> (sk/sketch)
       (sk/view :x :y {:color :group})
       sk/lay-point
-      sk/lay-lm
+      (sk/lay-smooth {:stat :linear-model})
       (sk/options {:title "Scatter with Regression"})))
 
 ;; Apply to one dataset:
@@ -673,7 +673,7 @@ my-sketch
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:group :species})
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -751,7 +751,7 @@ my-sketch
     (sk/view :sepal-length :sepal-width)
     (sk/facet :species)
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:panels s))

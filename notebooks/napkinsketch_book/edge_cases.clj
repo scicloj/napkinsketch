@@ -72,7 +72,7 @@
 
 (-> {:x [1 10] :y [5 50]}
     (sk/lay-point :x :y)
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:points s))
@@ -84,7 +84,7 @@
 
 (-> {:x [1 5 10] :y [5 25 50]}
     (sk/lay-point :x :y)
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:points s))
@@ -191,7 +191,7 @@
 (-> (rdatasets/datasets-iris)
     (tc/select-rows #(= "setosa" (% :species)))
     (sk/lay-point :sepal-length :sepal-width)
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     (sk/options {:title "Setosa Only"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -228,7 +228,7 @@
 
 (-> {:x ["a" "a" "b" "b" "b"]
      :g ["g1" "g2" "g1" "g1" "g1"]}
-    (sk/lay-stacked-bar-fill :x {:color :g}))
+    (sk/lay-bar :x {:position :fill :color :g}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -248,7 +248,7 @@
 
 (-> {:x [1 2 3] :y [2 4 5]}
     (sk/lay-point :x :y)
-    (sk/lay-lm {:confidence-band true}))
+    (sk/lay-smooth {:stat :linear-model :confidence-band true}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:points s))
@@ -261,7 +261,7 @@
 (-> (let [r (rng/rng :jdk 55)]
       {:x (range 10)
        :y (repeatedly 10 #(rng/irandom r 20))})
-    (sk/lay-stacked-area :x :y))
+    (sk/lay-area :x :y {:position :stack}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 

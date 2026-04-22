@@ -54,7 +54,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   (sk/lay-point {:alpha 0.6})
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -102,8 +102,8 @@
    :value
    (map
     (fn*
-     [p1__236338#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__236338#) 0.12)))))
+     [p1__255673#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__255673#) 0.12)))))
     (range 52))}))
 
 
@@ -182,7 +182,7 @@
  v29_l136
  (->
   (rdatasets/palmerpenguins-penguins)
-  (sk/lay-stacked-bar-fill :island {:color :species})))
+  (sk/lay-bar :island {:position :fill, :color :species})))
 
 
 (deftest
@@ -201,7 +201,7 @@
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/lay-lm {:color nil})))
+  (sk/lay-smooth {:stat :linear-model, :color nil})))
 
 
 (deftest
@@ -306,7 +306,7 @@
   (rdatasets/reshape2-tips)
   (sk/view :total-bill :tip {:color :smoker})
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/options
    {:title "Tipping Behavior",
     :x-label "Total Bill ($)",
@@ -333,7 +333,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   (sk/lay-point {:alpha 0.5})
-  (sk/lay-lm {:confidence-band true})
+  (sk/lay-smooth {:stat :linear-model, :confidence-band true})
   (sk/options {:title "Sepal Regression with Confidence Bands"})))
 
 
@@ -365,7 +365,7 @@
  v56_l260
  (->
   (rdatasets/reshape2-tips)
-  (sk/lay-stacked-bar :day {:color :sex})
+  (sk/lay-bar :day {:position :stack, :color :sex})
   (sk/options {:title "Stacked Bars"})))
 
 
@@ -452,7 +452,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__236339#] (= "virginica" p1__236339#))
+       (fn* [p1__255674#] (= "virginica" p1__255674#))
        (:texts s)))))
    v67_l303)))
 
@@ -485,7 +485,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/coord :fixed)
   (sk/options {:title "Fixed Aspect Ratio"})))
 
@@ -506,8 +506,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__236340#] (Math/sin (/ p1__236340# 3.0))) (range 20)),
-   :change (map (fn* [p1__236341#] (- p1__236341# 10)) (range 20))}
+   (map (fn* [p1__255675#] (Math/sin (/ p1__255675# 3.0))) (range 20)),
+   :change (map (fn* [p1__255676#] (- p1__255676# 10)) (range 20))}
   (sk/lay-point :x :y {:color :change})
   (sk/options
    {:color-scale :diverging,
@@ -532,7 +532,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  (sk/lay-loess {:confidence-band true})
+  (sk/lay-smooth {:confidence-band true})
   (sk/options {:title "LOESS with 95% CI"})))
 
 
@@ -624,13 +624,13 @@
    ys
    (map
     (fn*
-     [p1__236342#]
-     (+ (* 3 p1__236342#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__255677#]
+     (+ (* 3 p1__255677#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}
    (sk/lay-point :x :y)
-   sk/lay-lm
+   (sk/lay-smooth {:stat :linear-model})
    (sk/options {:title "Simulated: y = 3x + 5 + noise"}))))
 
 
@@ -673,7 +673,7 @@
   (rdatasets/palmerpenguins-penguins)
   (sk/view :bill-length-mm :bill-depth-mm {:color :species})
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/options {:title "Bill Length vs Depth with Regression"})))
 
 
@@ -693,7 +693,7 @@
  (->
   (rdatasets/palmerpenguins-penguins)
   (sk/lay-point :bill-length-mm :bill-depth-mm {:color :species})
-  (sk/lay-lm {:color nil})
+  (sk/lay-smooth {:stat :linear-model, :color nil})
   (sk/options
    {:title "Simpson's Paradox: Overall vs Per-Group Trend"})))
 
@@ -734,7 +734,7 @@
   (rdatasets/palmerpenguins-penguins)
   (sk/view :flipper-length-mm :body-mass-g {:color :species})
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/options {:title "Flipper Length vs Body Mass"})))
 
 
@@ -774,7 +774,7 @@
   (rdatasets/reshape2-tips)
   (sk/view :total-bill :tip {:color :smoker})
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/options
    {:title "Tipping: Smokers vs Non-Smokers",
     :x-label "Total Bill ($)",
@@ -815,7 +815,7 @@
  v118_l529
  (->
   (rdatasets/reshape2-tips)
-  (sk/lay-stacked-bar :day {:color :time})
+  (sk/lay-bar :day {:position :stack, :color :time})
   (sk/options {:title "Visits by Day (Stacked)"})))
 
 
@@ -856,7 +856,7 @@
   (rdatasets/ggplot2-mpg)
   (sk/view :displ :hwy {:color :class})
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/options {:title "Displacement vs Highway MPG by Class"})))
 
 

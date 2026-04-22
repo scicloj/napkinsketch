@@ -193,7 +193,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__238906#] (= 50 (:n-points p1__238906#))) gs)))
+     (every? (fn* [p1__258233#] (= 50 (:n-points p1__258233#))) gs)))
    v49_l177)))
 
 
@@ -295,9 +295,9 @@
     (and
      (> (count bars) 3)
      (every?
-      (fn* [p1__238907#] (< (:lo p1__238907#) (:hi p1__238907#)))
+      (fn* [p1__258234#] (< (:lo p1__258234#) (:hi p1__258234#)))
       bars)
-     (every? (fn* [p1__238908#] (pos? (:count p1__238908#))) bars)))
+     (every? (fn* [p1__258235#] (pos? (:count p1__258235#))) bars)))
    v74_l248)))
 
 
@@ -365,7 +365,7 @@
   stacked-pl
   (->
    (rdatasets/palmerpenguins-penguins)
-   (sk/lay-stacked-bar :island {:color :species})
+   (sk/lay-bar :island {:position :stack, :color :species})
    sk/plan)))
 
 
@@ -385,7 +385,7 @@
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -406,7 +406,7 @@
   (->
    (rdatasets/datasets-iris)
    (sk/lay-point :sepal-length :sepal-width)
-   sk/lay-lm
+   (sk/lay-smooth {:stat :linear-model})
    sk/plan)))
 
 
@@ -437,7 +437,7 @@
   (rdatasets/datasets-iris)
   (sk/view :petal-length :petal-width {:color :species})
   sk/lay-point
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -459,7 +459,7 @@
    (rdatasets/datasets-iris)
    (sk/view :petal-length :petal-width {:color :species})
    sk/lay-point
-   sk/lay-lm
+   (sk/lay-smooth {:stat :linear-model})
    sk/plan)))
 
 
@@ -486,7 +486,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__238909#] (Math/sin (* p1__238909# 0.3)))
+    (fn* [p1__258236#] (Math/sin (* p1__258236# 0.3)))
     (range 30))}))
 
 
@@ -652,7 +652,7 @@
    (rdatasets/datasets-iris)
    (sk/view :petal-length :petal-width {:color :species})
    sk/lay-point
-   sk/lay-lm)))
+   (sk/lay-smooth {:stat :linear-model}))))
 
 
 (def v140_l494 (def final-pl (sk/plan final-sk {:title "Iris Petals"})))

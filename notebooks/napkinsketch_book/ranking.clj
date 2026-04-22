@@ -43,7 +43,7 @@
 ;; Same data, stacked instead of dodged.
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-stacked-bar :day {:color :smoker}))
+    (sk/lay-bar :day {:position :stack :color :smoker}))
 
 (kind/test-last
  [(fn [v] (let [s (sk/svg-summary v)]
@@ -55,7 +55,7 @@
 ;; 100% stacked bars -- shows proportions instead of counts.
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (sk/lay-stacked-bar-fill :island {:color :species}))
+    (sk/lay-bar :island {:position :fill :color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

@@ -251,7 +251,7 @@ graph LR
   (-> (rdatasets/datasets-iris)
       (sk/view :petal-length :petal-width {:color :species})
       sk/lay-point
-      sk/lay-lm))
+      (sk/lay-smooth {:stat :linear-model})))
 
 ;; The sketch has one view with two global layers:
 
@@ -262,7 +262,7 @@ graph LR
 (mapv :layer-type (:layers multi-sk))
 
 (kind/test-last [(fn [v] (and (= :point (first v))
-                              (= :lm (second v))))])
+                              (= :smooth (second v))))])
 
 ;; The draft produces two maps -- one per layer -- both sharing
 ;; the same columns:
@@ -304,7 +304,7 @@ multi-plan
 (-> (rdatasets/datasets-iris)
     (sk/view :petal-length :petal-width {:color :species})
     sk/lay-point
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     (sk/options {:title "Iris Petals with Regression"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

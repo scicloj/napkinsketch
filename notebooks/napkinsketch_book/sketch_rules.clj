@@ -95,7 +95,7 @@
 (-> iris
     (sk/view :sepal-length :sepal-width)
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
                                d (sk/draft v)]
@@ -114,13 +114,13 @@
 (-> iris
     (sk/view :sepal-length :sepal-width)
     sk/lay-point
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     sk-summary)
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:layers m)))
                         (= :point (:layer-type (first (:layers m))))
-                        (= :lm (:layer-type (second (:layers m))))
+                        (= :smooth (:layer-type (second (:layers m))))
                         (nil? (:layers (first (:views m))))))])
 
 ;; Two sketch-level layers (point and lm). The view has no own
@@ -134,7 +134,7 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
                                d (sk/draft v)]
@@ -148,12 +148,12 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     sk-summary)
 
 (kind/test-last [(fn [m]
                    (and (= 1 (count (:layers m)))
-                        (= :lm (:layer-type (first (:layers m))))
+                        (= :smooth (:layer-type (first (:layers m))))
                         (= 1 (count (:layers (first (:views m)))))
                         (= :point (:layer-type (first (:layers (first (:views m))))))))])
 
@@ -170,7 +170,7 @@
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
     (sk/lay-point :petal-length :petal-width)
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
                                d (sk/draft v)]
@@ -182,12 +182,12 @@
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
     (sk/lay-point :petal-length :petal-width)
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     sk-summary)
 
 (kind/test-last [(fn [m]
                    (and (= 1 (count (:layers m)))
-                        (= :lm (:layer-type (first (:layers m))))
+                        (= :smooth (:layer-type (first (:layers m))))
                         (= 2 (count (:views m)))
                         (= 1 (count (:layers (first (:views m)))))
                         (= 1 (count (:layers (second (:views m)))))))])
@@ -239,7 +239,7 @@
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
     (sk/view :sepal-length :sepal-width)
-    (sk/lay-lm :sepal-length :sepal-width))
+    (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
                                d (sk/draft v)]
@@ -253,7 +253,7 @@
 (-> iris
     (sk/lay-point :sepal-length :sepal-width)
     (sk/view :sepal-length :sepal-width)
-    (sk/lay-lm :sepal-length :sepal-width)
+    (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model})
     sk-summary)
 
 (kind/test-last [(fn [m]
@@ -262,7 +262,7 @@
                         (= 1 (count (:layers (first (:views m)))))
                         (= :point (:layer-type (first (:layers (first (:views m))))))
                         (= 1 (count (:layers (second (:views m)))))
-                        (= :lm (:layer-type (first (:layers (second (:views m))))))))])
+                        (= :smooth (:layer-type (first (:layers (second (:views m))))))))])
 
 ;; Two views with identical columns. `lay-point` created the first
 ;; view and placed itself there. `sk/view` created the second view.
@@ -409,7 +409,7 @@
 (-> iris
     (sk/view :sepal-length :sepal-width)
     (sk/lay-point {:data iris-small})
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
                                d (sk/draft v)]
@@ -421,7 +421,7 @@
 (-> iris
     (sk/view :sepal-length :sepal-width)
     (sk/lay-point {:data iris-small})
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     sk-summary)
 
 (kind/test-last [(fn [m]
@@ -505,7 +505,7 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
                                d (sk/draft v)]
@@ -516,13 +516,13 @@
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     sk-summary)
 
 (kind/test-last [(fn [m]
                    (and (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
                         (= 1 (count (:layers m)))
-                        (= {} (:mapping (first (:layers m))))))])
+                        (nil? (:color (:mapping (first (:layers m)))))))])
 
 ;; Color is in the point layer's mapping. The sketch-level lm does
 ;; not see it -- one overall regression line, not three.
@@ -538,7 +538,7 @@
 (-> iris
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    (sk/lay-lm {:color nil}))
+    (sk/lay-smooth {:stat :linear-model :color nil}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)
                                d (sk/draft v)]
@@ -550,7 +550,7 @@
 (-> iris
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    (sk/lay-lm {:color nil})
+    (sk/lay-smooth {:stat :linear-model :color nil})
     sk-summary)
 
 (kind/test-last [(fn [m]
@@ -565,7 +565,7 @@
 (-> (sk/sketch iris {:color :species})
     (sk/view :sepal-length :sepal-width)
     (sk/lay-point {:color nil})
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
@@ -574,7 +574,7 @@
 (-> (sk/sketch iris {:color :species})
     (sk/view :sepal-length :sepal-width)
     (sk/lay-point {:color nil})
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     sk-summary)
 
 (kind/test-last [(fn [m]
@@ -582,7 +582,7 @@
                         (= 2 (count (:layers m)))
                         (contains? (:mapping (first (:layers m))) :color)
                         (nil? (get-in m [:layers 0 :mapping :color]))
-                        (= {} (:mapping (second (:layers m))))))])
+                        (nil? (:color (:mapping (second (:layers m)))))))])
 
 ;; Points are uncolored (layer `nil` cancels sketch color). The lm
 ;; layer has no override, so it inherits the sketch color -- three
@@ -749,7 +749,7 @@
   (-> iris
       (sk/lay-point :sepal-length :sepal-width)
       (sk/view :petal-length :petal-width)
-      sk/lay-lm))
+      (sk/lay-smooth {:stat :linear-model})))
 
 assembly-sketch
 
@@ -833,7 +833,7 @@ assembly-sketch
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-lm :sepal-length :sepal-width))
+    (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [p (sk/plan v)]
                            (and (= 1 (count (:panels p)))
@@ -841,7 +841,7 @@ assembly-sketch
 
 (-> iris
     (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-lm :sepal-length :sepal-width)
+    (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model})
     sk-summary)
 
 (kind/test-last [(fn [m]

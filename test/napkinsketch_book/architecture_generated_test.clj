@@ -170,7 +170,7 @@
    (rdatasets/datasets-iris)
    (sk/view :petal-length :petal-width {:color :species})
    sk/lay-point
-   sk/lay-lm)))
+   (sk/lay-smooth {:stat :linear-model}))))
 
 
 (def v52_l258 (count (:views multi-sk)))
@@ -184,7 +184,9 @@
 
 (deftest
  t55_l264
- (is ((fn [v] (and (= :point (first v)) (= :lm (second v)))) v54_l262)))
+ (is
+  ((fn [v] (and (= :point (first v)) (= :smooth (second v))))
+   v54_l262)))
 
 
 (def v57_l270 (def multi-draft (sk/draft multi-sk)))
@@ -251,7 +253,7 @@
   (rdatasets/datasets-iris)
   (sk/view :petal-length :petal-width {:color :species})
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/options {:title "Iris Petals with Regression"})))
 
 

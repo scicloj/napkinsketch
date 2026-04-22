@@ -16,7 +16,7 @@
   (rdatasets/ggplot2-mpg)
   (sk/view :displ :hwy {:color :class})
   sk/lay-point
-  sk/lay-loess
+  sk/lay-smooth
   (sk/options
    {:title "Fuel Efficiency by Engine Size",
     :x-label "Engine Displacement (L)",
@@ -370,9 +370,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__237975#]
+    [p1__257302#]
     (#{"Australia" "Brazil" "Japan" "Nigeria" "Germany"}
-     (:country p1__237975#))))
+     (:country p1__257302#))))
   (sk/view :year :life-exp {:color :country})
   sk/lay-line
   sk/lay-point
@@ -437,7 +437,7 @@
   (rdatasets/reshape2-tips)
   (sk/view :total-bill :tip {:color :sex})
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/options
    {:title "Tip vs Total Bill (with regression)",
     :x-label "Total Bill (USD)",
@@ -540,7 +540,7 @@
  (->
   (rdatasets/reshape2-tips)
   (sk/view :day {:color :sex})
-  sk/lay-stacked-bar
+  (sk/lay-bar {:position :stack})
   (sk/options
    {:title "Tips by Day and Sex (stacked bar)",
     :x-label "Day",
@@ -555,7 +555,7 @@
  (->
   (rdatasets/reshape2-tips)
   (sk/view :day {:color :sex})
-  sk/lay-stacked-bar-fill
+  (sk/lay-bar {:position :fill})
   (sk/options
    {:title "Proportion by Day and Sex",
     :x-label "Day",
@@ -573,7 +573,7 @@
   (tc/aggregate {:pop (fn [ds] (reduce + (ds :pop)))})
   (tc/order-by [:year :continent])
   (sk/view :year :pop {:color :continent})
-  sk/lay-stacked-area
+  (sk/lay-area {:position :stack})
   (sk/options
    {:title "World Population by Continent",
     :x-label "Year",
@@ -632,7 +632,7 @@
   (rdatasets/datasets-mtcars)
   (sk/view :wt :mpg)
   sk/lay-point
-  (sk/lay-lm {:confidence-band true})
+  (sk/lay-smooth {:stat :linear-model, :confidence-band true})
   (sk/options
    {:title "Weight vs MPG with Linear Fit",
     :x-label "Weight (1000 lbs)",
@@ -698,7 +698,7 @@
  v106_l547
  (->
   (rdatasets/gapminder-gapminder)
-  (tc/select-rows (fn* [p1__237976#] (= 2007 (:year p1__237976#))))
+  (tc/select-rows (fn* [p1__257303#] (= 2007 (:year p1__257303#))))
   (sk/lay-point :gdp-percap :life-exp {:color :continent, :size :pop})
   (sk/scale :x :log)
   (sk/options
@@ -718,9 +718,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__237977#]
+    [p1__257304#]
     (#{"Brazil" "United States" "Japan" "China" "India"}
-     (:country p1__237977#))))
+     (:country p1__257304#))))
   (sk/lay-line :year :life-exp {:color :country})
   (sk/options
    {:title "Life Expectancy Over Time",
@@ -770,7 +770,7 @@
   (rdatasets/reshape2-tips)
   (sk/view :total-bill :tip {:color :smoker})
   sk/lay-point
-  (sk/lay-loess {:confidence-band true})
+  (sk/lay-smooth {:confidence-band true})
   (sk/options
    {:title "Tips: Bill vs Tip by Smoking Status",
     :x-label "Total Bill ($)",
@@ -860,7 +860,7 @@
  v133_l656
  (->
   (rdatasets/reshape2-tips)
-  (sk/lay-stacked-bar-fill :day {:color :sex})
+  (sk/lay-bar :day {:position :fill, :color :sex})
   (sk/options {:title "Gender Proportion by Day (100% stacked)"})))
 
 
@@ -949,7 +949,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  (sk/lay-loess {:confidence-band true})
+  (sk/lay-smooth {:confidence-band true})
   (sk/options {:title "Iris: Scatter + LOESS by Species"})))
 
 
@@ -1071,9 +1071,9 @@
   (rdatasets/ggplot2-txhousing)
   (tc/select-rows
    (fn*
-    [p1__237978#]
+    [p1__257305#]
     (#{"Houston" "Dallas" "San Antonio" "Austin"}
-     (:city p1__237978#))))
+     (:city p1__257305#))))
   (sk/view :date :median {:color :city})
   sk/lay-line
   (sk/options
@@ -1116,7 +1116,7 @@
  (->
   (rdatasets/lme4-sleepstudy)
   (tc/select-rows
-   (fn* [p1__237979#] (= "308" (str (:subject p1__237979#)))))
+   (fn* [p1__257306#] (= "308" (str (:subject p1__257306#)))))
   (sk/view :days :reaction)
   sk/lay-step
   sk/lay-point
@@ -1160,7 +1160,7 @@
   (rdatasets/datasets-faithful)
   (sk/view :eruptions :waiting)
   sk/lay-point
-  sk/lay-loess
+  sk/lay-smooth
   (sk/options
    {:title "Old Faithful with LOESS",
     :x-label "Eruption Duration (min)",
@@ -1231,7 +1231,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__237980#] (= 2007 (:year p1__237980#))))
+   (fn* [p1__257307#] (= 2007 (:year p1__257307#))))
   (sk/lay-point
    :gdp-percap
    :life-exp
@@ -1344,7 +1344,7 @@
   (rdatasets/datasets-iris)
   (sk/view :petal-length :petal-width {:color :species})
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/options
    {:title "Iris Petals with Linear Fit per Species",
     :x-label "Petal Length",
@@ -1368,7 +1368,7 @@
   (rdatasets/datasets-mtcars)
   (sk/view :wt :mpg)
   sk/lay-point
-  (sk/lay-lm {:confidence-band true})
+  (sk/lay-smooth {:stat :linear-model, :confidence-band true})
   (sk/options
    {:title "Weight vs MPG with 95% Confidence Band",
     :x-label "Weight (1000 lbs)",
@@ -1392,8 +1392,8 @@
   (rdatasets/datasets-mtcars)
   (sk/view :wt :mpg)
   sk/lay-point
-  sk/lay-lm
-  sk/lay-loess
+  (sk/lay-smooth {:stat :linear-model})
+  sk/lay-smooth
   (sk/options
    {:title "Cars: LM and LOESS Smoothers",
     :x-label "Weight (1000 lbs)",
@@ -1759,8 +1759,8 @@
      [ds]
      (map
       (fn*
-       [p1__237981#]
-       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__237981#))
+       [p1__257308#]
+       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__257308#))
       (ds :month)))))))
 
 
@@ -2062,11 +2062,11 @@
  v315_l1536
  (->
   (tc/dataset
-   {:row (mapcat (fn* [p1__237982#] (repeat 6 p1__237982#)) (range 6)),
+   {:row (mapcat (fn* [p1__257309#] (repeat 6 p1__257309#)) (range 6)),
     :col (flatten (repeat 6 (range 6))),
     :value
     (map
-     (fn* [p1__237983#] (Math/sin (* p1__237983# 0.5)))
+     (fn* [p1__257310#] (Math/sin (* p1__257310# 0.5)))
      (range 36))})
   (sk/view :col :row {:fill :value})
   sk/lay-tile
@@ -2462,7 +2462,7 @@
   (rdatasets/datasets-iris)
   (sk/view :petal-length :petal-width)
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/facet :species)
   (sk/options
    {:title "Iris Petals: Faceted Regression",
@@ -2504,7 +2504,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__237984#] (= 2007 (:year p1__237984#))))
+   (fn* [p1__257311#] (= 2007 (:year p1__257311#))))
   (sk/view :gdp-percap :life-exp)
   sk/lay-point
   (sk/scale :x :log)
@@ -2551,7 +2551,7 @@
   (rdatasets/ggplot2-mpg)
   (sk/view :displ :hwy)
   sk/lay-point
-  sk/lay-loess
+  sk/lay-smooth
   (sk/facet :cyl)
   (sk/options
    {:title "MPG: Scatter + LOESS by Cylinder Count",
@@ -2682,7 +2682,7 @@
  (->
   (rdatasets/reshape2-tips)
   (sk/view :day {:color :time})
-  sk/lay-stacked-bar
+  (sk/lay-bar {:position :stack})
   (sk/options
    {:title "Tips by Day and Meal Time (Stacked)",
     :x-label "Day",

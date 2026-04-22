@@ -519,7 +519,7 @@ explicit-group-sketch
 ;; ### What grouping affects
 ;;
 ;; Grouping determines how statistical transformations operate.
-;; Without grouping, `sk/lay-lm` (linear model) fits one regression line through
+;; Without grouping, `(sk/lay-smooth {:stat :linear-model})` (linear model) fits one regression line through
 ;; all the data. With grouping, it fits one line per group.
 
 ;; One regression line -- no grouping:
@@ -527,7 +527,7 @@ explicit-group-sketch
 (-> grouped-data
     (sk/view :x :y)
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 6 (:points s))
@@ -538,7 +538,7 @@ explicit-group-sketch
 (-> grouped-data
     (sk/view :x :y {:color :g})
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 6 (:points s))
@@ -754,7 +754,7 @@ bar-views
 (def fill-sketch
   (-> {:x ["a" "a" "b" "b"]
        :g ["m" "n" "m" "n"]}
-      (sk/lay-stacked-bar-fill :x {:color :g})))
+      (sk/lay-bar :x {:position :fill :color :g})))
 
 fill-sketch
 
@@ -1090,7 +1090,7 @@ flipped-labels-sketch
   (-> five-points
       (sk/view :x :y)
       sk/lay-point
-      sk/lay-lm))
+      (sk/lay-smooth {:stat :linear-model})))
 
 multi-views
 

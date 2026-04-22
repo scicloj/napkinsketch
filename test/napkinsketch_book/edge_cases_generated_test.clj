@@ -71,7 +71,12 @@
    v11_l61)))
 
 
-(def v14_l73 (-> {:x [1 10], :y [5 50]} (sk/lay-point :x :y) sk/lay-lm))
+(def
+ v14_l73
+ (->
+  {:x [1 10], :y [5 50]}
+  (sk/lay-point :x :y)
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -87,7 +92,10 @@
 
 (def
  v17_l85
- (-> {:x [1 5 10], :y [5 25 50]} (sk/lay-point :x :y) sk/lay-lm))
+ (->
+  {:x [1 5 10], :y [5 25 50]}
+  (sk/lay-point :x :y)
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -215,7 +223,7 @@
    [r (rng/rng :jdk 99)]
    {:category
     (map
-     (fn* [p1__239686#] (keyword (str "cat-" p1__239686#)))
+     (fn* [p1__259013#] (keyword (str "cat-" p1__259013#)))
      (range 12)),
     :value (repeatedly 12 (fn* [] (+ 10 (rng/irandom r 90))))})
   (sk/lay-value-bar :category :value)))
@@ -257,9 +265,9 @@
  (->
   (rdatasets/datasets-iris)
   (tc/select-rows
-   (fn* [p1__239687#] (= "setosa" (p1__239687# :species))))
+   (fn* [p1__259014#] (= "setosa" (p1__259014# :species))))
   (sk/lay-point :sepal-length :sepal-width)
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/options {:title "Setosa Only"})))
 
 
@@ -302,7 +310,7 @@
  v54_l229
  (->
   {:x ["a" "a" "b" "b" "b"], :g ["g1" "g2" "g1" "g1" "g1"]}
-  (sk/lay-stacked-bar-fill :x {:color :g})))
+  (sk/lay-bar :x {:position :fill, :color :g})))
 
 
 (deftest
@@ -330,7 +338,7 @@
  (->
   {:x [1 2 3], :y [2 4 5]}
   (sk/lay-point :x :y)
-  (sk/lay-lm {:confidence-band true})))
+  (sk/lay-smooth {:stat :linear-model, :confidence-band true})))
 
 
 (deftest
@@ -350,7 +358,7 @@
   (let
    [r (rng/rng :jdk 55)]
    {:x (range 10), :y (repeatedly 10 (fn* [] (rng/irandom r 20)))})
-  (sk/lay-stacked-area :x :y)))
+  (sk/lay-area :x :y {:position :stack})))
 
 
 (deftest
@@ -420,8 +428,8 @@
  v78_l316
  (->
   {:x (range 20),
-   :y (map (fn* [p1__239688#] (- p1__239688# 10)) (range 20)),
-   :val (map (fn* [p1__239689#] (- p1__239689# 10.0)) (range 20))}
+   :y (map (fn* [p1__259015#] (- p1__259015# 10)) (range 20)),
+   :val (map (fn* [p1__259016#] (- p1__259016# 10.0)) (range 20))}
   (sk/lay-point :x :y {:color :val})
   (sk/options {:color-scale :diverging, :color-midpoint 0})))
 
@@ -450,11 +458,11 @@
   {:time
    (dt-dt/plus-temporal-amount
     (dtype/const-reader (jt/local-date-time 2025 3 15 8 0) 24)
-    (map (fn* [p1__239690#] (* (long p1__239690#) 15)) (range 24))
+    (map (fn* [p1__259017#] (* (long p1__259017#) 15)) (range 24))
     :minutes),
    :value
    (map
-    (fn* [p1__239691#] (+ 18.0 (* 4.0 (Math/sin (* p1__239691# 0.3)))))
+    (fn* [p1__259018#] (+ 18.0 (* 4.0 (Math/sin (* p1__259018# 0.3)))))
     (range 24))}
   (sk/lay-line :time :value)
   sk/lay-point))
@@ -481,7 +489,7 @@
     :hours),
    :temp
    (map
-    (fn* [p1__239692#] (+ 20.0 (* 5.0 (Math/sin (* p1__239692# 0.5)))))
+    (fn* [p1__259019#] (+ 20.0 (* 5.0 (Math/sin (* p1__259019# 0.5)))))
     (range 12))}
   (sk/lay-line :time :temp)
   sk/lay-point))
@@ -498,7 +506,7 @@
       (= 12 (:points s))
       (= 1 (:lines s))
       (some
-       (fn* [p1__239693#] (re-find #":\d\d" p1__239693#))
+       (fn* [p1__259020#] (re-find #":\d\d" p1__259020#))
        (:texts s)))))
    v87_l357)))
 
@@ -509,11 +517,11 @@
   {:date
    (dt-dt/plus-temporal-amount
     (dtype/const-reader (jt/local-date 2020 1 1) 20)
-    (map (fn* [p1__239694#] (* (long p1__239694#) 120)) (range 20))
+    (map (fn* [p1__259021#] (* (long p1__259021#) 120)) (range 20))
     :days),
    :value
    (map
-    (fn* [p1__239695#] (+ 100 (* 50 (Math/sin (* p1__239695# 0.4)))))
+    (fn* [p1__259022#] (+ 100 (* 50 (Math/sin (* p1__259022# 0.4)))))
     (range 20))}
   (sk/lay-line :date :value)
   sk/lay-point))
@@ -533,7 +541,7 @@
 (def
  v93_l388
  (->
-  {:cat (map (fn* [p1__239696#] (str "cat-" p1__239696#)) (range 12)),
+  {:cat (map (fn* [p1__259023#] (str "cat-" p1__259023#)) (range 12)),
    :val (repeatedly 12 (fn* [] (rand-int 100)))}
   (sk/lay-value-bar :cat :val)
   (sk/coord :polar)))
@@ -623,7 +631,7 @@
       (:texts s)
       strip-labels
       (filter
-       (fn* [p1__239697#] (re-find #"sepal|petal" p1__239697#))
+       (fn* [p1__259024#] (re-find #"sepal|petal" p1__259024#))
        texts)]
      (and (= 9 (:panels s)) (= 6 (count strip-labels)))))
    v105_l444)))

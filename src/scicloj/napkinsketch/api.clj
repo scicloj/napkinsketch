@@ -364,7 +364,7 @@
        (def template (-> (sk/sketch)
                          (sk/view :x :y {:color :group})
                          sk/lay-point
-                         sk/lay-lm))
+                         (sk/lay-smooth {:stat :linear-model})))
 
        (-> template (sk/with-data my-data))
        (-> template (sk/with-data other-data))
@@ -820,14 +820,6 @@
   ([sk-or-data x y-or-opts] (lay-layer-type :area sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-layer-type :area sk-or-data x y opts)))
 
-(defn lay-stacked-area
-  "Add :stacked-area layer type --areas stacked on top of each other.
-   Requires x, y, and :color (for grouping). Groups stack vertically."
-  ([sk-or-data] (lay-layer-type :stacked-area sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :stacked-area sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :stacked-area sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :stacked-area sk-or-data x y opts)))
-
 (defn lay-histogram
   "Add :histogram layer type --bin numerical values into bars.
    X-only: pass one column. Accepts :bins (count), :binwidth, :color,
@@ -844,22 +836,6 @@
   ([sk-or-data x-or-opts] (lay-layer-type :bar sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-layer-type :bar sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-layer-type :bar sk-or-data x y opts)))
-
-(defn lay-stacked-bar
-  "Add :stacked-bar layer type --bars stacked by color group.
-   X-only with :color. Heights represent counts per category per group."
-  ([sk-or-data] (lay-layer-type :stacked-bar sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :stacked-bar sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :stacked-bar sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :stacked-bar sk-or-data x y opts)))
-
-(defn lay-stacked-bar-fill
-  "Add :stacked-bar-fill layer type --100% stacked bars (proportional).
-   Same as stacked-bar but normalized so each bar totals 100%."
-  ([sk-or-data] (lay-layer-type :stacked-bar-fill sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :stacked-bar-fill sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :stacked-bar-fill sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :stacked-bar-fill sk-or-data x y opts)))
 
 (defn lay-value-bar
   "Add :value-bar layer type --bars with pre-computed heights.
@@ -879,24 +855,6 @@
   ([sk-or-data x-or-opts] (lay-layer-type :smooth sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-layer-type :smooth sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-layer-type :smooth sk-or-data x y opts)))
-
-(defn lay-lm
-  "Add :lm layer type --linear regression line.
-   Requires x and y (both numerical). Accepts {:confidence-band true} for a
-   95% confidence band around the fit."
-  ([sk-or-data] (lay-layer-type :lm sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :lm sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :lm sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :lm sk-or-data x y opts)))
-
-(defn lay-loess
-  "Add :loess layer type --local regression (LOESS) smooth curve.
-   Requires x and y (both numerical). Accepts {:confidence-band true} for a
-   confidence band, {:bandwidth 0.5} for smoothing control."
-  ([sk-or-data] (lay-layer-type :loess sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :loess sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :loess sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :loess sk-or-data x y opts)))
 
 (defn lay-density
   "Add :density layer type --kernel density estimate curve.

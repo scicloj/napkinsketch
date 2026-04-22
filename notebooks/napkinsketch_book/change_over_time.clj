@@ -117,7 +117,7 @@
                 [2 2 2 3 3 3 2 2 2 2]
                 [1 1 1 1 2 2 2 1 1 1])
      :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
-    (sk/lay-stacked-area :x :y {:color :group}))
+    (sk/lay-area :x :y {:position :stack :color :group}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))

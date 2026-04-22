@@ -182,7 +182,7 @@
 
 (def
   v41_l198
-  (-> iris (sk/view :sepal-length :sepal-width) sk/lay-point sk/lay-lm))
+  (-> iris (sk/view :sepal-length :sepal-width) sk/lay-point (sk/lay-smooth {:stat :linear-model})))
 
 (deftest
   t42_l203
@@ -200,7 +200,7 @@
    (sk/sketch iris {:color :species})
    (sk/view :sepal-length :sepal-width)
    sk/lay-point
-   sk/lay-lm))
+   (sk/lay-smooth {:stat :linear-model})))
 
 (deftest
   t45_l216
@@ -212,7 +212,7 @@
    (sk/sketch iris {:color :species})
    (sk/view :sepal-length :sepal-width)
    (sk/lay-point {:color nil})
-   sk/lay-lm))
+   (sk/lay-smooth {:stat :linear-model})))
 
 (deftest
   t48_l224
@@ -256,7 +256,7 @@
      (sk/sketch iris {:color :species})
      (sk/view :sepal-length :sepal-width)
      sk/lay-point
-     sk/lay-lm
+     (sk/lay-smooth {:stat :linear-model})
      (sk/options {:title "Iris"}))))
 
 (def v57_l274 (kind/pprint my-sketch))

@@ -75,9 +75,9 @@
 
 (def layer-type-order
   "Canonical display order for built-in layer types."
-  [:point :line :step :area :stacked-area
-   :histogram :bar :stacked-bar :stacked-bar-fill :value-bar
-   :smooth :lm :loess :density
+  [:point :line :step :area
+   :histogram :bar :value-bar
+   :smooth :density
    :tile :density-2d :contour
    :boxplot :violin :ridgeline
    :summary :errorbar :lollipop
@@ -90,14 +90,9 @@
 (register! :line {:mark :line :stat :identity :accepts [:size :nudge-x :nudge-y] :doc "Line — connects data points in order."})
 (register! :step {:mark :step :stat :identity :accepts [:size] :doc "Step — horizontal-then-vertical connected points."})
 (register! :area {:mark :area :stat :identity :accepts [] :doc "Area — filled region under a line."})
-(register! :stacked-area {:mark :area :stat :identity :position :stack :accepts [] :doc "Stacked area — filled regions stacked cumulatively."})
 (register! :histogram {:mark :bar :stat :bin :x-only true :accepts [:normalize :bins :binwidth] :doc "Histogram — bins numerical data into bars."})
 (register! :bar {:mark :rect :stat :count :x-only true :accepts [] :doc "Bar — counts categorical values."})
-(register! :stacked-bar {:mark :rect :stat :count :position :stack :x-only true :accepts [] :doc "Stacked bar — counts categorical values, stacked."})
-(register! :stacked-bar-fill {:mark :rect :stat :count :position :fill :x-only true :accepts [] :doc "Percentage stacked bar — proportions sum to 1.0."})
 (register! :value-bar {:mark :rect :stat :identity :accepts [] :doc "Value bar — categorical x with pre-computed y."})
-(register! :lm {:mark :line :stat :linear-model :accepts [:confidence-band :size :nudge-x :nudge-y] :doc "Linear model (lm) — ordinary least squares (OLS) regression line."})
-(register! :loess {:mark :line :stat :loess :accepts [:confidence-band :bootstrap-resamples :bandwidth :size :nudge-x :nudge-y] :doc "LOESS (local regression) — smooth curve fitted to nearby data."})
 (register! :smooth {:mark :line :stat :loess :accepts [:confidence-band :bootstrap-resamples :bandwidth :size :nudge-x :nudge-y] :doc "Smoothed trend line — defaults to LOESS; pass {:stat :linear-model} for OLS."})
 (register! :density {:mark :area :stat :density :x-only true :accepts [:bandwidth] :doc "Density — KDE (kernel density estimation) as filled area."})
 (register! :tile {:mark :tile :stat :bin2d :accepts [:fill :density-2d-grid] :doc "Tile/heatmap — 2D grid binning."})

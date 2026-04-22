@@ -63,7 +63,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width)
   sk/lay-point
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -83,7 +83,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width)
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   kind/pprint))
 
 
@@ -161,7 +161,7 @@
   (sk/sketch (rdatasets/datasets-iris) {:color :species})
   (sk/view :sepal-length :sepal-width)
   sk/lay-point
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -175,7 +175,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -222,7 +222,7 @@
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -242,7 +242,7 @@
   (sk/sketch (rdatasets/datasets-iris) {:color :species})
   (sk/view :sepal-length :sepal-width)
   (sk/lay-point {:color nil})
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -263,7 +263,7 @@
   (sk/view :sepal-length :sepal-width)
   (sk/view :petal-length :petal-width)
   sk/lay-point
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -282,7 +282,7 @@
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
-  (sk/lay-lm :sepal-length :sepal-width)
+  (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model})
   (sk/lay-point :petal-length :petal-width)))
 
 
@@ -323,7 +323,7 @@
   setosa
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__234050#] (= "setosa" (:species p1__234050#))))))
+   (fn* [p1__253385#] (= "setosa" (:species p1__253385#))))))
 
 
 (def
@@ -332,7 +332,7 @@
   versicolor
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__234051#] (= "versicolor" (:species p1__234051#))))))
+   (fn* [p1__253386#] (= "versicolor" (:species p1__253386#))))))
 
 
 (def
@@ -374,7 +374,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width)
   (sk/lay-point {:data setosa})
-  (sk/lay-lm {:data versicolor})))
+  (sk/lay-smooth {:stat :linear-model, :data versicolor})))
 
 
 (deftest
@@ -433,7 +433,7 @@
    (sk/sketch (rdatasets/datasets-iris) {:color :species})
    (sk/view :sepal-length :sepal-width)
    sk/lay-point
-   sk/lay-lm
+   (sk/lay-smooth {:stat :linear-model})
    (sk/options {:title "Iris"}))))
 
 
@@ -478,10 +478,10 @@
  (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v88_l452)))
 
 
-(def v91_l459 (sk/layer-type-lookup :lm))
+(def v91_l459 (sk/layer-type-lookup :smooth))
 
 
-(deftest t92_l461 (is ((fn [m] (= :linear-model (:stat m))) v91_l459)))
+(deftest t92_l461 (is ((fn [m] (= :loess (:stat m))) v91_l459)))
 
 
 (def
@@ -541,7 +541,7 @@
    (sk/lay-point :sepal-length :sepal-width))))
 
 
-(def v108_l573 (-> scatter-base sk/lay-lm))
+(def v108_l573 (-> scatter-base (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -555,7 +555,7 @@
    v108_l573)))
 
 
-(def v111_l581 (-> scatter-base sk/lay-loess))
+(def v111_l581 (-> scatter-base sk/lay-smooth))
 
 
 (deftest
@@ -577,7 +577,7 @@
    (sk/sketch)
    (sk/view :x :y {:color :group})
    sk/lay-point
-   sk/lay-lm
+   (sk/lay-smooth {:stat :linear-model})
    (sk/options {:title "Scatter with Regression"}))))
 
 
@@ -683,7 +683,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:group :species})
   sk/lay-point
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -762,7 +762,7 @@
   (sk/view :sepal-length :sepal-width)
   (sk/facet :species)
   sk/lay-point
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest

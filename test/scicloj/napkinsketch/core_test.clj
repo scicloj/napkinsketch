@@ -378,15 +378,11 @@
       :step :step
       :histogram :bar
       :bar :rect
-      :stacked-bar :rect
-      :stacked-bar-fill :rect
       :value-bar :rect
-      :lm :line
-      :loess :line
+      :smooth :line
       :text :text
       :label :label
       :area :area
-      :stacked-area :area
       :density :area
       :tile :tile
       :density-2d :tile
@@ -479,7 +475,7 @@
     (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
           fig (-> ds (sk/view :x :y)
                   sk/lay-point
-                  (sk/lay-loess {:confidence-band true :bootstrap-resamples 50})
+                  (sk/lay-smooth {:confidence-band true :bootstrap-resamples 50})
                   sk/plot)
           s (sk/svg-summary fig)]
       (is (= 20 (:points s)))
@@ -489,14 +485,14 @@
     (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
           fig (-> ds (sk/view :x :y)
                   sk/lay-point
-                  sk/lay-loess
+                  sk/lay-smooth
                   sk/plot)
           s (sk/svg-summary fig)]
       (is (= 1 (:lines s)))
       (is (zero? (:polygons s)))))
   (testing "LOESS dedup handles duplicate x values"
     (let [ds (tc/dataset {:x [1 1 2 2 3 3 4 4 5 5] :y [2 3 4 5 6 7 8 9 10 11]})
-          fig (-> ds (sk/view :x :y) sk/lay-loess sk/plot)
+          fig (-> ds (sk/view :x :y) sk/lay-smooth sk/plot)
           s (sk/svg-summary fig)]
       (is (= 1 (:lines s))))))
 
@@ -1160,8 +1156,8 @@
                  ["histogram" (-> iris (sk/view :sepal_length) sk/lay-histogram)]
                  ["line" (-> xy-ds (sk/view :x :y) sk/lay-line)]
                  ["step" (-> xy-ds (sk/view :x :y) sk/lay-step)]
-                 ["lm" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay-lm {:confidence-band true}))]
-                 ["loess" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-loess)]
+                 ["lm" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay-smooth {:stat :linear-model :confidence-band true}))]
+                 ["loess" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-smooth)]
                  ["area" (-> xy-ds (sk/view :x :y) sk/lay-area)]
                  ["boxplot" (-> iris (sk/view :species :sepal_width) sk/lay-boxplot)]
                  ["violin" (-> iris (sk/view :species :sepal_width) sk/lay-violin)]
@@ -1193,12 +1189,12 @@
   (testing "lm on categorical x throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
                           (-> {:species ["a" "b" "c"] :y [1 2 3]}
-                              (sk/lay-lm :species :y) sk/plan))))
+                              (sk/lay-smooth :species :y {:stat :linear-model}) sk/plan))))
 
   (testing "loess on categorical x throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"numeric"
                           (-> {:species ["a" "b" "c" "d"] :y [1 2 3 4]}
-                              (sk/lay-loess :species :y) sk/plan))))
+                              (sk/lay-smooth :species :y) sk/plan))))
 
   (testing "errorbar without y-min/y-max throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"y-min.*y-max"
@@ -1544,7 +1540,7 @@
                                  #"opacity=\"0.5\"")))
 
     (testing "alpha 0.5 propagates to :lm regression line"
-      (is (renders-with-opacity? (-> data (sk/lay-lm :x :y {:alpha 0.5}))
+      (is (renders-with-opacity? (-> data (sk/lay-smooth :x :y {:stat :linear-model :alpha 0.5}))
                                  #"opacity=\"0.5\"")))
 
     (testing "alpha 0.4 propagates to :errorbar"
@@ -1746,7 +1742,7 @@
           s (-> iris
                 (sk/lay-point :sepal-length :sepal-width {:color :species})
                 (sk/facet :species)
-                sk/lay-loess
+                sk/lay-smooth
                 sk/plot
                 sk/svg-summary)]
       (is (= 3 (:panels s)) "Faceted into 3 panels by species")
@@ -1779,7 +1775,7 @@
       (let [s (summary (-> (sk/sketch iris {:color :species})
                            (sk/view :sepal_length :sepal_width)
                            (sk/lay-point {:alpha 0.5})
-                           (sk/lay-lm)))]
+                           (sk/lay-smooth {:stat :linear-model})))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))
@@ -1795,8 +1791,8 @@
       (let [s (summary (-> (sk/sketch iris {:color :species})
                            (sk/view :sepal_length :sepal_width)
                            (sk/lay-point {:alpha 0.4})
-                           (sk/lay-lm)
-                           (sk/lay-lm {:color nil})))]
+                           (sk/lay-smooth {:stat :linear-model})
+                           (sk/lay-smooth {:stat :linear-model :color nil})))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 4 (:lines s)))))
@@ -1805,7 +1801,7 @@
       (let [s (summary (-> (sk/sketch iris)
                            (sk/view :sepal_length :sepal_width)
                            sk/lay-point
-                           sk/lay-loess
+                           sk/lay-smooth
                            (sk/facet :species)))]
         (is (= 3 (:panels s)))
         (is (= 150 (:points s)))
@@ -1815,7 +1811,7 @@
       (let [s (summary (-> iris
                            (sk/view :sepal_length :sepal_width {:color :species})
                            (sk/lay-point {:alpha 0.5})
-                           (sk/lay-lm)))]
+                           (sk/lay-smooth {:stat :linear-model})))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))
         (is (= 3 (:lines s)))))
@@ -1824,7 +1820,7 @@
       (let [recipe (-> (sk/sketch)
                        (sk/view :sepal_length :sepal_width)
                        (sk/lay-point)
-                       (sk/lay-lm))
+                       (sk/lay-smooth {:stat :linear-model}))
             s (summary (sk/with-data recipe iris))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))))
@@ -1869,7 +1865,7 @@
     (testing "Lay-first (methods before view)"
       (let [s (summary (-> iris
                            (sk/lay-point {:alpha 0.5})
-                           (sk/lay-lm)
+                           (sk/lay-smooth {:stat :linear-model})
                            (sk/view :sepal_length :sepal_width {:color :species})))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))

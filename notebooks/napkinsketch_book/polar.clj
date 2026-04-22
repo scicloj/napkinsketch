@@ -65,7 +65,7 @@
 ;; Stacked bars in polar show composition within each wedge.
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (sk/lay-stacked-bar :island {:color :species})
+    (sk/lay-bar :island {:position :stack :color :species})
     (sk/coord :polar))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

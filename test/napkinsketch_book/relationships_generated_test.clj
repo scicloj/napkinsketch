@@ -13,7 +13,7 @@
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -33,7 +33,7 @@
   (rdatasets/datasets-iris)
   (sk/view :petal-length :petal-width {:color :species})
   sk/lay-point
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -53,7 +53,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  (sk/lay-lm {:confidence-band true})))
+  (sk/lay-smooth {:stat :linear-model, :confidence-band true})))
 
 
 (deftest
@@ -73,7 +73,7 @@
   (rdatasets/reshape2-tips)
   (sk/view :total-bill :tip {:color :smoker})
   sk/lay-point
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -96,13 +96,13 @@
     :y
     (mapv
      (fn*
-      [p1__236139#]
+      [p1__255474#]
       (+
-       (Math/sin (* p1__236139# 0.2))
+       (Math/sin (* p1__255474# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
-  (sk/lay-loess {:bandwidth 0.2})))
+  (sk/lay-smooth {:bandwidth 0.2})))
 
 
 (deftest

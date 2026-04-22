@@ -160,7 +160,7 @@
   iris
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest

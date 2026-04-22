@@ -493,7 +493,13 @@
    v92_l507)))
 
 
-(def v95_l527 (-> grouped-data (sk/view :x :y) sk/lay-point sk/lay-lm))
+(def
+ v95_l527
+ (->
+  grouped-data
+  (sk/view :x :y)
+  sk/lay-point
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -509,7 +515,11 @@
 
 (def
  v98_l538
- (-> grouped-data (sk/view :x :y {:color :g}) sk/lay-point sk/lay-lm))
+ (->
+  grouped-data
+  (sk/view :x :y {:color :g})
+  sk/lay-point
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -778,7 +788,7 @@
   fill-sketch
   (->
    {:x ["a" "a" "b" "b"], :g ["m" "n" "m" "n"]}
-   (sk/lay-stacked-bar-fill :x {:color :g}))))
+   (sk/lay-bar :x {:position :fill, :color :g}))))
 
 
 (def v159_l759 fill-sketch)
@@ -1195,7 +1205,11 @@
  v249_l1089
  (def
   multi-views
-  (-> five-points (sk/view :x :y) sk/lay-point sk/lay-lm)))
+  (->
+   five-points
+   (sk/view :x :y)
+   sk/lay-point
+   (sk/lay-smooth {:stat :linear-model}))))
 
 
 (def v250_l1095 multi-views)

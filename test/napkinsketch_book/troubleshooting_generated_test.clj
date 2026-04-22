@@ -183,7 +183,7 @@
   {:x (concat (range 5) (range 5)),
    :y [1 2 3 4 5 2 2 2 3 3],
    :group (concat (repeat 5 "A") (repeat 5 "B"))}
-  (sk/lay-stacked-area :x :y {:color :group})))
+  (sk/lay-area :x :y {:position :stack, :color :group})))
 
 
 (deftest

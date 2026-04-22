@@ -310,26 +310,26 @@
 ;; {:reverse-categorical true})`) would spare the sort dance.
 ;; Tracked in `CHANGELOG.md` Known limitations.
 
-;; ## Stacked Bar Rejects Pre-Aggregated Counts
+;; ## Stacked Bars Reject Pre-Aggregated Counts
 ;;
-;; **Symptom**: `"lay-stacked-bar uses only the x column; do not
-;; pass a y column"` when you have already grouped and aggregated
-;; the data and want a stacked bar chart of the computed values.
+;; **Symptom**: `"lay-bar uses only the x column; do not pass a
+;; y column"` when you have already grouped and aggregated the
+;; data and want a stacked bar chart of the computed values.
 ;;
-;; **Cause**: `lay-stacked-bar` and `lay-stacked-bar-fill` are
-;; count-only -- they bin by `x` internally and sum counts. They
-;; have no mode that accepts a pre-computed `y`.
+;; **Cause**: `sk/lay-bar {:position :stack}` is count-only -- it
+;; bins by `x` internally and sums counts. It has no mode that
+;; accepts a pre-computed `y`.
 ;;
-;; **Fix for now**: Either use `lay-stacked-area` on a numeric x
-;; (it accepts pre-aggregated `y`), or expand aggregated rows
-;; back into count-many duplicates so the count stat sums to the
-;; pre-aggregated value. A proper `lay-stacked-value-bar` is
-;; tracked in `CHANGELOG.md` Known limitations.
+;; **Fix for now**: Either use `(sk/lay-area ... {:position :stack})`
+;; on a numeric x (it accepts pre-aggregated `y`), or expand
+;; aggregated rows back into count-many duplicates so the count
+;; stat sums to the pre-aggregated value. A proper stacked value-bar
+;; is tracked in `CHANGELOG.md` Known limitations.
 
 (-> {:x     (concat (range 5) (range 5))
      :y     [1  2  3  4  5  2  2  2  3  3]
      :group (concat (repeat 5 "A") (repeat 5 "B"))}
-    (sk/lay-stacked-area :x :y {:color :group}))
+    (sk/lay-area :x :y {:position :stack :color :group}))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 

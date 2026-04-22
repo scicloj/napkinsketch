@@ -49,7 +49,7 @@
  v10_l45
  (->
   (rdatasets/reshape2-tips)
-  (sk/lay-stacked-bar :day {:color :smoker})))
+  (sk/lay-bar :day {:position :stack, :color :smoker})))
 
 
 (deftest
@@ -67,7 +67,7 @@
  v13_l57
  (->
   (rdatasets/palmerpenguins-penguins)
-  (sk/lay-stacked-bar-fill :island {:color :species})))
+  (sk/lay-bar :island {:position :fill, :color :species})))
 
 
 (deftest

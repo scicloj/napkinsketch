@@ -75,14 +75,14 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
 ;; `sk/view` declares what to plot -- columns and color grouping.
-;; Then `sk/lay-point` and `sk/lay-lm` each add a layer.
+;; Then `sk/lay-point` and `(sk/lay-smooth {:stat :linear-model})` each add a layer.
 ;; Both layers share the same columns and aesthetics.
 ;;
 ;; **The key insight: `view` describes what, `lay-*` describes how.**
@@ -124,7 +124,7 @@
     (sk/view :sepal-length :sepal-width {:color :species})
     (sk/facet :species)
     sk/lay-point
-    sk/lay-lm
+    (sk/lay-smooth {:stat :linear-model})
     (sk/options {:title "Iris by Species"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

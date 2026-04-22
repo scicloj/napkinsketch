@@ -168,13 +168,13 @@
 ;;
 ;; Use `sk/view` to set column mappings for a view,
 ;; then add layers with `sk/lay-*`. All layers on this view
-;; inherit the view's mappings. Here `sk/lay-lm` adds a linear model
+;; inherit the view's mappings. Here `(sk/lay-smooth {:stat :linear-model})` adds a linear model
 ;; (regression line) per group:
 
 (-> iris
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    sk/lay-lm)
+    (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

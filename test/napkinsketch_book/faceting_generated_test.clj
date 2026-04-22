@@ -89,7 +89,7 @@
   (rdatasets/reshape2-tips)
   (sk/view :total-bill :tip {:color :sex})
   sk/lay-point
-  sk/lay-lm
+  (sk/lay-smooth {:stat :linear-model})
   (sk/facet-grid :smoker :sex)))
 
 

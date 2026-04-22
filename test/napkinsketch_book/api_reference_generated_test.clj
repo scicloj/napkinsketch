@@ -241,7 +241,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__237364#] (Math/sin (* p1__237364# 0.3)))
+    (fn* [p1__256699#] (Math/sin (* p1__256699# 0.3)))
     (range 30))}))
 
 
@@ -280,14 +280,11 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 3 (:polygons s)))) v53_l175)))
 
 
-(def v55_l181 (kind/doc #'sk/lay-stacked-bar))
-
-
 (def
  v56_l183
  (->
   (rdatasets/palmerpenguins-penguins)
-  (sk/lay-stacked-bar :island {:color :species})))
+  (sk/lay-bar :island {:position :stack, :color :species})))
 
 
 (deftest
@@ -297,14 +294,11 @@
    v56_l183)))
 
 
-(def v58_l189 (kind/doc #'sk/lay-stacked-bar-fill))
-
-
 (def
  v59_l191
  (->
   (rdatasets/palmerpenguins-penguins)
-  (sk/lay-stacked-bar-fill :island {:color :species})))
+  (sk/lay-bar :island {:position :fill, :color :species})))
 
 
 (deftest
@@ -326,15 +320,12 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 4 (:polygons s)))) v62_l199)))
 
 
-(def v64_l205 (kind/doc #'sk/lay-lm))
-
-
 (def
  v65_l207
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
-  sk/lay-lm))
+  (sk/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -348,7 +339,7 @@
    v65_l207)))
 
 
-(def v67_l215 (kind/doc #'sk/lay-loess))
+(def v67_l215 (kind/doc #'sk/lay-smooth))
 
 
 (def
@@ -360,13 +351,13 @@
     :y
     (mapv
      (fn*
-      [p1__237365#]
+      [p1__256700#]
       (+
-       (Math/sin (* p1__237365# 0.2))
+       (Math/sin (* p1__256700# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
-  (sk/lay-loess {:bandwidth 0.2})))
+  (sk/lay-smooth {:bandwidth 0.2})))
 
 
 (deftest
@@ -406,9 +397,6 @@
   ((fn [v] (let [s (sk/svg-summary v)] (= 1 (:polygons s)))) v74_l240)))
 
 
-(def v76_l246 (kind/doc #'sk/lay-stacked-area))
-
-
 (def
  v77_l248
  (->
@@ -419,7 +407,7 @@
     [2 2 2 3 3 3 2 2 2 2]
     [1 1 1 1 2 2 2 1 1 1]),
    :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
-  (sk/lay-stacked-area :x :y {:color :group})))
+  (sk/lay-area :x :y {:position :stack, :color :group})))
 
 
 (deftest
@@ -1103,14 +1091,13 @@
 (def v232_l668 (kind/doc #'sk/layer-type-lookup))
 
 
-(def v233_l670 (sk/layer-type-lookup :lm))
+(def v233_l670 (sk/layer-type-lookup :smooth))
 
 
 (deftest
  t234_l672
  (is
-  ((fn [m] (and (= :line (:mark m)) (= :linear-model (:stat m))))
-   v233_l670)))
+  ((fn [m] (and (= :line (:mark m)) (= :loess (:stat m)))) v233_l670)))
 
 
 (def v235_l675 (kind/doc #'sk/registered-layer-types))
@@ -1119,7 +1106,7 @@
 (def v236_l677 (count (sk/registered-layer-types)))
 
 
-(deftest t237_l679 (is ((fn [n] (= 30 n)) v236_l677)))
+(deftest t237_l679 (is ((fn [n] (= 25 n)) v236_l677)))
 
 
 (def v239_l685 (kind/doc #'sk/stat-doc))

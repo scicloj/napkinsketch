@@ -70,7 +70,7 @@
  v13_l67
  (->
   (rdatasets/palmerpenguins-penguins)
-  (sk/lay-stacked-bar :island {:color :species})
+  (sk/lay-bar :island {:position :stack, :color :species})
   (sk/coord :polar)))
 
 
