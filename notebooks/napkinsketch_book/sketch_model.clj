@@ -1,4 +1,4 @@
-;; # The Sketch Model
+;; # Sketch Model
 ;;
 ;; Napkinsketch is a composable plotting library inspired by
 ;; Wilkinson's [Grammar of Graphics](https://link.springer.com/book/10.1007/0-387-28695-0)

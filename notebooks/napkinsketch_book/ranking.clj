@@ -141,5 +141,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Change over Time**](./napkinsketch_book.change_over_time.html) -- line charts, step functions, and stacked areas
+;; - [**Change Over Time**](./napkinsketch_book.change_over_time.html) -- line charts, step functions, and stacked areas
 ;; - [**Configuration**](./napkinsketch_book.configuration.html) -- control dimensions, palettes, and themes

@@ -1,4 +1,4 @@
-;; # Sketch Architecture
+;; # Architecture
 ;;
 ;; Napkinsketch has a five-stage pipeline. You compose a sketch --
 ;; a declarative description of views, layers, and shared mappings --

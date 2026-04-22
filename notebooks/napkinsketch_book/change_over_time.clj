@@ -163,11 +163,11 @@
                            (and (= 12 (:points s))
                                 (= 2 (:lines s)))))])
 
-;; See [Inference Rules: Temporal columns](./napkinsketch_book.inference_rules.html)
+;; See [Inference Rules](./napkinsketch_book.inference_rules.html)
 ;; for details on how dates are detected and formatted.
 
 ;; ## What's Next
 ;;
 ;; - [**Relationships**](./napkinsketch_book.relationships.html) -- heatmaps, contours, and 2D density
-;; - [**Polar**](./napkinsketch_book.polar.html) -- radial charts for cyclical data
+;; - [**Polar Coordinates**](./napkinsketch_book.polar.html) -- radial charts for cyclical data
 ;; - [**Gallery**](./napkinsketch_book.gallery.html) -- more chart variations with side-by-side code

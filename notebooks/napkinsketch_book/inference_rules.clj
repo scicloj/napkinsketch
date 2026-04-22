@@ -7,7 +7,7 @@
 ;;
 ;; This chapter is a reference: each rule in detail, with its default,
 ;; its override, and a plan-level check. For the conceptual overview,
-;; read [The Sketch Model](./napkinsketch_book.sketch_model.html) and
+;; read [Sketch Model](./napkinsketch_book.sketch_model.html) and
 ;; [Core Concepts](./napkinsketch_book.core_concepts.html) first. The
 ;; examples here use small inline datasets so the full plan is readable.
 
@@ -1080,7 +1080,7 @@ flipped-labels-sketch
 ;;
 ;; Polar coordinates (`:coord :polar`) are a larger transform -- rose
 ;; charts, radial bars, and related plots. The
-;; [Polar](./napkinsketch_book.polar.html) chapter covers them in depth.
+;; [Polar Coordinates](./napkinsketch_book.polar.html) chapter covers them in depth.
 
 ;; ## Multi-Layer Plans
 ;;

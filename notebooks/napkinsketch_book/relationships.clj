@@ -158,5 +158,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Polar**](./napkinsketch_book.polar.html) -- radial charts and pie-style visualizations
+;; - [**Polar Coordinates**](./napkinsketch_book.polar.html) -- radial charts and pie-style visualizations
 ;; - [**Faceting**](./napkinsketch_book.faceting.html) -- split any chart into panels by category

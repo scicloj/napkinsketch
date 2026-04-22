@@ -221,7 +221,7 @@
 
 ;; ## What's Next
 ;;
-;; - [**The Sketch Model**](./napkinsketch_book.sketch_model.html) -- the mental model behind composable plotting
+;; - [**Sketch Model**](./napkinsketch_book.sketch_model.html) -- the mental model behind composable plotting
 ;; - [**Core Concepts**](./napkinsketch_book.core_concepts.html) -- data formats, marks, stats, color, grouping, coordinates
 ;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) -- the most common starting point for chart types
 ;; - [**Cookbook**](./napkinsketch_book.cookbook.html) -- recipes for common multi-layer plots

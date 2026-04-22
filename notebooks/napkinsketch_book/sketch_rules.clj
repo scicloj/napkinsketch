@@ -5,7 +5,7 @@
 ;; with a rendered plot, a printed sketch structure, and verified
 ;; behavior.
 ;;
-;; Read [The Sketch Model](./napkinsketch_book.sketch_model.html)
+;; Read [Sketch Model](./napkinsketch_book.sketch_model.html)
 ;; and [Core Concepts](./napkinsketch_book.core_concepts.html) first.
 ;; This chapter is the proof layer -- every rule is reproducible
 ;; and tested.

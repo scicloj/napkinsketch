@@ -81,7 +81,7 @@
 ;;                                :color-type :categorical})
 ;; ```
 ;;
-;; See [Inference Rules: Overriding color type](./napkinsketch_book.inference_rules.html)
+;; See [Inference Rules](./napkinsketch_book.inference_rules.html)
 ;; for a worked example.
 
 ;; ## Numeric Column Rejected by a Categorical-Axis Mark
@@ -109,7 +109,7 @@
 ;; `:hour` as categorical. The same switch works for `:y-type` when
 ;; a numeric column is on the y axis of a horizontal boxplot or
 ;; similar layout. See
-;; [Inference Rules: Overriding inferred types](./napkinsketch_book.inference_rules.html)
+;; [Inference Rules](./napkinsketch_book.inference_rules.html)
 ;; for a worked example.
 
 ;; ## Log Scale via `:scale-x` / `:scale-y` Options
@@ -189,7 +189,7 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; See the [Polar](./napkinsketch_book.polar.html) chapter for the
+;; See the [Polar Coordinates](./napkinsketch_book.polar.html) chapter for the
 ;; full set of supported marks and examples.
 
 ;; ## Tooltip and Brush Not Working

@@ -219,5 +219,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**The Sketch Model**](./napkinsketch_book.sketch_model.html) -- how Napkinsketch composes layers, aesthetics, and methods
+;; - [**Sketch Model**](./napkinsketch_book.sketch_model.html) -- how Napkinsketch composes layers, aesthetics, and methods
 ;; - [**Quickstart**](./napkinsketch_book.quickstart.html) -- if you skipped straight here, go back and build your first plots

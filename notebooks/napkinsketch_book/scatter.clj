@@ -1,4 +1,4 @@
-;; # Scatter
+;; # Scatter Plots
 ;;
 ;; Point mark variations -- color, size, alpha, shape, jitter,
 ;; and continuous color scale.
