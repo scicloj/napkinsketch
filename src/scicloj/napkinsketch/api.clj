@@ -992,15 +992,20 @@
 
 (defn options
   "Set plot-level options (title, labels, width, height, etc.).
-   Nested maps (e.g. :theme) are deep-merged."
+   Nested maps (e.g. :theme) are deep-merged.
+   :width and :height are coerced to long (rounded) so the plan carries
+   integer pixel dimensions through to render."
   [sk opts]
-  (let [opts (warn-and-strip-unknown-opts "sk/options" opts plot-options-keys)]
-    (doseq [k [:width :height]
-            :let [v (get opts k)]
-            :when v]
-      (when-not (and (number? v) (pos? v))
-        (throw (ex-info (str k " must be a positive number, got: " (pr-str v))
-                        {:option k :value v}))))
+  (let [opts (warn-and-strip-unknown-opts "sk/options" opts plot-options-keys)
+        opts (reduce (fn [m k]
+                       (if-let [v (get m k)]
+                         (do (when-not (and (number? v) (pos? v))
+                               (throw (ex-info (str k " must be a positive number, got: " (pr-str v))
+                                               {:option k :value v})))
+                             (assoc m k (long (Math/round (double v)))))
+                         m))
+                     opts
+                     [:width :height])]
     (update (ensure-sk sk) :opts deep-merge opts)))
 
 (def ^:private valid-scale-types
