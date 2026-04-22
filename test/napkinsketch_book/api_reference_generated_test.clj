@@ -241,7 +241,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__205580#] (Math/sin (* p1__205580# 0.3)))
+    (fn* [p1__199311#] (Math/sin (* p1__199311# 0.3)))
     (range 30))}))
 
 
@@ -360,9 +360,9 @@
     :y
     (mapv
      (fn*
-      [p1__205581#]
+      [p1__199312#]
       (+
-       (Math/sin (* p1__205581# 0.2))
+       (Math/sin (* p1__199312# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
@@ -1025,13 +1025,13 @@
 (deftest t206_l611 (is (true? v205_l609)))
 
 
-(def v207_l613 (kind/doc #'sk/membrane->figure))
+(def v207_l613 (kind/doc #'sk/membrane->plot))
 
 
 (def
  v208_l615
  (first
-  (sk/membrane->figure
+  (sk/membrane->plot
    m1
    :svg
    {:total-width (:total-width plan1),
@@ -1041,10 +1041,10 @@
 (deftest t209_l619 (is ((fn [v] (= :svg v)) v208_l615)))
 
 
-(def v210_l621 (kind/doc #'sk/plan->figure))
+(def v210_l621 (kind/doc #'sk/plan->plot))
 
 
-(def v211_l623 (first (sk/plan->figure plan1 :svg {})))
+(def v211_l623 (first (sk/plan->plot plan1 :svg {})))
 
 
 (deftest t212_l625 (is ((fn [v] (= :svg v)) v211_l623)))

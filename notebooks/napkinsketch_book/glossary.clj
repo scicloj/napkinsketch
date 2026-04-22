@@ -417,7 +417,7 @@ my-sketch
 ;;
 ;; Created by `sk/plot` or by auto-rendering a sketch.
 
-(def my-figure (sk/plan->figure my-plan :svg {}))
+(def my-figure (sk/plan->plot my-plan :svg {}))
 
 (first my-figure)
 

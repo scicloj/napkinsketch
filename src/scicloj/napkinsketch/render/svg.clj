@@ -189,7 +189,7 @@
 ;; Membrane-building code lives in render/membrane.clj.
 ;; This namespace handles membrane → SVG conversion only.
 
-;; ---- plan->figure :svg ----
+;; ---- plan->plot :svg ----
 
 ;; ---- Tooltip interactivity ----
 
@@ -285,7 +285,7 @@
                                                       (.setAttribute p "opacity" "1.0")
                                                       (.setAttribute p "opacity" "0.15")))))))))))))
 
-(defmethod render/membrane->figure :svg [membrane-tree _ opts]
+(defmethod render/membrane->plot :svg [membrane-tree _ opts]
   (let [{:keys [total-width total-height tooltip brush title]} opts
         svg-body (membrane->svg membrane-tree)
         svg (wrap-svg total-width total-height svg-body title)
@@ -305,16 +305,16 @@
                  brush (conj (brush-script div-id))))))
       (kind/hiccup svg))))
 
-(defmethod render/plan->figure :svg [plan _ opts]
+(defmethod render/plan->plot :svg [plan _ opts]
   (let [render-opts (select-keys opts [:tooltip :width :height :theme :palette
                                        :color-scale :color-midpoint])
         membrane-tree (apply membrane/plan->membrane plan
                              (mapcat identity render-opts))]
-    (render/membrane->figure membrane-tree :svg
-                             (assoc opts
-                                    :total-width (:total-width plan)
-                                    :total-height (:total-height plan)
-                                    :title (:title plan)))))
+    (render/membrane->plot membrane-tree :svg
+                           (assoc opts
+                                  :total-width (:total-width plan)
+                                  :total-height (:total-height plan)
+                                  :title (:title plan)))))
 
 ;; ---- SVG inspection ----
 

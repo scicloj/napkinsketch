@@ -283,8 +283,8 @@
       (do
         ;; Ensure the bufimg renderer is loaded
         (require 'scicloj.napkinsketch.render.bufimg)
-        (render-impl/plan->figure p :bufimg opts))
-      (render-impl/plan->figure p :svg opts))))
+        (render-impl/plan->plot p :bufimg opts))
+      (render-impl/plan->plot p :svg opts))))
 
 ;; ---- Constructor ----
 

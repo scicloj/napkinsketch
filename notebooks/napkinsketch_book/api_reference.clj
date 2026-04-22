@@ -610,17 +610,17 @@ plan1
 
 (kind/test-last [true?])
 
-(kind/doc #'sk/membrane->figure)
+(kind/doc #'sk/membrane->plot)
 
-(first (sk/membrane->figure m1 :svg
-                            {:total-width (:total-width plan1)
-                             :total-height (:total-height plan1)}))
+(first (sk/membrane->plot m1 :svg
+                          {:total-width (:total-width plan1)
+                           :total-height (:total-height plan1)}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
-(kind/doc #'sk/plan->figure)
+(kind/doc #'sk/plan->plot)
 
-(first (sk/plan->figure plan1 :svg {}))
+(first (sk/plan->plot plan1 :svg {}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 

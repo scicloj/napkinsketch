@@ -8,20 +8,20 @@
   (:import [javax.imageio ImageIO]
            [java.io File]))
 
-(defmethod render/membrane->figure :bufimg [membrane-tree _ opts]
+(defmethod render/membrane->plot :bufimg [membrane-tree _ opts]
   (let [w (int (or (:total-width opts) 600))
         h (int (or (:total-height opts) 400))]
     (java2d/draw-to-image membrane-tree [w h])))
 
-(defmethod render/plan->figure :bufimg [plan _ opts]
+(defmethod render/plan->plot :bufimg [plan _ opts]
   (let [render-opts (select-keys opts [:width :height :theme :palette
                                        :color-scale :color-midpoint])
         membrane-tree (apply membrane/plan->membrane plan
                              (mapcat identity render-opts))]
-    (render/membrane->figure membrane-tree :bufimg
-                             (assoc opts
-                                    :total-width (:total-width plan)
-                                    :total-height (:total-height plan)))))
+    (render/membrane->plot membrane-tree :bufimg
+                           (assoc opts
+                                  :total-width (:total-width plan)
+                                  :total-height (:total-height plan)))))
 
 (defn save-png
   "Save a BufferedImage to a PNG file. Returns the path."

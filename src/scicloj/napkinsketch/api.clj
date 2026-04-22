@@ -180,22 +180,22 @@
   (expect-type plan-data resolve/plan? "plan (from sk/plan)" "sk/plan->membrane")
   (membrane/plan->membrane plan-data opts))
 
-(defn membrane->figure
+(defn membrane->plot
   "Convert a membrane drawable tree into a figure for the given format.
    Dispatches on format keyword; :svg is always available.
-   (membrane->figure (plan->membrane (plan views)) :svg {})"
+   (membrane->plot (plan->membrane (plan views)) :svg {})"
   [membrane-tree format opts]
-  (render-impl/membrane->figure membrane-tree format opts))
+  (render-impl/membrane->plot membrane-tree format opts))
 
-(defn plan->figure
+(defn plan->plot
   "Convert a plan into a figure for the given format.
    Dispatches on format keyword. Each renderer is a separate namespace
    that registers a defmethod; :svg is always available.
-   (plan->figure (plan sketch) :svg {})
-   (plan->figure (plan sketch) :plotly {})"
+   (plan->plot (plan sketch) :svg {})
+   (plan->plot (plan sketch) :plotly {})"
   [plan format opts]
-  (expect-type plan resolve/plan? "plan (from sk/plan)" "sk/plan->figure")
-  (render-impl/plan->figure plan format opts))
+  (expect-type plan resolve/plan? "plan (from sk/plan)" "sk/plan->plot")
+  (render-impl/plan->plot plan format opts))
 
 ;; ---- Plan Validation ----
 
@@ -1078,7 +1078,7 @@
   ([sk]
    (let [sk (ensure-sk sk)
          p (plan sk)]
-     (render-impl/plan->figure p :svg (:opts sk {}))))
+     (render-impl/plan->plot p :svg (:opts sk {}))))
   ([sk opts]
    (plot (options sk opts))))
 
@@ -1214,7 +1214,7 @@
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
      (let [sk (if (seq opts) (options sk opts) sk)
            p (plan sk)
-           svg-hiccup (render-impl/plan->figure p :svg (:opts sk {}))]
+           svg-hiccup (render-impl/plan->plot p :svg (:opts sk {}))]
        (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                        (svg/hiccup->svg-str svg-hiccup)))
        path))))
@@ -1234,5 +1234,5 @@
    (let [sk (ensure-sk sk)
          sk (if (seq opts) (options sk opts) sk)
          p (plan sk)
-         img (render-impl/plan->figure p :bufimg (:opts sk {}))]
+         img (render-impl/plan->plot p :bufimg (:opts sk {}))]
      ((resolve 'scicloj.napkinsketch.render.bufimg/save-png) img path))))

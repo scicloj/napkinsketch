@@ -229,7 +229,7 @@ structural testing.
 
 **Extensibility.** Eight multimethods -- `compute-stat`,
 `extract-layer`, `layer->membrane`, `make-scale`, `make-coord`,
-`apply-position`, `plan->figure`, `membrane->figure` -- are open
+`apply-position`, `plan->plot`, `membrane->plot` -- are open
 extension points. The `waterfall_extension` chapter in the book walks
 through a complete end-to-end custom mark.
 

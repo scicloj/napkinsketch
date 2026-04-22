@@ -126,13 +126,13 @@
    sk/plan)))
 
 
-(def v25_l253 (first (sk/plan->figure my-plan :svg {})))
+(def v25_l253 (first (sk/plan->plot my-plan :svg {})))
 
 
 (deftest t26_l255 (is ((fn [v] (= :svg v)) v25_l253)))
 
 
-(def v28_l259 (def my-figure (sk/plan->figure my-plan :svg {})))
+(def v28_l259 (def my-figure (sk/plan->plot my-plan :svg {})))
 
 
 (def v29_l261 (vector? my-figure))
@@ -153,7 +153,7 @@
 (def
  v35_l312
  (first
-  (sk/membrane->figure
+  (sk/membrane->plot
    my-membrane
    :svg
    {:total-width (:total-width my-plan),

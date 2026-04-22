@@ -169,12 +169,12 @@ trace-membrane
 
 ;; ### Figure
 ;;
-;; `membrane->figure` converts the membrane tree into SVG hiccup.
+;; `membrane->plot` converts the membrane tree into SVG hiccup.
 
 (def trace-figure
-  (sk/membrane->figure trace-membrane :svg
-                       {:total-width (:total-width trace-plan)
-                        :total-height (:total-height trace-plan)}))
+  (sk/membrane->plot trace-membrane :svg
+                     {:total-width (:total-width trace-plan)
+                      :total-height (:total-height trace-plan)}))
 
 (kind/pprint trace-figure)
 

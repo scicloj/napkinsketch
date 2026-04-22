@@ -1769,7 +1769,7 @@
   "Resolve a sketch and get svg-summary."
   [sk]
   (let [views (sketch/sketch->draft sk)
-        fig (sk/plan->figure (plan/draft->plan views (:opts sk {})) :svg {})]
+        fig (sk/plan->plot (plan/draft->plan views (:opts sk {})) :svg {})]
     (sk/svg-summary fig)))
 
 (deftest basic-test
@@ -1961,8 +1961,8 @@
             sk-default (-> ds
                            (sk/lay-point :x :y)
                            (sk/lay-rule-h {:y-intercept 3}))
-            svg-red (str (sk/plan->figure (sk/plan sk-red) :svg {}))
-            svg-default (str (sk/plan->figure (sk/plan sk-default) :svg {}))]
+            svg-red (str (sk/plan->plot (sk/plan sk-red) :svg {}))
+            svg-default (str (sk/plan->plot (sk/plan sk-default) :svg {}))]
         (is (clojure.string/includes? svg-red "rgb(255,0,0)"))
         (is (not (clojure.string/includes? svg-default "rgb(255,0,0)")))))
 

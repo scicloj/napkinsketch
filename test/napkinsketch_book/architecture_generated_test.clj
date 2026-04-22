@@ -118,7 +118,7 @@
  v37_l174
  (def
   trace-figure
-  (sk/membrane->figure
+  (sk/membrane->plot
    trace-membrane
    :svg
    {:total-width (:total-width trace-plan),

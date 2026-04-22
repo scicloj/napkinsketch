@@ -42,13 +42,13 @@
 ;;                                              ↓
 ;;                                           plan
 ;;                                              ↓
-;;                          plan->figure (orchestrates full path)
+;;                          plan->plot (orchestrates full path)
 ;;                                              ↓
 ;;                              ┌───────────────┴───────────────┐
 ;;                     membrane path                     direct path
-;;                  plan->membrane                   plan->figure
+;;                  plan->membrane                   plan->plot
 ;;                        ↓
-;;                  membrane->figure
+;;                  membrane->plot
 ;;                        ↓
 ;;                      figure                           figure
 ;; ```
@@ -58,8 +58,8 @@
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
 ;; | `extract-layer` | `impl/extract.clj` | `:mark` key | Convert a stat result into a plan layer descriptor |
 ;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render a plan layer as membrane drawables |
-;; | `plan->figure` | `impl/render.clj` | format keyword | Orchestrate the full path from plan to figure |
-;; | `membrane->figure` | `impl/render.clj` | format keyword | Convert a membrane tree into a figure |
+;; | `plan->plot` | `impl/render.clj` | format keyword | Orchestrate the full path from plan to figure |
+;; | `membrane->plot` | `impl/render.clj` | format keyword | Convert a membrane tree into a figure |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
 ;; | `apply-position` | `impl/position.clj` | position keyword | Adjust group layout (dodge, stack, fill) |
@@ -230,7 +230,7 @@
 ;; need a `layer->membrane` defmethod for the SVG renderer. Without one,
 ;; the library throws an error explaining which defmethod to add.
 
-;; ## `plan->figure`
+;; ## `plan->plot`
 ;;
 ;; Orchestrates the full path from plan to figure. The `:svg`
 ;; implementation goes through the membrane path: plan, then membrane,
@@ -239,24 +239,24 @@
 ;;
 ;; | Dispatch value | Path |
 ;; |:---------------|:-----|
-;; | `:svg` | plan, then membrane, then `membrane->figure :svg` |
+;; | `:svg` | plan, then membrane, then `membrane->plot :svg` |
 ;;
 ;; Dispatch function: `(fn [plan format opts] format)`
 
-;; Using `plan->figure` directly:
+;; Using `plan->plot` directly:
 
 (def my-plan
   (-> (rdatasets/datasets-iris)
       (sk/lay-point :sepal-length :sepal-width {:color :species})
       sk/plan))
 
-(first (sk/plan->figure my-plan :svg {}))
+(first (sk/plan->plot my-plan :svg {}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
 ;; The same plan can be rendered to different formats:
 
-(def my-figure (sk/plan->figure my-plan :svg {}))
+(def my-figure (sk/plan->plot my-plan :svg {}))
 
 (vector? my-figure)
 
@@ -265,7 +265,7 @@
 ;; ### How to extend: add a new direct format
 ;;
 ;; To add a Plotly renderer that reads plan data directly
-;; (no membrane needed), register a `plan->figure` defmethod.
+;; (no membrane needed), register a `plan->plot` defmethod.
 ;;
 ;; Pseudocode:
 ;;
@@ -273,7 +273,7 @@
 ;; (ns mylib.render.plotly
 ;;   (:require [scicloj.napkinsketch.impl.render :as render]))
 ;;
-;; (defmethod render/plan->figure :plotly [plan _ opts]
+;; (defmethod render/plan->plot :plotly [plan _ opts]
 ;;   ;; Read plan domains, layers, legend, layout
 ;;   ;; Build a Plotly.js spec directly -- no membrane needed
 ;;   {:data (mapcat plan-layer->plotly-traces
@@ -289,7 +289,7 @@
 ;; (sk/plot views {:format :plotly})
 ;; ```
 
-;; ## `membrane->figure`
+;; ## `membrane->plot`
 ;;
 ;; Converts a membrane drawable tree into a figure for a given format.
 ;; This is the extensibility point for membrane-based output formats --
@@ -301,7 +301,7 @@
 ;;
 ;; Dispatch function: `(fn [membrane-tree format opts] format)`
 
-;; `sk/plan->membrane` builds the tree, `sk/membrane->figure` converts it:
+;; `sk/plan->membrane` builds the tree, `sk/membrane->plot` converts it:
 
 (def my-membrane (sk/plan->membrane my-plan))
 
@@ -309,16 +309,16 @@
 
 (kind/test-last [(fn [v] (true? v))])
 
-(first (sk/membrane->figure my-membrane :svg
-                            {:total-width (:total-width my-plan)
-                             :total-height (:total-height my-plan)}))
+(first (sk/membrane->plot my-membrane :svg
+                          {:total-width (:total-width my-plan)
+                           :total-height (:total-height my-plan)}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
 ;; ### How to extend: add a new membrane-based format
 ;;
 ;; To add a format that reuses the membrane tree (e.g., Canvas, PDF),
-;; register a `membrane->figure` defmethod.
+;; register a `membrane->plot` defmethod.
 ;;
 ;; Pseudocode:
 ;;
@@ -327,14 +327,14 @@
 ;;   (:require [scicloj.napkinsketch.impl.render :as render]
 ;;             [scicloj.napkinsketch.render.membrane :as membrane]))
 ;;
-;; (defmethod render/membrane->figure :canvas [membrane-tree _ opts]
+;; (defmethod render/membrane->plot :canvas [membrane-tree _ opts]
 ;;   ;; Walk the same drawable tree, emit canvas draw calls
 ;;   (canvas-walk membrane-tree))
 ;;
-;; ;; Also register plan->figure to orchestrate the full path:
-;; (defmethod render/plan->figure :canvas [plan _ opts]
+;; ;; Also register plan->plot to orchestrate the full path:
+;; (defmethod render/plan->plot :canvas [plan _ opts]
 ;;   (let [mt (membrane/plan->membrane plan)]
-;;     (render/membrane->figure mt :canvas
+;;     (render/membrane->plot mt :canvas
 ;;                               {:total-width (:total-width plan)
 ;;                                :total-height (:total-height plan)})))
 ;; ```
@@ -442,8 +442,8 @@
 ;; |:----------|:----------|
 ;; | A new statistical transform | `compute-stat` |
 ;; | A new mark type | `extract-layer` + `layer->membrane` |
-;; | A new output format (direct) | `plan->figure` |
-;; | A new output format (membrane-based) | `membrane->figure` + `plan->figure` |
+;; | A new output format (direct) | `plan->plot` |
+;; | A new output format (membrane-based) | `membrane->plot` + `plan->plot` |
 ;; | A new scale type | `make-scale` |
 ;; | A new coordinate system | `make-coord` |
 ;; | A new position adjustment | `apply-position` |

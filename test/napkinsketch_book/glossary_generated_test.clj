@@ -251,7 +251,7 @@
 (deftest t66_l410 (is ((fn [n] (pos? n)) v65_l408)))
 
 
-(def v68_l420 (def my-figure (sk/plan->figure my-plan :svg {})))
+(def v68_l420 (def my-figure (sk/plan->plot my-plan :svg {})))
 
 
 (def v69_l422 (first my-figure))
