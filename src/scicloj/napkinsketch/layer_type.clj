@@ -14,9 +14,11 @@
    layer-level x/y, this list just keeps build-layer's unknown-option
    warning consistent with that behavior. :x-type/:y-type/:color-type
    override the inferred column types (e.g. :x-type :categorical
-   treats a numeric x as categorical)."
+   treats a numeric x as categorical). :mark and :stat let any layer
+   override the visual mark or statistical transform supplied by its
+   layer-type entry; unknown keywords raise a clear error at build time."
   [:x :y :color :color-type :alpha :group :position :data
-   :x-type :y-type])
+   :x-type :y-type :mark :stat])
 
 (def layer-option-docs
   "Documentation for layer option keys. Maps key to description string."

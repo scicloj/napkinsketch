@@ -520,13 +520,46 @@
                              (pr-str (keyword (name k))) ".")
                         {:option k :value v}))))))
 
+(defn- registered-marks []
+  (->> (methods extract/extract-layer)
+       keys
+       (keep (fn [k] (cond (keyword? k) k
+                           (and (vector? k) (keyword? (first k))) (first k))))
+       (remove #{:default})
+       set))
+
+(defn- registered-stats []
+  (->> (methods stat/compute-stat)
+       keys
+       (keep (fn [k] (cond (keyword? k) k
+                           (and (vector? k) (keyword? (first k))) (first k))))
+       (remove #{:default})
+       set))
+
+(defn- validate-mark-stat [fn-name opts]
+  (when-let [m (:mark opts)]
+    (when-not (contains? (registered-marks) m)
+      (throw (ex-info (str fn-name " got :mark " (pr-str m)
+                           ", which is not a registered mark. Registered marks: "
+                           (vec (sort (registered-marks))))
+                      {:mark m :registered (sort (registered-marks))}))))
+  (when-let [s (:stat opts)]
+    (when-not (contains? (registered-stats) s)
+      (throw (ex-info (str fn-name " got :stat " (pr-str s)
+                           ", which is not a registered stat. Registered stats: "
+                           (vec (sort (registered-stats))))
+                      {:stat s :registered (sort (registered-stats))})))))
+
 (defn- build-layer
   "Build a layer map from a layer-type-key and optional opts.
-   Extracts :data if present. Warns and strips unrecognized option keys."
+   Extracts :data if present. Warns and strips unrecognized option keys.
+   Rejects unknown :mark or :stat keywords (since both are universal
+   layer options, a typo would silently fall through the accept-list)."
   [layer-type-key opts]
   (when opts
     (check-facet-keys "layer" opts)
-    (check-position-mapping (str "lay-" (name layer-type-key)) opts))
+    (check-position-mapping (str "lay-" (name layer-type-key)) opts)
+    (validate-mark-stat (str "lay-" (name layer-type-key)) opts))
   (let [opts (if (and opts (keyword? layer-type-key))
                (let [reg (layer-type/lookup layer-type-key)
                      accepted (-> (set layer-type/universal-layer-options)
