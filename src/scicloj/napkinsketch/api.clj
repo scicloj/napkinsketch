@@ -2,6 +2,7 @@
   "Public API for napkinsketch -- composable plotting in Clojure."
   (:require [scicloj.napkinsketch.impl.resolve :as resolve]
             [scicloj.napkinsketch.impl.sketch :as sketch]
+            [scicloj.napkinsketch.impl.frame :as frame]
             [scicloj.napkinsketch.impl.plan :as plan]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
             [scicloj.napkinsketch.impl.defaults :as defaults]
@@ -229,22 +230,53 @@
       (tc/dataset? d) d
       :else (tc/dataset d))))
 
-(defn- ensure-sk
-  "Coerce first arg to a sketch if it isn't one already.
-   Data is eagerly coerced to a dataset so downstream code can
-   uniformly use tc/column-names."
-  [x]
-  (cond
-    (sketch/sketch? x) x
-    (or (tc/dataset? x)
-        (map? x)
-        (sequential? x)) (sketch/->sketch (coerce-dataset x) {} [] [] {})
-    :else (sketch/->sketch nil {} [] [] {})))
-
 (defn sketch?
   "Return true if x is a sketch."
   [x]
   (sketch/sketch? x))
+
+(defn frame?
+  "Return true if x is a frame-shaped plain map. Frames are the
+   recursive replacement for sketch + view introduced by the pre-alpha
+   refactor; a frame has :layers and/or :frames and is not a Sketch
+   record."
+  [x]
+  (and (not (sketch/sketch? x))
+       (frame/frame? x)))
+
+(defn- frame->sketch
+  "Convert a leaf frame to an equivalent Sketch record so the existing
+   rendering pipeline can consume it. Composite frames (frames with
+   sub-frames) are not handled here; Phase 4 adds the compositor."
+  [fr]
+  (when-not (frame/leaf? fr)
+    (throw (ex-info (str "Composite frames are not yet rendered by sk/plot / sk/plan. "
+                         "The compositor lands in Phase 4 of the pre-alpha refactor.")
+                    {:frame fr})))
+  (let [m     (or (:mapping fr) {})
+        data  (:data fr)
+        opts  (or (:opts fr) {})
+        layers (or (:layers fr) [])
+        has-position? (or (contains? m :x) (contains? m :y))]
+    (if has-position?
+      ;; Frame with a position mapping -> one view carrying the mapping + layers.
+      (sketch/->sketch data {} [{:mapping m :layers layers}] [] opts)
+      ;; Frame with only aesthetic mapping (no :x/:y) -> bare sketch + sketch-level layers.
+      (sketch/->sketch data m [] layers opts))))
+
+(defn- ensure-sk
+  "Coerce first arg to a sketch if it isn't one already.
+   Data is eagerly coerced to a dataset so downstream code can
+   uniformly use tc/column-names. Frame-shaped plain maps (produced
+   by sk/frame) are routed through the leaf-frame adapter."
+  [x]
+  (cond
+    (sketch/sketch? x) x
+    (frame? x) (frame->sketch x)
+    (or (tc/dataset? x)
+        (map? x)
+        (sequential? x)) (sketch/->sketch (coerce-dataset x) {} [] [] {})
+    :else (sketch/->sketch nil {} [] [] {})))
 
 (def ^:private view-mapping-keys
   "Keys accepted in view/sketch mapping options."
@@ -275,6 +307,30 @@
       (if (seq unknown)
         (select-keys opts (filter accepted (keys opts)))
         opts))))
+
+(defn frame
+  "Create a leaf frame -- the recursive plain-map type that will
+   replace sketch + view. A leaf carries {:data :mapping :layers :opts}
+   and no :frames.
+
+   Compositing (nested frames, shared scales, layout) is staged in
+   later sub-phases of the pre-alpha refactor; this constructor and
+   its adapter (used internally by sk/plot and sk/plan) cover the
+   single-panel case today.
+
+   (sk/frame data)                     -- leaf with data only
+   (sk/frame data {:color :species})   -- leaf with aesthetic mapping
+   (sk/frame data :x-col :y-col)       -- leaf with {:x :x-col :y :y-col}"
+  ([] {:mapping {} :layers []})
+  ([data] {:data (coerce-dataset data) :mapping {} :layers []})
+  ([data x-or-mapping]
+   (let [base {:data (coerce-dataset data) :layers []}]
+     (if (map? x-or-mapping)
+       (let [m (warn-and-strip-unknown-opts "sk/frame" x-or-mapping view-mapping-keys)]
+         (assoc base :mapping (or m {})))
+       (assoc base :mapping {:x x-or-mapping}))))
+  ([data x y]
+   {:data (coerce-dataset data) :mapping {:x x :y y} :layers []}))
 
 (defn sketch
   "Create or augment a sketch with an optional sketch-level mapping.
