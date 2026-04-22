@@ -303,3 +303,20 @@
                      (binding [defaults/*config* captured]
                        (render-sketch sk)))
                    #'render-sketch)})))
+
+(defn leaf-frame->sketch
+  "Build a Sketch from a leaf frame (plain map with :data :mapping
+   :layers :opts). A frame with an :x/:y mapping becomes a sketch
+   whose single view carries that mapping; a frame with only
+   aesthetic mappings becomes a bare sketch with sketch-level layers.
+   Callers must ensure the frame is a leaf -- composites are out of
+   scope here."
+  [fr]
+  (let [m      (or (:mapping fr) {})
+        data   (:data fr)
+        opts   (or (:opts fr) {})
+        layers (or (:layers fr) [])
+        has-position? (or (contains? m :x) (contains? m :y))]
+    (if has-position?
+      (->sketch data {} [{:mapping m :layers layers}] [] opts)
+      (->sketch data m [] layers opts))))

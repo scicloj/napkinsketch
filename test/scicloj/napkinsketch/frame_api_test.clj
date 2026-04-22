@@ -93,18 +93,183 @@
       (is (same-plan-shape? via-frame via-legacy)))))
 
 ;; ============================================================
-;; Composite frames are not yet rendered (Phase 4); sk/plot rejects
-;; them with a helpful message. Layer addition (this phase) is the
-;; structural half -- tested below against literal composite maps,
-;; since no composite-producing constructor exists yet.
+;; Composite frames render via the Phase-4 compositor: each leaf
+;; renders through the existing sketch pipeline and is tiled via
+;; <g transform="translate(...)"> groups inside a wrapping SVG.
 ;; ============================================================
 
-(deftest composite-rejects-test
-  (testing "sk/plot on a composite frame throws a clear Phase-4 error"
-    (let [composite {:frames [{:layers []} {:layers []}]}]
-      (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                            #"Composite frames"
-                            (sk/plot composite))))))
+(deftest composite-renders-to-svg-test
+  (testing "sk/plot on a two-leaf horizontal composite returns an SVG
+            whose svg-summary shows two panels"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :frames [{:layers [{:layer-type :point}]}
+                              {:layers [{:layer-type :line}]}]}
+          svg (sk/plot composite)
+          summary (sk/svg-summary svg)]
+      (is (= :svg (first svg)))
+      (is (= 2 (:panels summary))
+          "one panel per leaf")
+      (is (pos? (:points summary))
+          "point leaf rendered")
+      (is (pos? (:lines summary))
+          "line leaf rendered"))))
+
+(deftest composite-renders-vertical-test
+  (testing "vertical layout produces stacked leaves"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :vertical :weights [1 1]}
+                     :frames [{:layers [{:layer-type :point}]}
+                              {:layers [{:layer-type :point}]}]}
+          svg (sk/plot composite)]
+      (is (= 2 (:panels (sk/svg-summary svg)))))))
+
+(deftest composite-renders-nested-test
+  (testing "nested composite (horizontal outer, vertical inner) renders
+            every descendant leaf"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :frames [{:layers [{:layer-type :point}]}
+                              {:layout {:direction :vertical :weights [1 1]}
+                               :frames [{:layers [{:layer-type :point}]}
+                                        {:layers [{:layer-type :point}]}]}]}
+          svg (sk/plot composite)]
+      (is (= 3 (:panels (sk/svg-summary svg)))
+          "three leaves -> three panels"))))
+
+;; ============================================================
+;; Composite plans (Phase 4 Slice B)
+;; ============================================================
+;;
+;; sk/plan on a composite returns a Plan record with :composite? true
+;; and :sub-plots [{:path :rect :plan} ...] -- one entry per resolved
+;; leaf. sk/plan? still returns true so downstream predicate checks
+;; keep working.
+
+(deftest composite-plan-shape-test
+  (testing "sk/plan on a composite returns a composite plan"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :frames [{:layers [{:layer-type :point}]}
+                              {:layers [{:layer-type :line}]}]}
+          p (sk/plan composite)]
+      (is (sk/plan? p)
+          "composite plan still passes plan? predicate")
+      (is (:composite? p)
+          ":composite? flag set")
+      (is (= 2 (count (:sub-plots p)))
+          "one :sub-plots entry per leaf")
+      (is (every? sk/plan? (map :plan (:sub-plots p)))
+          "each :plan entry is itself a plan")
+      (is (every? (fn [sp] (= 4 (count (:rect sp)))) (:sub-plots p))
+          "each entry carries a 4-tuple :rect"))))
+
+(deftest composite-plan-rects-tile-frame-test
+  (testing "horizontal composite sub-plot rects partition the outer width"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :opts {:width 600 :height 400}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :frames [{:layers [{:layer-type :point}]}
+                              {:layers [{:layer-type :point}]}]}
+          p (sk/plan composite)
+          rects (map :rect (:sub-plots p))]
+      (is (= [[0.0 0.0 300.0 400.0]
+              [300.0 0.0 300.0 400.0]]
+             (vec rects))
+          "two leaves split 600-wide frame evenly left/right"))))
+
+(deftest composite-plan-nested-paths-test
+  (testing "paths in :sub-plots match the DFS order of leaves"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :frames [{:layers [{:layer-type :point}]}
+                              {:layout {:direction :vertical :weights [1 1]}
+                               :frames [{:layers [{:layer-type :point}]}
+                                        {:layers [{:layer-type :point}]}]}]}
+          p (sk/plan composite)]
+      (is (= [[0] [1 0] [1 1]]
+             (mapv :path (:sub-plots p)))))))
+
+;; ============================================================
+;; Composite shared scales (Phase 4 Slice C)
+;; ============================================================
+;;
+;; :share-scales #{:x} on a composite pins an identical x-domain
+;; across sibling leaves that use the same x-column. Leaves with a
+;; different x-column get their own bucket (column-bucketing).
+
+(deftest composite-share-scales-x-same-column-test
+  (testing "two leaves sharing :x column get a unified x-domain"
+    (let [ds1 (tc/dataset {:x [0 1 2] :y [1 2 3]})
+          ds2 (tc/dataset {:x [10 20 30] :y [1 2 3]})
+          composite {:mapping {:y :y}
+                     :share-scales #{:x}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :frames [{:data ds1 :mapping {:x :x}
+                               :layers [{:layer-type :point}]}
+                              {:data ds2 :mapping {:x :x}
+                               :layers [{:layer-type :point}]}]}
+          p (sk/plan composite)
+          dom0 (-> p :sub-plots (get 0) :plan :panels first :x-domain)
+          dom1 (-> p :sub-plots (get 1) :plan :panels first :x-domain)]
+      (is (= dom0 dom1)
+          "both sub-plots have the same x-domain")
+      (is (= [0 30] dom0)
+          "shared domain is the union of each leaf's data range"))))
+
+(deftest composite-share-scales-x-column-bucketing-test
+  (testing "leaves with different x-columns get independent buckets"
+    (let [ds-a (tc/dataset {:a [0 1 2] :y [1 2 3]})
+          ds-b (tc/dataset {:b [100 200] :y [1 2]})
+          composite {:mapping {:y :y}
+                     :share-scales #{:x}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :frames [{:data ds-a :mapping {:x :a}
+                               :layers [{:layer-type :point}]}
+                              {:data ds-b :mapping {:x :b}
+                               :layers [{:layer-type :point}]}]}
+          p (sk/plan composite)
+          dom0 (-> p :sub-plots (get 0) :plan :panels first :x-domain)
+          dom1 (-> p :sub-plots (get 1) :plan :panels first :x-domain)]
+      (is (not= dom0 dom1)
+          "different columns -> different domains")
+      (is (= [0 2] dom0))
+      (is (= [100 200] dom1)))))
+
+(deftest composite-share-scales-marginal-style-test
+  (testing "marginal-style: scatter + top density share :x = :a, right density
+            uses :b (independent bucket)"
+    (let [ds (tc/dataset {:a [0 1 2 3 4] :b [10 20 30 40 50]})
+          composite {:data ds
+                     :share-scales #{:x :y}
+                     :layout {:direction :vertical :weights [1 3]}
+                     :frames [;; top density on :a
+                              {:mapping {:x :a}
+                               :layers [{:layer-type :density}]}
+                              ;; bottom row: scatter (a,b) + density on b (bucket-of-one)
+                              {:layout {:direction :horizontal :weights [3 1]}
+                               :frames [{:mapping {:x :a :y :b}
+                                         :layers [{:layer-type :point}]}
+                                        {:mapping {:x :b}
+                                         :layers [{:layer-type :density}]}]}]}
+          p (sk/plan composite)
+          sub (:sub-plots p)
+          top-density-x (-> sub (get 0) :plan :panels first :x-domain)
+          scatter-x     (-> sub (get 1) :plan :panels first :x-domain)]
+      (is (= top-density-x scatter-x)
+          "top density and scatter share x-domain (same :a column)"))))
 
 ;; ============================================================
 ;; Composite lay-* identity (Phase 3b)

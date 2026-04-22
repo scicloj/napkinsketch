@@ -3,6 +3,7 @@
   (:require [scicloj.napkinsketch.impl.resolve :as resolve]
             [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.impl.frame :as frame]
+            [scicloj.napkinsketch.impl.compositor :as compositor]
             [scicloj.napkinsketch.impl.plan :as plan]
             [scicloj.napkinsketch.impl.sketch-schema :as ss]
             [scicloj.napkinsketch.impl.defaults :as defaults]
@@ -244,35 +245,24 @@
   (and (not (sketch/sketch? x))
        (frame/frame? x)))
 
-(defn- frame->sketch
-  "Convert a leaf frame to an equivalent Sketch record so the existing
-   rendering pipeline can consume it. Composite frames (frames with
-   sub-frames) are not handled here; Phase 4 adds the compositor."
-  [fr]
-  (when-not (frame/leaf? fr)
-    (throw (ex-info (str "Composite frames are not yet rendered by sk/plot / sk/plan. "
-                         "The compositor lands in Phase 4 of the pre-alpha refactor.")
-                    {:frame fr})))
-  (let [m     (or (:mapping fr) {})
-        data  (:data fr)
-        opts  (or (:opts fr) {})
-        layers (or (:layers fr) [])
-        has-position? (or (contains? m :x) (contains? m :y))]
-    (if has-position?
-      ;; Frame with a position mapping -> one view carrying the mapping + layers.
-      (sketch/->sketch data {} [{:mapping m :layers layers}] [] opts)
-      ;; Frame with only aesthetic mapping (no :x/:y) -> bare sketch + sketch-level layers.
-      (sketch/->sketch data m [] layers opts))))
-
 (defn- ensure-sk
   "Coerce first arg to a sketch if it isn't one already.
    Data is eagerly coerced to a dataset so downstream code can
-   uniformly use tc/column-names. Frame-shaped plain maps (produced
-   by sk/frame) are routed through the leaf-frame adapter."
+   uniformly use tc/column-names. Leaf frame-shaped plain maps
+   (produced by sk/frame) are routed through sketch/leaf-frame->sketch.
+   Composite frames are out of scope here -- callers that can accept a
+   composite must branch on frame/composite? and route to the
+   compositor."
   [x]
   (cond
     (sketch/sketch? x) x
-    (frame? x) (frame->sketch x)
+    (and (frame? x) (frame/composite? x))
+    (throw (ex-info (str "ensure-sk got a composite frame. This is an "
+                         "internal-routing bug: sk/plot and sk/plan "
+                         "should dispatch composites to the compositor "
+                         "before calling ensure-sk.")
+                    {:frame x}))
+    (frame? x) (sketch/leaf-frame->sketch x)
     (or (tc/dataset? x)
         (map? x)
         (sequential? x)) (sketch/->sketch (coerce-dataset x) {} [] [] {})
@@ -1148,6 +1138,8 @@
 (defn plan
   "Convert a sketch into a plan using view-based grid layout.
    Each view = one panel. Grid position from structural columns.
+   On a composite frame, returns a wrapper plan with :composite? true
+   and :sub-plots tying each leaf path to its rect and sub-plan.
    (plan sk)
    (plan sk {:title \"My Plot\"})"
   ([sk]
@@ -1155,20 +1147,26 @@
      (throw (ex-info (str "sk/plan expects a sketch, not a plan. "
                           "Use the plan directly, or call sk/plot on a sketch.")
                      {:got :plan})))
-   (let [sk (ensure-sk sk)
-         d (sketch/sketch->draft sk)]
-     (plan/draft->plan d (:opts sk {}))))
+   (if (and (frame? sk) (frame/composite? sk))
+     (compositor/composite->plan sk)
+     (let [sk (ensure-sk sk)
+           d (sketch/sketch->draft sk)]
+       (plan/draft->plan d (:opts sk {})))))
   ([sk opts]
    (plan (options sk opts))))
 
 (defn plot
   "Render a sketch to SVG (or interactive HTML if tooltip/brush is set).
+   On a composite frame, leaves are rendered individually and tiled
+   via the compositor's layout.
    (plot sk)
    (plot sk {:width 800 :title \"My Plot\"})"
   ([sk]
-   (let [sk (ensure-sk sk)
-         p (plan sk)]
-     (render-impl/plan->plot p :svg (:opts sk {}))))
+   (if (and (frame? sk) (frame/composite? sk))
+     (compositor/composite->plot sk)
+     (let [sk (ensure-sk sk)
+           p (plan sk)]
+       (render-impl/plan->plot p :svg (:opts sk {})))))
   ([sk opts]
    (plot (options sk opts))))
 
