@@ -1,7 +1,7 @@
 (ns scicloj.napkinsketch.impl.sketch
   "Sketch: the composable data model.
    A sketch is a record with :data :mapping :views :layers :opts.
-   sketch->draft: merge(sketch-mapping, view-mapping, method-info, layer-mapping)
+   sketch->draft: merge(sketch-mapping, view-mapping, layer-type-info, layer-mapping)
    -> flat draft maps -> plan (via plan.clj)."
   (:require [tablecloth.api :as tc]
             [tech.v3.datatype :as dtype]
@@ -9,7 +9,7 @@
             [scicloj.napkinsketch.impl.resolve :as resolve]
             [scicloj.napkinsketch.impl.plan :as plan]
             [scicloj.napkinsketch.impl.render :as render-impl]
-            [scicloj.napkinsketch.method :as method]
+            [scicloj.napkinsketch.layer-type :as layer-type]
             [scicloj.kindly.v4.kind :as kind]))
 
 ;; ---- Record ----
@@ -107,32 +107,32 @@
                          :data (tc/select-rows ds (fn [r] (= (r frow) rv)))))))))
         views)))))
 
-(defn- resolve-method-info
-  "Look up method info from a layer's :method key.
+(defn- resolve-layer-type-info
+  "Look up layer-type info from a layer's :layer-type key.
    Keyword -> registry lookup (throws on unknown). Map -> pass through.
    :infer -> sentinel."
-  [method-key]
+  [layer-type-key]
   (cond
-    (= :infer method-key)
+    (= :infer layer-type-key)
     {:mark :infer}
 
-    (keyword? method-key)
-    (let [m (method/lookup method-key)]
+    (keyword? layer-type-key)
+    (let [m (layer-type/lookup layer-type-key)]
       (if m
-        ;; Keep the method-key itself so downstream error messages
+        ;; Keep the layer-type-key itself so downstream error messages
         ;; (e.g. in resolve.clj) can blame the lay-* function the
         ;; user called, not the internal :mark.
         (-> (select-keys m [:mark :stat :position :x-only])
-            (assoc :method method-key))
-        (let [registered (sort (keys (method/registered)))]
-          (throw (ex-info (str "Unknown method: " method-key
-                               ". Use sk/lay-* with a registered method, or "
-                               "(sk/method-lookup ...) to inspect. Registered methods: "
+            (assoc :layer-type layer-type-key))
+        (let [registered (sort (keys (layer-type/registered)))]
+          (throw (ex-info (str "Unknown layer type: " layer-type-key
+                               ". Use sk/lay-* with a registered layer type, or "
+                               "(sk/layer-type-lookup ...) to inspect. Registered layer types: "
                                (vec registered))
-                          {:method method-key :registered registered})))))
+                          {:layer-type layer-type-key :registered registered})))))
 
     :else ;; raw map -- pass through
-    method-key))
+    layer-type-key))
 
 (defn- heterogeneous-types
   "If the column has :object dtype and the first 100 values have more
@@ -184,8 +184,8 @@
                                ". Convert it to a single type (number, string, etc.) before plotting.")
                           {:key k :column col :types types})))))))
 
-(defn- annotation-method? [layer]
-  (contains? resolve/annotation-marks (:mark (method/lookup (:method layer)))))
+(defn- annotation-layer-type? [layer]
+  (contains? resolve/annotation-marks (:mark (layer-type/lookup (:layer-type layer)))))
 
 (defn sketch->draft
   "Flatten a sketch into a draft -- a vector of flat maps, one per
@@ -193,7 +193,7 @@
    bridge between composable sketches and the plan pipeline.
    Reads facet/scale/coord from opts. Expands facets on views.
    Crosses views x layers: each view's own :layers union sketch :layers.
-   Merges mappings downward: sketch-mapping < view-mapping < method-info < layer-mapping.
+   Merges mappings downward: sketch-mapping < view-mapping < layer-type-info < layer-mapping.
    Views with no applicable layers get {:mark :infer} for downstream inference.
    A sketch with only sketch-level annotation layers and no views gets
    one synthesized empty view so the annotations land in a panel."
@@ -212,7 +212,7 @@
         ;; the sketch's data + annotation positions.
         expanded (if (and (empty? expanded)
                           (seq sketch-layers)
-                          (every? annotation-method? sketch-layers))
+                          (every? annotation-layer-type? sketch-layers))
                    [{:mapping {} :layers []}]
                    expanded)]
     (let [idx (atom -1)]
@@ -225,15 +225,15 @@
                 view-data (:data view)
                 ;; Combine: view layers ∪ sketch layers
                 combined (concat (or view-layers nil) sketch-layers)
-                applicable (if (seq combined) (vec combined) [{:method :infer}])]
+                applicable (if (seq combined) (vec combined) [{:layer-type :infer}])]
             (map (fn [layer]
-                   (let [method-info (resolve-method-info (:method layer))
+                   (let [layer-type-info (resolve-layer-type-info (:layer-type layer))
                          layer-mapping (or (:mapping layer) {})
-                         ;; Four-level merge: sketch < view < method < layer
-                         ;; Method sets mark/stat/position; layer can override all
+                         ;; Four-level merge: sketch < view < layer-type < layer
+                         ;; Layer type sets mark/stat/position; layer can override all
                          resolved (merge sketch-mapping
                                          view-mapping
-                                         method-info
+                                         layer-type-info
                                          layer-mapping)
                          ;; Data: layer > view > sketch
                          d (ensure-dataset (or (:data layer) view-data data))

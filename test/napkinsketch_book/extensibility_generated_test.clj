@@ -4,7 +4,7 @@
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
-  [scicloj.napkinsketch.method :as method]
+  [scicloj.napkinsketch.layer-type :as layer-type]
   [scicloj.napkinsketch.impl.stat :as stat]
   [scicloj.napkinsketch.impl.extract :as extract]
   [scicloj.napkinsketch.render.mark :as mark]
@@ -34,19 +34,19 @@
 (deftest t4_l83 (is ((fn [t] (= 11 (count (:row-maps t)))) v3_l72)))
 
 
-(def v6_l91 (method/lookup :histogram))
+(def v6_l91 (layer-type/lookup :histogram))
 
 
 (deftest t7_l93 (is ((fn [m] (= :bin (:stat m))) v6_l91)))
 
 
-(def v9_l97 (method/lookup :bar))
+(def v9_l97 (layer-type/lookup :bar))
 
 
 (deftest t10_l99 (is ((fn [m] (= :count (:stat m))) v9_l97)))
 
 
-(def v12_l103 (method/lookup :point))
+(def v12_l103 (layer-type/lookup :point))
 
 
 (deftest t13_l105 (is ((fn [m] (= :identity (:stat m))) v12_l103)))

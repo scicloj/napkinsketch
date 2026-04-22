@@ -55,7 +55,7 @@
    v14_l105)))
 
 
-(def v17_l116 (get-in (:views trace-sk) [0 :layers 0 :method]))
+(def v17_l116 (get-in (:views trace-sk) [0 :layers 0 :layer-type]))
 
 
 (deftest t18_l118 (is ((fn [m] (= :point m)) v17_l116)))
@@ -179,7 +179,7 @@
 (deftest t53_l260 (is ((fn [n] (= 1 n)) v52_l258)))
 
 
-(def v54_l262 (mapv :method (:layers multi-sk)))
+(def v54_l262 (mapv :layer-type (:layers multi-sk)))
 
 
 (deftest

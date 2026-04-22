@@ -134,7 +134,7 @@
 ;; The generic layer adder. `sk/lay-point`, `sk/lay-bar`, etc. are
 ;; convenience wrappers around `sk/lay` with a registered method
 ;; key. Use `sk/lay` directly when you have a custom method (from
-;; `sk/method-lookup` on a registered key, or a raw method map from
+;; `sk/layer-type-lookup` on a registered key, or a raw method map from
 ;; an extension):
 
 (-> (rdatasets/datasets-iris)
@@ -542,11 +542,11 @@
 
 (kind/test-last [true?])
 
-(kind/doc #'sk/method?)
+(kind/doc #'sk/layer-type?)
 
 ;; Check whether a value is a registered method map:
 
-(sk/method? (sk/method-lookup :point))
+(sk/layer-type? (sk/layer-type-lookup :point))
 
 (kind/test-last [true?])
 
@@ -665,16 +665,16 @@ plan1
 
 ;; ## Method Registry
 
-(kind/doc #'sk/method-lookup)
+(kind/doc #'sk/layer-type-lookup)
 
-(sk/method-lookup :lm)
+(sk/layer-type-lookup :lm)
 
 (kind/test-last [(fn [m] (and (= :line (:mark m))
                               (= :lm (:stat m))))])
 
-(kind/doc #'sk/registered-methods)
+(kind/doc #'sk/registered-layer-types)
 
-(count (sk/registered-methods))
+(count (sk/registered-layer-types))
 
 (kind/test-last [(fn [n] (= 29 n))])
 

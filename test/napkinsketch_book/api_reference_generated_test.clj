@@ -241,7 +241,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__136900#] (Math/sin (* p1__136900# 0.3)))
+    (fn* [p1__205580#] (Math/sin (* p1__205580# 0.3)))
     (range 30))}))
 
 
@@ -360,9 +360,9 @@
     :y
     (mapv
      (fn*
-      [p1__136901#]
+      [p1__205581#]
       (+
-       (Math/sin (* p1__136901# 0.2))
+       (Math/sin (* p1__205581# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
@@ -934,10 +934,10 @@
 (deftest t178_l543 (is (true? v177_l541)))
 
 
-(def v179_l545 (kind/doc #'sk/method?))
+(def v179_l545 (kind/doc #'sk/layer-type?))
 
 
-(def v181_l549 (sk/method? (sk/method-lookup :point)))
+(def v181_l549 (sk/layer-type? (sk/layer-type-lookup :point)))
 
 
 (deftest t182_l551 (is (true? v181_l549)))
@@ -1100,10 +1100,10 @@
 (deftest t230_l664 (is ((fn [n] (pos? n)) v229_l662)))
 
 
-(def v232_l668 (kind/doc #'sk/method-lookup))
+(def v232_l668 (kind/doc #'sk/layer-type-lookup))
 
 
-(def v233_l670 (sk/method-lookup :lm))
+(def v233_l670 (sk/layer-type-lookup :lm))
 
 
 (deftest
@@ -1111,10 +1111,10 @@
  (is ((fn [m] (and (= :line (:mark m)) (= :lm (:stat m)))) v233_l670)))
 
 
-(def v235_l675 (kind/doc #'sk/registered-methods))
+(def v235_l675 (kind/doc #'sk/registered-layer-types))
 
 
-(def v236_l677 (count (sk/registered-methods)))
+(def v236_l677 (count (sk/registered-layer-types)))
 
 
 (deftest t237_l679 (is ((fn [n] (= 29 n)) v236_l677)))

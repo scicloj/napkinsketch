@@ -323,7 +323,7 @@
   setosa
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__133586#] (= "setosa" (:species p1__133586#))))))
+   (fn* [p1__201534#] (= "setosa" (:species p1__201534#))))))
 
 
 (def
@@ -332,7 +332,7 @@
   versicolor
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__133587#] (= "versicolor" (:species p1__133587#))))))
+   (fn* [p1__201535#] (= "versicolor" (:species p1__201535#))))))
 
 
 (def
@@ -418,8 +418,10 @@
     [sk]
     (and
      (= 2 (count (:views sk)))
-     (= :histogram (:method (first (:layers (first (:views sk))))))
-     (= :density (:method (first (:layers (second (:views sk))))))))
+     (= :histogram (:layer-type (first (:layers (first (:views sk))))))
+     (=
+      :density
+      (:layer-type (first (:layers (second (:views sk))))))))
    v76_l389)))
 
 
@@ -460,7 +462,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v81_l423)))
 
 
-(def v85_l446 (sk/method-lookup :histogram))
+(def v85_l446 (sk/layer-type-lookup :histogram))
 
 
 (deftest t86_l448 (is ((fn [m] (= :bar (:mark m))) v85_l446)))
@@ -476,7 +478,7 @@
  (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v88_l452)))
 
 
-(def v91_l459 (sk/method-lookup :lm))
+(def v91_l459 (sk/layer-type-lookup :lm))
 
 
 (deftest t92_l461 (is ((fn [m] (= :lm (:stat m))) v91_l459)))

@@ -1,14 +1,14 @@
-(ns scicloj.napkinsketch.method
-  "Method registry — keyword → method map (mark + stat + position).
-   Methods are plain data maps. The registry makes them discoverable
-   and extensible. Use `lookup` to get a method by keyword, `registered`
-   to enumerate all methods, and `register!` to add new ones."
+(ns scicloj.napkinsketch.layer-type
+  "Layer-type registry — keyword → layer-type map (mark + stat + position).
+   Layer types are plain data maps. The registry makes them discoverable
+   and extensible. Use `lookup` to get a layer type by keyword, `registered`
+   to enumerate all layer types, and `register!` to add new ones."
   (:require [scicloj.napkinsketch.impl.resolve :as resolve]))
 
 ;; ---- Registry ----
 
 (def universal-layer-options
-  "Layer options accepted by all methods. :x and :y are included so a
+  "Layer options accepted by all layer types. :x and :y are included so a
    layer can override the view's position mapping (an overlay-like
    pattern); the four-level merge in sketch->draft already honors
    layer-level x/y, this list just keeps build-layer's unknown-option
@@ -51,11 +51,11 @@
    :x-max "Upper x bound of a vertical shaded band"})
 
 (def ^:private registry*
-  "Atom holding keyword → method entry map."
+  "Atom holding keyword → layer-type entry map."
   (atom {}))
 
 (defn register!
-  "Register a method. `k` is a keyword, `entry` is a map with
+  "Register a layer type. `k` is a keyword, `entry` is a map with
    :mark, :stat, and optionally :position and :doc.
    Position defaults to nil (identity) — only :dodge, :stack, :fill are explicit."
   [k entry]
@@ -63,18 +63,18 @@
   k)
 
 (defn lookup
-  "Look up a registered method by keyword. Returns the method map
+  "Look up a registered layer type by keyword. Returns the layer-type map
    (with :mark, :stat, :position, :doc), or nil if not found."
   [k]
   (get @registry* k))
 
 (defn registered
-  "Return all registered methods as a map of keyword → entry."
+  "Return all registered layer types as a map of keyword → entry."
   []
   @registry*)
 
-(def method-order
-  "Canonical display order for built-in methods."
+(def layer-type-order
+  "Canonical display order for built-in layer types."
   [:point :line :step :area :stacked-area
    :histogram :bar :stacked-bar :stacked-bar-fill :value-bar
    :lm :loess :density
@@ -84,7 +84,7 @@
    :text :label :rug
    :rule-h :rule-v :band-h :band-v])
 
-;; ---- Built-in methods ----
+;; ---- Built-in layer types ----
 
 (register! :point {:mark :point :stat :identity :accepts [:size :shape :jitter :text :nudge-x :nudge-y] :doc "Scatter — individual data points."})
 (register! :line {:mark :line :stat :identity :accepts [:size :nudge-x :nudge-y] :doc "Line — connects data points in order."})

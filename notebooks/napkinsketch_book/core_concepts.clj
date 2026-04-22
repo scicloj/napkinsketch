@@ -391,8 +391,8 @@ targeted
 (kind/test-last
  [(fn [sk]
     (and (= 2 (count (:views sk)))
-         (= :histogram (:method (first (:layers (first (:views sk))))))
-         (= :density (:method (first (:layers (second (:views sk))))))))])
+         (= :histogram (:layer-type (first (:layers (first (:views sk))))))
+         (= :density (:layer-type (first (:layers (second (:views sk))))))))])
 
 ;; Two views with the same column but different layers. The first
 ;; `lay-histogram` found the first `view`. The second `lay-density`
@@ -443,7 +443,7 @@ my-sketch
 ;;
 ;; A method's name describes its intent. The mark describes the shape:
 
-(sk/method-lookup :histogram)
+(sk/layer-type-lookup :histogram)
 
 (kind/test-last [(fn [m] (= :bar (:mark m)))])
 
@@ -456,7 +456,7 @@ my-sketch
 
 ;; A regression: stat `:lm` fits a line, mark `:line` draws it:
 
-(sk/method-lookup :lm)
+(sk/layer-type-lookup :lm)
 
 (kind/test-last [(fn [m] (= :lm (:stat m)))])
 

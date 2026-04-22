@@ -14,7 +14,7 @@
             [scicloj.napkinsketch.render.membrane :as membrane]
             [scicloj.napkinsketch.render.mark :as mark]
             [scicloj.napkinsketch.render.svg :as svg]
-            [scicloj.napkinsketch.method :as method]
+            [scicloj.napkinsketch.layer-type :as layer-type]
             [clojure.set :as set]
             [clojure.string :as str]
             [tablecloth.api :as tc]
@@ -33,8 +33,8 @@
   [x]
   (resolve/layer? x))
 
-(defn method?
-  "Return true if x is a method (mark + stat + position bundle from the registry)."
+(defn layer-type?
+  "Return true if x is a layer type (mark + stat + position bundle from the registry)."
   [x]
   (resolve/method? x))
 
@@ -82,7 +82,7 @@
 (def layer-option-docs
   "Documentation for layer option keys accepted by lay- functions.
    Maps each key to a description string."
-  method/layer-option-docs)
+  layer-type/layer-option-docs)
 
 (defn set-config!
   "Set global config overrides. Persists across calls until reset.
@@ -91,18 +91,18 @@
   [m]
   (defaults/set-config! m))
 
-(defn method-lookup
-  "Look up a registered method by keyword. Returns the method map
+(defn layer-type-lookup
+  "Look up a registered layer type by keyword. Returns the layer-type map
    (with :mark, :stat, :position, :doc), or nil if not found.
-   (method-lookup :histogram) => {:mark :bar, :stat :bin, ...}"
+   (layer-type-lookup :histogram) => {:mark :bar, :stat :bin, ...}"
   [k]
-  (method/lookup k))
+  (layer-type/lookup k))
 
-(defn registered-methods
-  "Return all registered methods as a map of keyword -> method map.
+(defn registered-layer-types
+  "Return all registered layer types as a map of keyword -> layer-type map.
    Useful for generating documentation tables."
   []
-  (method/registered))
+  (layer-type/registered))
 
 (defn mark-doc
   "Return the prose description for a mark keyword.
@@ -521,40 +521,40 @@
                         {:option k :value v}))))))
 
 (defn- build-layer
-  "Build a layer map from a method-key and optional opts.
+  "Build a layer map from a layer-type-key and optional opts.
    Extracts :data if present. Warns and strips unrecognized option keys."
-  [method-key opts]
+  [layer-type-key opts]
   (when opts
     (check-facet-keys "layer" opts)
-    (check-position-mapping (str "lay-" (name method-key)) opts))
-  (let [opts (if (and opts (keyword? method-key))
-               (let [reg (method/lookup method-key)
-                     accepted (-> (set method/universal-layer-options)
+    (check-position-mapping (str "lay-" (name layer-type-key)) opts))
+  (let [opts (if (and opts (keyword? layer-type-key))
+               (let [reg (layer-type/lookup layer-type-key)
+                     accepted (-> (set layer-type/universal-layer-options)
                                   (into (:accepts reg))
                                   (set/difference (set (:rejects reg))))]
-                 (warn-and-strip-unknown-opts (str "lay-" (name method-key))
+                 (warn-and-strip-unknown-opts (str "lay-" (name layer-type-key))
                                               opts accepted))
                opts)
         d (:data opts)]
-    (cond-> {:method method-key
+    (cond-> {:layer-type layer-type-key
              :mapping (dissoc (or opts {}) :data)}
       d (assoc :data (coerce-dataset d)))))
 
 (defn lay
   "Add a sketch-level layer (applies to all views)."
-  ([sk-or-data method-key]
+  ([sk-or-data layer-type-key]
    (let [sk (ensure-sk sk-or-data)]
-     (update sk :layers conj (build-layer method-key nil))))
-  ([sk-or-data method-key opts]
+     (update sk :layers conj (build-layer layer-type-key nil))))
+  ([sk-or-data layer-type-key opts]
    (let [sk (ensure-sk sk-or-data)]
-     (update sk :layers conj (build-layer method-key opts)))))
+     (update sk :layers conj (build-layer layer-type-key opts)))))
 
 (defn- x-only?
-  "True if method-key is registered as x-only (rejects :y column)."
-  [method-key]
-  (:x-only (method/lookup method-key)))
+  "True if layer-type-key is registered as x-only (rejects :y column)."
+  [layer-type-key]
+  (:x-only (layer-type/lookup layer-type-key)))
 
-(defn- lay-method
+(defn- lay-layer-type
   "Shared implementation for all lay-* functions.
    1-arity: auto-infer columns for small datasets, otherwise sketch-level layer.
    2-arity: keyword/string -> view-specific; vector -> view-specific per column;
@@ -562,7 +562,7 @@
    3-arity: two keywords -> bivariate view-specific; keyword+map -> univariate+opts;
             vector+map -> view-specific per column with opts.
    4-arity: bivariate view-specific with opts."
-  ([method-key sk-or-data]
+  ([layer-type-key sk-or-data]
    (let [sk (ensure-sk sk-or-data)
          d (:data sk)
          col-count (when d (count (tc/column-names d)))
@@ -573,7 +573,7 @@
        (let [sk2 (view sk)]
          (add-view-layer sk2
                          (:mapping (first (:views sk2)))
-                         (build-layer method-key nil)))
+                         (build-layer layer-type-key nil)))
 
        ;; Fresh sketch, 4+ columns -> reject with a clear error (was: silent empty plot).
        ;; This only fires on the very first lay-* call on a fresh sketch; the
@@ -581,48 +581,48 @@
        ;; by the time subsequent 1-arity lay-* calls arrive.
        (and fresh? d (> col-count 3))
        (throw (ex-info (str "Cannot auto-infer columns from " col-count " columns. "
-                            "Pass explicit x and y: (sk/lay-" (name method-key)
+                            "Pass explicit x and y: (sk/lay-" (name layer-type-key)
                             " data :x :y). Available columns: "
                             (sort (tc/column-names d)))
-                       {:method method-key
+                       {:layer-type layer-type-key
                         :column-count col-count
                         :columns (sort (tc/column-names d))}))
 
        ;; Has views, has sketch-level layers, or no data: sketch-level layer
        :else
-       (lay sk method-key))))
-  ([method-key sk-or-data x-or-opts]
+       (lay sk layer-type-key))))
+  ([layer-type-key sk-or-data x-or-opts]
    (cond
      (or (keyword? x-or-opts) (string? x-or-opts))
      (add-view-layer (ensure-sk sk-or-data)
                      {:x x-or-opts}
-                     (build-layer method-key nil))
+                     (build-layer layer-type-key nil))
      ;; Sequential -> create view-specific layers (not global)
      (sequential? x-or-opts)
      (reduce (fn [sk col-or-pair]
                (if (sequential? col-or-pair)
                  (let [[x y] col-or-pair]
-                   (add-view-layer sk {:x x :y y} (build-layer method-key nil)))
-                 (add-view-layer sk {:x col-or-pair} (build-layer method-key nil))))
+                   (add-view-layer sk {:x x :y y} (build-layer layer-type-key nil)))
+                 (add-view-layer sk {:x col-or-pair} (build-layer layer-type-key nil))))
              (ensure-sk sk-or-data)
              x-or-opts)
      :else
-     (lay sk-or-data method-key x-or-opts)))
-  ([method-key sk-or-data x y-or-opts]
+     (lay sk-or-data layer-type-key x-or-opts)))
+  ([layer-type-key sk-or-data x y-or-opts]
    (cond
      (or (keyword? y-or-opts) (string? y-or-opts))
-     (do (when (x-only? method-key)
-           (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
-                           {:method method-key :x x :y y-or-opts})))
+     (do (when (x-only? layer-type-key)
+           (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
+                           {:layer-type layer-type-key :x x :y y-or-opts})))
          (add-view-layer (ensure-sk sk-or-data)
                          {:x x :y y-or-opts}
-                         (build-layer method-key nil)))
+                         (build-layer layer-type-key nil)))
      ;; Parallel vectors -> bivariate view-specific layers per (x_i, y_i) pair.
      ;; Supports (lay-point data [:x1 :x2] [:y1 :y2]) which previously
      ;; ClassCastException-d in build-layer.
      (and (sequential? x) (sequential? y-or-opts))
      (reduce (fn [sk [a b]]
-               (add-view-layer sk {:x a :y b} (build-layer method-key nil)))
+               (add-view-layer sk {:x a :y b} (build-layer layer-type-key nil)))
              (ensure-sk sk-or-data)
              (map vector x y-or-opts))
      ;; Sequential + opts -> view-specific layers with opts
@@ -630,21 +630,21 @@
      (reduce (fn [sk col-or-pair]
                (if (sequential? col-or-pair)
                  (let [[a b] col-or-pair]
-                   (add-view-layer sk {:x a :y b} (build-layer method-key y-or-opts)))
-                 (add-view-layer sk {:x col-or-pair} (build-layer method-key y-or-opts))))
+                   (add-view-layer sk {:x a :y b} (build-layer layer-type-key y-or-opts)))
+                 (add-view-layer sk {:x col-or-pair} (build-layer layer-type-key y-or-opts))))
              (ensure-sk sk-or-data)
              x)
      :else
      (add-view-layer (ensure-sk sk-or-data)
                      {:x x}
-                     (build-layer method-key y-or-opts))))
-  ([method-key sk-or-data x y opts]
-   (when (x-only? method-key)
-     (throw (ex-info (str "lay-" (name method-key) " uses only the x column; do not pass a y column")
-                     {:method method-key :x x :y y})))
+                     (build-layer layer-type-key y-or-opts))))
+  ([layer-type-key sk-or-data x y opts]
+   (when (x-only? layer-type-key)
+     (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
+                     {:layer-type layer-type-key :x x :y y})))
    (add-view-layer (ensure-sk sk-or-data)
                    {:x x :y y}
-                   (build-layer method-key opts))))
+                   (build-layer layer-type-key opts))))
 
 (defn lay-point
   "Add :point layer (scatter) to a sketch.
@@ -654,10 +654,10 @@
    (lay-point sk {:color :species})        -- sketch-level with opts
    (lay-point data :x :y)                 -- view-specific
    (lay-point data :x :y {:color :c})     -- view-specific with opts"
-  ([sk-or-data] (lay-method :point sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :point sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :point sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :point sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :point sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :point sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :point sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :point sk-or-data x y opts)))
 
 (defn- last-opts
   "Return the trailing opts map from a lay-* arg list (or nil)."
@@ -675,38 +675,38 @@
          " to wrap it in an opts map?")))
 
 (def ^:private rule-position-key
-  "Per-method required position key for sk/lay-rule-*."
+  "Per-layer-type required position key for sk/lay-rule-*."
   {:rule-h :y-intercept :rule-v :x-intercept})
 
 (def ^:private band-position-keys
-  "Per-method required [lo-key hi-key] for sk/lay-band-*."
+  "Per-layer-type required [lo-key hi-key] for sk/lay-band-*."
   {:band-h [:y-min :y-max] :band-v [:x-min :x-max]})
 
-(defn- assert-rule-opts! [method-key args]
+(defn- assert-rule-opts! [layer-type-key args]
   (let [opts (last-opts args)
-        k (rule-position-key method-key)
+        k (rule-position-key layer-type-key)
         v (get opts k)]
     (when-not (and (number? v) (Double/isFinite (double v)))
-      (throw (ex-info (str "lay-" (name method-key) " requires a finite numeric " k " in its opts map. "
-                           "Example: (sk/lay-" (name method-key) " sk {" k " 3.0})."
+      (throw (ex-info (str "lay-" (name layer-type-key) " requires a finite numeric " k " in its opts map. "
+                           "Example: (sk/lay-" (name layer-type-key) " sk {" k " 3.0})."
                            (positional-hint args))
-                      {:method method-key :opts opts})))))
+                      {:layer-type layer-type-key :opts opts})))))
 
-(defn- assert-band-opts! [method-key args]
+(defn- assert-band-opts! [layer-type-key args]
   (let [opts (last-opts args)
-        [lo-k hi-k] (band-position-keys method-key)
+        [lo-k hi-k] (band-position-keys layer-type-key)
         lo (get opts lo-k) hi (get opts hi-k)]
     (when-not (and (number? lo) (number? hi)
                    (Double/isFinite (double lo))
                    (Double/isFinite (double hi)))
-      (throw (ex-info (str "lay-" (name method-key) " requires finite numeric " lo-k " and " hi-k " in its opts map. "
-                           "Example: (sk/lay-" (name method-key) " sk {" lo-k " 2.0 " hi-k " 4.0})."
+      (throw (ex-info (str "lay-" (name layer-type-key) " requires finite numeric " lo-k " and " hi-k " in its opts map. "
+                           "Example: (sk/lay-" (name layer-type-key) " sk {" lo-k " 2.0 " hi-k " 4.0})."
                            (positional-hint args))
-                      {:method method-key :opts opts})))
+                      {:layer-type layer-type-key :opts opts})))
     (when-not (<= (double lo) (double hi))
-      (throw (ex-info (str "lay-" (name method-key) " requires " lo-k " <= " hi-k ", got " lo-k " " lo " " hi-k " " hi ". "
+      (throw (ex-info (str "lay-" (name layer-type-key) " requires " lo-k " <= " hi-k ", got " lo-k " " lo " " hi-k " " hi ". "
                            "Swap the arguments or check the source of the values.")
-                      {:method method-key :opts opts})))))
+                      {:layer-type layer-type-key :opts opts})))))
 
 (defn lay-rule-h
   "Add :rule-h layer -- horizontal reference line at y = y-intercept.
@@ -717,9 +717,9 @@
    (lay-rule-h sk {:y-intercept 3})           -- sketch-level, all panels
    (lay-rule-h sk :x :y {:y-intercept 3})     -- view-scope (columns pick or create the view)
    (lay-rule-h sk {:y-intercept 3 :color \"red\" :alpha 0.5})"
-  ([sk-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-method :rule-h sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-method :rule-h sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (assert-rule-opts! :rule-h [opts]) (lay-method :rule-h sk-or-data x y opts)))
+  ([sk-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-layer-type :rule-h sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-layer-type :rule-h sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (assert-rule-opts! :rule-h [opts]) (lay-layer-type :rule-h sk-or-data x y opts)))
 
 (defn lay-rule-v
   "Add :rule-v layer -- vertical reference line at x = x-intercept.
@@ -730,9 +730,9 @@
    (lay-rule-v sk {:x-intercept 5})           -- sketch-level, all panels
    (lay-rule-v sk :x :y {:x-intercept 5})     -- view-scope (columns pick or create the view)
    (lay-rule-v sk {:x-intercept 5 :color \"red\" :alpha 0.5})"
-  ([sk-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-method :rule-v sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-method :rule-v sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (assert-rule-opts! :rule-v [opts]) (lay-method :rule-v sk-or-data x y opts)))
+  ([sk-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-layer-type :rule-v sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-layer-type :rule-v sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (assert-rule-opts! :rule-v [opts]) (lay-layer-type :rule-v sk-or-data x y opts)))
 
 (defn lay-band-h
   "Add :band-h layer -- horizontal shaded band between y = y-min and y = y-max.
@@ -744,9 +744,9 @@
    (lay-band-h sk {:y-min 2 :y-max 4})            -- sketch-level, all panels
    (lay-band-h sk :x :y {:y-min 2 :y-max 4})      -- view-scope (columns pick or create the view)
    (lay-band-h sk {:y-min 2 :y-max 4 :color \"blue\" :alpha 0.3})"
-  ([sk-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-method :band-h sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-method :band-h sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (assert-band-opts! :band-h [opts]) (lay-method :band-h sk-or-data x y opts)))
+  ([sk-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-layer-type :band-h sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-layer-type :band-h sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (assert-band-opts! :band-h [opts]) (lay-layer-type :band-h sk-or-data x y opts)))
 
 (defn lay-band-v
   "Add :band-v layer -- vertical shaded band between x = x-min and x = x-max.
@@ -758,213 +758,213 @@
    (lay-band-v sk {:x-min 4 :x-max 6})            -- sketch-level, all panels
    (lay-band-v sk :x :y {:x-min 4 :x-max 6})      -- view-scope (columns pick or create the view)
    (lay-band-v sk {:x-min 4 :x-max 6 :color \"blue\" :alpha 0.3})"
-  ([sk-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-method :band-v sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-method :band-v sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (assert-band-opts! :band-v [opts]) (lay-method :band-v sk-or-data x y opts)))
+  ([sk-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-layer-type :band-v sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-layer-type :band-v sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (assert-band-opts! :band-v [opts]) (lay-layer-type :band-v sk-or-data x y opts)))
 
 (defn lay-line
-  "Add :line method -- connected line through data points.
+  "Add :line layer type --connected line through data points.
    Requires x (numerical) and y (numerical).
    Accepts :color, :alpha, :size (stroke width), :nudge-x, :nudge-y."
-  ([sk-or-data] (lay-method :line sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :line sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :line sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :line sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :line sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :line sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :line sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :line sk-or-data x y opts)))
 
 (defn lay-step
-  "Add :step method -- staircase line (horizontal then vertical).
+  "Add :step layer type --staircase line (horizontal then vertical).
    Requires x and y (both numerical)."
-  ([sk-or-data] (lay-method :step sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :step sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :step sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :step sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :step sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :step sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :step sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :step sk-or-data x y opts)))
 
 (defn lay-area
-  "Add :area method -- filled region between y and the baseline.
+  "Add :area layer type --filled region between y and the baseline.
    Requires x and y (both numerical). Accepts :color, :alpha."
-  ([sk-or-data] (lay-method :area sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :area sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :area sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :area sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :area sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :area sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :area sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :area sk-or-data x y opts)))
 
 (defn lay-stacked-area
-  "Add :stacked-area method -- areas stacked on top of each other.
+  "Add :stacked-area layer type --areas stacked on top of each other.
    Requires x, y, and :color (for grouping). Groups stack vertically."
-  ([sk-or-data] (lay-method :stacked-area sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :stacked-area sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :stacked-area sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :stacked-area sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :stacked-area sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :stacked-area sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :stacked-area sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :stacked-area sk-or-data x y opts)))
 
 (defn lay-histogram
-  "Add :histogram method -- bin numerical values into bars.
+  "Add :histogram layer type --bin numerical values into bars.
    X-only: pass one column. Accepts :bins (count), :binwidth, :color,
    :normalize (:density for density-normalized heights)."
-  ([sk-or-data] (lay-method :histogram sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :histogram sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :histogram sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :histogram sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :histogram sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :histogram sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :histogram sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :histogram sk-or-data x y opts)))
 
 (defn lay-bar
-  "Add :bar method -- count occurrences of each category.
+  "Add :bar layer type --count occurrences of each category.
    X-only: pass one categorical column. Accepts :color for grouped bars."
-  ([sk-or-data] (lay-method :bar sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :bar sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :bar sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :bar sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :bar sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :bar sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :bar sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :bar sk-or-data x y opts)))
 
 (defn lay-stacked-bar
-  "Add :stacked-bar method -- bars stacked by color group.
+  "Add :stacked-bar layer type --bars stacked by color group.
    X-only with :color. Heights represent counts per category per group."
-  ([sk-or-data] (lay-method :stacked-bar sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :stacked-bar sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :stacked-bar sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :stacked-bar sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :stacked-bar sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :stacked-bar sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :stacked-bar sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :stacked-bar sk-or-data x y opts)))
 
 (defn lay-stacked-bar-fill
-  "Add :stacked-bar-fill method -- 100% stacked bars (proportional).
+  "Add :stacked-bar-fill layer type --100% stacked bars (proportional).
    Same as stacked-bar but normalized so each bar totals 100%."
-  ([sk-or-data] (lay-method :stacked-bar-fill sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :stacked-bar-fill sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :stacked-bar-fill sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :stacked-bar-fill sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :stacked-bar-fill sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :stacked-bar-fill sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :stacked-bar-fill sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :stacked-bar-fill sk-or-data x y opts)))
 
 (defn lay-value-bar
-  "Add :value-bar method -- bars with pre-computed heights.
+  "Add :value-bar layer type --bars with pre-computed heights.
    Requires categorical x and numerical y. Unlike :bar (which counts),
    :value-bar uses the y value directly as the bar height."
-  ([sk-or-data] (lay-method :value-bar sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :value-bar sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :value-bar sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :value-bar sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :value-bar sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :value-bar sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :value-bar sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :value-bar sk-or-data x y opts)))
 
 (defn lay-lm
-  "Add :lm method -- linear regression line.
+  "Add :lm layer type --linear regression line.
    Requires x and y (both numerical). Accepts {:se true} for a
    95% confidence band around the fit."
-  ([sk-or-data] (lay-method :lm sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :lm sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :lm sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :lm sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :lm sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :lm sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :lm sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :lm sk-or-data x y opts)))
 
 (defn lay-loess
-  "Add :loess method -- local regression (LOESS) smooth curve.
+  "Add :loess layer type --local regression (LOESS) smooth curve.
    Requires x and y (both numerical). Accepts {:se true} for a
    confidence band, {:bandwidth 0.5} for smoothing control."
-  ([sk-or-data] (lay-method :loess sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :loess sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :loess sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :loess sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :loess sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :loess sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :loess sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :loess sk-or-data x y opts)))
 
 (defn lay-density
-  "Add :density method -- kernel density estimate curve.
+  "Add :density layer type --kernel density estimate curve.
    X-only: pass one numerical column. Accepts :color, :bandwidth."
-  ([sk-or-data] (lay-method :density sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :density sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :density sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :density sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :density sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :density sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :density sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :density sk-or-data x y opts)))
 
 (defn lay-tile
-  "Add :tile method -- colored grid cells (heatmap).
+  "Add :tile layer type --colored grid cells (heatmap).
    With :fill option: pre-computed tile colors from a column.
    Without :fill: auto-binned 2D histogram (stat :bin2d)."
-  ([sk-or-data] (lay-method :tile sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :tile sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :tile sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :tile sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :tile sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :tile sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :tile sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :tile sk-or-data x y opts)))
 
 (defn lay-density2d
-  "Add :density2d method -- 2D kernel density heatmap.
+  "Add :density2d layer type --2D kernel density heatmap.
    Requires x and y (both numerical). Produces a smoothed density
    surface as colored tiles with a continuous gradient legend."
-  ([sk-or-data] (lay-method :density2d sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :density2d sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :density2d sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :density2d sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :density2d sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :density2d sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :density2d sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :density2d sk-or-data x y opts)))
 
 (defn lay-contour
-  "Add :contour method -- iso-density contour lines from 2D KDE.
+  "Add :contour layer type --iso-density contour lines from 2D KDE.
    Requires x and y (both numerical). Accepts {:levels 10} for
    the number of contour levels."
-  ([sk-or-data] (lay-method :contour sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :contour sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :contour sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :contour sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :contour sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :contour sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :contour sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :contour sk-or-data x y opts)))
 
 (defn lay-boxplot
-  "Add :boxplot method -- box-and-whisker plot.
+  "Add :boxplot layer type --box-and-whisker plot.
    Requires categorical x and numerical y. Shows median, quartiles,
    whiskers, and outliers. Accepts :color for grouped boxplots."
-  ([sk-or-data] (lay-method :boxplot sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :boxplot sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :boxplot sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :boxplot sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :boxplot sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :boxplot sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :boxplot sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :boxplot sk-or-data x y opts)))
 
 (defn lay-violin
-  "Add :violin method -- mirrored density estimate by category.
+  "Add :violin layer type --mirrored density estimate by category.
    Requires categorical x and numerical y. Accepts :color, :bandwidth."
-  ([sk-or-data] (lay-method :violin sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :violin sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :violin sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :violin sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :violin sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :violin sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :violin sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :violin sk-or-data x y opts)))
 
 (defn lay-ridgeline
-  "Add :ridgeline method -- stacked density curves by category.
+  "Add :ridgeline layer type --stacked density curves by category.
    Requires categorical x and numerical y. Categories stack vertically
    with density curves rendered horizontally."
-  ([sk-or-data] (lay-method :ridgeline sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :ridgeline sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :ridgeline sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :ridgeline sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :ridgeline sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :ridgeline sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :ridgeline sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :ridgeline sk-or-data x y opts)))
 
 (defn lay-summary
-  "Add :summary method -- mean ± standard error per category.
+  "Add :summary layer type --mean ± standard error per category.
    Requires categorical x and numerical y. Shows a point at the mean
    with error bars for ± 1 SE. Accepts :color for grouped summaries."
-  ([sk-or-data] (lay-method :summary sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :summary sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :summary sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :summary sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :summary sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :summary sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :summary sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :summary sk-or-data x y opts)))
 
 (defn lay-errorbar
-  "Add :errorbar method -- vertical error bars from pre-computed bounds.
+  "Add :errorbar layer type --vertical error bars from pre-computed bounds.
    Requires x, y, and {:ymin :col :ymax :col} for lower/upper bounds."
-  ([sk-or-data] (lay-method :errorbar sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :errorbar sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :errorbar sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :errorbar sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :errorbar sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :errorbar sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :errorbar sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :errorbar sk-or-data x y opts)))
 
 (defn lay-lollipop
-  "Add :lollipop method -- dot on a stem from the baseline.
+  "Add :lollipop layer type --dot on a stem from the baseline.
    Requires categorical x and numerical y. Like value-bar but with
    a circle+line instead of a filled rectangle."
-  ([sk-or-data] (lay-method :lollipop sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :lollipop sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :lollipop sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :lollipop sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :lollipop sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :lollipop sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :lollipop sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :lollipop sk-or-data x y opts)))
 
 (defn lay-text
-  "Add :text method -- text labels at data coordinates.
+  "Add :text layer type --text labels at data coordinates.
    Requires x, y, and {:text :column} for label content."
-  ([sk-or-data] (lay-method :text sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :text sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :text sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :text sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :text sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :text sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :text sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :text sk-or-data x y opts)))
 
 (defn lay-label
-  "Add :label method -- text labels with background box at data coordinates.
+  "Add :label layer type --text labels with background box at data coordinates.
    Like :text but with a rectangular background for readability."
-  ([sk-or-data] (lay-method :label sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :label sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :label sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :label sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :label sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :label sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :label sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :label sk-or-data x y opts)))
 
 (defn lay-rug
-  "Add :rug method -- short tick marks along the axis showing individual values.
+  "Add :rug layer type --short tick marks along the axis showing individual values.
    X-only: pass one column. Often layered with density or scatter."
-  ([sk-or-data] (lay-method :rug sk-or-data))
-  ([sk-or-data x-or-opts] (lay-method :rug sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-method :rug sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-method :rug sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :rug sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :rug sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :rug sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :rug sk-or-data x y opts)))
 
 (defn facet
   "Facet a sketch by a column.
@@ -1049,7 +1049,7 @@
 (defn draft
   "Flatten a sketch into a draft -- a vector of flat maps, one per
    view-layer combination, with all scope merged: data, mappings,
-   and method fully determined.
+   and layer type fully determined.
    (draft sk)"
   [sk]
   (let [sk (ensure-sk sk)]

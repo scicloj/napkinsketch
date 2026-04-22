@@ -148,7 +148,7 @@ my-sketch
 ;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed aesthetic
 ;; for all points.
 
-(merge (sk/method-lookup :point) {:color :species :size :petal-length :alpha 0.7})
+(merge (sk/layer-type-lookup :point) {:color :species :size :petal-length :alpha 0.7})
 
 (kind/test-last [(fn [m] (and (= :species (:color m))
                               (= :petal-length (:size m))
@@ -192,7 +192,7 @@ my-sketch
 ;;
 ;; On categorical x-axes, jitter is applied along the band axis only.
 
-(merge (sk/method-lookup :point) {:jitter true})
+(merge (sk/layer-type-lookup :point) {:jitter true})
 
 (kind/test-last [(fn [m] (true? (:jitter m)))])
 
@@ -349,7 +349,7 @@ my-sketch
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
     (sk/lay-rule-h {:y-intercept 3.0})
-    :layers first :method)
+    :layers first :layer-type)
 
 (kind/test-last [(fn [m] (= :rule-h m))])
 
@@ -488,7 +488,7 @@ my-sketch
 ;; Four keys are universal -- accepted by every layer -- and each method
 ;; may accept additional keys. The [Methods](./napkinsketch_book.methods.html) chapter lists
 ;; which options each method accepts. See also `sk/layer-option-docs`
-;; for descriptions, or inspect a specific method with `sk/method-lookup`.
+;; for descriptions, or inspect a specific method with `sk/layer-type-lookup`.
 
 (count sk/layer-option-docs)
 
@@ -512,7 +512,7 @@ my-sketch
 ;; | Global layer | Layer in `:layers` applied to all views | `sk/lay-*` without columns |
 ;; | View-local layer | Layer in `view[:layers]` applied to one view | `sk/lay-*` with columns |
 ;; | Draft | Vector of flat maps from merging sketch, view, and layer mappings | `sk/draft`, automatic during `sk/plan` |
-;; | Method | Mark + stat + position bundle | `sk/method-lookup`, `sk/lay-*` |
+;; | Method | Mark + stat + position bundle | `sk/layer-type-lookup`, `sk/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in method map |
 ;; | Stat | Data transform: identity, bin, count, lm, kde, ... | Key in method map |
 ;; | Position | How groups share space: dodge, stack, fill, identity | Key in method map |

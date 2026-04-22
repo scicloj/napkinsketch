@@ -23,7 +23,7 @@
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
    ;; Method registry -- lookup mark/stat/position by keyword
-   [scicloj.napkinsketch.method :as method]))
+   [scicloj.napkinsketch.layer-type :as layer-type]))
 
 ;; ## A Minimal Scatter Plot
 ;;

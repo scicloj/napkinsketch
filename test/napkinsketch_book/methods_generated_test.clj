@@ -3,7 +3,7 @@
  (:require
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
-  [scicloj.napkinsketch.method :as method]
+  [scicloj.napkinsketch.layer-type :as layer-type]
   [clojure.string :as str]
   [clojure.test :refer [deftest is]]))
 
@@ -15,7 +15,7 @@
   "Sorted comma-separated method names whose `field` equals `value`."
   [field value]
   (->>
-   (method/registered)
+   (layer-type/registered)
    (filter (fn [[_ m]] (= value (or (get m field) :identity))))
    (map (comp name key))
    sort
@@ -34,10 +34,10 @@
     (fn
      [acc k]
      (let
-      [v (get (method/lookup k) field)]
+      [v (get (layer-type/lookup k) field)]
       (if (@seen v) acc (do (vswap! seen conj v) (conj acc v)))))
     []
-    method/method-order))))
+    layer-type/layer-type-order))))
 
 
 (def
@@ -46,7 +46,7 @@
   {:column-names ["Method" "Mark" "Stat" "Position"],
    :row-maps
    (for
-    [k method/method-order :let [m (method/lookup k)]]
+    [k layer-type/layer-type-order :let [m (layer-type/lookup k)]]
     {"Method" (kind/code (pr-str k)),
      "Mark" (kind/code (pr-str (:mark m))),
      "Stat" (kind/code (pr-str (:stat m))),
@@ -107,9 +107,9 @@
   {:column-names ["Option" "Description"],
    :row-maps
    (for
-    [k method/universal-layer-options]
+    [k layer-type/universal-layer-options]
     {"Option" (kind/code (pr-str k)),
-     "Description" (get method/layer-option-docs k)})}))
+     "Description" (get layer-type/layer-option-docs k)})}))
 
 
 (deftest t19_l149 (is ((fn [t] (pos? (count (:row-maps t)))) v18_l142)))
@@ -122,9 +122,9 @@
    :row-maps
    (for
     [k
-     method/method-order
+     layer-type/layer-type-order
      :let
-     [m (method/lookup k) accepts (:accepts m)]
+     [m (layer-type/lookup k) accepts (:accepts m)]
      :when
      (seq accepts)]
     {"Method" (kind/code (pr-str k)), "Additional options" accepts})}))
@@ -139,7 +139,7 @@
   {:column-names ["Option" "Description"],
    :row-maps
    (for
-    [[k desc] (sort-by key method/layer-option-docs)]
+    [[k desc] (sort-by key layer-type/layer-option-docs)]
     {"Option" (kind/code (pr-str k)), "Description" desc})}))
 
 

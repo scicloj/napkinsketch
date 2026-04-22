@@ -6,7 +6,7 @@
   [scicloj.napkinsketch.impl.stat :as stat]
   [scicloj.napkinsketch.impl.extract :as extract]
   [scicloj.napkinsketch.render.mark :as mark]
-  [scicloj.napkinsketch.method :as method]
+  [scicloj.napkinsketch.layer-type :as layer-type]
   [membrane.ui :as ui]
   [tablecloth.api :as tc]
   [clojure.test :refer [deftest is]]))
@@ -162,7 +162,7 @@
 
 (def
  v14_l145
- (method/register!
+ (layer-type/register!
   :waterfall
   {:mark :waterfall,
    :stat :waterfall,
@@ -174,7 +174,7 @@
  (->
   pnl-data
   (sk/view :category :amount)
-  (sk/lay (method/lookup :waterfall))
+  (sk/lay (layer-type/lookup :waterfall))
   (sk/options
    {:title "Profit & Loss Waterfall", :width 500, :height 350})
   sk/plot))
@@ -195,14 +195,14 @@
  v19_l176
  (defn
   lay-waterfall
-  ([sk] (sk/lay sk (method/lookup :waterfall)))
+  ([sk] (sk/lay sk (layer-type/lookup :waterfall)))
   ([data x y]
-   (-> data (sk/view x y) (sk/lay (method/lookup :waterfall))))
+   (-> data (sk/view x y) (sk/lay (layer-type/lookup :waterfall))))
   ([data x y opts]
    (->
     data
     (sk/view x y)
-    (sk/lay (merge (method/lookup :waterfall) opts))))))
+    (sk/lay (merge (layer-type/lookup :waterfall) opts))))))
 
 
 (def
@@ -278,12 +278,12 @@
 (def
  v36_l219
  (swap!
-  @(resolve 'scicloj.napkinsketch.method/registry*)
+  @(resolve 'scicloj.napkinsketch.layer-type/registry*)
   dissoc
   :waterfall))
 
 
-(def v38_l223 (nil? (method/lookup :waterfall)))
+(def v38_l223 (nil? (layer-type/lookup :waterfall)))
 
 
 (deftest t39_l225 (is ((fn [v] (true? v)) v38_l223)))

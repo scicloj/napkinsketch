@@ -21,7 +21,7 @@
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
    ;; Method registry -- for inspecting method data
-   [scicloj.napkinsketch.method :as method]
+   [scicloj.napkinsketch.layer-type :as layer-type]
    ;; String utilities
    [clojure.string :as str]))
 
@@ -38,7 +38,7 @@
 (defn used-by
   "Sorted comma-separated method names whose `field` equals `value`."
   [field value]
-  (->> (method/registered)
+  (->> (layer-type/registered)
        (filter (fn [[_ m]] (= value (or (get m field) :identity))))
        (map (comp name key))
        sort
@@ -49,10 +49,10 @@
   [field]
   (let [seen (volatile! #{})]
     (reduce (fn [acc k]
-              (let [v (get (method/lookup k) field)]
+              (let [v (get (layer-type/lookup k) field)]
                 (if (@seen v) acc
                     (do (vswap! seen conj v) (conj acc v)))))
-            [] method/method-order)))
+            [] layer-type/layer-type-order)))
 
 ;; ## Methods 
 ;;
@@ -61,8 +61,8 @@
 (kind/table
  {:column-names ["Method" "Mark" "Stat" "Position"]
   :row-maps
-  (for [k method/method-order
-        :let [m (method/lookup k)]]
+  (for [k layer-type/layer-type-order
+        :let [m (layer-type/lookup k)]]
     {"Method" (kind/code (pr-str k))
      "Mark" (kind/code (pr-str (:mark m)))
      "Stat" (kind/code (pr-str (:stat m)))
@@ -142,9 +142,9 @@
 (kind/table
  {:column-names ["Option" "Description"]
   :row-maps
-  (for [k method/universal-layer-options]
+  (for [k layer-type/universal-layer-options]
     {"Option" (kind/code (pr-str k))
-     "Description" (get method/layer-option-docs k)})})
+     "Description" (get layer-type/layer-option-docs k)})})
 
 (kind/test-last
  [(fn [t] (pos? (count (:row-maps t))))])
@@ -157,8 +157,8 @@
 (kind/table
  {:column-names ["Method" "Additional options"]
   :row-maps
-  (for [k method/method-order
-        :let [m (method/lookup k)
+  (for [k layer-type/layer-type-order
+        :let [m (layer-type/lookup k)
               accepts (:accepts m)]
         :when (seq accepts)]
     {"Method" (kind/code (pr-str k))
@@ -172,7 +172,7 @@
 (kind/table
  {:column-names ["Option" "Description"]
   :row-maps
-  (for [[k desc] (sort-by key method/layer-option-docs)]
+  (for [[k desc] (sort-by key layer-type/layer-option-docs)]
     {"Option" (kind/code (pr-str k))
      "Description" desc})})
 

@@ -346,11 +346,11 @@
 (def ^:private x-only-stats
   "Stats that consume only an x column and synthesize y themselves
    (counts, bins, densities). Used to permit x-only views for marks
-   driven by these stats even when the method registry's :x-only flag
+   driven by these stats even when the layer-type registry's :x-only flag
    is missing (e.g., tests that construct views directly)."
   #{:bin :count :kde})
 
-(defn infer-method
+(defn infer-layer-type
   "Choose mark and stat from column types when the user hasn't specified them.
    Rules:
      - x only, categorical       → :rect    + :count    (bar chart)
@@ -387,9 +387,9 @@
     {:mark mark :stat stat}))
 
 (defn resolve-draft-layer
-  "Resolve a single draft layer: infer column types, aesthetics, grouping, and method.
+  "Resolve a single draft layer: infer column types, aesthetics, grouping, and layer type.
    Delegates to `infer-column-types`, `resolve-aesthetics`, `infer-grouping`,
-   and `infer-method` — each named for the inference step it performs.
+   and `infer-layer-type` — each named for the inference step it performs.
    Resolves column names to match the dataset's actual names (keyword/string).
    Also normalizes user-facing shorthand options:
      - :bandwidth → :cfg {:<stat>-bandwidth ...} (routed per stat)
@@ -420,7 +420,7 @@
           {:keys [color color-type fixed-color
                   size fixed-size alpha fixed-alpha text-col]} (resolve-aesthetics resolved-ds v)
           group (infer-grouping v color-type color)
-          {:keys [mark stat]} (infer-method v x-type y-type x-temporal? y-temporal?)
+          {:keys [mark stat]} (infer-layer-type v x-type y-type x-temporal? y-temporal?)
           ;; Validate that category-grouping marks have a categorical axis.
           ;; :boxplot and :violin accept a categorical axis on either x or y
           ;; (boxplot renders horizontally when y is categorical). The others
@@ -430,11 +430,11 @@
           x-only-cat-marks {:lollipop :identity :summary :summary
                             :ridgeline :violin :pointrange :summary}
           both-numerical?  (and (= x-type :numerical) (= y-type :numerical))
-          ;; Prefer the user-facing layer-function name (:method) over the
-          ;; internal :mark for error messages. The :method key is stamped
-          ;; onto the draft layer by resolve-method-info in sketch.clj;
-          ;; fall back to :mark if it is missing (e.g. a raw method map).
-          user-fn-name (or (:method v) mark)
+          ;; Prefer the user-facing layer-function name (:layer-type) over the
+          ;; internal :mark for error messages. The :layer-type key is stamped
+          ;; onto the draft layer by resolve-layer-type-info in sketch.clj;
+          ;; fall back to :mark if it is missing (e.g. a raw layer-type map).
+          user-fn-name (or (:layer-type v) mark)
           _ (when (and (contains? both-axes-marks mark)
                        (= stat (both-axes-marks mark))
                        both-numerical?)
@@ -452,15 +452,15 @@
                                    "(e.g., species names) for the x-axis, or pass "
                                    "{:x-type :categorical} to treat a numeric column as categorical.")
                               {:mark mark :x (:x v) :x-type x-type})))
-          ;; Reject x-only views (no :y) for methods that require y.
+          ;; Reject x-only views (no :y) for layer types that require y.
           ;; Otherwise prepare-points silently fabricates y=0 for every
           ;; point and renders a flat line at the bottom of a [0, 1] domain.
           ;; Three sources of x-only permission:
-          ;;   1. :x-only true from the method registry (e.g., :histogram, :rug)
+          ;;   1. :x-only true from the layer-type registry (e.g., :histogram, :rug)
           ;;   2. stat is in `x-only-stats` — :bin/:count/:kde synthesize y
           ;;      from x alone (covers the :rect mark + bar stat too)
           ;;   3. mark is :rug, which is structurally x-only even when
-          ;;      constructed without the method registry
+          ;;      constructed without the layer-type registry
           _ (when (and (nil? y-resolved)
                        (not (:x-only v))
                        (not (contains? x-only-stats stat))

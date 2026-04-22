@@ -113,7 +113,7 @@ graph LR
 ;; The view has one layer -- the point layer -- attached directly
 ;; because `lay-point` was called with columns.
 
-(get-in (:views trace-sk) [0 :layers 0 :method])
+(get-in (:views trace-sk) [0 :layers 0 :layer-type])
 
 (kind/test-last [(fn [m] (= :point m))])
 
@@ -259,7 +259,7 @@ graph LR
 
 (kind/test-last [(fn [n] (= 1 n))])
 
-(mapv :method (:layers multi-sk))
+(mapv :layer-type (:layers multi-sk))
 
 (kind/test-last [(fn [v] (and (= :point (first v))
                               (= :lm (second v))))])

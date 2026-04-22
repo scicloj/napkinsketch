@@ -24,7 +24,7 @@
    [scicloj.napkinsketch.impl.extract :as extract]
    [scicloj.napkinsketch.render.mark :as mark]
    ;; Method registry -- to register our new chart type
-   [scicloj.napkinsketch.method :as method]
+   [scicloj.napkinsketch.layer-type :as layer-type]
    ;; Membrane -- drawing primitives
    [membrane.ui :as ui]
    ;; Tablecloth -- dataset operations
@@ -142,9 +142,9 @@
 ;;
 ;; Register the method so the pipeline recognizes `:waterfall`:
 
-(method/register! :waterfall
-                  {:mark :waterfall :stat :waterfall
-                   :doc "Waterfall -- running total with increase/decrease bars."})
+(layer-type/register! :waterfall
+                      {:mark :waterfall :stat :waterfall
+                       :doc "Waterfall -- running total with increase/decrease bars."})
 
 ;; Now we can plot it using the sketch API. Since there is
 ;; no built-in `sk/lay-waterfall`, we use `sk/lay` with
@@ -156,7 +156,7 @@
 
 (-> pnl-data
     (sk/view :category :amount)
-    (sk/lay (method/lookup :waterfall))
+    (sk/lay (layer-type/lookup :waterfall))
     (sk/options {:title "Profit & Loss Waterfall"
                  :width 500 :height 350})
     sk/plot)
@@ -174,9 +174,9 @@
 ;; function:
 
 (defn lay-waterfall
-  ([sk] (sk/lay sk (method/lookup :waterfall)))
-  ([data x y] (-> data (sk/view x y) (sk/lay (method/lookup :waterfall))))
-  ([data x y opts] (-> data (sk/view x y) (sk/lay (merge (method/lookup :waterfall) opts)))))
+  ([sk] (sk/lay sk (layer-type/lookup :waterfall)))
+  ([data x y] (-> data (sk/view x y) (sk/lay (layer-type/lookup :waterfall))))
+  ([data x y opts] (-> data (sk/view x y) (sk/lay (merge (layer-type/lookup :waterfall) opts)))))
 
 ;; Now the call is as clean as any built-in method:
 
@@ -216,11 +216,11 @@
 (remove-method extract/extract-layer [:waterfall :doc])
 (remove-method mark/layer->membrane :waterfall)
 (remove-method mark/layer->membrane [:waterfall :doc])
-(swap! @(resolve 'scicloj.napkinsketch.method/registry*) dissoc :waterfall)
+(swap! @(resolve 'scicloj.napkinsketch.layer-type/registry*) dissoc :waterfall)
 
 ;; Verify cleanup:
 
-(nil? (method/lookup :waterfall))
+(nil? (layer-type/lookup :waterfall))
 
 (kind/test-last [(fn [v] (true? v))])
 

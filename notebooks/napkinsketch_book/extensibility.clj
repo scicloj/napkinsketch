@@ -17,7 +17,7 @@
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
    ;; Method registry -- for inspecting method data
-   [scicloj.napkinsketch.method :as method]
+   [scicloj.napkinsketch.layer-type :as layer-type]
    ;; Implementation namespaces -- for extension points
    [scicloj.napkinsketch.impl.stat :as stat]
    [scicloj.napkinsketch.impl.extract :as extract]
@@ -85,22 +85,22 @@
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
 ;; The stat is part of the **method** returned by the mark
-;; map. For example, `(method/lookup :histogram)` returns a method
+;; map. For example, `(layer-type/lookup :histogram)` returns a method
 ;; with `:stat :bin`:
 
-(method/lookup :histogram)
+(layer-type/lookup :histogram)
 
 (kind/test-last [(fn [m] (= :bin (:stat m)))])
 
-;; `(method/lookup :bar)` returns a method with `:stat :count`:
+;; `(layer-type/lookup :bar)` returns a method with `:stat :count`:
 
-(method/lookup :bar)
+(layer-type/lookup :bar)
 
 (kind/test-last [(fn [m] (= :count (:stat m)))])
 
-;; `(method/lookup :point)` returns a method with `:stat :identity`:
+;; `(layer-type/lookup :point)` returns a method with `:stat :identity`:
 
-(method/lookup :point)
+(layer-type/lookup :point)
 
 (kind/test-last [(fn [m] (= :identity (:stat m)))])
 
@@ -210,18 +210,18 @@
 ;;
 ;; ```clojure
 ;; ;; Register the method
-;; (method/register! :waterfall
+;; (layer-type/register! :waterfall
 ;;   {:mark :waterfall :stat :waterfall
 ;;    :doc "Waterfall -- running total with increase/decrease bars."})
 ;;
 ;; ;; Users can then call:
-;; ;; (sk/lay data (method/lookup :waterfall))
+;; ;; (sk/lay data (layer-type/lookup :waterfall))
 ;;
 ;; ;; Or create a convenience function using lay:
 ;; (defn lay-waterfall
-;;   ([sk] (sk/lay sk (method/lookup :waterfall)))
-;;   ([data x y] (-> data (sk/view x y) (sk/lay (method/lookup :waterfall))))
-;;   ([data x y opts] (-> data (sk/view x y) (sk/lay (merge (method/lookup :waterfall) opts)))))
+;;   ([sk] (sk/lay sk (layer-type/lookup :waterfall)))
+;;   ([data x y] (-> data (sk/view x y) (sk/lay (layer-type/lookup :waterfall))))
+;;   ([data x y opts] (-> data (sk/view x y) (sk/lay (merge (layer-type/lookup :waterfall) opts)))))
 ;; ```
 ;;
 ;; Users can then call `(lay-waterfall data :category :amount)`.

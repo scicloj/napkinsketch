@@ -4,7 +4,7 @@
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
-  [scicloj.napkinsketch.method :as method]
+  [scicloj.napkinsketch.layer-type :as layer-type]
   [clojure.test :refer [deftest is]]))
 
 
@@ -193,7 +193,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__138442#] (= 50 (:n-points p1__138442#))) gs)))
+     (every? (fn* [p1__207122#] (= 50 (:n-points p1__207122#))) gs)))
    v49_l177)))
 
 
@@ -295,9 +295,9 @@
     (and
      (> (count bars) 3)
      (every?
-      (fn* [p1__138443#] (< (:lo p1__138443#) (:hi p1__138443#)))
+      (fn* [p1__207123#] (< (:lo p1__207123#) (:hi p1__207123#)))
       bars)
-     (every? (fn* [p1__138444#] (pos? (:count p1__138444#))) bars)))
+     (every? (fn* [p1__207124#] (pos? (:count p1__207124#))) bars)))
    v74_l248)))
 
 
@@ -486,7 +486,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__138445#] (Math/sin (* p1__138445# 0.3)))
+    (fn* [p1__207125#] (Math/sin (* p1__207125# 0.3)))
     (range 30))}))
 
 

@@ -74,7 +74,7 @@
 (def
  v19_l151
  (merge
-  (sk/method-lookup :point)
+  (sk/layer-type-lookup :point)
   {:color :species, :size :petal-length, :alpha 0.7}))
 
 
@@ -115,7 +115,7 @@
 (deftest t26_l184 (is ((fn [xs] (= [1.5 2.5 3.5] xs)) v25_l179)))
 
 
-(def v28_l195 (merge (sk/method-lookup :point) {:jitter true}))
+(def v28_l195 (merge (sk/layer-type-lookup :point) {:jitter true}))
 
 
 (deftest t29_l197 (is ((fn [m] (true? (:jitter m))) v28_l195)))
@@ -209,7 +209,7 @@
   (sk/lay-rule-h {:y-intercept 3.0})
   :layers
   first
-  :method))
+  :layer-type))
 
 
 (deftest t54_l354 (is ((fn [m] (= :rule-h m)) v53_l349)))

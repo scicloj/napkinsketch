@@ -12,7 +12,7 @@
             [scicloj.napkinsketch.impl.resolve :as resolve]
             [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.impl.plan :as plan]
-            [scicloj.napkinsketch.method :as method]
+            [scicloj.napkinsketch.layer-type :as layer-type]
             [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ============================================================
@@ -372,7 +372,7 @@
 
 (deftest mark-constructors-test
   (testing "registry entries have the correct :mark key"
-    (are [k mk] (= mk (:mark (method/lookup k)))
+    (are [k mk] (= mk (:mark (layer-type/lookup k)))
       :point :point
       :line :line
       :step :step
@@ -1627,12 +1627,12 @@
     (testing "sk/plot on raw data does not throw"
       (is (some? (-> data sk/plot))))))
 
-(deftest unknown-method-test
+(deftest unknown-layer-type-test
   ;; persona-16 H3. Closes Skept-R4 F3.
   (let [data {:x [1 2 3] :y [10 20 30]}]
-    (testing "unknown method keyword throws with registered list"
+    (testing "unknown layer type keyword throws with registered list"
       (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                            #"Unknown method: :stackedbar.*Registered methods"
+                            #"Unknown layer type: :stackedbar.*Registered layer types"
                             (-> data (sk/view :x :y) (sk/lay :stackedbar) sk/plan))))))
 
 (deftest scale-type-validation-test

@@ -83,7 +83,7 @@
                    (and (= 0 (count (:layers m)))
                         (= 1 (count (:views m)))
                         (= 1 (count (:layers (first (:views m)))))
-                        (= :point (:method (first (:layers (first (:views m))))))))])
+                        (= :point (:layer-type (first (:layers (first (:views m))))))))])
 
 ;; The layer lives inside the view. Sketch-level `:layers` is empty.
 
@@ -119,8 +119,8 @@
 
 (kind/test-last [(fn [m]
                    (and (= 2 (count (:layers m)))
-                        (= :point (:method (first (:layers m))))
-                        (= :lm (:method (second (:layers m))))
+                        (= :point (:layer-type (first (:layers m))))
+                        (= :lm (:layer-type (second (:layers m))))
                         (nil? (:layers (first (:views m))))))])
 
 ;; Two sketch-level layers (point and lm). The view has no own
@@ -153,9 +153,9 @@
 
 (kind/test-last [(fn [m]
                    (and (= 1 (count (:layers m)))
-                        (= :lm (:method (first (:layers m))))
+                        (= :lm (:layer-type (first (:layers m))))
                         (= 1 (count (:layers (first (:views m)))))
-                        (= :point (:method (first (:layers (first (:views m))))))))])
+                        (= :point (:layer-type (first (:layers (first (:views m))))))))])
 
 ;; Point is view-level (has columns); lm is sketch-level (no
 ;; columns). Colored scatter plus one overall regression line --
@@ -187,7 +187,7 @@
 
 (kind/test-last [(fn [m]
                    (and (= 1 (count (:layers m)))
-                        (= :lm (:method (first (:layers m))))
+                        (= :lm (:layer-type (first (:layers m))))
                         (= 2 (count (:views m)))
                         (= 1 (count (:layers (first (:views m)))))
                         (= 1 (count (:layers (second (:views m)))))))])
@@ -260,9 +260,9 @@
                    (and (= 2 (count (:views m)))
                         (= 0 (count (:layers m)))
                         (= 1 (count (:layers (first (:views m)))))
-                        (= :point (:method (first (:layers (first (:views m))))))
+                        (= :point (:layer-type (first (:layers (first (:views m))))))
                         (= 1 (count (:layers (second (:views m)))))
-                        (= :lm (:method (first (:layers (second (:views m))))))))])
+                        (= :lm (:layer-type (first (:layers (second (:views m))))))))])
 
 ;; Two views with identical columns. `lay-point` created the first
 ;; view and placed itself there. `sk/view` created the second view.
@@ -675,7 +675,7 @@
 
 (kind/test-last [(fn [m]
                    (let [layers (:layers m)
-                         rule (some #(when (= :rule-h (:method %)) %) layers)]
+                         rule (some #(when (= :rule-h (:layer-type %)) %) layers)]
                      (and (some? rule)
                           (= 3.0 (get-in rule [:mapping :y-intercept])))))])
 

@@ -21,7 +21,7 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__133993#] (dissoc p1__133993# :data))))
+    (partial mapv (fn* [p1__201941#] (dissoc p1__201941# :data))))
    kind/pprint)))
 
 
@@ -47,7 +47,7 @@
      (= 0 (count (:layers m)))
      (= 1 (count (:views m)))
      (= 1 (count (:layers (first (:views m)))))
-     (= :point (:method (first (:layers (first (:views m))))))))
+     (= :point (:layer-type (first (:layers (first (:views m))))))))
    v9_l78)))
 
 
@@ -95,8 +95,8 @@
     [m]
     (and
      (= 2 (count (:layers m)))
-     (= :point (:method (first (:layers m))))
-     (= :lm (:method (second (:layers m))))
+     (= :point (:layer-type (first (:layers m))))
+     (= :lm (:layer-type (second (:layers m))))
      (nil? (:layers (first (:views m))))))
    v14_l114)))
 
@@ -143,9 +143,9 @@
     [m]
     (and
      (= 1 (count (:layers m)))
-     (= :lm (:method (first (:layers m))))
+     (= :lm (:layer-type (first (:layers m))))
      (= 1 (count (:layers (first (:views m)))))
-     (= :point (:method (first (:layers (first (:views m))))))))
+     (= :point (:layer-type (first (:layers (first (:views m))))))))
    v19_l149)))
 
 
@@ -190,7 +190,7 @@
     [m]
     (and
      (= 1 (count (:layers m)))
-     (= :lm (:method (first (:layers m))))
+     (= :lm (:layer-type (first (:layers m))))
      (= 2 (count (:views m)))
      (= 1 (count (:layers (first (:views m)))))
      (= 1 (count (:layers (second (:views m)))))))
@@ -279,9 +279,9 @@
      (= 2 (count (:views m)))
      (= 0 (count (:layers m)))
      (= 1 (count (:layers (first (:views m)))))
-     (= :point (:method (first (:layers (first (:views m))))))
+     (= :point (:layer-type (first (:layers (first (:views m))))))
      (= 1 (count (:layers (second (:views m)))))
-     (= :lm (:method (first (:layers (second (:views m))))))))
+     (= :lm (:layer-type (first (:layers (second (:views m))))))))
    v34_l253)))
 
 
@@ -525,7 +525,7 @@
       (= 2 (:panels s))
       (= 300 (:points s))
       (every?
-       (fn* [p1__133994#] (= :species (:color p1__133994#)))
+       (fn* [p1__201942#] (= :species (:color p1__201942#)))
        d))))
    v69_l445)))
 
@@ -853,8 +853,8 @@
       rule
       (some
        (fn*
-        [p1__133995#]
-        (when (= :rule-h (:method p1__133995#)) p1__133995#))
+        [p1__201943#]
+        (when (= :rule-h (:layer-type p1__201943#)) p1__201943#))
        layers)]
      (and (some? rule) (= 3.0 (get-in rule [:mapping :y-intercept])))))
    v106_l671)))
