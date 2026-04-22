@@ -60,9 +60,10 @@
 ;;   `:bandwidth` for `sk/lay-kde` or `:bins` for
 ;;   `sk/lay-histogram`.
 ;; - **Aesthetics** -- how the method maps data to visuals:
-;;   `:color`, `:size`, `:alpha`, `:shape`, `:group`. Either
-;;   mapped from a column (`:color :species`) or given as a
-;;   constant (`:alpha 0.3`).
+;;   `:color`, `:size`, `:alpha`, `:shape`, `:group`, plus
+;;   mark-specific keys like `:text` and `:fill`. Either mapped
+;;   from a column (`:color :species`) or given as a constant
+;;   (`:alpha 0.3`).
 ;; - **Data** -- a per-layer `:data` key, if the layer should
 ;;   use a different dataset from the rest of the sketch.
 ;;

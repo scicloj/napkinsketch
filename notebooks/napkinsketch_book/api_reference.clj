@@ -74,7 +74,7 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-;; Histogram view -- a single keyword means x = y (diagonal):
+;; Histogram view -- pass a single column to see its distribution:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-histogram :sepal-length))
