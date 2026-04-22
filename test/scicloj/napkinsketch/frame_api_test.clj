@@ -237,3 +237,85 @@
           result (sk/lay-point fr :a :b)]
       (is (sk/frame? result))
       (is (not (sk/sketch? result))))))
+
+;; ============================================================
+;; Composite options / scale / coord (Phase 3b)
+;; ============================================================
+;;
+;; On a composite, these three all write to the root :opts.
+;; resolve-tree merges root :opts into every descendant leaf, so
+;; writing at the root is the frame-world analog of plot-level
+;; options on a sketch.
+
+(deftest composite-options-writes-root-opts-test
+  (testing "sk/options on a composite writes to root :opts"
+    (let [fr {:frames [{:layers [] :mapping {:x :a :y :b}}]}
+          result (sk/options fr {:title "hi" :width 500})]
+      (is (sk/frame? result))
+      (is (= "hi" (get-in result [:opts :title])))
+      (is (= 500 (get-in result [:opts :width])))
+      (is (empty? (get-in result [:frames 0 :opts] {}))
+          "leaf :opts is untouched"))))
+
+(deftest composite-options-deep-merges-existing-opts-test
+  (testing "sk/options deep-merges into an existing root :opts"
+    (let [fr     {:opts   {:theme {:bg "black"}}
+                  :frames [{:layers []}]}
+          result (sk/options fr {:theme {:fg "white"}})]
+      (is (= {:bg "black" :fg "white"}
+             (get-in result [:opts :theme]))
+          "nested map is merged rather than replaced"))))
+
+(deftest composite-options-width-height-coerced-test
+  (testing "width/height still get long-coerced on composites"
+    (let [fr {:frames [{:layers []}]}
+          result (sk/options fr {:width 500.7 :height 299.3})]
+      (is (= 501 (get-in result [:opts :width])))
+      (is (= 299 (get-in result [:opts :height]))))))
+
+(deftest composite-scale-writes-root-opts-test
+  (testing "sk/scale on a composite writes :x-scale at the root"
+    (let [fr {:frames [{:layers [] :mapping {:x :a :y :b}}]}
+          result (sk/scale fr :x :log)]
+      (is (sk/frame? result))
+      (is (= {:type :log} (get-in result [:opts :x-scale]))))))
+
+(deftest composite-scale-accepts-map-spec-test
+  (testing "sk/scale with a map scale-type fills in :linear as default :type"
+    (let [fr {:frames [{:layers []}]}
+          result (sk/scale fr :y {:breaks [0 5 10]})]
+      (is (= {:type :linear :breaks [0 5 10]}
+             (get-in result [:opts :y-scale]))))))
+
+(deftest composite-coord-writes-root-opts-test
+  (testing "sk/coord on a composite writes :coord at the root"
+    (let [fr {:frames [{:layers []}]}
+          result (sk/coord fr :polar)]
+      (is (sk/frame? result))
+      (is (= :polar (get-in result [:opts :coord]))))))
+
+(deftest composite-options-preserves-frames-test
+  (testing "options/scale/coord leave the :frames subtree intact"
+    (let [fr {:frames [{:layers [{:layer-type :point}] :mapping {:x :a}}
+                       {:layers [] :mapping {:x :b}}]}
+          opt-result (sk/options fr {:title "x"})
+          sc-result  (sk/scale fr :x :log)
+          co-result  (sk/coord fr :flip)]
+      (doseq [r [opt-result sc-result co-result]]
+        (is (= (:frames fr) (:frames r))
+            "frames subtree is untouched")))))
+
+(deftest composite-options-chainable-test
+  (testing "options/scale/coord chain on composites with each other and with lay-*"
+    (let [fr {:frames [{:layers [] :mapping {:x :a :y :b}}]}
+          result (-> fr
+                     (sk/options {:title "chart"})
+                     (sk/scale :x :log)
+                     (sk/coord :polar)
+                     (sk/lay-point :a :b))]
+      (is (sk/frame? result))
+      (is (= "chart" (get-in result [:opts :title])))
+      (is (= {:type :log} (get-in result [:opts :x-scale])))
+      (is (= :polar (get-in result [:opts :coord])))
+      (is (= 1 (count (get-in result [:frames 0 :layers])))
+          "lay-* still landed on the one matching leaf"))))

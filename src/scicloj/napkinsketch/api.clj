@@ -1065,11 +1065,24 @@
     (merge-with deep-merge a b)
     b))
 
+(defn- update-opts
+  "Update the root :opts of a sketch or composite frame. The composite
+   branch bypasses ensure-sk (which throws on composites) and writes
+   directly at the root -- resolve-tree merges root :opts into every
+   leaf, so root-level writes are the frame-world analog of
+   plot-level options on a sketch."
+  [sk-or-frame f & args]
+  (if (and (frame? sk-or-frame) (frame/composite? sk-or-frame))
+    (apply update sk-or-frame :opts f args)
+    (apply update (ensure-sk sk-or-frame) :opts f args)))
+
 (defn options
   "Set plot-level options (title, labels, width, height, etc.).
    Nested maps (e.g. :theme) are deep-merged.
    :width and :height are coerced to long (rounded) so the plan carries
-   integer pixel dimensions through to render."
+   integer pixel dimensions through to render. On a composite frame
+   the options attach to the root so every descendant leaf inherits
+   them via resolve-tree."
   [sk opts]
   (let [opts (warn-and-strip-unknown-opts "sk/options" opts plot-options-keys)
         opts (reduce (fn [m k]
@@ -1081,7 +1094,7 @@
                          m))
                      opts
                      [:width :height])]
-    (update (ensure-sk sk) :opts deep-merge opts)))
+    (update-opts sk deep-merge opts)))
 
 (def ^:private valid-scale-types
   "Scale types accepted by sk/scale. :linear and :log are the two
@@ -1092,14 +1105,15 @@
 (defn scale
   "Set axis scale on a sketch. Scale is plot-level -- applies to all views.
    Accepts a type keyword or a scale spec map with :type, optional
-   :domain, and optional :breaks (explicit tick locations).
+   :domain, and optional :breaks (explicit tick locations). On a
+   composite frame the scale attaches to the root so every descendant
+   leaf inherits it via resolve-tree.
    (scale sk :x :log)                                -- log scale on x-axis
    (scale sk :x {:type :categorical :domain [...]})  -- explicit category order
    (scale sk :y {:type :linear :breaks [0 5 10]})    -- pin tick locations
    (scale sk :y {:type :log :domain [1 1000]})       -- log scale with explicit range"
   [sk channel scale-type]
-  (let [sk (ensure-sk sk)
-        k (case channel :x :x-scale :y :y-scale
+  (let [k (case channel :x :x-scale :y :y-scale
                 (throw (ex-info (str "Scale channel must be :x or :y, got: " channel)
                                 {:channel channel})))
         type-kw (if (map? scale-type) (:type scale-type) scale-type)]
@@ -1107,19 +1121,20 @@
       (throw (ex-info (str "Unknown scale type: " type-kw
                            ". Supported: " (vec (sort valid-scale-types)))
                       {:scale-type type-kw :supported (vec (sort valid-scale-types))})))
-    (update sk :opts assoc k (if (map? scale-type)
-                               (merge {:type :linear} scale-type)
-                               {:type scale-type}))))
+    (update-opts sk assoc k (if (map? scale-type)
+                              (merge {:type :linear} scale-type)
+                              {:type scale-type}))))
 
 (defn coord
-  "Set coordinate transform on a sketch. Coord is plot-level -- applies to all views.
+  "Set coordinate transform on a sketch. Coord is plot-level -- applies
+   to all views. On a composite frame the coord attaches to the root
+   so every descendant leaf inherits it via resolve-tree.
    (coord sk :flip) -- flipped coordinates."
   [sk coord-type]
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
                     {:coord coord-type})))
-  (let [sk (ensure-sk sk)]
-    (update sk :opts assoc :coord coord-type)))
+  (update-opts sk assoc :coord coord-type))
 
 (defn draft
   "Flatten a sketch into a draft -- a vector of flat maps, one per
