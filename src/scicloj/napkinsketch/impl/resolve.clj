@@ -348,7 +348,7 @@
    (counts, bins, densities). Used to permit x-only views for marks
    driven by these stats even when the layer-type registry's :x-only flag
    is missing (e.g., tests that construct views directly)."
-  #{:bin :count :kde})
+  #{:bin :count :density})
 
 (defn infer-layer-type
   "Choose mark and stat from column types when the user hasn't specified them.
@@ -457,7 +457,7 @@
           ;; point and renders a flat line at the bottom of a [0, 1] domain.
           ;; Three sources of x-only permission:
           ;;   1. :x-only true from the layer-type registry (e.g., :histogram, :rug)
-          ;;   2. stat is in `x-only-stats` — :bin/:count/:kde synthesize y
+          ;;   2. stat is in `x-only-stats` — :bin/:count/:density synthesize y
           ;;      from x alone (covers the :rect mark + bar stat too)
           ;;   3. mark is :rug, which is structurally x-only even when
           ;;      constructed without the layer-type registry
@@ -481,13 +481,13 @@
                      x-temporal-extent (assoc :x-temporal-extent x-temporal-extent)
                      y-temporal-extent (assoc :y-temporal-extent y-temporal-extent))
           ;; Normalize :bandwidth shorthand to the stat-specific cfg key.
-          ;; :loess -> :loess-bandwidth; :kde2d -> :kde2d-bandwidth;
-          ;; :kde and :violin read :kde-bandwidth.
+          ;; :loess -> :loess-bandwidth; :density-2d -> :kde2d-bandwidth;
+          ;; :density and :violin read :kde-bandwidth.
           bw (:bandwidth resolved)
           resolved (if bw
                      (let [cfg-key (case (:stat resolved)
                                      :loess :loess-bandwidth
-                                     :kde2d :kde2d-bandwidth
+                                     :density-2d :kde2d-bandwidth
                                      :kde-bandwidth)]
                        (-> resolved (dissoc :bandwidth)
                            (assoc-in [:cfg cfg-key] bw)))
@@ -496,7 +496,7 @@
           ;; :color as a synonym) → override stat to :identity so the
           ;; pre-computed fill values drive the tile colors directly.
           ;; Only applies to lay-tile (which defaults to :bin2d) -- NOT
-          ;; to lay-density2d (:kde2d) or lay-contour, which intentionally
+          ;; to lay-density2d (:density-2d) or lay-contour, which intentionally
           ;; compute their own fill values from x/y.
           ;; Accepting :color keeps lay-tile friendly for users who
           ;; reach for :color by habit from the other marks. :fill wins

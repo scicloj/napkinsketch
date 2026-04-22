@@ -670,7 +670,7 @@ plan1
 (sk/layer-type-lookup :lm)
 
 (kind/test-last [(fn [m] (and (= :line (:mark m))
-                              (= :lm (:stat m))))])
+                              (= :linear-model (:stat m))))])
 
 (kind/doc #'sk/registered-layer-types)
 
@@ -684,7 +684,7 @@ plan1
 
 (kind/doc #'sk/stat-doc)
 
-(sk/stat-doc :lm)
+(sk/stat-doc :linear-model)
 
 (kind/test-last [(fn [s] (string? s))])
 

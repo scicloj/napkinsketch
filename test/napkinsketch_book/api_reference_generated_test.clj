@@ -241,7 +241,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__221775#] (Math/sin (* p1__221775# 0.3)))
+    (fn* [p1__230777#] (Math/sin (* p1__230777# 0.3)))
     (range 30))}))
 
 
@@ -360,9 +360,9 @@
     :y
     (mapv
      (fn*
-      [p1__221776#]
+      [p1__230778#]
       (+
-       (Math/sin (* p1__221776# 0.2))
+       (Math/sin (* p1__230778# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
@@ -1108,7 +1108,9 @@
 
 (deftest
  t234_l672
- (is ((fn [m] (and (= :line (:mark m)) (= :lm (:stat m)))) v233_l670)))
+ (is
+  ((fn [m] (and (= :line (:mark m)) (= :linear-model (:stat m))))
+   v233_l670)))
 
 
 (def v235_l675 (kind/doc #'sk/registered-layer-types))
@@ -1123,7 +1125,7 @@
 (def v239_l685 (kind/doc #'sk/stat-doc))
 
 
-(def v240_l687 (sk/stat-doc :lm))
+(def v240_l687 (sk/stat-doc :linear-model))
 
 
 (deftest t241_l689 (is ((fn [s] (string? s)) v240_l687)))

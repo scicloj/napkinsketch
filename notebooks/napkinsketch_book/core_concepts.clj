@@ -454,11 +454,11 @@ my-sketch
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; A regression: stat `:lm` fits a line, mark `:line` draws it:
+;; A regression: stat `:linear-model` fits a line, mark `:line` draws it:
 
 (sk/layer-type-lookup :lm)
 
-(kind/test-last [(fn [m] (= :lm (:stat m)))])
+(kind/test-last [(fn [m] (= :linear-model (:stat m)))])
 
 ;; Position `:stack` places groups on top of each other:
 

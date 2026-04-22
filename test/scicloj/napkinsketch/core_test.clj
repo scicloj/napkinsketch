@@ -140,7 +140,7 @@
 
 (deftest compute-stat-lm-test
   (testing "perfect linear data y=2x"
-    (let [view {:mark :line :stat :lm :data tiny-ds :x :x :y :y
+    (let [view {:mark :line :stat :linear-model :data tiny-ds :x :x :y :y
                 :x-type :numerical :cfg defaults/defaults}
           result (stat/compute-stat view)
           line (first (:lines result))]
@@ -150,13 +150,13 @@
       (is (< (Math/abs (- (:y2 line) 10.0)) 0.01))))
   (testing "n=2 produces nil (needs >= 3)"
     (let [ds2 (tc/dataset {:x [1 2] :y [3 4]})
-          view {:mark :line :stat :lm :data ds2 :x :x :y :y
+          view {:mark :line :stat :linear-model :data ds2 :x :x :y :y
                 :x-type :numerical :cfg defaults/defaults}
           result (stat/compute-stat view)]
       (is (empty? (:lines result))))))
 
 (deftest compute-stat-kde-test
-  (let [view {:mark :area :stat :kde :data tiny-ds :x :x :x-type :numerical
+  (let [view {:mark :area :stat :density :data tiny-ds :x :x :x-type :numerical
               :cfg defaults/defaults}
         result (stat/compute-stat view)]
     (is (seq (:points result)))

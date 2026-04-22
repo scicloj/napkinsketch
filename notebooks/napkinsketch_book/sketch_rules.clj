@@ -109,7 +109,7 @@
                                 (= :line (:mark (second d)))
                                 (= :sepal-length (:x (second d)))
                                 (= :sepal-width (:y (second d)))
-                                (= :lm (:stat (second d))))))])
+                                (= :linear-model (:stat (second d))))))])
 
 (-> iris
     (sk/view :sepal-length :sepal-width)

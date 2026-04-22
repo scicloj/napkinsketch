@@ -323,7 +323,7 @@
   setosa
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__218461#] (= "setosa" (:species p1__218461#))))))
+   (fn* [p1__227463#] (= "setosa" (:species p1__227463#))))))
 
 
 (def
@@ -332,7 +332,7 @@
   versicolor
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__218462#] (= "versicolor" (:species p1__218462#))))))
+   (fn* [p1__227464#] (= "versicolor" (:species p1__227464#))))))
 
 
 (def
@@ -481,7 +481,7 @@
 (def v91_l459 (sk/layer-type-lookup :lm))
 
 
-(deftest t92_l461 (is ((fn [m] (= :lm (:stat m))) v91_l459)))
+(deftest t92_l461 (is ((fn [m] (= :linear-model (:stat m))) v91_l459)))
 
 
 (def

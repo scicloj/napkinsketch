@@ -17,7 +17,7 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__218807#] (dissoc p1__218807# :data))))
+    (partial mapv (fn* [p1__227809#] (dissoc p1__227809# :data))))
    kind/pprint)))
 
 

@@ -415,7 +415,7 @@
    still see which value the line's representative color maps to --
    but we print a one-line warning so users realise the gradient they
    see in the legend is not what's painted on the line."
-  #{:line :step :area :density :stacked-area :lm :loess})
+  #{:line :step :area :density :stacked-area :linear-model :loess})
 
 (defn- warn-monochrome-numeric-color!
   "Warn once per plan when a numeric :color is paired with a mark that
@@ -741,7 +741,7 @@
 
 (defn- build-fill-fallback-legend
   "If no color legend was built (no :color column), check for tile
-   layers with computed fill ranges (:bin2d, :kde2d, or identity tiles
+   layers with computed fill ranges (:bin2d, :density-2d, or identity tiles
    with :fill). Returns a continuous legend map or nil."
   [panel-data resolved-all cfg]
   (let [stat-fill-range (some (fn [pd]
@@ -749,7 +749,7 @@
                               panel-data)
         stat-kind (when stat-fill-range
                     (some (fn [rv]
-                            (when (#{:bin2d :kde2d} (:stat rv))
+                            (when (#{:bin2d :density-2d} (:stat rv))
                               (:stat rv)))
                           resolved-all))
         view-fill-range (when-not stat-fill-range
@@ -764,7 +764,7 @@
       (let [grad-fn (:gradient-fn cfg)
             title (cond
                     (= stat-kind :bin2d) :count
-                    (= stat-kind :kde2d) :relative-density
+                    (= stat-kind :density-2d) :relative-density
                     :else :fill)
             n-stops 20]
         {:title title
