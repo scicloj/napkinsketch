@@ -227,7 +227,7 @@ precedence-result
          (= 500 (:plan-height m))))]) ;; with-config wins over set-config! (350)
 
 ;; We can verify point-radius too -- only set-config! touched it,
-;; so it wins over the library default (2.0):
+;; so it wins over the library default (3.0):
 
 (def precedence-point-radius
   (sk/with-config {:width 1200 :height 500}

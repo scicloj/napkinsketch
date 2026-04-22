@@ -231,10 +231,10 @@
 
 ;; ## More Recipes
 
-;; ### Confidence ribbon
+;; ### Confidence band
 
 ;; A scatter plot with per-group linear regressions and 95%
-;; confidence ribbons.
+;; confidence bands.
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})

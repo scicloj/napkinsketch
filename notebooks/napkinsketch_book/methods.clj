@@ -9,7 +9,7 @@
 ;;
 ;; Layer functions (`sk/lay-point`, `sk/lay-histogram`, `sk/lay-bar`, `sk/lay-lm`, etc.)
 ;; each add a layer with the corresponding method. When no layer is added,
-;; napkinsketch infers a method from the column types.
+;; Napkinsketch infers a method from the column types.
 ;;
 ;; All built-in methods are registered in a data registry. The tables below
 ;; are generated from that registry -- they stay in sync with the code.

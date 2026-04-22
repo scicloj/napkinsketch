@@ -512,7 +512,7 @@ my-sketch
 ;; have to name the columns you want. Column inference is most
 ;; useful for quick sketches of small, focused datasets. Here,
 ;; a dataset with two columns named `:height` and `:weight`:
-;; napkinsketch pairs them with the `:x` and `:y` aesthetics in
+;; Napkinsketch pairs them with the `:x` and `:y` aesthetics in
 ;; order.
 
 (-> {:height [170 180 165 175] :weight [70 80 65 75]}

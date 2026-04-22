@@ -238,7 +238,7 @@ graph LR
 ;;
 ;; - Validating plot structure with Malli
 ;;
-;; - Adding other backends (Canvas, Plotly, Vega-Lite) that consume plans
+;; - Adding alternate backends that consume plans (SVG and raster are implemented today)
 
 ;; ## Multi-Layer Example
 ;;

@@ -1,7 +1,7 @@
 ;; # Napkinsketch
 ;; Simple and easy plotting
 ;;
-;; NapkinSketch is a Clojure library for composable plotting, inspired by
+;; Napkinsketch is a Clojure library for composable plotting, inspired by
 ;; the Grammar of Graphics.
 ;;
 ;; ## General info

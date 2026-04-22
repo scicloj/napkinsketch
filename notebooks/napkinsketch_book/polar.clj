@@ -3,7 +3,8 @@
 ;; For [polar coordinates](https://en.wikipedia.org/wiki/Polar_coordinate_system),
 ;; `(sk/coord :polar)` maps x to angle and y to radius. Bars become
 ;; arc-interpolated wedges (rose charts), and scatter points wrap into
-;; a disc. Currently best suited for point and bar-family marks.
+;; a disc. Currently best suited for point and bar-family marks;
+;; tick labels and axis labels are not yet rendered under `:polar`.
 
 (ns napkinsketch-book.polar
   (:require

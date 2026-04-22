@@ -187,7 +187,7 @@
 ;; Pass `:palette` to override the default color cycle. It accepts a
 ;; vector of hex strings, a map from category to hex, or a keyword
 ;; naming one of the built-in palettes (`:set1`, `:set2`, `:dark2`,
-;; `:tableau10`, `:category10`, `:pastel1`, `:accent`, `:paired`, and
+;; `:tableau-10`, `:category10`, `:pastel1`, `:accent`, `:paired`, and
 ;; many more).
 ;;
 ;; For the full list of forms, the project-level / thread-local /

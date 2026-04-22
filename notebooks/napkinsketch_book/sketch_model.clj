@@ -6,8 +6,7 @@
 ;; Its operators are shaped by Clojure idioms -- threading, merge,
 ;; plain maps -- rather than a custom DSL.
 ;;
-;; This chapter introduces the mental model. Five ideas, and
-;; everything else in the book is details.
+;; This chapter introduces the mental model in five ideas.
 
 (ns napkinsketch-book.sketch-model
   (:require
@@ -93,7 +92,7 @@
 
 ;; ## Idea 4: Inference fills the gaps
 ;;
-;; When you omit a choice, napkinsketch infers it from the data.
+;; When you omit a choice, Napkinsketch infers it from the data.
 ;; Two numerical columns with no `lay-*` are inferred as a scatter:
 
 (-> (rdatasets/datasets-iris)
