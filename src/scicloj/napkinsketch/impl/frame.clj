@@ -150,6 +150,43 @@
   (let [node (reduce (fn [f i] (get-in f [:frames i])) frame path)]
     (when (leaf? node) node)))
 
+(defn path->update-in-path
+  "Translate a leaf path like [0 1] into the get-in / update-in navigation
+   [:frames 0 :frames 1]. A root path [] translates to []."
+  [path]
+  (into [] (mapcat (fn [i] [:frames i])) path))
+
+(defn- canonicalize-col
+  "Canonicalize a column ref to a string key for matching. A keyword
+   and a string with the same name are treated as the same column
+   (matches api.clj's col-key semantics)."
+  [col]
+  (cond
+    (nil? col) nil
+    (keyword? col) (name col)
+    :else (str col)))
+
+(defn last-matching-leaf-path
+  "Walk `frame` in left-to-right DFS order. Return the :path of the
+   last leaf whose effective :x and :y (after ancestor-merge of
+   :mapping) match `position-mapping`. Matching is keyword/string
+   tolerant. Returns nil if no leaf matches.
+
+   `position-mapping` may carry either or both of :x and :y; a nil
+   value matches a leaf whose effective mapping has no entry for that
+   axis. This mirrors the sketch-world rule (api.clj's add-view-layer):
+   matching is against resolved positional mappings only, and a bare
+   view (no :x/:y) matches a bare position mapping."
+  [frame position-mapping]
+  (let [px (canonicalize-col (:x position-mapping))
+        py (canonicalize-col (:y position-mapping))]
+    (->> (resolve-tree frame)
+         (keep (fn [leaf]
+                 (when (and (= (canonicalize-col (get-in leaf [:mapping :x])) px)
+                            (= (canonicalize-col (get-in leaf [:mapping :y])) py))
+                   (:path leaf))))
+         last)))
+
 ;; ---- Shared-scale injection ----
 ;;
 ;; The load-bearing primitive surfaced by the nested-frames PoC.

@@ -532,12 +532,11 @@
     (keyword? col) (name col)
     :else (str col)))
 
-(defn- add-view-layer
-  "Add a layer to a specific view (found by matching position mappings, or created new).
-   Matches the *last* view with the same :x/:y in its :mapping, so that
-   `lay-*` naturally targets the most recently created view.
-   Matching is keyword/string tolerant — `:x` matches `\"x\"`.
-   Used when lay-* is called with positional columns."
+(defn- add-view-layer-to-sketch
+  "Add a layer to the last view with matching position mappings, or
+   create a new view. Matching is keyword/string tolerant. This is the
+   sketch-world half of the lay-* identity rule (rules 5-7 in
+   sketch_rules.clj)."
   [sk position-mapping layer]
   (let [views (:views sk)
         px (col-key (:x position-mapping))
@@ -549,11 +548,32 @@
                        i))
                    views))]
     (if idx
-      ;; Found existing view -- append layer to its :layers
       (update-in sk [:views idx :layers]
                  (fn [ls] (conj (or ls []) layer)))
-      ;; No match -- create new view with this layer
       (update sk :views conj {:mapping position-mapping :layers [layer]}))))
+
+(defn- add-view-layer-to-composite
+  "Frame-world analog of add-view-layer-to-sketch. Walks the composite
+   depth-first and appends the layer to the last leaf whose effective
+   :x/:y (after ancestor-merge) match `position-mapping`. On miss,
+   appends a fresh leaf at the root level."
+  [fr position-mapping layer]
+  (let [match-path (frame/last-matching-leaf-path fr position-mapping)]
+    (if (some? match-path)
+      (update-in fr
+                 (conj (frame/path->update-in-path match-path) :layers)
+                 (fnil conj []) layer)
+      (update fr :frames (fnil conj [])
+              {:mapping position-mapping :layers [layer]}))))
+
+(defn- add-view-layer
+  "Dispatch to the composite- or sketch-path based on input shape.
+   Accepts raw sk-or-data so callers don't need to pre-run ensure-sk
+   (which would throw on composite frames)."
+  [sk-or-frame position-mapping layer]
+  (if (and (frame? sk-or-frame) (frame/composite? sk-or-frame))
+    (add-view-layer-to-composite sk-or-frame position-mapping layer)
+    (add-view-layer-to-sketch (ensure-sk sk-or-frame) position-mapping layer)))
 
 (defn- check-position-mapping
   "Throw a helpful error if :x or :y in a layer's options is a
@@ -630,13 +650,16 @@
       d (assoc :data (coerce-dataset d)))))
 
 (defn lay
-  "Add a sketch-level layer (applies to all views)."
+  "Add a sketch-level layer (applies to all views). On a composite
+   frame the layer attaches to the root's :layers, so every descendant
+   leaf inherits it via frame/resolve-tree."
   ([sk-or-data layer-type-key]
-   (let [sk (ensure-sk sk-or-data)]
-     (update sk :layers conj (build-layer layer-type-key nil))))
+   (lay sk-or-data layer-type-key nil))
   ([sk-or-data layer-type-key opts]
-   (let [sk (ensure-sk sk-or-data)]
-     (update sk :layers conj (build-layer layer-type-key opts)))))
+   (let [layer (build-layer layer-type-key opts)]
+     (if (and (frame? sk-or-data) (frame/composite? sk-or-data))
+       (update sk-or-data :layers (fnil conj []) layer)
+       (update (ensure-sk sk-or-data) :layers conj layer)))))
 
 (defn- x-only?
   "True if layer-type-key is registered as x-only (rejects :y column)."
@@ -652,38 +675,43 @@
             vector+map -> view-specific per column with opts.
    4-arity: bivariate view-specific with opts."
   ([layer-type-key sk-or-data]
-   (let [sk (ensure-sk sk-or-data)
-         d (:data sk)
-         col-count (when d (count (tc/column-names d)))
-         fresh? (and (empty? (:views sk)) (empty? (:layers sk)))]
-     (cond
-       ;; Fresh sketch, small dataset -> auto-infer columns
-       (and fresh? d (<= col-count 3))
-       (let [sk2 (view sk)]
-         (add-view-layer sk2
-                         (:mapping (first (:views sk2)))
-                         (build-layer layer-type-key nil)))
+   (if (and (frame? sk-or-data) (frame/composite? sk-or-data))
+     ;; Composite frames are never "fresh" in the auto-infer sense.
+     ;; Sketch-level lay-* attaches at the root, and ancestor :layers
+     ;; inherit into every descendant leaf via resolve-tree.
+     (lay sk-or-data layer-type-key)
+     (let [sk (ensure-sk sk-or-data)
+           d (:data sk)
+           col-count (when d (count (tc/column-names d)))
+           fresh? (and (empty? (:views sk)) (empty? (:layers sk)))]
+       (cond
+         ;; Fresh sketch, small dataset -> auto-infer columns
+         (and fresh? d (<= col-count 3))
+         (let [sk2 (view sk)]
+           (add-view-layer sk2
+                           (:mapping (first (:views sk2)))
+                           (build-layer layer-type-key nil)))
 
-       ;; Fresh sketch, 4+ columns -> reject with a clear error (was: silent empty plot).
-       ;; This only fires on the very first lay-* call on a fresh sketch; the
-       ;; "lay-first, view-later" pattern keeps working because it has layers
-       ;; by the time subsequent 1-arity lay-* calls arrive.
-       (and fresh? d (> col-count 3))
-       (throw (ex-info (str "Cannot auto-infer columns from " col-count " columns. "
-                            "Pass explicit x and y: (sk/lay-" (name layer-type-key)
-                            " data :x :y). Available columns: "
-                            (sort (tc/column-names d)))
-                       {:layer-type layer-type-key
-                        :column-count col-count
-                        :columns (sort (tc/column-names d))}))
+         ;; Fresh sketch, 4+ columns -> reject with a clear error (was: silent empty plot).
+         ;; This only fires on the very first lay-* call on a fresh sketch; the
+         ;; "lay-first, view-later" pattern keeps working because it has layers
+         ;; by the time subsequent 1-arity lay-* calls arrive.
+         (and fresh? d (> col-count 3))
+         (throw (ex-info (str "Cannot auto-infer columns from " col-count " columns. "
+                              "Pass explicit x and y: (sk/lay-" (name layer-type-key)
+                              " data :x :y). Available columns: "
+                              (sort (tc/column-names d)))
+                         {:layer-type layer-type-key
+                          :column-count col-count
+                          :columns (sort (tc/column-names d))}))
 
-       ;; Has views, has sketch-level layers, or no data: sketch-level layer
-       :else
-       (lay sk layer-type-key))))
+         ;; Has views, has sketch-level layers, or no data: sketch-level layer
+         :else
+         (lay sk layer-type-key)))))
   ([layer-type-key sk-or-data x-or-opts]
    (cond
      (or (keyword? x-or-opts) (string? x-or-opts))
-     (add-view-layer (ensure-sk sk-or-data)
+     (add-view-layer sk-or-data
                      {:x x-or-opts}
                      (build-layer layer-type-key nil))
      ;; Sequential -> create view-specific layers (not global)
@@ -693,7 +721,7 @@
                  (let [[x y] col-or-pair]
                    (add-view-layer sk {:x x :y y} (build-layer layer-type-key nil)))
                  (add-view-layer sk {:x col-or-pair} (build-layer layer-type-key nil))))
-             (ensure-sk sk-or-data)
+             sk-or-data
              x-or-opts)
      :else
      (lay sk-or-data layer-type-key x-or-opts)))
@@ -703,7 +731,7 @@
      (do (when (x-only? layer-type-key)
            (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
                            {:layer-type layer-type-key :x x :y y-or-opts})))
-         (add-view-layer (ensure-sk sk-or-data)
+         (add-view-layer sk-or-data
                          {:x x :y y-or-opts}
                          (build-layer layer-type-key nil)))
      ;; Parallel vectors -> bivariate view-specific layers per (x_i, y_i) pair.
@@ -712,7 +740,7 @@
      (and (sequential? x) (sequential? y-or-opts))
      (reduce (fn [sk [a b]]
                (add-view-layer sk {:x a :y b} (build-layer layer-type-key nil)))
-             (ensure-sk sk-or-data)
+             sk-or-data
              (map vector x y-or-opts))
      ;; Sequential + opts -> view-specific layers with opts
      (and (sequential? x) (map? y-or-opts))
@@ -721,17 +749,17 @@
                  (let [[a b] col-or-pair]
                    (add-view-layer sk {:x a :y b} (build-layer layer-type-key y-or-opts)))
                  (add-view-layer sk {:x col-or-pair} (build-layer layer-type-key y-or-opts))))
-             (ensure-sk sk-or-data)
+             sk-or-data
              x)
      :else
-     (add-view-layer (ensure-sk sk-or-data)
+     (add-view-layer sk-or-data
                      {:x x}
                      (build-layer layer-type-key y-or-opts))))
   ([layer-type-key sk-or-data x y opts]
    (when (x-only? layer-type-key)
      (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
                      {:layer-type layer-type-key :x x :y y})))
-   (add-view-layer (ensure-sk sk-or-data)
+   (add-view-layer sk-or-data
                    {:x x :y y}
                    (build-layer layer-type-key opts))))
 

@@ -164,6 +164,53 @@
     (testing "path lands on a composite -> nil"
       (is (nil? (frame/leaf-at tree [1]))))))
 
+(deftest path->update-in-path-test
+  (testing "empty path translates to empty"
+    (is (= [] (frame/path->update-in-path []))))
+  (testing "single-level path interleaves :frames"
+    (is (= [:frames 0] (frame/path->update-in-path [0]))))
+  (testing "deep paths interleave :frames at every level"
+    (is (= [:frames 2 :frames 1 :frames 0]
+           (frame/path->update-in-path [2 1 0])))))
+
+(deftest last-matching-leaf-path-test
+  (testing "two leaves with identical :x/:y match -- picks the last (Rule 6)"
+    (is (= [1]
+           (frame/last-matching-leaf-path
+            {:frames [{:layers [] :mapping {:x :a :y :b}}
+                      {:layers [] :mapping {:x :a :y :b}}]}
+            {:x :a :y :b}))))
+
+  (testing "no matching leaf returns nil"
+    (is (nil? (frame/last-matching-leaf-path
+               {:frames [{:layers [] :mapping {:x :c :y :d}}]}
+               {:x :a :y :b}))))
+
+  (testing "keyword/string tolerance -- :x matches \"x\" on either side"
+    (is (= [0] (frame/last-matching-leaf-path
+                {:frames [{:layers [] :mapping {:x "a" :y "b"}}]}
+                {:x :a :y :b})))
+    (is (= [0] (frame/last-matching-leaf-path
+                {:frames [{:layers [] :mapping {:x :a :y :b}}]}
+                {:x "a" :y "b"}))))
+
+  (testing "ancestor :mapping inherits into a bare leaf (resolve-tree merge)"
+    (is (= [0] (frame/last-matching-leaf-path
+                {:mapping {:x :a :y :b}
+                 :frames  [{:layers []}]}
+                {:x :a :y :b}))))
+
+  (testing "DFS order across different depths"
+    (is (= [1 0] (frame/last-matching-leaf-path
+                  {:frames [{:layers [] :mapping {:x :a :y :b}}
+                            {:frames [{:layers [] :mapping {:x :a :y :b}}]}]}
+                  {:x :a :y :b}))))
+
+  (testing "nil position components match bare leaves (no :x/:y mapping)"
+    (is (= [0] (frame/last-matching-leaf-path
+                {:frames [{:layers []}]}
+                {:x nil :y nil})))))
+
 ;; ============================================================
 ;; inject-shared-scales
 ;; ============================================================
