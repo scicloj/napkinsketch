@@ -156,10 +156,11 @@
   [path]
   (into [] (mapcat (fn [i] [:frames i])) path))
 
-(defn- canonicalize-col
+(defn canonicalize-col
   "Canonicalize a column ref to a string key for matching. A keyword
-   and a string with the same name are treated as the same column
-   (matches api.clj's col-key semantics)."
+   and a string with the same name are treated as the same column.
+   Shared between sketch-world view matching and frame-world leaf
+   matching so `:x` and `\"x\"` resolve identically in both."
   [col]
   (cond
     (nil? col) nil

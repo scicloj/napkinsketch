@@ -522,16 +522,6 @@
      ;; Opts merge into this view's mapping (view-level scope)
      (update sk :views conj (make-view (merge opts {:x x :y y}))))))
 
-(defn- col-key
-  "Canonicalize a column reference to a string key for view matching.
-   `:x` and `\"x\"` are semantically the same column, so matching should
-   treat them as equal. Returns nil for nil (x-only cases)."
-  [col]
-  (cond
-    (nil? col) nil
-    (keyword? col) (name col)
-    :else (str col)))
-
 (defn- add-view-layer-to-sketch
   "Add a layer to the last view with matching position mappings, or
    create a new view. Matching is keyword/string tolerant. This is the
@@ -539,12 +529,12 @@
    sketch_rules.clj)."
   [sk position-mapping layer]
   (let [views (:views sk)
-        px (col-key (:x position-mapping))
-        py (col-key (:y position-mapping))
+        px (frame/canonicalize-col (:x position-mapping))
+        py (frame/canonicalize-col (:y position-mapping))
         idx (last (keep-indexed
                    (fn [i v]
-                     (when (and (= (col-key (:x (:mapping v))) px)
-                                (= (col-key (:y (:mapping v))) py))
+                     (when (and (= (frame/canonicalize-col (:x (:mapping v))) px)
+                                (= (frame/canonicalize-col (:y (:mapping v))) py))
                        i))
                    views))]
     (if idx
