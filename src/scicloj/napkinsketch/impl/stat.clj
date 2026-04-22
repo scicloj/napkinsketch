@@ -79,10 +79,10 @@
 (defn prepare-points
   "Clean data, compute domains, group by columns.
    Drops rows with missing values in x/y AND in any referenced numeric
-   aesthetic column (color/size/alpha/ymin/ymax/fill) so downstream code
+   aesthetic column (color/size/alpha/y-min/y-max/fill) so downstream code
    never sees nil/NaN values where it tries to coerce to double."
   [view]
-  (let [{:keys [data x y color color-type size alpha shape text-col x-type y-type group mark ymin ymax fill]} view
+  (let [{:keys [data x y color color-type size alpha shape text-col x-type y-type group mark y-min y-max fill]} view
         x-only? (or (nil? y) (= x y))
         data-idx (tc/add-column data :__row-idx (range (tc/row-count data)))
         ds-cols (set (tc/column-names data-idx))
@@ -92,8 +92,8 @@
                          (col-ref? color) (conj color)
                          (col-ref? size)  (conj size)
                          (col-ref? alpha) (conj alpha)
-                         (col-ref? ymin)  (conj ymin)
-                         (col-ref? ymax)  (conj ymax)
+                         (col-ref? y-min)  (conj y-min)
+                         (col-ref? y-max)  (conj y-max)
                          (col-ref? fill)  (conj fill))
         drop-cols (vec (distinct (concat (if x-only? [x] [x y]) aesthetic-cols)))
         clean (cond-> (tc/drop-missing data-idx drop-cols)
@@ -110,10 +110,10 @@
                     cat-y? (distinct ys-col)
                     :else (let [[lo hi] (numeric-extent ys-col)]
                             (if (= mark :rect) [(min 0 lo) (max 0 hi)]
-                                ;; Extend domain to include ymin/ymax if present
-                                (if (and ymin ymax)
-                                  [(min lo (dfn/reduce-min (clean ymin)))
-                                   (max hi (dfn/reduce-max (clean ymax)))]
+                                ;; Extend domain to include y-min/y-max if present
+                                (if (and y-min y-max)
+                                  [(min lo (dfn/reduce-min (clean y-min)))
+                                   (max hi (dfn/reduce-max (clean y-max)))]
                                   [lo hi]))))
             numeric-color? (and color (= color-type :numerical))
             ;; Extract color value from group key when color is part of group
@@ -136,8 +136,8 @@
                             alpha (assoc :alphas (ds alpha))
                             shape (assoc :shapes (ds shape))
                             text-col (assoc :labels (ds text-col))
-                            ymin (assoc :ymins (ds ymin))
-                            ymax (assoc :ymaxs (ds ymax))))
+                            y-min (assoc :ymins (ds y-min))
+                            y-max (assoc :ymaxs (ds y-max))))
             groups (group-by-columns clean (or group []) point-group)]
         {:points groups :x-domain x-dom :y-domain y-dom}))))
 
@@ -380,7 +380,7 @@
 (defmethod compute-stat :lm [{:keys [data x y group cfg] :as view}]
   (validate-numeric-column view :x :lm)
   (validate-numeric-column view :y :lm)
-  (let [se (:se view)
+  (let [se (:confidence-band view)
         level (or (:level view) 0.95)
         n-grid (or (:se-n-grid (or cfg defaults/defaults)) 80)
         clean (tc/drop-missing data [x y])
@@ -541,7 +541,7 @@
 (defmethod compute-stat :loess [{:keys [data x y group cfg] :as view}]
   (validate-numeric-column view :x :loess)
   (validate-numeric-column view :y :loess)
-  (let [se (:se view)
+  (let [se (:confidence-band view)
         level (or (:level view) 0.95)
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)
@@ -550,8 +550,8 @@
         ;; count down for large inputs while preserving good CI coverage
         ;; on small/medium datasets. Clamp to at least 20 so the
         ;; quantile estimates remain usable. Users can still override
-        ;; via an explicit `:se-boot N` on the view.
-        n-boot (or (:se-boot view)
+        ;; via an explicit `:bootstrap-resamples N` on the view.
+        n-boot (or (:bootstrap-resamples view)
                    (cond
                      (<= n 500)    200
                      (<= n 2000)   100
@@ -927,7 +927,7 @@
             y-lo (- (double y-min) (* 0.3 y-range))
             y-hi (+ (double y-max) (* 0.3 y-range))
             ;; Grid resolution
-            n-grid (or (:kde2d-grid cfg) 25)
+            n-grid (or (:density-2d-grid cfg) 25)
             x-step (max 1e-10 (/ (- x-hi x-lo) n-grid))
             y-step (max 1e-10 (/ (- y-hi y-lo) n-grid))
             ;; Bandwidth: Silverman's rule for 2D product-kernel KDE.

@@ -483,7 +483,7 @@ my-sketch
 ;; of layer functions (`sk/lay-point`, `sk/lay-histogram`, etc.).
 ;; They control aesthetics (`:color`, `:size`, `:alpha`, `:shape`),
 ;; grouping (`:group`), position adjustment (`:position`), and
-;; method-specific parameters (`:bandwidth`, `:se`, `:normalize`, etc.).
+;; method-specific parameters (`:bandwidth`, `:confidence-band`, `:normalize`, etc.).
 ;;
 ;; Four keys are universal -- accepted by every layer -- and each method
 ;; may accept additional keys. The [Methods](./napkinsketch_book.methods.html) chapter lists

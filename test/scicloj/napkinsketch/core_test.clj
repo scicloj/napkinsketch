@@ -479,7 +479,7 @@
     (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
           fig (-> ds (sk/view :x :y)
                   sk/lay-point
-                  (sk/lay-loess {:se true :se-boot 50})
+                  (sk/lay-loess {:confidence-band true :bootstrap-resamples 50})
                   sk/plot)
           s (sk/svg-summary fig)]
       (is (= 20 (:points s)))
@@ -1153,14 +1153,14 @@
     (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                            {:key-fn keyword})
           xy-ds (tc/dataset {:x (range 10) :y (range 10)})
-          eb-ds (tc/dataset {:x ["a" "b"] :y [10 20] :ymin [8 17] :ymax [12 23]})
+          eb-ds (tc/dataset {:x ["a" "b"] :y [10 20] :y-min [8 17] :y-max [12 23]})
           txt-ds (tc/dataset {:x [1 2] :y [3 4] :n ["a" "b"]})
           cases [["point" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay-point {:color :species}))]
                  ["bar" (-> iris (sk/view :species) sk/lay-bar)]
                  ["histogram" (-> iris (sk/view :sepal_length) sk/lay-histogram)]
                  ["line" (-> xy-ds (sk/view :x :y) sk/lay-line)]
                  ["step" (-> xy-ds (sk/view :x :y) sk/lay-step)]
-                 ["lm" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay-lm {:se true}))]
+                 ["lm" (-> iris (sk/view :sepal_length :sepal_width) (sk/lay-lm {:confidence-band true}))]
                  ["loess" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-loess)]
                  ["area" (-> xy-ds (sk/view :x :y) sk/lay-area)]
                  ["boxplot" (-> iris (sk/view :species :sepal_width) sk/lay-boxplot)]
@@ -1170,7 +1170,7 @@
                  ["text" (-> txt-ds (sk/view :x :y) (sk/lay-text {:text :n}))]
                  ["tile" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-tile)]
                  ["contour" (-> iris (sk/view :sepal_length :sepal_width) sk/lay-contour)]
-                 ["errorbar" (-> eb-ds (sk/view :x :y) (sk/lay-errorbar {:ymin :ymin :ymax :ymax}))]
+                 ["errorbar" (-> eb-ds (sk/view :x :y) (sk/lay-errorbar {:y-min :y-min :y-max :y-max}))]
                  ["lollipop" (-> eb-ds (sk/view :x :y) sk/lay-lollipop)]
                  ["summary" (-> iris (sk/view :species :sepal_width) sk/lay-summary)]]]
       (doseq [[mark-name views] cases]
@@ -1200,8 +1200,8 @@
                           (-> {:species ["a" "b" "c" "d"] :y [1 2 3 4]}
                               (sk/lay-loess :species :y) sk/plan))))
 
-  (testing "errorbar without ymin/ymax throws"
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"ymin.*ymax"
+  (testing "errorbar without y-min/y-max throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"y-min.*y-max"
                           (-> {:x ["a" "b" "c"] :y [1 2 3]}
                               (sk/lay-errorbar :x :y) sk/plan))))
 
@@ -1227,7 +1227,7 @@
 
 (deftest aesthetic-column-validation-test
   ;; persona-16 B1: validate-columns covers :color/:size/:alpha/:shape/:group/
-  ;; :text/:ymin/:ymax/:fill, not just :x/:y. Closes the C2 epic:
+  ;; :text/:y-min/:y-max/:fill, not just :x/:y. Closes the C2 epic:
   ;; P5-R2 C1, P9-R2 F5/F6, Skept-R4 F2/F5/F6, P7-R2 F1/F2/F3, P11-R2 F5,
   ;; P3-R2 footgun.
   (let [data {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0] :g ["a" "b" "c"]}]
@@ -1251,10 +1251,10 @@
                             #"Column :bogus \(from :group\) not found"
                             (-> data (sk/lay-point :x :y {:group :bogus}) sk/plan))))
 
-    (testing "typoed :ymax keyword throws"
+    (testing "typoed :y-min keyword throws"
       (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                            #"Column :bogus2 \(from :ymax\) not found"
-                            (-> data (sk/lay-errorbar :x :y {:ymin :bogus1 :ymax :bogus2}) sk/plan))))
+                            #"Column :bogus1 \(from :y-min\) not found"
+                            (-> data (sk/lay-errorbar :x :y {:y-min :bogus1 :y-max :bogus2}) sk/plan))))
 
     (testing "literal :color string is not flagged (named color)"
       (is (some? (-> data (sk/lay-point :x :y {:color "red"}) sk/plan :panels))))
@@ -1550,7 +1550,7 @@
     (testing "alpha 0.4 propagates to :errorbar"
       (is (renders-with-opacity? (-> {:x [1.0 2.0] :y [10.0 20.0]
                                       :lo [5.0 15.0] :hi [15.0 25.0]}
-                                     (sk/lay-errorbar :x :y {:ymin :lo :ymax :hi :alpha 0.4}))
+                                     (sk/lay-errorbar :x :y {:y-min :lo :y-max :hi :alpha 0.4}))
                                  #"opacity=\"0.4\"")))
 
     (testing "alpha 0.6 propagates to :lollipop"
@@ -1704,10 +1704,10 @@
       (is (= 1 (count (:panels p))))
       (is (nil? (:alpha-legend p)) "alpha legend suppressed when all nil")))
 
-  (testing "nil in :ymin / :ymax drops rows for errorbar"
+  (testing "nil in :y-min / :y-max drops rows for errorbar"
     (let [p (-> {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0]
                  :lo [5.0 nil 25.0] :hi [15.0 nil 35.0]}
-                (sk/lay-errorbar :x :y {:ymin :lo :ymax :hi}) sk/plan)]
+                (sk/lay-errorbar :x :y {:y-min :lo :y-max :hi}) sk/plan)]
       (is (= 1 (count (:panels p)))))))
 
 (deftest sketch-threading-test

@@ -370,9 +370,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__199922#]
+    [p1__208729#]
     (#{"Australia" "Brazil" "Japan" "Nigeria" "Germany"}
-     (:country p1__199922#))))
+     (:country p1__208729#))))
   (sk/view :year :life-exp {:color :country})
   sk/lay-line
   sk/lay-point
@@ -632,7 +632,7 @@
   (rdatasets/datasets-mtcars)
   (sk/view :wt :mpg)
   sk/lay-point
-  (sk/lay-lm {:se true})
+  (sk/lay-lm {:confidence-band true})
   (sk/options
    {:title "Weight vs MPG with Linear Fit",
     :x-label "Weight (1000 lbs)",
@@ -698,7 +698,7 @@
  v106_l547
  (->
   (rdatasets/gapminder-gapminder)
-  (tc/select-rows (fn* [p1__199923#] (= 2007 (:year p1__199923#))))
+  (tc/select-rows (fn* [p1__208730#] (= 2007 (:year p1__208730#))))
   (sk/lay-point :gdp-percap :life-exp {:color :continent, :size :pop})
   (sk/scale :x :log)
   (sk/options
@@ -718,9 +718,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__199924#]
+    [p1__208731#]
     (#{"Brazil" "United States" "Japan" "China" "India"}
-     (:country p1__199924#))))
+     (:country p1__208731#))))
   (sk/lay-line :year :life-exp {:color :country})
   (sk/options
    {:title "Life Expectancy Over Time",
@@ -770,7 +770,7 @@
   (rdatasets/reshape2-tips)
   (sk/view :total-bill :tip {:color :smoker})
   sk/lay-point
-  (sk/lay-loess {:se true})
+  (sk/lay-loess {:confidence-band true})
   (sk/options
    {:title "Tips: Bill vs Tip by Smoking Status",
     :x-label "Total Bill ($)",
@@ -949,7 +949,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  (sk/lay-loess {:se true})
+  (sk/lay-loess {:confidence-band true})
   (sk/options {:title "Iris: Scatter + LOESS by Species"})))
 
 
@@ -1071,9 +1071,9 @@
   (rdatasets/ggplot2-txhousing)
   (tc/select-rows
    (fn*
-    [p1__199925#]
+    [p1__208732#]
     (#{"Houston" "Dallas" "San Antonio" "Austin"}
-     (:city p1__199925#))))
+     (:city p1__208732#))))
   (sk/view :date :median {:color :city})
   sk/lay-line
   (sk/options
@@ -1116,7 +1116,7 @@
  (->
   (rdatasets/lme4-sleepstudy)
   (tc/select-rows
-   (fn* [p1__199926#] (= "308" (str (:subject p1__199926#)))))
+   (fn* [p1__208733#] (= "308" (str (:subject p1__208733#)))))
   (sk/view :days :reaction)
   sk/lay-step
   sk/lay-point
@@ -1231,7 +1231,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__199927#] (= 2007 (:year p1__199927#))))
+   (fn* [p1__208734#] (= 2007 (:year p1__208734#))))
   (sk/lay-point
    :gdp-percap
    :life-exp
@@ -1368,7 +1368,7 @@
   (rdatasets/datasets-mtcars)
   (sk/view :wt :mpg)
   sk/lay-point
-  (sk/lay-lm {:se true})
+  (sk/lay-lm {:confidence-band true})
   (sk/options
    {:title "Weight vs MPG with 95% Confidence Band",
     :x-label "Weight (1000 lbs)",
@@ -1759,8 +1759,8 @@
      [ds]
      (map
       (fn*
-       [p1__199928#]
-       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__199928#))
+       [p1__208735#]
+       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__208735#))
       (ds :month)))))))
 
 
@@ -2062,11 +2062,11 @@
  v315_l1536
  (->
   (tc/dataset
-   {:row (mapcat (fn* [p1__199929#] (repeat 6 p1__199929#)) (range 6)),
+   {:row (mapcat (fn* [p1__208736#] (repeat 6 p1__208736#)) (range 6)),
     :col (flatten (repeat 6 (range 6))),
     :value
     (map
-     (fn* [p1__199930#] (Math/sin (* p1__199930# 0.5)))
+     (fn* [p1__208737#] (Math/sin (* p1__208737# 0.5)))
      (range 36))})
   (sk/view :col :row {:fill :value})
   sk/lay-tile
@@ -2088,19 +2088,19 @@
   (tc/group-by [:species])
   (tc/aggregate
    {:mean (fn [ds] (fstats/mean (ds :sepal-length))),
-    :ymin
+    :y-min
     (fn
      [ds]
      (-
       (fstats/mean (ds :sepal-length))
       (fstats/stddev (ds :sepal-length)))),
-    :ymax
+    :y-max
     (fn
      [ds]
      (+
       (fstats/mean (ds :sepal-length))
       (fstats/stddev (ds :sepal-length))))})
-  (sk/lay-errorbar :species :mean {:ymin :ymin, :ymax :ymax})
+  (sk/lay-errorbar :species :mean {:y-min :y-min, :y-max :y-max})
   (sk/lay-point :species :mean)
   (sk/options
    {:title "Mean Sepal Length +/- SD by Species",
@@ -2504,7 +2504,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__199931#] (= 2007 (:year p1__199931#))))
+   (fn* [p1__208738#] (= 2007 (:year p1__208738#))))
   (sk/view :gdp-percap :life-exp)
   sk/lay-point
   (sk/scale :x :log)

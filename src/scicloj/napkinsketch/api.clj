@@ -310,7 +310,7 @@
    validation. :color / :size / :alpha keyword values are also
    column refs, but the validator ignores string values since
    those are ambiguous (\"red\" might be a CSS color)."
-  [:x :y :color :size :alpha :group :text :ymin :ymax :fill :shape])
+  [:x :y :color :size :alpha :group :text :y-min :y-max :fill :shape])
 
 (defn- column-refs-in-mapping [m]
   (keep #(let [v (get m %)]
@@ -839,7 +839,7 @@
 
 (defn lay-lm
   "Add :lm layer type --linear regression line.
-   Requires x and y (both numerical). Accepts {:se true} for a
+   Requires x and y (both numerical). Accepts {:confidence-band true} for a
    95% confidence band around the fit."
   ([sk-or-data] (lay-layer-type :lm sk-or-data))
   ([sk-or-data x-or-opts] (lay-layer-type :lm sk-or-data x-or-opts))
@@ -848,7 +848,7 @@
 
 (defn lay-loess
   "Add :loess layer type --local regression (LOESS) smooth curve.
-   Requires x and y (both numerical). Accepts {:se true} for a
+   Requires x and y (both numerical). Accepts {:confidence-band true} for a
    confidence band, {:bandwidth 0.5} for smoothing control."
   ([sk-or-data] (lay-layer-type :loess sk-or-data))
   ([sk-or-data x-or-opts] (lay-layer-type :loess sk-or-data x-or-opts))
@@ -927,7 +927,7 @@
 
 (defn lay-errorbar
   "Add :errorbar layer type --vertical error bars from pre-computed bounds.
-   Requires x, y, and {:ymin :col :ymax :col} for lower/upper bounds."
+   Requires x, y, and {:y-min :col :y-max :col} for lower/upper bounds."
   ([sk-or-data] (lay-layer-type :errorbar sk-or-data))
   ([sk-or-data x-or-opts] (lay-layer-type :errorbar sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-layer-type :errorbar sk-or-data x y-or-opts))

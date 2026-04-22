@@ -33,20 +33,18 @@
    :shape "Column keyword for per-point shape"
    :jitter "true or pixel amount — random offset to reduce overplotting"
    :text "Column keyword for label content"
-   :se "true to show SE (standard error) confidence ribbon around fitted line"
-   :se-boot "Number of bootstrap resamples for LOESS confidence ribbon (default 200)"
+   :confidence-band "true to show a standard-error confidence ribbon around the fitted line"
+   :bootstrap-resamples "Number of bootstrap resamples for a LOESS confidence ribbon (default 200)"
    :bandwidth "Smoothing bandwidth for density and LOESS methods"
    :normalize "Histogram normalization — :density (area integrates to 1) or nil"
    :levels "Number of contour iso-levels (default 5)"
    :fill "Column keyword for tile fill values (pre-computed heatmap)"
-   :ymin "Column keyword for lower error bound"
-   :ymax "Column keyword for upper error bound"
+   :y-min "Column keyword for lower error bound of an errorbar, or lower y bound of a horizontal shaded band"
+   :y-max "Column keyword for upper error bound of an errorbar, or upper y bound of a horizontal shaded band"
    :side "Rug tick position — :x (default), :y, or :both"
-   :kde2d-grid "2D KDE grid resolution — number of bins per axis (default 25)"
+   :density-2d-grid "2D density grid resolution — number of bins per axis (default 25)"
    :y-intercept "Numeric y-axis position for a horizontal reference line"
    :x-intercept "Numeric x-axis position for a vertical reference line"
-   :y-min "Lower y bound of a horizontal shaded band"
-   :y-max "Upper y bound of a horizontal shaded band"
    :x-min "Lower x bound of a vertical shaded band"
    :x-max "Upper x bound of a vertical shaded band"})
 
@@ -96,17 +94,17 @@
 (register! :stacked-bar {:mark :rect :stat :count :position :stack :x-only true :accepts [] :doc "Stacked bar — counts categorical values, stacked."})
 (register! :stacked-bar-fill {:mark :rect :stat :count :position :fill :x-only true :accepts [] :doc "Percentage stacked bar — proportions sum to 1.0."})
 (register! :value-bar {:mark :rect :stat :identity :accepts [] :doc "Value bar — categorical x with pre-computed y."})
-(register! :lm {:mark :line :stat :lm :accepts [:se :size :nudge-x :nudge-y] :doc "Linear model (lm) — ordinary least squares (OLS) regression line."})
-(register! :loess {:mark :line :stat :loess :accepts [:se :se-boot :bandwidth :size :nudge-x :nudge-y] :doc "LOESS (local regression) — smooth curve fitted to nearby data."})
+(register! :lm {:mark :line :stat :lm :accepts [:confidence-band :size :nudge-x :nudge-y] :doc "Linear model (lm) — ordinary least squares (OLS) regression line."})
+(register! :loess {:mark :line :stat :loess :accepts [:confidence-band :bootstrap-resamples :bandwidth :size :nudge-x :nudge-y] :doc "LOESS (local regression) — smooth curve fitted to nearby data."})
 (register! :density {:mark :area :stat :kde :x-only true :accepts [:bandwidth] :doc "Density — KDE (kernel density estimation) as filled area."})
-(register! :tile {:mark :tile :stat :bin2d :accepts [:fill :kde2d-grid] :doc "Tile/heatmap — 2D grid binning."})
-(register! :density2d {:mark :tile :stat :kde2d :accepts [:kde2d-grid] :doc "2D density — kernel density estimation (KDE) smoothed heatmap."})
+(register! :tile {:mark :tile :stat :bin2d :accepts [:fill :density-2d-grid] :doc "Tile/heatmap — 2D grid binning."})
+(register! :density2d {:mark :tile :stat :kde2d :accepts [:density-2d-grid] :doc "2D density — kernel density estimation (KDE) smoothed heatmap."})
 (register! :contour {:mark :contour :stat :kde2d :accepts [:levels :size] :doc "Contour — iso-density contour lines."})
 (register! :boxplot {:mark :boxplot :stat :boxplot :accepts [:size] :doc "Boxplot — median, quartiles, whiskers, outliers."})
 (register! :violin {:mark :violin :stat :violin :accepts [:bandwidth :size] :doc "Violin — mirrored density curve per category."})
 (register! :ridgeline {:mark :ridgeline :stat :violin :accepts [:bandwidth] :doc "Ridgeline — stacked density curves per category."})
 (register! :summary {:mark :pointrange :stat :summary :accepts [:size] :doc "Summary — mean ± standard error per category."})
-(register! :errorbar {:mark :errorbar :stat :identity :accepts [:ymin :ymax :size :nudge-x :nudge-y] :doc "Errorbar — vertical error bars."})
+(register! :errorbar {:mark :errorbar :stat :identity :accepts [:y-min :y-max :size :nudge-x :nudge-y] :doc "Errorbar — vertical error bars."})
 (register! :lollipop {:mark :lollipop :stat :identity :accepts [:size] :doc "Lollipop — stem with dot."})
 (register! :text {:mark :text :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Text — data-driven labels."})
 (register! :label {:mark :label :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Label — text with background box."})

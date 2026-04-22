@@ -294,7 +294,7 @@
 
 (-> measurements
     (sk/lay-point :treatment :mean)
-    (sk/lay-errorbar {:ymin :ci-lo :ymax :ci-hi}))
+    (sk/lay-errorbar {:y-min :ci-lo :y-max :ci-hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))

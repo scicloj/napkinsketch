@@ -102,8 +102,8 @@
    :value
    (map
     (fn*
-     [p1__198285#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__198285#) 0.12)))))
+     [p1__207092#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__207092#) 0.12)))))
     (range 52))}))
 
 
@@ -248,7 +248,7 @@
  (->
   experiment
   (sk/lay-point :condition :mean {:size 5})
-  (sk/lay-errorbar {:ymin :ci_lo, :ymax :ci_hi})))
+  (sk/lay-errorbar {:y-min :ci_lo, :y-max :ci_hi})))
 
 
 (deftest
@@ -267,7 +267,7 @@
  (->
   experiment
   (sk/lay-lollipop :condition :mean)
-  (sk/lay-errorbar {:ymin :ci_lo, :ymax :ci_hi})))
+  (sk/lay-errorbar {:y-min :ci_lo, :y-max :ci_hi})))
 
 
 (deftest
@@ -333,7 +333,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   (sk/lay-point {:alpha 0.5})
-  (sk/lay-lm {:se true})
+  (sk/lay-lm {:confidence-band true})
   (sk/options {:title "Sepal Regression with Confidence Bands"})))
 
 
@@ -452,7 +452,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__198286#] (= "virginica" p1__198286#))
+       (fn* [p1__207093#] (= "virginica" p1__207093#))
        (:texts s)))))
    v67_l303)))
 
@@ -506,8 +506,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__198287#] (Math/sin (/ p1__198287# 3.0))) (range 20)),
-   :change (map (fn* [p1__198288#] (- p1__198288# 10)) (range 20))}
+   (map (fn* [p1__207094#] (Math/sin (/ p1__207094# 3.0))) (range 20)),
+   :change (map (fn* [p1__207095#] (- p1__207095# 10)) (range 20))}
   (sk/lay-point :x :y {:color :change})
   (sk/options
    {:color-scale :diverging,
@@ -532,7 +532,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  (sk/lay-loess {:se true})
+  (sk/lay-loess {:confidence-band true})
   (sk/options {:title "LOESS with 95% CI"})))
 
 
@@ -624,8 +624,8 @@
    ys
    (map
     (fn*
-     [p1__198289#]
-     (+ (* 3 p1__198289#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__207096#]
+     (+ (* 3 p1__207096#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}

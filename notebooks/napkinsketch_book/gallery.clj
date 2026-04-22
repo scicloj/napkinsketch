@@ -501,7 +501,7 @@
 (-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
-    (sk/lay-lm {:se true})
+    (sk/lay-lm {:confidence-band true})
     (sk/options {:title "Weight vs MPG with Linear Fit"
                  :x-label "Weight (1000 lbs)"
                  :y-label "Miles per Gallon"}))
@@ -594,7 +594,7 @@
 (-> (rdatasets/reshape2-tips)
     (sk/view :total-bill :tip {:color :smoker})
     sk/lay-point
-    (sk/lay-loess {:se true})
+    (sk/lay-loess {:confidence-band true})
     (sk/options {:title "Tips: Bill vs Tip by Smoking Status"
                  :x-label "Total Bill ($)"
                  :y-label "Tip ($)"}))
@@ -743,7 +743,7 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    (sk/lay-loess {:se true})
+    (sk/lay-loess {:confidence-band true})
     (sk/options {:title "Iris: Scatter + LOESS by Species"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -1056,7 +1056,7 @@
 (-> (rdatasets/datasets-mtcars)
     (sk/view :wt :mpg)
     sk/lay-point
-    (sk/lay-lm {:se true})
+    (sk/lay-lm {:confidence-band true})
     (sk/options {:title "Weight vs MPG with 95% Confidence Band"
                  :x-label "Weight (1000 lbs)"
                  :y-label "Miles per Gallon"}))
@@ -1553,11 +1553,11 @@
 (-> (rdatasets/datasets-iris)
     (tc/group-by [:species])
     (tc/aggregate {:mean (fn [ds] (fstats/mean (ds :sepal-length)))
-                   :ymin (fn [ds] (- (fstats/mean (ds :sepal-length))
-                                     (fstats/stddev (ds :sepal-length))))
-                   :ymax (fn [ds] (+ (fstats/mean (ds :sepal-length))
-                                     (fstats/stddev (ds :sepal-length))))})
-    (sk/lay-errorbar :species :mean {:ymin :ymin :ymax :ymax})
+                   :y-min (fn [ds] (- (fstats/mean (ds :sepal-length))
+                                      (fstats/stddev (ds :sepal-length))))
+                   :y-max (fn [ds] (+ (fstats/mean (ds :sepal-length))
+                                      (fstats/stddev (ds :sepal-length))))})
+    (sk/lay-errorbar :species :mean {:y-min :y-min :y-max :y-max})
     (sk/lay-point :species :mean)
     (sk/options {:title "Mean Sepal Length +/- SD by Species"
                  :x-label "Species"

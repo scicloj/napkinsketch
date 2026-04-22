@@ -53,7 +53,7 @@
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
   sk/lay-point
-  (sk/lay-lm {:se true})))
+  (sk/lay-lm {:confidence-band true})))
 
 
 (deftest
@@ -96,9 +96,9 @@
     :y
     (mapv
      (fn*
-      [p1__198086#]
+      [p1__206893#]
       (+
-       (Math/sin (* p1__198086# 0.2))
+       (Math/sin (* p1__206893# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)

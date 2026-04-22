@@ -41,12 +41,12 @@
 
 ;; ## Regression with Confidence Ribbon
 
-;; Pass `{:se true}` to show a 95% confidence band around the line.
+;; Pass `{:confidence-band true}` to show a 95% confidence band around the line.
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    (sk/lay-lm {:se true}))
+    (sk/lay-lm {:confidence-band true}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))

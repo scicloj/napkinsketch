@@ -85,8 +85,8 @@
                     (and with-labels? labels) (assoc :labels (mapv defaults/fmt-category-label labels)))))]
     (when (and with-range? (seq groups)
                (not-any? :ymins groups))
-      (throw (ex-info (str "errorbar/pointrange requires :ymin and :ymax columns. "
-                           "Pass them as options: (sk/lay-errorbar :x :y {:ymin :lo :ymax :hi})")
+      (throw (ex-info (str "errorbar/pointrange requires :y-min and :y-max columns. "
+                           "Pass them as options: (sk/lay-errorbar :x :y {:y-min :lo :y-max :hi})")
                       {:mark (:mark view)})))
     (when (and with-labels? (seq groups)
                (not-any? :labels groups))
@@ -183,7 +183,7 @@
                              {:color (resolve-color all-colors color (:fixed-color view) cfg)
                               :label (defaults/fmt-category-label color)
                               :xs xs :ys ys}))))}
-        ;; Confidence ribbons from :lm {:se true}
+        ;; Confidence ribbons from :lm {:confidence-band true}
         (:ribbons stat)
         (assoc :ribbons (vec
                          (for [{:keys [color xs ymins ymaxs]} (:ribbons stat)]

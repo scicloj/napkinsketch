@@ -248,7 +248,7 @@
 
 (-> {:x [1 2 3] :y [2 4 5]}
     (sk/lay-point :x :y)
-    (sk/lay-lm {:se true}))
+    (sk/lay-lm {:confidence-band true}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 3 (:points s))

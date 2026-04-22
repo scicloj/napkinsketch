@@ -241,7 +241,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__199311#] (Math/sin (* p1__199311# 0.3)))
+    (fn* [p1__208118#] (Math/sin (* p1__208118# 0.3)))
     (range 30))}))
 
 
@@ -360,9 +360,9 @@
     :y
     (mapv
      (fn*
-      [p1__199312#]
+      [p1__208119#]
       (+
-       (Math/sin (* p1__199312# 0.2))
+       (Math/sin (* p1__208119# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
@@ -514,7 +514,7 @@
  (->
   measurements
   (sk/lay-point :treatment :mean)
-  (sk/lay-errorbar {:ymin :ci-lo, :ymax :ci-hi})))
+  (sk/lay-errorbar {:y-min :ci-lo, :y-max :ci-hi})))
 
 
 (deftest

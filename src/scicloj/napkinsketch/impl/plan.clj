@@ -253,7 +253,7 @@
       rv
       (let [numeric-cols (distinct
                           (keep #(numeric-col-ref rv ds %)
-                                [:x :y :color :size :alpha :ymin :ymax :fill]))
+                                [:x :y :color :size :alpha :y-min :y-max :fill]))
             n-before (tc/row-count ds)
             ;; First pass: drop missing (nil)
             ds (if (seq numeric-cols)

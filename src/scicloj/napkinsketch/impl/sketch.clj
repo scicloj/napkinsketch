@@ -151,7 +151,7 @@
 (defn- validate-columns
   "Validate that every aesthetic column reference in the resolved mapping
    names a real column in the dataset. Covers :x, :y, :color, :size, :alpha,
-   :shape, :group, :text, :ymin, :ymax, :fill. Accepts both keyword and
+   :shape, :group, :text, :y-min, :y-max, :fill. Accepts both keyword and
    string refs with cross-type matching. Also rejects columns whose values
    are heterogeneous in type (mixed numbers/strings/keywords) -- these would
    produce a Malli schema dump deeper in the pipeline.

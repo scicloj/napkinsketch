@@ -182,7 +182,7 @@
 
 (-> experiment
     (sk/lay-point :condition :mean {:size 5})
-    (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
+    (sk/lay-errorbar {:y-min :ci_lo :y-max :ci_hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -194,7 +194,7 @@
 
 (-> experiment
     (sk/lay-lollipop :condition :mean)
-    (sk/lay-errorbar {:ymin :ci_lo :ymax :ci_hi}))
+    (sk/lay-errorbar {:y-min :ci_lo :y-max :ci_hi}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:points s))
@@ -239,7 +239,7 @@
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     (sk/lay-point {:alpha 0.5})
-    (sk/lay-lm {:se true})
+    (sk/lay-lm {:confidence-band true})
     (sk/options {:title "Sepal Regression with Confidence Bands"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -358,12 +358,12 @@
 
 ;; ### LOESS (Local Regression) [Confidence Ribbon](https://en.wikipedia.org/wiki/Confidence_band)
 ;;
-;; Add `{:se true}` to a LOESS smoother for a bootstrap confidence band.
+;; Add `{:confidence-band true}` to a LOESS smoother for a bootstrap confidence band.
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
     sk/lay-point
-    (sk/lay-loess {:se true})
+    (sk/lay-loess {:confidence-band true})
     (sk/options {:title "LOESS with 95% CI"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
