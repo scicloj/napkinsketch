@@ -676,7 +676,7 @@ plan1
 
 (count (sk/registered-layer-types))
 
-(kind/test-last [(fn [n] (= 29 n))])
+(kind/test-last [(fn [n] (= 30 n))])
 
 ;; ## Documentation Helpers
 ;;

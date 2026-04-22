@@ -870,6 +870,16 @@
   ([sk-or-data x y-or-opts] (lay-layer-type :value-bar sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-layer-type :value-bar sk-or-data x y opts)))
 
+(defn lay-smooth
+  "Add :smooth layer type --a smoothed trend line.
+   Defaults to LOESS (local regression). Pass {:stat :linear-model} for
+   ordinary least squares instead. Requires x and y (both numerical).
+   Accepts {:confidence-band true} for a confidence ribbon."
+  ([sk-or-data] (lay-layer-type :smooth sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :smooth sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :smooth sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :smooth sk-or-data x y opts)))
+
 (defn lay-lm
   "Add :lm layer type --linear regression line.
    Requires x and y (both numerical). Accepts {:confidence-band true} for a

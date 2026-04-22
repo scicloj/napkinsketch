@@ -70,7 +70,7 @@
 
 (kind/test-last
  [(fn [t]
-    (= 29 (count (:row-maps t))))])
+    (= 30 (count (:row-maps t))))])
 
 ;; ## Marks
 ;;

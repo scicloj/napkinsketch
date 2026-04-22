@@ -77,7 +77,7 @@
   "Canonical display order for built-in layer types."
   [:point :line :step :area :stacked-area
    :histogram :bar :stacked-bar :stacked-bar-fill :value-bar
-   :lm :loess :density
+   :smooth :lm :loess :density
    :tile :density2d :contour
    :boxplot :violin :ridgeline
    :summary :errorbar :lollipop
@@ -98,6 +98,7 @@
 (register! :value-bar {:mark :rect :stat :identity :accepts [] :doc "Value bar — categorical x with pre-computed y."})
 (register! :lm {:mark :line :stat :lm :accepts [:confidence-band :size :nudge-x :nudge-y] :doc "Linear model (lm) — ordinary least squares (OLS) regression line."})
 (register! :loess {:mark :line :stat :loess :accepts [:confidence-band :bootstrap-resamples :bandwidth :size :nudge-x :nudge-y] :doc "LOESS (local regression) — smooth curve fitted to nearby data."})
+(register! :smooth {:mark :line :stat :loess :accepts [:confidence-band :bootstrap-resamples :bandwidth :size :nudge-x :nudge-y] :doc "Smoothed trend line — defaults to LOESS; pass {:stat :linear-model} for OLS."})
 (register! :density {:mark :area :stat :kde :x-only true :accepts [:bandwidth] :doc "Density — KDE (kernel density estimation) as filled area."})
 (register! :tile {:mark :tile :stat :bin2d :accepts [:fill :density-2d-grid] :doc "Tile/heatmap — 2D grid binning."})
 (register! :density2d {:mark :tile :stat :kde2d :accepts [:density-2d-grid] :doc "2D density — kernel density estimation (KDE) smoothed heatmap."})

@@ -53,7 +53,7 @@
      "Position" (kind/code (pr-str (or (:position m) :identity)))})}))
 
 
-(deftest t7_l71 (is ((fn [t] (= 29 (count (:row-maps t)))) v6_l61)))
+(deftest t7_l71 (is ((fn [t] (= 30 (count (:row-maps t)))) v6_l61)))
 
 
 (def

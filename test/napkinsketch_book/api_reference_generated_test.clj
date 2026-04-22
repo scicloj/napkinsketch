@@ -241,7 +241,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__208118#] (Math/sin (* p1__208118# 0.3)))
+    (fn* [p1__221775#] (Math/sin (* p1__221775# 0.3)))
     (range 30))}))
 
 
@@ -360,9 +360,9 @@
     :y
     (mapv
      (fn*
-      [p1__208119#]
+      [p1__221776#]
       (+
-       (Math/sin (* p1__208119# 0.2))
+       (Math/sin (* p1__221776# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
@@ -1117,7 +1117,7 @@
 (def v236_l677 (count (sk/registered-layer-types)))
 
 
-(deftest t237_l679 (is ((fn [n] (= 29 n)) v236_l677)))
+(deftest t237_l679 (is ((fn [n] (= 30 n)) v236_l677)))
 
 
 (def v239_l685 (kind/doc #'sk/stat-doc))
