@@ -17,24 +17,24 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__114989#] (dissoc p1__114989# :data))))
+    (partial mapv (fn* [p1__121302#] (dissoc p1__121302# :data))))
    kind/pprint)))
 
 
 (def
- v5_l71
+ v5_l72
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
- t6_l74
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v5_l71)))
+ t6_l75
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v5_l72)))
 
 
 (def
- v8_l78
+ v8_l79
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -42,16 +42,16 @@
 
 
 (deftest
- t9_l82
+ t9_l83
  (is
   ((fn
     [m]
     (= :species (get-in m [:views 0 :layers 0 :mapping :color])))
-   v8_l78)))
+   v8_l79)))
 
 
 (def
- v11_l135
+ v11_l136
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -60,12 +60,12 @@
 
 
 (deftest
- t12_l140
- (is ((fn [v] (some #{"Iris"} (:texts (sk/svg-summary v)))) v11_l135)))
+ t12_l141
+ (is ((fn [v] (some #{"Iris"} (:texts (sk/svg-summary v)))) v11_l136)))
 
 
 (def
- v14_l144
+ v14_l145
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width)
@@ -75,21 +75,21 @@
 
 
 (deftest
- t15_l150
+ t15_l151
  (is
   ((fn
     [m]
     (and
      (= "Iris" (get-in m [:opts :title]))
      (= :flip (get-in m [:opts :coord]))))
-   v14_l144)))
+   v14_l145)))
 
 
-(def v17_l212 (select-keys (sk/config) [:width :height :margin]))
+(def v17_l213 (select-keys (sk/config) [:width :height :margin]))
 
 
 (deftest
- t18_l214
+ t18_l215
  (is
   ((fn
     [m]
@@ -97,11 +97,11 @@
      (number? (:width m))
      (number? (:height m))
      (number? (:margin m))))
-   v17_l212)))
+   v17_l213)))
 
 
 (def
- v20_l226
+ v20_l227
  (def
   demo
   (->
@@ -111,21 +111,21 @@
    (sk/coord :flip))))
 
 
-(def v22_l236 demo)
+(def v22_l237 demo)
 
 
 (deftest
- t23_l238
+ t23_l239
  (is
   ((fn [v] (some #{"Iris measurements"} (:texts (sk/svg-summary v))))
-   v22_l236)))
+   v22_l237)))
 
 
-(def v25_l242 (sk-summary demo))
+(def v25_l243 (sk-summary demo))
 
 
 (deftest
- t26_l244
+ t26_l245
  (is
   ((fn
     [m]
@@ -133,4 +133,4 @@
      (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
      (= "Iris measurements" (get-in m [:opts :title]))
      (= :flip (get-in m [:opts :coord]))))
-   v25_l242)))
+   v25_l243)))

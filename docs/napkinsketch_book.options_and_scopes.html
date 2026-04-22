@@ -489,7 +489,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li><p><strong>The method</strong> – the drawing recipe: a mark (point, line, bar, histogram, …), a stat (identity, lm, density, binning, …), and a position adjustment (dodge, stack, jitter). The method is chosen by which <code>sk/lay-*</code> function you call; its constituents can be overridden via <code>:mark</code>, <code>:stat</code>, and <code>:position</code> keys in the opts map.</p></li>
 <li><p><strong>Method parameters</strong> – knobs specific to the method, like <code>:bandwidth</code> for <code>sk/lay-kde</code> or <code>:bins</code> for <code>sk/lay-histogram</code>.</p></li>
-<li><p><strong>Aesthetics</strong> – how the method maps data to visuals: <code>:color</code>, <code>:size</code>, <code>:alpha</code>, <code>:shape</code>, <code>:group</code>. Either mapped from a column (<code>:color :species</code>) or given as a constant (<code>:alpha 0.3</code>).</p></li>
+<li><p><strong>Aesthetics</strong> – how the method maps data to visuals: <code>:color</code>, <code>:size</code>, <code>:alpha</code>, <code>:shape</code>, <code>:group</code>, plus mark-specific keys like <code>:text</code> and <code>:fill</code>. Either mapped from a column (<code>:color :species</code>) or given as a constant (<code>:alpha 0.3</code>).</p></li>
 <li><p><strong>Data</strong> – a per-layer <code>:data</code> key, if the layer should use a different dataset from the rest of the sketch.</p></li>
 </ul>
 <p>The primary way to set them is in the opts map of <code>sk/lay-*</code>:</p>
