@@ -8,7 +8,7 @@
 
 
 (def
- v2_l17
+ v2_l18
  (def
   wind
   {:direction ["N" "NE" "E" "SE" "S" "SW" "W" "NW"],
@@ -16,7 +16,7 @@
 
 
 (def
- v4_l26
+ v4_l27
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -24,50 +24,50 @@
 
 
 (deftest
- t5_l30
+ t5_l31
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
-   v4_l26)))
+   v4_l27)))
 
 
 (def
- v7_l41
+ v7_l42
  (-> (rdatasets/datasets-iris) (sk/lay-bar :species) (sk/coord :polar)))
 
 
 (deftest
- t8_l45
+ t8_l46
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v7_l41)))
+   v7_l42)))
 
 
 (def
- v10_l54
+ v10_l55
  (-> wind (sk/lay-value-bar :direction :speed) (sk/coord :polar)))
 
 
 (deftest
- t11_l58
+ t11_l59
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)))))
-   v10_l54)))
+   v10_l55)))
 
 
 (def
- v13_l66
+ v13_l67
  (->
   (rdatasets/palmerpenguins-penguins)
   (sk/lay-stacked-bar :island {:color :species})
@@ -75,18 +75,18 @@
 
 
 (deftest
- t14_l70
+ t14_l71
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v13_l66)))
+   v13_l67)))
 
 
 (def
- v16_l79
+ v16_l80
  (->
   (rdatasets/datasets-iris)
   (sk/lay-histogram :sepal-length)
@@ -94,18 +94,18 @@
 
 
 (deftest
- t17_l83
+ t17_l84
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v16_l79)))
+   v16_l80)))
 
 
 (def
- v19_l92
+ v19_l93
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -114,7 +114,7 @@
 
 
 (deftest
- t20_l97
+ t20_l98
  (is
   ((fn
     [v]
@@ -123,4 +123,4 @@
      (and
       (= 1 (:panels s))
       (some #{"Iris in Polar Space"} (:texts s)))))
-   v19_l92)))
+   v19_l93)))

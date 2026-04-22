@@ -429,7 +429,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#more-recipes" id="toc-more-recipes" class="nav-link" data-scroll-target="#more-recipes">More Recipes</a>
   <ul>
-  <li><a href="#confidence-ribbon" id="toc-confidence-ribbon" class="nav-link" data-scroll-target="#confidence-ribbon">Confidence ribbon</a></li>
+  <li><a href="#confidence-band" id="toc-confidence-band" class="nav-link" data-scroll-target="#confidence-band">Confidence band</a></li>
   <li><a href="#stacked-vs-grouped-bars" id="toc-stacked-vs-grouped-bars" class="nav-link" data-scroll-target="#stacked-vs-grouped-bars">Stacked vs grouped bars</a></li>
   <li><a href="#step-line" id="toc-step-line" class="nav-link" data-scroll-target="#step-line">Step line</a></li>
   <li><a href="#contour-scatter" id="toc-contour-scatter" class="nav-link" data-scroll-target="#contour-scatter">Contour + scatter</a></li>
@@ -690,9 +690,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="more-recipes" class="level2">
 <h2 class="anchored" data-anchor-id="more-recipes">More Recipes</h2>
-<section id="confidence-ribbon" class="level3">
-<h3 class="anchored" data-anchor-id="confidence-ribbon">Confidence ribbon</h3>
-<p>A scatter plot with per-group linear regressions and 95% confidence ribbons.</p>
+<section id="confidence-band" class="level3">
+<h3 class="anchored" data-anchor-id="confidence-band">Confidence band</h3>
+<p>A scatter plot with per-group linear regressions and 95% confidence bands.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    (sk/view <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
@@ -1004,7 +1004,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">:format</span> <span class="at">:bufimg</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="clay-image">
-<p><img src="napkinsketch_book.cookbook_files/image2.png" class="img-fluid"></p>
+<p><img src="napkinsketch_book.cookbook_files/image3.png" class="img-fluid"></p>
 </div>
 </section>
 <section id="saving-to-png" class="level3">

@@ -461,7 +461,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>stat</strong> – what computation to apply first (pass through, bin, count, regress, …)</li>
 <li><strong>position</strong> – how overlapping groups share space (identity, dodge, stack, fill)</li>
 </ul>
-<p>Layer functions (<code>sk/lay-point</code>, <code>sk/lay-histogram</code>, <code>sk/lay-bar</code>, <code>sk/lay-lm</code>, etc.) each add a layer with the corresponding method. When no layer is added, napkinsketch infers a method from the column types.</p>
+<p>Layer functions (<code>sk/lay-point</code>, <code>sk/lay-histogram</code>, <code>sk/lay-bar</code>, <code>sk/lay-lm</code>, etc.) each add a layer with the corresponding method. When no layer is added, Napkinsketch infers a method from the column types.</p>
 <p>All built-in methods are registered in a data registry. The tables below are generated from that registry – they stay in sync with the code.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> napkinsketch-book.<span class="kw">methods</span></span>

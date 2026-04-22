@@ -451,7 +451,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" type="text/javascript"></script>
 <p>Napkinsketch is a composable plotting library inspired by Wilkinson’s <a href="https://link.springer.com/book/10.1007/0-387-28695-0">Grammar of Graphics</a> and Julia’s <a href="https://aog.makie.org/stable/">AlgebraOfGraphics.jl</a>. Its operators are shaped by Clojure idioms – threading, merge, plain maps – rather than a custom DSL.</p>
-<p>This chapter introduces the mental model. Five ideas, and everything else in the book is details.</p>
+<p>This chapter introduces the mental model in five ideas.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> napkinsketch-book.sketch-model</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span></span>
@@ -569,7 +569,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="idea-4-inference-fills-the-gaps" class="level2">
 <h2 class="anchored" data-anchor-id="idea-4-inference-fills-the-gaps">Idea 4: Inference fills the gaps</h2>
-<p>When you omit a choice, napkinsketch infers it from the data. Two numerical columns with no <code>lay-*</code> are inferred as a scatter:</p>
+<p>When you omit a choice, Napkinsketch infers it from the data. Two numerical columns with no <code>lay-*</code> are inferred as a scatter:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    (sk/view <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>

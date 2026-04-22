@@ -491,15 +491,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:margin-multi</span> <span class="dv">10</span>,</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:loess-bandwidth</span> <span class="va">nil</span>,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:validate</span> <span class="va">true</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a> <span class="at">:point-stroke</span> <span class="st">"none"</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a> <span class="at">:title-offset</span> <span class="dv">18</span>,</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a> <span class="at">:tick-spacing-y</span> <span class="dv">40</span>,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a> <span class="at">:panel-size</span> <span class="dv">200</span>,</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a> <span class="at">:min-panel-size</span> <span class="dv">20</span>,</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a> <span class="at">:label-offset</span> <span class="dv">38</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a> <span class="at">:label-font-size</span> <span class="dv">13</span>,</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:validate</span> <span class="va">true</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:point-stroke</span> <span class="st">"none"</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a> <span class="at">:title-offset</span> <span class="dv">18</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a> <span class="at">:tick-spacing-y</span> <span class="dv">40</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a> <span class="at">:panel-size</span> <span class="dv">200</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a> <span class="at">:min-panel-size</span> <span class="dv">20</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a> <span class="at">:label-offset</span> <span class="dv">38</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a> <span class="at">:label-font-size</span> <span class="dv">13</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a> <span class="at">:palette</span> <span class="va">nil</span>,</span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a> <span class="at">:default-color</span> <span class="st">"#333"</span>,</span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a> <span class="at">:width</span> <span class="dv">600</span>,</span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a> <span class="at">:legend-header-pad</span> <span class="dv">20</span>,</span>
@@ -1164,7 +1164,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb116"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:plan-width</span> <span class="dv">900</span>, <span class="at">:plan-height</span> <span class="dv">500</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>We can verify point-radius too – only set-config! touched it, so it wins over the library default (2.0):</p>
+<p>We can verify point-radius too – only set-config! touched it, so it wins over the library default (3.0):</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb117"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> precedence-point-radius</span></span>
 <span id="cb117-2"><a href="#cb117-2" aria-hidden="true" tabindex="-1"></a>  (sk/with-config {<span class="at">:width</span> <span class="dv">1200</span> <span class="at">:height</span> <span class="dv">500</span>}</span>
