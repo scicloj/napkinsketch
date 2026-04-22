@@ -1,53 +1,73 @@
 (ns scicloj.napkinsketch.impl.frame-schema
-  "Malli schema skeleton for the Frame data model.
+  "Malli schema for the Frame data model.
 
    A frame is a plain recursive map that replaces both sketch and view.
-   A leaf frame has no :frames. A composite frame has :frames and an
-   optional :layout describing how sub-frames tile a bounding rectangle.
+   A leaf frame has no :frames (or an empty :frames vector). A composite
+   frame has :frames and an optional :layout describing how sub-frames
+   tile a bounding rectangle.
 
-   This schema is intentionally permissive -- it describes the structural
-   shape, not semantic constraints. Validation is not wired into any
-   runtime path yet; Phase 2 of the pre-alpha refactor (see
-   dev-notes/pre-alpha-refactor-plan.md) adds unit tests against this
-   schema, and Phase 6 wires validation at public API boundaries.
+   Validation is not wired into any runtime path yet; Phase 6 of the
+   pre-alpha refactor (see dev-notes/pre-alpha-refactor-plan.md) adds
+   validation at public API boundaries. Until then, impl.frame operates
+   on structurally-valid frames by convention; this schema is the
+   authoritative definition of that convention.
 
-   Open questions deferred to Phase 2:
-   - Whether {:layers [...]} with no :data and no :mapping is a valid
-     intermediate frame (leaf that inherits everything from its parent).
-   - Whether :share-scales only belongs on composites or also on leaves
-     (probably composites only -- a leaf has nothing to share with).
-   - Whether :layout requires :weights to match (count :frames)."
+   Decisions made in Phase 2:
+   - A leaf with no :data and no :mapping is valid -- leaves inherit
+     context from ancestors via impl.frame/resolve-tree.
+   - :share-scales is structurally allowed on any frame; it is a no-op
+     on leaves (nothing to share).
+   - :layout :weights length is not required to equal (count :frames);
+     impl.frame/compute-layout tolerates short/long weight vectors."
   (:require [malli.core :as m]))
 
-;; ---- Frame sub-schemas ----
+;; ---- Sub-schemas ----
 
 (def Layout
   "Compositor layout spec for a composite frame."
   [:map
-   [:direction [:enum :horizontal :vertical]]
+   [:direction {:optional true} [:enum :horizontal :vertical]]
    [:weights {:optional true} [:vector pos?]]])
 
 (def ShareScales
-  "Axis keys shared across descendants of a composite."
+  "Axis keys whose scale domains union across descendants of a composite."
   [:set [:enum :x :y]])
+
+(def Mapping
+  "Aesthetic mapping: keyword key -> column ref or literal value."
+  [:map-of keyword? any?])
+
+(def Layer
+  "A layer declaration inside a frame. :layer-type names a registered
+   entry; :mark / :stat allow per-layer overrides (Phase 1 item 08)."
+  [:map
+   [:layer-type {:optional true} keyword?]
+   [:mark       {:optional true} keyword?]
+   [:stat       {:optional true} keyword?]
+   [:mapping    {:optional true} Mapping]
+   [:data       {:optional true} any?]])
 
 ;; ---- Frame (recursive) ----
 
 (def FrameSchema
-  "Structural schema for a frame tree. Permissive by design.
+  "Structural schema for a frame tree.
 
    Shape:
      {:data         ?  dataset (inherited from ancestor if absent)
       :mapping      ?  aesthetic mappings (merges with ancestors)
-      :layers       ?  layers at this level (accumulates into leaves)
-      :frames       ?  sub-frames; absent = leaf
+      :layers       ?  Layer vec at this level (accumulates into leaves)
+      :frames       ?  sub-frames; absent or empty = leaf
       :layout       ?  Layout for composites
       :opts         ?  plot options (inheritable)
-      :share-scales ?  ShareScales for composites}"
+      :share-scales ?  ShareScales}
+
+   Permissive {:closed false} intentionally -- generators like facet
+   and mosaic attach metadata keys (:panel-label, :facet-row, ...) to
+   leaves that pass through resolve-tree unchanged."
   [:schema {:registry {::frame [:map
                                 [:data {:optional true} any?]
-                                [:mapping {:optional true} [:map-of keyword? any?]]
-                                [:layers {:optional true} [:vector map?]]
+                                [:mapping {:optional true} Mapping]
+                                [:layers {:optional true} [:vector Layer]]
                                 [:frames {:optional true} [:vector [:ref ::frame]]]
                                 [:layout {:optional true} Layout]
                                 [:opts {:optional true} map?]
