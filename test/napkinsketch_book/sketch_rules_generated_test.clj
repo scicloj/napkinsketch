@@ -21,7 +21,7 @@
    (select-keys sk [:mapping :views :layers :opts])
    (update
     :views
-    (partial mapv (fn* [p1__227870#] (dissoc p1__227870# :data))))
+    (partial mapv (fn* [p1__234457#] (dissoc p1__234457# :data))))
    kind/pprint)))
 
 
@@ -525,7 +525,7 @@
       (= 2 (:panels s))
       (= 300 (:points s))
       (every?
-       (fn* [p1__227871#] (= :species (:color p1__227871#)))
+       (fn* [p1__234458#] (= :species (:color p1__234458#)))
        d))))
    v69_l445)))
 
@@ -853,8 +853,8 @@
       rule
       (some
        (fn*
-        [p1__227872#]
-        (when (= :rule-h (:layer-type p1__227872#)) p1__227872#))
+        [p1__234459#]
+        (when (= :rule-h (:layer-type p1__234459#)) p1__234459#))
        layers)]
      (and (some? rule) (= 3.0 (get-in rule [:mapping :y-intercept])))))
    v106_l671)))

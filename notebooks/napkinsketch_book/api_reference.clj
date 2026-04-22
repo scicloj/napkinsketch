@@ -317,10 +317,10 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:visible-tiles s))))])
 
-(kind/doc #'sk/lay-density2d)
+(kind/doc #'sk/lay-density-2d)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-density2d :sepal-length :sepal-width))
+    (sk/lay-density-2d :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (pos? (:visible-tiles s))))])

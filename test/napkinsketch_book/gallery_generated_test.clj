@@ -370,9 +370,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__231388#]
+    [p1__237975#]
     (#{"Australia" "Brazil" "Japan" "Nigeria" "Germany"}
-     (:country p1__231388#))))
+     (:country p1__237975#))))
   (sk/view :year :life-exp {:color :country})
   sk/lay-line
   sk/lay-point
@@ -417,7 +417,7 @@
   (rdatasets/ggplot2-diamonds)
   (tc/head 2000)
   (sk/view :carat :price)
-  sk/lay-density2d
+  sk/lay-density-2d
   (sk/options
    {:title "Diamond Carat vs Price (density)",
     :x-label "Carat",
@@ -698,7 +698,7 @@
  v106_l547
  (->
   (rdatasets/gapminder-gapminder)
-  (tc/select-rows (fn* [p1__231389#] (= 2007 (:year p1__231389#))))
+  (tc/select-rows (fn* [p1__237976#] (= 2007 (:year p1__237976#))))
   (sk/lay-point :gdp-percap :life-exp {:color :continent, :size :pop})
   (sk/scale :x :log)
   (sk/options
@@ -718,9 +718,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__231390#]
+    [p1__237977#]
     (#{"Brazil" "United States" "Japan" "China" "India"}
-     (:country p1__231390#))))
+     (:country p1__237977#))))
   (sk/lay-line :year :life-exp {:color :country})
   (sk/options
    {:title "Life Expectancy Over Time",
@@ -1071,9 +1071,9 @@
   (rdatasets/ggplot2-txhousing)
   (tc/select-rows
    (fn*
-    [p1__231391#]
+    [p1__237978#]
     (#{"Houston" "Dallas" "San Antonio" "Austin"}
-     (:city p1__231391#))))
+     (:city p1__237978#))))
   (sk/view :date :median {:color :city})
   sk/lay-line
   (sk/options
@@ -1116,7 +1116,7 @@
  (->
   (rdatasets/lme4-sleepstudy)
   (tc/select-rows
-   (fn* [p1__231392#] (= "308" (str (:subject p1__231392#)))))
+   (fn* [p1__237979#] (= "308" (str (:subject p1__237979#)))))
   (sk/view :days :reaction)
   sk/lay-step
   sk/lay-point
@@ -1231,7 +1231,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__231393#] (= 2007 (:year p1__231393#))))
+   (fn* [p1__237980#] (= 2007 (:year p1__237980#))))
   (sk/lay-point
    :gdp-percap
    :life-exp
@@ -1759,8 +1759,8 @@
      [ds]
      (map
       (fn*
-       [p1__231394#]
-       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__231394#))
+       [p1__237981#]
+       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__237981#))
       (ds :month)))))))
 
 
@@ -1922,7 +1922,7 @@
  (->
   (rdatasets/datasets-faithful)
   (sk/view :eruptions :waiting)
-  sk/lay-density2d
+  sk/lay-density-2d
   (sk/options
    {:title "Old Faithful: 2D Density",
     :x-label "Eruption Duration (min)",
@@ -1940,7 +1940,7 @@
   (rdatasets/datasets-faithful)
   (sk/view :eruptions :waiting)
   sk/lay-point
-  sk/lay-density2d
+  sk/lay-density-2d
   (sk/options
    {:title "Old Faithful: Scatter + Density",
     :x-label "Eruption Duration (min)",
@@ -2023,7 +2023,7 @@
   (tc/head 3000)
   (sk/view :carat :price)
   sk/lay-point
-  sk/lay-density2d
+  sk/lay-density-2d
   (sk/options
    {:title "Diamonds: Scatter + 2D Density",
     :x-label "Carat",
@@ -2046,7 +2046,7 @@
  (->
   (rdatasets/ggplot2-mpg)
   (sk/view :displ :hwy)
-  sk/lay-density2d
+  sk/lay-density-2d
   (sk/options
    {:title "MPG: Displacement vs Highway (Density)",
     :x-label "Displacement (L)",
@@ -2062,11 +2062,11 @@
  v315_l1536
  (->
   (tc/dataset
-   {:row (mapcat (fn* [p1__231395#] (repeat 6 p1__231395#)) (range 6)),
+   {:row (mapcat (fn* [p1__237982#] (repeat 6 p1__237982#)) (range 6)),
     :col (flatten (repeat 6 (range 6))),
     :value
     (map
-     (fn* [p1__231396#] (Math/sin (* p1__231396# 0.5)))
+     (fn* [p1__237983#] (Math/sin (* p1__237983# 0.5)))
      (range 36))})
   (sk/view :col :row {:fill :value})
   sk/lay-tile
@@ -2504,7 +2504,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__231397#] (= 2007 (:year p1__231397#))))
+   (fn* [p1__237984#] (= 2007 (:year p1__237984#))))
   (sk/view :gdp-percap :life-exp)
   sk/lay-point
   (sk/scale :x :log)
@@ -2721,7 +2721,7 @@
  (->
   (rdatasets/datasets-iris)
   (sk/view :sepal-length :sepal-width {:color :species})
-  sk/lay-density2d
+  sk/lay-density-2d
   (sk/options
    {:title "Iris: 2D Density by Species",
     :x-label "Sepal Length",

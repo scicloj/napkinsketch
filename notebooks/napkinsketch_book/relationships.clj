@@ -115,7 +115,7 @@
 ;; [KDE](https://en.wikipedia.org/wiki/Kernel_density_estimation)-smoothed 2D density heatmap.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-density2d :sepal-length :sepal-width))
+    (sk/lay-density-2d :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
@@ -126,7 +126,7 @@
 ;; Overlay scatter points on the density heatmap.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-density2d :sepal-length :sepal-width)
+    (sk/lay-density-2d :sepal-length :sepal-width)
     (sk/lay-point {:alpha 0.5}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]

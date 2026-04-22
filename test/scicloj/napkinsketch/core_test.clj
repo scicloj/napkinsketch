@@ -389,7 +389,7 @@
       :stacked-area :area
       :density :area
       :tile :tile
-      :density2d :tile
+      :density-2d :tile
       :contour :contour
       :ridgeline :ridgeline
       :boxplot :boxplot
@@ -1353,13 +1353,13 @@
         (is (> (count (distinct (map :color tiles-color))) 1)
             ":color path produces varying tile colors, not uniform")))
 
-    (testing "lay-density2d with :color :species (categorical) still works"
-      ;; This used to hit the over-broad tile-override; must stay :kde2d.
+    (testing "lay-density-2d with :color :species (categorical) still works"
+      ;; This used to hit the over-broad tile-override; must stay :density-2d.
       (is (some? (-> (tc/dataset {:x [1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0]
                                   :y [1.0 2.1 3.0 4.2 5.1 6.0 7.0 8.1 9.0 10.0]
                                   :g ["a" "a" "a" "a" "a" "b" "b" "b" "b" "b"]})
                      (sk/view :x :y {:color :g})
-                     sk/lay-density2d sk/plan))))))
+                     sk/lay-density-2d sk/plan))))))
 
 (deftest mixed-type-column-test
   ;; persona-skeptical-round-4 F5: a column whose values are heterogeneous

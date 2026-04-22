@@ -96,9 +96,9 @@
     :y
     (mapv
      (fn*
-      [p1__229552#]
+      [p1__236139#]
       (+
-       (Math/sin (* p1__229552# 0.2))
+       (Math/sin (* p1__236139# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
@@ -163,7 +163,7 @@
  v25_l117
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-density2d :sepal-length :sepal-width)))
+  (sk/lay-density-2d :sepal-length :sepal-width)))
 
 
 (deftest
@@ -181,7 +181,7 @@
  v28_l128
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-density2d :sepal-length :sepal-width)
+  (sk/lay-density-2d :sepal-length :sepal-width)
   (sk/lay-point {:alpha 0.5})))
 
 

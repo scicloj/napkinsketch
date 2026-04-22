@@ -915,14 +915,14 @@
   ([sk-or-data x y-or-opts] (lay-layer-type :tile sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-layer-type :tile sk-or-data x y opts)))
 
-(defn lay-density2d
-  "Add :density2d layer type --2D kernel density heatmap.
+(defn lay-density-2d
+  "Add :density-2d layer type --2D kernel density heatmap.
    Requires x and y (both numerical). Produces a smoothed density
    surface as colored tiles with a continuous gradient legend."
-  ([sk-or-data] (lay-layer-type :density2d sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :density2d sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :density2d sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :density2d sk-or-data x y opts)))
+  ([sk-or-data] (lay-layer-type :density-2d sk-or-data))
+  ([sk-or-data x-or-opts] (lay-layer-type :density-2d sk-or-data x-or-opts))
+  ([sk-or-data x y-or-opts] (lay-layer-type :density-2d sk-or-data x y-or-opts))
+  ([sk-or-data x y opts] (lay-layer-type :density-2d sk-or-data x y opts)))
 
 (defn lay-contour
   "Add :contour layer type --iso-density contour lines from 2D KDE.

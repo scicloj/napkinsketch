@@ -241,7 +241,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__230777#] (Math/sin (* p1__230777# 0.3)))
+    (fn* [p1__237364#] (Math/sin (* p1__237364# 0.3)))
     (range 30))}))
 
 
@@ -360,9 +360,9 @@
     :y
     (mapv
      (fn*
-      [p1__230778#]
+      [p1__237365#]
       (+
-       (Math/sin (* p1__230778# 0.2))
+       (Math/sin (* p1__237365# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
@@ -562,14 +562,14 @@
    v98_l314)))
 
 
-(def v100_l320 (kind/doc #'sk/lay-density2d))
+(def v100_l320 (kind/doc #'sk/lay-density-2d))
 
 
 (def
  v101_l322
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-density2d :sepal-length :sepal-width)))
+  (sk/lay-density-2d :sepal-length :sepal-width)))
 
 
 (deftest

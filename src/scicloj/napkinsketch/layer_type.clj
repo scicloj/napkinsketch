@@ -78,7 +78,7 @@
   [:point :line :step :area :stacked-area
    :histogram :bar :stacked-bar :stacked-bar-fill :value-bar
    :smooth :lm :loess :density
-   :tile :density2d :contour
+   :tile :density-2d :contour
    :boxplot :violin :ridgeline
    :summary :errorbar :lollipop
    :text :label :rug
@@ -101,7 +101,7 @@
 (register! :smooth {:mark :line :stat :loess :accepts [:confidence-band :bootstrap-resamples :bandwidth :size :nudge-x :nudge-y] :doc "Smoothed trend line — defaults to LOESS; pass {:stat :linear-model} for OLS."})
 (register! :density {:mark :area :stat :density :x-only true :accepts [:bandwidth] :doc "Density — KDE (kernel density estimation) as filled area."})
 (register! :tile {:mark :tile :stat :bin2d :accepts [:fill :density-2d-grid] :doc "Tile/heatmap — 2D grid binning."})
-(register! :density2d {:mark :tile :stat :density-2d :accepts [:density-2d-grid] :doc "2D density — kernel density estimation (KDE) smoothed heatmap."})
+(register! :density-2d {:mark :tile :stat :density-2d :accepts [:density-2d-grid] :doc "2D density — kernel density estimation (KDE) smoothed heatmap."})
 (register! :contour {:mark :contour :stat :density-2d :accepts [:levels :size] :doc "Contour — iso-density contour lines."})
 (register! :boxplot {:mark :boxplot :stat :boxplot :accepts [:size] :doc "Boxplot — median, quartiles, whiskers, outliers."})
 (register! :violin {:mark :violin :stat :violin :accepts [:bandwidth :size] :doc "Violin — mirrored density curve per category."})

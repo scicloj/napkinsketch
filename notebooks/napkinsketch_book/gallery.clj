@@ -328,7 +328,7 @@
 (-> (rdatasets/ggplot2-diamonds)
     (tc/head 2000)
     (sk/view :carat :price)
-    sk/lay-density2d
+    sk/lay-density-2d
     (sk/options {:title "Diamond Carat vs Price (density)"
                  :x-label "Carat"
                  :y-label "Price (USD)"}))
@@ -1439,7 +1439,7 @@
 
 (-> (rdatasets/datasets-faithful)
     (sk/view :eruptions :waiting)
-    sk/lay-density2d
+    sk/lay-density-2d
     (sk/options {:title "Old Faithful: 2D Density"
                  :x-label "Eruption Duration (min)"
                  :y-label "Waiting Time (min)"}))
@@ -1452,7 +1452,7 @@
 (-> (rdatasets/datasets-faithful)
     (sk/view :eruptions :waiting)
     sk/lay-point
-    sk/lay-density2d
+    sk/lay-density-2d
     (sk/options {:title "Old Faithful: Scatter + Density"
                  :x-label "Eruption Duration (min)"
                  :y-label "Waiting Time (min)"}))
@@ -1509,7 +1509,7 @@
     (tc/head 3000)
     (sk/view :carat :price)
     sk/lay-point
-    sk/lay-density2d
+    sk/lay-density-2d
     (sk/options {:title "Diamonds: Scatter + 2D Density"
                  :x-label "Carat"
                  :y-label "Price ($)"}))
@@ -1523,7 +1523,7 @@
 
 (-> (rdatasets/ggplot2-mpg)
     (sk/view :displ :hwy)
-    sk/lay-density2d
+    sk/lay-density-2d
     (sk/options {:title "MPG: Displacement vs Highway (Density)"
                  :x-label "Displacement (L)"
                  :y-label "Highway MPG"}))
@@ -2021,7 +2021,7 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width {:color :species})
-    sk/lay-density2d
+    sk/lay-density-2d
     (sk/options {:title "Iris: 2D Density by Species"
                  :x-label "Sepal Length"
                  :y-label "Sepal Width"}))

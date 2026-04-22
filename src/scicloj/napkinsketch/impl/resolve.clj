@@ -496,7 +496,7 @@
           ;; :color as a synonym) → override stat to :identity so the
           ;; pre-computed fill values drive the tile colors directly.
           ;; Only applies to lay-tile (which defaults to :bin2d) -- NOT
-          ;; to lay-density2d (:density-2d) or lay-contour, which intentionally
+          ;; to lay-density-2d (:density-2d) or lay-contour, which intentionally
           ;; compute their own fill values from x/y.
           ;; Accepting :color keeps lay-tile friendly for users who
           ;; reach for :color by habit from the other marks. :fill wins
