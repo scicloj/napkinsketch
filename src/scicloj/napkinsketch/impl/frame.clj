@@ -1,8 +1,8 @@
 (ns scicloj.napkinsketch.impl.frame
   "Frame substrate -- the recursive plain-map type that replaces
    sketch + view in the pre-alpha refactor. This namespace holds the
-   pure tree operations (resolve, layout, shared-scale injection) that
-   downstream phases build on.
+   pure tree operations (resolve, layout, shared-scale injection) and
+   the leaf->draft emitter that feeds plan.clj.
 
    Shape of a frame:
      {:data         ?  dataset (inherited from ancestor if absent)
@@ -12,12 +12,13 @@
       :layout       ?  {:direction :horizontal|:vertical
                         :weights   [pos-num ...]}
       :opts         ?  plot options (inheritable)
-      :share-scales ?  #{:x :y}  for composites}
-
-   This namespace is intentionally free of rendering concerns. Phase 4
-   wires a compositor on top of it."
+      :share-scales ?  #{:x :y}  for composites}"
   (:require [tablecloth.api :as tc]
-            [tech.v3.datatype.functional :as dfn]))
+            [tech.v3.datatype :as dtype]
+            [tech.v3.datatype.functional :as dfn]
+            [scicloj.napkinsketch.impl.defaults :as defaults]
+            [scicloj.napkinsketch.impl.resolve :as resolve]
+            [scicloj.napkinsketch.layer-type :as layer-type]))
 
 ;; ---- Structural predicates ----
 
@@ -307,3 +308,127 @@
                (fn [children]
                  (mapv #(inject-shared-scales % child-domains my-mapping)
                        children)))))))
+
+;; ---- Leaf-to-draft ----
+;;
+;; The adapter-free draft emitter. Consumes one resolved leaf and
+;; produces a draft vector -- the same shape plan/draft->plan accepts.
+;; Replaces the leaf-frame->sketch + sketch->draft detour.
+
+(defn- coerce-dataset
+  "Coerce raw data to a Tablecloth dataset. Returns nil for nil."
+  [d]
+  (when d
+    (if (tc/dataset? d) d (tc/dataset d))))
+
+(defn- resolve-layer-type-info
+  "Look up layer-type info from a layer's :layer-type key.
+   Keyword -> registry lookup (throws on unknown). Map -> pass through.
+   :infer -> sentinel."
+  [layer-type-key]
+  (cond
+    (= :infer layer-type-key)
+    {:mark :infer}
+
+    (keyword? layer-type-key)
+    (let [m (layer-type/lookup layer-type-key)]
+      (if m
+        (-> (select-keys m [:mark :stat :position :x-only])
+            (assoc :layer-type layer-type-key))
+        (let [registered (sort (keys (layer-type/registered)))]
+          (throw (ex-info (str "Unknown layer type: " layer-type-key
+                               ". Use sk/lay-* with a registered layer type, or "
+                               "(sk/layer-type-lookup ...) to inspect. Registered layer types: "
+                               (vec registered))
+                          {:layer-type layer-type-key :registered registered})))))
+
+    :else
+    layer-type-key))
+
+(defn- heterogeneous-types
+  "If the column has :object dtype and the first 100 values have more
+   than one distinct (clojure.core/type), return a sorted list of
+   those type names. Otherwise nil."
+  [col]
+  (when (and col (= :object (dtype/elemwise-datatype col)))
+    (let [sample (take 100 col)
+          types (->> sample
+                     (remove nil?)
+                     (map type)
+                     distinct)]
+      (when (> (count types) 1)
+        (sort (map #(.getSimpleName ^Class %) types))))))
+
+(defn- validate-columns
+  "Validate that every aesthetic column reference in the resolved
+   mapping names a real column in the dataset. Rejects heterogeneous
+   object columns (mixed numbers/strings/keywords)."
+  [resolved d]
+  (when d
+    (let [col-names (set (tc/column-names d))
+          col-exists? (fn [col]
+                        (or (col-names col)
+                            (and (keyword? col) (col-names (name col)))
+                            (and (string? col) (col-names (keyword col)))))
+          col-lookup (fn [col]
+                       (or (get d col)
+                           (and (keyword? col) (get d (name col)))
+                           (and (string? col) (get d (keyword col)))))]
+      (doseq [k defaults/column-keys
+              :let [col (get resolved k)]
+              :when (and col
+                         (resolve/column-ref? col)
+                         (not (and (= k :color) (string? col))))]
+        (when-not (col-exists? col)
+          (throw (ex-info (str "Column " col " (from " k ") not found in dataset. Available: " (sort col-names))
+                          {:key k :column col :available (sort col-names)})))
+        (when-let [types (heterogeneous-types (col-lookup col))]
+          (throw (ex-info (str "Column " col " (from " k ") has mixed value types: " (vec types)
+                               ". Convert it to a single type (number, string, etc.) before plotting.")
+                          {:key k :column col :types types})))))))
+
+(defn leaf->draft
+  "Emit a draft vector from a leaf frame. A draft has one entry per
+   applicable layer; each entry is a flat map carrying the merged
+   aesthetic mapping (frame < layer-type-info < layer), the layer's
+   :stat/:position/:mark as first-class siblings, and plot-level
+   :x-scale/:y-scale/:coord stamped from :opts.
+
+   An empty :layers vector yields one {:mark :infer ...} placeholder so
+   downstream inference can still choose a layer type from the data.
+
+   Data precedence: layer :data > leaf :data.
+
+   Every emitted draft carries :__entry-idx 0 because a single leaf is
+   a single panel; plan.clj uses the key to group layers by panel, and
+   a leaf has no sub-panel structure."
+  [leaf]
+  (let [leaf-mapping (or (:mapping leaf) {})
+        leaf-data    (:data leaf)
+        opts         (or (:opts leaf) {})
+        x-scale      (:x-scale opts)
+        y-scale      (:y-scale opts)
+        coord-type   (:coord opts)
+        layers       (or (:layers leaf) [])
+        applicable   (if (seq layers) layers [{:layer-type :infer}])]
+    (vec
+     (map (fn [layer]
+            (let [layer-type-info  (resolve-layer-type-info (:layer-type layer))
+                  layer-mapping    (or (:mapping layer) {})
+                  layer-structural (select-keys layer [:stat :position :mark])
+                  resolved (merge leaf-mapping
+                                  layer-type-info
+                                  layer-mapping
+                                  layer-structural)
+                  d (coerce-dataset (or (:data layer) leaf-data))]
+              (validate-columns resolved d)
+              (-> resolved
+                  (assoc :data d
+                         :__entry-idx 0)
+                  (cond->
+                   x-scale    (assoc :x-scale x-scale)
+                   y-scale    (assoc :y-scale y-scale)
+                   coord-type (assoc :coord coord-type))
+                  (cond-> (= :infer (:mark resolved))
+                    (-> (dissoc :mark :stat))))))
+          applicable))))
