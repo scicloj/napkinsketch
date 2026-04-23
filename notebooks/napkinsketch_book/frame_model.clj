@@ -73,15 +73,38 @@
 ;; ## Idea 3: What to show, how to show it
 ;;
 ;; The API separates **what** to plot from **how** to show it:
+;; a frame's `:mapping` holds the "what" (columns to aesthetics),
+;; and its `:layers` holds the "how" (one entry per chart-type
+;; layer). Declaring the mapping once lets several layers share it
+;; -- scatter points and a regression line per species here:
+
+(def multi-layer
+  (sk/prepare-frame
+   {:data (rdatasets/datasets-iris)
+    :mapping {:x :sepal-length :y :sepal-width :color :species}
+    :layers [{:layer-type :point}
+             {:layer-type :smooth :mapping {:stat :linear-model}}]}))
+
+multi-layer
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
+
+;; Printed, the mapping and the layers are visibly separate:
+
+(kind/pprint multi-layer)
+
+(kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
+                              (= :species (:color (:mapping v)))))])
+
+;; `:mapping` answers the "what" question -- which columns flow to
+;; which aesthetic -- and `:layers` answers the "how" question, with
+;; each entry naming a chart type and optional layer-specific
+;; options (`:stat :linear-model` on the smooth layer here).
 ;;
-;; | Verb | What it does | Example |
-;; |:-----|:-------------|:--------|
-;; | `sk/frame` | Declare what to show -- columns and aesthetics | `(sk/frame data :a :b)` |
-;; | `sk/lay-*` | Choose how to show it -- the chart type | `sk/lay-point`, `sk/lay-histogram` |
-;;
-;; When you declare the mapping once and attach several layers, both
-;; layers share the same columns and aesthetics -- scatter points
-;; and a regression line per species here:
+;; The threaded form builds the same frame step by step: `sk/frame`
+;; sets the mapping, then each `sk/lay-*` appends a layer.
 
 (-> (rdatasets/datasets-iris)
     (sk/frame :sepal-length :sepal-width {:color :species})
@@ -91,22 +114,6 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
-
-;; Written as a plain map, the same two-layer frame looks like this:
-
-(kind/pprint
- (sk/prepare-frame
-  {:data (rdatasets/datasets-iris)
-   :mapping {:x :sepal-length :y :sepal-width :color :species}
-   :layers [{:layer-type :point}
-            {:layer-type :smooth :mapping {:stat :linear-model}}]}))
-
-(kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
-                              (= :species (:color (:mapping v)))))])
-
-;; The `:mapping` is shared; each entry in `:layers` just names its
-;; own chart type (plus any layer-specific options). The threaded
-;; form above and this explicit map describe the same frame.
 
 ;; ## Idea 4: Inference fills the gaps
 ;;
@@ -138,8 +145,35 @@
 ;; ## Idea 5: Frames compose
 ;;
 ;; Every function in the API takes a frame and returns a frame.
-;; `sk/arrange` is the simplest multi-frame composition -- it places
-;; several frames side by side:
+;; A **composite** frame is a plain map too -- with `:frames`
+;; holding its sub-frames and `:layout` describing how to tile
+;; them. Here is a two-panel composite written as an explicit map:
+
+(def two-panel
+  (sk/prepare-frame
+   {:data (rdatasets/datasets-iris)
+    :layout {:direction :horizontal}
+    :frames [{:mapping {:x :sepal-length :y :sepal-width :color :species}
+              :layers [{:layer-type :point}]}
+             {:mapping {:x :petal-length :y :petal-width :color :species}
+              :layers [{:layer-type :point}]}]}))
+
+two-panel
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 300 (:points s)))))])
+
+;; Printed, its structure is visible at once:
+
+(kind/pprint two-panel)
+
+(kind/test-last [(fn [v] (and (= 2 (count (:frames v)))
+                              (= :horizontal (get-in v [:layout :direction]))))])
+
+;; The outer `:data` is inherited by every sub-frame. `sk/arrange`
+;; is the ergonomic way to build this shape from a list of already-
+;; built frames:
 
 (sk/arrange
  [(-> (rdatasets/datasets-iris)
@@ -149,24 +183,7 @@
       (sk/frame :petal-length :petal-width {:color :species})
       sk/lay-point)])
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 2 (:panels s))
-                                (= 300 (:points s)))))])
-
-;; A composite frame is a plain map too -- with `:frames` holding
-;; its sub-frames and `:layout` describing how to tile them:
-
-(kind/pprint
- (sk/prepare-frame
-  {:data (rdatasets/datasets-iris)
-   :layout {:direction :horizontal}
-   :frames [{:mapping {:x :sepal-length :y :sepal-width :color :species}
-             :layers [{:layer-type :point}]}
-            {:mapping {:x :petal-length :y :petal-width :color :species}
-             :layers [{:layer-type :point}]}]}))
-
-(kind/test-last [(fn [v] (and (= 2 (count (:frames v)))
-                              (= :horizontal (get-in v [:layout :direction]))))])
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
 ;; `frame`, `lay-*`, `arrange`, `facet`, `options`, `scale`, `coord`
 ;; -- all take a frame and return a frame. The pipeline reads like a
