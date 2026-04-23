@@ -7,7 +7,7 @@
 ;;
 ;; This chapter is a reference: each rule in detail, with its default,
 ;; its override, and a plan-level check. For the conceptual overview,
-;; read [Sketch Model](./napkinsketch_book.sketch_model.html) and
+;; read [Frame Model](./napkinsketch_book.frame_model.html) and
 ;; [Core Concepts](./napkinsketch_book.core_concepts.html) first. The
 ;; examples here use small inline datasets so the full plan is readable.
 

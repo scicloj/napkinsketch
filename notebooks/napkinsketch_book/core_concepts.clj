@@ -2,7 +2,7 @@
 ;;
 ;; This chapter covers the core concepts you need for daily use.
 ;; If you have not read the
-;; [Sketch Model](./napkinsketch_book.sketch_model.html)
+;; [Frame Model](./napkinsketch_book.frame_model.html)
 ;; chapter, start there -- it introduces the mental model behind
 ;; composable plotting.
 
