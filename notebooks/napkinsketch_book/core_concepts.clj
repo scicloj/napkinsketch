@@ -84,20 +84,20 @@
 ;; loading from CSV, URLs, and other file formats.
 
 ;; ---
-;; ## Views and Layers
+;; ## Mappings and Layers
 ;;
-;; A sketch is built from two kinds of content:
+;; A frame is built from two kinds of content:
 ;;
-;; - **View** -- what to look at (which columns define the axes)
-;; - **Layer** -- how to draw it (which chart type, with what options)
+;; - **Mapping** -- what to show (which columns define the axes and aesthetics)
+;; - **Layer** -- how to show it (which chart type, with what options)
 ;;
-;; A view says "show me sepal length versus sepal width."
-;; A layer says "draw it as points" or "fit a regression line."
-;; When you want multiple layers sharing the same axes, declare
-;; the axes with `sk/view`, then add layers with `sk/lay-*`:
+;; The mapping says "show sepal length versus sepal width." A layer
+;; says "show it as points" or "fit a regression line." When you want
+;; multiple layers sharing the same axes, declare the mapping once
+;; with `sk/frame`, then add layers with `sk/lay-*`:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
+    (sk/frame :sepal-length :sepal-width)
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -105,26 +105,25 @@
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
 
-;; One view, two layers: points and a regression line.
-;; Let us look at the sketch structure:
+;; One mapping, two layers: points and a regression line.
+;; Let us look at the resulting frame's structure:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
+    (sk/frame :sepal-length :sepal-width)
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model})
     kind/pprint)
 
 (kind/test-last
- [(fn [sk]
-    (and (= 1 (count (:views sk)))
-         (= 2 (count (:layers sk)))))])
+ [(fn [fr]
+    (and (seq (:data fr))
+         (= 2 (count (:layers fr)))))])
 
-;; `:views` has one view (the panel). `:layers` has two layers
-;; (point and lm). These layers apply to every view -- we will
-;; see why in the Scope section below.
+;; Both layers appear under `:layers` -- they apply to the frame's
+;; mapping. We will see how scope works in the next section.
 ;;
-;; When `sk/lay-*` is called **with columns**, it creates a view with
-;; a layer bound directly to it:
+;; When `sk/lay-*` is called **with columns**, it creates a frame and
+;; attaches a layer in one step:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width))
@@ -135,100 +134,52 @@
     (sk/lay-point :sepal-length :sepal-width)
     kind/pprint)
 
-(kind/test-last
- [(fn [sk]
-    (and (= 1 (count (:views sk)))
-         (= 0 (count (:layers sk)))
-         (= 1 (count (:layers (first (:views sk)))))))])
+(kind/test-last [(fn [fr] (seq (:data fr)))])
 
-;; The layer lives inside the view. No sketch-level layers.
-;;
-;; With multiple views, sketch-level layers apply to all of them --
-;; the cross product:
+;; With multiple frames arranged side by side, use `sk/arrange`:
 
-(def two-panel-sketch
-  (-> (rdatasets/datasets-iris)
-      (sk/view :sepal-length :sepal-width)
-      (sk/view :petal-length :petal-width)
-      sk/lay-point))
+(def two-panel
+  (sk/arrange
+   [(-> (rdatasets/datasets-iris)
+        (sk/lay-point :sepal-length :sepal-width))
+    (-> (rdatasets/datasets-iris)
+        (sk/lay-point :petal-length :petal-width))]))
 
-two-panel-sketch
+two-panel
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
-(kind/pprint two-panel-sketch)
-
-(kind/test-last [(fn [sk] (and (= 2 (count (:views sk)))
-                               (= 1 (count (:layers sk)))))])
-
-;; Two views, one layer. Each view becomes a panel, and the
-;; point layer applies to both.
+;; Each sub-frame has its own mapping and layers. `sk/arrange`
+;; produces a composite frame that contains them as siblings.
 
 ;; ---
 ;; ## Scope
 ;;
 ;; A **mapping** connects a column to a visual property -- like
 ;; mapping `:species` to color. Where you write a mapping determines
-;; who sees it. There are three levels:
+;; who sees it. There are two levels:
 ;;
 ;; | Where you write it | What sees it |
 ;; |:-------------------|:-------------|
-;; | `(sk/sketch ... {:color :c})` | All layers on all views |
-;; | `(sk/view ... {:color :c})` | All layers on this view |
+;; | `(sk/frame ... {:color :c})` | All layers on this frame |
 ;; | `(sk/lay-point ... {:color :c})` | This layer only |
 ;;
 ;; This is **lexical scope** -- the same principle as in programming
 ;; languages. Lower levels override higher ones.
 
-;; ### Sketch-level mapping
+;; ### Frame-level mapping
 ;;
-;; `sk/sketch` sets mappings that flow to every view and every layer:
-
-(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
-    (sk/view :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model}))
-
-(kind/test-last [(fn [v] (= 3 (:lines (sk/svg-summary v))))])
-
-;; Both point and lm see `:color :species`. Three regression
-;; lines -- one per species.
-
-;; ### View-level mapping
-;;
-;; The opts map in `sk/view` scopes to that view. All layers on
-;; the view inherit it, but other views do not:
+;; `sk/frame`'s mapping flows to every layer attached to the frame:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width {:color :species})
+    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (= 3 (:lines (sk/svg-summary v))))])
 
-;; Same result here -- one view, both layers see the color.
-;; The difference shows with two views:
-
-(def view-scoped
-  (-> (rdatasets/datasets-iris)
-      (sk/view :sepal-length :sepal-width {:color :species})
-      (sk/view :petal-length :petal-width)
-      sk/lay-point))
-
-view-scoped
-
-(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
-
-(kind/pprint view-scoped)
-
-(kind/test-last
- [(fn [sk]
-    (and (= {} (:mapping sk))
-         (= :species (:color (:mapping (first (:views sk)))))
-         (nil? (:color (:mapping (second (:views sk)))))))])
-
-;; Color is in the first view's mapping only. The second view
-;; has no color. Sketch-level mapping is empty.
+;; Both point and smooth layers see `:color :species`. Three
+;; regression lines -- one per species.
 
 ;; ### Layer-level mapping
 ;;
@@ -242,16 +193,16 @@ view-scoped
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Color is in the point layer. The lm (a sketch-level layer)
-;; does not see it -- one overall regression line.
+;; Color is on the point layer. The smooth layer does not see it --
+;; one overall regression line.
 
 ;; ### Override
 ;;
 ;; Lower scopes override higher ones. A layer can cancel a mapping
 ;; by setting it to `nil`:
 
-(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
-    (sk/view :sepal-length :sepal-width)
+(-> (rdatasets/datasets-iris)
+    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
     (sk/lay-point {:color nil})
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -259,64 +210,25 @@ view-scoped
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; Sketch says `:color :species`. The point layer cancels it
-;; with `nil` -- uncolored points. The lm layer has no override,
-;; so it keeps the sketch-level color -- three lines.
+;; The frame says `:color :species`. The point layer cancels it with
+;; `nil` -- uncolored points. The smooth layer has no override, so it
+;; keeps the frame-level color -- three lines.
 
 ;; ### How scope is applied
 ;;
 ;; The same scoping principle governs three things -- mappings,
 ;; layers, and data -- each with its own combination rule:
 ;;
-;; | What | Sketch level | View level | Layer level | Combination |
-;; |:-----|:-------------|:-----------|:------------|:------------|
-;; | Mapping | `sk/sketch` | `sk/view` opts | `sk/lay-*` opts | `merge` -- innermost wins, `nil` erases |
-;; | Layer | `sk/lay-*` (bare) | `sk/lay-*` (with columns) | -- (leaf) | `concat` -- both apply |
-;; | Data | first argument | `:data` in view opts | `:data` in layer opts | `or` -- innermost non-nil wins |
+;; | What | Frame level | Layer level | Combination |
+;; |:-----|:------------|:------------|:------------|
+;; | Mapping | `sk/frame` mapping | `sk/lay-*` opts | `merge` -- innermost wins, `nil` erases |
+;; | Layer | `sk/lay-*` | -- (leaf) | layers accumulate |
+;; | Data | first argument | `:data` in layer opts | innermost non-nil wins |
 
-;; ### Layer scope
+;; ### Layer-level data
 ;;
-;; Sketch-level lm -- both panels get a regression line:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
-    (sk/view :petal-length :petal-width)
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 2 (:panels s))
-                                (= 2 (:lines s)))))])
-
-;; View-level lm -- only the first panel gets one:
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model})
-    (sk/lay-point :petal-length :petal-width))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 2 (:panels s))
-                                (= 1 (:lines s)))))])
-
-;; ### Data scope
-;;
-;; Data enters at sketch level -- the first argument to `sk/sketch`
-;; or `sk/lay-*`. All views see it:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
-    (sk/view :petal-length :petal-width)
-    sk/lay-point)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 2 (:panels s))
-                                (= 300 (:points s)))))])
-
-;; Both panels draw from the same 150-row dataset (300 points total).
-;;
-;; **View-level data** -- pass `:data` in the opts map of `sk/view`
-;; to give a view its own dataset:
+;; Pass `:data` in the opts map of `sk/lay-*` to give that layer its
+;; own dataset:
 
 (def setosa
   (tc/select-rows (rdatasets/datasets-iris)
@@ -326,15 +238,19 @@ view-scoped
   (tc/select-rows (rdatasets/datasets-iris)
                   #(= "versicolor" (:species %))))
 
-(-> (sk/sketch (rdatasets/datasets-iris))
-    (sk/view :sepal-length :sepal-width {:data setosa})
-    (sk/view :sepal-length :sepal-width {:data versicolor})
-    sk/lay-point)
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point {:data setosa})
+    (sk/lay-smooth {:stat :linear-model :data versicolor}))
 
-(kind/test-last [(fn [v] (= 100 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 50 (:points s))
+                                (= 1 (:lines s)))))])
 
-;; 100 points -- each view draws from its own 50-row subset.
-;; Faceting does the same thing automatically:
+;; Points from setosa (50 rows), regression from versicolor.
+;; Same frame, different data per layer.
+;;
+;; Faceting splits a single dataset into panels automatically:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
@@ -345,116 +261,100 @@ view-scoped
                                 (= 150 (:points s)))))])
 
 ;; Three panels, each with its own data subset.
-;;
-;; **Layer-level data** -- pass `:data` in the opts map of `sk/lay-*`:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
-    (sk/lay-point {:data setosa})
-    (sk/lay-smooth {:stat :linear-model :data versicolor}))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 50 (:points s))
-                                (= 1 (:lines s)))))])
-
-;; Points from setosa (50 rows), regression from versicolor.
-;; Same panel, different data per layer.
-;;
-;; One principle, three things it governs, each at every level.
 
 ;; ---
 ;; ## Identity
 ;;
-;; Scope determines what each view and layer sees. But how do views
-;; come into existence? The two verbs handle this differently:
+;; Scope determines what each frame and layer sees. But how do
+;; layers find their frame? The rule is:
 ;;
-;; - `sk/view` **always creates** a new view.
-;; - `sk/lay-*` with columns **finds the most recent** view that
-;;   has the same x and y columns, or creates a new one.
+;; - `sk/lay-*` with columns **finds the most recent leaf frame**
+;;   whose position mappings match, or creates a new one if none
+;;   matches.
 ;;
-;; This makes the threading pipeline sequential and predictable:
-;; each `lay-*` refers to the view you just established.
+;; This makes the threading pipeline sequential and predictable.
+;; When the columns match, the new layer attaches to the existing
+;; frame:
 
-(def targeted
-  (-> (rdatasets/datasets-iris)
-      (sk/view :sepal-width)
-      (sk/lay-histogram :sepal-width)
-      (sk/view :sepal-width)
-      (sk/lay-density :sepal-width)))
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-smooth :sepal-length :sepal-width {:stat :linear-model}))
 
-targeted
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s))
+                                (= 1 (:lines s)))))])
+
+;; One frame, two layers: scatter points and a regression line
+;; sharing the same axes.
+;;
+;; When the columns differ, `sk/lay-*` creates a new frame:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :petal-length))
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
-(kind/pprint targeted)
+;; Two frames, arranged side by side: one scatter and one histogram.
+;;
+;; To force two separate frames that share a column but carry
+;; different layers, arrange them explicitly:
 
-(kind/test-last
- [(fn [sk]
-    (and (= 2 (count (:views sk)))
-         (= :histogram (:layer-type (first (:layers (first (:views sk))))))
-         (= :density (:layer-type (first (:layers (second (:views sk))))))))])
+(sk/arrange
+ [(-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-width))
+  (-> (rdatasets/datasets-iris) (sk/lay-density :sepal-width))])
 
-;; Two views with the same column but different layers. The first
-;; `lay-histogram` found the first `view`. The second `lay-density`
-;; found the second `view` -- the most recent match.
+(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
 ;; ---
-;; ## The Sketch Record
+;; ## The Frame
 ;;
-;; A sketch is a composable value with five fields:
+;; A frame is a composable value. A simple leaf frame carries:
 ;;
 ;; | Field | Contains | Set by |
 ;; |:------|:---------|:-------|
-;; | `:data` | the dataset | `sk/lay-*` or `sk/sketch` |
-;; | `:mapping` | sketch-level mappings | `sk/sketch` |
-;; | `:views` | what to plot | `sk/view`, `sk/lay-*` with columns |
-;; | `:layers` | sketch-level layers | `sk/lay-*` without columns |
+;; | `:data` | the dataset | `sk/frame`, `sk/lay-*`, or `sk/with-data` |
+;; | `:mapping` | frame-level mappings | `sk/frame` |
+;; | `:layers` | layers attached to the frame | `sk/lay-*` |
 ;; | `:opts` | title, width, theme, scale, coord | `sk/options`, `sk/scale`, `sk/coord` |
 
-(def my-sketch
-  (-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
-      (sk/view :sepal-length :sepal-width)
+(def my-frame
+  (-> (rdatasets/datasets-iris)
+      (sk/frame {:x :sepal-length :y :sepal-width :color :species})
       sk/lay-point
       (sk/lay-smooth {:stat :linear-model})
       (sk/options {:title "Iris"})))
 
-my-sketch
+my-frame
 
-(kind/pprint my-sketch)
-
-(kind/test-last
- [(fn [sk]
-    (and (tc/dataset? (:data sk))
-         (= :species (:color (:mapping sk)))
-         (= 1 (count (:views sk)))
-         (= 2 (count (:layers sk)))
-         (= "Iris" (:title (:opts sk)))))])
+(kind/pprint my-frame)
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; ---
 ;; ## Mark, Stat, and Position
 ;;
-;; Each layer contains a **method** -- a rendering recipe with three parts:
+;; Each layer has a **layer-type** -- a rendering recipe with three parts:
 ;;
 ;; - **Mark** -- the visual shape (point, bar, line, area, tile, ...)
-;; - **Stat** -- the computation before drawing (identity, bin, lm, kde, ...)
+;; - **Stat** -- the computation before rendering (identity, bin, linear-model, density, ...)
 ;; - **Position** -- how overlapping groups share space (identity, dodge, stack, ...)
 ;;
-;; A method's name describes its intent. The mark describes the shape:
+;; A layer-type's name describes its intent. The mark describes the shape:
 
 (sk/layer-type-lookup :histogram)
 
 (kind/test-last [(fn [m] (= :bar (:mark m)))])
 
-;; A histogram: stat `:bin` computes ranges, mark `:bar` draws them:
+;; A histogram: stat `:bin` computes ranges, mark `:bar` shows them:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-histogram :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; A regression: stat `:linear-model` fits a line, mark `:line` draws it:
+;; A regression: stat `:linear-model` fits a line, mark `:line` shows it:
 
 (sk/layer-type-lookup :smooth)
 
@@ -475,10 +375,10 @@ my-sketch
 ;; ---
 ;; ## Inference
 ;;
-;; Napkinsketch tries to make small sketches work without you
-;; having to specify everything. You give it what you know -- a
-;; dataset, perhaps a column or two -- and it fills in the rest
-;; by looking at the data.
+;; Napkinsketch tries to make small frames work without you having
+;; to specify everything. You give it what you know -- a dataset,
+;; perhaps a column or two -- and it fills in the rest by looking
+;; at the data.
 ;;
 ;; The underlying principle is short: **resolved = your-choice,
 ;; or else inferred-from-data**. Wherever you make a choice it
@@ -494,11 +394,11 @@ my-sketch
 ;; too, but mostly stay out of the way until you want to adjust
 ;; them.
 ;;
-;; Two kinds of inference show up often enough to be worth
-;; seeing directly: column inference and method inference.
+;; Two kinds of inference show up often enough to be worth seeing
+;; directly: column inference and layer-type inference.
 ;;
 ;; **Column inference** kicks in when a dataset has up to three
-;; columns and you call `sk/view` (or a `sk/lay-*`) without
+;; columns and you call `sk/frame` (or a `sk/lay-*`) without
 ;; naming any column. Napkinsketch pairs the columns with
 ;; aesthetics in dataset order:
 ;;
@@ -510,49 +410,42 @@ my-sketch
 ;;
 ;; With four or more columns the library does not guess -- you
 ;; have to name the columns you want. Column inference is most
-;; useful for quick sketches of small, focused datasets. Here,
-;; a dataset with two columns named `:height` and `:weight`:
-;; Napkinsketch pairs them with the `:x` and `:y` aesthetics in
-;; order.
+;; useful for quick sketches of small, focused datasets.
 
 (-> {:height [170 180 165 175] :weight [70 80 65 75]}
-    sk/view)
+    sk/lay-point)
 
-(kind/test-last
- [(fn [v]
-    (and (= 4 (:points (sk/svg-summary v)))
-         (= {:x :height :y :weight}
-            (get-in v [:views 0 :mapping]))))])
+(kind/test-last [(fn [v] (= 4 (:points (sk/svg-summary v))))])
 
-;; **Method inference** fires when a view has no explicit
+;; **Layer-type inference** fires when a frame has no explicit
 ;; layer. The library inspects the types of the columns the
-;; view refers to and picks a chart type that fits. Two
+;; mapping refers to and picks a chart type that fits. Two
 ;; numerical columns produce a scatter plot:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width))
+    (sk/frame :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; A single numerical column produces a histogram:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length))
+    (sk/frame :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 ;; In both cases the inferred plot is the same one you would
-;; draw by hand with `sk/lay-point` or `sk/lay-histogram`.
-;; Inference is a shorthand, not a separate rendering path.
+;; get from `sk/lay-point` or `sk/lay-histogram`. Inference is a
+;; shorthand, not a separate rendering path.
 ;;
 ;; Every inferred choice can be overridden. Want a specific
 ;; chart type? Use the matching `sk/lay-*` function instead of
-;; leaving the view bare. Want a particular scale? Pass
+;; leaving the frame bare. Want a particular scale? Pass
 ;; `sk/scale`. Want a numeric column to be treated as categorical?
 ;; Add `{:x-type :categorical}`, `{:y-type :categorical}`, or
-;; `{:color-type :categorical}` to the view or layer, depending on
-;; which axis the column feeds. Inference exists so small sketches
-;; stay small, not to take decisions away from you. The
+;; `{:color-type :categorical}` to the frame or layer, depending
+;; on which axis the column feeds. Inference exists so small
+;; frames stay small, not to take decisions away from you. The
 ;; [Inference Rules](./napkinsketch_book.inference_rules.html)
 ;; chapter lists the full decision logic and the override for
 ;; each case.
@@ -560,8 +453,8 @@ my-sketch
 ;; ---
 ;; ## Incremental Building
 ;;
-;; Because sketches are plain data, you can save a partial plot and
-;; extend it later. Each call returns a new sketch without changing
+;; Because frames are plain data, you can save a partial plot and
+;; extend it later. Each call returns a new frame without changing
 ;; the original.
 
 (def scatter-base
@@ -585,17 +478,16 @@ my-sketch
                                 (= 1 (:lines s)))))])
 
 ;; ---
-;; ## Dataless Sketches as Reusable Instruments
+;; ## Reusable Frame Templates
 ;;
-;; A sketch does not need to carry data. `(sk/sketch)` creates an
-;; empty sketch you can evolve like any other -- adding views,
-;; layers, options -- and then attach a dataset at the end with
+;; A frame does not need to carry data. `(sk/frame)` creates an
+;; empty frame you can evolve like any other -- adding layers,
+;; options -- and then attach a dataset at the end with
 ;; `sk/with-data`. The result is a plotting *instrument* that can
 ;; be applied to many datasets:
 
 (def scatter-with-regression
-  (-> (sk/sketch)
-      (sk/view :x :y {:color :group})
+  (-> (sk/frame nil {:x :x :y :y :color :group})
       sk/lay-point
       (sk/lay-smooth {:stat :linear-model})
       (sk/options {:title "Scatter with Regression"})))
@@ -623,7 +515,7 @@ my-sketch
                                 (= 2 (:lines s)))))])
 
 ;; `sk/with-data` validates at attach time: if the dataset is
-;; missing a column the sketch references, you get a clear error
+;; missing a column the frame references, you get a clear error
 ;; naming the missing columns -- no cryptic failure deep in the
 ;; rendering path.
 
@@ -671,7 +563,7 @@ my-sketch
 ;; colors:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width {:group :species})
+    (sk/frame {:x :sepal-length :y :sepal-width :group :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -685,7 +577,7 @@ my-sketch
 ;; ## Plot Options and Annotations
 ;;
 ;; So far you've seen mappings, layers, and data -- all scoped at
-;; sketch, view, or layer level. The functions in this section set
+;; frame or layer level. The functions in this section set
 ;; **plot-level options** instead: values that configure the whole
 ;; rendered plot and cannot be scoped down. See
 ;; [Options and Scopes](./napkinsketch_book.options_and_scopes.html)
@@ -729,7 +621,7 @@ my-sketch
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; `sk/scale` changes how a numeric axis is drawn. `:log` applies
+;; `sk/scale` changes how a numeric axis is shown. `:log` applies
 ;; a logarithmic transformation:
 
 (-> {:population [1000 5000 50000 200000 1000000 5000000]
@@ -740,15 +632,15 @@ my-sketch
 
 (kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
 
-;; Both are plot-level -- they apply to all views uniformly.
+;; Both are plot-level -- they apply uniformly across the whole frame.
 
 ;; ---
 ;; ## Faceting and Multi-Panel Layouts
 ;;
-;; **Faceting** splits a plot into panels by a column's values:
+;; **Faceting** splits a frame into panels by a column's values:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
+    (sk/frame :sepal-length :sepal-width)
     (sk/facet :species)
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
@@ -764,33 +656,19 @@ my-sketch
 
 (kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
 
-;; `sk/view` also accepts a vector of `[x y]` pairs -- each pair
-;; becomes one panel:
+;; To place whole frames side by side, use `sk/arrange`:
 
-(-> (rdatasets/datasets-iris)
-    (sk/view [[:sepal-length :sepal-width]
-              [:petal-length :petal-width]])
-    sk/lay-point)
+(sk/arrange
+ [(-> (rdatasets/datasets-iris)
+      (sk/lay-point :sepal-length :sepal-width))
+  (-> (rdatasets/datasets-iris)
+      (sk/lay-point :petal-length :petal-width))])
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
-;; Two panels, each with its own x/y columns. `sk/cross` automates
-;; this for every combination of columns -- useful for scatter
-;; matrices:
-
-(def cols [:sepal-length :sepal-width :petal-length])
-
-(sk/cross cols cols)
-
-;; Nine `[x y]` pairs. Passing them to `sk/view` creates a 3x3 grid:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross cols cols)))
-
-(kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
-
-;; On the diagonal, where x and y are the same column, Napkinsketch
-;; infers a histogram instead of a scatter plot.
+;; Each sub-frame inside `sk/arrange` can have its own data, mapping,
+;; layers, and options -- they are independent plots arranged in a
+;; single figure.
 
 ;; ## What's Next
 ;;
