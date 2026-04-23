@@ -250,6 +250,79 @@
       (is (= {:x :e :y :f} (-> f :frames (nth 2) :mapping))))))
 
 ;; ============================================================
+;; Multi-pair sk/frame -- broadcast N panels in one call (M1-M6)
+;; ============================================================
+;;
+;; (sk/frame fr [[:a :b] [:c :d]]) and (sk/frame fr [:a :b :c]) expand
+;; to an iterated sequence of (sk/frame fr ...) calls, one per pair or
+;; column. The result is equivalent to threading sk/frame N times.
+;; This restores the panel-broadcast half of the old sk/view that was
+;; dropped in slice 1. The canonical use is SPLOM:
+;;
+;;   (-> data (sk/frame {:color :species})
+;;            sk/lay-point
+;;            (sk/frame (sk/cross cols cols)))
+
+(deftest multi-pair-raw-data-bivariate-test
+  (testing "M1: (sk/frame data [[:a :b] [:c :d]]) -- vector of pairs"
+    (let [f (sk/frame iris [[:a :b] [:c :d]])]
+      (is (= 2 (count (:frames f))))
+      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping))))))
+
+(deftest multi-pair-raw-data-univariate-test
+  (testing "M2: (sk/frame data [:a :b :c]) -- vector of columns"
+    (let [f (sk/frame iris [:a :b :c])]
+      (is (= 3 (count (:frames f))))
+      (is (= {:x :a} (-> f :frames (nth 0) :mapping)))
+      (is (= {:x :b} (-> f :frames (nth 1) :mapping)))
+      (is (= {:x :c} (-> f :frames (nth 2) :mapping))))))
+
+(deftest multi-pair-extend-existing-test
+  (testing "M3: threaded onto a leaf-with-position -- promote + append"
+    (let [f (-> iris (sk/frame :a :b) (sk/frame [[:c :d] [:e :f]]))]
+      (is (= 3 (count (:frames f))))
+      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping)))
+      (is (= {:x :e :y :f} (-> f :frames (nth 2) :mapping))))))
+
+(deftest multi-pair-root-layer-flows-test
+  (testing "M4: root layer flows to every panel via resolve-tree"
+    (let [f (-> iris sk/frame sk/lay-point (sk/frame [[:a :b] [:c :d]]))]
+      (is (= 2 (count (:frames f))))
+      (is (= 1 (count (:layers f))))
+      (is (= :point (-> f :layers (nth 0) :layer-type))))))
+
+(deftest multi-pair-root-aesthetic-splom-pattern-test
+  (testing "M5: full SPLOM pattern -- root aesthetic + root layer + N panels"
+    (let [f (-> iris
+                (sk/frame {:color :species})
+                sk/lay-point
+                (sk/frame [[:a :b] [:c :d]]))]
+      (is (= {:color :species} (:mapping f)))
+      (is (= 2 (count (:frames f))))
+      (is (= 1 (count (:layers f))))
+      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping))))))
+
+(deftest multi-pair-cross-utility-test
+  (testing "M6: (sk/frame data (sk/cross cols cols)) is the SPLOM generator"
+    (let [cols [:a :b]
+          f (sk/frame iris (sk/cross cols cols))]
+      (is (= 4 (count (:frames f))))
+      (is (= [{:x :a :y :a} {:x :a :y :b} {:x :b :y :a} {:x :b :y :b}]
+             (mapv :mapping (:frames f)))))))
+
+(deftest multi-pair-iteration-equivalence-test
+  (testing "M7: (sk/frame fr vec-of-pairs) equals threading sk/frame per pair"
+    (let [expected (-> iris
+                       (sk/frame :a :b)
+                       (sk/frame :c :d)
+                       (sk/frame :e :f))
+          actual (sk/frame iris [[:a :b] [:c :d] [:e :f]])]
+      (is (= expected actual)))))
+
+;; ============================================================
 ;; Integration with sk/lay-* and resolve-tree (I1-I3)
 ;; ============================================================
 

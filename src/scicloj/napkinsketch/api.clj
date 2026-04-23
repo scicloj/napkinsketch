@@ -511,6 +511,34 @@
     (some? data) (assoc :data data)
     (seq mapping) (assoc :mapping mapping)))
 
+(declare frame)
+
+(defn- multi-pair-frame
+  "Iteratively apply sk/frame to each column or pair in cols-or-pairs.
+   The ground case -- x a non-frame -- first lifts x into a leaf via
+   (sk/frame x). Each element in cols-or-pairs may be a column
+   reference (keyword or string) -> univariate panel, or a two-element
+   sequential -> bivariate panel. Any mixture is accepted."
+  [x cols-or-pairs]
+  (let [base (if (frame? x) x (frame x))]
+    (reduce (fn [fr item]
+              (cond
+                (or (keyword? item) (string? item))
+                (frame fr item)
+
+                (sequential? item)
+                (let [[a b] item]
+                  (frame fr a b))
+
+                :else
+                (throw (ex-info
+                        (str "sk/frame multi-pair element must be a column "
+                             "reference or a two-element sequential, got: "
+                             (pr-str item))
+                        {:item item :cols-or-pairs cols-or-pairs}))))
+            base
+            cols-or-pairs)))
+
 (defn frame
   "Construct or extend a frame.
 
@@ -521,6 +549,8 @@
      (sk/frame data :x-col)                    -- leaf with {:x :x-col}
      (sk/frame data :x-col :y-col)             -- leaf with :x and :y
      (sk/frame data :x-col :y-col {:color :c}) -- positional x/y + opts
+     (sk/frame data [[:a :b] [:c :d]])         -- multi-pair: N bivariate panels
+     (sk/frame data [:a :b :c])                -- multi-pair: N univariate panels
 
    Threaded over an existing frame (first argument is a frame):
      (sk/frame fr)                        -- no-op, returns fr unchanged
@@ -532,6 +562,8 @@
                                              to the composite root on promote
      (sk/frame fr {:color :c})            -- aesthetic-only: extend mapping
                                              or (on leaf-with-position) promote
+     (sk/frame fr [[:a :b] [:c :d]])      -- multi-pair: append N panels
+     (sk/frame fr (sk/cross cols cols))   -- SPLOM N^2 panels in one call
 
    For hand-built composite frames (nested :frames, explicit :weights,
    etc.) use sk/prepare-frame."
@@ -541,14 +573,19 @@
      (frame? x) x
      :else      (prepare-frame (frame-from-data x {}))))
   ([x y]
-   (let [mapping (if (map? y)
-                   (or (warn-and-strip-unknown-opts
-                        "sk/frame" y view-mapping-keys)
-                       {})
-                   {:x y})]
-     (if (frame? x)
-       (prepare-frame (extend-or-promote x mapping))
-       (prepare-frame (frame-from-data x mapping)))))
+   (cond
+     (and (sequential? y) (not (map? y)))
+     (multi-pair-frame x y)
+
+     :else
+     (let [mapping (if (map? y)
+                     (or (warn-and-strip-unknown-opts
+                          "sk/frame" y view-mapping-keys)
+                         {})
+                     {:x y})]
+       (if (frame? x)
+         (prepare-frame (extend-or-promote x mapping))
+         (prepare-frame (frame-from-data x mapping))))))
   ([x y z]
    (let [mapping {:x y :y z}]
      (if (frame? x)
