@@ -102,8 +102,8 @@
    :value
    (map
     (fn*
-     [p1__142190#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__142190#) 0.12)))))
+     [p1__147834#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__147834#) 0.12)))))
     (range 52))}))
 
 
@@ -452,7 +452,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__142191#] (= "virginica" p1__142191#))
+       (fn* [p1__147835#] (= "virginica" p1__147835#))
        (:texts s)))))
    v67_l303)))
 
@@ -506,8 +506,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__142192#] (Math/sin (/ p1__142192# 3.0))) (range 20)),
-   :change (map (fn* [p1__142193#] (- p1__142193# 10)) (range 20))}
+   (map (fn* [p1__147836#] (Math/sin (/ p1__147836# 3.0))) (range 20)),
+   :change (map (fn* [p1__147837#] (- p1__147837# 10)) (range 20))}
   (sk/lay-point :x :y {:color :change})
   (sk/options
    {:color-scale :diverging,
@@ -624,8 +624,8 @@
    ys
    (map
     (fn*
-     [p1__142194#]
-     (+ (* 3 p1__142194#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__147838#]
+     (+ (* 3 p1__147838#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}
