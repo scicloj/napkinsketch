@@ -71,7 +71,7 @@
 ;; Layers compose with faceting -- scatter plus regression per panel:
 
 (-> (rdatasets/reshape2-tips)
-    (sk/view :total-bill :tip {:color :sex})
+    (sk/frame {:x :total-bill :y :tip :color :sex})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model})
     (sk/facet-grid :smoker :sex))
