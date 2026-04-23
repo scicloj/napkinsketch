@@ -36,9 +36,34 @@
 
 ;; ## Construction
 
+(kind/doc #'sk/frame)
+
+;; Create a leaf frame with data and columns:
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point)
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
+
+;; Map form -- include aesthetics on the frame so every layer sees them:
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    sk/lay-point
+    (sk/lay-smooth {:stat :linear-model}))
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
+
 (kind/doc #'sk/sketch)
 
-;; Create a sketch with sketch-level mappings visible to all views:
+;; Legacy adapter. Create a sketch with sketch-level mappings visible
+;; to all views. `sk/sketch` + `sk/view` remain in the API through
+;; alpha for backwards compatibility; prefer `sk/frame` for new code.
 
 (-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
     (sk/view :sepal-length :sepal-width)
