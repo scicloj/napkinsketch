@@ -14,83 +14,75 @@
    ;; clojure2d -- color palettes and gradients
    [clojure2d.color :as c2d]))
 
-;; ## Sketch
+;; ## Frame
 ;;
-;; A **sketch** is a composable record with five fields: `:data`,
-;; `:mapping`, `:views`, `:layers`, and `:opts`. Every function in
-;; the API (`sk/view`, `sk/lay-*`, `sk/facet`, `sk/options`, `sk/scale`,
-;; `sk/coord`) takes a sketch and returns a sketch.
-;; `sk/sketch` creates a sketch and optionally sets sketch-level
-;; mappings visible to all views and layers.
-;; Sketches auto-render in
+;; A **frame** is the unified composable value in Napkinsketch. A
+;; leaf frame describes one plot panel; a composite frame contains
+;; sub-frames arranged together. Every function in the API
+;; (`sk/frame`, `sk/lay-*`, `sk/facet`, `sk/arrange`, `sk/options`,
+;; `sk/scale`, `sk/coord`) takes a frame and returns a frame.
+;; Frames auto-render in
 ;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).
 
-(def my-sketch
+(def my-frame
   (-> (rdatasets/datasets-iris)
       (sk/lay-point :sepal-length :sepal-width {:color :species})
       (sk/options {:title "Iris"})))
 
-my-sketch
+my-frame
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; A sketch is a plain Clojure value -- inspect it with `sk/sketch?`
-;; and by reaching into its fields:
+;; A frame is a plain Clojure value -- inspect it with `kind/pprint`
+;; or reach into its fields directly.
 
-(sk/sketch? my-sketch)
+;; ## Leaf Frame
+;;
+;; A **leaf frame** is a frame that describes a single plot panel.
+;; It carries `:data`, a `:mapping` from columns to aesthetics, and
+;; `:layers` -- the chart-type layers attached to it. Created by
+;; `sk/frame` or `sk/lay-*`.
 
-(kind/test-last [true?])
+;; ## Composite Frame
+;;
+;; A **composite frame** is a frame that contains other frames under
+;; `:frames` plus an optional `:layout`. Created by `sk/arrange` (and
+;; later, by `sk/mosaic` and `sk/with-marginals`). Its leaves render
+;; independently and are tiled into the final figure.
 
-(count (:views my-sketch))
-
-(kind/test-last [(fn [n] (= 1 n))])
-
-;; ## View
+;; ## Layer Type
 ;;
-;; A **view** is a plain map in `sketch[:views]` that declares
-;; **what** to plot -- which columns map to x and y. Each view
-;; becomes one panel in the rendered plot.
+;; A **layer type** is the bundle of mark + stat + position that
+;; determines how data becomes a visual element. See the
+;; [Methods](./napkinsketch_book.methods.html) chapter for detailed
+;; tables of all built-in layer types, marks, stats, and positions.
 ;;
-;; Created by `sk/view` or by `sk/lay-*` with columns.
-;; A view can optionally carry its own `:layers` (view-local
-;; layers). Multiple views produce multi-panel layouts.
+;; Layer types attach to frames in two ways:
 ;;
-;; See [Core Concepts](./napkinsketch_book.core_concepts.html) and
-;; [Sketch Rules](./napkinsketch_book.sketch_rules.html) for details.
-
-;; ## Method
-;;
-;; A **method** is the bundle of mark + stat + position that determines how
-;; data becomes a visual element.
-;; See the [Methods](./napkinsketch_book.methods.html) chapter for detailed tables of all
-;; built-in methods, marks, stats, and positions.
-;;
-;; Methods come in two scopes:
-;;
-;; - **Global layer** -- stored in `sketch[:layers]`, applied to ALL
-;;   views. Created by bare `sk/lay-*` (without columns).
-;;
-;; - **View-local layer** -- stored in `view[:layers]`, applied
-;;   only to that view. Created by `sk/lay-*` with columns.
-;;
-;; Resolution: each view uses `concat(own layers, global layers)`.
-;; See [Sketch Rules](./napkinsketch_book.sketch_rules.html) Rules 2-5.
+;; - **Frame-level layer** -- `sk/lay-*` called without columns,
+;;   after a frame with position mappings exists; the layer sees the
+;;   frame's mapping.
+;; - **New-leaf layer** -- `sk/lay-*` called with columns that do
+;;   not match any existing leaf creates a fresh leaf frame with the
+;;   layer attached.
 
 ;; ## Mark
 ;;
-;; The **mark** is the visual shape drawn for each data point or group.
-;; Several methods may share the same mark -- for instance, `lm` and `loess`
-;; both draw lines, and `area`, `stacked-area`, and `density` all draw
-;; filled regions.
-;; See the [Methods](./napkinsketch_book.methods.html) chapter for a table of all built-in marks.
+;; The **mark** is the visual shape shown for each data point or
+;; group. Several layer types may share the same mark -- for
+;; instance, `lm` and `loess` both produce lines, and `area`,
+;; `stacked-area`, and `density` all produce filled regions.
+;; See the [Methods](./napkinsketch_book.methods.html) chapter for
+;; a table of all built-in marks.
 
 ;; ## Stat
 ;;
 ;; A **stat** (statistical transform) processes raw data before
-;; rendering. Each stat takes data-space inputs and produces
-;; the geometry that its mark will draw.
-;; See the [Methods](./napkinsketch_book.methods.html) chapter for a table of all built-in stats.
+;; rendering. Each stat takes data-space inputs and produces the
+;; geometry that its mark will show.
+;; See the [Methods](./napkinsketch_book.methods.html) chapter for
+;; a table of all built-in stats.
 
 ;; ## Position
 ;;
@@ -100,7 +92,8 @@ my-sketch
 ;; the layer options.
 ;; When multiple layers share `:position :dodge`, they are coordinated
 ;; together -- error bars automatically align with bars.
-;; See the [Methods](./napkinsketch_book.methods.html) chapter for a table of all built-in positions.
+;; See the [Methods](./napkinsketch_book.methods.html) chapter for
+;; a table of all built-in positions.
 
 (def tips {:day ["Mon" "Mon" "Tue" "Tue"]
            :count [30 20 45 15]
@@ -116,15 +109,16 @@ my-sketch
 ;; ## Draft
 ;;
 ;; A **draft** is a vector of flat maps produced by `sk/draft`. Each
-;; applicable (view, layer) pair in a sketch resolves to one draft
-;; element by merging the sketch, view, and layer mappings. Draft
-;; elements carry all the information the pipeline needs: data,
-;; columns, mark, stat, color, grouping.
+;; applicable layer in a frame resolves to one draft element by
+;; merging the frame and layer mappings. Draft elements carry all
+;; the information the pipeline needs: data, columns, mark, stat,
+;; color, grouping.
 ;;
-;; `sk/draft` is useful for inspecting exactly what the renderer will
-;; consume before any domains, ticks, or pixel math are computed.
+;; `sk/draft` is useful for inspecting exactly what the renderer
+;; will consume before any domains, ticks, or coordinate math are
+;; computed.
 
-(-> my-sketch sk/draft kind/pprint)
+(-> my-frame sk/draft kind/pprint)
 
 (kind/test-last [(fn [d] (and (vector? d)
                               (= 1 (count d))
@@ -145,8 +139,8 @@ my-sketch
 ;; | `:fill` | Tile gradient color | Numerical |
 ;;
 ;; When a keyword is passed, it maps to a dataset column.
-;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed aesthetic
-;; for all points.
+;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed
+;; aesthetic for all points.
 
 (merge (sk/layer-type-lookup :point) {:color :species :size :petal-length :alpha 0.7})
 
@@ -156,7 +150,7 @@ my-sketch
 
 ;; ## Group
 ;;
-;; A **group** is a subset of data that is processed and drawn
+;; A **group** is a subset of data that is processed and rendered
 ;; together. Mapping `:color` to a categorical column automatically
 ;; creates groups -- one per unique value. You can also create groups
 ;; without color using the `:group` key.
@@ -185,10 +179,11 @@ my-sketch
 
 ;; ## Jitter
 ;;
-;; **Jitter** adds random offsets in drawing units to reduce overplotting.
-;; Unlike position and nudge, jitter operates after scaling (not in
-;; data space) and is deterministic -- seeded by a hash of the group's
-;; color so repeated renders produce identical output.
+;; **Jitter** adds random offsets in drawing units to reduce
+;; overplotting. Unlike position and nudge, jitter operates after
+;; scaling (not in data space) and is deterministic -- seeded by a
+;; hash of the group's color so repeated renders produce identical
+;; output.
 ;;
 ;; On categorical x-axes, jitter is applied along the band axis only.
 
@@ -198,30 +193,33 @@ my-sketch
 
 ;; ## Inference
 ;;
-;; **Inference** is the automatic selection of a method (mark + stat
-;; + position) when you bypass `sk/lay-*` and just pass columns to
-;; `sk/view` or rely on sketch-level data. Napkinsketch picks a method
-;; based on column types: numerical x and y defaults to `:point`,
-;; categorical x with numerical y to `:boxplot`, a single numerical
-;; column to `:histogram`, and so on. Use `:x-type` / `:y-type` on a
-;; view or layer to override the detected type.
+;; **Inference** is the automatic selection of a layer type
+;; (mark + stat + position) when you bypass `sk/lay-*` and just pass
+;; columns to `sk/frame` or rely on sketch-level data. Napkinsketch
+;; picks a layer type based on column types: numerical x and y
+;; defaults to `:point`, categorical x with numerical y to
+;; `:boxplot`, a single numerical column to `:histogram`, and so on.
+;; Use `:x-type` / `:y-type` on a frame or layer to override the
+;; detected type.
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width))
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point)
 
 (kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
 
 ;; ## Plan
 ;;
 ;; A **plan** is the fully resolved intermediate representation --
-;; a plain Clojure map containing everything needed to render a plot:
-;; data-space geometry, domains, tick info, legend, layout dimensions.
-;; No membrane types, no datasets, no scale objects.
+;; a plain Clojure map containing everything needed to render a
+;; plot: data-space geometry, domains, tick info, legend, layout
+;; dimensions. No membrane types, no datasets, no scale objects.
 ;;
 ;; Created with `sk/plan`. Numeric arrays (`:xs`, `:ys`, etc.) are
-;; [dtype-next](https://github.com/cnuernber/dtype-next) buffers for efficiency.
+;; [dtype-next](https://github.com/cnuernber/dtype-next) buffers for
+;; efficiency.
 
-(def my-plan (sk/plan my-sketch))
+(def my-plan (sk/plan my-frame))
 
 (sort (keys my-plan))
 
@@ -231,7 +229,8 @@ my-sketch
 ;;
 ;; A **panel** is a single plotting area within a plan. It contains
 ;; x/y domains, scale specs, tick info, coordinate type, and layers.
-;; A simple plot has one panel; `sk/facet` and `sk/facet-grid` produce multiple.
+;; A simple plot has one panel; `sk/facet` and `sk/facet-grid`
+;; produce multiple.
 
 (sort (keys (first (:panels my-plan))))
 
@@ -243,7 +242,7 @@ my-sketch
 ;; style, and groups of data-space geometry. Layers live inside
 ;; panels in the plan.
 
-(-> my-sketch
+(-> my-frame
     sk/plan
     (get-in [:panels 0 :layers 0]))
 
@@ -336,8 +335,8 @@ my-sketch
 ;; overlay fixed positions passed via opts (`:y-intercept` or
 ;; `:x-intercept` for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max`
 ;; for bands). They are regular layers, so they scope like any other
-;; `lay-*` -- bare call attaches to the sketch, columns attach to a
-;; view.
+;; `lay-*` -- bare call attaches to the frame, columns attach to a
+;; new leaf.
 ;;
 ;; | Constructor | What |
 ;; |:------------|:-----|
@@ -409,17 +408,17 @@ my-sketch
 
 (kind/test-last [(fn [n] (pos? n))])
 
-;; ## Figure
+;; ## Plot
 ;;
-;; A **figure** is the final rendered output -- the result of rendering
-;; a plan to a specific format. For SVG, the figure is hiccup markup
+;; A **plot** is the final rendered output -- the result of rendering
+;; a plan to a specific format. For SVG, the plot is hiccup markup
 ;; wrapped in `kind/hiccup`.
 ;;
-;; Created by `sk/plot` or by auto-rendering a sketch.
+;; Created by `sk/plot` or by auto-rendering a frame.
 
-(def my-figure (sk/plan->plot my-plan :svg {}))
+(def my-plot (sk/plan->plot my-plan :svg {}))
 
-(first my-figure)
+(first my-plot)
 
 (kind/test-last [(fn [v] (= :svg v))])
 
@@ -483,12 +482,15 @@ my-sketch
 ;; of layer functions (`sk/lay-point`, `sk/lay-histogram`, etc.).
 ;; They control aesthetics (`:color`, `:size`, `:alpha`, `:shape`),
 ;; grouping (`:group`), position adjustment (`:position`), and
-;; method-specific parameters (`:bandwidth`, `:confidence-band`, `:normalize`, etc.).
+;; layer-type-specific parameters (`:bandwidth`, `:confidence-band`,
+;; `:normalize`, etc.).
 ;;
-;; Four keys are universal -- accepted by every layer -- and each method
-;; may accept additional keys. The [Methods](./napkinsketch_book.methods.html) chapter lists
-;; which options each method accepts. See also `sk/layer-option-docs`
-;; for descriptions, or inspect a specific method with `sk/layer-type-lookup`.
+;; Four keys are universal -- accepted by every layer -- and each
+;; layer type may accept additional keys. The
+;; [Methods](./napkinsketch_book.methods.html) chapter lists which
+;; options each layer type accepts. See also `sk/layer-option-docs`
+;; for descriptions, or inspect a specific layer type with
+;; `sk/layer-type-lookup`.
 
 (count sk/layer-option-docs)
 
@@ -506,36 +508,36 @@ my-sketch
 ;;
 ;; | Term | What | Key functions |
 ;; |:-----|:-----|:-------------|
-;; | Sketch | Composable value: data + mapping + views + layers + opts | All `sk/` functions return sketches |
-;; | View (sketch) | Map in `:views` declaring what to plot (column pairs) | `sk/view`, `sk/lay-*` with columns |
-;; | Sketch mapping | Mappings in `:mapping` that apply to all views | `sk/sketch` opts map |
-;; | Global layer | Layer in `:layers` applied to all views | `sk/lay-*` without columns |
-;; | View-local layer | Layer in `view[:layers]` applied to one view | `sk/lay-*` with columns |
-;; | Draft | Vector of flat maps from merging sketch, view, and layer mappings | `sk/draft`, automatic during `sk/plan` |
-;; | Method | Mark + stat + position bundle | `sk/layer-type-lookup`, `sk/lay-*` |
-;; | Mark | Visual shape: point, line, bar, area, ... | Key in method map |
-;; | Stat | Data transform: identity, bin, count, lm, kde, ... | Key in method map |
-;; | Position | How groups share space: dodge, stack, fill, identity | Key in method map |
+;; | Frame | Composable value: data + mapping + layers (+ sub-frames) | All `sk/` functions return frames |
+;; | Leaf frame | Frame describing one plot panel | `sk/frame`, `sk/lay-*` with columns |
+;; | Composite frame | Frame containing sub-frames and a layout | `sk/arrange`, `sk/facet`, `sk/facet-grid` |
+;; | Mapping | Column-to-aesthetic association on a frame or layer | `sk/frame` mapping, `sk/lay-*` opts |
+;; | Layer | Method attached to a frame | `sk/lay-*` |
+;; | Draft | Vector of flat maps from merging frame and layer mappings | `sk/draft`, automatic during `sk/plan` |
+;; | Layer type | Mark + stat + position bundle | `sk/layer-type-lookup`, `sk/lay-*` |
+;; | Mark | Visual shape: point, line, bar, area, ... | Key in layer-type map |
+;; | Stat | Data transform: identity, bin, count, linear-model, density, ... | Key in layer-type map |
+;; | Position | How groups share space: dodge, stack, fill, identity | Key in layer-type map |
 ;; | Inference | Auto-choosing mark/stat from column types | When `sk/lay-*` is omitted |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha | Key in mapping or layer |
-;; | Group | Subset of data drawn together | From `:color` or `:group` |
+;; | Group | Subset of data rendered together | From `:color` or `:group` |
 ;; | Plan | Fully resolved plot description | `sk/plan` |
 ;; | Panel | One plotting area (domain, ticks, layers) | One or more per plan |
-;; | Layer | Resolved geometry + style for one mark | Inside plan panels |
+;; | Plan layer | Resolved geometry + style for one mark | Inside plan panels |
 ;; | Domain | Data range on an axis | Part of panel |
 ;; | Tick | Axis mark with label at a domain value | Part of panel |
 ;; | Scale | Data-to-pixel mapping (linear, log, categorical) | `sk/scale` |
 ;; | Coord | Coordinate system (cartesian, flip, polar, fixed) | `sk/coord` |
 ;; | Facet | Split into panels by a categorical column | `sk/facet`, `sk/facet-grid` |
+;; | Arrange | Compose multiple frames into a grid | `sk/arrange` |
 ;; | Annotation | Non-data reference marks (rules, bands) | `sk/lay-rule-*`, `sk/lay-band-*` |
 ;; | Legend | Color/size/alpha key from aesthetic mappings | Automatic in plan |
 ;; | Plot options | Title, subtitle, caption, labels, dimensions | `sk/options` |
-;; | Layer options | Per-layer aesthetics and method parameters | `sk/lay-*` opts map |
+;; | Layer options | Per-layer aesthetics and layer-type parameters | `sk/lay-*` opts map |
 ;; | Theme | Visual styling: background, grid, fonts | `:theme` in `sk/options` |
 ;; | Palette | Ordered color set for categorical aesthetics | `:palette` in `sk/options` |
 ;; | Gradient | Continuous color ramp for numerical mappings | `:color-scale` in `sk/options` |
 ;; | Configuration | Global rendering defaults | `sk/config`, `sk/set-config!`, `sk/with-config` |
 ;; | Membrane | Drawable tree (membrane library) | Internal rendering step |
-;; | Figure | Final output (SVG hiccup) | `sk/plot`, `sk/save` |
-;; | Arrange | Compose multiple sketches into a grid | `sk/arrange` |
+;; | Plot | Final output (SVG hiccup) | `sk/plot`, `sk/save` |
 ;; | Tooltip / Brush | JavaScript hover and selection interactions | `{:tooltip true}` in options |
