@@ -65,7 +65,7 @@
 ;;   from a column (`:color :species`) or given as a constant
 ;;   (`:alpha 0.3`).
 ;; - **Data** -- a per-layer `:data` key, if the layer should
-;;   use a different dataset from the rest of the sketch.
+;;   use a different dataset from the rest of the frame.
 ;;
 ;; The primary way to set them is in the opts map of `sk/lay-*`:
 
@@ -86,26 +86,27 @@
 
 ;; ### Scope: generalizing layer options upward
 ;;
-;; Method parameters, aesthetics, and per-layer data can also be
-;; set at wider **scopes** when they should apply to more than
-;; one layer. The scope hierarchy has three levels, from narrow
-;; to broad:
+;; Layer-type parameters, aesthetics, and per-layer data can also
+;; be set at wider **scopes** when they should apply to more than
+;; one layer. For a single-panel plot the scope hierarchy has two
+;; levels, from narrow to broad:
 ;;
 ;; | Scope  | Set via           | Reaches                    |
 ;; |:-------|:------------------|:---------------------------|
 ;; | Layer  | `sk/lay-*` opts   | that one layer             |
-;; | View   | `sk/view` opts    | every layer on that view   |
-;; | Sketch | `sk/sketch` opts  | every layer on every view  |
+;; | Frame  | `sk/frame` opts   | every layer on this frame  |
 ;;
-;; When the same key is set at multiple scopes, narrower scope
-;; wins.
+;; When the same key is set at both scopes, the narrower one wins.
 ;;
-;; The method itself is chosen per layer -- you pick which
-;; `sk/lay-*` to call, and that is where the method belongs.
-;; [Core Concepts](./napkinsketch_book.core_concepts.html)
-;; teaches how layers themselves (sketch-level vs view-level)
-;; combine, and the detailed combination rules for each category
-;; of layer option.
+;; Composite frames introduce a third level: an outer frame's
+;; mapping flows into each of its descendant leaves, where it
+;; combines with the leaf's own mapping. See
+;; [Composition](./napkinsketch_book.composition.html) for examples.
+;;
+;; The layer type itself is chosen per layer -- you pick which
+;; `sk/lay-*` to call. [Core Concepts](./napkinsketch_book.core_concepts.html)
+;; teaches how layer placement interacts with frame mappings, and
+;; the detailed combination rules for each category of layer option.
 
 ;; ---
 ;; ## Plot options
@@ -114,7 +115,7 @@
 ;; axis scales, coordinate system, facets. A plot has one of each
 ;; -- there is no scope here, because there is nothing to vary over.
 ;;
-;; Four functions write plot options to the sketch's `:opts`
+;; Four functions write plot options to the frame's `:opts`
 ;; field:
 ;;
 ;; - `sk/options` -- plot text (title, subtitle, caption, axis
@@ -130,8 +131,8 @@
 ;; Reference lines and shaded bands -- `sk/lay-rule-h`,
 ;; `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v` -- are layers,
 ;; not plot options. They scope like any other `lay-*`: bare calls
-;; attach to the sketch, while passing `:x`/`:y` columns attaches
-;; to a specific view.
+;; attach to the frame, while passing `:x`/`:y` columns targets the
+;; most recent matching leaf (or creates a new one).
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
@@ -173,7 +174,7 @@
 ;;
 ;; A note on terminology: other chapters may refer to these
 ;; values as **plot-level** -- a category name. That is not the
-;; same as **sketch-level**, which names a scope position (the
+;; same as **frame-level**, which names a scope position (the
 ;; top of the layer-options scope hierarchy) within another
 ;; category. Trying to set a plot option inside an `sk/lay-*`
 ;; opts map -- for example `{:x-scale {:type :log}}` -- is a
@@ -188,7 +189,7 @@
 ;; is resolved at render time from a layered stack of sources,
 ;; from highest priority to lowest:
 ;;
-;; 1. **Plot options** on the sketch (`sk/options`) -- a
+;; 1. **Plot options** on the frame (`sk/options`) -- a
 ;;    per-plot override that wins for that one plot.
 ;; 2. **Thread-local overrides** via `sk/with-config`.
 ;; 3. **Global overrides** via `sk/set-config!`.
@@ -196,11 +197,11 @@
 ;; 5. **Library defaults** -- the baseline shipped with
 ;;    Napkinsketch.
 ;;
-;; Sources 2-5 sit outside any specific sketch and carry across
-;; every plot you render. Source 1 is how a specific sketch dips
+;; Sources 2-5 sit outside any specific frame and carry across
+;; every plot you render. Source 1 is how a specific frame dips
 ;; into the chain to override a configuration key for itself --
 ;; `(sk/options {:palette :dark2})` sets `:palette` on one
-;; sketch, and at render time wins over any palette set through
+;; frame, and at render time wins over any palette set through
 ;; the other four sources.
 ;;
 ;; The [Configuration](./napkinsketch_book.configuration.html)
@@ -221,7 +222,7 @@
 ;; ---
 ;; ## A worked example
 ;;
-;; The sketch below touches two categories explicitly. The third,
+;; The frame below touches two categories explicitly. The third,
 ;; configuration, shows up at render time.
 
 (def demo
@@ -238,7 +239,7 @@ demo
 
 (kind/test-last [(fn [v] (some #{"Iris measurements"} (:texts (sk/svg-summary v))))])
 
-;; The sketch structure:
+;; The frame structure:
 
 (sk-summary demo)
 
@@ -257,7 +258,7 @@ demo
 ;;   option at layer scope.
 ;; - `:title` and `:coord` are in `:opts` -- plot options, no
 ;;   scope.
-;; - Configuration does not appear in the sketch. The renderer
+;; - Configuration does not appear in the frame. The renderer
 ;;   will consult `(sk/config)` for theme, default dimensions,
 ;;   and other defaults.
 
@@ -270,7 +271,7 @@ demo
 ;; | ggplot2 construct                            | Napkinsketch category       |
 ;; |:---------------------------------------------|:----------------------------|
 ;; | `geom_*(aes(...))`                           | layer option (layer scope)  |
-;; | `ggplot(aes(...))`                           | layer option (sketch scope) |
+;; | `ggplot(aes(...))`                           | layer option (frame scope)  |
 ;; | `+ geom_*()`                                 | a layer                     |
 ;; | `+ scale_*()`, `+ coord_*()`, `+ facet_*()`  | plot option                 |
 ;; | `+ labs(...)`, one-off `+ theme(...)`        | plot option                 |
@@ -281,7 +282,7 @@ demo
 ;;
 ;; - [Core Concepts](./napkinsketch_book.core_concepts.html) --
 ;;   the scope hierarchy for layer options in full.
-;; - [Sketch Rules](./napkinsketch_book.sketch_rules.html) --
+;; - [Frame Rules](./napkinsketch_book.sketch_rules.html) --
 ;;   precise rules for each option function.
 ;; - [Configuration](./napkinsketch_book.configuration.html) --
 ;;   the four configuration sources and every configuration key.
