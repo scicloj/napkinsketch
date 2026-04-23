@@ -1177,15 +1177,16 @@
    Returns a map with :width, :height, :panels, :points, :lines,
    :polygons, :tiles, :visible-tiles, and :texts -- useful for asserting
    plot structure.
-   Accepts SVG hiccup or a sketch (auto-renders to SVG first).
+   Accepts SVG hiccup, a sketch, or a frame (auto-renders to SVG first).
    (svg-summary (plot sk))  -- summary of rendered SVG
-   (svg-summary my-sketch)              -- auto-renders sketch, then summarizes"
+   (svg-summary my-sketch)  -- auto-renders sketch, then summarizes
+   (svg-summary my-frame)   -- auto-renders frame (leaf or composite)"
   ([svg-or-sketch]
-   (if (sketch/sketch? svg-or-sketch)
+   (if (or (sketch/sketch? svg-or-sketch) (frame? svg-or-sketch))
      (svg/svg-summary (plot svg-or-sketch))
      (svg/svg-summary svg-or-sketch)))
   ([svg-or-sketch theme]
-   (if (sketch/sketch? svg-or-sketch)
+   (if (or (sketch/sketch? svg-or-sketch) (frame? svg-or-sketch))
      (svg/svg-summary (plot svg-or-sketch) theme)
      (svg/svg-summary svg-or-sketch theme))))
 

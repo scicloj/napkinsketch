@@ -117,6 +117,27 @@
       (is (pos? (:lines summary))
           "line leaf rendered"))))
 
+(deftest svg-summary-auto-renders-frames-test
+  (testing "svg-summary accepts a leaf-frame plain map and auto-renders"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          leaf (sk/frame ds :x :y)
+          summary (sk/svg-summary leaf)]
+      (is (= 1 (:panels summary)))
+      (is (pos? (:points summary))
+          "inferred scatter points rendered")))
+
+  (testing "svg-summary accepts a composite frame and auto-renders"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :frames [{:layers [{:layer-type :point}]}
+                              {:layers [{:layer-type :line}]}]}
+          summary (sk/svg-summary composite)]
+      (is (= 2 (:panels summary)))
+      (is (pos? (:points summary)))
+      (is (pos? (:lines summary))))))
+
 (deftest composite-renders-vertical-test
   (testing "vertical layout produces stacked leaves"
     (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
