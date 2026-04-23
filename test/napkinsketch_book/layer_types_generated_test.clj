@@ -1,5 +1,5 @@
 (ns
- napkinsketch-book.methods-generated-test
+ napkinsketch-book.layer-types-generated-test
  (:require
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.napkinsketch.api :as sk]
@@ -9,10 +9,10 @@
 
 
 (def
- v3_l38
+ v3_l40
  (defn
   used-by
-  "Sorted comma-separated method names whose `field` equals `value`."
+  "Sorted comma-separated layer-type names whose `field` equals `value`."
   [field value]
   (->>
    (layer-type/registered)
@@ -23,10 +23,10 @@
 
 
 (def
- v4_l47
+ v4_l49
  (defn
   distinct-in-order
-  "Distinct values of `field` across methods, in first-seen order."
+  "Distinct values of `field` across layer types, in first-seen order."
   [field]
   (let
    [seen (volatile! #{})]
@@ -41,23 +41,23 @@
 
 
 (def
- v6_l61
+ v6_l63
  (kind/table
-  {:column-names ["Method" "Mark" "Stat" "Position"],
+  {:column-names ["Layer type" "Mark" "Stat" "Position"],
    :row-maps
    (for
     [k layer-type/layer-type-order :let [m (layer-type/lookup k)]]
-    {"Method" (kind/code (pr-str k)),
+    {"Layer type" (kind/code (pr-str k)),
      "Mark" (kind/code (pr-str (:mark m))),
      "Stat" (kind/code (pr-str (:stat m))),
      "Position" (kind/code (pr-str (or (:position m) :identity)))})}))
 
 
-(deftest t7_l71 (is ((fn [t] (= 25 (count (:row-maps t)))) v6_l61)))
+(deftest t7_l73 (is ((fn [t] (= 25 (count (:row-maps t)))) v6_l63)))
 
 
 (def
- v9_l81
+ v9_l84
  (kind/table
   {:column-names ["Mark" "Shape" "Used by"],
    :row-maps
@@ -68,11 +68,11 @@
      "Used by" (used-by :mark mk)})}))
 
 
-(deftest t10_l89 (is ((fn [t] (= 21 (count (:row-maps t)))) v9_l81)))
+(deftest t10_l92 (is ((fn [t] (= 21 (count (:row-maps t)))) v9_l84)))
 
 
 (def
- v12_l99
+ v12_l102
  (kind/table
   {:column-names ["Stat" "What it computes" "Used by"],
    :row-maps
@@ -83,11 +83,11 @@
      "Used by" (used-by :stat st)})}))
 
 
-(deftest t13_l107 (is ((fn [t] (pos? (count (:row-maps t)))) v12_l99)))
+(deftest t13_l110 (is ((fn [t] (pos? (count (:row-maps t)))) v12_l102)))
 
 
 (def
- v15_l116
+ v15_l119
  (kind/table
   {:column-names ["Position" "What it does" "Used by"],
    :row-maps
@@ -98,11 +98,11 @@
      "Used by" (used-by :position pos)})}))
 
 
-(deftest t16_l124 (is ((fn [t] (pos? (count (:row-maps t)))) v15_l116)))
+(deftest t16_l127 (is ((fn [t] (pos? (count (:row-maps t)))) v15_l119)))
 
 
 (def
- v18_l142
+ v18_l145
  (kind/table
   {:column-names ["Option" "Description"],
    :row-maps
@@ -112,13 +112,13 @@
      "Description" (get layer-type/layer-option-docs k)})}))
 
 
-(deftest t19_l149 (is ((fn [t] (pos? (count (:row-maps t)))) v18_l142)))
+(deftest t19_l152 (is ((fn [t] (pos? (count (:row-maps t)))) v18_l145)))
 
 
 (def
- v21_l157
+ v21_l160
  (kind/table
-  {:column-names ["Method" "Additional options"],
+  {:column-names ["Layer type" "Additional options"],
    :row-maps
    (for
     [k
@@ -127,14 +127,15 @@
      [m (layer-type/lookup k) accepts (:accepts m)]
      :when
      (seq accepts)]
-    {"Method" (kind/code (pr-str k)), "Additional options" accepts})}))
+    {"Layer type" (kind/code (pr-str k)),
+     "Additional options" accepts})}))
 
 
-(deftest t22_l167 (is ((fn [t] (pos? (count (:row-maps t)))) v21_l157)))
+(deftest t22_l170 (is ((fn [t] (pos? (count (:row-maps t)))) v21_l160)))
 
 
 (def
- v24_l172
+ v24_l175
  (kind/table
   {:column-names ["Option" "Description"],
    :row-maps
@@ -143,4 +144,4 @@
     {"Option" (kind/code (pr-str k)), "Description" desc})}))
 
 
-(deftest t25_l179 (is ((fn [t] (pos? (count (:row-maps t)))) v24_l172)))
+(deftest t25_l182 (is ((fn [t] (pos? (count (:row-maps t)))) v24_l175)))

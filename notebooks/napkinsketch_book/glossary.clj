@@ -55,7 +55,7 @@ my-frame
 ;;
 ;; A **layer type** is the bundle of mark + stat + position that
 ;; determines how data becomes a visual element. See the
-;; [Methods](./napkinsketch_book.methods.html) chapter for detailed
+;; [Layer Types](./napkinsketch_book.layer_types.html) chapter for detailed
 ;; tables of all built-in layer types, marks, stats, and positions.
 ;;
 ;; Layer types attach to frames in two ways:
@@ -73,7 +73,7 @@ my-frame
 ;; group. Several layer types may share the same mark -- for
 ;; instance, `lm` and `loess` both produce lines, and `area`,
 ;; `stacked-area`, and `density` all produce filled regions.
-;; See the [Methods](./napkinsketch_book.methods.html) chapter for
+;; See the [Layer Types](./napkinsketch_book.layer_types.html) chapter for
 ;; a table of all built-in marks.
 
 ;; ## Stat
@@ -81,7 +81,7 @@ my-frame
 ;; A **stat** (statistical transform) processes raw data before
 ;; rendering. Each stat takes data-space inputs and produces the
 ;; geometry that its mark will show.
-;; See the [Methods](./napkinsketch_book.methods.html) chapter for
+;; See the [Layer Types](./napkinsketch_book.layer_types.html) chapter for
 ;; a table of all built-in stats.
 
 ;; ## Position
@@ -92,7 +92,7 @@ my-frame
 ;; the layer options.
 ;; When multiple layers share `:position :dodge`, they are coordinated
 ;; together -- error bars automatically align with bars.
-;; See the [Methods](./napkinsketch_book.methods.html) chapter for
+;; See the [Layer Types](./napkinsketch_book.layer_types.html) chapter for
 ;; a table of all built-in positions.
 
 (def tips {:day ["Mon" "Mon" "Tue" "Tue"]
@@ -487,7 +487,7 @@ my-frame
 ;;
 ;; Four keys are universal -- accepted by every layer -- and each
 ;; layer type may accept additional keys. The
-;; [Methods](./napkinsketch_book.methods.html) chapter lists which
+;; [Layer Types](./napkinsketch_book.layer_types.html) chapter lists which
 ;; options each layer type accepts. See also `sk/layer-option-docs`
 ;; for descriptions, or inspect a specific layer type with
 ;; `sk/layer-type-lookup`.

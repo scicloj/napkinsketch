@@ -1,42 +1,44 @@
-;; # Methods
+;; # Layer Types
 
-;; A **method** is the bundle that determines how data becomes a visual element.
-;; It combines three concepts:
+;; A **layer type** is the bundle that determines how data becomes a
+;; visual element. It combines three concepts:
 ;;
-;; - **mark** -- what shape to draw (points, bars, lines, ...)
+;; - **mark** -- what shape to show (points, bars, lines, ...)
 ;; - **stat** -- what computation to apply first (pass through, bin, count, regress, ...)
 ;; - **position** -- how overlapping groups share space (identity, dodge, stack, fill)
 ;;
-;; Layer functions (`sk/lay-point`, `sk/lay-histogram`, `sk/lay-bar`, `(sk/lay-smooth {:stat :linear-model})`, etc.)
-;; each add a layer with the corresponding method. When no layer is added,
-;; Napkinsketch infers a method from the column types.
+;; Layer functions (`sk/lay-point`, `sk/lay-histogram`, `sk/lay-bar`,
+;; `(sk/lay-smooth {:stat :linear-model})`, etc.) each add a layer
+;; with the corresponding layer type. When no layer is added,
+;; Napkinsketch infers a layer type from the column types.
 ;;
-;; All built-in methods are registered in a data registry. The tables below
-;; are generated from that registry -- they stay in sync with the code.
+;; All built-in layer types are registered in a data registry. The
+;; tables below are generated from that registry -- they stay in
+;; sync with the code.
 
-(ns napkinsketch-book.methods
+(ns napkinsketch-book.layer-types
   (:require
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Method registry -- for inspecting method data
+   ;; Layer-type registry -- for inspecting layer-type data
    [scicloj.napkinsketch.layer-type :as layer-type]
    ;; String utilities
    [clojure.string :as str]))
 
 ;; ## Reading the Registry
 ;;
-;; The tables below are generated directly from the method registry,
-;; so they track whatever is currently registered. Two small helpers
-;; query the registry: `used-by` returns the comma-separated list of
-;; methods whose given field equals a value, and `distinct-in-order`
-;; returns each distinct field value in the order methods were
-;; registered. Both are used to populate the Mark, Stat, and Position
-;; tables further down.
+;; The tables below are generated directly from the layer-type
+;; registry, so they track whatever is currently registered. Two
+;; small helpers query the registry: `used-by` returns the
+;; comma-separated list of layer types whose given field equals a
+;; value, and `distinct-in-order` returns each distinct field value
+;; in the order layer types were registered. Both are used to
+;; populate the Mark, Stat, and Position tables further down.
 
 (defn used-by
-  "Sorted comma-separated method names whose `field` equals `value`."
+  "Sorted comma-separated layer-type names whose `field` equals `value`."
   [field value]
   (->> (layer-type/registered)
        (filter (fn [[_ m]] (= value (or (get m field) :identity))))
@@ -45,7 +47,7 @@
        (str/join ", ")))
 
 (defn distinct-in-order
-  "Distinct values of `field` across methods, in first-seen order."
+  "Distinct values of `field` across layer types, in first-seen order."
   [field]
   (let [seen (volatile! #{})]
     (reduce (fn [acc k]
@@ -54,16 +56,16 @@
                     (do (vswap! seen conj v) (conj acc v)))))
             [] layer-type/layer-type-order)))
 
-;; ## Methods 
+;; ## Layer Types
 ;;
-;; Each row is a registered method showing its mark, stat, and position.
+;; Each row is a registered layer type showing its mark, stat, and position.
 
 (kind/table
- {:column-names ["Method" "Mark" "Stat" "Position"]
+ {:column-names ["Layer type" "Mark" "Stat" "Position"]
   :row-maps
   (for [k layer-type/layer-type-order
         :let [m (layer-type/lookup k)]]
-    {"Method" (kind/code (pr-str k))
+    {"Layer type" (kind/code (pr-str k))
      "Mark" (kind/code (pr-str (:mark m)))
      "Stat" (kind/code (pr-str (:stat m)))
      "Position" (kind/code (pr-str (or (:position m) :identity)))})})
@@ -74,9 +76,10 @@
 
 ;; ## Marks
 ;;
-;; A **mark** is the visual shape drawn for each data point or group.
-;; Several methods may share the same mark -- for instance, `histogram`
-;; and `value-bar` both draw bars, and `lm` (linear model) and `loess` (local regression) both draw lines.
+;; A **mark** is the visual shape shown for each data point or
+;; group. Several layer types may share the same mark -- for
+;; instance, `histogram` and `value-bar` both produce bars, and `lm`
+;; (linear model) and `loess` (local regression) both produce lines.
 
 (kind/table
  {:column-names ["Mark" "Shape" "Used by"]
@@ -93,8 +96,8 @@
 ;; ## Stats
 ;;
 ;; A **stat** (statistical transform) processes raw data before
-;; rendering. Each stat takes data-space inputs and produces
-;; the geometry that its mark will draw.
+;; rendering. Each stat takes data-space inputs and produces the
+;; geometry that its mark will show.
 
 (kind/table
  {:column-names ["Stat" "What it computes" "Used by"]
@@ -137,7 +140,7 @@
 ;;
 ;; ### Universal options
 ;;
-;; Accepted by every method:
+;; Accepted by every layer type:
 
 (kind/table
  {:column-names ["Option" "Description"]
@@ -149,19 +152,19 @@
 (kind/test-last
  [(fn [t] (pos? (count (:row-maps t))))])
 
-;; ### Method-specific options
+;; ### Layer-type-specific options
 ;;
-;; Some methods accept additional keys beyond the universal set.
-;; Methods not listed here accept only the universal options above.
+;; Some layer types accept additional keys beyond the universal set.
+;; Layer types not listed here accept only the universal options above.
 
 (kind/table
- {:column-names ["Method" "Additional options"]
+ {:column-names ["Layer type" "Additional options"]
   :row-maps
   (for [k layer-type/layer-type-order
         :let [m (layer-type/lookup k)
               accepts (:accepts m)]
         :when (seq accepts)]
-    {"Method" (kind/code (pr-str k))
+    {"Layer type" (kind/code (pr-str k))
      "Additional options" accepts})})
 
 (kind/test-last
@@ -181,6 +184,6 @@
 
 ;; ## What's Next
 ;;
-;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) -- see point, line, and regression methods in action
+;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) -- see point, line, and regression layer types in action
 ;; - [**Distributions**](./napkinsketch_book.distributions.html) -- histograms, density, boxplots, violins
 ;; - [**Customization**](./napkinsketch_book.customization.html) -- colors, palettes, themes, and per-layer options

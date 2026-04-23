@@ -369,8 +369,8 @@ my-frame
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; See the [Methods](./napkinsketch_book.methods.html) chapter for
-;; complete tables of every mark, stat, and position.
+;; See the [Layer Types](./napkinsketch_book.layer_types.html) chapter
+;; for complete tables of every mark, stat, and position.
 
 ;; ---
 ;; ## Inference

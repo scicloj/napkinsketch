@@ -1191,5 +1191,5 @@ graph TD
 
 ;; ## What's Next
 ;;
-;; - [**Methods**](./napkinsketch_book.methods.html) -- the full registry of marks, stats, and positions that inference selects from
+;; - [**Layer Types**](./napkinsketch_book.layer_types.html) -- the full registry of marks, stats, and positions that inference selects from
 ;; - [**Scatter Plots**](./napkinsketch_book.scatter.html) -- see inference in action with the most common chart type

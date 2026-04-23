@@ -5,7 +5,7 @@
                    "options_and_scopes"
                    "sketch_rules"
                    "inference_rules"
-                   "methods"
+                   "layer_types"
                    "glossary"]
  "📊 Chart Types" ["scatter"
                    "distributions"

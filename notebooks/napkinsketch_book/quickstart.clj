@@ -134,7 +134,7 @@
                            (and (= 1 (:panels s))
                                 (pos? (:lines s)))))])
 
-;; See the [**Methods**](./napkinsketch_book.methods.html) chapter for the full list of chart types.
+;; See the [**Layer Types**](./napkinsketch_book.layer_types.html) chapter for the full list of chart types.
 
 ;; ## Inference
 ;;
