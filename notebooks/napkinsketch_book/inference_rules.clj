@@ -525,7 +525,7 @@ explicit-group-sketch
 ;; One regression line -- no grouping:
 
 (-> grouped-data
-    (sk/view :x :y)
+    (sk/frame :x :y)
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -536,7 +536,7 @@ explicit-group-sketch
 ;; Two regression lines -- grouped by color:
 
 (-> grouped-data
-    (sk/view :x :y {:color :g})
+    (sk/frame {:x :x :y :y :color :g})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -550,8 +550,8 @@ explicit-group-sketch
 
 ;; ## Method
 ;;
-;; When you use `sk/view` without an explicit `sk/lay-*` call,
-;; Napkinsketch infers the **method** -- a mark + stat bundle --
+;; When you use `sk/frame` without an explicit `sk/lay-*` call,
+;; Napkinsketch infers the **layer type** -- a mark + stat bundle --
 ;; from the column types of the referenced columns. Internally,
 ;; `infer-method` in `resolve.clj` applies these rules.
 ;;
@@ -586,7 +586,7 @@ explicit-group-sketch
 
 (def hist-views
   (-> five-points
-      (sk/view :x)))
+      (sk/frame :x)))
 
 hist-views
 
@@ -608,7 +608,7 @@ hist-views
 (def temporal-hist-sketch
   (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
               #inst "2024-04-01" #inst "2024-05-01"]}
-      (sk/view :date)))
+      (sk/frame :date)))
 
 temporal-hist-sketch
 
@@ -625,7 +625,7 @@ temporal-hist-sketch
 
 (def count-views
   (-> animals
-      (sk/view :animal)))
+      (sk/frame :animal)))
 
 count-views
 
@@ -645,7 +645,7 @@ count-views
 ;; `scatter-views` is such a sketch):
 
 (def num-num-sketch
-  (-> five-points (sk/view :x :y)))
+  (-> five-points (sk/frame :x :y)))
 
 num-num-sketch
 
@@ -664,7 +664,7 @@ num-num-sketch
 (def ts-line-sketch
   (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"]
        :val  [10 25 18]}
-      (sk/view :date :val)))
+      (sk/frame :date :val)))
 
 ts-line-sketch
 
@@ -683,7 +683,7 @@ ts-line-sketch
 (def boxplot-sketch
   (-> {:species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]
        :val     [8  10  12  18  20  22  14  15  17]}
-      (sk/view :species :val)))
+      (sk/frame :species :val)))
 
 boxplot-sketch
 
@@ -703,7 +703,7 @@ boxplot-sketch
 (def horizontal-boxplot-sketch
   (-> {:val     [8  10  12  18  20  22  14  15  17]
        :species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]}
-      (sk/view :val :species)))
+      (sk/frame :val :species)))
 
 horizontal-boxplot-sketch
 
@@ -851,7 +851,7 @@ iris-label-sketch
 ;; The system omits the y-label since it would repeat the column name:
 
 (def x-only-sketch
-  (-> five-points (sk/view :x)))
+  (-> five-points (sk/frame :x)))
 
 x-only-sketch
 
@@ -1088,7 +1088,7 @@ flipped-labels-sketch
 
 (def multi-views
   (-> five-points
-      (sk/view :x :y)
+      (sk/frame :x :y)
       sk/lay-point
       (sk/lay-smooth {:stat :linear-model})))
 
@@ -1168,7 +1168,7 @@ graph TD
 ;;
 ;; | What is inferred | Default | Override |
 ;; |:-----------------|:--------|:---------|
-;; | Column selection | one column fills x; two fill x, y; three fill x, y, color | explicit column args in `sk/view` or `sk/lay-*` |
+;; | Column selection | one column fills x; two fill x, y; three fill x, y, color | explicit column args in `sk/frame` or `sk/lay-*` |
 ;; | Column type | dtype inspection | `:x-type`, `:y-type`, `:color-type` in view options |
 ;; | Aesthetic classification | keyword = column, string = color/column | explicit `:color` keyword vs hex string |
 ;; | Grouping | categorical color column | `:group` aesthetic |

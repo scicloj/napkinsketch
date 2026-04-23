@@ -497,7 +497,7 @@
  v95_l527
  (->
   grouped-data
-  (sk/view :x :y)
+  (sk/frame :x :y)
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})))
 
@@ -517,7 +517,7 @@
  v98_l538
  (->
   grouped-data
-  (sk/view :x :y {:color :g})
+  (sk/frame {:x :x, :y :y, :color :g})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})))
 
@@ -533,7 +533,7 @@
    v98_l538)))
 
 
-(def v101_l587 (def hist-views (-> five-points (sk/view :x))))
+(def v101_l587 (def hist-views (-> five-points (sk/frame :x))))
 
 
 (def v102_l591 hist-views)
@@ -569,7 +569,7 @@
      #inst "2024-03-01T00:00:00.000-00:00"
      #inst "2024-04-01T00:00:00.000-00:00"
      #inst "2024-05-01T00:00:00.000-00:00"]}
-   (sk/view :date))))
+   (sk/frame :date))))
 
 
 (def v109_l613 temporal-hist-sketch)
@@ -594,7 +594,7 @@
    v112_l619)))
 
 
-(def v115_l626 (def count-views (-> animals (sk/view :animal))))
+(def v115_l626 (def count-views (-> animals (sk/frame :animal))))
 
 
 (def v116_l630 count-views)
@@ -619,7 +619,7 @@
    v119_l636)))
 
 
-(def v122_l647 (def num-num-sketch (-> five-points (sk/view :x :y))))
+(def v122_l647 (def num-num-sketch (-> five-points (sk/frame :x :y))))
 
 
 (def v123_l650 num-num-sketch)
@@ -654,7 +654,7 @@
      #inst "2024-02-01T00:00:00.000-00:00"
      #inst "2024-03-01T00:00:00.000-00:00"],
     :val [10 25 18]}
-   (sk/view :date :val))))
+   (sk/frame :date :val))))
 
 
 (def v130_l669 ts-line-sketch)
@@ -686,7 +686,7 @@
   (->
    {:species ["a" "a" "a" "b" "b" "b" "c" "c" "c"],
     :val [8 10 12 18 20 22 14 15 17]}
-   (sk/view :species :val))))
+   (sk/frame :species :val))))
 
 
 (def v137_l688 boxplot-sketch)
@@ -718,7 +718,7 @@
   (->
    {:val [8 10 12 18 20 22 14 15 17],
     :species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]}
-   (sk/view :val :species))))
+   (sk/frame :val :species))))
 
 
 (def v144_l708 horizontal-boxplot-sketch)
@@ -903,7 +903,7 @@
    v178_l843)))
 
 
-(def v181_l853 (def x-only-sketch (-> five-points (sk/view :x))))
+(def v181_l853 (def x-only-sketch (-> five-points (sk/frame :x))))
 
 
 (def v182_l856 x-only-sketch)
@@ -1207,7 +1207,7 @@
   multi-views
   (->
    five-points
-   (sk/view :x :y)
+   (sk/frame :x :y)
    sk/lay-point
    (sk/lay-smooth {:stat :linear-model}))))
 
