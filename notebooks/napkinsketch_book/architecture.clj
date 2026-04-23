@@ -1,11 +1,18 @@
 ;; # Architecture
 ;;
-;; Napkinsketch has a five-stage pipeline. You compose a sketch --
-;; a declarative description of views, layers, and shared mappings --
+;; Napkinsketch has a five-stage pipeline. You compose a frame --
+;; a declarative description of data, mappings, and layers --
 ;; that flattens into a draft automatically.
 ;;
 ;; This notebook traces a small example through every stage,
 ;; explains the plan boundary, and shows the namespace structure.
+;;
+;; **Note on internal types.** The pipeline trace below reaches into
+;; `impl/` namespaces to show fields like `:views` and the Sketch
+;; record. These are the internal shape used today; the frame
+;; substrate (plain maps) is the unified spec type that Phase 6
+;; will promote to the single internal type. The user-facing API
+;; already uses "frame" vocabulary uniformly.
 
 (ns napkinsketch-book.architecture
   (:require
@@ -27,10 +34,10 @@
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  B[\"sketch<br/>(composable API)\"] -->|sketch->draft| D[\"Draft<br/>(flat maps)\"]
+  B[\"Frame<br/>(composable API)\"] -->|frame->draft| D[\"Draft<br/>(flat maps)\"]
   D -->|draft->plan| P[\"Plan<br/>(data-space)\"]
   P -->|scales + coords| M[\"Membrane<br/>(drawing primitives)\"]
-  M -->|tree walk| F[\"Figure<br/>(output)\"]
+  M -->|tree walk| F[\"Plot<br/>(output)\"]
   style B fill:#d1c4e9
   style D fill:#e8f5e9
   style P fill:#fff3e0
@@ -38,14 +45,14 @@ graph LR
   style F fill:#fce4ec
 ")
 
-;; - **sketch** -- the composable user API. Functions like
-;;   `sk/sketch`, `sk/view`, `sk/lay-point`, `sk/lay-rule-h`,
-;;   `sk/options`, `sk/facet`, `sk/scale`, and `sk/coord` build up a
-;;   sketch record. No computation has happened yet.
+;; - **Frame** -- the composable user API. Functions like
+;;   `sk/frame`, `sk/lay-point`, `sk/lay-rule-h`, `sk/options`,
+;;   `sk/facet`, `sk/arrange`, `sk/scale`, and `sk/coord` build up a
+;;   frame. No computation has happened yet.
 ;;
 ;; - **Draft** -- a flat vector of maps produced by `sk/draft`.
 ;;   Each map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
-;;   keys -- one per view-layer combination, with all scope merged.
+;;   keys -- one per leaf-and-layer combination, with all scope merged.
 ;;
 ;; - **Plan** -- fully resolved plan. Data-space geometry, domains, tick info,
 ;;   legend. Plain Clojure maps and dtype-next buffers. No rendering primitives.
@@ -53,10 +60,10 @@ graph LR
 ;; - **Membrane** -- positioned drawing primitives
 ;;   (Translate, WithColor, Path, Label, etc.).
 ;;
-;; - **Figure** -- final output. A tree walk converts membrane records
+;; - **Plot** -- final output. A tree walk converts membrane records
 ;;   to SVG hiccup, which Clay/Kindly renders in notebooks.
 
-;; Most users only interact with the sketch stage and never need to
+;; Most users only interact with the frame stage and never need to
 ;; think about the others. The stages below matter when you are debugging
 ;; unexpected output, building a custom renderer, or extending the library.
 
@@ -70,33 +77,37 @@ graph LR
    :y [2 4 3 5 4]
    :g [:a :a :b :b :b]})
 
-;; ### sketch
+;; ### Frame
 ;;
-;; The user composes a sketch by threading data through
-;; composable functions. The sketch records what to plot
+;; The user composes a frame by threading data through
+;; composable functions. The frame records what to plot
 ;; without doing any computation.
 
 (def trace-sk
   (-> trace-data
       (sk/lay-point :x :y {:color :g})))
 
-;; The sketch is a record with five fields:
+;; Internally today, threading `sk/lay-*` produces a Sketch record
+;; (the adapter in place during the pre-alpha refactor). Phase 6
+;; retires this record in favour of the plain-map frame; the public
+;; API and pipeline semantics do not change. The fields below are
+;; what you see while inspecting the threaded value today:
 ;;
 ;; - `:data` -- the dataset (coerced to Tablecloth)
 ;;
-;; - `:mapping` -- mappings inherited by all views (from `view`)
+;; - `:mapping` -- mappings inherited by all layers
 ;;
-;; - `:views` -- structural views, each with `:mapping` and optional `:layers`
+;; - `:views` -- leaf descriptions, each with `:mapping` and optional `:layers`
 ;;
-;; - `:layers` -- global layers (from bare `lay-*` without columns)
+;; - `:layers` -- sketch-level layers (from bare `lay-*` without columns)
 ;;
-;; - `:opts` -- rendering options (title, width, etc.)
+;; - `:opts` -- plot-level options (title, width, etc.)
 
 (sketch-impl/sketch? trace-sk)
 
 (kind/test-last [true?])
 
-;; Let's look at the views and layers inside the sketch:
+;; Let's look at the leaves and layers inside the frame:
 
 (count (:views trace-sk))
 
@@ -119,8 +130,8 @@ graph LR
 
 ;; ### Draft
 ;;
-;; `sk/draft` flattens the sketch into a vector of
-;; maps. Each map merges sketch-level mappings, view mappings,
+;; `sk/draft` flattens the frame into a vector of
+;; maps. Each map merges frame-level mappings, leaf mappings,
 ;; and layer details into one flat map with `:data`, `:x`, `:y`, `:mark`, etc.
 
 (def trace-draft
@@ -167,30 +178,30 @@ trace-membrane
 
 (kind/test-last [(fn [v] (and (vector? v) (pos? (count v))))])
 
-;; ### Figure
+;; ### Plot
 ;;
 ;; `membrane->plot` converts the membrane tree into SVG hiccup.
 
-(def trace-figure
+(def trace-plot
   (sk/membrane->plot trace-membrane :svg
                      {:total-width (:total-width trace-plan)
                       :total-height (:total-height trace-plan)}))
 
-(kind/pprint trace-figure)
+(kind/pprint trace-plot)
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; And this is what it looks like when rendered:
 
-(kind/hiccup trace-figure)
+(kind/hiccup trace-plot)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; ### Shortcut: sketch to Plan
+;; ### Shortcut: Frame to Plan
 ;;
-;; In practice, `sk/plan` does the sketch-to-plan conversion
+;; In practice, `sk/plan` does the frame-to-plan conversion
 ;; in one step -- computing the draft and running `draft->plan`
 ;; internally.
 
@@ -204,25 +215,25 @@ trace-membrane
 ;;
 ;; | Stage | Type | Coordinates |
 ;; |:------|:-----|:------------|
-;; | sketch | sketch record | N/A (declarative) |
+;; | Frame | Plain map (leaf or composite) or Sketch record | N/A (declarative) |
 ;; | Draft | Vector of maps | N/A (declarative) |
 ;; | Plan | Clojure maps + dtype buffers | Data space |
-;; | Membrane | Record tree | Pixel space |
-;; | Figure | Hiccup vectors | Pixel space |
+;; | Membrane | Record tree | Drawing units |
+;; | Plot | Hiccup vectors | Drawing units |
 
 ;; ## The Plan Boundary
 ;;
 ;; The plan is the boundary between description and rendering. The
-;; sketch and draft stages assemble the description. The plan resolves
+;; frame and draft stages assemble the description. The plan resolves
 ;; it into computed geometry, domains, ticks, and legend -- still as
-;; plain data, before any pixel layout. The membrane and figure stages
-;; then produce pixel output.
+;; plain data, before any layout. The membrane and plot stages
+;; then produce the rendered output.
 
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  A[\"sketch + draft\"] -->|plan| P[\"Plan\"]
-  P --> R[\"membrane + figure\"]
+  A[\"Frame + draft\"] -->|plan| P[\"Plan\"]
+  P --> R[\"membrane + plot\"]
   style A fill:#e8f5e9
   style P fill:#fff3e0
   style R fill:#e3f2fd
@@ -242,18 +253,18 @@ graph LR
 
 ;; ## Multi-Layer Example
 ;;
-;; A sketch can hold multiple layers on the same view.
+;; A frame can hold multiple layers that share one mapping.
 ;; Here, scatter points and per-species regression lines share
-;; the same panel because both `lay-point` and `lay-lm`
-;; target the same `:petal-length`/`:petal-width` view.
+;; the same panel because both `lay-point` and `lay-smooth`
+;; target the same `:petal-length`/`:petal-width` mapping.
 
 (def multi-sk
   (-> (rdatasets/datasets-iris)
-      (sk/view :petal-length :petal-width {:color :species})
+      (sk/frame {:x :petal-length :y :petal-width :color :species})
       sk/lay-point
       (sk/lay-smooth {:stat :linear-model})))
 
-;; The sketch has one view with two global layers:
+;; The frame has one leaf with two frame-level layers:
 
 (count (:views multi-sk))
 
