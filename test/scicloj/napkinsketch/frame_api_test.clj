@@ -505,3 +505,145 @@
       (is (= :polar (get-in result [:opts :coord])))
       (is (= 1 (count (get-in result [:frames 0 :layers])))
           "lay-* still landed on the one matching leaf"))))
+
+;; ============================================================
+;; sk/frame 4-arity: positional x/y + opts map
+;; ============================================================
+
+(deftest frame-4-arity-basic-test
+  (testing "4-arity constructs a leaf with :x :y and opts in mapping"
+    (let [fr (sk/frame tiny-ds :x :y {:color :g})]
+      (is (sk/frame? fr))
+      (is (= {:x :x :y :y :color :g} (:mapping fr)))
+      (is (tc/dataset? (:data fr))))))
+
+(deftest frame-4-arity-positional-x-wins-test
+  (testing "positional x/y override same keys in opts map"
+    (let [fr (sk/frame tiny-ds :x :y {:x :override :color :g})]
+      (is (= :x (get-in fr [:mapping :x])) "positional :x wins")
+      (is (= :y (get-in fr [:mapping :y])))
+      (is (= :g (get-in fr [:mapping :color]))))))
+
+(deftest frame-4-arity-opts-data-wins-test
+  (testing "opts' :data overrides the positional data (matches sk/view)"
+    (let [other-ds (tc/dataset {:x [10 20] :y [30 40]})
+          fr (sk/frame tiny-ds :x :y {:data other-ds})]
+      (is (= 2 (tc/row-count (:data fr))) "opts :data wins; 2 rows, not 5")
+      ;; And :data does not leak into :mapping
+      (is (not (contains? (:mapping fr) :data))))))
+
+(deftest frame-4-arity-unknown-key-warns-test
+  (testing "unknown mapping key in opts triggers a warning and is stripped"
+    (let [warnings (java.io.StringWriter.)
+          fr (binding [*out* warnings]
+               (sk/frame tiny-ds :x :y {:bogus :nope :color :g}))
+          msg (str warnings)]
+      (is (re-find #"sk/frame.*bogus" msg) "warning mentions the stripped key")
+      (is (not (contains? (:mapping fr) :bogus)) "bogus key stripped from mapping")
+      (is (= :g (get-in fr [:mapping :color])) "good keys survive"))))
+
+;; ============================================================
+;; sk/prepare-frame: promote hand-built frame maps
+;; ============================================================
+
+(deftest prepare-frame-attaches-kindly-test
+  (testing "leaf map: prepare-frame attaches :kind/fn metadata"
+    (let [fr (sk/prepare-frame
+              {:data {:x [1 2 3] :y [4 5 6]}
+               :mapping {:x :x :y :y}
+               :layers [{:layer-type :point}]})]
+      (is (sk/frame? fr))
+      (is (= :kind/fn (:kindly/kind (meta fr))))
+      (is (tc/dataset? (:data fr)) "data coerced to dataset")))
+
+  (testing "composite map: prepare-frame attaches :kind/fn metadata"
+    (let [ds (tc/dataset {:x [1 2 3] :y [4 5 6]})
+          fr (sk/prepare-frame
+              {:data ds
+               :layout {:direction :horizontal}
+               :frames [{:mapping {:x :x :y :y}
+                         :layers [{:layer-type :point}]}
+                        {:mapping {:x :y :y :x}
+                         :layers [{:layer-type :line}]}]})]
+      (is (= :kind/fn (:kindly/kind (meta fr))))
+      (is (= 2 (:panels (sk/svg-summary fr)))))))
+
+(deftest prepare-frame-coerces-data-recursively-test
+  (testing ":data on nested sub-frames is coerced to a dataset"
+    (let [fr (sk/prepare-frame
+              {:layout {:direction :horizontal}
+               :frames [{:data {:a [1 2] :b [3 4]}
+                         :mapping {:x :a :y :b}
+                         :layers [{:layer-type :point}]}
+                        {:data {:c [10 20] :d [30 40]}
+                         :mapping {:x :c :y :d}
+                         :layers [{:layer-type :point}]}]})]
+      (is (every? tc/dataset?
+                  (map :data (:frames fr)))
+          "each sub-frame's :data is a tablecloth dataset"))))
+
+(deftest prepare-frame-key-order-test
+  (testing "reorder places :data before :frames; :frames last"
+    (let [ds (tc/dataset {:x [1 2] :y [3 4]})
+          composite (sk/prepare-frame
+                     {:data ds
+                      :layout {:direction :horizontal}
+                      :frames [{:mapping {:x :x :y :y}
+                                :layers [{:layer-type :point}]}]})]
+      (is (= [:layout :data :frames] (vec (keys composite)))
+          "outer keys print in readable order")))
+
+  (testing "leaf: :data goes last (no :frames to precede)"
+    (let [leaf (sk/prepare-frame
+                {:data {:x [1 2] :y [3 4]}
+                 :mapping {:x :x :y :y}
+                 :layers [{:layer-type :point}]
+                 :opts {:title "t"}})]
+      (is (= [:opts :mapping :layers :data] (vec (keys leaf)))))))
+
+(deftest prepare-frame-idempotent-test
+  (testing "wrapping twice yields a value with the same rendered SVG"
+    (let [m0 {:data {:x [1 2 3] :y [4 5 6]}
+              :mapping {:x :x :y :y}
+              :layers [{:layer-type :point}]}
+          m1 (sk/prepare-frame m0)
+          m2 (sk/prepare-frame m1)]
+      (is (= :kind/fn (:kindly/kind (meta m2))))
+      (is (= (sk/svg-summary m1) (sk/svg-summary m2)))
+      (is (tc/dataset? (:data m2)) "still coerced after double pass"))))
+
+(deftest prepare-frame-outer-layers-distribute-test
+  (testing "an outer-scope :layer on a composite renders in every leaf"
+    (let [ds (tc/dataset {:x [1 2 3] :a [4 5 6] :b [7 8 9]})
+          fr (sk/prepare-frame
+              {:data ds
+               :mapping {:x :x}
+               :layers [{:layer-type :point}]
+               :frames [{:mapping {:y :a}}
+                        {:mapping {:y :b}}]})
+          summary (sk/svg-summary fr)]
+      (is (= 2 (:panels summary)))
+      (is (= 6 (:points summary))
+          "3 points per leaf x 2 leaves = 6; outer :layers distributes"))))
+
+(deftest prepare-frame-rejects-sketch-test
+  (testing "Sketch records raise with a clear message"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"expects a plain-map frame"
+                          (sk/prepare-frame (sk/sketch tiny-ds))))))
+
+(deftest prepare-frame-warns-unknown-keys-test
+  (testing ":frame (singular) and other typos trigger a warning"
+    (let [warnings (java.io.StringWriter.)
+          fr (binding [*out* warnings]
+               (sk/prepare-frame
+                {:data {:x [1 2] :y [3 4]}
+                 :mapping {:x :x :y :y}
+                 :layers [{:layer-type :point}]
+                 :frame []        ; typo: singular
+                 :shared-scales #{:x}}))   ; typo: extra 'd'
+          msg (str warnings)]
+      (is (re-find #":frame" msg))
+      (is (re-find #":shared-scales" msg))
+      (is (contains? fr :frame)
+          "unknown keys are warned but not stripped (might be extensions)"))))

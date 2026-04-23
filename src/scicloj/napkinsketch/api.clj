@@ -298,57 +298,145 @@
         (select-keys opts (filter accepted (keys opts)))
         opts))))
 
-(defn- render-leaf-frame
-  "Kindly render function for a leaf frame returned by sk/frame.
-   Captures the config snapshot so theme/palette/config bindings at
-   construction time survive into render time. Routes through the
-   leaf-frame adapter to reuse the sketch pipeline."
+(def ^:private frame-keys
+  "Allowed top-level keys on a frame at any depth. Outer-scope
+   :layers distribute to every descendant leaf in a composite;
+   outer-scope :mapping inherits downward and merges with each
+   descendant's own mapping."
+  #{:data :mapping :layers :opts :frames :layout :share-scales})
+
+(def ^:private frame-print-order
+  "Key order used by sk/prepare-frame to make printed frame maps
+   readable. Small declarative keys first; :data before :frames so
+   each level's data stays visually bound to its own siblings rather
+   than trailing past its children; :frames last since children can
+   be heavy."
+  [:opts :mapping :share-scales :layout :layers :data :frames])
+
+(defn- warn-unknown-frame-keys
+  "Warn once about top-level keys in fr that are not in frame-keys.
+   Returns fr unchanged."
+  [fr]
+  (let [unknown (remove frame-keys (keys fr))]
+    (when (seq unknown)
+      (println (str "Warning: sk/prepare-frame got unexpected "
+                    "top-level key(s): " (vec unknown)
+                    ". Known frame keys: " (vec (sort frame-keys)))))
+    fr))
+
+(defn- reorder-frame-keys
+  "Return a copy of fr with known keys in frame-print-order, followed
+   by any unknown keys in their original order (so extensions survive,
+   they just print last)."
+  [fr]
+  (let [known (reduce (fn [acc k]
+                        (if (contains? fr k) (assoc acc k (fr k)) acc))
+                      {}
+                      frame-print-order)
+        extras (remove (set frame-print-order) (keys fr))]
+    (reduce (fn [acc k] (assoc acc k (fr k))) known extras)))
+
+(defn- normalize-frame
+  "Recursively validate top-level keys, coerce :data to a Tablecloth
+   dataset at every depth, and reorder keys for readable printing."
+  [fr]
+  (let [validated (warn-unknown-frame-keys fr)
+        coerced (cond-> validated
+                  (:data validated)
+                  (update :data coerce-dataset)
+                  (:frames validated)
+                  (update :frames (partial mapv normalize-frame)))]
+    (reorder-frame-keys coerced)))
+
+(declare plot)
+
+(defn- render-frame-map
+  "Kindly render function that restores captured *config* and routes
+   a frame map (leaf or composite) through sk/plot."
   [captured-config]
   (fn [fr]
-    (let [sk (sketch/leaf-frame->sketch fr)]
-      (if captured-config
-        (binding [defaults/*config* captured-config]
-          (sketch/render-sketch sk))
-        (sketch/render-sketch sk)))))
+    (if captured-config
+      (binding [defaults/*config* captured-config]
+        (plot fr))
+      (plot fr))))
 
-(defn- leaf-frame-with-kind
-  "Wrap a leaf-frame plain map with Kindly auto-render metadata, so it
-   renders as a plot in notebook viewers without the user having to
-   thread it through sk/plot first. Mirrors the kind/fn wrapping that
-   sk/sketch and sk/arrange apply."
-  [fr]
-  (kind/fn fr
-    {:kindly/f (render-leaf-frame defaults/*config*)}))
+(defn prepare-frame
+  "Prepare a plain-map frame for use: coerce :data at every depth,
+   capture the current *config* for render-time restoration, and
+   attach Kindly metadata so notebook viewers auto-render the frame.
+
+   Use this when you construct a frame by hand to get features beyond
+   what sk/arrange covers: unequal :weights in :layout, nested
+   :frames, cross-sibling :share-scales on differing columns, or a
+   composite-level :layers that should distribute to every descendant
+   leaf. For a flat row or column of plots, prefer sk/arrange.
+
+   Accepts any frame-shaped map. All of :data, :mapping, :layers,
+   :opts, :frames, :layout, :share-scales are legal at any depth.
+   Unknown top-level keys are warned and otherwise left in place.
+   Sketch records are rejected with a clear message.
+
+   Keys are reordered for readable printing: small declarative keys
+   first, :data before :frames so each level's data stays beside its
+   level's other keys.
+
+   (sk/prepare-frame {:data iris
+                      :mapping {:x :a :y :b}
+                      :layers [{:layer-type :point}]})
+   (sk/prepare-frame {:data iris
+                      :frames [...]
+                      :layout {:direction :vertical :weights [1 3]}})
+   (sk/prepare-frame {:data iris
+                      :mapping {:x :a}
+                      :layers [{:layer-type :point}]
+                      :frames [{:mapping {:y :b}}
+                               {:mapping {:y :c}}]})
+      ;; outer :layers distributes to both sub-frames"
+  [fr-map]
+  (when-not (map? fr-map)
+    (throw (ex-info (str "sk/prepare-frame expects a frame map, got "
+                         (pr-str (type fr-map)))
+                    {:got fr-map})))
+  (when (sketch/sketch? fr-map)
+    (throw (ex-info (str "sk/prepare-frame expects a plain-map frame, "
+                         "not a Sketch record. Sketches already carry "
+                         "Kindly metadata; display them directly.")
+                    {:got fr-map})))
+  (let [prepared (normalize-frame fr-map)
+        captured defaults/*config*]
+    (kind/fn prepared
+      {:kindly/f (render-frame-map captured)})))
 
 (defn frame
-  "Create a leaf frame -- the recursive plain-map type that will
-   replace sketch + view. A leaf carries {:data :mapping :layers :opts}
-   and no :frames.
+  "Create a leaf frame from data and optional column mappings.
+   Returns a Kindly-annotated value that auto-renders in notebook
+   viewers.
 
-   Compositing (nested frames, shared scales, layout) is staged in
-   later sub-phases of the pre-alpha refactor; this constructor and
-   its adapter (used internally by sk/plot and sk/plan) cover the
-   single-panel case today.
+   (sk/frame)                                -- empty leaf
+   (sk/frame data)                           -- leaf with data only
+   (sk/frame data {:color :species})         -- leaf with aesthetic mapping
+   (sk/frame data :x-col)                    -- leaf with {:x :x-col}
+   (sk/frame data :x-col :y-col)             -- leaf with :x and :y
+   (sk/frame data :x-col :y-col {:color :c}) -- positional x/y + opts
 
-   The returned value is annotated with Kindly metadata so
-   Clay/Kindly-compatible notebook viewers auto-render it as a plot.
-
-   (sk/frame data)                     -- leaf with data only
-   (sk/frame data {:color :species})   -- leaf with aesthetic mapping
-   (sk/frame data :x-col :y-col)       -- leaf with {:x :x-col :y :y-col}"
-  ([] (leaf-frame-with-kind {:mapping {} :layers []}))
-  ([data] (leaf-frame-with-kind
-           {:data (coerce-dataset data) :mapping {} :layers []}))
+   For hand-built composite frames (nested :frames, explicit
+   :weights, etc.) use sk/prepare-frame."
+  ([] (prepare-frame {:mapping {} :layers []}))
+  ([data] (prepare-frame {:data data :mapping {} :layers []}))
   ([data x-or-mapping]
-   (let [base {:data (coerce-dataset data) :layers []}
-         fr (if (map? x-or-mapping)
-              (let [m (warn-and-strip-unknown-opts "sk/frame" x-or-mapping view-mapping-keys)]
-                (assoc base :mapping (or m {})))
-              (assoc base :mapping {:x x-or-mapping}))]
-     (leaf-frame-with-kind fr)))
+   (let [mapping (if (map? x-or-mapping)
+                   (or (warn-and-strip-unknown-opts
+                        "sk/frame" x-or-mapping view-mapping-keys)
+                       {})
+                   {:x x-or-mapping})]
+     (prepare-frame {:data data :mapping mapping :layers []})))
   ([data x y]
-   (leaf-frame-with-kind
-    {:data (coerce-dataset data) :mapping {:x x :y y} :layers []})))
+   (prepare-frame {:data data :mapping {:x x :y y} :layers []}))
+  ([data x y opts]
+   (let [opts (warn-and-strip-unknown-opts "sk/frame" opts view-mapping-keys)
+         final-data (or (:data opts) data)
+         mapping (-> opts (dissoc :data) (merge {:x x :y y}))]
+     (prepare-frame {:data final-data :mapping mapping :layers []}))))
 
 (defn sketch
   "Create or augment a sketch with an optional sketch-level mapping.
