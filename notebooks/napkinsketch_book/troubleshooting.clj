@@ -36,11 +36,11 @@
 
 ;; ## Wrong Chart Type from Inference
 ;;
-;; **Symptom**: `sk/view` produces a chart type that isn't what you
+;; **Symptom**: `sk/frame` produces a chart type that isn't what you
 ;; wanted -- a boxplot when you wanted individual points, a line
 ;; when you wanted a scatter.
 ;;
-;; **Cause**: `sk/view` infers the method from column types. The
+;; **Cause**: `sk/frame` infers the layer type from column types. The
 ;; defaults fit the most common use case for each column-type pair
 ;; (see [Inference Rules](./napkinsketch_book.inference_rules.html)),
 ;; but they can be overridden.
@@ -49,7 +49,7 @@
 ;; categorical x with a numerical y defaults to a boxplot:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :species :sepal-width))
+    (sk/frame :species :sepal-width))
 
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
@@ -183,7 +183,7 @@
 ;; becomes a rose chart:
 
 (-> (rdatasets/datasets-chickwts)
-    (sk/view :feed)
+    (sk/frame :feed)
     sk/lay-bar
     (sk/coord :polar))
 
@@ -211,15 +211,15 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; ## Faceting Keys in a Layer or View Options Map
+;; ## Faceting Keys in a Layer or Frame Options Map
 ;;
 ;; **Symptom**: An error like
 ;; `"Faceting is plot-level, not layer-level. Use (sk/facet sk col) ..."`
 ;; when you put `:facet-col`, `:facet-row`, `:facet-x`, or
-;; `:facet-y` inside a `sk/view` or `sk/lay-*` options map.
+;; `:facet-y` inside a `sk/frame` or `sk/lay-*` options map.
 ;;
 ;; **Cause**: Faceting configures the plot as a whole, not a single
-;; view or layer. Those keys are not accepted in view/layer
+;; frame or layer. Those keys are not accepted in frame/layer
 ;; mappings.
 ;;
 ;; **Fix**: Use `sk/facet` (single-axis) or `sk/facet-grid`
@@ -272,8 +272,7 @@
 ;; reference the columns the dataset has.
 
 (def template
-  (-> (sk/sketch)
-      (sk/view :x :y)
+  (-> (sk/frame nil {:x :x :y :y})
       sk/lay-point))
 
 (-> template

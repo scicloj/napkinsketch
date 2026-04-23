@@ -350,7 +350,7 @@ bar-layer
 ;; layer gets one segment per group:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :petal-length :petal-width {:color :species})
+    (sk/frame {:x :petal-length :y :petal-width :color :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -358,7 +358,7 @@ bar-layer
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 (def grp-pl (-> (rdatasets/datasets-iris)
-                (sk/view :petal-length :petal-width {:color :species})
+                (sk/frame {:x :petal-length :y :petal-width :color :species})
                 sk/lay-point
                 (sk/lay-smooth {:stat :linear-model})
                 sk/plan))
@@ -487,7 +487,7 @@ opts-pl
 
 (def final-sk
   (-> (rdatasets/datasets-iris)
-      (sk/view :petal-length :petal-width {:color :species})
+      (sk/frame {:x :petal-length :y :petal-width :color :species})
       sk/lay-point
       (sk/lay-smooth {:stat :linear-model})))
 

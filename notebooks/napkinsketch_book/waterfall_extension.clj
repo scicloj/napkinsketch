@@ -155,7 +155,7 @@
 ;; extension's defmethods:
 
 (-> pnl-data
-    (sk/view :category :amount)
+    (sk/frame :category :amount)
     (sk/lay (layer-type/lookup :waterfall))
     (sk/options {:title "Profit & Loss Waterfall"
                  :width 500 :height 350})
@@ -170,13 +170,13 @@
 
 ;; ## Optional: Convenience Function
 ;;
-;; For a polished API, wrap the pattern in a sketch-compatible
+;; For a polished API, wrap the pattern in a frame-compatible
 ;; function:
 
 (defn lay-waterfall
   ([sk] (sk/lay sk (layer-type/lookup :waterfall)))
-  ([data x y] (-> data (sk/view x y) (sk/lay (layer-type/lookup :waterfall))))
-  ([data x y opts] (-> data (sk/view x y) (sk/lay (merge (layer-type/lookup :waterfall) opts)))))
+  ([data x y] (-> data (sk/frame x y) (sk/lay (layer-type/lookup :waterfall))))
+  ([data x y opts] (-> data (sk/frame x y) (sk/lay (merge (layer-type/lookup :waterfall) opts)))))
 
 ;; Now the call is as clean as any built-in method:
 
