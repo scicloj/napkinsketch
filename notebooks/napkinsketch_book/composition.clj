@@ -75,7 +75,11 @@
             {:mapping {:x :petal-length :y :petal-width}
              :layers [{:layer-type :point}]}]})
 
-weighted
+;; `sk/frame` and `sk/arrange` return values with Kindly metadata so
+;; they auto-render in notebooks. A bare plain-map composite does
+;; not -- pass it to `sk/plot` to render:
+
+(sk/plot weighted)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -103,7 +107,7 @@ weighted
             {:mapping {:x :sepal-length :y :petal-length}
              :layers [{:layer-type :point}]}]})
 
-shared-x
+(sk/plot shared-x)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -128,7 +132,7 @@ shared-x
             {:mapping {:x :sepal-length :y :sepal-width :color :species}
              :layers [{:layer-type :point}]}]})
 
-marginal
+(sk/plot marginal)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -165,7 +169,7 @@ marginal
                       {:mapping {:x :petal-length :color :species}
                        :layers [{:layer-type :density}]}]}]})
 
-dashboard
+(sk/plot dashboard)
 
 (kind/test-last [(fn [v] (= 4 (:panels (sk/svg-summary v))))])
 

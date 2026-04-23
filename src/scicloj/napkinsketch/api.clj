@@ -298,6 +298,28 @@
         (select-keys opts (filter accepted (keys opts)))
         opts))))
 
+(defn- render-leaf-frame
+  "Kindly render function for a leaf frame returned by sk/frame.
+   Captures the config snapshot so theme/palette/config bindings at
+   construction time survive into render time. Routes through the
+   leaf-frame adapter to reuse the sketch pipeline."
+  [captured-config]
+  (fn [fr]
+    (let [sk (sketch/leaf-frame->sketch fr)]
+      (if captured-config
+        (binding [defaults/*config* captured-config]
+          (sketch/render-sketch sk))
+        (sketch/render-sketch sk)))))
+
+(defn- leaf-frame-with-kind
+  "Wrap a leaf-frame plain map with Kindly auto-render metadata, so it
+   renders as a plot in notebook viewers without the user having to
+   thread it through sk/plot first. Mirrors the kind/fn wrapping that
+   sk/sketch and sk/arrange apply."
+  [fr]
+  (kind/fn fr
+    {:kindly/f (render-leaf-frame defaults/*config*)}))
+
 (defn frame
   "Create a leaf frame -- the recursive plain-map type that will
    replace sketch + view. A leaf carries {:data :mapping :layers :opts}
@@ -308,19 +330,25 @@
    its adapter (used internally by sk/plot and sk/plan) cover the
    single-panel case today.
 
+   The returned value is annotated with Kindly metadata so
+   Clay/Kindly-compatible notebook viewers auto-render it as a plot.
+
    (sk/frame data)                     -- leaf with data only
    (sk/frame data {:color :species})   -- leaf with aesthetic mapping
    (sk/frame data :x-col :y-col)       -- leaf with {:x :x-col :y :y-col}"
-  ([] {:mapping {} :layers []})
-  ([data] {:data (coerce-dataset data) :mapping {} :layers []})
+  ([] (leaf-frame-with-kind {:mapping {} :layers []}))
+  ([data] (leaf-frame-with-kind
+           {:data (coerce-dataset data) :mapping {} :layers []}))
   ([data x-or-mapping]
-   (let [base {:data (coerce-dataset data) :layers []}]
-     (if (map? x-or-mapping)
-       (let [m (warn-and-strip-unknown-opts "sk/frame" x-or-mapping view-mapping-keys)]
-         (assoc base :mapping (or m {})))
-       (assoc base :mapping {:x x-or-mapping}))))
+   (let [base {:data (coerce-dataset data) :layers []}
+         fr (if (map? x-or-mapping)
+              (let [m (warn-and-strip-unknown-opts "sk/frame" x-or-mapping view-mapping-keys)]
+                (assoc base :mapping (or m {})))
+              (assoc base :mapping {:x x-or-mapping}))]
+     (leaf-frame-with-kind fr)))
   ([data x y]
-   {:data (coerce-dataset data) :mapping {:x x :y y} :layers []}))
+   (leaf-frame-with-kind
+    {:data (coerce-dataset data) :mapping {:x x :y y} :layers []})))
 
 (defn sketch
   "Create or augment a sketch with an optional sketch-level mapping.

@@ -63,22 +63,22 @@
      :layers [{:layer-type :point}]}]}))
 
 
-(def v11_l78 weighted)
+(def v12_l82 (sk/plot weighted))
 
 
 (deftest
- t12_l80
+ t13_l84
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v11_l78)))
+   v12_l82)))
 
 
 (def
- v14_l97
+ v15_l101
  (def
   shared-x
   {:data iris,
@@ -91,22 +91,22 @@
      :layers [{:layer-type :point}]}]}))
 
 
-(def v15_l106 shared-x)
+(def v16_l110 (sk/plot shared-x))
 
 
 (deftest
- t16_l108
+ t17_l112
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v15_l106)))
+   v16_l110)))
 
 
 (def
- v18_l122
+ v19_l126
  (def
   marginal
   {:data iris,
@@ -118,22 +118,22 @@
      :layers [{:layer-type :point}]}]}))
 
 
-(def v19_l131 marginal)
+(def v20_l135 (sk/plot marginal))
 
 
 (deftest
- t20_l133
+ t21_l137
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 150 (:points s)) (pos? (:polygons s)))))
-   v19_l131)))
+   v20_l135)))
 
 
 (def
- v22_l154
+ v23_l158
  (def
   dashboard
   {:data iris,
@@ -152,9 +152,9 @@
        :layers [{:layer-type :density}]}]}]}))
 
 
-(def v23_l168 dashboard)
+(def v24_l172 (sk/plot dashboard))
 
 
 (deftest
- t24_l170
- (is ((fn [v] (= 4 (:panels (sk/svg-summary v)))) v23_l168)))
+ t25_l174
+ (is ((fn [v] (= 4 (:panels (sk/svg-summary v)))) v24_l172)))
