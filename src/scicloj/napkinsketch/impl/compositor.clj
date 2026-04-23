@@ -9,7 +9,6 @@
    domain on matching leaves (impl.frame/inject-shared-scales)."
   (:require [membrane.ui :as ui]
             [scicloj.napkinsketch.impl.frame :as frame]
-            [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.impl.plan :as plan]
             [scicloj.napkinsketch.impl.render :as render-impl]
             [scicloj.napkinsketch.impl.resolve :as resolve]
@@ -41,20 +40,13 @@
                y-dom (update :y-scale domain->scale-entry y-dom)))
       leaf)))
 
-(defn leaf->sketch
-  "Build a Sketch from a resolved leaf (output of
-   impl.frame/resolve-tree). Shared-scale domains on :opts are
-   translated before delegating to sketch/leaf-frame->sketch."
-  [leaf]
-  (sketch/leaf-frame->sketch (apply-shared-scale-domains leaf)))
-
 (defn- leaf->plan
   [leaf [_ _ rw rh]]
-  (let [sk (leaf->sketch leaf)
-        leaf-opts (assoc (or (:opts sk) {})
+  (let [leaf (apply-shared-scale-domains leaf)
+        leaf-opts (assoc (or (:opts leaf) {})
                          :width (max 1 (long-or rw 1))
                          :height (max 1 (long-or rh 1)))]
-    (plan/draft->plan (sketch/sketch->draft sk) leaf-opts)))
+    (plan/draft->plan (frame/leaf->draft leaf) leaf-opts)))
 
 (defn- leaf->membrane
   "Build a translated membrane tree for a leaf at its pixel rectangle.

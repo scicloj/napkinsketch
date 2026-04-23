@@ -1446,28 +1446,35 @@
   (update-opts sk assoc :coord coord-type))
 
 (defn draft
-  "Flatten a sketch into a draft -- a vector of flat maps, one per
-   view-layer combination, with all scope merged: data, mappings,
-   and layer type fully determined.
+  "Flatten a sketch or leaf frame into a draft -- a vector of flat
+   maps, one per applicable layer, with all scope merged: data,
+   mappings, and layer type fully determined.
    (draft sk)"
   [sk]
-  (let [sk (ensure-sk sk)]
-    (sketch/sketch->draft sk)))
+  (if (and (frame? sk) (frame/leaf? sk))
+    (frame/leaf->draft sk)
+    (let [sk (ensure-sk sk)]
+      (sketch/sketch->draft sk))))
 
 (defn plan
-  "Convert a sketch into a plan using view-based grid layout.
-   Each view = one panel. Grid position from structural columns.
+  "Convert a sketch or frame into a plan. Each view/leaf is one panel.
    On a composite frame, returns a wrapper plan with :composite? true
    and :sub-plots tying each leaf path to its rect and sub-plan.
    (plan sk)
    (plan sk {:title \"My Plot\"})"
   ([sk]
    (when (plan? sk)
-     (throw (ex-info (str "sk/plan expects a sketch, not a plan. "
+     (throw (ex-info (str "sk/plan expects a sketch or frame, not a plan. "
                           "Use the plan directly, or call sk/plot on a sketch.")
                      {:got :plan})))
-   (if (and (frame? sk) (frame/composite? sk))
+   (cond
+     (and (frame? sk) (frame/composite? sk))
      (compositor/composite->plan sk)
+
+     (and (frame? sk) (frame/leaf? sk))
+     (plan/draft->plan (frame/leaf->draft sk) (:opts sk {}))
+
+     :else
      (let [sk (ensure-sk sk)
            d (sketch/sketch->draft sk)]
        (plan/draft->plan d (:opts sk {})))))
@@ -1475,14 +1482,20 @@
    (plan (options sk opts))))
 
 (defn plot
-  "Render a sketch to SVG (or interactive HTML if tooltip/brush is set).
-   On a composite frame, leaves are rendered individually and tiled
-   via the compositor's layout.
+  "Render a sketch or frame to SVG (or interactive HTML if tooltip/brush
+   is set). On a composite frame, leaves are rendered individually and
+   tiled via the compositor's layout.
    (plot sk)
    (plot sk {:width 800 :title \"My Plot\"})"
   ([sk]
-   (if (and (frame? sk) (frame/composite? sk))
+   (cond
+     (and (frame? sk) (frame/composite? sk))
      (compositor/composite->plot sk)
+
+     (and (frame? sk) (frame/leaf? sk))
+     (render-impl/plan->plot (plan sk) :svg (:opts sk {}))
+
+     :else
      (let [sk (ensure-sk sk)
            p (plan sk)]
        (render-impl/plan->plot p :svg (:opts sk {})))))
