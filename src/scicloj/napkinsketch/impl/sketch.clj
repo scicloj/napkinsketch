@@ -229,12 +229,16 @@
             (map (fn [layer]
                    (let [layer-type-info (resolve-layer-type-info (:layer-type layer))
                          layer-mapping (or (:mapping layer) {})
+                         ;; :stat/:position/:mark live as first-class
+                         ;; sibling keys on the layer map (phase 6).
+                         layer-structural (select-keys layer [:stat :position :mark])
                          ;; Four-level merge: sketch < view < layer-type < layer
                          ;; Layer type sets mark/stat/position; layer can override all
                          resolved (merge sketch-mapping
                                          view-mapping
                                          layer-type-info
-                                         layer-mapping)
+                                         layer-mapping
+                                         layer-structural)
                          ;; Data: layer > view > sketch
                          d (ensure-dataset (or (:data layer) view-data data))
                          ;; Sketch-scope marker: annotations coming from

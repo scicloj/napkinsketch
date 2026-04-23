@@ -844,11 +844,19 @@
                            (vec (sort (registered-stats))))
                       {:stat s :registered (sort (registered-stats))})))))
 
+(def ^:private layer-structural-keys
+  "User-supplied layer options that are layer-structural (not
+   column-to-aesthetic mappings). Promoted to top-level keys on the
+   layer map; `:mapping` holds only true mappings."
+  #{:stat :position :mark})
+
 (defn- build-layer
   "Build a layer map from a layer-type-key and optional opts.
-   Extracts :data if present. Warns and strips unrecognized option keys.
-   Rejects unknown :mark or :stat keywords (since both are universal
-   layer options, a typo would silently fall through the accept-list)."
+   Extracts :data if present. Extracts :stat, :position, :mark as
+   first-class sibling keys -- :mapping holds only column-to-aesthetic
+   bindings. Warns and strips unrecognized option keys. Rejects
+   unknown :mark or :stat keywords (since both are universal layer
+   options, a typo would silently fall through the accept-list)."
   [layer-type-key opts]
   (when opts
     (check-facet-keys "layer" opts)
@@ -862,9 +870,13 @@
                  (warn-and-strip-unknown-opts (str "lay-" (name layer-type-key))
                                               opts accepted))
                opts)
-        d (:data opts)]
-    (cond-> {:layer-type layer-type-key
-             :mapping (dissoc (or opts {}) :data)}
+        opts-map (or opts {})
+        d (:data opts-map)
+        structural (select-keys opts-map layer-structural-keys)
+        mapping (apply dissoc opts-map :data layer-structural-keys)]
+    (cond-> (merge {:layer-type layer-type-key
+                    :mapping mapping}
+                   structural)
       d (assoc :data (coerce-dataset d)))))
 
 (defn lay

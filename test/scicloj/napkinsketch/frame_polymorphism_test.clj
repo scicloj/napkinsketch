@@ -317,3 +317,45 @@
                                        (sk/frame :c :d))]
                            (sk/frame two :e :f))]
       (is (= three-in-a-row built-in-two)))))
+
+;; ============================================================
+;; Layer structural keys -- :stat, :position, :mark (Decision 1)
+;; ============================================================
+;;
+;; :layer-type, :stat, :position, and explicit :mark are first-class
+;; sibling keys on the layer map. :mapping is reserved for
+;; column-to-aesthetic bindings only.
+
+(deftest layer-structural-keys-test
+  (testing ":stat is a sibling key, not inside :mapping"
+    (let [layer (-> (sk/frame iris :a :b)
+                    (sk/lay-smooth {:stat :linear-model})
+                    :layers
+                    first)]
+      (is (= :linear-model (:stat layer)))
+      (is (not (contains? (or (:mapping layer) {}) :stat)))))
+
+  (testing ":position is a sibling key, not inside :mapping"
+    (let [layer (-> (sk/frame iris :a :b)
+                    (sk/lay-bar {:position :dodge})
+                    :layers
+                    first)]
+      (is (= :dodge (:position layer)))
+      (is (not (contains? (or (:mapping layer) {}) :position)))))
+
+  (testing ":mark (user override) is a sibling key, not inside :mapping"
+    (let [layer (-> (sk/frame iris :a :b)
+                    (sk/lay-point {:mark :line})
+                    :layers
+                    first)]
+      (is (= :line (:mark layer)))
+      (is (not (contains? (or (:mapping layer) {}) :mark)))))
+
+  (testing "aesthetic keys stay in :mapping"
+    (let [layer (-> (sk/frame iris :a :b)
+                    (sk/lay-point {:color :species :alpha 0.5})
+                    :layers
+                    first)]
+      (is (= {:color :species :alpha 0.5} (:mapping layer)))
+      (is (not (contains? layer :color)))
+      (is (not (contains? layer :alpha))))))
