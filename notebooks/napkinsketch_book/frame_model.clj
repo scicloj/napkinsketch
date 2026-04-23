@@ -38,14 +38,16 @@
 ;; `kind/pprint` to see its structure instead of its rendered plot:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
+    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
     kind/pprint)
 
-(kind/test-last [(fn [v] (seq (:data v)))])
+(kind/test-last [(fn [v] (and (seq (:data v))
+                              (= :sepal-length (:x (:mapping v)))))])
 
-;; A frame carries everything needed to render the plot: the dataset,
-;; a column mapping, the layers you have added, and any options you
-;; have set. [Core Concepts](./napkinsketch_book.core_concepts.html)
+;; A frame carries the dataset, a column mapping, and any layers
+;; attached to it (empty here, until we add some). Options set by
+;; `sk/options`, `sk/scale`, and `sk/coord` live under an `:opts`
+;; key. [Core Concepts](./napkinsketch_book.core_concepts.html)
 ;; walks through each field in detail.
 ;;
 ;; Because frames are plain data, you can store them, transform them,

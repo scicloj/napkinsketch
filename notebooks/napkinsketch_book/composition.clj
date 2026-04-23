@@ -10,7 +10,8 @@
 ;; `sk/arrange` and explicit composite-frame maps. Dedicated
 ;; constructors (`sk/mosaic`, `sk/with-marginals`) will land
 ;; post-alpha; until then, the primitives below cover the same
-;; ground in a few extra lines.
+;; patterns -- compactly for simple cases, with a bit of literal map
+;; construction for nested layouts.
 
 (ns napkinsketch-book.composition
   (:require
@@ -40,42 +41,41 @@
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
-;; Pass `{:direction :vertical}` for a stacked arrangement:
+;; Pass `{:cols 1}` for a stacked arrangement (one column means each
+;; frame goes on its own row):
 
 (sk/arrange
  [(-> iris (sk/lay-point :sepal-length :sepal-width {:color :species}))
   (-> iris (sk/lay-point :petal-length :petal-width {:color :species}))]
- {:direction :vertical})
+ {:cols 1})
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
-;; Each sub-frame gets a rectangle proportional to its weight
-;; (default equal weights). To give the first panel twice the space,
-;; pass `:weights`:
-
-(sk/arrange
- [(-> iris (sk/lay-point :sepal-length :sepal-width))
-  (-> iris (sk/lay-point :petal-length :petal-width))]
- {:weights [2 1]})
-
-(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+;; `sk/arrange` divides space equally among its sub-frames. For
+;; unequal splits (e.g., give the first panel twice the space of the
+;; second), construct the composite as an explicit map; the next
+;; section shows how.
 
 ;; ## Explicit Composite Frames
 ;;
 ;; Under `sk/arrange` there is a plain-map composite frame. You can
-;; construct one directly when you need finer control -- for example,
-;; to share a dataset across sub-frames, set shared scales, or mix in
-;; non-plot leaves (text panels, KPIs) in future work.
+;; construct one directly when you need finer control -- unequal
+;; weights, shared scales, or (in future work) non-plot leaves like
+;; text panels and KPIs.
+;;
+;; An explicit `:layout` accepts `:direction` (`:horizontal` or
+;; `:vertical`) and `:weights` (one weight per sub-frame). Here the
+;; first panel gets twice the space of the second:
 
-(def bare-composite
+(def weighted
   {:data iris
-   :layout {:direction :horizontal :weights [1 1]}
+   :layout {:direction :horizontal :weights [2 1]}
    :frames [{:mapping {:x :sepal-length :y :sepal-width}
              :layers [{:layer-type :point}]}
             {:mapping {:x :petal-length :y :petal-width}
              :layers [{:layer-type :point}]}]})
 
-bare-composite
+weighted
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -186,9 +186,10 @@ dashboard
 ;;   padding, so plot-area edges may not line up across composite
 ;;   siblings.
 ;; - **No shared legend.** Each sub-frame produces its own legend.
-;; - **Threading builds flat composites only.** For nested
-;;   composites, use literal maps or nested `sk/arrange` calls as
-;;   shown above.
+;; - **Threading builds flat composites only.** `sk/arrange` today
+;;   rejects composite frames as inputs; for nested layouts, write
+;;   the composite as an explicit map as shown in the dashboard
+;;   example above.
 ;;
 ;; See the alpha release notes for the full list.
 

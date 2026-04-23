@@ -106,21 +106,6 @@
                                 (pos? (:lines s)))))])
 
 ;; One mapping, two layers: points and a regression line.
-;; Let us look at the resulting frame's structure:
-
-(-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model})
-    kind/pprint)
-
-(kind/test-last
- [(fn [fr]
-    (and (seq (:data fr))
-         (= 2 (count (:layers fr)))))])
-
-;; Both layers appear under `:layers` -- they apply to the frame's
-;; mapping. We will see how scope works in the next section.
 ;;
 ;; When `sk/lay-*` is called **with columns**, it creates a frame and
 ;; attaches a layer in one step:
@@ -130,11 +115,8 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    kind/pprint)
-
-(kind/test-last [(fn [fr] (seq (:data fr)))])
+;; We will revisit where mappings flow (to all layers or to a single
+;; one) in the Scope section below.
 
 ;; With multiple frames arranged side by side, use `sk/arrange`:
 
@@ -327,8 +309,6 @@ two-panel
       (sk/options {:title "Iris"})))
 
 my-frame
-
-(kind/pprint my-frame)
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
