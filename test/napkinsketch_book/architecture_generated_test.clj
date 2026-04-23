@@ -173,10 +173,10 @@
    (sk/lay-smooth {:stat :linear-model}))))
 
 
-(def v52_l269 (count (:views multi-sk)))
+(def v52_l269 (count (:layers multi-sk)))
 
 
-(deftest t53_l271 (is ((fn [n] (= 1 n)) v52_l269)))
+(deftest t53_l271 (is ((fn [n] (= 2 n)) v52_l269)))
 
 
 (def v54_l273 (mapv :layer-type (:layers multi-sk)))

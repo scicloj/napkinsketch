@@ -127,7 +127,7 @@
     kind/pprint)
 
 (kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
-                              (= :sepal-length (get-in v [:views 0 :mapping :x]))))])
+                              (= :sepal-length (get-in v [:mapping :x]))))])
 
 ;; One mapping, two layers: points and a regression line.
 ;;
@@ -237,7 +237,7 @@ two-panel
     (sk/lay-smooth {:stat :linear-model})
     kind/pprint)
 
-(kind/test-last [(fn [v] (and (= :species (get-in v [:views 0 :mapping :color]))
+(kind/test-last [(fn [v] (and (= :species (get-in v [:mapping :color]))
                               (contains? (get (first (:layers v)) :mapping) :color)
                               (nil? (get-in (first (:layers v)) [:mapping :color]))))])
 
@@ -425,7 +425,7 @@ my-frame
     kind/pprint)
 
 (kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
-                              (= :species (get-in v [:views 0 :mapping :color]))
+                              (= :species (get-in v [:mapping :color]))
                               (= "Iris" (get-in v [:opts :title]))))])
 
 ;; ---

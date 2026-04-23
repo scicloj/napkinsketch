@@ -130,7 +130,7 @@ multi-layer
     kind/pprint)
 
 (kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
-                              (= :species (get-in v [:views 0 :mapping :color]))))])
+                              (= :species (get-in v [:mapping :color]))))])
 
 ;; ## Idea 4: Inference fills the gaps
 ;;

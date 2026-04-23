@@ -13,7 +13,8 @@
    the test-first outline in the design doc."
   (:require [clojure.test :refer [deftest testing is]]
             [tablecloth.api :as tc]
-            [scicloj.napkinsketch.api :as sk]))
+            [scicloj.napkinsketch.api :as sk]
+            [scicloj.napkinsketch.impl.frame :as frame]))
 
 ;; ============================================================
 ;; Shared fixtures
@@ -255,33 +256,30 @@
 (deftest integration-lay-resolve-test
   (testing "I1: root-origin layer reaches both panels through resolve-tree"
     (let [f (-> iris (sk/frame :a :b) sk/lay-point (sk/frame :c :d))
-          p (sk/plan f)]
-      (is (:composite? p))
-      (is (= 2 (count (:sub-plots p))))
-      (is (every? (fn [sp] (pos? (count (:layers (:plan sp)))))
-                  (:sub-plots p))
-          "each resolved panel carries the root layer")))
+          leaves (frame/resolve-tree f)]
+      (is (= 2 (count leaves)))
+      (is (every? (fn [leaf] (= 1 (count (:layers leaf)))) leaves)
+          "each resolved leaf carries the root layer")))
 
   (testing "I2: panel-specific layer does not leak across panels"
     (let [f (-> iris
                 (sk/frame :a :b)
                 (sk/lay-point :a :b)
                 (sk/frame :c :d))
-          p (sk/plan f)
-          layers-per-panel (mapv #(count (:layers (:plan %))) (:sub-plots p))]
-      (is (= [1 0] layers-per-panel)
-          "panel 1 has the layer; panel 2 does not")))
+          leaves (frame/resolve-tree f)
+          layers-per-leaf (mapv #(count (:layers %)) leaves)]
+      (is (= [1 0] layers-per-leaf)
+          "leaf 1 has the layer; leaf 2 does not")))
 
   (testing "I3: root aesthetic merges into both resolved leaves' mappings"
     (let [f (-> iris
                 (sk/frame :a :b)
                 (sk/frame {:color :species})
                 (sk/frame :c :d))
-          p (sk/plan f)]
-      (is (= 2 (count (:sub-plots p))))
-      (is (every? (fn [sp]
-                    (= :species (get-in (:plan sp) [:mapping :color])))
-                  (:sub-plots p))))))
+          leaves (frame/resolve-tree f)]
+      (is (= 2 (count leaves)))
+      (is (every? (fn [leaf] (= :species (get-in leaf [:mapping :color])))
+                  leaves)))))
 
 ;; ============================================================
 ;; Property-style checks

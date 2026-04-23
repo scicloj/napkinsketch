@@ -266,9 +266,9 @@ graph LR
 
 ;; The frame has one leaf with two frame-level layers:
 
-(count (:views multi-sk))
+(count (:layers multi-sk))
 
-(kind/test-last [(fn [n] (= 1 n))])
+(kind/test-last [(fn [n] (= 2 n))])
 
 (mapv :layer-type (:layers multi-sk))
 

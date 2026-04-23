@@ -887,8 +887,10 @@
    (lay sk-or-data layer-type-key nil))
   ([sk-or-data layer-type-key opts]
    (let [layer (build-layer layer-type-key opts)]
-     (if (and (frame? sk-or-data) (frame/composite? sk-or-data))
+     (cond
+       (frame? sk-or-data)
        (update sk-or-data :layers (fnil conj []) layer)
+       :else
        (update (ensure-sk sk-or-data) :layers conj layer)))))
 
 (defn- x-only?
@@ -896,8 +898,55 @@
   [layer-type-key]
   (:x-only (layer-type/lookup layer-type-key)))
 
+(defn- lay-on-frame
+  "Append a layer to a frame following the DFS-last identity rule.
+
+   Composite + position: the layer lands on the last leaf whose
+   effective :x/:y match (via add-view-layer-to-composite), or a
+   fresh sub-frame is appended at the root.
+
+   Leaf whose own :mapping has no :x/:y, called with a position:
+   extend the leaf's :mapping with the position and append a bare
+   layer. (Matches the old view-creation semantics where a
+   position-bearing lay-* on a bare frame sets the frame's position.)
+
+   Leaf whose own :mapping already has position, called with a
+   position: append a layer carrying its own :mapping so downstream
+   partitioning treats it as panel-origin.
+
+   No position (leaf or composite + aesthetic-only): append the
+   bare / aesthetic layer to :layers."
+  [fr layer-type-key position-mapping opts]
+  (let [bare-layer (elide-empty-maps (build-layer layer-type-key opts))
+        frame-pos? (or (:x (:mapping fr)) (:y (:mapping fr)))]
+    (cond
+      (and (frame/composite? fr) (seq position-mapping))
+      (add-view-layer-to-composite fr position-mapping bare-layer)
+
+      (and (seq position-mapping) (not frame-pos?))
+      (-> fr
+          (update :mapping (fnil merge {}) position-mapping)
+          (update :layers (fnil conj []) bare-layer))
+
+      (seq position-mapping)
+      (update fr :layers (fnil conj [])
+              (elide-empty-maps
+               (update bare-layer :mapping (fnil merge {}) position-mapping)))
+
+      :else
+      (update fr :layers (fnil conj []) bare-layer))))
+
 (defn- lay-layer-type
   "Shared implementation for all lay-* functions.
+
+   Frame inputs: append a layer directly to the frame's :layers (leaf
+   or composite; composite layers distribute to descendants via
+   resolve-tree).
+
+   Non-frame inputs (raw data, legacy Sketch): route through the
+   Sketch adapter so the existing auto-infer / view-creation behavior
+   is preserved until the adapter is retired.
+
    1-arity: auto-infer columns for small datasets, otherwise sketch-level layer.
    2-arity: keyword/string -> view-specific; vector -> view-specific per column;
             map -> sketch-level with opts.
@@ -905,11 +954,11 @@
             vector+map -> view-specific per column with opts.
    4-arity: bivariate view-specific with opts."
   ([layer-type-key sk-or-data]
-   (if (and (frame? sk-or-data) (frame/composite? sk-or-data))
-     ;; Composite frames are never "fresh" in the auto-infer sense.
-     ;; Sketch-level lay-* attaches at the root, and ancestor :layers
-     ;; inherit into every descendant leaf via resolve-tree.
-     (lay sk-or-data layer-type-key)
+   (cond
+     (frame? sk-or-data)
+     (lay-on-frame sk-or-data layer-type-key nil nil)
+
+     :else
      (let [sk (ensure-sk sk-or-data)
            d (:data sk)
            col-count (when d (count (tc/column-names d)))
@@ -940,6 +989,11 @@
          (lay sk layer-type-key)))))
   ([layer-type-key sk-or-data x-or-opts]
    (cond
+     (frame? sk-or-data)
+     (if (map? x-or-opts)
+       (lay-on-frame sk-or-data layer-type-key nil x-or-opts)
+       (lay-on-frame sk-or-data layer-type-key {:x x-or-opts} nil))
+
      (or (keyword? x-or-opts) (string? x-or-opts))
      (add-view-layer sk-or-data
                      {:x x-or-opts}
@@ -957,6 +1011,14 @@
      (lay sk-or-data layer-type-key x-or-opts)))
   ([layer-type-key sk-or-data x y-or-opts]
    (cond
+     (frame? sk-or-data)
+     (if (map? y-or-opts)
+       (lay-on-frame sk-or-data layer-type-key {:x x} y-or-opts)
+       (do (when (x-only? layer-type-key)
+             (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
+                             {:layer-type layer-type-key :x x :y y-or-opts})))
+           (lay-on-frame sk-or-data layer-type-key {:x x :y y-or-opts} nil)))
+
      (or (keyword? y-or-opts) (string? y-or-opts))
      (do (when (x-only? layer-type-key)
            (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
@@ -989,9 +1051,14 @@
    (when (x-only? layer-type-key)
      (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
                      {:layer-type layer-type-key :x x :y y})))
-   (add-view-layer sk-or-data
-                   {:x x :y y}
-                   (build-layer layer-type-key opts))))
+   (cond
+     (frame? sk-or-data)
+     (lay-on-frame sk-or-data layer-type-key {:x x :y y} opts)
+
+     :else
+     (add-view-layer sk-or-data
+                     {:x x :y y}
+                     (build-layer layer-type-key opts)))))
 
 (defn lay-point
   "Add :point layer (scatter) to a sketch.
@@ -1306,13 +1373,13 @@
     b))
 
 (defn- update-opts
-  "Update the root :opts of a sketch or composite frame. The composite
-   branch bypasses ensure-sk (which throws on composites) and writes
-   directly at the root -- resolve-tree merges root :opts into every
-   leaf, so root-level writes are the frame-world analog of
-   plot-level options on a sketch."
+  "Update the root :opts of a sketch or frame. Frames (leaf or
+   composite) stay in frame-world; non-frame inputs are coerced via
+   ensure-sk so the same update applies. resolve-tree merges root
+   :opts into every leaf, so root-level writes are the frame-world
+   analog of plot-level options on a sketch."
   [sk-or-frame f & args]
-  (if (and (frame? sk-or-frame) (frame/composite? sk-or-frame))
+  (if (frame? sk-or-frame)
     (apply update sk-or-frame :opts f args)
     (apply update (ensure-sk sk-or-frame) :opts f args)))
 

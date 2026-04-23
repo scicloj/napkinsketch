@@ -132,7 +132,7 @@
     [v]
     (and
      (= 2 (count (:layers v)))
-     (= :species (get-in v [:views 0 :mapping :color]))))
+     (= :species (get-in v [:mapping :color]))))
    v25_l126)))
 
 

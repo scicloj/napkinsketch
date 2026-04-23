@@ -324,14 +324,17 @@
       (is (= :point (get-in result [:frames 1 :layers 0 :layer-type]))))))
 
 (deftest composite-lay-miss-on-empty-frames-test
-  (testing "composite with empty :frames -- miss creates a root leaf"
+  (testing "composite with empty :frames -- lay-* extends the leaf in place"
     (let [fr {:frames []}
           result (sk/lay-point fr :a :b)]
-      ;; An empty :frames vector counts as a leaf per impl.frame/leaf?,
-      ;; so the dispatch should take the non-composite path and behave
-      ;; like a data-less sketch here.
-      (is (sk/sketch? result)
-          "empty-frames input is treated as a leaf and routed through ensure-sk"))))
+      ;; An empty :frames vector counts as a leaf per impl.frame/leaf?.
+      ;; Post-Phase-6, such a leaf stays in frame-world: the position
+      ;; call extends the leaf's :mapping and appends a bare layer.
+      (is (sk/frame? result))
+      (is (not (sk/sketch? result)))
+      (is (= {:x :a :y :b} (:mapping result)))
+      (is (= 1 (count (:layers result))))
+      (is (= :point (-> result :layers (nth 0) :layer-type))))))
 
 (deftest composite-lay-sketch-level-test
   (testing "bare lay-* on a composite attaches at the root :layers"
