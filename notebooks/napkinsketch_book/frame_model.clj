@@ -115,6 +115,23 @@ multi-layer
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
+;; Printed, the threaded form exposes an adapter artifact from
+;; the current pre-alpha transition: the mapping sits under
+;; `:views` instead of at the top level, and `:layers` attaches
+;; at the top. Napkinsketch is mid-refactor; `sk/frame` and
+;; `sk/lay-*` still build through a legacy `Sketch` record that
+;; will be retired before 0.1.0. When that happens, the threaded
+;; pprint will match the explicit-map pprint shown above.
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width {:color :species})
+    sk/lay-point
+    (sk/lay-smooth {:stat :linear-model})
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
+                              (= :species (get-in v [:views 0 :mapping :color]))))])
+
 ;; ## Idea 4: Inference fills the gaps
 ;;
 ;; When you omit a choice, Napkinsketch infers it from the data.
@@ -184,6 +201,26 @@ two-panel
       sk/lay-point)])
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+
+;; Printed, `sk/arrange` always wraps its plots in a top-level
+;; vertical layout whose rows are horizontal strips -- a single
+;; row of two panels shows up here as a vertical-of-horizontal
+;; composite. The sub-frames themselves are clean leaf maps that
+;; match the shape of the explicit-map form above:
+
+(-> (sk/arrange
+     [(-> (rdatasets/datasets-iris)
+          (sk/frame :sepal-length :sepal-width {:color :species})
+          sk/lay-point)
+      (-> (rdatasets/datasets-iris)
+          (sk/frame :petal-length :petal-width {:color :species})
+          sk/lay-point)])
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (= :vertical (get-in v [:layout :direction]))
+                              (= 1 (count (:frames v)))
+                              (= 2 (count (:frames (first (:frames v)))))
+                              (= :horizontal (get-in v [:frames 0 :layout :direction]))))])
 
 ;; `frame`, `lay-*`, `arrange`, `facet`, `options`, `scale`, `coord`
 ;; -- all take a frame and return a frame. The pipeline reads like a

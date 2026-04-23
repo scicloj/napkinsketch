@@ -115,24 +115,45 @@
    v22_l109)))
 
 
-(def v25_l123 (-> (rdatasets/datasets-iris) (sk/frame :sepal-length)))
+(def
+ v25_l126
+ (->
+  (rdatasets/datasets-iris)
+  (sk/frame :sepal-length :sepal-width {:color :species})
+  sk/lay-point
+  (sk/lay-smooth {:stat :linear-model})
+  kind/pprint))
 
 
 (deftest
- t26_l126
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v25_l123)))
+ t26_l132
+ (is
+  ((fn
+    [v]
+    (and
+     (= 2 (count (:layers v)))
+     (= :species (get-in v [:views 0 :mapping :color]))))
+   v25_l126)))
+
+
+(def v28_l140 (-> (rdatasets/datasets-iris) (sk/frame :sepal-length)))
+
+
+(deftest
+ t29_l143
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v28_l140)))
 
 
 (def
- v28_l132
+ v31_l149
  (-> (rdatasets/datasets-iris) (sk/frame :sepal-length) kind/pprint))
 
 
-(deftest t29_l136 (is ((fn [v] (empty? (:layers v))) v28_l132)))
+(deftest t32_l153 (is ((fn [v] (empty? (:layers v))) v31_l149)))
 
 
 (def
- v31_l152
+ v34_l169
  (def
   two-panel
   (sk/prepare-frame
@@ -145,36 +166,36 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v32_l161 two-panel)
+(def v35_l178 two-panel)
 
 
 (deftest
- t33_l163
+ t36_l180
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v32_l161)))
+   v35_l178)))
 
 
-(def v35_l169 (kind/pprint two-panel))
+(def v38_l186 (kind/pprint two-panel))
 
 
 (deftest
- t36_l171
+ t39_l188
  (is
   ((fn
     [v]
     (and
      (= 2 (count (:frames v)))
      (= :horizontal (get-in v [:layout :direction]))))
-   v35_l169)))
+   v38_l186)))
 
 
 (def
- v38_l178
+ v41_l195
  (sk/arrange
   [(->
     (rdatasets/datasets-iris)
@@ -187,5 +208,33 @@
 
 
 (deftest
- t39_l186
- (is ((fn [v] (= 2 (:panels (sk/svg-summary v)))) v38_l178)))
+ t42_l203
+ (is ((fn [v] (= 2 (:panels (sk/svg-summary v)))) v41_l195)))
+
+
+(def
+ v44_l211
+ (->
+  (sk/arrange
+   [(->
+     (rdatasets/datasets-iris)
+     (sk/frame :sepal-length :sepal-width {:color :species})
+     sk/lay-point)
+    (->
+     (rdatasets/datasets-iris)
+     (sk/frame :petal-length :petal-width {:color :species})
+     sk/lay-point)])
+  kind/pprint))
+
+
+(deftest
+ t45_l220
+ (is
+  ((fn
+    [v]
+    (and
+     (= :vertical (get-in v [:layout :direction]))
+     (= 1 (count (:frames v)))
+     (= 2 (count (:frames (first (:frames v)))))
+     (= :horizontal (get-in v [:frames 0 :layout :direction]))))
+   v44_l211)))
