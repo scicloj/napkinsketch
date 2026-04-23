@@ -342,7 +342,7 @@ bar-layer
                               (number? (:y2 m))))])
 
 ;; The renderer maps these two points through scales to get a
-;; pixel-space line segment.
+;; rendered line segment.
 
 ;; ## Per-Group Regression
 ;;

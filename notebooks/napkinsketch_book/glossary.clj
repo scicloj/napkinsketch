@@ -185,8 +185,8 @@ my-sketch
 
 ;; ## Jitter
 ;;
-;; **Jitter** adds random pixel-space offsets to reduce overplotting.
-;; Unlike position and nudge, jitter operates in pixel space (not
+;; **Jitter** adds random offsets in drawing units to reduce overplotting.
+;; Unlike position and nudge, jitter operates after scaling (not in
 ;; data space) and is deterministic -- seeded by a hash of the group's
 ;; color so repeated renders produce identical output.
 ;;
@@ -300,7 +300,7 @@ my-sketch
 ;; ## Coord
 ;;
 ;; A **coord** (coordinate system) defines how data-space maps to
-;; pixel-space.
+;; drawing units.
 ;;
 ;; | Type | Behavior |
 ;; |:-----|:---------|

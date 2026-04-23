@@ -29,7 +29,7 @@
 graph LR
   B[\"sketch<br/>(composable API)\"] -->|sketch->draft| D[\"Draft<br/>(flat maps)\"]
   D -->|draft->plan| P[\"Plan<br/>(data-space)\"]
-  P -->|scales + coords| M[\"Membrane<br/>(pixel-space)\"]
+  P -->|scales + coords| M[\"Membrane<br/>(drawing primitives)\"]
   M -->|tree walk| F[\"Figure<br/>(output)\"]
   style B fill:#d1c4e9
   style D fill:#e8f5e9
@@ -50,7 +50,7 @@ graph LR
 ;; - **Plan** -- fully resolved plan. Data-space geometry, domains, tick info,
 ;;   legend. Plain Clojure maps and dtype-next buffers. No rendering primitives.
 ;;
-;; - **Membrane** -- positioned drawing primitives in pixel space
+;; - **Membrane** -- positioned drawing primitives
 ;;   (Translate, WithColor, Path, Label, etc.).
 ;;
 ;; - **Figure** -- final output. A tree walk converts membrane records
@@ -159,7 +159,7 @@ trace-plan
 ;; ### Membrane
 ;;
 ;; `plan->membrane` converts the plan into a tree of membrane
-;; drawing primitives positioned in pixel space.
+;; drawing primitives laid out for the rendered plot.
 
 (def trace-membrane (sk/plan->membrane trace-plan))
 
@@ -348,8 +348,7 @@ graph TD
 ;; column type inference, grouping).
 ;;
 ;; The `impl/` directory is pure data -- no membrane dependency.
-;; The `render/` directory uses membrane for pixel-space layout and
-;; SVG conversion.
+;; The `render/` directory uses membrane for layout and SVG conversion.
 
 ;; ## Dependencies
 ;;

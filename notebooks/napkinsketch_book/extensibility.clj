@@ -362,7 +362,7 @@
 ;; ## `make-coord`
 ;;
 ;; Builds a coordinate function that maps data-space (x, y) to
-;; pixel-space (px, py).
+;; drawing units (px, py).
 ;;
 (kind/table
  {:column-names ["Dispatch value" "Behavior"]
