@@ -300,15 +300,41 @@ two-panel
 ;; | `:mapping` | frame-level mappings | `sk/frame` |
 ;; | `:layers` | layers attached to the frame | `sk/lay-*` |
 ;; | `:opts` | title, width, theme, scale, coord | `sk/options`, `sk/scale`, `sk/coord` |
+;;
+;; Here is a frame with all four fields set, constructed as an
+;; explicit map through `sk/prepare-frame`:
 
 (def my-frame
-  (-> (rdatasets/datasets-iris)
-      (sk/frame :sepal-length :sepal-width {:color :species})
-      sk/lay-point
-      (sk/lay-smooth {:stat :linear-model})
-      (sk/options {:title "Iris"})))
+  (sk/prepare-frame
+   {:data (rdatasets/datasets-iris)
+    :mapping {:x :sepal-length :y :sepal-width :color :species}
+    :layers [{:layer-type :point}
+             {:layer-type :smooth :mapping {:stat :linear-model}}]
+    :opts {:title "Iris"}}))
 
 my-frame
+
+(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s))
+                                (some #{"Iris"} (:texts s)))))])
+
+;; And the same value printed, showing the four fields above:
+
+(kind/pprint my-frame)
+
+(kind/test-last [(fn [fr] (= #{:data :mapping :layers :opts}
+                             (set (keys fr))))])
+
+;; The more common way to build a frame of this shape is the
+;; threaded form -- `sk/frame` to set data and mapping, `sk/lay-*`
+;; for each layer, `sk/options` for plot-level options:
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width {:color :species})
+    sk/lay-point
+    (sk/lay-smooth {:stat :linear-model})
+    (sk/options {:title "Iris"}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 

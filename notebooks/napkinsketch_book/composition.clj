@@ -88,9 +88,19 @@ weighted
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
+;; And printed, showing the composite's structure -- `:layout` with
+;; direction and weights at the top, then each sub-frame with its
+;; own `:mapping` and `:layers`, and the outer `:data` dataset:
+
+(kind/pprint weighted)
+
+(kind/test-last [(fn [fr] (and (= [2 1] (get-in fr [:layout :weights]))
+                               (= 2 (count (:frames fr)))))])
+
 ;; The outer `:data` is inherited by both sub-frames. Each sub-frame
 ;; has its own `:mapping` and `:layers`, and need not repeat the
-;; dataset.
+;; dataset. Subsequent examples in this chapter follow the same
+;; shape and show only the rendered plot.
 
 ;; ## Shared Scales
 ;;

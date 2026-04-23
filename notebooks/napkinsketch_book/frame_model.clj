@@ -34,8 +34,17 @@
 
 ;; ## Idea 2: Frames are data
 ;;
-;; A frame is a plain Clojure value you can inspect. Wrap it with
-;; `kind/pprint` to see its structure instead of its rendered plot:
+;; A frame auto-renders as a plot -- here is one with just a mapping
+;; and no layers, so inference picks a scatter:
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width {:color :species}))
+
+(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; But a frame is also a plain Clojure value you can inspect.
+;; Wrap it with `kind/pprint` to see its structure instead of its
+;; rendered plot:
 
 (-> (rdatasets/datasets-iris)
     (sk/frame :sepal-length :sepal-width {:color :species})

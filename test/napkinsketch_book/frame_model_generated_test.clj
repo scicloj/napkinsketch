@@ -23,19 +23,31 @@
  v6_l40
  (->
   (rdatasets/datasets-iris)
+  (sk/frame :sepal-length :sepal-width {:color :species})))
+
+
+(deftest
+ t7_l43
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v6_l40)))
+
+
+(def
+ v9_l49
+ (->
+  (rdatasets/datasets-iris)
   (sk/frame :sepal-length :sepal-width {:color :species})
   kind/pprint))
 
 
 (deftest
- t7_l44
+ t10_l53
  (is
   ((fn [v] (and (seq (:data v)) (= :sepal-length (:x (:mapping v)))))
-   v6_l40)))
+   v9_l49)))
 
 
 (def
- v9_l69
+ v12_l78
  (->
   (rdatasets/datasets-iris)
   (sk/frame :sepal-length :sepal-width {:color :species})
@@ -44,36 +56,36 @@
 
 
 (deftest
- t10_l74
+ t13_l83
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v9_l69)))
+   v12_l78)))
 
 
 (def
- v12_l92
+ v15_l101
  (-> (rdatasets/datasets-iris) (sk/frame :sepal-length :sepal-width)))
 
 
 (deftest
- t13_l95
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v12_l92)))
+ t16_l104
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v15_l101)))
 
 
-(def v15_l99 (-> (rdatasets/datasets-iris) (sk/frame :sepal-length)))
+(def v18_l108 (-> (rdatasets/datasets-iris) (sk/frame :sepal-length)))
 
 
 (deftest
- t16_l102
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v15_l99)))
+ t19_l111
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v18_l108)))
 
 
 (def
- v18_l116
+ v21_l125
  (->
   (rdatasets/datasets-iris)
   (sk/frame :sepal-length :sepal-width {:color :species})
@@ -84,7 +96,7 @@
 
 
 (deftest
- t19_l123
+ t22_l132
  (is
   ((fn
     [v]
@@ -94,4 +106,4 @@
       (= 3 (:panels s))
       (= 150 (:points s))
       (some #{"Iris by Species"} (:texts s)))))
-   v18_l116)))
+   v21_l125)))

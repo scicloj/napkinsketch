@@ -78,8 +78,22 @@
    v12_l85)))
 
 
+(def v15_l95 (kind/pprint weighted))
+
+
+(deftest
+ t16_l97
+ (is
+  ((fn
+    [fr]
+    (and
+     (= [2 1] (get-in fr [:layout :weights]))
+     (= 2 (count (:frames fr)))))
+   v15_l95)))
+
+
 (def
- v15_l104
+ v18_l114
  (def
   shared-x
   (sk/prepare-frame
@@ -93,22 +107,22 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v16_l114 shared-x)
+(def v19_l124 shared-x)
 
 
 (deftest
- t17_l116
+ t20_l126
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v16_l114)))
+   v19_l124)))
 
 
 (def
- v19_l130
+ v22_l140
  (def
   marginal
   (sk/prepare-frame
@@ -121,22 +135,22 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v20_l140 marginal)
+(def v23_l150 marginal)
 
 
 (deftest
- t21_l142
+ t24_l152
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 150 (:points s)) (pos? (:polygons s)))))
-   v20_l140)))
+   v23_l150)))
 
 
 (def
- v23_l163
+ v26_l173
  (def
   dashboard
   (sk/prepare-frame
@@ -157,9 +171,9 @@
         :layers [{:layer-type :density}]}]}]})))
 
 
-(def v24_l178 dashboard)
+(def v27_l188 dashboard)
 
 
 (deftest
- t25_l180
- (is ((fn [v] (= 4 (:panels (sk/svg-summary v)))) v24_l178)))
+ t28_l190
+ (is ((fn [v] (= 4 (:panels (sk/svg-summary v)))) v27_l188)))
