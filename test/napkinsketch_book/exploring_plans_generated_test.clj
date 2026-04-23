@@ -193,7 +193,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__164384#] (= 50 (:n-points p1__164384#))) gs)))
+     (every? (fn* [p1__179107#] (= 50 (:n-points p1__179107#))) gs)))
    v49_l177)))
 
 
@@ -295,9 +295,9 @@
     (and
      (> (count bars) 3)
      (every?
-      (fn* [p1__164385#] (< (:lo p1__164385#) (:hi p1__164385#)))
+      (fn* [p1__179108#] (< (:lo p1__179108#) (:hi p1__179108#)))
       bars)
-     (every? (fn* [p1__164386#] (pos? (:count p1__164386#))) bars)))
+     (every? (fn* [p1__179109#] (pos? (:count p1__179109#))) bars)))
    v74_l248)))
 
 
@@ -435,7 +435,7 @@
  v104_l352
  (->
   (rdatasets/datasets-iris)
-  (sk/frame {:x :petal-length, :y :petal-width, :color :species})
+  (sk/frame :petal-length :petal-width {:color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})))
 
@@ -457,7 +457,7 @@
   grp-pl
   (->
    (rdatasets/datasets-iris)
-   (sk/frame {:x :petal-length, :y :petal-width, :color :species})
+   (sk/frame :petal-length :petal-width {:color :species})
    sk/lay-point
    (sk/lay-smooth {:stat :linear-model})
    sk/plan)))
@@ -486,7 +486,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__164387#] (Math/sin (* p1__164387# 0.3)))
+    (fn* [p1__179110#] (Math/sin (* p1__179110# 0.3)))
     (range 30))}))
 
 
@@ -650,7 +650,7 @@
   final-sk
   (->
    (rdatasets/datasets-iris)
-   (sk/frame {:x :petal-length, :y :petal-width, :color :species})
+   (sk/frame :petal-length :petal-width {:color :species})
    sk/lay-point
    (sk/lay-smooth {:stat :linear-model}))))
 

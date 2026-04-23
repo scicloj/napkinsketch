@@ -62,7 +62,7 @@
    :group [:a :a :a :a :a :b :b :b :b :b]})
 
 (-> growth
-    (sk/frame {:x :day :y :value :color :group})
+    (sk/frame :day :value {:color :group})
     sk/lay-line
     sk/lay-point)
 
@@ -88,7 +88,7 @@
 ;; Grouped step lines.
 
 (-> growth
-    (sk/frame {:x :day :y :value :color :group})
+    (sk/frame :day :value {:color :group})
     sk/lay-step
     sk/lay-point)
 

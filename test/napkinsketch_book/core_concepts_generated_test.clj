@@ -114,7 +114,7 @@
  v28_l156
  (->
   (rdatasets/datasets-iris)
-  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
+  (sk/frame :sepal-length :sepal-width {:color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})))
 
@@ -147,7 +147,7 @@
  v34_l186
  (->
   (rdatasets/datasets-iris)
-  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
+  (sk/frame :sepal-length :sepal-width {:color :species})
   (sk/lay-point {:color nil})
   (sk/lay-smooth {:stat :linear-model})))
 
@@ -169,7 +169,7 @@
   setosa
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__159569#] (= "setosa" (:species p1__159569#))))))
+   (fn* [p1__174292#] (= "setosa" (:species p1__174292#))))))
 
 
 (def
@@ -178,7 +178,7 @@
   versicolor
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__159570#] (= "versicolor" (:species p1__159570#))))))
+   (fn* [p1__174293#] (= "versicolor" (:species p1__174293#))))))
 
 
 (def
@@ -270,7 +270,7 @@
   my-frame
   (->
    (rdatasets/datasets-iris)
-   (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
+   (sk/frame :sepal-length :sepal-width {:color :species})
    sk/lay-point
    (sk/lay-smooth {:stat :linear-model})
    (sk/options {:title "Iris"}))))
@@ -496,7 +496,7 @@
  v107_l545
  (->
   (rdatasets/datasets-iris)
-  (sk/frame {:x :sepal-length, :y :sepal-width, :group :species})
+  (sk/frame :sepal-length :sepal-width {:group :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})))
 

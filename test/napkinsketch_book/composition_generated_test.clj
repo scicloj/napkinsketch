@@ -54,107 +54,112 @@
  v10_l70
  (def
   weighted
-  {:data iris,
-   :layout {:direction :horizontal, :weights [2 1]},
-   :frames
-   [{:mapping {:x :sepal-length, :y :sepal-width},
-     :layers [{:layer-type :point}]}
-    {:mapping {:x :petal-length, :y :petal-width},
-     :layers [{:layer-type :point}]}]}))
+  (sk/prepare-frame
+   {:data iris,
+    :layout {:direction :horizontal, :weights [2 1]},
+    :frames
+    [{:mapping {:x :sepal-length, :y :sepal-width},
+      :layers [{:layer-type :point}]}
+     {:mapping {:x :petal-length, :y :petal-width},
+      :layers [{:layer-type :point}]}]})))
 
 
-(def v12_l82 (sk/plot weighted))
+(def v12_l85 weighted)
 
 
 (deftest
- t13_l84
+ t13_l87
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v12_l82)))
+   v12_l85)))
 
 
 (def
- v15_l101
+ v15_l104
  (def
   shared-x
-  {:data iris,
-   :share-scales #{:x},
-   :layout {:direction :horizontal, :weights [1 1]},
-   :frames
-   [{:mapping {:x :sepal-length, :y :sepal-width},
-     :layers [{:layer-type :point}]}
-    {:mapping {:x :sepal-length, :y :petal-length},
-     :layers [{:layer-type :point}]}]}))
+  (sk/prepare-frame
+   {:data iris,
+    :share-scales #{:x},
+    :layout {:direction :horizontal, :weights [1 1]},
+    :frames
+    [{:mapping {:x :sepal-length, :y :sepal-width},
+      :layers [{:layer-type :point}]}
+     {:mapping {:x :sepal-length, :y :petal-length},
+      :layers [{:layer-type :point}]}]})))
 
 
-(def v16_l110 (sk/plot shared-x))
+(def v16_l114 shared-x)
 
 
 (deftest
- t17_l112
+ t17_l116
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v16_l110)))
+   v16_l114)))
 
 
 (def
- v19_l126
+ v19_l130
  (def
   marginal
-  {:data iris,
-   :share-scales #{:x},
-   :layout {:direction :vertical, :weights [1 3]},
-   :frames
-   [{:mapping {:x :sepal-length}, :layers [{:layer-type :density}]}
-    {:mapping {:x :sepal-length, :y :sepal-width, :color :species},
-     :layers [{:layer-type :point}]}]}))
+  (sk/prepare-frame
+   {:data iris,
+    :share-scales #{:x},
+    :layout {:direction :vertical, :weights [1 3]},
+    :frames
+    [{:mapping {:x :sepal-length}, :layers [{:layer-type :density}]}
+     {:mapping {:x :sepal-length, :y :sepal-width, :color :species},
+      :layers [{:layer-type :point}]}]})))
 
 
-(def v20_l135 (sk/plot marginal))
+(def v20_l140 marginal)
 
 
 (deftest
- t21_l137
+ t21_l142
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 150 (:points s)) (pos? (:polygons s)))))
-   v20_l135)))
+   v20_l140)))
 
 
 (def
- v23_l158
+ v23_l163
  (def
   dashboard
-  {:data iris,
-   :layout {:direction :vertical, :weights [1 1]},
-   :frames
-   [{:layout {:direction :horizontal, :weights [1 1]},
-     :frames
-     [{:mapping {:x :sepal-length}, :layers [{:layer-type :histogram}]}
-      {:mapping {:x :species, :y :sepal-width, :color :species},
-       :layers [{:layer-type :boxplot}]}]}
-    {:layout {:direction :horizontal, :weights [1 1]},
-     :frames
-     [{:mapping {:x :petal-length, :y :petal-width, :color :species},
-       :layers [{:layer-type :point}]}
-      {:mapping {:x :petal-length, :color :species},
-       :layers [{:layer-type :density}]}]}]}))
+  (sk/prepare-frame
+   {:data iris,
+    :layout {:direction :vertical, :weights [1 1]},
+    :frames
+    [{:layout {:direction :horizontal, :weights [1 1]},
+      :frames
+      [{:mapping {:x :sepal-length},
+        :layers [{:layer-type :histogram}]}
+       {:mapping {:x :species, :y :sepal-width, :color :species},
+        :layers [{:layer-type :boxplot}]}]}
+     {:layout {:direction :horizontal, :weights [1 1]},
+      :frames
+      [{:mapping {:x :petal-length, :y :petal-width, :color :species},
+        :layers [{:layer-type :point}]}
+       {:mapping {:x :petal-length, :color :species},
+        :layers [{:layer-type :density}]}]}]})))
 
 
-(def v24_l172 (sk/plot dashboard))
+(def v24_l178 dashboard)
 
 
 (deftest
- t25_l174
- (is ((fn [v] (= 4 (:panels (sk/svg-summary v)))) v24_l172)))
+ t25_l180
+ (is ((fn [v] (= 4 (:panels (sk/svg-summary v)))) v24_l178)))

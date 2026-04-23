@@ -68,18 +68,21 @@
 ;; first panel gets twice the space of the second:
 
 (def weighted
-  {:data iris
-   :layout {:direction :horizontal :weights [2 1]}
-   :frames [{:mapping {:x :sepal-length :y :sepal-width}
-             :layers [{:layer-type :point}]}
-            {:mapping {:x :petal-length :y :petal-width}
-             :layers [{:layer-type :point}]}]})
+  (sk/prepare-frame
+   {:data iris
+    :layout {:direction :horizontal :weights [2 1]}
+    :frames [{:mapping {:x :sepal-length :y :sepal-width}
+              :layers [{:layer-type :point}]}
+             {:mapping {:x :petal-length :y :petal-width}
+              :layers [{:layer-type :point}]}]}))
 
-;; `sk/frame` and `sk/arrange` return values with Kindly metadata so
-;; they auto-render in notebooks. A bare plain-map composite does
-;; not -- pass it to `sk/plot` to render:
+;; `sk/prepare-frame` lifts a plain-map composite into a frame the
+;; library treats like any other: data is coerced to a Tablecloth
+;; dataset at every depth, the current configuration is captured for
+;; render time, and Kindly metadata is attached so the frame
+;; auto-renders in a notebook viewer:
 
-(sk/plot weighted)
+weighted
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -99,15 +102,16 @@
 ;; column:
 
 (def shared-x
-  {:data iris
-   :share-scales #{:x}
-   :layout {:direction :horizontal :weights [1 1]}
-   :frames [{:mapping {:x :sepal-length :y :sepal-width}
-             :layers [{:layer-type :point}]}
-            {:mapping {:x :sepal-length :y :petal-length}
-             :layers [{:layer-type :point}]}]})
+  (sk/prepare-frame
+   {:data iris
+    :share-scales #{:x}
+    :layout {:direction :horizontal :weights [1 1]}
+    :frames [{:mapping {:x :sepal-length :y :sepal-width}
+              :layers [{:layer-type :point}]}
+             {:mapping {:x :sepal-length :y :petal-length}
+              :layers [{:layer-type :point}]}]}))
 
-(sk/plot shared-x)
+shared-x
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -124,15 +128,16 @@
 ;; above the main plot -- is a vertical composite with shared x:
 
 (def marginal
-  {:data iris
-   :share-scales #{:x}
-   :layout {:direction :vertical :weights [1 3]}
-   :frames [{:mapping {:x :sepal-length}
-             :layers [{:layer-type :density}]}
-            {:mapping {:x :sepal-length :y :sepal-width :color :species}
-             :layers [{:layer-type :point}]}]})
+  (sk/prepare-frame
+   {:data iris
+    :share-scales #{:x}
+    :layout {:direction :vertical :weights [1 3]}
+    :frames [{:mapping {:x :sepal-length}
+              :layers [{:layer-type :density}]}
+             {:mapping {:x :sepal-length :y :sepal-width :color :species}
+              :layers [{:layer-type :point}]}]}))
 
-(sk/plot marginal)
+marginal
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -156,20 +161,21 @@
 ;; inputs, so the nesting is expressed as an explicit map:
 
 (def dashboard
-  {:data iris
-   :layout {:direction :vertical :weights [1 1]}
-   :frames [{:layout {:direction :horizontal :weights [1 1]}
-             :frames [{:mapping {:x :sepal-length}
-                       :layers [{:layer-type :histogram}]}
-                      {:mapping {:x :species :y :sepal-width :color :species}
-                       :layers [{:layer-type :boxplot}]}]}
-            {:layout {:direction :horizontal :weights [1 1]}
-             :frames [{:mapping {:x :petal-length :y :petal-width :color :species}
-                       :layers [{:layer-type :point}]}
-                      {:mapping {:x :petal-length :color :species}
-                       :layers [{:layer-type :density}]}]}]})
+  (sk/prepare-frame
+   {:data iris
+    :layout {:direction :vertical :weights [1 1]}
+    :frames [{:layout {:direction :horizontal :weights [1 1]}
+              :frames [{:mapping {:x :sepal-length}
+                        :layers [{:layer-type :histogram}]}
+                       {:mapping {:x :species :y :sepal-width :color :species}
+                        :layers [{:layer-type :boxplot}]}]}
+             {:layout {:direction :horizontal :weights [1 1]}
+              :frames [{:mapping {:x :petal-length :y :petal-width :color :species}
+                        :layers [{:layer-type :point}]}
+                       {:mapping {:x :petal-length :color :species}
+                        :layers [{:layer-type :density}]}]}]}))
 
-(sk/plot dashboard)
+dashboard
 
 (kind/test-last [(fn [v] (= 4 (:panels (sk/svg-summary v))))])
 

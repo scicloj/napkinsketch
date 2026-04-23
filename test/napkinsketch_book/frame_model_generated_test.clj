@@ -23,7 +23,7 @@
  v6_l40
  (->
   (rdatasets/datasets-iris)
-  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
+  (sk/frame :sepal-length :sepal-width {:color :species})
   kind/pprint))
 
 
@@ -38,7 +38,7 @@
  v9_l69
  (->
   (rdatasets/datasets-iris)
-  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
+  (sk/frame :sepal-length :sepal-width {:color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})))
 
@@ -76,7 +76,7 @@
  v18_l116
  (->
   (rdatasets/datasets-iris)
-  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
+  (sk/frame :sepal-length :sepal-width {:color :species})
   (sk/facet :species)
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})

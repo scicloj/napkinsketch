@@ -57,7 +57,7 @@
  v12_l53
  (->
   (rdatasets/datasets-iris)
-  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
+  (sk/frame :sepal-length :sepal-width {:color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})))
 
@@ -283,7 +283,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__162834#] (Math/sin (* p1__162834# 0.3)))
+    (fn* [p1__177557#] (Math/sin (* p1__177557# 0.3)))
     (range 30))}))
 
 
@@ -393,9 +393,9 @@
     :y
     (mapv
      (fn*
-      [p1__162835#]
+      [p1__177558#]
       (+
-       (Math/sin (* p1__162835# 0.2))
+       (Math/sin (* p1__177558# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)

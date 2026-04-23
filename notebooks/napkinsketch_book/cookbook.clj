@@ -51,7 +51,7 @@
 ;; Fit a linear regression per group to reveal trends across species.
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    (sk/frame :sepal-length :sepal-width {:color :species})
     (sk/lay-point {:alpha 0.6})
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -217,7 +217,7 @@
 ;; Scatter + per-group regression to compare smoker tipping patterns.
 
 (-> (rdatasets/reshape2-tips)
-    (sk/frame {:x :total-bill :y :tip :color :smoker})
+    (sk/frame :total-bill :tip {:color :smoker})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model})
     (sk/options {:title "Tipping Behavior"
@@ -237,7 +237,7 @@
 ;; confidence bands.
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    (sk/frame :sepal-length :sepal-width {:color :species})
     (sk/lay-point {:alpha 0.5})
     (sk/lay-smooth {:stat :linear-model :confidence-band true})
     (sk/options {:title "Sepal Regression with Confidence Bands"}))
@@ -329,7 +329,7 @@
 ;; This makes the plot square when x and y have equal ranges.
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    (sk/frame :sepal-length :sepal-width {:color :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model})
     (sk/coord :fixed)
@@ -361,7 +361,7 @@
 ;; Add `{:confidence-band true}` to a LOESS smoother for a bootstrap confidence band.
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    (sk/frame :sepal-length :sepal-width {:color :species})
     sk/lay-point
     (sk/lay-smooth {:confidence-band true})
     (sk/options {:title "LOESS with 95% CI"}))
@@ -446,7 +446,7 @@
 ;; Per-species regression reveals different slopes.
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (sk/frame {:x :bill-length-mm :y :bill-depth-mm :color :species})
+    (sk/frame :bill-length-mm :bill-depth-mm {:color :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model})
     (sk/options {:title "Bill Length vs Depth with Regression"}))
@@ -480,7 +480,7 @@
 ;; Flipper length vs body mass -- a strong positive correlation.
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (sk/frame {:x :flipper-length-mm :y :body-mass-g :color :species})
+    (sk/frame :flipper-length-mm :body-mass-g {:color :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model})
     (sk/options {:title "Flipper Length vs Body Mass"}))
@@ -504,7 +504,7 @@
 ;; Tipping behavior: smokers vs non-smokers.
 
 (-> (rdatasets/reshape2-tips)
-    (sk/frame {:x :total-bill :y :tip :color :smoker})
+    (sk/frame :total-bill :tip {:color :smoker})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model})
     (sk/options {:title "Tipping: Smokers vs Non-Smokers"
@@ -550,7 +550,7 @@
 ;; Engine displacement vs highway fuel efficiency, colored by vehicle class.
 
 (-> (rdatasets/ggplot2-mpg)
-    (sk/frame {:x :displ :y :hwy :color :class})
+    (sk/frame :displ :hwy {:color :class})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model})
     (sk/options {:title "Displacement vs Highway MPG by Class"}))

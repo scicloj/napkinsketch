@@ -38,7 +38,7 @@
 ;; `kind/pprint` to see its structure instead of its rendered plot:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    (sk/frame :sepal-length :sepal-width {:color :species})
     kind/pprint)
 
 (kind/test-last [(fn [v] (and (seq (:data v))
@@ -67,7 +67,7 @@
 ;; mapping once and attach several layers to it:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    (sk/frame :sepal-length :sepal-width {:color :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -114,7 +114,7 @@
 ;; means they all thread naturally with `->`:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    (sk/frame :sepal-length :sepal-width {:color :species})
     (sk/facet :species)
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model})

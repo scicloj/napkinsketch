@@ -154,7 +154,7 @@ two-panel
 ;; `sk/frame`'s mapping flows to every layer attached to the frame:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    (sk/frame :sepal-length :sepal-width {:color :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -184,7 +184,7 @@ two-panel
 ;; by setting it to `nil`:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    (sk/frame :sepal-length :sepal-width {:color :species})
     (sk/lay-point {:color nil})
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -303,7 +303,7 @@ two-panel
 
 (def my-frame
   (-> (rdatasets/datasets-iris)
-      (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+      (sk/frame :sepal-length :sepal-width {:color :species})
       sk/lay-point
       (sk/lay-smooth {:stat :linear-model})
       (sk/options {:title "Iris"})))
@@ -543,7 +543,7 @@ my-frame
 ;; colors:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :group :species})
+    (sk/frame :sepal-length :sepal-width {:group :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 

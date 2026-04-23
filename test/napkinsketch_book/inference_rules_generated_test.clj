@@ -517,7 +517,7 @@
  v98_l538
  (->
   grouped-data
-  (sk/frame {:x :x, :y :y, :color :g})
+  (sk/frame :x :y {:color :g})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})))
 

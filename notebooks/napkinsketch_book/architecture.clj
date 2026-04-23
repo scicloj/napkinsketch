@@ -260,7 +260,7 @@ graph LR
 
 (def multi-sk
   (-> (rdatasets/datasets-iris)
-      (sk/frame {:x :petal-length :y :petal-width :color :species})
+      (sk/frame :petal-length :petal-width {:color :species})
       sk/lay-point
       (sk/lay-smooth {:stat :linear-model})))
 

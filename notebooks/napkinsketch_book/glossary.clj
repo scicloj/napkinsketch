@@ -50,6 +50,21 @@ my-frame
 ;; `:frames` plus an optional `:layout`. Created by `sk/arrange` (and
 ;; later, by `sk/mosaic` and `sk/with-marginals`). Its leaves render
 ;; independently and are tiled into the final plot.
+;;
+;; For hand-built composite maps (needed when you want features beyond
+;; what `sk/arrange` offers -- unequal weights, nested frames,
+;; cross-sibling shared scales), wrap the map with `sk/prepare-frame`
+;; so it carries the Kindly metadata needed to auto-render.
+
+;; ## Prepare Frame
+;;
+;; `sk/prepare-frame` lifts a hand-built frame map (leaf or composite)
+;; to a first-class frame value. It coerces `:data` at every depth,
+;; captures the current configuration for render-time restoration,
+;; and attaches Kindly metadata so the frame auto-renders in notebook
+;; viewers. Use it when you construct a composite frame by literal
+;; map and want it to behave like one built with `sk/frame` or
+;; `sk/arrange`.
 
 ;; ## Layer Type
 ;;

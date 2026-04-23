@@ -31,7 +31,7 @@
 ;; Fit a regression line per group.
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :petal-length :y :petal-width :color :species})
+    (sk/frame :petal-length :petal-width {:color :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 
@@ -44,7 +44,7 @@
 ;; Pass `{:confidence-band true}` to show a 95% confidence band around the line.
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
+    (sk/frame :sepal-length :sepal-width {:color :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model :confidence-band true}))
 
@@ -57,7 +57,7 @@
 ;; Do smokers and non-smokers tip differently?
 
 (-> (rdatasets/reshape2-tips)
-    (sk/frame {:x :total-bill :y :tip :color :smoker})
+    (sk/frame :total-bill :tip {:color :smoker})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 

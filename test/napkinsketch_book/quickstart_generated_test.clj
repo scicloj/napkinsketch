@@ -158,7 +158,7 @@
  v43_l174
  (->
   iris
-  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
+  (sk/frame :sepal-length :sepal-width {:color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})))
 
