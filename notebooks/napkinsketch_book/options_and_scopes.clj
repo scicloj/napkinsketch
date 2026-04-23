@@ -282,8 +282,10 @@ demo
 ;;
 ;; - [Core Concepts](./napkinsketch_book.core_concepts.html) --
 ;;   the scope hierarchy for layer options in full.
-;; - [Frame Rules](./napkinsketch_book.sketch_rules.html) --
-;;   precise rules for each option function.
+;; - [Sketch Rules](./napkinsketch_book.sketch_rules.html) --
+;;   precise rules for each option function (documents the
+;;   legacy sk/sketch + sk/view API, which remains available
+;;   through alpha).
 ;; - [Configuration](./napkinsketch_book.configuration.html) --
 ;;   the four configuration sources and every configuration key.
 ;; - [Glossary](./napkinsketch_book.glossary.html) -- definitions

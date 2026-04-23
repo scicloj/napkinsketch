@@ -1,14 +1,22 @@
 ;; # Sketch Rules
 ;;
-;; This chapter is the definitive specification for how sketches
-;; behave. It covers 24 rules in seven sections -- each demonstrated
-;; with a rendered plot, a printed sketch structure, and verified
-;; behavior.
+;; This chapter is the definitive specification for how the
+;; `sk/sketch` + `sk/view` + `sk/lay-*` API composes. It covers
+;; 24 rules in seven sections -- each demonstrated with a rendered
+;; plot, a printed sketch structure, and verified behavior.
 ;;
 ;; Read [Frame Model](./napkinsketch_book.frame_model.html)
 ;; and [Core Concepts](./napkinsketch_book.core_concepts.html) first.
 ;; This chapter is the proof layer -- every rule is reproducible
 ;; and tested.
+;;
+;; **Transitional note.** Napkinsketch's pre-alpha refactor is
+;; moving to a unified **frame** type; `sk/sketch` and `sk/view`
+;; remain in the public API as adapters while the rest of the book
+;; migrates. The rules below still describe current behaviour
+;; (they are tested on every run) and are what your existing
+;; sketch-world code relies on. A frame-world restatement will
+;; replace them once `sk/sketch` and `sk/view` are retired.
 
 (ns napkinsketch-book.sketch-rules
   (:require
