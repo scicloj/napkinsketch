@@ -33,7 +33,7 @@
 ;; 2. **Column types** -- whether x and y are numerical, categorical, or temporal
 ;; 3. **Aesthetic resolution** -- whether `:color`, `:size`, `:alpha`, and `:text` are column references or fixed values
 ;; 4. **Grouping** -- which columns split data into subsets (explicit `:group` plus a categorical `:color`)
-;; 5. **Method** -- which mark and stat to use (e.g., scatter, histogram, bar, line, boxplot)
+;; 5. **Layer type** -- which mark and stat to use (e.g., scatter, histogram, bar, line, boxplot)
 ;; 6. **Domains** -- data extent for each axis, with padding
 ;; 7. **Ticks** -- nice round values and formatted labels
 ;; 8. **Axis labels** -- derived from column names
@@ -219,7 +219,7 @@ temporal-sketch
 ;; hours of the day, years, or subject IDs. The inference system sees
 ;; numbers and treats them as numerical, but you may want discrete
 ;; categorical bands. Pass `:x-type :categorical` (or `:y-type`) to
-;; the view or layer options to override:
+;; the frame or layer options to override:
 
 (def hour-bar-sketch
   (-> {:hour [9 10 11 12] :count [5 8 12 7]}
@@ -592,7 +592,7 @@ hist-views
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; The plan shows the inferred method:
+;; The plan shows the inferred layer type:
 
 (sk/plan hist-views)
 
@@ -614,7 +614,7 @@ temporal-hist-sketch
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
-;; The plan shows the inferred method:
+;; The plan shows the inferred layer type:
 
 (sk/plan temporal-hist-sketch)
 
@@ -631,7 +631,7 @@ count-views
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
-;; The plan shows the inferred method:
+;; The plan shows the inferred layer type:
 
 (sk/plan count-views)
 
@@ -642,7 +642,7 @@ count-views
 ;; of the 4 categories.
 
 ;; Two numerical columns produce a scatter (the chapter's opening
-;; `scatter-views` is such a sketch):
+;; `scatter-views` is such a frame):
 
 (def num-num-sketch
   (-> five-points (sk/frame :x :y)))
@@ -651,7 +651,7 @@ num-num-sketch
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; The plan shows the inferred method:
+;; The plan shows the inferred layer type:
 
 (sk/plan num-num-sketch)
 
@@ -670,7 +670,7 @@ ts-line-sketch
 
 (kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
 
-;; The plan shows the inferred method:
+;; The plan shows the inferred layer type:
 
 (sk/plan ts-line-sketch)
 
@@ -689,7 +689,7 @@ boxplot-sketch
 
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
-;; The plan shows the inferred method:
+;; The plan shows the inferred layer type:
 
 (sk/plan boxplot-sketch)
 
@@ -709,7 +709,7 @@ horizontal-boxplot-sketch
 
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
-;; The plan shows the inferred method:
+;; The plan shows the inferred layer type:
 
 (sk/plan horizontal-boxplot-sketch)
 
@@ -1011,7 +1011,7 @@ full-layout-sketch
 ;; The bare plot has zero title padding and zero legend width.
 ;; The full plot adds padding for the title and 100 pixels for the legend.
 
-;; Layout type is also inferred from the view structure:
+;; Layout type is also inferred from the frame structure:
 ;;
 ;; - A single panel is `:single`
 ;; - A facet grid (`:facet-row` or `:facet-col`) is `:facet-grid`
@@ -1123,7 +1123,7 @@ graph TD
   VIEWS --> AE[\"Aesthetics<br/>(resolve-aesthetics)\"]
   CT --> GR[\"Grouping<br/>(infer-grouping)\"]
   AE --> GR
-  CT --> ME[\"Method<br/>(infer-method)\"]
+  CT --> ME[\"Layer type<br/>(infer-method)\"]
   GR --> STATS[\"Statistics<br/>(compute-stat)\"]
   ME --> STATS
 
@@ -1158,7 +1158,7 @@ graph TD
 
 ;; Each box corresponds to a named function in the codebase.
 ;; The top four boxes -- Column Types, Aesthetics, Grouping, and
-;; Method -- are the per-view inference steps (in `resolve.clj`).
+;; Layer type -- are the per-leaf inference steps (in `resolve.clj`).
 ;; The remaining boxes are the plan-level orchestration steps
 ;; (in `plan.clj` and `scale.clj`).
 
@@ -1169,13 +1169,13 @@ graph TD
 ;; | What is inferred | Default | Override |
 ;; |:-----------------|:--------|:---------|
 ;; | Column selection | one column fills x; two fill x, y; three fill x, y, color | explicit column args in `sk/frame` or `sk/lay-*` |
-;; | Column type | dtype inspection | `:x-type`, `:y-type`, `:color-type` in view options |
+;; | Column type | dtype inspection | `:x-type`, `:y-type`, `:color-type` in frame or layer options |
 ;; | Aesthetic classification | keyword = column, string = color/column | explicit `:color` keyword vs hex string |
 ;; | Grouping | categorical color column | `:group` aesthetic |
-;; | Method (mark + stat) | column types (see table above) | `sk/lay-point`, `sk/lay-histogram`, etc. |
-;; | Domain extent | data range + 5% padding | `(sk/scale views :x {:domain [0 10]})` |
-;; | Domain zero-anchor | bar/stacked charts include zero | `(sk/scale views :y {:domain [5 20]})` |
-;; | Fill domain | `[0.0, 1.0]` for fill position | `(sk/scale views :y {:domain [0 2]})` |
+;; | Layer type (mark + stat) | column types (see table above) | `sk/lay-point`, `sk/lay-histogram`, etc. |
+;; | Domain extent | data range + 5% padding | `(sk/scale sk :x {:domain [0 10]})` |
+;; | Domain zero-anchor | bar/stacked charts include zero | `(sk/scale sk :y {:domain [5 20]})` |
+;; | Fill domain | `[0.0, 1.0]` for fill position | `(sk/scale sk :y {:domain [0 2]})` |
 ;; | Tick values | round intervals (linear), powers of 10 (log) | wadogo scale configuration |
 ;; | Tick labels | number formatting, calendar formatting | wadogo label formatting |
 ;; | Axis labels | column name, with underscores replaced by spaces | `(sk/options {:x-label "Custom"})` |

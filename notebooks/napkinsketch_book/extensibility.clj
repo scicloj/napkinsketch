@@ -357,7 +357,7 @@
 ;;
 ;; Dispatch: inferred from the domain type and scale spec.
 ;; Categorical domains dispatch to `:categorical`. Numerical domains default to
-;; `:linear`, overridden to `:log` by `(sk/scale sketch :x :log)`.
+;; `:linear`, overridden to `:log` by `(sk/scale sk :x :log)`.
 
 ;; ## `make-coord`
 ;;
