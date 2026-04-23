@@ -336,17 +336,29 @@
         extras (remove (set frame-print-order) (keys fr))]
     (reduce (fn [acc k] (assoc acc k (fr k))) known extras)))
 
+(defn- elide-empty-maps
+  "Strip :mapping and :opts keys whose value is an empty map. :layers
+   [] is preserved because a leaf must carry :layers. Applied by
+   normalize-frame so every builder path produces clean output."
+  [m]
+  (cond-> m
+    (and (contains? m :mapping) (empty? (:mapping m))) (dissoc :mapping)
+    (and (contains? m :opts)    (empty? (:opts m)))    (dissoc :opts)))
+
 (defn- normalize-frame
   "Recursively validate top-level keys, coerce :data to a Tablecloth
-   dataset at every depth, and reorder keys for readable printing."
+   dataset at every depth, apply empty-map elision to the frame and
+   its layers, and reorder keys for readable printing."
   [fr]
   (let [validated (warn-unknown-frame-keys fr)
         coerced (cond-> validated
                   (:data validated)
                   (update :data coerce-dataset)
                   (:frames validated)
-                  (update :frames (partial mapv normalize-frame)))]
-    (reorder-frame-keys coerced)))
+                  (update :frames (partial mapv normalize-frame))
+                  (:layers validated)
+                  (update :layers (partial mapv elide-empty-maps)))]
+    (reorder-frame-keys (elide-empty-maps coerced))))
 
 (declare plot)
 
@@ -407,36 +419,146 @@
     (kind/fn prepared
       {:kindly/f (render-frame-map captured)})))
 
+;; ---- sk/frame polymorphism (Phase 6) ----
+
+(defn- layer-has-position? [layer]
+  (boolean (or (:x (:mapping layer))
+               (:y (:mapping layer)))))
+
+(defn- leaf-has-position? [leaf]
+  (or (boolean (or (:x (:mapping leaf))
+                   (:y (:mapping leaf))))
+      (boolean (some layer-has-position? (:layers leaf)))))
+
+(defn- position-mapping [m]
+  (select-keys m [:x :y]))
+
+(defn- aesthetic-mapping [m]
+  (apply dissoc m [:x :y]))
+
+(defn- partition-layers-by-position
+  "Returns [root-origin-layers panel-origin-layers]. A layer is
+   panel-origin if its own :mapping carries :x or :y, else root-origin."
+  [layers]
+  (let [{panel :panel root :root}
+        (group-by #(if (layer-has-position? %) :panel :root) (or layers []))]
+    [(vec (or root []))
+     (vec (or panel []))]))
+
+(defn- promote-leaf
+  "Promote a leaf to a composite, folding a new incoming-mapping into
+   the result. The leaf's position part + panel-origin layers become
+   sub-frame 1; the leaf's aesthetic part + root-origin layers move
+   to the composite root; the incoming mapping splits the same way
+   (aesthetic -> root, position -> sub-frame 2). When the incoming
+   mapping carries no position, no new sub-frame is added."
+  [leaf incoming-mapping]
+  (let [[root-layers panel-layers] (partition-layers-by-position (:layers leaf))
+        leaf-pos        (position-mapping (:mapping leaf))
+        leaf-aesth      (aesthetic-mapping (:mapping leaf))
+        incoming-pos    (position-mapping incoming-mapping)
+        incoming-aesth  (aesthetic-mapping incoming-mapping)
+        root-aesth      (merge leaf-aesth incoming-aesth)
+        panel-1         (cond-> {:layers panel-layers}
+                          (seq leaf-pos) (assoc :mapping leaf-pos))
+        panel-2         (when (seq incoming-pos)
+                          {:mapping incoming-pos :layers []})
+        frames          (filterv some? [panel-1 panel-2])]
+    (cond-> {:frames frames}
+      (:data leaf)      (assoc :data (:data leaf))
+      (seq root-aesth)  (assoc :mapping root-aesth)
+      (seq root-layers) (assoc :layers root-layers))))
+
+(defn- extend-leaf
+  "Extend a leaf that carries no position yet, merging incoming-mapping
+   into its :mapping. Used when neither the leaf's :mapping nor its
+   layers carry :x or :y."
+  [leaf incoming-mapping]
+  (let [merged (merge (:mapping leaf) incoming-mapping)]
+    (cond-> leaf
+      (seq merged)   (assoc :mapping merged)
+      (empty? merged) (dissoc :mapping))))
+
+(defn- extend-composite
+  "Extend a composite. Aesthetic part of incoming-mapping merges into
+   the root :mapping; position part appends a new sub-frame."
+  [composite incoming-mapping]
+  (let [incoming-pos   (position-mapping incoming-mapping)
+        incoming-aesth (aesthetic-mapping incoming-mapping)
+        with-aesth (if (seq incoming-aesth)
+                     (update composite :mapping (fnil merge {}) incoming-aesth)
+                     composite)]
+    (if (seq incoming-pos)
+      (update with-aesth :frames conj {:mapping incoming-pos :layers []})
+      with-aesth)))
+
+(defn- extend-or-promote
+  "Dispatch `(sk/frame existing-frame incoming-mapping)`: composite
+   inputs extend in place; leaves extend or promote depending on
+   whether they already carry position."
+  [fr incoming-mapping]
+  (cond
+    (frame/composite? fr)    (extend-composite fr incoming-mapping)
+    (leaf-has-position? fr)  (promote-leaf fr incoming-mapping)
+    :else                    (extend-leaf fr incoming-mapping)))
+
+(defn- frame-from-data
+  "Build a leaf-frame map from raw data and an already-normalized
+   mapping (use {} for no mapping). Empty mapping is elided by
+   normalize-frame downstream."
+  [data mapping]
+  (cond-> {:layers []}
+    (some? data) (assoc :data data)
+    (seq mapping) (assoc :mapping mapping)))
+
 (defn frame
-  "Create a leaf frame from data and optional column mappings.
-   Returns a Kindly-annotated value that auto-renders in notebook
-   viewers.
+  "Construct or extend a frame.
 
-   (sk/frame)                                -- empty leaf
-   (sk/frame data)                           -- leaf with data only
-   (sk/frame data {:color :species})         -- leaf with aesthetic mapping
-   (sk/frame data :x-col)                    -- leaf with {:x :x-col}
-   (sk/frame data :x-col :y-col)             -- leaf with :x and :y
-   (sk/frame data :x-col :y-col {:color :c}) -- positional x/y + opts
+   On raw data (first argument is not itself a frame):
+     (sk/frame)                                -- empty leaf
+     (sk/frame data)                           -- leaf with data only
+     (sk/frame data {:color :species})         -- leaf with aesthetic mapping
+     (sk/frame data :x-col)                    -- leaf with {:x :x-col}
+     (sk/frame data :x-col :y-col)             -- leaf with :x and :y
+     (sk/frame data :x-col :y-col {:color :c}) -- positional x/y + opts
 
-   For hand-built composite frames (nested :frames, explicit
-   :weights, etc.) use sk/prepare-frame."
-  ([] (prepare-frame {:mapping {} :layers []}))
-  ([data] (prepare-frame {:data data :mapping {} :layers []}))
-  ([data x-or-mapping]
-   (let [mapping (if (map? x-or-mapping)
+   Threaded over an existing frame (first argument is a frame):
+     (sk/frame fr)                -- no-op, returns fr unchanged
+     (sk/frame fr :x-col :y-col)  -- extend a leaf-without-position,
+                                     or promote a leaf-with-position
+                                     into a 2-panel composite, or
+                                     append a panel to a composite
+     (sk/frame fr {:color :c})    -- aesthetic-only: extend mapping
+                                     or (on leaf-with-position) promote
+
+   For hand-built composite frames (nested :frames, explicit :weights,
+   etc.) use sk/prepare-frame."
+  ([] (prepare-frame {:layers []}))
+  ([x]
+   (cond
+     (frame? x) x
+     :else      (prepare-frame (frame-from-data x {}))))
+  ([x y]
+   (let [mapping (if (map? y)
                    (or (warn-and-strip-unknown-opts
-                        "sk/frame" x-or-mapping view-mapping-keys)
+                        "sk/frame" y view-mapping-keys)
                        {})
-                   {:x x-or-mapping})]
-     (prepare-frame {:data data :mapping mapping :layers []})))
-  ([data x y]
-   (prepare-frame {:data data :mapping {:x x :y y} :layers []}))
-  ([data x y opts]
-   (let [opts (warn-and-strip-unknown-opts "sk/frame" opts view-mapping-keys)
-         final-data (or (:data opts) data)
-         mapping (-> opts (dissoc :data) (merge {:x x :y y}))]
-     (prepare-frame {:data final-data :mapping mapping :layers []}))))
+                   {:x y})]
+     (if (frame? x)
+       (prepare-frame (extend-or-promote x mapping))
+       (prepare-frame (frame-from-data x mapping)))))
+  ([x y z]
+   (let [mapping {:x y :y z}]
+     (if (frame? x)
+       (prepare-frame (extend-or-promote x mapping))
+       (prepare-frame (frame-from-data x mapping)))))
+  ([x y z opts]
+   (let [opts      (warn-and-strip-unknown-opts "sk/frame" opts view-mapping-keys)
+         data-over (:data opts)
+         mapping   (-> opts (dissoc :data) (merge {:x y :y z}))]
+     (if (frame? x)
+       (prepare-frame (extend-or-promote x mapping))
+       (prepare-frame (frame-from-data (or data-over x) mapping))))))
 
 (defn sketch
   "Create or augment a sketch with an optional sketch-level mapping.

@@ -22,14 +22,14 @@
       (is (sk/frame? f))
       (is (not (sk/sketch? f)))
       (is (nil? (:data f)))
-      (is (= {} (:mapping f)))
+      (is (not (contains? f :mapping)))
       (is (= [] (:layers f)))))
 
   (testing "1-arity coerces data, no mapping"
     (let [f (sk/frame {:x [1 2] :y [3 4]})]
       (is (sk/frame? f))
       (is (tc/dataset? (:data f)))
-      (is (= {} (:mapping f)))))
+      (is (not (contains? f :mapping)))))
 
   (testing "2-arity with a map arg is an aesthetic mapping"
     (let [f (sk/frame tiny-ds {:color :g})]
