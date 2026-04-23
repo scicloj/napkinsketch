@@ -1,0 +1,319 @@
+(ns scicloj.napkinsketch.frame-polymorphism-test
+  "Specification for Phase 6's polymorphic sk/frame.
+
+   These tests describe the target behavior after the Sketch record
+   and :views adapter are retired. sk/frame dispatches on its first
+   argument: raw data creates a leaf; an existing frame may be
+   extended, promoted to a composite, or appended-to. Empty :mapping
+   and :opts are never present in output (strict elision, Reading A
+   per Phase 6 design discussion 2026-04-24).
+
+   Design reference: memory/project_phase_6_design.md and
+   dev-notes/frame-rules-draft.md. Case labels (C1, E2, P3, ...) match
+   the test-first outline in the design doc."
+  (:require [clojure.test :refer [deftest testing is]]
+            [tablecloth.api :as tc]
+            [scicloj.napkinsketch.api :as sk]))
+
+;; ============================================================
+;; Shared fixtures
+;; ============================================================
+
+(def iris
+  "Synthetic stand-in for rdatasets iris, using :a :b :c :d :e :f as
+   placeholder column names to match the design-doc notation."
+  (tc/dataset {:a       [1.0 2.0 3.0]
+               :b       [0.5 1.0 1.5]
+               :c       [10.0 20.0 30.0]
+               :d       [100.0 200.0 300.0]
+               :e       [1000.0 2000.0 3000.0]
+               :f       [10000.0 20000.0 30000.0]
+               :species ["setosa" "setosa" "versicolor"]}))
+
+(defn- all-nodes
+  "Seq of every frame and layer in the tree -- for property checks."
+  [fr]
+  (concat [fr]
+          (:layers fr)
+          (mapcat all-nodes (:frames fr))))
+
+(defn- no-empty-map-output? [fr]
+  (every? (fn [node]
+            (not (or (and (contains? node :mapping) (empty? (:mapping node)))
+                     (and (contains? node :opts) (empty? (:opts node))))))
+          (all-nodes fr)))
+
+;; ============================================================
+;; Creation -- raw data input (C1-C6)
+;; ============================================================
+
+(deftest creation-raw-data-test
+  (testing "C1: (sk/frame) -- arity-0 empty leaf, mapping elided"
+    (let [f (sk/frame)]
+      (is (= [] (:layers f)))
+      (is (not (contains? f :mapping)))
+      (is (not (contains? f :data)))
+      (is (not (contains? f :frames)))))
+
+  (testing "C2: (sk/frame iris) -- data only, mapping elided"
+    (let [f (sk/frame iris)]
+      (is (tc/dataset? (:data f)))
+      (is (= [] (:layers f)))
+      (is (not (contains? f :mapping)))
+      (is (not (contains? f :frames)))))
+
+  (testing "C3: (sk/frame iris {:color :species}) -- aesthetic-only mapping"
+    (let [f (sk/frame iris {:color :species})]
+      (is (= {:color :species} (:mapping f)))
+      (is (= [] (:layers f)))
+      (is (not (contains? f :frames)))))
+
+  (testing "C4: (sk/frame iris :a) -- positional x only"
+    (let [f (sk/frame iris :a)]
+      (is (= {:x :a} (:mapping f)))
+      (is (= [] (:layers f)))))
+
+  (testing "C5: (sk/frame iris :a :b) -- positional x and y"
+    (let [f (sk/frame iris :a :b)]
+      (is (= {:x :a :y :b} (:mapping f)))
+      (is (= [] (:layers f)))))
+
+  (testing "C6: (sk/frame iris :a :b {:color :species}) -- position + opts"
+    (let [f (sk/frame iris :a :b {:color :species})]
+      (is (= {:x :a :y :b :color :species} (:mapping f)))
+      (is (= [] (:layers f))))))
+
+;; ============================================================
+;; Extend -- existing leaf with room to grow (E1-E2)
+;; ============================================================
+;;
+;; When a leaf has no position-bearing state (no :x/:y in its own
+;; :mapping, no position-carrying layers), a subsequent sk/frame call
+;; extends the leaf's mapping rather than promoting to composite.
+
+(deftest extend-leaf-test
+  (testing "E1: empty leaf, then position -- extends mapping"
+    (let [f (-> iris sk/frame (sk/frame :a :b))]
+      (is (= {:x :a :y :b} (:mapping f)))
+      (is (= [] (:layers f)))
+      (is (not (contains? f :frames)))))
+
+  (testing "E2: aesthetic-only leaf, then position -- extends mapping"
+    (let [f (-> iris (sk/frame {:color :species}) (sk/frame :a :b))]
+      (is (= {:x :a :y :b :color :species} (:mapping f)))
+      (is (= [] (:layers f)))
+      (is (not (contains? f :frames))))))
+
+;; ============================================================
+;; Promote -- leaf-with-position plus a new position (P1-P3)
+;; ============================================================
+;;
+;; When the receiver leaf already carries position (:x or :y in its
+;; :mapping), another position-bearing sk/frame call promotes to a
+;; composite. Aesthetic parts split to the composite's root; position
+;; parts stay on the per-panel sub-frames.
+
+(deftest promote-via-position-test
+  (testing "P1 (guiding): identical positions -- two identical panels"
+    (let [f (-> iris (sk/frame :a :b) (sk/frame :a :b))]
+      (is (= 2 (count (:frames f))))
+      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
+      (is (= {:x :a :y :b} (-> f :frames (nth 1) :mapping)))
+      (is (not (contains? f :mapping)))
+      (is (not (contains? f :layers)))))
+
+  (testing "P2: distinct positions -- two distinct panels"
+    (let [f (-> iris (sk/frame :a :b) (sk/frame :c :d))]
+      (is (= 2 (count (:frames f))))
+      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping)))
+      (is (not (contains? f :mapping)))))
+
+  (testing "P3: aesthetic in first call splits to root; positions to panels"
+    (let [f (-> iris (sk/frame :a :b {:color :species}) (sk/frame :c :d))]
+      (is (= {:color :species} (:mapping f)))
+      (is (= 2 (count (:frames f))))
+      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping))))))
+
+;; ============================================================
+;; Promote -- aesthetic-only call on leaf-with-position (A1-A2)
+;; ============================================================
+;;
+;; Aesthetic-only calls do not add a panel; they promote the leaf so
+;; the aesthetic lives at composite root (flowing to every descendant
+;; panel). Subsequent position calls append panels as usual.
+
+(deftest promote-via-aesthetic-test
+  (testing "A1: aesthetic-only on leaf-with-position promotes, no new panel"
+    (let [f (-> iris (sk/frame :a :b) (sk/frame {:color :species}))]
+      (is (= {:color :species} (:mapping f)))
+      (is (= 1 (count (:frames f))))
+      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))))
+
+  (testing "A2: aesthetic-then-position gives root aesthetic + two panels"
+    (let [f (-> iris
+                (sk/frame :a :b)
+                (sk/frame {:color :species})
+                (sk/frame :c :d))]
+      (is (= {:color :species} (:mapping f)))
+      (is (= 2 (count (:frames f))))
+      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping))))))
+
+;; ============================================================
+;; Layer partitioning during promotion (L1-L4)
+;; ============================================================
+;;
+;; Partition rule is single and self-describing: inspect each layer's
+;; own :mapping. Layers carrying :x or :y ("panel-origin") stay with
+;; sub-frame 1. Layers without :x/:y ("root-origin") move to the new
+;; composite's root :layers -- they distribute to every panel via
+;; resolve-tree.
+
+(deftest layer-partitioning-test
+  (testing "L1 (Pattern D): bare lay-point routes to root, flows to both"
+    (let [f (-> iris (sk/frame :a :b) sk/lay-point (sk/frame :c :d))]
+      (is (= 1 (count (:layers f))))
+      (is (= :point (-> f :layers (nth 0) :layer-type)))
+      (is (not (contains? (-> f :layers (nth 0)) :mapping)))
+      (is (= 2 (count (:frames f))))
+      (is (= [] (-> f :frames (nth 0) :layers)))
+      (is (= [] (-> f :frames (nth 1) :layers)))))
+
+  (testing "L2: position-matching lay-point stays in sub-frame 1"
+    (let [f (-> iris
+                (sk/frame :a :b)
+                (sk/lay-point :a :b)
+                (sk/frame :c :d))]
+      (is (or (not (contains? f :layers))
+              (= [] (:layers f))))
+      (is (= 1 (count (-> f :frames (nth 0) :layers))))
+      (is (= :point (-> f :frames (nth 0) :layers (nth 0) :layer-type)))
+      (is (= [] (-> f :frames (nth 1) :layers)))))
+
+  (testing "L3: mixed bare + position layers partition correctly"
+    (let [f (-> iris
+                (sk/frame :a :b)
+                sk/lay-point
+                (sk/lay-line :a :b)
+                (sk/frame :c :d))]
+      (is (= 1 (count (:layers f))))
+      (is (= :point (-> f :layers (nth 0) :layer-type)))
+      (is (= 1 (count (-> f :frames (nth 0) :layers))))
+      (is (= :line (-> f :frames (nth 0) :layers (nth 0) :layer-type)))
+      (is (= [] (-> f :frames (nth 1) :layers)))))
+
+  (testing "L4: aesthetic-only on layer (no :x/:y) routes to root"
+    (let [f (-> iris
+                (sk/frame :a :b)
+                (sk/lay-point {:color :species})
+                (sk/frame :c :d))]
+      (is (= 1 (count (:layers f))))
+      (is (= {:color :species} (-> f :layers (nth 0) :mapping)))
+      (is (= [] (-> f :frames (nth 0) :layers)))
+      (is (= [] (-> f :frames (nth 1) :layers))))))
+
+;; ============================================================
+;; No-op on empty call (N1-N2)
+;; ============================================================
+;;
+;; A 1-arity sk/frame on an existing leaf or composite returns the
+;; input unchanged. (Distinct from (sk/frame data) where `data` is raw
+;; -- that creates a new leaf; see C2.)
+
+(deftest no-op-empty-call-test
+  (testing "N1: (sk/frame leaf) returns leaf unchanged"
+    (let [leaf (sk/frame iris :a :b)
+          again (sk/frame leaf)]
+      (is (= leaf again))))
+
+  (testing "N2: (sk/frame composite) returns composite unchanged"
+    (let [composite (-> iris (sk/frame :a :b) (sk/frame :c :d))
+          again (sk/frame composite)]
+      (is (= composite again)))))
+
+;; ============================================================
+;; Composite append -- third panel and beyond (K1)
+;; ============================================================
+
+(deftest composite-append-test
+  (testing "K1: three sk/frame position calls in a row give three panels"
+    (let [f (-> iris
+                (sk/frame :a :b)
+                (sk/frame :c :d)
+                (sk/frame :e :f))]
+      (is (= 3 (count (:frames f))))
+      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping)))
+      (is (= {:x :e :y :f} (-> f :frames (nth 2) :mapping))))))
+
+;; ============================================================
+;; Integration with sk/lay-* and resolve-tree (I1-I3)
+;; ============================================================
+
+(deftest integration-lay-resolve-test
+  (testing "I1: root-origin layer reaches both panels through resolve-tree"
+    (let [f (-> iris (sk/frame :a :b) sk/lay-point (sk/frame :c :d))
+          p (sk/plan f)]
+      (is (:composite? p))
+      (is (= 2 (count (:sub-plots p))))
+      (is (every? (fn [sp] (pos? (count (:layers (:plan sp)))))
+                  (:sub-plots p))
+          "each resolved panel carries the root layer")))
+
+  (testing "I2: panel-specific layer does not leak across panels"
+    (let [f (-> iris
+                (sk/frame :a :b)
+                (sk/lay-point :a :b)
+                (sk/frame :c :d))
+          p (sk/plan f)
+          layers-per-panel (mapv #(count (:layers (:plan %))) (:sub-plots p))]
+      (is (= [1 0] layers-per-panel)
+          "panel 1 has the layer; panel 2 does not")))
+
+  (testing "I3: root aesthetic merges into both resolved leaves' mappings"
+    (let [f (-> iris
+                (sk/frame :a :b)
+                (sk/frame {:color :species})
+                (sk/frame :c :d))
+          p (sk/plan f)]
+      (is (= 2 (count (:sub-plots p))))
+      (is (every? (fn [sp]
+                    (= :species (get-in (:plan sp) [:mapping :color])))
+                  (:sub-plots p))))))
+
+;; ============================================================
+;; Property-style checks
+;; ============================================================
+
+(deftest no-empty-map-output-property-test
+  (testing "No frame or layer in the resulting tree carries {} for mapping or opts"
+    (is (no-empty-map-output? (sk/frame)))
+    (is (no-empty-map-output? (sk/frame iris)))
+    (is (no-empty-map-output? (sk/frame iris :a :b)))
+    (is (no-empty-map-output? (-> iris (sk/frame :a :b) (sk/frame :c :d))))
+    (is (no-empty-map-output? (-> iris (sk/frame :a :b) sk/lay-point)))
+    (is (no-empty-map-output?
+         (-> iris (sk/frame :a :b) sk/lay-point (sk/frame :c :d))))))
+
+(deftest frames-preserve-call-order-test
+  (testing "Sub-frames appear in left-to-right sk/frame invocation order"
+    (let [f (-> iris
+                (sk/frame :a :b)
+                (sk/frame :c :d)
+                (sk/frame :e :f))]
+      (is (= [{:x :a :y :b} {:x :c :y :d} {:x :e :y :f}]
+             (mapv :mapping (:frames f)))))))
+
+(deftest promotion-shape-idempotence-test
+  (testing "Threading sk/frame three times equals threading twice + once"
+    (let [three-in-a-row (-> iris
+                             (sk/frame :a :b)
+                             (sk/frame :c :d)
+                             (sk/frame :e :f))
+          built-in-two   (let [two (-> iris
+                                       (sk/frame :a :b)
+                                       (sk/frame :c :d))]
+                           (sk/frame two :e :f))]
+      (is (= three-in-a-row built-in-two)))))
