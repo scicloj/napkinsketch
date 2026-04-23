@@ -52,7 +52,7 @@
  v9_l53
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :sepal-width {:color :species})
+  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
   (sk/lay-point {:alpha 0.6})
   (sk/lay-smooth {:stat :linear-model})))
 
@@ -102,8 +102,8 @@
    :value
    (map
     (fn*
-     [p1__71293#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__71293#) 0.12)))))
+     [p1__142190#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__142190#) 0.12)))))
     (range 52))}))
 
 
@@ -304,7 +304,7 @@
  v48_l219
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :total-bill :tip {:color :smoker})
+  (sk/frame {:x :total-bill, :y :tip, :color :smoker})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   (sk/options
@@ -331,7 +331,7 @@
  v51_l239
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :sepal-width {:color :species})
+  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
   (sk/lay-point {:alpha 0.5})
   (sk/lay-smooth {:stat :linear-model, :confidence-band true})
   (sk/options {:title "Sepal Regression with Confidence Bands"})))
@@ -452,7 +452,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__71294#] (= "virginica" p1__71294#))
+       (fn* [p1__142191#] (= "virginica" p1__142191#))
        (:texts s)))))
    v67_l303)))
 
@@ -483,7 +483,7 @@
  v73_l331
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :sepal-width {:color :species})
+  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   (sk/coord :fixed)
@@ -506,8 +506,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__71295#] (Math/sin (/ p1__71295# 3.0))) (range 20)),
-   :change (map (fn* [p1__71296#] (- p1__71296# 10)) (range 20))}
+   (map (fn* [p1__142192#] (Math/sin (/ p1__142192# 3.0))) (range 20)),
+   :change (map (fn* [p1__142193#] (- p1__142193# 10)) (range 20))}
   (sk/lay-point :x :y {:color :change})
   (sk/options
    {:color-scale :diverging,
@@ -530,7 +530,7 @@
  v79_l363
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :sepal-width {:color :species})
+  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
   sk/lay-point
   (sk/lay-smooth {:confidence-band true})
   (sk/options {:title "LOESS with 95% CI"})))
@@ -624,8 +624,8 @@
    ys
    (map
     (fn*
-     [p1__71297#]
-     (+ (* 3 p1__71297#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__142194#]
+     (+ (* 3 p1__142194#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}
@@ -671,7 +671,7 @@
  v97_l448
  (->
   (rdatasets/palmerpenguins-penguins)
-  (sk/view :bill-length-mm :bill-depth-mm {:color :species})
+  (sk/frame {:x :bill-length-mm, :y :bill-depth-mm, :color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   (sk/options {:title "Bill Length vs Depth with Regression"})))
@@ -732,7 +732,7 @@
  v106_l482
  (->
   (rdatasets/palmerpenguins-penguins)
-  (sk/view :flipper-length-mm :body-mass-g {:color :species})
+  (sk/frame {:x :flipper-length-mm, :y :body-mass-g, :color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   (sk/options {:title "Flipper Length vs Body Mass"})))
@@ -772,7 +772,7 @@
  v112_l506
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :total-bill :tip {:color :smoker})
+  (sk/frame {:x :total-bill, :y :tip, :color :smoker})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   (sk/options
@@ -854,7 +854,7 @@
  v124_l552
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :displ :hwy {:color :class})
+  (sk/frame {:x :displ, :y :hwy, :color :class})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   (sk/options {:title "Displacement vs Highway MPG by Class"})))

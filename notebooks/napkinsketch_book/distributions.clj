@@ -251,17 +251,6 @@
             (and (= 3 (:panels s))
                  (pos? (:polygons s)))))])
 
-;; The same works with `sk/view` and a separate `lay-*` step:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view [:sepal-length :sepal-width :petal-length])
-    sk/lay-histogram)
-
-(kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
-            (and (= 3 (:panels s))
-                 (pos? (:polygons s)))))])
-
 ;; Combine with `:color` to see group differences within each column.
 
 (sk/lay-density (rdatasets/datasets-iris) [:sepal-length :sepal-width :petal-length] {:color :species})
