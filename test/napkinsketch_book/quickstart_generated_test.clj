@@ -130,7 +130,7 @@
    v31_l130)))
 
 
-(def v34_l146 (-> iris (sk/view :sepal-length :sepal-width)))
+(def v34_l146 (-> iris (sk/frame :sepal-length :sepal-width)))
 
 
 (deftest
@@ -138,7 +138,7 @@
  (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v34_l146)))
 
 
-(def v37_l153 (-> iris (sk/view :species)))
+(def v37_l153 (-> iris (sk/frame :species)))
 
 
 (deftest
@@ -146,7 +146,7 @@
  (is ((fn [v] (= 3 (:polygons (sk/svg-summary v)))) v37_l153)))
 
 
-(def v40_l160 (-> iris (sk/view :sepal-length)))
+(def v40_l160 (-> iris (sk/frame :sepal-length)))
 
 
 (deftest
@@ -158,7 +158,7 @@
  v43_l174
  (->
   iris
-  (sk/view :sepal-length :sepal-width {:color :species})
+  (sk/frame {:x :sepal-length, :y :sepal-width, :color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})))
 

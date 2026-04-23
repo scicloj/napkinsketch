@@ -40,7 +40,7 @@
 ;; [R datasets](https://vincentarelbundock.github.io/Rdatasets/) as a
 ;; [Tablecloth](https://scicloj.github.io/tablecloth/) dataset with
 ;; keyword column names.
-;; - `sk/lay-point` draws each row as a dot (scatter plot).
+;; - `sk/lay-point` shows each row as a dot (scatter plot).
 
 ;; ## Plain Data
 ;;
@@ -138,27 +138,27 @@
 
 ;; ## Inference
 ;;
-;; `sk/view` declares which columns to plot without committing to a
-;; chart type. When a pipeline ends at `sk/view` (no `sk/lay-*`),
+;; `sk/frame` declares which columns to plot without committing to a
+;; chart type. When a pipeline ends at `sk/frame` (no `sk/lay-*`),
 ;; Napkinsketch picks the chart type from the column types.
 ;; Two numerical columns produce a scatter plot:
 
 (-> iris
-    (sk/view :sepal-length :sepal-width))
+    (sk/frame :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; A single categorical column produces a bar chart:
 
 (-> iris
-    (sk/view :species))
+    (sk/frame :species))
 
 (kind/test-last [(fn [v] (= 3 (:polygons (sk/svg-summary v))))])
 
 ;; A single numerical column produces a histogram:
 
 (-> iris
-    (sk/view :sepal-length))
+    (sk/frame :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
@@ -166,13 +166,13 @@
 
 ;; ## Multiple Layers
 ;;
-;; Use `sk/view` to set column mappings for a view,
-;; then add layers with `sk/lay-*`. All layers on this view
-;; inherit the view's mappings. Here `(sk/lay-smooth {:stat :linear-model})` adds a linear model
+;; Use `sk/frame` to set column mappings for a frame,
+;; then add layers with `sk/lay-*`. All layers on this frame
+;; inherit the frame's mappings. Here `(sk/lay-smooth {:stat :linear-model})` adds a linear model
 ;; (regression line) per group:
 
 (-> iris
-    (sk/view :sepal-length :sepal-width {:color :species})
+    (sk/frame {:x :sepal-length :y :sepal-width :color :species})
     sk/lay-point
     (sk/lay-smooth {:stat :linear-model}))
 
