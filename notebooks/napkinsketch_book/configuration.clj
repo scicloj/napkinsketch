@@ -23,7 +23,7 @@
 ;; We use the iris dataset throughout.
 
 ;; We define `base-plot` as a function because
-;; sketches render at display time -- calling the function
+;; frames render at display time -- calling the function
 ;; produces a fresh specification that picks up the current configuration.
 
 (defn base-plot
@@ -562,7 +562,7 @@ precedence-plot
 ;;
 ;; | Mechanism | Scope | Persistence | Example |
 ;; |:----------|:------|:------------|:--------|
-;; | plot options | single call | none | `(sk/options {...})` or `(sk/plot views {...})` |
+;; | plot options | single call | none | `(sk/options {...})` or `(sk/plot sk {...})` |
 ;; | `with-config` | lexical body | until body exits | `(sk/with-config {:width 800} ...)` |
 ;; | `set-config!` | global | until reset | `(sk/set-config! {:width 800})` |
 ;; | `napkinsketch.edn` | project | file on disk | `{:width 800}` in project root |

@@ -500,10 +500,10 @@
 
 (kind/test-last [(fn [m] (re-find #"must contain :boxes" m))])
 
-;; ### x-only method with y column
+;; ### x-only layer type with y column
 ;;
-;; Methods that use only the x column (histogram, bar, density, rug)
-;; reject a y column with a clear message.
+;; Layer types that use only the x column (histogram, bar, density,
+;; rug) reject a y column with a clear message.
 
 ;; Histogram uses only the x column. Passing a y column is now an error:
 

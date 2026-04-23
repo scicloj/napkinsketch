@@ -180,7 +180,7 @@
 ;; faceted plot with a different reference value per panel (column-mapped
 ;; intercept, ggplot2's `geom_hline(aes(yintercept=...))`) is on the
 ;; post-alpha roadmap. Today, an annotation added once with the same
-;; intercept appears on every panel that shares the view.
+;; intercept appears on every panel of the faceted frame.
 
 ;; ## Palettes
 ;;

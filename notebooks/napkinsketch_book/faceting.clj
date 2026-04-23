@@ -15,7 +15,7 @@
 
 ;; ## Facet Wrap
 ;;
-;; `sk/facet` splits views by one categorical column.
+;; `sk/facet` splits a frame into panels by one categorical column.
 ;; The default direction is `:col` -- a horizontal row of panels:
 
 (-> (rdatasets/datasets-iris)
@@ -151,7 +151,7 @@
 
 ;; Diagonal panels (where x = y) show histograms -- inference detects
 ;; same-column pairs. Off-diagonal panels show scatter plots. All
-;; panels are colored by species (the color mapping is included in each view created by `sk/cross`).
+;; panels are colored by species (the color mapping is included in each leaf created by `sk/cross`).
 
 ;; ## Comparing Multiple Columns
 ;;
