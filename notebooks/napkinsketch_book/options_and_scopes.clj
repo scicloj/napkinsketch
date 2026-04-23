@@ -143,7 +143,7 @@
 
 (kind/test-last [(fn [v] (some #{"Iris"} (:texts (sk/svg-summary v))))])
 
-;; And the sketch structure:
+;; And the frame structure:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
@@ -164,7 +164,7 @@
 ;;
 ;; - Scale **type** (log, categorical, linear, etc.) is shared
 ;;   across all panels -- if you set `sk/scale :x :log` on a
-;;   faceted sketch, every panel has a log x-axis.
+;;   faceted frame, every panel has a log x-axis.
 ;; - Scale **domain** (the numeric range actually shown) is
 ;;   computed per panel by default, so different panels may
 ;;   display different numeric ranges.

@@ -148,20 +148,20 @@
 
 
 (def
- v36_l274
+ v36_l278
  (def template (-> (sk/frame nil {:x :x, :y :y}) sk/lay-point)))
 
 
-(def v37_l278 (-> template (sk/with-data {:x [1 2 3], :y [4 5 6]})))
+(def v37_l282 (-> template (sk/with-data {:x [1 2 3], :y [4 5 6]})))
 
 
 (deftest
- t38_l281
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v37_l278)))
+ t38_l285
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v37_l282)))
 
 
 (def
- v40_l298
+ v40_l302
  (->
   [{:category "A", :value 100}
    {:category "B", :value 50}
@@ -173,12 +173,12 @@
 
 
 (deftest
- t41_l306
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v40_l298)))
+ t41_l310
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v40_l302)))
 
 
 (def
- v43_l328
+ v43_l332
  (->
   {:x (concat (range 5) (range 5)),
    :y [1 2 3 4 5 2 2 2 3 3],
@@ -187,5 +187,5 @@
 
 
 (deftest
- t44_l333
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v43_l328)))
+ t44_l337
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v43_l332)))

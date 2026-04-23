@@ -199,12 +199,11 @@ my-frame
 ;;
 ;; **Inference** is the automatic selection of a layer type
 ;; (mark + stat + position) when you bypass `sk/lay-*` and just pass
-;; columns to `sk/frame` or rely on sketch-level data. Napkinsketch
-;; picks a layer type based on column types: numerical x and y
-;; defaults to `:point`, categorical x with numerical y to
-;; `:boxplot`, a single numerical column to `:histogram`, and so on.
-;; Use `:x-type` / `:y-type` on a frame or layer to override the
-;; detected type.
+;; columns to `sk/frame`. Napkinsketch picks a layer type based on
+;; column types: numerical x and y defaults to `:point`, categorical
+;; x with numerical y to `:boxplot`, a single numerical column to
+;; `:histogram`, and so on. Use `:x-type` / `:y-type` on a frame or
+;; layer to override the detected type.
 
 (-> (rdatasets/datasets-iris)
     (sk/frame :sepal-length :sepal-width)

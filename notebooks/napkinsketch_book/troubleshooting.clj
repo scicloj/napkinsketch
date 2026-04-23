@@ -131,7 +131,7 @@
 
 (kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
 
-;; `sk/scale` takes the sketch, the axis (`:x` or `:y`), and
+;; `sk/scale` takes the frame, the axis (`:x` or `:y`), and
 ;; either a type keyword (`:linear`, `:log`) or a scale spec
 ;; map with `:type` and an optional `:domain` override.
 ;; See the [Inference Rules](./napkinsketch_book.inference_rules.html)
@@ -261,7 +261,11 @@
 ;; **Symptom**: An error like
 ;; `"Cannot attach data: sketch references column(s) [:group] not
 ;; present in the dataset. Available columns: [:x :y]"` when
-;; calling `sk/with-data` on a dataless template sketch.
+;; calling `sk/with-data` on a dataless template frame.
+;;
+;; (The error message itself still says "sketch" in Phase 5 because
+;; it comes from the internal Sketch record's validator; the user
+;; pattern is "a frame template without data".)
 ;;
 ;; **Cause**: `sk/with-data` validates at attach time -- every
 ;; keyword column reference in the template must exist in the

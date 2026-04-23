@@ -156,7 +156,7 @@
 
 ;; ### Different data per layer
 ;;
-;; Each `lay-*` accepts `{:data ...}` to override the sketch-level
+;; Each `lay-*` accepts `{:data ...}` to override the frame-level
 ;; dataset. This lets you overlay marks from two different tables --
 ;; ggplot2's `geom_line(data=df2) + geom_point(data=df1)` pattern.
 

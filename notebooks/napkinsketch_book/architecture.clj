@@ -99,7 +99,7 @@ graph LR
 ;;
 ;; - `:views` -- leaf descriptions, each with `:mapping` and optional `:layers`
 ;;
-;; - `:layers` -- sketch-level layers (from bare `lay-*` without columns)
+;; - `:layers` -- frame-level layers (from bare `lay-*` without columns)
 ;;
 ;; - `:opts` -- plot-level options (title, width, etc.)
 
