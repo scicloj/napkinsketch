@@ -115,13 +115,10 @@ multi-layer
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; Printed, the threaded form exposes an adapter artifact from
-;; the current pre-alpha transition: the mapping sits under
-;; `:views` instead of at the top level, and `:layers` attaches
-;; at the top. Napkinsketch is mid-refactor; `sk/frame` and
-;; `sk/lay-*` still build through a legacy `Sketch` record that
-;; will be retired before 0.1.0. When that happens, the threaded
-;; pprint will match the explicit-map pprint shown above.
+;; Printed, the threaded form produces the same shape as the
+;; explicit-map form shown earlier -- `:mapping` at the top, `:layers`
+;; alongside it. `sk/frame` and `sk/lay-*` build the same frame value
+;; step by step.
 
 (-> (rdatasets/datasets-iris)
     (sk/frame :sepal-length :sepal-width {:color :species})

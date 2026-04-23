@@ -116,7 +116,7 @@
 
 
 (def
- v25_l126
+ v25_l123
  (->
   (rdatasets/datasets-iris)
   (sk/frame :sepal-length :sepal-width {:color :species})
@@ -126,34 +126,34 @@
 
 
 (deftest
- t26_l132
+ t26_l129
  (is
   ((fn
     [v]
     (and
      (= 2 (count (:layers v)))
      (= :species (get-in v [:mapping :color]))))
-   v25_l126)))
+   v25_l123)))
 
 
-(def v28_l140 (-> (rdatasets/datasets-iris) (sk/frame :sepal-length)))
+(def v28_l137 (-> (rdatasets/datasets-iris) (sk/frame :sepal-length)))
 
 
 (deftest
- t29_l143
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v28_l140)))
+ t29_l140
+ (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v28_l137)))
 
 
 (def
- v31_l149
+ v31_l146
  (-> (rdatasets/datasets-iris) (sk/frame :sepal-length) kind/pprint))
 
 
-(deftest t32_l153 (is ((fn [v] (empty? (:layers v))) v31_l149)))
+(deftest t32_l150 (is ((fn [v] (empty? (:layers v))) v31_l146)))
 
 
 (def
- v34_l169
+ v34_l166
  (def
   two-panel
   (sk/prepare-frame
@@ -166,36 +166,36 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v35_l178 two-panel)
+(def v35_l175 two-panel)
 
 
 (deftest
- t36_l180
+ t36_l177
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v35_l178)))
+   v35_l175)))
 
 
-(def v38_l186 (kind/pprint two-panel))
+(def v38_l183 (kind/pprint two-panel))
 
 
 (deftest
- t39_l188
+ t39_l185
  (is
   ((fn
     [v]
     (and
      (= 2 (count (:frames v)))
      (= :horizontal (get-in v [:layout :direction]))))
-   v38_l186)))
+   v38_l183)))
 
 
 (def
- v41_l195
+ v41_l192
  (sk/arrange
   [(->
     (rdatasets/datasets-iris)
@@ -208,12 +208,12 @@
 
 
 (deftest
- t42_l203
- (is ((fn [v] (= 2 (:panels (sk/svg-summary v)))) v41_l195)))
+ t42_l200
+ (is ((fn [v] (= 2 (:panels (sk/svg-summary v)))) v41_l192)))
 
 
 (def
- v44_l211
+ v44_l208
  (->
   (sk/arrange
    [(->
@@ -228,7 +228,7 @@
 
 
 (deftest
- t45_l220
+ t45_l217
  (is
   ((fn
     [v]
@@ -237,4 +237,4 @@
      (= 1 (count (:frames v)))
      (= 2 (count (:frames (first (:frames v)))))
      (= :horizontal (get-in v [:frames 0 :layout :direction]))))
-   v44_l211)))
+   v44_l208)))

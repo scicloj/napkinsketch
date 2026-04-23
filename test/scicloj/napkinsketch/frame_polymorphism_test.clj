@@ -317,6 +317,33 @@
       (is (= three-in-a-row built-in-two)))))
 
 ;; ============================================================
+;; Layer position vs frame position -- overlay semantics
+;; ============================================================
+;;
+;; When a leaf already carries position and `sk/lay-*` is called with
+;; a non-matching position, the new position lives on the LAYER's
+;; own `:mapping` rather than creating a new panel. At render, the
+;; layer's position overrides the frame's via merge -- an overlay on
+;; the same panel. This differs from the old Sketch-world behavior
+;; (where a non-matching position would have created a new view /
+;; panel); in the frame world, adding a panel is an explicit `sk/frame`
+;; call. Pinned here so the next slice can't silently change it.
+
+(deftest leaf-layer-non-matching-position-test
+  (testing "leaf with position, lay-* with non-matching position -- overlay"
+    (let [f (-> iris
+                (sk/frame :a :b)
+                (sk/lay-point :c :d))]
+      (is (= {:x :a :y :b} (:mapping f))
+          "leaf's own mapping is unchanged")
+      (is (= 1 (count (:layers f)))
+          "one layer added, no panel added")
+      (is (= {:x :c :y :d} (-> f :layers (nth 0) :mapping))
+          "the non-matching position lives on the layer's :mapping")
+      (is (not (contains? f :frames))
+          "no promotion to composite"))))
+
+;; ============================================================
 ;; Layer structural keys -- :stat, :position, :mark (Decision 1)
 ;; ============================================================
 ;;

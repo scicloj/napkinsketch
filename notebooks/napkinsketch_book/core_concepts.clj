@@ -116,9 +116,8 @@
                                 (pos? (:lines s)))))])
 
 ;; Printed, the mapping-and-layers split is visible in the frame
-;; value. The threaded form still routes the frame's position
-;; mapping through a `:views` adapter slot pending Phase 6 cleanup
-;; -- see [Frame Model](./napkinsketch_book.frame_model.html) Idea 3:
+;; value -- `:mapping` at the top, `:layers` alongside it, one entry
+;; per call:
 
 (-> (rdatasets/datasets-iris)
     (sk/frame :sepal-length :sepal-width)
@@ -414,8 +413,8 @@ my-frame
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; Printed, the threaded form carries the same fields as
-;; `my-frame` above; it just routes the position mapping through
-;; the `:views` adapter slot that Phase 6 retires:
+;; `my-frame` above -- `:mapping` up top, `:layers` alongside it,
+;; `:opts` holding the title:
 
 (-> (rdatasets/datasets-iris)
     (sk/frame :sepal-length :sepal-width {:color :species})

@@ -523,13 +523,15 @@
      (sk/frame data :x-col :y-col {:color :c}) -- positional x/y + opts
 
    Threaded over an existing frame (first argument is a frame):
-     (sk/frame fr)                -- no-op, returns fr unchanged
-     (sk/frame fr :x-col :y-col)  -- extend a leaf-without-position,
-                                     or promote a leaf-with-position
-                                     into a 2-panel composite, or
-                                     append a panel to a composite
-     (sk/frame fr {:color :c})    -- aesthetic-only: extend mapping
-                                     or (on leaf-with-position) promote
+     (sk/frame fr)                        -- no-op, returns fr unchanged
+     (sk/frame fr :x-col :y-col)          -- extend a leaf-without-position,
+                                             or promote a leaf-with-position
+                                             into a 2-panel composite, or
+                                             append a panel to a composite
+     (sk/frame fr :x-col :y-col {:color :c}) -- same, with aesthetic routed
+                                             to the composite root on promote
+     (sk/frame fr {:color :c})            -- aesthetic-only: extend mapping
+                                             or (on leaf-with-position) promote
 
    For hand-built composite frames (nested :frames, explicit :weights,
    etc.) use sk/prepare-frame."

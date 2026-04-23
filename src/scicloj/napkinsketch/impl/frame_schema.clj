@@ -39,11 +39,13 @@
 
 (def Layer
   "A layer declaration inside a frame. :layer-type names a registered
-   entry; :mark / :stat allow per-layer overrides (Phase 1 item 08)."
+   entry; :mark / :stat / :position are layer-structural siblings
+   extracted from user opts by build-layer (Phase 6 decision 1)."
   [:map
    [:layer-type {:optional true} keyword?]
    [:mark       {:optional true} keyword?]
    [:stat       {:optional true} keyword?]
+   [:position   {:optional true} keyword?]
    [:mapping    {:optional true} Mapping]
    [:data       {:optional true} any?]])
 
