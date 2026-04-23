@@ -661,6 +661,19 @@
                       from-layers
                       facet-refs))))
 
+(defn- column-refs-in-frame
+  "Collect every keyword column reference used by a frame's :mapping,
+   :layers, :frames (recursively), and :facet-col/:facet-row on opts."
+  [fr]
+  (distinct
+   (concat
+    (column-refs-in-mapping (or (:mapping fr) {}))
+    (mapcat #(column-refs-in-mapping (or (:mapping %) {})) (:layers fr))
+    (mapcat column-refs-in-frame (:frames fr))
+    (keep #(let [v (get-in fr [:opts %])]
+             (when (keyword? v) v))
+          [:facet-col :facet-row]))))
+
 (defn- validate-columns-present
   "Throw a helpful error if any of `refs` is absent from the
    dataset's column-name set. Tolerates keyword/string mismatches
@@ -680,30 +693,38 @@
                       {:missing missing :available (vec (sort cols))})))))
 
 (defn with-data
-  "Supply or replace the sketch-level dataset on a sketch. Useful
-   for building a template once and applying it to different
+  "Supply or replace the top-level dataset on a sketch or frame.
+   Useful for building a template once and applying it to different
    datasets:
 
-       (def template (-> (sk/sketch)
-                         (sk/view :x :y {:color :group})
+       (def template (-> (sk/frame)
+                         (sk/frame :x :y {:color :group})
                          sk/lay-point
                          (sk/lay-smooth {:stat :linear-model})))
 
        (-> template (sk/with-data my-data))
        (-> template (sk/with-data other-data))
 
-   At attach time, every keyword column reference in the sketch's
-   mapping, views, layers, and facet options must exist in the
-   dataset -- otherwise an error is thrown naming the missing
-   columns and listing what is available. Per-view / per-layer
-   `:data` still overrides the sketch-level data.
+   At attach time, every keyword column reference in the template's
+   mapping, layers, sub-frames, and facet options must exist in the
+   dataset -- otherwise an error is thrown naming the missing columns
+   and listing what is available. Per-layer / per-sub-frame `:data`
+   still overrides the top-level data.
    (with-data sk data)"
   [sk data]
-  (let [sk (ensure-sk sk)
-        ds (coerce-dataset data)]
-    (when ds
-      (validate-columns-present (column-refs-in-sketch sk) ds))
-    (assoc sk :data ds)))
+  (let [ds (coerce-dataset data)]
+    (cond
+      (frame? sk)
+      (do
+        (when ds
+          (validate-columns-present (column-refs-in-frame sk) ds))
+        (prepare-frame (assoc sk :data ds)))
+
+      :else
+      (let [sk (ensure-sk sk)]
+        (when ds
+          (validate-columns-present (column-refs-in-sketch sk) ds))
+        (assoc sk :data ds)))))
 
 (defn- check-facet-keys
   "Throw a helpful error if a mapping or layer-options map contains

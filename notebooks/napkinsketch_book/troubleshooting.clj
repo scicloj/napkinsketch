@@ -263,10 +263,6 @@
 ;; present in the dataset. Available columns: [:x :y]"` when
 ;; calling `sk/with-data` on a dataless template frame.
 ;;
-;; (The error message itself still says "sketch" in Phase 5 because
-;; it comes from the internal Sketch record's validator; the user
-;; pattern is "a frame template without data".)
-;;
 ;; **Cause**: `sk/with-data` validates at attach time -- every
 ;; keyword column reference in the template must exist in the
 ;; dataset, or the attachment fails fast.

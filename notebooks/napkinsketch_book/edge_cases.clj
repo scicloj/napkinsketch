@@ -492,7 +492,7 @@
 
 (try
   (-> {:x [1 2 3]}
-      (sk/view :x)
+      (sk/frame :x)
       (sk/lay {:mark :boxplot :stat :bin})
       sk/plot)
   (catch Exception e

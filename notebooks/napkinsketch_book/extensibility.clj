@@ -220,8 +220,8 @@
 ;; ;; Or create a convenience function using lay:
 ;; (defn lay-waterfall
 ;;   ([sk] (sk/lay sk (layer-type/lookup :waterfall)))
-;;   ([data x y] (-> data (sk/view x y) (sk/lay (layer-type/lookup :waterfall))))
-;;   ([data x y opts] (-> data (sk/view x y) (sk/lay (merge (layer-type/lookup :waterfall) opts)))))
+;;   ([data x y] (-> data (sk/frame x y) (sk/lay (layer-type/lookup :waterfall))))
+;;   ([data x y opts] (-> data (sk/frame x y) (sk/lay (merge (layer-type/lookup :waterfall) opts)))))
 ;; ```
 ;;
 ;; Users can then call `(lay-waterfall data :category :amount)`.
