@@ -3,8 +3,8 @@
 ;; Napkinsketch has three kinds of values you set, each answering
 ;; a different question:
 ;;
-;; - **Layer options** -- *how is this layer drawn?* Its
-;;   aesthetics (`:color`, `:size`), its method parameters
+;; - **Layer options** -- *how is this layer shown?* Its
+;;   aesthetics (`:color`, `:size`), its layer-type parameters
 ;;   (`:bandwidth`, `:bins`), its data, its grouping and
 ;;   position. Per-layer by nature, but scopable up to apply
 ;;   across multiple layers.
@@ -34,12 +34,14 @@
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
-;; A helper to inspect sketch structure. It shows `:mapping`,
-;; `:views`, `:layers`, and `:opts` -- the full record also has
-;; `:data`, which this helper omits for readability.
+;; A helper to inspect frame structure. It prints everything except
+;; the `:data` field (omitted for readability). In the current
+;; pre-alpha transition, threaded frames surface as Sketch records
+;; with a `:views` field; this helper exposes that structure so the
+;; scope examples below can point to where each option lands.
 
 (defn sk-summary
-  "Print sketch structure without :data (for readability)."
+  "Print frame structure without :data (for readability)."
   [sk]
   (-> (select-keys sk [:mapping :views :layers :opts])
       (update :views (partial mapv #(dissoc % :data)))
@@ -50,16 +52,16 @@
 ;;
 ;; Layer options describe a specific layer. They include:
 ;;
-;; - **The method** -- the drawing recipe: a mark (point, line,
-;;   bar, histogram, ...), a stat (identity, lm, density,
+;; - **The layer type** -- the rendering recipe: a mark (point, line,
+;;   bar, histogram, ...), a stat (identity, linear-model, density,
 ;;   binning, ...), and a position adjustment (dodge, stack,
-;;   jitter). The method is chosen by which `sk/lay-*` function
+;;   jitter). The layer type is chosen by which `sk/lay-*` function
 ;;   you call; its constituents can be overridden via `:mark`,
 ;;   `:stat`, and `:position` keys in the opts map.
-;; - **Method parameters** -- knobs specific to the method, like
-;;   `:bandwidth` for `sk/lay-kde` or `:bins` for
+;; - **Layer-type parameters** -- knobs specific to the layer type,
+;;   like `:bandwidth` for `sk/lay-density` or `:bins` for
 ;;   `sk/lay-histogram`.
-;; - **Aesthetics** -- how the method maps data to visuals:
+;; - **Aesthetics** -- how the layer maps data to visuals:
 ;;   `:color`, `:size`, `:alpha`, `:shape`, `:group`, plus
 ;;   mark-specific keys like `:text` and `:fill`. Either mapped
 ;;   from a column (`:color :species`) or given as a constant
@@ -74,7 +76,7 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; And the sketch structure:
+;; And the frame structure:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species})

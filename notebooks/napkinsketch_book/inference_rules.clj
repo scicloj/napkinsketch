@@ -548,7 +548,7 @@ explicit-group-sketch
 ;; smoothers, boxplots, and dodge/stack positioning all operate
 ;; per group.
 
-;; ## Method
+;; ## Layer Type
 ;;
 ;; When you use `sk/frame` without an explicit `sk/lay-*` call,
 ;; Napkinsketch infers the **layer type** -- a mark + stat bundle --
@@ -577,10 +577,10 @@ explicit-group-sketch
 ;; categorical y, and temporal x + temporal y. These are rarer in
 ;; practice, and giving them a dedicated inference is deferred. You
 ;; can always override with an explicit `sk/lay-*` call; the
-;; inferred method is only a default.
+;; inferred layer type is only a default.
 ;;
-;; When you use `sk/lay-point`, `sk/lay-histogram`, etc., the method's
-;; stat takes precedence -- column-type inference is bypassed.
+;; When you use `sk/lay-point`, `sk/lay-histogram`, etc., the layer
+;; type's stat takes precedence -- column-type inference is bypassed.
 ;;
 ;; A single numerical column produces a histogram:
 

@@ -16,7 +16,7 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Method registry -- for inspecting method data
+   ;; Layer-type registry -- for inspecting layer-type data
    [scicloj.napkinsketch.layer-type :as layer-type]
    ;; Implementation namespaces -- for extension points
    [scicloj.napkinsketch.impl.stat :as stat]
@@ -27,30 +27,30 @@
 
 ;; ## Overview
 ;;
-;; The pipeline from data to figure has several stages, each governed
-;; by a multimethod. The sketch API adds a composable front-end
+;; The pipeline from data to plot has several stages, each governed
+;; by a multimethod. The frame API adds a composable front-end
 ;; that resolves into the same pipeline:
 ;;
 ;; ```
-;; sketch (view, lay-*, options, ...)
-;;                        ↓
-;;                  sketch->draft
-;;                        ↓
+;; frame (sk/frame, sk/lay-*, sk/options, ...)
+;;                        |
+;;                   frame->draft
+;;                        v
 ;;                      draft
-;;                        ↓
-;; draft -> draft->plan (compute-stat, extract-layer, ...)
-;;                                              ↓
-;;                                           plan
-;;                                              ↓
-;;                          plan->plot (orchestrates full path)
-;;                                              ↓
-;;                              ┌───────────────┴───────────────┐
-;;                     membrane path                     direct path
-;;                  plan->membrane                   plan->plot
-;;                        ↓
-;;                  membrane->plot
-;;                        ↓
-;;                      figure                           figure
+;;                        |
+;;                   draft->plan (compute-stat, extract-layer, ...)
+;;                        v
+;;                      plan
+;;                        |
+;;                    plan->plot (orchestrates full path)
+;;                        v
+;;             ----------------------
+;;           membrane path      direct path
+;;           plan->membrane     plan->plot
+;;                |
+;;           membrane->plot
+;;                v
+;;              plot                 plot
 ;; ```
 ;;
 ;; | Multimethod | Namespace | Dispatches on | Purpose |
@@ -58,15 +58,15 @@
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
 ;; | `extract-layer` | `impl/extract.clj` | `:mark` key | Convert a stat result into a plan layer descriptor |
 ;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render a plan layer as membrane drawables |
-;; | `plan->plot` | `impl/render.clj` | format keyword | Orchestrate the full path from plan to figure |
-;; | `membrane->plot` | `impl/render.clj` | format keyword | Convert a membrane tree into a figure |
+;; | `plan->plot` | `impl/render.clj` | format keyword | Orchestrate the full path from plan to plot |
+;; | `membrane->plot` | `impl/render.clj` | format keyword | Convert a membrane tree into a plot |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
 ;; | `apply-position` | `impl/position.clj` | position keyword | Adjust group layout (dodge, stack, fill) |
 
 ;; ## `compute-stat`
 ;;
-;; Transforms raw data into a statistical summary. Each method
+;; Transforms raw data into a statistical summary. Each layer type
 ;; uses a stat to prepare data for rendering.
 ;;
 (kind/table
@@ -84,21 +84,21 @@
 ;;
 ;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
-;; The stat is part of the **method** returned by the mark
-;; map. For example, `(layer-type/lookup :histogram)` returns a method
-;; with `:stat :bin`:
+;; The stat is part of the **layer type** returned by
+;; `layer-type/lookup`. For example, `(layer-type/lookup :histogram)`
+;; returns a layer type with `:stat :bin`:
 
 (layer-type/lookup :histogram)
 
 (kind/test-last [(fn [m] (= :bin (:stat m)))])
 
-;; `(layer-type/lookup :bar)` returns a method with `:stat :count`:
+;; `(layer-type/lookup :bar)` returns a layer type with `:stat :count`:
 
 (layer-type/lookup :bar)
 
 (kind/test-last [(fn [m] (= :count (:stat m)))])
 
-;; `(layer-type/lookup :point)` returns a method with `:stat :identity`:
+;; `(layer-type/lookup :point)` returns a layer type with `:stat :identity`:
 
 (layer-type/lookup :point)
 
@@ -202,14 +202,14 @@
 ;;   ...)
 ;; ```
 ;;
-;; ### How to extend: register a method and create a sketch-compatible layer function
+;; ### How to extend: register a layer type and create a frame-compatible layer function
 ;;
 ;; After defining `compute-stat` and `extract-layer` for your custom
-;; mark, register a method and create a convenience function that
-;; works with the sketch API:
+;; mark, register a layer type and create a convenience function that
+;; works with the frame API:
 ;;
 ;; ```clojure
-;; ;; Register the method
+;; ;; Register the layer type
 ;; (layer-type/register! :waterfall
 ;;   {:mark :waterfall :stat :waterfall
 ;;    :doc "Waterfall -- running total with increase/decrease bars."})
@@ -232,9 +232,9 @@
 
 ;; ## `plan->plot`
 ;;
-;; Orchestrates the full path from plan to figure. The `:svg`
+;; Orchestrates the full path from plan to plot. The `:svg`
 ;; implementation goes through the membrane path: plan, then membrane,
-;; then figure. Other renderers can skip membrane and go directly from
+;; then plot. Other renderers can skip membrane and go directly from
 ;; plan to their target format.
 ;;
 ;; | Dispatch value | Path |
@@ -291,7 +291,7 @@
 
 ;; ## `membrane->plot`
 ;;
-;; Converts a membrane drawable tree into a figure for a given format.
+;; Converts a membrane drawable tree into a plot for a given format.
 ;; This is the extensibility point for membrane-based output formats --
 ;; formats that share the same drawable tree but walk it differently.
 ;;

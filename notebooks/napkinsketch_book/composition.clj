@@ -1,9 +1,9 @@
 ;; # Composition
 ;;
 ;; Napkinsketch's frame substrate lets you combine whole plots into a
-;; single figure. A **composite frame** holds other frames and a
-;; layout; each sub-frame renders independently and the composite
-;; tiles them together.
+;; single rendered image. A **composite frame** holds other frames
+;; and a layout; each sub-frame renders independently and the
+;; composite tiles them together.
 ;;
 ;; This chapter walks through composition patterns from simple
 ;; side-by-side arrangements to shared-scale marginal plots, using

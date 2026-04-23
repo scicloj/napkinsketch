@@ -647,8 +647,8 @@ my-frame
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
 ;; Each sub-frame inside `sk/arrange` can have its own data, mapping,
-;; layers, and options -- they are independent plots arranged in a
-;; single figure.
+;; layers, and options -- they are independent plots tiled into a
+;; single rendered image.
 
 ;; ## What's Next
 ;;

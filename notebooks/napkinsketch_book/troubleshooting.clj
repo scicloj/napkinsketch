@@ -138,12 +138,12 @@
 ;; chapter for how scale types and domains interact with column
 ;; inference.
 
-;; ## x-Only Methods Do Not Accept a y Column
+;; ## x-Only Layer Types Do Not Accept a y Column
 ;;
 ;; **Symptom**: `"lay-histogram uses only the x column"` error.
 ;;
-;; **Cause**: Histogram, bar, density, and rug methods use only the
-;; x column. Passing a y column is an error.
+;; **Cause**: Histogram, bar, density, and rug layer types use only
+;; the x column. Passing a y column is an error.
 ;;
 ;; **Fix**: Remove the y column:
 

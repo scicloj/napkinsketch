@@ -202,7 +202,7 @@
 
 ;; ### Summary (Mean +/- SE) with Raw Data
 ;;
-;; The `summary` method computes mean and SE (standard error) per category.
+;; The `summary` layer type computes mean and SE (standard error) per category.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :species :sepal-length {:alpha 0.3 :jitter 5})

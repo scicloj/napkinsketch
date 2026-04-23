@@ -15,7 +15,7 @@
 ;;
 ;; - **Column types matter for plotting**: dataset columns carry type
 ;;   information (numeric, categorical, temporal) that Napkinsketch uses
-;;   to choose scales, axis formatting, and statistical methods. A column
+;;   to choose scales, axis formatting, and statistical transforms. A column
 ;;   of doubles gets a continuous axis; a column of strings gets a
 ;;   categorical axis. When you pass plain Clojure data, types are
 ;;   inferred on coercion -- sometimes not the way you expect. Working
@@ -219,5 +219,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Frame Model**](./napkinsketch_book.frame_model.html) -- how Napkinsketch composes layers, aesthetics, and methods
+;; - [**Frame Model**](./napkinsketch_book.frame_model.html) -- how Napkinsketch composes layers, aesthetics, and layer types
 ;; - [**Quickstart**](./napkinsketch_book.quickstart.html) -- if you skipped straight here, go back and build your first plots

@@ -82,7 +82,7 @@
  (->
   (rdatasets/datasets-iris)
   (tc/select-rows
-   (fn* [p1__145473#] (= "setosa" (:species p1__145473#))))))
+   (fn* [p1__159415#] (= "setosa" (:species p1__159415#))))))
 
 
 (deftest t25_l166 (is ((fn [ds] (= 50 (tc/row-count ds))) v24_l163)))

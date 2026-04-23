@@ -49,7 +49,7 @@ my-frame
 ;; A **composite frame** is a frame that contains other frames under
 ;; `:frames` plus an optional `:layout`. Created by `sk/arrange` (and
 ;; later, by `sk/mosaic` and `sk/with-marginals`). Its leaves render
-;; independently and are tiled into the final figure.
+;; independently and are tiled into the final plot.
 
 ;; ## Layer Type
 ;;
@@ -58,13 +58,17 @@ my-frame
 ;; [Layer Types](./napkinsketch_book.layer_types.html) chapter for detailed
 ;; tables of all built-in layer types, marks, stats, and positions.
 ;;
-;; Layer types attach to frames in two ways:
+;; Layer types attach to frames in three ways, depending on what you
+;; pass to `sk/lay-*`:
 ;;
-;; - **Frame-level layer** -- `sk/lay-*` called without columns,
-;;   after a frame with position mappings exists; the layer sees the
-;;   frame's mapping.
-;; - **New-leaf layer** -- `sk/lay-*` called with columns that do
-;;   not match any existing leaf creates a fresh leaf frame with the
+;; - **Bare** -- `sk/lay-*` without columns attaches the layer so it
+;;   sees the current frame's mapping (inherited from `sk/frame` or
+;;   a prior `sk/lay-*`).
+;; - **Matching columns** -- `sk/lay-*` with columns that match the
+;;   most recent matching leaf reuses that leaf, so the new layer
+;;   joins the existing panel.
+;; - **Non-matching columns** -- `sk/lay-*` with columns that do not
+;;   match any existing leaf creates a fresh leaf frame with the
 ;;   layer attached.
 
 ;; ## Mark
@@ -334,9 +338,10 @@ my-frame
 ;; to a plot. Annotations are not connected to data columns -- they
 ;; overlay fixed positions passed via opts (`:y-intercept` or
 ;; `:x-intercept` for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max`
-;; for bands). They are regular layers, so they scope like any other
-;; `lay-*` -- bare call attaches to the frame, columns attach to a
-;; new leaf.
+;; for bands). They are regular layers, so they attach under the
+;; same three cases as any `lay-*`: bare call sits on the frame,
+;; matching columns join the most recent matching leaf, non-matching
+;; columns create a new leaf.
 ;;
 ;; | Constructor | What |
 ;; |:------------|:-----|

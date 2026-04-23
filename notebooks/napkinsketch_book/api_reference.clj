@@ -157,10 +157,10 @@
 (kind/doc #'sk/lay)
 
 ;; The generic layer adder. `sk/lay-point`, `sk/lay-bar`, etc. are
-;; convenience wrappers around `sk/lay` with a registered method
-;; key. Use `sk/lay` directly when you have a custom method (from
-;; `sk/layer-type-lookup` on a registered key, or a raw method map from
-;; an extension):
+;; convenience wrappers around `sk/lay` with a registered layer-type
+;; key. Use `sk/lay` directly when you have a custom layer type (from
+;; `sk/layer-type-lookup` on a registered key, or a raw layer-type
+;; map from an extension):
 
 (-> (rdatasets/datasets-iris)
     (sk/view :sepal-length :sepal-width)
@@ -569,7 +569,7 @@
 
 (kind/doc #'sk/layer-type?)
 
-;; Check whether a value is a registered method map:
+;; Check whether a value is a registered layer-type map:
 
 (sk/layer-type? (sk/layer-type-lookup :point))
 

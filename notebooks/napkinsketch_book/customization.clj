@@ -117,7 +117,7 @@
 
 ;; ## Mark Styling
 
-;; Pass `:alpha` and `:size` directly to methods.
+;; Pass `:alpha` and `:size` directly to layer functions.
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width {:color :species :alpha 0.5 :size 5}))

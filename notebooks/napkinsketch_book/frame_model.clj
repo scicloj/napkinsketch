@@ -133,8 +133,8 @@
 ;; Composition shows up in two ways. Within a single frame, layers
 ;; stack -- scatter points plus regression lines, sharing the same
 ;; axes. Across several frames, operations like `sk/facet` and
-;; `sk/arrange` combine whole plots into a single figure. The details
-;; of multi-frame composition are covered in later chapters.
+;; `sk/arrange` tile whole plots into a single rendered image. The
+;; details of multi-frame composition are covered in later chapters.
 
 ;; ## Summary
 ;;

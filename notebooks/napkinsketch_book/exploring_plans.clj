@@ -111,8 +111,8 @@ tiny-pl
 
 ;; ### The layer
 ;;
-;; Each method in the sketch produces one layer. Our scatter has a single
-;; point layer:
+;; Each layer in the frame produces one plan-level layer entry. Our
+;; scatter has a single point layer:
 
 (def tiny-layer (first (:layers tiny-panel)))
 

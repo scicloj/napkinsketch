@@ -140,15 +140,15 @@
 
 ;; ## Step 4: Register and Plot
 ;;
-;; Register the method so the pipeline recognizes `:waterfall`:
+;; Register the layer type so the pipeline recognizes `:waterfall`:
 
 (layer-type/register! :waterfall
                       {:mark :waterfall :stat :waterfall
                        :doc "Waterfall -- running total with increase/decrease bars."})
 
-;; Now we can plot it using the sketch API. Since there is
+;; Now we can plot it using the frame API. Since there is
 ;; no built-in `sk/lay-waterfall`, we use `sk/lay` with
-;; the method lookup.
+;; the layer-type lookup.
 ;;
 ;; We use `sk/plot` to force eager rendering to SVG before the
 ;; cleanup section at the end of this notebook removes the
@@ -178,7 +178,7 @@
   ([data x y] (-> data (sk/frame x y) (sk/lay (layer-type/lookup :waterfall))))
   ([data x y opts] (-> data (sk/frame x y) (sk/lay (merge (layer-type/lookup :waterfall) opts)))))
 
-;; Now the call is as clean as any built-in method:
+;; Now the call is as clean as any built-in layer type:
 
 (-> pnl-data
     (lay-waterfall :category :amount)
