@@ -47,6 +47,16 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
+;; Printed, the frame carries the data, a view with the position
+;; mapping, and the point layer with its own layer-scoped `:color`:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (= 1 (count (:views v)))
+                              (= :species (get-in v [:views 0 :layers 0 :mapping :color]))))])
+
 ;; ### Input formats
 ;;
 ;; Napkinsketch accepts several common Clojure data shapes and
@@ -104,6 +114,20 @@
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
+
+;; Printed, the mapping-and-layers split is visible in the frame
+;; value. The threaded form still routes the frame's position
+;; mapping through a `:views` adapter slot pending Phase 6 cleanup
+;; -- see [Frame Model](./napkinsketch_book.frame_model.html) Idea 3:
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point
+    (sk/lay-smooth {:stat :linear-model})
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
+                              (= :sepal-length (get-in v [:views 0 :mapping :x]))))])
 
 ;; One mapping, two layers: points and a regression line.
 ;;
@@ -175,6 +199,17 @@ two-panel
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
+;; Printed, `:color` lives on the point layer's `:mapping`, not
+;; on the view -- so only the point layer sees it:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/lay-smooth {:stat :linear-model})
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (= :species (get-in v [:views 0 :layers 0 :mapping :color]))
+                              (not (contains? (:mapping (first (:layers v))) :color))))])
+
 ;; Color is on the point layer. The smooth layer does not see it --
 ;; one overall regression line.
 
@@ -191,6 +226,20 @@ two-panel
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
+
+;; Printed, the override appears as `:color nil` in the point
+;; layer's own `:mapping`, erasing the frame-level color for that
+;; layer only:
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width {:color :species})
+    (sk/lay-point {:color nil})
+    (sk/lay-smooth {:stat :linear-model})
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (= :species (get-in v [:views 0 :mapping :color]))
+                              (contains? (get (first (:layers v)) :mapping) :color)
+                              (nil? (get-in (first (:layers v)) [:mapping :color]))))])
 
 ;; The frame says `:color :species`. The point layer cancels it with
 ;; `nil` -- uncolored points. The smooth layer has no override, so it
@@ -228,6 +277,20 @@ two-panel
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 50 (:points s))
                                 (= 1 (:lines s)))))])
+
+;; Printed, each layer carries its own `:data` alongside its
+;; `:mapping`; the frame-level `:data` remains as a default for
+;; any layer that does not override it:
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point {:data setosa})
+    (sk/lay-smooth {:stat :linear-model :data versicolor})
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (some? (:data v))
+                              (contains? (first (:layers v)) :data)
+                              (contains? (second (:layers v)) :data)))])
 
 ;; Points from setosa (50 rows), regression from versicolor.
 ;; Same frame, different data per layer.
@@ -277,6 +340,18 @@ two-panel
     (sk/lay-histogram :petal-length))
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+
+;; Printed, the two-frame outcome shows up as two entries in the
+;; value -- each with its own mapping and layer:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width)
+    (sk/lay-histogram :petal-length)
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (= 2 (count (:views v)))
+                              (= :sepal-length (get-in v [:views 0 :mapping :x]))
+                              (= :petal-length (get-in v [:views 1 :mapping :x]))))])
 
 ;; Two frames, arranged side by side: one scatter and one histogram.
 ;;
@@ -337,6 +412,21 @@ my-frame
     (sk/options {:title "Iris"}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+
+;; Printed, the threaded form carries the same fields as
+;; `my-frame` above; it just routes the position mapping through
+;; the `:views` adapter slot that Phase 6 retires:
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width {:color :species})
+    sk/lay-point
+    (sk/lay-smooth {:stat :linear-model})
+    (sk/options {:title "Iris"})
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
+                              (= :species (get-in v [:views 0 :mapping :color]))
+                              (= "Iris" (get-in v [:opts :title]))))])
 
 ;; ---
 ;; ## Mark, Stat, and Position
@@ -498,6 +588,15 @@ my-frame
       (sk/lay-smooth {:stat :linear-model})
       (sk/options {:title "Scatter with Regression"})))
 
+;; Printed, the template has `:data nil` -- a frame that carries
+;; mapping, layers, and options but no data yet:
+
+(kind/pprint scatter-with-regression)
+
+(kind/test-last [(fn [v] (and (nil? (:data v))
+                              (= 2 (count (:layers v)))
+                              (= "Scatter with Regression" (get-in v [:opts :title]))))])
+
 ;; Apply to one dataset:
 
 (-> scatter-with-regression
@@ -613,6 +712,21 @@ my-frame
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
+;; Printed, annotation layers carry their positions (`:y-intercept`,
+;; `:x-min`, `:x-max`) and appearance (`:alpha`) inside the `:mapping`
+;; slot, the same slot chart layers use for their mappings:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/lay-rule-h {:y-intercept 3.0})
+    (sk/lay-band-v {:x-min 5.0 :x-max 6.0 :alpha 0.1})
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (= :rule-h (get-in v [:layers 0 :layer-type]))
+                              (= 3.0 (get-in v [:layers 0 :mapping :y-intercept]))
+                              (= :band-v (get-in v [:layers 1 :layer-type]))
+                              (= 5.0 (get-in v [:layers 1 :mapping :x-min]))))])
+
 ;; See the [Customization](./napkinsketch_book.customization.html)
 ;; chapter for themes, palettes, and annotation details.
 
@@ -655,12 +769,36 @@ my-frame
                            (and (= 3 (:panels s))
                                 (= 150 (:points s)))))])
 
+;; Printed, the facet column lives in `:opts` as `:facet-col` --
+;; the frame itself is not split until render time:
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width)
+    (sk/facet :species)
+    sk/lay-point
+    (sk/lay-smooth {:stat :linear-model})
+    kind/pprint)
+
+(kind/test-last [(fn [v] (= :species (get-in v [:opts :facet-col])))])
+
 ;; A vector of column names creates one panel per variable:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-histogram [:sepal-length :sepal-width :petal-length]))
 
 (kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
+
+;; Printed, each named column gets its own view, each with its
+;; own histogram layer:
+
+(-> (rdatasets/datasets-iris)
+    (sk/lay-histogram [:sepal-length :sepal-width :petal-length])
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (= 3 (count (:views v)))
+                              (= :sepal-length (get-in v [:views 0 :mapping :x]))
+                              (= :sepal-width (get-in v [:views 1 :mapping :x]))
+                              (= :petal-length (get-in v [:views 2 :mapping :x]))))])
 
 ;; To place whole frames side by side, use `sk/arrange`:
 
