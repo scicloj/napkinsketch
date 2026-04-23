@@ -6,7 +6,10 @@
 ;; Its operators are shaped by Clojure idioms -- threading, merge,
 ;; plain maps -- rather than a custom DSL.
 ;;
-;; This chapter introduces the mental model in five ideas.
+;; This chapter introduces the mental model in five ideas. Each idea
+;; shows a rendered plot alongside the printed frame value, so the
+;; curious reader can see both what the library did and how the
+;; underlying data looks.
 
 (ns napkinsketch-book.frame-model
   (:require
@@ -20,47 +23,52 @@
 ;; ## Idea 1: A frame describes a plot
 ;;
 ;; In Napkinsketch, every plot you compose is a **frame** -- a plain
-;; Clojure value that describes what to show and how to show it.
-;; The simplest frame names some data, picks columns, and chooses a
-;; chart type:
+;; Clojure value that describes what to show. The simplest frame
+;; names some data and picks columns. With no explicit chart type,
+;; the library infers one from the column types:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width))
+    (sk/frame :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; `lay-point` takes data and columns, and returns a frame.
-;; The notebook auto-renders it as a plot.
+;; Two numerical columns produced a scatter. And because a frame is
+;; plain data, you can inspect it with `kind/pprint`:
 
-;; ## Idea 2: Frames are data
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length :sepal-width)
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (seq (:data v))
+                              (= :sepal-length (:x (:mapping v)))))])
+
+;; A frame is a plain Clojure map. The dataset lives under `:data`,
+;; the column mapping under `:mapping`, chart-type layers (empty
+;; here -- we never attached one) under `:layers`, and plot-level
+;; options under `:opts`.
+
+;; ## Idea 2: Frames carry mappings
 ;;
-;; A frame auto-renders as a plot -- here is one with just a mapping
-;; and no layers, so inference picks a scatter:
+;; A **mapping** connects columns to visual properties. We added
+;; `:x` and `:y` in Idea 1; the frame also accepts appearance
+;; aesthetics like `:color`, `:size`, `:alpha`, and `:shape`:
 
 (-> (rdatasets/datasets-iris)
     (sk/frame :sepal-length :sepal-width {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; But a frame is also a plain Clojure value you can inspect.
-;; Wrap it with `kind/pprint` to see its structure instead of its
-;; rendered plot:
+;; The printed frame shows the full mapping:
 
 (-> (rdatasets/datasets-iris)
     (sk/frame :sepal-length :sepal-width {:color :species})
     kind/pprint)
 
-(kind/test-last [(fn [v] (and (seq (:data v))
-                              (= :sepal-length (:x (:mapping v)))))])
+(kind/test-last [(fn [v] (= :species (:color (:mapping v))))])
 
-;; A frame carries the dataset, a column mapping, and any layers
-;; attached to it (empty here, until we add some). Options set by
-;; `sk/options`, `sk/scale`, and `sk/coord` live under an `:opts`
-;; key. [Core Concepts](./napkinsketch_book.core_concepts.html)
-;; walks through each field in detail.
-;;
-;; Because frames are plain data, you can store them, transform them,
-;; and compose them with ordinary Clojure tools.
+;; All three pairs -- `:x -> :sepal-length`, `:y -> :sepal-width`,
+;; `:color -> :species` -- end up in the one `:mapping` map. Future
+;; layers on this frame will inherit the whole set.
 
 ;; ## Idea 3: What to show, how to show it
 ;;
@@ -68,12 +76,12 @@
 ;;
 ;; | Verb | What it does | Example |
 ;; |:-----|:-------------|:--------|
-;; | `sk/frame` | Declare what to show -- columns and aesthetics | `(sk/frame data {:x :a :y :b})` |
+;; | `sk/frame` | Declare what to show -- columns and aesthetics | `(sk/frame data :a :b)` |
 ;; | `sk/lay-*` | Choose how to show it -- the chart type | `sk/lay-point`, `sk/lay-histogram` |
 ;;
-;; When you call `sk/lay-point data :x :y`, it does both in one step:
-;; a column mapping and a chart-type layer. But you can declare the
-;; mapping once and attach several layers to it:
+;; When you declare the mapping once and attach several layers, both
+;; layers share the same columns and aesthetics -- scatter points
+;; and a regression line per species here:
 
 (-> (rdatasets/datasets-iris)
     (sk/frame :sepal-length :sepal-width {:color :species})
@@ -84,31 +92,41 @@
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; `sk/frame` declares what to show -- columns and color grouping.
-;; Then `sk/lay-point` and `(sk/lay-smooth {:stat :linear-model})` each add
-;; a layer. Both layers share the same columns and aesthetics, so each
-;; species gets its own color and its own fitted line.
-;;
-;; **The key insight: `sk/frame` describes what, `sk/lay-*` describes how.**
-;; Separating the two lets you add multiple layers that share the same
-;; data mapping -- scatter points and regression lines here.
+;; Written as a plain map, the same two-layer frame looks like this:
+
+(kind/pprint
+ (sk/prepare-frame
+  {:data (rdatasets/datasets-iris)
+   :mapping {:x :sepal-length :y :sepal-width :color :species}
+   :layers [{:layer-type :point}
+            {:layer-type :smooth :mapping {:stat :linear-model}}]}))
+
+(kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
+                              (= :species (:color (:mapping v)))))])
+
+;; The `:mapping` is shared; each entry in `:layers` just names its
+;; own chart type (plus any layer-specific options). The threaded
+;; form above and this explicit map describe the same frame.
 
 ;; ## Idea 4: Inference fills the gaps
 ;;
 ;; When you omit a choice, Napkinsketch infers it from the data.
-;; Two numerical columns with no `lay-*` are shown as a scatter:
-
-(-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width))
-
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
-
 ;; One numerical column becomes a histogram:
 
 (-> (rdatasets/datasets-iris)
     (sk/frame :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+
+;; The printed frame shows an empty `:layers` -- the histogram
+;; layer is chosen by inference at render time, not stored on the
+;; frame:
+
+(-> (rdatasets/datasets-iris)
+    (sk/frame :sepal-length)
+    kind/pprint)
+
+(kind/test-last [(fn [v] (empty? (:layers v)))])
 
 ;; The principle: **`resolved` = `(or your-choice (inferred-from-data))`**.
 ;;
@@ -119,41 +137,52 @@
 
 ;; ## Idea 5: Frames compose
 ;;
-;; Every function in the API takes a frame and returns a frame. This
-;; means they all thread naturally with `->`:
+;; Every function in the API takes a frame and returns a frame.
+;; `sk/arrange` is the simplest multi-frame composition -- it places
+;; several frames side by side:
 
-(-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width {:color :species})
-    (sk/facet :species)
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model})
-    (sk/options {:title "Iris by Species"}))
+(sk/arrange
+ [(-> (rdatasets/datasets-iris)
+      (sk/frame :sepal-length :sepal-width {:color :species})
+      sk/lay-point)
+  (-> (rdatasets/datasets-iris)
+      (sk/frame :petal-length :petal-width {:color :species})
+      sk/lay-point)])
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 3 (:panels s))
-                                (= 150 (:points s))
-                                (some #{"Iris by Species"} (:texts s)))))])
+                           (and (= 2 (:panels s))
+                                (= 300 (:points s)))))])
 
-;; `frame`, `lay-*`, `facet`, `options`, `scale`, `coord` -- all take
-;; a frame and return a frame. The pipeline reads like a sentence:
-;; "take this data, frame these columns with color, facet by species,
-;; add points and regression lines, set a title."
-;;
-;; Composition shows up in two ways. Within a single frame, layers
-;; stack -- scatter points plus regression lines, sharing the same
-;; axes. Across several frames, operations like `sk/facet` and
-;; `sk/arrange` tile whole plots into a single rendered image. The
-;; details of multi-frame composition are covered in later chapters.
+;; A composite frame is a plain map too -- with `:frames` holding
+;; its sub-frames and `:layout` describing how to tile them:
+
+(kind/pprint
+ (sk/prepare-frame
+  {:data (rdatasets/datasets-iris)
+   :layout {:direction :horizontal}
+   :frames [{:mapping {:x :sepal-length :y :sepal-width :color :species}
+             :layers [{:layer-type :point}]}
+            {:mapping {:x :petal-length :y :petal-width :color :species}
+             :layers [{:layer-type :point}]}]}))
+
+(kind/test-last [(fn [v] (and (= 2 (count (:frames v)))
+                              (= :horizontal (get-in v [:layout :direction]))))])
+
+;; `frame`, `lay-*`, `arrange`, `facet`, `options`, `scale`, `coord`
+;; -- all take a frame and return a frame. The pipeline reads like a
+;; sentence; composites nest the same shape inside `:frames`. The
+;; [Composition](./napkinsketch_book.composition.html) chapter
+;; covers the multi-frame patterns in depth.
 
 ;; ## Summary
 ;;
 ;; | Idea | In code |
 ;; |:-----|:--------|
-;; | A frame describes a plot | `sk/frame`, `sk/lay-*` return frames |
-;; | Frames are data | Plain Clojure values -- inspect with `kind/pprint` |
+;; | A frame describes a plot | `sk/frame`, `sk/lay-*` return frames; inspect with `kind/pprint` |
+;; | Frames carry mappings | Column-to-aesthetic pairs live in `:mapping` |
 ;; | What vs how | `sk/frame` declares what; `sk/lay-*` declares how |
 ;; | Inference fills gaps | Omit choices, the library infers from data |
-;; | Frames compose | All functions return frames, thread with `->` |
+;; | Frames compose | `sk/arrange` tiles sibling frames; composites nest under `:frames` |
 ;;
 ;; ## What's Next
 ;;
