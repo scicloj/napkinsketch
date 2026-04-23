@@ -489,7 +489,7 @@
                  (sk/options {:width 250 :height 200}))]
             {:cols 2})
 
-(kind/test-last [(fn [v] (= :div (first v)))])
+(kind/test-last [(fn [v] (sk/frame? v))])
 
 ;; ## Rendering
 

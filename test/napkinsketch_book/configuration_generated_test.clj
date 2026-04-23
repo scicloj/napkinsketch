@@ -336,31 +336,37 @@
       :height 250}))]))
 
 
-(deftest t75_l351 (is ((fn [v] (= :div (first v))) v74_l341)))
+(deftest
+ t75_l351
+ (is
+  ((fn
+    [v]
+    (and (sk/frame? v) (= 2 (count (:frames (first (:frames v)))))))
+   v74_l341)))
 
 
-(def v77_l375 (-> (base-plot) (sk/options {:palette :tableau10})))
+(def v77_l376 (-> (base-plot) (sk/options {:palette :tableau10})))
 
 
 (deftest
- t78_l378
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v77_l375)))
+ t78_l379
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v77_l376)))
 
 
 (def
- v80_l383
+ v80_l384
  (->
   (base-plot)
   (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]})))
 
 
 (deftest
- t81_l386
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v80_l383)))
+ t81_l387
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v80_l384)))
 
 
 (def
- v83_l391
+ v83_l392
  (->
   (base-plot)
   (sk/options
@@ -371,46 +377,46 @@
 
 
 (deftest
- t84_l396
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v83_l391)))
+ t84_l397
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v83_l392)))
 
 
-(def v86_l401 (sk/set-config! {:palette :pastel1}))
+(def v86_l402 (sk/set-config! {:palette :pastel1}))
 
 
-(def v87_l403 (-> (base-plot)))
-
-
-(deftest
- t88_l405
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v87_l403)))
-
-
-(def v89_l408 (sk/set-config! nil))
-
-
-(def v91_l412 (sk/with-config {:palette :accent} (-> (base-plot))))
+(def v87_l404 (-> (base-plot)))
 
 
 (deftest
- t92_l415
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v91_l412)))
+ t88_l406
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v87_l404)))
+
+
+(def v89_l409 (sk/set-config! nil))
+
+
+(def v91_l413 (sk/with-config {:palette :accent} (-> (base-plot))))
+
+
+(deftest
+ t92_l416
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v91_l413)))
 
 
 (def
- v94_l426
+ v94_l427
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (sk/lay-point :x :y {:color :c})))
 
 
 (deftest
- t95_l429
- (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v94_l426)))
+ t95_l430
+ (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v94_l427)))
 
 
 (def
- v97_l433
+ v97_l434
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (sk/lay-point :x :y {:color :c})
@@ -418,12 +424,12 @@
 
 
 (deftest
- t98_l437
- (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v97_l433)))
+ t98_l438
+ (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v97_l434)))
 
 
 (def
- v100_l441
+ v100_l442
  (sk/with-config
   {:color-scale :plasma}
   (->
@@ -432,12 +438,12 @@
 
 
 (deftest
- t101_l445
- (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v100_l441)))
+ t101_l446
+ (is ((fn [v] (= 50 (:points (sk/svg-summary v)))) v100_l442)))
 
 
 (def
- v103_l451
+ v103_l452
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (sk/lay-point :x :y {:color :c})
@@ -447,50 +453,50 @@
 
 
 (deftest
- t104_l457
+ t104_l458
  (is
   ((fn
     [m]
     (and (= :inferno (:color-scale m)) (= :continuous (:type m))))
-   v103_l451)))
+   v103_l452)))
 
 
-(def v106_l473 (sk/plan (base-plot)))
-
-
-(deftest
- t107_l475
- (is ((fn [plan] (and (map? plan) (= 600 (:width plan)))) v106_l473)))
-
-
-(def v109_l482 (-> (base-plot)))
+(def v106_l474 (sk/plan (base-plot)))
 
 
 (deftest
- t110_l484
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v109_l482)))
+ t107_l476
+ (is ((fn [plan] (and (map? plan) (= 600 (:width plan)))) v106_l474)))
 
 
-(def v112_l493 (def good-plan (sk/plan (base-plot) {:validate false})))
+(def v109_l483 (-> (base-plot)))
 
 
-(def v113_l495 (sk/valid-plan? good-plan))
+(deftest
+ t110_l485
+ (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v109_l483)))
 
 
-(deftest t114_l497 (is ((fn [v] (true? v)) v113_l495)))
+(def v112_l494 (def good-plan (sk/plan (base-plot) {:validate false})))
 
 
-(def v116_l502 (def bad-plan (assoc good-plan :width "not-a-number")))
+(def v113_l496 (sk/valid-plan? good-plan))
 
 
-(def v117_l504 (sk/valid-plan? bad-plan))
+(deftest t114_l498 (is ((fn [v] (true? v)) v113_l496)))
 
 
-(deftest t118_l506 (is ((fn [v] (false? v)) v117_l504)))
+(def v116_l503 (def bad-plan (assoc good-plan :width "not-a-number")))
+
+
+(def v117_l505 (sk/valid-plan? bad-plan))
+
+
+(deftest t118_l507 (is ((fn [v] (false? v)) v117_l505)))
 
 
 (def
- v120_l511
+ v120_l512
  (->
   (sk/explain-plan bad-plan)
   :errors
@@ -499,14 +505,14 @@
 
 
 (deftest
- t121_l516
+ t121_l517
  (is
   ((fn [m] (and (= [:width] (:path m)) (= "not-a-number" (:value m))))
-   v120_l511)))
+   v120_l512)))
 
 
 (def
- v123_l525
+ v123_l526
  (try
   (let
    [plan
@@ -524,19 +530,19 @@
 
 
 (deftest
- t124_l536
+ t124_l537
  (is
   ((fn
     [m]
     (and
      (:caught m)
      (= "Plan does not conform to schema" (:message m))))
-   v123_l525)))
+   v123_l526)))
 
 
-(def v126_l545 (sk/plan (base-plot) {:validate false}))
+(def v126_l546 (sk/plan (base-plot) {:validate false}))
 
 
 (deftest
- t127_l547
- (is ((fn [plan] (and (map? plan) (= 600 (:width plan)))) v126_l545)))
+ t127_l548
+ (is ((fn [plan] (and (map? plan) (= 600 (:width plan)))) v126_l546)))

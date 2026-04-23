@@ -388,8 +388,8 @@
 (sk/arrange [iris-sepal iris-petal]
             {:title "Iris Dashboard" :cols 2})
 
-(kind/test-last [(fn [v] (and (= :div (first v))
-                              (= :kind/hiccup (:kindly/kind (meta v)))))])
+(kind/test-last [(fn [v] (and (sk/frame? v)
+                              (= "Iris Dashboard" (-> v :opts :title))))])
 
 ;; ### Labeled scatter
 

@@ -102,8 +102,8 @@
    :value
    (map
     (fn*
-     [p1__255673#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__255673#) 0.12)))))
+     [p1__71293#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__71293#) 0.12)))))
     (range 52))}))
 
 
@@ -452,7 +452,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__255674#] (= "virginica" p1__255674#))
+       (fn* [p1__71294#] (= "virginica" p1__71294#))
        (:texts s)))))
    v67_l303)))
 
@@ -506,8 +506,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__255675#] (Math/sin (/ p1__255675# 3.0))) (range 20)),
-   :change (map (fn* [p1__255676#] (- p1__255676# 10)) (range 20))}
+   (map (fn* [p1__71295#] (Math/sin (/ p1__71295# 3.0))) (range 20)),
+   :change (map (fn* [p1__71296#] (- p1__71296# 10)) (range 20))}
   (sk/lay-point :x :y {:color :change})
   (sk/options
    {:color-scale :diverging,
@@ -579,7 +579,7 @@
  (is
   ((fn
     [v]
-    (and (= :div (first v)) (= :kind/hiccup (:kindly/kind (meta v)))))
+    (and (sk/frame? v) (= "Iris Dashboard" (-> v :opts :title))))
    v84_l388)))
 
 
@@ -624,8 +624,8 @@
    ys
    (map
     (fn*
-     [p1__255677#]
-     (+ (* 3 p1__255677#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__71297#]
+     (+ (* 3 p1__71297#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}

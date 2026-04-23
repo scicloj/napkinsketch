@@ -320,3 +320,29 @@
     (if has-position?
       (->sketch data {} [{:mapping m :layers layers}] [] opts)
       (->sketch data m [] layers opts))))
+
+(defn sketch->leaf-frame
+  "Collapse a 0-or-1-view sketch into a leaf-frame plain map so it can
+   be placed as a leaf inside a composite. Multi-view sketches are not
+   representable as a single leaf; callers get an error pointing them
+   at arrange or frame APIs for multi-panel needs."
+  [sk]
+  (let [{:keys [data mapping views layers opts]} sk
+        view-count (count views)]
+    (cond
+      (>= view-count 2)
+      (throw (ex-info (str "Cannot place a multi-view sketch as a single leaf "
+                           "in a composite. Split the sketch or rebuild with "
+                           "sk/frame.")
+                      {:view-count view-count}))
+      (= 1 view-count)
+      (let [v (first views)]
+        {:data data
+         :mapping (merge (or mapping {}) (or (:mapping v) {}))
+         :layers (into (vec (:layers v)) (or layers []))
+         :opts (or opts {})})
+      :else
+      {:data data
+       :mapping (or mapping {})
+       :layers (or layers [])
+       :opts (or opts {})})))

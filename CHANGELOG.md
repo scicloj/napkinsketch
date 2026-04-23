@@ -5,6 +5,44 @@ All notable changes to napkinsketch will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Breaking: `sk/arrange` returns a composite frame
+
+`sk/arrange` now returns a composite frame (a plain-map value) instead
+of CSS-grid hiccup. The composite renders through the membrane
+rendering pipeline, so both `:svg` (default) and `:bufimg` targets work
+the same way they do for single plots.
+
+- Inputs must be sketches or leaf frames. Pre-rendered hiccup is no
+  longer accepted -- combine hiccup yourself with `[:div ...]` if you
+  want raw hiccup composition.
+- `:gap` (CSS string) is removed. Leaves tile tightly; add spacing
+  later at the composite level if needed.
+- `:title` still works; it renders as a centered band above the grid.
+- New option `:share-scales` (default `#{}`) shares x/y domains across
+  arranged cells when set to a subset of `#{:x :y}`.
+
+Migration for the common case:
+
+```clojure
+;; Before
+(sk/arrange [(sk/plot sk-a) (sk/plot sk-b)])
+
+;; After
+(sk/arrange [sk-a sk-b])
+```
+
+The composite frame auto-renders in notebooks via `kind/fn`, and
+passing it to `sk/plot` returns SVG hiccup as before.
+
+### Facet deferral (internal)
+
+The pre-alpha refactor plan listed `sk/facet` and `sk/facet-grid` for
+migration onto the composite substrate in this slice. We chose to
+defer -- see `dev-notes/facet-composite-deferral.md` for the rationale
+(unified-membrane guarantee, Option C for shared chrome).
+
 ## [0.1.0] - 2026-04-21
 
 First public alpha release. The API and visual defaults are still

@@ -204,7 +204,7 @@
              (sk/lay-histogram iris :sepal-length {:color :species})]
             {:cols 2})
 
-(kind/test-last [(fn [v] (vector? v))])
+(kind/test-last [(fn [v] (sk/frame? v))])
 
 ;; ## Export
 

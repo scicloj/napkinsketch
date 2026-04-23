@@ -497,23 +497,33 @@
       (is (= 1 (:lines s))))))
 
 (deftest arrange-test
-  (testing "flat plots → CSS grid"
-    (let [p1 (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
-          p2 (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
-          result (sk/arrange [p1 p2])]
-      (is (= :div (first result)))
-      (is (= :kind/hiccup (:kindly/kind (meta result))))))
-  (testing "nested rows → correct cols"
-    (let [p (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
-          result (sk/arrange [[p p] [p p]])]
-      (is (= "repeat(2, 1fr)"
-             (-> result second :style :grid-template-columns)))))
-  (testing "title appears as first child"
-    (let [p (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)
-          result (sk/arrange [p p] {:title "Test" :cols 2})
-          title-div (nth result 2)]
-      (is (= :div (first title-div)))
-      (is (= "Test" (last title-div))))))
+  (testing "flat sketches -> composite frame of leaves"
+    (let [sk1 (-> tiny-ds (sk/view :x :y) sk/lay-point)
+          sk2 (-> tiny-ds (sk/view :x :y) sk/lay-point)
+          result (sk/arrange [sk1 sk2])]
+      (is (sk/frame? result))
+      (is (= 1 (count (:frames result))) "one row with both leaves")
+      (is (= 2 (count (:frames (first (:frames result))))))))
+  (testing "nested rows -> outer vertical of rows"
+    (let [sk1 (-> tiny-ds (sk/view :x :y) sk/lay-point)
+          result (sk/arrange [[sk1 sk1] [sk1 sk1]])]
+      (is (sk/frame? result))
+      (is (= 2 (count (:frames result))) "two rows")
+      (is (every? #(= 2 (count (:frames %))) (:frames result))
+          "each row has two leaves")))
+  (testing "title flows through to composite opts"
+    (let [sk1 (-> tiny-ds (sk/view :x :y) sk/lay-point)
+          result (sk/arrange [sk1 sk1] {:title "Test" :cols 2})]
+      (is (= "Test" (-> result :opts :title)))
+      (let [plotted (sk/plot result)]
+        (is (= :svg (first plotted)))
+        (is (some #(= "Test" %) (:texts (sk/svg-summary plotted)))
+            "title text appears in rendered svg"))))
+  (testing "hiccup input is rejected with a clear error"
+    (let [pre-rendered (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plot)]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"must be a sketch or leaf frame"
+                            (sk/arrange [pre-rendered pre-rendered]))))))
 
 (deftest valid-plan-test
   (let [views (-> tiny-ds (sk/view [[:x :y]]) sk/lay-point)

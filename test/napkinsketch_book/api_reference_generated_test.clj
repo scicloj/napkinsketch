@@ -240,9 +240,7 @@
   wave
   {:x (range 30),
    :y
-   (map
-    (fn* [p1__256699#] (Math/sin (* p1__256699# 0.3)))
-    (range 30))}))
+   (map (fn* [p1__72355#] (Math/sin (* p1__72355# 0.3))) (range 30))}))
 
 
 (def v47_l159 (-> wave (sk/lay-line :x :y)))
@@ -351,9 +349,9 @@
     :y
     (mapv
      (fn*
-      [p1__256700#]
+      [p1__72356#]
       (+
-       (Math/sin (* p1__256700# 0.2))
+       (Math/sin (* p1__72356# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
@@ -854,7 +852,7 @@
   {:cols 2}))
 
 
-(deftest t156_l492 (is ((fn [v] (= :div (first v))) v155_l484)))
+(deftest t156_l492 (is ((fn [v] (sk/frame? v)) v155_l484)))
 
 
 (def v158_l496 (kind/doc #'sk/plot))

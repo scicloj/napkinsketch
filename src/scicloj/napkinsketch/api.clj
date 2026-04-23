@@ -1191,96 +1191,100 @@
 
 ;; ---- Multi-Plot Composition ----
 
-(defn- derived-cell-width
-  "Pixel width available for each cell in an arrange grid."
-  [arrange-width cols gap-px]
-  (let [w (- (double arrange-width) (* (dec (long cols)) (double gap-px)))]
-    (max 50.0 (/ w (long cols)))))
+(defn- coerce-arrange-input
+  "Turn one sk/arrange input into a leaf-frame plain map. Accepts
+   Sketch records (flattened via sketch/sketch->leaf-frame) and
+   frame-shaped leaf maps (passed through). Anything else -- including
+   pre-rendered hiccup -- throws with guidance."
+  [p idx]
+  (cond
+    (sketch/sketch? p) (sketch/sketch->leaf-frame p)
+    (and (frame? p) (frame/leaf? p)) p
+    (and (frame? p) (frame/composite? p))
+    (throw (ex-info (str "sk/arrange input at index " idx
+                         " is a composite frame. Nested arrangements "
+                         "are not supported yet -- flatten first, or "
+                         "open an issue.")
+                    {:index idx}))
+    :else
+    (throw (ex-info (str "sk/arrange input at index " idx
+                         " must be a sketch or leaf frame. Got: "
+                         (pr-str (type p))
+                         ". Pre-rendered hiccup is not supported; wrap "
+                         "hiccup yourself with `[:div ...]` if you want "
+                         "raw composition.")
+                    {:index idx :type (type p)}))))
 
-(defn- derived-cell-height
-  "Pixel height available for each cell in an arrange grid."
-  [arrange-height rows gap-px title-pad]
-  (let [h (- (double arrange-height) (* (dec (long rows)) (double gap-px)) (double title-pad))]
-    (max 50.0 (/ h (long rows)))))
+(defn- render-composite
+  "Kindly render function for a composite frame returned by sk/arrange.
+   Captures the config snapshot so theme/palette/config bindings at
+   construction time survive into render time."
+  [captured-config]
+  (fn [composite]
+    (let [fmt (or (:format (:opts composite)) :svg)]
+      (if captured-config
+        (binding [defaults/*config* captured-config]
+          (compositor/composite->plot composite fmt))
+        (compositor/composite->plot composite fmt)))))
 
 (defn arrange
-  "Arrange multiple plots in a CSS grid layout.
-   plots: a flat vector of plots or sketches, or a vector of vectors (explicit rows).
-   opts:  {:cols N, :title \"...\", :gap \"8px\", :width W, :height H}.
+  "Arrange multiple sketches (or leaf frames) in a grid. Returns a
+   composite frame that renders through the compositor via membrane --
+   so `:svg`, `:bufimg`, and any other membrane target work uniformly.
 
-   `:width` and `:height` are total-dashboard dimensions. They default
-   to the cfg defaults (600 and 400) when not passed, so the returned
-   arrangement always fits within a predictable bounding box. Every
-   sub-sketch is re-planned at the derived per-cell dimensions so
-   text and line widths stay at native resolution (\"sketch-mode\").
-   Pre-rendered hiccup plots pass through unchanged -- they inherit
-   the container's CSS grid cell size (\"figure-mode\").
+   Inputs must be sketches or leaf frames. Pre-rendered hiccup is no
+   longer accepted; build your own `[:div ...]` if you need to combine
+   already-rendered values outside the library.
 
-   To restore the old \"each plot at its own full size\" behavior,
-   pre-render each sketch with `sk/plot` and pass the hiccup in.
+   Opts:
+     :cols N          explicit column count (default: min(4, n-plots))
+     :title STRING    centered title band above the grid
+     :width W         total composite width in pixels
+     :height H        total composite height in pixels
+     :share-scales S  subset of #{:x :y} shared across cells (default: #{})
 
-   (arrange [plot-a plot-b])                       -- 1x2 row at default width
+   (arrange [sk-a sk-b])                           -- 1x2 row
    (arrange [sk-a sk-b sk-c] {:cols 2 :width 900}) -- 2x2 grid (wraps)
-   (arrange [[plot-a plot-b] [plot-c plot-d]])     -- explicit 2x2 grid"
+   (arrange [[sk-a sk-b] [sk-c sk-d]])             -- explicit 2x2 grid"
   ([plots] (arrange plots {}))
   ([plots opts]
    (let [cfg (defaults/config)
-         {:keys [cols title gap]
-          :or {gap "8px"}} opts
+         {:keys [cols title share-scales]
+          :or {share-scales #{}}} opts
          width  (or (:width opts)  (:width cfg))
          height (or (:height opts) (:height cfg))
-         nested? (and (sequential? (first plots))
+         nested? (and (sequential? plots)
+                      (sequential? (first plots))
                       (not (keyword? (ffirst plots))))
-         flat-plots (if nested? (vec (apply concat plots)) (vec plots))
+         rows-in (if nested? (vec plots) [(vec plots)])
+         flat-plots (vec (apply concat rows-in))
          n-plots (count flat-plots)
          _ (when (zero? n-plots)
-             (throw (ex-info "sk/arrange requires at least one plot."
-                             {:plots plots})))
+             (throw (ex-info "sk/arrange requires at least one plot." {:plots plots})))
+         leaves (vec (map-indexed (fn [i p] (coerce-arrange-input p i)) flat-plots))
          n-cols (or cols
-                    (if nested? (count (first plots))
+                    (if nested? (count (first rows-in))
                         (min 4 n-plots)))
-         n-rows (if (pos? n-cols)
-                  (long (Math/ceil (/ (double n-plots) (double n-cols))))
-                  1)
-         ;; Derive a numeric pixel gap from the CSS-string gap.
-         ;; Falls back to 8 when the value doesn't match a "NNpx" pattern.
-         gap-px (or (when (string? gap)
-                      (when-let [m (re-find #"(\d+)\s*px" gap)]
-                        (Long/parseLong (second m))))
-                    8)
-         title-reserve 28
-         ;; Cell sizes derived from the total dashboard dims. Schema
-         ;; requires :width/:height to be positive integers, so round.
-         cell-w (long (Math/round (derived-cell-width width n-cols gap-px)))
-         cell-h (long (Math/round (derived-cell-height height n-rows gap-px
-                                                       (if title title-reserve 0))))
-         ;; Sketch-mode: every sub-sketch is re-planned at the cell
-         ;; size so it renders at the target resolution natively.
-         ;; Figure-mode (pre-rendered hiccup) passes through -- the
-         ;; browser sizes it via the CSS grid cell.
-         flat-plots (mapv
-                     (fn [p]
-                       (cond
-                         (sketch/sketch? p)
-                         (plot (options p {:width cell-w :height cell-h}))
-                         :else p))
-                     flat-plots)
-         grid-style {:display "grid"
-                     :grid-template-columns (str "repeat(" n-cols ", 1fr)")
-                     :gap gap
-                     :width (str (long width) "px")}
-         title-div (when title
-                     [:div {:style {:grid-column "1 / -1"
-                                    :text-align "center"
-                                    :font-weight "bold"
-                                    :font-size "16px"
-                                    :padding "4px 0"}}
-                      title])]
-     (kind/hiccup
-      (into [:div {:style grid-style}]
-            (cond-> []
-              title (conj title-div)
-              true (into flat-plots)))))))
+         _ (when-not (pos? (long n-cols))
+             (throw (ex-info ":cols must be a positive integer." {:cols cols})))
+         row-partitions (if nested?
+                          (map #(mapv (fn [i] (nth leaves i))
+                                      (range (reduce + (map count (take % rows-in)))
+                                             (reduce + (map count (take (inc %) rows-in)))))
+                               (range (count rows-in)))
+                          (partition-all n-cols leaves))
+         row-frames (mapv (fn [row]
+                            {:layout {:direction :horizontal}
+                             :frames (vec row)})
+                          row-partitions)
+         composite (cond-> {:opts (cond-> {:width  (long (Math/round (double width)))
+                                           :height (long (Math/round (double height)))}
+                                    title (assoc :title title))
+                            :layout {:direction :vertical}
+                            :frames row-frames}
+                     (seq share-scales) (assoc :share-scales (set share-scales)))]
+     (kind/fn composite
+       {:kindly/f (render-composite defaults/*config*)}))))
 
 ;; ---- Save ----
 

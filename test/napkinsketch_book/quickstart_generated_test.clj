@@ -209,7 +209,7 @@
   {:cols 2}))
 
 
-(deftest t50_l207 (is ((fn [v] (vector? v)) v49_l203)))
+(deftest t50_l207 (is ((fn [v] (sk/frame? v)) v49_l203)))
 
 
 (def

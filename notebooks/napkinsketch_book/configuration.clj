@@ -350,8 +350,9 @@ precedence-plot
 
 (kind/test-last
  [(fn [v]
-    ;; arrange returns a :div with two child plots
-    (= :div (first v)))])
+    ;; arrange returns a composite frame holding the two sub-plots
+    (and (sk/frame? v)
+         (= 2 (count (:frames (first (:frames v)))))))])
 
 ;; ## Palette Configuration
 ;;
