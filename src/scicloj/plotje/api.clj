@@ -1597,8 +1597,14 @@
      (when-not (.endsWith path-str ".svg")
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
      (let [fr (if (seq opts) (options fr opts) fr)
-           p (plan fr)
-           svg-hiccup (render-impl/plan->plot p :svg (:opts fr {}))]
+           ;; Composites render via the compositor (one membrane tree
+           ;; built by tiling each leaf's plan). Plain leaves render
+           ;; via the per-plan path. Without this branch, composite
+           ;; frames save as empty SVG because the top-level plan
+           ;; carries :sub-plots rather than :panels.
+           svg-hiccup (if (frame/composite? fr)
+                        (compositor/composite->plot fr :svg)
+                        (render-impl/plan->plot (plan fr) :svg (:opts fr {})))]
        (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                        (svg/hiccup->svg-str svg-hiccup)))
        path))))
@@ -1617,6 +1623,9 @@
    (require 'scicloj.plotje.render.bufimg)
    (let [fr (ensure-frame fr)
          fr (if (seq opts) (options fr opts) fr)
-         p (plan fr)
-         img (render-impl/plan->plot p :bufimg (:opts fr {}))]
+         ;; Same composite/leaf branch as pj/save: composites go through
+         ;; the compositor (one membrane tree), leaves through plan->plot.
+         img (if (frame/composite? fr)
+               (compositor/composite->plot fr :bufimg)
+               (render-impl/plan->plot (plan fr) :bufimg (:opts fr {})))]
      ((resolve 'scicloj.plotje.render.bufimg/save-png) img path))))
