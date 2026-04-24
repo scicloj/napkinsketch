@@ -63,19 +63,19 @@
   {:x [1.0 2.0 3.0 4.0 5.0]
    :y [2.1 4.3 3.0 5.2 4.8]})
 
-(def scatter-views
+(def scatter-frame
   (-> five-points
       (sk/lay-point :x :y)))
 
 ;; Here is the rendered plot:
 
-scatter-views
+scatter-frame
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; And the full plan that produced it:
 
-(sk/plan scatter-views)
+(sk/plan scatter-frame)
 
 (kind/test-last [(fn [pl] (and (= :single (:layout-type pl))
                                (= 1 (count (:panels pl)))
@@ -165,17 +165,17 @@ scatter-views
   {:animal ["cat" "dog" "bird" "fish"]
    :count [12 8 15 5]})
 
-(def bar-views
+(def bar-frame
   (-> animals
       (sk/lay-value-bar :animal :count)))
 
-bar-views
+bar-frame
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
 ;; And the plan:
 
-(sk/plan bar-views)
+(sk/plan bar-frame)
 
 (kind/test-last [(fn [pl] (let [p (first (:panels pl))]
                             (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
@@ -191,14 +191,14 @@ bar-views
 ;; with calendar-aware tick labels.
 ;; Clojure's `#inst` reader literal is a convenient way to write dates:
 
-(def temporal-sketch
+(def temporal-frame
   (-> {:date [#inst "2024-01-01" #inst "2024-06-01" #inst "2024-12-01"]
        :val [10 25 18]}
       (sk/lay-point :date :val)))
 
-temporal-sketch
+temporal-frame
 
-(let [p (first (:panels (sk/plan temporal-sketch)))]
+(let [p (first (:panels (sk/plan temporal-frame)))]
   {:x-domain-numeric? (number? (first (:x-domain p)))
    :tick-count (count (:values (:x-ticks p)))
    :first-tick-label (first (:labels (:x-ticks p)))})
@@ -221,15 +221,15 @@ temporal-sketch
 ;; categorical bands. Pass `:x-type :categorical` (or `:y-type`) to
 ;; the frame or layer options to override:
 
-(def hour-bar-sketch
+(def hour-bar-frame
   (-> {:hour [9 10 11 12] :count [5 8 12 7]}
       (sk/lay-value-bar :hour :count {:x-type :categorical})))
 
-hour-bar-sketch
+hour-bar-frame
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
-(:x-domain (first (:panels (sk/plan hour-bar-sketch))))
+(:x-domain (first (:panels (sk/plan hour-bar-frame))))
 
 (kind/test-last [(fn [d] (= ["9" "10" "11" "12"] d))])
 
@@ -249,19 +249,19 @@ hour-bar-sketch
 
 ;; ### Column reference -- colored by palette
 
-(def colored-views
+(def colored-frame
   (-> {:x [1 2 3 4 5 6]
        :y [3 5 4 7 6 8]
        :g ["a" "a" "a" "b" "b" "b"]}
       (sk/lay-point :x :y {:color :g})))
 
-colored-views
+colored-frame
 
 (kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
 
 ;; And the plan:
 
-(sk/plan colored-views)
+(sk/plan colored-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (and (= 2 (count (:groups layer)))
@@ -277,17 +277,17 @@ colored-views
 
 ;; ### Fixed color string -- single color, no legend
 
-(def fixed-color-views
+(def fixed-color-frame
   (-> five-points
       (sk/lay-point :x :y {:color "#E74C3C"})))
 
-fixed-color-views
+fixed-color-frame
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; And the plan:
 
-(sk/plan fixed-color-views)
+(sk/plan fixed-color-frame)
 
 (kind/test-last [(fn [pl] (and (nil? (:legend pl))
                                (zero? (get-in pl [:layout :legend-w]))
@@ -338,13 +338,13 @@ fixed-color-views
 
 ;; Verify: `"red"` is a fixed color when the dataset has no `red` column:
 
-(def red-color-sketch
+(def red-color-frame
   (-> five-points
       (sk/lay-point :x :y {:color "red"})))
 
-red-color-sketch
+red-color-frame
 
-(let [pl (sk/plan red-color-sketch)]
+(let [pl (sk/plan red-color-frame)]
   {:legend (:legend pl)
    :color (:color (first (:groups (first (:layers (first (:panels pl)))))))})
 
@@ -374,13 +374,13 @@ red-color-sketch
 
 ;; ### Categorical color implies grouping
 ;;
-;; When `:color` maps to a categorical column (as with `colored-views`
+;; When `:color` maps to a categorical column (as with `colored-frame`
 ;; above), the data is split into one group per category. Each group
 ;; gets a distinct palette color and a legend entry:
 
-colored-views
+colored-frame
 
-(let [pl (sk/plan colored-views)
+(let [pl (sk/plan colored-frame)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :group-labels (mapv :label (:groups layer))
@@ -400,15 +400,15 @@ colored-views
 ;; gradient. There is one group, and the legend is continuous
 ;; with 20 pre-computed color stops.
 
-(def numeric-color-sketch
+(def numeric-color-frame
   (-> {:x [1 2 3 4 5]
        :y [2 4 3 5 4]
        :val [10 20 30 40 50]}
       (sk/lay-point :x :y {:color :val})))
 
-numeric-color-sketch
+numeric-color-frame
 
-(let [pl (sk/plan numeric-color-sketch)
+(let [pl (sk/plan numeric-color-frame)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :legend-type (:type (:legend pl))
@@ -439,13 +439,13 @@ numeric-color-sketch
 
 ;; Without override -- one group, continuous gradient:
 
-(def study-continuous-sketch
+(def study-continuous-frame
   (-> study-data
       (sk/lay-line :day :score {:color :subject})))
 
-study-continuous-sketch
+study-continuous-frame
 
-(let [pl (sk/plan study-continuous-sketch)
+(let [pl (sk/plan study-continuous-frame)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :legend-type (:type (:legend pl))})
@@ -455,14 +455,14 @@ study-continuous-sketch
 
 ;; With `:color-type :categorical` -- three groups, one per subject:
 
-(def study-categorical-sketch
+(def study-categorical-frame
   (-> study-data
       (sk/lay-line :day :score {:color :subject
                                 :color-type :categorical})))
 
-study-categorical-sketch
+study-categorical-frame
 
-(let [pl (sk/plan study-categorical-sketch)
+(let [pl (sk/plan study-categorical-frame)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :legend-entries (count (:entries (:legend pl)))})
@@ -498,13 +498,13 @@ study-categorical-sketch
    :y [3 5 4 7 6 8]
    :g ["a" "a" "a" "b" "b" "b"]})
 
-(def explicit-group-sketch
+(def explicit-group-frame
   (-> grouped-data
       (sk/lay-point :x :y {:group :g})))
 
-explicit-group-sketch
+explicit-group-frame
 
-(let [pl (sk/plan explicit-group-sketch)
+(let [pl (sk/plan explicit-group-frame)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :has-legend? (some? (:legend pl))})
@@ -584,17 +584,17 @@ explicit-group-sketch
 ;;
 ;; A single numerical column produces a histogram:
 
-(def hist-views
+(def hist-frame
   (-> five-points
       (sk/frame :x)))
 
-hist-views
+hist-frame
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan hist-views)
+(sk/plan hist-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :bar (:mark layer))))])
@@ -605,35 +605,35 @@ hist-views
 ;; A single temporal column also becomes a histogram, binned over
 ;; epoch-milliseconds with calendar-aware tick labels:
 
-(def temporal-hist-sketch
+(def temporal-hist-frame
   (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
               #inst "2024-04-01" #inst "2024-05-01"]}
       (sk/frame :date)))
 
-temporal-hist-sketch
+temporal-hist-frame
 
 (kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan temporal-hist-sketch)
+(sk/plan temporal-hist-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :bar (:mark layer))))])
 
 ;; A single categorical column produces a bar chart of counts:
 
-(def count-views
+(def count-frame
   (-> animals
       (sk/frame :animal)))
 
-count-views
+count-frame
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan count-views)
+(sk/plan count-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :rect (:mark layer))))])
@@ -642,18 +642,18 @@ count-views
 ;; of the 4 categories.
 
 ;; Two numerical columns produce a scatter (the chapter's opening
-;; `scatter-views` is such a frame):
+;; `scatter-frame` is such a frame):
 
-(def num-num-sketch
+(def num-num-frame
   (-> five-points (sk/frame :x :y)))
 
-num-num-sketch
+num-num-frame
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan num-num-sketch)
+(sk/plan num-num-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :point (:mark layer))))])
@@ -661,18 +661,18 @@ num-num-sketch
 ;; A temporal x with a numerical y infers a time-series line. Row
 ;; order is preserved, so pre-sort temporal data to avoid zigzag:
 
-(def ts-line-sketch
+(def ts-line-frame
   (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"]
        :val  [10 25 18]}
       (sk/frame :date :val)))
 
-ts-line-sketch
+ts-line-frame
 
 (kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan ts-line-sketch)
+(sk/plan ts-line-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :line (:mark layer))))])
@@ -680,18 +680,18 @@ ts-line-sketch
 ;; A categorical x with a numerical y infers a boxplot -- the default
 ;; for summarizing a distribution across groups:
 
-(def boxplot-sketch
+(def boxplot-frame
   (-> {:species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]
        :val     [8  10  12  18  20  22  14  15  17]}
       (sk/frame :species :val)))
 
-boxplot-sketch
+boxplot-frame
 
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan boxplot-sketch)
+(sk/plan boxplot-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (and (= :boxplot (:mark layer))
@@ -700,18 +700,18 @@ boxplot-sketch
 ;; A numerical x with a categorical y infers a horizontal boxplot --
 ;; the same summary laid out with the category axis on y:
 
-(def horizontal-boxplot-sketch
+(def horizontal-boxplot-frame
   (-> {:val     [8  10  12  18  20  22  14  15  17]
        :species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]}
       (sk/frame :val :species)))
 
-horizontal-boxplot-sketch
+horizontal-boxplot-frame
 
 (kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan horizontal-boxplot-sketch)
+(sk/plan horizontal-boxplot-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (and (= :boxplot (:mark layer))
@@ -723,9 +723,9 @@ horizontal-boxplot-sketch
 ;; aren't clipped at the edges. Internally, `pad-domain` in
 ;; `scale.clj` computes this padding.
 
-scatter-views
+scatter-frame
 
-(let [pl (sk/plan scatter-views)
+(let [pl (sk/plan scatter-frame)
       p (first (:panels pl))]
   {:x-domain (:x-domain p)
    :data-range [1.0 5.0]
@@ -741,9 +741,9 @@ scatter-views
 ;;
 ;; Bar chart y-domains always include zero:
 
-bar-views
+bar-frame
 
-(let [pl (sk/plan bar-views)
+(let [pl (sk/plan bar-frame)
       p (first (:panels pl))]
   {:y-domain (:y-domain p)})
 
@@ -751,14 +751,14 @@ bar-views
 
 ;; Percentage-filled layers normalize the y-domain to `[0.0, 1.0]`:
 
-(def fill-sketch
+(def fill-frame
   (-> {:x ["a" "a" "b" "b"]
        :g ["m" "n" "m" "n"]}
       (sk/lay-bar :x {:position :fill :color :g})))
 
-fill-sketch
+fill-frame
 
-(:y-domain (first (:panels (sk/plan fill-sketch))))
+(:y-domain (first (:panels (sk/plan fill-frame))))
 
 (kind/test-last [(fn [d] (and (== 0.0 (first d))
                               (== 1.0 (second d))))])
@@ -783,9 +783,9 @@ fill-sketch
 ;;
 ;; Linear ticks for the scatter example:
 
-scatter-views
+scatter-frame
 
-(let [pl (sk/plan scatter-views)
+(let [pl (sk/plan scatter-frame)
       p (first (:panels pl))]
   {:x-tick-values (:values (:x-ticks p))
    :x-tick-labels (:labels (:x-ticks p))})
@@ -799,15 +799,15 @@ scatter-views
 ;;
 ;; Log ticks for a multi-decade range:
 
-(def log-scale-sketch
+(def log-scale-frame
   (-> {:x [0.1 1.0 10.0 100.0 1000.0]
        :y [5 10 15 20 25]}
       (sk/lay-point :x :y)
       (sk/scale :x :log)))
 
-log-scale-sketch
+log-scale-frame
 
-(let [pl (sk/plan log-scale-sketch)
+(let [pl (sk/plan log-scale-frame)
       p (first (:panels pl))]
   {:tick-values (:values (:x-ticks p))
    :tick-labels (:labels (:x-ticks p))})
@@ -821,9 +821,9 @@ log-scale-sketch
 
 ;; Categorical ticks match domain order:
 
-bar-views
+bar-frame
 
-(let [pl (sk/plan bar-views)
+(let [pl (sk/plan bar-frame)
       p (first (:panels pl))]
   (:values (:x-ticks p)))
 
@@ -834,13 +834,13 @@ bar-views
 ;; Labels come from column names. Underscores and hyphens become spaces.
 ;; Internally, `resolve-labels` in `plan.clj` handles this.
 
-(def iris-label-sketch
+(def iris-label-frame
   (-> (rdatasets/datasets-iris)
       (sk/lay-point :sepal-length :sepal-width)))
 
-iris-label-sketch
+iris-label-frame
 
-(let [pl (sk/plan iris-label-sketch)]
+(let [pl (sk/plan iris-label-frame)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -850,12 +850,12 @@ iris-label-sketch
 ;; When only one column is specified, the y-axis shows computed counts.
 ;; The system omits the y-label since it would repeat the column name:
 
-(def x-only-sketch
+(def x-only-frame
   (-> five-points (sk/frame :x)))
 
-x-only-sketch
+x-only-frame
 
-(let [pl (sk/plan x-only-sketch)]
+(let [pl (sk/plan x-only-frame)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -864,14 +864,14 @@ x-only-sketch
 
 ;; Explicit labels override inference:
 
-(def explicit-label-sketch
+(def explicit-label-frame
   (-> five-points
       (sk/lay-point :x :y)
       (sk/options {:x-label "Length (cm)" :y-label "Width (cm)"})))
 
-explicit-label-sketch
+explicit-label-frame
 
-(let [pl (sk/plan explicit-label-sketch)]
+(let [pl (sk/plan explicit-label-frame)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -886,9 +886,9 @@ explicit-label-sketch
 ;;
 ;; A categorical color mapping produces a discrete legend with one entry per category:
 
-colored-views
+colored-frame
 
-(:legend (sk/plan colored-views))
+(:legend (sk/plan colored-frame))
 
 (kind/test-last [(fn [leg] (and (= :g (:title leg))
                                 (= 2 (count (:entries leg)))))])
@@ -897,29 +897,29 @@ colored-views
 ;;
 ;; No color mapping means no legend:
 
-scatter-views
+scatter-frame
 
-(:legend (sk/plan scatter-views))
+(:legend (sk/plan scatter-frame))
 
 (kind/test-last [nil?])
 
 ;; A fixed color string also suppresses the legend:
 
-fixed-color-views
+fixed-color-frame
 
-(:legend (sk/plan fixed-color-views))
+(:legend (sk/plan fixed-color-frame))
 
 (kind/test-last [nil?])
 
 ;; A numeric color mapping produces a continuous legend (gradient bar):
 
-(def continuous-color-sketch
+(def continuous-color-frame
   (-> {:x [1 2 3] :y [4 5 6] :val [10 20 30]}
       (sk/lay-point :x :y {:color :val})))
 
-continuous-color-sketch
+continuous-color-frame
 
-(:legend (sk/plan continuous-color-sketch))
+(:legend (sk/plan continuous-color-frame))
 
 (kind/test-last [(fn [leg] (and (= :continuous (:type leg))
                                 (= 20 (count (:stops leg)))))])
@@ -930,13 +930,13 @@ continuous-color-sketch
 ;; circles spanning the data range. Internally, `build-size-legend` in
 ;; `plan.clj` generates five entries with proportional radii.
 
-(def size-legend-sketch
+(def size-legend-frame
   (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :s [10 20 30 40 50]}
       (sk/lay-point :x :y {:size :s})))
 
-size-legend-sketch
+size-legend-frame
 
-(:size-legend (sk/plan size-legend-sketch))
+(:size-legend (sk/plan size-legend-frame))
 
 (kind/test-last [(fn [leg] (and (= :size (:type leg))
                                 (= :s (:title leg))
@@ -944,9 +944,9 @@ size-legend-sketch
 
 ;; Each entry has a `:value` and `:radius`. No size mapping means no size legend:
 
-scatter-views
+scatter-frame
 
-(:size-legend (sk/plan scatter-views))
+(:size-legend (sk/plan scatter-frame))
 
 (kind/test-last [nil?])
 
@@ -957,13 +957,13 @@ scatter-views
 ;; `plan.clj` asks for about five nice 1/2/5 breaks; the exact count
 ;; depends on the range (here the range [0.1, 0.9] yields four).
 
-(def alpha-legend-sketch
+(def alpha-legend-frame
   (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :a [0.1 0.3 0.5 0.7 0.9]}
       (sk/lay-point :x :y {:alpha :a})))
 
-alpha-legend-sketch
+alpha-legend-frame
 
-(:alpha-legend (sk/plan alpha-legend-sketch))
+(:alpha-legend (sk/plan alpha-legend-frame))
 
 (kind/test-last [(fn [leg] (and (= :alpha (:type leg))
                                 (= :a (:title leg))
@@ -971,9 +971,9 @@ alpha-legend-sketch
 
 ;; No alpha mapping means no alpha legend:
 
-scatter-views
+scatter-frame
 
-(:alpha-legend (sk/plan scatter-views))
+(:alpha-legend (sk/plan scatter-frame))
 
 (kind/test-last [nil?])
 
@@ -985,19 +985,19 @@ scatter-views
 ;;
 ;; Compare a bare plot to one with title, labels, and legend:
 
-scatter-views
+scatter-frame
 
-(def full-layout-sketch
+(def full-layout-frame
   (-> {:x [1 2 3 4 5 6]
        :y [3 5 4 7 6 8]
        :g ["a" "a" "a" "b" "b" "b"]}
       (sk/lay-point :x :y {:color :g})
       (sk/options {:title "My Plot"})))
 
-full-layout-sketch
+full-layout-frame
 
-(let [bare (sk/plan scatter-views)
-      full (sk/plan full-layout-sketch)]
+(let [bare (sk/plan scatter-frame)
+      full (sk/plan full-layout-frame)]
   {:bare-title-pad (get-in bare [:layout :title-pad])
    :full-title-pad (get-in full [:layout :title-pad])
    :bare-legend-w (get-in bare [:layout :legend-w])
@@ -1017,9 +1017,9 @@ full-layout-sketch
 ;; - A facet grid (`:facet-row` or `:facet-col`) is `:facet-grid`
 ;; - Multiple x-y pairs (scatter plot matrix) are `:multi-variable`
 
-scatter-views
+scatter-frame
 
-(:layout-type (sk/plan scatter-views))
+(:layout-type (sk/plan scatter-frame))
 
 (kind/test-last [(fn [lt] (= :single lt))])
 
@@ -1029,23 +1029,23 @@ scatter-views
 ;; stays the same -- the panel-level domains and ticks are swapped.
 ;; Internally, `make-coord` in `coord.clj` handles the transformation.
 
-(def normal-sketch
+(def normal-frame
   (-> animals
       (sk/lay-value-bar :animal :count)))
 
-normal-sketch
+normal-frame
 
-(def flip-sketch
+(def flip-frame
   (-> animals
       (sk/lay-value-bar :animal :count)
       (sk/coord :flip)))
 
-flip-sketch
+flip-frame
 
 (kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
 
-(let [np (first (:panels (sk/plan normal-sketch)))
-      fp (first (:panels (sk/plan flip-sketch)))]
+(let [np (first (:panels (sk/plan normal-frame)))
+      fp (first (:panels (sk/plan flip-frame)))]
   {:normal {:x-categorical? (:categorical? (:x-ticks np))
             :y-categorical? (:categorical? (:y-ticks np))}
    :flipped {:x-categorical? (:categorical? (:x-ticks fp))
@@ -1061,14 +1061,14 @@ flip-sketch
 ;; Labels are also swapped -- the x-label and y-label follow their
 ;; visual axis, not the data axis:
 
-(def flipped-labels-sketch
+(def flipped-labels-frame
   (-> five-points
       (sk/lay-point :x :y)
       (sk/coord :flip)))
 
-flipped-labels-sketch
+flipped-labels-frame
 
-(let [pl (sk/plan flipped-labels-sketch)]
+(let [pl (sk/plan flipped-labels-frame)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -1086,13 +1086,13 @@ flipped-labels-sketch
 ;;
 ;; When multiple layers share a panel, their domains are merged:
 
-(def multi-views
+(def multi-frame
   (-> five-points
       (sk/frame :x :y)
       sk/lay-point
       (sk/lay-smooth {:stat :linear-model})))
 
-multi-views
+multi-frame
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 5 (:points s))
@@ -1100,7 +1100,7 @@ multi-views
 
 ;; And the plan:
 
-(sk/plan multi-views)
+(sk/plan multi-frame)
 
 (kind/test-last [(fn [pl] (let [p (first (:panels pl))]
                             (= 2 (count (:layers p)))))])
