@@ -257,14 +257,19 @@
   [x]
   (frame/frame? x))
 
+(declare prepare-frame)
+
 (defn- ensure-frame
   "Coerce input to a frame. Frames pass through. Raw data becomes a
-   leaf frame with :data set and no mapping."
+   leaf frame with :data set and no mapping, and is run through
+   prepare-frame so Kindly auto-render metadata is attached -- the
+   metadata is preserved by subsequent assoc/update calls in the
+   lay-*/options/frame pipelines."
   [x]
   (if (frame? x)
     x
     (let [d (coerce-dataset x)]
-      (cond-> {:layers []} d (assoc :data d)))))
+      (prepare-frame (cond-> {:layers []} d (assoc :data d))))))
 
 (def ^:private view-mapping-keys
   "Keys accepted in a frame mapping."
