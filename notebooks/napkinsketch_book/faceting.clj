@@ -142,16 +142,17 @@
 (def cols [:sepal-length :sepal-width :petal-length :petal-width])
 
 (-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross cols cols) {:color :species}))
+    (sk/frame {:color :species})
+    sk/lay-point
+    (sk/frame (sk/cross cols cols)))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 16 (:panels s))
-                                (= (* 12 150) (:points s))
-                                (pos? (:polygons s)))))])
+                                (= (* 16 150) (:points s)))))])
 
-;; Diagonal panels (where x = y) show histograms -- inference detects
-;; same-column pairs. Off-diagonal panels show scatter plots. All
-;; panels are colored by species (the color mapping is included in each leaf created by `sk/cross`).
+;; Every cell renders as a scatter plot -- 16 panels, each with 150
+;; colored points. The shared scales (`:share-scales #{:x :y}`) set
+;; on the composite align x-axes down columns and y-axes across rows.
 
 ;; ## Comparing Multiple Columns
 ;;

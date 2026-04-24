@@ -311,8 +311,9 @@
 (def splom-cols [:sepal-length :sepal-width :petal-length :petal-width])
 
 (-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross splom-cols splom-cols) {:color :species})
+    (sk/frame {:color :species})
     sk/lay-point
+    (sk/frame (sk/cross splom-cols splom-cols))
     (sk/options {:brush true}))
 
 (kind/test-last [(fn [v] (= :div (first (sk/plot v))))])

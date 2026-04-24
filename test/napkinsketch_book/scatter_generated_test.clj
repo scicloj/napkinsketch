@@ -233,18 +233,17 @@
  v37_l152
  (->
   (rdatasets/datasets-iris)
-  (sk/view (sk/cross cols cols) {:color :species})))
+  (sk/frame {:color :species})
+  sk/lay-point
+  (sk/frame (sk/cross cols cols))))
 
 
 (deftest
- t38_l155
+ t38_l157
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and
-      (= 16 (:panels s))
-      (= (* 12 150) (:points s))
-      (pos? (:polygons s)))))
+     (and (= 16 (:panels s)) (= (* 16 150) (:points s)))))
    v37_l152)))

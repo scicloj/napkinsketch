@@ -53,11 +53,12 @@ Line chart with point markers from plain Clojure data:
 Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping:
 ```clj
 (-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross [:sepal-length :sepal-width
-                        :petal-length :petal-width]
-                       [:sepal-length :sepal-width
-                        :petal-length :petal-width])
-             {:color :species})
+    (sk/frame {:color :species})
+    sk/lay-point
+    (sk/frame (sk/cross [:sepal-length :sepal-width
+                         :petal-length :petal-width]
+                        [:sepal-length :sepal-width
+                         :petal-length :petal-width]))
     (sk/options {:title "Iris SPLOM"}))
 ```
 ![](readme_files/image1.svg)

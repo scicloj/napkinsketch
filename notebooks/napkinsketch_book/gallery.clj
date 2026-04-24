@@ -404,13 +404,15 @@
 ;; ### SPLOM (scatter plot matrix)
 ;; Source: [R Graph Gallery: Correlogram](https://r-graph-gallery.com/correlogram.html)
 
-;; All pairwise combinations of iris measurements. Diagonal panels
-;; show histograms; off-diagonal panels show scatter plots:
+;; All pairwise combinations of iris measurements, laid out on a 4x4
+;; grid with shared x-scales down columns and shared y-scales across
+;; rows:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross [:sepal-length :sepal-width :petal-length :petal-width]
-                       [:sepal-length :sepal-width :petal-length :petal-width])
-             {:color :species})
+    (sk/frame {:color :species})
+    sk/lay-point
+    (sk/frame (sk/cross [:sepal-length :sepal-width :petal-length :petal-width]
+                        [:sepal-length :sepal-width :petal-length :petal-width]))
     (sk/options {:title "Iris SPLOM"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -663,9 +665,10 @@
 ;; Source: [Vega-Lite: Scatter Matrix](https://vega.github.io/vega-lite/examples/interactive_splom.html)
 
 (-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross [:sepal-length :sepal-width :petal-length :petal-width]
-                       [:sepal-length :sepal-width :petal-length :petal-width])
-             {:color :species}))
+    (sk/frame {:color :species})
+    sk/lay-point
+    (sk/frame (sk/cross [:sepal-length :sepal-width :petal-length :petal-width]
+                        [:sepal-length :sepal-width :petal-length :petal-width])))
 
 (kind/test-last [(fn [v] (= 16 (:panels (sk/svg-summary v))))])
 
@@ -1898,7 +1901,7 @@
 ;; Source: [Vega-Lite: SPLOM](https://vega.github.io/vega-lite/examples/interactive_splom.html)
 
 (-> (rdatasets/datasets-mtcars)
-    (sk/view (sk/cross [:mpg :hp :wt] [:mpg :hp :wt]))
+    (sk/frame (sk/cross [:mpg :hp :wt] [:mpg :hp :wt]))
     (sk/options {:title "Motor Trend Cars: 3x3 SPLOM"}))
 
 (kind/test-last [(fn [v] (= 9 (:panels (sk/svg-summary v))))])
@@ -1907,7 +1910,7 @@
 ;; Source: [D3 Graph Gallery: SPLOM](https://d3-graph-gallery.com/graph/correlogram_basic.html)
 
 (-> (rdatasets/datasets-mtcars)
-    (sk/view (sk/cross [:mpg :wt] [:mpg :wt]))
+    (sk/frame (sk/cross [:mpg :wt] [:mpg :wt]))
     (sk/options {:title "MPG vs Weight: 2x2 SPLOM"}))
 
 (kind/test-last [(fn [v] (= 4 (:panels (sk/svg-summary v))))])

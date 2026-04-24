@@ -102,7 +102,7 @@
   {:x (range 1 50),
    :y
    (map
-    (fn* [p1__134886#] (* 2 (Math/pow 1.1 p1__134886#)))
+    (fn* [p1__156224#] (* 2 (Math/pow 1.1 p1__156224#)))
     (range 1 50))}))
 
 
@@ -413,9 +413,10 @@
  v80_l313
  (->
   (rdatasets/datasets-iris)
-  (sk/view (sk/cross splom-cols splom-cols) {:color :species})
+  (sk/frame {:color :species})
   sk/lay-point
+  (sk/frame (sk/cross splom-cols splom-cols))
   (sk/options {:brush true})))
 
 
-(deftest t81_l318 (is ((fn [v] (= :div (first (sk/plot v)))) v80_l313)))
+(deftest t81_l319 (is ((fn [v] (= :div (first (sk/plot v)))) v80_l313)))

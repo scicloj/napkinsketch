@@ -184,25 +184,24 @@
  v34_l144
  (->
   (rdatasets/datasets-iris)
-  (sk/view (sk/cross cols cols) {:color :species})))
+  (sk/frame {:color :species})
+  sk/lay-point
+  (sk/frame (sk/cross cols cols))))
 
 
 (deftest
- t35_l147
+ t35_l149
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
-     (and
-      (= 16 (:panels s))
-      (= (* 12 150) (:points s))
-      (pos? (:polygons s)))))
+     (and (= 16 (:panels s)) (= (* 16 150) (:points s)))))
    v34_l144)))
 
 
 (def
- v37_l160
+ v37_l161
  (sk/lay-histogram
   (rdatasets/datasets-iris)
   [:sepal-length :sepal-width :petal-length]
@@ -210,18 +209,18 @@
 
 
 (deftest
- t38_l162
+ t38_l163
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (pos? (:polygons s)))))
-   v37_l160)))
+   v37_l161)))
 
 
 (def
- v40_l168
+ v40_l169
  (->
   (rdatasets/palmerpenguins-penguins)
   (sk/lay-bar :species {:color :species})
@@ -229,18 +228,18 @@
 
 
 (deftest
- t41_l172
+ t41_l173
  (is
   ((fn
     [v]
     (let
      [s (sk/svg-summary v)]
      (and (= 3 (:panels s)) (= 5 (:polygons s)))))
-   v40_l168)))
+   v40_l169)))
 
 
 (def
- v43_l180
+ v43_l181
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -252,7 +251,7 @@
 
 
 (deftest
- t44_l186
+ t44_l187
  (is
   ((fn
     [v]
@@ -263,4 +262,4 @@
       (= 150 (:points s))
       (some #{"Iris by Species"} (:texts s))
       (some #{"Sepal Length (cm)"} (:texts s)))))
-   v43_l180)))
+   v43_l181)))
