@@ -1,134 +1,114 @@
 (ns scicloj.napkinsketch.impl.frame-draft-test
-  "Specification for Phase 6 slice-2's frame-native leaf->draft.
+  "Specification for frame/leaf->draft. Pins the shape that plan.clj
+   and the compositor depend on: one draft entry per applicable layer,
+   merged mapping (frame < layer-type-info < layer), layer-level
+   :stat / :position / :mark as sibling keys, plot-level
+   :x-scale / :y-scale / :coord stamped from :opts, and -- when
+   :opts carry :facet-col / :facet-row -- one entry per facet variant
+   with filtered :data and string facet labels.
 
-   The old pipeline routes a leaf frame through leaf-frame->sketch ->
-   sketch->draft. That detour is replaced by frame/leaf->draft, which
-   reads the leaf directly and produces the same draft shape.
-
-   These tests assert equivalence with sketch->draft on the inputs the
-   adapter handles, and pin the documented bug (edge case B) that the
-   adapter path cannot cover: a leaf with no position in its own
-   :mapping but layers that carry :x/:y. Old path: empty draft. New
-   path: one draft entry per layer, :x/:y sourced from the layer."
+   Also pins edge case B (leaf has no :x/:y in its own :mapping but
+   layers carry :x/:y) -- the frame-native path emits one entry per
+   layer with :x/:y sourced from the layer, which is the behavior a
+   user would expect of the frame model."
   (:require [clojure.test :refer [deftest testing is]]
             [tablecloth.api :as tc]
-            [scicloj.napkinsketch.impl.frame :as frame]
-            [scicloj.napkinsketch.impl.sketch :as sketch]))
+            [scicloj.napkinsketch.impl.frame :as frame]))
 
 (def iris
   (tc/dataset {:a [1.0 2.0 3.0]
                :b [0.5 1.0 1.5]
                :species ["setosa" "setosa" "versicolor"]}))
 
-(defn- scrub-adapter-keys
-  "Drop keys the adapter stamps that the frame-native path does not
-   (or does differently). Compared shape is the data-bearing merged
-   draft body."
-  [m]
-  (dissoc m :__entry-idx :__sketch-scope))
-
-(defn- scrub-draft [draft]
-  (mapv scrub-adapter-keys draft))
-
-(defn- drafts-equivalent?
-  "sketch->draft and frame/leaf->draft produce the same draft modulo
-   the adapter-only bookkeeping keys."
-  [leaf]
-  (let [old-draft (scrub-draft (sketch/sketch->draft (sketch/leaf-frame->sketch leaf)))
-        new-draft (scrub-draft (frame/leaf->draft leaf))]
-    (= old-draft new-draft)))
-
 ;; ============================================================
-;; Equivalence with sketch->draft on adapter-supported shapes
+;; Leaf with position + layer shapes
 ;; ============================================================
 
-(deftest equivalence-leaf-with-position-single-layer-test
-  (testing "leaf :x/:y + one bare layer"
-    (is (drafts-equivalent?
-         {:data iris
-          :mapping {:x :a :y :b}
-          :layers [{:layer-type :point :mapping {}}]}))))
+(deftest leaf-with-position-single-layer-test
+  (testing "leaf :x/:y + one bare layer -- one draft, mark from the layer type"
+    (let [draft (frame/leaf->draft
+                 {:data iris
+                  :mapping {:x :a :y :b}
+                  :layers [{:layer-type :point :mapping {}}]})]
+      (is (= 1 (count draft)))
+      (is (= :a (:x (first draft))))
+      (is (= :b (:y (first draft))))
+      (is (= :point (:mark (first draft)))))))
 
-(deftest equivalence-leaf-with-position-and-aesthetic-test
-  (testing "frame-level :color flows into the layer"
-    (is (drafts-equivalent?
-         {:data iris
-          :mapping {:x :a :y :b :color :species}
-          :layers [{:layer-type :point :mapping {}}]}))))
+(deftest frame-aesthetic-flows-into-layer-test
+  (testing "frame-level :color flows into the draft entry"
+    (let [draft (frame/leaf->draft
+                 {:data iris
+                  :mapping {:x :a :y :b :color :species}
+                  :layers [{:layer-type :point :mapping {}}]})]
+      (is (= :species (:color (first draft)))))))
 
-(deftest equivalence-layer-overrides-frame-test
-  (testing "layer mapping overrides frame mapping on shared keys"
-    (is (drafts-equivalent?
-         {:data iris
-          :mapping {:x :a :y :b :color :species}
-          :layers [{:layer-type :point :mapping {:color :a}}]}))))
+(deftest layer-overrides-frame-mapping-test
+  (testing "layer mapping wins on shared keys"
+    (let [draft (frame/leaf->draft
+                 {:data iris
+                  :mapping {:x :a :y :b :color :species}
+                  :layers [{:layer-type :point :mapping {:color :a}}]})]
+      (is (= :a (:color (first draft)))))))
 
-(deftest equivalence-multiple-layers-test
+(deftest multiple-layers-yield-multiple-drafts-test
   (testing "each layer becomes one draft entry"
-    (is (drafts-equivalent?
-         {:data iris
-          :mapping {:x :a :y :b}
-          :layers [{:layer-type :point :mapping {}}
-                   {:layer-type :line  :mapping {}}]}))))
+    (let [draft (frame/leaf->draft
+                 {:data iris
+                  :mapping {:x :a :y :b}
+                  :layers [{:layer-type :point :mapping {}}
+                           {:layer-type :line  :mapping {}}]})]
+      (is (= 2 (count draft)))
+      (is (= #{:point :line} (into #{} (map :mark draft)))))))
 
-(deftest equivalence-layer-structural-keys-test
-  (testing ":stat/:position/:mark siblings on a layer carry through"
-    (is (drafts-equivalent?
-         {:data iris
-          :mapping {:x :a :y :b}
-          :layers [{:layer-type :smooth :mapping {} :stat :linear-model}]}))
-    (is (drafts-equivalent?
-         {:data iris
-          :mapping {:x :a :y :b}
-          :layers [{:layer-type :bar :mapping {} :position :dodge}]}))
-    (is (drafts-equivalent?
-         {:data iris
-          :mapping {:x :a :y :b}
-          :layers [{:layer-type :point :mapping {} :mark :line}]}))))
+(deftest structural-keys-carry-through-test
+  (testing ":stat / :position / :mark siblings on a layer carry through"
+    (is (= :linear-model
+           (:stat (first (frame/leaf->draft
+                          {:data iris
+                           :mapping {:x :a :y :b}
+                           :layers [{:layer-type :smooth :mapping {} :stat :linear-model}]})))))
+    (is (= :dodge
+           (:position (first (frame/leaf->draft
+                              {:data iris
+                               :mapping {:x :a :y :b}
+                               :layers [{:layer-type :bar :mapping {} :position :dodge}]})))))))
 
-(deftest equivalence-empty-layers-test
-  (testing "no layers -> a single {:mark :infer} draft entry"
-    (is (drafts-equivalent?
-         {:data iris
-          :mapping {:x :a :y :b}
-          :layers []}))))
+(deftest empty-layers-yield-infer-placeholder-test
+  (testing "no layers -> one {:mark :infer ...} draft entry"
+    (let [draft (frame/leaf->draft
+                 {:data iris
+                  :mapping {:x :a :y :b}
+                  :layers []})]
+      (is (= 1 (count draft))))))
 
-(deftest equivalence-opts-plot-level-test
+(deftest no-mapping-no-layers-yields-empty-draft-test
+  (testing "a bare leaf with data only produces no draft"
+    (is (empty? (frame/leaf->draft {:data iris :layers []}))
+        "nothing to infer from -- let plan produce a minimal placeholder.")))
+
+(deftest plot-level-opts-stamped-on-every-entry-test
   (testing ":x-scale/:y-scale/:coord on leaf opts stamp on each draft entry"
-    (is (drafts-equivalent?
-         {:data iris
-          :mapping {:x :a :y :b}
-          :layers [{:layer-type :point :mapping {}}]
-          :opts   {:x-scale {:type :log}
-                   :y-scale {:type :linear}
-                   :coord   :flip}}))))
-
-(deftest equivalence-aesthetic-only-frame-annotation-layer-test
-  (testing "frame with no :x/:y + an annotation layer (rule-h) renders one panel"
-    ;; Old adapter path synthesizes an empty view for annotation-only
-    ;; sketches. Frame-native path just emits the annotation directly
-    ;; with :__entry-idx 0. plan.clj treats both as an annotation-only
-    ;; group and synthesizes a domain.
-    (is (drafts-equivalent?
-         {:data iris
-          :layers [{:layer-type :rule-h :mapping {:y-intercept 1.0}}]}))))
+    (let [[e] (frame/leaf->draft
+               {:data iris
+                :mapping {:x :a :y :b}
+                :layers [{:layer-type :point :mapping {}}]
+                :opts   {:x-scale {:type :log}
+                         :y-scale {:type :linear}
+                         :coord   :flip}})]
+      (is (= {:type :log} (:x-scale e)))
+      (is (= {:type :linear} (:y-scale e)))
+      (is (= :flip (:coord e))))))
 
 ;; ============================================================
 ;; Edge case B: layers carry position, frame :mapping does not
 ;; ============================================================
-;;
-;; sketch/leaf-frame->sketch treats this as a sketch with empty mapping
-;; and sketch-level layers, and sketch->draft emits no drafts because
-;; there are no views. Frame-native leaf->draft produces one entry per
-;; layer with :x/:y sourced from the layer, matching the behavior a
-;; user would expect of the frame model. Pinned here so the reroute
-;; keeps this in the spec.
 
 (deftest edge-case-b-layer-carries-position-test
   (testing "leaf has no :x/:y; layer has :x/:y -- one draft entry per layer"
-    (let [leaf {:data iris
-                :layers [{:layer-type :point :mapping {:x :a :y :b}}]}
-          draft (frame/leaf->draft leaf)]
+    (let [draft (frame/leaf->draft
+                 {:data iris
+                  :layers [{:layer-type :point :mapping {:x :a :y :b}}]})]
       (is (= 1 (count draft)))
       (is (= :a (:x (first draft))))
       (is (= :b (:y (first draft))))
@@ -136,10 +116,42 @@
 
 (deftest edge-case-b-multiple-layers-test
   (testing "two layers both carrying position -- two draft entries"
-    (let [leaf {:data iris
-                :layers [{:layer-type :point :mapping {:x :a :y :b}}
-                         {:layer-type :line  :mapping {:x :a :y :b}}]}
-          draft (frame/leaf->draft leaf)]
+    (let [draft (frame/leaf->draft
+                 {:data iris
+                  :layers [{:layer-type :point :mapping {:x :a :y :b}}
+                           {:layer-type :line  :mapping {:x :a :y :b}}]})]
       (is (= 2 (count draft)))
       (is (every? #(= :a (:x %)) draft))
       (is (every? #(= :b (:y %)) draft)))))
+
+;; ============================================================
+;; Facet expansion
+;; ============================================================
+
+(deftest facet-col-expands-draft-test
+  (testing ":opts {:facet-col col} multiplies the draft by distinct values"
+    (let [draft (frame/leaf->draft
+                 {:data iris
+                  :mapping {:x :a :y :b}
+                  :layers [{:layer-type :point :mapping {}}]
+                  :opts   {:facet-col :species}})]
+      (is (= 2 (count draft)) "two distinct species in the test dataset")
+      (is (every? :facet-col draft))
+      (is (every? #(string? (:facet-col %)) draft))
+      (is (apply distinct? (map :__entry-idx draft))
+          "each variant gets its own :__entry-idx so plan groups them as separate panels"))))
+
+(deftest facet-row-and-col-expands-product-test
+  (testing ":opts {:facet-col c :facet-row r} multiplies by the combined values"
+    (let [ds (tc/dataset {:x [1 2 3 4]
+                          :y [1 2 3 4]
+                          :c ["A" "B" "A" "B"]
+                          :r ["X" "X" "Y" "Y"]})
+          draft (frame/leaf->draft
+                 {:data ds
+                  :mapping {:x :x :y :y}
+                  :layers [{:layer-type :point :mapping {}}]
+                  :opts   {:facet-col :c :facet-row :r}})]
+      (is (= 4 (count draft)))
+      (is (every? :facet-col draft))
+      (is (every? :facet-row draft)))))

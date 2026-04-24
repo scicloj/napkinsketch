@@ -322,17 +322,19 @@ multi-plan
 ^:kindly/hide-code
 (kind/mermaid "
 graph TD
-  API[\"api.clj\"] --> SK[\"impl/sketch.clj\"]
+  API[\"api.clj\"] --> FR[\"impl/frame.clj\"]
   API --> RES[\"impl/resolve.clj\"]
   API --> PL[\"impl/plan.clj\"]
-  SK --> RES
-  SK --> PL
+  API --> COMP[\"impl/compositor.clj\"]
+  FR --> RES
+  COMP --> FR
+  COMP --> PL
   PL --> RES
   PL --> STAT[\"impl/stat.clj\"]
   PL --> SCALE[\"impl/scale.clj\"]
   PL --> DEFAULTS[\"impl/defaults.clj\"]
-  PL --> SS[\"impl/sketch_schema.clj\"]
-  SK --> RENDER[\"impl/render.clj\"]
+  PL --> PS[\"impl/plan_schema.clj\"]
+  API --> RENDER[\"impl/render.clj\"]
   RENDER --> SVG[\"render/svg.clj\"]
   SVG --> MEMBRANE[\"render/membrane.clj\"]
   MEMBRANE --> PANEL[\"render/panel.clj\"]
@@ -340,15 +342,19 @@ graph TD
   PANEL --> SCALE
   PANEL --> COORD[\"impl/coord.clj\"]
   style API fill:#c8e6c9
-  style SK fill:#d1c4e9
+  style FR fill:#d1c4e9
+  style COMP fill:#d1c4e9
   style PL fill:#d1c4e9
   style SVG fill:#f8bbd0
   style MEMBRANE fill:#f8bbd0
 ")
 
-;; `impl/sketch.clj` holds the `Sketch` record, `sketch->draft`
-;; (flattens views and layers into draft maps), and `render-sketch`
-;; (drives the full pipeline for auto-rendering in notebooks).
+;; `impl/frame.clj` holds the frame substrate: `resolve-tree` (merges
+;; mappings/data/opts down from root to every leaf), `leaf->draft`
+;; (flattens a leaf into draft maps with optional facet expansion),
+;; and the multi-pair / grid composite utilities.
+;; `impl/compositor.clj` handles composite rendering -- each leaf
+;; becomes a sub-plot, tiled via layout.
 ;; `impl/plan.clj` holds `draft->plan` (domains, ticks, legends, layout).
 ;; `impl/resolve.clj` holds `resolve-draft-layer` (single draft layer resolution,
 ;; column type inference, grouping).
