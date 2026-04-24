@@ -9,35 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### SPLOM strip labels
 
-Grid composites built from `(sk/frame data (sk/cross cols cols))`
+Grid composites built from `(pj/frame data (pj/cross cols cols))`
 now render strip labels above the top row (one per column,
 naming the y column) and to the left of the leftmost column (one
-per row, naming the x column) -- matching the legacy `sk/view`
+per row, naming the x column) -- matching the legacy `pj/view`
 SPLOM chrome. Labels are drawn at the compositor level rather
 than plumbed through each cell's plan, so tight SPLOM layouts
 with long column names don't squeeze the per-panel width. The
 `cross-grid-strip-labels-test` no longer carries a FIXME.
 
-### Retired: sk/sketch, sk/view, and impl/sketch.clj
+### Retired: pj/sketch, pj/view, and impl/sketch.clj
 
 The Sketch record, its constructors, and its adapter surface are
 gone. The frame substrate is now the only internal spec type.
 
 Removed user-facing API:
 
-- `sk/sketch`, `sk/view`, `sk/sketch?` -- use `sk/frame`, `sk/lay-*`,
-  and `sk/frame?` instead.
+- `pj/sketch`, `pj/view`, `pj/sketch?` -- use `pj/frame`, `pj/lay-*`,
+  and `pj/frame?` instead.
 - The `Sketch` record itself (`impl/sketch.clj`, ~348 lines).
 
 Internal changes the deletion required:
 
-- `sk/lay-*` on raw data now coerces through `sk/frame` and returns a
+- `pj/lay-*` on raw data now coerces through `pj/frame` and returns a
   frame; previously the adapter returned a Sketch record.
-- `sk/with-data`, `sk/options`, `sk/scale`, `sk/coord`, `sk/save`, and
-  `sk/save-png` all coerce non-frame inputs via a new private
+- `pj/with-data`, `pj/options`, `pj/scale`, `pj/coord`, `pj/save`, and
+  `pj/save-png` all coerce non-frame inputs via a new private
   `ensure-frame` helper (raw data -> leaf frame) rather than the old
   `ensure-sk` (raw data -> Sketch).
-- `sk/facet` and `sk/facet-grid` write to the frame's `:opts` instead
+- `pj/facet` and `pj/facet-grid` write to the frame's `:opts` instead
   of routing through `ensure-sk`. The facet-expansion logic moved
   from `impl/sketch.clj`'s `expand-facets` into
   `impl/frame/leaf->draft`: when a leaf's `:opts` carry
@@ -49,8 +49,8 @@ Internal changes the deletion required:
 - `impl/sketch_schema.clj` renamed to `impl/plan_schema.clj` -- it
   was misnamed; the namespace holds Malli schemas for the plan data
   model, not the Sketch record.
-- Multi-column `sk/lay-*` (`(sk/lay-histogram data [:a :b :c])`) now
-  builds a multi-pair composite via `sk/frame` and attaches a bare
+- Multi-column `pj/lay-*` (`(pj/lay-histogram data [:a :b :c])`) now
+  builds a multi-pair composite via `pj/frame` and attaches a bare
   layer at the root; the layer flows to every panel via
   `resolve-tree`. Previously this path created N views with N
   identical layers.
@@ -59,18 +59,18 @@ Internal changes the deletion required:
 
 Known shape changes from the retirement:
 
-- `(sk/lay-point data :x :y {:color :g})` now places `:color` on the
+- `(pj/lay-point data :x :y {:color :g})` now places `:color` on the
   layer's own `:mapping`, not on the frame's root `:mapping`. Semantic
   behaviour at render time is unchanged.
-- Chaining two `sk/lay-*` calls with different position columns on
+- Chaining two `pj/lay-*` calls with different position columns on
   the same leaf no longer silently creates two panels; both layers
   attach to the same leaf. To create two panels, promote explicitly
-  via `(sk/frame data [[:a :b] [:c :d]])`.
+  via `(pj/frame data [[:a :b] [:c :d]])`.
 
 ### Frame-native pipeline (Phase 6 slice 2)
 
 The frame substrate now runs the full draft emission pipeline on its
-own. `sk/plan`, `sk/plot`, and `sk/draft` read a leaf frame directly
+own. `pj/plan`, `pj/plot`, and `pj/draft` read a leaf frame directly
 via a new `impl.frame/leaf->draft`; the compositor reads each
 resolved leaf the same way. The Sketch detour
 (`leaf-frame->sketch` -> `sketch->draft`) is no longer on the frame
@@ -82,13 +82,13 @@ User-visible behavior:
   layer (not on the frame's own `:mapping`) used to emit an empty
   draft. The layer's position is now read and the draft carries one
   entry per layer.
-- `sk/with-data` accepts frames directly and keeps them as frames
+- `pj/with-data` accepts frames directly and keeps them as frames
   (it used to force frames through the Sketch adapter, returning a
   Sketch record).
-- `sk/frame` gains a multi-pair arity: `(sk/frame fr [[:a :b]
-  [:c :d] ...])` and `(sk/frame fr [:a :b :c])` append panels in
+- `pj/frame` gains a multi-pair arity: `(pj/frame fr [[:a :b]
+  [:c :d] ...])` and `(pj/frame fr [:a :b :c])` append panels in
   one call.
-- `(sk/frame fr (sk/cross cols cols))` builds a SPLOM: when the
+- `(pj/frame fr (pj/cross cols cols))` builds a SPLOM: when the
   pairs form an M x N Cartesian rectangle, the result is a nested
   rows-of-cols composite with `:share-scales #{:x :y}`. The
   compositor renders one shared legend on the right (when the
@@ -96,25 +96,25 @@ User-visible behavior:
   x-axis labels on non-bottom rows and y-axis labels on non-leftmost
   columns, and lets per-cell inference pick the layer type --
   scatter off-diagonal, histogram on the diagonal where x = y
-  (matching the legacy sk/view SPLOM behaviour). The idiomatic SPLOM
-  omits `sk/lay-point`:
+  (matching the legacy pj/view SPLOM behaviour). The idiomatic SPLOM
+  omits `pj/lay-point`:
   ```clojure
   (-> data
-      (sk/frame {:color :species})
-      (sk/frame (sk/cross cols cols)))
+      (pj/frame {:color :species})
+      (pj/frame (pj/cross cols cols)))
   ```
 
 User-facing examples across the book and gallery have been migrated
-to `sk/frame`. SPLOM examples in gallery, scatter, faceting,
+to `pj/frame`. SPLOM examples in gallery, scatter, faceting,
 customization, and edge_cases all use the new frame-native pattern.
 
 Also fixed: `promote-leaf` was dropping `:opts` when the leaf got
-wrapped into a composite. Plot-level options set via `sk/options`
+wrapped into a composite. Plot-level options set via `pj/options`
 before promotion now correctly carry to the new composite's root.
 
-### Breaking: `sk/arrange` returns a composite frame
+### Breaking: `pj/arrange` returns a composite frame
 
-`sk/arrange` now returns a composite frame (a plain-map value) instead
+`pj/arrange` now returns a composite frame (a plain-map value) instead
 of CSS-grid hiccup. The composite renders through the membrane
 rendering pipeline, so both `:svg` (default) and `:bufimg` targets work
 the same way they do for single plots.
@@ -132,18 +132,18 @@ Migration for the common case:
 
 ```clojure
 ;; Before
-(sk/arrange [(sk/plot sk-a) (sk/plot sk-b)])
+(pj/arrange [(pj/plot sk-a) (pj/plot sk-b)])
 
 ;; After
-(sk/arrange [sk-a sk-b])
+(pj/arrange [sk-a sk-b])
 ```
 
 The composite frame auto-renders in notebooks via `kind/fn`, and
-passing it to `sk/plot` returns SVG hiccup as before.
+passing it to `pj/plot` returns SVG hiccup as before.
 
 ### Facet deferral (internal)
 
-The pre-alpha refactor plan listed `sk/facet` and `sk/facet-grid` for
+The pre-alpha refactor plan listed `pj/facet` and `pj/facet-grid` for
 migration onto the composite substrate in this slice. We chose to
 defer -- see `dev-notes/facet-composite-deferral.md` for the rationale
 (unified-membrane guarantee, Option C for shared chrome).
@@ -157,11 +157,11 @@ subject to change based on early adopter feedback.
 
 Reference lines and shaded bands used to live in `[:opts :annotations]`,
 applied uniformly to every panel, and were attached with a separate
-`sk/annotate` wrapper around `sk/rule-h`/`sk/rule-v`/`sk/band-h`/`sk/band-v`.
+`pj/annotate` wrapper around `pj/rule-h`/`pj/rule-v`/`pj/band-h`/`pj/band-v`.
 This release replaces that entire path with first-class layers:
 
-- `sk/lay-rule-h` / `sk/lay-rule-v` -- horizontal / vertical reference line
-- `sk/lay-band-h` / `sk/lay-band-v` -- horizontal / vertical shaded band
+- `pj/lay-rule-h` / `pj/lay-rule-v` -- horizontal / vertical reference line
+- `pj/lay-band-h` / `pj/lay-band-v` -- horizontal / vertical shaded band
 
 These are ordinary `lay-*` functions: bare arity is sketch-scope (every
 panel), the four-argument arity with column refs is view-scope (only
@@ -171,10 +171,10 @@ opts map (`:y-intercept` for `lay-rule-h`, `:x-intercept` for
 `lay-band-v`). Appearance aesthetics (`:color`, `:alpha`) are literal
 values in the same opts map.
 
-The old API is removed: `sk/annotate`, `sk/rule-h`, `sk/rule-v`,
-`sk/band-h`, `sk/band-v`, and the `[:opts :annotations]` slot no longer
+The old API is removed: `pj/annotate`, `pj/rule-h`, `pj/rule-v`,
+`pj/band-h`, `pj/band-v`, and the `[:opts :annotations]` slot no longer
 exist. Migration is mechanical -- replace each call with the corresponding
-`sk/lay-*` form. Column-mapped positions (one rule per row, ggplot2's
+`pj/lay-*` form. Column-mapped positions (one rule per row, ggplot2's
 `geom_hline(aes(yintercept=...))`) are deferred to a future milestone;
 literal positions only in this release.
 
@@ -197,7 +197,7 @@ pin the panel size on their axis when you do want a specific panel
 size regardless of overhead. Either or both can be set.
 
 The new semantics apply to every layout type: single-panel plots,
-facet grids, SPLOMs, and `sk/arrange` dashboards all honor the
+facet grids, SPLOMs, and `pj/arrange` dashboards all honor the
 total `:width`/`:height` as a hard bound. SPLOMs in particular
 used to use `:panel-size` from cfg and silently ignore
 `:width`/`:height`; now they derive panel dimensions from the
@@ -207,13 +207,13 @@ at the default 600x400 will end up with small panels -- bump
 explicitly. The `:panel-size` cfg key still exists for backwards
 compatibility but is no longer consulted by the layout pipeline.
 
-`sk/arrange` defaults `:width`/`:height` from cfg (600 and 400)
+`pj/arrange` defaults `:width`/`:height` from cfg (600 and 400)
 when they aren't passed, always re-plans sub-sketches at the
 derived per-cell size so text stays at native resolution, and
 wraps the result in a fixed-width CSS grid. Pre-rendered hiccup
 plots pass through unchanged and inherit the CSS grid cell size.
 To restore the old "each plot at its own full size" behavior,
-pre-render each sketch with `sk/plot` before passing to arrange.
+pre-render each sketch with `pj/plot` before passing to arrange.
 
 The layout pipeline was rewritten around three pure functions
 (`compute-scene` / `compute-padding` / `compute-dims`, in
@@ -282,7 +282,7 @@ and friends) -- no explicit render call required.
 ### Features
 
 **Composable pipeline.** Everything you do to build a plot -- create
-a frame (`sk/frame`), add layers (`sk/lay-*`), set aesthetic
+a frame (`pj/frame`), add layers (`pj/lay-*`), set aesthetic
 mappings, apply scales and coordinate transforms, add facets, attach
 annotations, set plot options -- flows through `->`. Every function
 takes a frame and returns a frame, so there is no plot-assembly
@@ -309,17 +309,17 @@ for heatmaps, boxplot five-number summary with R type 7 quartiles,
 violin density per category, and mean + standard error summaries.
 Every stat is a multimethod — you can register new ones.
 
-**Faceting.** `sk/facet` for single-variable paneling (one row or
-column of panels), `sk/facet-grid` for row x column grids, `sk/cross`
+**Faceting.** `pj/facet` for single-variable paneling (one row or
+column of panels), `pj/facet-grid` for row x column grids, `pj/cross`
 as a helper for building scatter-plot matrices (SPLOM), and
-`sk/distribution` for the diagonal of a SPLOM (univariate
+`pj/distribution` for the diagonal of a SPLOM (univariate
 distributions).
 
 **Coordinate systems.** Cartesian (default), flip, polar, and fixed
 (1:1 aspect ratio).
 
 **Scales.** Linear, log, categorical, and datetime — type is
-auto-detected from the column and can be overridden via `sk/scale`.
+auto-detected from the column and can be overridden via `pj/scale`.
 
 **Continuous and categorical color.** Numeric columns map to a
 continuous gradient (ggplot2-style dark-to-light blue by default;
@@ -328,8 +328,8 @@ via `:color-scale`) with a color bar legend. Categorical columns draw
 from one of ~7000 palettes exposed by clojure2d. Diverging color
 scales with custom midpoints are also supported.
 
-**Annotations.** Reference lines (`sk/lay-rule-h`, `sk/lay-rule-v`)
-and shaded bands (`sk/lay-band-h`, `sk/lay-band-v`) as first-class
+**Annotations.** Reference lines (`pj/lay-rule-h`, `pj/lay-rule-v`)
+and shaded bands (`pj/lay-band-h`, `pj/lay-band-v`) as first-class
 layers. Sketch-scope annotations apply to every panel; view-scope
 annotations apply only to panels matching the view's x/y mapping.
 
@@ -347,7 +347,7 @@ and the web; raster PNG via `:format :bufimg` for large scatters or
 Java2D-based export. Both are exercised by the same plan -- only the
 terminal stage differs.
 
-**Multi-plot dashboards.** `sk/arrange` composes several plots into a
+**Multi-plot dashboards.** `pj/arrange` composes several plots into a
 CSS grid, with optional titles and flexible row/column layouts.
 
 **Interactivity.** Opt-in hover tooltips (`{:tooltip true}`) and
@@ -365,10 +365,10 @@ references, mixed-type columns, unknown methods, unknown options on
 numeric stats, and numeric x passed to categorical marks all fail
 with a clear, actionable error pointing at the offending input.
 
-**Plan inspection.** `sk/plan` returns a plain Clojure data structure
+**Plan inspection.** `pj/plan` returns a plain Clojure data structure
 (domains, ticks, legends, layout, resolved layers) that can be
 inspected, serialized, or re-rendered by alternative backends.
-`sk/svg-summary`, `sk/valid-plan?`, and `sk/explain-plan` support
+`pj/svg-summary`, `pj/valid-plan?`, and `pj/explain-plan` support
 structural testing.
 
 **Extensibility.** Eight multimethods -- `compute-stat`,
@@ -408,7 +408,7 @@ sketch -> draft -> plan -> membrane -> figure
 
 - **Sketch** — user-facing composable value (`data + mapping + views
   + layers + opts`)
-- **Draft** — flat maps produced by `sk/draft` (one per view-layer
+- **Draft** — flat maps produced by `pj/draft` (one per view-layer
   combination), the bridge between API composition and planning
 - **Plan** — plain Clojure data with dtype-next buffers (domains,
   ticks, legends, layout, resolved layers); serializable, inspectable,
@@ -428,8 +428,8 @@ produce crashes on canonical inputs.
 
 **Layout and visuals:**
 
-- Multi-layer overlays like `(-> data (sk/lay-point ...) (sk/lay-lm ...)
-  (sk/lay-loess ...))` do not auto-generate a layer-kind legend to
+- Multi-layer overlays like `(-> data (pj/lay-point ...) (pj/lay-lm ...)
+  (pj/lay-loess ...))` do not auto-generate a layer-kind legend to
   distinguish the two regression curves. Workaround: color each
   layer explicitly.
 - SPLOM row labels render left-anchored instead of right-anchored
@@ -442,13 +442,13 @@ produce crashes on canonical inputs.
   back to data values.
 - SPLOMs with 6+ variables at the default 600x400 have tight panels.
   Bump `:width`/`:height` or pin `:panel-width`/`:panel-height`.
-- Horizontal bars from `(sk/coord :flip)` render the first row of
+- Horizontal bars from `(pj/coord :flip)` render the first row of
   data at the bottom of the chart, so a dataset sorted descending
   (natural "top N" order) produces the biggest bar at the bottom.
   The behavior matches ggplot2's `coord_flip()`. Workaround: sort
   the dataset ascending before plotting, e.g.
   `(tc/order-by data [:value] [:asc])`. A future opt-in flag such
-  as `(sk/coord :flip {:reverse-categorical true})` would spare
+  as `(pj/coord :flip {:reverse-categorical true})` would spare
   users the sort. Reported in user-report-1 Issue 3.
 
 **Marks:**
@@ -459,26 +459,26 @@ produce crashes on canonical inputs.
   -- rose charts currently render with zero text.
 - Stacked bars don't split positive and negative values; all-positive
   data works, but mixed-sign data stacks incorrectly.
-- `sk/lay-tile` (and the underlying `:bin2d` stat) requires numeric
+- `pj/lay-tile` (and the underlying `:bin2d` stat) requires numeric
   x and y columns. Passing categorical axes throws
   `ClassCastException: String cannot be cast to Number`. Workaround:
   bin externally and render with explicit numeric bin centers, or
-  use `sk/lay-value-bar` with `{:color :value}` for a
+  use `pj/lay-value-bar` with `{:color :value}` for a
   categorical-axis "heatmap" look.
-- `sk/lay-stacked-bar` / `sk/lay-stacked-bar-fill` are count-only
+- `pj/lay-stacked-bar` / `pj/lay-stacked-bar-fill` are count-only
   and reject a `y` column -- there is no clean way to render a
   stacked bar chart of pre-aggregated values (e.g. a "messages
   per year broken down by tenure bucket" chart where the counts
-  are already computed). `sk/lay-stacked-area` does accept
+  are already computed). `pj/lay-stacked-area` does accept
   pre-aggregated `y`, so the pattern works there. Workarounds:
   lift the aggregation (expand each row back into count-many
   duplicate rows so `:count` sums to the pre-aggregated value),
-  or use `sk/lay-stacked-area` on a numeric x. A proper fix
+  or use `pj/lay-stacked-area` on a numeric x. A proper fix
   (either lift the restriction when `y` is supplied, or add a
-  `sk/lay-stacked-value-bar`) is planned. Reported in
+  `pj/lay-stacked-value-bar`) is planned. Reported in
   user-report-2 Issue 2.
-- Stack order in `sk/lay-stacked-area` and
-  `sk/lay-stacked-bar` follows the sort order of the `:color`
+- Stack order in `pj/lay-stacked-area` and
+  `pj/lay-stacked-bar` follows the sort order of the `:color`
   column. There is no `:stack-order` / `:color-order` option yet,
   so forcing a specific bottom-to-top order requires prefixing
   category labels with sort-stable ordinal characters
@@ -488,25 +488,25 @@ produce crashes on canonical inputs.
   no-op. Only column mappings to `:shape` take effect.
 - Faceted panels default to free scales per panel (ggplot2's default
   is fixed); an explicit `:facet-scales :fixed` option is pending.
-  A consequence: a sketch-scope annotation (`sk/lay-rule-*` /
-  `sk/lay-band-*`) is invisible in any panel whose per-panel domain
+  A consequence: a sketch-scope annotation (`pj/lay-rule-*` /
+  `pj/lay-band-*`) is invisible in any panel whose per-panel domain
   doesn't contain the intercept -- for example, `{:y-intercept 6.0}`
   on a species-faceted scatter won't appear in setosa if setosa's
   y-range is [4, 5.5]. Workaround: pin the y-domain explicitly via
-  `(sk/scale :y {:domain [...]})`.
-- Annotations are silently skipped under `(sk/coord :polar)`. A polar
+  `(pj/scale :y {:domain [...]})`.
+- Annotations are silently skipped under `(pj/coord :polar)`. A polar
   rule would need to render as a circle (fixed radius) or spoke
   (fixed angle); those shapes are not implemented. Use Cartesian or
   flip coords for annotated plots.
-- `sk/facet` and `sk/facet-grid` require a categorical column --
+- `pj/facet` and `pj/facet-grid` require a categorical column --
   passing a numeric column (e.g. mpg's `:cyl`) produces empty
   panels. Workaround: convert to string or keyword before faceting,
   or pick an already-categorical column.
 - Large scatters produce large SVGs (~220 bytes/point). For >10k
   points, use `:format :bufimg` for raster output.
-- `sk/save-png` (and the `:bufimg` raster path generally) truncates
+- `pj/save-png` (and the `:bufimg` raster path generally) truncates
   the rotated y-axis label after ~6 characters. The SVG path
-  (`sk/plot` + Clay GFM, or `rsvg-convert` on the saved SVG)
+  (`pj/plot` + Clay GFM, or `rsvg-convert` on the saved SVG)
   renders the full label. Root cause lives in membrane's Java2D
   backend (the rotated-text bounding box is clipped). Workaround:
   render to SVG and rasterize externally, or pad `:y-label` to
@@ -519,11 +519,11 @@ produce crashes on canonical inputs.
 - `:panel-size` is a legacy config key from the pre-total-first
   layout. It now emits a deprecation warning and is ignored. Use
   `:panel-width` / `:panel-height` (total-first escape hatches).
-- The `:width` key on a `sk/plan` result preserves the user's
+- The `:width` key on a `pj/plan` result preserves the user's
   original request even when `:panel-width` pins the real size --
   inspect `:total-width`/`:total-height` for the rendered canvas.
-- `sk/plan` called on a plan or on a hiccup value now throws a
-  clear error. Call `sk/plan` only on sketches.
+- `pj/plan` called on a plan or on a hiccup value now throws a
+  clear error. Call `pj/plan` only on sketches.
 
 **Schema errors that could be friendlier:**
 
@@ -535,8 +535,8 @@ produce crashes on canonical inputs.
 **Mixing keyword and string column references:**
 
 - Mapping the same column with a keyword in one place and a string
-  in another (e.g. `(sk/frame ds {:color :group})` then
-  `(sk/lay-point :x :y {:color "group"})`) is not normalized: the
+  in another (e.g. `(pj/frame ds {:color :group})` then
+  `(pj/lay-point :x :y {:color "group"})`) is not normalized: the
   scope hierarchy treats them as different keys and the result is a
   silent empty plot. Workaround: pick one form (keyword or string)
   and use it consistently within a frame.

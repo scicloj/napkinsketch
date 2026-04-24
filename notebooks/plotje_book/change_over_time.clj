@@ -9,7 +9,7 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]))
+   [scicloj.plotje.api :as pj]))
 
 ;; ## Line
 
@@ -19,9 +19,9 @@
            :y (map #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
-    (sk/lay-line :x :y))
+    (pj/lay-line :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 1 (:lines s)))))])
 
@@ -35,9 +35,9 @@
             :fn (concat (repeat 30 :sin) (repeat 30 :cos))})
 
 (-> waves
-    (sk/lay-line :x :y {:color :fn}))
+    (pj/lay-line :x :y {:color :fn}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 2 (:lines s)))))])
 
@@ -46,9 +46,9 @@
 ;; Constant stroke width via `:size`.
 
 (-> wave
-    (sk/lay-line :x :y {:size 4}))
+    (pj/lay-line :x :y {:size 4}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 1 (:lines s)))))])
 
@@ -62,11 +62,11 @@
    :group [:a :a :a :a :a :b :b :b :b :b]})
 
 (-> growth
-    (sk/frame :day :value {:color :group})
-    sk/lay-line
-    sk/lay-point)
+    (pj/frame :day :value {:color :group})
+    pj/lay-line
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 10 (:points s))
                                 (= 2 (:lines s)))))])
 
@@ -76,10 +76,10 @@
 
 (-> {:x [1 2 3 4 5]
      :y [2 4 1 5 3]}
-    (sk/lay-step :x :y)
-    sk/lay-point)
+    (pj/lay-step :x :y)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 5 (:points s))
                                 (= 1 (:lines s)))))])
 
@@ -88,11 +88,11 @@
 ;; Grouped step lines.
 
 (-> growth
-    (sk/frame :day :value {:color :group})
-    sk/lay-step
-    sk/lay-point)
+    (pj/frame :day :value {:color :group})
+    pj/lay-step
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 10 (:points s))
                                 (= 2 (:lines s)))))])
 
@@ -102,9 +102,9 @@
 
 (-> {:x (range 30)
      :y (map #(Math/sin (* % 0.3)) (range 30))}
-    (sk/lay-area :x :y))
+    (pj/lay-area :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 1 (:polygons s)))))])
 
@@ -117,9 +117,9 @@
                 [2 2 2 3 3 3 2 2 2 2]
                 [1 1 1 1 2 2 2 1 1 1])
      :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
-    (sk/lay-area :x :y {:position :stack :color :group}))
+    (pj/lay-area :x :y {:position :stack :color :group}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 3 (:polygons s)))))])
 
@@ -134,10 +134,10 @@
 (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
             #inst "2024-04-01" #inst "2024-05-01" #inst "2024-06-01"]
      :temperature [3 5 9 14 19 23]}
-    (sk/lay-line :date :temperature)
-    sk/lay-point)
+    (pj/lay-line :date :temperature)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 6 (:points s))
                                 (= 1 (:lines s)))))])
 
@@ -156,10 +156,10 @@
                    15 17 19 22 25 28]
      :city        (concat (repeat 6 "Zurich")
                           (repeat 6 "Athens"))}
-    (sk/lay-line :date :temperature {:color :city})
-    sk/lay-point)
+    (pj/lay-line :date :temperature {:color :city})
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 12 (:points s))
                                 (= 2 (:lines s)))))])
 

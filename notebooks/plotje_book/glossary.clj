@@ -10,7 +10,7 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; clojure2d -- color palettes and gradients
    [clojure2d.color :as c2d]))
 
@@ -19,20 +19,20 @@
 ;; A **frame** is the unified composable value in Plotje. A
 ;; leaf frame describes one plot panel; a composite frame contains
 ;; sub-frames arranged together. Every function in the API
-;; (`sk/frame`, `sk/lay-*`, `sk/facet`, `sk/arrange`, `sk/options`,
-;; `sk/scale`, `sk/coord`) takes a frame and returns a frame.
+;; (`pj/frame`, `pj/lay-*`, `pj/facet`, `pj/arrange`, `pj/options`,
+;; `pj/scale`, `pj/coord`) takes a frame and returns a frame.
 ;; Frames auto-render in
 ;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).
 
 (def my-frame
   (-> (rdatasets/datasets-iris)
-      (sk/lay-point :sepal-length :sepal-width {:color :species})
-      (sk/options {:title "Iris"})))
+      (pj/lay-point :sepal-length :sepal-width {:color :species})
+      (pj/options {:title "Iris"})))
 
 my-frame
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; A frame is a plain Clojure value -- inspect it with `kind/pprint`
 ;; or reach into its fields directly.
@@ -42,29 +42,29 @@ my-frame
 ;; A **leaf frame** is a frame that describes a single plot panel.
 ;; It carries `:data`, a `:mapping` from columns to aesthetics, and
 ;; `:layers` -- the chart-type layers attached to it. Created by
-;; `sk/frame` or `sk/lay-*`.
+;; `pj/frame` or `pj/lay-*`.
 
 ;; ## Composite Frame
 ;;
 ;; A **composite frame** is a frame that contains other frames under
-;; `:frames` plus an optional `:layout`. Created by `sk/arrange` (and
-;; later, by `sk/mosaic` and `sk/with-marginals`). Its leaves render
+;; `:frames` plus an optional `:layout`. Created by `pj/arrange` (and
+;; later, by `pj/mosaic` and `pj/with-marginals`). Its leaves render
 ;; independently and are tiled into the final plot.
 ;;
 ;; For hand-built composite maps (needed when you want features beyond
-;; what `sk/arrange` offers -- unequal weights, nested frames,
-;; cross-sibling shared scales), wrap the map with `sk/prepare-frame`
+;; what `pj/arrange` offers -- unequal weights, nested frames,
+;; cross-sibling shared scales), wrap the map with `pj/prepare-frame`
 ;; so it carries the Kindly metadata needed to auto-render.
 
 ;; ## Prepare Frame
 ;;
-;; `sk/prepare-frame` lifts a hand-built frame map (leaf or composite)
+;; `pj/prepare-frame` lifts a hand-built frame map (leaf or composite)
 ;; to a first-class frame value. It coerces `:data` at every depth,
 ;; captures the current configuration for render-time restoration,
 ;; and attaches Kindly metadata so the frame auto-renders in notebook
 ;; viewers. Use it when you construct a composite frame by literal
-;; map and want it to behave like one built with `sk/frame` or
-;; `sk/arrange`.
+;; map and want it to behave like one built with `pj/frame` or
+;; `pj/arrange`.
 
 ;; ## Layer Type
 ;;
@@ -74,15 +74,15 @@ my-frame
 ;; tables of all built-in layer types, marks, stats, and positions.
 ;;
 ;; Layer types attach to frames in three ways, depending on what you
-;; pass to `sk/lay-*`:
+;; pass to `pj/lay-*`:
 ;;
-;; - **Bare** -- `sk/lay-*` without columns attaches the layer so it
-;;   sees the current frame's mapping (inherited from `sk/frame` or
-;;   a prior `sk/lay-*`).
-;; - **Matching columns** -- `sk/lay-*` with columns that match the
+;; - **Bare** -- `pj/lay-*` without columns attaches the layer so it
+;;   sees the current frame's mapping (inherited from `pj/frame` or
+;;   a prior `pj/lay-*`).
+;; - **Matching columns** -- `pj/lay-*` with columns that match the
 ;;   most recent matching leaf reuses that leaf, so the new layer
 ;;   joins the existing panel.
-;; - **Non-matching columns** -- `sk/lay-*` with columns that do not
+;; - **Non-matching columns** -- `pj/lay-*` with columns that do not
 ;;   match any existing leaf creates a fresh leaf frame with the
 ;;   layer attached.
 
@@ -119,25 +119,25 @@ my-frame
            :meal ["lunch" "dinner" "lunch" "dinner"]})
 
 (-> tips
-    (sk/lay-value-bar :day :count {:color :meal :position :stack})
-    sk/plan
+    (pj/lay-value-bar :day :count {:color :meal :position :stack})
+    pj/plan
     (get-in [:panels 0 :layers 0 :groups 1 :y0s]))
 
 (kind/test-last [(fn [y0s] (every? pos? y0s))])
 
 ;; ## Draft
 ;;
-;; A **draft** is a vector of flat maps produced by `sk/draft`. Each
+;; A **draft** is a vector of flat maps produced by `pj/draft`. Each
 ;; applicable layer in a frame resolves to one draft element by
 ;; merging the frame and layer mappings. Draft elements carry all
 ;; the information the pipeline needs: data, columns, mark, stat,
 ;; color, grouping.
 ;;
-;; `sk/draft` is useful for inspecting exactly what the renderer
+;; `pj/draft` is useful for inspecting exactly what the renderer
 ;; will consume before any domains, ticks, or coordinate math are
 ;; computed.
 
-(-> my-frame sk/draft kind/pprint)
+(-> my-frame pj/draft kind/pprint)
 
 (kind/test-last [(fn [d] (and (vector? d)
                               (= 1 (count d))
@@ -161,7 +161,7 @@ my-frame
 ;; A literal value (e.g., `"#E74C3C"`, `"red"`, `0.5`) sets a fixed
 ;; aesthetic for all points.
 
-(merge (sk/layer-type-lookup :point) {:color :species :size :petal-length :alpha 0.7})
+(merge (pj/layer-type-lookup :point) {:color :species :size :petal-length :alpha 0.7})
 
 (kind/test-last [(fn [m] (and (= :species (:color m))
                               (= :petal-length (:size m))
@@ -175,8 +175,8 @@ my-frame
 ;; without color using the `:group` key.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-line :sepal-length :sepal-width {:group :species})
-    sk/plan
+    (pj/lay-line :sepal-length :sepal-width {:group :species})
+    pj/plan
     (get-in [:panels 0 :layers 0 :groups])
     count)
 
@@ -190,8 +190,8 @@ my-frame
 ;; keys in the layer options.
 
 (-> {:x [1 2 3] :y [4 5 6]}
-    (sk/lay-point :x :y {:nudge-x 0.5})
-    sk/plan
+    (pj/lay-point :x :y {:nudge-x 0.5})
+    pj/plan
     (get-in [:panels 0 :layers 0 :groups 0 :xs]))
 
 (kind/test-last [(fn [xs] (= [1.5 2.5 3.5] xs))])
@@ -206,25 +206,25 @@ my-frame
 ;;
 ;; On categorical x-axes, jitter is applied along the band axis only.
 
-(merge (sk/layer-type-lookup :point) {:jitter true})
+(merge (pj/layer-type-lookup :point) {:jitter true})
 
 (kind/test-last [(fn [m] (true? (:jitter m)))])
 
 ;; ## Inference
 ;;
 ;; **Inference** is the automatic selection of a layer type
-;; (mark + stat + position) when you bypass `sk/lay-*` and just pass
-;; columns to `sk/frame`. Plotje picks a layer type based on
+;; (mark + stat + position) when you bypass `pj/lay-*` and just pass
+;; columns to `pj/frame`. Plotje picks a layer type based on
 ;; column types: numerical x and y defaults to `:point`, categorical
 ;; x with numerical y to `:boxplot`, a single numerical column to
 ;; `:histogram`, and so on. Use `:x-type` / `:y-type` on a frame or
 ;; layer to override the detected type.
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point)
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:points (pj/svg-summary v))))])
 
 ;; ## Plan
 ;;
@@ -233,11 +233,11 @@ my-frame
 ;; plot: data-space geometry, domains, tick info, legend, layout
 ;; dimensions. No membrane types, no datasets, no scale objects.
 ;;
-;; Created with `sk/plan`. Numeric arrays (`:xs`, `:ys`, etc.) are
+;; Created with `pj/plan`. Numeric arrays (`:xs`, `:ys`, etc.) are
 ;; [dtype-next](https://github.com/cnuernber/dtype-next) buffers for
 ;; efficiency.
 
-(def my-plan (sk/plan my-frame))
+(def my-plan (pj/plan my-frame))
 
 (sort (keys my-plan))
 
@@ -247,7 +247,7 @@ my-frame
 ;;
 ;; A **panel** is a single plotting area within a plan. It contains
 ;; x/y domains, scale specs, tick info, coordinate type, and layers.
-;; A simple plot has one panel; `sk/facet` and `sk/facet-grid`
+;; A simple plot has one panel; `pj/facet` and `pj/facet-grid`
 ;; produce multiple.
 
 (sort (keys (first (:panels my-plan))))
@@ -261,7 +261,7 @@ my-frame
 ;; panels in the plan.
 
 (-> my-frame
-    sk/plan
+    pj/plan
     (get-in [:panels 0 :layers 0]))
 
 (kind/test-last [(fn [m] (= :point (:mark m)))])
@@ -331,18 +331,18 @@ my-frame
 ;; A **facet** splits data into multiple panels by a categorical
 ;; column. Each panel shows a subset of the data.
 ;;
-;; - `sk/facet` creates a row or column of panels
-;; - `sk/facet-grid` creates a row-by-column grid from two columns
+;; - `pj/facet` creates a row or column of panels
+;; - `pj/facet-grid` creates a row-by-column grid from two columns
 ;;
 ;; By default each panel has its own domains, derived from the data
 ;; in that panel -- so scales are independent per panel. To force
 ;; shared axis ranges across panels, pin the domain explicitly with
-;; `(sk/scale :x {:domain [lo hi]})` (and/or `:y`).
+;; `(pj/scale :x {:domain [lo hi]})` (and/or `:y`).
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/facet :species)
-    sk/plan :panels count)
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/facet :species)
+    pj/plan :panels count)
 
 (kind/test-last [(fn [n] (= 3 n))])
 
@@ -359,14 +359,14 @@ my-frame
 ;;
 ;; | Constructor | What |
 ;; |:------------|:-----|
-;; | `sk/lay-rule-v` | Vertical line at x = x-intercept |
-;; | `sk/lay-rule-h` | Horizontal line at y = y-intercept |
-;; | `sk/lay-band-v` | Vertical shaded region from x = x-min to x = x-max |
-;; | `sk/lay-band-h` | Horizontal shaded region from y = y-min to y = y-max |
+;; | `pj/lay-rule-v` | Vertical line at x = x-intercept |
+;; | `pj/lay-rule-h` | Horizontal line at y = y-intercept |
+;; | `pj/lay-band-v` | Vertical shaded region from x = x-min to x = x-max |
+;; | `pj/lay-band-h` | Horizontal shaded region from y = y-min to y = y-max |
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-rule-h {:y-intercept 3.0})
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-rule-h {:y-intercept 3.0})
     :layers (nth 1) :layer-type)
 
 (kind/test-last [(fn [m] (= :rule-h m))])
@@ -394,15 +394,15 @@ my-frame
 ;; | `:grid` | Gridline color |
 ;; | `:font-size` | Base font size in pixels |
 ;;
-;; Passed as `{:theme {...}}` via `sk/options`, `sk/with-config`, or
-;; `sk/set-config!`. Other visual knobs (margins, legend width, tick
+;; Passed as `{:theme {...}}` via `pj/options`, `pj/with-config`, or
+;; `pj/set-config!`. Other visual knobs (margins, legend width, tick
 ;; spacing) are top-level configuration keys, not theme entries --
-;; see `sk/config-key-docs`.
+;; see `pj/config-key-docs`.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}})
-    sk/svg-summary :points)
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}})
+    pj/svg-summary :points)
 
 (kind/test-last [(fn [n] (= 150 n))])
 
@@ -417,7 +417,7 @@ my-frame
 ;; the plan becomes a membrane, which becomes SVG hiccup. Direct
 ;; renderers (e.g., Plotly) skip the membrane entirely.
 
-(def my-membrane (sk/plan->membrane my-plan))
+(def my-membrane (pj/plan->membrane my-plan))
 
 (vector? my-membrane)
 
@@ -433,9 +433,9 @@ my-frame
 ;; a plan to a specific format. For SVG, the plot is hiccup markup
 ;; wrapped in `kind/hiccup`.
 ;;
-;; Created by `sk/plot` or by auto-rendering a frame.
+;; Created by `pj/plot` or by auto-rendering a frame.
 
-(def my-plot (sk/plan->plot my-plan :svg {}))
+(def my-plot (pj/plan->plot my-plan :svg {}))
 
 (first my-plot)
 
@@ -473,7 +473,7 @@ my-frame
 ;; [layer options](#layer-options). Configuration follows a
 ;; precedence chain:
 ;;
-;; plot options > `sk/with-config` > `sk/set-config!` > `plotje.edn` > library defaults
+;; plot options > `pj/with-config` > `pj/set-config!` > `plotje.edn` > library defaults
 ;;
 ;; `plotje.edn` is an optional file in your project root that provides
 ;; project-level defaults (e.g., a consistent palette or theme across all plots).
@@ -482,23 +482,23 @@ my-frame
 
 ;; ## Plot Options
 ;;
-;; **Plot options** are per-plot settings passed to `sk/options`,
-;; `sk/plan`, or `sk/plot`. They include text content (title,
+;; **Plot options** are per-plot settings passed to `pj/options`,
+;; `pj/plan`, or `pj/plot`. They include text content (title,
 ;; subtitle, caption, axis labels) and a nested `:config` override.
 ;; Unlike configuration keys, plot options are inherently per-plot --
 ;; a title does not make sense as a global default.
 ;;
-;; See `sk/plot-option-docs` for the full list, or the
+;; See `pj/plot-option-docs` for the full list, or the
 ;; [Configuration](./plotje_book.configuration.html) chapter for usage examples.
 
-(count sk/plot-option-docs)
+(count pj/plot-option-docs)
 
 (kind/test-last [(fn [n] (= 11 n))])
 
 ;; ## Layer Options
 ;;
 ;; **Layer options** are per-layer settings passed in the options map
-;; of layer functions (`sk/lay-point`, `sk/lay-histogram`, etc.).
+;; of layer functions (`pj/lay-point`, `pj/lay-histogram`, etc.).
 ;; They control aesthetics (`:color`, `:size`, `:alpha`, `:shape`),
 ;; grouping (`:group`), position adjustment (`:position`), and
 ;; layer-type-specific parameters (`:bandwidth`, `:confidence-band`,
@@ -507,11 +507,11 @@ my-frame
 ;; Four keys are universal -- accepted by every layer -- and each
 ;; layer type may accept additional keys. The
 ;; [Layer Types](./plotje_book.layer_types.html) chapter lists which
-;; options each layer type accepts. See also `sk/layer-option-docs`
+;; options each layer type accepts. See also `pj/layer-option-docs`
 ;; for descriptions, or inspect a specific layer type with
-;; `sk/layer-type-lookup`.
+;; `pj/layer-type-lookup`.
 
-(count sk/layer-option-docs)
+(count pj/layer-option-docs)
 
 (kind/test-last [(fn [n] (pos? n))])
 
@@ -527,36 +527,36 @@ my-frame
 ;;
 ;; | Term | What | Key functions |
 ;; |:-----|:-----|:-------------|
-;; | Frame | Composable value: data + mapping + layers (+ sub-frames) | All `sk/` functions return frames |
-;; | Leaf frame | Frame describing one plot panel | `sk/frame`, `sk/lay-*` with columns |
-;; | Composite frame | Frame containing sub-frames and a layout | `sk/arrange`, `sk/facet`, `sk/facet-grid` |
-;; | Mapping | Column-to-aesthetic association on a frame or layer | `sk/frame` mapping, `sk/lay-*` opts |
-;; | Layer | Method attached to a frame | `sk/lay-*` |
-;; | Draft | Vector of flat maps from merging frame and layer mappings | `sk/draft`, automatic during `sk/plan` |
-;; | Layer type | Mark + stat + position bundle | `sk/layer-type-lookup`, `sk/lay-*` |
+;; | Frame | Composable value: data + mapping + layers (+ sub-frames) | All `pj/` functions return frames |
+;; | Leaf frame | Frame describing one plot panel | `pj/frame`, `pj/lay-*` with columns |
+;; | Composite frame | Frame containing sub-frames and a layout | `pj/arrange`, `pj/facet`, `pj/facet-grid` |
+;; | Mapping | Column-to-aesthetic association on a frame or layer | `pj/frame` mapping, `pj/lay-*` opts |
+;; | Layer | Method attached to a frame | `pj/lay-*` |
+;; | Draft | Vector of flat maps from merging frame and layer mappings | `pj/draft`, automatic during `pj/plan` |
+;; | Layer type | Mark + stat + position bundle | `pj/layer-type-lookup`, `pj/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in layer-type map |
 ;; | Stat | Data transform: identity, bin, count, linear-model, density, ... | Key in layer-type map |
 ;; | Position | How groups share space: dodge, stack, fill, identity | Key in layer-type map |
-;; | Inference | Auto-choosing mark/stat from column types | When `sk/lay-*` is omitted |
+;; | Inference | Auto-choosing mark/stat from column types | When `pj/lay-*` is omitted |
 ;; | Aesthetic | Data-driven visual property: color, size, alpha | Key in mapping or layer |
 ;; | Group | Subset of data rendered together | From `:color` or `:group` |
-;; | Plan | Fully resolved plot description | `sk/plan` |
+;; | Plan | Fully resolved plot description | `pj/plan` |
 ;; | Panel | One plotting area (domain, ticks, layers) | One or more per plan |
 ;; | Plan layer | Resolved geometry + style for one mark | Inside plan panels |
 ;; | Domain | Data range on an axis | Part of panel |
 ;; | Tick | Axis mark with label at a domain value | Part of panel |
-;; | Scale | Data-to-pixel mapping (linear, log, categorical) | `sk/scale` |
-;; | Coord | Coordinate system (cartesian, flip, polar, fixed) | `sk/coord` |
-;; | Facet | Split into panels by a categorical column | `sk/facet`, `sk/facet-grid` |
-;; | Arrange | Compose multiple frames into a grid | `sk/arrange` |
-;; | Annotation | Non-data reference marks (rules, bands) | `sk/lay-rule-*`, `sk/lay-band-*` |
+;; | Scale | Data-to-pixel mapping (linear, log, categorical) | `pj/scale` |
+;; | Coord | Coordinate system (cartesian, flip, polar, fixed) | `pj/coord` |
+;; | Facet | Split into panels by a categorical column | `pj/facet`, `pj/facet-grid` |
+;; | Arrange | Compose multiple frames into a grid | `pj/arrange` |
+;; | Annotation | Non-data reference marks (rules, bands) | `pj/lay-rule-*`, `pj/lay-band-*` |
 ;; | Legend | Color/size/alpha key from aesthetic mappings | Automatic in plan |
-;; | Plot options | Title, subtitle, caption, labels, dimensions | `sk/options` |
-;; | Layer options | Per-layer aesthetics and layer-type parameters | `sk/lay-*` opts map |
-;; | Theme | Visual styling: background, grid, fonts | `:theme` in `sk/options` |
-;; | Palette | Ordered color set for categorical aesthetics | `:palette` in `sk/options` |
-;; | Gradient | Continuous color ramp for numerical mappings | `:color-scale` in `sk/options` |
-;; | Configuration | Global rendering defaults | `sk/config`, `sk/set-config!`, `sk/with-config` |
+;; | Plot options | Title, subtitle, caption, labels, dimensions | `pj/options` |
+;; | Layer options | Per-layer aesthetics and layer-type parameters | `pj/lay-*` opts map |
+;; | Theme | Visual styling: background, grid, fonts | `:theme` in `pj/options` |
+;; | Palette | Ordered color set for categorical aesthetics | `:palette` in `pj/options` |
+;; | Gradient | Continuous color ramp for numerical mappings | `:color-scale` in `pj/options` |
+;; | Configuration | Global rendering defaults | `pj/config`, `pj/set-config!`, `pj/with-config` |
 ;; | Membrane | Drawable tree (membrane library) | Internal rendering step |
-;; | Plot | Final output (SVG hiccup) | `sk/plot`, `sk/save` |
+;; | Plot | Final output (SVG hiccup) | `pj/plot`, `pj/save` |
 ;; | Tooltip / Brush | JavaScript hover and selection interactions | `{:tooltip true}` in options |

@@ -18,7 +18,7 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- public API
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; Extension points -- the multimethods we will extend
    [scicloj.plotje.impl.stat :as stat]
    [scicloj.plotje.impl.extract :as extract]
@@ -147,21 +147,21 @@
                        :doc "Waterfall -- running total with increase/decrease bars."})
 
 ;; Now we can plot it using the frame API. Since there is
-;; no built-in `sk/lay-waterfall`, we use `sk/lay` with
+;; no built-in `pj/lay-waterfall`, we use `pj/lay` with
 ;; the layer-type lookup.
 ;;
-;; We use `sk/plot` to force eager rendering to SVG before the
+;; We use `pj/plot` to force eager rendering to SVG before the
 ;; cleanup section at the end of this notebook removes the
 ;; extension's defmethods:
 
 (-> pnl-data
-    (sk/frame :category :amount)
-    (sk/lay (layer-type/lookup :waterfall))
-    (sk/options {:title "Profit & Loss Waterfall"
+    (pj/frame :category :amount)
+    (pj/lay (layer-type/lookup :waterfall))
+    (pj/options {:title "Profit & Loss Waterfall"
                  :width 500 :height 350})
-    sk/plot)
+    pj/plot)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 6 (:polygons s)))))])
 
@@ -174,18 +174,18 @@
 ;; function:
 
 (defn lay-waterfall
-  ([sk] (sk/lay sk (layer-type/lookup :waterfall)))
-  ([data x y] (-> data (sk/frame x y) (sk/lay (layer-type/lookup :waterfall))))
-  ([data x y opts] (-> data (sk/frame x y) (sk/lay (merge (layer-type/lookup :waterfall) opts)))))
+  ([sk] (pj/lay sk (layer-type/lookup :waterfall)))
+  ([data x y] (-> data (pj/frame x y) (pj/lay (layer-type/lookup :waterfall))))
+  ([data x y opts] (-> data (pj/frame x y) (pj/lay (merge (layer-type/lookup :waterfall) opts)))))
 
 ;; Now the call is as clean as any built-in layer type:
 
 (-> pnl-data
     (lay-waterfall :category :amount)
-    (sk/options {:title "Quarterly Cash Flow" :width 500})
-    sk/plot)
+    (pj/options {:title "Quarterly Cash Flow" :width 500})
+    pj/plot)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 6 (:polygons s))))])
 
 ;; ## Optional: Self-Documenting Extension
@@ -202,7 +202,7 @@
 (defmethod mark/layer->membrane [:waterfall :doc] [_ _]
   "Filled rectangles positioned by running total")
 
-(sk/stat-doc :waterfall)
+(pj/stat-doc :waterfall)
 
 (kind/test-last [(fn [v] (= "Compute running totals for waterfall bars" v))])
 

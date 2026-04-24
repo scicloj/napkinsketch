@@ -124,7 +124,7 @@
 ;; into `notebooks/` so that the book's front page shows the same images.
 ;; Run `make-readme!` before `make-book!` when the README content changes.
 ;;
-;; Note: the readme notebook uses `sk/plot` (eager rendering) instead of
+;; Note: the readme notebook uses `pj/plot` (eager rendering) instead of
 ;; auto-rendering the frame, because GFM mode requires materialized SVG values.
 
 ;; ## Building a JAR

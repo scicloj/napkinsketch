@@ -7,8 +7,8 @@
 ;;
 ;; This chapter walks through composition patterns from simple
 ;; side-by-side arrangements to shared-scale marginal plots, using
-;; `sk/arrange` and explicit composite-frame maps. Dedicated
-;; constructors (`sk/mosaic`, `sk/with-marginals`) will land
+;; `pj/arrange` and explicit composite-frame maps. Dedicated
+;; constructors (`pj/mosaic`, `pj/with-marginals`) will land
 ;; post-alpha; until then, the primitives below cover the same
 ;; patterns -- compactly for simple cases, with a bit of literal map
 ;; construction for nested layouts.
@@ -20,45 +20,45 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; RDatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 (def iris (rdatasets/datasets-iris))
 
-;; ## Side-by-Side via `sk/arrange`
+;; ## Side-by-Side via `pj/arrange`
 ;;
 ;; The simplest composite: two independent frames, placed next to
-;; each other. `sk/arrange` takes a vector of frames and returns a
+;; each other. `pj/arrange` takes a vector of frames and returns a
 ;; composite. Each sub-frame has its own data, mapping, layers, and
 ;; options.
 
-(sk/arrange
- [(-> iris (sk/lay-point :sepal-length :sepal-width {:color :species}))
-  (-> iris (sk/lay-point :petal-length :petal-width {:color :species}))])
+(pj/arrange
+ [(-> iris (pj/lay-point :sepal-length :sepal-width {:color :species}))
+  (-> iris (pj/lay-point :petal-length :petal-width {:color :species}))])
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
 ;; Pass `{:cols 1}` for a stacked arrangement (one column means each
 ;; frame goes on its own row):
 
-(sk/arrange
- [(-> iris (sk/lay-point :sepal-length :sepal-width {:color :species}))
-  (-> iris (sk/lay-point :petal-length :petal-width {:color :species}))]
+(pj/arrange
+ [(-> iris (pj/lay-point :sepal-length :sepal-width {:color :species}))
+  (-> iris (pj/lay-point :petal-length :petal-width {:color :species}))]
  {:cols 1})
 
-(kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 2 (:panels (pj/svg-summary v))))])
 
-;; `sk/arrange` divides space equally among its sub-frames. For
+;; `pj/arrange` divides space equally among its sub-frames. For
 ;; unequal splits (e.g., give the first panel twice the space of the
 ;; second), construct the composite as an explicit map; the next
 ;; section shows how.
 
 ;; ## Explicit Composite Frames
 ;;
-;; Under `sk/arrange` there is a plain-map composite frame. You can
+;; Under `pj/arrange` there is a plain-map composite frame. You can
 ;; construct one directly when you need finer control -- unequal
 ;; weights, shared scales, or (in future work) non-plot leaves like
 ;; text panels and KPIs.
@@ -68,7 +68,7 @@
 ;; first panel gets twice the space of the second:
 
 (def weighted
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris
     :layout {:direction :horizontal :weights [2 1]}
     :frames [{:mapping {:x :sepal-length :y :sepal-width}
@@ -76,7 +76,7 @@
              {:mapping {:x :petal-length :y :petal-width}
               :layers [{:layer-type :point}]}]}))
 
-;; `sk/prepare-frame` lifts a plain-map composite into a frame the
+;; `pj/prepare-frame` lifts a plain-map composite into a frame the
 ;; library treats like any other: data is coerced to a Tablecloth
 ;; dataset at every depth, the current configuration is captured for
 ;; render time, and Kindly metadata is attached so the frame
@@ -84,7 +84,7 @@
 
 weighted
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
@@ -112,7 +112,7 @@ weighted
 ;; column:
 
 (def shared-x
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris
     :share-scales #{:x}
     :layout {:direction :horizontal :weights [1 1]}
@@ -123,7 +123,7 @@ weighted
 
 shared-x
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
@@ -138,7 +138,7 @@ shared-x
 ;; above the main plot -- is a vertical composite with shared x:
 
 (def marginal
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris
     :share-scales #{:x}
     :layout {:direction :vertical :weights [1 3]}
@@ -149,7 +149,7 @@ shared-x
 
 marginal
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 2 (:panels s))
                                 (= 150 (:points s))
                                 (pos? (:polygons s)))))])
@@ -167,11 +167,11 @@ marginal
 ;;
 ;; Layouts today are one-dimensional (`:horizontal` or `:vertical`),
 ;; so a 2x2 grid is built as a vertical pair of horizontal pairs.
-;; The current `sk/arrange` does not accept composite frames as
+;; The current `pj/arrange` does not accept composite frames as
 ;; inputs, so the nesting is expressed as an explicit map:
 
 (def dashboard
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris
     :layout {:direction :vertical :weights [1 1]}
     :frames [{:layout {:direction :horizontal :weights [1 1]}
@@ -187,7 +187,7 @@ marginal
 
 dashboard
 
-(kind/test-last [(fn [v] (= 4 (:panels (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 4 (:panels (pj/svg-summary v))))])
 
 ;; Four panels, each its own layer type. The outer composite stacks
 ;; two rows; each row is itself a horizontal composite of two plots.
@@ -206,7 +206,7 @@ dashboard
 ;;   padding, so plot-area edges may not line up across composite
 ;;   siblings.
 ;; - **No shared legend.** Each sub-frame produces its own legend.
-;; - **Threading builds flat composites only.** `sk/arrange` today
+;; - **Threading builds flat composites only.** `pj/arrange` today
 ;;   rejects composite frames as inputs; for nested layouts, write
 ;;   the composite as an explicit map as shown in the dashboard
 ;;   example above.

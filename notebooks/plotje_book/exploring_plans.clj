@@ -3,7 +3,7 @@
 ;; When Plotje renders a plot, it builds an intermediate data
 ;; structure called a **plan** before rendering anything. This notebook
 ;; walks through the plan step by step, building intuition for the
-;; data model by looking at what `sk/plan` produces for different
+;; data model by looking at what `pj/plan` produces for different
 ;; frames.
 ;;
 ;; You would explore plans when:
@@ -21,7 +21,7 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; Method registry -- lookup mark/stat/position by keyword
    [scicloj.plotje.layer-type :as layer-type]))
 
@@ -36,18 +36,18 @@
 ;; Here is the rendered plot:
 
 (-> tiny
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
 ;; And here is the plan -- the data structure that drives the rendering.
-;; We'll use `sk/plan` with the same frame:
+;; We'll use `pj/plan` with the same frame:
 
 (def tiny-pl (-> tiny
-                 (sk/lay-point :x :y)
-                 sk/plan))
+                 (pj/lay-point :x :y)
+                 pj/plan))
 
 ;; ### What's in a plan?
 ;;
@@ -147,15 +147,15 @@ tiny-layer
 ;; and adds a legend.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
 (def iris-pl (-> (rdatasets/datasets-iris)
-                 (sk/lay-point :sepal-length :sepal-width {:color :species})
-                 sk/plan))
+                 (pj/lay-point :sepal-length :sepal-width {:color :species})
+                 pj/plan))
 
 ;; Here is the full plan -- notice the legend and three groups:
 
@@ -197,8 +197,8 @@ iris-pl
 ;; per-point colors and a continuous gradient legend.
 
 (def cont-pl (-> (rdatasets/datasets-iris)
-                 (sk/lay-point :sepal-length :sepal-width {:color :petal-length})
-                 sk/plan))
+                 (pj/lay-point :sepal-length :sepal-width {:color :petal-length})
+                 pj/plan))
 
 (:legend cont-pl)
 
@@ -223,15 +223,15 @@ iris-pl
 ;; bin edges and counts -- still in data space.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-histogram :sepal-length))
+    (pj/lay-histogram :sepal-length))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
 (def hist-pl (-> (rdatasets/datasets-iris)
-                 (sk/lay-histogram :sepal-length)
-                 sk/plan))
+                 (pj/lay-histogram :sepal-length)
+                 pj/plan))
 
 hist-pl
 
@@ -261,15 +261,15 @@ hist-pl
 ;; the categories and counts per group.
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (sk/lay-bar :island {:color :species}))
+    (pj/lay-bar :island {:color :species}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
 (def bar-pl (-> (rdatasets/palmerpenguins-penguins)
-                (sk/lay-bar :island {:color :species})
-                sk/plan))
+                (pj/lay-bar :island {:color :species})
+                pj/plan))
 
 (def bar-layer (first (:layers (first (:panels bar-pl)))))
 
@@ -298,8 +298,8 @@ bar-layer
 ;; Stacking changes the position field:
 
 (def stacked-pl (-> (rdatasets/palmerpenguins-penguins)
-                    (sk/lay-bar :island {:position :stack :color :species})
-                    sk/plan))
+                    (pj/lay-bar :island {:position :stack :color :species})
+                    pj/plan))
 
 (def stacked-layer (first (:layers (first (:panels stacked-pl)))))
 
@@ -315,17 +315,17 @@ bar-layer
 ;; A regression produces line segments in data space.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
 (def lm-pl (-> (rdatasets/datasets-iris)
-               (sk/lay-point :sepal-length :sepal-width)
-               (sk/lay-smooth {:stat :linear-model})
-               sk/plan))
+               (pj/lay-point :sepal-length :sepal-width)
+               (pj/lay-smooth {:stat :linear-model})
+               pj/plan))
 
 ;; Two layers -- points and line:
 
@@ -350,18 +350,18 @@ bar-layer
 ;; layer gets one segment per group:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :petal-length :petal-width {:color :species})
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/frame :petal-length :petal-width {:color :species})
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 (def grp-pl (-> (rdatasets/datasets-iris)
-                (sk/frame :petal-length :petal-width {:color :species})
-                sk/lay-point
-                (sk/lay-smooth {:stat :linear-model})
-                sk/plan))
+                (pj/frame :petal-length :petal-width {:color :species})
+                pj/lay-point
+                (pj/lay-smooth {:stat :linear-model})
+                pj/plan))
 
 (let [line-layer (second (:layers (first (:panels grp-pl))))]
   (mapv (fn [g]
@@ -382,15 +382,15 @@ bar-layer
            :y (map #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
-    (sk/lay-line :x :y))
+    (pj/lay-line :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 1 (:lines s)))))])
 
 (def wave-pl (-> wave
-                 (sk/lay-line :x :y)
-                 sk/plan))
+                 (pj/lay-line :x :y)
+                 pj/plan))
 
 (def wave-group (first (:groups (first (:layers (first (:panels wave-pl)))))))
 
@@ -411,15 +411,15 @@ bar-layer
             :revenue [120 340 210 95]})
 
 (-> sales
-    (sk/lay-value-bar :product :revenue))
+    (pj/lay-value-bar :product :revenue))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 4 (:polygons s)))))])
 
 (def sales-pl (-> sales
-                  (sk/lay-value-bar :product :revenue)
-                  sk/plan))
+                  (pj/lay-value-bar :product :revenue)
+                  pj/plan))
 
 (let [g (first (:groups (first (:layers (first (:panels sales-pl))))))]
   {:xs (:xs g)
@@ -432,9 +432,9 @@ bar-layer
 ;; Setting `:coord :flip` swaps x and y in the plan's panel:
 
 (def flip-pl (-> (rdatasets/datasets-iris)
-                 (sk/lay-bar :species)
-                 (sk/coord :flip)
-                 sk/plan))
+                 (pj/lay-bar :species)
+                 (pj/coord :flip)
+                 pj/plan))
 
 (:coord (first (:panels flip-pl)))
 
@@ -457,8 +457,8 @@ bar-layer
 ;; Title, labels, and dimensions are recorded in the plan:
 
 (def opts-pl (-> (rdatasets/datasets-iris)
-                 (sk/lay-point :sepal-length :sepal-width)
-                 (sk/plan {:title "My Custom Title"
+                 (pj/lay-point :sepal-length :sepal-width)
+                 (pj/plan {:title "My Custom Title"
                            :x-label "Length (cm)"
                            :y-label "Width (cm)"
                            :width 800
@@ -480,18 +480,18 @@ opts-pl
 
 ;; ## Plan vs Plot -- Side by Side
 ;;
-;; `sk/plan` and `sk/plot` accept the same frame.
-;; `sk/plan` returns the intermediate data map; `sk/plot` returns the final SVG.
+;; `pj/plan` and `pj/plot` accept the same frame.
+;; `pj/plan` returns the intermediate data map; `pj/plot` returns the final SVG.
 
 ;; The plan (a plain Clojure map):
 
 (def final-sk
   (-> (rdatasets/datasets-iris)
-      (sk/frame :petal-length :petal-width {:color :species})
-      sk/lay-point
-      (sk/lay-smooth {:stat :linear-model})))
+      (pj/frame :petal-length :petal-width {:color :species})
+      pj/lay-point
+      (pj/lay-smooth {:stat :linear-model})))
 
-(def final-pl (sk/plan final-sk {:title "Iris Petals"}))
+(def final-pl (pj/plan final-sk {:title "Iris Petals"}))
 
 final-pl
 
@@ -508,9 +508,9 @@ final-pl
 
 ;; The rendered plot (SVG):
 
-(-> final-sk (sk/options {:title "Iris Petals"}))
+(-> final-sk (pj/options {:title "Iris Petals"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
@@ -521,9 +521,9 @@ final-pl
 
 (def faceted-pl
   (-> (rdatasets/datasets-iris)
-      (sk/lay-point :sepal-length :sepal-width {:color :species})
-      (sk/facet :species)
-      sk/plan))
+      (pj/lay-point :sepal-length :sepal-width {:color :species})
+      (pj/facet :species)
+      pj/plan))
 
 ;; The grid tells us the layout:
 
@@ -561,45 +561,45 @@ final-pl
 
 ;; Multi-panel plans validate against the same Malli schema:
 
-(sk/valid-plan? faceted-pl)
+(pj/valid-plan? faceted-pl)
 
 (kind/test-last [true?])
 
 ;; ## Malli Validation
 ;;
 ;; Every plan conforms to a Malli schema. Validation runs automatically
-;; when `sk/plan` is called (default `:validate true`).
+;; when `pj/plan` is called (default `:validate true`).
 ;; Pass `{:validate false}` to skip it.
 ;;
-;; You can also check manually with `sk/valid-plan?`:
+;; You can also check manually with `pj/valid-plan?`:
 
-(sk/valid-plan? tiny-pl)
-
-(kind/test-last [true?])
-
-(sk/valid-plan? iris-pl)
+(pj/valid-plan? tiny-pl)
 
 (kind/test-last [true?])
 
-(sk/valid-plan? hist-pl)
+(pj/valid-plan? iris-pl)
 
 (kind/test-last [true?])
 
-(sk/valid-plan? bar-pl)
+(pj/valid-plan? hist-pl)
 
 (kind/test-last [true?])
 
-(sk/valid-plan? lm-pl)
+(pj/valid-plan? bar-pl)
 
 (kind/test-last [true?])
 
-(sk/valid-plan? final-pl)
+(pj/valid-plan? lm-pl)
 
 (kind/test-last [true?])
 
-;; When a plan is invalid, `sk/explain-plan` shows which part failed:
+(pj/valid-plan? final-pl)
 
-(sk/explain-plan (assoc tiny-pl :width "not-a-number"))
+(kind/test-last [true?])
+
+;; When a plan is invalid, `pj/explain-plan` shows which part failed:
+
+(pj/explain-plan (assoc tiny-pl :width "not-a-number"))
 
 (kind/test-last [some?])
 

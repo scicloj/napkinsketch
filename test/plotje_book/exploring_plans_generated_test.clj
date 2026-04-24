@@ -3,7 +3,7 @@
  (:require
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [scicloj.plotje.layer-type :as layer-type]
   [clojure.test :refer [deftest is]]))
 
@@ -11,7 +11,7 @@
 (def v3_l33 (def tiny {:x [1 2 3 4 5], :y [2 4 1 5 3]}))
 
 
-(def v5_l38 (-> tiny (sk/lay-point :x :y)))
+(def v5_l38 (-> tiny (pj/lay-point :x :y)))
 
 
 (deftest
@@ -20,12 +20,12 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 5 (:points s)))))
    v5_l38)))
 
 
-(def v8_l48 (def tiny-pl (-> tiny (sk/lay-point :x :y) sk/plan)))
+(def v8_l48 (def tiny-pl (-> tiny (pj/lay-point :x :y) pj/plan)))
 
 
 (def v10_l57 tiny-pl)
@@ -130,7 +130,7 @@
  v38_l149
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width {:color :species})))
+  (pj/lay-point :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
@@ -139,7 +139,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
    v38_l149)))
 
@@ -150,8 +150,8 @@
   iris-pl
   (->
    (rdatasets/datasets-iris)
-   (sk/lay-point :sepal-length :sepal-width {:color :species})
-   sk/plan)))
+   (pj/lay-point :sepal-length :sepal-width {:color :species})
+   pj/plan)))
 
 
 (def v42_l162 iris-pl)
@@ -211,8 +211,8 @@
   cont-pl
   (->
    (rdatasets/datasets-iris)
-   (sk/lay-point :sepal-length :sepal-width {:color :petal-length})
-   sk/plan)))
+   (pj/lay-point :sepal-length :sepal-width {:color :petal-length})
+   pj/plan)))
 
 
 (def v56_l203 (:legend cont-pl))
@@ -243,7 +243,7 @@
 
 (def
  v65_l225
- (-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-length)))
+ (-> (rdatasets/datasets-iris) (pj/lay-histogram :sepal-length)))
 
 
 (deftest
@@ -252,7 +252,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v65_l225)))
 
@@ -263,8 +263,8 @@
   hist-pl
   (->
    (rdatasets/datasets-iris)
-   (sk/lay-histogram :sepal-length)
-   sk/plan)))
+   (pj/lay-histogram :sepal-length)
+   pj/plan)))
 
 
 (def v68_l236 hist-pl)
@@ -305,7 +305,7 @@
  v77_l263
  (->
   (rdatasets/palmerpenguins-penguins)
-  (sk/lay-bar :island {:color :species})))
+  (pj/lay-bar :island {:color :species})))
 
 
 (deftest
@@ -314,7 +314,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v77_l263)))
 
@@ -325,8 +325,8 @@
   bar-pl
   (->
    (rdatasets/palmerpenguins-penguins)
-   (sk/lay-bar :island {:color :species})
-   sk/plan)))
+   (pj/lay-bar :island {:color :species})
+   pj/plan)))
 
 
 (def
@@ -365,8 +365,8 @@
   stacked-pl
   (->
    (rdatasets/palmerpenguins-penguins)
-   (sk/lay-bar :island {:position :stack, :color :species})
-   sk/plan)))
+   (pj/lay-bar :island {:position :stack, :color :species})
+   pj/plan)))
 
 
 (def
@@ -384,8 +384,8 @@
  v93_l317
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width)
-  (sk/lay-smooth {:stat :linear-model})))
+  (pj/lay-point :sepal-length :sepal-width)
+  (pj/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -394,7 +394,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
    v93_l317)))
 
@@ -405,9 +405,9 @@
   lm-pl
   (->
    (rdatasets/datasets-iris)
-   (sk/lay-point :sepal-length :sepal-width)
-   (sk/lay-smooth {:stat :linear-model})
-   sk/plan)))
+   (pj/lay-point :sepal-length :sepal-width)
+   (pj/lay-smooth {:stat :linear-model})
+   pj/plan)))
 
 
 (def v97_l332 (mapv :mark (:layers (first (:panels lm-pl)))))
@@ -435,9 +435,9 @@
  v104_l352
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :petal-length :petal-width {:color :species})
-  sk/lay-point
-  (sk/lay-smooth {:stat :linear-model})))
+  (pj/frame :petal-length :petal-width {:color :species})
+  pj/lay-point
+  (pj/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -446,7 +446,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
    v104_l352)))
 
@@ -457,10 +457,10 @@
   grp-pl
   (->
    (rdatasets/datasets-iris)
-   (sk/frame :petal-length :petal-width {:color :species})
-   sk/lay-point
-   (sk/lay-smooth {:stat :linear-model})
-   sk/plan)))
+   (pj/frame :petal-length :petal-width {:color :species})
+   pj/lay-point
+   (pj/lay-smooth {:stat :linear-model})
+   pj/plan)))
 
 
 (def
@@ -490,7 +490,7 @@
     (range 30))}))
 
 
-(def v111_l384 (-> wave (sk/lay-line :x :y)))
+(def v111_l384 (-> wave (pj/lay-line :x :y)))
 
 
 (deftest
@@ -499,12 +499,12 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:lines s)))))
    v111_l384)))
 
 
-(def v113_l391 (def wave-pl (-> wave (sk/lay-line :x :y) sk/plan)))
+(def v113_l391 (def wave-pl (-> wave (pj/lay-line :x :y) pj/plan)))
 
 
 (def
@@ -532,7 +532,7 @@
    :revenue [120 340 210 95]}))
 
 
-(def v119_l413 (-> sales (sk/lay-value-bar :product :revenue)))
+(def v119_l413 (-> sales (pj/lay-value-bar :product :revenue)))
 
 
 (deftest
@@ -541,14 +541,14 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
    v119_l413)))
 
 
 (def
  v121_l420
- (def sales-pl (-> sales (sk/lay-value-bar :product :revenue) sk/plan)))
+ (def sales-pl (-> sales (pj/lay-value-bar :product :revenue) pj/plan)))
 
 
 (def
@@ -567,9 +567,9 @@
   flip-pl
   (->
    (rdatasets/datasets-iris)
-   (sk/lay-bar :species)
-   (sk/coord :flip)
-   sk/plan)))
+   (pj/lay-bar :species)
+   (pj/coord :flip)
+   pj/plan)))
 
 
 (def v126_l439 (:coord (first (:panels flip-pl))))
@@ -605,8 +605,8 @@
   opts-pl
   (->
    (rdatasets/datasets-iris)
-   (sk/lay-point :sepal-length :sepal-width)
-   (sk/plan
+   (pj/lay-point :sepal-length :sepal-width)
+   (pj/plan
     {:title "My Custom Title",
      :x-label "Length (cm)",
      :y-label "Width (cm)",
@@ -650,12 +650,12 @@
   final-sk
   (->
    (rdatasets/datasets-iris)
-   (sk/frame :petal-length :petal-width {:color :species})
-   sk/lay-point
-   (sk/lay-smooth {:stat :linear-model}))))
+   (pj/frame :petal-length :petal-width {:color :species})
+   pj/lay-point
+   (pj/lay-smooth {:stat :linear-model}))))
 
 
-(def v140_l494 (def final-pl (sk/plan final-sk {:title "Iris Petals"})))
+(def v140_l494 (def final-pl (pj/plan final-sk {:title "Iris Petals"})))
 
 
 (def v141_l496 final-pl)
@@ -676,7 +676,7 @@
 (deftest t145_l507 (is ((fn [ls] (= 2 (count ls))) v144_l502)))
 
 
-(def v147_l511 (-> final-sk (sk/options {:title "Iris Petals"})))
+(def v147_l511 (-> final-sk (pj/options {:title "Iris Petals"})))
 
 
 (deftest
@@ -685,7 +685,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
    v147_l511)))
 
@@ -696,9 +696,9 @@
   faceted-pl
   (->
    (rdatasets/datasets-iris)
-   (sk/lay-point :sepal-length :sepal-width {:color :species})
-   (sk/facet :species)
-   sk/plan)))
+   (pj/lay-point :sepal-length :sepal-width {:color :species})
+   (pj/facet :species)
+   pj/plan)))
 
 
 (def v152_l530 (:grid faceted-pl))
@@ -742,49 +742,49 @@
  (is ((fn [m] (= :facet-grid (:layout-type m))) v164_l558)))
 
 
-(def v167_l564 (sk/valid-plan? faceted-pl))
+(def v167_l564 (pj/valid-plan? faceted-pl))
 
 
 (deftest t168_l566 (is (true? v167_l564)))
 
 
-(def v170_l576 (sk/valid-plan? tiny-pl))
+(def v170_l576 (pj/valid-plan? tiny-pl))
 
 
 (deftest t171_l578 (is (true? v170_l576)))
 
 
-(def v172_l580 (sk/valid-plan? iris-pl))
+(def v172_l580 (pj/valid-plan? iris-pl))
 
 
 (deftest t173_l582 (is (true? v172_l580)))
 
 
-(def v174_l584 (sk/valid-plan? hist-pl))
+(def v174_l584 (pj/valid-plan? hist-pl))
 
 
 (deftest t175_l586 (is (true? v174_l584)))
 
 
-(def v176_l588 (sk/valid-plan? bar-pl))
+(def v176_l588 (pj/valid-plan? bar-pl))
 
 
 (deftest t177_l590 (is (true? v176_l588)))
 
 
-(def v178_l592 (sk/valid-plan? lm-pl))
+(def v178_l592 (pj/valid-plan? lm-pl))
 
 
 (deftest t179_l594 (is (true? v178_l592)))
 
 
-(def v180_l596 (sk/valid-plan? final-pl))
+(def v180_l596 (pj/valid-plan? final-pl))
 
 
 (deftest t181_l598 (is (true? v180_l596)))
 
 
-(def v183_l602 (sk/explain-plan (assoc tiny-pl :width "not-a-number")))
+(def v183_l602 (pj/explain-plan (assoc tiny-pl :width "not-a-number")))
 
 
 (deftest t184_l604 (is (some? v183_l602)))

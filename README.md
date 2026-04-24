@@ -33,7 +33,7 @@ such as [Clay](https://scicloj.github.io/clay/).
 ## Quick example
 ```clj
 (ns readme
-  (:require [scicloj.plotje.api :as sk]
+  (:require [scicloj.plotje.api :as pj]
             [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 ```
 Line chart with point markers from plain Clojure data:
@@ -44,9 +44,9 @@ Line chart with point markers from plain Clojure data:
      {:month "Apr" :sales 175}
      {:month "May" :sales 160}
      {:month "Jun" :sales 210}]
-    (sk/lay-line :month :sales)
-    sk/lay-point
-    (sk/options {:title "Monthly Sales"}))
+    (pj/lay-line :month :sales)
+    pj/lay-point
+    (pj/options {:title "Monthly Sales"}))
 ```
 ![](readme_files/image0.svg)
 
@@ -55,12 +55,12 @@ grouping; diagonal cells show histograms, off-diagonal cells show
 scatter plots (per-cell inference picks the layer type):
 ```clj
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:color :species})
-    (sk/frame (sk/cross [:sepal-length :sepal-width
+    (pj/frame {:color :species})
+    (pj/frame (pj/cross [:sepal-length :sepal-width
                          :petal-length :petal-width]
                         [:sepal-length :sepal-width
                          :petal-length :petal-width]))
-    (sk/options {:title "Iris SPLOM"}))
+    (pj/options {:title "Iris SPLOM"}))
 ```
 ![](readme_files/image1.svg)
 

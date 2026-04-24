@@ -11,7 +11,7 @@
    ;; Tablecloth -- dataset manipulation
    [tablecloth.api :as tc]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]))
+   [scicloj.plotje.api :as pj]))
 
 ;; ## Column Not Found
 ;;
@@ -36,29 +36,29 @@
 
 ;; ## Wrong Chart Type from Inference
 ;;
-;; **Symptom**: `sk/frame` produces a chart type that isn't what you
+;; **Symptom**: `pj/frame` produces a chart type that isn't what you
 ;; wanted -- a boxplot when you wanted individual points, a line
 ;; when you wanted a scatter.
 ;;
-;; **Cause**: `sk/frame` infers the layer type from column types. The
+;; **Cause**: `pj/frame` infers the layer type from column types. The
 ;; defaults fit the most common use case for each column-type pair
 ;; (see [Inference Rules](./plotje_book.inference_rules.html)),
 ;; but they can be overridden.
 ;;
-;; **Fix**: Use an explicit `sk/lay-*` function. For example, a
+;; **Fix**: Use an explicit `pj/lay-*` function. For example, a
 ;; categorical x with a numerical y defaults to a boxplot:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :species :sepal-width))
+    (pj/frame :species :sepal-width))
 
-(kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:lines (pj/svg-summary v))))])
 
-;; Use `sk/lay-point` if you want the individual points instead:
+;; Use `pj/lay-point` if you want the individual points instead:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :species :sepal-width))
+    (pj/lay-point :species :sepal-width))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; ## Numeric IDs Treated as Continuous Color
 ;;
@@ -74,10 +74,10 @@
 ;;
 ;; ```clojure
 ;; ;; Gradient (wrong for IDs):
-;; (sk/lay-line data :day :score {:color :subject})
+;; (pj/lay-line data :day :score {:color :subject})
 ;;
 ;; ;; Discrete groups (correct):
-;; (sk/lay-line data :day :score {:color :subject
+;; (pj/lay-line data :day :score {:color :subject
 ;;                                :color-type :categorical})
 ;; ```
 ;;
@@ -100,9 +100,9 @@
 ;; convert the column itself:
 
 (-> {:hour [9 10 11 12] :count [5 8 12 7]}
-    (sk/lay-value-bar :hour :count {:x-type :categorical}))
+    (pj/lay-value-bar :hour :count {:x-type :categorical}))
 
-(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
 
 ;; The override propagates into `infer-column-types`, so every
 ;; downstream step (scale type, tick placement, domain) treats
@@ -115,23 +115,23 @@
 ;; ## Log Scale via `:scale-x` / `:scale-y` Options
 ;;
 ;; **Symptom**: Passing `{:scale-x :log}` (or `{:scale-y :log}`)
-;; to a layer or to `sk/options` prints a warning --
+;; to a layer or to `pj/options` prints a warning --
 ;; `"does not recognize option(s): [:scale-x]"` -- and the chart
 ;; comes out on a linear axis.
 ;;
 ;; **Cause**: Scales are plot-level, not layer-level or option-map
-;; keys. They are set by the `sk/scale` function, not by a
+;; keys. They are set by the `pj/scale` function, not by a
 ;; `:scale-*` key.
 ;;
-;; **Fix**: Use `sk/scale`:
+;; **Fix**: Use `pj/scale`:
 
 (-> (rdatasets/ggplot2-diamonds)
-    (sk/lay-point :carat :price {:alpha 0.1})
-    (sk/scale :y :log))
+    (pj/lay-point :carat :price {:alpha 0.1})
+    (pj/scale :y :log))
 
-(kind/test-last [(fn [v] (pos? (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:points (pj/svg-summary v))))])
 
-;; `sk/scale` takes the frame, the axis (`:x` or `:y`), and
+;; `pj/scale` takes the frame, the axis (`:x` or `:y`), and
 ;; either a type keyword (`:linear`, `:log`) or a scale spec
 ;; map with `:type` and an optional `:domain` override.
 ;; See the [Inference Rules](./plotje_book.inference_rules.html)
@@ -148,9 +148,9 @@
 ;; **Fix**: Remove the y column:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-histogram :sepal-length))
+    (pj/lay-histogram :sepal-length))
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; ## Categorical Column with Log Scale
 ;;
@@ -164,9 +164,9 @@
 
 (try
   (-> (rdatasets/datasets-iris)
-      (sk/lay-bar :species)
-      (sk/scale :x :log)
-      sk/plan)
+      (pj/lay-bar :species)
+      (pj/scale :x :log)
+      pj/plan)
   (catch Exception e (.getMessage e)))
 
 (kind/test-last [(fn [msg] (and (string? msg)
@@ -174,7 +174,7 @@
 
 ;; ## Polar Coordinates with Unsupported Marks
 ;;
-;; **Symptom**: Errors or unexpected output with `(sk/coord :polar)`.
+;; **Symptom**: Errors or unexpected output with `(pj/coord :polar)`.
 ;;
 ;; **Cause**: Not all marks support polar coordinates. Currently
 ;; `:point`, `:bar`, and `:line` work well with polar.
@@ -183,11 +183,11 @@
 ;; becomes a rose chart:
 
 (-> (rdatasets/datasets-chickwts)
-    (sk/frame :feed)
-    sk/lay-bar
-    (sk/coord :polar))
+    (pj/frame :feed)
+    pj/lay-bar
+    (pj/coord :polar))
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; See the [Polar Coordinates](./plotje_book.polar.html) chapter for the
 ;; full set of supported marks and examples.
@@ -206,30 +206,30 @@
 ;; scripts.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:tooltip true}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:tooltip true}))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; ## Faceting Keys in a Layer or Frame Options Map
 ;;
 ;; **Symptom**: An error like
-;; `"Faceting is plot-level, not layer-level. Use (sk/facet sk col) ..."`
+;; `"Faceting is plot-level, not layer-level. Use (pj/facet sk col) ..."`
 ;; when you put `:facet-col`, `:facet-row`, `:facet-x`, or
-;; `:facet-y` inside a `sk/frame` or `sk/lay-*` options map.
+;; `:facet-y` inside a `pj/frame` or `pj/lay-*` options map.
 ;;
 ;; **Cause**: Faceting configures the plot as a whole, not a single
 ;; frame or layer. Those keys are not accepted in frame/layer
 ;; mappings.
 ;;
-;; **Fix**: Use `sk/facet` (single-axis) or `sk/facet-grid`
+;; **Fix**: Use `pj/facet` (single-axis) or `pj/facet-grid`
 ;; (two-axis) as a top-level step in the pipeline:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/facet :species))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/facet :species))
 
-(kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 3 (:panels (pj/svg-summary v))))])
 
 ;; ## Constant `:x` or `:y` in a Layer's Options
 ;;
@@ -237,7 +237,7 @@
 ;; `"lay-text :y must be a column reference (keyword or string),
 ;; but got 200"`, typically when adding a text or label layer at a
 ;; fixed horizontal or vertical position. (Reference lines use
-;; `sk/lay-rule-h` with `:y-intercept` or `sk/lay-rule-v` with
+;; `pj/lay-rule-h` with `:y-intercept` or `pj/lay-rule-v` with
 ;; `:x-intercept` instead.)
 ;;
 ;; **Cause**: `:x` and `:y` are position **mappings** -- they must
@@ -248,22 +248,22 @@
 ;; hold the constant values, then reference those columns:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-text {:data (-> (tc/dataset {:sepal-length [6.5]
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-text {:data (-> (tc/dataset {:sepal-length [6.5]
                                          :species     ["mean"]})
                             (tc/add-column :yy (constantly 3.5)))
                   :x :sepal-length :y :yy :text :species}))
 
-(kind/test-last [(fn [v] (some #{"mean"} (:texts (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (some #{"mean"} (:texts (pj/svg-summary v))))])
 
 ;; ## Dataset Missing Columns a Template References
 ;;
 ;; **Symptom**: An error like
 ;; `"Cannot attach data: frame references column(s) [:group] not
 ;; present in the dataset. Available columns: [:x :y]"` when
-;; calling `sk/with-data` on a dataless template frame.
+;; calling `pj/with-data` on a dataless template frame.
 ;;
-;; **Cause**: `sk/with-data` validates at attach time -- every
+;; **Cause**: `pj/with-data` validates at attach time -- every
 ;; keyword column reference in the template must exist in the
 ;; dataset, or the attachment fails fast.
 ;;
@@ -272,17 +272,17 @@
 ;; reference the columns the dataset has.
 
 (def template
-  (-> (sk/frame nil {:x :x :y :y})
-      sk/lay-point))
+  (-> (pj/frame nil {:x :x :y :y})
+      pj/lay-point))
 
 (-> template
-    (sk/with-data {:x [1 2 3] :y [4 5 6]}))
+    (pj/with-data {:x [1 2 3] :y [4 5 6]}))
 
-(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 3 (:points (pj/svg-summary v))))])
 
 ;; ## Horizontal Ranking Bars Draw Biggest-at-Bottom
 ;;
-;; **Symptom**: A horizontal bar chart made with `(sk/coord :flip)`
+;; **Symptom**: A horizontal bar chart made with `(pj/coord :flip)`
 ;; shows the first row of the data at the bottom of the chart.
 ;; A descending-sorted "top-N" dataset ends up with the biggest
 ;; bar at the bottom instead of the top.
@@ -300,12 +300,12 @@
      {:category "C" :value 25}]
     (tc/dataset)
     (tc/order-by [:value] :asc)
-    (sk/lay-value-bar :category :value)
-    (sk/coord :flip))
+    (pj/lay-value-bar :category :value)
+    (pj/coord :flip))
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
-;; A future opt-in option (e.g. `(sk/coord :flip
+;; A future opt-in option (e.g. `(pj/coord :flip
 ;; {:reverse-categorical true})`) would spare the sort dance.
 ;; Tracked in `CHANGELOG.md` Known limitations.
 
@@ -315,11 +315,11 @@
 ;; y column"` when you have already grouped and aggregated the
 ;; data and want a stacked bar chart of the computed values.
 ;;
-;; **Cause**: `sk/lay-bar {:position :stack}` is count-only -- it
+;; **Cause**: `pj/lay-bar {:position :stack}` is count-only -- it
 ;; bins by `x` internally and sums counts. It has no mode that
 ;; accepts a pre-computed `y`.
 ;;
-;; **Fix for now**: Either use `(sk/lay-area ... {:position :stack})`
+;; **Fix for now**: Either use `(pj/lay-area ... {:position :stack})`
 ;; on a numeric x (it accepts pre-aggregated `y`), or expand
 ;; aggregated rows back into count-many duplicates so the count
 ;; stat sums to the pre-aggregated value. A proper stacked value-bar
@@ -328,17 +328,17 @@
 (-> {:x     (concat (range 5) (range 5))
      :y     [1  2  3  4  5  2  2  2  3  3]
      :group (concat (repeat 5 "A") (repeat 5 "B"))}
-    (sk/lay-area :x :y {:position :stack :color :group}))
+    (pj/lay-area :x :y {:position :stack :color :group}))
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; ## Heatmap with Categorical Axes
 ;;
 ;; **Symptom**: `"class java.lang.String cannot be cast to class
 ;; java.lang.Number"` when passing a string column to
-;; `sk/lay-tile`.
+;; `pj/lay-tile`.
 ;;
-;; **Cause**: `sk/lay-tile` (and the underlying `:bin2d` stat)
+;; **Cause**: `pj/lay-tile` (and the underlying `:bin2d` stat)
 ;; requires numeric x and y columns -- the tile boundaries are
 ;; numeric intervals. Categorical axes are not yet supported for
 ;; tile.
@@ -346,7 +346,7 @@
 ;; **Fix for now**: Either render a numeric-indexed grid (convert
 ;; categorical labels to integer ticks and reposition the tick
 ;; labels afterwards), or approach the problem with
-;; `sk/lay-value-bar` coloured by value for a
+;; `pj/lay-value-bar` coloured by value for a
 ;; "categorical-heatmap" effect. A proper categorical-axis tile
 ;; is tracked in `CHANGELOG.md` Known limitations.
 

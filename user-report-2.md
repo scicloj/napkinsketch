@@ -21,7 +21,7 @@ Each issue below has a copy-pasteable minimal reproduction. Run them
 in a REPL with:
 
 ```clojure
-(require '[scicloj.plotje.api :as sk])
+(require '[scicloj.plotje.api :as pj])
 (require '[tablecloth.api :as tc])
 ```
 
@@ -30,16 +30,16 @@ in a REPL with:
 ## Issue 1 — No log-scale support; `:scale-x` / `:scale-y` silently warned, then ignored
 
 > **PARTIALLY ADDRESSED** (2026-04-20). Log scale IS supported, just
-> through `sk/scale` rather than layer-option keys:
+> through `pj/scale` rather than layer-option keys:
 >
 > ```clojure
-> (-> data (sk/lay-histogram :msgs) (sk/scale :x :log))
+> (-> data (pj/lay-histogram :msgs) (pj/scale :x :log))
 > ```
 >
 > The function was not being discovered on the layer-option path.
 > Added a troubleshooting entry in `troubleshooting.clj`
 > ("Log Scale via `:scale-x` / `:scale-y` Options") that explains
-> the symptom, names `sk/scale`, and shows a working example.
+> the symptom, names `pj/scale`, and shows a working example.
 > Post-alpha follow-ups (not blocking): accept `:scale-x` / `:scale-y`
 > as sketch-level shortcuts; add a "log-scale" quickstart row.
 
@@ -47,8 +47,8 @@ in a REPL with:
 **Severity:** Medium — every long-tail / power-law dataset wants this, and the warning doesn't tell the user what to do.
 
 **Summary.** Passing `{:scale-x :log}` (or `{:scale-y :log}`) to a layer
-or to `sk/options` prints a `Warning: ... does not recognize option(s)`
-and produces a linear-scale chart. `sk/options`'s accept-list does not
+or to `pj/options` prints a `Warning: ... does not recognize option(s)`
+and produces a linear-scale chart. `pj/options`'s accept-list does not
 include any `:scale-*` key. There appears to be no way to render a log
 axis without manually computing the transform on the dataset side.
 
@@ -63,8 +63,8 @@ loses the meaningful tick labels) or accepting an unreadable chart.
 ```clojure
 (-> {:user (range 1 1001) :msgs (map #(int (Math/exp (/ % 50.0))) (range 1 1001))}
     tc/dataset
-    (sk/lay-histogram :msgs {:scale-x :log})
-    sk/plot)
+    (pj/lay-histogram :msgs {:scale-x :log})
+    pj/plot)
 ;; Warning: lay-histogram does not recognize option(s): [:scale-x].
 ;; Accepted: [:alpha :bins :binwidth :color :color-type :data :group
 ;;            :normalize :position :x :x-type :y :y-type]
@@ -72,9 +72,9 @@ loses the meaningful tick labels) or accepting an unreadable chart.
 ```
 
 **Expected.** Either (a) accept `:scale-x :log` / `:scale-y :log` on
-layers and on `sk/options`, or (b) document the manual `Math/log10`
+layers and on `pj/options`, or (b) document the manual `Math/log10`
 recipe in a "common gotchas" section, or (c) provide a sk-level helper
-like `(sk/scale :y :log10)`.
+like `(pj/scale :y :log10)`.
 
 **Workaround used.** Compute `:log10-messages` by hand and label it as
 `"log10(messages)"`, losing the ability to read the original units off
@@ -85,16 +85,16 @@ the axis.
 ## Issue 2 — `lay-stacked-bar` / `lay-stacked-bar-fill` reject pre-aggregated `y`
 
 > **DEFERRED (post-alpha).** Real functionality gap. The cleanest
-> resolution is a new `sk/lay-stacked-value-bar` (mirror of
-> `sk/lay-value-bar` for stacks) rather than overloading the
+> resolution is a new `pj/lay-stacked-value-bar` (mirror of
+> `pj/lay-value-bar` for stacks) rather than overloading the
 > existing count-only method, since the two semantics differ. Not
 > started pre-alpha.
 >
 > Logged in `CHANGELOG.md` under Known limitations → Marks
-> ("`sk/lay-stacked-bar` ... are count-only and reject a `y`
+> ("`pj/lay-stacked-bar` ... are count-only and reject a `y`
 > column..."). Workaround: expand pre-aggregated counts back into
 > row duplicates so `:count` sums to the pre-aggregated value, or
-> use `sk/lay-stacked-area` on a numeric x.
+> use `pj/lay-stacked-area` on a numeric x.
 
 
 **Severity:** Medium-high — common pattern (precomputed counts → stacked bar) is blocked.
@@ -127,8 +127,8 @@ inconsistent.
                {:year "2020" :tenure "1-3 yr"  :msgs 300}]))
 
 (-> yearly
-    (sk/lay-stacked-bar :year :msgs {:color :tenure :x-type :categorical})
-    sk/plot)
+    (pj/lay-stacked-bar :year :msgs {:color :tenure :x-type :categorical})
+    pj/plot)
 ;; ExceptionInfo: lay-stacked-bar uses only the x column; do not pass a y column
 
 ;; Workaround in our chapter: switch to lay-stacked-area on a numeric
@@ -157,7 +157,7 @@ apply when `y` is omitted).
 > > that value, e.g. (tc/add-column data :y (constantly 200)) and
 > > pass :y :y.`
 >
-> Same validation applies to every `sk/lay-*` function that accepts
+> Same validation applies to every `pj/lay-*` function that accepts
 > options.
 
 
@@ -182,9 +182,9 @@ that the message strings are then being cast as numbers.
                :event ["release"]}))
 
 (-> main
-    (sk/lay-line :date :msgs)
-    (sk/lay-text {:data labels :x :date :y 200 :text :event})
-    sk/plot)
+    (pj/lay-line :date :msgs)
+    (pj/lay-text {:data labels :x :date :y 200 :text :event})
+    pj/plot)
 ;; ClassCastException: class java.lang.String cannot be cast to
 ;;   class java.lang.Number
 ;;   (...the :event strings are being interpreted as if :y were a
@@ -196,8 +196,8 @@ that the message strings are then being cast as numbers.
 ```clojure
 (-> labels
     (tc/add-column :y (constantly 200))
-    (#(sk/lay-text main {:data % :x :date :y :y :text :event}))
-    sk/plot)
+    (#(pj/lay-text main {:data % :x :date :y :y :text :event}))
+    pj/plot)
 ```
 
 **Expected.** Either (a) accept scalar values for `:x` / `:y` and
@@ -233,8 +233,8 @@ will be confused by an error blaming a function they never invoked.
 (-> {:date (map #(java.time.LocalDate/of 2024 % 1) (range 1 13))
      :y    (range 12)}
     tc/dataset
-    (sk/lay-summary :date :y)
-    sk/plot)
+    (pj/lay-summary :date :y)
+    pj/plot)
 ;; ExceptionInfo: lay-pointrange requires a categorical :x column,
 ;;   but :date is numerical. Use a categorical column (e.g., species
 ;;   names) for the x-axis.
@@ -245,7 +245,7 @@ the `{:x-type :categorical}` escape hatch (introduced in user-report-1
 fix `5edf0ff`) which works here:
 
 ```clojure
-(-> ds (sk/lay-summary :year :y {:x-type :categorical}) sk/plot)  ;; works
+(-> ds (pj/lay-summary :year :y {:x-type :categorical}) pj/plot)  ;; works
 ```
 
 **Expected.** Replace `lay-pointrange` with the user-facing function
@@ -265,19 +265,19 @@ etc.
 > `:facet-col`, `:facet-row`, `:facet-x`, and `:facet-y` in either
 > a view's or a layer's options now all raise:
 >
-> > `Faceting is plot-level, not layer-level. Use (sk/facet sk col)
-> > or (sk/facet-grid ...) instead of putting :facet-col in a
+> > `Faceting is plot-level, not layer-level. Use (pj/facet sk col)
+> > or (pj/facet-grid ...) instead of putting :facet-col in a
 > > layer's options map.`
 
 
-**Severity:** Low — `sk/facet` and `sk/facet-grid` work fine; the silent ignore for the wrong API is the friction.
+**Severity:** Low — `pj/facet` and `pj/facet-grid` work fine; the silent ignore for the wrong API is the friction.
 
 **Summary.** Putting `:facet-x` (or `:facet-col`) into the mapping passed
-to `sk/view` (or to a layer's options) produces only a `Warning: sk/view
+to `pj/view` (or to a layer's options) produces only a `Warning: pj/view
 does not recognize option(s): [:facet-x]` and renders a single-panel
 chart. The internal code in `view`/`api.clj` actually *does* check for
 `:facet-col` / `:facet-row` in the mapping and throws a helpful error
-("Use (sk/facet sk col) or (sk/facet-grid …) instead") — but only when
+("Use (pj/facet sk col) or (pj/facet-grid …) instead") — but only when
 the keys arrive there directly. Through the public path I used, the
 keys were dropped at the option-validation step before that check ever
 saw them.
@@ -289,20 +289,20 @@ saw them.
                      :group (cycle ["A" "B" "C"])}))
 
 ;; Quietly does the wrong thing:
-(-> ds (sk/lay-line :x :y {:facet-x :group}) sk/plot)
-;; Warning: sk/view does not recognize option(s): [:facet-x].
+(-> ds (pj/lay-line :x :y {:facet-x :group}) pj/plot)
+;; Warning: pj/view does not recognize option(s): [:facet-x].
 ;; Accepted: [:alpha :color :color-type :data :fill :group :shape
 ;;            :size :text :x :x-type :y :y-type :ymax :ymin]
 ;; → single-panel chart with all 30 points joined by one line.
 
 ;; Right way (works):
-(-> ds (sk/lay-line :x :y) (sk/facet :group) sk/plot)
+(-> ds (pj/lay-line :x :y) (pj/facet :group) pj/plot)
 ;; → 3 panels, A/B/C.
 ```
 
 **Expected.** When `:facet-col` / `:facet-row` / `:facet-x` / `:facet-y`
 is passed in a layer or view options map, raise the same helpful error
-that the internal `view` code already raises ("Use `sk/facet`…"). It
+that the internal `view` code already raises ("Use `pj/facet`…"). It
 already exists; it just isn't reached on this path.
 
 ---
@@ -314,8 +314,8 @@ already exists; it just isn't reached on this path.
 > workaround (`"01: new"`, `"02: 1-3 yr"`) is ugly but functional.
 >
 > Logged in `CHANGELOG.md` under Known limitations → Marks
-> ("Stack order in `sk/lay-stacked-area` and
-> `sk/lay-stacked-bar` follows the sort order of the `:color`
+> ("Stack order in `pj/lay-stacked-area` and
+> `pj/lay-stacked-bar` follows the sort order of the `:color`
 > column...").
 
 
@@ -340,7 +340,7 @@ A long list this round:
   was supplied for a numeric year column.
 - **`lay-ridgeline`** — same: works with `{:x-type :categorical}`.
 - **`lay-step`, `lay-area`** — clean cumulative-user curve.
-- **`lay-lollipop` + `(sk/coord :flip)`** — drop-in replacement for the
+- **`lay-lollipop` + `(pj/coord :flip)`** — drop-in replacement for the
   horizontal-bar ranking; nicer for sparse data.
 - **`lay-tile` with numeric x and y, `:fill :value`** — proper heatmap.
   (Categorical-y heatmap is still blocked — see user-report-1's tile
@@ -351,11 +351,11 @@ A long list this round:
   `lay-density + lay-rug` both worked first try with no friction.
 - **`{:color :year :color-type :categorical}` on `lay-density`** — clean
   per-year overlay of length distributions.
-- **`sk/facet`** — works as advertised once you find it; produced 8
+- **`pj/facet`** — works as advertised once you find it; produced 8
   per-channel panels of monthly activity. (See Issue 5 about
   discoverability.)
-- **`sk/options {:palette […]}`** — custom palette accepted directly.
-- **`sk/svg-summary`** — invaluable for verifying chart structure
+- **`pj/options {:palette […]}`** — custom palette accepted directly.
+- **`pj/svg-summary`** — invaluable for verifying chart structure
   (panel count, line count, label set) from the REPL without rendering
   to a file. Used it heavily this session for sanity checks; please
   preserve.

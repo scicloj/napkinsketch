@@ -3,7 +3,7 @@
  (:require
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [clojure.test :refer [deftest is]]))
 
 
@@ -11,7 +11,7 @@
  v3_l19
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width)))
+  (pj/lay-point :sepal-length :sepal-width)))
 
 
 (deftest
@@ -20,7 +20,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
    v3_l19)))
 
@@ -29,7 +29,7 @@
  v6_l31
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width {:color :species})))
+  (pj/lay-point :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
@@ -38,7 +38,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
    v6_l31)))
 
@@ -47,7 +47,7 @@
  v9_l43
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :petal-length :petal-width {:color :species})))
+  (pj/lay-point :petal-length :petal-width {:color :species})))
 
 
 (deftest
@@ -56,7 +56,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)) (zero? (:lines s)))))
    v9_l43)))
 
@@ -65,7 +65,7 @@
  v12_l55
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width {:color "#E74C3C"})))
+  (pj/lay-point :sepal-length :sepal-width {:color "#E74C3C"})))
 
 
 (deftest
@@ -74,7 +74,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
    v12_l55)))
 
@@ -83,8 +83,8 @@
  v15_l66
  (->
   (rdatasets/reshape2-tips)
-  (sk/lay-point :total-bill :tip {:color :day})
-  (sk/options
+  (pj/lay-point :total-bill :tip {:color :day})
+  (pj/options
    {:width 700,
     :height 300,
     :title "Tips by Day",
@@ -98,7 +98,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and
       (= 1 (:panels s))
       (= 244 (:points s))
@@ -111,7 +111,7 @@
  v18_l84
  (->
   (rdatasets/reshape2-tips)
-  (sk/lay-point :total-bill :tip {:color :day, :size :size})))
+  (pj/lay-point :total-bill :tip {:color :day, :size :size})))
 
 
 (deftest
@@ -120,7 +120,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
    v18_l84)))
 
@@ -129,7 +129,7 @@
  v21_l93
  (->
   (rdatasets/reshape2-tips)
-  (sk/lay-point
+  (pj/lay-point
    :total-bill
    :tip
    {:color :day, :size :size, :alpha 0.6})))
@@ -141,7 +141,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:points s)))))
    v21_l93)))
 
@@ -150,7 +150,7 @@
  v24_l105
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :species :sepal-width {:jitter true})))
+  (pj/lay-point :species :sepal-width {:jitter true})))
 
 
 (deftest
@@ -159,7 +159,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
    v24_l105)))
 
@@ -168,7 +168,7 @@
  v27_l114
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :species :sepal-width {:jitter 10, :alpha 0.5})))
+  (pj/lay-point :species :sepal-width {:jitter 10, :alpha 0.5})))
 
 
 (deftest
@@ -177,7 +177,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
    v27_l114)))
 
@@ -186,7 +186,7 @@
  v30_l126
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width {:color :petal-length})))
+  (pj/lay-point :sepal-length :sepal-width {:color :petal-length})))
 
 
 (deftest
@@ -195,7 +195,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and
       (= 1 (:panels s))
       (= 150 (:points s))
@@ -207,7 +207,7 @@
  v33_l136
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point
+  (pj/lay-point
    :sepal-length
    :sepal-width
    {:color :petal-length, :size :petal-width, :alpha 0.7})))
@@ -219,7 +219,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (some #{"petal length"} (:texts s)))))
    v33_l136)))
 
@@ -233,8 +233,8 @@
  v37_l152
  (->
   (rdatasets/datasets-iris)
-  (sk/frame {:color :species})
-  (sk/frame (sk/cross cols cols))))
+  (pj/frame {:color :species})
+  (pj/frame (pj/cross cols cols))))
 
 
 (deftest
@@ -243,7 +243,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and
       (= 16 (:panels s))
       (= (* 12 150) (:points s))

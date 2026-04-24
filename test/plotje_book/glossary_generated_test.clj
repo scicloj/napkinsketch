@@ -3,7 +3,7 @@
  (:require
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [clojure2d.color :as c2d]
   [clojure.test :refer [deftest is]]))
 
@@ -14,8 +14,8 @@
   my-frame
   (->
    (rdatasets/datasets-iris)
-   (sk/lay-point :sepal-length :sepal-width {:color :species})
-   (sk/options {:title "Iris"}))))
+   (pj/lay-point :sepal-length :sepal-width {:color :species})
+   (pj/options {:title "Iris"}))))
 
 
 (def v4_l33 my-frame)
@@ -23,7 +23,7 @@
 
 (deftest
  t5_l35
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v4_l33)))
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v4_l33)))
 
 
 (def
@@ -39,15 +39,15 @@
  v8_l121
  (->
   tips
-  (sk/lay-value-bar :day :count {:color :meal, :position :stack})
-  sk/plan
+  (pj/lay-value-bar :day :count {:color :meal, :position :stack})
+  pj/plan
   (get-in [:panels 0 :layers 0 :groups 1 :y0s])))
 
 
 (deftest t9_l126 (is ((fn [y0s] (every? pos? y0s)) v8_l121)))
 
 
-(def v11_l140 (-> my-frame sk/draft kind/pprint))
+(def v11_l140 (-> my-frame pj/draft kind/pprint))
 
 
 (deftest
@@ -62,7 +62,7 @@
 (def
  v14_l164
  (merge
-  (sk/layer-type-lookup :point)
+  (pj/layer-type-lookup :point)
   {:color :species, :size :petal-length, :alpha 0.7}))
 
 
@@ -82,8 +82,8 @@
  v17_l177
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-line :sepal-length :sepal-width {:group :species})
-  sk/plan
+  (pj/lay-line :sepal-length :sepal-width {:group :species})
+  pj/plan
   (get-in [:panels 0 :layers 0 :groups])
   count))
 
@@ -95,15 +95,15 @@
  v20_l192
  (->
   {:x [1 2 3], :y [4 5 6]}
-  (sk/lay-point :x :y {:nudge-x 0.5})
-  sk/plan
+  (pj/lay-point :x :y {:nudge-x 0.5})
+  pj/plan
   (get-in [:panels 0 :layers 0 :groups 0 :xs])))
 
 
 (deftest t21_l197 (is ((fn [xs] (= [1.5 2.5 3.5] xs)) v20_l192)))
 
 
-(def v23_l209 (merge (sk/layer-type-lookup :point) {:jitter true}))
+(def v23_l209 (merge (pj/layer-type-lookup :point) {:jitter true}))
 
 
 (deftest t24_l211 (is ((fn [m] (true? (:jitter m))) v23_l209)))
@@ -113,16 +113,16 @@
  v26_l223
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width)
-  sk/lay-point))
+  (pj/frame :sepal-length :sepal-width)
+  pj/lay-point))
 
 
 (deftest
  t27_l227
- (is ((fn [v] (pos? (:points (sk/svg-summary v)))) v26_l223)))
+ (is ((fn [v] (pos? (:points (pj/svg-summary v)))) v26_l223)))
 
 
-(def v29_l240 (def my-plan (sk/plan my-frame)))
+(def v29_l240 (def my-plan (pj/plan my-frame)))
 
 
 (def v30_l242 (sort (keys my-plan)))
@@ -139,7 +139,7 @@
  (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v33_l253)))
 
 
-(def v36_l263 (-> my-frame sk/plan (get-in [:panels 0 :layers 0])))
+(def v36_l263 (-> my-frame pj/plan (get-in [:panels 0 :layers 0])))
 
 
 (deftest t37_l267 (is ((fn [m] (= :point (:mark m))) v36_l263)))
@@ -182,9 +182,9 @@
  v45_l342
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width)
-  (sk/facet :species)
-  sk/plan
+  (pj/lay-point :sepal-length :sepal-width)
+  (pj/facet :species)
+  pj/plan
   :panels
   count))
 
@@ -196,8 +196,8 @@
  v48_l367
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width)
-  (sk/lay-rule-h {:y-intercept 3.0})
+  (pj/lay-point :sepal-length :sepal-width)
+  (pj/lay-rule-h {:y-intercept 3.0})
   :layers
   (nth 1)
   :layer-type))
@@ -218,16 +218,16 @@
  v54_l402
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/options {:theme {:bg "#2d2d2d", :grid "#444444", :font-size 10}})
-  sk/svg-summary
+  (pj/lay-point :sepal-length :sepal-width {:color :species})
+  (pj/options {:theme {:bg "#2d2d2d", :grid "#444444", :font-size 10}})
+  pj/svg-summary
   :points))
 
 
 (deftest t55_l407 (is ((fn [n] (= 150 n)) v54_l402)))
 
 
-(def v57_l420 (def my-membrane (sk/plan->membrane my-plan)))
+(def v57_l420 (def my-membrane (pj/plan->membrane my-plan)))
 
 
 (def v58_l422 (vector? my-membrane))
@@ -242,7 +242,7 @@
 (deftest t61_l428 (is ((fn [n] (pos? n)) v60_l426)))
 
 
-(def v63_l438 (def my-plot (sk/plan->plot my-plan :svg {})))
+(def v63_l438 (def my-plot (pj/plan->plot my-plan :svg {})))
 
 
 (def v64_l440 (first my-plot))
@@ -257,13 +257,13 @@
 (deftest t68_l456 (is ((fn [n] (< 1000 n)) v67_l454)))
 
 
-(def v70_l494 (count sk/plot-option-docs))
+(def v70_l494 (count pj/plot-option-docs))
 
 
 (deftest t71_l496 (is ((fn [n] (= 11 n)) v70_l494)))
 
 
-(def v73_l514 (count sk/layer-option-docs))
+(def v73_l514 (count pj/layer-option-docs))
 
 
 (deftest t74_l516 (is ((fn [n] (pos? n)) v73_l514)))

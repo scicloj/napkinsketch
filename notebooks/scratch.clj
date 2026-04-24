@@ -1,6 +1,6 @@
 (ns scratch
   (:require [scicloj.kindly.v4.kind :as kind]
-            [scicloj.napkinsketch.api :as sk]))
+            [scicloj.napkinsketch.api :as pj]))
 
 (kind/fn {:x 1
           :y 2}
@@ -10,7 +10,7 @@
 
 (-> {:A [1 2 3 4]
      :B [4 5 2 9]}
-    sk/lay-point)
+    pj/lay-point)
 
 
 {:data _unnamed [4 2]:

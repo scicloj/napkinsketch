@@ -3,7 +3,7 @@
  (:require
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [scicloj.plotje.impl.frame :as frame-impl]
   [scicloj.plotje.impl.plan :as plan-impl]
   [scicloj.plotje.impl.plan-schema :as ss]
@@ -23,10 +23,10 @@
 
 (def
  v7_l79
- (def trace-sk (-> trace-data (sk/lay-point :x :y {:color :g}))))
+ (def trace-sk (-> trace-data (pj/lay-point :x :y {:color :g}))))
 
 
-(def v9_l96 (sk/frame? trace-sk))
+(def v9_l96 (pj/frame? trace-sk))
 
 
 (deftest t10_l98 (is (true? v9_l96)))
@@ -58,7 +58,7 @@
 (deftest t21_l124 (is ((fn [m] (= :g m)) v20_l122)))
 
 
-(def v23_l132 (def trace-draft (sk/draft trace-sk)))
+(def v23_l132 (def trace-draft (pj/draft trace-sk)))
 
 
 (def v24_l135 (count trace-draft))
@@ -100,7 +100,7 @@
 (deftest t34_l163 (is (true? v33_l161)))
 
 
-(def v36_l170 (def trace-membrane (sk/plan->membrane trace-plan)))
+(def v36_l170 (def trace-membrane (pj/plan->membrane trace-plan)))
 
 
 (def v37_l172 trace-membrane)
@@ -115,7 +115,7 @@
  v40_l180
  (def
   trace-plot
-  (sk/membrane->plot
+  (pj/membrane->plot
    trace-membrane
    :svg
    {:total-width (:total-width trace-plan),
@@ -139,12 +139,12 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 5 (:points s)))))
    v44_l191)))
 
 
-(def v47_l203 (def shortcut-plan (sk/plan trace-sk)))
+(def v47_l203 (def shortcut-plan (pj/plan trace-sk)))
 
 
 (def v48_l205 (ss/valid? shortcut-plan))
@@ -165,9 +165,9 @@
   multi-sk
   (->
    (rdatasets/datasets-iris)
-   (sk/frame :petal-length :petal-width {:color :species})
-   sk/lay-point
-   (sk/lay-smooth {:stat :linear-model}))))
+   (pj/frame :petal-length :petal-width {:color :species})
+   pj/lay-point
+   (pj/lay-smooth {:stat :linear-model}))))
 
 
 (def v55_l264 (count (:layers multi-sk)))
@@ -186,7 +186,7 @@
    v57_l268)))
 
 
-(def v60_l276 (def multi-draft (sk/draft multi-sk)))
+(def v60_l276 (def multi-draft (pj/draft multi-sk)))
 
 
 (def v61_l278 (count multi-draft))
@@ -208,7 +208,7 @@
  v66_l289
  (def
   multi-plan
-  (sk/plan multi-sk {:title "Iris Petals with Regression"})))
+  (pj/plan multi-sk {:title "Iris Petals with Regression"})))
 
 
 (def
@@ -248,10 +248,10 @@
  v73_l310
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :petal-length :petal-width {:color :species})
-  sk/lay-point
-  (sk/lay-smooth {:stat :linear-model})
-  (sk/options {:title "Iris Petals with Regression"})))
+  (pj/frame :petal-length :petal-width {:color :species})
+  pj/lay-point
+  (pj/lay-smooth {:stat :linear-model})
+  (pj/options {:title "Iris Petals with Regression"})))
 
 
 (deftest
@@ -260,7 +260,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
    v73_l310)))
 

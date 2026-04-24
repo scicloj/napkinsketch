@@ -3,7 +3,7 @@
  (:require
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [clojure.test :refer [deftest is]]))
 
 
@@ -20,21 +20,21 @@
  v5_l71
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width)
-  (sk/lay-point {:color :species})))
+  (pj/frame :sepal-length :sepal-width)
+  (pj/lay-point {:color :species})))
 
 
 (deftest
  t6_l75
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v5_l71)))
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v5_l71)))
 
 
 (def
  v8_l79
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width)
-  (sk/lay-point {:color :species})
+  (pj/frame :sepal-length :sepal-width)
+  (pj/lay-point {:color :species})
   sk-summary))
 
 
@@ -49,25 +49,25 @@
  v11_l138
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width)
-  sk/lay-point
-  (sk/options {:title "Iris"})
-  (sk/coord :flip)))
+  (pj/frame :sepal-length :sepal-width)
+  pj/lay-point
+  (pj/options {:title "Iris"})
+  (pj/coord :flip)))
 
 
 (deftest
  t12_l144
- (is ((fn [v] (some #{"Iris"} (:texts (sk/svg-summary v)))) v11_l138)))
+ (is ((fn [v] (some #{"Iris"} (:texts (pj/svg-summary v)))) v11_l138)))
 
 
 (def
  v14_l148
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width)
-  sk/lay-point
-  (sk/options {:title "Iris"})
-  (sk/coord :flip)
+  (pj/frame :sepal-length :sepal-width)
+  pj/lay-point
+  (pj/options {:title "Iris"})
+  (pj/coord :flip)
   sk-summary))
 
 
@@ -82,7 +82,7 @@
    v14_l148)))
 
 
-(def v17_l217 (select-keys (sk/config) [:width :height :margin]))
+(def v17_l217 (select-keys (pj/config) [:width :height :margin]))
 
 
 (deftest
@@ -103,10 +103,10 @@
   demo
   (->
    (rdatasets/datasets-iris)
-   (sk/frame :sepal-length :sepal-width)
-   (sk/lay-point {:color :species})
-   (sk/options {:title "Iris measurements"})
-   (sk/coord :flip))))
+   (pj/frame :sepal-length :sepal-width)
+   (pj/lay-point {:color :species})
+   (pj/options {:title "Iris measurements"})
+   (pj/coord :flip))))
 
 
 (def v22_l242 demo)
@@ -115,7 +115,7 @@
 (deftest
  t23_l244
  (is
-  ((fn [v] (some #{"Iris measurements"} (:texts (sk/svg-summary v))))
+  ((fn [v] (some #{"Iris measurements"} (:texts (pj/svg-summary v))))
    v22_l242)))
 
 

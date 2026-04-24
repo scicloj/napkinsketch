@@ -9,7 +9,7 @@
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]))
+   [scicloj.plotje.api :as pj]))
 
 (def sales {:product [:widget :gadget :gizmo :doohickey]
             :revenue [120 340 210 95]})
@@ -19,10 +19,10 @@
 ;; Count occurrences of a categorical column.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-bar :species))
+    (pj/lay-bar :species))
 
 (kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
+ [(fn [v] (let [s (pj/svg-summary v)]
             (and (= 1 (:panels s))
                  (pos? (:polygons s)))))])
 
@@ -31,10 +31,10 @@
 ;; Grouped (dodged) bars -- count by day, colored by smoking status.
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-bar :day {:color :smoker}))
+    (pj/lay-bar :day {:color :smoker}))
 
 (kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
+ [(fn [v] (let [s (pj/svg-summary v)]
             (and (= 1 (:panels s))
                  (pos? (:polygons s)))))])
 
@@ -43,10 +43,10 @@
 ;; Same data, stacked instead of dodged.
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-bar :day {:position :stack :color :smoker}))
+    (pj/lay-bar :day {:position :stack :color :smoker}))
 
 (kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
+ [(fn [v] (let [s (pj/svg-summary v)]
             (and (= 1 (:panels s))
                  (pos? (:polygons s)))))])
 
@@ -55,9 +55,9 @@
 ;; 100% stacked bars -- shows proportions instead of counts.
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (sk/lay-bar :island {:position :fill :color :species}))
+    (pj/lay-bar :island {:position :fill :color :species}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
@@ -66,15 +66,15 @@
 ;; Flip the bar chart for horizontal orientation.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-bar :species)
-    (sk/coord :flip))
+    (pj/lay-bar :species)
+    (pj/coord :flip))
 
 (kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
+ [(fn [v] (let [s (pj/svg-summary v)]
             (and (= 1 (:panels s))
                  (pos? (:polygons s)))))])
 
-;; `(sk/coord :flip)` draws categories **bottom-to-top in data
+;; `(pj/coord :flip)` draws categories **bottom-to-top in data
 ;; order**, matching ggplot2's `coord_flip()`. For a ranking chart
 ;; where the biggest value should appear at the top, sort the data
 ;; ascending before plotting, e.g.
@@ -85,11 +85,11 @@
 ;; Colored bars, flipped.
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-bar :day {:color :time})
-    (sk/coord :flip))
+    (pj/lay-bar :day {:color :time})
+    (pj/coord :flip))
 
 (kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
+ [(fn [v] (let [s (pj/svg-summary v)]
             (and (= 1 (:panels s))
                  (pos? (:polygons s)))))])
 
@@ -98,9 +98,9 @@
 ;; Pre-computed y values (no counting).
 
 (-> sales
-    (sk/lay-value-bar :product :revenue))
+    (pj/lay-value-bar :product :revenue))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 4 (:polygons s)))))])
 
@@ -109,10 +109,10 @@
 ;; Flip for horizontal orientation.
 
 (-> sales
-    (sk/lay-value-bar :product :revenue)
-    (sk/coord :flip))
+    (pj/lay-value-bar :product :revenue)
+    (pj/coord :flip))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 4 (:polygons s)))))])
 
@@ -121,9 +121,9 @@
 ;; Stem + dot -- a lighter alternative to bar charts.
 
 (-> sales
-    (sk/lay-lollipop :product :revenue))
+    (pj/lay-lollipop :product :revenue))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:points s))
                                 (= 4 (:lines s)))))])
 
@@ -132,10 +132,10 @@
 ;; Flipped for horizontal orientation.
 
 (-> sales
-    (sk/lay-lollipop :product :revenue)
-    (sk/coord :flip))
+    (pj/lay-lollipop :product :revenue)
+    (pj/coord :flip))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:points s))
                                 (= 4 (:lines s)))))])
 

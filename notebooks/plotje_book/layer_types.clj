@@ -7,8 +7,8 @@
 ;; - **stat** -- what computation to apply first (pass through, bin, count, regress, ...)
 ;; - **position** -- how overlapping groups share space (identity, dodge, stack, fill)
 ;;
-;; Layer functions (`sk/lay-point`, `sk/lay-histogram`, `sk/lay-bar`,
-;; `(sk/lay-smooth {:stat :linear-model})`, etc.) each add a layer
+;; Layer functions (`pj/lay-point`, `pj/lay-histogram`, `pj/lay-bar`,
+;; `(pj/lay-smooth {:stat :linear-model})`, etc.) each add a layer
 ;; with the corresponding layer type. When no layer is added,
 ;; Plotje infers a layer type from the column types.
 ;;
@@ -21,7 +21,7 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; Layer-type registry -- for inspecting layer-type data
    [scicloj.plotje.layer-type :as layer-type]
    ;; String utilities
@@ -86,7 +86,7 @@
   :row-maps
   (for [mk (distinct-in-order :mark)]
     {"Mark" (kind/code (pr-str mk))
-     "Shape" (sk/mark-doc mk)
+     "Shape" (pj/mark-doc mk)
      "Used by" (used-by :mark mk)})})
 
 (kind/test-last
@@ -104,7 +104,7 @@
   :row-maps
   (for [st (distinct-in-order :stat)]
     {"Stat" (kind/code (pr-str st))
-     "What it computes" (sk/stat-doc st)
+     "What it computes" (pj/stat-doc st)
      "Used by" (used-by :stat st)})})
 
 (kind/test-last
@@ -121,7 +121,7 @@
   :row-maps
   (for [pos [:identity :dodge :stack :fill]]
     {"Position" (kind/code (pr-str pos))
-     "What it does" (sk/position-doc pos)
+     "What it does" (pj/position-doc pos)
      "Used by" (used-by :position pos)})})
 
 (kind/test-last

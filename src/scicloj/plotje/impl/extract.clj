@@ -86,12 +86,12 @@
     (when (and with-range? (seq groups)
                (not-any? :ymins groups))
       (throw (ex-info (str "errorbar/pointrange requires :y-min and :y-max columns. "
-                           "Pass them as options: (sk/lay-errorbar :x :y {:y-min :lo :y-max :hi})")
+                           "Pass them as options: (pj/lay-errorbar :x :y {:y-min :lo :y-max :hi})")
                       {:mark (:mark view)})))
     (when (and with-labels? (seq groups)
                (not-any? :labels groups))
       (throw (ex-info (str "text/label mark requires a :text column. "
-                           "Pass it as an option: (sk/lay-text :x :y {:text :label-column})")
+                           "Pass it as an option: (pj/lay-text :x :y {:text :label-column})")
                       {:mark (:mark view)})))
     groups))
 

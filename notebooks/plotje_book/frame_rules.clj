@@ -1,8 +1,8 @@
 ;; # Frame Rules
 ;;
-;; This chapter is the specification for how `sk/frame`, `sk/lay-*`,
-;; `sk/arrange`, `sk/options`, `sk/scale`, `sk/coord`, `sk/facet`,
-;; and `sk/cross` compose in the frame world. Twenty-eight rules
+;; This chapter is the specification for how `pj/frame`, `pj/lay-*`,
+;; `pj/arrange`, `pj/options`, `pj/scale`, `pj/coord`, `pj/facet`,
+;; and `pj/cross` compose in the frame world. Twenty-eight rules
 ;; across eight sections; each rule is demonstrated with a rendered
 ;; frame (or plan), a printed structure, and a verified assertion.
 ;;
@@ -19,7 +19,7 @@
    ;; RDatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]))
+   [scicloj.plotje.api :as pj]))
 
 ;; ## Setup
 
@@ -67,22 +67,22 @@
 ;; ## Construction
 ;;
 ;; How frames and composites come into existence. Eight rules
-;; covering every `sk/frame` call shape plus `sk/arrange`.
+;; covering every `pj/frame` call shape plus `pj/arrange`.
 
-;; ### Rule C1: `sk/frame` on raw data creates a leaf
+;; ### Rule C1: `pj/frame` on raw data creates a leaf
 ;;
-;; Called with a dataset as first argument, `sk/frame` returns a
+;; Called with a dataset as first argument, `pj/frame` returns a
 ;; leaf frame. The arity decides what's in `:mapping`: a keyword is
 ;; `:x`; two keywords are `:x` and `:y`; an options map contributes
 ;; aesthetic keys.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width))
+    (pj/frame :sepal-length :sepal-width))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
+    (pj/frame :sepal-length :sepal-width)
     fr-summary)
 
 (kind/test-last
@@ -96,7 +96,7 @@
 ;; handle picking an axis if a layer is added without position.
 
 (-> iris
-    (sk/frame {:color :species})
+    (pj/frame {:color :species})
     fr-summary)
 
 (kind/test-last
@@ -104,16 +104,16 @@
     (and (= {:color :species} (:mapping fr))
          (not (contains? fr :frames))))])
 
-;; ### Rule C2: `sk/frame` on an unpositioned leaf extends its mapping
+;; ### Rule C2: `pj/frame` on an unpositioned leaf extends its mapping
 ;;
 ;; A leaf is **unpositioned** if neither its own `:mapping` nor any
-;; of its layers' mappings carries `:x` or `:y`. Calling `sk/frame`
+;; of its layers' mappings carries `:x` or `:y`. Calling `pj/frame`
 ;; again on such a leaf merges the new mapping into the leaf's own;
 ;; the leaf remains a leaf. No composite is created.
 
 (-> iris
-    sk/frame
-    (sk/frame :sepal-length :sepal-width))
+    pj/frame
+    (pj/frame :sepal-length :sepal-width))
 
 (kind/test-last
  [(fn [fr]
@@ -123,8 +123,8 @@
 ;; And an aesthetic-on-aesthetic extension merges with later-wins:
 
 (-> iris
-    (sk/frame {:color :species})
-    (sk/frame :sepal-length :sepal-width))
+    (pj/frame {:color :species})
+    (pj/frame :sepal-length :sepal-width))
 
 (kind/test-last
  [(fn [fr]
@@ -135,17 +135,17 @@
 ;; same content expressed as one call.
 
 (-> iris
-    sk/frame
-    (sk/frame {:color :species})
-    (sk/frame :sepal-length :sepal-width))
+    pj/frame
+    (pj/frame {:color :species})
+    (pj/frame :sepal-length :sepal-width))
 
 (kind/test-last
  [(fn [fr]
-    (= fr (sk/frame iris :sepal-length :sepal-width {:color :species})))])
+    (= fr (pj/frame iris :sepal-length :sepal-width {:color :species})))])
 
-;; ### Rule C3: `sk/frame` with position on a positioned leaf promotes to a composite
+;; ### Rule C3: `pj/frame` with position on a positioned leaf promotes to a composite
 ;;
-;; When `sk/frame` is called with position (`:x`/`:y`) on a leaf
+;; When `pj/frame` is called with position (`:x`/`:y`) on a leaf
 ;; that already has position, the leaf becomes sub-frame 1 of a new
 ;; composite and the call becomes sub-frame 2. If the leaf carried
 ;; aesthetic alongside position, the aesthetic moves to the new
@@ -153,8 +153,8 @@
 ;; position stays with sub-frame 1.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/frame :petal-length :petal-width))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/frame :petal-length :petal-width))
 
 (kind/test-last
  [(fn [fr]
@@ -169,8 +169,8 @@
 ;; stays with sub-frame 1:
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width {:color :species})
-    (sk/frame :petal-length :petal-width)
+    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/frame :petal-length :petal-width)
     fr-summary)
 
 (kind/test-last
@@ -182,20 +182,20 @@
             (:mapping (second (:frames fr))))))])
 
 ;; **Property P-C3b -- plot-level options stay at root on promotion.**
-;; A `:title` set via `sk/options` before promotion does not demote
+;; A `:title` set via `pj/options` before promotion does not demote
 ;; into sub-frame 1; it lives on the composite root's `:opts`.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/options {:title "Iris"})
-    (sk/frame :petal-length :petal-width))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/options {:title "Iris"})
+    (pj/frame :petal-length :petal-width))
 
 (kind/test-last
  [(fn [fr]
     (and (= "Iris" (get-in fr [:opts :title]))
          (not (contains? (first (:frames fr)) :opts))))])
 
-;; ### Rule C4: aesthetic-only `sk/frame` on a positioned leaf promotes without adding a panel
+;; ### Rule C4: aesthetic-only `pj/frame` on a positioned leaf promotes without adding a panel
 ;;
 ;; An aesthetic-only call (no `:x`/`:y`) on a positioned leaf
 ;; wraps the leaf as sub-frame 1 of a new composite and routes the
@@ -204,8 +204,8 @@
 ;; aesthetic at plot scope ahead of any subsequent panel.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/frame {:color :species}))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/frame {:color :species}))
 
 (kind/test-last
  [(fn [fr]
@@ -221,16 +221,16 @@
 ;; forms without changing the result.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/frame {:color :species})
-    (sk/frame :petal-length :petal-width))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/frame {:color :species})
+    (pj/frame :petal-length :petal-width))
 
 (kind/test-last
  [(fn [fr]
     (= fr
        (-> iris
-           (sk/frame :sepal-length :sepal-width {:color :species})
-           (sk/frame :petal-length :petal-width))))])
+           (pj/frame :sepal-length :sepal-width {:color :species})
+           (pj/frame :petal-length :petal-width))))])
 
 ;; ### Rule C5: layer partitioning at promotion splits layers by position presence
 ;;
@@ -243,9 +243,9 @@
 ;; self-describing.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/frame :petal-length :petal-width))
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/frame :petal-length :petal-width))
 
 (kind/test-last
  [(fn [fr]
@@ -255,15 +255,15 @@
          (= [] (:layers (first (:frames fr))))
          (= [] (:layers (second (:frames fr))))))])
 
-;; The bare `sk/lay-point` call is root-origin: at render time it
+;; The bare `pj/lay-point` call is root-origin: at render time it
 ;; reaches both panels through the resolve-tree walk. Had we passed
-;; position -- `(sk/lay-point :sepal-length :sepal-width)` -- the
+;; position -- `(pj/lay-point :sepal-length :sepal-width)` -- the
 ;; layer would stay with sub-frame 1.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/frame :petal-length :petal-width))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/frame :petal-length :petal-width))
 
 (kind/test-last
  [(fn [fr]
@@ -272,7 +272,7 @@
          (= 1 (count (:layers (first (:frames fr)))))
          (= [] (:layers (second (:frames fr))))))])
 
-;; ### Rule C6: `sk/frame` on a composite dispatches by call shape
+;; ### Rule C6: `pj/frame` on a composite dispatches by call shape
 ;;
 ;; Already a composite? The dispatch is:
 ;;
@@ -282,9 +282,9 @@
 ;; - **Empty call** -- no-op (see C7).
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/frame :petal-length :petal-width)
-    (sk/frame :sepal-length :petal-length))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/frame :petal-length :petal-width)
+    (pj/frame :sepal-length :petal-length))
 
 (kind/test-last
  [(fn [fr]
@@ -298,9 +298,9 @@
 ;; sub-frames alone:
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/frame :petal-length :petal-width)
-    (sk/frame {:color :species})
+    (pj/frame :sepal-length :sepal-width)
+    (pj/frame :petal-length :petal-width)
+    (pj/frame {:color :species})
     fr-summary)
 
 (kind/test-last
@@ -310,34 +310,34 @@
          (= {:x :sepal-length :y :sepal-width}
             (:mapping (first (:frames fr))))))])
 
-;; ### Rule C7: empty `sk/frame` on an existing frame is a no-op
+;; ### Rule C7: empty `pj/frame` on an existing frame is a no-op
 ;;
-;; `(sk/frame fr)` where `fr` is a leaf or a composite returns `fr`
-;; unchanged. This makes the 1-arity `sk/frame` safe as a syntactic
+;; `(pj/frame fr)` where `fr` is a leaf or a composite returns `fr`
+;; unchanged. This makes the 1-arity `pj/frame` safe as a syntactic
 ;; nullity.
 
-(let [fr (-> iris (sk/frame :sepal-length :sepal-width))]
-  (= fr (sk/frame fr)))
+(let [fr (-> iris (pj/frame :sepal-length :sepal-width))]
+  (= fr (pj/frame fr)))
 
 (kind/test-last [true?])
 
 (let [fr (-> iris
-             (sk/frame :sepal-length :sepal-width)
-             (sk/frame :petal-length :petal-width))]
-  (= fr (sk/frame fr)))
+             (pj/frame :sepal-length :sepal-width)
+             (pj/frame :petal-length :petal-width))]
+  (= fr (pj/frame fr)))
 
 (kind/test-last [true?])
 
-;; ### Rule C8: `sk/arrange` composes frames into a composite
+;; ### Rule C8: `pj/arrange` composes frames into a composite
 ;;
-;; `sk/arrange` takes a sequence of frames (leaves in alpha) plus
+;; `pj/arrange` takes a sequence of frames (leaves in alpha) plus
 ;; optional layout opts and returns a composite. The inputs become
 ;; the composite's `:frames`, wrapped in a 2-level row-and-column
 ;; layout.
 
-(sk/arrange
- [(-> iris (sk/frame :sepal-length :sepal-width) sk/lay-point)
-  (-> iris (sk/frame :petal-length :petal-width) sk/lay-point)])
+(pj/arrange
+ [(-> iris (pj/frame :sepal-length :sepal-width) pj/lay-point)
+  (-> iris (pj/frame :petal-length :petal-width) pj/lay-point)])
 
 (kind/test-last
  [(fn [fr]
@@ -351,9 +351,9 @@
 ;; Opts (`:cols`, `:title`, `:width`, `:height`, `:share-scales`)
 ;; route into the composite's `:opts` / `:layout`:
 
-(sk/arrange
- [(sk/frame iris :sepal-length :sepal-width)
-  (sk/frame iris :petal-length :petal-width)]
+(pj/arrange
+ [(pj/frame iris :sepal-length :sepal-width)
+  (pj/frame iris :petal-length :petal-width)]
  {:title "Arranged"
   :share-scales #{:y}})
 
@@ -386,8 +386,8 @@
 ;; `resolve-tree`.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point)
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point)
 
 (kind/test-last
  [(fn [fr]
@@ -398,10 +398,10 @@
 ;; On a composite, the same call attaches at root and reaches every
 ;; panel through resolve-tree:
 
-(-> (sk/arrange
-     [(sk/frame iris :sepal-length :sepal-width)
-      (sk/frame iris :petal-length :petal-width)])
-    sk/lay-point
+(-> (pj/arrange
+     [(pj/frame iris :sepal-length :sepal-width)
+      (pj/frame iris :petal-length :petal-width)])
+    pj/lay-point
     fr-summary)
 
 (kind/test-last
@@ -416,13 +416,13 @@
 ;; prepended, so every sub-plot renders the layer on top of its
 ;; inferred or explicit leaf layers.
 
-(let [before (sk/arrange
-              [(sk/frame iris :sepal-length :sepal-width)
-               (sk/frame iris :petal-length :petal-width)])
-      after  (-> (sk/arrange
-                  [(sk/frame iris :sepal-length :sepal-width)
-                   (sk/frame iris :petal-length :petal-width)])
-                 sk/lay-point)]
+(let [before (pj/arrange
+              [(pj/frame iris :sepal-length :sepal-width)
+               (pj/frame iris :petal-length :petal-width)])
+      after  (-> (pj/arrange
+                  [(pj/frame iris :sepal-length :sepal-width)
+                   (pj/frame iris :petal-length :petal-width)])
+                 pj/lay-point)]
   [(count (or (:layers before) []))
    (count (or (:layers after)  []))])
 
@@ -438,9 +438,9 @@
 ;; carries the call's position.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/frame :petal-length :petal-width)
-    (sk/lay-point :sepal-length :sepal-width))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/frame :petal-length :petal-width)
+    (pj/lay-point :sepal-length :sepal-width))
 
 (kind/test-last
  [(fn [fr]
@@ -454,8 +454,8 @@
 ;; leaf (LP2e):
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/lay-point "sepal-length" "sepal-width"))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/lay-point "sepal-length" "sepal-width"))
 
 (kind/test-last
  [(fn [fr]
@@ -469,11 +469,11 @@
 ;; carries the new position; at render, the layer's position
 ;; overrides the leaf's via scope merge -- an overlay on the same
 ;; panel. Adding a new panel in the frame world requires an
-;; explicit `sk/frame` call.
+;; explicit `pj/frame` call.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/lay-point :petal-length :petal-width))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/lay-point :petal-length :petal-width))
 
 (kind/test-last
  [(fn [fr]
@@ -493,9 +493,9 @@
 ;; overlay, per LP2 above.)
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/frame :petal-length :petal-width)
-    (sk/lay-point :sepal-length :petal-length))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/frame :petal-length :petal-width)
+    (pj/lay-point :sepal-length :petal-length))
 
 (kind/test-last
  [(fn [fr]
@@ -509,8 +509,8 @@
 ;; `lay-*` called with a dataset as its first argument coerces the
 ;; data into a leaf frame first, then applies the layer. The result
 ;; is a leaf frame equivalent to
-;; `(-> data (sk/frame :x :y) sk/lay-point)`. This keeps the
-;; convenience one-liner `(-> data (sk/lay-point :x :y))` working as
+;; `(-> data (pj/frame :x :y) pj/lay-point)`. This keeps the
+;; convenience one-liner `(-> data (pj/lay-point :x :y))` working as
 ;; the shortest path from data to plot.
 
 (def tiny
@@ -518,15 +518,15 @@
    :b [2 4 3 5 4]})
 
 (-> tiny
-    (sk/lay-point :a :b))
+    (pj/lay-point :a :b))
 
-(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
 
 ;; The explicit two-step form produces the same leaf frame:
 
 (-> tiny
-    (sk/frame :a :b)
-    sk/lay-point
+    (pj/frame :a :b)
+    pj/lay-point
     fr-summary)
 
 (kind/test-last
@@ -544,7 +544,7 @@
 
 ;; ### Rule LI1: few-column datasets auto-infer columns by position
 ;;
-;; When `lay-*` or `sk/frame` is called on a dataset without
+;; When `lay-*` or `pj/frame` is called on a dataset without
 ;; explicit column arguments, columns are inferred:
 ;;
 ;; | Columns | Inferred mapping |
@@ -555,16 +555,16 @@
 ;; | 4+ | error (pass explicit x and y) |
 
 (-> {:height [1 2 3] :weight [4 5 6] :species ["a" "b" "a"]}
-    sk/lay-point)
+    pj/lay-point)
 
 (kind/test-last
- [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+ [(fn [v] (= 3 (:points (pj/svg-summary v))))])
 
 ;; Four or more columns without explicit arguments throws:
 
 (try
   (-> {:a [1 2] :b [3 4] :c [5 6] :d [7 8]}
-      sk/lay-point)
+      pj/lay-point)
   (catch Exception e
     (ex-message e)))
 
@@ -579,8 +579,8 @@
 ;; as the user typed it; tolerance is a comparison property only.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/lay-point "sepal-length" "sepal-width"))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/lay-point "sepal-length" "sepal-width"))
 
 (kind/test-last
  [(fn [fr]
@@ -591,7 +591,7 @@
 ;; frame holds a string:
 
 (-> iris
-    (sk/frame "sepal-length" "sepal-width")
+    (pj/frame "sepal-length" "sepal-width")
     fr-summary)
 
 (kind/test-last
@@ -616,7 +616,7 @@
 ;; composite with `:color` declared at root:
 
 (def s1-composite
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris
     :mapping {:color :species}
     :frames [{:mapping {:x :sepal-length :y :sepal-width}
@@ -628,7 +628,7 @@ s1-composite
 
 (kind/test-last
  [(fn [fr]
-    (let [pl (sk/plan fr)
+    (let [pl (pj/plan fr)
           panels (mapv (comp :panels :plan) (:sub-plots pl))]
       ;; Both sub-plots render colored-by-species -- 3 groups per panel
       (every? (fn [pp]
@@ -639,7 +639,7 @@ s1-composite
 ;; mapping does not leak into its siblings.
 
 (def s1-siblings
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris
     :frames [{:mapping {:x :sepal-length :y :sepal-width}
               :layers [{:layer-type :point}]}
@@ -650,7 +650,7 @@ s1-siblings
 
 (kind/test-last
  [(fn [fr]
-    (let [sub-plots (:sub-plots (sk/plan fr))
+    (let [sub-plots (:sub-plots (pj/plan fr))
           panel-groups (mapv (fn [sp]
                                (count (:groups (first (:layers
                                                        (first (-> sp :plan :panels)))))))
@@ -667,7 +667,7 @@ s1-siblings
 ;; merge -- it is picked, wholesale.
 
 (def s2-tree
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris
     :frames [{:mapping {:x :sepal-length :y :sepal-width}
               :layers [{:layer-type :point}]}
@@ -679,7 +679,7 @@ s2-tree
 
 (kind/test-last
  [(fn [fr]
-    (let [sub-plots (:sub-plots (sk/plan fr))
+    (let [sub-plots (:sub-plots (pj/plan fr))
           counts (mapv (fn [sp]
                          (-> sp :plan :panels first :layers first
                              :groups first :xs count))
@@ -695,12 +695,12 @@ s2-tree
 ;; aesthetic."
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width {:color :species})
-    sk/lay-point
-    (sk/lay-smooth {:color nil :stat :linear-model}))
+    (pj/frame :sepal-length :sepal-width {:color :species})
+    pj/lay-point
+    (pj/lay-smooth {:color nil :stat :linear-model}))
 
 (kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
+ [(fn [v] (let [s (pj/svg-summary v)]
             ;; lm produces one overall line (not three), because its
             ;; :color was canceled
             (and (= 150 (:points s))
@@ -714,12 +714,12 @@ s2-tree
 ;; case of S1: the layer's mapping is innermost in the merge.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/lay-point {:color :species})
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/lay-point {:color :species})
+    (pj/lay-smooth {:stat :linear-model}))
 
 (kind/test-last
- [(fn [v] (let [s (sk/svg-summary v)]
+ [(fn [v] (let [s (pj/svg-summary v)]
             ;; Point layer sees :species (colored points); smooth
             ;; layer does not (one overall regression line).
             (and (= 150 (:points s))
@@ -732,17 +732,17 @@ s2-tree
 ;; data (which live in the scope hierarchy), options configure the
 ;; whole rendered plot and attach to the root's `:opts`.
 
-;; ### Rule O1: `sk/options` writes to the root's `:opts`
+;; ### Rule O1: `pj/options` writes to the root's `:opts`
 ;;
-;; `sk/options` merges its argument into the current frame's
+;; `pj/options` merges its argument into the current frame's
 ;; `:opts`. On a leaf, that is the leaf's `:opts`. On a composite,
 ;; the root's. Options do not flow down like mappings -- they are
 ;; plot-level, not layer-level.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/options {:title "Iris"}))
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/options {:title "Iris"}))
 
 (kind/test-last
  [(fn [fr] (= "Iris" (get-in fr [:opts :title])))])
@@ -750,45 +750,45 @@ s2-tree
 ;; Repeated calls merge, later-wins on collisions:
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/options {:title "One"})
-    (sk/options {:title "Two" :subtitle "Sub"}))
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/options {:title "One"})
+    (pj/options {:title "Two" :subtitle "Sub"}))
 
 (kind/test-last
  [(fn [fr]
     (and (= "Two" (get-in fr [:opts :title]))
          (= "Sub" (get-in fr [:opts :subtitle]))))])
 
-;; ### Rule O2: `sk/scale` and `sk/coord` are plot-level options
+;; ### Rule O2: `pj/scale` and `pj/coord` are plot-level options
 ;;
-;; `sk/scale` and `sk/coord` write into `:opts` as `:x-scale` /
+;; `pj/scale` and `pj/coord` write into `:opts` as `:x-scale` /
 ;; `:y-scale` and `:coord`. They apply to every leaf in the tree
 ;; uniformly. (Per-panel scale variation is an open design
 ;; question; today both are plot-wide.)
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/scale :x :log)
-    (sk/coord :flip))
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/scale :x :log)
+    (pj/coord :flip))
 
 (kind/test-last
  [(fn [fr]
     (and (= {:type :log} (get-in fr [:opts :x-scale]))
          (= :flip (get-in fr [:opts :coord]))))])
 
-;; ### Rule O3: `sk/facet` writes the faceting column to `:opts`
+;; ### Rule O3: `pj/facet` writes the faceting column to `:opts`
 ;;
-;; `sk/facet` and `sk/facet-grid` store facet columns in `:opts`
+;; `pj/facet` and `pj/facet-grid` store facet columns in `:opts`
 ;; as `:facet-col` (and `:facet-row` for a grid). The layout
 ;; effect -- splitting each leaf's panel into a group of panels --
 ;; happens at render time.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/facet :species))
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/facet :species))
 
 (kind/test-last
  [(fn [fr] (= :species (get-in fr [:opts :facet-col])))])
@@ -796,18 +796,18 @@ s2-tree
 ;; A 2D grid uses both keys:
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/facet-grid :species :species))
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/facet-grid :species :species))
 
 (kind/test-last
  [(fn [fr]
     (and (= :species (get-in fr [:opts :facet-col]))
          (= :species (get-in fr [:opts :facet-row]))))])
 
-;; ### Rule O4: `sk/lay-rule-*` and `sk/lay-band-*` are layers (annotations)
+;; ### Rule O4: `pj/lay-rule-*` and `pj/lay-band-*` are layers (annotations)
 ;;
-;; `sk/lay-rule-h`, `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v`
+;; `pj/lay-rule-h`, `pj/lay-rule-v`, `pj/lay-band-h`, `pj/lay-band-v`
 ;; produce layers and scope like any other `lay-*`: bare call
 ;; attaches at root (flows to every panel); 4-arity with column
 ;; refs attaches to a matching leaf. Position rides as layer-type
@@ -815,9 +815,9 @@ s2-tree
 ;; `:x-min`/`:x-max`), not column refs.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/lay-point {:color :species})
-    (sk/lay-rule-h {:y-intercept 3.0}))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/lay-point {:color :species})
+    (pj/lay-rule-h {:y-intercept 3.0}))
 
 (kind/test-last
  [(fn [fr]
@@ -830,9 +830,9 @@ s2-tree
 ;; leaf, not every panel:
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/frame :petal-length :petal-width)
-    (sk/lay-rule-h :sepal-length :sepal-width {:y-intercept 3.0}))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/frame :petal-length :petal-width)
+    (pj/lay-rule-h :sepal-length :sepal-width {:y-intercept 3.0}))
 
 (kind/test-last
  [(fn [fr]
@@ -846,7 +846,7 @@ s2-tree
 ;; ## Assembly
 ;;
 ;; How the rules above combine to produce rendered layers. The
-;; `sk/draft` pipeline stage is the observable output of assembly;
+;; `pj/draft` pipeline stage is the observable output of assembly;
 ;; each entry corresponds to one rendered layer.
 
 ;; ### Rule A1: one rendered layer per applicable (leaf, layer) pair
@@ -856,15 +856,15 @@ s2-tree
 ;; the leaf's own plus all ancestor root-origin layers.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/frame :petal-length :petal-width)
-    sk/lay-point                            ;; root-origin; reaches both
-    (sk/lay-smooth :sepal-length :sepal-width
+    (pj/frame :sepal-length :sepal-width)
+    (pj/frame :petal-length :petal-width)
+    pj/lay-point                            ;; root-origin; reaches both
+    (pj/lay-smooth :sepal-length :sepal-width
                    {:stat :linear-model}))  ;; panel-origin; sub-frame 1 only
 
 (kind/test-last
  [(fn [fr]
-    (let [pl (sk/plan fr)
+    (let [pl (pj/plan fr)
           panel-layer-counts (mapv (fn [sp]
                                      (count (:layers (first (-> sp :plan :panels)))))
                                    (:sub-plots pl))]
@@ -880,9 +880,9 @@ s2-tree
 ;; unresolved.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width {:color :species})
-    sk/lay-point
-    sk/draft)
+    (pj/frame :sepal-length :sepal-width {:color :species})
+    pj/lay-point
+    pj/draft)
 
 (kind/test-last
  [(fn [drafts]
@@ -905,14 +905,14 @@ s2-tree
 ;;
 ;; Each leaf in the resolved tree produces one **panel block** in
 ;; the rendered plot. Without faceting, the block contains one
-;; panel. With `sk/facet` or `sk/facet-grid`, the block contains
+;; panel. With `pj/facet` or `pj/facet-grid`, the block contains
 ;; one panel per facet value (or per (row, col) pair).
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    (sk/frame :petal-length :petal-width)
-    sk/lay-point
-    sk/plan)
+    (pj/frame :sepal-length :sepal-width)
+    (pj/frame :petal-length :petal-width)
+    pj/lay-point
+    pj/plan)
 
 (kind/test-last
  [(fn [pl]
@@ -927,34 +927,34 @@ s2-tree
 ;; panels.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width {:color :species})
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/frame :sepal-length :sepal-width {:color :species})
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model}))
 
 (kind/test-last
  [(fn [fr]
-    (let [pl (sk/plan fr)
+    (let [pl (pj/plan fr)
           panel (first (:panels pl))]
       (and (= 1 (count (:panels pl)))
            (= 2 (count (:layers panel))))))])
 
 ;; ### Rule L3: faceting splits each leaf into panels by category
 ;;
-;; `sk/facet :col` produces one panel per unique value of `:col`;
-;; `sk/facet-grid :row-col :col-col` produces one panel per (row,
+;; `pj/facet :col` produces one panel per unique value of `:col`;
+;; `pj/facet-grid :row-col :col-col` produces one panel per (row,
 ;; col) pair.
 
 (-> iris
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/facet :species))
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/facet :species))
 
 (kind/test-last
- [(fn [fr] (= 3 (count (:panels (sk/plan fr)))))])
+ [(fn [fr] (= 3 (count (:panels (pj/plan fr)))))])
 
 ;; ### Rule L4: composite layout is controlled by `:layout` and optional `:share-scales`
 ;;
-;; A composite frame carries a `:layout` map (set by `sk/arrange`
+;; A composite frame carries a `:layout` map (set by `pj/arrange`
 ;; options: `:cols`, `:width`, `:height`, `:title`) controlling
 ;; the grid of its sub-frames' panel blocks. An optional
 ;; `:share-scales` (subset of `#{:x :y}`) enables column-bucketed
@@ -968,26 +968,26 @@ s2-tree
 ;; scatter and top density; right density has its own y).
 
 (def l4-shared
-  (sk/arrange
-   [(-> iris (sk/frame :sepal-length :sepal-width) sk/lay-point)
-    (-> iris (sk/frame :sepal-length :petal-width) sk/lay-point)]
+  (pj/arrange
+   [(-> iris (pj/frame :sepal-length :sepal-width) pj/lay-point)
+    (-> iris (pj/frame :sepal-length :petal-width) pj/lay-point)]
    {:share-scales #{:x}}))
 
 l4-shared
 
 (kind/test-last
  [(fn [fr]
-    (let [sub-plots (:sub-plots (sk/plan fr))
+    (let [sub-plots (:sub-plots (pj/plan fr))
           domains (mapv #(get-in % [:plan :panels 0 :x-scale :domain]) sub-plots)]
       ;; Both panels share :sepal-length as x -> same x-domain
       (and (= 2 (count domains))
            (= (first domains) (second domains)))))])
 
-;; ### Rule L5: multi-pair `sk/frame` reshapes rectangular pairs into a 2D grid (SPLOM)
+;; ### Rule L5: multi-pair `pj/frame` reshapes rectangular pairs into a 2D grid (SPLOM)
 ;;
-;; When `sk/frame` receives a pair-sequence that forms a
+;; When `pj/frame` receives a pair-sequence that forms a
 ;; rectangular M x N Cartesian product (like the output of
-;; `sk/cross cols cols`), the result is a nested **rows-of-cols**
+;; `pj/cross cols cols`), the result is a nested **rows-of-cols**
 ;; composite with `:share-scales #{:x :y}` -- the canonical SPLOM
 ;; layout. Each cell inherits the base's `:data`, root `:mapping`,
 ;; and root `:layers` via `resolve-tree`. The compositor applies
@@ -1000,15 +1000,15 @@ l4-shared
 ;; - `:suppress-y-label true` on every non-leftmost column (y-axis
 ;;   label shows only on the leftmost column).
 ;;
-;; Idiomatic SPLOM usage therefore omits `sk/lay-point` -- each
+;; Idiomatic SPLOM usage therefore omits `pj/lay-point` -- each
 ;; cell infers its own layer type: scatter off-diagonal, histogram
 ;; on the diagonal (where x = y). Pair lists that are not
 ;; rectangular fall through to the flat one-panel-per-pair behaviour
 ;; (see Rules C3 / C6).
 
 (-> iris
-    (sk/frame {:color :species})
-    (sk/frame (sk/cross [:sepal-length :sepal-width]
+    (pj/frame {:color :species})
+    (pj/frame (pj/cross [:sepal-length :sepal-width]
                         [:petal-length :petal-width])))
 
 (kind/test-last
@@ -1020,17 +1020,17 @@ l4-shared
          (= {:color :species} (:mapping fr))))])
 
 ;; ---
-;; ## A note on `sk/cross`
+;; ## A note on `pj/cross`
 ;;
-;; `sk/cross` is not a rule. It is a pure pair-generator --
+;; `pj/cross` is not a rule. It is a pure pair-generator --
 ;; `(for [x xs y ys] [x y])` -- returning `[x-col y-col]` pairs. It
 ;; has no plot-level behavior on its own; the multi-pair arity of
-;; `sk/frame` (and `sk/arrange` for independent plots) is what turns
+;; `pj/frame` (and `pj/arrange` for independent plots) is what turns
 ;; the generated sequence into panels, and those cases are already
-;; covered by the rules above. `sk/cross` belongs in the cookbook
+;; covered by the rules above. `pj/cross` belongs in the cookbook
 ;; as a SPLOM-construction ingredient, not here.
 
-(sk/cross [:a :b] [:c :d])
+(pj/cross [:a :b] [:c :d])
 
 (kind/test-last
  [(fn [pairs] (= [[:a :c] [:a :d] [:b :c] [:b :d]] pairs))])

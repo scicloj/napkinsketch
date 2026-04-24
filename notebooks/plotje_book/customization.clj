@@ -8,7 +8,7 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; RDatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Clojure2d -- palette and gradient discovery
@@ -19,20 +19,20 @@
 ;; A wide, short plot.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:width 800 :height 250}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:width 800 :height 250}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (>= (:width s) 800))))])
 
 ;; A tall, narrow plot.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:width 300 :height 500}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:width 300 :height 500}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (>= (:width s) 300))))])
 
@@ -41,24 +41,24 @@
 ;; Override axis labels and add a title.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:title "Iris Sepal Measurements"
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:title "Iris Sepal Measurements"
                  :x-label "Length (cm)"
                  :y-label "Width (cm)"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (some #{"Iris Sepal Measurements"} (:texts s)))))])
 
 ;; Add a subtitle and caption for context.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:title "Iris Measurements"
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:title "Iris Measurements"
                  :subtitle "Sepal dimensions across three species"
                  :caption "Source: Fisher's Iris dataset (1936)"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (some #{"Iris Measurements"} (:texts s))
                                 (some (fn [t] (.contains ^String t "Sepal dimensions")) (:texts s)))))])
@@ -74,32 +74,32 @@
 ;; Linear scale -- hard to see the structure.
 
 (-> exponential-data
-    (sk/lay-point :x :y)
-    (sk/options {:title "Linear Scale"}))
+    (pj/lay-point :x :y)
+    (pj/options {:title "Linear Scale"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 49 (:points s)))))])
 
 ;; Log y-scale -- reveals the exponential trend.
 
 (-> exponential-data
-    (sk/lay-point :x :y)
-    (sk/scale :y :log)
-    (sk/options {:title "Log Y Scale"}))
+    (pj/lay-point :x :y)
+    (pj/scale :y :log)
+    (pj/options {:title "Log Y Scale"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 49 (:points s)))))])
 
 ;; Lock the y-axis to a specific range.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/scale :y {:type :linear :domain [0 6]})
-    (sk/options {:title "Fixed Y Domain [0, 6]"}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/scale :y {:type :linear :domain [0 6]})
+    (pj/options {:title "Fixed Y Domain [0, 6]"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
@@ -107,10 +107,10 @@
 ;; `scale_*_continuous(breaks=...)`).
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/scale :y {:type :linear :breaks [2.0 3.0 4.0]}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/scale :y {:type :linear :breaks [2.0 3.0 4.0]}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (some #{"2"} (:texts s))
                                 (some #{"4"} (:texts s)))))])
@@ -120,31 +120,31 @@
 ;; Pass `:alpha` and `:size` directly to layer functions.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species :alpha 0.5 :size 5}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species :alpha 0.5 :size 5}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
 ;; `:size` controls line thickness on line-based marks:
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
-    (sk/lay-line :x :y {:size 3}))
+    (pj/lay-line :x :y {:size 3}))
 
-(kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 1 (:lines (pj/svg-summary v))))])
 
 ;; Alpha works on bars and polygons too.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-bar :species {:alpha 0.4}))
+    (pj/lay-bar :species {:alpha 0.4}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 3 (:polygons s))))])
 
 ;; ## Annotations
 
 ;; Reference lines and shaded bands are layers added with
-;; `sk/lay-rule-h`, `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v`.
+;; `pj/lay-rule-h`, `pj/lay-rule-v`, `pj/lay-band-h`, `pj/lay-band-v`.
 ;; Position comes from the opts map (`:y-intercept` or `:x-intercept`
 ;; for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max` for bands);
 ;; appearance aesthetics (`:color`, `:alpha`) work the same way they
@@ -153,27 +153,27 @@
 ;; Horizontal and vertical reference lines.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-rule-h {:y-intercept 3.0})
-    (sk/lay-rule-v {:x-intercept 6.0}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/lay-rule-h {:y-intercept 3.0})
+    (pj/lay-rule-v {:x-intercept 6.0}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 2 (:lines s)))))])
 
 ;; Shaded bands use a default opacity of 0.15.
 ;; Pass `{:alpha ...}` to override.
 
-(:band-opacity (sk/config))
+(:band-opacity (pj/config))
 
 (kind/test-last [(fn [v] (= 0.15 v))])
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/lay-band-v {:x-min 5.5 :x-max 6.5})
-    (sk/lay-band-h {:y-min 3.0 :y-max 3.5 :alpha 0.3}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/lay-band-v {:x-min 5.5 :x-max 6.5})
+    (pj/lay-band-h {:y-min 3.0 :y-max 3.5 :alpha 0.3}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 150 (:points s))))])
 
 ;; Note: position values must be literal numbers in this release. A
@@ -197,18 +197,18 @@
 ;; Custom vector:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; Named preset -- here `:dark2` for a high-contrast qualitative palette:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:palette :dark2}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:palette :dark2}))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; ## Discovering Palettes and Gradients
 ;;
@@ -254,21 +254,21 @@
 ;; - `:tableau-10` -- Tableau default, high contrast
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:palette :khroma/okabeito}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:palette :khroma/okabeito}))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; ## Theme
 ;;
 ;; Customize background color, grid color, and font size.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:title "White Theme"
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:title "White Theme"
                  :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 10}}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 150 (:points s))))])
 
 ;; ## Legend Position
@@ -277,10 +277,10 @@
 ;; `:top`, or `:none`.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:legend-position :bottom}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:legend-position :bottom}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (< (:width s) 700))))])
 
@@ -289,20 +289,20 @@
 ;; Enable mouseover data values with `{:tooltip true}`.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:tooltip true}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:tooltip true}))
 
-(kind/test-last [(fn [v] (= :div (first (sk/plot v))))])
+(kind/test-last [(fn [v] (= :div (first (pj/plot v))))])
 
 ;; ## Brush Selection
 ;;
 ;; Enable drag-to-select with `{:brush true}`. Click to reset.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/options {:brush true}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:brush true}))
 
-(kind/test-last [(fn [v] (= :div (first (sk/plot v))))])
+(kind/test-last [(fn [v] (= :div (first (pj/plot v))))])
 
 ;; Brushing becomes especially useful in a SPLOM (scatter plot matrix).
 ;; Drag to select points in any panel -- the selection
@@ -311,12 +311,12 @@
 (def splom-cols [:sepal-length :sepal-width :petal-length :petal-width])
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:color :species})
-    sk/lay-point
-    (sk/frame (sk/cross splom-cols splom-cols))
-    (sk/options {:brush true}))
+    (pj/frame {:color :species})
+    pj/lay-point
+    (pj/frame (pj/cross splom-cols splom-cols))
+    (pj/options {:brush true}))
 
-(kind/test-last [(fn [v] (= :div (first (sk/plot v))))])
+(kind/test-last [(fn [v] (= :div (first (pj/plot v))))])
 
 ;; ## What's Next
 ;;

@@ -10,16 +10,16 @@
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]))
+   [scicloj.plotje.api :as pj]))
 
 ;; ## Basic Scatter
 
 ;; Sepal dimensions, no color -- the default mark.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width))
+    (pj/lay-point :sepal-length :sepal-width))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s))
                                 (zero? (:lines s)))))])
@@ -29,9 +29,9 @@
 ;; Adding `:color :species` groups points by species with distinct colors.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s))
                                 (zero? (:lines s)))))])
@@ -41,9 +41,9 @@
 ;; Petal length vs width -- a strongly correlated pair.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :petal-length :petal-width {:color :species}))
+    (pj/lay-point :petal-length :petal-width {:color :species}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s))
                                 (zero? (:lines s)))))])
@@ -53,9 +53,9 @@
 ;; A fixed color string (not a column reference) applies to all points.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color "#E74C3C"}))
+    (pj/lay-point :sepal-length :sepal-width {:color "#E74C3C"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
@@ -64,13 +64,13 @@
 ;; Wider plot with custom title and labels.
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-point :total-bill :tip {:color :day})
-    (sk/options {:width 700 :height 300
+    (pj/lay-point :total-bill :tip {:color :day})
+    (pj/options {:width 700 :height 300
                  :title "Tips by Day"
                  :x-label "Total Bill ($)"
                  :y-label "Tip ($)"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 244 (:points s))
                                 (>= (:width s) 700)
@@ -82,18 +82,18 @@
 ;; Each point's radius reflects the column value.
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-point :total-bill :tip {:color :day :size :size}))
+    (pj/lay-point :total-bill :tip {:color :day :size :size}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:points s)))))])
 
 ;; Combine size with alpha for dense data.
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-point :total-bill :tip {:color :day :size :size :alpha 0.6}))
+    (pj/lay-point :total-bill :tip {:color :day :size :size :alpha 0.6}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:points s)))))])
 
@@ -103,18 +103,18 @@
 ;; points overlap. Use `:jitter true` to add random pixel offsets.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :species :sepal-width {:jitter true}))
+    (pj/lay-point :species :sepal-width {:jitter true}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
 ;; Control the jitter amount in pixels.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :species :sepal-width {:jitter 10 :alpha 0.5}))
+    (pj/lay-point :species :sepal-width {:jitter 10 :alpha 0.5}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
@@ -124,9 +124,9 @@
 ;; continuous blue gradient instead of discrete palette colors.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :petal-length}))
+    (pj/lay-point :sepal-length :sepal-width {:color :petal-length}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s))
                                 (some #{"petal length"} (:texts s)))))])
@@ -134,15 +134,15 @@
 ;; Continuous color with size -- a color-size bubble plot.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :petal-length :size :petal-width :alpha 0.7}))
+    (pj/lay-point :sepal-length :sepal-width {:color :petal-length :size :petal-width :alpha 0.7}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (some #{"petal length"} (:texts s)))))])
 
 ;; ## Scatter Plot Matrix (SPLOM)
 ;;
-;; `sk/cross` generates all combinations of two lists. Passing
+;; `pj/cross` generates all combinations of two lists. Passing
 ;; column names produces a grid of scatter plots -- one per pair of
 ;; variables. The diagonal shows histograms (automatic inference
 ;; for same-column pairs).
@@ -150,10 +150,10 @@
 (def cols [:sepal-length :sepal-width :petal-length :petal-width])
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:color :species})
-    (sk/frame (sk/cross cols cols)))
+    (pj/frame {:color :species})
+    (pj/frame (pj/cross cols cols)))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 16 (:panels s))
                                 (= (* 12 150) (:points s))
                                 (pos? (:polygons s)))))])

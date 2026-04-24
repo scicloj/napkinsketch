@@ -32,7 +32,7 @@
    ;; RDatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]))
+   [scicloj.plotje.api :as pj]))
 
 ;; A helper to inspect frame structure. It prints `:mapping`,
 ;; `:layers`, and `:opts` -- everything except the `:data` field,
@@ -52,12 +52,12 @@
 ;; - **The layer type** -- the rendering recipe: a mark (point, line,
 ;;   bar, histogram, ...), a stat (identity, linear-model, density,
 ;;   binning, ...), and a position adjustment (dodge, stack,
-;;   jitter). The layer type is chosen by which `sk/lay-*` function
+;;   jitter). The layer type is chosen by which `pj/lay-*` function
 ;;   you call; its constituents can be overridden via `:mark`,
 ;;   `:stat`, and `:position` keys in the opts map.
 ;; - **Layer-type parameters** -- knobs specific to the layer type,
-;;   like `:bandwidth` for `sk/lay-density` or `:bins` for
-;;   `sk/lay-histogram`.
+;;   like `:bandwidth` for `pj/lay-density` or `:bins` for
+;;   `pj/lay-histogram`.
 ;; - **Aesthetics** -- how the layer maps data to visuals:
 ;;   `:color`, `:size`, `:alpha`, `:shape`, `:group`, plus
 ;;   mark-specific keys like `:text` and `:fill`. Either mapped
@@ -66,19 +66,19 @@
 ;; - **Data** -- a per-layer `:data` key, if the layer should
 ;;   use a different dataset from the rest of the frame.
 ;;
-;; The primary way to set them is in the opts map of `sk/lay-*`:
+;; The primary way to set them is in the opts map of `pj/lay-*`:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width)
-    (sk/lay-point {:color :species}))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/lay-point {:color :species}))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; And the frame structure:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width)
-    (sk/lay-point {:color :species})
+    (pj/frame :sepal-length :sepal-width)
+    (pj/lay-point {:color :species})
     sk-summary)
 
 (kind/test-last
@@ -94,8 +94,8 @@
 ;;
 ;; | Scope  | Set via           | Reaches                    |
 ;; |:-------|:------------------|:---------------------------|
-;; | Layer  | `sk/lay-*` opts   | that one layer             |
-;; | Frame  | `sk/frame` opts   | every layer on this frame  |
+;; | Layer  | `pj/lay-*` opts   | that one layer             |
+;; | Frame  | `pj/frame` opts   | every layer on this frame  |
 ;;
 ;; When the same key is set at both scopes, the narrower one wins.
 ;;
@@ -105,7 +105,7 @@
 ;; [Composition](./plotje_book.composition.html) for examples.
 ;;
 ;; The layer type itself is chosen per layer -- you pick which
-;; `sk/lay-*` to call. [Core Concepts](./plotje_book.core_concepts.html)
+;; `pj/lay-*` to call. [Core Concepts](./plotje_book.core_concepts.html)
 ;; teaches how layer placement interacts with frame mappings, and
 ;; the detailed combination rules for each category of layer option.
 
@@ -119,37 +119,37 @@
 ;; Four functions write plot options to the frame's `:opts`
 ;; field:
 ;;
-;; - `sk/options` -- plot text (title, subtitle, caption, axis
+;; - `pj/options` -- plot text (title, subtitle, caption, axis
 ;;   and legend labels) and panel dimensions. It also accepts
 ;;   configuration keys as per-plot overrides (see Configuration
 ;;   below).
-;; - `sk/scale` -- axis scale (log, categorical, fixed domain).
-;; - `sk/coord` -- coordinate system (cartesian, flipped, polar,
+;; - `pj/scale` -- axis scale (log, categorical, fixed domain).
+;; - `pj/coord` -- coordinate system (cartesian, flipped, polar,
 ;;   fixed).
-;; - `sk/facet` and `sk/facet-grid` -- split the plot into panels
+;; - `pj/facet` and `pj/facet-grid` -- split the plot into panels
 ;;   by a column.
 ;;
-;; Reference lines and shaded bands -- `sk/lay-rule-h`,
-;; `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v` -- are layers,
+;; Reference lines and shaded bands -- `pj/lay-rule-h`,
+;; `pj/lay-rule-v`, `pj/lay-band-h`, `pj/lay-band-v` -- are layers,
 ;; not plot options. They scope like any other `lay-*`: bare calls
 ;; attach to the frame, while passing `:x`/`:y` columns targets the
 ;; most recent matching leaf (or creates a new one).
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/options {:title "Iris"})
-    (sk/coord :flip))
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/options {:title "Iris"})
+    (pj/coord :flip))
 
-(kind/test-last [(fn [v] (some #{"Iris"} (:texts (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (some #{"Iris"} (:texts (pj/svg-summary v))))])
 
 ;; And the frame structure:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    (sk/options {:title "Iris"})
-    (sk/coord :flip)
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/options {:title "Iris"})
+    (pj/coord :flip)
     sk-summary)
 
 (kind/test-last
@@ -164,14 +164,14 @@
 ;; differently across panels.
 ;;
 ;; - Scale **type** (log, categorical, linear, etc.) is shared
-;;   across all panels -- if you set `sk/scale :x :log` on a
+;;   across all panels -- if you set `pj/scale :x :log` on a
 ;;   faceted frame, every panel has a log x-axis.
 ;; - Scale **domain** (the numeric range actually shown) is
 ;;   computed per panel by default, so different panels may
 ;;   display different numeric ranges.
 ;;
-;; A note on scope of scales and coord: whether `sk/scale` and
-;; `sk/coord` should support scope variation is an open design
+;; A note on scope of scales and coord: whether `pj/scale` and
+;; `pj/coord` should support scope variation is an open design
 ;; question; the underlying plan structure allows per-panel
 ;; scales, but the current API treats them as plot-level.
 ;;
@@ -179,7 +179,7 @@
 ;; values as **plot-level** -- a category name. That is not the
 ;; same as **frame-level**, which names a scope position (the
 ;; top of the layer-options scope hierarchy) within another
-;; category. Trying to set a plot option inside an `sk/lay-*`
+;; category. Trying to set a plot option inside an `pj/lay-*`
 ;; opts map -- for example `{:x-scale {:type :log}}` -- is a
 ;; category mistake: plot options belong in `:opts` via their
 ;; dedicated functions above.
@@ -192,10 +192,10 @@
 ;; is resolved at render time from a layered stack of sources,
 ;; from highest priority to lowest:
 ;;
-;; 1. **Plot options** on the frame (`sk/options`) -- a
+;; 1. **Plot options** on the frame (`pj/options`) -- a
 ;;    per-plot override that wins for that one plot.
-;; 2. **Thread-local overrides** via `sk/with-config`.
-;; 3. **Global overrides** via `sk/set-config!`.
+;; 2. **Thread-local overrides** via `pj/with-config`.
+;; 3. **Global overrides** via `pj/set-config!`.
 ;; 4. **Project file** (`plotje.edn`), if present.
 ;; 5. **Library defaults** -- the baseline shipped with
 ;;    Plotje.
@@ -203,7 +203,7 @@
 ;; Sources 2-5 sit outside any specific frame and carry across
 ;; every plot you render. Source 1 is how a specific frame dips
 ;; into the chain to override a configuration key for itself --
-;; `(sk/options {:palette :dark2})` sets `:palette` on one
+;; `(pj/options {:palette :dark2})` sets `:palette` on one
 ;; frame, and at render time wins over any palette set through
 ;; the other four sources.
 ;;
@@ -211,10 +211,10 @@
 ;; chapter covers each source in depth and lists every
 ;; configuration key.
 ;;
-;; `sk/config` returns the resolved configuration -- the merged
+;; `pj/config` returns the resolved configuration -- the merged
 ;; result of all five sources above.
 
-(select-keys (sk/config) [:width :height :margin])
+(select-keys (pj/config) [:width :height :margin])
 
 (kind/test-last
  [(fn [m]
@@ -230,18 +230,18 @@
 
 (def demo
   (-> (rdatasets/datasets-iris)
-      (sk/frame :sepal-length :sepal-width)
+      (pj/frame :sepal-length :sepal-width)
       ;; layer option: a layer-scope color mapping
-      (sk/lay-point {:color :species})
+      (pj/lay-point {:color :species})
       ;; plot options: stored in :opts
-      (sk/options {:title "Iris measurements"})
-      (sk/coord :flip)))
+      (pj/options {:title "Iris measurements"})
+      (pj/coord :flip)))
 
 ;; The rendered plot:
 
 demo
 
-(kind/test-last [(fn [v] (some #{"Iris measurements"} (:texts (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (some #{"Iris measurements"} (:texts (pj/svg-summary v))))])
 
 ;; The frame structure:
 
@@ -263,7 +263,7 @@ demo
 ;; - `:title` and `:coord` are in `:opts` -- plot options, no
 ;;   scope.
 ;; - Configuration does not appear in the frame. The renderer
-;;   will consult `(sk/config)` for theme, default dimensions,
+;;   will consult `(pj/config)` for theme, default dimensions,
 ;;   and other defaults.
 
 ;; ---
@@ -287,9 +287,9 @@ demo
 ;; - [Core Concepts](./plotje_book.core_concepts.html) --
 ;;   the scope hierarchy for layer options in full.
 ;; - [Frame Rules](./plotje_book.frame_rules.html) --
-;;   precise rules for each frame-world function: `sk/frame`,
-;;   `sk/lay-*`, `sk/arrange`, `sk/options`, `sk/scale`, `sk/coord`,
-;;   `sk/facet`. Twenty-eight rules with tested assertions.
+;;   precise rules for each frame-world function: `pj/frame`,
+;;   `pj/lay-*`, `pj/arrange`, `pj/options`, `pj/scale`, `pj/coord`,
+;;   `pj/facet`. Twenty-eight rules with tested assertions.
 ;; - [Configuration](./plotje_book.configuration.html) --
 ;;   the four configuration sources and every configuration key.
 ;; - [Glossary](./plotje_book.glossary.html) -- definitions

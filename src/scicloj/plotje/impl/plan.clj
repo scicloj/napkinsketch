@@ -378,7 +378,7 @@
 (defn- resolve-labels
   "Resolve effective title and axis labels.
    Title comes from opts only; axis labels fall back to view-level :x-label/:y-label
-   (set via sk/options), then scale :label, then auto-inferred column name."
+   (set via pj/options), then scale :label, then auto-inferred column name."
   [draft-layers x-vars y-vars x-scale-spec y-scale-spec
    title x-label y-label auto-label?]
   (let [view-x-label (:x-label (first draft-layers))
@@ -850,7 +850,7 @@
          draft-layers (if (map? draft) [draft] draft)
 
          ;; Annotations-as-layers: split annotation draft layers
-         ;; (created by sk/lay-rule-*/sk/lay-band-*) from data draft
+         ;; (created by pj/lay-rule-*/pj/lay-band-*) from data draft
          ;; layers. Annotations skip the stat/extract-layer pipeline
          ;; and join the plot-level :annotations list merged below.
          ;; A view with only annotations (no data layer) still needs
@@ -901,7 +901,7 @@
          _ (validate-polar-marks resolved-all rep-coord)
          _ (warn-conflicting-specs draft-layers)
 
-         ;; Plot-level annotations -- from sk/lay-rule-* / sk/lay-band-*
+         ;; Plot-level annotations -- from pj/lay-rule-* / pj/lay-band-*
          ;; layers extracted above. Root-scope annotations (carried
          ;; down through frame/resolve-tree) need deduping because
          ;; facet expansion repeats the same annotation for every
@@ -929,7 +929,7 @@
                                 distinct
                                 vec)
          ;; View-scope annotations also cross-product when a view is
-         ;; expanded by sk/facet (one identical copy per facet panel).
+         ;; expanded by pj/facet (one identical copy per facet panel).
          ;; Dedup by content so finalize-panel matches a single
          ;; annotation against every panel that shares the view's x/y.
          view-scope-anns (->> layer-annotations

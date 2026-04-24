@@ -18,7 +18,7 @@
    ;; rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]))
+   [scicloj.plotje.api :as pj]))
 
 ;; We use the iris dataset throughout.
 
@@ -28,14 +28,14 @@
 
 (defn base-plot
   [] (-> (rdatasets/datasets-iris)
-         (sk/lay-point :sepal-length :sepal-width {:color :species})))
+         (pj/lay-point :sepal-length :sepal-width {:color :species})))
 
 ;; ## Inspecting the Current Configuration
 ;;
-;; `sk/config` returns the resolved configuration as a plain map.
+;; `pj/config` returns the resolved configuration as a plain map.
 ;; It merges all active configuration layers into one map.
 
-(sk/config)
+(pj/config)
 
 (kind/test-last
  [(fn [cfg]
@@ -57,8 +57,8 @@
 (kind/table
  {:column-names ["Key" "Default" "Category" "Description"]
   :row-maps
-  (let [cfg (sk/config)]
-    (->> sk/config-key-docs
+  (let [cfg (pj/config)]
+    (->> pj/config-key-docs
          (sort-by (fn [[k [cat]]]
                     [(.indexOf ^java.util.List category-order cat) (name k)]))
          (mapv (fn [[k [cat desc]]]
@@ -71,8 +71,8 @@
 
 ;; ### Plot Options
 ;;
-;; These options are accepted directly by `sk/options`, `sk/plan`, and
-;; `sk/plot`; they are inherently per-plot, with no cross-plot defaults.
+;; These options are accepted directly by `pj/options`, `pj/plan`, and
+;; `pj/plot`; they are inherently per-plot, with no cross-plot defaults.
 ;; (Other plot options -- axis scales, coordinate system, facets --
 ;; are set by their dedicated functions and live in the same `:opts`
 ;; field.)
@@ -80,7 +80,7 @@
 (kind/table
  {:column-names ["Key" "Category" "Description"]
   :row-maps
-  (->> sk/plot-option-docs
+  (->> pj/plot-option-docs
        (sort-by (fn [[k [cat]]] [cat (name k)]))
        (mapv (fn [[k [cat desc]]]
                {"Key" (kind/code (pr-str k))
@@ -91,22 +91,22 @@
 
 ;; ## Using Plot Options
 ;;
-;; Pass an options map to `sk/options` to override any setting for a
+;; Pass an options map to `pj/options` to override any setting for a
 ;; single plot. Plot options have the highest priority -- they
 ;; override everything else.
 
 ;; Custom dimensions -- the defaults are:
 
-(select-keys (sk/config) [:width :height])
+(select-keys (pj/config) [:width :height])
 
 (kind/test-last [(fn [m] (= {:width 600 :height 400} m))])
 
 (-> (base-plot)
-    (sk/options {:width 900 :height 250}))
+    (pj/options {:width 900 :height 250}))
 
 (kind/test-last
  [(fn [v]
-    (let [s (sk/svg-summary v)]
+    (let [s (pj/svg-summary v)]
       (and (= 150 (:points s))
            (> (:width s) 800))))])
 
@@ -114,32 +114,32 @@
 ;; white background; `:grid` and `:font-size` keep their defaults:
 
 (-> (base-plot)
-    (sk/options {:theme {:bg "#FFFFFF"}}))
+    (pj/options {:theme {:bg "#FFFFFF"}}))
 
 (kind/test-last
  [(fn [v]
-    (= 150 (:points (sk/svg-summary v))))])
+    (= 150 (:points (pj/svg-summary v))))])
 
 ;; Named palette:
 
 (-> (base-plot)
-    (sk/options {:palette :dark2}))
+    (pj/options {:palette :dark2}))
 
 (kind/test-last
  [(fn [v]
-    (let [s (sk/svg-summary v)]
+    (let [s (pj/svg-summary v)]
       (= 150 (:points s))))])
 
 ;; ## Global Overrides with set-config!
 ;;
-;; `sk/set-config!` sets overrides that persist across calls -- useful
+;; `pj/set-config!` sets overrides that persist across calls -- useful
 ;; when you want a consistent style for an entire session or notebook.
 
 ;; Set a global width override and render:
 
-(sk/set-config! {:width 800})
+(pj/set-config! {:width 800})
 
-(select-keys (sk/config) [:width :height])
+(select-keys (pj/config) [:width :height])
 
 (kind/test-last [(fn [m] (= {:width 800 :height 400} m))])
 
@@ -147,43 +147,43 @@
 
 ;; Reset to library defaults by passing `nil`:
 
-(sk/set-config! nil)
+(pj/set-config! nil)
 
-(select-keys (sk/config) [:width :height])
+(select-keys (pj/config) [:width :height])
 
 (kind/test-last [(fn [m] (= {:width 600 :height 400} m))])
 
 ;; ## Thread-Local Overrides with with-config
 ;;
-;; `sk/with-config` is a macro that binds configuration overrides for
+;; `pj/with-config` is a macro that binds configuration overrides for
 ;; the duration of its body, then automatically reverts. This is ideal
 ;; for one-off experiments or when different sections of a notebook
 ;; need different settings.
 
 ;; A dark theme, scoped to this block:
 
-(sk/with-config {:theme {:bg "#1a1a2e" :grid "#16213e" :font-size 8}}
+(pj/with-config {:theme {:bg "#1a1a2e" :grid "#16213e" :font-size 8}}
   (-> (base-plot)
-      (sk/options {:title "Dark Theme via with-config"})))
+      (pj/options {:title "Dark Theme via with-config"})))
 
 (kind/test-last
  [(fn [v]
-    (= 150 (:points (sk/svg-summary v))))])
+    (= 150 (:points (pj/svg-summary v))))])
 
 ;; Partial theme override -- only `:bg` changes; `:grid` and `:font-size`
 ;; are deep-merged from the defaults:
 
-(sk/with-config {:theme {:bg "#F5F5DC"}}
+(pj/with-config {:theme {:bg "#F5F5DC"}}
   (-> (base-plot)
-      (sk/options {:title "Partial Theme Override"})))
+      (pj/options {:title "Partial Theme Override"})))
 
 (kind/test-last
  [(fn [v]
-    (= 150 (:points (sk/svg-summary v))))])
+    (= 150 (:points (pj/svg-summary v))))])
 
 ;; Outside the body, the default theme is back:
 
-(select-keys (sk/config) [:width :height])
+(select-keys (pj/config) [:width :height])
 
 (kind/test-last [(fn [m] (= {:width 600 :height 400} m))])
 
@@ -201,21 +201,21 @@
 
 ;; Before overriding, the library default for point-radius is:
 
-(:point-radius (sk/config))
+(:point-radius (pj/config))
 
 (kind/test-last [(fn [v] (= 3.0 v))])
 
 ;; Now set a global override for width, height, and point-radius:
 
-(sk/set-config! {:width 800 :height 350 :point-radius 5.0})
+(pj/set-config! {:width 800 :height 350 :point-radius 5.0})
 
 ;; Layer a thread-local override on top for width and height
 ;; (but not point-radius):
 
 (def precedence-result
-  (sk/with-config {:width 1200 :height 500}
+  (pj/with-config {:width 1200 :height 500}
     ;; Pass plot options for width only:
-    (let [plan (sk/plan (base-plot) {:width 900})]
+    (let [plan (pj/plan (base-plot) {:width 900})]
       {:plan-width (:width plan)
        :plan-height (:height plan)})))
 
@@ -230,8 +230,8 @@ precedence-result
 ;; so it wins over the library default (3.0):
 
 (def precedence-point-radius
-  (sk/with-config {:width 1200 :height 500}
-    (:point-radius (sk/config))))
+  (pj/with-config {:width 1200 :height 500}
+    (:point-radius (pj/config))))
 
 precedence-point-radius
 
@@ -240,15 +240,15 @@ precedence-point-radius
 ;; The rendered plot reflects the same precedence:
 
 (def precedence-plot
-  (sk/with-config {:width 1200 :height 500}
+  (pj/with-config {:width 1200 :height 500}
     (-> (base-plot)
-        (sk/options {:width 900}))))
+        (pj/options {:width 900}))))
 
 precedence-plot
 
 (kind/test-last
  [(fn [v]
-    (let [s (sk/svg-summary v)]
+    (let [s (pj/svg-summary v)]
       (and (= 150 (:points s))
            ;; :width is the TOTAL SVG width, so the plot option
            ;; value 900 shows up exactly in the output viewBox.
@@ -256,9 +256,9 @@ precedence-plot
 
 ;; Clean up the global override.
 
-(sk/set-config! nil)
+(pj/set-config! nil)
 
-(select-keys (sk/config) [:width :height :point-radius])
+(select-keys (pj/config) [:width :height :point-radius])
 
 (kind/test-last [(fn [m] (= {:width 600 :height 400 :point-radius 3.0} m))])
 
@@ -298,20 +298,20 @@ precedence-plot
 ;; - `:grid` -- grid line color (hex string)
 ;; - `:font-size` -- tick label font size (number)
 
-(count (:theme (sk/config)))
+(count (:theme (pj/config)))
 
 (kind/test-last [(fn [n] (= 3 n))])
 
 ;; All configuration merging uses **deep-merge** -- nested maps like `:theme`
-;; are merged recursively at every level (`sk/options`, `sk/with-config`,
-;; `sk/set-config!`, and `plotje.edn`). You only need to specify the
+;; are merged recursively at every level (`pj/options`, `pj/with-config`,
+;; `pj/set-config!`, and `plotje.edn`). You only need to specify the
 ;; keys you want to change.
 
 ;; Override only `:bg`, keep default `:grid` and `:font-size`:
 
 (-> (base-plot)
-    (sk/options {:theme {:bg "#F5F5DC"}})
-    sk/plot)
+    (pj/options {:theme {:bg "#F5F5DC"}})
+    pj/plot)
 
 (kind/test-last
  [(fn [v]
@@ -324,9 +324,9 @@ precedence-plot
 ;; Override all three for a dark theme:
 
 (-> (base-plot)
-    (sk/options {:title "Full Dark Theme"
+    (pj/options {:title "Full Dark Theme"
                  :theme {:bg "#2d2d2d" :grid "#444444" :font-size 10}})
-    sk/plot)
+    pj/plot)
 
 (kind/test-last
  [(fn [v]
@@ -335,23 +335,23 @@ precedence-plot
 
 ;; ## Comparing Two Themes Side by Side
 ;;
-;; `sk/arrange` composes independent plots in a CSS grid.
+;; `pj/arrange` composes independent plots in a CSS grid.
 ;; Each plot can have its own theme.
 
-(sk/arrange
+(pj/arrange
  [(-> (base-plot)
-      (sk/options {:title "Light"
+      (pj/options {:title "Light"
                    :theme {:bg "#FFFFFF" :grid "#EEEEEE" :font-size 8}
                    :width 350 :height 250}))
   (-> (base-plot)
-      (sk/options {:title "Dark"
+      (pj/options {:title "Dark"
                    :theme {:bg "#2d2d2d" :grid "#444444" :font-size 8}
                    :width 350 :height 250}))])
 
 (kind/test-last
  [(fn [v]
     ;; arrange returns a composite frame holding the two sub-plots
-    (and (sk/frame? v)
+    (and (pj/frame? v)
          (= 2 (count (:frames (first (:frames v)))))))])
 
 ;; ## Palette Configuration
@@ -374,47 +374,47 @@ precedence-plot
 ;; Named palette via plot options:
 
 (-> (base-plot)
-    (sk/options {:palette :tableau10}))
+    (pj/options {:palette :tableau10}))
 
 (kind/test-last
- [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+ [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; Custom vector palette:
 
 (-> (base-plot)
-    (sk/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
+    (pj/options {:palette ["#E74C3C" "#3498DB" "#2ECC71"]}))
 
 (kind/test-last
- [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+ [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; Explicit map palette:
 
 (-> (base-plot)
-    (sk/options {:palette {"setosa" "#FF6B6B"
+    (pj/options {:palette {"setosa" "#FF6B6B"
                            "versicolor" "#4ECDC4"
                            "virginica" "#45B7D1"}}))
 
 (kind/test-last
- [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+ [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; Global palette via set-config!:
 
-(sk/set-config! {:palette :pastel1})
+(pj/set-config! {:palette :pastel1})
 
 (-> (base-plot))
 
 (kind/test-last
- [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+ [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-(sk/set-config! nil)
+(pj/set-config! nil)
 
 ;; Thread-local palette via with-config:
 
-(sk/with-config {:palette :accent}
+(pj/with-config {:palette :accent}
   (-> (base-plot)))
 
 (kind/test-last
- [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+ [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; ## Color Scale Configuration
 ;;
@@ -425,33 +425,33 @@ precedence-plot
 ;; Default continuous color (dark blue to light blue):
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
-    (sk/lay-point :x :y {:color :c}))
+    (pj/lay-point :x :y {:color :c}))
 
-(kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 50 (:points (pj/svg-summary v))))])
 
 ;; Color scale override via plot options -- inferno gradient:
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
-    (sk/lay-point :x :y {:color :c})
-    (sk/options {:color-scale :inferno}))
+    (pj/lay-point :x :y {:color :c})
+    (pj/options {:color-scale :inferno}))
 
-(kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 50 (:points (pj/svg-summary v))))])
 
 ;; Thread-local color scale via `with-config`:
 
-(sk/with-config {:color-scale :plasma}
+(pj/with-config {:color-scale :plasma}
   (-> {:x (range 50) :y (range 50) :c (range 50)}
-      (sk/lay-point :x :y {:color :c})))
+      (pj/lay-point :x :y {:color :c})))
 
-(kind/test-last [(fn [v] (= 50 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 50 (:points (pj/svg-summary v))))])
 
 ;; The plan records `:color-scale` in its legend. The renderer
 ;; uses the pre-computed gradient stops, or resolves a fresh gradient
 ;; if the render-time configuration specifies a different color scale.
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
-    (sk/lay-point :x :y {:color :c})
-    (sk/plan {:color-scale :inferno})
+    (pj/lay-point :x :y {:color :c})
+    (pj/plan {:color-scale :inferno})
     :legend
     (select-keys [:color-scale :type]))
 
@@ -460,18 +460,18 @@ precedence-plot
 
 ;; ## Validation Control
 ;;
-;; By default, `sk/plan` validates the output against a [Malli](https://github.com/metosin/malli)
+;; By default, `pj/plan` validates the output against a [Malli](https://github.com/metosin/malli)
 ;; schema and throws if the plan is malformed.  This is controlled
 ;; by the `:validate` key.
 ;;
 ;; Two helper functions let you inspect plans manually:
 ;;
-;; - `sk/valid-plan?` -- returns true or false
-;; - `sk/explain-plan` -- returns nil if valid, or a [Malli](https://github.com/metosin/malli) explanation map
+;; - `pj/valid-plan?` -- returns true or false
+;; - `pj/explain-plan` -- returns nil if valid, or a [Malli](https://github.com/metosin/malli) explanation map
 
 ;; Default behavior (validate = true) -- a valid plan passes silently:
 
-(sk/plan (base-plot))
+(pj/plan (base-plot))
 
 (kind/test-last
  [(fn [plan]
@@ -483,7 +483,7 @@ precedence-plot
 (-> (base-plot))
 
 (kind/test-last
- [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+ [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; ### What Validation Catches
 ;;
@@ -491,9 +491,9 @@ precedence-plot
 ;; with validation disabled, then corrupt it.  First, create a valid
 ;; plan and confirm it passes:
 
-(def good-plan (sk/plan (base-plot) {:validate false}))
+(def good-plan (pj/plan (base-plot) {:validate false}))
 
-(sk/valid-plan? good-plan)
+(pj/valid-plan? good-plan)
 
 (kind/test-last [(fn [v] (true? v))])
 
@@ -502,14 +502,14 @@ precedence-plot
 
 (def bad-plan (assoc good-plan :width "not-a-number"))
 
-(sk/valid-plan? bad-plan)
+(pj/valid-plan? bad-plan)
 
 (kind/test-last [(fn [v] (false? v))])
 
-;; `sk/explain-plan` pinpoints the problem.  The `:errors` key in
+;; `pj/explain-plan` pinpoints the problem.  The `:errors` key in
 ;; the returned map shows exactly which path failed and why:
 
-(-> (sk/explain-plan bad-plan)
+(-> (pj/explain-plan bad-plan)
     :errors
     first
     (select-keys [:path :in :value]))
@@ -519,14 +519,14 @@ precedence-plot
     (and (= [:width] (:path m))
          (= "not-a-number" (:value m))))])
 
-;; With validation enabled (the default), `sk/plan` would throw
+;; With validation enabled (the default), `pj/plan` would throw
 ;; an exception for such a malformed plan.  We can verify this
 ;; by catching the exception:
 
 (try
-  (let [plan (sk/plan (base-plot) {:validate false})
+  (let [plan (pj/plan (base-plot) {:validate false})
         bad (assoc plan :width "not-a-number")]
-    (when-let [explanation (sk/explain-plan bad)]
+    (when-let [explanation (pj/explain-plan bad)]
       (throw (ex-info "Plan does not conform to schema"
                       {:explanation explanation})))
     :no-error)
@@ -543,7 +543,7 @@ precedence-plot
 ;;
 ;; Disable validation with `:validate false`:
 
-(sk/plan (base-plot) {:validate false})
+(pj/plan (base-plot) {:validate false})
 
 (kind/test-last
  [(fn [plan]
@@ -553,24 +553,24 @@ precedence-plot
 ;; You can also disable validation globally for a debugging session:
 ;;
 ;; ```clojure
-;; (sk/set-config! {:validate false})
+;; (pj/set-config! {:validate false})
 ;; ;; ... work freely ...
-;; (sk/set-config! nil)  ;; re-enable
+;; (pj/set-config! nil)  ;; re-enable
 ;; ```
 
 ;; ## Summary
 ;;
 ;; | Mechanism | Scope | Persistence | Example |
 ;; |:----------|:------|:------------|:--------|
-;; | plot options | single call | none | `(sk/options {...})` or `(sk/plot sk {...})` |
-;; | `with-config` | lexical body | until body exits | `(sk/with-config {:width 800} ...)` |
-;; | `set-config!` | global | until reset | `(sk/set-config! {:width 800})` |
+;; | plot options | single call | none | `(pj/options {...})` or `(pj/plot sk {...})` |
+;; | `with-config` | lexical body | until body exits | `(pj/with-config {:width 800} ...)` |
+;; | `set-config!` | global | until reset | `(pj/set-config! {:width 800})` |
 ;; | `plotje.edn` | project | file on disk | `{:width 800}` in project root |
 ;; | library defaults | everywhere | built-in | `resources/plotje-defaults.edn` |
 ;;
 ;; Precedence: plot options > with-config > set-config! > plotje.edn > library defaults.
 ;;
-;; Use `sk/config` at any time to see the resolved configuration.
+;; Use `pj/config` at any time to see the resolved configuration.
 
 ;; ## What's Next
 ;;

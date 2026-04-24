@@ -466,7 +466,7 @@
                        (not (contains? x-only-stats stat))
                        (not= :rug mark))
               (throw (ex-info (str ":" (name mark) " requires both :x and :y columns. "
-                                   "Either pass a y column (e.g., (sk/lay-" (name mark)
+                                   "Either pass a y column (e.g., (pj/lay-" (name mark)
                                    " data :x :y)) or use an x-only mark like histogram, "
                                    "density, bar, or rug.")
                               {:mark mark :x (:x v)})))

@@ -2,7 +2,7 @@
  plotje-book.waterfall-extension-generated-test
  (:require
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [scicloj.plotje.impl.stat :as stat]
   [scicloj.plotje.impl.extract :as extract]
   [scicloj.plotje.render.mark :as mark]
@@ -173,11 +173,11 @@
  v16_l157
  (->
   pnl-data
-  (sk/frame :category :amount)
-  (sk/lay (layer-type/lookup :waterfall))
-  (sk/options
+  (pj/frame :category :amount)
+  (pj/lay (layer-type/lookup :waterfall))
+  (pj/options
    {:title "Profit & Loss Waterfall", :width 500, :height 350})
-  sk/plot))
+  pj/plot))
 
 
 (deftest
@@ -186,7 +186,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 6 (:polygons s)))))
    v16_l157)))
 
@@ -195,14 +195,14 @@
  v19_l176
  (defn
   lay-waterfall
-  ([sk] (sk/lay sk (layer-type/lookup :waterfall)))
+  ([sk] (pj/lay sk (layer-type/lookup :waterfall)))
   ([data x y]
-   (-> data (sk/frame x y) (sk/lay (layer-type/lookup :waterfall))))
+   (-> data (pj/frame x y) (pj/lay (layer-type/lookup :waterfall))))
   ([data x y opts]
    (->
     data
-    (sk/frame x y)
-    (sk/lay (merge (layer-type/lookup :waterfall) opts))))))
+    (pj/frame x y)
+    (pj/lay (merge (layer-type/lookup :waterfall) opts))))))
 
 
 (def
@@ -210,14 +210,14 @@
  (->
   pnl-data
   (lay-waterfall :category :amount)
-  (sk/options {:title "Quarterly Cash Flow", :width 500})
-  sk/plot))
+  (pj/options {:title "Quarterly Cash Flow", :width 500})
+  pj/plot))
 
 
 (deftest
  t22_l188
  (is
-  ((fn [v] (let [s (sk/svg-summary v)] (= 6 (:polygons s)))) v21_l183)))
+  ((fn [v] (let [s (pj/svg-summary v)] (= 6 (:polygons s)))) v21_l183)))
 
 
 (def
@@ -247,7 +247,7 @@
   "Filled rectangles positioned by running total"))
 
 
-(def v27_l205 (sk/stat-doc :waterfall))
+(def v27_l205 (pj/stat-doc :waterfall))
 
 
 (deftest

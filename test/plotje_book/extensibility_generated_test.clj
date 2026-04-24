@@ -3,7 +3,7 @@
  (:require
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [scicloj.plotje.layer-type :as layer-type]
   [scicloj.plotje.impl.stat :as stat]
   [scicloj.plotje.impl.extract :as extract]
@@ -28,7 +28,7 @@
      (fn
       [k]
       {"Dispatch value" (kind/code (pr-str k)),
-       "What it does" (sk/stat-doc k)})))}))
+       "What it does" (pj/stat-doc k)})))}))
 
 
 (deftest t4_l83 (is ((fn [t] (= 11 (count (:row-maps t)))) v3_l72)))
@@ -67,7 +67,7 @@
      (fn
       [k]
       {"Dispatch value" (kind/code (pr-str k)),
-       "Output" (sk/mark-doc k)})))}))
+       "Output" (pj/mark-doc k)})))}))
 
 
 (deftest t16_l147 (is ((fn [t] (= 17 (count (:row-maps t)))) v15_l136)))
@@ -79,8 +79,8 @@
   [s
    (->
     (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    sk/plan)
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    pj/plan)
    layer
    (first (:layers (first (:panels s))))]
   layer))
@@ -110,7 +110,7 @@
      (fn
       [k]
       {"Dispatch value" (kind/code (pr-str k)),
-       "Membrane output" (sk/membrane-mark-doc k)})))}))
+       "Membrane output" (pj/membrane-mark-doc k)})))}))
 
 
 (deftest t22_l179 (is ((fn [t] (= 17 (count (:row-maps t)))) v21_l168)))
@@ -122,17 +122,17 @@
   my-plan
   (->
    (rdatasets/datasets-iris)
-   (sk/lay-point :sepal-length :sepal-width {:color :species})
-   sk/plan)))
+   (pj/lay-point :sepal-length :sepal-width {:color :species})
+   pj/plan)))
 
 
-(def v25_l253 (first (sk/plan->plot my-plan :svg {})))
+(def v25_l253 (first (pj/plan->plot my-plan :svg {})))
 
 
 (deftest t26_l255 (is ((fn [v] (= :svg v)) v25_l253)))
 
 
-(def v28_l259 (def my-figure (sk/plan->plot my-plan :svg {})))
+(def v28_l259 (def my-figure (pj/plan->plot my-plan :svg {})))
 
 
 (def v29_l261 (vector? my-figure))
@@ -141,7 +141,7 @@
 (deftest t30_l263 (is ((fn [v] (true? v)) v29_l261)))
 
 
-(def v32_l306 (def my-membrane (sk/plan->membrane my-plan)))
+(def v32_l306 (def my-membrane (pj/plan->membrane my-plan)))
 
 
 (def v33_l308 (vector? my-membrane))
@@ -153,7 +153,7 @@
 (def
  v35_l312
  (first
-  (sk/membrane->plot
+  (pj/membrane->plot
    my-membrane
    :svg
    {:total-width (:total-width my-plan),
@@ -177,7 +177,7 @@
      (fn
       [k]
       {"Dispatch value" (kind/code (pr-str k)),
-       "Scale type" (sk/scale-doc k)})))}))
+       "Scale type" (pj/scale-doc k)})))}))
 
 
 (deftest t39_l356 (is ((fn [t] (= 3 (count (:row-maps t)))) v38_l346)))
@@ -198,7 +198,7 @@
      (fn
       [k]
       {"Dispatch value" (kind/code (pr-str k)),
-       "Behavior" (sk/coord-doc k)})))}))
+       "Behavior" (pj/coord-doc k)})))}))
 
 
 (deftest t42_l378 (is ((fn [t] (= 4 (count (:row-maps t)))) v41_l367)))
@@ -206,7 +206,7 @@
 
 (def
  v44_l385
- (-> (rdatasets/datasets-iris) (sk/lay-bar :species) (sk/coord :flip)))
+ (-> (rdatasets/datasets-iris) (pj/lay-bar :species) (pj/coord :flip)))
 
 
 (deftest
@@ -215,7 +215,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v44_l385)))
 
@@ -238,7 +238,7 @@
   "Quantile regression bands"))
 
 
-(def v50_l413 (sk/stat-doc :quantile))
+(def v50_l413 (pj/stat-doc :quantile))
 
 
 (deftest
@@ -249,7 +249,7 @@
 (def v53_l423 (remove-method stat/compute-stat [:quantile :doc]))
 
 
-(def v54_l425 (sk/stat-doc :quantile))
+(def v54_l425 (pj/stat-doc :quantile))
 
 
 (deftest t55_l427 (is ((fn [v] (= "(no description)" v)) v54_l425)))

@@ -11,18 +11,18 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]))
+   [scicloj.plotje.api :as pj]))
 
 ;; ## Facet Wrap
 ;;
-;; `sk/facet` splits a frame into panels by one categorical column.
+;; `pj/facet` splits a frame into panels by one categorical column.
 ;; The default direction is `:col` -- a horizontal row of panels:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/facet :species))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/facet :species))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:panels s))
                                 (= 150 (:points s)))))])
 
@@ -35,22 +35,22 @@
 ;; Pass `:row` as the direction for a vertical column of panels:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/facet :species :row))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/facet :species :row))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:panels s))
                                 (= 150 (:points s)))))])
 
 ;; ## Facet Grid
 ;;
-;; `sk/facet-grid` splits by two columns -- one for rows, one for columns:
+;; `pj/facet-grid` splits by two columns -- one for rows, one for columns:
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-point :total-bill :tip {:color :sex})
-    (sk/facet-grid :smoker :sex))
+    (pj/lay-point :total-bill :tip {:color :sex})
+    (pj/facet-grid :smoker :sex))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:panels s))
                                 (= 244 (:points s)))))])
 
@@ -59,10 +59,10 @@
 ;; ## Faceted Histogram
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-histogram :sepal-length {:color :species})
-    (sk/facet :species))
+    (pj/lay-histogram :sepal-length {:color :species})
+    (pj/facet :species))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:panels s))
                                 (pos? (:polygons s)))))])
 
@@ -71,12 +71,12 @@
 ;; Layers compose with faceting -- scatter plus regression per panel:
 
 (-> (rdatasets/reshape2-tips)
-    (sk/frame :total-bill :tip {:color :sex})
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model})
-    (sk/facet-grid :smoker :sex))
+    (pj/frame :total-bill :tip {:color :sex})
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model})
+    (pj/facet-grid :smoker :sex))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:panels s))
                                 (= 244 (:points s))
                                 (= 4 (:lines s)))))])
@@ -89,22 +89,22 @@
 ;; Shared (default) -- all panels have the same y-range:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/facet :species)
-    (sk/options {:scales :shared}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/facet :species)
+    (pj/options {:scales :shared}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:panels s))
                                 (= 150 (:points s)))))])
 
 ;; Free y -- each panel has its own y-range:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/facet :species)
-    (sk/options {:scales :free-y}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/facet :species)
+    (pj/options {:scales :free-y}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:panels s))
                                 (= 150 (:points s)))))])
 
@@ -116,9 +116,9 @@
 
 (def faceted-pl
   (-> (rdatasets/datasets-iris)
-      (sk/lay-point :sepal-length :sepal-width {:color :species})
-      (sk/facet :species)
-      sk/plan))
+      (pj/lay-point :sepal-length :sepal-width {:color :species})
+      (pj/facet :species)
+      pj/plan))
 
 (:grid faceted-pl)
 
@@ -136,16 +136,16 @@
 
 ;; ## [SPLOM](https://en.wikipedia.org/wiki/Scatter_plot#Scatter_plot_matrices) (Scatter Plot Matrix)
 ;;
-;; `sk/cross` generates all pairs of columns. Combined with the
+;; `pj/cross` generates all pairs of columns. Combined with the
 ;; multi-variable layout, this produces a scatter plot matrix (SPLOM):
 
 (def cols [:sepal-length :sepal-width :petal-length :petal-width])
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:color :species})
-    (sk/frame (sk/cross cols cols)))
+    (pj/frame {:color :species})
+    (pj/frame (pj/cross cols cols)))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 16 (:panels s))
                                 (= (* 12 150) (:points s))
                                 (pos? (:polygons s)))))])
@@ -159,33 +159,33 @@
 ;;
 ;; Pass a vector of column names to create one panel per column:
 
-(sk/lay-histogram (rdatasets/datasets-iris) [:sepal-length :sepal-width :petal-length] {:color :species})
+(pj/lay-histogram (rdatasets/datasets-iris) [:sepal-length :sepal-width :petal-length] {:color :species})
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:panels s))
                                 (pos? (:polygons s)))))])
 
 ;; ## Faceted Bar Chart
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (sk/lay-bar :species {:color :species})
-    (sk/facet :island))
+    (pj/lay-bar :species {:color :species})
+    (pj/facet :island))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:panels s))
                                 (= 5 (:polygons s)))))])
 
 ;; ## Labels and Faceting
 ;;
-;; `sk/options` works with faceted plots:
+;; `pj/options` works with faceted plots:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/facet :species)
-    (sk/options {:title "Iris by Species"
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/facet :species)
+    (pj/options {:title "Iris by Species"
                  :x-label "Sepal Length (cm)" :y-label "Sepal Width (cm)"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:panels s))
                                 (= 150 (:points s))
                                 (some #{"Iris by Species"} (:texts s))

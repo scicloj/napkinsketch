@@ -3,25 +3,25 @@
  (:require
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [clojure.test :refer [deftest is]]))
 
 
 (def
  v3_l30
- (-> (rdatasets/datasets-iris) (sk/frame :sepal-length :sepal-width)))
+ (-> (rdatasets/datasets-iris) (pj/frame :sepal-length :sepal-width)))
 
 
 (deftest
  t4_l33
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v3_l30)))
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v3_l30)))
 
 
 (def
  v6_l38
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width)
+  (pj/frame :sepal-length :sepal-width)
   kind/pprint))
 
 
@@ -36,19 +36,19 @@
  v9_l56
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width {:color :species})))
+  (pj/frame :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
  t10_l59
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v9_l56)))
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v9_l56)))
 
 
 (def
  v12_l63
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width {:color :species})
+  (pj/frame :sepal-length :sepal-width {:color :species})
   kind/pprint))
 
 
@@ -61,7 +61,7 @@
  v15_l81
  (def
   multi-layer
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data (rdatasets/datasets-iris),
     :mapping {:x :sepal-length, :y :sepal-width, :color :species},
     :layers
@@ -78,7 +78,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
    v16_l88)))
 
@@ -99,9 +99,9 @@
  v22_l109
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width {:color :species})
-  sk/lay-point
-  (sk/lay-smooth {:stat :linear-model})))
+  (pj/frame :sepal-length :sepal-width {:color :species})
+  pj/lay-point
+  (pj/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -110,7 +110,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
    v22_l109)))
 
@@ -119,9 +119,9 @@
  v25_l123
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width {:color :species})
-  sk/lay-point
-  (sk/lay-smooth {:stat :linear-model})
+  (pj/frame :sepal-length :sepal-width {:color :species})
+  pj/lay-point
+  (pj/lay-smooth {:stat :linear-model})
   kind/pprint))
 
 
@@ -136,17 +136,17 @@
    v25_l123)))
 
 
-(def v28_l137 (-> (rdatasets/datasets-iris) (sk/frame :sepal-length)))
+(def v28_l137 (-> (rdatasets/datasets-iris) (pj/frame :sepal-length)))
 
 
 (deftest
  t29_l140
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v28_l137)))
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v28_l137)))
 
 
 (def
  v31_l146
- (-> (rdatasets/datasets-iris) (sk/frame :sepal-length) kind/pprint))
+ (-> (rdatasets/datasets-iris) (pj/frame :sepal-length) kind/pprint))
 
 
 (deftest t32_l150 (is ((fn [v] (empty? (:layers v))) v31_l146)))
@@ -156,7 +156,7 @@
  v34_l166
  (def
   two-panel
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data (rdatasets/datasets-iris),
     :layout {:direction :horizontal},
     :frames
@@ -175,7 +175,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
    v35_l175)))
 
@@ -196,34 +196,34 @@
 
 (def
  v41_l192
- (sk/arrange
+ (pj/arrange
   [(->
     (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width {:color :species})
-    sk/lay-point)
+    (pj/frame :sepal-length :sepal-width {:color :species})
+    pj/lay-point)
    (->
     (rdatasets/datasets-iris)
-    (sk/frame :petal-length :petal-width {:color :species})
-    sk/lay-point)]))
+    (pj/frame :petal-length :petal-width {:color :species})
+    pj/lay-point)]))
 
 
 (deftest
  t42_l200
- (is ((fn [v] (= 2 (:panels (sk/svg-summary v)))) v41_l192)))
+ (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v41_l192)))
 
 
 (def
  v44_l208
  (->
-  (sk/arrange
+  (pj/arrange
    [(->
      (rdatasets/datasets-iris)
-     (sk/frame :sepal-length :sepal-width {:color :species})
-     sk/lay-point)
+     (pj/frame :sepal-length :sepal-width {:color :species})
+     pj/lay-point)
     (->
      (rdatasets/datasets-iris)
-     (sk/frame :petal-length :petal-width {:color :species})
-     sk/lay-point)])
+     (pj/frame :petal-length :petal-width {:color :species})
+     pj/lay-point)])
   kind/pprint))
 
 

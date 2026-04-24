@@ -10,7 +10,7 @@
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; Fastmath -- random number generation
    [fastmath.random :as rng]))
 
@@ -19,10 +19,10 @@
 ;; A single regression line through all data.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
@@ -31,11 +31,11 @@
 ;; Fit a regression line per group.
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :petal-length :petal-width {:color :species})
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/frame :petal-length :petal-width {:color :species})
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
@@ -44,11 +44,11 @@
 ;; Pass `{:confidence-band true}` to show a 95% confidence band around the line.
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width {:color :species})
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model :confidence-band true}))
+    (pj/frame :sepal-length :sepal-width {:color :species})
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model :confidence-band true}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s))
                                 (= 3 (:polygons s)))))])
@@ -57,11 +57,11 @@
 ;; Do smokers and non-smokers tip differently?
 
 (-> (rdatasets/reshape2-tips)
-    (sk/frame :total-bill :tip {:color :smoker})
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/frame :total-bill :tip {:color :smoker})
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 244 (:points s))
                                 (= 2 (:lines s)))))])
 
@@ -75,10 +75,10 @@
        :y (mapv #(+ (Math/sin (* % 0.2))
                     (* 0.3 (- (rng/drandom r) 0.5)))
                 xs)})
-    (sk/lay-point :x :y)
-    (sk/lay-smooth {:bandwidth 0.2}))
+    (pj/lay-point :x :y)
+    (pj/lay-smooth {:bandwidth 0.2}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 50 (:points s))
                                 (= 1 (:lines s)))))])
 
@@ -87,9 +87,9 @@
 ;; Bin x and y into a grid, count points per cell.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-tile :sepal-length :sepal-width))
+    (pj/lay-tile :sepal-length :sepal-width))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:visible-tiles s)))))])
 
@@ -104,9 +104,9 @@
      :value (repeatedly 25 #(rng/irandom r 100))}))
 
 (-> grid-data
-    (sk/lay-tile :x :y {:fill :value}))
+    (pj/lay-tile :x :y {:fill :value}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:visible-tiles s)))))])
 
@@ -115,9 +115,9 @@
 ;; [KDE](https://en.wikipedia.org/wiki/Kernel_density_estimation)-smoothed 2D density heatmap.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-density-2d :sepal-length :sepal-width))
+    (pj/lay-density-2d :sepal-length :sepal-width))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:visible-tiles s)))))])
 
@@ -126,10 +126,10 @@
 ;; Overlay scatter points on the density heatmap.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-density-2d :sepal-length :sepal-width)
-    (sk/lay-point {:alpha 0.5}))
+    (pj/lay-density-2d :sepal-length :sepal-width)
+    (pj/lay-point {:alpha 0.5}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (pos? (:visible-tiles s)))))])
 
@@ -138,9 +138,9 @@
 ;; Iso-density contour lines from 2D KDE.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-contour :sepal-length :sepal-width))
+    (pj/lay-contour :sepal-length :sepal-width))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:lines s)))))])
 
@@ -149,10 +149,10 @@
 ;; Contour lines overlaid on scatter points.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:alpha 0.3})
-    (sk/lay-contour {:levels 8}))
+    (pj/lay-point :sepal-length :sepal-width {:alpha 0.3})
+    (pj/lay-contour {:levels 8}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
 

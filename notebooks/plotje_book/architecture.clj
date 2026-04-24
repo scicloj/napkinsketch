@@ -14,7 +14,7 @@
    ;; rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; Frame substrate -- leaf->draft, resolve-tree
    [scicloj.plotje.impl.frame :as frame-impl]
    ;; Plan pipeline -- draft->plan, domains, ticks, legends, layout
@@ -39,11 +39,11 @@ graph LR
 ")
 
 ;; - **Frame** -- the composable user API. Functions like
-;;   `sk/frame`, `sk/lay-point`, `sk/lay-rule-h`, `sk/options`,
-;;   `sk/facet`, `sk/arrange`, `sk/scale`, and `sk/coord` build up a
+;;   `pj/frame`, `pj/lay-point`, `pj/lay-rule-h`, `pj/options`,
+;;   `pj/facet`, `pj/arrange`, `pj/scale`, and `pj/coord` build up a
 ;;   frame. No computation has happened yet.
 ;;
-;; - **Draft** -- a flat vector of maps produced by `sk/draft`.
+;; - **Draft** -- a flat vector of maps produced by `pj/draft`.
 ;;   Each map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
 ;;   keys -- one per leaf-and-layer combination, with all scope merged.
 ;;
@@ -78,7 +78,7 @@ graph LR
 
 (def trace-sk
   (-> trace-data
-      (sk/lay-point :x :y {:color :g})))
+      (pj/lay-point :x :y {:color :g})))
 
 ;; A frame is a plain Clojure map. The fields below are what you see
 ;; while inspecting the threaded value:
@@ -93,7 +93,7 @@ graph LR
 ;;
 ;; - `:opts` -- plot-level options (title, width, etc.)
 
-(sk/frame? trace-sk)
+(pj/frame? trace-sk)
 
 (kind/test-last [true?])
 
@@ -105,7 +105,7 @@ graph LR
 
 ;; The mapping carries the position aesthetics (from the positional
 ;; :x / :y arguments); the color aesthetic (from the opts map) rides
-;; on the layer so a subsequent `sk/lay-*` with different opts does
+;; on the layer so a subsequent `pj/lay-*` with different opts does
 ;; not disturb it:
 
 (:mapping trace-sk)
@@ -125,12 +125,12 @@ graph LR
 
 ;; ### Draft
 ;;
-;; `sk/draft` flattens the frame into a vector of
+;; `pj/draft` flattens the frame into a vector of
 ;; maps. Each map merges frame-level mappings, leaf mappings,
 ;; and layer details into one flat map with `:data`, `:x`, `:y`, `:mark`, etc.
 
 (def trace-draft
-  (sk/draft trace-sk))
+  (pj/draft trace-sk))
 
 (count trace-draft)
 
@@ -167,7 +167,7 @@ trace-plan
 ;; `plan->membrane` converts the plan into a tree of membrane
 ;; drawing primitives laid out for the rendered plot.
 
-(def trace-membrane (sk/plan->membrane trace-plan))
+(def trace-membrane (pj/plan->membrane trace-plan))
 
 trace-membrane
 
@@ -178,7 +178,7 @@ trace-membrane
 ;; `membrane->plot` converts the membrane tree into SVG hiccup.
 
 (def trace-plot
-  (sk/membrane->plot trace-membrane :svg
+  (pj/membrane->plot trace-membrane :svg
                      {:total-width (:total-width trace-plan)
                       :total-height (:total-height trace-plan)}))
 
@@ -190,17 +190,17 @@ trace-membrane
 
 (kind/hiccup trace-plot)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
 ;; ### Shortcut: Frame to Plan
 ;;
-;; In practice, `sk/plan` does the frame-to-plan conversion
+;; In practice, `pj/plan` does the frame-to-plan conversion
 ;; in one step -- computing the draft and running `draft->plan`
 ;; internally.
 
-(def shortcut-plan (sk/plan trace-sk))
+(def shortcut-plan (pj/plan trace-sk))
 
 (ss/valid? shortcut-plan)
 
@@ -255,9 +255,9 @@ graph LR
 
 (def multi-sk
   (-> (rdatasets/datasets-iris)
-      (sk/frame :petal-length :petal-width {:color :species})
-      sk/lay-point
-      (sk/lay-smooth {:stat :linear-model})))
+      (pj/frame :petal-length :petal-width {:color :species})
+      pj/lay-point
+      (pj/lay-smooth {:stat :linear-model})))
 
 ;; The frame has one leaf with two frame-level layers:
 
@@ -273,7 +273,7 @@ graph LR
 ;; The draft produces two maps -- one per layer -- both sharing
 ;; the same columns:
 
-(def multi-draft (sk/draft multi-sk))
+(def multi-draft (pj/draft multi-sk))
 
 (count multi-draft)
 
@@ -287,7 +287,7 @@ graph LR
 ;; Building a plan with a title and checking the layers:
 
 (def multi-plan
-  (sk/plan multi-sk {:title "Iris Petals with Regression"}))
+  (pj/plan multi-sk {:title "Iris Petals with Regression"}))
 
 (mapv (fn [layer]
         {:mark (:mark layer)
@@ -308,12 +308,12 @@ multi-plan
 ;; And the rendered result:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :petal-length :petal-width {:color :species})
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model})
-    (sk/options {:title "Iris Petals with Regression"}))
+    (pj/frame :petal-length :petal-width {:color :species})
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model})
+    (pj/options {:title "Iris Petals with Regression"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 

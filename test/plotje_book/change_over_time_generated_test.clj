@@ -3,7 +3,7 @@
  (:require
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [clojure.test :refer [deftest is]]))
 
 
@@ -16,7 +16,7 @@
    (map (fn* [p1__95969#] (Math/sin (* p1__95969# 0.3))) (range 30))}))
 
 
-(def v4_l21 (-> wave (sk/lay-line :x :y)))
+(def v4_l21 (-> wave (pj/lay-line :x :y)))
 
 
 (deftest
@@ -25,7 +25,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:lines s)))))
    v4_l21)))
 
@@ -42,7 +42,7 @@
    :fn (concat (repeat 30 :sin) (repeat 30 :cos))}))
 
 
-(def v8_l37 (-> waves (sk/lay-line :x :y {:color :fn})))
+(def v8_l37 (-> waves (pj/lay-line :x :y {:color :fn})))
 
 
 (deftest
@@ -51,12 +51,12 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 2 (:lines s)))))
    v8_l37)))
 
 
-(def v11_l48 (-> wave (sk/lay-line :x :y {:size 4})))
+(def v11_l48 (-> wave (pj/lay-line :x :y {:size 4})))
 
 
 (deftest
@@ -65,7 +65,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:lines s)))))
    v11_l48)))
 
@@ -83,9 +83,9 @@
  v15_l64
  (->
   growth
-  (sk/frame :day :value {:color :group})
-  sk/lay-line
-  sk/lay-point))
+  (pj/frame :day :value {:color :group})
+  pj/lay-line
+  pj/lay-point))
 
 
 (deftest
@@ -94,14 +94,14 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 10 (:points s)) (= 2 (:lines s)))))
    v15_l64)))
 
 
 (def
  v18_l77
- (-> {:x [1 2 3 4 5], :y [2 4 1 5 3]} (sk/lay-step :x :y) sk/lay-point))
+ (-> {:x [1 2 3 4 5], :y [2 4 1 5 3]} (pj/lay-step :x :y) pj/lay-point))
 
 
 (deftest
@@ -110,7 +110,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 5 (:points s)) (= 1 (:lines s)))))
    v18_l77)))
 
@@ -119,9 +119,9 @@
  v21_l90
  (->
   growth
-  (sk/frame :day :value {:color :group})
-  sk/lay-step
-  sk/lay-point))
+  (pj/frame :day :value {:color :group})
+  pj/lay-step
+  pj/lay-point))
 
 
 (deftest
@@ -130,7 +130,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 10 (:points s)) (= 2 (:lines s)))))
    v21_l90)))
 
@@ -141,7 +141,7 @@
   {:x (range 30),
    :y
    (map (fn* [p1__95972#] (Math/sin (* p1__95972# 0.3))) (range 30))}
-  (sk/lay-area :x :y)))
+  (pj/lay-area :x :y)))
 
 
 (deftest
@@ -150,7 +150,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:polygons s)))))
    v24_l103)))
 
@@ -165,7 +165,7 @@
     [2 2 2 3 3 3 2 2 2 2]
     [1 1 1 1 2 2 2 1 1 1]),
    :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
-  (sk/lay-area :x :y {:position :stack, :color :group})))
+  (pj/lay-area :x :y {:position :stack, :color :group})))
 
 
 (deftest
@@ -174,7 +174,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
    v27_l115)))
 
@@ -190,8 +190,8 @@
     #inst "2024-05-01T00:00:00.000-00:00"
     #inst "2024-06-01T00:00:00.000-00:00"],
    :temperature [3 5 9 14 19 23]}
-  (sk/lay-line :date :temperature)
-  sk/lay-point))
+  (pj/lay-line :date :temperature)
+  pj/lay-point))
 
 
 (deftest
@@ -200,7 +200,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 6 (:points s)) (= 1 (:lines s)))))
    v30_l134)))
 
@@ -223,8 +223,8 @@
   {:date (concat months months),
    :temperature [3 5 9 14 19 23 15 17 19 22 25 28],
    :city (concat (repeat 6 "Zurich") (repeat 6 "Athens"))}
-  (sk/lay-line :date :temperature {:color :city})
-  sk/lay-point))
+  (pj/lay-line :date :temperature {:color :city})
+  pj/lay-point))
 
 
 (deftest
@@ -233,6 +233,6 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 12 (:points s)) (= 2 (:lines s)))))
    v34_l154)))

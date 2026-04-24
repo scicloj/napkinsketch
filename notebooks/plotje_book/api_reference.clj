@@ -16,7 +16,7 @@
    ;; rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; Fastmath -- random number generation
    [fastmath.random :as rng]))
 
@@ -36,177 +36,177 @@
 
 ;; ## Construction
 
-(kind/doc #'sk/frame)
+(kind/doc #'pj/frame)
 
 ;; Create a leaf frame with data and columns:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point)
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
 ;; Map form -- include aesthetics on the frame so every layer sees them:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width {:color :species})
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/frame :sepal-length :sepal-width {:color :species})
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-(kind/doc #'sk/with-data)
+(kind/doc #'pj/with-data)
 
 ;; Attach or replace the top-level dataset on a frame.
 ;; Useful for building a dataless template and applying it to many
 ;; datasets:
 
 (def scatter-template
-  (-> (sk/frame nil {:x :x :y :y :color :group})
-      sk/lay-point))
+  (-> (pj/frame nil {:x :x :y :y :color :group})
+      pj/lay-point))
 
 (-> scatter-template
-    (sk/with-data tiny))
+    (pj/with-data tiny))
 
-(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
 
 ;; Multi-pair frame -- a vector of `[x y]` pairs creates a composite
 ;; with one sub-frame per pair:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame [[:sepal-length :sepal-width]
+    (pj/frame [[:sepal-length :sepal-width]
                [:petal-length :petal-width]])
-    (sk/lay-point {:color :species}))
+    (pj/lay-point {:color :species}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
 ;; Map form -- explicit keys on a frame:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:x :sepal-length :y :sepal-width})
-    sk/lay-point)
+    (pj/frame {:x :sepal-length :y :sepal-width})
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-(kind/doc #'sk/cross)
+(kind/doc #'pj/cross)
 
-(sk/cross [:a :b] [1 2 3])
+(pj/cross [:a :b] [1 2 3])
 
 (kind/test-last [(fn [v] (= [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]] v))])
 
-;; Combine `sk/cross` with `sk/frame` to build a SPLOM:
+;; Combine `pj/cross` with `pj/frame` to build a SPLOM:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:color :species})
-    (sk/frame (sk/cross [:sepal-length :petal-length]
+    (pj/frame {:color :species})
+    (pj/frame (pj/cross [:sepal-length :petal-length]
                         [:sepal-width :petal-width])))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:panels s))
                                 (= 600 (:points s)))))])
 
 ;; Multi-column vector creates one panel per column:
 
-(sk/lay-histogram (rdatasets/datasets-iris) [:sepal-length :sepal-width])
+(pj/lay-histogram (rdatasets/datasets-iris) [:sepal-length :sepal-width])
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 2 (:panels s))
                                 (pos? (:polygons s)))))])
 
 ;; ## Layer Functions
 
-(kind/doc #'sk/lay)
+(kind/doc #'pj/lay)
 
-;; The generic layer adder. `sk/lay-point`, `sk/lay-bar`, etc. are
-;; convenience wrappers around `sk/lay` with a registered layer-type
-;; key. Use `sk/lay` directly when you have a custom layer type (from
-;; `sk/layer-type-lookup` on a registered key, or a raw layer-type
+;; The generic layer adder. `pj/lay-point`, `pj/lay-bar`, etc. are
+;; convenience wrappers around `pj/lay` with a registered layer-type
+;; key. Use `pj/lay` directly when you have a custom layer type (from
+;; `pj/layer-type-lookup` on a registered key, or a raw layer-type
 ;; map from an extension):
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width)
-    (sk/lay :point))
+    (pj/frame :sepal-length :sepal-width)
+    (pj/lay :point))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-(kind/doc #'sk/lay-point)
+(kind/doc #'pj/lay-point)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 150 (:points s))))])
 
-(kind/doc #'sk/lay-line)
+(kind/doc #'pj/lay-line)
 
 (def wave {:x (range 30)
            :y (map #(Math/sin (* % 0.3)) (range 30))})
 
 (-> wave
-    (sk/lay-line :x :y))
+    (pj/lay-line :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 1 (:lines s))))])
 
-(kind/doc #'sk/lay-histogram)
+(kind/doc #'pj/lay-histogram)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-histogram :sepal-length))
+    (pj/lay-histogram :sepal-length))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (pos? (:polygons s))))])
 
-(kind/doc #'sk/lay-bar)
+(kind/doc #'pj/lay-bar)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-bar :species))
+    (pj/lay-bar :species))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 3 (:polygons s))))])
 
-;; Stacked bars: pass `{:position :stack}` to `sk/lay-bar`.
+;; Stacked bars: pass `{:position :stack}` to `pj/lay-bar`.
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (sk/lay-bar :island {:position :stack :color :species}))
+    (pj/lay-bar :island {:position :stack :color :species}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (pos? (:polygons s))))])
 
-;; 100% stacked bars: pass `{:position :fill}` to `sk/lay-bar`.
+;; 100% stacked bars: pass `{:position :fill}` to `pj/lay-bar`.
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (sk/lay-bar :island {:position :fill :color :species}))
+    (pj/lay-bar :island {:position :fill :color :species}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (pos? (:polygons s))))])
 
-(kind/doc #'sk/lay-value-bar)
+(kind/doc #'pj/lay-value-bar)
 
 (-> sales
-    (sk/lay-value-bar :product :revenue))
+    (pj/lay-value-bar :product :revenue))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 4 (:polygons s))))])
 
-;; Linear regression: pass `{:stat :linear-model}` to `sk/lay-smooth`.
+;; Linear regression: pass `{:stat :linear-model}` to `pj/lay-smooth`.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-(kind/doc #'sk/lay-smooth)
+(kind/doc #'pj/lay-smooth)
 
 (-> (let [r (rng/rng :jdk 42)
           xs (vec (range 50))]
@@ -214,152 +214,152 @@
        :y (mapv #(+ (Math/sin (* % 0.2))
                     (* 0.3 (- (rng/drandom r) 0.5)))
                 xs)})
-    (sk/lay-point :x :y)
-    (sk/lay-smooth {:bandwidth 0.2}))
+    (pj/lay-point :x :y)
+    (pj/lay-smooth {:bandwidth 0.2}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 50 (:points s))
                                 (= 1 (:lines s)))))])
 
-(kind/doc #'sk/lay-density)
+(kind/doc #'pj/lay-density)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-density :sepal-length))
+    (pj/lay-density :sepal-length))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 1 (:polygons s))))])
 
-(kind/doc #'sk/lay-area)
+(kind/doc #'pj/lay-area)
 
 (-> wave
-    (sk/lay-area :x :y))
+    (pj/lay-area :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 1 (:polygons s))))])
 
-;; Stacked areas: pass `{:position :stack}` to `sk/lay-area`.
+;; Stacked areas: pass `{:position :stack}` to `pj/lay-area`.
 
 (-> {:x (concat (range 10) (range 10) (range 10))
      :y (concat [1 2 3 4 5 4 3 2 1 0]
                 [2 2 2 3 3 3 2 2 2 2]
                 [1 1 1 1 2 2 2 1 1 1])
      :group (concat (repeat 10 "A") (repeat 10 "B") (repeat 10 "C"))}
-    (sk/lay-area :x :y {:position :stack :color :group}))
+    (pj/lay-area :x :y {:position :stack :color :group}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 3 (:polygons s))))])
 
-(kind/doc #'sk/lay-text)
+(kind/doc #'pj/lay-text)
 
 (-> {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]}
-    (sk/lay-text :x :y {:text :name}))
+    (pj/lay-text :x :y {:text :name}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (every? (set (:texts s)) ["A" "B" "C" "D"])))])
 
-(kind/doc #'sk/lay-label)
+(kind/doc #'pj/lay-label)
 
 (-> {:x [1 2 3 4] :y [4 7 5 8] :name ["A" "B" "C" "D"]}
-    (sk/lay-point :x :y {:size 5})
-    (sk/lay-label {:text :name}))
+    (pj/lay-point :x :y {:size 5})
+    (pj/lay-label {:text :name}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:points s))
                                 (every? (set (:texts s)) ["A" "B" "C" "D"]))))])
 
-(kind/doc #'sk/lay-boxplot)
+(kind/doc #'pj/lay-boxplot)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-boxplot :species :sepal-width))
+    (pj/lay-boxplot :species :sepal-width))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:polygons s))
                                 (pos? (:lines s)))))])
 
-(kind/doc #'sk/lay-violin)
+(kind/doc #'pj/lay-violin)
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-violin :day :total-bill))
+    (pj/lay-violin :day :total-bill))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 4 (:polygons s))))])
 
-(kind/doc #'sk/lay-errorbar)
+(kind/doc #'pj/lay-errorbar)
 
 (-> measurements
-    (sk/lay-point :treatment :mean)
-    (sk/lay-errorbar {:y-min :ci-lo :y-max :ci-hi}))
+    (pj/lay-point :treatment :mean)
+    (pj/lay-errorbar {:y-min :ci-lo :y-max :ci-hi}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:points s))
                                 (= 12 (:lines s)))))])
 
-(kind/doc #'sk/lay-lollipop)
+(kind/doc #'pj/lay-lollipop)
 
 (-> sales
-    (sk/lay-lollipop :product :revenue))
+    (pj/lay-lollipop :product :revenue))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:points s))
                                 (= 4 (:lines s)))))])
 
-(kind/doc #'sk/lay-tile)
+(kind/doc #'pj/lay-tile)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-tile :sepal-length :sepal-width))
+    (pj/lay-tile :sepal-length :sepal-width))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (pos? (:visible-tiles s))))])
 
-(kind/doc #'sk/lay-density-2d)
+(kind/doc #'pj/lay-density-2d)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-density-2d :sepal-length :sepal-width))
+    (pj/lay-density-2d :sepal-length :sepal-width))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (pos? (:visible-tiles s))))])
 
-(kind/doc #'sk/lay-contour)
+(kind/doc #'pj/lay-contour)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-contour :sepal-length :sepal-width))
+    (pj/lay-contour :sepal-length :sepal-width))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (pos? (:lines s))))])
 
-(kind/doc #'sk/lay-ridgeline)
+(kind/doc #'pj/lay-ridgeline)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-ridgeline :species :sepal-length))
+    (pj/lay-ridgeline :species :sepal-length))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (pos? (:polygons s))))])
 
-(kind/doc #'sk/lay-rug)
+(kind/doc #'pj/lay-rug)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-rug {:side :both}))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-rug {:side :both}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 300 (:lines s))))])
 
-(kind/doc #'sk/lay-step)
+(kind/doc #'pj/lay-step)
 
 (-> tiny
-    (sk/lay-step :x :y)
-    sk/lay-point)
+    (pj/lay-step :x :y)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 5 (:points s))
                                 (= 1 (:lines s)))))])
 
-(kind/doc #'sk/lay-summary)
+(kind/doc #'pj/lay-summary)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-summary :species :sepal-length))
+    (pj/lay-summary :species :sepal-length))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:points s))
                                 (= 3 (:lines s)))))])
 
@@ -373,266 +373,266 @@
 ;; x/y columns they attach at the root (every panel); with x/y
 ;; columns they attach to one matching leaf.
 
-(kind/doc #'sk/lay-rule-v)
+(kind/doc #'pj/lay-rule-v)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-rule-v {:x-intercept 6.0}))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-rule-v {:x-intercept 6.0}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
 
-(kind/doc #'sk/lay-rule-h)
+(kind/doc #'pj/lay-rule-h)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-rule-h {:y-intercept 3.0}))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-rule-h {:y-intercept 3.0}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
 
-(kind/doc #'sk/lay-band-v)
+(kind/doc #'pj/lay-band-v)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-band-v {:x-min 5.5 :x-max 6.5}))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-band-v {:x-min 5.5 :x-max 6.5}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 150 (:points s))))])
 
-(kind/doc #'sk/lay-band-h)
+(kind/doc #'pj/lay-band-h)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-band-h {:y-min 2.5 :y-max 3.5}))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-band-h {:y-min 2.5 :y-max 3.5}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 150 (:points s))))])
 
 ;; ## Transforms
 
-(kind/doc #'sk/coord)
+(kind/doc #'pj/coord)
 
 ;; Flip axes:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-bar :species) (sk/coord :flip))
+    (pj/lay-bar :species) (pj/coord :flip))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 3 (:polygons s))))])
 
 ;; Polar coordinates:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-bar :species) (sk/coord :polar))
+    (pj/lay-bar :species) (pj/coord :polar))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (pos? (:polygons s))))])
 
-(kind/doc #'sk/scale)
+(kind/doc #'pj/scale)
 
 ;; Log scale:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width) (sk/scale :x :log))
+    (pj/lay-point :sepal-length :sepal-width) (pj/scale :x :log))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 150 (:points s))))])
 
 ;; Fixed domain:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width) (sk/scale :x {:domain [3 9]}))
+    (pj/lay-point :sepal-length :sepal-width) (pj/scale :x {:domain [3 9]}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 150 (:points s))))])
 
 ;; ## Faceting
 
-(kind/doc #'sk/facet)
+(kind/doc #'pj/facet)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
-    (sk/facet :species))
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/facet :species))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:panels s))
                                 (= 150 (:points s)))))])
 
-(kind/doc #'sk/facet-grid)
+(kind/doc #'pj/facet-grid)
 
 (-> (rdatasets/reshape2-tips)
-    (sk/lay-point :total-bill :tip {:color :sex})
-    (sk/facet-grid :smoker :sex))
+    (pj/lay-point :total-bill :tip {:color :sex})
+    (pj/facet-grid :smoker :sex))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:panels s))
                                 (= 244 (:points s)))))])
 
 ;; ## Composition
 
-(kind/doc #'sk/arrange)
+(kind/doc #'pj/arrange)
 
-(sk/arrange [(-> (rdatasets/datasets-iris)
-                 (sk/lay-point :sepal-length :sepal-width {:color :species})
-                 (sk/options {:width 250 :height 200}))
+(pj/arrange [(-> (rdatasets/datasets-iris)
+                 (pj/lay-point :sepal-length :sepal-width {:color :species})
+                 (pj/options {:width 250 :height 200}))
              (-> (rdatasets/datasets-iris)
-                 (sk/lay-point :petal-length :petal-width {:color :species})
-                 (sk/options {:width 250 :height 200}))]
+                 (pj/lay-point :petal-length :petal-width {:color :species})
+                 (pj/options {:width 250 :height 200}))]
             {:cols 2})
 
-(kind/test-last [(fn [v] (sk/frame? v))])
+(kind/test-last [(fn [v] (pj/frame? v))])
 
 ;; ## Rendering
 
-(kind/doc #'sk/plot)
+(kind/doc #'pj/plot)
 
 ;; See the Customization notebook for options (title, theme,
 ;; tooltip, brush, legend position, palette).
 
 (-> tiny
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 5 (:points s))))])
 
-(kind/doc #'sk/options)
+(kind/doc #'pj/options)
 
 ;; Set render options on a frame:
 
 (-> tiny
-    (sk/lay-point :x :y)
-    (sk/options {:width 400 :height 200 :title "Small Plot"}))
+    (pj/lay-point :x :y)
+    (pj/options {:width 400 :height 200 :title "Small Plot"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (< (:width s) 500)
                                 (some #{"Small Plot"} (:texts s)))))])
 
 ;; ## Predicates
 
-(kind/doc #'sk/frame?)
+(kind/doc #'pj/frame?)
 
 ;; Check whether a value is a frame (leaf or composite):
 
-(sk/frame? (-> tiny (sk/frame :x :y) sk/lay-point))
+(pj/frame? (-> tiny (pj/frame :x :y) pj/lay-point))
 
 (kind/test-last [true?])
 
-(kind/doc #'sk/plan?)
+(kind/doc #'pj/plan?)
 
-;; Check whether a value is a plan (from `sk/plan`):
+;; Check whether a value is a plan (from `pj/plan`):
 
-(sk/plan? (sk/plan (sk/lay-point tiny :x :y)))
+(pj/plan? (pj/plan (pj/lay-point tiny :x :y)))
 
 (kind/test-last [true?])
 
-(kind/doc #'sk/layer?)
+(kind/doc #'pj/layer?)
 
 ;; Check whether a value is a resolved plan layer:
 
-(sk/layer? (first (:layers (first (:panels (sk/plan (sk/lay-point tiny :x :y)))))))
+(pj/layer? (first (:layers (first (:panels (pj/plan (pj/lay-point tiny :x :y)))))))
 
 (kind/test-last [true?])
 
-(kind/doc #'sk/layer-type?)
+(kind/doc #'pj/layer-type?)
 
 ;; Check whether a value is a registered layer-type map:
 
-(sk/layer-type? (sk/layer-type-lookup :point))
+(pj/layer-type? (pj/layer-type-lookup :point))
 
 (kind/test-last [true?])
 
 ;; ## Inspection
 
-(kind/doc #'sk/draft)
+(kind/doc #'pj/draft)
 
 ;; Flatten a frame into a vector of draft layers -- one
 ;; per applicable layer, with all scope merged. Useful for
 ;; inspecting exactly what the renderer will draw:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame :sepal-length :sepal-width)
-    sk/lay-point
-    sk/draft
+    (pj/frame :sepal-length :sepal-width)
+    pj/lay-point
+    pj/draft
     kind/pprint)
 
 (kind/test-last [(fn [d] (and (vector? d)
                               (= 1 (count d))
                               (= :point (:mark (first d)))))])
 
-(kind/doc #'sk/plan)
+(kind/doc #'pj/plan)
 
 ;; Returns the intermediate plan data structure:
 
 (def plan1 (-> tiny
-               (sk/lay-point :x :y)
-               sk/plan))
+               (pj/lay-point :x :y)
+               pj/plan))
 
 plan1
 
 (kind/test-last [(fn [m] (and (= 600 (:width m))
                               (= "x" (:x-label m))))])
 
-(kind/doc #'sk/svg-summary)
+(kind/doc #'pj/svg-summary)
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species}) sk/svg-summary)
+    (pj/lay-point :sepal-length :sepal-width {:color :species}) pj/svg-summary)
 
 (kind/test-last [(fn [m] (and (= 1 (:panels m))
                               (= 150 (:points m))))])
 
-(kind/doc #'sk/valid-plan?)
+(kind/doc #'pj/valid-plan?)
 
-(sk/valid-plan? plan1)
+(pj/valid-plan? plan1)
 
 (kind/test-last [true?])
 
-(kind/doc #'sk/explain-plan)
+(kind/doc #'pj/explain-plan)
 
-(sk/explain-plan plan1)
+(pj/explain-plan plan1)
 
 (kind/test-last [nil?])
 
 ;; ## Pipeline
 
-(kind/doc #'sk/plan->membrane)
+(kind/doc #'pj/plan->membrane)
 
-(def m1 (sk/plan->membrane plan1))
+(def m1 (pj/plan->membrane plan1))
 
 (vector? m1)
 
 (kind/test-last [true?])
 
-(kind/doc #'sk/membrane->plot)
+(kind/doc #'pj/membrane->plot)
 
-(first (sk/membrane->plot m1 :svg
+(first (pj/membrane->plot m1 :svg
                           {:total-width (:total-width plan1)
                            :total-height (:total-height plan1)}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
-(kind/doc #'sk/plan->plot)
+(kind/doc #'pj/plan->plot)
 
-(first (sk/plan->plot plan1 :svg {}))
+(first (pj/plan->plot plan1 :svg {}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
 ;; ## Configuration
 
-(kind/doc #'sk/config)
+(kind/doc #'pj/config)
 
-(sk/config)
+(pj/config)
 
 (kind/test-last [(fn [m] (map? m))])
 
-(kind/doc #'sk/set-config!)
+(kind/doc #'pj/set-config!)
 
-(kind/doc #'sk/with-config)
+(kind/doc #'pj/with-config)
 
-(sk/with-config {:palette :pastel1}
-  (:palette (sk/config)))
+(pj/with-config {:palette :pastel1}
+  (:palette (pj/config)))
 
 (kind/test-last [(fn [p] (= :pastel1 p))])
 
@@ -640,36 +640,36 @@ plan1
 
 ;; Three maps document the option keys at each scope level.
 
-(kind/doc #'sk/config-key-docs)
+(kind/doc #'pj/config-key-docs)
 
-(count sk/config-key-docs)
+(count pj/config-key-docs)
 
 (kind/test-last [(fn [n] (= 36 n))])
 
-(kind/doc #'sk/plot-option-docs)
+(kind/doc #'pj/plot-option-docs)
 
-(count sk/plot-option-docs)
+(count pj/plot-option-docs)
 
 (kind/test-last [(fn [n] (= 11 n))])
 
-(kind/doc #'sk/layer-option-docs)
+(kind/doc #'pj/layer-option-docs)
 
-(count sk/layer-option-docs)
+(count pj/layer-option-docs)
 
 (kind/test-last [(fn [n] (pos? n))])
 
 ;; ## Method Registry
 
-(kind/doc #'sk/layer-type-lookup)
+(kind/doc #'pj/layer-type-lookup)
 
-(sk/layer-type-lookup :smooth)
+(pj/layer-type-lookup :smooth)
 
 (kind/test-last [(fn [m] (and (= :line (:mark m))
                               (= :loess (:stat m))))])
 
-(kind/doc #'sk/registered-layer-types)
+(kind/doc #'pj/registered-layer-types)
 
-(count (sk/registered-layer-types))
+(count (pj/registered-layer-types))
 
 (kind/test-last [(fn [n] (= 25 n))])
 
@@ -677,65 +677,65 @@ plan1
 ;;
 ;; Query the self-documenting dispatch tables for any extensible concept.
 
-(kind/doc #'sk/stat-doc)
+(kind/doc #'pj/stat-doc)
 
-(sk/stat-doc :linear-model)
-
-(kind/test-last [(fn [s] (string? s))])
-
-(kind/doc #'sk/mark-doc)
-
-(sk/mark-doc :point)
+(pj/stat-doc :linear-model)
 
 (kind/test-last [(fn [s] (string? s))])
 
-(kind/doc #'sk/position-doc)
+(kind/doc #'pj/mark-doc)
 
-(sk/position-doc :dodge)
-
-(kind/test-last [(fn [s] (string? s))])
-
-(kind/doc #'sk/scale-doc)
-
-(sk/scale-doc :linear)
+(pj/mark-doc :point)
 
 (kind/test-last [(fn [s] (string? s))])
 
-(kind/doc #'sk/coord-doc)
+(kind/doc #'pj/position-doc)
 
-(sk/coord-doc :cartesian)
+(pj/position-doc :dodge)
 
 (kind/test-last [(fn [s] (string? s))])
 
-(kind/doc #'sk/membrane-mark-doc)
+(kind/doc #'pj/scale-doc)
 
-(sk/membrane-mark-doc :point)
+(pj/scale-doc :linear)
+
+(kind/test-last [(fn [s] (string? s))])
+
+(kind/doc #'pj/coord-doc)
+
+(pj/coord-doc :cartesian)
+
+(kind/test-last [(fn [s] (string? s))])
+
+(kind/doc #'pj/membrane-mark-doc)
+
+(pj/membrane-mark-doc :point)
 
 (kind/test-last [(fn [s] (string? s))])
 
 ;; ## Export
 
-(kind/doc #'sk/save)
+(kind/doc #'pj/save)
 
 ;; Save a plot to an SVG file:
 
 (let [path (str (java.io.File/createTempFile "plotje-example" ".svg"))]
   (-> (rdatasets/datasets-iris)
-      (sk/lay-point :sepal-length :sepal-width {:color :species})
-      (sk/save path {:title "Iris Export"}))
+      (pj/lay-point :sepal-length :sepal-width {:color :species})
+      (pj/save path {:title "Iris Export"}))
   (.contains (slurp path) "<svg"))
 
 (kind/test-last [true?])
 
-(kind/doc #'sk/save-png)
+(kind/doc #'pj/save-png)
 
 ;; Save a plot to a PNG file via membrane's Java2D backend.
 ;; Returns the path:
 
 (let [path (str (java.io.File/createTempFile "plotje-example" ".png"))]
   (-> (rdatasets/datasets-iris)
-      (sk/lay-point :sepal-length :sepal-width {:color :species})
-      (sk/save-png path))
+      (pj/lay-point :sepal-length :sepal-width {:color :species})
+      (pj/save-png path))
   (.exists (java.io.File. ^String path)))
 
 (kind/test-last [true?])

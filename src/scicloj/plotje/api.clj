@@ -25,7 +25,7 @@
 ;; ---- Type predicates ----
 
 (defn plan?
-  "Return true if x is a plan (the resolved data-space geometry from sk/plan)."
+  "Return true if x is a plan (the resolved data-space geometry from pj/plan)."
   [x]
   (resolve/plan? x))
 
@@ -70,12 +70,12 @@
 (def config-key-docs
   "Documentation metadata for configuration keys.
    Maps each config key to [category description].
-   Use with (sk/config) to build reference tables."
+   Use with (pj/config) to build reference tables."
   defaults/config-key-docs)
 
 (def plot-option-docs
   "Documentation for plot-level option keys.
-   These are accepted by sk/options, sk/plan, and sk/plot but are
+   These are accepted by pj/options, pj/plan, and pj/plot but are
    inherently per-plot (text content or nested config override).
    Maps each key to [category description]."
   defaults/plot-option-docs)
@@ -178,7 +178,7 @@
   "Convert a plan into a membrane drawable tree.
    (plan->membrane (plan fr))"
   [plan-data & {:as opts}]
-  (expect-type plan-data resolve/plan? "plan (from sk/plan)" "sk/plan->membrane")
+  (expect-type plan-data resolve/plan? "plan (from pj/plan)" "pj/plan->membrane")
   (membrane/plan->membrane plan-data opts))
 
 (defn membrane->plot
@@ -195,7 +195,7 @@
    (plan->plot (plan fr) :svg {})
    (plan->plot (plan fr) :plotly {})"
   [plan format opts]
-  (expect-type plan resolve/plan? "plan (from sk/plan)" "sk/plan->plot")
+  (expect-type plan resolve/plan? "plan (from pj/plan)" "pj/plan->plot")
   (render-impl/plan->plot plan format opts))
 
 ;; ---- Plan Validation ----
@@ -241,7 +241,7 @@
   (into defaults/column-keys #{:data :color-type :x-type :y-type}))
 
 (def ^:private plot-options-keys
-  "Keys accepted by sk/options (top-level only; nested theme/config keys
+  "Keys accepted by pj/options (top-level only; nested theme/config keys
    are validated separately by deep-merge)."
   (into (set (keys defaults/plot-option-docs))
         (keys defaults/config-key-docs)))
@@ -249,7 +249,7 @@
 (defn- warn-and-strip-unknown-opts
   "Warn if `opts` contains keys outside `accepted` and return `opts`
    with only the accepted keys retained. `caller` is used in the
-   warning message (e.g. \"sk/frame\", \"lay-point\"). If opts is
+   warning message (e.g. \"pj/frame\", \"lay-point\"). If opts is
    nil or not a map, returns it unchanged. Stripping makes the
    warning honest: keys the library does not recognize are dropped
    rather than silently propagated into mapping maps, where they
@@ -275,7 +275,7 @@
     :grid-strip-labels})
 
 (def ^:private frame-print-order
-  "Key order used by sk/prepare-frame to make printed frame maps
+  "Key order used by pj/prepare-frame to make printed frame maps
    readable. Small declarative keys first; :data before :frames so
    each level's data stays visually bound to its own siblings rather
    than trailing past its children; :frames last since children can
@@ -288,7 +288,7 @@
   [fr]
   (let [unknown (remove frame-keys (keys fr))]
     (when (seq unknown)
-      (println (str "Warning: sk/prepare-frame got unexpected "
+      (println (str "Warning: pj/prepare-frame got unexpected "
                     "top-level key(s): " (vec unknown)
                     ". Known frame keys: " (vec (sort frame-keys)))))
     fr))
@@ -333,7 +333,7 @@
 
 (defn- render-frame-map
   "Kindly render function that restores captured *config* and routes
-   a frame map (leaf or composite) through sk/plot."
+   a frame map (leaf or composite) through pj/plot."
   [captured-config]
   (fn [fr]
     (if captured-config
@@ -347,10 +347,10 @@
    attach Kindly metadata so notebook viewers auto-render the frame.
 
    Use this when you construct a frame by hand to get features beyond
-   what sk/arrange covers: unequal :weights in :layout, nested
+   what pj/arrange covers: unequal :weights in :layout, nested
    :frames, cross-sibling :share-scales on differing columns, or a
    composite-level :layers that should distribute to every descendant
-   leaf. For a flat row or column of plots, prefer sk/arrange.
+   leaf. For a flat row or column of plots, prefer pj/arrange.
 
    Accepts any frame-shaped map. All of :data, :mapping, :layers,
    :opts, :frames, :layout, :share-scales are legal at any depth.
@@ -360,13 +360,13 @@
    first, :data before :frames so each level's data stays beside its
    level's other keys.
 
-   (sk/prepare-frame {:data iris
+   (pj/prepare-frame {:data iris
                       :mapping {:x :a :y :b}
                       :layers [{:layer-type :point}]})
-   (sk/prepare-frame {:data iris
+   (pj/prepare-frame {:data iris
                       :frames [...]
                       :layout {:direction :vertical :weights [1 3]}})
-   (sk/prepare-frame {:data iris
+   (pj/prepare-frame {:data iris
                       :mapping {:x :a}
                       :layers [{:layer-type :point}]
                       :frames [{:mapping {:y :b}}
@@ -374,7 +374,7 @@
       ;; outer :layers distributes to both sub-frames"
   [fr-map]
   (when-not (map? fr-map)
-    (throw (ex-info (str "sk/prepare-frame expects a frame map, got "
+    (throw (ex-info (str "pj/prepare-frame expects a frame map, got "
                          (pr-str (type fr-map)))
                     {:got fr-map})))
   (let [prepared (normalize-frame fr-map)
@@ -382,7 +382,7 @@
     (kind/fn prepared
       {:kindly/f (render-frame-map captured)})))
 
-;; ---- sk/frame polymorphism (Phase 6) ----
+;; ---- pj/frame polymorphism (Phase 6) ----
 
 (defn- layer-has-position? [layer]
   (boolean (or (:x (:mapping layer))
@@ -459,7 +459,7 @@
       with-aesth)))
 
 (defn- extend-or-promote
-  "Dispatch `(sk/frame existing-frame incoming-mapping)`: composite
+  "Dispatch `(pj/frame existing-frame incoming-mapping)`: composite
    inputs extend in place; leaves extend or promote depending on
    whether they already carry position."
   [fr incoming-mapping]
@@ -558,14 +558,14 @@
     (prepare-frame composite)))
 
 (defn- multi-pair-frame
-  "Iteratively apply sk/frame to each column or pair in cols-or-pairs.
+  "Iteratively apply pj/frame to each column or pair in cols-or-pairs.
    The ground case -- x a non-frame -- first lifts x into a leaf via
-   (sk/frame x). Each element in cols-or-pairs may be a column
+   (pj/frame x). Each element in cols-or-pairs may be a column
    reference (keyword or string) -> univariate panel, or a two-element
    sequential -> bivariate panel. Any mixture is accepted.
 
    When the elements form a rectangular M x N grid of pairs (e.g. the
-   output of sk/cross cols cols), the result is a nested rows-of-cols
+   output of pj/cross cols cols), the result is a nested rows-of-cols
    composite with :share-scales #{:x :y} -- the canonical SPLOM shape.
    Non-rectangular pair lists and mixed/univariate lists fall through
    to the flat per-element reduce."
@@ -586,7 +586,7 @@
 
       :else
       (throw (ex-info
-              (str "sk/frame multi-pair element must be a column "
+              (str "pj/frame multi-pair element must be a column "
                    "reference or a two-element sequential, got: "
                    (pr-str first-el))
               {:item first-el :cols-or-pairs cols-or-pairs})))))
@@ -595,31 +595,31 @@
   "Construct or extend a frame.
 
    On raw data (first argument is not itself a frame):
-     (sk/frame)                                -- empty leaf
-     (sk/frame data)                           -- leaf with data only
-     (sk/frame data {:color :species})         -- leaf with aesthetic mapping
-     (sk/frame data :x-col)                    -- leaf with {:x :x-col}
-     (sk/frame data :x-col {:color :c})        -- univariate x + opts
-     (sk/frame data :x-col :y-col)             -- leaf with :x and :y
-     (sk/frame data :x-col :y-col {:color :c}) -- positional x/y + opts
-     (sk/frame data [[:a :b] [:c :d]])         -- multi-pair: N bivariate panels
-     (sk/frame data [:a :b :c])                -- multi-pair: N univariate panels
+     (pj/frame)                                -- empty leaf
+     (pj/frame data)                           -- leaf with data only
+     (pj/frame data {:color :species})         -- leaf with aesthetic mapping
+     (pj/frame data :x-col)                    -- leaf with {:x :x-col}
+     (pj/frame data :x-col {:color :c})        -- univariate x + opts
+     (pj/frame data :x-col :y-col)             -- leaf with :x and :y
+     (pj/frame data :x-col :y-col {:color :c}) -- positional x/y + opts
+     (pj/frame data [[:a :b] [:c :d]])         -- multi-pair: N bivariate panels
+     (pj/frame data [:a :b :c])                -- multi-pair: N univariate panels
 
    Threaded over an existing frame (first argument is a frame):
-     (sk/frame fr)                        -- no-op, returns fr unchanged
-     (sk/frame fr :x-col :y-col)          -- extend a leaf-without-position,
+     (pj/frame fr)                        -- no-op, returns fr unchanged
+     (pj/frame fr :x-col :y-col)          -- extend a leaf-without-position,
                                              or promote a leaf-with-position
                                              into a 2-panel composite, or
                                              append a panel to a composite
-     (sk/frame fr :x-col :y-col {:color :c}) -- same, with aesthetic routed
+     (pj/frame fr :x-col :y-col {:color :c}) -- same, with aesthetic routed
                                              to the composite root on promote
-     (sk/frame fr {:color :c})            -- aesthetic-only: extend mapping
+     (pj/frame fr {:color :c})            -- aesthetic-only: extend mapping
                                              or (on leaf-with-position) promote
-     (sk/frame fr [[:a :b] [:c :d]])      -- multi-pair: append N panels
-     (sk/frame fr (sk/cross cols cols))   -- SPLOM N^2 panels in one call
+     (pj/frame fr [[:a :b] [:c :d]])      -- multi-pair: append N panels
+     (pj/frame fr (pj/cross cols cols))   -- SPLOM N^2 panels in one call
 
    For hand-built composite frames (nested :frames, explicit :weights,
-   etc.) use sk/prepare-frame."
+   etc.) use pj/prepare-frame."
   ([] (prepare-frame {:layers []}))
   ([x]
    (cond
@@ -633,7 +633,7 @@
      :else
      (let [mapping (if (map? y)
                      (or (warn-and-strip-unknown-opts
-                          "sk/frame" y view-mapping-keys)
+                          "pj/frame" y view-mapping-keys)
                          {})
                      {:x y})]
        (if (frame? x)
@@ -641,8 +641,8 @@
          (prepare-frame (frame-from-data x mapping))))))
   ([x y z]
    (if (map? z)
-     ;; (sk/frame data x-col opts-map) -- univariate position plus opts
-     (let [opts      (warn-and-strip-unknown-opts "sk/frame" z view-mapping-keys)
+     ;; (pj/frame data x-col opts-map) -- univariate position plus opts
+     (let [opts      (warn-and-strip-unknown-opts "pj/frame" z view-mapping-keys)
            data-over (:data opts)
            mapping   (-> opts (dissoc :data) (merge {:x y}))]
        (if (frame? x)
@@ -653,7 +653,7 @@
          (prepare-frame (extend-or-promote x mapping))
          (prepare-frame (frame-from-data x mapping))))))
   ([x y z opts]
-   (let [opts      (warn-and-strip-unknown-opts "sk/frame" opts view-mapping-keys)
+   (let [opts      (warn-and-strip-unknown-opts "pj/frame" opts view-mapping-keys)
          data-over (:data opts)
          mapping   (-> opts (dissoc :data) (merge {:x y :y z}))]
      (if (frame? x)
@@ -709,13 +709,13 @@
    Useful for building a template once and applying it to different
    datasets:
 
-       (def template (-> (sk/frame)
-                         (sk/frame :x :y {:color :group})
-                         sk/lay-point
-                         (sk/lay-smooth {:stat :linear-model})))
+       (def template (-> (pj/frame)
+                         (pj/frame :x :y {:color :group})
+                         pj/lay-point
+                         (pj/lay-smooth {:stat :linear-model})))
 
-       (-> template (sk/with-data my-data))
-       (-> template (sk/with-data other-data))
+       (-> template (pj/with-data my-data))
+       (-> template (pj/with-data other-data))
 
    At attach time, every keyword column reference in the template's
    mapping, layers, sub-frames, and facet options must exist in the
@@ -733,14 +733,14 @@
 (defn- check-facet-keys
   "Throw a helpful error if a mapping or layer-options map contains
    :facet-col / :facet-row / :facet-x / :facet-y. Faceting is
-   plot-level and is set via sk/facet or sk/facet-grid, never via a
+   plot-level and is set via pj/facet or pj/facet-grid, never via a
    view or layer options map -- the silent-strip behaviour on such
    keys confused users (user-report-2 Issue 5)."
   [context m]
   (let [fk (select-keys m [:facet-col :facet-row :facet-x :facet-y])]
     (when (seq fk)
       (throw (ex-info (str "Faceting is plot-level, not " context "-level. "
-                           "Use (sk/facet sk col) or (sk/facet-grid sk col-col row-col) "
+                           "Use (pj/facet sk col) or (pj/facet-grid sk col-col row-col) "
                            "instead of putting "
                            (str/join " / " (map name (keys fk)))
                            " in a " context "'s options map.")
@@ -903,7 +903,7 @@
    a dataset. Throws if the dataset has 4+ columns -- the user must
    pass explicit x/y.
 
-   Applied when 1-arity (sk/lay-* data) lands on a fresh leaf-frame
+   Applied when 1-arity (pj/lay-* data) lands on a fresh leaf-frame
    with data but no :mapping."
   [layer-type-key d]
   (let [cols (vec (tc/column-names d))
@@ -913,7 +913,7 @@
       2 {:x (cols 0) :y (cols 1)}
       3 {:x (cols 0) :y (cols 1) :color (cols 2)}
       (throw (ex-info (str "Cannot auto-infer columns from " n " columns. "
-                           "Pass explicit x and y: (sk/lay-" (name layer-type-key)
+                           "Pass explicit x and y: (pj/lay-" (name layer-type-key)
                            " data :x :y). Available columns: "
                            (sort cols))
                       {:layer-type layer-type-key
@@ -941,7 +941,7 @@
          d (:data fr)]
      (if (and was-raw? d)
        ;; Raw-data 1-arity: auto-infer columns from the first 1-3 columns
-       ;; so `(sk/lay-point data)` still produces a renderable plot.
+       ;; so `(pj/lay-point data)` still produces a renderable plot.
        (let [mapping (auto-infer-mapping layer-type-key d)]
          (lay-on-frame (assoc fr :mapping mapping)
                        layer-type-key nil nil))
@@ -955,7 +955,7 @@
        (or (keyword? x-or-opts) (string? x-or-opts))
        (lay-on-frame fr layer-type-key {:x x-or-opts} nil)
 
-       ;; Sequential -> build a multi-panel composite via sk/frame, then
+       ;; Sequential -> build a multi-panel composite via pj/frame, then
        ;; attach the layer at the root so it flows to every panel via
        ;; resolve-tree.
        (sequential? x-or-opts)
@@ -966,14 +966,14 @@
   ([layer-type-key sk-or-data x y-or-opts]
    (let [fr (ensure-frame sk-or-data)]
      (cond
-       ;; Parallel vectors -> build a multi-panel composite via sk/frame
+       ;; Parallel vectors -> build a multi-panel composite via pj/frame
        ;; with paired x/y, then attach the bare layer at the root so it
        ;; flows to every panel.
        (and (sequential? x) (sequential? y-or-opts))
        (lay-on-frame (frame fr (mapv vector x y-or-opts))
                      layer-type-key nil nil)
 
-       ;; Sequential + opts -> build a multi-panel composite via sk/frame,
+       ;; Sequential + opts -> build a multi-panel composite via pj/frame,
        ;; then attach a layer with opts at the root.
        (and (sequential? x) (map? y-or-opts))
        (lay-on-frame (frame fr x) layer-type-key nil y-or-opts)
@@ -1025,11 +1025,11 @@
          " to wrap it in an opts map?")))
 
 (def ^:private rule-position-key
-  "Per-layer-type required position key for sk/lay-rule-*."
+  "Per-layer-type required position key for pj/lay-rule-*."
   {:rule-h :y-intercept :rule-v :x-intercept})
 
 (def ^:private band-position-keys
-  "Per-layer-type required [lo-key hi-key] for sk/lay-band-*."
+  "Per-layer-type required [lo-key hi-key] for pj/lay-band-*."
   {:band-h [:y-min :y-max] :band-v [:x-min :x-max]})
 
 (defn- assert-rule-opts! [layer-type-key args]
@@ -1038,7 +1038,7 @@
         v (get opts k)]
     (when-not (and (number? v) (Double/isFinite (double v)))
       (throw (ex-info (str "lay-" (name layer-type-key) " requires a finite numeric " k " in its opts map. "
-                           "Example: (sk/lay-" (name layer-type-key) " sk {" k " 3.0})."
+                           "Example: (pj/lay-" (name layer-type-key) " sk {" k " 3.0})."
                            (positional-hint args))
                       {:layer-type layer-type-key :opts opts})))))
 
@@ -1050,7 +1050,7 @@
                    (Double/isFinite (double lo))
                    (Double/isFinite (double hi)))
       (throw (ex-info (str "lay-" (name layer-type-key) " requires finite numeric " lo-k " and " hi-k " in its opts map. "
-                           "Example: (sk/lay-" (name layer-type-key) " sk {" lo-k " 2.0 " hi-k " 4.0})."
+                           "Example: (pj/lay-" (name layer-type-key) " sk {" lo-k " 2.0 " hi-k " 4.0})."
                            (positional-hint args))
                       {:layer-type layer-type-key :opts opts})))
     (when-not (<= (double lo) (double hi))
@@ -1311,7 +1311,7 @@
    the options attach to the root so every descendant leaf inherits
    them via resolve-tree."
   [sk opts]
-  (let [opts (warn-and-strip-unknown-opts "sk/options" opts plot-options-keys)
+  (let [opts (warn-and-strip-unknown-opts "pj/options" opts plot-options-keys)
         opts (reduce (fn [m k]
                        (if-let [v (get m k)]
                          (do (when-not (and (number? v) (pos? v))
@@ -1329,7 +1329,7 @@
    (see dev-notes/facet-composite-deferral.md)."
   [fr]
   (when (and (frame? fr) (frame/composite? fr))
-    (throw (ex-info (str "sk/facet and sk/facet-grid are not yet supported on composite frames. "
+    (throw (ex-info (str "pj/facet and pj/facet-grid are not yet supported on composite frames. "
                          "The facet grid would cross the composite layout; see "
                          "dev-notes/facet-composite-deferral.md. Flatten to a single leaf "
                          "(or wait for Option C).")
@@ -1357,7 +1357,7 @@
   (update-opts sk assoc :facet-col col-col :facet-row row-col))
 
 (def ^:private valid-scale-types
-  "Scale types accepted by sk/scale. :linear and :log are the two
+  "Scale types accepted by pj/scale. :linear and :log are the two
    continuous types; :categorical lets users supply an explicit ordering
    via a :domain spec for categorical axes."
   #{:linear :log :categorical})
@@ -1412,8 +1412,8 @@
    (plan fr {:title \"My Plot\"})"
   ([sk]
    (when (plan? sk)
-     (throw (ex-info (str "sk/plan expects a frame, not a plan. "
-                          "Use the plan directly, or call sk/plot on the frame.")
+     (throw (ex-info (str "pj/plan expects a frame, not a plan. "
+                          "Use the plan directly, or call pj/plot on the frame.")
                      {:got :plan})))
    (let [fr (ensure-frame sk)]
      (if (frame/composite? fr)
@@ -1458,20 +1458,20 @@
 ;; ---- Multi-Plot Composition ----
 
 (defn- coerce-arrange-input
-  "Turn one sk/arrange input into a leaf-frame plain map. Accepts
+  "Turn one pj/arrange input into a leaf-frame plain map. Accepts
    frame-shaped leaf maps (passed through). Anything else -- including
    pre-rendered hiccup -- throws with guidance."
   [p idx]
   (cond
     (and (frame? p) (frame/leaf? p)) p
     (and (frame? p) (frame/composite? p))
-    (throw (ex-info (str "sk/arrange input at index " idx
+    (throw (ex-info (str "pj/arrange input at index " idx
                          " is a composite frame. Nested arrangements "
                          "are not supported yet -- flatten first, or "
                          "open an issue.")
                     {:index idx}))
     :else
-    (throw (ex-info (str "sk/arrange input at index " idx
+    (throw (ex-info (str "pj/arrange input at index " idx
                          " must be a leaf frame. Got: "
                          (pr-str (type p))
                          ". Pre-rendered hiccup is not supported; wrap "
@@ -1480,7 +1480,7 @@
                     {:index idx :type (type p)}))))
 
 (defn- render-composite
-  "Kindly render function for a composite frame returned by sk/arrange.
+  "Kindly render function for a composite frame returned by pj/arrange.
    Captures the config snapshot so theme/palette/config bindings at
    construction time survive into render time."
   [captured-config]
@@ -1524,7 +1524,7 @@
          flat-plots (vec (apply concat rows-in))
          n-plots (count flat-plots)
          _ (when (zero? n-plots)
-             (throw (ex-info "sk/arrange requires at least one plot." {:plots plots})))
+             (throw (ex-info "pj/arrange requires at least one plot." {:plots plots})))
          leaves (vec (map-indexed (fn [i p] (coerce-arrange-input p i)) flat-plots))
          n-cols (or cols
                     (if nested? (count (first rows-in))

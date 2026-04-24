@@ -3,13 +3,13 @@
  (:require
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [clojure.test :refer [deftest is]]))
 
 
 (def
  v3_l19
- (-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-length)))
+ (-> (rdatasets/datasets-iris) (pj/lay-histogram :sepal-length)))
 
 
 (deftest
@@ -18,7 +18,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v3_l19)))
 
@@ -27,7 +27,7 @@
  v6_l31
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-histogram :sepal-length {:color :species})))
+  (pj/lay-histogram :sepal-length {:color :species})))
 
 
 (deftest
@@ -36,14 +36,14 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v6_l31)))
 
 
 (def
  v9_l43
- (-> (rdatasets/datasets-iris) (sk/lay-histogram :petal-width)))
+ (-> (rdatasets/datasets-iris) (pj/lay-histogram :petal-width)))
 
 
 (deftest
@@ -52,7 +52,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v9_l43)))
 
@@ -61,8 +61,8 @@
  v12_l53
  (->
   (rdatasets/reshape2-tips)
-  (sk/lay-histogram :total-bill)
-  (sk/options
+  (pj/lay-histogram :total-bill)
+  (pj/options
    {:title "Distribution of Total Bill", :x-label "Amount ($)"})))
 
 
@@ -72,7 +72,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and
       (= 1 (:panels s))
       (pos? (:polygons s))
@@ -86,8 +86,8 @@
  v15_l70
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-histogram :sepal-length {:normalize :density, :alpha 0.5})
-  sk/lay-density))
+  (pj/lay-histogram :sepal-length {:normalize :density, :alpha 0.5})
+  pj/lay-density))
 
 
 (deftest
@@ -96,14 +96,14 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v15_l70)))
 
 
 (def
  v18_l82
- (-> (rdatasets/datasets-iris) (sk/lay-density :sepal-length)))
+ (-> (rdatasets/datasets-iris) (pj/lay-density :sepal-length)))
 
 
 (deftest
@@ -112,7 +112,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:polygons s)))))
    v18_l82)))
 
@@ -121,7 +121,7 @@
  v21_l94
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-density :sepal-length {:color :species})))
+  (pj/lay-density :sepal-length {:color :species})))
 
 
 (deftest
@@ -130,7 +130,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
    v21_l94)))
 
@@ -139,7 +139,7 @@
  v24_l106
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-density :sepal-length {:bandwidth 0.3})))
+  (pj/lay-density :sepal-length {:bandwidth 0.3})))
 
 
 (deftest
@@ -148,14 +148,14 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:polygons s)))))
    v24_l106)))
 
 
 (def
  v27_l118
- (-> (rdatasets/datasets-iris) (sk/lay-boxplot :species :sepal-width)))
+ (-> (rdatasets/datasets-iris) (pj/lay-boxplot :species :sepal-width)))
 
 
 (deftest
@@ -164,7 +164,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)) (pos? (:lines s)))))
    v27_l118)))
 
@@ -173,7 +173,7 @@
  v30_l131
  (->
   (rdatasets/reshape2-tips)
-  (sk/lay-boxplot :day :total-bill {:color :smoker})))
+  (pj/lay-boxplot :day :total-bill {:color :smoker})))
 
 
 (deftest
@@ -182,7 +182,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)) (pos? (:lines s)))))
    v30_l131)))
 
@@ -193,8 +193,8 @@
   [pl
    (->
     (rdatasets/reshape2-tips)
-    (sk/lay-boxplot :day :total-bill {:color :smoker})
-    sk/plan)
+    (pj/lay-boxplot :day :total-bill {:color :smoker})
+    pj/plan)
    panel
    (first (:panels pl))
    box-layer
@@ -214,8 +214,8 @@
  v36_l157
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-boxplot :species :sepal-width)
-  (sk/coord :flip)))
+  (pj/lay-boxplot :species :sepal-width)
+  (pj/coord :flip)))
 
 
 (deftest
@@ -224,14 +224,14 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)) (pos? (:lines s)))))
    v36_l157)))
 
 
 (def
  v39_l172
- (-> (rdatasets/reshape2-tips) (sk/lay-violin :day :total-bill)))
+ (-> (rdatasets/reshape2-tips) (pj/lay-violin :day :total-bill)))
 
 
 (deftest
@@ -240,7 +240,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
    v39_l172)))
 
@@ -249,7 +249,7 @@
  v42_l184
  (->
   (rdatasets/reshape2-tips)
-  (sk/lay-violin :day :total-bill {:color :smoker})))
+  (pj/lay-violin :day :total-bill {:color :smoker})))
 
 
 (deftest
@@ -258,7 +258,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)))))
    v42_l184)))
 
@@ -269,8 +269,8 @@
   [pl
    (->
     (rdatasets/reshape2-tips)
-    (sk/lay-violin :day :total-bill {:color :smoker})
-    sk/plan)
+    (pj/lay-violin :day :total-bill {:color :smoker})
+    pj/plan)
    panel
    (first (:panels pl))
    viol-layer
@@ -290,8 +290,8 @@
  v48_l207
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-violin :species :petal-length)
-  (sk/coord :flip)))
+  (pj/lay-violin :species :petal-length)
+  (pj/coord :flip)))
 
 
 (deftest
@@ -300,7 +300,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
    v48_l207)))
 
@@ -309,7 +309,7 @@
  v51_l221
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-ridgeline :species :sepal-length)))
+  (pj/lay-ridgeline :species :sepal-length)))
 
 
 (deftest
@@ -318,7 +318,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v51_l221)))
 
@@ -327,7 +327,7 @@
  v54_l233
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-ridgeline :species :sepal-length {:color :species})))
+  (pj/lay-ridgeline :species :sepal-length {:color :species})))
 
 
 (deftest
@@ -336,14 +336,14 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
    v54_l233)))
 
 
 (def
  v57_l247
- (sk/lay-histogram
+ (pj/lay-histogram
   (rdatasets/datasets-iris)
   [:sepal-length :sepal-width :petal-length]))
 
@@ -354,14 +354,14 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 3 (:panels s)) (pos? (:polygons s)))))
    v57_l247)))
 
 
 (def
  v60_l256
- (sk/lay-density
+ (pj/lay-density
   (rdatasets/datasets-iris)
   [:sepal-length :sepal-width :petal-length]
   {:color :species}))
@@ -373,6 +373,6 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 3 (:panels s)) (pos? (:polygons s)))))
    v60_l256)))

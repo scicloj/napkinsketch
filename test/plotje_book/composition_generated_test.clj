@@ -3,7 +3,7 @@
  (:require
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [clojure.test :refer [deftest is]]))
 
@@ -13,13 +13,13 @@
 
 (def
  v4_l36
- (sk/arrange
+ (pj/arrange
   [(->
     iris
-    (sk/lay-point :sepal-length :sepal-width {:color :species}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species}))
    (->
     iris
-    (sk/lay-point :petal-length :petal-width {:color :species}))]))
+    (pj/lay-point :petal-length :petal-width {:color :species}))]))
 
 
 (deftest
@@ -28,33 +28,33 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
    v4_l36)))
 
 
 (def
  v7_l47
- (sk/arrange
+ (pj/arrange
   [(->
     iris
-    (sk/lay-point :sepal-length :sepal-width {:color :species}))
+    (pj/lay-point :sepal-length :sepal-width {:color :species}))
    (->
     iris
-    (sk/lay-point :petal-length :petal-width {:color :species}))]
+    (pj/lay-point :petal-length :petal-width {:color :species}))]
   {:cols 1}))
 
 
 (deftest
  t8_l52
- (is ((fn [v] (= 2 (:panels (sk/svg-summary v)))) v7_l47)))
+ (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v7_l47)))
 
 
 (def
  v10_l70
  (def
   weighted
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris,
     :layout {:direction :horizontal, :weights [2 1]},
     :frames
@@ -73,7 +73,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
    v12_l85)))
 
@@ -96,7 +96,7 @@
  v18_l114
  (def
   shared-x
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris,
     :share-scales #{:x},
     :layout {:direction :horizontal, :weights [1 1]},
@@ -116,7 +116,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
    v19_l124)))
 
@@ -125,7 +125,7 @@
  v22_l140
  (def
   marginal
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris,
     :share-scales #{:x},
     :layout {:direction :vertical, :weights [1 3]},
@@ -144,7 +144,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 150 (:points s)) (pos? (:polygons s)))))
    v23_l150)))
 
@@ -153,7 +153,7 @@
  v26_l173
  (def
   dashboard
-  (sk/prepare-frame
+  (pj/prepare-frame
    {:data iris,
     :layout {:direction :vertical, :weights [1 1]},
     :frames
@@ -176,4 +176,4 @@
 
 (deftest
  t28_l190
- (is ((fn [v] (= 4 (:panels (sk/svg-summary v)))) v27_l188)))
+ (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v27_l188)))

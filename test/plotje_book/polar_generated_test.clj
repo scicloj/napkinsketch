@@ -3,7 +3,7 @@
  (:require
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [clojure.test :refer [deftest is]]))
 
 
@@ -19,8 +19,8 @@
  v4_l27
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/coord :polar)))
+  (pj/lay-point :sepal-length :sepal-width {:color :species})
+  (pj/coord :polar)))
 
 
 (deftest
@@ -29,14 +29,14 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 150 (:points s)))))
    v4_l27)))
 
 
 (def
  v7_l42
- (-> (rdatasets/datasets-iris) (sk/lay-bar :species) (sk/coord :polar)))
+ (-> (rdatasets/datasets-iris) (pj/lay-bar :species) (pj/coord :polar)))
 
 
 (deftest
@@ -45,14 +45,14 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
    v7_l42)))
 
 
 (def
  v10_l55
- (-> wind (sk/lay-value-bar :direction :speed) (sk/coord :polar)))
+ (-> wind (pj/lay-value-bar :direction :speed) (pj/coord :polar)))
 
 
 (deftest
@@ -61,7 +61,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 8 (:polygons s)))))
    v10_l55)))
 
@@ -70,8 +70,8 @@
  v13_l67
  (->
   (rdatasets/palmerpenguins-penguins)
-  (sk/lay-bar :island {:position :stack, :color :species})
-  (sk/coord :polar)))
+  (pj/lay-bar :island {:position :stack, :color :species})
+  (pj/coord :polar)))
 
 
 (deftest
@@ -80,7 +80,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v13_l67)))
 
@@ -89,8 +89,8 @@
  v16_l80
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-histogram :sepal-length)
-  (sk/coord :polar)))
+  (pj/lay-histogram :sepal-length)
+  (pj/coord :polar)))
 
 
 (deftest
@@ -99,7 +99,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
    v16_l80)))
 
@@ -108,9 +108,9 @@
  v19_l93
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/coord :polar)
-  (sk/options {:title "Iris in Polar Space"})))
+  (pj/lay-point :sepal-length :sepal-width {:color :species})
+  (pj/coord :polar)
+  (pj/options {:title "Iris in Polar Space"})))
 
 
 (deftest
@@ -119,7 +119,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and
       (= 1 (:panels s))
       (some #{"Iris in Polar Space"} (:texts s)))))

@@ -3,7 +3,7 @@
  (:require
   [tablecloth.api :as tc]
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [clojure.test :refer [deftest is]]))
 
@@ -15,13 +15,13 @@
    {:month "Feb", :temperature 7}
    {:month "Mar", :temperature 12}
    {:month "Apr", :temperature 16}]
-  (sk/lay-line :month :temperature)
-  sk/lay-point))
+  (pj/lay-line :month :temperature)
+  pj/lay-point))
 
 
 (deftest
  t4_l55
- (is ((fn [v] (= 4 (:points (sk/svg-summary v)))) v3_l48)))
+ (is ((fn [v] (= 4 (:points (pj/svg-summary v)))) v3_l48)))
 
 
 (def v6_l76 (tc/dataset {:x [1 2 3 4 5], :y [10 20 15 30 25]}))
@@ -124,19 +124,19 @@
 (deftest t37_l195 (is ((fn [n] (= 53940 n)) v36_l193)))
 
 
-(def v39_l205 (-> {:x [1 2 3], :y [4 5 6]} (sk/lay-point :x :y)))
+(def v39_l205 (-> {:x [1 2 3], :y [4 5 6]} (pj/lay-point :x :y)))
 
 
 (deftest
  t40_l208
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v39_l205)))
+ (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v39_l205)))
 
 
 (def
  v42_l212
- (-> (tc/dataset {:x [1 2 3], :y [4 5 6]}) (sk/lay-point :x :y)))
+ (-> (tc/dataset {:x [1 2 3], :y [4 5 6]}) (pj/lay-point :x :y)))
 
 
 (deftest
  t43_l215
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v42_l212)))
+ (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v42_l212)))

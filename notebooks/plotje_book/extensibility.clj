@@ -15,7 +15,7 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; Layer-type registry -- for inspecting layer-type data
    [scicloj.plotje.layer-type :as layer-type]
    ;; Implementation namespaces -- for extension points
@@ -32,7 +32,7 @@
 ;; that resolves into the same pipeline:
 ;;
 ;; ```
-;; frame (sk/frame, sk/lay-*, sk/options, ...)
+;; frame (pj/frame, pj/lay-*, pj/options, ...)
 ;;                        |
 ;;                   frame->draft
 ;;                        v
@@ -78,7 +78,7 @@
        (remove #{:default})
        sort
        (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
-                      "What it does" (sk/stat-doc k)})))})
+                      "What it does" (pj/stat-doc k)})))})
 
 (kind/test-last [(fn [t] (= 11 (count (:row-maps t))))])
 ;;
@@ -142,7 +142,7 @@
        (remove #{:default})
        sort
        (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
-                      "Output" (sk/mark-doc k)})))})
+                      "Output" (pj/mark-doc k)})))})
 
 (kind/test-last [(fn [t] (= 17 (count (:row-maps t))))])
 ;;
@@ -151,8 +151,8 @@
 ;; A plan layer looks like this:
 
 (let [s (-> (rdatasets/datasets-iris)
-            (sk/lay-point :sepal-length :sepal-width {:color :species})
-            sk/plan)
+            (pj/lay-point :sepal-length :sepal-width {:color :species})
+            pj/plan)
       layer (first (:layers (first (:panels s))))]
   layer)
 
@@ -174,7 +174,7 @@
        (remove #{:default})
        sort
        (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
-                      "Membrane output" (sk/membrane-mark-doc k)})))})
+                      "Membrane output" (pj/membrane-mark-doc k)})))})
 
 (kind/test-last [(fn [t] (= 17 (count (:row-maps t))))])
 ;;
@@ -215,13 +215,13 @@
 ;;    :doc "Waterfall -- running total with increase/decrease bars."})
 ;;
 ;; ;; Users can then call:
-;; ;; (sk/lay data (layer-type/lookup :waterfall))
+;; ;; (pj/lay data (layer-type/lookup :waterfall))
 ;;
 ;; ;; Or create a convenience function using lay:
 ;; (defn lay-waterfall
-;;   ([sk] (sk/lay sk (layer-type/lookup :waterfall)))
-;;   ([data x y] (-> data (sk/frame x y) (sk/lay (layer-type/lookup :waterfall))))
-;;   ([data x y opts] (-> data (sk/frame x y) (sk/lay (merge (layer-type/lookup :waterfall) opts)))))
+;;   ([sk] (pj/lay sk (layer-type/lookup :waterfall)))
+;;   ([data x y] (-> data (pj/frame x y) (pj/lay (layer-type/lookup :waterfall))))
+;;   ([data x y opts] (-> data (pj/frame x y) (pj/lay (merge (layer-type/lookup :waterfall) opts)))))
 ;; ```
 ;;
 ;; Users can then call `(lay-waterfall data :category :amount)`.
@@ -247,16 +247,16 @@
 
 (def my-plan
   (-> (rdatasets/datasets-iris)
-      (sk/lay-point :sepal-length :sepal-width {:color :species})
-      sk/plan))
+      (pj/lay-point :sepal-length :sepal-width {:color :species})
+      pj/plan))
 
-(first (sk/plan->plot my-plan :svg {}))
+(first (pj/plan->plot my-plan :svg {}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
 ;; The same plan can be rendered to different formats:
 
-(def my-figure (sk/plan->plot my-plan :svg {}))
+(def my-figure (pj/plan->plot my-plan :svg {}))
 
 (vector? my-figure)
 
@@ -286,7 +286,7 @@
 ;;
 ;; ```clojure
 ;; (require '[mylib.render.plotly])
-;; (sk/plot views {:format :plotly})
+;; (pj/plot views {:format :plotly})
 ;; ```
 
 ;; ## `membrane->plot`
@@ -301,15 +301,15 @@
 ;;
 ;; Dispatch function: `(fn [membrane-tree format opts] format)`
 
-;; `sk/plan->membrane` builds the tree, `sk/membrane->plot` converts it:
+;; `pj/plan->membrane` builds the tree, `pj/membrane->plot` converts it:
 
-(def my-membrane (sk/plan->membrane my-plan))
+(def my-membrane (pj/plan->membrane my-plan))
 
 (vector? my-membrane)
 
 (kind/test-last [(fn [v] (true? v))])
 
-(first (sk/membrane->plot my-membrane :svg
+(first (pj/membrane->plot my-membrane :svg
                           {:total-width (:total-width my-plan)
                            :total-height (:total-height my-plan)}))
 
@@ -351,13 +351,13 @@
        (filter keyword?)
        sort
        (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
-                      "Scale type" (sk/scale-doc k)})))})
+                      "Scale type" (pj/scale-doc k)})))})
 
 (kind/test-last [(fn [t] (= 3 (count (:row-maps t))))])
 ;;
 ;; Dispatch: inferred from the domain type and scale spec.
 ;; Categorical domains dispatch to `:categorical`. Numerical domains default to
-;; `:linear`, overridden to `:log` by `(sk/scale sk :x :log)`.
+;; `:linear`, overridden to `:log` by `(pj/scale sk :x :log)`.
 
 ;; ## `make-coord`
 ;;
@@ -373,7 +373,7 @@
        (remove #{:default})
        sort
        (mapv (fn [k] {"Dispatch value" (kind/code (pr-str k))
-                      "Behavior" (sk/coord-doc k)})))})
+                      "Behavior" (pj/coord-doc k)})))})
 
 (kind/test-last [(fn [t] (= 4 (count (:row-maps t))))])
 ;;
@@ -383,10 +383,10 @@
 ;; A flipped bar chart uses `:flip` coordinates:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-bar :species)
-    (sk/coord :flip))
+    (pj/lay-bar :species)
+    (pj/coord :flip))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
@@ -410,7 +410,7 @@
 
 ;; The doc helper picks it up immediately:
 
-(sk/stat-doc :quantile)
+(pj/stat-doc :quantile)
 
 (kind/test-last [(fn [v] (= "Quantile regression bands" v))])
 
@@ -422,7 +422,7 @@
 
 (remove-method stat/compute-stat [:quantile :doc])
 
-(sk/stat-doc :quantile)
+(pj/stat-doc :quantile)
 
 (kind/test-last [(fn [v] (= "(no description)" v))])
 

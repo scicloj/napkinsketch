@@ -18,14 +18,14 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## What Gets Inferred
 ;;
-;; When you write `(-> data (sk/lay-point :x :y))` -- or even just
-;; `(sk/lay-point data)` -- the library fills
+;; When you write `(-> data (pj/lay-point :x :y))` -- or even just
+;; `(pj/lay-point data)` -- the library fills
 ;; in everything needed to render a plot. Here is the full list of
 ;; inference steps, in the order they happen:
 ;;
@@ -54,9 +54,9 @@
 ;; with domains, ticks, scales, resolved layers, legend, and layout
 ;; dimensions -- every inference decision made explicit in one place.
 ;;
-;; `sk/plan` is the function that produces it. You can call it on
+;; `pj/plan` is the function that produces it. You can call it on
 ;; any frame to see exactly what the library decided. Throughout
-;; this chapter we use `sk/plan` to peek inside after each example
+;; this chapter we use `pj/plan` to peek inside after each example
 ;; and check which rules fired.
 
 (def five-points
@@ -65,17 +65,17 @@
 
 (def scatter-frame
   (-> five-points
-      (sk/lay-point :x :y)))
+      (pj/lay-point :x :y)))
 
 ;; Here is the rendered plot:
 
 scatter-frame
 
-(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
 
 ;; And the full plan that produced it:
 
-(sk/plan scatter-frame)
+(pj/plan scatter-frame)
 
 (kind/test-last [(fn [pl] (and (= :single (:layout-type pl))
                                (= 1 (count (:panels pl)))
@@ -116,23 +116,23 @@ scatter-frame
 ;; One column:
 
 (-> {:values [1 2 3 4 5 6]}
-    sk/lay-histogram)
+    pj/lay-histogram)
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; Two columns:
 
 (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
-    sk/lay-point)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
 
 ;; Three columns -- the third becomes `:color`:
 
 (-> {:x [1 2 3 4] :y [4 5 6 7] :g ["a" "a" "b" "b"]}
-    sk/lay-point)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:points s))
                                 (some #{"a"} (:texts s)))))])
 
@@ -140,9 +140,9 @@ scatter-frame
 ;; are in full control:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :petal-length :petal-width {:color :species}))
+    (pj/lay-point :petal-length :petal-width {:color :species}))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; ## Column Types
 ;;
@@ -167,15 +167,15 @@ scatter-frame
 
 (def bar-frame
   (-> animals
-      (sk/lay-value-bar :animal :count)))
+      (pj/lay-value-bar :animal :count)))
 
 bar-frame
 
-(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
 
 ;; And the plan:
 
-(sk/plan bar-frame)
+(pj/plan bar-frame)
 
 (kind/test-last [(fn [pl] (let [p (first (:panels pl))]
                             (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
@@ -194,11 +194,11 @@ bar-frame
 (def temporal-frame
   (-> {:date [#inst "2024-01-01" #inst "2024-06-01" #inst "2024-12-01"]
        :val [10 25 18]}
-      (sk/lay-point :date :val)))
+      (pj/lay-point :date :val)))
 
 temporal-frame
 
-(let [p (first (:panels (sk/plan temporal-frame)))]
+(let [p (first (:panels (pj/plan temporal-frame)))]
   {:x-domain-numeric? (number? (first (:x-domain p)))
    :tick-count (count (:values (:x-ticks p)))
    :first-tick-label (first (:labels (:x-ticks p)))})
@@ -223,13 +223,13 @@ temporal-frame
 
 (def hour-bar-frame
   (-> {:hour [9 10 11 12] :count [5 8 12 7]}
-      (sk/lay-value-bar :hour :count {:x-type :categorical})))
+      (pj/lay-value-bar :hour :count {:x-type :categorical})))
 
 hour-bar-frame
 
-(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
 
-(:x-domain (first (:panels (sk/plan hour-bar-frame))))
+(:x-domain (first (:panels (pj/plan hour-bar-frame))))
 
 (kind/test-last [(fn [d] (= ["9" "10" "11" "12"] d))])
 
@@ -253,15 +253,15 @@ hour-bar-frame
   (-> {:x [1 2 3 4 5 6]
        :y [3 5 4 7 6 8]
        :g ["a" "a" "a" "b" "b" "b"]}
-      (sk/lay-point :x :y {:color :g})))
+      (pj/lay-point :x :y {:color :g})))
 
 colored-frame
 
-(kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 6 (:points (pj/svg-summary v))))])
 
 ;; And the plan:
 
-(sk/plan colored-frame)
+(pj/plan colored-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (and (= 2 (count (:groups layer)))
@@ -279,15 +279,15 @@ colored-frame
 
 (def fixed-color-frame
   (-> five-points
-      (sk/lay-point :x :y {:color "#E74C3C"})))
+      (pj/lay-point :x :y {:color "#E74C3C"})))
 
 fixed-color-frame
 
-(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
 
 ;; And the plan:
 
-(sk/plan fixed-color-frame)
+(pj/plan fixed-color-frame)
 
 (kind/test-last [(fn [pl] (and (nil? (:legend pl))
                                (zero? (get-in pl [:layout :legend-w]))
@@ -309,9 +309,9 @@ fixed-color-frame
 ;; fixed colors:
 
 (-> five-points
-    (sk/lay-point :x :y {:color "steelblue"}))
+    (pj/lay-point :x :y {:color "steelblue"}))
 
-(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
 
 ;; This raises a question: since `:color` also accepts column names
 ;; as strings (like `"species"`), how does the system decide whether
@@ -340,11 +340,11 @@ fixed-color-frame
 
 (def red-color-frame
   (-> five-points
-      (sk/lay-point :x :y {:color "red"})))
+      (pj/lay-point :x :y {:color "red"})))
 
 red-color-frame
 
-(let [pl (sk/plan red-color-frame)]
+(let [pl (pj/plan red-color-frame)]
   {:legend (:legend pl)
    :color (:color (first (:groups (first (:layers (first (:panels pl)))))))})
 
@@ -380,7 +380,7 @@ red-color-frame
 
 colored-frame
 
-(let [pl (sk/plan colored-frame)
+(let [pl (pj/plan colored-frame)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :group-labels (mapv :label (:groups layer))
@@ -404,11 +404,11 @@ colored-frame
   (-> {:x [1 2 3 4 5]
        :y [2 4 3 5 4]
        :val [10 20 30 40 50]}
-      (sk/lay-point :x :y {:color :val})))
+      (pj/lay-point :x :y {:color :val})))
 
 numeric-color-frame
 
-(let [pl (sk/plan numeric-color-frame)
+(let [pl (pj/plan numeric-color-frame)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :legend-type (:type (:legend pl))
@@ -441,11 +441,11 @@ numeric-color-frame
 
 (def study-continuous-frame
   (-> study-data
-      (sk/lay-line :day :score {:color :subject})))
+      (pj/lay-line :day :score {:color :subject})))
 
 study-continuous-frame
 
-(let [pl (sk/plan study-continuous-frame)
+(let [pl (pj/plan study-continuous-frame)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :legend-type (:type (:legend pl))})
@@ -457,12 +457,12 @@ study-continuous-frame
 
 (def study-categorical-frame
   (-> study-data
-      (sk/lay-line :day :score {:color :subject
+      (pj/lay-line :day :score {:color :subject
                                 :color-type :categorical})))
 
 study-categorical-frame
 
-(let [pl (sk/plan study-categorical-frame)
+(let [pl (pj/plan study-categorical-frame)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :legend-entries (count (:entries (:legend pl)))})
@@ -478,12 +478,12 @@ study-categorical-frame
 (-> {:subject [1 1 1 2 2 2 3 3 3]
      :day     [1 2 3 1 2 3 1 2 3]
      :score   [5 7 6 3 4 5 8 9 7]}
-    (sk/lay-line :day :score {:color :subject
+    (pj/lay-line :day :score {:color :subject
                               :color-type :categorical})
-    sk/lay-point
-    (sk/options {:title "Scores by Subject (categorical override)"}))
+    pj/lay-point
+    (pj/options {:title "Scores by Subject (categorical override)"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (pos? (:lines s))
                                 (pos? (:points s)))))])
 
@@ -500,11 +500,11 @@ study-categorical-frame
 
 (def explicit-group-frame
   (-> grouped-data
-      (sk/lay-point :x :y {:group :g})))
+      (pj/lay-point :x :y {:group :g})))
 
 explicit-group-frame
 
-(let [pl (sk/plan explicit-group-frame)
+(let [pl (pj/plan explicit-group-frame)
       layer (first (:layers (first (:panels pl))))]
   {:group-count (count (:groups layer))
    :has-legend? (some? (:legend pl))})
@@ -519,28 +519,28 @@ explicit-group-frame
 ;; ### What grouping affects
 ;;
 ;; Grouping determines how statistical transformations operate.
-;; Without grouping, `(sk/lay-smooth {:stat :linear-model})` (linear model) fits one regression line through
+;; Without grouping, `(pj/lay-smooth {:stat :linear-model})` (linear model) fits one regression line through
 ;; all the data. With grouping, it fits one line per group.
 
 ;; One regression line -- no grouping:
 
 (-> grouped-data
-    (sk/frame :x :y)
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/frame :x :y)
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 6 (:points s))
                                 (= 1 (:lines s)))))])
 
 ;; Two regression lines -- grouped by color:
 
 (-> grouped-data
-    (sk/frame :x :y {:color :g})
-    sk/lay-point
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/frame :x :y {:color :g})
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 6 (:points s))
                                 (= 2 (:lines s)))))])
 
@@ -550,7 +550,7 @@ explicit-group-frame
 
 ;; ## Layer Type
 ;;
-;; When you use `sk/frame` without an explicit `sk/lay-*` call,
+;; When you use `pj/frame` without an explicit `pj/lay-*` call,
 ;; Plotje infers the **layer type** -- a mark + stat bundle --
 ;; from the column types of the referenced columns. Internally,
 ;; `infer-method` in `resolve.clj` applies these rules.
@@ -576,25 +576,25 @@ explicit-group-frame
 ;; Fallback pairs include temporal x + categorical y, categorical x +
 ;; categorical y, and temporal x + temporal y. These are rarer in
 ;; practice, and giving them a dedicated inference is deferred. You
-;; can always override with an explicit `sk/lay-*` call; the
+;; can always override with an explicit `pj/lay-*` call; the
 ;; inferred layer type is only a default.
 ;;
-;; When you use `sk/lay-point`, `sk/lay-histogram`, etc., the layer
+;; When you use `pj/lay-point`, `pj/lay-histogram`, etc., the layer
 ;; type's stat takes precedence -- column-type inference is bypassed.
 ;;
 ;; A single numerical column produces a histogram:
 
 (def hist-frame
   (-> five-points
-      (sk/frame :x)))
+      (pj/frame :x)))
 
 hist-frame
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan hist-frame)
+(pj/plan hist-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :bar (:mark layer))))])
@@ -608,15 +608,15 @@ hist-frame
 (def temporal-hist-frame
   (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
               #inst "2024-04-01" #inst "2024-05-01"]}
-      (sk/frame :date)))
+      (pj/frame :date)))
 
 temporal-hist-frame
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan temporal-hist-frame)
+(pj/plan temporal-hist-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :bar (:mark layer))))])
@@ -625,15 +625,15 @@ temporal-hist-frame
 
 (def count-frame
   (-> animals
-      (sk/frame :animal)))
+      (pj/frame :animal)))
 
 count-frame
 
-(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan count-frame)
+(pj/plan count-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :rect (:mark layer))))])
@@ -645,15 +645,15 @@ count-frame
 ;; `scatter-frame` is such a frame):
 
 (def num-num-frame
-  (-> five-points (sk/frame :x :y)))
+  (-> five-points (pj/frame :x :y)))
 
 num-num-frame
 
-(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan num-num-frame)
+(pj/plan num-num-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :point (:mark layer))))])
@@ -664,15 +664,15 @@ num-num-frame
 (def ts-line-frame
   (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"]
        :val  [10 25 18]}
-      (sk/frame :date :val)))
+      (pj/frame :date :val)))
 
 ts-line-frame
 
-(kind/test-last [(fn [v] (= 1 (:lines (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 1 (:lines (pj/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan ts-line-frame)
+(pj/plan ts-line-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (= :line (:mark layer))))])
@@ -683,15 +683,15 @@ ts-line-frame
 (def boxplot-frame
   (-> {:species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]
        :val     [8  10  12  18  20  22  14  15  17]}
-      (sk/frame :species :val)))
+      (pj/frame :species :val)))
 
 boxplot-frame
 
-(kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:lines (pj/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan boxplot-frame)
+(pj/plan boxplot-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (and (= :boxplot (:mark layer))
@@ -703,15 +703,15 @@ boxplot-frame
 (def horizontal-boxplot-frame
   (-> {:val     [8  10  12  18  20  22  14  15  17]
        :species ["a" "a" "a" "b" "b" "b" "c" "c" "c"]}
-      (sk/frame :val :species)))
+      (pj/frame :val :species)))
 
 horizontal-boxplot-frame
 
-(kind/test-last [(fn [v] (pos? (:lines (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:lines (pj/svg-summary v))))])
 
 ;; The plan shows the inferred layer type:
 
-(sk/plan horizontal-boxplot-frame)
+(pj/plan horizontal-boxplot-frame)
 
 (kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
                             (and (= :boxplot (:mark layer))
@@ -725,7 +725,7 @@ horizontal-boxplot-frame
 
 scatter-frame
 
-(let [pl (sk/plan scatter-frame)
+(let [pl (pj/plan scatter-frame)
       p (first (:panels pl))]
   {:x-domain (:x-domain p)
    :data-range [1.0 5.0]
@@ -743,7 +743,7 @@ scatter-frame
 
 bar-frame
 
-(let [pl (sk/plan bar-frame)
+(let [pl (pj/plan bar-frame)
       p (first (:panels pl))]
   {:y-domain (:y-domain p)})
 
@@ -754,11 +754,11 @@ bar-frame
 (def fill-frame
   (-> {:x ["a" "a" "b" "b"]
        :g ["m" "n" "m" "n"]}
-      (sk/lay-bar :x {:position :fill :color :g})))
+      (pj/lay-bar :x {:position :fill :color :g})))
 
 fill-frame
 
-(:y-domain (first (:panels (sk/plan fill-frame))))
+(:y-domain (first (:panels (pj/plan fill-frame))))
 
 (kind/test-last [(fn [d] (and (== 0.0 (first d))
                               (== 1.0 (second d))))])
@@ -785,7 +785,7 @@ fill-frame
 
 scatter-frame
 
-(let [pl (sk/plan scatter-frame)
+(let [pl (pj/plan scatter-frame)
       p (first (:panels pl))]
   {:x-tick-values (:values (:x-ticks p))
    :x-tick-labels (:labels (:x-ticks p))})
@@ -802,12 +802,12 @@ scatter-frame
 (def log-scale-frame
   (-> {:x [0.1 1.0 10.0 100.0 1000.0]
        :y [5 10 15 20 25]}
-      (sk/lay-point :x :y)
-      (sk/scale :x :log)))
+      (pj/lay-point :x :y)
+      (pj/scale :x :log)))
 
 log-scale-frame
 
-(let [pl (sk/plan log-scale-frame)
+(let [pl (pj/plan log-scale-frame)
       p (first (:panels pl))]
   {:tick-values (:values (:x-ticks p))
    :tick-labels (:labels (:x-ticks p))})
@@ -823,7 +823,7 @@ log-scale-frame
 
 bar-frame
 
-(let [pl (sk/plan bar-frame)
+(let [pl (pj/plan bar-frame)
       p (first (:panels pl))]
   (:values (:x-ticks p)))
 
@@ -836,11 +836,11 @@ bar-frame
 
 (def iris-label-frame
   (-> (rdatasets/datasets-iris)
-      (sk/lay-point :sepal-length :sepal-width)))
+      (pj/lay-point :sepal-length :sepal-width)))
 
 iris-label-frame
 
-(let [pl (sk/plan iris-label-frame)]
+(let [pl (pj/plan iris-label-frame)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -851,11 +851,11 @@ iris-label-frame
 ;; The system omits the y-label since it would repeat the column name:
 
 (def x-only-frame
-  (-> five-points (sk/frame :x)))
+  (-> five-points (pj/frame :x)))
 
 x-only-frame
 
-(let [pl (sk/plan x-only-frame)]
+(let [pl (pj/plan x-only-frame)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -866,12 +866,12 @@ x-only-frame
 
 (def explicit-label-frame
   (-> five-points
-      (sk/lay-point :x :y)
-      (sk/options {:x-label "Length (cm)" :y-label "Width (cm)"})))
+      (pj/lay-point :x :y)
+      (pj/options {:x-label "Length (cm)" :y-label "Width (cm)"})))
 
 explicit-label-frame
 
-(let [pl (sk/plan explicit-label-frame)]
+(let [pl (pj/plan explicit-label-frame)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -888,7 +888,7 @@ explicit-label-frame
 
 colored-frame
 
-(:legend (sk/plan colored-frame))
+(:legend (pj/plan colored-frame))
 
 (kind/test-last [(fn [leg] (and (= :g (:title leg))
                                 (= 2 (count (:entries leg)))))])
@@ -899,7 +899,7 @@ colored-frame
 
 scatter-frame
 
-(:legend (sk/plan scatter-frame))
+(:legend (pj/plan scatter-frame))
 
 (kind/test-last [nil?])
 
@@ -907,7 +907,7 @@ scatter-frame
 
 fixed-color-frame
 
-(:legend (sk/plan fixed-color-frame))
+(:legend (pj/plan fixed-color-frame))
 
 (kind/test-last [nil?])
 
@@ -915,11 +915,11 @@ fixed-color-frame
 
 (def continuous-color-frame
   (-> {:x [1 2 3] :y [4 5 6] :val [10 20 30]}
-      (sk/lay-point :x :y {:color :val})))
+      (pj/lay-point :x :y {:color :val})))
 
 continuous-color-frame
 
-(:legend (sk/plan continuous-color-frame))
+(:legend (pj/plan continuous-color-frame))
 
 (kind/test-last [(fn [leg] (and (= :continuous (:type leg))
                                 (= 20 (count (:stops leg)))))])
@@ -932,11 +932,11 @@ continuous-color-frame
 
 (def size-legend-frame
   (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :s [10 20 30 40 50]}
-      (sk/lay-point :x :y {:size :s})))
+      (pj/lay-point :x :y {:size :s})))
 
 size-legend-frame
 
-(:size-legend (sk/plan size-legend-frame))
+(:size-legend (pj/plan size-legend-frame))
 
 (kind/test-last [(fn [leg] (and (= :size (:type leg))
                                 (= :s (:title leg))
@@ -946,7 +946,7 @@ size-legend-frame
 
 scatter-frame
 
-(:size-legend (sk/plan scatter-frame))
+(:size-legend (pj/plan scatter-frame))
 
 (kind/test-last [nil?])
 
@@ -959,11 +959,11 @@ scatter-frame
 
 (def alpha-legend-frame
   (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :a [0.1 0.3 0.5 0.7 0.9]}
-      (sk/lay-point :x :y {:alpha :a})))
+      (pj/lay-point :x :y {:alpha :a})))
 
 alpha-legend-frame
 
-(:alpha-legend (sk/plan alpha-legend-frame))
+(:alpha-legend (pj/plan alpha-legend-frame))
 
 (kind/test-last [(fn [leg] (and (= :alpha (:type leg))
                                 (= :a (:title leg))
@@ -973,7 +973,7 @@ alpha-legend-frame
 
 scatter-frame
 
-(:alpha-legend (sk/plan scatter-frame))
+(:alpha-legend (pj/plan scatter-frame))
 
 (kind/test-last [nil?])
 
@@ -991,13 +991,13 @@ scatter-frame
   (-> {:x [1 2 3 4 5 6]
        :y [3 5 4 7 6 8]
        :g ["a" "a" "a" "b" "b" "b"]}
-      (sk/lay-point :x :y {:color :g})
-      (sk/options {:title "My Plot"})))
+      (pj/lay-point :x :y {:color :g})
+      (pj/options {:title "My Plot"})))
 
 full-layout-frame
 
-(let [bare (sk/plan scatter-frame)
-      full (sk/plan full-layout-frame)]
+(let [bare (pj/plan scatter-frame)
+      full (pj/plan full-layout-frame)]
   {:bare-title-pad (get-in bare [:layout :title-pad])
    :full-title-pad (get-in full [:layout :title-pad])
    :bare-legend-w (get-in bare [:layout :legend-w])
@@ -1019,7 +1019,7 @@ full-layout-frame
 
 scatter-frame
 
-(:layout-type (sk/plan scatter-frame))
+(:layout-type (pj/plan scatter-frame))
 
 (kind/test-last [(fn [lt] (= :single lt))])
 
@@ -1031,21 +1031,21 @@ scatter-frame
 
 (def normal-frame
   (-> animals
-      (sk/lay-value-bar :animal :count)))
+      (pj/lay-value-bar :animal :count)))
 
 normal-frame
 
 (def flip-frame
   (-> animals
-      (sk/lay-value-bar :animal :count)
-      (sk/coord :flip)))
+      (pj/lay-value-bar :animal :count)
+      (pj/coord :flip)))
 
 flip-frame
 
-(kind/test-last [(fn [v] (= 4 (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
 
-(let [np (first (:panels (sk/plan normal-frame)))
-      fp (first (:panels (sk/plan flip-frame)))]
+(let [np (first (:panels (pj/plan normal-frame)))
+      fp (first (:panels (pj/plan flip-frame)))]
   {:normal {:x-categorical? (:categorical? (:x-ticks np))
             :y-categorical? (:categorical? (:y-ticks np))}
    :flipped {:x-categorical? (:categorical? (:x-ticks fp))
@@ -1063,12 +1063,12 @@ flip-frame
 
 (def flipped-labels-frame
   (-> five-points
-      (sk/lay-point :x :y)
-      (sk/coord :flip)))
+      (pj/lay-point :x :y)
+      (pj/coord :flip)))
 
 flipped-labels-frame
 
-(let [pl (sk/plan flipped-labels-frame)]
+(let [pl (pj/plan flipped-labels-frame)]
   {:x-label (:x-label pl)
    :y-label (:y-label pl)})
 
@@ -1088,19 +1088,19 @@ flipped-labels-frame
 
 (def multi-frame
   (-> five-points
-      (sk/frame :x :y)
-      sk/lay-point
-      (sk/lay-smooth {:stat :linear-model})))
+      (pj/frame :x :y)
+      pj/lay-point
+      (pj/lay-smooth {:stat :linear-model})))
 
 multi-frame
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 5 (:points s))
                                 (= 1 (:lines s)))))])
 
 ;; And the plan:
 
-(sk/plan multi-frame)
+(pj/plan multi-frame)
 
 (kind/test-last [(fn [pl] (let [p (first (:panels pl))]
                             (= 2 (count (:layers p)))))])
@@ -1168,23 +1168,23 @@ graph TD
 ;;
 ;; | What is inferred | Default | Override |
 ;; |:-----------------|:--------|:---------|
-;; | Column selection | one column fills x; two fill x, y; three fill x, y, color | explicit column args in `sk/frame` or `sk/lay-*` |
+;; | Column selection | one column fills x; two fill x, y; three fill x, y, color | explicit column args in `pj/frame` or `pj/lay-*` |
 ;; | Column type | dtype inspection | `:x-type`, `:y-type`, `:color-type` in frame or layer options |
 ;; | Aesthetic classification | keyword = column, string = color/column | explicit `:color` keyword vs hex string |
 ;; | Grouping | categorical color column | `:group` aesthetic |
-;; | Layer type (mark + stat) | column types (see table above) | `sk/lay-point`, `sk/lay-histogram`, etc. |
-;; | Domain extent | data range + 5% padding | `(sk/scale sk :x {:domain [0 10]})` |
-;; | Domain zero-anchor | bar/stacked charts include zero | `(sk/scale sk :y {:domain [5 20]})` |
-;; | Fill domain | `[0.0, 1.0]` for fill position | `(sk/scale sk :y {:domain [0 2]})` |
+;; | Layer type (mark + stat) | column types (see table above) | `pj/lay-point`, `pj/lay-histogram`, etc. |
+;; | Domain extent | data range + 5% padding | `(pj/scale sk :x {:domain [0 10]})` |
+;; | Domain zero-anchor | bar/stacked charts include zero | `(pj/scale sk :y {:domain [5 20]})` |
+;; | Fill domain | `[0.0, 1.0]` for fill position | `(pj/scale sk :y {:domain [0 2]})` |
 ;; | Tick values | round intervals (linear), powers of 10 (log) | wadogo scale configuration |
 ;; | Tick labels | number formatting, calendar formatting | wadogo label formatting |
-;; | Axis labels | column name, with underscores replaced by spaces | `(sk/options {:x-label "Custom"})` |
+;; | Axis labels | column name, with underscores replaced by spaces | `(pj/options {:x-label "Custom"})` |
 ;; | Color legend | categorical = discrete, numerical = continuous, none = no legend | `:color` mapping controls presence |
 ;; | Size legend | 5 graduated circles when `:size` maps to numerical column | `:size` mapping controls presence |
 ;; | Alpha legend | 5 graduated opacity squares when `:alpha` maps to numerical column | `:alpha` mapping controls presence |
 ;; | Layout padding | adjusts for title, labels, legend | `:width`, `:height` in options |
-;; | Layout type | single, facet-grid, multi-variable | `sk/facet`, multiple x-y pairs |
-;; | Coordinate system | `:cartesian` | `(sk/coord :flip)`, `(sk/coord :polar)` |
+;; | Layout type | single, facet-grid, multi-variable | `pj/facet`, multiple x-y pairs |
+;; | Coordinate system | `:cartesian` | `(pj/coord :flip)`, `(pj/coord :polar)` |
 ;;
 ;; The plan captures the result of all inference. When in doubt,
 ;; look at the plan.

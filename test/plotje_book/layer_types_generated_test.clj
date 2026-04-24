@@ -2,7 +2,7 @@
  plotje-book.layer-types-generated-test
  (:require
   [scicloj.kindly.v4.kind :as kind]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [scicloj.plotje.layer-type :as layer-type]
   [clojure.string :as str]
   [clojure.test :refer [deftest is]]))
@@ -64,7 +64,7 @@
    (for
     [mk (distinct-in-order :mark)]
     {"Mark" (kind/code (pr-str mk)),
-     "Shape" (sk/mark-doc mk),
+     "Shape" (pj/mark-doc mk),
      "Used by" (used-by :mark mk)})}))
 
 
@@ -79,7 +79,7 @@
    (for
     [st (distinct-in-order :stat)]
     {"Stat" (kind/code (pr-str st)),
-     "What it computes" (sk/stat-doc st),
+     "What it computes" (pj/stat-doc st),
      "Used by" (used-by :stat st)})}))
 
 
@@ -94,7 +94,7 @@
    (for
     [pos [:identity :dodge :stack :fill]]
     {"Position" (kind/code (pr-str pos)),
-     "What it does" (sk/position-doc pos),
+     "What it does" (pj/position-doc pos),
      "Used by" (used-by :position pos)})}))
 
 

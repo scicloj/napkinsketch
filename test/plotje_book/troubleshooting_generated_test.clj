@@ -4,7 +4,7 @@
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.kindly.v4.kind :as kind]
   [tablecloth.api :as tc]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [clojure.test :refer [deftest is]]))
 
 
@@ -16,57 +16,57 @@
 
 (def
  v6_l51
- (-> (rdatasets/datasets-iris) (sk/frame :species :sepal-width)))
+ (-> (rdatasets/datasets-iris) (pj/frame :species :sepal-width)))
 
 
 (deftest
  t7_l54
- (is ((fn [v] (pos? (:lines (sk/svg-summary v)))) v6_l51)))
+ (is ((fn [v] (pos? (:lines (pj/svg-summary v)))) v6_l51)))
 
 
 (def
  v9_l58
- (-> (rdatasets/datasets-iris) (sk/lay-point :species :sepal-width)))
+ (-> (rdatasets/datasets-iris) (pj/lay-point :species :sepal-width)))
 
 
 (deftest
  t10_l61
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v9_l58)))
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v9_l58)))
 
 
 (def
  v12_l102
  (->
   {:hour [9 10 11 12], :count [5 8 12 7]}
-  (sk/lay-value-bar :hour :count {:x-type :categorical})))
+  (pj/lay-value-bar :hour :count {:x-type :categorical})))
 
 
 (deftest
  t13_l105
- (is ((fn [v] (= 4 (:polygons (sk/svg-summary v)))) v12_l102)))
+ (is ((fn [v] (= 4 (:polygons (pj/svg-summary v)))) v12_l102)))
 
 
 (def
  v15_l128
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/lay-point :carat :price {:alpha 0.1})
-  (sk/scale :y :log)))
+  (pj/lay-point :carat :price {:alpha 0.1})
+  (pj/scale :y :log)))
 
 
 (deftest
  t16_l132
- (is ((fn [v] (pos? (:points (sk/svg-summary v)))) v15_l128)))
+ (is ((fn [v] (pos? (:points (pj/svg-summary v)))) v15_l128)))
 
 
 (def
  v18_l150
- (-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-length)))
+ (-> (rdatasets/datasets-iris) (pj/lay-histogram :sepal-length)))
 
 
 (deftest
  t19_l153
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v18_l150)))
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v18_l150)))
 
 
 (def
@@ -74,9 +74,9 @@
  (try
   (->
    (rdatasets/datasets-iris)
-   (sk/lay-bar :species)
-   (sk/scale :x :log)
-   sk/plan)
+   (pj/lay-bar :species)
+   (pj/scale :x :log)
+   pj/plan)
   (catch Exception e (.getMessage e))))
 
 
@@ -91,48 +91,48 @@
  v24_l185
  (->
   (rdatasets/datasets-chickwts)
-  (sk/frame :feed)
-  sk/lay-bar
-  (sk/coord :polar)))
+  (pj/frame :feed)
+  pj/lay-bar
+  (pj/coord :polar)))
 
 
 (deftest
  t25_l190
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v24_l185)))
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v24_l185)))
 
 
 (def
  v27_l208
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width {:color :species})
-  (sk/options {:tooltip true})))
+  (pj/lay-point :sepal-length :sepal-width {:color :species})
+  (pj/options {:tooltip true})))
 
 
 (deftest
  t28_l212
- (is ((fn [v] (= 150 (:points (sk/svg-summary v)))) v27_l208)))
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v27_l208)))
 
 
 (def
  v30_l228
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width)
-  (sk/facet :species)))
+  (pj/lay-point :sepal-length :sepal-width)
+  (pj/facet :species)))
 
 
 (deftest
  t31_l232
- (is ((fn [v] (= 3 (:panels (sk/svg-summary v)))) v30_l228)))
+ (is ((fn [v] (= 3 (:panels (pj/svg-summary v)))) v30_l228)))
 
 
 (def
  v33_l250
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width)
-  (sk/lay-text
+  (pj/lay-point :sepal-length :sepal-width)
+  (pj/lay-text
    {:data
     (->
      (tc/dataset {:sepal-length [6.5], :species ["mean"]})
@@ -144,20 +144,20 @@
 
 (deftest
  t34_l257
- (is ((fn [v] (some #{"mean"} (:texts (sk/svg-summary v)))) v33_l250)))
+ (is ((fn [v] (some #{"mean"} (:texts (pj/svg-summary v)))) v33_l250)))
 
 
 (def
  v36_l274
- (def template (-> (sk/frame nil {:x :x, :y :y}) sk/lay-point)))
+ (def template (-> (pj/frame nil {:x :x, :y :y}) pj/lay-point)))
 
 
-(def v37_l278 (-> template (sk/with-data {:x [1 2 3], :y [4 5 6]})))
+(def v37_l278 (-> template (pj/with-data {:x [1 2 3], :y [4 5 6]})))
 
 
 (deftest
  t38_l281
- (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v37_l278)))
+ (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v37_l278)))
 
 
 (def
@@ -168,13 +168,13 @@
    {:category "C", :value 25}]
   (tc/dataset)
   (tc/order-by [:value] :asc)
-  (sk/lay-value-bar :category :value)
-  (sk/coord :flip)))
+  (pj/lay-value-bar :category :value)
+  (pj/coord :flip)))
 
 
 (deftest
  t41_l306
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v40_l298)))
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v40_l298)))
 
 
 (def
@@ -183,9 +183,9 @@
   {:x (concat (range 5) (range 5)),
    :y [1 2 3 4 5 2 2 2 3 3],
    :group (concat (repeat 5 "A") (repeat 5 "B"))}
-  (sk/lay-area :x :y {:position :stack, :color :group})))
+  (pj/lay-area :x :y {:position :stack, :color :group})))
 
 
 (deftest
  t44_l333
- (is ((fn [v] (pos? (:polygons (sk/svg-summary v)))) v43_l328)))
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v43_l328)))

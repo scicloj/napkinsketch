@@ -101,7 +101,7 @@
      :weights   (repeat n 1)  (equal share)
 
    Rectangle arithmetic is in doubles; callers that need integer
-   pixels should coerce at the render boundary (see sk/plot's
+   pixels should coerce at the render boundary (see pj/plot's
    width/height coercion)."
   ([frame rect]
    (compute-layout frame rect []))
@@ -334,8 +334,8 @@
             (assoc :layer-type layer-type-key))
         (let [registered (sort (keys (layer-type/registered)))]
           (throw (ex-info (str "Unknown layer type: " layer-type-key
-                               ". Use sk/lay-* with a registered layer type, or "
-                               "(sk/layer-type-lookup ...) to inspect. Registered layer types: "
+                               ". Use pj/lay-* with a registered layer type, or "
+                               "(pj/layer-type-lookup ...) to inspect. Registered layer types: "
                                (vec registered))
                           {:layer-type layer-type-key :registered registered})))))
 
@@ -403,11 +403,11 @@
   [data facet-col facet-row]
   (when (and facet-col (sequential? facet-col))
     (throw (ex-info (str "Facet column must be a single keyword or string, got vector: " (pr-str facet-col)
-                         ". For 2D grids use (sk/facet-grid sk col-col row-col).")
+                         ". For 2D grids use (pj/facet-grid sk col-col row-col).")
                     {:facet-col facet-col})))
   (when (and facet-row (sequential? facet-row))
     (throw (ex-info (str "Facet row must be a single keyword or string, got vector: " (pr-str facet-row)
-                         ". For 2D grids use (sk/facet-grid sk col-col row-col).")
+                         ". For 2D grids use (pj/facet-grid sk col-col row-col).")
                     {:facet-row facet-row})))
   (let [nc? (resolve/column-ref? facet-col)
         nr? (resolve/column-ref? facet-row)

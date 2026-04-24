@@ -3,7 +3,7 @@
  (:require
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
-  [scicloj.plotje.api :as sk]
+  [scicloj.plotje.api :as pj]
   [fastmath.random :as rng]
   [clojure.test :refer [deftest is]]))
 
@@ -12,8 +12,8 @@
  v3_l21
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width)
-  (sk/lay-smooth {:stat :linear-model})))
+  (pj/lay-point :sepal-length :sepal-width)
+  (pj/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -22,7 +22,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 1 (:lines s)))))
    v3_l21)))
 
@@ -31,9 +31,9 @@
  v6_l33
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :petal-length :petal-width {:color :species})
-  sk/lay-point
-  (sk/lay-smooth {:stat :linear-model})))
+  (pj/frame :petal-length :petal-width {:color :species})
+  pj/lay-point
+  (pj/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -42,7 +42,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
    v6_l33)))
 
@@ -51,9 +51,9 @@
  v9_l46
  (->
   (rdatasets/datasets-iris)
-  (sk/frame :sepal-length :sepal-width {:color :species})
-  sk/lay-point
-  (sk/lay-smooth {:stat :linear-model, :confidence-band true})))
+  (pj/frame :sepal-length :sepal-width {:color :species})
+  pj/lay-point
+  (pj/lay-smooth {:stat :linear-model, :confidence-band true})))
 
 
 (deftest
@@ -62,7 +62,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)) (= 3 (:polygons s)))))
    v9_l46)))
 
@@ -71,9 +71,9 @@
  v12_l59
  (->
   (rdatasets/reshape2-tips)
-  (sk/frame :total-bill :tip {:color :smoker})
-  sk/lay-point
-  (sk/lay-smooth {:stat :linear-model})))
+  (pj/frame :total-bill :tip {:color :smoker})
+  pj/lay-point
+  (pj/lay-smooth {:stat :linear-model})))
 
 
 (deftest
@@ -82,7 +82,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 244 (:points s)) (= 2 (:lines s)))))
    v12_l59)))
 
@@ -101,8 +101,8 @@
        (Math/sin (* p1__96063# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
-  (sk/lay-point :x :y)
-  (sk/lay-smooth {:bandwidth 0.2})))
+  (pj/lay-point :x :y)
+  (pj/lay-smooth {:bandwidth 0.2})))
 
 
 (deftest
@@ -111,7 +111,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 50 (:points s)) (= 1 (:lines s)))))
    v15_l72)))
 
@@ -120,7 +120,7 @@
  v18_l89
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-tile :sepal-length :sepal-width)))
+  (pj/lay-tile :sepal-length :sepal-width)))
 
 
 (deftest
@@ -129,7 +129,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:visible-tiles s)))))
    v18_l89)))
 
@@ -145,7 +145,7 @@
     :value (repeatedly 25 (fn* [] (rng/irandom r 100)))})))
 
 
-(def v22_l106 (-> grid-data (sk/lay-tile :x :y {:fill :value})))
+(def v22_l106 (-> grid-data (pj/lay-tile :x :y {:fill :value})))
 
 
 (deftest
@@ -154,7 +154,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:visible-tiles s)))))
    v22_l106)))
 
@@ -163,7 +163,7 @@
  v25_l117
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-density-2d :sepal-length :sepal-width)))
+  (pj/lay-density-2d :sepal-length :sepal-width)))
 
 
 (deftest
@@ -172,7 +172,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:visible-tiles s)))))
    v25_l117)))
 
@@ -181,8 +181,8 @@
  v28_l128
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-density-2d :sepal-length :sepal-width)
-  (sk/lay-point {:alpha 0.5})))
+  (pj/lay-density-2d :sepal-length :sepal-width)
+  (pj/lay-point {:alpha 0.5})))
 
 
 (deftest
@@ -191,7 +191,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:visible-tiles s)))))
    v28_l128)))
 
@@ -200,7 +200,7 @@
  v31_l140
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-contour :sepal-length :sepal-width)))
+  (pj/lay-contour :sepal-length :sepal-width)))
 
 
 (deftest
@@ -209,7 +209,7 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:lines s)))))
    v31_l140)))
 
@@ -218,8 +218,8 @@
  v34_l151
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width {:alpha 0.3})
-  (sk/lay-contour {:levels 8})))
+  (pj/lay-point :sepal-length :sepal-width {:alpha 0.3})
+  (pj/lay-contour {:levels 8})))
 
 
 (deftest
@@ -228,6 +228,6 @@
   ((fn
     [v]
     (let
-     [s (sk/svg-summary v)]
+     [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (pos? (:lines s)))))
    v34_l151)))

@@ -13,7 +13,7 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; Fastmath -- random number generation
    [fastmath.random :as rng]
    ;; Java-time -- idiomatic date/time construction
@@ -32,9 +32,9 @@
    :y [3 nil 5 6 nil 8 9]})
 
 (-> with-missing
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 3 (:points s)))))])
 
@@ -48,9 +48,9 @@
    :y [10.0 Double/POSITIVE_INFINITY 30.0 Double/NEGATIVE_INFINITY 50.0]})
 
 (-> with-infinity
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 3 (:points s))
                                 (not (clojure.string/includes? (str v) "NaN")))))])
@@ -59,9 +59,9 @@
 ;; A lone data point should render without errors.
 
 (-> {:x [3] :y [7]}
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 1 (:points s)))))])
 
@@ -71,10 +71,10 @@
 ;; the line is omitted and the points still render.
 
 (-> {:x [1 10] :y [5 50]}
-    (sk/lay-point :x :y)
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/lay-point :x :y)
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 2 (:points s))
                                 (zero? (:lines s)))))])
 
@@ -83,10 +83,10 @@
 ;; With 3 points, the regression line appears.
 
 (-> {:x [1 5 10] :y [5 25 50]}
-    (sk/lay-point :x :y)
-    (sk/lay-smooth {:stat :linear-model}))
+    (pj/lay-point :x :y)
+    (pj/lay-smooth {:stat :linear-model}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:points s))
                                 (= 1 (:lines s)))))])
 
@@ -95,9 +95,9 @@
 ;; All x values are the same -- the plot should still render.
 
 (-> {:x [5 5 5 5 5] :y [1 2 3 4 5]}
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
@@ -106,9 +106,9 @@
 ;; All y values are the same.
 
 (-> {:x [1 2 3 4 5] :y [3 3 3 3 3]}
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
@@ -117,27 +117,27 @@
 ;; Data spanning positive and negative ranges.
 
 (-> {:x [-5 -3 0 3 5] :y [-2 4 0 -4 2]}
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
 ;; ## Very Large Values
 
 (-> {:x [1e6 2e6 3e6] :y [1e9 2e9 3e9]}
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 3 (:points s)))))])
 
 ;; ## Very Small Values
 
 (-> {:x [0.001 0.002 0.003] :y [0.0001 0.0002 0.0003]}
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 3 (:points s)))))])
 
@@ -152,9 +152,9 @@
      :group (repeatedly 1000 #([:a :b :c] (rng/irandom r 3)))}))
 
 (-> large-data
-    (sk/lay-point :x :y {:color :group}))
+    (pj/lay-point :x :y {:color :group}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 1000 (:points s)))))])
 
@@ -165,9 +165,9 @@
 (-> (let [r (rng/rng :jdk 99)]
       {:category (map #(keyword (str "cat-" %)) (range 12))
        :value (repeatedly 12 #(+ 10 (rng/irandom r 90)))})
-    (sk/lay-value-bar :category :value))
+    (pj/lay-value-bar :category :value))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 12 (:polygons s)))))])
 
@@ -177,10 +177,10 @@
 
 (-> (rdatasets/datasets-iris)
     (tc/map-columns :sepal-ratio [:sepal-length :sepal-width] /)
-    (sk/lay-point :sepal-length :sepal-ratio {:color :species})
-    (sk/options {:title "Sepal Length/Width Ratio"}))
+    (pj/lay-point :sepal-length :sepal-ratio {:color :species})
+    (pj/options {:title "Sepal Length/Width Ratio"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
@@ -190,11 +190,11 @@
 
 (-> (rdatasets/datasets-iris)
     (tc/select-rows #(= "setosa" (% :species)))
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-smooth {:stat :linear-model})
-    (sk/options {:title "Setosa Only"}))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/lay-smooth {:stat :linear-model})
+    (pj/options {:title "Setosa Only"}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 50 (:points s))
                                 (= 1 (:lines s)))))])
 
@@ -206,9 +206,9 @@
 
 (-> {:category ["a" "b" "c"]
      :count [10 20 15]}
-    (sk/lay-value-bar :category :count {:position :stack}))
+    (pj/lay-value-bar :category :count {:position :stack}))
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; ### Dodge -- missing category in one group
 
@@ -217,9 +217,9 @@
 
 (-> {:x ["a" "b" "a"]
      :g ["g1" "g1" "g2"]}
-    (sk/lay-bar :x {:color :g}))
+    (pj/lay-bar :x {:color :g}))
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; ### Fill -- zero count category
 
@@ -228,18 +228,18 @@
 
 (-> {:x ["a" "a" "b" "b" "b"]
      :g ["g1" "g2" "g1" "g1" "g1"]}
-    (sk/lay-bar :x {:position :fill :color :g}))
+    (pj/lay-bar :x {:position :fill :color :g}))
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; ### Nudge on scatter
 
 ;; Nudge-x on continuous data -- shifts points without error.
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:nudge-x 0.1 :nudge-y -0.05}))
+    (pj/lay-point :sepal-length :sepal-width {:nudge-x 0.1 :nudge-y -0.05}))
 
-(kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; ### Confidence ribbon -- small n
 
@@ -247,10 +247,10 @@
 ;; (minimum for lm -- linear model).
 
 (-> {:x [1 2 3] :y [2 4 5]}
-    (sk/lay-point :x :y)
-    (sk/lay-smooth {:stat :linear-model :confidence-band true}))
+    (pj/lay-point :x :y)
+    (pj/lay-smooth {:stat :linear-model :confidence-band true}))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:points s))
                                 (= 1 (:lines s)))))])
 
@@ -261,9 +261,9 @@
 (-> (let [r (rng/rng :jdk 55)]
       {:x (range 10)
        :y (repeatedly 10 #(rng/irandom r 20))})
-    (sk/lay-area :x :y {:position :stack}))
+    (pj/lay-area :x :y {:position :stack}))
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; ## Log Scale Edge Cases
 
@@ -271,11 +271,11 @@
 
 (-> {:x [1 10 100 1000 10000]
      :y [2 20 200 2000 20000]}
-    (sk/lay-point :x :y)
-    (sk/scale :x :log)
-    (sk/scale :y :log))
+    (pj/lay-point :x :y)
+    (pj/scale :x :log)
+    (pj/scale :y :log))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 5 (:points s))
                                 (= 1 (:panels s)))))])
 
@@ -283,10 +283,10 @@
 
 (-> {:x [0.001 0.01 0.1 1 10 100]
      :y [1 2 3 4 5 6]}
-    (sk/lay-point :x :y)
-    (sk/scale :x :log))
+    (pj/lay-point :x :y)
+    (pj/scale :x :log))
 
-(kind/test-last [(fn [v] (= 6 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 6 (:points (pj/svg-summary v))))])
 
 ;; ### Log scale with non-positive values
 ;;
@@ -294,10 +294,10 @@
 ;; requires positive inputs. Here x includes 0 and -1:
 
 (-> {:x [0 -1 1 10 100] :y [1 2 3 4 5]}
-    (sk/lay-point :x :y)
-    (sk/scale :x :log))
+    (pj/lay-point :x :y)
+    (pj/scale :x :log))
 
-(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 3 (:points (pj/svg-summary v))))])
 
 ;; ## Continuous Color Edge Cases
 
@@ -307,19 +307,19 @@
 ;; should still render and not divide by zero.
 
 (-> {:x [1 2 3] :y [4 5 6] :c [5 5 5]}
-    (sk/lay-point :x :y {:color :c}))
+    (pj/lay-point :x :y {:color :c}))
 
-(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 3 (:points (pj/svg-summary v))))])
 
 ;; ### Diverging color with midpoint at zero
 
 (-> {:x (range 20)
      :y (map #(- % 10) (range 20))
      :val (map #(- % 10.0) (range 20))}
-    (sk/lay-point :x :y {:color :val})
-    (sk/options {:color-scale :diverging :color-midpoint 0}))
+    (pj/lay-point :x :y {:color :val})
+    (pj/options {:color-scale :diverging :color-midpoint 0}))
 
-(kind/test-last [(fn [v] (= 20 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 20 (:points (pj/svg-summary v))))])
 
 ;; ## Temporal Scale Edge Cases
 
@@ -328,9 +328,9 @@
 (-> {:date [(jt/local-date 2025 1 1)
             (jt/local-date 2025 1 2)]
      :val [10 20]}
-    (sk/lay-point :date :val))
+    (pj/lay-point :date :val))
 
-(kind/test-last [(fn [v] (= 2 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 2 (:points (pj/svg-summary v))))])
 
 ;; ### Sub-day precision (LocalDateTime spanning hours)
 ;;
@@ -341,10 +341,10 @@
             (dtype/const-reader (jt/local-date-time 2025 3 15 8 0) 24)
             (map #(* (long %) 15) (range 24)) :minutes)
      :value (map #(+ 18.0 (* 4.0 (Math/sin (* % 0.3)))) (range 24))}
-    (sk/lay-line :time :value)
-    sk/lay-point)
+    (pj/lay-line :time :value)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 24 (:points s))
                                 (= 1 (:lines s)))))])
 
@@ -358,10 +358,10 @@
             (dtype/const-reader (jt/instant 1750003200000) 12)
             (range 12) :hours)
      :temp (map #(+ 20.0 (* 5.0 (Math/sin (* % 0.5)))) (range 12))}
-    (sk/lay-line :time :temp)
-    sk/lay-point)
+    (pj/lay-line :time :temp)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 12 (:points s))
                                 (= 1 (:lines s))
                                 (some #(re-find #":\d\d" %) (:texts s)))))])
@@ -374,10 +374,10 @@
             (dtype/const-reader (jt/local-date 2020 1 1) 20)
             (map #(* (long %) 120) (range 20)) :days)
      :value (map #(+ 100 (* 50 (Math/sin (* % 0.4)))) (range 20))}
-    (sk/lay-line :date :value)
-    sk/lay-point)
+    (pj/lay-line :date :value)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 20 (:points s))
                                 (= 1 (:lines s)))))])
 
@@ -387,10 +387,10 @@
 
 (-> {:cat (map #(str "cat-" %) (range 12))
      :val (repeatedly 12 #(rand-int 100))}
-    (sk/lay-value-bar :cat :val)
-    (sk/coord :polar))
+    (pj/lay-value-bar :cat :val)
+    (pj/coord :polar))
 
-(kind/test-last [(fn [v] (pos? (:polygons (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; ### Log scale + coord flip combined
 ;;
@@ -399,15 +399,15 @@
 ;; reflect the flipped layout.
 
 (-> {:x [1 10 100 1000] :y [2 4 8 16]}
-    (sk/lay-point :x :y)
-    (sk/scale :x :log)
-    (sk/coord :flip))
+    (pj/lay-point :x :y)
+    (pj/scale :x :log)
+    (pj/coord :flip))
 
 (kind/test-last
  [(fn [v]
-    (let [plan (sk/plan v)
+    (let [plan (pj/plan v)
           panel (first (:panels plan))]
-      (and (= 4 (:points (sk/svg-summary v)))
+      (and (= 4 (:points (pj/svg-summary v)))
            (= :flip (:coord panel))
            ;; After flip: y-scale is original x-scale (log)
            (= {:type :log} (:y-scale panel))
@@ -417,36 +417,36 @@
 ;; ### Scale with explicit domain
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/scale :y {:domain [0 6]}))
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/scale :y {:domain [0 6]}))
 
 (kind/test-last
  [(fn [v]
-    (let [plan (sk/plan v)
+    (let [plan (pj/plan v)
           panel (first (:panels plan))]
       (= [0 6] (:y-domain panel))))])
 
 ;; ### Fixed aspect ratio with extreme domain ratio
 
 (-> {:x (range 100) :y (range 0 10 0.1)}
-    (sk/lay-point :x :y)
-    (sk/coord :fixed))
+    (pj/lay-point :x :y)
+    (pj/coord :fixed))
 
-(kind/test-last [(fn [v] (= 100 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 100 (:points (pj/svg-summary v))))])
 
 ;; ## Multi-Panel Edge Cases
 
 ;; ### Full grid -- cross plot
 ;;
-;; `sk/cross` produces a full NxN grid of panels. Column names
+;; `pj/cross` produces a full NxN grid of panels. Column names
 ;; appear as axis labels on each cell.
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame {:color :species})
-    (sk/frame (sk/cross [:sepal-length :sepal-width :petal-length]
+    (pj/frame {:color :species})
+    (pj/frame (pj/cross [:sepal-length :sepal-width :petal-length]
                         [:sepal-length :sepal-width :petal-length])))
 
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)
                                texts (:texts s)
                                col-label? #(re-find #"sepal|petal" %)]
                            (and (= 9 (:panels s))
@@ -459,8 +459,8 @@
 
 (try
   (-> {:x [1 2 3] :y [4 5 6]}
-      (sk/lay-point :nonexistent :y)
-      sk/plot)
+      (pj/lay-point :nonexistent :y)
+      pj/plot)
   (catch Exception e
     (ex-message e)))
 
@@ -470,8 +470,8 @@
 
 (try
   (-> {:x [1 2 3] :y [4 5 6]}
-      (sk/lay-point :x :y {:color :bogus})
-      sk/plot)
+      (pj/lay-point :x :y {:color :bogus})
+      pj/plot)
   (catch Exception e
     (ex-message e)))
 
@@ -481,9 +481,9 @@
 
 (try
   (-> {:x [1 2 3] :y [4 5 6]}
-      (sk/lay-line :x :y)
-      (sk/coord :polar)
-      sk/plot)
+      (pj/lay-line :x :y)
+      (pj/coord :polar)
+      pj/plot)
   (catch Exception e
     (ex-message e)))
 
@@ -493,9 +493,9 @@
 
 (try
   (-> {:x [1 2 3]}
-      (sk/frame :x)
-      (sk/lay {:mark :boxplot :stat :bin})
-      sk/plot)
+      (pj/frame :x)
+      (pj/lay {:mark :boxplot :stat :bin})
+      pj/plot)
   (catch Exception e
     (ex-message e)))
 
@@ -510,7 +510,7 @@
 
 (try
   (-> {:x [1 2 3] :y [4 5 6]}
-      (sk/lay-histogram :x :y))
+      (pj/lay-histogram :x :y))
   (catch clojure.lang.ExceptionInfo e
     (ex-message e)))
 

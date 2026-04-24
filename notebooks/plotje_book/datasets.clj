@@ -36,7 +36,7 @@
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
-   [scicloj.plotje.api :as sk]
+   [scicloj.plotje.api :as pj]
    ;; RDatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
@@ -49,10 +49,10 @@
      {:month "Feb" :temperature 7}
      {:month "Mar" :temperature 12}
      {:month "Apr" :temperature 16}]
-    (sk/lay-line :month :temperature)
-    sk/lay-point)
+    (pj/lay-line :month :temperature)
+    pj/lay-point)
 
-(kind/test-last [(fn [v] (= 4 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 4 (:points (pj/svg-summary v))))])
 
 ;; This is all you need for quick plots. The rest of this chapter
 ;; covers datasets, which become useful as your data grows.
@@ -203,16 +203,16 @@
 ;; Plain data:
 
 (-> {:x [1 2 3] :y [4 5 6]}
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 3 (:points (pj/svg-summary v))))])
 
 ;; Dataset:
 
 (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
-    (sk/lay-point :x :y))
+    (pj/lay-point :x :y))
 
-(kind/test-last [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+(kind/test-last [(fn [v] (= 3 (:points (pj/svg-summary v))))])
 
 ;; Both produce the same plot. Use whichever is more convenient for
 ;; your workflow.

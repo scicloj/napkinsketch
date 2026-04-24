@@ -269,7 +269,7 @@
 ;; ---- Configuration Precedence Chain ----
 ;;
 ;; Resolved with precedence (highest to lowest):
-;;   1. plot options (passed to sk/options, sk/plot, sk/plan, etc.)
+;;   1. plot options (passed to pj/options, pj/plot, pj/plan, etc.)
 ;;   2. binding *config* (thread-local override)
 ;;   3. set-config! (global mutable state)
 ;;   4. plotje.edn (project root or classpath)
@@ -361,7 +361,7 @@
 
 (def plot-option-docs
   "Documentation for plot-level option keys.
-   These are accepted by sk/options, sk/plan, and sk/plot but are
+   These are accepted by pj/options, pj/plan, and pj/plot but are
    inherently per-plot (text content or nested config override).
    Each entry maps a key to [category description]."
   {:title ["Content" "Plot title string"]
