@@ -1522,28 +1522,38 @@
                      [:width :height])]
     (update-opts sk deep-merge opts)))
 
+(defn- reject-composite-for-facet
+  "Throw if the input is a composite frame. Facet on composites would
+   cross the facet grid with the composite grid, which is deferred
+   (see dev-notes/facet-composite-deferral.md)."
+  [fr]
+  (when (and (frame? fr) (frame/composite? fr))
+    (throw (ex-info (str "sk/facet and sk/facet-grid are not yet supported on composite frames. "
+                         "The facet grid would cross the composite layout; see "
+                         "dev-notes/facet-composite-deferral.md. Flatten to a single leaf "
+                         "(or wait for Option C).")
+                    {:frame-kind :composite}))))
+
 (defn facet
   "Facet a frame by a column.
    Direction is :col (default, horizontal row) or :row (vertical column).
    Faceting is plot-level -- every panel is faceted the same way.
-   Faceting currently routes through the legacy sketch-based facet
-   machinery (see dev-notes/facet-composite-deferral.md), so composite
-   frames are not supported yet -- flatten to a single view first."
+   Composite frames are not supported yet (see
+   dev-notes/facet-composite-deferral.md)."
   ([sk col] (facet sk col :col))
   ([sk col direction]
-   (let [sk (ensure-sk sk)
-         k (case direction :col :facet-col :row :facet-row)]
-     (update sk :opts assoc k col))))
+   (reject-composite-for-facet sk)
+   (let [k (case direction :col :facet-col :row :facet-row)]
+     (update-opts sk assoc k col))))
 
 (defn facet-grid
   "Facet a frame by two columns (2D grid).
    Faceting is plot-level -- every panel is faceted the same way.
-   Faceting currently routes through the legacy sketch-based facet
-   machinery (see dev-notes/facet-composite-deferral.md), so composite
-   frames are not supported yet -- flatten to a single view first."
+   Composite frames are not supported yet (see
+   dev-notes/facet-composite-deferral.md)."
   [sk col-col row-col]
-  (let [sk (ensure-sk sk)]
-    (update sk :opts assoc :facet-col col-col :facet-row row-col)))
+  (reject-composite-for-facet sk)
+  (update-opts sk assoc :facet-col col-col :facet-row row-col))
 
 (def ^:private valid-scale-types
   "Scale types accepted by sk/scale. :linear and :log are the two

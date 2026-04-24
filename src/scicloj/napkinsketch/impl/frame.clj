@@ -387,12 +387,72 @@
                                ". Convert it to a single type (number, string, etc.) before plotting.")
                           {:key k :column col :types types})))))))
 
+(defn- resolve-facet-col
+  "Resolve a facet column ref against a dataset; throw with a clear
+   message if the column is missing."
+  [ds role ref]
+  (let [col-names (set (tc/column-names ds))
+        fname (resolve/resolve-col-name ds ref)]
+    (when-not (contains? col-names fname)
+      (throw (ex-info (str "Facet column " ref " (from " role ") not found in dataset. Available: " (sort col-names))
+                      {:role role :column ref :available (sort col-names)})))
+    fname))
+
+(defn- facet-variants
+  "Build one (data + labels) variant per facet-value combination.
+   Returns a vector of maps {:data ds-subset, :facet-col <label>?, :facet-row <label>?}.
+   When neither axis is faceted, returns a single-element vector carrying the
+   input dataset unchanged and no labels."
+  [data facet-col facet-row]
+  (when (and facet-col (sequential? facet-col))
+    (throw (ex-info (str "Facet column must be a single keyword or string, got vector: " (pr-str facet-col)
+                         ". For 2D grids use (sk/facet-grid sk col-col row-col).")
+                    {:facet-col facet-col})))
+  (when (and facet-row (sequential? facet-row))
+    (throw (ex-info (str "Facet row must be a single keyword or string, got vector: " (pr-str facet-row)
+                         ". For 2D grids use (sk/facet-grid sk col-col row-col).")
+                    {:facet-row facet-row})))
+  (let [nc? (resolve/column-ref? facet-col)
+        nr? (resolve/column-ref? facet-row)
+        ds  (coerce-dataset data)]
+    (cond
+      (not (or nc? nr?))
+      [{:data ds}]
+
+      (and nc? nr?)
+      (let [fcol (resolve-facet-col ds :facet-col facet-col)
+            frow (resolve-facet-col ds :facet-row facet-row)]
+        (vec
+         (for [cv (distinct (ds fcol)) rv (distinct (ds frow))]
+           {:data (tc/select-rows ds (fn [r] (and (= (r fcol) cv) (= (r frow) rv))))
+            :facet-col (defaults/fmt-category-label cv)
+            :facet-row (defaults/fmt-category-label rv)})))
+
+      nc?
+      (let [fcol (resolve-facet-col ds :facet-col facet-col)]
+        (vec
+         (for [cv (distinct (ds fcol))]
+           {:data (tc/select-rows ds (fn [r] (= (r fcol) cv)))
+            :facet-col (defaults/fmt-category-label cv)})))
+
+      nr?
+      (let [frow (resolve-facet-col ds :facet-row facet-row)]
+        (vec
+         (for [rv (distinct (ds frow))]
+           {:data (tc/select-rows ds (fn [r] (= (r frow) rv)))
+            :facet-row (defaults/fmt-category-label rv)}))))))
+
 (defn leaf->draft
   "Emit a draft vector from a leaf frame. A draft has one entry per
    applicable layer; each entry is a flat map carrying the merged
    aesthetic mapping (frame < layer-type-info < layer), the layer's
    :stat/:position/:mark as first-class siblings, and plot-level
    :x-scale/:y-scale/:coord stamped from :opts.
+
+   If the leaf's :opts carry :facet-col or :facet-row, the draft is
+   multiplied over distinct facet values. Each variant carries a
+   filtered :data plus :facet-col / :facet-row labels that plan.clj
+   detects to build the facet grid.
 
    The leaf's :opts is passed through to plan/draft->plan; in
    particular the compositor uses :suppress-legend on grid cells.
@@ -413,25 +473,28 @@
         y-scale      (:y-scale opts)
         coord-type   (:coord opts)
         layers       (or (:layers leaf) [])
-        applicable   (if (seq layers) layers [{:layer-type :infer}])]
+        applicable   (if (seq layers) layers [{:layer-type :infer}])
+        variants     (facet-variants leaf-data (:facet-col opts) (:facet-row opts))]
     (vec
-     (map (fn [layer]
-            (let [layer-type-info  (resolve-layer-type-info (:layer-type layer))
-                  layer-mapping    (or (:mapping layer) {})
-                  layer-structural (select-keys layer [:stat :position :mark])
-                  resolved (merge leaf-mapping
-                                  layer-type-info
-                                  layer-mapping
-                                  layer-structural)
-                  d (coerce-dataset (or (:data layer) leaf-data))]
-              (validate-columns resolved d)
-              (-> resolved
-                  (assoc :data d
-                         :__entry-idx 0)
-                  (cond->
-                   x-scale    (assoc :x-scale x-scale)
-                   y-scale    (assoc :y-scale y-scale)
-                   coord-type (assoc :coord coord-type))
-                  (cond-> (= :infer (:mark resolved))
-                    (-> (dissoc :mark :stat))))))
-          applicable))))
+     (for [[variant-idx variant] (map-indexed vector variants)
+           layer applicable]
+       (let [layer-type-info  (resolve-layer-type-info (:layer-type layer))
+             layer-mapping    (or (:mapping layer) {})
+             layer-structural (select-keys layer [:stat :position :mark])
+             resolved (merge leaf-mapping
+                             layer-type-info
+                             layer-mapping
+                             layer-structural)
+             d (coerce-dataset (or (:data layer) (:data variant)))]
+         (validate-columns resolved d)
+         (-> resolved
+             (assoc :data d
+                    :__entry-idx variant-idx)
+             (cond->
+              x-scale    (assoc :x-scale x-scale)
+              y-scale    (assoc :y-scale y-scale)
+              coord-type (assoc :coord coord-type)
+              (:facet-col variant) (assoc :facet-col (:facet-col variant))
+              (:facet-row variant) (assoc :facet-row (:facet-row variant)))
+             (cond-> (= :infer (:mark resolved))
+               (-> (dissoc :mark :stat)))))))))
