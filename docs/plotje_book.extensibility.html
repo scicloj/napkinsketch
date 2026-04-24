@@ -1328,216 +1328,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-bar <span class="at">:species</span>)</span>
 <span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>    (pj/coord <span class="at">:flip</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div><p>{</p><div class="clay-map" style="margin-left:10%;width:110%;"><div><pre><code class="sourceCode language-clojure printed-clojure">:layers [{:layer-type :bar}]</code></pre></div>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<tbody>
-<tr class="odd">
-<td data-valign="top"><div class="code-copy-outer-scaffold"><div>
-<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>:data</code></pre>
-</div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
-<td><div style="margin-left:10px;">
-<div class="clay-dataset">
-<p><a href="https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv">https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv</a> [150 6]:</p>
-<table class="table caption-top">
-<thead>
-<tr class="header">
-<th style="text-align: right;" data-quarto-table-cell-role="th">:rownames</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">:sepal-length</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">:sepal-width</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">:petal-length</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">:petal-width</th>
-<th data-quarto-table-cell-role="th">:species</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">5.1</td>
-<td style="text-align: right;">3.5</td>
-<td style="text-align: right;">1.4</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">4.9</td>
-<td style="text-align: right;">3.0</td>
-<td style="text-align: right;">1.4</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">4.7</td>
-<td style="text-align: right;">3.2</td>
-<td style="text-align: right;">1.3</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">4.6</td>
-<td style="text-align: right;">3.1</td>
-<td style="text-align: right;">1.5</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">5.0</td>
-<td style="text-align: right;">3.6</td>
-<td style="text-align: right;">1.4</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">5.4</td>
-<td style="text-align: right;">3.9</td>
-<td style="text-align: right;">1.7</td>
-<td style="text-align: right;">0.4</td>
-<td>setosa</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">4.6</td>
-<td style="text-align: right;">3.4</td>
-<td style="text-align: right;">1.4</td>
-<td style="text-align: right;">0.3</td>
-<td>setosa</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">5.0</td>
-<td style="text-align: right;">3.4</td>
-<td style="text-align: right;">1.5</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">4.4</td>
-<td style="text-align: right;">2.9</td>
-<td style="text-align: right;">1.4</td>
-<td style="text-align: right;">0.2</td>
-<td>setosa</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">4.9</td>
-<td style="text-align: right;">3.1</td>
-<td style="text-align: right;">1.5</td>
-<td style="text-align: right;">0.1</td>
-<td>setosa</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">...</td>
-<td style="text-align: right;">...</td>
-<td style="text-align: right;">...</td>
-<td style="text-align: right;">...</td>
-<td style="text-align: right;">...</td>
-<td>...</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">140</td>
-<td style="text-align: right;">6.9</td>
-<td style="text-align: right;">3.1</td>
-<td style="text-align: right;">5.4</td>
-<td style="text-align: right;">2.1</td>
-<td>virginica</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">141</td>
-<td style="text-align: right;">6.7</td>
-<td style="text-align: right;">3.1</td>
-<td style="text-align: right;">5.6</td>
-<td style="text-align: right;">2.4</td>
-<td>virginica</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">142</td>
-<td style="text-align: right;">6.9</td>
-<td style="text-align: right;">3.1</td>
-<td style="text-align: right;">5.1</td>
-<td style="text-align: right;">2.3</td>
-<td>virginica</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">143</td>
-<td style="text-align: right;">5.8</td>
-<td style="text-align: right;">2.7</td>
-<td style="text-align: right;">5.1</td>
-<td style="text-align: right;">1.9</td>
-<td>virginica</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">144</td>
-<td style="text-align: right;">6.8</td>
-<td style="text-align: right;">3.2</td>
-<td style="text-align: right;">5.9</td>
-<td style="text-align: right;">2.3</td>
-<td>virginica</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">145</td>
-<td style="text-align: right;">6.7</td>
-<td style="text-align: right;">3.3</td>
-<td style="text-align: right;">5.7</td>
-<td style="text-align: right;">2.5</td>
-<td>virginica</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">146</td>
-<td style="text-align: right;">6.7</td>
-<td style="text-align: right;">3.0</td>
-<td style="text-align: right;">5.2</td>
-<td style="text-align: right;">2.3</td>
-<td>virginica</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">147</td>
-<td style="text-align: right;">6.3</td>
-<td style="text-align: right;">2.5</td>
-<td style="text-align: right;">5.0</td>
-<td style="text-align: right;">1.9</td>
-<td>virginica</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">148</td>
-<td style="text-align: right;">6.5</td>
-<td style="text-align: right;">3.0</td>
-<td style="text-align: right;">5.2</td>
-<td style="text-align: right;">2.0</td>
-<td>virginica</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">149</td>
-<td style="text-align: right;">6.2</td>
-<td style="text-align: right;">3.4</td>
-<td style="text-align: right;">5.4</td>
-<td style="text-align: right;">2.3</td>
-<td>virginica</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">150</td>
-<td style="text-align: right;">5.9</td>
-<td style="text-align: right;">3.0</td>
-<td style="text-align: right;">5.1</td>
-<td style="text-align: right;">1.8</td>
-<td>virginica</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div></td>
-</tr>
-</tbody>
-</table>
-<div><pre><code class="sourceCode language-clojure printed-clojure">:mapping {:x :species}</code></pre></div><div><pre><code class="sourceCode language-clojure printed-clojure">:opts {:coord :flip}</code></pre></div></div><p>}</p></div>
+<svg font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" height="400.0" role="img" viewbox="0 0 600.0 400.0" width="600.0" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(12.00,191.50)"><g transform="rotate(-90.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">species</text></g></g></g><g transform="translate(91.00,10.00)"><g><g><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="363.0" stroke="none" width="499.0" x="0" y="0"></rect></g></g></g><g transform="translate(81.00,0.00)"><g><g><g><g><polyline fill="none" points="32.68,10.00 32.68,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="78.05,10.00 78.05,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="123.41,10.00 123.41,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="168.77,10.00 168.77,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="214.14,10.00 214.14,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="259.50,10.00 259.50,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="304.86,10.00 304.86,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="350.23,10.00 350.23,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="395.59,10.00 395.59,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="440.95,10.00 440.95,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="486.32,10.00 486.32,373.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.85" points="32.68,360.90 486.32,360.90 486.32,264.10 32.68,264.10 32.68,360.90" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.85" points="32.68,239.90 486.32,239.90 486.32,143.10 32.68,143.10 32.68,239.90" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g><g><polygon fill="rgb(51,51,51)" fill-opacity="0.85" points="32.68,118.90 486.32,118.90 486.32,22.10 32.68,22.10 32.68,118.90" shape-rendering="crispEdges" stroke="none"></polygon></g></g><g transform="translate(32.68,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">0</text></g></g><g transform="translate(78.05,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">5</text></g></g><g transform="translate(123.41,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">10</text></g></g><g transform="translate(168.77,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">15</text></g></g><g transform="translate(214.14,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">20</text></g></g><g transform="translate(259.50,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">25</text></g></g><g transform="translate(304.86,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">30</text></g></g><g transform="translate(350.23,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">35</text></g></g><g transform="translate(395.59,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">40</text></g></g><g transform="translate(440.95,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">45</text></g></g><g transform="translate(486.32,385.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">50</text></g></g><g transform="translate(7.00,307.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">setosa</text></g></g><g transform="translate(7.00,186.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">versicolor</text></g></g><g transform="translate(7.00,65.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">virginica</text></g></g></g></g></g></svg>
 </section>
 <section id="self-documenting-extensions" class="level2">
 <h2 class="anchored" data-anchor-id="self-documenting-extensions">Self-Documenting Extensions</h2>
@@ -1546,51 +1337,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="adding-a-documented-extension">Adding a documented extension</h3>
 <p>Register both the implementation and a <code>[:key :doc]</code> defmethod:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb87"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> stat/compute-stat </span><span class="at">:quantile</span> [view]</span>
-<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:points</span> [] <span class="at">:x-domain</span> [<span class="dv">0</span> <span class="dv">1</span>] <span class="at">:y-domain</span> [<span class="dv">0</span> <span class="dv">1</span>]})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb86"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> stat/compute-stat </span><span class="at">:quantile</span> [view]</span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:points</span> [] <span class="at">:x-domain</span> [<span class="dv">0</span> <span class="dv">1</span>] <span class="at">:y-domain</span> [<span class="dv">0</span> <span class="dv">1</span>]})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb88"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> stat/compute-stat </span>[<span class="at">:quantile</span> <span class="at">:doc</span>] [_]</span>
-<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Quantile regression bands"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb87"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> stat/compute-stat </span>[<span class="at">:quantile</span> <span class="at">:doc</span>] [_]</span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Quantile regression bands"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The doc helper picks it up immediately:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb89"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>(pj/stat-doc <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb88"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>(pj/stat-doc <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb90"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="st">"Quantile regression bands"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb89"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="st">"Quantile regression bands"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="missing-documentation-degrades-gracefully" class="level3">
 <h3 class="anchored" data-anchor-id="missing-documentation-degrades-gracefully">Missing documentation degrades gracefully</h3>
 <p>If you skip the <code>[:key :doc]</code> defmethod, the table still renders – the description falls back to “(no description)” instead of throwing an error. Let us remove the doc defmethod and verify:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb91"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">remove-method</span> stat/compute-stat [<span class="at">:quantile</span> <span class="at">:doc</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb90"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">remove-method</span> stat/compute-stat [<span class="at">:quantile</span> <span class="at">:doc</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb92"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>#multifn[compute-stat <span class="bn">0x290796ed</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb91"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>#multifn[compute-stat <span class="bn">0x549dc3bd</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb93"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>(pj/stat-doc <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb92"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>(pj/stat-doc <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb94"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="st">"(no description)"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb93"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="st">"(no description)"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="cleanup" class="level3">
 <h3 class="anchored" data-anchor-id="cleanup">Cleanup</h3>
 <p>Remove the example extension so it does not affect other tests:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb95"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">remove-method</span> stat/compute-stat <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb94"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">remove-method</span> stat/compute-stat <span class="at">:quantile</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb96"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>#multifn[compute-stat <span class="bn">0x290796ed</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb95"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>#multifn[compute-stat <span class="bn">0x549dc3bd</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb97"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> (<span class="kw">remove</span> #{<span class="at">:default</span>} (<span class="kw">filter</span> <span class="kw">keyword?</span> (<span class="kw">keys</span> (<span class="kw">methods</span> stat/compute-stat)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb96"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> (<span class="kw">remove</span> #{<span class="at">:default</span>} (<span class="kw">filter</span> <span class="kw">keyword?</span> (<span class="kw">keys</span> (<span class="kw">methods</span> stat/compute-stat)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb98"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb97"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
