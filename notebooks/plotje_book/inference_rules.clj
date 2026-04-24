@@ -25,7 +25,7 @@
 ;; ## What Gets Inferred
 ;;
 ;; When you write `(-> data (pj/lay-point :x :y))` -- or even just
-;; `(pj/lay-point data)` -- the library fills
+;; `(pj/lay-point data)` or `(pj/frame data)` -- the library fills
 ;; in everything needed to render a plot. Here is the full list of
 ;; inference steps, in the order they happen:
 ;;
@@ -111,7 +111,12 @@ scatter-frame
 ;; | 1 | first column becomes x |
 ;; | 2 | first becomes x, second becomes y |
 ;; | 3 | first becomes x, second becomes y, third becomes color |
-;; | 4+ | error -- specify columns explicitly |
+;; | 4+ | no inference -- see the note below |
+;;
+;; The same rule applies to both entry points into the pipeline:
+;; `pj/lay-*` on raw data, and `pj/frame` on raw data. Both
+;; read the first 1-3 columns of the dataset in the order they
+;; appear and build the mapping from there.
 ;;
 ;; One column:
 
@@ -136,6 +141,40 @@ scatter-frame
                            (and (= 4 (:points s))
                                 (some #{"a"} (:texts s)))))])
 
+;; ### Frame construction infers the same mapping
+;;
+;; Calling `pj/frame` on raw data without explicit column arguments
+;; runs the same column-selection rule. A 1-3 column dataset gets
+;; its mapping filled in; the resulting frame carries the mapping
+;; but has no layer attached yet, so layer type inference (covered
+;; below) chooses the mark when the frame renders.
+
+(def two-col-frame
+  (pj/frame {:x [1.0 2.0 3.0 4.0 5.0]
+             :y [1.0 4.0 9.0 16.0 25.0]}))
+
+two-col-frame
+
+(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
+
+;; The inferred mapping is visible on the frame itself:
+
+(-> two-col-frame (select-keys [:mapping :layers]) kind/pprint)
+
+(kind/test-last [(fn [fr] (and (= {:x :x :y :y} (:mapping fr))
+                               (empty? (:layers fr))))])
+
+;; ### 4+ columns
+;;
+;; With four or more columns there is no unambiguous default, so
+;; inference stops:
+;;
+;; - `(pj/lay-* data)` throws with a message listing the available
+;;   columns, asking you to pass explicit `:x` and `:y`.
+;; - `(pj/frame data)` is gentler -- it builds a frame with the data
+;;   attached but no mapping, so you can add one downstream with
+;;   `(pj/frame fr :col-a :col-b)` or `(pj/lay-point fr :col-a :col-b)`.
+;;
 ;; When you provide explicit columns, inference is skipped -- you
 ;; are in full control:
 
