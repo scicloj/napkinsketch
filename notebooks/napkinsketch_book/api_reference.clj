@@ -59,20 +59,6 @@
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-(kind/doc #'sk/sketch)
-
-;; Legacy adapter. Create a sketch with sketch-level mappings visible
-;; to all views. `sk/sketch` + `sk/view` remain in the API through
-;; alpha for backwards compatibility; prefer `sk/frame` for new code.
-
-(-> (sk/sketch (rdatasets/datasets-iris) {:color :species})
-    (sk/view :sepal-length :sepal-width)
-    sk/lay-point)
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
-
 (kind/doc #'sk/with-data)
 
 ;; Attach or replace the top-level dataset on a frame or sketch.
@@ -88,41 +74,22 @@
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-(kind/doc #'sk/view)
-
-;; Single scatter view -- two columns as `[x y]`:
-
-(-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
-
-;; Histogram view -- pass a single column to see its distribution:
+;; Multi-pair frame -- a vector of `[x y]` pairs creates a composite
+;; with one sub-frame per pair:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-histogram :sepal-length))
-
-(kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (pos? (:polygons s)))))])
-
-;; Multiple views -- a vector of `[x y]` pairs:
-
-(-> (rdatasets/datasets-iris)
-    (sk/view [[:sepal-length :sepal-width]
-              [:petal-length :petal-width]])
+    (sk/frame [[:sepal-length :sepal-width]
+               [:petal-length :petal-width]])
     (sk/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
-;; Map form -- explicit keys:
+;; Map form -- explicit keys on a frame:
 
 (-> (rdatasets/datasets-iris)
-    (sk/view {:x :sepal-length :y :sepal-width})
+    (sk/frame {:x :sepal-length :y :sepal-width})
     sk/lay-point)
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
@@ -135,10 +102,12 @@
 
 (kind/test-last [(fn [v] (= [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]] v))])
 
+;; Combine `sk/cross` with `sk/frame` to build a SPLOM:
+
 (-> (rdatasets/datasets-iris)
-    (sk/view (sk/cross [:sepal-length :petal-length]
-                       [:sepal-width :petal-width]))
-    (sk/lay-point {:color :species}))
+    (sk/frame {:color :species})
+    (sk/frame (sk/cross [:sepal-length :petal-length]
+                        [:sepal-width :petal-width])))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 4 (:panels s))
@@ -163,7 +132,7 @@
 ;; map from an extension):
 
 (-> (rdatasets/datasets-iris)
-    (sk/view :sepal-length :sepal-width)
+    (sk/frame :sepal-length :sepal-width)
     (sk/lay :point))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
@@ -543,11 +512,11 @@
 
 ;; ## Predicates
 
-(kind/doc #'sk/sketch?)
+(kind/doc #'sk/frame?)
 
-;; Check whether a value is a sketch:
+;; Check whether a value is a frame (leaf or composite):
 
-(sk/sketch? (sk/lay-point tiny :x :y))
+(sk/frame? (-> tiny (sk/frame :x :y) sk/lay-point))
 
 (kind/test-last [true?])
 

@@ -8,10 +8,7 @@
 ;;
 ;; Read [Frame Model](./napkinsketch_book.frame_model.html) first --
 ;; this chapter is the proof layer, not a teaching chapter. Every
-;; rule is tested on every run. The parallel legacy reference is
-;; [Sketch Rules](./napkinsketch_book.sketch_rules.html), which
-;; documents the adapter path still available as `sk/sketch` +
-;; `sk/view`.
+;; rule is tested on every run.
 
 (ns napkinsketch-book.frame-rules
   (:require
@@ -1029,12 +1026,11 @@ l4-shared
 ;;
 ;; `sk/cross` is not a rule. It is a pure pair-generator --
 ;; `(for [x xs y ys] [x y])` -- returning `[x-col y-col]` pairs. It
-;; has no plot-level behavior on its own; whatever consumes the
-;; pairs (today's `sk/view`, tomorrow's `sk/arrange` + `sk/frame`
-;; over the generated sequence) is where the layout behavior lives,
-;; and those cases are already covered by the rules above. `sk/cross`
-;; belongs in the cookbook as a SPLOM-construction ingredient, not
-;; here.
+;; has no plot-level behavior on its own; the multi-pair arity of
+;; `sk/frame` (and `sk/arrange` for independent plots) is what turns
+;; the generated sequence into panels, and those cases are already
+;; covered by the rules above. `sk/cross` belongs in the cookbook
+;; as a SPLOM-construction ingredient, not here.
 
 (sk/cross [:a :b] [:c :d])
 

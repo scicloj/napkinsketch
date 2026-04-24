@@ -290,9 +290,6 @@ demo
 ;;   precise rules for each frame-world function: `sk/frame`,
 ;;   `sk/lay-*`, `sk/arrange`, `sk/options`, `sk/scale`, `sk/coord`,
 ;;   `sk/facet`. Twenty-eight rules with tested assertions.
-;; - [Sketch Rules](./napkinsketch_book.sketch_rules.html) --
-;;   the parallel reference for the legacy `sk/sketch` + `sk/view`
-;;   adapter path, kept for migration.
 ;; - [Configuration](./napkinsketch_book.configuration.html) --
 ;;   the four configuration sources and every configuration key.
 ;; - [Glossary](./napkinsketch_book.glossary.html) -- definitions
