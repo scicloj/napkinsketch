@@ -364,3 +364,240 @@
  [(fn [fr]
     (and (= "Arranged" (get-in fr [:opts :title]))
          (= #{:y} (:share-scales fr))))])
+
+;; ---
+;; ## Layer Placement
+;;
+;; How `lay-*` calls decide where the layer lands in the frame tree.
+;; Four rules covering the (bare vs position) x (leaf vs composite)
+;; matrix plus the raw-data convenience case.
+;;
+;; **Position storage (ratified 2026-04-23):** when a `lay-*` call
+;; carries position, the position lives on the **layer's own
+;; `:mapping`**. The leaf being attached to (or created for) also
+;; carries position in its own `:mapping` where appropriate -- both
+;; resolve to the same effective `:x`/`:y` via scope merge. The
+;; layer's own `:mapping` is the authoritative record of what the
+;; user typed and is what C5 inspects at promotion.
+
+;; ### Rule LP1: bare `lay-*` attaches at the current frame's root
+;;
+;; A `lay-*` call without position arguments attaches the layer to
+;; the current frame's top-level `:layers`. On a leaf, that is the
+;; leaf's own `:layers`. On a composite, it is the root `:layers`,
+;; and the layer flows into every descendant leaf via
+;; `resolve-tree`.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point)
+
+(kind/test-last
+ [(fn [fr]
+    (and (= 1 (count (:layers fr)))
+         (= :point (:layer-type (first (:layers fr))))
+         (empty? (or (:mapping (first (:layers fr))) {}))))])
+
+;; On a composite, the same call attaches at root and reaches every
+;; panel through resolve-tree:
+
+(-> (sk/arrange
+     [(sk/frame iris :sepal-length :sepal-width)
+      (sk/frame iris :petal-length :petal-width)])
+    sk/lay-point
+    fr-summary)
+
+(kind/test-last
+ [(fn [fr]
+    (and (contains? fr :frames)
+         (= 1 (count (:layers fr)))
+         (= :point (:layer-type (first (:layers fr))))))])
+
+;; **Property P-LP1 -- bare layers flow downward.** After adding one
+;; bare layer to a composite, the composite's root `:layers` holds
+;; that single entry; `resolve-tree` walks each leaf with it
+;; prepended, so every sub-plot renders the layer on top of its
+;; inferred or explicit leaf layers.
+
+(let [before (sk/arrange
+              [(sk/frame iris :sepal-length :sepal-width)
+               (sk/frame iris :petal-length :petal-width)])
+      after  (-> (sk/arrange
+                  [(sk/frame iris :sepal-length :sepal-width)
+                   (sk/frame iris :petal-length :petal-width)])
+                 sk/lay-point)]
+  [(count (or (:layers before) []))
+   (count (or (:layers after)  []))])
+
+(kind/test-last
+ [(fn [counts] (= [0 1] counts))])
+
+;; ### Rule LP2: position-carrying `lay-*` attaches to the DFS-last matching leaf
+;;
+;; When `lay-*` carries `:x`/`:y` and at least one leaf has matching
+;; effective `:x`/`:y` (after ancestor merge), the layer attaches to
+;; the **last such leaf in left-to-right depth-first order**.
+;; Matching is keyword/string tolerant. The layer's own `:mapping`
+;; carries the call's position.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    (sk/frame :petal-length :petal-width)
+    (sk/lay-point :sepal-length :sepal-width))
+
+(kind/test-last
+ [(fn [fr]
+    (and (= 2 (count (:frames fr)))
+         (= 1 (count (:layers (first (:frames fr)))))
+         (= 0 (count (:layers (second (:frames fr)))))
+         (= :point
+            (:layer-type (first (:layers (first (:frames fr))))))))])
+
+;; Keyword/string tolerance -- the string form matches a keyword
+;; leaf (LP2e):
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point "sepal-length" "sepal-width"))
+
+(kind/test-last
+ [(fn [fr]
+    (and (not (contains? fr :frames))
+         (= 1 (count (:layers fr)))))])
+
+;; **Note on leaf-input with non-matching position (overlay).** When
+;; the receiver is a single leaf that carries position and the
+;; `lay-*` call carries a **different** position, the call does
+;; *not* promote to a composite. Instead, the layer's own `:mapping`
+;; carries the new position; at render, the layer's position
+;; overrides the leaf's via scope merge -- an overlay on the same
+;; panel. Adding a new panel in the frame world requires an
+;; explicit `sk/frame` call.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point :petal-length :petal-width))
+
+(kind/test-last
+ [(fn [fr]
+    (and (not (contains? fr :frames))
+         (= {:x :sepal-length :y :sepal-width} (:mapping fr))
+         (= 1 (count (:layers fr)))
+         (= {:x :petal-length :y :petal-width}
+            (:mapping (first (:layers fr))))))])
+
+;; ### Rule LP3: on a composite, position-carrying `lay-*` misses append a new leaf at root
+;;
+;; When `lay-*` carries `:x`/`:y` and **no** descendant leaf has
+;; matching effective `:x`/`:y`, a new leaf is appended at the
+;; composite's root `:frames`. Its `:mapping` carries the call's
+;; position; a single layer with matching position attaches to it.
+;; (Leaf-input with non-matching position is a separate case --
+;; overlay, per LP2 above.)
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    (sk/frame :petal-length :petal-width)
+    (sk/lay-point :sepal-length :petal-length))
+
+(kind/test-last
+ [(fn [fr]
+    (and (= 3 (count (:frames fr)))
+         (= {:x :sepal-length :y :petal-length}
+            (:mapping (nth (:frames fr) 2)))
+         (= 1 (count (:layers (nth (:frames fr) 2))))))])
+
+;; ### Rule LP4: `lay-*` on raw data coerces via the legacy adapter
+;;
+;; `lay-*` called with a dataset as its first argument routes
+;; through the legacy sketch adapter. The result is a Sketch record
+;; with one view (or none, for bare calls on small datasets where
+;; auto-inference from structure supplies columns), not a frame.
+;; This keeps the convenience one-liner
+;; `(-> data (sk/lay-point :x :y))` working during the alpha
+;; transition; frame-native idiom is `(-> data (sk/frame :x :y)
+;; sk/lay-point)`.
+
+(def tiny
+  {:a [1 2 3 4 5]
+   :b [2 4 3 5 4]})
+
+(-> tiny
+    (sk/lay-point :a :b))
+
+(kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
+
+;; The frame-native equivalent produces a clean frame:
+
+(-> tiny
+    (sk/frame :a :b)
+    sk/lay-point
+    fr-summary)
+
+(kind/test-last
+ [(fn [fr]
+    (and (= {:x :a :y :b} (:mapping fr))
+         (= 1 (count (:layers fr)))
+         (not (contains? fr :frames))))])
+
+;; ---
+;; ## Leaf Identity
+;;
+;; How columns identify a leaf. Two rules -- one about inference
+;; when the user omits column names, one about how column refs are
+;; compared.
+
+;; ### Rule LI1: few-column datasets auto-infer columns by position
+;;
+;; When `lay-*` or `sk/frame` is called on a dataset without
+;; explicit column arguments, columns are inferred:
+;;
+;; | Columns | Inferred mapping |
+;; |:--------|:-----------------|
+;; | 1 | `{:x col0}` |
+;; | 2 | `{:x col0 :y col1}` |
+;; | 3 | `{:x col0 :y col1 :color col2}` |
+;; | 4+ | error (pass explicit x and y) |
+
+(-> {:height [1 2 3] :weight [4 5 6] :species ["a" "b" "a"]}
+    sk/lay-point)
+
+(kind/test-last
+ [(fn [v] (= 3 (:points (sk/svg-summary v))))])
+
+;; Four or more columns without explicit arguments throws:
+
+(try
+  (-> {:a [1 2] :b [3 4] :c [5 6] :d [7 8]}
+      sk/lay-point)
+  (catch Exception e
+    (ex-message e)))
+
+(kind/test-last
+ [(fn [msg] (re-find #"Cannot auto-infer columns" msg))])
+
+;; ### Rule LI2: column references compare tolerantly between keywords and strings
+;;
+;; When matching column refs -- whether a `lay-*` call's position
+;; against a leaf's, or inside scope resolution -- `:x` and `"x"`
+;; are treated as the same column. The stored form is preserved
+;; as the user typed it; tolerance is a comparison property only.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point "sepal-length" "sepal-width"))
+
+(kind/test-last
+ [(fn [fr]
+    (and (not (contains? fr :frames))
+         (= 1 (count (:layers fr)))))])
+
+;; Storage preserves the user's input -- if you type a string, the
+;; frame holds a string:
+
+(-> iris
+    (sk/frame "sepal-length" "sepal-width")
+    fr-summary)
+
+(kind/test-last
+ [(fn [fr] (= {:x "sepal-length" :y "sepal-width"} (:mapping fr)))])

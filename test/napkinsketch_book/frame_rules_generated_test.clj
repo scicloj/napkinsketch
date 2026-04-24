@@ -21,7 +21,7 @@
    (:layers fr)
    (update
     :layers
-    (partial mapv (fn* [p1__142948#] (dissoc p1__142948# :data))))
+    (partial mapv (fn* [p1__145776#] (dissoc p1__145776# :data))))
    (:frames fr)
    (update :frames (partial mapv strip-data)))))
 
@@ -392,3 +392,225 @@
      (= "Arranged" (get-in fr [:opts :title]))
      (= #{:y} (:share-scales fr))))
    v60_l357)))
+
+
+(def
+ v63_l391
+ (-> iris (sk/frame :sepal-length :sepal-width) sk/lay-point))
+
+
+(deftest
+ t64_l395
+ (is
+  ((fn
+    [fr]
+    (and
+     (= 1 (count (:layers fr)))
+     (= :point (:layer-type (first (:layers fr))))
+     (empty? (or (:mapping (first (:layers fr))) {}))))
+   v63_l391)))
+
+
+(def
+ v66_l404
+ (->
+  (sk/arrange
+   [(sk/frame iris :sepal-length :sepal-width)
+    (sk/frame iris :petal-length :petal-width)])
+  sk/lay-point
+  fr-summary))
+
+
+(deftest
+ t67_l410
+ (is
+  ((fn
+    [fr]
+    (and
+     (contains? fr :frames)
+     (= 1 (count (:layers fr)))
+     (= :point (:layer-type (first (:layers fr))))))
+   v66_l404)))
+
+
+(def
+ v69_l422
+ (let
+  [before
+   (sk/arrange
+    [(sk/frame iris :sepal-length :sepal-width)
+     (sk/frame iris :petal-length :petal-width)])
+   after
+   (->
+    (sk/arrange
+     [(sk/frame iris :sepal-length :sepal-width)
+      (sk/frame iris :petal-length :petal-width)])
+    sk/lay-point)]
+  [(count (or (:layers before) [])) (count (or (:layers after) []))]))
+
+
+(deftest t70_l432 (is ((fn [counts] (= [0 1] counts)) v69_l422)))
+
+
+(def
+ v72_l443
+ (->
+  iris
+  (sk/frame :sepal-length :sepal-width)
+  (sk/frame :petal-length :petal-width)
+  (sk/lay-point :sepal-length :sepal-width)))
+
+
+(deftest
+ t73_l448
+ (is
+  ((fn
+    [fr]
+    (and
+     (= 2 (count (:frames fr)))
+     (= 1 (count (:layers (first (:frames fr)))))
+     (= 0 (count (:layers (second (:frames fr)))))
+     (= :point (:layer-type (first (:layers (first (:frames fr))))))))
+   v72_l443)))
+
+
+(def
+ v75_l459
+ (->
+  iris
+  (sk/frame :sepal-length :sepal-width)
+  (sk/lay-point "sepal-length" "sepal-width")))
+
+
+(deftest
+ t76_l463
+ (is
+  ((fn
+    [fr]
+    (and (not (contains? fr :frames)) (= 1 (count (:layers fr)))))
+   v75_l459)))
+
+
+(def
+ v78_l477
+ (->
+  iris
+  (sk/frame :sepal-length :sepal-width)
+  (sk/lay-point :petal-length :petal-width)))
+
+
+(deftest
+ t79_l481
+ (is
+  ((fn
+    [fr]
+    (and
+     (not (contains? fr :frames))
+     (= {:x :sepal-length, :y :sepal-width} (:mapping fr))
+     (= 1 (count (:layers fr)))
+     (=
+      {:x :petal-length, :y :petal-width}
+      (:mapping (first (:layers fr))))))
+   v78_l477)))
+
+
+(def
+ v81_l498
+ (->
+  iris
+  (sk/frame :sepal-length :sepal-width)
+  (sk/frame :petal-length :petal-width)
+  (sk/lay-point :sepal-length :petal-length)))
+
+
+(deftest
+ t82_l503
+ (is
+  ((fn
+    [fr]
+    (and
+     (= 3 (count (:frames fr)))
+     (=
+      {:x :sepal-length, :y :petal-length}
+      (:mapping (nth (:frames fr) 2)))
+     (= 1 (count (:layers (nth (:frames fr) 2))))))
+   v81_l498)))
+
+
+(def v84_l521 (def tiny {:a [1 2 3 4 5], :b [2 4 3 5 4]}))
+
+
+(def v85_l525 (-> tiny (sk/lay-point :a :b)))
+
+
+(deftest
+ t86_l528
+ (is ((fn [v] (= 5 (:points (sk/svg-summary v)))) v85_l525)))
+
+
+(def v88_l532 (-> tiny (sk/frame :a :b) sk/lay-point fr-summary))
+
+
+(deftest
+ t89_l537
+ (is
+  ((fn
+    [fr]
+    (and
+     (= {:x :a, :y :b} (:mapping fr))
+     (= 1 (count (:layers fr)))
+     (not (contains? fr :frames))))
+   v88_l532)))
+
+
+(def
+ v91_l562
+ (->
+  {:height [1 2 3], :weight [4 5 6], :species ["a" "b" "a"]}
+  sk/lay-point))
+
+
+(deftest
+ t92_l565
+ (is ((fn [v] (= 3 (:points (sk/svg-summary v)))) v91_l562)))
+
+
+(def
+ v94_l570
+ (try
+  (-> {:a [1 2], :b [3 4], :c [5 6], :d [7 8]} sk/lay-point)
+  (catch Exception e (ex-message e))))
+
+
+(deftest
+ t95_l576
+ (is ((fn [msg] (re-find #"Cannot auto-infer columns" msg)) v94_l570)))
+
+
+(def
+ v97_l586
+ (->
+  iris
+  (sk/frame :sepal-length :sepal-width)
+  (sk/lay-point "sepal-length" "sepal-width")))
+
+
+(deftest
+ t98_l590
+ (is
+  ((fn
+    [fr]
+    (and (not (contains? fr :frames)) (= 1 (count (:layers fr)))))
+   v97_l586)))
+
+
+(def
+ v100_l598
+ (-> iris (sk/frame "sepal-length" "sepal-width") fr-summary))
+
+
+(deftest
+ t101_l602
+ (is
+  ((fn [fr] (= {:x "sepal-length", :y "sepal-width"} (:mapping fr)))
+   v100_l598)))
