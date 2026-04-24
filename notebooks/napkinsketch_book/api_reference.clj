@@ -61,7 +61,7 @@
 
 (kind/doc #'sk/with-data)
 
-;; Attach or replace the top-level dataset on a frame or sketch.
+;; Attach or replace the top-level dataset on a frame.
 ;; Useful for building a dataless template and applying it to many
 ;; datasets:
 
@@ -500,7 +500,7 @@
 
 (kind/doc #'sk/options)
 
-;; Set render options on a frame or sketch:
+;; Set render options on a frame:
 
 (-> tiny
     (sk/lay-point :x :y)
@@ -548,7 +548,7 @@
 
 (kind/doc #'sk/draft)
 
-;; Flatten a frame or sketch into a vector of draft layers -- one
+;; Flatten a frame into a vector of draft layers -- one
 ;; per applicable layer, with all scope merged. Useful for
 ;; inspecting exactly what the renderer will draw:
 

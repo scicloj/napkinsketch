@@ -343,7 +343,7 @@ two-panel
 ;; explicit `sk/frame` call to add a second panel:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame [[:sepal-length :sepal-width] [:petal-length :petal-length]])
+    (sk/frame [[:sepal-length :sepal-width] [:petal-length :petal-width]])
     (sk/lay-point))
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
@@ -351,13 +351,15 @@ two-panel
 ;; Printed, the two-panel outcome is a composite with two sub-frames:
 
 (-> (rdatasets/datasets-iris)
-    (sk/frame [[:sepal-length :sepal-width] [:petal-length :petal-length]])
+    (sk/frame [[:sepal-length :sepal-width] [:petal-length :petal-width]])
     (sk/lay-point)
     kind/pprint)
 
 (kind/test-last [(fn [v] (and (= 2 (count (:frames v)))
                               (= :sepal-length (get-in v [:frames 0 :mapping :x]))
-                              (= :petal-length (get-in v [:frames 1 :mapping :x]))))])
+                              (= :sepal-width  (get-in v [:frames 0 :mapping :y]))
+                              (= :petal-length (get-in v [:frames 1 :mapping :x]))
+                              (= :petal-width  (get-in v [:frames 1 :mapping :y]))))])
 
 ;; Two panels, arranged side by side. For plots with different
 ;; layer kinds (a scatter and a histogram, say), use `sk/arrange`

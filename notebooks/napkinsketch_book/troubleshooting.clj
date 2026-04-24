@@ -259,7 +259,7 @@
 ;; ## Dataset Missing Columns a Template References
 ;;
 ;; **Symptom**: An error like
-;; `"Cannot attach data: sketch references column(s) [:group] not
+;; `"Cannot attach data: frame references column(s) [:group] not
 ;; present in the dataset. Available columns: [:x :y]"` when
 ;; calling `sk/with-data` on a dataless template frame.
 ;;

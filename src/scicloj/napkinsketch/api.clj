@@ -599,6 +599,7 @@
      (sk/frame data)                           -- leaf with data only
      (sk/frame data {:color :species})         -- leaf with aesthetic mapping
      (sk/frame data :x-col)                    -- leaf with {:x :x-col}
+     (sk/frame data :x-col {:color :c})        -- univariate x + opts
      (sk/frame data :x-col :y-col)             -- leaf with :x and :y
      (sk/frame data :x-col :y-col {:color :c}) -- positional x/y + opts
      (sk/frame data [[:a :b] [:c :d]])         -- multi-pair: N bivariate panels
@@ -639,10 +640,18 @@
          (prepare-frame (extend-or-promote x mapping))
          (prepare-frame (frame-from-data x mapping))))))
   ([x y z]
-   (let [mapping {:x y :y z}]
-     (if (frame? x)
-       (prepare-frame (extend-or-promote x mapping))
-       (prepare-frame (frame-from-data x mapping)))))
+   (if (map? z)
+     ;; (sk/frame data x-col opts-map) -- univariate position plus opts
+     (let [opts      (warn-and-strip-unknown-opts "sk/frame" z view-mapping-keys)
+           data-over (:data opts)
+           mapping   (-> opts (dissoc :data) (merge {:x y}))]
+       (if (frame? x)
+         (prepare-frame (extend-or-promote x mapping))
+         (prepare-frame (frame-from-data (or data-over x) mapping))))
+     (let [mapping {:x y :y z}]
+       (if (frame? x)
+         (prepare-frame (extend-or-promote x mapping))
+         (prepare-frame (frame-from-data x mapping))))))
   ([x y z opts]
    (let [opts      (warn-and-strip-unknown-opts "sk/frame" opts view-mapping-keys)
          data-over (:data opts)
@@ -1354,16 +1363,16 @@
   #{:linear :log :categorical})
 
 (defn scale
-  "Set axis scale on a frame or sketch. Scale is plot-level -- it
-   applies across every panel. Accepts a type keyword or a scale spec
-   map with :type, optional :domain, and optional :breaks (explicit
-   tick locations). On a composite frame the scale attaches to the
-   root so every descendant leaf inherits it via resolve-tree.
-   (scale sk :x :log)                                -- log scale on x-axis
-   (scale sk :x {:type :categorical :domain [...]})  -- explicit category order
-   (scale sk :y {:type :linear :breaks [0 5 10]})    -- pin tick locations
-   (scale sk :y {:type :log :domain [1 1000]})       -- log scale with explicit range"
-  [sk channel scale-type]
+  "Set axis scale on a frame. Scale is plot-level -- it applies
+   across every panel. Accepts a type keyword or a scale spec map
+   with :type, optional :domain, and optional :breaks (explicit tick
+   locations). On a composite frame the scale attaches to the root so
+   every descendant leaf inherits it via resolve-tree.
+   (scale fr :x :log)                                -- log scale on x-axis
+   (scale fr :x {:type :categorical :domain [...]})  -- explicit category order
+   (scale fr :y {:type :linear :breaks [0 5 10]})    -- pin tick locations
+   (scale fr :y {:type :log :domain [1 1000]})       -- log scale with explicit range"
+  [fr channel scale-type]
   (let [k (case channel :x :x-scale :y :y-scale
                 (throw (ex-info (str "Scale channel must be :x or :y, got: " channel)
                                 {:channel channel})))
@@ -1372,21 +1381,20 @@
       (throw (ex-info (str "Unknown scale type: " type-kw
                            ". Supported: " (vec (sort valid-scale-types)))
                       {:scale-type type-kw :supported (vec (sort valid-scale-types))})))
-    (update-opts sk assoc k (if (map? scale-type)
+    (update-opts fr assoc k (if (map? scale-type)
                               (merge {:type :linear} scale-type)
                               {:type scale-type}))))
 
 (defn coord
-  "Set coordinate transform on a frame or sketch. Coord is plot-level
-   -- it applies across every panel. On a composite frame the coord
-   attaches to the root so every descendant leaf inherits it via
-   resolve-tree.
-   (coord sk :flip) -- flipped coordinates."
-  [sk coord-type]
+  "Set coordinate transform on a frame. Coord is plot-level -- it
+   applies across every panel. On a composite frame the coord attaches
+   to the root so every descendant leaf inherits it via resolve-tree.
+   (coord fr :flip) -- flipped coordinates."
+  [fr coord-type]
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
                     {:coord coord-type})))
-  (update-opts sk assoc :coord coord-type))
+  (update-opts fr assoc :coord coord-type))
 
 (defn draft
   "Flatten a leaf frame into a draft -- a vector of flat maps, one per
@@ -1438,14 +1446,14 @@
    Accepts SVG hiccup or a frame (auto-renders to SVG first).
    (svg-summary (plot fr))  -- summary of rendered SVG
    (svg-summary my-frame)   -- auto-renders frame (leaf or composite)"
-  ([svg-or-sketch]
-   (if (frame? svg-or-sketch)
-     (svg/svg-summary (plot svg-or-sketch))
-     (svg/svg-summary svg-or-sketch)))
-  ([svg-or-sketch theme]
-   (if (frame? svg-or-sketch)
-     (svg/svg-summary (plot svg-or-sketch) theme)
-     (svg/svg-summary svg-or-sketch theme))))
+  ([svg-or-frame]
+   (if (frame? svg-or-frame)
+     (svg/svg-summary (plot svg-or-frame))
+     (svg/svg-summary svg-or-frame)))
+  ([svg-or-frame theme]
+   (if (frame? svg-or-frame)
+     (svg/svg-summary (plot svg-or-frame) theme)
+     (svg/svg-summary svg-or-frame theme))))
 
 ;; ---- Multi-Plot Composition ----
 
@@ -1464,7 +1472,7 @@
                     {:index idx}))
     :else
     (throw (ex-info (str "sk/arrange input at index " idx
-                         " must be a sketch or leaf frame. Got: "
+                         " must be a leaf frame. Got: "
                          (pr-str (type p))
                          ". Pre-rendered hiccup is not supported; wrap "
                          "hiccup yourself with `[:div ...]` if you want "
@@ -1484,13 +1492,13 @@
         (compositor/composite->plot composite fmt)))))
 
 (defn arrange
-  "Arrange multiple sketches (or leaf frames) in a grid. Returns a
-   composite frame that renders through the compositor via membrane --
-   so `:svg`, `:bufimg`, and any other membrane target work uniformly.
+  "Arrange multiple leaf frames in a grid. Returns a composite frame
+   that renders through the compositor via membrane -- so `:svg`,
+   `:bufimg`, and any other membrane target work uniformly.
 
-   Inputs must be sketches or leaf frames. Pre-rendered hiccup is no
-   longer accepted; build your own `[:div ...]` if you need to combine
-   already-rendered values outside the library.
+   Inputs must be leaf frames. Pre-rendered hiccup is not accepted;
+   build your own `[:div ...]` if you need to combine already-rendered
+   values outside the library.
 
    Opts:
      :cols N          explicit column count (default: min(4, n-plots))
@@ -1499,9 +1507,9 @@
      :height H        total composite height in pixels
      :share-scales S  subset of #{:x :y} shared across cells (default: #{})
 
-   (arrange [sk-a sk-b])                           -- 1x2 row
-   (arrange [sk-a sk-b sk-c] {:cols 2 :width 900}) -- 2x2 grid (wraps)
-   (arrange [[sk-a sk-b] [sk-c sk-d]])             -- explicit 2x2 grid"
+   (arrange [fr-a fr-b])                           -- 1x2 row
+   (arrange [fr-a fr-b fr-c] {:cols 2 :width 900}) -- 2x2 grid (wraps)
+   (arrange [[fr-a fr-b] [fr-c fr-d]])             -- explicit 2x2 grid"
   ([plots] (arrange plots {}))
   ([plots opts]
    (let [cfg (defaults/config)
@@ -1546,41 +1554,41 @@
 
 (defn save
   "Save a plot to an SVG file.
-   sk -- a sketch.
-   path     -- file path (string or java.io.File).
-   opts     -- same options as plot (:width, :height, :title, :theme, etc.).
+   fr   -- a frame.
+   path -- file path (string or java.io.File).
+   opts -- same options as plot (:width, :height, :title, :theme, etc.).
    Tooltip and brush interactivity are not included in saved files.
    Returns the path.
-   (save my-sketch \"plot.svg\")
-   (save my-sketch \"plot.svg\" {:width 800 :height 600})"
-  ([sk path]
-   (save sk path {}))
-  ([sk path opts]
+   (save my-frame \"plot.svg\")
+   (save my-frame \"plot.svg\" {:width 800 :height 600})"
+  ([fr path]
+   (save fr path {}))
+  ([fr path opts]
    (let [path-str (str path)
-         sk (ensure-frame sk)]
+         fr (ensure-frame fr)]
      (when-not (.endsWith path-str ".svg")
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
-     (let [sk (if (seq opts) (options sk opts) sk)
-           p (plan sk)
-           svg-hiccup (render-impl/plan->plot p :svg (:opts sk {}))]
+     (let [fr (if (seq opts) (options fr opts) fr)
+           p (plan fr)
+           svg-hiccup (render-impl/plan->plot p :svg (:opts fr {}))]
        (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                        (svg/hiccup->svg-str svg-hiccup)))
        path))))
 
 (defn save-png
   "Save a plot to a PNG file via membrane's Java2D backend.
-   sk -- a sketch.
-   path     -- file path (string or java.io.File).
-   opts     -- same options as save (:width, :height, :title, :theme, etc.).
+   fr   -- a frame.
+   path -- file path (string or java.io.File).
+   opts -- same options as save (:width, :height, :title, :theme, etc.).
    Returns the path.
-   (save-png my-sketch \"plot.png\")
-   (save-png my-sketch \"plot.png\" {:width 800 :height 600})"
-  ([sk path]
-   (save-png sk path {}))
-  ([sk path opts]
+   (save-png my-frame \"plot.png\")
+   (save-png my-frame \"plot.png\" {:width 800 :height 600})"
+  ([fr path]
+   (save-png fr path {}))
+  ([fr path opts]
    (require 'scicloj.napkinsketch.render.bufimg)
-   (let [sk (ensure-frame sk)
-         sk (if (seq opts) (options sk opts) sk)
-         p (plan sk)
-         img (render-impl/plan->plot p :bufimg (:opts sk {}))]
+   (let [fr (ensure-frame fr)
+         fr (if (seq opts) (options fr opts) fr)
+         p (plan fr)
+         img (render-impl/plan->plot p :bufimg (:opts fr {}))]
      ((resolve 'scicloj.napkinsketch.render.bufimg/save-png) img path))))

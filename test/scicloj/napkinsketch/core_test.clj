@@ -520,7 +520,7 @@
   (testing "hiccup input is rejected with a clear error"
     (let [pre-rendered (-> tiny-ds (sk/frame :x :y) sk/lay-point sk/plot)]
       (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                            #"must be a sketch or leaf frame"
+                            #"must be a leaf frame"
                             (sk/arrange [pre-rendered pre-rendered]))))))
 
 (deftest valid-plan-test

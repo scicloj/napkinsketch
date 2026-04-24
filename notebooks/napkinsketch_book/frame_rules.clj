@@ -504,16 +504,14 @@
             (:mapping (nth (:frames fr) 2)))
          (= 1 (count (:layers (nth (:frames fr) 2))))))])
 
-;; ### Rule LP4: `lay-*` on raw data coerces via the legacy adapter
+;; ### Rule LP4: `lay-*` on raw data coerces the data into a leaf frame
 ;;
-;; `lay-*` called with a dataset as its first argument routes
-;; through the legacy sketch adapter. The result is a Sketch record
-;; with one view (or none, for bare calls on small datasets where
-;; auto-inference from structure supplies columns), not a frame.
-;; This keeps the convenience one-liner
-;; `(-> data (sk/lay-point :x :y))` working during the alpha
-;; transition; frame-native idiom is `(-> data (sk/frame :x :y)
-;; sk/lay-point)`.
+;; `lay-*` called with a dataset as its first argument coerces the
+;; data into a leaf frame first, then applies the layer. The result
+;; is a leaf frame equivalent to
+;; `(-> data (sk/frame :x :y) sk/lay-point)`. This keeps the
+;; convenience one-liner `(-> data (sk/lay-point :x :y))` working as
+;; the shortest path from data to plot.
 
 (def tiny
   {:a [1 2 3 4 5]
@@ -524,7 +522,7 @@
 
 (kind/test-last [(fn [v] (= 5 (:points (sk/svg-summary v))))])
 
-;; The frame-native equivalent produces a clean frame:
+;; The explicit two-step form produces the same leaf frame:
 
 (-> tiny
     (sk/frame :a :b)
@@ -603,8 +601,8 @@
 ;; ## Scope
 ;;
 ;; How mappings and data flow through the frame tree. Four rules
-;; generalizing the sketch-world hierarchy (sketch / view / layer)
-;; to arbitrary-depth composites.
+;; covering the root -> composite -> leaf -> layer chain at
+;; arbitrary depth.
 
 ;; ### Rule S1: mapping scope is a tree-walk merge; narrower wins
 ;;

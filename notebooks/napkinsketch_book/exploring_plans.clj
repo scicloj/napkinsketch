@@ -4,7 +4,7 @@
 ;; structure called a **plan** before rendering anything. This notebook
 ;; walks through the plan step by step, building intuition for the
 ;; data model by looking at what `sk/plan` produces for different
-;; sketches.
+;; frames.
 ;;
 ;; You would explore plans when:
 ;;
@@ -43,7 +43,7 @@
                                 (= 5 (:points s)))))])
 
 ;; And here is the plan -- the data structure that drives the rendering.
-;; We'll use `sk/plan` with the same sketch:
+;; We'll use `sk/plan` with the same frame:
 
 (def tiny-pl (-> tiny
                  (sk/lay-point :x :y)
@@ -478,9 +478,9 @@ opts-pl
                                 (pos? (:x-label-pad lay))
                                 (pos? (:y-label-pad lay))))])
 
-;; ## Plan vs sketch -- Side by Side
+;; ## Plan vs Plot -- Side by Side
 ;;
-;; `sk/plan` and `sk/plot` accept the same sketch.
+;; `sk/plan` and `sk/plot` accept the same frame.
 ;; `sk/plan` returns the intermediate data map; `sk/plot` returns the final SVG.
 
 ;; The plan (a plain Clojure map):
