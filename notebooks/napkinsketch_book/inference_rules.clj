@@ -50,12 +50,12 @@
 ;; ## Inspecting the Plan
 ;;
 ;; A **plan** is the fully resolved data structure Napkinsketch builds
-;; from a sketch right before rendering. It is a plain Clojure map
+;; from a frame right before rendering. It is a plain Clojure map
 ;; with domains, ticks, scales, resolved layers, legend, and layout
 ;; dimensions -- every inference decision made explicit in one place.
 ;;
 ;; `sk/plan` is the function that produces it. You can call it on
-;; any sketch to see exactly what the library decided. Throughout
+;; any frame to see exactly what the library decided. Throughout
 ;; this chapter we use `sk/plan` to peek inside after each example
 ;; and check which rules fired.
 
