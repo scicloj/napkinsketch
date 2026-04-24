@@ -1484,23 +1484,6 @@
   ([sk-or-data x y-or-opts] (lay-layer-type :rug sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (lay-layer-type :rug sk-or-data x y opts)))
 
-(defn facet
-  "Facet a sketch by a column.
-   Direction is :col (default, horizontal row) or :row (vertical column).
-   Faceting is plot-level -- all views are faceted the same way."
-  ([sk col] (facet sk col :col))
-  ([sk col direction]
-   (let [sk (ensure-sk sk)
-         k (case direction :col :facet-col :row :facet-row)]
-     (update sk :opts assoc k col))))
-
-(defn facet-grid
-  "Facet a sketch by two columns (2D grid).
-   Faceting is plot-level -- all views are faceted the same way."
-  [sk col-col row-col]
-  (let [sk (ensure-sk sk)]
-    (update sk :opts assoc :facet-col col-col :facet-row row-col)))
-
 (defn- deep-merge
   "Recursively merge maps. Non-map values are overwritten."
   [a b]
@@ -1538,6 +1521,29 @@
                      opts
                      [:width :height])]
     (update-opts sk deep-merge opts)))
+
+(defn facet
+  "Facet a frame by a column.
+   Direction is :col (default, horizontal row) or :row (vertical column).
+   Faceting is plot-level -- every panel is faceted the same way.
+   Faceting currently routes through the legacy sketch-based facet
+   machinery (see dev-notes/facet-composite-deferral.md), so composite
+   frames are not supported yet -- flatten to a single view first."
+  ([sk col] (facet sk col :col))
+  ([sk col direction]
+   (let [sk (ensure-sk sk)
+         k (case direction :col :facet-col :row :facet-row)]
+     (update sk :opts assoc k col))))
+
+(defn facet-grid
+  "Facet a frame by two columns (2D grid).
+   Faceting is plot-level -- every panel is faceted the same way.
+   Faceting currently routes through the legacy sketch-based facet
+   machinery (see dev-notes/facet-composite-deferral.md), so composite
+   frames are not supported yet -- flatten to a single view first."
+  [sk col-col row-col]
+  (let [sk (ensure-sk sk)]
+    (update sk :opts assoc :facet-col col-col :facet-row row-col)))
 
 (def ^:private valid-scale-types
   "Scale types accepted by sk/scale. :linear and :log are the two
