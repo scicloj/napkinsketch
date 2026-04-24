@@ -473,7 +473,13 @@
         y-scale      (:y-scale opts)
         coord-type   (:coord opts)
         layers       (or (:layers leaf) [])
-        applicable   (if (seq layers) layers [{:layer-type :infer}])
+        ;; An entirely empty leaf (no mapping, no layers) has nothing
+        ;; to infer from -- emit nothing so plan produces a minimal
+        ;; placeholder instead of crashing on a mark-:infer with no x.
+        applicable   (cond
+                       (seq layers) layers
+                       (seq leaf-mapping) [{:layer-type :infer}]
+                       :else [])
         variants     (facet-variants leaf-data (:facet-col opts) (:facet-row opts))]
     (vec
      (for [[variant-idx variant] (map-indexed vector variants)

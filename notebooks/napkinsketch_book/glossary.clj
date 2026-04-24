@@ -367,7 +367,7 @@ my-frame
 (-> (rdatasets/datasets-iris)
     (sk/lay-point :sepal-length :sepal-width)
     (sk/lay-rule-h {:y-intercept 3.0})
-    :layers first :layer-type)
+    :layers (nth 1) :layer-type)
 
 (kind/test-last [(fn [m] (= :rule-h m))])
 

@@ -339,30 +339,29 @@ two-panel
 ;; One frame, two layers: scatter points and a regression line
 ;; sharing the same axes.
 ;;
-;; When the columns differ, `sk/lay-*` creates a new frame:
+;; To place two plots side by side with different columns, use an
+;; explicit `sk/frame` call to add a second panel:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-histogram :petal-length))
+    (sk/frame [[:sepal-length :sepal-width] [:petal-length :petal-length]])
+    (sk/lay-point))
 
 (kind/test-last [(fn [v] (= 2 (:panels (sk/svg-summary v))))])
 
-;; Printed, the two-frame outcome shows up as two entries in the
-;; value -- each with its own mapping and layer:
+;; Printed, the two-panel outcome is a composite with two sub-frames:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
-    (sk/lay-histogram :petal-length)
+    (sk/frame [[:sepal-length :sepal-width] [:petal-length :petal-length]])
+    (sk/lay-point)
     kind/pprint)
 
-(kind/test-last [(fn [v] (and (= 2 (count (:views v)))
-                              (= :sepal-length (get-in v [:views 0 :mapping :x]))
-                              (= :petal-length (get-in v [:views 1 :mapping :x]))))])
+(kind/test-last [(fn [v] (and (= 2 (count (:frames v)))
+                              (= :sepal-length (get-in v [:frames 0 :mapping :x]))
+                              (= :petal-length (get-in v [:frames 1 :mapping :x]))))])
 
-;; Two frames, arranged side by side: one scatter and one histogram.
-;;
-;; To force two separate frames that share a column but carry
-;; different layers, arrange them explicitly:
+;; Two panels, arranged side by side. For plots with different
+;; layer kinds (a scatter and a histogram, say), use `sk/arrange`
+;; to combine independent frames:
 
 (sk/arrange
  [(-> (rdatasets/datasets-iris) (sk/lay-histogram :sepal-width))
@@ -728,10 +727,11 @@ my-frame
     (sk/lay-band-v {:x-min 5.0 :x-max 6.0 :alpha 0.1})
     kind/pprint)
 
-(kind/test-last [(fn [v] (and (= :rule-h (get-in v [:layers 0 :layer-type]))
-                              (= 3.0 (get-in v [:layers 0 :mapping :y-intercept]))
-                              (= :band-v (get-in v [:layers 1 :layer-type]))
-                              (= 5.0 (get-in v [:layers 1 :mapping :x-min]))))])
+(kind/test-last [(fn [v] (and (= :point (get-in v [:layers 0 :layer-type]))
+                              (= :rule-h (get-in v [:layers 1 :layer-type]))
+                              (= 3.0 (get-in v [:layers 1 :mapping :y-intercept]))
+                              (= :band-v (get-in v [:layers 2 :layer-type]))
+                              (= 5.0 (get-in v [:layers 2 :mapping :x-min]))))])
 
 ;; See the [Customization](./napkinsketch_book.customization.html)
 ;; chapter for themes, palettes, and annotation details.
@@ -794,17 +794,18 @@ my-frame
 
 (kind/test-last [(fn [v] (= 3 (:panels (sk/svg-summary v))))])
 
-;; Printed, each named column gets its own view, each with its
-;; own histogram layer:
+;; Printed, each named column becomes a sub-frame with its own x
+;; mapping; the bare `sk/lay-histogram` attaches at the root and
+;; flows into every panel via `resolve-tree`:
 
 (-> (rdatasets/datasets-iris)
     (sk/lay-histogram [:sepal-length :sepal-width :petal-length])
     kind/pprint)
 
-(kind/test-last [(fn [v] (and (= 3 (count (:views v)))
-                              (= :sepal-length (get-in v [:views 0 :mapping :x]))
-                              (= :sepal-width (get-in v [:views 1 :mapping :x]))
-                              (= :petal-length (get-in v [:views 2 :mapping :x]))))])
+(kind/test-last [(fn [v] (and (= 3 (count (:frames v)))
+                              (= :sepal-length (get-in v [:frames 0 :mapping :x]))
+                              (= :sepal-width (get-in v [:frames 1 :mapping :x]))
+                              (= :petal-length (get-in v [:frames 2 :mapping :x]))))])
 
 ;; To place whole frames side by side, use `sk/arrange`:
 

@@ -1,7 +1,6 @@
 (ns scicloj.napkinsketch.api
   "Public API for napkinsketch -- composable plotting in Clojure."
   (:require [scicloj.napkinsketch.impl.resolve :as resolve]
-            [scicloj.napkinsketch.impl.sketch :as sketch]
             [scicloj.napkinsketch.impl.frame :as frame]
             [scicloj.napkinsketch.impl.compositor :as compositor]
             [scicloj.napkinsketch.impl.plan :as plan]
@@ -217,59 +216,28 @@
 ;; ---- API ----
 
 (defn- coerce-dataset
-  "Coerce data to a tablecloth dataset. Returns nil for nil.
-   Rejects Sketch records to prevent silent coercion to a bogus
-   5-column dataset made of the sketch's own fields."
+  "Coerce data to a tablecloth dataset. Returns nil for nil."
   [d]
   (when d
-    (cond
-      (sketch/sketch? d)
-      (throw (ex-info (str ":data must be a dataset or map of columns, not a sketch. "
-                           "Pass tabular data (dataset, map of columns, or row maps), "
-                           "or remove the :data override.")
-                      {:data-type 'Sketch}))
-      (tc/dataset? d) d
-      :else (tc/dataset d))))
-
-(defn sketch?
-  "Return true if x is a sketch."
-  [x]
-  (sketch/sketch? x))
+    (if (tc/dataset? d) d (tc/dataset d))))
 
 (defn frame?
-  "Return true if x is a frame-shaped plain map. Frames are the
-   recursive replacement for sketch + view introduced by the pre-alpha
-   refactor; a frame has :layers and/or :frames and is not a Sketch
-   record."
+  "Return true if x is a frame-shaped plain map (a map carrying at
+   least one of :layers or :frames)."
   [x]
-  (and (not (sketch/sketch? x))
-       (frame/frame? x)))
+  (frame/frame? x))
 
-(defn- ensure-sk
-  "Coerce first arg to a sketch if it isn't one already.
-   Data is eagerly coerced to a dataset so downstream code can
-   uniformly use tc/column-names. Leaf frame-shaped plain maps
-   (produced by sk/frame) are routed through sketch/leaf-frame->sketch.
-   Composite frames are out of scope here -- callers that can accept a
-   composite must branch on frame/composite? and route to the
-   compositor."
+(defn- ensure-frame
+  "Coerce input to a frame. Frames pass through. Raw data becomes a
+   leaf frame with :data set and no mapping."
   [x]
-  (cond
-    (sketch/sketch? x) x
-    (and (frame? x) (frame/composite? x))
-    (throw (ex-info (str "ensure-sk got a composite frame. This is an "
-                         "internal-routing bug: sk/plot and sk/plan "
-                         "should dispatch composites to the compositor "
-                         "before calling ensure-sk.")
-                    {:frame x}))
-    (frame? x) (sketch/leaf-frame->sketch x)
-    (or (tc/dataset? x)
-        (map? x)
-        (sequential? x)) (sketch/->sketch (coerce-dataset x) {} [] [] {})
-    :else (sketch/->sketch nil {} [] [] {})))
+  (if (frame? x)
+    x
+    (let [d (coerce-dataset x)]
+      (cond-> {:layers []} d (assoc :data d)))))
 
 (def ^:private view-mapping-keys
-  "Keys accepted in view/sketch mapping options."
+  "Keys accepted in a frame mapping."
   (into defaults/column-keys #{:data :color-type :x-type :y-type}))
 
 (def ^:private plot-options-keys
@@ -408,11 +376,6 @@
   (when-not (map? fr-map)
     (throw (ex-info (str "sk/prepare-frame expects a frame map, got "
                          (pr-str (type fr-map)))
-                    {:got fr-map})))
-  (when (sketch/sketch? fr-map)
-    (throw (ex-info (str "sk/prepare-frame expects a plain-map frame, "
-                         "not a Sketch record. Sketches already carry "
-                         "Kindly metadata; display them directly.")
                     {:got fr-map})))
   (let [prepared (normalize-frame fr-map)
         captured defaults/*config*]
@@ -674,34 +637,6 @@
        (prepare-frame (extend-or-promote x mapping))
        (prepare-frame (frame-from-data (or data-over x) mapping))))))
 
-(defn sketch
-  "Create or augment a sketch with an optional sketch-level mapping.
-   Use for sketch-level aesthetics that apply to all views and layers.
-
-   (sketch)                          -- empty sketch
-   (sketch data)                     -- sketch with data only
-   (sketch data {:color :species})   -- sketch with sketch-level color mapping
-   (sketch existing-sketch {:color :c}) -- merge mapping into existing sketch
-                                          (preserves :views/:layers/:opts)"
-  ([] (sketch/->sketch nil {} [] [] {}))
-  ([data] (sketch data {}))
-  ([data mapping]
-   ;; sk/sketch's mapping is for *appearance* aesthetics (color/size/etc.) that
-   ;; flow into all views; it does not create a view. Reject :x/:y here so a
-   ;; ggplot2-style `(ggplot data, aes(x, y))` pattern fails loudly instead of
-   ;; producing a 0-panel plot.
-   (when (or (:x mapping) (:y mapping))
-     (throw (ex-info (str "sk/sketch does not create a view -- :x and :y are not allowed "
-                          "in its mapping. Use (sk/view sk :x :y) to declare position "
-                          "mappings, or (sk/lay-point sk :x :y) for a one-shot view+layer.")
-                     {:mapping mapping})))
-   (let [mapping (warn-and-strip-unknown-opts "sk/sketch" mapping view-mapping-keys)]
-     (if (sketch/sketch? data)
-       ;; Merge new mapping into existing sketch, preserving views/layers/opts
-       (update data :mapping merge mapping)
-       ;; Fresh sketch from raw data (or nil)
-       (sketch/->sketch (coerce-dataset data) mapping [] [] {})))))
-
 (def ^:private position-aesthetic-keys
   "Mapping keys whose keyword values are always column references
    (no literal-value path). Used by with-data's attach-time
@@ -714,27 +649,6 @@
   (keep #(let [v (get m %)]
            (when (keyword? v) v))
         position-aesthetic-keys))
-
-(defn- column-refs-in-sketch
-  "Collect every keyword column reference used by the sketch's
-   mapping, views, layers, and facet options. Returns a distinct
-   sequence of keywords."
-  [sk]
-  (let [views (:views sk)
-        from-views (mapcat (fn [v]
-                             (concat (column-refs-in-mapping (:mapping v))
-                                     (mapcat #(column-refs-in-mapping (:mapping %))
-                                             (:layers v))))
-                           views)
-        from-layers (mapcat #(column-refs-in-mapping (:mapping %))
-                            (:layers sk))
-        facet-refs (keep #(when (keyword? (get-in sk [:opts %]))
-                            (get-in sk [:opts %]))
-                         [:facet-col :facet-row])]
-    (distinct (concat (column-refs-in-mapping (:mapping sk))
-                      from-views
-                      from-layers
-                      facet-refs))))
 
 (defn- column-refs-in-frame
   "Collect every keyword column reference used by a frame's :mapping,
@@ -768,7 +682,7 @@
                       {:missing missing :available (vec (sort cols))})))))
 
 (defn with-data
-  "Supply or replace the top-level dataset on a sketch or frame.
+  "Supply or replace the top-level dataset on a frame.
    Useful for building a template once and applying it to different
    datasets:
 
@@ -785,21 +699,13 @@
    dataset -- otherwise an error is thrown naming the missing columns
    and listing what is available. Per-layer / per-sub-frame `:data`
    still overrides the top-level data.
-   (with-data sk data)"
+   (with-data fr data)"
   [sk data]
-  (let [ds (coerce-dataset data)]
-    (cond
-      (frame? sk)
-      (do
-        (when ds
-          (validate-columns-present (column-refs-in-frame sk) ds))
-        (prepare-frame (assoc sk :data ds)))
-
-      :else
-      (let [sk (ensure-sk sk)]
-        (when ds
-          (validate-columns-present (column-refs-in-sketch sk) ds))
-        (assoc sk :data ds)))))
+  (let [fr (ensure-frame sk)
+        ds (coerce-dataset data)]
+    (when ds
+      (validate-columns-present (column-refs-in-frame fr) ds))
+    (prepare-frame (assoc fr :data ds))))
 
 (defn- check-facet-keys
   "Throw a helpful error if a mapping or layer-options map contains
@@ -817,99 +723,10 @@
                            " in a " context "'s options map.")
                       fk)))))
 
-(defn- make-view
-  "Build a view map from a mapping, extracting :data if present."
-  [mapping]
-  (check-facet-keys "view" mapping)
-  (let [mapping (warn-and-strip-unknown-opts "sk/view" mapping view-mapping-keys)
-        d (:data mapping)]
-    (cond-> {:mapping (dissoc mapping :data)}
-      d (assoc :data (coerce-dataset d)))))
-
-(defn view
-  "Declare what to look at -- add a view with position mappings.
-   Opts scope to this view (not to all views). For sketch-level
-   mappings, use sk/sketch.
-   (view data :x :y)             -- one bivariate view
-   (view data :x)                -- one univariate view
-   (view data [[:a :b] [:c :d]]) -- multiple bivariate views
-   (view data :x :y {:color :g}) -- view with color mapping (view-level)
-   (view data {:x :a :y :b :color :c}) -- view from map (view-level)
-   (view sk)                     -- auto-infer columns from small dataset"
-  ([sk-or-data]
-   (let [sk (ensure-sk sk-or-data)]
-     (if (:data sk)
-       (let [cols (vec (tc/column-names (:data sk)))
-             n (count cols)]
-         (case n
-           1 (update sk :views conj {:mapping {:x (cols 0)}})
-           2 (update sk :views conj {:mapping {:x (cols 0) :y (cols 1)}})
-           3 (update sk :views conj {:mapping {:x (cols 0) :y (cols 1) :color (cols 2)}})
-           (throw (ex-info (str "Cannot infer columns from " n " columns.") {:columns cols}))))
-       sk)))
-  ([sk-or-data x-or-cols]
-   (let [sk (ensure-sk sk-or-data)]
-     (cond
-       (or (keyword? x-or-cols)
-           (string? x-or-cols))
-       (update sk :views conj {:mapping {:x x-or-cols}})
-
-       (map? x-or-cols)
-       ;; Map form: all keys go into view mapping (extract :data if present)
-       (update sk :views conj (make-view x-or-cols))
-
-       (sequential? x-or-cols)
-       (let [first-el (first x-or-cols)]
-         (if (or (keyword? first-el) (string? first-el))
-           ;; Vector of keywords -> univariate views: [:a :b :c]
-           (update sk :views into (mapv (fn [col] {:mapping {:x col}}) x-or-cols))
-           ;; Vector of pairs -> bivariate views: [[:x1 :y1] [:x2 :y2]]
-           (update sk :views into (mapv (fn [[x y]] {:mapping {:x x :y y}}) x-or-cols)))))))
-  ([sk-or-data x y]
-   (let [sk (ensure-sk sk-or-data)]
-     (cond
-       ;; Columns/pairs + view opts: (view sk [:a :b :c] {:color :species})
-       (and (sequential? x) (map? y))
-       (let [first-el (first x)]
-         (if (or (keyword? first-el) (string? first-el))
-           (update sk :views into (mapv (fn [col] (make-view (assoc y :x col))) x))
-           (update sk :views into (mapv (fn [[a b]] (make-view (merge y {:x a :y b}))) x))))
-       ;; Single column + view opts: (view data :x {:color :species})
-       (map? y)
-       (update sk :views conj (make-view (assoc y :x x)))
-       ;; Two columns: (view data :x :y)
-       :else
-       (update sk :views conj {:mapping {:x x :y y}}))))
-  ([sk-or-data x y opts]
-   (let [sk (ensure-sk sk-or-data)]
-     ;; Opts merge into this view's mapping (view-level scope)
-     (update sk :views conj (make-view (merge opts {:x x :y y}))))))
-
-(defn- add-view-layer-to-sketch
-  "Add a layer to the last view with matching position mappings, or
-   create a new view. Matching is keyword/string tolerant. This is the
-   sketch-world half of the lay-* identity rule (rules 5-7 in
-   sketch_rules.clj)."
-  [sk position-mapping layer]
-  (let [views (:views sk)
-        px (frame/canonicalize-col (:x position-mapping))
-        py (frame/canonicalize-col (:y position-mapping))
-        idx (last (keep-indexed
-                   (fn [i v]
-                     (when (and (= (frame/canonicalize-col (:x (:mapping v))) px)
-                                (= (frame/canonicalize-col (:y (:mapping v))) py))
-                       i))
-                   views))]
-    (if idx
-      (update-in sk [:views idx :layers]
-                 (fn [ls] (conj (or ls []) layer)))
-      (update sk :views conj {:mapping position-mapping :layers [layer]}))))
-
 (defn- add-view-layer-to-composite
-  "Frame-world analog of add-view-layer-to-sketch. Walks the composite
-   depth-first and appends the layer to the last leaf whose effective
-   :x/:y (after ancestor-merge) match `position-mapping`. On miss,
-   appends a fresh leaf at the root level."
+  "Walk the composite depth-first and append the layer to the last
+   leaf whose effective :x/:y (after ancestor-merge) match
+   `position-mapping`. On miss, append a fresh leaf at the root level."
   [fr position-mapping layer]
   (let [match-path (frame/last-matching-leaf-path fr position-mapping)]
     (if (some? match-path)
@@ -918,15 +735,6 @@
                  (fnil conj []) layer)
       (update fr :frames (fnil conj [])
               {:mapping position-mapping :layers [layer]}))))
-
-(defn- add-view-layer
-  "Dispatch to the composite- or sketch-path based on input shape.
-   Accepts raw sk-or-data so callers don't need to pre-run ensure-sk
-   (which would throw on composite frames)."
-  [sk-or-frame position-mapping layer]
-  (if (and (frame? sk-or-frame) (frame/composite? sk-or-frame))
-    (add-view-layer-to-composite sk-or-frame position-mapping layer)
-    (add-view-layer-to-sketch (ensure-sk sk-or-frame) position-mapping layer)))
 
 (defn- check-position-mapping
   "Throw a helpful error if :x or :y in a layer's options is a
@@ -1015,19 +823,14 @@
       d (assoc :data (coerce-dataset d)))))
 
 (defn lay
-  "Add a root-scope layer. On a frame (leaf or composite) the layer
-   attaches to :layers and flows via frame/resolve-tree to every
-   descendant leaf. On a legacy sketch input the layer attaches to
-   the sketch's :layers (applies to all views)."
+  "Add a root-scope layer. The layer attaches to :layers and flows via
+   frame/resolve-tree to every descendant leaf (composite) or renders
+   on the single panel (leaf)."
   ([sk-or-data layer-type-key]
    (lay sk-or-data layer-type-key nil))
   ([sk-or-data layer-type-key opts]
    (let [layer (build-layer layer-type-key opts)]
-     (cond
-       (frame? sk-or-data)
-       (update sk-or-data :layers (fnil conj []) layer)
-       :else
-       (update (ensure-sk sk-or-data) :layers conj layer)))))
+     (update (ensure-frame sk-or-data) :layers (fnil conj []) layer))))
 
 (defn- x-only?
   "True if layer-type-key is registered as x-only (rejects :y column)."
@@ -1072,129 +875,102 @@
       :else
       (update fr :layers (fnil conj []) bare-layer))))
 
+(defn- auto-infer-mapping
+  "Auto-infer a position/color mapping from the first 1-3 columns of
+   a dataset. Throws if the dataset has 4+ columns -- the user must
+   pass explicit x/y.
+
+   Applied when 1-arity (sk/lay-* data) lands on a fresh leaf-frame
+   with data but no :mapping."
+  [layer-type-key d]
+  (let [cols (vec (tc/column-names d))
+        n (count cols)]
+    (case n
+      1 {:x (cols 0)}
+      2 {:x (cols 0) :y (cols 1)}
+      3 {:x (cols 0) :y (cols 1) :color (cols 2)}
+      (throw (ex-info (str "Cannot auto-infer columns from " n " columns. "
+                           "Pass explicit x and y: (sk/lay-" (name layer-type-key)
+                           " data :x :y). Available columns: "
+                           (sort cols))
+                      {:layer-type layer-type-key
+                       :column-count n
+                       :columns (sort cols)})))))
+
 (defn- lay-layer-type
   "Shared implementation for all lay-* functions.
 
-   Frame inputs: append a layer directly to the frame's :layers (leaf
-   or composite; composite layers distribute to descendants via
-   resolve-tree).
+   Raw data coerces to a fresh leaf frame. Frames (leaf or composite)
+   pass through. All dispatches then route through lay-on-frame, which
+   follows the DFS-last identity rule in frame_rules.clj.
 
-   Non-frame inputs (raw data, legacy Sketch): route through the
-   Sketch adapter so the existing auto-infer / view-creation behavior
-   is preserved until the adapter is retired.
-
-   1-arity: auto-infer columns for small datasets, otherwise sketch-level layer.
-   2-arity: keyword/string -> view-specific; vector -> view-specific per column;
-            map -> sketch-level with opts.
-   3-arity: two keywords -> bivariate view-specific; keyword+map -> univariate+opts;
-            vector+map -> view-specific per column with opts.
-   4-arity: bivariate view-specific with opts."
+   1-arity: auto-infer columns for a fresh leaf-with-data (<= 3 cols),
+            otherwise append a bare/aesthetic layer.
+   2-arity: keyword/string -> position-bearing layer;
+            vector of columns/pairs -> multi-pair broadcast;
+            map -> aesthetic-only layer with opts.
+   3-arity: two keywords -> bivariate; keyword+map -> univariate+opts;
+            vector+map -> multi-pair broadcast with opts.
+   4-arity: bivariate layer with opts."
   ([layer-type-key sk-or-data]
-   (cond
-     (frame? sk-or-data)
-     (lay-on-frame sk-or-data layer-type-key nil nil)
-
-     :else
-     (let [sk (ensure-sk sk-or-data)
-           d (:data sk)
-           col-count (when d (count (tc/column-names d)))
-           fresh? (and (empty? (:views sk)) (empty? (:layers sk)))]
-       (cond
-         ;; Fresh sketch, small dataset -> auto-infer columns
-         (and fresh? d (<= col-count 3))
-         (let [sk2 (view sk)]
-           (add-view-layer sk2
-                           (:mapping (first (:views sk2)))
-                           (build-layer layer-type-key nil)))
-
-         ;; Fresh sketch, 4+ columns -> reject with a clear error (was: silent empty plot).
-         ;; This only fires on the very first lay-* call on a fresh sketch; the
-         ;; "lay-first, view-later" pattern keeps working because it has layers
-         ;; by the time subsequent 1-arity lay-* calls arrive.
-         (and fresh? d (> col-count 3))
-         (throw (ex-info (str "Cannot auto-infer columns from " col-count " columns. "
-                              "Pass explicit x and y: (sk/lay-" (name layer-type-key)
-                              " data :x :y). Available columns: "
-                              (sort (tc/column-names d)))
-                         {:layer-type layer-type-key
-                          :column-count col-count
-                          :columns (sort (tc/column-names d))}))
-
-         ;; Has views, has sketch-level layers, or no data: sketch-level layer
-         :else
-         (lay sk layer-type-key)))))
+   (let [was-raw? (not (frame? sk-or-data))
+         fr (ensure-frame sk-or-data)
+         d (:data fr)]
+     (if (and was-raw? d)
+       ;; Raw-data 1-arity: auto-infer columns from the first 1-3 columns
+       ;; so `(sk/lay-point data)` still produces a renderable plot.
+       (let [mapping (auto-infer-mapping layer-type-key d)]
+         (lay-on-frame (assoc fr :mapping mapping)
+                       layer-type-key nil nil))
+       (lay-on-frame fr layer-type-key nil nil))))
   ([layer-type-key sk-or-data x-or-opts]
-   (cond
-     (frame? sk-or-data)
-     (if (map? x-or-opts)
-       (lay-on-frame sk-or-data layer-type-key nil x-or-opts)
-       (lay-on-frame sk-or-data layer-type-key {:x x-or-opts} nil))
+   (let [fr (ensure-frame sk-or-data)]
+     (cond
+       (map? x-or-opts)
+       (lay-on-frame fr layer-type-key nil x-or-opts)
 
-     (or (keyword? x-or-opts) (string? x-or-opts))
-     (add-view-layer sk-or-data
-                     {:x x-or-opts}
-                     (build-layer layer-type-key nil))
-     ;; Sequential -> create view-specific layers (not global)
-     (sequential? x-or-opts)
-     (reduce (fn [sk col-or-pair]
-               (if (sequential? col-or-pair)
-                 (let [[x y] col-or-pair]
-                   (add-view-layer sk {:x x :y y} (build-layer layer-type-key nil)))
-                 (add-view-layer sk {:x col-or-pair} (build-layer layer-type-key nil))))
-             sk-or-data
-             x-or-opts)
-     :else
-     (lay sk-or-data layer-type-key x-or-opts)))
+       (or (keyword? x-or-opts) (string? x-or-opts))
+       (lay-on-frame fr layer-type-key {:x x-or-opts} nil)
+
+       ;; Sequential -> build a multi-panel composite via sk/frame, then
+       ;; attach the layer at the root so it flows to every panel via
+       ;; resolve-tree.
+       (sequential? x-or-opts)
+       (lay-on-frame (frame fr x-or-opts) layer-type-key nil nil)
+
+       :else
+       (lay-on-frame fr layer-type-key nil nil))))
   ([layer-type-key sk-or-data x y-or-opts]
-   (cond
-     (frame? sk-or-data)
-     (if (map? y-or-opts)
-       (lay-on-frame sk-or-data layer-type-key {:x x} y-or-opts)
+   (let [fr (ensure-frame sk-or-data)]
+     (cond
+       ;; Parallel vectors -> build a multi-panel composite via sk/frame
+       ;; with paired x/y, then attach the bare layer at the root so it
+       ;; flows to every panel.
+       (and (sequential? x) (sequential? y-or-opts))
+       (lay-on-frame (frame fr (mapv vector x y-or-opts))
+                     layer-type-key nil nil)
+
+       ;; Sequential + opts -> build a multi-panel composite via sk/frame,
+       ;; then attach a layer with opts at the root.
+       (and (sequential? x) (map? y-or-opts))
+       (lay-on-frame (frame fr x) layer-type-key nil y-or-opts)
+
+       (map? y-or-opts)
+       (lay-on-frame fr layer-type-key {:x x} y-or-opts)
+
+       (or (keyword? y-or-opts) (string? y-or-opts))
        (do (when (x-only? layer-type-key)
              (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
                              {:layer-type layer-type-key :x x :y y-or-opts})))
-           (lay-on-frame sk-or-data layer-type-key {:x x :y y-or-opts} nil)))
+           (lay-on-frame fr layer-type-key {:x x :y y-or-opts} nil))
 
-     (or (keyword? y-or-opts) (string? y-or-opts))
-     (do (when (x-only? layer-type-key)
-           (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
-                           {:layer-type layer-type-key :x x :y y-or-opts})))
-         (add-view-layer sk-or-data
-                         {:x x :y y-or-opts}
-                         (build-layer layer-type-key nil)))
-     ;; Parallel vectors -> bivariate view-specific layers per (x_i, y_i) pair.
-     ;; Supports (lay-point data [:x1 :x2] [:y1 :y2]) which previously
-     ;; ClassCastException-d in build-layer.
-     (and (sequential? x) (sequential? y-or-opts))
-     (reduce (fn [sk [a b]]
-               (add-view-layer sk {:x a :y b} (build-layer layer-type-key nil)))
-             sk-or-data
-             (map vector x y-or-opts))
-     ;; Sequential + opts -> view-specific layers with opts
-     (and (sequential? x) (map? y-or-opts))
-     (reduce (fn [sk col-or-pair]
-               (if (sequential? col-or-pair)
-                 (let [[a b] col-or-pair]
-                   (add-view-layer sk {:x a :y b} (build-layer layer-type-key y-or-opts)))
-                 (add-view-layer sk {:x col-or-pair} (build-layer layer-type-key y-or-opts))))
-             sk-or-data
-             x)
-     :else
-     (add-view-layer sk-or-data
-                     {:x x}
-                     (build-layer layer-type-key y-or-opts))))
+       :else
+       (lay-on-frame fr layer-type-key {:x x} y-or-opts))))
   ([layer-type-key sk-or-data x y opts]
    (when (x-only? layer-type-key)
      (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
                      {:layer-type layer-type-key :x x :y y})))
-   (cond
-     (frame? sk-or-data)
-     (lay-on-frame sk-or-data layer-type-key {:x x :y y} opts)
-
-     :else
-     (add-view-layer sk-or-data
-                     {:x x :y y}
-                     (build-layer layer-type-key opts)))))
+   (lay-on-frame (ensure-frame sk-or-data) layer-type-key {:x x :y y} opts)))
 
 (defn lay-point
   "Add :point layer (scatter) to a sketch.
@@ -1492,15 +1268,12 @@
     b))
 
 (defn- update-opts
-  "Update the root :opts of a sketch or frame. Frames (leaf or
-   composite) stay in frame-world; non-frame inputs are coerced via
-   ensure-sk so the same update applies. resolve-tree merges root
-   :opts into every leaf, so root-level writes act as plot-level
-   options across the whole tree."
+  "Update the root :opts of a frame. Non-frame inputs are coerced via
+   ensure-frame first. resolve-tree merges root :opts into every leaf,
+   so root-level writes act as plot-level options across the whole
+   tree."
   [sk-or-frame f & args]
-  (if (frame? sk-or-frame)
-    (apply update sk-or-frame :opts f args)
-    (apply update (ensure-sk sk-or-frame) :opts f args)))
+  (apply update (ensure-frame sk-or-frame) :opts f args))
 
 (defn options
   "Set plot-level options (title, labels, width, height, etc.).
@@ -1597,59 +1370,42 @@
   (update-opts sk assoc :coord coord-type))
 
 (defn draft
-  "Flatten a sketch or leaf frame into a draft -- a vector of flat
-   maps, one per applicable layer, with all scope merged: data,
-   mappings, and layer type fully determined.
-   (draft sk)"
-  [sk]
-  (if (and (frame? sk) (frame/leaf? sk))
-    (frame/leaf->draft sk)
-    (let [sk (ensure-sk sk)]
-      (sketch/sketch->draft sk))))
+  "Flatten a leaf frame into a draft -- a vector of flat maps, one per
+   applicable layer, with all scope merged: data, mappings, and layer
+   type fully determined.
+   (draft fr)"
+  [fr]
+  (frame/leaf->draft (ensure-frame fr)))
 
 (defn plan
-  "Convert a sketch or frame into a plan. Each view/leaf is one panel.
-   On a composite frame, returns a wrapper plan with :composite? true
-   and :sub-plots tying each leaf path to its rect and sub-plan.
-   (plan sk)
-   (plan sk {:title \"My Plot\"})"
+  "Convert a frame into a plan. Each leaf is one panel. On a composite
+   frame, returns a wrapper plan with :composite? true and :sub-plots
+   tying each leaf path to its rect and sub-plan.
+   (plan fr)
+   (plan fr {:title \"My Plot\"})"
   ([sk]
    (when (plan? sk)
-     (throw (ex-info (str "sk/plan expects a sketch or frame, not a plan. "
-                          "Use the plan directly, or call sk/plot on a frame.")
+     (throw (ex-info (str "sk/plan expects a frame, not a plan. "
+                          "Use the plan directly, or call sk/plot on the frame.")
                      {:got :plan})))
-   (cond
-     (and (frame? sk) (frame/composite? sk))
-     (compositor/composite->plan sk)
-
-     (and (frame? sk) (frame/leaf? sk))
-     (plan/draft->plan (frame/leaf->draft sk) (:opts sk {}))
-
-     :else
-     (let [sk (ensure-sk sk)
-           d (sketch/sketch->draft sk)]
-       (plan/draft->plan d (:opts sk {})))))
+   (let [fr (ensure-frame sk)]
+     (if (frame/composite? fr)
+       (compositor/composite->plan fr)
+       (plan/draft->plan (frame/leaf->draft fr) (:opts fr {})))))
   ([sk opts]
    (plan (options sk opts))))
 
 (defn plot
-  "Render a sketch or frame to SVG (or interactive HTML if tooltip/brush
-   is set). On a composite frame, leaves are rendered individually and
+  "Render a frame to SVG (or interactive HTML if tooltip/brush is
+   set). On a composite frame, leaves are rendered individually and
    tiled via the compositor's layout.
-   (plot sk)
-   (plot sk {:width 800 :title \"My Plot\"})"
+   (plot fr)
+   (plot fr {:width 800 :title \"My Plot\"})"
   ([sk]
-   (cond
-     (and (frame? sk) (frame/composite? sk))
-     (compositor/composite->plot sk)
-
-     (and (frame? sk) (frame/leaf? sk))
-     (render-impl/plan->plot (plan sk) :svg (:opts sk {}))
-
-     :else
-     (let [sk (ensure-sk sk)
-           p (plan sk)]
-       (render-impl/plan->plot p :svg (:opts sk {})))))
+   (let [fr (ensure-frame sk)]
+     (if (frame/composite? fr)
+       (compositor/composite->plot fr)
+       (render-impl/plan->plot (plan fr) :svg (:opts fr {})))))
   ([sk opts]
    (plot (options sk opts))))
 
@@ -1660,16 +1416,15 @@
    Returns a map with :width, :height, :panels, :points, :lines,
    :polygons, :tiles, :visible-tiles, and :texts -- useful for asserting
    plot structure.
-   Accepts SVG hiccup, a sketch, or a frame (auto-renders to SVG first).
-   (svg-summary (plot sk))  -- summary of rendered SVG
-   (svg-summary my-sketch)  -- auto-renders sketch, then summarizes
+   Accepts SVG hiccup or a frame (auto-renders to SVG first).
+   (svg-summary (plot fr))  -- summary of rendered SVG
    (svg-summary my-frame)   -- auto-renders frame (leaf or composite)"
   ([svg-or-sketch]
-   (if (or (sketch/sketch? svg-or-sketch) (frame? svg-or-sketch))
+   (if (frame? svg-or-sketch)
      (svg/svg-summary (plot svg-or-sketch))
      (svg/svg-summary svg-or-sketch)))
   ([svg-or-sketch theme]
-   (if (or (sketch/sketch? svg-or-sketch) (frame? svg-or-sketch))
+   (if (frame? svg-or-sketch)
      (svg/svg-summary (plot svg-or-sketch) theme)
      (svg/svg-summary svg-or-sketch theme))))
 
@@ -1677,12 +1432,10 @@
 
 (defn- coerce-arrange-input
   "Turn one sk/arrange input into a leaf-frame plain map. Accepts
-   Sketch records (flattened via sketch/sketch->leaf-frame) and
    frame-shaped leaf maps (passed through). Anything else -- including
    pre-rendered hiccup -- throws with guidance."
   [p idx]
   (cond
-    (sketch/sketch? p) (sketch/sketch->leaf-frame p)
     (and (frame? p) (frame/leaf? p)) p
     (and (frame? p) (frame/composite? p))
     (throw (ex-info (str "sk/arrange input at index " idx
@@ -1785,7 +1538,7 @@
    (save sk path {}))
   ([sk path opts]
    (let [path-str (str path)
-         sk (ensure-sk sk)]
+         sk (ensure-frame sk)]
      (when-not (.endsWith path-str ".svg")
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
      (let [sk (if (seq opts) (options sk opts) sk)
@@ -1807,7 +1560,7 @@
    (save-png sk path {}))
   ([sk path opts]
    (require 'scicloj.napkinsketch.render.bufimg)
-   (let [sk (ensure-sk sk)
+   (let [sk (ensure-frame sk)
          sk (if (seq opts) (options sk opts) sk)
          p (plan sk)
          img (render-impl/plan->plot p :bufimg (:opts sk {}))]

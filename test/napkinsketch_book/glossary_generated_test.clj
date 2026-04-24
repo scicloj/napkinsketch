@@ -199,7 +199,7 @@
   (sk/lay-point :sepal-length :sepal-width)
   (sk/lay-rule-h {:y-intercept 3.0})
   :layers
-  first
+  (nth 1)
   :layer-type))
 
 

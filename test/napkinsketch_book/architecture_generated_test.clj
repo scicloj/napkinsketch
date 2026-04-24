@@ -1,223 +1,271 @@
 (ns
  napkinsketch-book.architecture-generated-test
-  (:require
-   [scicloj.kindly.v4.kind :as kind]
-   [scicloj.metamorph.ml.rdatasets :as rdatasets]
-   [scicloj.napkinsketch.api :as sk]
-   [scicloj.napkinsketch.impl.sketch :as sketch-impl]
-   [scicloj.napkinsketch.impl.plan :as plan-impl]
-   [scicloj.napkinsketch.impl.plan-schema :as ss]
-   [clojure.test :refer [deftest is]]))
+ (:require
+  [scicloj.kindly.v4.kind :as kind]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
+  [scicloj.napkinsketch.api :as sk]
+  [scicloj.napkinsketch.impl.frame :as frame-impl]
+  [scicloj.napkinsketch.impl.plan :as plan-impl]
+  [scicloj.napkinsketch.impl.plan-schema :as ss]
+  [clojure.test :refer [deftest is]]))
+
 
 (def
-  v3_l34
-  (kind/mermaid
-   "\ngraph LR\n  B[\"Frame<br/>(composable API)\"] -->|frame->draft| D[\"Draft<br/>(flat maps)\"]\n  D -->|draft->plan| P[\"Plan<br/>(data-space)\"]\n  P -->|scales + coords| M[\"Membrane<br/>(drawing primitives)\"]\n  M -->|tree walk| F[\"Plot<br/>(output)\"]\n  style B fill:#d1c4e9\n  style D fill:#e8f5e9\n  style P fill:#fff3e0\n  style M fill:#e3f2fd\n  style F fill:#fce4ec\n"))
+ v3_l27
+ (kind/mermaid
+  "\ngraph LR\n  B[\"Frame<br/>(composable API)\"] -->|frame->draft| D[\"Draft<br/>(flat maps)\"]\n  D -->|draft->plan| P[\"Plan<br/>(data-space)\"]\n  P -->|scales + coords| M[\"Membrane<br/>(drawing primitives)\"]\n  M -->|tree walk| F[\"Plot<br/>(output)\"]\n  style B fill:#d1c4e9\n  style D fill:#e8f5e9\n  style P fill:#fff3e0\n  style M fill:#e3f2fd\n  style F fill:#fce4ec\n"))
+
 
 (def
-  v5_l75
-  (def trace-data {:x [1 2 3 4 5], :y [2 4 3 5 4], :g [:a :a :b :b :b]}))
+ v5_l68
+ (def trace-data {:x [1 2 3 4 5], :y [2 4 3 5 4], :g [:a :a :b :b :b]}))
+
 
 (def
-  v7_l86
-  (def trace-sk (-> trace-data (sk/lay-point :x :y {:color :g}))))
+ v7_l79
+ (def trace-sk (-> trace-data (sk/lay-point :x :y {:color :g}))))
 
-(def v9_l106 (sketch-impl/sketch? trace-sk))
 
-(deftest t10_l108 (is (true? v9_l106)))
+(def v9_l96 (sk/frame? trace-sk))
 
-(def v12_l112 (count (:views trace-sk)))
 
-(deftest t13_l114 (is ((fn [n] (= 1 n)) v12_l112)))
+(deftest t10_l98 (is (true? v9_l96)))
 
-(def v14_l116 (:views trace-sk))
 
-(deftest
-  t15_l118
-  (is
-   ((fn
-      [views]
-      (let
-       [v (first views)]
-        (and
-         (= :x (get-in v [:mapping :x]))
-         (= :y (get-in v [:mapping :y]))
-         (= 1 (count (:layers v))))))
-    v14_l116)))
+(def v12_l102 (frame-impl/leaf? trace-sk))
 
-(def v17_l127 (get-in (:views trace-sk) [0 :layers 0 :layer-type]))
 
-(deftest t18_l129 (is ((fn [m] (= :point m)) v17_l127)))
+(deftest t13_l104 (is (true? v12_l102)))
 
-(def v20_l137 (def trace-draft (sk/draft trace-sk)))
 
-(def v21_l140 (count trace-draft))
+(def v15_l111 (:mapping trace-sk))
 
-(deftest t22_l142 (is ((fn [n] (= 1 n)) v21_l140)))
-
-(def v23_l144 (select-keys (first trace-draft) [:x :y :mark :color]))
 
 (deftest
-  t24_l146
-  (is
-   ((fn
-      [m]
-      (and
-       (= :x (:x m))
-       (= :y (:y m))
-       (= :point (:mark m))
-       (= :g (:color m))))
-    v23_l144)))
+ t16_l113
+ (is ((fn [m] (and (= :x (:x m)) (= :y (:y m)))) v15_l111)))
 
-(def v26_l157 (def trace-plan (plan-impl/draft->plan trace-draft {})))
 
-(def v27_l160 trace-plan)
+(def v17_l116 (get-in trace-sk [:layers 0 :layer-type]))
+
+
+(deftest t18_l118 (is ((fn [m] (= :point m)) v17_l116)))
+
+
+(def v20_l122 (get-in trace-sk [:layers 0 :mapping :color]))
+
+
+(deftest t21_l124 (is ((fn [m] (= :g m)) v20_l122)))
+
+
+(def v23_l132 (def trace-draft (sk/draft trace-sk)))
+
+
+(def v24_l135 (count trace-draft))
+
+
+(deftest t25_l137 (is ((fn [n] (= 1 n)) v24_l135)))
+
+
+(def v26_l139 (select-keys (first trace-draft) [:x :y :mark :color]))
+
 
 (deftest
-  t28_l162
-  (is ((fn [v] (and (map? v) (contains? v :panels))) v27_l160)))
+ t27_l141
+ (is
+  ((fn
+    [m]
+    (and
+     (= :x (:x m))
+     (= :y (:y m))
+     (= :point (:mark m))
+     (= :g (:color m))))
+   v26_l139)))
 
-(def v30_l166 (ss/valid? trace-plan))
 
-(deftest t31_l168 (is (true? v30_l166)))
+(def v29_l152 (def trace-plan (plan-impl/draft->plan trace-draft {})))
 
-(def v33_l175 (def trace-membrane (sk/plan->membrane trace-plan)))
 
-(def v34_l177 trace-membrane)
+(def v30_l155 trace-plan)
+
 
 (deftest
-  t35_l179
-  (is ((fn [v] (and (vector? v) (pos? (count v)))) v34_l177)))
+ t31_l157
+ (is ((fn [v] (and (map? v) (contains? v :panels))) v30_l155)))
+
+
+(def v33_l161 (ss/valid? trace-plan))
+
+
+(deftest t34_l163 (is (true? v33_l161)))
+
+
+(def v36_l170 (def trace-membrane (sk/plan->membrane trace-plan)))
+
+
+(def v37_l172 trace-membrane)
+
+
+(deftest
+ t38_l174
+ (is ((fn [v] (and (vector? v) (pos? (count v)))) v37_l172)))
+
 
 (def
-  v37_l185
-  (def
-    trace-plot
-    (sk/membrane->plot
-     trace-membrane
-     :svg
-     {:total-width (:total-width trace-plan),
-      :total-height (:total-height trace-plan)})))
+ v40_l180
+ (def
+  trace-plot
+  (sk/membrane->plot
+   trace-membrane
+   :svg
+   {:total-width (:total-width trace-plan),
+    :total-height (:total-height trace-plan)})))
 
-(def v38_l190 (kind/pprint trace-plot))
 
-(deftest
-  t39_l192
-  (is ((fn [v] (and (vector? v) (= :svg (first v)))) v38_l190)))
+(def v41_l185 (kind/pprint trace-plot))
 
-(def v41_l196 (kind/hiccup trace-plot))
 
 (deftest
-  t42_l198
-  (is
-   ((fn
-      [v]
-      (let
-       [s (sk/svg-summary v)]
-        (and (= 1 (:panels s)) (= 5 (:points s)))))
-    v41_l196)))
+ t42_l187
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v41_l185)))
 
-(def v44_l208 (def shortcut-plan (sk/plan trace-sk)))
 
-(def v45_l210 (ss/valid? shortcut-plan))
+(def v44_l191 (kind/hiccup trace-plot))
 
-(deftest t46_l212 (is (true? v45_l210)))
+
+(deftest
+ t45_l193
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 1 (:panels s)) (= 5 (:points s)))))
+   v44_l191)))
+
+
+(def v47_l203 (def shortcut-plan (sk/plan trace-sk)))
+
+
+(def v48_l205 (ss/valid? shortcut-plan))
+
+
+(deftest t49_l207 (is (true? v48_l205)))
+
 
 (def
-  v48_l232
-  (kind/mermaid
-   "\ngraph LR\n  A[\"Frame + draft\"] -->|plan| P[\"Plan\"]\n  P --> R[\"membrane + plot\"]\n  style A fill:#e8f5e9\n  style P fill:#fff3e0\n  style R fill:#e3f2fd\n"))
+ v51_l227
+ (kind/mermaid
+  "\ngraph LR\n  A[\"Frame + draft\"] -->|plan| P[\"Plan\"]\n  P --> R[\"membrane + plot\"]\n  style A fill:#e8f5e9\n  style P fill:#fff3e0\n  style R fill:#e3f2fd\n"))
+
 
 (def
-  v50_l261
-  (def
-    multi-sk
-    (->
-     (rdatasets/datasets-iris)
-     (sk/frame :petal-length :petal-width {:color :species})
-     sk/lay-point
-     (sk/lay-smooth {:stat :linear-model}))))
-
-(def v52_l269 (count (:layers multi-sk)))
-
-(deftest t53_l271 (is ((fn [n] (= 2 n)) v52_l269)))
-
-(def v54_l273 (mapv :layer-type (:layers multi-sk)))
-
-(deftest
-  t55_l275
-  (is
-   ((fn [v] (and (= :point (first v)) (= :smooth (second v))))
-    v54_l273)))
-
-(def v57_l281 (def multi-draft (sk/draft multi-sk)))
-
-(def v58_l283 (count multi-draft))
-
-(deftest t59_l285 (is ((fn [n] (= 2 n)) v58_l283)))
-
-(def v60_l287 (mapv :mark multi-draft))
-
-(deftest
-  t61_l289
-  (is
-   ((fn [v] (and (= :point (first v)) (= :line (second v)))) v60_l287)))
-
-(def
-  v63_l294
-  (def
-    multi-plan
-    (sk/plan multi-sk {:title "Iris Petals with Regression"})))
-
-(def
-  v64_l297
-  (mapv
-   (fn [layer] {:mark (:mark layer), :n-groups (count (:groups layer))})
-   (:layers (first (:panels multi-plan)))))
-
-(deftest
-  t65_l302
-  (is
-   ((fn
-      [v]
-      (and
-       (= :point (:mark (first v)))
-       (= :line (:mark (second v)))
-       (= 3 (:n-groups (first v)))))
-    v64_l297)))
-
-(def v67_l308 multi-plan)
-
-(deftest
-  t68_l310
-  (is
-   ((fn
-      [m]
-      (and
-       (= "Iris Petals with Regression" (:title m))
-       (= 3 (count (get-in m [:legend :entries])))))
-    v67_l308)))
-
-(def
-  v70_l315
+ v53_l256
+ (def
+  multi-sk
   (->
    (rdatasets/datasets-iris)
    (sk/frame :petal-length :petal-width {:color :species})
    sk/lay-point
-   (sk/lay-smooth {:stat :linear-model})
-   (sk/options {:title "Iris Petals with Regression"})))
+   (sk/lay-smooth {:stat :linear-model}))))
+
+
+(def v55_l264 (count (:layers multi-sk)))
+
+
+(deftest t56_l266 (is ((fn [n] (= 2 n)) v55_l264)))
+
+
+(def v57_l268 (mapv :layer-type (:layers multi-sk)))
+
 
 (deftest
-  t71_l321
-  (is
-   ((fn
-      [v]
-      (let
-       [s (sk/svg-summary v)]
-        (and (= 150 (:points s)) (= 3 (:lines s)))))
-    v70_l315)))
+ t58_l270
+ (is
+  ((fn [v] (and (= :point (first v)) (= :smooth (second v))))
+   v57_l268)))
+
+
+(def v60_l276 (def multi-draft (sk/draft multi-sk)))
+
+
+(def v61_l278 (count multi-draft))
+
+
+(deftest t62_l280 (is ((fn [n] (= 2 n)) v61_l278)))
+
+
+(def v63_l282 (mapv :mark multi-draft))
+
+
+(deftest
+ t64_l284
+ (is
+  ((fn [v] (and (= :point (first v)) (= :line (second v)))) v63_l282)))
+
 
 (def
-  v73_l327
-  (kind/mermaid
-   "\ngraph TD\n  API[\"api.clj\"] --> SK[\"impl/sketch.clj\"]\n  API --> RES[\"impl/resolve.clj\"]\n  API --> PL[\"impl/plan.clj\"]\n  SK --> RES\n  SK --> PL\n  PL --> RES\n  PL --> STAT[\"impl/stat.clj\"]\n  PL --> SCALE[\"impl/scale.clj\"]\n  PL --> DEFAULTS[\"impl/defaults.clj\"]\n  PL --> SS[\"impl/sketch_schema.clj\"]\n  SK --> RENDER[\"impl/render.clj\"]\n  RENDER --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SK fill:#d1c4e9\n  style PL fill:#d1c4e9\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))
+ v66_l289
+ (def
+  multi-plan
+  (sk/plan multi-sk {:title "Iris Petals with Regression"})))
+
+
+(def
+ v67_l292
+ (mapv
+  (fn [layer] {:mark (:mark layer), :n-groups (count (:groups layer))})
+  (:layers (first (:panels multi-plan)))))
+
+
+(deftest
+ t68_l297
+ (is
+  ((fn
+    [v]
+    (and
+     (= :point (:mark (first v)))
+     (= :line (:mark (second v)))
+     (= 3 (:n-groups (first v)))))
+   v67_l292)))
+
+
+(def v70_l303 multi-plan)
+
+
+(deftest
+ t71_l305
+ (is
+  ((fn
+    [m]
+    (and
+     (= "Iris Petals with Regression" (:title m))
+     (= 3 (count (get-in m [:legend :entries])))))
+   v70_l303)))
+
+
+(def
+ v73_l310
+ (->
+  (rdatasets/datasets-iris)
+  (sk/frame :petal-length :petal-width {:color :species})
+  sk/lay-point
+  (sk/lay-smooth {:stat :linear-model})
+  (sk/options {:title "Iris Petals with Regression"})))
+
+
+(deftest
+ t74_l316
+ (is
+  ((fn
+    [v]
+    (let
+     [s (sk/svg-summary v)]
+     (and (= 150 (:points s)) (= 3 (:lines s)))))
+   v73_l310)))
+
+
+(def
+ v76_l322
+ (kind/mermaid
+  "\ngraph TD\n  API[\"api.clj\"] --> SK[\"impl/sketch.clj\"]\n  API --> RES[\"impl/resolve.clj\"]\n  API --> PL[\"impl/plan.clj\"]\n  SK --> RES\n  SK --> PL\n  PL --> RES\n  PL --> STAT[\"impl/stat.clj\"]\n  PL --> SCALE[\"impl/scale.clj\"]\n  PL --> DEFAULTS[\"impl/defaults.clj\"]\n  PL --> SS[\"impl/sketch_schema.clj\"]\n  SK --> RENDER[\"impl/render.clj\"]\n  RENDER --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style SK fill:#d1c4e9\n  style PL fill:#d1c4e9\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))

@@ -6,13 +6,6 @@
 ;;
 ;; This notebook traces a small example through every stage,
 ;; explains the plan boundary, and shows the namespace structure.
-;;
-;; **Note on internal types.** The pipeline trace below reaches into
-;; `impl/` namespaces to show fields like `:views` and the Sketch
-;; record. These are the internal shape used today; the frame
-;; substrate (plain maps) is the unified spec type that Phase 6
-;; will promote to the single internal type. The user-facing API
-;; already uses "frame" vocabulary uniformly.
 
 (ns napkinsketch-book.architecture
   (:require
@@ -22,8 +15,8 @@
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]
-   ;; Sketch internals -- record and draft
-   [scicloj.napkinsketch.impl.sketch :as sketch-impl]
+   ;; Frame substrate -- leaf->draft, resolve-tree
+   [scicloj.napkinsketch.impl.frame :as frame-impl]
    ;; Plan pipeline -- draft->plan, domains, ticks, legends, layout
    [scicloj.napkinsketch.impl.plan :as plan-impl]
    ;; Malli schema validation
@@ -87,46 +80,48 @@ graph LR
   (-> trace-data
       (sk/lay-point :x :y {:color :g})))
 
-;; Internally today, threading `sk/lay-*` produces a Sketch record
-;; (the adapter in place during the pre-alpha refactor). Phase 6
-;; retires this record in favour of the plain-map frame; the public
-;; API and pipeline semantics do not change. The fields below are
-;; what you see while inspecting the threaded value today:
+;; A frame is a plain Clojure map. The fields below are what you see
+;; while inspecting the threaded value:
 ;;
 ;; - `:data` -- the dataset (coerced to Tablecloth)
 ;;
-;; - `:mapping` -- mappings inherited by all layers
+;; - `:mapping` -- mappings that flow into every layer on this frame
 ;;
-;; - `:views` -- leaf descriptions, each with `:mapping` and optional `:layers`
+;; - `:layers` -- layers placed on this frame
 ;;
-;; - `:layers` -- frame-level layers (from bare `lay-*` without columns)
+;; - `:frames` -- sub-frames; a leaf has none
 ;;
 ;; - `:opts` -- plot-level options (title, width, etc.)
 
-(sketch-impl/sketch? trace-sk)
+(sk/frame? trace-sk)
 
 (kind/test-last [true?])
 
-;; Let's look at the leaves and layers inside the frame:
+;; Because a leaf frame has no sub-frames, this is a leaf:
 
-(count (:views trace-sk))
+(frame-impl/leaf? trace-sk)
 
-(kind/test-last [(fn [n] (= 1 n))])
+(kind/test-last [true?])
 
-(:views trace-sk)
+;; The mapping carries the position aesthetics (from the positional
+;; :x / :y arguments); the color aesthetic (from the opts map) rides
+;; on the layer so a subsequent `sk/lay-*` with different opts does
+;; not disturb it:
 
-(kind/test-last [(fn [views]
-                   (let [v (first views)]
-                     (and (= :x (get-in v [:mapping :x]))
-                          (= :y (get-in v [:mapping :y]))
-                          (= 1 (count (:layers v))))))])
+(:mapping trace-sk)
 
-;; The view has one layer -- the point layer -- attached directly
-;; because `lay-point` was called with columns.
+(kind/test-last [(fn [m] (and (= :x (:x m))
+                              (= :y (:y m))))])
 
-(get-in (:views trace-sk) [0 :layers 0 :layer-type])
+(get-in trace-sk [:layers 0 :layer-type])
 
 (kind/test-last [(fn [m] (= :point m))])
+
+;; The :color mapping lives on the layer's own :mapping:
+
+(get-in trace-sk [:layers 0 :mapping :color])
+
+(kind/test-last [(fn [m] (= :g m))])
 
 ;; ### Draft
 ;;
@@ -215,7 +210,7 @@ trace-membrane
 ;;
 ;; | Stage | Type | Coordinates |
 ;; |:------|:-----|:------------|
-;; | Frame | Plain map (leaf or composite) or Sketch record | N/A (declarative) |
+;; | Frame | Plain map (leaf or composite) | N/A (declarative) |
 ;; | Draft | Vector of maps | N/A (declarative) |
 ;; | Plan | Clojure maps + dtype buffers | Data space |
 ;; | Membrane | Record tree | Drawing units |
