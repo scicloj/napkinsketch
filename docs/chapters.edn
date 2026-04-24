@@ -1,11 +1,11 @@
 {"🚀 Getting Started" ["quickstart"]
  "🧱 Foundations" ["datasets"
-                   "sketch_model"
+                   "frame_model"
                    "core_concepts"
                    "options_and_scopes"
-                   "sketch_rules"
+                   "frame_rules"
                    "inference_rules"
-                   "methods"
+                   "layer_types"
                    "glossary"]
  "📊 Chart Types" ["scatter"
                    "distributions"
@@ -17,6 +17,7 @@
                      "configuration"
                      "customization"
                      "faceting"
+                     "composition"
                      "troubleshooting"]
  "📖 Reference" ["api_reference"]
  "🖼 Gallery" ["gallery"]

@@ -224,9 +224,7 @@
   wave
   {:x (range 30),
    :y
-   (map
-    (fn* [p1__153538#] (Math/sin (* p1__153538# 0.3)))
-    (range 30))}))
+   (map (fn* [p1__83366#] (Math/sin (* p1__83366# 0.3))) (range 30))}))
 
 
 (def v44_l153 (-> wave (pj/lay-line :x :y)))
@@ -335,9 +333,9 @@
     :y
     (mapv
      (fn*
-      [p1__153539#]
+      [p1__83367#]
       (+
-       (Math/sin (* p1__153539# 0.2))
+       (Math/sin (* p1__83367# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (pj/lay-point :x :y)
@@ -1154,8 +1152,7 @@
 (def
  v257_l722
  (let
-  [path
-   (str (java.io.File/createTempFile "plotje-example" ".svg"))]
+  [path (str (java.io.File/createTempFile "plotje-example" ".svg"))]
   (->
    (rdatasets/datasets-iris)
    (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -1172,8 +1169,7 @@
 (def
  v261_l735
  (let
-  [path
-   (str (java.io.File/createTempFile "plotje-example" ".png"))]
+  [path (str (java.io.File/createTempFile "plotje-example" ".png"))]
   (->
    (rdatasets/datasets-iris)
    (pj/lay-point :sepal-length :sepal-width {:color :species})

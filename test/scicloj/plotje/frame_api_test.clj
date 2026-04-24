@@ -23,8 +23,15 @@
       (is (not (contains? f :mapping)))
       (is (= [] (:layers f)))))
 
-  (testing "1-arity coerces data, no mapping"
+  (testing "1-arity coerces data and auto-infers mapping on 1-3 cols"
     (let [f (pj/frame {:x [1 2] :y [3 4]})]
+      (is (pj/frame? f))
+      (is (tc/dataset? (:data f)))
+      (is (= {:x :x :y :y} (:mapping f))
+          "two-column data infers {:x col0, :y col1}")))
+
+  (testing "1-arity leaves mapping empty on 4+ cols (no ambiguous default)"
+    (let [f (pj/frame {:a [1] :b [2] :c [3] :d [4]})]
       (is (pj/frame? f))
       (is (tc/dataset? (:data f)))
       (is (not (contains? f :mapping)))))
@@ -40,6 +47,39 @@
   (testing "3-arity sets both :x and :y"
     (let [f (pj/frame tiny-ds :x :y)]
       (is (= {:x :x :y :y} (:mapping f))))))
+
+;; ============================================================
+;; Few-column inference: parity with the pre-Phase-6 Sketch era,
+;; where `sk/view` 1-arity and `sk/lay-* data` fresh-sketch paths
+;; both inferred from the first 1-3 columns.
+;; ============================================================
+
+(deftest few-column-inference-test
+  (testing "pj/frame 1-arity infers mapping from 1-3 columns"
+    (is (= {:x :a} (:mapping (pj/frame {:a [1 2 3]}))))
+    (is (= {:x :a :y :b} (:mapping (pj/frame {:a [1 2] :b [3 4]}))))
+    (is (= {:x :a :y :b :color :c}
+           (:mapping (pj/frame {:a [1] :b [2] :c ["x"]})))))
+
+  (testing "threading through pj/frame preserves lay-* auto-infer"
+    (let [raw      (pj/lay-point {:x [1 2] :y [3 4]})
+          threaded (-> {:x [1 2] :y [3 4]} pj/frame pj/lay-point)]
+      (is (= {:x :x :y :y} (:mapping threaded))
+          "(-> data pj/frame pj/lay-point) matches (pj/lay-point data)")
+      (is (= (:mapping raw) (:mapping threaded)))
+      (is (= (:layers raw) (:layers threaded)))))
+
+  (testing "lay-* 1-arity on a frame without mapping still infers"
+    (let [bare   {:data (tc/dataset {:x [1 2] :y [3 4]}) :layers []}
+          framed (pj/lay-point bare)]
+      (is (= {:x :x :y :y} (:mapping framed)))
+      (is (= [{:layer-type :point}] (:layers framed)))))
+
+  (testing "4+ column lay-* still throws (no ambiguous default)"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"Cannot auto-infer columns from 4 columns"
+         (pj/lay-point {:a [1] :b [2] :c [3] :d [4]})))))
 
 ;; ============================================================
 ;; Composite frames render via the Phase-4 compositor: each leaf

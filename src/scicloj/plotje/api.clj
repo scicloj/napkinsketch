@@ -221,6 +221,36 @@
   (when d
     (if (tc/dataset? d) d (tc/dataset d))))
 
+(defn- try-infer-mapping
+  "Infer a position/color mapping from the first 1-3 columns of a
+   dataset. Returns nil if the dataset has 0 or 4+ columns -- callers
+   decide whether to throw or fall through."
+  [d]
+  (let [cols (vec (tc/column-names d))
+        n (count cols)]
+    (case n
+      1 {:x (cols 0)}
+      2 {:x (cols 0) :y (cols 1)}
+      3 {:x (cols 0) :y (cols 1) :color (cols 2)}
+      nil)))
+
+(defn- auto-infer-mapping
+  "Auto-infer a position/color mapping from the first 1-3 columns of
+   a dataset. Throws if the dataset has 4+ columns -- the user must
+   pass explicit x/y.
+
+   Applied when 1-arity (pj/lay-* data) lands on a fresh leaf-frame
+   with data but no :mapping."
+  [layer-type-key d]
+  (or (try-infer-mapping d)
+      (let [cols (sort (tc/column-names d))]
+        (throw (ex-info (str "Cannot auto-infer columns from " (count cols) " columns. "
+                             "Pass explicit x and y: (pj/lay-" (name layer-type-key)
+                             " data :x :y). Available columns: " cols)
+                        {:layer-type layer-type-key
+                         :column-count (count cols)
+                         :columns cols})))))
+
 (defn frame?
   "Return true if x is a frame-shaped plain map (a map carrying at
    least one of :layers or :frames)."
@@ -596,7 +626,12 @@
 
    On raw data (first argument is not itself a frame):
      (pj/frame)                                -- empty leaf
-     (pj/frame data)                           -- leaf with data only
+     (pj/frame data)                           -- leaf with data; on 1-3
+                                                  column datasets the
+                                                  mapping is auto-inferred
+                                                  (:x, then :y, then :color)
+                                                  so the frame renders without
+                                                  an explicit mapping call
      (pj/frame data {:color :species})         -- leaf with aesthetic mapping
      (pj/frame data :x-col)                    -- leaf with {:x :x-col}
      (pj/frame data :x-col {:color :c})        -- univariate x + opts
@@ -624,7 +659,9 @@
   ([x]
    (cond
      (frame? x) x
-     :else      (prepare-frame (frame-from-data x {}))))
+     :else      (let [d (coerce-dataset x)
+                      mapping (or (try-infer-mapping d) {})]
+                  (prepare-frame (frame-from-data x mapping)))))
   ([x y]
    (cond
      (and (sequential? y) (not (map? y)))
@@ -898,28 +935,6 @@
       :else
       (update fr :layers (fnil conj []) bare-layer))))
 
-(defn- auto-infer-mapping
-  "Auto-infer a position/color mapping from the first 1-3 columns of
-   a dataset. Throws if the dataset has 4+ columns -- the user must
-   pass explicit x/y.
-
-   Applied when 1-arity (pj/lay-* data) lands on a fresh leaf-frame
-   with data but no :mapping."
-  [layer-type-key d]
-  (let [cols (vec (tc/column-names d))
-        n (count cols)]
-    (case n
-      1 {:x (cols 0)}
-      2 {:x (cols 0) :y (cols 1)}
-      3 {:x (cols 0) :y (cols 1) :color (cols 2)}
-      (throw (ex-info (str "Cannot auto-infer columns from " n " columns. "
-                           "Pass explicit x and y: (pj/lay-" (name layer-type-key)
-                           " data :x :y). Available columns: "
-                           (sort cols))
-                      {:layer-type layer-type-key
-                       :column-count n
-                       :columns (sort cols)})))))
-
 (defn- lay-layer-type
   "Shared implementation for all lay-* functions.
 
@@ -936,12 +951,16 @@
             vector+map -> multi-pair broadcast with opts.
    4-arity: bivariate layer with opts."
   ([layer-type-key sk-or-data]
-   (let [was-raw? (not (frame? sk-or-data))
-         fr (ensure-frame sk-or-data)
+   (let [fr (ensure-frame sk-or-data)
          d (:data fr)]
-     (if (and was-raw? d)
-       ;; Raw-data 1-arity: auto-infer columns from the first 1-3 columns
-       ;; so `(pj/lay-point data)` still produces a renderable plot.
+     (if (and d
+              (empty? (:mapping fr))
+              (empty? (:layers fr))
+              (nil? (:frames fr)))
+       ;; Fresh leaf with data and no mapping yet: auto-infer from the
+       ;; first 1-3 columns so `(pj/lay-point data)` and threaded
+       ;; `(-> data pj/frame pj/lay-point)` both produce a renderable
+       ;; plot. Throws on 4+ columns (no ambiguous default).
        (let [mapping (auto-infer-mapping layer-type-key d)]
          (lay-on-frame (assoc fr :mapping mapping)
                        layer-type-key nil nil))
