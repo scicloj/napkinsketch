@@ -118,6 +118,56 @@
    shared legend strip."
   120)
 
+(def ^:private grid-strip-font-size
+  "Font size for column/row strip labels on grid composites."
+  11)
+
+(def ^:private grid-strip-h
+  "Pixel height reserved at the top of a grid composite for column
+   strip labels."
+  20)
+
+(defn- grid-strip-w
+  "Pixel width reserved at the left of a grid composite for row strip
+   labels. Scales with the longest label so long column names fit."
+  [row-labels]
+  (let [max-chars (reduce max 0 (map count row-labels))]
+    (+ 8 (* max-chars 7))))
+
+(defn- col-strip-drawables
+  "Build a vector of membrane drawables: one centered text per column
+   label, positioned above its column's top-row rect."
+  [col-labels layout n-cols strip-top]
+  (vec
+   (for [ci (range n-cols)
+         :let [label (nth col-labels ci nil)
+               rect  (get layout [0 ci])]
+         :when (and label rect)]
+     (let [[x _ w _] rect
+           cx (+ (double x) (/ (double w) 2.0))]
+       (ui/translate cx (double strip-top)
+                     (ui/with-color [0.1 0.1 0.1 1.0]
+                       (assoc (ui/label label (ui/font nil grid-strip-font-size))
+                              :text-anchor "middle")))))))
+
+(defn- row-strip-drawables
+  "Build a vector of membrane drawables: one text per row label,
+   positioned to the left of its row's leftmost rect."
+  [row-labels layout n-rows strip-left strip-right]
+  (let [label-x (+ (double strip-left)
+                   (/ (- (double strip-right) (double strip-left)) 2.0))]
+    (vec
+     (for [ri (range n-rows)
+           :let [label (nth row-labels ri nil)
+                 rect  (get layout [ri 0])]
+           :when (and label rect)]
+       (let [[_ y _ h] rect
+             cy (+ (double y) (/ (double h) 2.0))]
+         (ui/translate label-x cy
+                       (ui/with-color [0.1 0.1 0.1 1.0]
+                         (assoc (ui/label label (ui/font nil grid-strip-font-size))
+                                :text-anchor "middle"))))))))
+
 (defn- rep-leaf-plan
   "Build a plan for the first resolved leaf with :suppress-legend
    removed, so the plan carries legend data. Returns the plan or
@@ -182,19 +232,42 @@
          ;; grid area accordingly.
          shared? (has-shared-aesthetic? composite)
          legend-w (if shared? shared-legend-strip-w 0)
-         grid-w (max 1 (- w legend-w))
-         grid-rect [0 (double top-pad) (double grid-w) (double (- h top-pad))]
+         ;; Grid-composite (rows-of-cols SPLOM) stamps :grid-strip-labels
+         ;; on its root. Reserve strip-h at the top for column labels
+         ;; and strip-w at the left for row labels, and draw the
+         ;; strips outside the cell rects so per-cell layout stays
+         ;; untouched.
+         {:keys [col-labels row-labels]} (:grid-strip-labels composite)
+         strips? (boolean (or (seq col-labels) (seq row-labels)))
+         strip-h (if (seq col-labels) grid-strip-h 0)
+         strip-w (if (seq row-labels) (grid-strip-w row-labels) 0)
+         n-cols (count col-labels)
+         n-rows (count row-labels)
+         grid-w (max 1 (- w legend-w strip-w))
+         grid-rect [(double strip-w)
+                    (double (+ top-pad strip-h))
+                    (double grid-w)
+                    (double (- h top-pad strip-h))]
          layout (frame/compute-layout injected grid-rect)
          leaf-trees (mapv (fn [leaf]
                             (leaf->membrane leaf (get layout (:path leaf))))
                           leaves)
+         col-strips (when (and strips? (seq col-labels))
+                      (col-strip-drawables col-labels layout n-cols
+                                           (+ top-pad 2)))
+         row-strips (when (and strips? (seq row-labels))
+                      (row-strip-drawables row-labels layout n-rows
+                                           0 strip-w))
          ;; Build the shared legend from a representative leaf's plan.
          ;; Use the first leaf's rectangle as the sizing context.
          legend-tree (when shared?
                        (let [rep-plan (rep-leaf-plan leaves)]
                          (shared-legend-drawables
-                          rep-plan (+ grid-w 20) (double top-pad))))
+                          rep-plan (+ (double strip-w) grid-w 20)
+                          (double (+ top-pad strip-h)))))
          composed (cond-> leaf-trees
+                    (seq col-strips) (into col-strips)
+                    (seq row-strips) (into row-strips)
                     (seq legend-tree) (into legend-tree)
                     title             (conj (title-drawable title w)))
          render-opts (assoc opts

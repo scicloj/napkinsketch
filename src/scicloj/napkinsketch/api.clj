@@ -271,7 +271,8 @@
    :layers distribute to every descendant leaf in a composite;
    outer-scope :mapping inherits downward and merges with each
    descendant's own mapping."
-  #{:data :mapping :layers :opts :frames :layout :share-scales})
+  #{:data :mapping :layers :opts :frames :layout :share-scales
+    :grid-strip-labels})
 
 (def ^:private frame-print-order
   "Key order used by sk/prepare-frame to make printed frame maps
@@ -279,7 +280,7 @@
    each level's data stays visually bound to its own siblings rather
    than trailing past its children; :frames last since children can
    be heavy."
-  [:opts :mapping :share-scales :layout :layers :data :frames])
+  [:opts :mapping :share-scales :grid-strip-labels :layout :layers :data :frames])
 
 (defn- warn-unknown-frame-keys
   "Warn once about top-level keys in fr that are not in frame-keys.
@@ -508,34 +509,48 @@
    :suppress-legend everywhere (one shared legend at composite level),
    :suppress-x-label on rows that aren't the bottom (x-label shows
    only on the bottom row), :suppress-y-label on columns that aren't
-   the leftmost (y-label shows only on the leftmost column)."
+   the leftmost (y-label shows only on the leftmost column).
+
+   The composite root carries :grid-strip-labels so the compositor
+   can draw column strip labels above the top row and row strip
+   labels to the left of the leftmost column (matching the legacy
+   SPLOM chrome)."
   [base rows]
   (let [root-data (:data base)
         root-m    (:mapping base)
         root-l    (:layers base)
         root-o    (:opts base)
         n-rows    (count rows)
-        cells     (fn [row-idx row]
-                    (let [bottom? (= row-idx (dec n-rows))]
-                      (vec
-                       (map-indexed
-                        (fn [col-idx [x y]]
-                          (let [leftmost? (zero? col-idx)]
-                            {:mapping {:x x :y y}
-                             :opts (cond-> {:suppress-legend true}
-                                     (not bottom?)   (assoc :suppress-x-label true)
-                                     (not leftmost?) (assoc :suppress-y-label true))
-                             :layers []}))
-                        row))))
+        col->name (fn [c] (if (keyword? c) (name c) (str c)))
+        ;; Each column shares its y column; each row shares its x
+        ;; column. Strip labels live at the composite root, not on
+        ;; individual cells, so cell layout stays untouched.
+        col-labels (when (seq rows)
+                     (mapv (fn [[_ y]] (col->name y)) (first rows)))
+        row-labels (mapv (fn [row] (col->name (first (first row)))) rows)
+        cells      (fn [row-idx row]
+                     (let [bottom? (= row-idx (dec n-rows))]
+                       (vec
+                        (map-indexed
+                         (fn [col-idx [x y]]
+                           (let [leftmost? (zero? col-idx)]
+                             {:mapping {:x x :y y}
+                              :opts (cond-> {:suppress-legend true}
+                                      (not bottom?)   (assoc :suppress-x-label true)
+                                      (not leftmost?) (assoc :suppress-y-label true))
+                              :layers []}))
+                         row))))
         row-frames (vec
                     (map-indexed
                      (fn [row-idx row]
                        {:layout {:direction :horizontal}
                         :frames (cells row-idx row)})
                      rows))
-        composite (cond-> {:layout       {:direction :vertical}
-                           :share-scales #{:x :y}
-                           :frames       row-frames}
+        composite (cond-> {:layout             {:direction :vertical}
+                           :share-scales       #{:x :y}
+                           :grid-strip-labels  {:col-labels col-labels
+                                                :row-labels row-labels}
+                           :frames             row-frames}
                     (some? root-data) (assoc :data root-data)
                     (seq root-m)      (assoc :mapping root-m)
                     (seq root-l)      (assoc :layers root-l)

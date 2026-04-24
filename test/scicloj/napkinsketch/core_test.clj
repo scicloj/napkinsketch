@@ -1016,14 +1016,7 @@
       (is (= 300 (:height pl))))))
 
 (deftest cross-grid-strip-labels-test
-  ;; KNOWN REGRESSION (frame-native SPLOM): on a 3x3 cross grid built via
-  ;; (sk/frame data (sk/cross cols cols)), only first/last column strip
-  ;; labels render -- the middle label is missing. The sk/view SPLOM path
-  ;; emits "a b c a b c" (each label twice, once as row + once as col).
-  ;; The frame-native path emits "a ... a ... c c c c" with no "b".
-  ;; Tracked in MEMORY deferred-items; fix belongs with the SPLOM
-  ;; strip-label work.
-  (testing "cross plot (full grid) shows at least the edge strip labels"
+  (testing "cross plot (full grid) shows all strip labels"
     (let [ds (tc/dataset {:a [1 2 3 4 5] :b [5 4 3 2 1] :c [2 4 6 8 10]})
           views (-> ds
                     (sk/frame (sk/cross [:a :b :c] [:a :b :c]))
@@ -1033,6 +1026,7 @@
           texts (:texts s)]
       (is (= 9 (:panels s)))
       (is (some #{"a"} texts))
+      (is (some #{"b"} texts))
       (is (some #{"c"} texts)))))
 
 (deftest save-test

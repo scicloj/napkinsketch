@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### SPLOM strip labels
+
+Grid composites built from `(sk/frame data (sk/cross cols cols))`
+now render strip labels above the top row (one per column,
+naming the y column) and to the left of the leftmost column (one
+per row, naming the x column) -- matching the legacy `sk/view`
+SPLOM chrome. Labels are drawn at the compositor level rather
+than plumbed through each cell's plan, so tight SPLOM layouts
+with long column names don't squeeze the per-panel width. The
+`cross-grid-strip-labels-test` no longer carries a FIXME.
+
 ### Retired: sk/sketch, sk/view, and impl/sketch.clj
 
 The Sketch record, its constructors, and its adapter surface are
