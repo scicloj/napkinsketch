@@ -1,8 +1,7 @@
 (ns scicloj.napkinsketch.frame-api-test
-  "Tests for sk/frame public constructor and its equivalence to the
-   legacy sk/sketch + sk/view combination. Phase 3a of the pre-alpha
-   refactor: sk/frame produces a leaf-frame plain map; rendering
-   routes through a leaf-frame adapter."
+  "Tests for the sk/frame public constructor, polymorphic dispatch,
+   and composite-frame semantics (lay-*, options/scale/coord,
+   prepare-frame)."
   (:require [clojure.test :refer [deftest testing is]]
             [tablecloth.api :as tc]
             [scicloj.napkinsketch.api :as sk]))
@@ -20,7 +19,6 @@
   (testing "0-arity makes an empty leaf frame"
     (let [f (sk/frame)]
       (is (sk/frame? f))
-      (is (not (sk/sketch? f)))
       (is (nil? (:data f)))
       (is (not (contains? f :mapping)))
       (is (= [] (:layers f)))))
@@ -42,55 +40,6 @@
   (testing "3-arity sets both :x and :y"
     (let [f (sk/frame tiny-ds :x :y)]
       (is (= {:x :x :y :y} (:mapping f))))))
-
-(deftest frame-predicate-test
-  (testing "frame? rejects sketches"
-    (is (not (sk/frame? (sk/sketch))))
-    (is (not (sk/frame? (sk/sketch tiny-ds)))))
-
-  (testing "sketch? rejects frames"
-    (is (not (sk/sketch? (sk/frame))))
-    (is (not (sk/sketch? (sk/frame tiny-ds :x :y))))))
-
-;; ============================================================
-;; Equivalence to the legacy path
-;; ============================================================
-;;
-;; The phase-3a adapter promises that a leaf frame renders to the
-;; same SVG as the equivalent (sketch + view + lay-*) construction.
-;; These tests compare plans (structural) rather than SVG strings
-;; (which carry nondeterministic ids).
-
-(defn- same-plan-shape? [p1 p2]
-  (and (= (:grid p1) (:grid p2))
-       (= (count (:panels p1)) (count (:panels p2)))
-       (= (mapv :layers (:panels p1))
-          (mapv :layers (:panels p2)))))
-
-(deftest equivalence-bivariate-test
-  (testing "sk/frame :x :y -> lay-point matches sk/view :x :y -> sk/lay-point"
-    (let [via-frame  (-> (sk/frame tiny-ds :x :y) sk/lay-point sk/plan)
-          via-view   (-> tiny-ds (sk/view :x :y) sk/lay-point sk/plan)]
-      (is (same-plan-shape? via-frame via-view)))))
-
-(deftest equivalence-aesthetic-mapping-test
-  (testing "sk/frame with aesthetic mapping matches sk/sketch"
-    (let [via-frame  (-> (sk/frame tiny-ds {:color :g})
-                         (sk/lay-point :x :y) sk/plan)
-          via-sketch (-> (sk/sketch tiny-ds {:color :g})
-                         (sk/lay-point :x :y) sk/plan)]
-      (is (same-plan-shape? via-frame via-sketch)))))
-
-(deftest equivalence-layers-before-view-test
-  (testing "lay-point with explicit columns on a frame is the one-shot form"
-    (let [via-frame  (-> tiny-ds
-                         sk/frame
-                         (sk/lay-point :x :y)
-                         sk/plan)
-          via-legacy (-> tiny-ds
-                         (sk/lay-point :x :y)
-                         sk/plan)]
-      (is (same-plan-shape? via-frame via-legacy)))))
 
 ;; ============================================================
 ;; Composite frames render via the Phase-4 compositor: each leaf
@@ -331,7 +280,6 @@
       ;; Post-Phase-6, such a leaf stays in frame-world: the position
       ;; call extends the leaf's :mapping and appends a bare layer.
       (is (sk/frame? result))
-      (is (not (sk/sketch? result)))
       (is (= {:x :a :y :b} (:mapping result)))
       (is (= 1 (count (:layers result))))
       (is (= :point (-> result :layers (nth 0) :layer-type))))))
@@ -424,8 +372,7 @@
   (testing "the result of lay-* on a composite remains a composite frame"
     (let [fr {:frames [{:layers [] :mapping {:x :a :y :b}}]}
           result (sk/lay-point fr :a :b)]
-      (is (sk/frame? result))
-      (is (not (sk/sketch? result))))))
+      (is (sk/frame? result)))))
 
 ;; ============================================================
 ;; Composite options / scale / coord (Phase 3b)
@@ -528,7 +475,7 @@
       (is (= :g (get-in fr [:mapping :color]))))))
 
 (deftest frame-4-arity-opts-data-wins-test
-  (testing "opts' :data overrides the positional data (matches sk/view)"
+  (testing "opts' :data overrides the positional data"
     (let [other-ds (tc/dataset {:x [10 20] :y [30 40]})
           fr (sk/frame tiny-ds :x :y {:data other-ds})]
       (is (= 2 (tc/row-count (:data fr))) "opts :data wins; 2 rows, not 5")
@@ -628,12 +575,6 @@
       (is (= 2 (:panels summary)))
       (is (= 6 (:points summary))
           "3 points per leaf x 2 leaves = 6; outer :layers distributes"))))
-
-(deftest prepare-frame-rejects-sketch-test
-  (testing "Sketch records raise with a clear message"
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #"expects a plain-map frame"
-                          (sk/prepare-frame (sk/sketch tiny-ds))))))
 
 (deftest prepare-frame-warns-unknown-keys-test
   (testing ":frame (singular) and other typos trigger a warning"
