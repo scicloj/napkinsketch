@@ -542,25 +542,35 @@
    stamped as #{:x :y} so columns share x-axis domains and rows share
    y-axis domains -- SPLOM behavior.
 
-   Each cell also carries :opts {:suppress-legend true} so per-cell
-   legends do not eat the small rectangle each cell gets in the grid
-   layout; the composite has one shared legend (built from the root
-   mapping) instead."
+   Each cell also carries :opts with three compositor-facing flags:
+   :suppress-legend everywhere (one shared legend at composite level),
+   :suppress-x-label on rows that aren't the bottom (x-label shows
+   only on the bottom row), :suppress-y-label on columns that aren't
+   the leftmost (y-label shows only on the leftmost column)."
   [base rows]
   (let [root-data (:data base)
         root-m    (:mapping base)
         root-l    (:layers base)
         root-o    (:opts base)
-        cells     (fn [row]
-                    (mapv (fn [[x y]]
+        n-rows    (count rows)
+        cells     (fn [row-idx row]
+                    (let [bottom? (= row-idx (dec n-rows))]
+                      (vec
+                       (map-indexed
+                        (fn [col-idx [x y]]
+                          (let [leftmost? (zero? col-idx)]
                             {:mapping {:x x :y y}
-                             :opts    {:suppress-legend true}
-                             :layers  []})
-                          row))
-        row-frames (mapv (fn [row]
-                           {:layout {:direction :horizontal}
-                            :frames (cells row)})
-                         rows)
+                             :opts (cond-> {:suppress-legend true}
+                                     (not bottom?)   (assoc :suppress-x-label true)
+                                     (not leftmost?) (assoc :suppress-y-label true))
+                             :layers []}))
+                        row))))
+        row-frames (vec
+                    (map-indexed
+                     (fn [row-idx row]
+                       {:layout {:direction :horizontal}
+                        :frames (cells row-idx row)})
+                     rows))
         composite (cond-> {:layout       {:direction :vertical}
                            :share-scales #{:x :y}
                            :frames       row-frames}

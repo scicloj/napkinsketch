@@ -990,6 +990,12 @@
          [eff-x-label eff-y-label] (if swap-labels?
                                      [eff-y-label eff-x-label]
                                      [eff-x-label eff-y-label])
+         ;; :suppress-x-label / :suppress-y-label on opts drop the axis
+         ;; label text. Used by the compositor on grid-composite inner
+         ;; cells so only the edge cells carry labels -- reduces chart
+         ;; junk in a SPLOM.
+         eff-x-label (if (:suppress-x-label opts) nil eff-x-label)
+         eff-y-label (if (:suppress-y-label opts) nil eff-y-label)
 
          ;; Legends -- depend on resolved draft layers + cfg, not on pixel math.
          ;; :suppress-legend on opts skips legend construction entirely; used
