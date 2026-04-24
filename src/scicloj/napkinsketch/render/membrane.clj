@@ -8,8 +8,10 @@
 
 ;; ---- Legend ----
 
-(defn- render-legend-from-plan
-  "Render legend from plan legend data as membrane drawables."
+(defn render-legend-from-plan
+  "Render legend from plan legend data as membrane drawables. Public
+   so the compositor can reuse the renderer for composite-level
+   shared legends (one legend per composite, not per leaf)."
   [legend x y cfg]
   (let [{:keys [title]} legend
         fsize 10
@@ -106,8 +108,8 @@
                         entries)]
             elems)))))))
 
-(defn- render-size-legend
-  "Render a size legend — graduated circles with value labels.
+(defn render-size-legend
+  "Render a size legend -- graduated circles with value labels.
    Returns a vector of membrane drawables."
   [size-legend x y]
   (let [{:keys [title entries]} size-legend
@@ -138,9 +140,9 @@
                                         (ui/label (str value) (ui/font nil 10))))])
          :legend true))))))
 
-(defn- render-alpha-legend
-  "Render an alpha legend — squares with varying opacity and value labels.
-   Returns a vector of membrane drawables."
+(defn render-alpha-legend
+  "Render an alpha legend -- squares with varying opacity and value
+   labels. Returns a vector of membrane drawables."
   [alpha-legend x y]
   (let [{:keys [title entries]} alpha-legend
         title-color [0.2 0.2 0.2 1.0]
