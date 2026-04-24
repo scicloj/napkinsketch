@@ -27,7 +27,7 @@
    ;; Plan pipeline -- draft->plan, domains, ticks, legends, layout
    [scicloj.napkinsketch.impl.plan :as plan-impl]
    ;; Malli schema validation
-   [scicloj.napkinsketch.impl.sketch-schema :as ss]))
+   [scicloj.napkinsketch.impl.plan-schema :as ss]))
 
 ;; ## Pipeline Overview
 

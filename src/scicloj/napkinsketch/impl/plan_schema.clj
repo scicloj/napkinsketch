@@ -1,4 +1,4 @@
-(ns scicloj.napkinsketch.impl.sketch-schema
+(ns scicloj.napkinsketch.impl.plan-schema
   "Malli schemas for the plan data model."
   (:require [malli.core :as m]))
 

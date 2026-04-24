@@ -17,7 +17,7 @@
             [scicloj.napkinsketch.impl.position :as position]
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.layout :as layout]
-            [scicloj.napkinsketch.impl.sketch-schema :as ss]))
+            [scicloj.napkinsketch.impl.plan-schema :as ss]))
 
 ;; ---- Domain Helpers ----
 

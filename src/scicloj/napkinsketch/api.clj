@@ -5,7 +5,7 @@
             [scicloj.napkinsketch.impl.frame :as frame]
             [scicloj.napkinsketch.impl.compositor :as compositor]
             [scicloj.napkinsketch.impl.plan :as plan]
-            [scicloj.napkinsketch.impl.sketch-schema :as ss]
+            [scicloj.napkinsketch.impl.plan-schema :as ss]
             [scicloj.napkinsketch.impl.defaults :as defaults]
             [scicloj.napkinsketch.impl.render :as render-impl]
             [scicloj.napkinsketch.impl.stat :as stat]
