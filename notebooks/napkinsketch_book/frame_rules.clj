@@ -988,6 +988,35 @@ l4-shared
       (and (= 2 (count domains))
            (= (first domains) (second domains)))))])
 
+;; ### Rule L5: multi-pair `sk/frame` reshapes rectangular pairs into a 2D grid (SPLOM)
+;;
+;; When `sk/frame` receives a pair-sequence that forms a
+;; rectangular M x N Cartesian product (like the output of
+;; `sk/cross cols cols`), the result is a nested **rows-of-cols**
+;; composite with `:share-scales #{:x :y}` -- the canonical SPLOM
+;; layout. Each cell inherits the base's `:data`, root `:mapping`,
+;; and root `:layers` via `resolve-tree`, and carries
+;; `:opts {:suppress-legend true}` so the legend appears once at
+;; the composite level rather than per cell.
+;;
+;; Pair lists that are not rectangular fall through to the flat
+;; one-panel-per-pair behaviour (see Rules C3 / C6).
+
+(-> iris
+    (sk/frame {:color :species})
+    sk/lay-point
+    (sk/frame (sk/cross [:sepal-length :sepal-width]
+                        [:petal-length :petal-width])))
+
+(kind/test-last
+ [(fn [fr]
+    (and (= :vertical (get-in fr [:layout :direction]))
+         (= #{:x :y} (:share-scales fr))
+         (= 2 (count (:frames fr)))
+         (every? #(= 2 (count (:frames %))) (:frames fr))
+         (= {:color :species} (:mapping fr))
+         (= 1 (count (:layers fr)))))])
+
 ;; ---
 ;; ## A note on `sk/cross`
 ;;

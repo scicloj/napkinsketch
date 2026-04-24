@@ -394,6 +394,9 @@
    :stat/:position/:mark as first-class siblings, and plot-level
    :x-scale/:y-scale/:coord stamped from :opts.
 
+   The leaf's :opts is passed through to plan/draft->plan; in
+   particular the compositor uses :suppress-legend on grid cells.
+
    An empty :layers vector yields one {:mark :infer ...} placeholder so
    downstream inference can still choose a layer type from the data.
 

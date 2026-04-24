@@ -992,10 +992,19 @@
                                      [eff-x-label eff-y-label])
 
          ;; Legends -- depend on resolved draft layers + cfg, not on pixel math.
-         legend (build-legend resolved-all numeric-color? all-colors color-cols cfg (:color-label opts))
-         legend (or legend (build-fill-fallback-legend panel-data resolved-all cfg))
-         size-legend (build-size-legend resolved-all (:size-label opts))
-         alpha-legend (build-alpha-legend resolved-all (:alpha-label opts))
+         ;; :suppress-legend on opts skips legend construction entirely; used
+         ;; by the compositor on sub-plots (e.g. SPLOM cells) so the legend
+         ;; doesn't eat the per-cell render rectangle.
+         suppress-legend? (:suppress-legend opts)
+         legend (when-not suppress-legend?
+                  (build-legend resolved-all numeric-color? all-colors color-cols cfg (:color-label opts)))
+         legend (or legend
+                    (when-not suppress-legend?
+                      (build-fill-fallback-legend panel-data resolved-all cfg)))
+         size-legend (when-not suppress-legend?
+                       (build-size-legend resolved-all (:size-label opts)))
+         alpha-legend (when-not suppress-legend?
+                        (build-alpha-legend resolved-all (:alpha-label opts)))
 
          ;; Scene: everything compute-padding + compute-dims need to
          ;; know about the data and options, all data-derived or

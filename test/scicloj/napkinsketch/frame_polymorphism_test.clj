@@ -306,21 +306,99 @@
       (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping))))))
 
 (deftest multi-pair-cross-utility-test
-  (testing "M6: (sk/frame data (sk/cross cols cols)) is the SPLOM generator"
+  (testing "M6: (sk/frame data (sk/cross cols cols)) builds a SPLOM grid"
+    ;; (sk/cross cols cols) is the canonical SPLOM input -- an MxM
+    ;; Cartesian rectangle. See the G1-G5 tests below for the full
+    ;; grid-shape contract; here we pin that it is NOT the flat
+    ;; composite (which was the slice-1 behaviour).
     (let [cols [:a :b]
           f (sk/frame iris (sk/cross cols cols))]
-      (is (= 4 (count (:frames f))))
-      (is (= [{:x :a :y :a} {:x :a :y :b} {:x :b :y :a} {:x :b :y :b}]
-             (mapv :mapping (:frames f)))))))
+      (is (= 2 (count (:frames f))) "2 rows, not 4 flat sub-frames")
+      (is (= :vertical (get-in f [:layout :direction])))
+      (is (= #{:x :y} (:share-scales f))))))
 
 (deftest multi-pair-iteration-equivalence-test
-  (testing "M7: (sk/frame fr vec-of-pairs) equals threading sk/frame per pair"
+  (testing "M7: (sk/frame fr vec-of-pairs) -- non-rectangular pair list threads per-pair"
+    ;; 3 pairs that do NOT form a Cartesian rectangle -- keeps flat
+    ;; behaviour; equivalent to threading sk/frame three times.
     (let [expected (-> iris
                        (sk/frame :a :b)
                        (sk/frame :c :d)
                        (sk/frame :e :f))
           actual (sk/frame iris [[:a :b] [:c :d] [:e :f]])]
       (is (= expected actual)))))
+
+;; ============================================================
+;; Multi-pair sk/frame -- rectangular grid reshape (G1-G5)
+;; ============================================================
+;;
+;; When multi-pair sk/frame receives pairs that form an M x N
+;; Cartesian rectangle (every combination of unique first-elements
+;; with unique second-elements, in cross-order), the result is a
+;; nested composite: outer :vertical of M rows; each row is
+;; :horizontal of N cells. :share-scales is stamped as #{:x :y} so
+;; axes align across rows and columns -- the canonical SPLOM shape.
+;; Pair lists that are not rectangular keep the flat-reduce
+;; behaviour asserted in M7.
+
+(deftest multi-pair-grid-splom-shape-test
+  (testing "G1: (sk/cross cols cols) produces M x N nested composite"
+    (let [f (sk/frame iris (sk/cross [:a :b] [:c :d]))]
+      (is (= :vertical (get-in f [:layout :direction])))
+      (is (= #{:x :y} (:share-scales f)))
+      (is (= 2 (count (:frames f))) "2 rows")
+      (let [row-0 (first (:frames f))
+            row-1 (second (:frames f))]
+        (is (= :horizontal (get-in row-0 [:layout :direction])))
+        (is (= 2 (count (:frames row-0))) "2 cells per row")
+        (is (= 2 (count (:frames row-1))))
+        ;; row 0: x = :a, y varies [:c :d]
+        (is (= {:x :a :y :c} (:mapping (first (:frames row-0)))))
+        (is (= {:x :a :y :d} (:mapping (second (:frames row-0)))))
+        ;; row 1: x = :b, y varies [:c :d]
+        (is (= {:x :b :y :c} (:mapping (first (:frames row-1)))))
+        (is (= {:x :b :y :d} (:mapping (second (:frames row-1)))))))))
+
+(deftest multi-pair-grid-3x3-test
+  (testing "G2: 3 x 3 SPLOM via sk/cross"
+    (let [cols [:a :b :c]
+          f (sk/frame iris (sk/cross cols cols))]
+      (is (= 3 (count (:frames f))) "3 rows")
+      (is (every? #(= 3 (count (:frames %))) (:frames f)) "3 cells each"))))
+
+(deftest multi-pair-grid-root-aesthetic-test
+  (testing "G3: SPLOM pattern -- root aesthetic + root layer + grid"
+    (let [f (-> iris
+                (sk/frame {:color :species})
+                sk/lay-point
+                (sk/frame (sk/cross [:a :b] [:c :d])))]
+      (is (= {:color :species} (:mapping f))
+          "root aesthetic preserved")
+      (is (= 1 (count (:layers f)))
+          "root layer preserved")
+      (is (= :point (-> f :layers first :layer-type)))
+      (is (= 2 (count (:frames f))) "2 rows")
+      (is (every? #(= 2 (count (:frames %))) (:frames f)) "2 cells each"))))
+
+(deftest multi-pair-grid-non-rectangular-falls-through-test
+  (testing "G4: non-rectangular pair list keeps flat composite"
+    ;; 2 pairs: [:a :b] [:c :d] -- would need [:a :d] [:c :b] for a 2x2
+    ;; rectangle, so falls through to flat reduce.
+    (let [f (sk/frame iris [[:a :b] [:c :d]])]
+      (is (= 2 (count (:frames f))))
+      ;; Flat composite -- each sub-frame is a leaf with mapping, no
+      ;; nested :frames
+      (is (every? #(not (contains? % :frames)) (:frames f))))))
+
+(deftest multi-pair-grid-1xN-falls-through-test
+  (testing "G5: a 1xN shape does not grid-reshape"
+    ;; (sk/cross [:a] [:b :c :d]) gives 3 pairs but only 1 unique x --
+    ;; 1 row. We require at least 2 rows and 2 cols to reshape.
+    (let [f (sk/frame iris (sk/cross [:a] [:b :c :d]))]
+      ;; Falls through to flat -- 3 sub-frames at root
+      (is (= 3 (count (:frames f))))
+      (is (every? #(not (contains? % :frames)) (:frames f)))
+      (is (not (contains? f :share-scales))))))
 
 ;; ============================================================
 ;; Integration with sk/lay-* and resolve-tree (I1-I3)

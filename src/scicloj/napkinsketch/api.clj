@@ -516,31 +516,93 @@
 
 (declare frame)
 
+(defn- pairs->rows
+  "Detect whether `pairs` forms a rectangular M x N grid -- every
+   combination of unique first-elements with unique second-elements,
+   in cross order. Returns a vec of row-vecs when rectangular, nil
+   otherwise. Requires M >= 2 and N >= 2 so a single row or column
+   stays flat (not a grid)."
+  [pairs]
+  (let [pairs  (vec pairs)
+        xs     (vec (distinct (map first pairs)))
+        ys     (vec (distinct (map second pairs)))
+        m      (count xs)
+        n      (count ys)]
+    (when (and (<= 2 m) (<= 2 n)
+               (= (count pairs) (* m n))
+               (= pairs (vec (for [x xs y ys] [x y]))))
+      (mapv (fn [x] (mapv (fn [y] [x y]) ys)) xs))))
+
+(defn- grid-composite
+  "Build a 2D rows-of-cols composite from `base` (a leaf or composite)
+   and a rectangular grid of [x-col y-col] pairs. Each cell becomes a
+   leaf carrying only its position mapping; the base's :data,
+   :mapping, :layers, and :opts move to the new composite's root so
+   they inherit into every cell via resolve-tree. :share-scales is
+   stamped as #{:x :y} so columns share x-axis domains and rows share
+   y-axis domains -- SPLOM behavior.
+
+   Each cell also carries :opts {:suppress-legend true} so per-cell
+   legends do not eat the small rectangle each cell gets in the grid
+   layout; the composite has one shared legend (built from the root
+   mapping) instead."
+  [base rows]
+  (let [root-data (:data base)
+        root-m    (:mapping base)
+        root-l    (:layers base)
+        root-o    (:opts base)
+        cells     (fn [row]
+                    (mapv (fn [[x y]]
+                            {:mapping {:x x :y y}
+                             :opts    {:suppress-legend true}
+                             :layers  []})
+                          row))
+        row-frames (mapv (fn [row]
+                           {:layout {:direction :horizontal}
+                            :frames (cells row)})
+                         rows)
+        composite (cond-> {:layout       {:direction :vertical}
+                           :share-scales #{:x :y}
+                           :frames       row-frames}
+                    (some? root-data) (assoc :data root-data)
+                    (seq root-m)      (assoc :mapping root-m)
+                    (seq root-l)      (assoc :layers root-l)
+                    (seq root-o)      (assoc :opts root-o))]
+    (prepare-frame composite)))
+
 (defn- multi-pair-frame
   "Iteratively apply sk/frame to each column or pair in cols-or-pairs.
    The ground case -- x a non-frame -- first lifts x into a leaf via
    (sk/frame x). Each element in cols-or-pairs may be a column
    reference (keyword or string) -> univariate panel, or a two-element
-   sequential -> bivariate panel. Any mixture is accepted."
+   sequential -> bivariate panel. Any mixture is accepted.
+
+   When the elements form a rectangular M x N grid of pairs (e.g. the
+   output of sk/cross cols cols), the result is a nested rows-of-cols
+   composite with :share-scales #{:x :y} -- the canonical SPLOM shape.
+   Non-rectangular pair lists and mixed/univariate lists fall through
+   to the flat per-element reduce."
   [x cols-or-pairs]
-  (let [base (if (frame? x) x (frame x))]
-    (reduce (fn [fr item]
-              (cond
-                (or (keyword? item) (string? item))
-                (frame fr item)
+  (let [base     (if (frame? x) x (frame x))
+        items    (vec cols-or-pairs)
+        first-el (first items)]
+    (cond
+      ;; Univariate -- columns
+      (or (keyword? first-el) (string? first-el))
+      (reduce (fn [fr col] (frame fr col)) base items)
 
-                (sequential? item)
-                (let [[a b] item]
-                  (frame fr a b))
+      ;; Pairs -- check for rectangular grid before falling back
+      (sequential? first-el)
+      (if-let [rows (pairs->rows items)]
+        (grid-composite base rows)
+        (reduce (fn [fr [a b]] (frame fr a b)) base items))
 
-                :else
-                (throw (ex-info
-                        (str "sk/frame multi-pair element must be a column "
-                             "reference or a two-element sequential, got: "
-                             (pr-str item))
-                        {:item item :cols-or-pairs cols-or-pairs}))))
-            base
-            cols-or-pairs)))
+      :else
+      (throw (ex-info
+              (str "sk/frame multi-pair element must be a column "
+                   "reference or a two-element sequential, got: "
+                   (pr-str first-el))
+              {:item first-el :cols-or-pairs cols-or-pairs})))))
 
 (defn frame
   "Construct or extend a frame.
