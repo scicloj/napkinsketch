@@ -34,17 +34,14 @@
    ;; Napkinsketch -- composable plotting
    [scicloj.napkinsketch.api :as sk]))
 
-;; A helper to inspect frame structure. It prints everything except
-;; the `:data` field (omitted for readability). In the current
-;; pre-alpha transition, threaded frames surface as Sketch records
-;; with a `:views` field; this helper exposes that structure so the
-;; scope examples below can point to where each option lands.
+;; A helper to inspect frame structure. It prints `:mapping`,
+;; `:layers`, and `:opts` -- everything except the `:data` field,
+;; which is omitted for readability.
 
 (defn sk-summary
   "Print frame structure without :data (for readability)."
-  [sk]
-  (-> (select-keys sk [:mapping :views :layers :opts])
-      (update :views (partial mapv #(dissoc % :data)))
+  [fr]
+  (-> (select-keys fr [:mapping :layers :opts])
       kind/pprint))
 
 ;; ---
@@ -72,19 +69,21 @@
 ;; The primary way to set them is in the opts map of `sk/lay-*`:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species}))
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
 ;; And the frame structure:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point {:color :species})
     sk-summary)
 
 (kind/test-last
  [(fn [m]
-    (= :species (get-in m [:views 0 :layers 0 :mapping :color])))])
+    (= :species (get-in m [:layers 0 :mapping :color])))])
 
 ;; ### Scope: generalizing layer options upward
 ;;
@@ -137,7 +136,8 @@
 ;; most recent matching leaf (or creates a new one).
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point
     (sk/options {:title "Iris"})
     (sk/coord :flip))
 
@@ -146,7 +146,8 @@
 ;; And the frame structure:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point
     (sk/options {:title "Iris"})
     (sk/coord :flip)
     sk-summary)
@@ -229,8 +230,9 @@
 
 (def demo
   (-> (rdatasets/datasets-iris)
+      (sk/frame :sepal-length :sepal-width)
       ;; layer option: a layer-scope color mapping
-      (sk/lay-point :sepal-length :sepal-width {:color :species})
+      (sk/lay-point {:color :species})
       ;; plot options: stored in :opts
       (sk/options {:title "Iris measurements"})
       (sk/coord :flip)))
@@ -249,7 +251,7 @@ demo
  [(fn [m]
     (and
      ;; layer-scope mapping
-     (= :species (get-in m [:views 0 :layers 0 :mapping :color]))
+     (= :species (get-in m [:layers 0 :mapping :color]))
      ;; plot options
      (= "Iris measurements" (get-in m [:opts :title]))
      (= :flip (get-in m [:opts :coord]))))])

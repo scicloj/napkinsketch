@@ -43,19 +43,23 @@
 ;; Here is a scatter plot of sepal dimensions, colored by species:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species}))
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (sk/svg-summary v))))])
 
-;; Printed, the frame carries the data, a view with the position
-;; mapping, and the point layer with its own layer-scoped `:color`:
+;; Printed, the frame carries the data and the `:x`/`:y` position
+;; mapping at the top, and one point layer with its own layer-scoped
+;; `:color`:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point {:color :species})
     kind/pprint)
 
-(kind/test-last [(fn [v] (and (= 1 (count (:views v)))
-                              (= :species (get-in v [:views 0 :layers 0 :mapping :color]))))])
+(kind/test-last [(fn [v] (and (= :sepal-length (get-in v [:mapping :x]))
+                              (= 1 (count (:layers v)))
+                              (= :species (get-in v [:layers 0 :mapping :color]))))])
 
 ;; ### Input formats
 ;;
@@ -191,23 +195,26 @@ two-panel
 ;; Opts in `sk/lay-*` scope to that layer alone:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point {:color :species})
     (sk/lay-smooth {:stat :linear-model}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; Printed, `:color` lives on the point layer's `:mapping`, not
-;; on the view -- so only the point layer sees it:
+;; Printed, `:color` lives on the point layer's own `:mapping`, not
+;; on the frame -- so only the point layer sees it:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width {:color :species})
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point {:color :species})
     (sk/lay-smooth {:stat :linear-model})
     kind/pprint)
 
-(kind/test-last [(fn [v] (and (= :species (get-in v [:views 0 :layers 0 :mapping :color]))
-                              (not (contains? (:mapping (first (:layers v))) :color))))])
+(kind/test-last [(fn [v] (and (= :species (get-in v [:layers 0 :mapping :color]))
+                              (not (contains? (or (get-in v [:layers 1 :mapping]) {})
+                                              :color))))])
 
 ;; Color is on the point layer. The smooth layer does not see it --
 ;; one overall regression line.
