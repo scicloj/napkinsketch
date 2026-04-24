@@ -283,7 +283,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__140617#] (Math/sin (* p1__140617# 0.3)))
+    (fn* [p1__142288#] (Math/sin (* p1__142288# 0.3)))
     (range 30))}))
 
 
@@ -393,9 +393,9 @@
     :y
     (mapv
      (fn*
-      [p1__140618#]
+      [p1__142289#]
       (+
-       (Math/sin (* p1__140618# 0.2))
+       (Math/sin (* p1__142289# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)
@@ -980,13 +980,14 @@
  v193_l586
  (->
   (rdatasets/datasets-iris)
-  (sk/lay-point :sepal-length :sepal-width)
+  (sk/frame :sepal-length :sepal-width)
+  sk/lay-point
   sk/draft
   kind/pprint))
 
 
 (deftest
- t194_l591
+ t194_l592
  (is
   ((fn
     [d]
@@ -994,26 +995,26 @@
    v193_l586)))
 
 
-(def v195_l595 (kind/doc #'sk/plan))
+(def v195_l596 (kind/doc #'sk/plan))
 
 
-(def v197_l599 (def plan1 (-> tiny (sk/lay-point :x :y) sk/plan)))
+(def v197_l600 (def plan1 (-> tiny (sk/lay-point :x :y) sk/plan)))
 
 
-(def v198_l603 plan1)
+(def v198_l604 plan1)
 
 
 (deftest
- t199_l605
+ t199_l606
  (is
-  ((fn [m] (and (= 600 (:width m)) (= "x" (:x-label m)))) v198_l603)))
+  ((fn [m] (and (= 600 (:width m)) (= "x" (:x-label m)))) v198_l604)))
 
 
-(def v200_l608 (kind/doc #'sk/svg-summary))
+(def v200_l609 (kind/doc #'sk/svg-summary))
 
 
 (def
- v201_l610
+ v201_l611
  (->
   (rdatasets/datasets-iris)
   (sk/lay-point :sepal-length :sepal-width {:color :species})
@@ -1021,45 +1022,45 @@
 
 
 (deftest
- t202_l613
- (is ((fn [m] (and (= 1 (:panels m)) (= 150 (:points m)))) v201_l610)))
+ t202_l614
+ (is ((fn [m] (and (= 1 (:panels m)) (= 150 (:points m)))) v201_l611)))
 
 
-(def v203_l616 (kind/doc #'sk/valid-plan?))
+(def v203_l617 (kind/doc #'sk/valid-plan?))
 
 
-(def v204_l618 (sk/valid-plan? plan1))
+(def v204_l619 (sk/valid-plan? plan1))
 
 
-(deftest t205_l620 (is (true? v204_l618)))
+(deftest t205_l621 (is (true? v204_l619)))
 
 
-(def v206_l622 (kind/doc #'sk/explain-plan))
+(def v206_l623 (kind/doc #'sk/explain-plan))
 
 
-(def v207_l624 (sk/explain-plan plan1))
+(def v207_l625 (sk/explain-plan plan1))
 
 
-(deftest t208_l626 (is (nil? v207_l624)))
+(deftest t208_l627 (is (nil? v207_l625)))
 
 
-(def v210_l630 (kind/doc #'sk/plan->membrane))
+(def v210_l631 (kind/doc #'sk/plan->membrane))
 
 
-(def v211_l632 (def m1 (sk/plan->membrane plan1)))
+(def v211_l633 (def m1 (sk/plan->membrane plan1)))
 
 
-(def v212_l634 (vector? m1))
+(def v212_l635 (vector? m1))
 
 
-(deftest t213_l636 (is (true? v212_l634)))
+(deftest t213_l637 (is (true? v212_l635)))
 
 
-(def v214_l638 (kind/doc #'sk/membrane->plot))
+(def v214_l639 (kind/doc #'sk/membrane->plot))
 
 
 (def
- v215_l640
+ v215_l641
  (first
   (sk/membrane->plot
    m1
@@ -1068,148 +1069,148 @@
     :total-height (:total-height plan1)})))
 
 
-(deftest t216_l644 (is ((fn [v] (= :svg v)) v215_l640)))
+(deftest t216_l645 (is ((fn [v] (= :svg v)) v215_l641)))
 
 
-(def v217_l646 (kind/doc #'sk/plan->plot))
+(def v217_l647 (kind/doc #'sk/plan->plot))
 
 
-(def v218_l648 (first (sk/plan->plot plan1 :svg {})))
+(def v218_l649 (first (sk/plan->plot plan1 :svg {})))
 
 
-(deftest t219_l650 (is ((fn [v] (= :svg v)) v218_l648)))
+(deftest t219_l651 (is ((fn [v] (= :svg v)) v218_l649)))
 
 
-(def v221_l654 (kind/doc #'sk/config))
+(def v221_l655 (kind/doc #'sk/config))
 
 
-(def v222_l656 (sk/config))
+(def v222_l657 (sk/config))
 
 
-(deftest t223_l658 (is ((fn [m] (map? m)) v222_l656)))
+(deftest t223_l659 (is ((fn [m] (map? m)) v222_l657)))
 
 
-(def v224_l660 (kind/doc #'sk/set-config!))
+(def v224_l661 (kind/doc #'sk/set-config!))
 
 
-(def v225_l662 (kind/doc #'sk/with-config))
+(def v225_l663 (kind/doc #'sk/with-config))
 
 
 (def
- v226_l664
+ v226_l665
  (sk/with-config {:palette :pastel1} (:palette (sk/config))))
 
 
-(deftest t227_l667 (is ((fn [p] (= :pastel1 p)) v226_l664)))
+(deftest t227_l668 (is ((fn [p] (= :pastel1 p)) v226_l665)))
 
 
-(def v229_l673 (kind/doc #'sk/config-key-docs))
+(def v229_l674 (kind/doc #'sk/config-key-docs))
 
 
-(def v230_l675 (count sk/config-key-docs))
+(def v230_l676 (count sk/config-key-docs))
 
 
-(deftest t231_l677 (is ((fn [n] (= 36 n)) v230_l675)))
+(deftest t231_l678 (is ((fn [n] (= 36 n)) v230_l676)))
 
 
-(def v232_l679 (kind/doc #'sk/plot-option-docs))
+(def v232_l680 (kind/doc #'sk/plot-option-docs))
 
 
-(def v233_l681 (count sk/plot-option-docs))
+(def v233_l682 (count sk/plot-option-docs))
 
 
-(deftest t234_l683 (is ((fn [n] (= 11 n)) v233_l681)))
+(deftest t234_l684 (is ((fn [n] (= 11 n)) v233_l682)))
 
 
-(def v235_l685 (kind/doc #'sk/layer-option-docs))
+(def v235_l686 (kind/doc #'sk/layer-option-docs))
 
 
-(def v236_l687 (count sk/layer-option-docs))
+(def v236_l688 (count sk/layer-option-docs))
 
 
-(deftest t237_l689 (is ((fn [n] (pos? n)) v236_l687)))
+(deftest t237_l690 (is ((fn [n] (pos? n)) v236_l688)))
 
 
-(def v239_l693 (kind/doc #'sk/layer-type-lookup))
+(def v239_l694 (kind/doc #'sk/layer-type-lookup))
 
 
-(def v240_l695 (sk/layer-type-lookup :smooth))
+(def v240_l696 (sk/layer-type-lookup :smooth))
 
 
 (deftest
- t241_l697
+ t241_l698
  (is
-  ((fn [m] (and (= :line (:mark m)) (= :loess (:stat m)))) v240_l695)))
+  ((fn [m] (and (= :line (:mark m)) (= :loess (:stat m)))) v240_l696)))
 
 
-(def v242_l700 (kind/doc #'sk/registered-layer-types))
+(def v242_l701 (kind/doc #'sk/registered-layer-types))
 
 
-(def v243_l702 (count (sk/registered-layer-types)))
+(def v243_l703 (count (sk/registered-layer-types)))
 
 
-(deftest t244_l704 (is ((fn [n] (= 25 n)) v243_l702)))
+(deftest t244_l705 (is ((fn [n] (= 25 n)) v243_l703)))
 
 
-(def v246_l710 (kind/doc #'sk/stat-doc))
+(def v246_l711 (kind/doc #'sk/stat-doc))
 
 
-(def v247_l712 (sk/stat-doc :linear-model))
+(def v247_l713 (sk/stat-doc :linear-model))
 
 
-(deftest t248_l714 (is ((fn [s] (string? s)) v247_l712)))
+(deftest t248_l715 (is ((fn [s] (string? s)) v247_l713)))
 
 
-(def v249_l716 (kind/doc #'sk/mark-doc))
+(def v249_l717 (kind/doc #'sk/mark-doc))
 
 
-(def v250_l718 (sk/mark-doc :point))
+(def v250_l719 (sk/mark-doc :point))
 
 
-(deftest t251_l720 (is ((fn [s] (string? s)) v250_l718)))
+(deftest t251_l721 (is ((fn [s] (string? s)) v250_l719)))
 
 
-(def v252_l722 (kind/doc #'sk/position-doc))
+(def v252_l723 (kind/doc #'sk/position-doc))
 
 
-(def v253_l724 (sk/position-doc :dodge))
+(def v253_l725 (sk/position-doc :dodge))
 
 
-(deftest t254_l726 (is ((fn [s] (string? s)) v253_l724)))
+(deftest t254_l727 (is ((fn [s] (string? s)) v253_l725)))
 
 
-(def v255_l728 (kind/doc #'sk/scale-doc))
+(def v255_l729 (kind/doc #'sk/scale-doc))
 
 
-(def v256_l730 (sk/scale-doc :linear))
+(def v256_l731 (sk/scale-doc :linear))
 
 
-(deftest t257_l732 (is ((fn [s] (string? s)) v256_l730)))
+(deftest t257_l733 (is ((fn [s] (string? s)) v256_l731)))
 
 
-(def v258_l734 (kind/doc #'sk/coord-doc))
+(def v258_l735 (kind/doc #'sk/coord-doc))
 
 
-(def v259_l736 (sk/coord-doc :cartesian))
+(def v259_l737 (sk/coord-doc :cartesian))
 
 
-(deftest t260_l738 (is ((fn [s] (string? s)) v259_l736)))
+(deftest t260_l739 (is ((fn [s] (string? s)) v259_l737)))
 
 
-(def v261_l740 (kind/doc #'sk/membrane-mark-doc))
+(def v261_l741 (kind/doc #'sk/membrane-mark-doc))
 
 
-(def v262_l742 (sk/membrane-mark-doc :point))
+(def v262_l743 (sk/membrane-mark-doc :point))
 
 
-(deftest t263_l744 (is ((fn [s] (string? s)) v262_l742)))
+(deftest t263_l745 (is ((fn [s] (string? s)) v262_l743)))
 
 
-(def v265_l748 (kind/doc #'sk/save))
+(def v265_l749 (kind/doc #'sk/save))
 
 
 (def
- v267_l752
+ v267_l753
  (let
   [path
    (str (java.io.File/createTempFile "napkinsketch-example" ".svg"))]
@@ -1220,14 +1221,14 @@
   (.contains (slurp path) "<svg")))
 
 
-(deftest t268_l758 (is (true? v267_l752)))
+(deftest t268_l759 (is (true? v267_l753)))
 
 
-(def v269_l760 (kind/doc #'sk/save-png))
+(def v269_l761 (kind/doc #'sk/save-png))
 
 
 (def
- v271_l765
+ v271_l766
  (let
   [path
    (str (java.io.File/createTempFile "napkinsketch-example" ".png"))]
@@ -1238,4 +1239,4 @@
   (.exists (java.io.File. path))))
 
 
-(deftest t272_l771 (is (true? v271_l765)))
+(deftest t272_l772 (is (true? v271_l766)))

@@ -125,7 +125,7 @@
 ;; Run `make-readme!` before `make-book!` when the README content changes.
 ;;
 ;; Note: the readme notebook uses `sk/plot` (eager rendering) instead of
-;; auto-rendering Sketch, because GFM mode requires materialized SVG values.
+;; auto-rendering the frame, because GFM mode requires materialized SVG values.
 
 ;; ## Building a JAR
 ;;

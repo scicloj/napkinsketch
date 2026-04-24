@@ -579,12 +579,13 @@
 
 (kind/doc #'sk/draft)
 
-;; Flatten a sketch into a vector of draft layers -- one per
-;; (view, applicable-layer) pair, with all scope merged. Useful
-;; for inspecting exactly what the renderer will draw:
+;; Flatten a frame or sketch into a vector of draft layers -- one
+;; per applicable layer, with all scope merged. Useful for
+;; inspecting exactly what the renderer will draw:
 
 (-> (rdatasets/datasets-iris)
-    (sk/lay-point :sepal-length :sepal-width)
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point
     sk/draft
     kind/pprint)
 
