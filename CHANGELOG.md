@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Frame-native pipeline (Phase 6 slice 2)
+
+The frame substrate now runs the full draft emission pipeline on its
+own. `sk/plan`, `sk/plot`, and `sk/draft` read a leaf frame directly
+via a new `impl.frame/leaf->draft`; the compositor reads each
+resolved leaf the same way. The Sketch detour
+(`leaf-frame->sketch` -> `sketch->draft`) is no longer on the frame
+path.
+
+User-visible behavior:
+
+- Fixes an edge case where a leaf frame with `:x`/`:y` only on a
+  layer (not on the frame's own `:mapping`) used to emit an empty
+  draft. The layer's position is now read and the draft carries one
+  entry per layer.
+- `sk/with-data` accepts frames directly and keeps them as frames
+  (it used to force frames through the Sketch adapter, returning a
+  Sketch record).
+- `sk/frame` gains a multi-pair arity: `(sk/frame fr [[:a :b]
+  [:c :d] ...])` and `(sk/frame fr [:a :b :c])` append panels in
+  one call. `(sk/frame fr (sk/cross cols cols))` is the canonical
+  SPLOM generator at the frame level. Note: frame-native SPLOM
+  currently renders as a flat row; a grid-layout form is deferred
+  to a follow-up. For an N x N SPLOM in this release, continue to
+  use `sk/view (sk/cross cols cols)`.
+
+Legacy `sk/sketch` and `sk/view` remain in place as adapters;
+user-facing examples across the book and gallery have been migrated
+to `sk/frame`. See individual notebook migrations for the per-chapter
+pattern.
+
 ### Breaking: `sk/arrange` returns a composite frame
 
 `sk/arrange` now returns a composite frame (a plain-map value) instead
