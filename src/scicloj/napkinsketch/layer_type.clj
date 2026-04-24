@@ -9,8 +9,8 @@
 
 (def universal-layer-options
   "Layer options accepted by all layer types. :x and :y are included so a
-   layer can override the view's position mapping (an overlay-like
-   pattern); the four-level merge in sketch->draft already honors
+   layer can override the frame's position mapping (an overlay-like
+   pattern); the four-level merge in frame/leaf->draft already honors
    layer-level x/y, this list just keeps build-layer's unknown-option
    warning consistent with that behavior. :x-type/:y-type/:color-type
    override the inferred column types (e.g. :x-type :categorical

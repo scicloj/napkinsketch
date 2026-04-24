@@ -1,9 +1,9 @@
 (ns scicloj.napkinsketch.impl.compositor
-  "Composite-frame rendering. A composite has no single Sketch to feed
-   the existing plan pipeline. Each leaf produces its own membrane tree
-   via plan->membrane, and the compositor tiles those trees by wrapping
-   them in ui/translate. The resulting membrane tree is then handed to
-   membrane->plot, which dispatches on format (:svg, :bufimg, ...).
+  "Composite-frame rendering. Each leaf produces its own membrane
+   tree via plan->membrane, and the compositor tiles those trees by
+   wrapping them in ui/translate. The resulting membrane tree is
+   handed to membrane->plot, which dispatches on format (:svg,
+   :bufimg, ...).
 
    Shared scales are reconciled before rendering by stamping a forced
    domain on matching leaves (impl.frame/inject-shared-scales).

@@ -176,7 +176,7 @@
 
 (defn plan->membrane
   "Convert a plan into a membrane drawable tree.
-   (plan->membrane (plan sketch))"
+   (plan->membrane (plan fr))"
   [plan-data & {:as opts}]
   (expect-type plan-data resolve/plan? "plan (from sk/plan)" "sk/plan->membrane")
   (membrane/plan->membrane plan-data opts))
@@ -192,8 +192,8 @@
   "Convert a plan into a figure for the given format.
    Dispatches on format keyword. Each renderer is a separate namespace
    that registers a defmethod; :svg is always available.
-   (plan->plot (plan sketch) :svg {})
-   (plan->plot (plan sketch) :plotly {})"
+   (plan->plot (plan fr) :svg {})
+   (plan->plot (plan fr) :plotly {})"
   [plan format opts]
   (expect-type plan resolve/plan? "plan (from sk/plan)" "sk/plan->plot")
   (render-impl/plan->plot plan format opts))
@@ -249,7 +249,7 @@
 (defn- warn-and-strip-unknown-opts
   "Warn if `opts` contains keys outside `accepted` and return `opts`
    with only the accepted keys retained. `caller` is used in the
-   warning message (e.g. \"sk/sketch\", \"lay-point\"). If opts is
+   warning message (e.g. \"sk/frame\", \"lay-point\"). If opts is
    nil or not a map, returns it unchanged. Stripping makes the
    warning honest: keys the library does not recognize are dropped
    rather than silently propagated into mapping maps, where they
@@ -354,7 +354,6 @@
    Accepts any frame-shaped map. All of :data, :mapping, :layers,
    :opts, :frames, :layout, :share-scales are legal at any depth.
    Unknown top-level keys are warned and otherwise left in place.
-   Sketch records are rejected with a clear message.
 
    Keys are reordered for readable printing: small declarative keys
    first, :data before :frames so each level's data stays beside its
@@ -675,7 +674,7 @@
                        (and (string? r) (contains? cols (keyword r)))))
         missing (vec (remove matches? refs))]
     (when (seq missing)
-      (throw (ex-info (str "Cannot attach data: sketch references column(s) "
+      (throw (ex-info (str "Cannot attach data: frame references column(s) "
                            missing
                            " not present in the dataset. Available columns: "
                            (vec (sort cols)) ".")
@@ -973,13 +972,14 @@
    (lay-on-frame (ensure-frame sk-or-data) layer-type-key {:x x :y y} opts)))
 
 (defn lay-point
-  "Add :point layer (scatter) to a sketch.
-   Without columns -> sketch-level layer (applies to all views).
-   With columns -> view-specific (find or create view).
-   (lay-point sk)                         -- sketch-level layer
-   (lay-point sk {:color :species})        -- sketch-level with opts
-   (lay-point data :x :y)                 -- view-specific
-   (lay-point data :x :y {:color :c})     -- view-specific with opts"
+  "Add a :point (scatter) layer to a frame.
+   Without columns -> bare layer at the frame's root (flows to every leaf).
+   With columns -> position-bearing layer (attaches to the matching leaf
+   via DFS-last identity, or appends a new sub-frame on miss).
+   (lay-point fr)                         -- bare layer at root
+   (lay-point fr {:color :species})        -- bare layer with aesthetic opts
+   (lay-point data :x :y)                 -- coerce data to a leaf, then attach
+   (lay-point data :x :y {:color :c})     -- same with aesthetic opts"
   ([sk-or-data] (lay-layer-type :point sk-or-data))
   ([sk-or-data x-or-opts] (lay-layer-type :point sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (lay-layer-type :point sk-or-data x y-or-opts))
@@ -994,7 +994,7 @@
 (defn- positional-hint
   "If the user passed a non-map last arg (e.g. a bare number), suggest
    wrapping it in an opts map. args here are the trailing args after
-   the sketch -- so the bad shape is `(lay-rule-h sk 3)` not `(lay-rule-h sk)`."
+   the frame -- so the bad shape is `(lay-rule-h fr 3)` not `(lay-rule-h fr)`."
   [args]
   (when (and (seq args) (not (map? (last args))))
     (str " Got " (pr-str (last args)) " as the last argument; did you forget"
@@ -1038,10 +1038,11 @@
   "Add :rule-h layer -- horizontal reference line at y = y-intercept.
    Position comes from opts (not data columns); :y-intercept is required.
    Accepts :y-intercept (required), :color (literal string), :alpha.
-   The 4-arity finds or creates a view with these x/y columns and
-   attaches the rule there (only panels matching that view show it).
-   (lay-rule-h sk {:y-intercept 3})           -- sketch-level, all panels
-   (lay-rule-h sk :x :y {:y-intercept 3})     -- view-scope (columns pick or create the view)
+   The 4-arity finds or creates a sub-frame with these x/y columns
+   and attaches the rule there (only panels matching that leaf show
+   it).
+   (lay-rule-h sk {:y-intercept 3})           -- root-level, flows to every panel
+   (lay-rule-h sk :x :y {:y-intercept 3})     -- panel-scope (columns pick or create a sub-frame)
    (lay-rule-h sk {:y-intercept 3 :color \"red\" :alpha 0.5})"
   ([sk-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-layer-type :rule-h sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-layer-type :rule-h sk-or-data x y-or-opts))
@@ -1051,10 +1052,11 @@
   "Add :rule-v layer -- vertical reference line at x = x-intercept.
    Position comes from opts (not data columns); :x-intercept is required.
    Accepts :x-intercept (required), :color (literal string), :alpha.
-   The 4-arity finds or creates a view with these x/y columns and
-   attaches the rule there (only panels matching that view show it).
-   (lay-rule-v sk {:x-intercept 5})           -- sketch-level, all panels
-   (lay-rule-v sk :x :y {:x-intercept 5})     -- view-scope (columns pick or create the view)
+   The 4-arity finds or creates a sub-frame with these x/y columns
+   and attaches the rule there (only panels matching that leaf show
+   it).
+   (lay-rule-v sk {:x-intercept 5})           -- root-level, flows to every panel
+   (lay-rule-v sk :x :y {:x-intercept 5})     -- panel-scope (columns pick or create a sub-frame)
    (lay-rule-v sk {:x-intercept 5 :color \"red\" :alpha 0.5})"
   ([sk-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-layer-type :rule-v sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-layer-type :rule-v sk-or-data x y-or-opts))
@@ -1065,10 +1067,11 @@
    Position comes from opts (not data columns); :y-min and :y-max are
    required and :y-min must be <= :y-max.
    Accepts :y-min (required), :y-max (required), :color (literal string), :alpha.
-   The 4-arity finds or creates a view with these x/y columns and
-   attaches the band there (only panels matching that view show it).
-   (lay-band-h sk {:y-min 2 :y-max 4})            -- sketch-level, all panels
-   (lay-band-h sk :x :y {:y-min 2 :y-max 4})      -- view-scope (columns pick or create the view)
+   The 4-arity finds or creates a sub-frame with these x/y columns
+   and attaches the band there (only panels matching that leaf show
+   it).
+   (lay-band-h sk {:y-min 2 :y-max 4})            -- root-level, flows to every panel
+   (lay-band-h sk :x :y {:y-min 2 :y-max 4})      -- panel-scope (columns pick or create a sub-frame)
    (lay-band-h sk {:y-min 2 :y-max 4 :color \"blue\" :alpha 0.3})"
   ([sk-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-layer-type :band-h sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-layer-type :band-h sk-or-data x y-or-opts))
@@ -1079,10 +1082,11 @@
    Position comes from opts (not data columns); :x-min and :x-max are
    required and :x-min must be <= :x-max.
    Accepts :x-min (required), :x-max (required), :color (literal string), :alpha.
-   The 4-arity finds or creates a view with these x/y columns and
-   attaches the band there (only panels matching that view show it).
-   (lay-band-v sk {:x-min 4 :x-max 6})            -- sketch-level, all panels
-   (lay-band-v sk :x :y {:x-min 4 :x-max 6})      -- view-scope (columns pick or create the view)
+   The 4-arity finds or creates a sub-frame with these x/y columns
+   and attaches the band there (only panels matching that leaf show
+   it).
+   (lay-band-v sk {:x-min 4 :x-max 6})            -- root-level, flows to every panel
+   (lay-band-v sk :x :y {:x-min 4 :x-max 6})      -- panel-scope (columns pick or create a sub-frame)
    (lay-band-v sk {:x-min 4 :x-max 6 :color \"blue\" :alpha 0.3})"
   ([sk-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-layer-type :band-v sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-layer-type :band-v sk-or-data x y-or-opts))

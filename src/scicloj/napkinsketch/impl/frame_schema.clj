@@ -1,10 +1,10 @@
 (ns scicloj.napkinsketch.impl.frame-schema
   "Malli schema for the Frame data model.
 
-   A frame is a plain recursive map that replaces both sketch and view.
-   A leaf frame has no :frames (or an empty :frames vector). A composite
-   frame has :frames and an optional :layout describing how sub-frames
-   tile a bounding rectangle.
+   A frame is a plain recursive map. A leaf frame has no :frames (or
+   an empty :frames vector). A composite frame has :frames and an
+   optional :layout describing how sub-frames tile a bounding
+   rectangle.
 
    Validation is not wired into any runtime path yet; Phase 6 of the
    pre-alpha refactor (see dev-notes/pre-alpha-refactor-plan.md) adds

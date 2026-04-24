@@ -1,6 +1,6 @@
 (ns scicloj.napkinsketch.impl.plan
   "Draft-to-plan pipeline: domains, ticks, legends, layout, and grid inference.
-   Takes draft maps (from sketch->draft) and produces a Plan record
+   Takes draft maps (from frame/leaf->draft) and produces a Plan record
    with all geometry needed for rendering."
   (:require [wadogo.scale :as ws]
             [java-time.api :as jt]
@@ -902,15 +902,20 @@
          _ (warn-conflicting-specs draft-layers)
 
          ;; Plot-level annotations -- from sk/lay-rule-* / sk/lay-band-*
-         ;; layers extracted above. Sketch-scope annotations get
-         ;; duplicated by the view cross-product in sketch->draft;
-         ;; dedupe them here and strip :x/:y so they apply to all
-         ;; panels. View-scope annotations keep their :x/:y so
+         ;; layers extracted above. Root-scope annotations (carried
+         ;; down through frame/resolve-tree) need deduping because
+         ;; facet expansion repeats the same annotation for every
+         ;; panel. Strip :x/:y on root-scope so they apply to all
+         ;; panels. Panel-scope annotations keep their :x/:y so
          ;; finalize-panel can match them to the right panel.
          ;; Annotations only support literal :color (string) and
-         ;; literal :alpha (number); column-mapped aesthetics inherited
-         ;; from sketch/view scope are silently dropped (annotations
-         ;; don't participate in column-mapped scales).
+         ;; literal :alpha (number); column-mapped aesthetics are
+         ;; silently dropped (annotations don't participate in
+         ;; column-mapped scales).
+         ;; Legacy: :__sketch-scope was set by impl/sketch.clj's
+         ;; draft emitter; frame/leaf->draft does not stamp it, so
+         ;; the sketch-scope filter returns an empty vec today. Kept
+         ;; defensively in case a caller hand-builds a draft.
          clean-aesthetics (fn [m]
                             (cond-> m
                               (not (string? (:color m))) (dissoc :color)

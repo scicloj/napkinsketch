@@ -1,8 +1,8 @@
 (ns scicloj.napkinsketch.impl.frame
-  "Frame substrate -- the recursive plain-map type that replaces
-   sketch + view in the pre-alpha refactor. This namespace holds the
-   pure tree operations (resolve, layout, shared-scale injection) and
-   the leaf->draft emitter that feeds plan.clj.
+  "Frame substrate -- the recursive plain-map type that is the
+   library's spec vocabulary. This namespace holds the pure tree
+   operations (resolve, layout, shared-scale injection) and the
+   leaf->draft emitter that feeds plan.clj.
 
    Shape of a frame:
      {:data         ?  dataset (inherited from ancestor if absent)
@@ -159,9 +159,8 @@
 
 (defn canonicalize-col
   "Canonicalize a column ref to a string key for matching. A keyword
-   and a string with the same name are treated as the same column.
-   Shared between sketch-world view matching and frame-world leaf
-   matching so `:x` and `\"x\"` resolve identically in both."
+   and a string with the same name are treated as the same column,
+   so `:x` and `\"x\"` resolve identically during leaf matching."
   [col]
   (cond
     (nil? col) nil
@@ -176,9 +175,8 @@
 
    `position-mapping` may carry either or both of :x and :y; a nil
    value matches a leaf whose effective mapping has no entry for that
-   axis. This mirrors the sketch-world rule (api.clj's add-view-layer):
-   matching is against resolved positional mappings only, and a bare
-   view (no :x/:y) matches a bare position mapping."
+   axis. Matching is against resolved positional mappings only --
+   a bare leaf (no :x/:y) matches a bare position mapping."
   [frame position-mapping]
   (let [px (canonicalize-col (:x position-mapping))
         py (canonicalize-col (:y position-mapping))]
@@ -311,9 +309,8 @@
 
 ;; ---- Leaf-to-draft ----
 ;;
-;; The adapter-free draft emitter. Consumes one resolved leaf and
-;; produces a draft vector -- the same shape plan/draft->plan accepts.
-;; Replaces the leaf-frame->sketch + sketch->draft detour.
+;; The draft emitter. Consumes one resolved leaf and produces a draft
+;; vector -- the same shape plan/draft->plan accepts.
 
 (defn- coerce-dataset
   "Coerce raw data to a Tablecloth dataset. Returns nil for nil."
