@@ -99,10 +99,10 @@
 
 
 (def
- v20_l81
+ v20_l82
  (def
   scatter-template
-  (-> (sk/sketch) (sk/view :x :y {:color :group}) sk/lay-point)))
+  (-> (sk/frame nil {:x :x, :y :y, :color :group}) sk/lay-point)))
 
 
 (def v21_l86 (-> scatter-template (sk/with-data tiny)))
@@ -283,7 +283,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__138561#] (Math/sin (* p1__138561# 0.3)))
+    (fn* [p1__140617#] (Math/sin (* p1__140617# 0.3)))
     (range 30))}))
 
 
@@ -393,9 +393,9 @@
     :y
     (mapv
      (fn*
-      [p1__138562#]
+      [p1__140618#]
       (+
-       (Math/sin (* p1__138562# 0.2))
+       (Math/sin (* p1__140618# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (sk/lay-point :x :y)

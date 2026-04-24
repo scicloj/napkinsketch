@@ -75,12 +75,12 @@
 
 (kind/doc #'sk/with-data)
 
-;; Attach or replace the sketch-level dataset. Useful for building a
-;; template sketch without data and applying it to many datasets:
+;; Attach or replace the top-level dataset on a frame or sketch.
+;; Useful for building a dataless template and applying it to many
+;; datasets:
 
 (def scatter-template
-  (-> (sk/sketch)
-      (sk/view :x :y {:color :group})
+  (-> (sk/frame nil {:x :x :y :y :color :group})
       sk/lay-point))
 
 (-> scatter-template
@@ -401,8 +401,8 @@
 ;; for `lay-rule-v`; `:y-min`/`:y-max` for `lay-band-h`,
 ;; `:x-min`/`:x-max` for `lay-band-v`); appearance aesthetics like
 ;; `:color` and `:alpha` work the same as on any other layer. Without
-;; x/y columns they attach to the sketch (every panel); with x/y
-;; columns they attach to one view.
+;; x/y columns they attach at the root (every panel); with x/y
+;; columns they attach to one matching leaf.
 
 (kind/doc #'sk/lay-rule-v)
 
@@ -531,7 +531,7 @@
 
 (kind/doc #'sk/options)
 
-;; Set render options on a sketch:
+;; Set render options on a frame or sketch:
 
 (-> tiny
     (sk/lay-point :x :y)
