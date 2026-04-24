@@ -182,7 +182,14 @@
                 title subtitle caption x-label y-label
                 legend size-legend alpha-legend
                 legend-position panels layout grid]} plan
-        {:keys [x-label-pad y-label-pad title-pad subtitle-pad caption-pad legend-w legend-h strip-h strip-w]} layout
+        {:keys [x-label-pad y-label-pad title-pad subtitle-pad caption-pad legend-w legend-h]
+         :or   {x-label-pad 0 y-label-pad 0 title-pad 0 subtitle-pad 0
+                caption-pad 0 legend-w 0 legend-h 0}} layout
+        ;; strip-h / strip-w are nil on composites without strip labels
+        ;; (plain multi-panel non-facet grids); default to 0 so arithmetic
+        ;; and `pos?` checks below don't NPE.
+        strip-h (or (:strip-h layout) 0)
+        strip-w (or (:strip-w layout) 0)
         theme (:theme cfg)
         legend-pos (or legend-position :right)
         grid-rows (:rows grid)
