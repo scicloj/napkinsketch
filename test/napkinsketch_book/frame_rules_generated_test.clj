@@ -21,7 +21,7 @@
    (:layers fr)
    (update
     :layers
-    (partial mapv (fn* [p1__167005#] (dissoc p1__167005# :data))))
+    (partial mapv (fn* [p1__169512#] (dissoc p1__169512# :data))))
    (:frames fr)
    (update :frames (partial mapv strip-data)))))
 
@@ -879,8 +879,8 @@
       rule
       (some
        (fn*
-        [p1__167006#]
-        (when (= :rule-h (:layer-type p1__167006#)) p1__167006#))
+        [p1__169513#]
+        (when (= :rule-h (:layer-type p1__169513#)) p1__169513#))
        layers)]
      (and (some? rule) (= 3.0 (get-in rule [:mapping :y-intercept])))))
    v136_l822)))
@@ -1036,19 +1036,18 @@
       domains
       (mapv
        (fn*
-        [p1__167007#]
-        (get-in p1__167007# [:plan :panels 0 :x-scale :domain]))
+        [p1__169514#]
+        (get-in p1__169514# [:plan :panels 0 :x-scale :domain]))
        sub-plots)]
      (and (= 2 (count domains)) (= (first domains) (second domains)))))
    v158_l981)))
 
 
 (def
- v161_l1005
+ v161_l1014
  (->
   iris
   (sk/frame {:color :species})
-  sk/lay-point
   (sk/frame
    (sk/cross
     [:sepal-length :sepal-width]
@@ -1056,7 +1055,7 @@
 
 
 (deftest
- t162_l1011
+ t162_l1019
  (is
   ((fn
     [fr]
@@ -1065,18 +1064,17 @@
      (= #{:y :x} (:share-scales fr))
      (= 2 (count (:frames fr)))
      (every?
-      (fn* [p1__167008#] (= 2 (count (:frames p1__167008#))))
+      (fn* [p1__169515#] (= 2 (count (:frames p1__169515#))))
       (:frames fr))
-     (= {:color :species} (:mapping fr))
-     (= 1 (count (:layers fr)))))
-   v161_l1005)))
+     (= {:color :species} (:mapping fr))))
+   v161_l1014)))
 
 
-(def v164_l1032 (sk/cross [:a :b] [:c :d]))
+(def v164_l1039 (sk/cross [:a :b] [:c :d]))
 
 
 (deftest
- t165_l1034
+ t165_l1041
  (is
   ((fn [pairs] (= [[:a :c] [:a :d] [:b :c] [:b :d]] pairs))
-   v164_l1032)))
+   v164_l1039)))

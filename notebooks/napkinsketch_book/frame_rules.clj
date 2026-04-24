@@ -995,16 +995,24 @@ l4-shared
 ;; `sk/cross cols cols`), the result is a nested **rows-of-cols**
 ;; composite with `:share-scales #{:x :y}` -- the canonical SPLOM
 ;; layout. Each cell inherits the base's `:data`, root `:mapping`,
-;; and root `:layers` via `resolve-tree`, and carries
-;; `:opts {:suppress-legend true}` so the legend appears once at
-;; the composite level rather than per cell.
+;; and root `:layers` via `resolve-tree`. The compositor applies
+;; three renderer flags on cells:
 ;;
-;; Pair lists that are not rectangular fall through to the flat
-;; one-panel-per-pair behaviour (see Rules C3 / C6).
+;; - `:suppress-legend true` on every cell (one shared legend is
+;;   drawn at composite level).
+;; - `:suppress-x-label true` on every non-bottom row (x-axis label
+;;   shows only on the bottom row).
+;; - `:suppress-y-label true` on every non-leftmost column (y-axis
+;;   label shows only on the leftmost column).
+;;
+;; Idiomatic SPLOM usage therefore omits `sk/lay-point` -- each
+;; cell infers its own layer type: scatter off-diagonal, histogram
+;; on the diagonal (where x = y). Pair lists that are not
+;; rectangular fall through to the flat one-panel-per-pair behaviour
+;; (see Rules C3 / C6).
 
 (-> iris
     (sk/frame {:color :species})
-    sk/lay-point
     (sk/frame (sk/cross [:sepal-length :sepal-width]
                         [:petal-length :petal-width])))
 
@@ -1014,8 +1022,7 @@ l4-shared
          (= #{:x :y} (:share-scales fr))
          (= 2 (count (:frames fr)))
          (every? #(= 2 (count (:frames %))) (:frames fr))
-         (= {:color :species} (:mapping fr))
-         (= 1 (count (:layers fr)))))])
+         (= {:color :species} (:mapping fr))))])
 
 ;; ---
 ;; ## A note on `sk/cross`

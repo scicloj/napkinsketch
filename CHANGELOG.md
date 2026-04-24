@@ -30,11 +30,19 @@ User-visible behavior:
   one call.
 - `(sk/frame fr (sk/cross cols cols))` builds a SPLOM: when the
   pairs form an M x N Cartesian rectangle, the result is a nested
-  rows-of-cols composite with `:share-scales #{:x :y}`. Per-cell
-  legends are suppressed so the grid fits even at the default plot
-  size. A remaining difference from the legacy SPLOM: every cell
-  renders a scatter layer (there is no x=y -> histogram inference
-  on the diagonal yet).
+  rows-of-cols composite with `:share-scales #{:x :y}`. The
+  compositor renders one shared legend on the right (when the
+  composite root carries a color/size/alpha aesthetic), suppresses
+  x-axis labels on non-bottom rows and y-axis labels on non-leftmost
+  columns, and lets per-cell inference pick the layer type --
+  scatter off-diagonal, histogram on the diagonal where x = y
+  (matching the legacy sk/view SPLOM behaviour). The idiomatic SPLOM
+  omits `sk/lay-point`:
+  ```clojure
+  (-> data
+      (sk/frame {:color :species})
+      (sk/frame (sk/cross cols cols)))
+  ```
 
 Legacy `sk/sketch` and `sk/view` remain in place as adapters;
 user-facing examples across the book and gallery have been migrated
