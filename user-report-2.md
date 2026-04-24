@@ -1,9 +1,9 @@
-# napkinsketch — user report 2
+# plotje — user report 2
 
 **Reporter:** Daniel Slutsky (via Claude Code session)
 **Date:** 2026-04-19
 **Context:** Continuing the `zulipdata` integration. After the round
-of fixes in user-report-1, I deliberately stretched napkinsketch with
+of fixes in user-report-1, I deliberately stretched plotje with
 a wider variety of plot types I'd actually want for community-history
 analysis: distributions, ridgelines, lollipops, errorbars, faceted
 small-multiples, custom palettes, annotations, log scales, stacked
@@ -12,7 +12,7 @@ This report is the friction list from the rest.
 
 ## Environment
 
-- napkinsketch: `:local/root "../napkinsketch"` (working tree as of 2026-04-19, post user-report-1 fixes)
+- plotje: `:local/root "../plotje"` (working tree as of 2026-04-19, post user-report-1 fixes)
 - Clay: `2.0.9`
 - Tablecloth: `7.029.2`
 - JDK: Java 21 (Linux)
@@ -21,7 +21,7 @@ Each issue below has a copy-pasteable minimal reproduction. Run them
 in a REPL with:
 
 ```clojure
-(require '[scicloj.napkinsketch.api :as sk])
+(require '[scicloj.plotje.api :as sk])
 (require '[tablecloth.api :as tc])
 ```
 

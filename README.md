@@ -1,5 +1,5 @@
 
-# Napkinsketch
+# Plotje
 Simple and easy plotting
 
 NapkinSketch is a Clojure library for composable plotting, inspired by
@@ -10,10 +10,10 @@ the Grammar of Graphics.
 
 |||
 |-|-|
-|Website | [https://scicloj.github.io/napkinsketch/](https://scicloj.github.io/napkinsketch/)
-|Source |[![(GitHub repo)](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/scicloj/napkinsketch)|
-|Deps |[![Clojars Project](https://img.shields.io/clojars/v/org.scicloj/napkinsketch.svg)](https://clojars.org/org.scicloj/napkinsketch)|
-|License |[MIT](https://github.com/scicloj/napkinsketch/blob/main/LICENSE)|
+|Website | [https://scicloj.github.io/plotje/](https://scicloj.github.io/plotje/)
+|Source |[![(GitHub repo)](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/scicloj/plotje)|
+|Deps |[![Clojars Project](https://img.shields.io/clojars/v/org.scicloj/plotje.svg)](https://clojars.org/org.scicloj/plotje)|
+|License |[MIT](https://github.com/scicloj/plotje/blob/main/LICENSE)|
 |Status |🛠alpha🛠|
 
 
@@ -22,10 +22,10 @@ the Grammar of Graphics.
 Add to your `deps.edn`:
 
 ```clojure
-org.scicloj/napkinsketch {:mvn/version "0.1.0"}
+org.scicloj/plotje {:mvn/version "0.1.0"}
 ```
 
-Napkinsketch is intended to be used with data-visualization tools
+Plotje is intended to be used with data-visualization tools
 that support the [Kindly](https://scicloj.github.io/kindly) convention
 such as [Clay](https://scicloj.github.io/clay/).
 
@@ -33,7 +33,7 @@ such as [Clay](https://scicloj.github.io/clay/).
 ## Quick example
 ```clj
 (ns readme
-  (:require [scicloj.napkinsketch.api :as sk]
+  (:require [scicloj.plotje.api :as sk]
             [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 ```
 Line chart with point markers from plain Clojure data:
@@ -67,7 +67,7 @@ scatter plots (per-cell inference picks the layer type):
 
 ## Documentation
 
-[Full documentation](https://scicloj.github.io/napkinsketch/)
+[Full documentation](https://scicloj.github.io/plotje/)
 
 
 ## License

@@ -1,0 +1,61 @@
+;; Default configuration for Plotje.
+;; Users can override by creating plotje.edn in their project root (or on classpath),
+;; by calling set-config!, or by binding *config*.
+{;; Layout
+ ;; :width and :height are TOTAL SVG dimensions. Panel dimensions are
+ ;; derived by subtracting layout overhead (labels, legend, strips,
+ ;; titles). Use :panel-width / :panel-height (per-plot opts) as an
+ ;; escape hatch to pin a specific panel size regardless of overhead.
+ :width 600 :height 400
+ ;; :margin is the inner panel padding -- breathing room between the
+ ;; panel edge and the data drawing area. Tick labels are drawn
+ ;; *outside* the panel (in y-label-pad / x-label-pad), so this
+ ;; margin only reserves visual space for point radius etc. 10px is
+ ;; plenty and leaves SPLOM panels usable under the total-first
+ ;; layout. :margin-multi is a legacy knob for SPLOMs, still
+ ;; respected even though the SPLOM path no longer uses :panel-size.
+ :margin 10 :margin-multi 10 :panel-size 200 :legend-width 100
+ ;; Minimum derived panel size before compute-dims throws a helpful
+ ;; error. Acts as a sanity guard against "overhead > total dimension"
+ ;; layouts. Set at 20px so dense 18-column facet grids still fit in
+ ;; a 600px total width without tripping the check.
+ :min-panel-size 20
+ ;; Top/bottom legend layout: header pad + per-entry row height.
+ ;; Previously hardcoded as magic numbers in compute-layout-dims.
+ :legend-header-pad 20
+ :legend-entry-height 18
+
+ ;; Theme (visual identity — ggplot2-inspired with friendly feel)
+ :theme {:bg "#E8E8E8" :grid "#F5F5F5" :font-size 11}
+
+ ;; Typography
+ :label-font-size 13 :title-font-size 15 :strip-font-size 10
+
+ ;; Points
+ :point-radius 3.0 :point-opacity 0.75
+ :point-stroke "none" :point-stroke-width 0
+
+ ;; Bars and lines
+ :bar-opacity 0.85 :line-width 2.5 :grid-stroke-width 0.6
+
+ ;; Annotations
+ :annotation-stroke "#333" :annotation-dash [4 3] :band-opacity 0.15
+
+ ;; Ticks
+ :tick-spacing-x 60 :tick-spacing-y 40
+
+ ;; Statistics
+ :bin-method :sturges
+ :domain-padding 0.05
+
+ ;; Labels and titles
+ :label-offset 38 :title-offset 18
+
+ ;; Facet strips
+ :strip-height 16
+
+ ;; Behavior
+ :validate true
+
+ ;; Fallback
+ :default-color "#333"}

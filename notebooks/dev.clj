@@ -8,14 +8,14 @@
 (def ^:private chapters->source-paths
   (fn [chapters]
     (into [] (mapcat (fn [[_part names]]
-                       (map #(format "napkinsketch_book/%s.clj" %) names)))
+                       (map #(format "plotje_book/%s.clj" %) names)))
           chapters)))
 
 (def ^:private chapters->parts
   (fn [chapters]
     (mapv (fn [[part names]]
             {:part part
-             :chapters (mapv #(format "napkinsketch_book/%s.clj" %) names)})
+             :chapters (mapv #(format "plotje_book/%s.clj" %) names)})
           chapters)))
 
 (defn make-book!
@@ -25,7 +25,7 @@
   (clay/make! (merge {:format [:quarto :html]
                       :base-source-path "notebooks"
                       :source-path (into ["index.clj"] (chapters->parts (read-chapters)))
-                      :book {:title "Napkinsketch"}
+                      :book {:title "Plotje"}
                       :clean-up-target-dir true
                       :base-target-path (if docs
                                           "docs"
@@ -63,6 +63,6 @@
   (make-book! {:docs true})
   (make-book! {:docs false})
   (make-gfm!)
-  (make-gfm! "napkinsketch_book/quickstart.clj"))
+  (make-gfm! "plotje_book/quickstart.clj"))
 
 

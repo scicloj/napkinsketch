@@ -2,7 +2,7 @@
   (:require [clojure.tools.build.api :as b]
             [deps-deploy.deps-deploy :as dd]))
 
-(def lib 'org.scicloj/napkinsketch)
+(def lib 'org.scicloj/plotje)
 (def version "0.1.0")
 (def snapshot (str version "-SNAPSHOT"))
 (def class-dir "target/classes")
@@ -32,7 +32,7 @@
 
 (defn- pom-template [version]
   [[:description "composable plotting in Clojure"]
-   [:url "https://github.com/scicloj/napkinsketch"]
+   [:url "https://github.com/scicloj/plotje"]
    [:licenses
     [:license
      [:name "MIT License"]
@@ -41,9 +41,9 @@
     [:developer
      [:name "scicloj"]]]
    [:scm
-    [:url "https://github.com/scicloj/napkinsketch"]
-    [:connection "scm:git:https://github.com/scicloj/napkinsketch.git"]
-    [:developerConnection "scm:git:ssh:git@github.com:scicloj/napkinsketch.git"]
+    [:url "https://github.com/scicloj/plotje"]
+    [:connection "scm:git:https://github.com/scicloj/plotje.git"]
+    [:developerConnection "scm:git:ssh:git@github.com:scicloj/plotje.git"]
     [:tag (str "v" version)]]])
 
 (defn ci

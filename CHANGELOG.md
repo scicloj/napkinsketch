@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to napkinsketch will be documented in this file.
+All notable changes to plotje will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -273,7 +273,7 @@ plots look identical to pre-rewrite renders.
 
 ### Overview
 
-Napkinsketch is a composable plotting library for Clojure, inspired by
+Plotje is a composable plotting library for Clojure, inspired by
 the Grammar of Graphics. Plots are built by threading data through a
 sequence of small transformations. The resulting frame is a plain
 Clojure value that auto-renders in Kindly-compatible notebooks (Clay
@@ -355,7 +355,7 @@ drag-to-select brushes (`{:brush true}`) via lightweight inline
 JavaScript.
 
 **Layered configuration.** Per-plot options > thread-local
-`with-config` > global `set-config!` > `napkinsketch.edn` > library
+`with-config` > global `set-config!` > `plotje.edn` > library
 defaults. Theme values deep-merge so partial overrides don't clobber
 the rest.
 

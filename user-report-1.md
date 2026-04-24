@@ -1,15 +1,15 @@
-# napkinsketch — user report 1
+# plotje — user report 1
 
 **Reporter:** Daniel Slutsky (via Claude Code session)
 **Date:** 2026-04-19
-**Context:** Integrating napkinsketch into the `zulipdata` prototype — replacing a `tableplot` setup with `napkinsketch` for the first time. Hit several friction points worth reporting.
+**Context:** Integrating plotje into the `zulipdata` prototype — replacing a `tableplot` setup with `plotje` for the first time. Hit several friction points worth reporting.
 
 ## Environment
 
-- napkinsketch: `:local/root "../napkinsketch"` (working tree as of 2026-04-19)
+- plotje: `:local/root "../plotje"` (working tree as of 2026-04-19)
 - Clay: `2.0.9`
 - Noj: `2-beta24`
-- Tablecloth: `7.029.2` (zulipdata's top-level pin; napkinsketch's own deps request `7.067`, but the top-level wins in dep resolution — no runtime issues observed)
+- Tablecloth: `7.029.2` (zulipdata's top-level pin; plotje's own deps request `7.067`, but the top-level wins in dep resolution — no runtime issues observed)
 - JDK: Java 21 (Linux)
 
 The notebook we rewrote produces four charts: a multi-series line (messages-per-month by channel), two horizontal bars (top senders, top emojis via `coord :flip`), and a vertical bar (messages per hour-of-day). Data is a `tc/dataset` from tablecloth.
@@ -17,7 +17,7 @@ The notebook we rewrote produces four charts: a multi-series line (messages-per-
 Each issue below has a copy-pasteable minimal reproduction. Run them in a REPL with:
 
 ```clojure
-(require '[scicloj.napkinsketch.api :as sk])
+(require '[scicloj.plotje.api :as sk])
 ```
 
 ---
@@ -29,13 +29,13 @@ Each issue below has a copy-pasteable minimal reproduction. Run them in a REPL w
 > interactive HTML. Clay's GFM renderer recognises a top-level
 > `kind/hiccup [:svg ...]` as an image to extract, and does NOT when the
 > SVG is nested in a `[:div ...]`. `render-sketch` now returns the raw
-> `kind/hiccup [:svg ...]` directly. `gfm/napkinsketch_book.ranking.md`
+> `kind/hiccup [:svg ...]` directly. `gfm/plotje_book.ranking.md`
 > went from 0 to 10 image references in one regeneration pass.
 
 
 **Severity:** Medium — silent failure, unclear from the README/example hierarchy.
 
-**Summary.** If a pipeline ends at `sk/lay-line` (or any `lay-*`) without an explicit `sk/plot`, the expression returns a `scicloj.napkinsketch.impl.sketch.Sketch` record. Clay treats it as a Kindly-kinded value — and in interactive HTML/Clay rendering this works fine — but **in `:format [:gfm]` the Sketch renders as nothing**: no SVG file is written, and the markdown has empty lines where the chart should be.
+**Summary.** If a pipeline ends at `sk/lay-line` (or any `lay-*`) without an explicit `sk/plot`, the expression returns a `scicloj.plotje.impl.sketch.Sketch` record. Clay treats it as a Kindly-kinded value — and in interactive HTML/Clay rendering this works fine — but **in `:format [:gfm]` the Sketch renders as nothing**: no SVG file is written, and the markdown has empty lines where the chart should be.
 
 Appending `sk/plot` converts the Sketch into a hiccup `[:svg ...]` vector that Clay's GFM renderer picks up, writes as `image<N>.svg`, and references with a markdown `![]()` tag.
 
@@ -45,7 +45,7 @@ Appending `sk/plot` converts the Sketch into a hiccup `[:svg ...]` vector that C
 ;; Without sk/plot — renders blank in GFM
 (-> {:x [1 2 3] :y [1 4 9]}
     (sk/lay-line :x :y))
-;; => #scicloj.napkinsketch.impl.sketch.Sketch{...}
+;; => #scicloj.plotje.impl.sketch.Sketch{...}
 
 ;; With sk/plot — renders as an SVG image in GFM
 (-> {:x [1 2 3] :y [1 4 9]}
@@ -58,7 +58,7 @@ Repro the render asymmetry by authoring a Clay notebook with both forms and runn
 
 **Expected.** Either (a) `sk/plot` should be implicit in `:format [:gfm]`, or (b) the README's "Quickstart" examples should make clear that bare `lay-*` expressions work only in interactive kinds, and a trailing `sk/plot` is mandatory for GFM/static export.
 
-Note: napkinsketch's own `notebooks/napkinsketch_book/ranking.clj` omits `sk/plot` at the ends of its pipelines; the rendered `gfm/napkinsketch_book.ranking.md` also has no `![]()` image references (though stale `image<N>.svg` files from an earlier render sit in the `_files/` directory). It looks like the GFM flow broke for this chapter at some point and wasn't caught.
+Note: plotje's own `notebooks/plotje_book/ranking.clj` omits `sk/plot` at the ends of its pipelines; the rendered `gfm/plotje_book.ranking.md` also has no `![]()` image references (though stale `image<N>.svg` files from an earlier render sit in the `_files/` directory). It looks like the GFM flow broke for this chapter at some point and wasn't caught.
 
 ---
 
@@ -82,9 +82,9 @@ Note: napkinsketch's own `notebooks/napkinsketch_book/ranking.clj` omits `sk/plo
 > - methods.clj reference table, via `layer-option-docs` entries for `:x-type` and `:y-type`.
 
 
-**Severity:** Medium — legitimate error but fires late (at `sk/plot`, not at `lay-value-bar`), and the remedy is to cast the column outside napkinsketch.
+**Severity:** Medium — legitimate error but fires late (at `sk/plot`, not at `lay-value-bar`), and the remedy is to cast the column outside plotje.
 
-**Summary.** Passing a numeric column as the categorical axis of a value-bar throws `ExceptionInfo` from `scicloj.napkinsketch.impl.extract`. The message is clear and suggests the cast to string, which works. The friction is only that "hour of day" feels conceptually categorical but arrives as `:int64` from `tc/group-by`, so the error reads as surprising until you realize the library treats "categorical" by dtype, not by intent.
+**Summary.** Passing a numeric column as the categorical axis of a value-bar throws `ExceptionInfo` from `scicloj.plotje.impl.extract`. The message is clear and suggests the cast to string, which works. The friction is only that "hour of day" feels conceptually categorical but arrives as `:int64` from `tc/group-by`, so the error reads as surprising until you realize the library treats "categorical" by dtype, not by intent.
 
 **Minimal repro.**
 
@@ -162,7 +162,7 @@ This is familiar to ggplot2 users (ggplot2's `coord_flip()` has the same behavio
 > the `:bufimg` / Java2D rasterisation path
 > (`membrane.java2d/draw-to-image`) truncates the rotated y-label
 > after ~6 characters. The bug lives in `membrane`, not in
-> napkinsketch's own code. A clean fix needs a reproducer against
+> plotje's own code. A clean fix needs a reproducer against
 > membrane and either a fix there or a local workaround in
 > `render/bufimg.clj` (for example, widening the Java2D raster target
 > before rasterising so the rotated-text bounding box is not clipped).
@@ -250,7 +250,7 @@ Column name `:really-long-label` is rendered on the axis as `"really long label"
 ## What worked well
 
 - `sk/lay-line` with `{:color :channel}` — the multi-series coloring on a `tc/dataset` worked on the first try.
-- `java.time.LocalDate` x values for time series — napkinsketch auto-selected sparse calendar-aligned tick labels, which was the main thing we lost when we tried using `"YYYY-MM"` strings.
+- `java.time.LocalDate` x values for time series — plotje auto-selected sparse calendar-aligned tick labels, which was the main thing we lost when we tried using `"YYYY-MM"` strings.
 - `sk/svg-summary` — made it possible to assert chart structure (number of polygons, label set) from a REPL or test without rendering, a nice capability for regression-testing that the other obvious libraries lack.
 - Error message for Issue 2 was clear and suggested the exact fix.
 
