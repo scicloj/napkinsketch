@@ -251,7 +251,7 @@
  v70_l315
  (->
   (rdatasets/datasets-iris)
-  (sk/view :petal-length :petal-width {:color :species})
+  (sk/frame :petal-length :petal-width {:color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   (sk/options {:title "Iris Petals with Regression"})))
