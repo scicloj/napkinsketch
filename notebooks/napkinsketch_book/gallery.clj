@@ -404,19 +404,21 @@
 ;; ### SPLOM (scatter plot matrix)
 ;; Source: [R Graph Gallery: Correlogram](https://r-graph-gallery.com/correlogram.html)
 
-;; All pairwise combinations of iris measurements, laid out on a 4x4
-;; grid with shared x-scales down columns and shared y-scales across
-;; rows:
+;; All pairwise combinations of iris measurements on a 4x4 grid with
+;; shared x-scales down columns and shared y-scales across rows.
+;; Off-diagonal cells show scatter plots; diagonal cells (where x = y)
+;; show histograms -- per-cell inference picks the layer type:
 
 (-> (rdatasets/datasets-iris)
     (sk/frame {:color :species})
-    sk/lay-point
     (sk/frame (sk/cross [:sepal-length :sepal-width :petal-length :petal-width]
                         [:sepal-length :sepal-width :petal-length :petal-width]))
     (sk/options {:title "Iris SPLOM"}))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
-                           (= 16 (:panels s))))])
+                           (and (= 16 (:panels s))
+                                (= (* 12 150) (:points s))
+                                (pos? (:polygons s)))))])
 
 ;; ## Composition
 
@@ -666,7 +668,6 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/frame {:color :species})
-    sk/lay-point
     (sk/frame (sk/cross [:sepal-length :sepal-width :petal-length :petal-width]
                         [:sepal-length :sepal-width :petal-length :petal-width])))
 

@@ -151,18 +151,20 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/frame {:color :species})
-    sk/lay-point
     (sk/frame (sk/cross cols cols)))
 
 (kind/test-last [(fn [v] (let [s (sk/svg-summary v)]
                            (and (= 16 (:panels s))
-                                (= (* 16 150) (:points s)))))])
+                                (= (* 12 150) (:points s))
+                                (pos? (:polygons s)))))])
 
-;; Every cell renders as a scatter plot -- 16 panels, each with 150
-;; colored points. The shared scales line up x-axes down columns and
-;; y-axes across rows. See the
-;; [Faceting](./napkinsketch_book.faceting.html) chapter for more
-;; SPLOM variations, including brush selection.
+;; Diagonal panels (where x = y) show histograms; off-diagonal panels
+;; show scatter plots. Per-cell inference picks the layer type based
+;; on whether the cell is univariate (x = y) or bivariate. All panels
+;; share the color aesthetic set at the composite root.
+;;
+;; See the [Faceting](./napkinsketch_book.faceting.html) chapter for
+;; more SPLOM variations, including brush selection.
 
 ;; ## What's Next
 ;;

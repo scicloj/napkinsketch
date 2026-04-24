@@ -443,7 +443,6 @@
 
 (-> (rdatasets/datasets-iris)
     (sk/frame {:color :species})
-    sk/lay-point
     (sk/frame (sk/cross [:sepal-length :sepal-width :petal-length]
                         [:sepal-length :sepal-width :petal-length])))
 
