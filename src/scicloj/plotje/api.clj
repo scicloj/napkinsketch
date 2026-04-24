@@ -600,7 +600,10 @@
    Non-rectangular pair lists and mixed/univariate lists fall through
    to the flat per-element reduce."
   [x cols-or-pairs]
-  (let [base     (if (frame? x) x (frame x))
+  (let [;; Bare data-only leaf (no inferred :mapping) -- each pair or
+        ;; column in `items` contributes its own sub-frame, so the base
+        ;; must not carry a position mapping of its own.
+        base     (if (frame? x) x (prepare-frame (frame-from-data x {})))
         items    (vec cols-or-pairs)
         first-el (first items)]
     (cond
@@ -951,16 +954,17 @@
             vector+map -> multi-pair broadcast with opts.
    4-arity: bivariate layer with opts."
   ([layer-type-key sk-or-data]
-   (let [fr (ensure-frame sk-or-data)
+   (let [was-raw? (not (frame? sk-or-data))
+         fr (ensure-frame sk-or-data)
          d (:data fr)]
-     (if (and d
-              (empty? (:mapping fr))
-              (empty? (:layers fr))
-              (nil? (:frames fr)))
-       ;; Fresh leaf with data and no mapping yet: auto-infer from the
-       ;; first 1-3 columns so `(pj/lay-point data)` and threaded
-       ;; `(-> data pj/frame pj/lay-point)` both produce a renderable
-       ;; plot. Throws on 4+ columns (no ambiguous default).
+     (if (and was-raw? d)
+       ;; Raw-data 1-arity: auto-infer columns from the first 1-3 columns
+       ;; so `(pj/lay-point data)` still produces a renderable plot.
+       ;; Threaded `(-> data pj/frame pj/lay-point)` works too because
+       ;; pj/frame 1-arity sets the mapping itself for 1-3 col data.
+       ;; A frame with no mapping that reaches here (e.g. iris with 7
+       ;; cols through pj/frame, or a hand-built map) stays bare so the
+       ;; "root layer flows to every panel" M4 pattern keeps working.
        (let [mapping (auto-infer-mapping layer-type-key d)]
          (lay-on-frame (assoc fr :mapping mapping)
                        layer-type-key nil nil))

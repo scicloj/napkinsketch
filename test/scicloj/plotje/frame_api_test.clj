@@ -69,12 +69,6 @@
       (is (= (:mapping raw) (:mapping threaded)))
       (is (= (:layers raw) (:layers threaded)))))
 
-  (testing "lay-* 1-arity on a frame without mapping still infers"
-    (let [bare   {:data (tc/dataset {:x [1 2] :y [3 4]}) :layers []}
-          framed (pj/lay-point bare)]
-      (is (= {:x :x :y :y} (:mapping framed)))
-      (is (= [{:layer-type :point}] (:layers framed)))))
-
   (testing "4+ column lay-* still throws (no ambiguous default)"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
