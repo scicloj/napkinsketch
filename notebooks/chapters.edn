@@ -3,6 +3,7 @@
                    "frame_model"
                    "core_concepts"
                    "options_and_scopes"
+                   "frame_rules"
                    "sketch_rules"
                    "inference_rules"
                    "layer_types"

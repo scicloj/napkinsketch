@@ -601,3 +601,406 @@
 
 (kind/test-last
  [(fn [fr] (= {:x "sepal-length" :y "sepal-width"} (:mapping fr)))])
+
+;; ---
+;; ## Scope
+;;
+;; How mappings and data flow through the frame tree. Four rules
+;; generalizing the sketch-world hierarchy (sketch / view / layer)
+;; to arbitrary-depth composites.
+
+;; ### Rule S1: mapping scope is a tree-walk merge; narrower wins
+;;
+;; The effective `:mapping` for a rendered layer is computed by
+;; merging, in order: root's `:mapping` -> each ancestor
+;; composite's `:mapping` -> the leaf's own `:mapping` -> the
+;; layer's own `:mapping`. Inner keys override outer. Any depth of
+;; composite nesting works the same way.
+
+;; Root-level aesthetic flows to every leaf. Using a two-panel
+;; composite with `:color` declared at root:
+
+(def s1-composite
+  (sk/prepare-frame
+   {:data iris
+    :mapping {:color :species}
+    :frames [{:mapping {:x :sepal-length :y :sepal-width}
+              :layers [{:layer-type :point}]}
+             {:mapping {:x :petal-length :y :petal-width}
+              :layers [{:layer-type :point}]}]}))
+
+s1-composite
+
+(kind/test-last
+ [(fn [fr]
+    (let [pl (sk/plan fr)
+          panels (mapv (comp :panels :plan) (:sub-plots pl))]
+      ;; Both sub-plots render colored-by-species -- 3 groups per panel
+      (every? (fn [pp]
+                (= 3 (count (:groups (first (:layers (first pp)))))))
+              panels)))])
+
+;; **Property P-S1a -- sibling independence.** A sub-frame's own
+;; mapping does not leak into its siblings.
+
+(def s1-siblings
+  (sk/prepare-frame
+   {:data iris
+    :frames [{:mapping {:x :sepal-length :y :sepal-width}
+              :layers [{:layer-type :point}]}
+             {:mapping {:x :petal-length :y :petal-width :color :species}
+              :layers [{:layer-type :point}]}]}))
+
+s1-siblings
+
+(kind/test-last
+ [(fn [fr]
+    (let [sub-plots (:sub-plots (sk/plan fr))
+          panel-groups (mapv (fn [sp]
+                               (count (:groups (first (:layers
+                                                       (first (-> sp :plan :panels)))))))
+                             sub-plots)]
+      ;; Sub-plot 0: no color -> 1 group. Sub-plot 1: :color :species -> 3.
+      (= [1 3] panel-groups)))])
+
+;; ### Rule S2: data scope -- nearest-ancestor-non-nil wins
+;;
+;; The effective `:data` for a rendered layer is the nearest
+;; non-nil `:data` walking from the layer up through each ancestor
+;; to the root. Layer `:data` > leaf `:data` > nearest ancestor
+;; composite `:data` > root `:data`. Unlike mappings, data does not
+;; merge -- it is picked, wholesale.
+
+(def s2-tree
+  (sk/prepare-frame
+   {:data iris
+    :frames [{:mapping {:x :sepal-length :y :sepal-width}
+              :layers [{:layer-type :point}]}
+             {:mapping {:x :a :y :b}
+              :data (tc/dataset {:a [1 2 3] :b [3 5 4]})
+              :layers [{:layer-type :point}]}]}))
+
+s2-tree
+
+(kind/test-last
+ [(fn [fr]
+    (let [sub-plots (:sub-plots (sk/plan fr))
+          counts (mapv (fn [sp]
+                         (-> sp :plan :panels first :layers first
+                             :groups first :xs count))
+                       sub-plots)]
+      ;; Sub-plot 0 inherits root's iris (150 rows). Sub-plot 1 uses its own (3).
+      (= [150 3] counts)))])
+
+;; ### Rule S3: `nil` in a mapping cancels an inherited value
+;;
+;; Assigning `nil` to a mapping key at an inner scope cancels the
+;; value inherited from outer scopes. The rendering path treats a
+;; nil mapping value as equivalent to "no mapping for that
+;; aesthetic."
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width {:color :species})
+    sk/lay-point
+    (sk/lay-smooth {:color nil :stat :linear-model}))
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            ;; lm produces one overall line (not three), because its
+            ;; :color was canceled
+            (and (= 150 (:points s))
+                 (= 1 (:lines s)))))])
+
+;; ### Rule S4: layer `:mapping` is the narrowest scope
+;;
+;; A mapping written in a layer's own `:mapping` (aesthetic opts
+;; passed to `lay-*`) scopes to that layer only. Other layers --
+;; even on the same leaf -- do not see it. This is the terminal
+;; case of S1: the layer's mapping is innermost in the merge.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point {:color :species})
+    (sk/lay-smooth {:stat :linear-model}))
+
+(kind/test-last
+ [(fn [v] (let [s (sk/svg-summary v)]
+            ;; Point layer sees :species (colored points); smooth
+            ;; layer does not (one overall regression line).
+            (and (= 150 (:points s))
+                 (= 1 (:lines s)))))])
+
+;; ---
+;; ## Options
+;;
+;; Plot-level options and modifiers. Unlike mappings, layers, and
+;; data (which live in the scope hierarchy), options configure the
+;; whole rendered plot and attach to the root's `:opts`.
+
+;; ### Rule O1: `sk/options` writes to the root's `:opts`
+;;
+;; `sk/options` merges its argument into the current frame's
+;; `:opts`. On a leaf, that is the leaf's `:opts`. On a composite,
+;; the root's. Options do not flow down like mappings -- they are
+;; plot-level, not layer-level.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point
+    (sk/options {:title "Iris"}))
+
+(kind/test-last
+ [(fn [fr] (= "Iris" (get-in fr [:opts :title])))])
+
+;; Repeated calls merge, later-wins on collisions:
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point
+    (sk/options {:title "One"})
+    (sk/options {:title "Two" :subtitle "Sub"}))
+
+(kind/test-last
+ [(fn [fr]
+    (and (= "Two" (get-in fr [:opts :title]))
+         (= "Sub" (get-in fr [:opts :subtitle]))))])
+
+;; ### Rule O2: `sk/scale` and `sk/coord` are plot-level options
+;;
+;; `sk/scale` and `sk/coord` write into `:opts` as `:x-scale` /
+;; `:y-scale` and `:coord`. They apply to every leaf in the tree
+;; uniformly. (Per-panel scale variation is an open design
+;; question; today both are plot-wide.)
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point
+    (sk/scale :x :log)
+    (sk/coord :flip))
+
+(kind/test-last
+ [(fn [fr]
+    (and (= {:type :log} (get-in fr [:opts :x-scale]))
+         (= :flip (get-in fr [:opts :coord]))))])
+
+;; ### Rule O3: `sk/facet` writes the faceting column to `:opts`
+;;
+;; `sk/facet` and `sk/facet-grid` store facet columns in `:opts`
+;; as `:facet-col` (and `:facet-row` for a grid). The layout
+;; effect -- splitting each leaf's panel into a group of panels --
+;; happens at render time.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point
+    (sk/facet :species))
+
+(kind/test-last
+ [(fn [fr] (= :species (get-in fr [:opts :facet-col])))])
+
+;; A 2D grid uses both keys:
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point
+    (sk/facet-grid :species :species))
+
+(kind/test-last
+ [(fn [fr]
+    (and (= :species (get-in fr [:opts :facet-col]))
+         (= :species (get-in fr [:opts :facet-row]))))])
+
+;; ### Rule O4: `sk/lay-rule-*` and `sk/lay-band-*` are layers (annotations)
+;;
+;; `sk/lay-rule-h`, `sk/lay-rule-v`, `sk/lay-band-h`, `sk/lay-band-v`
+;; produce layers and scope like any other `lay-*`: bare call
+;; attaches at root (flows to every panel); 4-arity with column
+;; refs attaches to a matching leaf. Position rides as layer-type
+;; keys (`:y-intercept`, `:x-intercept`, `:y-min`/`:y-max`,
+;; `:x-min`/`:x-max`), not column refs.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    (sk/lay-point {:color :species})
+    (sk/lay-rule-h {:y-intercept 3.0}))
+
+(kind/test-last
+ [(fn [fr]
+    (let [layers (:layers fr)
+          rule (some #(when (= :rule-h (:layer-type %)) %) layers)]
+      (and (some? rule)
+           (= 3.0 (get-in rule [:mapping :y-intercept])))))])
+
+;; A view-scope annotation via the 4-arity attaches to a matching
+;; leaf, not every panel:
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    (sk/frame :petal-length :petal-width)
+    (sk/lay-rule-h :sepal-length :sepal-width {:y-intercept 3.0}))
+
+(kind/test-last
+ [(fn [fr]
+    (and (= 2 (count (:frames fr)))
+         (= 1 (count (:layers (first (:frames fr)))))
+         (= 0 (count (:layers (second (:frames fr)))))
+         (= :rule-h (:layer-type
+                     (first (:layers (first (:frames fr))))))))])
+
+;; ---
+;; ## Assembly
+;;
+;; How the rules above combine to produce rendered layers. The
+;; `sk/draft` pipeline stage is the observable output of assembly;
+;; each entry corresponds to one rendered layer.
+
+;; ### Rule A1: one rendered layer per applicable (leaf, layer) pair
+;;
+;; For each leaf in the resolved tree, the number of rendered
+;; layers equals the number of layers applicable to that leaf --
+;; the leaf's own plus all ancestor root-origin layers.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    (sk/frame :petal-length :petal-width)
+    sk/lay-point                            ;; root-origin; reaches both
+    (sk/lay-smooth :sepal-length :sepal-width
+                   {:stat :linear-model}))  ;; panel-origin; sub-frame 1 only
+
+(kind/test-last
+ [(fn [fr]
+    (let [pl (sk/plan fr)
+          panel-layer-counts (mapv (fn [sp]
+                                     (count (:layers (first (-> sp :plan :panels)))))
+                                   (:sub-plots pl))]
+      ;; sub-plot 0: point + smooth (2); sub-plot 1: point only (1)
+      (= [2 1] panel-layer-counts)))])
+
+;; ### Rule A2: each rendered layer carries fully merged scope
+;;
+;; A draft entry reflects the full scope merge: effective `:data`,
+;; effective `:mapping` (covering both aesthetics and position),
+;; and `:layer-type` (plus any `:stat`, `:position`, `:mark`
+;; promoted to siblings). No scope level is dropped; no key is
+;; unresolved.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width {:color :species})
+    sk/lay-point
+    sk/draft)
+
+(kind/test-last
+ [(fn [drafts]
+    (and (= 1 (count drafts))
+         (let [d (first drafts)]
+           (and (= :sepal-length (:x d))
+                (= :sepal-width (:y d))
+                (= :species (:color d))
+                (= :point (:mark d))
+                (= 150 (tc/row-count (:data d)))))))])
+
+;; ---
+;; ## Layout
+;;
+;; How leaves become panels in the rendered plot. Four rules
+;; covering single panels, overlays, faceting, and composite grids
+;; with shared scales.
+
+;; ### Rule L1: each leaf produces a panel block
+;;
+;; Each leaf in the resolved tree produces one **panel block** in
+;; the rendered plot. Without faceting, the block contains one
+;; panel. With `sk/facet` or `sk/facet-grid`, the block contains
+;; one panel per facet value (or per (row, col) pair).
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    (sk/frame :petal-length :petal-width)
+    sk/lay-point
+    sk/plan)
+
+(kind/test-last
+ [(fn [pl]
+    (and (:composite? pl)
+         (= 2 (count (:sub-plots pl)))))])
+
+;; ### Rule L2: layers within one leaf overlay within that leaf's panel block
+;;
+;; All layers applicable to a leaf (the leaf's own plus all
+;; ancestor root-origin layers) draw on the same axis pair -- they
+;; overlay within each panel of that leaf's block, not on separate
+;; panels.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width {:color :species})
+    sk/lay-point
+    (sk/lay-smooth {:stat :linear-model}))
+
+(kind/test-last
+ [(fn [fr]
+    (let [pl (sk/plan fr)
+          panel (first (:panels pl))]
+      (and (= 1 (count (:panels pl)))
+           (= 2 (count (:layers panel))))))])
+
+;; ### Rule L3: faceting splits each leaf into panels by category
+;;
+;; `sk/facet :col` produces one panel per unique value of `:col`;
+;; `sk/facet-grid :row-col :col-col` produces one panel per (row,
+;; col) pair.
+
+(-> iris
+    (sk/frame :sepal-length :sepal-width)
+    sk/lay-point
+    (sk/facet :species))
+
+(kind/test-last
+ [(fn [fr] (= 3 (count (:panels (sk/plan fr)))))])
+
+;; ### Rule L4: composite layout is controlled by `:layout` and optional `:share-scales`
+;;
+;; A composite frame carries a `:layout` map (set by `sk/arrange`
+;; options: `:cols`, `:width`, `:height`, `:title`) controlling
+;; the grid of its sub-frames' panel blocks. An optional
+;; `:share-scales` (subset of `#{:x :y}`) enables column-bucketed
+;; shared-scale resolution across sub-frames.
+;;
+;; **Column-bucketing**: when `:x` is shared, sub-frames whose
+;; effective `:x` column is the same share that scale's domain;
+;; sub-frames with different `:x` columns get independent
+;; x-domains. Same for `:y`. This is what enables SPLOM (aligning
+;; columns down, rows across) and marginal plots (x shared between
+;; scatter and top density; right density has its own y).
+
+(def l4-shared
+  (sk/arrange
+   [(-> iris (sk/frame :sepal-length :sepal-width) sk/lay-point)
+    (-> iris (sk/frame :sepal-length :petal-width) sk/lay-point)]
+   {:share-scales #{:x}}))
+
+l4-shared
+
+(kind/test-last
+ [(fn [fr]
+    (let [sub-plots (:sub-plots (sk/plan fr))
+          domains (mapv #(get-in % [:plan :panels 0 :x-scale :domain]) sub-plots)]
+      ;; Both panels share :sepal-length as x -> same x-domain
+      (and (= 2 (count domains))
+           (= (first domains) (second domains)))))])
+
+;; ---
+;; ## A note on `sk/cross`
+;;
+;; `sk/cross` is not a rule. It is a pure pair-generator --
+;; `(for [x xs y ys] [x y])` -- returning `[x-col y-col]` pairs. It
+;; has no plot-level behavior on its own; whatever consumes the
+;; pairs (today's `sk/view`, tomorrow's `sk/arrange` + `sk/frame`
+;; over the generated sequence) is where the layout behavior lives,
+;; and those cases are already covered by the rules above. `sk/cross`
+;; belongs in the cookbook as a SPLOM-construction ingredient, not
+;; here.
+
+(sk/cross [:a :b] [:c :d])
+
+(kind/test-last
+ [(fn [pairs] (= [[:a :c] [:a :d] [:b :c] [:b :d]] pairs))])
