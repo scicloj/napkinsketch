@@ -822,4 +822,4 @@ my-frame
 
 ;; ## What's Next
 ;;
-;; - [**Sketch Rules**](./napkinsketch_book.sketch_rules.html) -- 24 rules that formalize the model
+;; - [**Frame Rules**](./napkinsketch_book.frame_rules.html) -- 28 rules that formalize the model with tested assertions

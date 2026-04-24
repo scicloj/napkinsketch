@@ -245,9 +245,10 @@
 ;; Composite lay-* identity (Phase 3b)
 ;; ============================================================
 ;;
-;; The rule extends sketch_rules.clj rules 5-7 into composite frames:
-;; position-carrying lay-* targets the last leaf (DFS) whose effective
-;; :x/:y match, else appends a new leaf at the root level. Sketch-level
+;; The rule extends the Layer Placement section of frame_rules.clj
+;; into composite frames: position-carrying lay-* targets the last leaf
+;; (DFS) whose effective :x/:y match, else appends a new leaf at the
+;; root level. Aesthetic-only or bare
 ;; lay-* attaches at the root's :layers so descendants inherit it.
 
 (deftest composite-lay-hit-last-matching-leaf-test
@@ -344,9 +345,8 @@
 
 (deftest composite-lay-rule5-two-frames-different-layers-test
   (testing "scatter on leaf 0, view created, then smooth -- ends up on leaf 1"
-    ;; Mirrors sketch_rules.clj Rule 6 worked example into the frame
-    ;; world: starting from a composite with two same-position leaves,
-    ;; one lay-* lands on each.
+    ;; DFS-last identity applied twice: starting from a composite with
+    ;; two same-position leaves, one lay-* lands on each in turn.
     (let [fr {:frames [{:layers [{:layer-type :point} {:layer-type :placeholder}]
                         :mapping {:x :x :y :y}}
                        {:layers [] :mapping {:x :x :y :y}}]}
