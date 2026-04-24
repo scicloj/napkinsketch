@@ -27,16 +27,23 @@ User-visible behavior:
   Sketch record).
 - `sk/frame` gains a multi-pair arity: `(sk/frame fr [[:a :b]
   [:c :d] ...])` and `(sk/frame fr [:a :b :c])` append panels in
-  one call. `(sk/frame fr (sk/cross cols cols))` is the canonical
-  SPLOM generator at the frame level. Note: frame-native SPLOM
-  currently renders as a flat row; a grid-layout form is deferred
-  to a follow-up. For an N x N SPLOM in this release, continue to
-  use `sk/view (sk/cross cols cols)`.
+  one call.
+- `(sk/frame fr (sk/cross cols cols))` builds a SPLOM: when the
+  pairs form an M x N Cartesian rectangle, the result is a nested
+  rows-of-cols composite with `:share-scales #{:x :y}`. Per-cell
+  legends are suppressed so the grid fits even at the default plot
+  size. A remaining difference from the legacy SPLOM: every cell
+  renders a scatter layer (there is no x=y -> histogram inference
+  on the diagonal yet).
 
 Legacy `sk/sketch` and `sk/view` remain in place as adapters;
 user-facing examples across the book and gallery have been migrated
-to `sk/frame`. See individual notebook migrations for the per-chapter
-pattern.
+to `sk/frame`. SPLOM examples in gallery, scatter, faceting,
+customization, and edge_cases all use the new frame-native pattern.
+
+Also fixed: `promote-leaf` was dropping `:opts` when the leaf got
+wrapped into a composite. Plot-level options set via `sk/options`
+before promotion now correctly carry to the new composite's root.
 
 ### Breaking: `sk/arrange` returns a composite frame
 
