@@ -448,10 +448,11 @@
 (defn- promote-leaf
   "Promote a leaf to a composite, folding a new incoming-mapping into
    the result. The leaf's position part + panel-origin layers become
-   sub-frame 1; the leaf's aesthetic part + root-origin layers move
-   to the composite root; the incoming mapping splits the same way
-   (aesthetic -> root, position -> sub-frame 2). When the incoming
-   mapping carries no position, no new sub-frame is added."
+   sub-frame 1; the leaf's aesthetic part + root-origin layers + the
+   leaf's :opts move to the composite root; the incoming mapping
+   splits the same way (aesthetic -> root, position -> sub-frame 2).
+   When the incoming mapping carries no position, no new sub-frame
+   is added."
   [leaf incoming-mapping]
   (let [[root-layers panel-layers] (partition-layers-by-position (:layers leaf))
         leaf-pos        (position-mapping (:mapping leaf))
@@ -459,6 +460,7 @@
         incoming-pos    (position-mapping incoming-mapping)
         incoming-aesth  (aesthetic-mapping incoming-mapping)
         root-aesth      (merge leaf-aesth incoming-aesth)
+        leaf-opts       (:opts leaf)
         panel-1         (cond-> {:layers panel-layers}
                           (seq leaf-pos) (assoc :mapping leaf-pos))
         panel-2         (when (seq incoming-pos)
@@ -467,7 +469,8 @@
     (cond-> {:frames frames}
       (:data leaf)      (assoc :data (:data leaf))
       (seq root-aesth)  (assoc :mapping root-aesth)
-      (seq root-layers) (assoc :layers root-layers))))
+      (seq root-layers) (assoc :layers root-layers)
+      (seq leaf-opts)   (assoc :opts leaf-opts))))
 
 (defn- extend-leaf
   "Extend a leaf that carries no position yet, merging incoming-mapping
