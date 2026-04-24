@@ -940,9 +940,10 @@
       d (assoc :data (coerce-dataset d)))))
 
 (defn lay
-  "Add a sketch-level layer (applies to all views). On a composite
-   frame the layer attaches to the root's :layers, so every descendant
-   leaf inherits it via frame/resolve-tree."
+  "Add a root-scope layer. On a frame (leaf or composite) the layer
+   attaches to :layers and flows via frame/resolve-tree to every
+   descendant leaf. On a legacy sketch input the layer attaches to
+   the sketch's :layers (applies to all views)."
   ([sk-or-data layer-type-key]
    (lay sk-or-data layer-type-key nil))
   ([sk-or-data layer-type-key opts]
@@ -1436,8 +1437,8 @@
   "Update the root :opts of a sketch or frame. Frames (leaf or
    composite) stay in frame-world; non-frame inputs are coerced via
    ensure-sk so the same update applies. resolve-tree merges root
-   :opts into every leaf, so root-level writes are the frame-world
-   analog of plot-level options on a sketch."
+   :opts into every leaf, so root-level writes act as plot-level
+   options across the whole tree."
   [sk-or-frame f & args]
   (if (frame? sk-or-frame)
     (apply update sk-or-frame :opts f args)
@@ -1470,11 +1471,11 @@
   #{:linear :log :categorical})
 
 (defn scale
-  "Set axis scale on a sketch. Scale is plot-level -- applies to all views.
-   Accepts a type keyword or a scale spec map with :type, optional
-   :domain, and optional :breaks (explicit tick locations). On a
-   composite frame the scale attaches to the root so every descendant
-   leaf inherits it via resolve-tree.
+  "Set axis scale on a frame or sketch. Scale is plot-level -- it
+   applies across every panel. Accepts a type keyword or a scale spec
+   map with :type, optional :domain, and optional :breaks (explicit
+   tick locations). On a composite frame the scale attaches to the
+   root so every descendant leaf inherits it via resolve-tree.
    (scale sk :x :log)                                -- log scale on x-axis
    (scale sk :x {:type :categorical :domain [...]})  -- explicit category order
    (scale sk :y {:type :linear :breaks [0 5 10]})    -- pin tick locations
@@ -1493,9 +1494,10 @@
                               {:type scale-type}))))
 
 (defn coord
-  "Set coordinate transform on a sketch. Coord is plot-level -- applies
-   to all views. On a composite frame the coord attaches to the root
-   so every descendant leaf inherits it via resolve-tree.
+  "Set coordinate transform on a frame or sketch. Coord is plot-level
+   -- it applies across every panel. On a composite frame the coord
+   attaches to the root so every descendant leaf inherits it via
+   resolve-tree.
    (coord sk :flip) -- flipped coordinates."
   [sk coord-type]
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)
@@ -1523,7 +1525,7 @@
   ([sk]
    (when (plan? sk)
      (throw (ex-info (str "sk/plan expects a sketch or frame, not a plan. "
-                          "Use the plan directly, or call sk/plot on a sketch.")
+                          "Use the plan directly, or call sk/plot on a frame.")
                      {:got :plan})))
    (cond
      (and (frame? sk) (frame/composite? sk))
