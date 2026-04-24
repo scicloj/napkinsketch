@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Retired: sk/sketch, sk/view, and impl/sketch.clj
+
+The Sketch record, its constructors, and its adapter surface are
+gone. The frame substrate is now the only internal spec type.
+
+Removed user-facing API:
+
+- `sk/sketch`, `sk/view`, `sk/sketch?` -- use `sk/frame`, `sk/lay-*`,
+  and `sk/frame?` instead.
+- The `Sketch` record itself (`impl/sketch.clj`, ~348 lines).
+
+Internal changes the deletion required:
+
+- `sk/lay-*` on raw data now coerces through `sk/frame` and returns a
+  frame; previously the adapter returned a Sketch record.
+- `sk/with-data`, `sk/options`, `sk/scale`, `sk/coord`, `sk/save`, and
+  `sk/save-png` all coerce non-frame inputs via a new private
+  `ensure-frame` helper (raw data -> leaf frame) rather than the old
+  `ensure-sk` (raw data -> Sketch).
+- `sk/facet` and `sk/facet-grid` write to the frame's `:opts` instead
+  of routing through `ensure-sk`. The facet-expansion logic moved
+  from `impl/sketch.clj`'s `expand-facets` into
+  `impl/frame/leaf->draft`: when a leaf's `:opts` carry
+  `:facet-col`/`:facet-row`, the draft is multiplied across distinct
+  facet values, each variant carrying filtered `:data` and a
+  `:facet-col`/`:facet-row` label that `plan.clj` detects to build
+  the facet grid. Composite frames are rejected explicitly (see
+  `dev-notes/facet-composite-deferral.md`).
+- `impl/sketch_schema.clj` renamed to `impl/plan_schema.clj` -- it
+  was misnamed; the namespace holds Malli schemas for the plan data
+  model, not the Sketch record.
+- Multi-column `sk/lay-*` (`(sk/lay-histogram data [:a :b :c])`) now
+  builds a multi-pair composite via `sk/frame` and attaches a bare
+  layer at the root; the layer flows to every panel via
+  `resolve-tree`. Previously this path created N views with N
+  identical layers.
+- The `sketch_rules.clj` notebook was retired -- `frame_rules.clj`
+  is the live replacement.
+
+Known shape changes from the retirement:
+
+- `(sk/lay-point data :x :y {:color :g})` now places `:color` on the
+  layer's own `:mapping`, not on the frame's root `:mapping`. Semantic
+  behaviour at render time is unchanged.
+- Chaining two `sk/lay-*` calls with different position columns on
+  the same leaf no longer silently creates two panels; both layers
+  attach to the same leaf. To create two panels, promote explicitly
+  via `(sk/frame data [[:a :b] [:c :d]])`.
+
 ### Frame-native pipeline (Phase 6 slice 2)
 
 The frame substrate now runs the full draft emission pipeline on its
@@ -44,8 +93,7 @@ User-visible behavior:
       (sk/frame (sk/cross cols cols)))
   ```
 
-Legacy `sk/sketch` and `sk/view` remain in place as adapters;
-user-facing examples across the book and gallery have been migrated
+User-facing examples across the book and gallery have been migrated
 to `sk/frame`. SPLOM examples in gallery, scatter, faceting,
 customization, and edge_cases all use the new frame-native pattern.
 
@@ -216,23 +264,24 @@ plots look identical to pre-rewrite renders.
 
 Napkinsketch is a composable plotting library for Clojure, inspired by
 the Grammar of Graphics. Plots are built by threading data through a
-sequence of small transformations. The resulting sketch is a plain
+sequence of small transformations. The resulting frame is a plain
 Clojure value that auto-renders in Kindly-compatible notebooks (Clay
 and friends) -- no explicit render call required.
 
 ### Features
 
-**Composable pipeline.** Everything you do to build a plot -- define
-views (`sk/view`), add layers (`sk/lay-*`), set aesthetic mappings,
-apply scales and coordinate transforms, add facets, attach
+**Composable pipeline.** Everything you do to build a plot -- create
+a frame (`sk/frame`), add layers (`sk/lay-*`), set aesthetic
+mappings, apply scales and coordinate transforms, add facets, attach
 annotations, set plot options -- flows through `->`. Every function
-takes a sketch and returns a sketch, so there is no plot-assembly
+takes a frame and returns a frame, so there is no plot-assembly
 order to memorize.
 
-**Three-level scope.** Aesthetic mappings (color, size, alpha,
-shape, group, text) flow sketch -> view -> layer. Lower scopes
-override higher ones; `nil` is an explicit cancellation. Scope is
-lexical: you set a mapping where you want it to apply.
+**Scoped mappings.** Aesthetic mappings (color, size, alpha, shape,
+group, text) flow down a frame's tree from the root to every leaf
+and then into each layer. Lower scopes override higher ones; `nil`
+is an explicit cancellation. Scope is lexical: you set a mapping
+where you want it to apply.
 
 **29 layer functions** covering the common chart types: point, line,
 step, area, stacked-area, histogram, bar, stacked-bar,
@@ -475,11 +524,11 @@ produce crashes on canonical inputs.
 **Mixing keyword and string column references:**
 
 - Mapping the same column with a keyword in one place and a string
-  in another (e.g. `(sk/sketch ds {:color :group})` then
+  in another (e.g. `(sk/frame ds {:color :group})` then
   `(sk/lay-point :x :y {:color "group"})`) is not normalized: the
   scope hierarchy treats them as different keys and the result is a
   silent empty plot. Workaround: pick one form (keyword or string)
-  and use it consistently within a sketch.
+  and use it consistently within a frame.
 
 **ggplot2 features not yet implemented:**
 
