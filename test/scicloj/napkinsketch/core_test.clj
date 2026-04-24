@@ -10,8 +10,6 @@
             [scicloj.napkinsketch.impl.position :as position]
             [scicloj.napkinsketch.impl.extract :as extract]
             [scicloj.napkinsketch.impl.resolve :as resolve]
-            [scicloj.napkinsketch.impl.sketch :as sketch]
-            [scicloj.napkinsketch.impl.plan :as plan]
             [scicloj.napkinsketch.layer-type :as layer-type]
             [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
@@ -1386,25 +1384,6 @@
     (is (some? (-> {:x [1.0 2.0 3.0] :y [4.0 5.0 6.0]}
                    (sk/lay-point :x :y) sk/plan)))))
 
-(deftest sketch-rejects-x-y-mapping-test
-  ;; persona-03-R2 Footgun 1: (sk/sketch data {:x :a :y :b}) used to
-  ;; silently produce a 0-panel plot because sk/sketch doesn't create a
-  ;; view. ggplot2 users coming from (ggplot data, aes(x, y)) will try
-  ;; this incantation. Now throws with a redirect to sk/view.
-  (let [data {:a [1 2 3] :b [4 5 6]}]
-    (testing "sk/sketch with :x throws"
-      (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                            #"sk/sketch does not create a view"
-                            (sk/sketch data {:x :a :y :b}))))
-
-    (testing "sk/sketch with only :y throws"
-      (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                            #"sk/sketch does not create a view"
-                            (sk/sketch data {:y :b}))))
-
-    (testing "sk/sketch with appearance mappings is fine"
-      (is (some? (sk/sketch data {:color :a}))))))
-
 (deftest aesthetic-cross-type-lookup-test
   ;; persona-skeptical-round-4 F2: aesthetic columns must work whether
   ;; the dataset has keyword or string column names. Build-legend used
@@ -1434,28 +1413,10 @@
                     (sk/lay-point {:x :c :y :d})))]
       (is (not (re-find #"does not recognize option" out))))))
 
-(deftest view-level-facet-rejected-test
-  ;; persona-skeptical-round-4 F12: view-level :facet-col / :facet-row
-  ;; in a map-form view used to be silently ignored. Now throws,
-  ;; redirecting to sk/facet.
-  (testing "view-level :facet-col throws"
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #"Faceting is plot-level"
-                          (-> {:x [1 2 3] :y [4 5 6] :g ["a" "b" "a"]}
-                              (sk/view {:x :x :y :y :facet-col :g})
-                              sk/lay-point))))
-
-  (testing "view-level :facet-row throws"
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #"Faceting is plot-level"
-                          (-> {:x [1 2 3] :y [4 5 6] :g ["a" "b" "a"]}
-                              (sk/view {:x :x :y :y :facet-row :g})
-                              sk/lay-point)))))
-
 (deftest plot-level-keys-stripped-from-wrong-scope-test
   ;; persona-skeptical-round-6 F1/F5/F6: plot-level keys like
   ;; :x-scale and :coord used to emit an "unrecognized option"
-  ;; warning but still propagate into the layer's or view's
+  ;; warning but still propagate into the layer's or frame's
   ;; mapping and leak into the final panel (identical output to
   ;; the canonical sk/scale / sk/coord form). Now the warning is
   ;; honest: unknown keys are stripped from the mapping, so the
@@ -1463,45 +1424,39 @@
   (let [ds {:x [1 10 100] :y [1 2 3]}]
 
     (testing "layer-level :x-scale is stripped, not honored"
-      (let [sk (-> ds
-                   (sk/lay-point :x :y {:x-scale {:type :log}}))
-            panel (first (:panels (sk/plan sk)))]
-        (is (= {} (get-in sk [:views 0 :layers 0 :mapping]))
+      (let [fr (-> ds (sk/frame :x :y) (sk/lay-point {:x-scale {:type :log}}))
+            layer-mapping (:mapping (first (:layers fr)))
+            panel (first (:panels (sk/plan fr)))]
+        (is (not (contains? (or layer-mapping {}) :x-scale))
             ":x-scale should not appear in layer mapping")
         (is (= :linear (get-in panel [:x-scale :type]))
             "panel x-scale should stay at default :linear")))
 
-    (testing "view-level :x-scale is stripped, not honored"
-      (let [sk (-> ds
-                   (sk/view :x :y {:x-scale {:type :log}})
-                   sk/lay-point)
-            panel (first (:panels (sk/plan sk)))]
-        (is (= {:x :x :y :y} (get-in sk [:views 0 :mapping]))
-            ":x-scale should not appear in view mapping")
+    (testing "frame-level :x-scale is stripped, not honored"
+      (let [fr (-> ds (sk/frame :x :y {:x-scale {:type :log}}) sk/lay-point)
+            panel (first (:panels (sk/plan fr)))]
+        (is (not (contains? (:mapping fr) :x-scale))
+            ":x-scale should not appear in frame mapping")
         (is (= :linear (get-in panel [:x-scale :type]))
             "panel x-scale should stay at default :linear")))
 
     (testing "layer-level :coord is stripped, not honored"
-      (let [sk (-> ds
-                   (sk/lay-point :x :y {:coord :flip}))
-            panel (first (:panels (sk/plan sk)))]
-        (is (not (contains? (get-in sk [:views 0 :layers 0 :mapping]) :coord))
+      (let [fr (-> ds (sk/frame :x :y) (sk/lay-point {:coord :flip}))
+            layer-mapping (:mapping (first (:layers fr)))
+            panel (first (:panels (sk/plan fr)))]
+        (is (not (contains? (or layer-mapping {}) :coord))
             ":coord should not appear in layer mapping")
         (is (not= :flip (:coord panel))
             "panel coord should not reflect a stripped layer-level :flip")))
 
     (testing "canonical sk/scale still works"
-      (let [sk (-> ds
-                   (sk/lay-point :x :y)
-                   (sk/scale :x :log))
-            panel (first (:panels (sk/plan sk)))]
+      (let [fr (-> ds (sk/frame :x :y) sk/lay-point (sk/scale :x :log))
+            panel (first (:panels (sk/plan fr)))]
         (is (= :log (get-in panel [:x-scale :type])))))
 
     (testing "canonical sk/coord still works"
-      (let [sk (-> ds
-                   (sk/lay-point :x :y)
-                   (sk/coord :flip))
-            panel (first (:panels (sk/plan sk)))]
+      (let [fr (-> ds (sk/frame :x :y) sk/lay-point (sk/coord :flip))
+            panel (first (:panels (sk/plan fr)))]
         (is (= :flip (:coord panel)))))))
 
 (deftest input-validation-misc-test
@@ -1621,12 +1576,9 @@
     (testing "valid options stay quiet"
       (is (= "" (with-out-str (-> data (sk/view :x :y {:color :y}))))))))
 
-(deftest ensure-sk-on-with-data-plan-plot-test
+(deftest raw-data-plan-plot-test
   ;; persona-16 H2. Closes P1-R3 F2/F3, P9-R2 L2.
   (let [data {:x [1 2 3] :y [10 20 30]}]
-    (testing "sk/with-data on raw data returns a Sketch"
-      (is (sketch/sketch? (sk/with-data data {:x [4 5] :y [40 50]}))))
-
     (testing "sk/plan on raw data does not throw"
       (is (some? (-> data sk/plan))))
 
@@ -1716,33 +1668,12 @@
                 (sk/lay-errorbar :x :y {:y-min :lo :y-max :hi}) sk/plan)]
       (is (= 1 (count (:panels p)))))))
 
-(deftest sketch-threading-test
+(deftest frame-color-mapping-composes-test
   ;; persona-16 B5. Closes P1-R3 F1, P9-R2 F14.
+  ;; A color aesthetic on a frame composes with the position mapping.
   (let [data {:x [1 2 3] :y [10 20 30] :g ["a" "b" "c"]}]
-    (testing "threading sketch through sk/sketch preserves views"
-      (let [s (-> data (sk/view :x :y) (sk/sketch {:color :g}))]
-        (is (= 1 (count (:views s))))
-        (is (= {:color :g} (:mapping s)))
-        (is (some? (:data s)))))
-
-    (testing "threading sketch through sk/sketch preserves layers"
-      (let [s (-> data (sk/lay-point :x :y) (sk/sketch {:color :g}))]
-        (is (seq (get-in s [:views 0 :layers])))
-        (is (= {:color :g} (:mapping s)))))
-
-    (testing "raw data path unchanged"
-      (let [s (sk/sketch data {:color :g})]
-        (is (= 0 (count (:views s))))
-        (is (= {:color :g} (:mapping s)))))
-
-    (testing "sketch + empty mapping is idempotent on structure"
-      (let [s1 (-> data (sk/view :x :y) sk/lay-point)
-            s2 (sk/sketch s1)]
-        (is (= (:views s1) (:views s2)))
-        (is (= (:mapping s1) (:mapping s2)))))
-
-    (testing "end-to-end: threaded sketch renders with merged color mapping"
-      (let [p (-> data (sk/view :x :y) (sk/sketch {:color :g}) sk/lay-point sk/plan)
+    (testing "leaf frame renders with merged color mapping"
+      (let [p (-> data (sk/frame :x :y {:color :g}) sk/lay-point sk/plan)
             layer (first (:layers (first (:panels p))))]
         (is (= 3 (count (:groups layer))) "one group per :g value")))))
 
@@ -1772,11 +1703,9 @@
 ;; ============================================================
 
 (defn- summary
-  "Resolve a sketch and get svg-summary."
-  [sk]
-  (let [views (sketch/sketch->draft sk)
-        fig (sk/plan->plot (plan/draft->plan views (:opts sk {})) :svg {})]
-    (sk/svg-summary fig)))
+  "Render a frame and return svg-summary."
+  [fr]
+  (sk/svg-summary (sk/plot fr)))
 
 (deftest basic-test
   (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
