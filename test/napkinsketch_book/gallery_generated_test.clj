@@ -14,7 +14,7 @@
  v3_l28
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :displ :hwy {:color :class})
+  (sk/frame :displ :hwy {:color :class})
   sk/lay-point
   sk/lay-smooth
   (sk/options
@@ -39,7 +39,7 @@
  (->
   (rdatasets/ggplot2-diamonds)
   (tc/head 500)
-  (sk/view :carat :price {:color :cut, :size :depth})
+  (sk/frame :carat :price {:color :cut, :size :depth})
   sk/lay-point
   (sk/options
    {:title "Diamond Price vs Carat (bubble)",
@@ -57,7 +57,7 @@
  v9_l62
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill {:color :sex})
+  (sk/frame :day :total-bill {:color :sex})
   sk/lay-point
   (sk/options
    {:title "Total Bill by Day",
@@ -75,7 +75,7 @@
  v12_l79
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/view :price)
+  (sk/frame :price)
   sk/lay-histogram
   (sk/options
    {:title "Distribution of Diamond Prices",
@@ -93,7 +93,7 @@
  v15_l91
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/view :price {:color :cut})
+  (sk/frame :price {:color :cut})
   sk/lay-histogram
   (sk/options
    {:title "Diamond Prices by Cut",
@@ -111,7 +111,7 @@
  v18_l106
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/view :carat {:color :cut})
+  (sk/frame :carat {:color :cut})
   sk/lay-density
   (sk/options
    {:title "Carat Distribution by Cut",
@@ -131,7 +131,7 @@
  (->
   (rdatasets/ggplot2-diamonds)
   (tc/head 500)
-  (sk/view :carat)
+  (sk/frame :carat)
   sk/lay-density
   sk/lay-rug
   (sk/options
@@ -155,7 +155,7 @@
  v24_l136
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill {:color :day})
+  (sk/frame :day :total-bill {:color :day})
   sk/lay-boxplot
   (sk/options
    {:title "Total Bill by Day",
@@ -174,7 +174,7 @@
  v27_l148
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill)
+  (sk/frame :day :total-bill)
   sk/lay-boxplot
   sk/lay-point
   (sk/options
@@ -198,7 +198,7 @@
  v30_l165
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill {:color :day})
+  (sk/frame :day :total-bill {:color :day})
   sk/lay-violin
   (sk/options
    {:title "Total Bill by Day (violin)",
@@ -217,7 +217,7 @@
  v33_l177
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill {:color :day})
+  (sk/frame :day :total-bill {:color :day})
   sk/lay-violin
   sk/lay-boxplot
   (sk/options
@@ -237,7 +237,7 @@
  v36_l193
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/view :cut :price)
+  (sk/frame :cut :price)
   sk/lay-ridgeline
   (sk/options
    {:title "Price Distribution by Cut (ridgeline)",
@@ -256,7 +256,7 @@
  v39_l210
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/view :cut)
+  (sk/frame :cut)
   sk/lay-bar
   (sk/options
    {:title "Diamond Count by Cut", :x-label "Cut", :y-label "Count"})))
@@ -272,7 +272,7 @@
  v42_l225
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/view :cut)
+  (sk/frame :cut)
   sk/lay-bar
   (sk/coord :flip)
   (sk/options
@@ -303,7 +303,7 @@
  v46_l248
  (->
   mpg-mfr-counts
-  (sk/view :manufacturer :count)
+  (sk/frame :manufacturer :count)
   sk/lay-lollipop
   (sk/options
    {:title "Top Manufacturers by Model Count",
@@ -326,7 +326,7 @@
  v49_l261
  (->
   mpg-mfr-counts
-  (sk/view :manufacturer :count)
+  (sk/frame :manufacturer :count)
   sk/lay-lollipop
   (sk/coord :flip)
   (sk/options
@@ -350,7 +350,7 @@
  v52_l280
  (->
   (rdatasets/ggplot2-economics)
-  (sk/view :date :unemploy)
+  (sk/frame :date :unemploy)
   sk/lay-line
   (sk/options
    {:title "US Unemployment Over Time",
@@ -370,10 +370,10 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__97960#]
+    [p1__132229#]
     (#{"Australia" "Brazil" "Japan" "Nigeria" "Germany"}
-     (:country p1__97960#))))
-  (sk/view :year :life-exp {:color :country})
+     (:country p1__132229#))))
+  (sk/frame :year :life-exp {:color :country})
   sk/lay-line
   sk/lay-point
   (sk/options
@@ -397,7 +397,7 @@
  v58_l311
  (->
   (rdatasets/ggplot2-economics)
-  (sk/view :date :unemploy)
+  (sk/frame :date :unemploy)
   sk/lay-area
   (sk/options
    {:title "US Unemployment Over Time (area)",
@@ -416,7 +416,7 @@
  (->
   (rdatasets/ggplot2-diamonds)
   (tc/head 2000)
-  (sk/view :carat :price)
+  (sk/frame :carat :price)
   sk/lay-density-2d
   (sk/options
    {:title "Diamond Carat vs Price (density)",
@@ -435,7 +435,7 @@
  v64_l344
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :total-bill :tip {:color :sex})
+  (sk/frame :total-bill :tip {:color :sex})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   (sk/options
@@ -459,7 +459,7 @@
  v67_l361
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :sepal-width {:color :species})
+  (sk/frame :sepal-length :sepal-width {:color :species})
   sk/lay-point
   sk/lay-contour
   (sk/options
@@ -483,7 +483,7 @@
  v70_l380
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :displ :hwy {:color :class})
+  (sk/frame :displ :hwy {:color :class})
   sk/lay-point
   (sk/facet-grid :drv nil)
   (sk/options
@@ -502,7 +502,7 @@
  v73_l393
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :hwy)
+  (sk/frame :hwy)
   sk/lay-histogram
   (sk/facet-grid :drv nil)
   (sk/options
@@ -539,7 +539,7 @@
  v79_l426
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day {:color :sex})
+  (sk/frame :day {:color :sex})
   (sk/lay-bar {:position :stack})
   (sk/options
    {:title "Tips by Day and Sex (stacked bar)",
@@ -547,14 +547,14 @@
     :y-label "Count"})))
 
 
-(deftest t80_l433 (is ((fn [v] (sk/sketch? v)) v79_l426)))
+(deftest t80_l433 (is ((fn [v] (sk/frame? v)) v79_l426)))
 
 
 (def
  v82_l437
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day {:color :sex})
+  (sk/frame :day {:color :sex})
   (sk/lay-bar {:position :fill})
   (sk/options
    {:title "Proportion by Day and Sex",
@@ -562,7 +562,7 @@
     :y-label "Proportion"})))
 
 
-(deftest t83_l444 (is ((fn [v] (sk/sketch? v)) v82_l437)))
+(deftest t83_l444 (is ((fn [v] (sk/frame? v)) v82_l437)))
 
 
 (def
@@ -572,7 +572,7 @@
   (tc/group-by [:year :continent])
   (tc/aggregate {:pop (fn [ds] (reduce + (ds :pop)))})
   (tc/order-by [:year :continent])
-  (sk/view :year :pop {:color :continent})
+  (sk/frame :year :pop {:color :continent})
   (sk/lay-area {:position :stack})
   (sk/options
    {:title "World Population by Continent",
@@ -590,7 +590,7 @@
  v88_l471
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/view :cut)
+  (sk/frame :cut)
   sk/lay-bar
   (sk/coord :polar)
   (sk/options {:title "Diamond Cut (rose chart)"})))
@@ -606,7 +606,7 @@
  v91_l486
  (->
   (rdatasets/datasets-mtcars)
-  (sk/view :wt :mpg)
+  (sk/frame :wt :mpg)
   sk/lay-point
   (sk/lay-text {:text :rownames})
   (sk/options
@@ -630,7 +630,7 @@
  v94_l501
  (->
   (rdatasets/datasets-mtcars)
-  (sk/view :wt :mpg)
+  (sk/frame :wt :mpg)
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model, :confidence-band true})
   (sk/options
@@ -698,7 +698,7 @@
  v106_l547
  (->
   (rdatasets/gapminder-gapminder)
-  (tc/select-rows (fn* [p1__97961#] (= 2007 (:year p1__97961#))))
+  (tc/select-rows (fn* [p1__132230#] (= 2007 (:year p1__132230#))))
   (sk/lay-point :gdp-percap :life-exp {:color :continent, :size :pop})
   (sk/scale :x :log)
   (sk/options
@@ -718,9 +718,9 @@
   (rdatasets/gapminder-gapminder)
   (tc/select-rows
    (fn*
-    [p1__97962#]
+    [p1__132231#]
     (#{"Brazil" "United States" "Japan" "China" "India"}
-     (:country p1__97962#))))
+     (:country p1__132231#))))
   (sk/lay-line :year :life-exp {:color :country})
   (sk/options
    {:title "Life Expectancy Over Time",
@@ -753,7 +753,7 @@
  v115_l583
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length)
+  (sk/frame :sepal-length)
   sk/lay-density
   sk/lay-rug
   (sk/options {:title "Iris Sepal Length: Density + Rug"})))
@@ -768,7 +768,7 @@
  v118_l594
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :total-bill :tip {:color :smoker})
+  (sk/frame :total-bill :tip {:color :smoker})
   sk/lay-point
   (sk/lay-smooth {:confidence-band true})
   (sk/options
@@ -829,7 +829,7 @@
  v127_l634
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill)
+  (sk/frame :day :total-bill)
   sk/lay-violin
   sk/lay-boxplot
   (sk/options {:title "Tips Distribution by Day"})))
@@ -889,7 +889,7 @@
  v139_l675
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length)
+  (sk/frame :sepal-length)
   (sk/lay-histogram {:normalize :density})
   sk/lay-density
   (sk/options {:title "Sepal Length: Histogram + Density Curve"})))
@@ -947,7 +947,7 @@
  v151_l743
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :sepal-width {:color :species})
+  (sk/frame :sepal-length :sepal-width {:color :species})
   sk/lay-point
   (sk/lay-smooth {:confidence-band true})
   (sk/options {:title "Iris: Scatter + LOESS by Species"})))
@@ -981,7 +981,7 @@
  v157_l765
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :sepal-width)
+  (sk/frame :sepal-length :sepal-width)
   sk/lay-point
   sk/lay-rug
   (sk/options {:title "Iris: Scatter with Rug Marks"})))
@@ -997,7 +997,7 @@
  (->
   (rdatasets/ggplot2-economics)
   (as-> econ (tc/select-rows econ (range 0 (tc/row-count econ) 12)))
-  (sk/view :unemploy :pce)
+  (sk/frame :unemploy :pce)
   sk/lay-line
   sk/lay-point
   (sk/options
@@ -1021,7 +1021,7 @@
  v163_l827
  (->
   (rdatasets/ggplot2-economics)
-  (sk/view :date :unemploy)
+  (sk/frame :date :unemploy)
   sk/lay-step
   sk/lay-area
   (sk/options
@@ -1045,7 +1045,7 @@
  v166_l844
  (->
   (rdatasets/ggplot2-economics)
-  (sk/view :date :psavert)
+  (sk/frame :date :psavert)
   sk/lay-area
   sk/lay-line
   (sk/options
@@ -1071,9 +1071,10 @@
   (rdatasets/ggplot2-txhousing)
   (tc/select-rows
    (fn*
-    [p1__97963#]
-    (#{"Houston" "Dallas" "San Antonio" "Austin"} (:city p1__97963#))))
-  (sk/view :date :median {:color :city})
+    [p1__132232#]
+    (#{"Houston" "Dallas" "San Antonio" "Austin"}
+     (:city p1__132232#))))
+  (sk/frame :date :median {:color :city})
   sk/lay-line
   (sk/options
    {:title "Texas Median Home Prices",
@@ -1090,7 +1091,10 @@
  v172_l874
  (->
   (rdatasets/lme4-sleepstudy)
-  (sk/view :days :reaction {:color :subject, :color-type :categorical})
+  (sk/frame
+   :days
+   :reaction
+   {:color :subject, :color-type :categorical})
   sk/lay-line
   sk/lay-point
   (sk/options
@@ -1115,8 +1119,8 @@
  (->
   (rdatasets/lme4-sleepstudy)
   (tc/select-rows
-   (fn* [p1__97964#] (= "308" (str (:subject p1__97964#)))))
-  (sk/view :days :reaction)
+   (fn* [p1__132233#] (= "308" (str (:subject p1__132233#)))))
+  (sk/frame :days :reaction)
   sk/lay-step
   sk/lay-point
   (sk/options
@@ -1140,7 +1144,7 @@
  v178_l908
  (->
   (rdatasets/datasets-faithful)
-  (sk/view :eruptions :waiting)
+  (sk/frame :eruptions :waiting)
   sk/lay-point
   (sk/options
    {:title "Old Faithful Geyser",
@@ -1157,7 +1161,7 @@
  v181_l920
  (->
   (rdatasets/datasets-faithful)
-  (sk/view :eruptions :waiting)
+  (sk/frame :eruptions :waiting)
   sk/lay-point
   sk/lay-smooth
   (sk/options
@@ -1230,7 +1234,7 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__97965#] (= 2007 (:year p1__97965#))))
+   (fn* [p1__132234#] (= 2007 (:year p1__132234#))))
   (sk/lay-point
    :gdp-percap
    :life-exp
@@ -1297,7 +1301,7 @@
  v203_l1011
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :petal-length {:color :species})
+  (sk/frame :sepal-length :petal-length {:color :species})
   sk/lay-point
   (sk/coord :fixed)
   (sk/options
@@ -1317,7 +1321,7 @@
   (rdatasets/datasets-mtcars)
   (tc/order-by [:mpg] :desc)
   (tc/select-rows (range 5))
-  (sk/view :wt :mpg)
+  (sk/frame :wt :mpg)
   sk/lay-point
   (sk/lay-label {:text :rownames})
   (sk/options
@@ -1341,7 +1345,7 @@
  v209_l1041
  (->
   (rdatasets/datasets-iris)
-  (sk/view :petal-length :petal-width {:color :species})
+  (sk/frame :petal-length :petal-width {:color :species})
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   (sk/options
@@ -1365,7 +1369,7 @@
  v212_l1056
  (->
   (rdatasets/datasets-mtcars)
-  (sk/view :wt :mpg)
+  (sk/frame :wt :mpg)
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model, :confidence-band true})
   (sk/options
@@ -1389,7 +1393,7 @@
  v215_l1074
  (->
   (rdatasets/datasets-mtcars)
-  (sk/view :wt :mpg)
+  (sk/frame :wt :mpg)
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   sk/lay-smooth
@@ -1414,7 +1418,7 @@
  v218_l1093
  (->
   (rdatasets/datasets-faithful)
-  (sk/view :eruptions)
+  (sk/frame :eruptions)
   (sk/lay-histogram {:normalize :density, :binwidth 0.25})
   sk/lay-density
   (sk/options
@@ -1432,7 +1436,7 @@
  v221_l1106
  (->
   (rdatasets/datasets-faithful)
-  (sk/view :eruptions)
+  (sk/frame :eruptions)
   sk/lay-density
   sk/lay-rug
   (sk/options
@@ -1456,7 +1460,7 @@
  v224_l1121
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/view :depth)
+  (sk/frame :depth)
   sk/lay-density
   (sk/options
    {:title "Distribution of Diamond Depth",
@@ -1473,7 +1477,7 @@
  v227_l1133
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/view :depth)
+  (sk/frame :depth)
   (sk/lay-histogram {:normalize :density})
   sk/lay-density
   (sk/options
@@ -1523,7 +1527,7 @@
  v236_l1168
  (->
   (rdatasets/datasets-faithful)
-  (sk/view :waiting)
+  (sk/frame :waiting)
   (sk/lay-histogram {:bins 15})
   (sk/options
    {:title "Waiting Time Between Eruptions (15 bins)",
@@ -1544,7 +1548,7 @@
     (repeatedly
      500
      (fn* [] (+ (* 2.0 (rand)) (* 2.0 (rand)) (* 2.0 (rand)) -3.0)))})
-  (sk/view :value)
+  (sk/frame :value)
   (sk/lay-histogram {:bins 30, :normalize :density})
   sk/lay-density
   (sk/options
@@ -1562,7 +1566,7 @@
  v242_l1193
  (->
   (rdatasets/datasets-chickwts)
-  (sk/view :feed :weight {:color :feed})
+  (sk/frame :feed :weight {:color :feed})
   sk/lay-boxplot
   (sk/options
    {:title "Chick Weight by Feed Type",
@@ -1579,7 +1583,7 @@
  v245_l1205
  (->
   (rdatasets/datasets-iris)
-  (sk/view :species :sepal-length {:color :species})
+  (sk/frame :species :sepal-length {:color :species})
   sk/lay-boxplot
   (sk/coord :flip)
   (sk/options
@@ -1597,7 +1601,7 @@
  v248_l1220
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill {:color :sex})
+  (sk/frame :day :total-bill {:color :sex})
   sk/lay-boxplot
   (sk/options
    {:title "Tips by Day and Gender (Grouped Boxplot)",
@@ -1614,7 +1618,7 @@
  v251_l1232
  (->
   (rdatasets/datasets-iris)
-  (sk/view :species :sepal-width {:color :species})
+  (sk/frame :species :sepal-width {:color :species})
   sk/lay-violin
   (sk/options
    {:title "Iris Sepal Width (Violin)",
@@ -1631,7 +1635,7 @@
  v254_l1244
  (->
   (rdatasets/datasets-iris)
-  (sk/view :species :petal-width {:color :species})
+  (sk/frame :species :petal-width {:color :species})
   sk/lay-violin
   (sk/coord :flip)
   (sk/options
@@ -1649,7 +1653,7 @@
  v257_l1260
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill)
+  (sk/frame :day :total-bill)
   sk/lay-violin
   sk/lay-point
   (sk/options
@@ -1673,7 +1677,7 @@
  v260_l1277
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill)
+  (sk/frame :day :total-bill)
   sk/lay-violin
   sk/lay-boxplot
   sk/lay-point
@@ -1698,7 +1702,7 @@
  v263_l1293
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :smoker :total-bill {:color :smoker})
+  (sk/frame :smoker :total-bill {:color :smoker})
   sk/lay-violin
   (sk/options
    {:title "Total Bill by Smoking Status",
@@ -1715,7 +1719,7 @@
  v266_l1305
  (->
   (rdatasets/datasets-iris)
-  (sk/view :species :petal-length)
+  (sk/frame :species :petal-length)
   sk/lay-ridgeline
   (sk/options
    {:title "Iris Petal Length by Species (Ridgeline)",
@@ -1732,7 +1736,7 @@
  v269_l1317
  (->
   (rdatasets/ggplot2-diamonds)
-  (sk/view :color :price)
+  (sk/frame :color :price)
   sk/lay-ridgeline
   (sk/options
    {:title "Diamond Price by Color Grade (Ridgeline)",
@@ -1758,8 +1762,8 @@
      [ds]
      (map
       (fn*
-       [p1__97966#]
-       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__97966#))
+       [p1__132235#]
+       (get {5 "May", 6 "Jun", 7 "Jul", 8 "Aug", 9 "Sep"} p1__132235#))
       (ds :month)))))))
 
 
@@ -1767,7 +1771,7 @@
  v273_l1336
  (->
   airquality
-  (sk/view :month-name :ozone {:color :month-name})
+  (sk/frame :month-name :ozone {:color :month-name})
   sk/lay-boxplot
   (sk/options
    {:title "New York Ozone by Month",
@@ -1784,7 +1788,7 @@
  v276_l1351
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :class)
+  (sk/frame :class)
   sk/lay-bar
   (sk/options
    {:title "Vehicle Count by Class",
@@ -1920,7 +1924,7 @@
  v294_l1440
  (->
   (rdatasets/datasets-faithful)
-  (sk/view :eruptions :waiting)
+  (sk/frame :eruptions :waiting)
   sk/lay-density-2d
   (sk/options
    {:title "Old Faithful: 2D Density",
@@ -1937,7 +1941,7 @@
  v297_l1452
  (->
   (rdatasets/datasets-faithful)
-  (sk/view :eruptions :waiting)
+  (sk/frame :eruptions :waiting)
   sk/lay-point
   sk/lay-density-2d
   (sk/options
@@ -1961,7 +1965,7 @@
  v300_l1467
  (->
   (rdatasets/datasets-faithful)
-  (sk/view :eruptions :waiting)
+  (sk/frame :eruptions :waiting)
   sk/lay-point
   sk/lay-contour
   (sk/options
@@ -1985,7 +1989,7 @@
  v303_l1482
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :petal-length)
+  (sk/frame :sepal-length :petal-length)
   sk/lay-contour
   (sk/options
    {:title "Iris: Sepal vs Petal Length Contour",
@@ -2002,7 +2006,7 @@
  v306_l1496
  (->
   (rdatasets/ggplot2-faithfuld)
-  (sk/view :eruptions :waiting {:fill :density})
+  (sk/frame :eruptions :waiting {:fill :density})
   sk/lay-tile
   (sk/options
    {:title "Old Faithful: Pre-computed Density Heatmap",
@@ -2020,7 +2024,7 @@
  (->
   (rdatasets/ggplot2-diamonds)
   (tc/head 3000)
-  (sk/view :carat :price)
+  (sk/frame :carat :price)
   sk/lay-point
   sk/lay-density-2d
   (sk/options
@@ -2044,7 +2048,7 @@
  v312_l1524
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :displ :hwy)
+  (sk/frame :displ :hwy)
   sk/lay-density-2d
   (sk/options
    {:title "MPG: Displacement vs Highway (Density)",
@@ -2061,11 +2065,13 @@
  v315_l1536
  (->
   (tc/dataset
-   {:row (mapcat (fn* [p1__97967#] (repeat 6 p1__97967#)) (range 6)),
+   {:row (mapcat (fn* [p1__132236#] (repeat 6 p1__132236#)) (range 6)),
     :col (flatten (repeat 6 (range 6))),
     :value
-    (map (fn* [p1__97968#] (Math/sin (* p1__97968# 0.5))) (range 36))})
-  (sk/view :col :row {:fill :value})
+    (map
+     (fn* [p1__132237#] (Math/sin (* p1__132237# 0.5)))
+     (range 36))})
+  (sk/frame :col :row {:fill :value})
   sk/lay-tile
   (sk/options
    {:title "Synthetic Heatmap (sin wave)",
@@ -2194,7 +2200,7 @@
  v333_l1633
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :sepal-width)
+  (sk/frame :sepal-length :sepal-width)
   sk/lay-point
   (sk/lay-rule-h {:y-intercept 3.0})
   (sk/lay-rule-h {:y-intercept 4.0})
@@ -2221,7 +2227,7 @@
  v336_l1651
  (->
   (rdatasets/datasets-mtcars)
-  (sk/view :wt :mpg)
+  (sk/frame :wt :mpg)
   sk/lay-point
   (sk/lay-band-h {:y-min 20, :y-max 30})
   (sk/lay-band-v {:x-min 2.5, :x-max 3.5})
@@ -2240,7 +2246,7 @@
  v339_l1665
  (->
   (rdatasets/ggplot2-economics)
-  (sk/view :date :unemploy)
+  (sk/frame :date :unemploy)
   sk/lay-area
   (sk/lay-rule-h {:y-intercept 8000})
   (sk/options
@@ -2283,7 +2289,7 @@
  v345_l1693
  (->
   airquality
-  (sk/view :wind :ozone)
+  (sk/frame :wind :ozone)
   sk/lay-point
   (sk/lay-band-h {:y-min 0, :y-max 40})
   (sk/options
@@ -2301,7 +2307,7 @@
  v348_l1709
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :displ :hwy)
+  (sk/frame :displ :hwy)
   sk/lay-point
   (sk/facet :class)
   (sk/options
@@ -2319,7 +2325,7 @@
  v351_l1722
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :displ :hwy)
+  (sk/frame :displ :hwy)
   sk/lay-point
   (sk/facet-grid :drv :year)
   (sk/options
@@ -2337,7 +2343,7 @@
  v354_l1739
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :displ :hwy)
+  (sk/frame :displ :hwy)
   sk/lay-point
   (sk/facet-grid :drv :class)
   (sk/options
@@ -2355,7 +2361,7 @@
  v357_l1752
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :displ :hwy)
+  (sk/frame :displ :hwy)
   sk/lay-point
   (sk/facet-grid nil :drv)
   (sk/options
@@ -2373,7 +2379,7 @@
  v360_l1765
  (->
   (rdatasets/datasets-iris)
-  (sk/view :petal-length)
+  (sk/frame :petal-length)
   sk/lay-density
   (sk/facet :species)
   (sk/options
@@ -2391,7 +2397,7 @@
  v363_l1778
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill)
+  (sk/frame :day :total-bill)
   sk/lay-boxplot
   (sk/facet :sex)
   (sk/options
@@ -2415,7 +2421,7 @@
  v366_l1793
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill)
+  (sk/frame :day :total-bill)
   sk/lay-violin
   (sk/facet :sex)
   (sk/options
@@ -2439,7 +2445,7 @@
  v369_l1808
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :class)
+  (sk/frame :class)
   sk/lay-bar
   (sk/facet :year)
   (sk/options
@@ -2457,7 +2463,7 @@
  v372_l1821
  (->
   (rdatasets/datasets-iris)
-  (sk/view :petal-length :petal-width)
+  (sk/frame :petal-length :petal-width)
   sk/lay-point
   (sk/lay-smooth {:stat :linear-model})
   (sk/facet :species)
@@ -2482,7 +2488,7 @@
  v375_l1838
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill)
+  (sk/frame :day :total-bill)
   sk/lay-boxplot
   (sk/facet-grid :time :smoker)
   (sk/options
@@ -2501,8 +2507,8 @@
  (->
   (tc/select-rows
    (rdatasets/gapminder-gapminder)
-   (fn* [p1__97969#] (= 2007 (:year p1__97969#))))
-  (sk/view :gdp-percap :life-exp)
+   (fn* [p1__132238#] (= 2007 (:year p1__132238#))))
+  (sk/frame :gdp-percap :life-exp)
   sk/lay-point
   (sk/scale :x :log)
   (sk/facet :continent)
@@ -2521,7 +2527,7 @@
  v381_l1865
  (->
   (rdatasets/lme4-sleepstudy)
-  (sk/view :days :reaction)
+  (sk/frame :days :reaction)
   sk/lay-line
   sk/lay-point
   (sk/facet :subject)
@@ -2546,7 +2552,7 @@
  v384_l1881
  (->
   (rdatasets/ggplot2-mpg)
-  (sk/view :displ :hwy)
+  (sk/frame :displ :hwy)
   sk/lay-point
   sk/lay-smooth
   (sk/facet :cyl)
@@ -2597,7 +2603,7 @@
  v393_l1921
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day)
+  (sk/frame :day)
   sk/lay-bar
   (sk/coord :polar)
   (sk/options {:title "Tips Count by Day (Rose)"})))
@@ -2612,7 +2618,7 @@
  v396_l1932
  (->
   (rdatasets/datasets-chickwts)
-  (sk/view :feed)
+  (sk/frame :feed)
   sk/lay-bar
   (sk/coord :polar)
   (sk/options {:title "Chick Count by Feed (Rose)"})))
@@ -2678,7 +2684,7 @@
  v408_l1988
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day {:color :time})
+  (sk/frame :day {:color :time})
   (sk/lay-bar {:position :stack})
   (sk/options
    {:title "Tips by Day and Meal Time (Stacked)",
@@ -2686,14 +2692,14 @@
     :y-label "Count"})))
 
 
-(deftest t409_l1995 (is ((fn [v] (sk/sketch? v)) v408_l1988)))
+(deftest t409_l1995 (is ((fn [v] (sk/frame? v)) v408_l1988)))
 
 
 (def
  v411_l2002
  (->
   (rdatasets/reshape2-tips)
-  (sk/view :day :total-bill)
+  (sk/frame :day :total-bill)
   sk/lay-bar
   sk/lay-point
   (sk/options
@@ -2717,7 +2723,7 @@
  v414_l2022
  (->
   (rdatasets/datasets-iris)
-  (sk/view :sepal-length :sepal-width {:color :species})
+  (sk/frame :sepal-length :sepal-width {:color :species})
   sk/lay-density-2d
   (sk/options
    {:title "Iris: 2D Density by Species",
@@ -2735,7 +2741,7 @@
  (->
   (rdatasets/ggplot2-diamonds)
   (tc/head 1000)
-  (sk/view :carat :price)
+  (sk/frame :carat :price)
   sk/lay-contour
   sk/lay-point
   (sk/options
