@@ -193,7 +193,7 @@
     [gs]
     (and
      (= 3 (count gs))
-     (every? (fn* [p1__85759#] (= 50 (:n-points p1__85759#))) gs)))
+     (every? (fn* [p1__104903#] (= 50 (:n-points p1__104903#))) gs)))
    v49_l177)))
 
 
@@ -295,9 +295,9 @@
     (and
      (> (count bars) 3)
      (every?
-      (fn* [p1__85760#] (< (:lo p1__85760#) (:hi p1__85760#)))
+      (fn* [p1__104904#] (< (:lo p1__104904#) (:hi p1__104904#)))
       bars)
-     (every? (fn* [p1__85761#] (pos? (:count p1__85761#))) bars)))
+     (every? (fn* [p1__104905#] (pos? (:count p1__104905#))) bars)))
    v74_l248)))
 
 
@@ -485,7 +485,9 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__85762#] (Math/sin (* p1__85762# 0.3))) (range 30))}))
+   (map
+    (fn* [p1__104906#] (Math/sin (* p1__104906# 0.3)))
+    (range 30))}))
 
 
 (def v111_l384 (-> wave (pj/lay-line :x :y)))
@@ -645,7 +647,7 @@
 (def
  v139_l488
  (def
-  final-sk
+  final-pose
   (->
    (rdatasets/datasets-iris)
    (pj/pose :petal-length :petal-width {:color :species})
@@ -653,10 +655,12 @@
    (pj/lay-smooth {:stat :linear-model}))))
 
 
-(def v140_l494 (def final-pl (pj/plan final-sk {:title "Iris Petals"})))
+(def
+ v140_l494
+ (def final-plan (pj/plan final-pose {:title "Iris Petals"})))
 
 
-(def v141_l496 final-pl)
+(def v141_l496 final-plan)
 
 
 (deftest
@@ -668,13 +672,13 @@
  v144_l502
  (mapv
   (fn [l] {:mark (:mark l), :n-groups (count (:groups l))})
-  (:layers (first (:panels final-pl)))))
+  (:layers (first (:panels final-plan)))))
 
 
 (deftest t145_l507 (is ((fn [ls] (= 2 (count ls))) v144_l502)))
 
 
-(def v147_l511 (-> final-sk (pj/options {:title "Iris Petals"})))
+(def v147_l511 (-> final-pose (pj/options {:title "Iris Petals"})))
 
 
 (deftest
@@ -776,7 +780,7 @@
 (deftest t179_l594 (is (true? v178_l592)))
 
 
-(def v180_l596 (pj/valid-plan? final-pl))
+(def v180_l596 (pj/valid-plan? final-plan))
 
 
 (deftest t181_l598 (is (true? v180_l596)))

@@ -23,22 +23,22 @@
 
 (def
  v7_l79
- (def trace-sk (-> trace-data (pj/lay-point :x :y {:color :g}))))
+ (def trace-pose (-> trace-data (pj/lay-point :x :y {:color :g}))))
 
 
-(def v9_l96 (pj/pose? trace-sk))
+(def v9_l96 (pj/pose? trace-pose))
 
 
 (deftest t10_l98 (is (true? v9_l96)))
 
 
-(def v12_l102 (pose-impl/leaf? trace-sk))
+(def v12_l102 (pose-impl/leaf? trace-pose))
 
 
 (deftest t13_l104 (is (true? v12_l102)))
 
 
-(def v15_l111 (:mapping trace-sk))
+(def v15_l111 (:mapping trace-pose))
 
 
 (deftest
@@ -46,19 +46,19 @@
  (is ((fn [m] (and (= :x (:x m)) (= :y (:y m)))) v15_l111)))
 
 
-(def v17_l116 (get-in trace-sk [:layers 0 :layer-type]))
+(def v17_l116 (get-in trace-pose [:layers 0 :layer-type]))
 
 
 (deftest t18_l118 (is ((fn [m] (= :point m)) v17_l116)))
 
 
-(def v20_l122 (get-in trace-sk [:layers 0 :mapping :color]))
+(def v20_l122 (get-in trace-pose [:layers 0 :mapping :color]))
 
 
 (deftest t21_l124 (is ((fn [m] (= :g m)) v20_l122)))
 
 
-(def v23_l132 (def trace-draft (pj/draft trace-sk)))
+(def v23_l132 (def trace-draft (pj/draft trace-pose)))
 
 
 (def v24_l135 (count trace-draft))
@@ -144,7 +144,7 @@
    v44_l191)))
 
 
-(def v47_l203 (def shortcut-plan (pj/plan trace-sk)))
+(def v47_l203 (def shortcut-plan (pj/plan trace-pose)))
 
 
 (def v48_l205 (ss/valid? shortcut-plan))
@@ -162,7 +162,7 @@
 (def
  v53_l256
  (def
-  multi-sk
+  multi-pose
   (->
    (rdatasets/datasets-iris)
    (pj/pose :petal-length :petal-width {:color :species})
@@ -170,13 +170,13 @@
    (pj/lay-smooth {:stat :linear-model}))))
 
 
-(def v55_l264 (count (:layers multi-sk)))
+(def v55_l264 (count (:layers multi-pose)))
 
 
 (deftest t56_l266 (is ((fn [n] (= 2 n)) v55_l264)))
 
 
-(def v57_l268 (mapv :layer-type (:layers multi-sk)))
+(def v57_l268 (mapv :layer-type (:layers multi-pose)))
 
 
 (deftest
@@ -186,7 +186,7 @@
    v57_l268)))
 
 
-(def v60_l276 (def multi-draft (pj/draft multi-sk)))
+(def v60_l276 (def multi-draft (pj/draft multi-pose)))
 
 
 (def v61_l278 (count multi-draft))
@@ -208,7 +208,7 @@
  v66_l289
  (def
   multi-plan
-  (pj/plan multi-sk {:title "Iris Petals with Regression"})))
+  (pj/plan multi-pose {:title "Iris Petals with Regression"})))
 
 
 (def

@@ -412,8 +412,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#what-gets-inferred" id="toc-what-gets-inferred" class="nav-link active" data-scroll-target="#what-gets-inferred">What Gets Inferred</a></li>
-  <li><a href="#inspecting-the-plan" id="toc-inspecting-the-plan" class="nav-link" data-scroll-target="#inspecting-the-plan">Inspecting the Plan</a></li>
+  <li><a href="#a-worked-example" id="toc-a-worked-example" class="nav-link active" data-scroll-target="#a-worked-example">A Worked Example</a></li>
+  <li><a href="#what-gets-inferred-chapter-map" id="toc-what-gets-inferred-chapter-map" class="nav-link" data-scroll-target="#what-gets-inferred-chapter-map">What Gets Inferred (Chapter Map)</a></li>
   <li><a href="#column-selection" id="toc-column-selection" class="nav-link" data-scroll-target="#column-selection">Column Selection</a>
   <ul>
   <li><a href="#pose-construction-infers-the-same-mapping" id="toc-pose-construction-infers-the-same-mapping" class="nav-link" data-scroll-target="#pose-construction-infers-the-same-mapping">Pose construction infers the same mapping</a></li>
@@ -510,28 +510,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; R datasets</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>   [scicloj.metamorph.ml.rdatasets <span class="at">:as</span> rdatasets]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<section id="what-gets-inferred" class="level2">
-<h2 class="anchored" data-anchor-id="what-gets-inferred">What Gets Inferred</h2>
-<p>When you write <code>(-&gt; data (pj/lay-point :x :y))</code> – or even just <code>(pj/lay-point data)</code> or <code>(pj/pose data)</code> – the library fills in everything needed to render a plot. Here is the full list of inference steps, in the order they happen:</p>
-<ol type="1">
-<li><strong>Column selection</strong> – which columns map to x, y, and color (inferred from dataset shape when omitted)</li>
-<li><strong>Column types</strong> – whether x and y are numerical, categorical, or temporal</li>
-<li><strong>Aesthetic resolution</strong> – whether <code>:color</code>, <code>:size</code>, <code>:alpha</code>, and <code>:text</code> are column references or fixed values</li>
-<li><strong>Grouping</strong> – which columns split data into subsets (explicit <code>:group</code> plus a categorical <code>:color</code>)</li>
-<li><strong>Layer type</strong> – which mark and stat to use (e.g., scatter, histogram, bar, line, boxplot)</li>
-<li><strong>Domains</strong> – data extent for each axis, with padding</li>
-<li><strong>Ticks</strong> – nice round values and formatted labels</li>
-<li><strong>Axis labels</strong> – derived from column names</li>
-<li><strong>Legends</strong> – entries for color, size, and alpha legends, plus the room they take in the plot margin</li>
-<li><strong>Layout</strong> – whether panels form a single plot, a facet grid, or a multi-variable grid</li>
-<li><strong>Coordinate flipping</strong> – whether axes are swapped after layout (polar has its own chapter)</li>
-</ol>
-<p>Each rule has a sensible default and an explicit override. The sections below demonstrate each rule with live examples. Two cross-cutting sections follow the rule-by-rule tour: how the rules combine in multi-layer plots, and a diagram of the full resolution pipeline.</p>
-</section>
-<section id="inspecting-the-plan" class="level2">
-<h2 class="anchored" data-anchor-id="inspecting-the-plan">Inspecting the Plan</h2>
-<p>A <strong>plan</strong> is the fully resolved data structure Plotje builds from a pose right before rendering. It is a plain Clojure map with domains, ticks, scales, resolved layers, legend, and layout dimensions – every inference decision made explicit in one place.</p>
-<p><code>pj/plan</code> is the function that produces it. You can call it on any pose to see exactly what the library decided. Throughout this chapter we use <code>pj/plan</code> to peek inside after each example and check which rules fired.</p>
+<section id="a-worked-example" class="level2">
+<h2 class="anchored" data-anchor-id="a-worked-example">A Worked Example</h2>
+<p>Before the rule-by-rule tour, here is the kind of inference the chapter is going to dissect: a five-point scatter, then the <strong>plan</strong> that produced it. A plan is the fully resolved data structure Plotje builds from a pose right before rendering – a plain Clojure map with domains, ticks, scales, resolved layers, legend, and layout dimensions, every inference decision made explicit in one place. <code>pj/plan</code> is the function that produces it; we will use it to peek inside after each example.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> five-points</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:x</span> [<span class="fl">1.0</span> <span class="fl">2.0</span> <span class="fl">3.0</span> <span class="fl">4.0</span> <span class="fl">5.0</span>]</span>
@@ -622,6 +603,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><p><code>:layout</code> has <code>:legend-w 0</code> – no space reserved for a legend</p></li>
 <li><p>The single layer has <code>:mark :point</code> and a single <code>:groups</code> entry with all 5 data points, colored in the default color (steel blue)</p></li>
 </ul>
+<p>Each of those bullets is its own inference rule, with a default and an explicit override. The rest of the chapter walks them.</p>
+</section>
+<section id="what-gets-inferred-chapter-map" class="level2">
+<h2 class="anchored" data-anchor-id="what-gets-inferred-chapter-map">What Gets Inferred (Chapter Map)</h2>
+<p>The sections below cover each inference rule in detail. Skip to the one you need; the order roughly follows the resolution pipeline:</p>
+<ol type="1">
+<li><strong>Column selection</strong> – which columns map to x, y, and color (inferred from dataset shape when omitted)</li>
+<li><strong>Column types</strong> – whether x and y are numerical, categorical, or temporal</li>
+<li><strong>Aesthetic resolution</strong> – whether <code>:color</code>, <code>:size</code>, <code>:alpha</code>, and <code>:text</code> are column references or fixed values</li>
+<li><strong>Grouping</strong> – which columns split data into subsets (explicit <code>:group</code> plus a categorical <code>:color</code>)</li>
+<li><strong>Layer type</strong> – which mark and stat to use (e.g., scatter, histogram, bar, line, boxplot)</li>
+<li><strong>Domains</strong> – data extent for each axis, with padding</li>
+<li><strong>Ticks</strong> – nice round values and formatted labels</li>
+<li><strong>Axis labels</strong> – derived from column names</li>
+<li><strong>Legends</strong> – entries for color, size, and alpha legends, plus the room they take in the plot margin</li>
+<li><strong>Layout</strong> – whether panels form a single plot, a facet grid, or a multi-variable grid</li>
+<li><strong>Coordinate flipping</strong> – whether axes are swapped after layout (polar has its own chapter)</li>
+</ol>
+<p>Two cross-cutting sections follow the rule-by-rule tour: how the rules combine in multi-layer plots, and a diagram of the full resolution pipeline.</p>
 </section>
 <section id="column-selection" class="level2">
 <h2 class="anchored" data-anchor-id="column-selection">Column Selection</h2>
@@ -677,7 +677,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> two-col-pose</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  (pj/pose {<span class="at">:x</span> [<span class="fl">1.0</span> <span class="fl">2.0</span> <span class="fl">3.0</span> <span class="fl">4.0</span> <span class="fl">5.0</span>]</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">:y</span> [<span class="fl">1.0</span> <span class="fl">4.0</span> <span class="fl">9.0</span> <span class="fl">16.0</span> <span class="fl">25.0</span>]}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">:y</span> [<span class="fl">1.0</span> <span class="fl">4.0</span> <span class="fl">9.0</span> <span class="fl">16.0</span> <span class="fl">25.0</span>]}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>two-col-pose</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1293,7 +1293,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="layer-type" class="level2">
 <h2 class="anchored" data-anchor-id="layer-type">Layer Type</h2>
-<p>When you use <code>pj/pose</code> without an explicit <code>pj/lay-*</code> call, Plotje infers the <strong>layer type</strong> – a mark + stat bundle – from the column types of the referenced columns. Internally, <code>infer-method</code> in <code>resolve.clj</code> applies these rules.</p>
+<p>When you use <code>pj/pose</code> without an explicit <code>pj/lay-*</code> call, Plotje infers the <strong>layer type</strong> – a mark + stat bundle – from the column types of the referenced columns. Internally, <code>infer-layer-type</code> in <code>resolve.clj</code> applies these rules.</p>
 <section id="single-column-cases-or-x-y-on-the-diagonal" class="level3">
 <h3 class="anchored" data-anchor-id="single-column-cases-or-x-y-on-the-diagonal">Single-column cases (or x = y on the diagonal)</h3>
 <table class="caption-top table">
@@ -2592,19 +2592,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>All of the inference rules above feed into <code>draft-&gt;plan</code>, which orchestrates a resolution pipeline. The diagram below shows the key steps and their data dependencies:</p>
 <div class="mermaid">
 graph TD
-  VIEWS["views + options"]
-  VIEWS --&gt; CT["Column Types<br>(infer-column-types)"]
-  VIEWS --&gt; AE["Aesthetics<br>(resolve-aesthetics)"]
+  POSE["pose + options"]
+  POSE --&gt; CT["Column Types<br>(infer-column-types)"]
+  POSE --&gt; AE["Aesthetics<br>(resolve-aesthetics)"]
   CT --&gt; GR["Grouping<br>(infer-grouping)"]
   AE --&gt; GR
-  CT --&gt; ME["Layer type<br>(infer-method)"]
+  CT --&gt; ME["Layer type<br>(infer-layer-type)"]
   GR --&gt; STATS["Statistics<br>(compute-stat)"]
   ME --&gt; STATS
 
   STATS --&gt; DOM["Domains<br>(collect-domain + pad-domain)"]
   DOM --&gt; TK["Ticks<br>(compute-ticks)"]
 
-  VIEWS --&gt; LBL["Labels<br>(resolve-labels)"]
+  POSE --&gt; LBL["Labels<br>(resolve-labels)"]
   AE --&gt; LEG["Color Legend<br>(build-legend)"]
   AE --&gt; SLEG["Size Legend<br>(build-size-legend)"]
   AE --&gt; ALEG["Alpha Legend<br>(build-alpha-legend)"]
@@ -2624,7 +2624,7 @@ graph TD
   LAYOUT --&gt; PLAN
   STATS --&gt; PLAN
 
-  style VIEWS fill:#e8f5e9
+  style POSE fill:#e8f5e9
   style PLAN fill:#fff3e0
   style STATS fill:#e3f2fd
   style DOM fill:#e3f2fd

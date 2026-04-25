@@ -10,7 +10,7 @@
 (def
  v3_l41
  (defn
-  sk-summary
+  pose-summary
   "Print pose structure without :data (for readability)."
   [fr]
   (-> (select-keys fr [:mapping :layers :opts]) kind/pprint)))
@@ -35,7 +35,7 @@
   (rdatasets/datasets-iris)
   (pj/pose :sepal-length :sepal-width)
   (pj/lay-point {:color :species})
-  sk-summary))
+  pose-summary))
 
 
 (deftest
@@ -68,7 +68,7 @@
   pj/lay-point
   (pj/options {:title "Iris"})
   (pj/coord :flip)
-  sk-summary))
+  pose-summary))
 
 
 (deftest
@@ -119,7 +119,7 @@
    v22_l242)))
 
 
-(def v25_l248 (sk-summary demo))
+(def v25_l248 (pose-summary demo))
 
 
 (deftest

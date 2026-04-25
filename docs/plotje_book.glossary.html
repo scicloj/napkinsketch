@@ -429,6 +429,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan">Plan</a></li>
   <li><a href="#panel" id="toc-panel" class="nav-link" data-scroll-target="#panel">Panel</a></li>
   <li><a href="#layer" id="toc-layer" class="nav-link" data-scroll-target="#layer">Layer</a></li>
+  <li><a href="#plan-layer" id="toc-plan-layer" class="nav-link" data-scroll-target="#plan-layer">Plan Layer</a></li>
+  <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset">Dataset</a></li>
+  <li><a href="#pipeline" id="toc-pipeline" class="nav-link" data-scroll-target="#pipeline">Pipeline</a></li>
+  <li><a href="#sub-plot" id="toc-sub-plot" class="nav-link" data-scroll-target="#sub-plot">Sub-plot</a></li>
+  <li><a href="#resolve-tree" id="toc-resolve-tree" class="nav-link" data-scroll-target="#resolve-tree">Resolve Tree</a></li>
   <li><a href="#domain" id="toc-domain" class="nav-link" data-scroll-target="#domain">Domain</a></li>
   <li><a href="#tick" id="toc-tick" class="nav-link" data-scroll-target="#tick">Tick</a></li>
   <li><a href="#scale" id="toc-scale" class="nav-link" data-scroll-target="#scale">Scale</a></li>
@@ -498,7 +503,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="pose" class="level2">
 <h2 class="anchored" data-anchor-id="pose">Pose</h2>
-<p>A <strong>pose</strong> is the unified composable value in Plotje. A leaf pose describes one plot panel; a composite pose contains sub-poses arranged together. Every function in the API (<code>pj/pose</code>, <code>pj/lay-*</code>, <code>pj/facet</code>, <code>pj/arrange</code>, <code>pj/options</code>, <code>pj/scale</code>, <code>pj/coord</code>) takes a pose and returns a pose. Poses auto-render in <a href="https://scicloj.github.io/kindly-noted/">Kindly</a>-compatible tools like <a href="https://scicloj.github.io/clay/">Clay</a>.</p>
+<p>A <strong>pose</strong> is the composable value in Plotje. A leaf pose describes one plot panel; a composite pose contains sub-poses arranged together. Every function in the API (<code>pj/pose</code>, <code>pj/lay-*</code>, <code>pj/facet</code>, <code>pj/arrange</code>, <code>pj/options</code>, <code>pj/scale</code>, <code>pj/coord</code>) takes a pose and returns a pose. Poses auto-render in <a href="https://scicloj.github.io/kindly-noted/">Kindly</a>-compatible tools like <a href="https://scicloj.github.io/clay/">Clay</a>.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-pose</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -769,55 +774,81 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="layer" class="level2">
 <h2 class="anchored" data-anchor-id="layer">Layer</h2>
-<p>A <strong>layer</strong> is a plan-level descriptor: resolved mark type, style, and groups of data-space geometry. Layers live inside panels in the plan.</p>
+<p>A <strong>layer</strong> is a layer type placed on a pose, optionally with scoped mappings. Created by <code>pj/lay-*</code>. Layers attach to a pose either at the root (<code>(pj/lay-point pose)</code>) where they flow to every leaf, or with columns (<code>(pj/lay-point pose :x :y)</code>) where they attach to the matching leaf.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> my-pose</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    pj/plan</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">get-in</span> [<span class="at">:panels</span> <span class="dv">0</span> <span class="at">:layers</span> <span class="dv">0</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> my-pose <span class="at">:layers</span> <span class="kw">first</span> <span class="at">:layer-type</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:mark</span> <span class="at">:point</span>,</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:style</span> {<span class="at">:opacity</span> <span class="fl">0.75</span>, <span class="at">:radius</span> <span class="fl">3.0</span>},</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:groups</span></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:color</span></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.8941176470588236</span> <span class="fl">0.10196078431372549</span> <span class="fl">0.10980392156862745</span> <span class="fl">1.0</span>],</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>   <span class="at">:xs</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-length</span></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>[<span class="fl">5.100</span>, <span class="fl">4.900</span>, <span class="fl">4.700</span>, <span class="fl">4.600</span>, <span class="fl">5.000</span>, <span class="fl">5.400</span>, <span class="fl">4.600</span>, <span class="fl">5.000</span>, <span class="fl">4.400</span>, <span class="fl">4.900</span>, <span class="fl">5.400</span>, <span class="fl">4.800</span>, <span class="fl">4.800</span>, <span class="fl">4.300</span>, <span class="fl">5.800</span>, <span class="fl">5.700</span>, <span class="fl">5.400</span>, <span class="fl">5.100</span>, <span class="fl">5.700</span>, <span class="dv">5</span>.<span class="dv">100</span>...],</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>   <span class="at">:ys</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-width</span></span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>[<span class="fl">3.500</span>, <span class="fl">3.000</span>, <span class="fl">3.200</span>, <span class="fl">3.100</span>, <span class="fl">3.600</span>, <span class="fl">3.900</span>, <span class="fl">3.400</span>, <span class="fl">3.400</span>, <span class="fl">2.900</span>, <span class="fl">3.100</span>, <span class="fl">3.700</span>, <span class="fl">3.400</span>, <span class="fl">3.000</span>, <span class="fl">3.000</span>, <span class="fl">4.000</span>, <span class="fl">4.400</span>, <span class="fl">3.900</span>, <span class="fl">3.500</span>, <span class="fl">3.800</span>, <span class="dv">3</span>.<span class="dv">800</span>...],</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>   <span class="at">:label</span> <span class="st">"setosa"</span>,</span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>   <span class="at">:row-indices</span> #tech.v3.dataset.column&lt;int64&gt;[<span class="dv">50</span>]</span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>:__row-idx</span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>[<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">10</span>, <span class="dv">11</span>, <span class="dv">12</span>, <span class="dv">13</span>, <span class="dv">14</span>, <span class="dv">15</span>, <span class="dv">16</span>, <span class="dv">17</span>, <span class="dv">18</span>, <span class="dv">19</span>...]}</span>
-<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:color</span></span>
-<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.21568627450980393</span> <span class="fl">0.49411764705882355</span> <span class="fl">0.7215686274509804</span> <span class="fl">1.0</span>],</span>
-<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>   <span class="at">:xs</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
-<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-length</span></span>
-<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>[<span class="fl">7.000</span>, <span class="fl">6.400</span>, <span class="fl">6.900</span>, <span class="fl">5.500</span>, <span class="fl">6.500</span>, <span class="fl">5.700</span>, <span class="fl">6.300</span>, <span class="fl">4.900</span>, <span class="fl">6.600</span>, <span class="fl">5.200</span>, <span class="fl">5.000</span>, <span class="fl">5.900</span>, <span class="fl">6.000</span>, <span class="fl">6.100</span>, <span class="fl">5.600</span>, <span class="fl">6.700</span>, <span class="fl">5.600</span>, <span class="fl">5.800</span>, <span class="fl">6.200</span>, <span class="dv">5</span>.<span class="dv">600</span>...],</span>
-<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>   <span class="at">:ys</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
-<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-width</span></span>
-<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>[<span class="fl">3.200</span>, <span class="fl">3.200</span>, <span class="fl">3.100</span>, <span class="fl">2.300</span>, <span class="fl">2.800</span>, <span class="fl">2.800</span>, <span class="fl">3.300</span>, <span class="fl">2.400</span>, <span class="fl">2.900</span>, <span class="fl">2.700</span>, <span class="fl">2.000</span>, <span class="fl">3.000</span>, <span class="fl">2.200</span>, <span class="fl">2.900</span>, <span class="fl">2.900</span>, <span class="fl">3.100</span>, <span class="fl">3.000</span>, <span class="fl">2.700</span>, <span class="fl">2.200</span>, <span class="dv">2</span>.<span class="dv">500</span>...],</span>
-<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>   <span class="at">:label</span> <span class="st">"versicolor"</span>,</span>
-<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>   <span class="at">:row-indices</span> #tech.v3.dataset.column&lt;int64&gt;[<span class="dv">50</span>]</span>
-<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>:__row-idx</span>
-<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>[<span class="dv">50</span>, <span class="dv">51</span>, <span class="dv">52</span>, <span class="dv">53</span>, <span class="dv">54</span>, <span class="dv">55</span>, <span class="dv">56</span>, <span class="dv">57</span>, <span class="dv">58</span>, <span class="dv">59</span>, <span class="dv">60</span>, <span class="dv">61</span>, <span class="dv">62</span>, <span class="dv">63</span>, <span class="dv">64</span>, <span class="dv">65</span>, <span class="dv">66</span>, <span class="dv">67</span>, <span class="dv">68</span>, <span class="dv">69</span>...]}</span>
-<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:color</span></span>
-<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.30196078431372547</span> <span class="fl">0.6862745098039216</span> <span class="fl">0.2901960784313726</span> <span class="fl">1.0</span>],</span>
-<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>   <span class="at">:xs</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
-<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-length</span></span>
-<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a>[<span class="fl">6.300</span>, <span class="fl">5.800</span>, <span class="fl">7.100</span>, <span class="fl">6.300</span>, <span class="fl">6.500</span>, <span class="fl">7.600</span>, <span class="fl">4.900</span>, <span class="fl">7.300</span>, <span class="fl">6.700</span>, <span class="fl">7.200</span>, <span class="fl">6.500</span>, <span class="fl">6.400</span>, <span class="fl">6.800</span>, <span class="fl">5.700</span>, <span class="fl">5.800</span>, <span class="fl">6.400</span>, <span class="fl">6.500</span>, <span class="fl">7.700</span>, <span class="fl">7.700</span>, <span class="dv">6</span>.<span class="dv">000</span>...],</span>
-<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a>   <span class="at">:ys</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
-<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-width</span></span>
-<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a>[<span class="fl">3.300</span>, <span class="fl">2.700</span>, <span class="fl">3.000</span>, <span class="fl">2.900</span>, <span class="fl">3.000</span>, <span class="fl">3.000</span>, <span class="fl">2.500</span>, <span class="fl">2.900</span>, <span class="fl">2.500</span>, <span class="fl">3.600</span>, <span class="fl">3.200</span>, <span class="fl">2.700</span>, <span class="fl">3.000</span>, <span class="fl">2.500</span>, <span class="fl">2.800</span>, <span class="fl">3.200</span>, <span class="fl">3.000</span>, <span class="fl">3.800</span>, <span class="fl">2.600</span>, <span class="dv">2</span>.<span class="dv">200</span>...],</span>
-<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a>   <span class="at">:label</span> <span class="st">"virginica"</span>,</span>
-<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a>   <span class="at">:row-indices</span> #tech.v3.dataset.column&lt;int64&gt;[<span class="dv">50</span>]</span>
-<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a>:__row-idx</span>
-<span id="cb24-39"><a href="#cb24-39" aria-hidden="true" tabindex="-1"></a>[<span class="dv">100</span>, <span class="dv">101</span>, <span class="dv">102</span>, <span class="dv">103</span>, <span class="dv">104</span>, <span class="dv">105</span>, <span class="dv">106</span>, <span class="dv">107</span>, <span class="dv">108</span>, <span class="dv">109</span>, <span class="dv">110</span>, <span class="dv">111</span>, <span class="dv">112</span>, <span class="dv">113</span>, <span class="dv">114</span>, <span class="dv">115</span>, <span class="dv">116</span>, <span class="dv">117</span>, <span class="dv">118</span>, <span class="dv">119</span>...]}],</span>
-<span id="cb24-40"><a href="#cb24-40" aria-hidden="true" tabindex="-1"></a> <span class="at">:y-domain</span> [<span class="fl">2.0</span> <span class="fl">4.4</span>],</span>
-<span id="cb24-41"><a href="#cb24-41" aria-hidden="true" tabindex="-1"></a> <span class="at">:x-domain</span> [<span class="fl">4.3</span> <span class="fl">7.9</span>]}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="at">:point</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+</section>
+<section id="plan-layer" class="level2">
+<h2 class="anchored" data-anchor-id="plan-layer">Plan Layer</h2>
+<p>A <strong>plan layer</strong> is the resolved descriptor inside a plan panel: resolved mark type, style, and groups of data-space geometry. The user-level layer becomes the plan layer through <code>pj/plan</code>.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> my-pose</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    pj/plan</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">get-in</span> [<span class="at">:panels</span> <span class="dv">0</span> <span class="at">:layers</span> <span class="dv">0</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:mark</span> <span class="at">:point</span>,</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:style</span> {<span class="at">:opacity</span> <span class="fl">0.75</span>, <span class="at">:radius</span> <span class="fl">3.0</span>},</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:groups</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:color</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.8941176470588236</span> <span class="fl">0.10196078431372549</span> <span class="fl">0.10980392156862745</span> <span class="fl">1.0</span>],</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>   <span class="at">:xs</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-length</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>[<span class="fl">5.100</span>, <span class="fl">4.900</span>, <span class="fl">4.700</span>, <span class="fl">4.600</span>, <span class="fl">5.000</span>, <span class="fl">5.400</span>, <span class="fl">4.600</span>, <span class="fl">5.000</span>, <span class="fl">4.400</span>, <span class="fl">4.900</span>, <span class="fl">5.400</span>, <span class="fl">4.800</span>, <span class="fl">4.800</span>, <span class="fl">4.300</span>, <span class="fl">5.800</span>, <span class="fl">5.700</span>, <span class="fl">5.400</span>, <span class="fl">5.100</span>, <span class="fl">5.700</span>, <span class="dv">5</span>.<span class="dv">100</span>...],</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>   <span class="at">:ys</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-width</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>[<span class="fl">3.500</span>, <span class="fl">3.000</span>, <span class="fl">3.200</span>, <span class="fl">3.100</span>, <span class="fl">3.600</span>, <span class="fl">3.900</span>, <span class="fl">3.400</span>, <span class="fl">3.400</span>, <span class="fl">2.900</span>, <span class="fl">3.100</span>, <span class="fl">3.700</span>, <span class="fl">3.400</span>, <span class="fl">3.000</span>, <span class="fl">3.000</span>, <span class="fl">4.000</span>, <span class="fl">4.400</span>, <span class="fl">3.900</span>, <span class="fl">3.500</span>, <span class="fl">3.800</span>, <span class="dv">3</span>.<span class="dv">800</span>...],</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>   <span class="at">:label</span> <span class="st">"setosa"</span>,</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>   <span class="at">:row-indices</span> #tech.v3.dataset.column&lt;int64&gt;[<span class="dv">50</span>]</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>:__row-idx</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>[<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">10</span>, <span class="dv">11</span>, <span class="dv">12</span>, <span class="dv">13</span>, <span class="dv">14</span>, <span class="dv">15</span>, <span class="dv">16</span>, <span class="dv">17</span>, <span class="dv">18</span>, <span class="dv">19</span>...]}</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:color</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.21568627450980393</span> <span class="fl">0.49411764705882355</span> <span class="fl">0.7215686274509804</span> <span class="fl">1.0</span>],</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>   <span class="at">:xs</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-length</span></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>[<span class="fl">7.000</span>, <span class="fl">6.400</span>, <span class="fl">6.900</span>, <span class="fl">5.500</span>, <span class="fl">6.500</span>, <span class="fl">5.700</span>, <span class="fl">6.300</span>, <span class="fl">4.900</span>, <span class="fl">6.600</span>, <span class="fl">5.200</span>, <span class="fl">5.000</span>, <span class="fl">5.900</span>, <span class="fl">6.000</span>, <span class="fl">6.100</span>, <span class="fl">5.600</span>, <span class="fl">6.700</span>, <span class="fl">5.600</span>, <span class="fl">5.800</span>, <span class="fl">6.200</span>, <span class="dv">5</span>.<span class="dv">600</span>...],</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>   <span class="at">:ys</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-width</span></span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>[<span class="fl">3.200</span>, <span class="fl">3.200</span>, <span class="fl">3.100</span>, <span class="fl">2.300</span>, <span class="fl">2.800</span>, <span class="fl">2.800</span>, <span class="fl">3.300</span>, <span class="fl">2.400</span>, <span class="fl">2.900</span>, <span class="fl">2.700</span>, <span class="fl">2.000</span>, <span class="fl">3.000</span>, <span class="fl">2.200</span>, <span class="fl">2.900</span>, <span class="fl">2.900</span>, <span class="fl">3.100</span>, <span class="fl">3.000</span>, <span class="fl">2.700</span>, <span class="fl">2.200</span>, <span class="dv">2</span>.<span class="dv">500</span>...],</span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>   <span class="at">:label</span> <span class="st">"versicolor"</span>,</span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>   <span class="at">:row-indices</span> #tech.v3.dataset.column&lt;int64&gt;[<span class="dv">50</span>]</span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>:__row-idx</span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>[<span class="dv">50</span>, <span class="dv">51</span>, <span class="dv">52</span>, <span class="dv">53</span>, <span class="dv">54</span>, <span class="dv">55</span>, <span class="dv">56</span>, <span class="dv">57</span>, <span class="dv">58</span>, <span class="dv">59</span>, <span class="dv">60</span>, <span class="dv">61</span>, <span class="dv">62</span>, <span class="dv">63</span>, <span class="dv">64</span>, <span class="dv">65</span>, <span class="dv">66</span>, <span class="dv">67</span>, <span class="dv">68</span>, <span class="dv">69</span>...]}</span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:color</span></span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.30196078431372547</span> <span class="fl">0.6862745098039216</span> <span class="fl">0.2901960784313726</span> <span class="fl">1.0</span>],</span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>   <span class="at">:xs</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-length</span></span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>[<span class="fl">6.300</span>, <span class="fl">5.800</span>, <span class="fl">7.100</span>, <span class="fl">6.300</span>, <span class="fl">6.500</span>, <span class="fl">7.600</span>, <span class="fl">4.900</span>, <span class="fl">7.300</span>, <span class="fl">6.700</span>, <span class="fl">7.200</span>, <span class="fl">6.500</span>, <span class="fl">6.400</span>, <span class="fl">6.800</span>, <span class="fl">5.700</span>, <span class="fl">5.800</span>, <span class="fl">6.400</span>, <span class="fl">6.500</span>, <span class="fl">7.700</span>, <span class="fl">7.700</span>, <span class="dv">6</span>.<span class="dv">000</span>...],</span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>   <span class="at">:ys</span> #tech.v3.dataset.column&lt;float64&gt;[<span class="dv">50</span>]</span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a><span class="at">:sepal-width</span></span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a>[<span class="fl">3.300</span>, <span class="fl">2.700</span>, <span class="fl">3.000</span>, <span class="fl">2.900</span>, <span class="fl">3.000</span>, <span class="fl">3.000</span>, <span class="fl">2.500</span>, <span class="fl">2.900</span>, <span class="fl">2.500</span>, <span class="fl">3.600</span>, <span class="fl">3.200</span>, <span class="fl">2.700</span>, <span class="fl">3.000</span>, <span class="fl">2.500</span>, <span class="fl">2.800</span>, <span class="fl">3.200</span>, <span class="fl">3.000</span>, <span class="fl">3.800</span>, <span class="fl">2.600</span>, <span class="dv">2</span>.<span class="dv">200</span>...],</span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a>   <span class="at">:label</span> <span class="st">"virginica"</span>,</span>
+<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a>   <span class="at">:row-indices</span> #tech.v3.dataset.column&lt;int64&gt;[<span class="dv">50</span>]</span>
+<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a>:__row-idx</span>
+<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a>[<span class="dv">100</span>, <span class="dv">101</span>, <span class="dv">102</span>, <span class="dv">103</span>, <span class="dv">104</span>, <span class="dv">105</span>, <span class="dv">106</span>, <span class="dv">107</span>, <span class="dv">108</span>, <span class="dv">109</span>, <span class="dv">110</span>, <span class="dv">111</span>, <span class="dv">112</span>, <span class="dv">113</span>, <span class="dv">114</span>, <span class="dv">115</span>, <span class="dv">116</span>, <span class="dv">117</span>, <span class="dv">118</span>, <span class="dv">119</span>...]}],</span>
+<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a> <span class="at">:y-domain</span> [<span class="fl">2.0</span> <span class="fl">4.4</span>],</span>
+<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a> <span class="at">:x-domain</span> [<span class="fl">4.3</span> <span class="fl">7.9</span>]}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="dataset" class="level2">
+<h2 class="anchored" data-anchor-id="dataset">Dataset</h2>
+<p>A <strong>dataset</strong> is the tabular data backing a plot. Plotje uses <a href="https://scicloj.github.io/tablecloth/">Tablecloth</a> datasets internally; raw input (a map of <code>{column-name [values]}</code>, a sequence of row-maps, or a CSV/URL string) is coerced via <code>tablecloth.api/dataset</code> at construction time. The dataset lives on a pose under <code>:data</code>; per-layer and per-sub-pose <code>:data</code> overrides are also supported.</p>
+</section>
+<section id="pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="pipeline">Pipeline</h2>
+<p>The <strong>pipeline</strong> is the five-stage flow from user code to rendered output: <code>pose -&gt; draft -&gt; plan -&gt; membrane -&gt; figure</code>. A pose is what you compose; <code>pj/draft</code> flattens it into a vector of maps; <code>pj/plan</code> resolves geometry and layout; the membrane layer turns the plan into drawable primitives; the figure is the terminal SVG hiccup or PNG output. See the <a href="./plotje_book.architecture.html">Architecture</a> chapter for the per-stage details.</p>
+</section>
+<section id="sub-plot" class="level2">
+<h2 class="anchored" data-anchor-id="sub-plot">Sub-plot</h2>
+<p>A <strong>sub-plot</strong> is one resolved sub-pose in a composite pose’s plan. Where a plain leaf-pose’s plan carries <code>:panels</code> (one per faceted variant), a composite pose’s plan carries <code>:sub-plots</code> (one per sub-pose), each with its own nested <code>:plan</code> map. The compositor reads <code>:sub-plots</code> and tiles their rendered membranes into the final canvas.</p>
+</section>
+<section id="resolve-tree" class="level2">
+<h2 class="anchored" data-anchor-id="resolve-tree">Resolve Tree</h2>
+<p>The <strong>resolve tree</strong> is the scope-merge walk that propagates a root pose’s <code>:mapping</code>, <code>:opts</code>, and root-attached <code>:layers</code> downward into every descendant leaf during plan construction. Lower (narrower) scopes override higher ones; root-attached layers reach every applicable leaf in the tree.</p>
 </section>
 <section id="domain" class="level2">
 <h2 class="anchored" data-anchor-id="domain">Domain</h2>
@@ -827,23 +858,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Categorical: sequence of distinct values (e.g., <code>["setosa" "versicolor" "virginica"]</code>)</li>
 </ul>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [p (<span class="kw">first</span> (<span class="at">:panels</span> my-plan))]</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:x-domain</span> (<span class="at">:x-domain</span> p)</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>   <span class="at">:y-domain</span> (<span class="at">:y-domain</span> p)})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [p (<span class="kw">first</span> (<span class="at">:panels</span> my-plan))]</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:x-domain</span> (<span class="at">:x-domain</span> p)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>   <span class="at">:y-domain</span> (<span class="at">:y-domain</span> p)})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:x-domain</span> [<span class="fl">4.12</span> <span class="fl">8.08</span>], <span class="at">:y-domain</span> [<span class="fl">1.88</span> <span class="fl">4.5200000000000005</span>]}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:x-domain</span> [<span class="fl">4.12</span> <span class="fl">8.08</span>], <span class="at">:y-domain</span> [<span class="fl">1.88</span> <span class="fl">4.5200000000000005</span>]}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="tick" class="level2">
 <h2 class="anchored" data-anchor-id="tick">Tick</h2>
 <p>A <strong>tick</strong> is an axis mark with a label at a domain value. Ticks are chosen at layout time to fit the available pixel budget – label widths, minimum spacing, and calendar boundaries (for temporal axes) all feed into the selection. Each panel in the plan carries its own <code>:x-ticks</code> and <code>:y-ticks</code> maps with parallel <code>:values</code> and <code>:labels</code> vectors.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> my-plan <span class="at">:panels</span> <span class="kw">first</span> <span class="at">:x-ticks</span> (<span class="kw">select-keys</span> [<span class="at">:values</span> <span class="at">:labels</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> my-plan <span class="at">:panels</span> <span class="kw">first</span> <span class="at">:x-ticks</span> (<span class="kw">select-keys</span> [<span class="at">:values</span> <span class="at">:labels</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:values</span> [<span class="fl">4.5</span> <span class="fl">5.0</span> <span class="fl">5.5</span> <span class="fl">6.0</span> <span class="fl">6.5</span> <span class="fl">7.0</span> <span class="fl">7.5</span> <span class="fl">8.0</span>],</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:labels</span> [<span class="st">"4.5"</span> <span class="st">"5.0"</span> <span class="st">"5.5"</span> <span class="st">"6.0"</span> <span class="st">"6.5"</span> <span class="st">"7.0"</span> <span class="st">"7.5"</span> <span class="st">"8.0"</span>]}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:values</span> [<span class="fl">4.5</span> <span class="fl">5.0</span> <span class="fl">5.5</span> <span class="fl">6.0</span> <span class="fl">6.5</span> <span class="fl">7.0</span> <span class="fl">7.5</span> <span class="fl">8.0</span>],</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:labels</span> [<span class="st">"4.5"</span> <span class="st">"5.0"</span> <span class="st">"5.5"</span> <span class="st">"6.0"</span> <span class="st">"6.5"</span> <span class="st">"7.0"</span> <span class="st">"7.5"</span> <span class="st">"8.0"</span>]}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="scale" class="level2">
@@ -913,13 +944,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>By default each panel has its own domains, derived from the data in that panel – so scales are independent per panel. To force shared axis ranges across panels, pin the domain explicitly with <code>(pj/scale :x {:domain [lo hi]})</code> (and/or <code>:y</code>).</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    (pj/facet <span class="at">:species</span>)</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    pj/plan <span class="at">:panels</span> <span class="kw">count</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    (pj/facet <span class="at">:species</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    pj/plan <span class="at">:panels</span> <span class="kw">count</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="annotation" class="level2">
@@ -956,33 +987,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    (pj/lay-rule-h {<span class="at">:y-intercept</span> <span class="fl">3.0</span>})</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">:layers</span> (<span class="kw">nth</span> <span class="dv">1</span>) <span class="at">:layer-type</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    (pj/lay-rule-h {<span class="at">:y-intercept</span> <span class="fl">3.0</span>})</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">:layers</span> (<span class="kw">nth</span> <span class="dv">1</span>) <span class="at">:layer-type</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="at">:rule-h</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="at">:rule-h</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="legend" class="level2">
 <h2 class="anchored" data-anchor-id="legend">Legend</h2>
 <p>A <strong>legend</strong> is generated automatically when a color (or shape) aesthetic maps to a data column. It appears in the plan as a <code>:legend</code> key containing entries with labels and colors. Position is controlled via <code>{:legend-position :bottom}</code> in options.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">:legend</span> my-plan)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">:legend</span> my-plan)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:title</span> <span class="at">:species</span>,</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:entries</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:label</span> <span class="st">"setosa"</span>,</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>   <span class="at">:color</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.8941176470588236</span> <span class="fl">0.10196078431372549</span> <span class="fl">0.10980392156862745</span> <span class="fl">1.0</span>]}</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:label</span> <span class="st">"versicolor"</span>,</span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>   <span class="at">:color</span></span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.21568627450980393</span> <span class="fl">0.49411764705882355</span> <span class="fl">0.7215686274509804</span> <span class="fl">1.0</span>]}</span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:label</span> <span class="st">"virginica"</span>,</span>
-<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>   <span class="at">:color</span></span>
-<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.30196078431372547</span> <span class="fl">0.6862745098039216</span> <span class="fl">0.2901960784313726</span> <span class="fl">1.0</span>]}]}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>{<span class="at">:title</span> <span class="at">:species</span>,</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a> <span class="at">:entries</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a> [{<span class="at">:label</span> <span class="st">"setosa"</span>,</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>   <span class="at">:color</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.8941176470588236</span> <span class="fl">0.10196078431372549</span> <span class="fl">0.10980392156862745</span> <span class="fl">1.0</span>]}</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:label</span> <span class="st">"versicolor"</span>,</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>   <span class="at">:color</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.21568627450980393</span> <span class="fl">0.49411764705882355</span> <span class="fl">0.7215686274509804</span> <span class="fl">1.0</span>]}</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  {<span class="at">:label</span> <span class="st">"virginica"</span>,</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>   <span class="at">:color</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>   [<span class="fl">0.30196078431372547</span> <span class="fl">0.6862745098039216</span> <span class="fl">0.2901960784313726</span> <span class="fl">1.0</span>]}]}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="theme" class="level2">
@@ -1012,13 +1043,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <p>Passed as <code>{:theme {...}}</code> via <code>pj/options</code>, <code>pj/with-config</code>, or <code>pj/set-config!</code>. Other visual knobs (margins, legend width, tick spacing) are top-level configuration keys, not theme entries – see <code>pj/config-key-docs</code>.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    (pj/options {<span class="at">:theme</span> {<span class="at">:bg</span> <span class="st">"#2d2d2d"</span> <span class="at">:grid</span> <span class="st">"#444444"</span> <span class="at">:font-size</span> <span class="dv">10</span>}})</span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    pj/svg-summary <span class="at">:points</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    (pj/options {<span class="at">:theme</span> {<span class="at">:bg</span> <span class="st">"#2d2d2d"</span> <span class="at">:grid</span> <span class="st">"#444444"</span> <span class="at">:font-size</span> <span class="dv">10</span>}})</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    pj/svg-summary <span class="at">:points</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="dv">150</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="dv">150</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="membrane" class="level2">
@@ -1026,19 +1057,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>A <strong>membrane</strong> is a value of the <a href="https://github.com/phronmophobic/membrane">Membrane</a> library – a tree of layout and drawing primitives (<code>Translate</code>, <code>WithColor</code>, <code>RoundedRectangle</code>, <code>Label</code>, etc.) that represents a complete plot.</p>
 <p>The membrane is an intermediate step in the SVG rendering path: the plan becomes a membrane, which becomes SVG hiccup. Direct renderers (e.g., Plotly) skip the membrane entirely.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-membrane </span>(pj/plan-&gt;membrane my-plan))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-membrane </span>(pj/plan-&gt;membrane my-plan))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">vector?</span> my-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">vector?</span> my-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> my-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> my-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="dv">9</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="dv">9</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="plot" class="level2">
@@ -1046,13 +1077,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>A <strong>plot</strong> is the final rendered output – the result of rendering a plan to a specific format. For SVG, the plot is hiccup markup wrapped in <code>kind/hiccup</code>.</p>
 <p>Created by <code>pj/plot</code> or by auto-rendering a pose.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-plot </span>(pj/plan-&gt;plot my-plan <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-plot </span>(pj/plan-&gt;plot my-plan <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> my-plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> my-plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="at">:svg</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="at">:svg</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="palette" class="level2">
@@ -1060,10 +1091,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>A <strong>palette</strong> is an ordered set of colors used for categorical aesthetics. When <code>:color</code> maps to a categorical column, colors are assigned from the active palette in order.</p>
 <p>Plotje uses <a href="https://github.com/Clojure2D/clojure2d">clojure2d</a> for palettes. Set via <code>{:palette :set2}</code> in options. The number of named palettes available:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> (c2d/find-palette <span class="ss">#".*"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> (c2d/find-palette <span class="ss">#".*"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="dv">7024</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="dv">7024</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="gradient" class="level2">
@@ -1083,10 +1114,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Plot options</strong> are per-plot settings passed to <code>pj/options</code>, <code>pj/plan</code>, or <code>pj/plot</code>. They include text content (title, subtitle, caption, axis labels) and a nested <code>:config</code> override. Unlike configuration keys, plot options are inherently per-plot – a title does not make sense as a global default.</p>
 <p>See <code>pj/plot-option-docs</code> for the full list, or the <a href="./plotje_book.configuration.html">Configuration</a> chapter for usage examples.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> pj/plot-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> pj/plot-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="layer-options" class="level2">
@@ -1094,10 +1125,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Layer options</strong> are per-layer settings passed in the options map of layer functions (<code>pj/lay-point</code>, <code>pj/lay-histogram</code>, etc.). They control aesthetics (<code>:color</code>, <code>:size</code>, <code>:alpha</code>, <code>:shape</code>), grouping (<code>:group</code>), position adjustment (<code>:position</code>), and layer-type-specific parameters (<code>:bandwidth</code>, <code>:confidence-band</code>, <code>:normalize</code>, etc.).</p>
 <p>Four keys are universal – accepted by every layer – and each layer type may accept additional keys. The <a href="./plotje_book.layer_types.html">Layer Types</a> chapter lists which options each layer type accepts. See also <code>pj/layer-option-docs</code> for descriptions, or inspect a specific layer type with <code>pj/layer-type-lookup</code>.</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> pj/layer-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> pj/layer-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="dv">27</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="dv">27</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="tooltip-and-brush" class="level2">
@@ -1143,8 +1174,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Layer</td>
-<td style="text-align: left;">Method attached to a pose</td>
+<td style="text-align: left;">Layer type attached to a pose, optionally with scoped mappings</td>
 <td style="text-align: left;"><code>pj/lay-*</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Dataset</td>
+<td style="text-align: left;">Tabular data backing a plot (Tablecloth)</td>
+<td style="text-align: left;"><code>:data</code> slot, <code>pj/with-data</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pipeline</td>
+<td style="text-align: left;">Five-stage flow <code>pose -&gt; draft -&gt; plan -&gt; membrane -&gt; figure</code></td>
+<td style="text-align: left;">Architecture chapter</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sub-plot</td>
+<td style="text-align: left;">One resolved sub-pose in a composite pose’s plan</td>
+<td style="text-align: left;"><code>:sub-plots</code> in plan</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Resolve tree</td>
+<td style="text-align: left;">Scope-merge walk: root mappings propagate to every leaf</td>
+<td style="text-align: left;">Internal to <code>pj/plan</code></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Draft</td>
