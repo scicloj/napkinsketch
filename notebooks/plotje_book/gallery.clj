@@ -412,7 +412,7 @@
 (-> (rdatasets/datasets-iris)
     (pj/pose {:color :species})
     (pj/pose (pj/cross [:sepal-length :sepal-width :petal-length :petal-width]
-                        [:sepal-length :sepal-width :petal-length :petal-width]))
+                       [:sepal-length :sepal-width :petal-length :petal-width]))
     (pj/options {:title "Iris SPLOM"}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
@@ -526,14 +526,20 @@
 ;; ### Log scale scatter
 ;; Source: [ECharts: Scatter Logarithmic](https://echarts.apache.org/examples/en/editor.html?c=scatter-logarithmic-regression)
 
+;; The ggplot2 diamonds dataset is ~54k rows; rendered as SVG that
+;; is a ~10MB document, heavy to load. We use `{:format :bufimg}`
+;; here for raster output -- crisp at the demonstrated zoom and
+;; far lighter on the page.
+
 (-> (rdatasets/ggplot2-diamonds)
     (pj/lay-point :carat :price {:alpha 0.1})
     (pj/scale :y :log)
     (pj/options {:title "Diamond Price by Carat (Log Scale)"
                  :x-label "Carat"
-                 :y-label "Price ($, log scale)"}))
+                 :y-label "Price ($, log scale)"
+                 :format :bufimg}))
 
-(kind/test-last [(fn [v] (pos? (:points (pj/svg-summary v))))])
+(kind/test-last [(fn [v] (instance? java.awt.image.BufferedImage v))])
 
 ;; ### Summary with error bars (mean +/- SE)
 ;; Source: [Vega-Lite: Error Bars with CI](https://vega.github.io/vega-lite/examples/layer_point_errorbar_ci.html)
@@ -669,7 +675,7 @@
 (-> (rdatasets/datasets-iris)
     (pj/pose {:color :species})
     (pj/pose (pj/cross [:sepal-length :sepal-width :petal-length :petal-width]
-                        [:sepal-length :sepal-width :petal-length :petal-width])))
+                       [:sepal-length :sepal-width :petal-length :petal-width])))
 
 (kind/test-last [(fn [v] (= 16 (:panels (pj/svg-summary v))))])
 
@@ -936,15 +942,18 @@
 ;; ### Scatter with alpha blending for overplotting
 ;; Source: [Vega-Lite: Scatter with Opacity](https://vega.github.io/vega-lite/examples/point_2d.html)
 
-;; Transparency reveals density in overplotted regions:
+;; Transparency reveals density in overplotted regions. Same
+;; ~54k-row dataset; raster output (`:format :bufimg`) keeps the
+;; page weight reasonable.
 
 (-> (rdatasets/ggplot2-diamonds)
     (pj/lay-point :carat :price {:alpha 0.05})
     (pj/options {:title "Diamond Price vs Carat (alpha = 0.05)"
                  :x-label "Carat"
-                 :y-label "Price ($)"}))
+                 :y-label "Price ($)"
+                 :format :bufimg}))
 
-(kind/test-last [(fn [v] (pos? (:points (pj/svg-summary v))))])
+(kind/test-last [(fn [v] (instance? java.awt.image.BufferedImage v))])
 
 ;; ### Scatter colored by continuous variable
 ;; Source: [D3 Graph Gallery: Scatter Color](https://d3-graph-gallery.com/graph/scatter_basic.html)

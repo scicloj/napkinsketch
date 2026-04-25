@@ -1548,17 +1548,33 @@
   ([sk opts]
    (plan (options sk opts))))
 
+(defn- ensure-renderer-loaded!
+  "Lazy-load the renderer namespace for non-default formats. The :svg
+   backend is loaded as a top-level require by api.clj; :bufimg is
+   side-loaded on first use to keep startup time down for SVG-only
+   users. Future formats register here."
+  [fmt]
+  (when (= fmt :bufimg)
+    (require 'scicloj.plotje.render.bufimg)))
+
 (defn plot
-  "Render a pose to SVG (or interactive HTML if tooltip/brush is
-   set). On a composite pose, leaves are rendered individually and
-   tiled via the compositor's layout.
+  "Render a pose to a figure. The format keyword in the pose's
+   `:opts` (`{:format :svg}` -- default; `{:format :bufimg}` for
+   raster PNG via Java2D; or any other registered backend) selects
+   which `plan->plot` / `membrane->plot` defmethod runs.
+
+   On a composite pose, leaves are rendered individually and tiled
+   via the compositor's layout, in the same chosen format.
    (plot fr)
-   (plot fr {:width 800 :title \"My Plot\"})"
+   (plot fr {:width 800 :title \"My Plot\"})
+   (plot fr {:format :bufimg})  ;; returns a BufferedImage"
   ([sk]
-   (let [fr (ensure-pose sk)]
+   (let [fr (ensure-pose sk)
+         fmt (or (:format (:opts fr)) :svg)]
+     (ensure-renderer-loaded! fmt)
      (if (pose/composite? fr)
-       (compositor/composite->plot fr)
-       (render-impl/plan->plot (plan fr) :svg (:opts fr {})))))
+       (compositor/composite->plot fr fmt)
+       (render-impl/plan->plot (plan fr) fmt (:opts fr {})))))
   ([sk opts]
    (plot (options sk opts))))
 
@@ -1608,14 +1624,15 @@
 (defn- render-composite
   "Kindly render function for a composite pose returned by pj/arrange.
    Captures the config snapshot so theme/palette/config bindings at
-   construction time survive into render time."
+   construction time survive into render time. Delegates to pj/plot,
+   which honors :format from :opts uniformly across composite and
+   leaf paths."
   [captured-config]
   (fn [composite]
-    (let [fmt (or (:format (:opts composite)) :svg)]
-      (if captured-config
-        (binding [defaults/*config* captured-config]
-          (compositor/composite->plot composite fmt))
-        (compositor/composite->plot composite fmt)))))
+    (if captured-config
+      (binding [defaults/*config* captured-config]
+        (plot composite))
+      (plot composite))))
 
 (defn arrange
   "Arrange multiple leaf poses in a grid. Returns a composite pose

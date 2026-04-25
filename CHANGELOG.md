@@ -422,6 +422,29 @@ leak raw exceptions now throw with clear `ex-info`:
   `ClassCastException` from a `dissoc` on a keyword. Now throws
   with a one-line message naming the bad opts argument.
 
+### `pj/plot` honors `:format` from pose `:opts`
+
+Setting `{:format :bufimg}` (or any registered backend keyword) in
+a pose's `:opts` now selects the renderer for both leaf and
+composite poses. Previously only the Kindly auto-render path for
+composites read `:format`; explicit `pj/plot` calls and the leaf
+auto-render hardcoded `:svg` regardless. The fix consolidates
+format dispatch in `pj/plot`; `render-composite` now delegates
+to `pj/plot` instead of duplicating the dispatch.
+
+The fix is specific to `:format` -- audit confirmed every other
+opt that affects rendering (`:tooltip`, `:brush`, `:title`,
+`:width`, `:height`, `:theme`, `:palette`, `:color-scale`,
+`:color-midpoint`) was already flowing through correctly via the
+opts payload. Only `:format` was blocked because it occupies the
+dispatch position rather than the payload.
+
+The `:bufimg` backend is lazy-loaded on first use so SVG-only
+users don't pay the load cost. `pj/save` and `pj/save-png` keep
+their per-function fixed format (the function name carries the
+backend choice); `:format` in opts only affects `pj/plot` and the
+notebook auto-render paths.
+
 ### Opt-in strict option-key checking
 
 New `:strict` config flag (default `false`). When `false`, an
