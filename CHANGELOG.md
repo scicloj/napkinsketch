@@ -5,10 +5,11 @@ All notable changes to plotje will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026-04-25
+## Unreleased
 
-First public alpha release. The API and visual defaults are still
-subject to change based on early adopter feedback.
+Staged for the upcoming first public alpha release. The API and
+visual defaults are still subject to change based on early adopter
+feedback.
 
 ### Renamed: `frame` -> `pose`
 
