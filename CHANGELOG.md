@@ -7,6 +7,98 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Renamed: napkinsketch -> Plotje (and `sk` -> `pj`)
+
+The library is now **Plotje** -- Dutch for "a little plot". Two
+atomic mechanical commits, no API behaviour change:
+
+- Maven coordinate `org.scicloj/napkinsketch` -> `org.scicloj/plotje`.
+- Namespace prefix `scicloj.napkinsketch.*` -> `scicloj.plotje.*`.
+- Documentation alias `sk` -> `pj` across every `(:require [...
+  :as sk])`. All notebooks, tests, and prose use `pj` now.
+- Resource and config files: `resources/napkinsketch-defaults.edn`
+  -> `resources/plotje-defaults.edn`; user config lookup
+  `napkinsketch.edn` -> `plotje.edn`.
+- GitHub repo URLs and Clay remote-repo updated accordingly.
+
+The on-disk working directory is still named `napkinsketch/` and
+the GitHub remote still points at `scicloj/napkinsketch` -- both
+deliberate carryovers until the repo is renamed on GitHub.
+Migration is mechanical: `s/napkinsketch/plotje/g` plus update the
+`:as` alias on every require.
+
+### Matrix layout for threaded multi-position composites
+
+Threading `(pj/frame fr :x :y)` over a leaf-with-position now
+promotes to a composite whose layout is `:matrix`: distinct x-cols
+become grid columns, distinct y-cols become grid rows, leaves land
+at their `(col-of-x, row-of-y)` intersection. Empty cells render
+the theme background. Strip labels above each column carry the
+x-col name, strip labels left of each row carry the y-col name.
+Per-panel x/y axis labels are suppressed under the strip labels.
+Duplicate `(x, y)` pairs stack into new rows in DFS order rather
+than colliding.
+
+This restores (and generalises) sketch-era `sk/view` behaviour.
+The marginal-density-plot pattern falls out naturally: a 2x2
+matrix where the off-axis cells hold the marginal densities and
+the main scatter sits at `(:x, :y)`.
+
+The previous flat-row layout is still reachable via:
+`(pj/options fr {:layout {:direction :horizontal}})`.
+
+`(pj/frame data [[:a :b] [:c :d]])` (multi-pair literal) and
+`pj/arrange` keep their current row layouts. SPLOM via `pj/cross`
+still uses its own grid composite shape (could be unified with
+matrix later).
+
+### SPLOM visual-chrome cleanup
+
+The SPLOM (`(pj/frame data (pj/cross cols cols))`) had three
+visible defects on diagonal cells; two are fixed:
+
+- Per-cell axis-name labels (e.g. y-axis label "sl" inside the
+  leftmost column's cells) now suppressed everywhere -- the col/row
+  strip labels carry the axis-variable name.
+- Per-cell tick numbers now appear only on the bottom row (x-ticks)
+  and leftmost column (y-ticks). The `:share-scales #{:x :y}`
+  guarantee makes per-cell ticks redundant across the rest of the
+  grid.
+
+The third issue -- diagonal histograms render against the column's
+shared y-domain (data range) instead of a count axis, so most are
+nearly invisible -- is documented but not fixed. See
+`dev-notes/regression-corpus/notes/diagonal-histogram-scale.md`.
+
+### Frame inference and rendering fixes
+
+A handful of bugs in the post-Phase-6 frame pipeline, surfaced by
+a regression corpus comparing pre-Phase-6 Sketch behaviour to
+current frame behaviour. All shipped:
+
+- `pj/frame` 1-arity now auto-infers a position mapping from the
+  first 1-3 columns of its data (`(pj/frame {:x [...] :y [...]})`
+  yields a frame with `:mapping {:x :x :y :y}` and renders without
+  an explicit `pj/lay-*` call). 4+ column data leaves the mapping
+  empty -- gentler than the sketch-era `sk/view` which threw.
+- `ensure-frame` now routes raw-data inputs through `prepare-frame`,
+  so Kindly auto-render metadata is attached on every entry path
+  (previously only `pj/frame` itself attached it; `(pj/lay-point
+  raw-data)` bypassed the wrapper and the result didn't auto-render
+  in notebooks).
+- `pj/save` and `pj/save-png` now route composite frames through
+  the compositor. They used to call `plan->plot` directly on the
+  top-level plan, which has empty `:panels` for composites and
+  rendered as a blank document.
+- `render.membrane/plan->membrane` now defaults `:strip-h` and
+  `:strip-w` to 0 for composites without strip labels, fixing an
+  NPE in `clojure.lang.Numbers/isPos`.
+
+### Documentation
+
+`inference_rules.clj` updated to document the few-column inference
+on `pj/frame` 1-arity (which had been left out of the rule table).
+
 ### SPLOM strip labels
 
 Grid composites built from `(pj/frame data (pj/cross cols cols))`
