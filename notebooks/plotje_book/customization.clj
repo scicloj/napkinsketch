@@ -180,7 +180,7 @@
 ;; faceted plot with a different reference value per panel (column-mapped
 ;; intercept, ggplot2's `geom_hline(aes(yintercept=...))`) is on the
 ;; post-alpha roadmap. Today, an annotation added once with the same
-;; intercept appears on every panel of the faceted frame.
+;; intercept appears on every panel of the faceted pose.
 
 ;; ## Palettes
 ;;
@@ -311,9 +311,9 @@
 (def splom-cols [:sepal-length :sepal-width :petal-length :petal-width])
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame {:color :species})
+    (pj/pose {:color :species})
     pj/lay-point
-    (pj/frame (pj/cross splom-cols splom-cols))
+    (pj/pose (pj/cross splom-cols splom-cols))
     (pj/options {:brush true}))
 
 (kind/test-last [(fn [v] (= :div (first (pj/plot v))))])

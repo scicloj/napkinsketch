@@ -2,7 +2,7 @@
 ;;
 ;; This chapter covers the core concepts you need for daily use.
 ;; If you have not read the
-;; [Frame Model](./plotje_book.frame_model.html)
+;; [Pose Model](./plotje_book.pose_model.html)
 ;; chapter, start there -- it introduces the mental model behind
 ;; composable plotting.
 
@@ -43,17 +43,17 @@
 ;; Here is a scatter plot of sepal dimensions, colored by species:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-;; Printed, the frame carries the data and the `:x`/`:y` position
+;; Printed, the pose carries the data and the `:x`/`:y` position
 ;; mapping at the top, and one point layer with its own layer-scoped
 ;; `:color`:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/lay-point {:color :species})
     kind/pprint)
 
@@ -100,7 +100,7 @@
 ;; ---
 ;; ## Mappings and Layers
 ;;
-;; A frame is built from two kinds of content:
+;; A pose is built from two kinds of content:
 ;;
 ;; - **Mapping** -- what to show (which columns define the axes and aesthetics)
 ;; - **Layer** -- how to show it (which chart type, with what options)
@@ -108,10 +108,10 @@
 ;; The mapping says "show sepal length versus sepal width." A layer
 ;; says "show it as points" or "fit a regression line." When you want
 ;; multiple layers sharing the same axes, declare the mapping once
-;; with `pj/frame`, then add layers with `pj/lay-*`:
+;; with `pj/pose`, then add layers with `pj/lay-*`:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model}))
 
@@ -119,12 +119,12 @@
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
 
-;; Printed, the mapping-and-layers split is visible in the frame
+;; Printed, the mapping-and-layers split is visible in the pose
 ;; value -- `:mapping` at the top, `:layers` alongside it, one entry
 ;; per call:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     kind/pprint)
@@ -134,7 +134,7 @@
 
 ;; One mapping, two layers: points and a regression line.
 ;;
-;; When `pj/lay-*` is called **with columns**, it creates a frame and
+;; When `pj/lay-*` is called **with columns**, it creates a pose and
 ;; attaches a layer in one step:
 
 (-> (rdatasets/datasets-iris)
@@ -145,7 +145,7 @@
 ;; We will revisit where mappings flow (to all layers or to a single
 ;; one) in the Scope section below.
 
-;; With multiple frames arranged side by side, use `pj/arrange`:
+;; With multiple poses arranged side by side, use `pj/arrange`:
 
 (def two-panel
   (pj/arrange
@@ -158,8 +158,8 @@ two-panel
 
 (kind/test-last [(fn [v] (= 2 (:panels (pj/svg-summary v))))])
 
-;; Each sub-frame has its own mapping and layers. `pj/arrange`
-;; produces a composite frame that contains them as siblings.
+;; Each sub-pose has its own mapping and layers. `pj/arrange`
+;; produces a composite pose that contains them as siblings.
 
 ;; ---
 ;; ## Scope
@@ -170,18 +170,18 @@ two-panel
 ;;
 ;; | Where you write it | What sees it |
 ;; |:-------------------|:-------------|
-;; | `(pj/frame ... {:color :c})` | All layers on this frame |
+;; | `(pj/pose ... {:color :c})` | All layers on this pose |
 ;; | `(pj/lay-point ... {:color :c})` | This layer only |
 ;;
 ;; This is **lexical scope** -- the same principle as in programming
 ;; languages. Lower levels override higher ones.
 
-;; ### Frame-level mapping
+;; ### Pose-level mapping
 ;;
-;; `pj/frame`'s mapping flows to every layer attached to the frame:
+;; `pj/pose`'s mapping flows to every layer attached to the pose:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model}))
 
@@ -195,7 +195,7 @@ two-panel
 ;; Opts in `pj/lay-*` scope to that layer alone:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/lay-point {:color :species})
     (pj/lay-smooth {:stat :linear-model}))
 
@@ -204,10 +204,10 @@ two-panel
                                 (= 1 (:lines s)))))])
 
 ;; Printed, `:color` lives on the point layer's own `:mapping`, not
-;; on the frame -- so only the point layer sees it:
+;; on the pose -- so only the point layer sees it:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/lay-point {:color :species})
     (pj/lay-smooth {:stat :linear-model})
     kind/pprint)
@@ -225,7 +225,7 @@ two-panel
 ;; by setting it to `nil`:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     (pj/lay-point {:color nil})
     (pj/lay-smooth {:stat :linear-model}))
 
@@ -234,11 +234,11 @@ two-panel
                                 (= 3 (:lines s)))))])
 
 ;; Printed, the override appears as `:color nil` in the point
-;; layer's own `:mapping`, erasing the frame-level color for that
+;; layer's own `:mapping`, erasing the pose-level color for that
 ;; layer only:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     (pj/lay-point {:color nil})
     (pj/lay-smooth {:stat :linear-model})
     kind/pprint)
@@ -247,18 +247,18 @@ two-panel
                               (contains? (get (first (:layers v)) :mapping) :color)
                               (nil? (get-in (first (:layers v)) [:mapping :color]))))])
 
-;; The frame says `:color :species`. The point layer cancels it with
+;; The pose says `:color :species`. The point layer cancels it with
 ;; `nil` -- uncolored points. The smooth layer has no override, so it
-;; keeps the frame-level color -- three lines.
+;; keeps the pose-level color -- three lines.
 
 ;; ### How scope is applied
 ;;
 ;; The same scoping principle governs three things -- mappings,
 ;; layers, and data -- each with its own combination rule:
 ;;
-;; | What | Frame level | Layer level | Combination |
+;; | What | Pose level | Layer level | Combination |
 ;; |:-----|:------------|:------------|:------------|
-;; | Mapping | `pj/frame` mapping | `pj/lay-*` opts | `merge` -- innermost wins, `nil` erases |
+;; | Mapping | `pj/pose` mapping | `pj/lay-*` opts | `merge` -- innermost wins, `nil` erases |
 ;; | Layer | `pj/lay-*` | -- (leaf) | layers accumulate |
 ;; | Data | first argument | `:data` in layer opts | innermost non-nil wins |
 
@@ -276,7 +276,7 @@ two-panel
                   #(= "versicolor" (:species %))))
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/lay-point {:data setosa})
     (pj/lay-smooth {:stat :linear-model :data versicolor}))
 
@@ -285,11 +285,11 @@ two-panel
                                 (= 1 (:lines s)))))])
 
 ;; Printed, each layer carries its own `:data` alongside its
-;; `:mapping`; the frame-level `:data` remains as a default for
+;; `:mapping`; the pose-level `:data` remains as a default for
 ;; any layer that does not override it:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/lay-point {:data setosa})
     (pj/lay-smooth {:stat :linear-model :data versicolor})
     kind/pprint)
@@ -299,7 +299,7 @@ two-panel
                               (contains? (second (:layers v)) :data)))])
 
 ;; Points from setosa (50 rows), regression from versicolor.
-;; Same frame, different data per layer.
+;; Same pose, different data per layer.
 ;;
 ;; Faceting splits a single dataset into panels automatically:
 
@@ -316,16 +316,16 @@ two-panel
 ;; ---
 ;; ## Identity
 ;;
-;; Scope determines what each frame and layer sees. But how do
-;; layers find their frame? The rule is:
+;; Scope determines what each pose and layer sees. But how do
+;; layers find their pose? The rule is:
 ;;
-;; - `pj/lay-*` with columns **finds the most recent leaf frame**
+;; - `pj/lay-*` with columns **finds the most recent leaf pose**
 ;;   whose position mappings match, or creates a new one if none
 ;;   matches.
 ;;
 ;; This makes the threading pipeline sequential and predictable.
 ;; When the columns match, the new layer attaches to the existing
-;; frame:
+;; pose:
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width)
@@ -336,34 +336,34 @@ two-panel
                                 (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; One frame, two layers: scatter points and a regression line
+;; One pose, two layers: scatter points and a regression line
 ;; sharing the same axes.
 ;;
 ;; To place two plots side by side with different columns, use an
-;; explicit `pj/frame` call to add a second panel:
+;; explicit `pj/pose` call to add a second panel:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame [[:sepal-length :sepal-width] [:petal-length :petal-width]])
+    (pj/pose [[:sepal-length :sepal-width] [:petal-length :petal-width]])
     (pj/lay-point))
 
 (kind/test-last [(fn [v] (= 2 (:panels (pj/svg-summary v))))])
 
-;; Printed, the two-panel outcome is a composite with two sub-frames:
+;; Printed, the two-panel outcome is a composite with two sub-poses:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame [[:sepal-length :sepal-width] [:petal-length :petal-width]])
+    (pj/pose [[:sepal-length :sepal-width] [:petal-length :petal-width]])
     (pj/lay-point)
     kind/pprint)
 
-(kind/test-last [(fn [v] (and (= 2 (count (:frames v)))
-                              (= :sepal-length (get-in v [:frames 0 :mapping :x]))
-                              (= :sepal-width  (get-in v [:frames 0 :mapping :y]))
-                              (= :petal-length (get-in v [:frames 1 :mapping :x]))
-                              (= :petal-width  (get-in v [:frames 1 :mapping :y]))))])
+(kind/test-last [(fn [v] (and (= 2 (count (:poses v)))
+                              (= :sepal-length (get-in v [:poses 0 :mapping :x]))
+                              (= :sepal-width  (get-in v [:poses 0 :mapping :y]))
+                              (= :petal-length (get-in v [:poses 1 :mapping :x]))
+                              (= :petal-width  (get-in v [:poses 1 :mapping :y]))))])
 
 ;; Two panels, arranged side by side. For plots with different
 ;; layer kinds (a scatter and a histogram, say), use `pj/arrange`
-;; to combine independent frames:
+;; to combine independent poses:
 
 (pj/arrange
  [(-> (rdatasets/datasets-iris) (pj/lay-histogram :sepal-width))
@@ -372,29 +372,29 @@ two-panel
 (kind/test-last [(fn [v] (= 2 (:panels (pj/svg-summary v))))])
 
 ;; ---
-;; ## The Frame
+;; ## The Pose
 ;;
-;; A frame is a composable value. A simple leaf frame carries:
+;; A pose is a composable value. A simple leaf pose carries:
 ;;
 ;; | Field | Contains | Set by |
 ;; |:------|:---------|:-------|
-;; | `:data` | the dataset | `pj/frame`, `pj/lay-*`, or `pj/with-data` |
-;; | `:mapping` | frame-level mappings | `pj/frame` |
-;; | `:layers` | layers attached to the frame | `pj/lay-*` |
+;; | `:data` | the dataset | `pj/pose`, `pj/lay-*`, or `pj/with-data` |
+;; | `:mapping` | pose-level mappings | `pj/pose` |
+;; | `:layers` | layers attached to the pose | `pj/lay-*` |
 ;; | `:opts` | title, width, theme, scale, coord | `pj/options`, `pj/scale`, `pj/coord` |
 ;;
-;; Here is a frame with all four fields set, constructed as an
-;; explicit map through `pj/prepare-frame`:
+;; Here is a pose with all four fields set, constructed as an
+;; explicit map through `pj/prepare-pose`:
 
-(def my-frame
-  (pj/prepare-frame
+(def my-pose
+  (pj/prepare-pose
    {:data (rdatasets/datasets-iris)
     :mapping {:x :sepal-length :y :sepal-width :color :species}
     :layers [{:layer-type :point}
              {:layer-type :smooth :mapping {:stat :linear-model}}]
     :opts {:title "Iris"}}))
 
-my-frame
+my-pose
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
@@ -403,17 +403,17 @@ my-frame
 
 ;; And the same value printed, showing the four fields above:
 
-(kind/pprint my-frame)
+(kind/pprint my-pose)
 
 (kind/test-last [(fn [fr] (= #{:data :mapping :layers :opts}
                              (set (keys fr))))])
 
-;; The more common way to build a frame of this shape is the
-;; threaded form -- `pj/frame` to set data and mapping, `pj/lay-*`
+;; The more common way to build a pose of this shape is the
+;; threaded form -- `pj/pose` to set data and mapping, `pj/lay-*`
 ;; for each layer, `pj/options` for plot-level options:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     (pj/options {:title "Iris"}))
@@ -421,11 +421,11 @@ my-frame
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; Printed, the threaded form carries the same fields as
-;; `my-frame` above -- `:mapping` up top, `:layers` alongside it,
+;; `my-pose` above -- `:mapping` up top, `:layers` alongside it,
 ;; `:opts` holding the title:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     (pj/options {:title "Iris"})
@@ -478,7 +478,7 @@ my-frame
 ;; ---
 ;; ## Inference
 ;;
-;; Plotje tries to make small frames work without you having
+;; Plotje tries to make small poses work without you having
 ;; to specify everything. You give it what you know -- a dataset,
 ;; perhaps a column or two -- and it fills in the rest by looking
 ;; at the data.
@@ -501,7 +501,7 @@ my-frame
 ;; directly: column inference and layer-type inference.
 ;;
 ;; **Column inference** kicks in when a dataset has up to three
-;; columns and you call `pj/frame` (or a `pj/lay-*`) without
+;; columns and you call `pj/pose` (or a `pj/lay-*`) without
 ;; naming any column. Plotje pairs the columns with
 ;; aesthetics in dataset order:
 ;;
@@ -520,20 +520,20 @@ my-frame
 
 (kind/test-last [(fn [v] (= 4 (:points (pj/svg-summary v))))])
 
-;; **Layer-type inference** fires when a frame has no explicit
+;; **Layer-type inference** fires when a pose has no explicit
 ;; layer. The library inspects the types of the columns the
 ;; mapping refers to and picks a chart type that fits. Two
 ;; numerical columns produce a scatter plot:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width))
+    (pj/pose :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; A single numerical column produces a histogram:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length))
+    (pj/pose :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
@@ -543,12 +543,12 @@ my-frame
 ;;
 ;; Every inferred choice can be overridden. Want a specific
 ;; chart type? Use the matching `pj/lay-*` function instead of
-;; leaving the frame bare. Want a particular scale? Pass
+;; leaving the pose bare. Want a particular scale? Pass
 ;; `pj/scale`. Want a numeric column to be treated as categorical?
 ;; Add `{:x-type :categorical}`, `{:y-type :categorical}`, or
-;; `{:color-type :categorical}` to the frame or layer, depending
+;; `{:color-type :categorical}` to the pose or layer, depending
 ;; on which axis the column feeds. Inference exists so small
-;; frames stay small, not to take decisions away from you. The
+;; poses stay small, not to take decisions away from you. The
 ;; [Inference Rules](./plotje_book.inference_rules.html)
 ;; chapter lists the full decision logic and the override for
 ;; each case.
@@ -556,8 +556,8 @@ my-frame
 ;; ---
 ;; ## Incremental Building
 ;;
-;; Because frames are plain data, you can save a partial plot and
-;; extend it later. Each call returns a new frame without changing
+;; Because poses are plain data, you can save a partial plot and
+;; extend it later. Each call returns a new pose without changing
 ;; the original.
 
 (def scatter-base
@@ -581,21 +581,21 @@ my-frame
                                 (= 1 (:lines s)))))])
 
 ;; ---
-;; ## Reusable Frame Templates
+;; ## Reusable Pose Templates
 ;;
-;; A frame does not need to carry data. `(pj/frame)` creates an
-;; empty frame you can evolve like any other -- adding layers,
+;; A pose does not need to carry data. `(pj/pose)` creates an
+;; empty pose you can evolve like any other -- adding layers,
 ;; options -- and then attach a dataset at the end with
 ;; `pj/with-data`. The result is a plotting *instrument* that can
 ;; be applied to many datasets:
 
 (def scatter-with-regression
-  (-> (pj/frame nil {:x :x :y :y :color :group})
+  (-> (pj/pose nil {:x :x :y :y :color :group})
       pj/lay-point
       (pj/lay-smooth {:stat :linear-model})
       (pj/options {:title "Scatter with Regression"})))
 
-;; Printed, the template has `:data nil` -- a frame that carries
+;; Printed, the template has `:data nil` -- a pose that carries
 ;; mapping, layers, and options but no data yet:
 
 (kind/pprint scatter-with-regression)
@@ -627,7 +627,7 @@ my-frame
                                 (= 2 (:lines s)))))])
 
 ;; `pj/with-data` validates at attach time: if the dataset is
-;; missing a column the frame references, you get a clear error
+;; missing a column the pose references, you get a clear error
 ;; naming the missing columns -- no cryptic failure deep in the
 ;; rendering path.
 
@@ -675,7 +675,7 @@ my-frame
 ;; colors:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:group :species})
+    (pj/pose :sepal-length :sepal-width {:group :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model}))
 
@@ -689,7 +689,7 @@ my-frame
 ;; ## Plot Options and Annotations
 ;;
 ;; So far you've seen mappings, layers, and data -- all scoped at
-;; frame or layer level. The functions in this section set
+;; pose or layer level. The functions in this section set
 ;; **plot-level options** instead: values that configure the whole
 ;; rendered plot and cannot be scoped down. See
 ;; [Options and Scopes](./plotje_book.options_and_scopes.html)
@@ -760,15 +760,15 @@ my-frame
 
 (kind/test-last [(fn [v] (= 6 (:points (pj/svg-summary v))))])
 
-;; Both are plot-level -- they apply uniformly across the whole frame.
+;; Both are plot-level -- they apply uniformly across the whole pose.
 
 ;; ---
 ;; ## Faceting and Multi-Panel Layouts
 ;;
-;; **Faceting** splits a frame into panels by a column's values:
+;; **Faceting** splits a pose into panels by a column's values:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/facet :species)
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model}))
@@ -778,10 +778,10 @@ my-frame
                                 (= 150 (:points s)))))])
 
 ;; Printed, the facet column lives in `:opts` as `:facet-col` --
-;; the frame itself is not split until render time:
+;; the pose itself is not split until render time:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/facet :species)
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
@@ -796,7 +796,7 @@ my-frame
 
 (kind/test-last [(fn [v] (= 3 (:panels (pj/svg-summary v))))])
 
-;; Printed, each named column becomes a sub-frame with its own x
+;; Printed, each named column becomes a sub-pose with its own x
 ;; mapping; the bare `pj/lay-histogram` attaches at the root and
 ;; flows into every panel via `resolve-tree`:
 
@@ -804,12 +804,12 @@ my-frame
     (pj/lay-histogram [:sepal-length :sepal-width :petal-length])
     kind/pprint)
 
-(kind/test-last [(fn [v] (and (= 3 (count (:frames v)))
-                              (= :sepal-length (get-in v [:frames 0 :mapping :x]))
-                              (= :sepal-width (get-in v [:frames 1 :mapping :x]))
-                              (= :petal-length (get-in v [:frames 2 :mapping :x]))))])
+(kind/test-last [(fn [v] (and (= 3 (count (:poses v)))
+                              (= :sepal-length (get-in v [:poses 0 :mapping :x]))
+                              (= :sepal-width (get-in v [:poses 1 :mapping :x]))
+                              (= :petal-length (get-in v [:poses 2 :mapping :x]))))])
 
-;; To place whole frames side by side, use `pj/arrange`:
+;; To place whole poses side by side, use `pj/arrange`:
 
 (pj/arrange
  [(-> (rdatasets/datasets-iris)
@@ -819,10 +819,10 @@ my-frame
 
 (kind/test-last [(fn [v] (= 2 (:panels (pj/svg-summary v))))])
 
-;; Each sub-frame inside `pj/arrange` can have its own data, mapping,
+;; Each sub-pose inside `pj/arrange` can have its own data, mapping,
 ;; layers, and options -- they are independent plots tiled into a
 ;; single rendered image.
 
 ;; ## What's Next
 ;;
-;; - [**Frame Rules**](./plotje_book.frame_rules.html) -- 28 rules that formalize the model with tested assertions
+;; - [**Pose Rules**](./plotje_book.pose_rules.html) -- 28 rules that formalize the model with tested assertions

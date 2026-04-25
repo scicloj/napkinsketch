@@ -34,12 +34,12 @@
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]))
 
-;; A helper to inspect frame structure. It prints `:mapping`,
+;; A helper to inspect pose structure. It prints `:mapping`,
 ;; `:layers`, and `:opts` -- everything except the `:data` field,
 ;; which is omitted for readability.
 
 (defn sk-summary
-  "Print frame structure without :data (for readability)."
+  "Print pose structure without :data (for readability)."
   [fr]
   (-> (select-keys fr [:mapping :layers :opts])
       kind/pprint))
@@ -64,20 +64,20 @@
 ;;   from a column (`:color :species`) or given as a constant
 ;;   (`:alpha 0.3`).
 ;; - **Data** -- a per-layer `:data` key, if the layer should
-;;   use a different dataset from the rest of the frame.
+;;   use a different dataset from the rest of the pose.
 ;;
 ;; The primary way to set them is in the opts map of `pj/lay-*`:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-;; And the frame structure:
+;; And the pose structure:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/lay-point {:color :species})
     sk-summary)
 
@@ -95,18 +95,18 @@
 ;; | Scope  | Set via           | Reaches                    |
 ;; |:-------|:------------------|:---------------------------|
 ;; | Layer  | `pj/lay-*` opts   | that one layer             |
-;; | Frame  | `pj/frame` opts   | every layer on this frame  |
+;; | Pose  | `pj/pose` opts   | every layer on this pose  |
 ;;
 ;; When the same key is set at both scopes, the narrower one wins.
 ;;
-;; Composite frames introduce a third level: an outer frame's
+;; Composite poses introduce a third level: an outer pose's
 ;; mapping flows into each of its descendant leaves, where it
 ;; combines with the leaf's own mapping. See
 ;; [Composition](./plotje_book.composition.html) for examples.
 ;;
 ;; The layer type itself is chosen per layer -- you pick which
 ;; `pj/lay-*` to call. [Core Concepts](./plotje_book.core_concepts.html)
-;; teaches how layer placement interacts with frame mappings, and
+;; teaches how layer placement interacts with pose mappings, and
 ;; the detailed combination rules for each category of layer option.
 
 ;; ---
@@ -116,7 +116,7 @@
 ;; axis scales, coordinate system, facets. A plot has one of each
 ;; -- there is no scope here, because there is nothing to vary over.
 ;;
-;; Four functions write plot options to the frame's `:opts`
+;; Four functions write plot options to the pose's `:opts`
 ;; field:
 ;;
 ;; - `pj/options` -- plot text (title, subtitle, caption, axis
@@ -132,21 +132,21 @@
 ;; Reference lines and shaded bands -- `pj/lay-rule-h`,
 ;; `pj/lay-rule-v`, `pj/lay-band-h`, `pj/lay-band-v` -- are layers,
 ;; not plot options. They scope like any other `lay-*`: bare calls
-;; attach to the frame, while passing `:x`/`:y` columns targets the
+;; attach to the pose, while passing `:x`/`:y` columns targets the
 ;; most recent matching leaf (or creates a new one).
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     pj/lay-point
     (pj/options {:title "Iris"})
     (pj/coord :flip))
 
 (kind/test-last [(fn [v] (some #{"Iris"} (:texts (pj/svg-summary v))))])
 
-;; And the frame structure:
+;; And the pose structure:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     pj/lay-point
     (pj/options {:title "Iris"})
     (pj/coord :flip)
@@ -165,7 +165,7 @@
 ;;
 ;; - Scale **type** (log, categorical, linear, etc.) is shared
 ;;   across all panels -- if you set `pj/scale :x :log` on a
-;;   faceted frame, every panel has a log x-axis.
+;;   faceted pose, every panel has a log x-axis.
 ;; - Scale **domain** (the numeric range actually shown) is
 ;;   computed per panel by default, so different panels may
 ;;   display different numeric ranges.
@@ -177,7 +177,7 @@
 ;;
 ;; A note on terminology: other chapters may refer to these
 ;; values as **plot-level** -- a category name. That is not the
-;; same as **frame-level**, which names a scope position (the
+;; same as **pose-level**, which names a scope position (the
 ;; top of the layer-options scope hierarchy) within another
 ;; category. Trying to set a plot option inside an `pj/lay-*`
 ;; opts map -- for example `{:x-scale {:type :log}}` -- is a
@@ -192,7 +192,7 @@
 ;; is resolved at render time from a layered stack of sources,
 ;; from highest priority to lowest:
 ;;
-;; 1. **Plot options** on the frame (`pj/options`) -- a
+;; 1. **Plot options** on the pose (`pj/options`) -- a
 ;;    per-plot override that wins for that one plot.
 ;; 2. **Thread-local overrides** via `pj/with-config`.
 ;; 3. **Global overrides** via `pj/set-config!`.
@@ -200,11 +200,11 @@
 ;; 5. **Library defaults** -- the baseline shipped with
 ;;    Plotje.
 ;;
-;; Sources 2-5 sit outside any specific frame and carry across
-;; every plot you render. Source 1 is how a specific frame dips
+;; Sources 2-5 sit outside any specific pose and carry across
+;; every plot you render. Source 1 is how a specific pose dips
 ;; into the chain to override a configuration key for itself --
 ;; `(pj/options {:palette :dark2})` sets `:palette` on one
-;; frame, and at render time wins over any palette set through
+;; pose, and at render time wins over any palette set through
 ;; the other four sources.
 ;;
 ;; The [Configuration](./plotje_book.configuration.html)
@@ -225,12 +225,12 @@
 ;; ---
 ;; ## A worked example
 ;;
-;; The frame below touches two categories explicitly. The third,
+;; The pose below touches two categories explicitly. The third,
 ;; configuration, shows up at render time.
 
 (def demo
   (-> (rdatasets/datasets-iris)
-      (pj/frame :sepal-length :sepal-width)
+      (pj/pose :sepal-length :sepal-width)
       ;; layer option: a layer-scope color mapping
       (pj/lay-point {:color :species})
       ;; plot options: stored in :opts
@@ -243,7 +243,7 @@ demo
 
 (kind/test-last [(fn [v] (some #{"Iris measurements"} (:texts (pj/svg-summary v))))])
 
-;; The frame structure:
+;; The pose structure:
 
 (sk-summary demo)
 
@@ -262,7 +262,7 @@ demo
 ;;   option at layer scope.
 ;; - `:title` and `:coord` are in `:opts` -- plot options, no
 ;;   scope.
-;; - Configuration does not appear in the frame. The renderer
+;; - Configuration does not appear in the pose. The renderer
 ;;   will consult `(pj/config)` for theme, default dimensions,
 ;;   and other defaults.
 
@@ -275,7 +275,7 @@ demo
 ;; | ggplot2 construct                            | Plotje category       |
 ;; |:---------------------------------------------|:----------------------------|
 ;; | `geom_*(aes(...))`                           | layer option (layer scope)  |
-;; | `ggplot(aes(...))`                           | layer option (frame scope)  |
+;; | `ggplot(aes(...))`                           | layer option (pose scope)  |
 ;; | `+ geom_*()`                                 | a layer                     |
 ;; | `+ scale_*()`, `+ coord_*()`, `+ facet_*()`  | plot option                 |
 ;; | `+ labs(...)`, one-off `+ theme(...)`        | plot option                 |
@@ -286,8 +286,8 @@ demo
 ;;
 ;; - [Core Concepts](./plotje_book.core_concepts.html) --
 ;;   the scope hierarchy for layer options in full.
-;; - [Frame Rules](./plotje_book.frame_rules.html) --
-;;   precise rules for each frame-world function: `pj/frame`,
+;; - [Pose Rules](./plotje_book.pose_rules.html) --
+;;   precise rules for each pose-world function: `pj/pose`,
 ;;   `pj/lay-*`, `pj/arrange`, `pj/options`, `pj/scale`, `pj/coord`,
 ;;   `pj/facet`. Twenty-eight rules with tested assertions.
 ;; - [Configuration](./plotje_book.configuration.html) --

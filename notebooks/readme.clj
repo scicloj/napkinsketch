@@ -47,8 +47,8 @@
 ;; Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame {:color :species})
-    (pj/frame (pj/cross [:sepal-length :sepal-width
+    (pj/pose {:color :species})
+    (pj/pose (pj/cross [:sepal-length :sepal-width
                          :petal-length :petal-width]
                         [:sepal-length :sepal-width
                          :petal-length :petal-width]))

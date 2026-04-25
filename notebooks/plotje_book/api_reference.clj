@@ -36,22 +36,22 @@
 
 ;; ## Construction
 
-(kind/doc #'pj/frame)
+(kind/doc #'pj/pose)
 
-;; Create a leaf frame with data and columns:
+;; Create a leaf pose with data and columns:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     pj/lay-point)
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-;; Map form -- include aesthetics on the frame so every layer sees them:
+;; Map form -- include aesthetics on the pose so every layer sees them:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model}))
 
@@ -61,12 +61,12 @@
 
 (kind/doc #'pj/with-data)
 
-;; Attach or replace the top-level dataset on a frame.
+;; Attach or replace the top-level dataset on a pose.
 ;; Useful for building a dataless template and applying it to many
 ;; datasets:
 
 (def scatter-template
-  (-> (pj/frame nil {:x :x :y :y :color :group})
+  (-> (pj/pose nil {:x :x :y :y :color :group})
       pj/lay-point))
 
 (-> scatter-template
@@ -74,11 +74,11 @@
 
 (kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
 
-;; Multi-pair frame -- a vector of `[x y]` pairs creates a composite
-;; with one sub-frame per pair:
+;; Multi-pair pose -- a vector of `[x y]` pairs creates a composite
+;; with one sub-pose per pair:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame [[:sepal-length :sepal-width]
+    (pj/pose [[:sepal-length :sepal-width]
                [:petal-length :petal-width]])
     (pj/lay-point {:color :species}))
 
@@ -86,10 +86,10 @@
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
-;; Map form -- explicit keys on a frame:
+;; Map form -- explicit keys on a pose:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame {:x :sepal-length :y :sepal-width})
+    (pj/pose {:x :sepal-length :y :sepal-width})
     pj/lay-point)
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
@@ -102,11 +102,11 @@
 
 (kind/test-last [(fn [v] (= [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]] v))])
 
-;; Combine `pj/cross` with `pj/frame` to build a SPLOM:
+;; Combine `pj/cross` with `pj/pose` to build a SPLOM:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame {:color :species})
-    (pj/frame (pj/cross [:sepal-length :petal-length]
+    (pj/pose {:color :species})
+    (pj/pose (pj/cross [:sepal-length :petal-length]
                         [:sepal-width :petal-width])))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
@@ -132,7 +132,7 @@
 ;; map from an extension):
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     (pj/lay :point))
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
@@ -483,7 +483,7 @@
                  (pj/options {:width 250 :height 200}))]
             {:cols 2})
 
-(kind/test-last [(fn [v] (pj/frame? v))])
+(kind/test-last [(fn [v] (pj/pose? v))])
 
 ;; ## Rendering
 
@@ -500,7 +500,7 @@
 
 (kind/doc #'pj/options)
 
-;; Set render options on a frame:
+;; Set render options on a pose:
 
 (-> tiny
     (pj/lay-point :x :y)
@@ -512,11 +512,11 @@
 
 ;; ## Predicates
 
-(kind/doc #'pj/frame?)
+(kind/doc #'pj/pose?)
 
-;; Check whether a value is a frame (leaf or composite):
+;; Check whether a value is a pose (leaf or composite):
 
-(pj/frame? (-> tiny (pj/frame :x :y) pj/lay-point))
+(pj/pose? (-> tiny (pj/pose :x :y) pj/lay-point))
 
 (kind/test-last [true?])
 
@@ -548,12 +548,12 @@
 
 (kind/doc #'pj/draft)
 
-;; Flatten a frame into a vector of draft layers -- one
+;; Flatten a pose into a vector of draft layers -- one
 ;; per applicable layer, with all scope merged. Useful for
 ;; inspecting exactly what the renderer will draw:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     pj/lay-point
     pj/draft
     kind/pprint)

@@ -36,11 +36,11 @@
 
 ;; ## Wrong Chart Type from Inference
 ;;
-;; **Symptom**: `pj/frame` produces a chart type that isn't what you
+;; **Symptom**: `pj/pose` produces a chart type that isn't what you
 ;; wanted -- a boxplot when you wanted individual points, a line
 ;; when you wanted a scatter.
 ;;
-;; **Cause**: `pj/frame` infers the layer type from column types. The
+;; **Cause**: `pj/pose` infers the layer type from column types. The
 ;; defaults fit the most common use case for each column-type pair
 ;; (see [Inference Rules](./plotje_book.inference_rules.html)),
 ;; but they can be overridden.
@@ -49,7 +49,7 @@
 ;; categorical x with a numerical y defaults to a boxplot:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :species :sepal-width))
+    (pj/pose :species :sepal-width))
 
 (kind/test-last [(fn [v] (pos? (:lines (pj/svg-summary v))))])
 
@@ -131,7 +131,7 @@
 
 (kind/test-last [(fn [v] (pos? (:points (pj/svg-summary v))))])
 
-;; `pj/scale` takes the frame, the axis (`:x` or `:y`), and
+;; `pj/scale` takes the pose, the axis (`:x` or `:y`), and
 ;; either a type keyword (`:linear`, `:log`) or a scale spec
 ;; map with `:type` and an optional `:domain` override.
 ;; See the [Inference Rules](./plotje_book.inference_rules.html)
@@ -183,7 +183,7 @@
 ;; becomes a rose chart:
 
 (-> (rdatasets/datasets-chickwts)
-    (pj/frame :feed)
+    (pj/pose :feed)
     pj/lay-bar
     (pj/coord :polar))
 
@@ -211,15 +211,15 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-;; ## Faceting Keys in a Layer or Frame Options Map
+;; ## Faceting Keys in a Layer or Pose Options Map
 ;;
 ;; **Symptom**: An error like
 ;; `"Faceting is plot-level, not layer-level. Use (pj/facet sk col) ..."`
 ;; when you put `:facet-col`, `:facet-row`, `:facet-x`, or
-;; `:facet-y` inside a `pj/frame` or `pj/lay-*` options map.
+;; `:facet-y` inside a `pj/pose` or `pj/lay-*` options map.
 ;;
 ;; **Cause**: Faceting configures the plot as a whole, not a single
-;; frame or layer. Those keys are not accepted in frame/layer
+;; pose or layer. Those keys are not accepted in pose/layer
 ;; mappings.
 ;;
 ;; **Fix**: Use `pj/facet` (single-axis) or `pj/facet-grid`
@@ -259,9 +259,9 @@
 ;; ## Dataset Missing Columns a Template References
 ;;
 ;; **Symptom**: An error like
-;; `"Cannot attach data: frame references column(s) [:group] not
+;; `"Cannot attach data: pose references column(s) [:group] not
 ;; present in the dataset. Available columns: [:x :y]"` when
-;; calling `pj/with-data` on a dataless template frame.
+;; calling `pj/with-data` on a dataless template pose.
 ;;
 ;; **Cause**: `pj/with-data` validates at attach time -- every
 ;; keyword column reference in the template must exist in the
@@ -272,7 +272,7 @@
 ;; reference the columns the dataset has.
 
 (def template
-  (-> (pj/frame nil {:x :x :y :y})
+  (-> (pj/pose nil {:x :x :y :y})
       pj/lay-point))
 
 (-> template

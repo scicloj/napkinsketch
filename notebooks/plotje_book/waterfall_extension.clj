@@ -146,7 +146,7 @@
                       {:mark :waterfall :stat :waterfall
                        :doc "Waterfall -- running total with increase/decrease bars."})
 
-;; Now we can plot it using the frame API. Since there is
+;; Now we can plot it using the pose API. Since there is
 ;; no built-in `pj/lay-waterfall`, we use `pj/lay` with
 ;; the layer-type lookup.
 ;;
@@ -155,7 +155,7 @@
 ;; extension's defmethods:
 
 (-> pnl-data
-    (pj/frame :category :amount)
+    (pj/pose :category :amount)
     (pj/lay (layer-type/lookup :waterfall))
     (pj/options {:title "Profit & Loss Waterfall"
                  :width 500 :height 350})
@@ -170,13 +170,13 @@
 
 ;; ## Optional: Convenience Function
 ;;
-;; For a polished API, wrap the pattern in a frame-compatible
+;; For a polished API, wrap the pattern in a pose-compatible
 ;; function:
 
 (defn lay-waterfall
   ([sk] (pj/lay sk (layer-type/lookup :waterfall)))
-  ([data x y] (-> data (pj/frame x y) (pj/lay (layer-type/lookup :waterfall))))
-  ([data x y opts] (-> data (pj/frame x y) (pj/lay (merge (layer-type/lookup :waterfall) opts)))))
+  ([data x y] (-> data (pj/pose x y) (pj/lay (layer-type/lookup :waterfall))))
+  ([data x y opts] (-> data (pj/pose x y) (pj/lay (merge (layer-type/lookup :waterfall) opts)))))
 
 ;; Now the call is as clean as any built-in layer type:
 

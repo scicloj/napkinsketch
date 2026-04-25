@@ -125,7 +125,7 @@
 ;; Run `make-readme!` before `make-book!` when the README content changes.
 ;;
 ;; Note: the readme notebook uses `pj/plot` (eager rendering) instead of
-;; auto-rendering the frame, because GFM mode requires materialized SVG values.
+;; auto-rendering the pose, because GFM mode requires materialized SVG values.
 
 ;; ## Building a JAR
 ;;

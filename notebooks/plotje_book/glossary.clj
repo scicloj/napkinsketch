@@ -14,56 +14,56 @@
    ;; clojure2d -- color palettes and gradients
    [clojure2d.color :as c2d]))
 
-;; ## Frame
+;; ## Pose
 ;;
-;; A **frame** is the unified composable value in Plotje. A
-;; leaf frame describes one plot panel; a composite frame contains
-;; sub-frames arranged together. Every function in the API
-;; (`pj/frame`, `pj/lay-*`, `pj/facet`, `pj/arrange`, `pj/options`,
-;; `pj/scale`, `pj/coord`) takes a frame and returns a frame.
-;; Frames auto-render in
+;; A **pose** is the unified composable value in Plotje. A
+;; leaf pose describes one plot panel; a composite pose contains
+;; sub-poses arranged together. Every function in the API
+;; (`pj/pose`, `pj/lay-*`, `pj/facet`, `pj/arrange`, `pj/options`,
+;; `pj/scale`, `pj/coord`) takes a pose and returns a pose.
+;; Poses auto-render in
 ;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).
 
-(def my-frame
+(def my-pose
   (-> (rdatasets/datasets-iris)
       (pj/lay-point :sepal-length :sepal-width {:color :species})
       (pj/options {:title "Iris"})))
 
-my-frame
+my-pose
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-;; A frame is a plain Clojure value -- inspect it with `kind/pprint`
+;; A pose is a plain Clojure value -- inspect it with `kind/pprint`
 ;; or reach into its fields directly.
 
-;; ## Leaf Frame
+;; ## Leaf Pose
 ;;
-;; A **leaf frame** is a frame that describes a single plot panel.
+;; A **leaf pose** is a pose that describes a single plot panel.
 ;; It carries `:data`, a `:mapping` from columns to aesthetics, and
 ;; `:layers` -- the chart-type layers attached to it. Created by
-;; `pj/frame` or `pj/lay-*`.
+;; `pj/pose` or `pj/lay-*`.
 
-;; ## Composite Frame
+;; ## Composite Pose
 ;;
-;; A **composite frame** is a frame that contains other frames under
-;; `:frames` plus an optional `:layout`. Created by `pj/arrange` (and
+;; A **composite pose** is a pose that contains other poses under
+;; `:poses` plus an optional `:layout`. Created by `pj/arrange` (and
 ;; later, by `pj/mosaic` and `pj/with-marginals`). Its leaves render
 ;; independently and are tiled into the final plot.
 ;;
 ;; For hand-built composite maps (needed when you want features beyond
-;; what `pj/arrange` offers -- unequal weights, nested frames,
-;; cross-sibling shared scales), wrap the map with `pj/prepare-frame`
+;; what `pj/arrange` offers -- unequal weights, nested poses,
+;; cross-sibling shared scales), wrap the map with `pj/prepare-pose`
 ;; so it carries the Kindly metadata needed to auto-render.
 
-;; ## Prepare Frame
+;; ## Prepare Pose
 ;;
-;; `pj/prepare-frame` lifts a hand-built frame map (leaf or composite)
-;; to a first-class frame value. It coerces `:data` at every depth,
+;; `pj/prepare-pose` lifts a hand-built pose map (leaf or composite)
+;; to a first-class pose value. It coerces `:data` at every depth,
 ;; captures the current configuration for render-time restoration,
-;; and attaches Kindly metadata so the frame auto-renders in notebook
-;; viewers. Use it when you construct a composite frame by literal
-;; map and want it to behave like one built with `pj/frame` or
+;; and attaches Kindly metadata so the pose auto-renders in notebook
+;; viewers. Use it when you construct a composite pose by literal
+;; map and want it to behave like one built with `pj/pose` or
 ;; `pj/arrange`.
 
 ;; ## Layer Type
@@ -73,17 +73,17 @@ my-frame
 ;; [Layer Types](./plotje_book.layer_types.html) chapter for detailed
 ;; tables of all built-in layer types, marks, stats, and positions.
 ;;
-;; Layer types attach to frames in three ways, depending on what you
+;; Layer types attach to poses in three ways, depending on what you
 ;; pass to `pj/lay-*`:
 ;;
 ;; - **Bare** -- `pj/lay-*` without columns attaches the layer so it
-;;   sees the current frame's mapping (inherited from `pj/frame` or
+;;   sees the current pose's mapping (inherited from `pj/pose` or
 ;;   a prior `pj/lay-*`).
 ;; - **Matching columns** -- `pj/lay-*` with columns that match the
 ;;   most recent matching leaf reuses that leaf, so the new layer
 ;;   joins the existing panel.
 ;; - **Non-matching columns** -- `pj/lay-*` with columns that do not
-;;   match any existing leaf creates a fresh leaf frame with the
+;;   match any existing leaf creates a fresh leaf pose with the
 ;;   layer attached.
 
 ;; ## Mark
@@ -128,8 +128,8 @@ my-frame
 ;; ## Draft
 ;;
 ;; A **draft** is a vector of flat maps produced by `pj/draft`. Each
-;; applicable layer in a frame resolves to one draft element by
-;; merging the frame and layer mappings. Draft elements carry all
+;; applicable layer in a pose resolves to one draft element by
+;; merging the pose and layer mappings. Draft elements carry all
 ;; the information the pipeline needs: data, columns, mark, stat,
 ;; color, grouping.
 ;;
@@ -137,7 +137,7 @@ my-frame
 ;; will consume before any domains, ticks, or coordinate math are
 ;; computed.
 
-(-> my-frame pj/draft kind/pprint)
+(-> my-pose pj/draft kind/pprint)
 
 (kind/test-last [(fn [d] (and (vector? d)
                               (= 1 (count d))
@@ -214,14 +214,14 @@ my-frame
 ;;
 ;; **Inference** is the automatic selection of a layer type
 ;; (mark + stat + position) when you bypass `pj/lay-*` and just pass
-;; columns to `pj/frame`. Plotje picks a layer type based on
+;; columns to `pj/pose`. Plotje picks a layer type based on
 ;; column types: numerical x and y defaults to `:point`, categorical
 ;; x with numerical y to `:boxplot`, a single numerical column to
-;; `:histogram`, and so on. Use `:x-type` / `:y-type` on a frame or
+;; `:histogram`, and so on. Use `:x-type` / `:y-type` on a pose or
 ;; layer to override the detected type.
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     pj/lay-point)
 
 (kind/test-last [(fn [v] (pos? (:points (pj/svg-summary v))))])
@@ -237,7 +237,7 @@ my-frame
 ;; [dtype-next](https://github.com/cnuernber/dtype-next) buffers for
 ;; efficiency.
 
-(def my-plan (pj/plan my-frame))
+(def my-plan (pj/plan my-pose))
 
 (sort (keys my-plan))
 
@@ -260,7 +260,7 @@ my-frame
 ;; style, and groups of data-space geometry. Layers live inside
 ;; panels in the plan.
 
-(-> my-frame
+(-> my-pose
     pj/plan
     (get-in [:panels 0 :layers 0]))
 
@@ -353,7 +353,7 @@ my-frame
 ;; overlay fixed positions passed via opts (`:y-intercept` or
 ;; `:x-intercept` for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max`
 ;; for bands). They are regular layers, so they attach under the
-;; same three cases as any `lay-*`: bare call sits on the frame,
+;; same three cases as any `lay-*`: bare call sits on the pose,
 ;; matching columns join the most recent matching leaf, non-matching
 ;; columns create a new leaf.
 ;;
@@ -433,7 +433,7 @@ my-frame
 ;; a plan to a specific format. For SVG, the plot is hiccup markup
 ;; wrapped in `kind/hiccup`.
 ;;
-;; Created by `pj/plot` or by auto-rendering a frame.
+;; Created by `pj/plot` or by auto-rendering a pose.
 
 (def my-plot (pj/plan->plot my-plan :svg {}))
 
@@ -527,12 +527,12 @@ my-frame
 ;;
 ;; | Term | What | Key functions |
 ;; |:-----|:-----|:-------------|
-;; | Frame | Composable value: data + mapping + layers (+ sub-frames) | All `pj/` functions return frames |
-;; | Leaf frame | Frame describing one plot panel | `pj/frame`, `pj/lay-*` with columns |
-;; | Composite frame | Frame containing sub-frames and a layout | `pj/arrange`, `pj/facet`, `pj/facet-grid` |
-;; | Mapping | Column-to-aesthetic association on a frame or layer | `pj/frame` mapping, `pj/lay-*` opts |
-;; | Layer | Method attached to a frame | `pj/lay-*` |
-;; | Draft | Vector of flat maps from merging frame and layer mappings | `pj/draft`, automatic during `pj/plan` |
+;; | Pose | Composable value: data + mapping + layers (+ sub-poses) | All `pj/` functions return poses |
+;; | Leaf pose | Pose describing one plot panel | `pj/pose`, `pj/lay-*` with columns |
+;; | Composite pose | Pose containing sub-poses and a layout | `pj/arrange`, `pj/facet`, `pj/facet-grid` |
+;; | Mapping | Column-to-aesthetic association on a pose or layer | `pj/pose` mapping, `pj/lay-*` opts |
+;; | Layer | Method attached to a pose | `pj/lay-*` |
+;; | Draft | Vector of flat maps from merging pose and layer mappings | `pj/draft`, automatic during `pj/plan` |
 ;; | Layer type | Mark + stat + position bundle | `pj/layer-type-lookup`, `pj/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in layer-type map |
 ;; | Stat | Data transform: identity, bin, count, linear-model, density, ... | Key in layer-type map |
@@ -548,7 +548,7 @@ my-frame
 ;; | Scale | Data-to-pixel mapping (linear, log, categorical) | `pj/scale` |
 ;; | Coord | Coordinate system (cartesian, flip, polar, fixed) | `pj/coord` |
 ;; | Facet | Split into panels by a categorical column | `pj/facet`, `pj/facet-grid` |
-;; | Arrange | Compose multiple frames into a grid | `pj/arrange` |
+;; | Arrange | Compose multiple poses into a grid | `pj/arrange` |
 ;; | Annotation | Non-data reference marks (rules, bands) | `pj/lay-rule-*`, `pj/lay-band-*` |
 ;; | Legend | Color/size/alpha key from aesthetic mappings | Automatic in plan |
 ;; | Plot options | Title, subtitle, caption, labels, dimensions | `pj/options` |

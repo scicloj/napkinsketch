@@ -1,4 +1,4 @@
-;; # Frame Model
+;; # Pose Model
 ;;
 ;; Plotje is a composable plotting library inspired by
 ;; Wilkinson's [Grammar of Graphics](https://link.springer.com/book/10.1007/0-387-28695-0)
@@ -7,11 +7,11 @@
 ;; plain maps -- rather than a custom DSL.
 ;;
 ;; This chapter introduces the mental model in five ideas. Each idea
-;; shows a rendered plot alongside the printed frame value, so the
+;; shows a rendered plot alongside the printed pose value, so the
 ;; curious reader can see both what the library did and how the
 ;; underlying data looks.
 
-(ns plotje-book.frame-model
+(ns plotje-book.pose-model
   (:require
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
@@ -20,66 +20,66 @@
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]))
 
-;; ## Idea 1: A frame describes a plot
+;; ## Idea 1: A pose describes a plot
 ;;
-;; In Plotje, every plot you compose is a **frame** -- a plain
-;; Clojure value that describes what to show. The simplest frame
+;; In Plotje, every plot you compose is a **pose** -- a plain
+;; Clojure value that describes what to show. The simplest pose
 ;; names some data and picks columns. With no explicit chart type,
 ;; the library infers one from the column types:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width))
+    (pj/pose :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-;; Two numerical columns produced a scatter. And because a frame is
+;; Two numerical columns produced a scatter. And because a pose is
 ;; plain data, you can inspect it with `kind/pprint`:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width)
+    (pj/pose :sepal-length :sepal-width)
     kind/pprint)
 
 (kind/test-last [(fn [v] (and (seq (:data v))
                               (= :sepal-length (:x (:mapping v)))))])
 
-;; A frame is a plain Clojure map. The dataset lives under `:data`,
+;; A pose is a plain Clojure map. The dataset lives under `:data`,
 ;; the column mapping under `:mapping`, chart-type layers (empty
 ;; here -- we never attached one) under `:layers`, and plot-level
 ;; options under `:opts`.
 
-;; ## Idea 2: Frames carry mappings
+;; ## Idea 2: Poses carry mappings
 ;;
 ;; A **mapping** connects columns to visual properties. We added
-;; `:x` and `:y` in Idea 1; the frame also accepts appearance
+;; `:x` and `:y` in Idea 1; the pose also accepts appearance
 ;; aesthetics like `:color`, `:size`, `:alpha`, and `:shape`:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species}))
+    (pj/pose :sepal-length :sepal-width {:color :species}))
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-;; The printed frame shows the full mapping:
+;; The printed pose shows the full mapping:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     kind/pprint)
 
 (kind/test-last [(fn [v] (= :species (:color (:mapping v))))])
 
 ;; All three pairs -- `:x -> :sepal-length`, `:y -> :sepal-width`,
 ;; `:color -> :species` -- end up in the one `:mapping` map. Future
-;; layers on this frame will inherit the whole set.
+;; layers on this pose will inherit the whole set.
 
 ;; ## Idea 3: What to show, how to show it
 ;;
 ;; The API separates **what** to plot from **how** to show it:
-;; a frame's `:mapping` holds the "what" (columns to aesthetics),
+;; a pose's `:mapping` holds the "what" (columns to aesthetics),
 ;; and its `:layers` holds the "how" (one entry per chart-type
 ;; layer). Declaring the mapping once lets several layers share it
 ;; -- scatter points and a regression line per species here:
 
 (def multi-layer
-  (pj/prepare-frame
+  (pj/prepare-pose
    {:data (rdatasets/datasets-iris)
     :mapping {:x :sepal-length :y :sepal-width :color :species}
     :layers [{:layer-type :point}
@@ -103,11 +103,11 @@ multi-layer
 ;; each entry naming a chart type and optional layer-specific
 ;; options (`:stat :linear-model` on the smooth layer here).
 ;;
-;; The threaded form builds the same frame step by step: `pj/frame`
+;; The threaded form builds the same pose step by step: `pj/pose`
 ;; sets the mapping, then each `pj/lay-*` appends a layer.
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model}))
 
@@ -117,11 +117,11 @@ multi-layer
 
 ;; Printed, the threaded form produces the same shape as the
 ;; explicit-map form shown earlier -- `:mapping` at the top, `:layers`
-;; alongside it. `pj/frame` and `pj/lay-*` build the same frame value
+;; alongside it. `pj/pose` and `pj/lay-*` build the same pose value
 ;; step by step.
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     kind/pprint)
@@ -135,16 +135,16 @@ multi-layer
 ;; One numerical column becomes a histogram:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length))
+    (pj/pose :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
-;; The printed frame shows an empty `:layers` -- the histogram
+;; The printed pose shows an empty `:layers` -- the histogram
 ;; layer is chosen by inference at render time, not stored on the
-;; frame:
+;; pose:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length)
+    (pj/pose :sepal-length)
     kind/pprint)
 
 (kind/test-last [(fn [v] (empty? (:layers v)))])
@@ -156,18 +156,18 @@ multi-layer
 ;; grouping. See [Inference Rules](./plotje_book.inference_rules.html)
 ;; for the full set.
 
-;; ## Idea 5: Frames compose
+;; ## Idea 5: Poses compose
 ;;
-;; Every function in the API takes a frame and returns a frame.
-;; A **composite** frame is a plain map too -- with `:frames`
-;; holding its sub-frames and `:layout` describing how to tile
+;; Every function in the API takes a pose and returns a pose.
+;; A **composite** pose is a plain map too -- with `:poses`
+;; holding its sub-poses and `:layout` describing how to tile
 ;; them. Here is a two-panel composite written as an explicit map:
 
 (def two-panel
-  (pj/prepare-frame
+  (pj/prepare-pose
    {:data (rdatasets/datasets-iris)
     :layout {:direction :horizontal}
-    :frames [{:mapping {:x :sepal-length :y :sepal-width :color :species}
+    :poses [{:mapping {:x :sepal-length :y :sepal-width :color :species}
               :layers [{:layer-type :point}]}
              {:mapping {:x :petal-length :y :petal-width :color :species}
               :layers [{:layer-type :point}]}]}))
@@ -182,19 +182,19 @@ two-panel
 
 (kind/pprint two-panel)
 
-(kind/test-last [(fn [v] (and (= 2 (count (:frames v)))
+(kind/test-last [(fn [v] (and (= 2 (count (:poses v)))
                               (= :horizontal (get-in v [:layout :direction]))))])
 
-;; The outer `:data` is inherited by every sub-frame. `pj/arrange`
+;; The outer `:data` is inherited by every sub-pose. `pj/arrange`
 ;; is the ergonomic way to build this shape from a list of already-
-;; built frames:
+;; built poses:
 
 (pj/arrange
  [(-> (rdatasets/datasets-iris)
-      (pj/frame :sepal-length :sepal-width {:color :species})
+      (pj/pose :sepal-length :sepal-width {:color :species})
       pj/lay-point)
   (-> (rdatasets/datasets-iris)
-      (pj/frame :petal-length :petal-width {:color :species})
+      (pj/pose :petal-length :petal-width {:color :species})
       pj/lay-point)])
 
 (kind/test-last [(fn [v] (= 2 (:panels (pj/svg-summary v))))])
@@ -202,38 +202,38 @@ two-panel
 ;; Printed, `pj/arrange` always wraps its plots in a top-level
 ;; vertical layout whose rows are horizontal strips -- a single
 ;; row of two panels shows up here as a vertical-of-horizontal
-;; composite. The sub-frames themselves are clean leaf maps that
+;; composite. The sub-poses themselves are clean leaf maps that
 ;; match the shape of the explicit-map form above:
 
 (-> (pj/arrange
      [(-> (rdatasets/datasets-iris)
-          (pj/frame :sepal-length :sepal-width {:color :species})
+          (pj/pose :sepal-length :sepal-width {:color :species})
           pj/lay-point)
       (-> (rdatasets/datasets-iris)
-          (pj/frame :petal-length :petal-width {:color :species})
+          (pj/pose :petal-length :petal-width {:color :species})
           pj/lay-point)])
     kind/pprint)
 
 (kind/test-last [(fn [v] (and (= :vertical (get-in v [:layout :direction]))
-                              (= 1 (count (:frames v)))
-                              (= 2 (count (:frames (first (:frames v)))))
-                              (= :horizontal (get-in v [:frames 0 :layout :direction]))))])
+                              (= 1 (count (:poses v)))
+                              (= 2 (count (:poses (first (:poses v)))))
+                              (= :horizontal (get-in v [:poses 0 :layout :direction]))))])
 
-;; `frame`, `lay-*`, `arrange`, `facet`, `options`, `scale`, `coord`
-;; -- all take a frame and return a frame. The pipeline reads like a
-;; sentence; composites nest the same shape inside `:frames`. The
+;; `pose`, `lay-*`, `arrange`, `facet`, `options`, `scale`, `coord`
+;; -- all take a pose and return a pose. The pipeline reads like a
+;; sentence; composites nest the same shape inside `:poses`. The
 ;; [Composition](./plotje_book.composition.html) chapter
-;; covers the multi-frame patterns in depth.
+;; covers the multi-pose patterns in depth.
 
 ;; ## Summary
 ;;
 ;; | Idea | In code |
 ;; |:-----|:--------|
-;; | A frame describes a plot | `pj/frame`, `pj/lay-*` return frames; inspect with `kind/pprint` |
-;; | Frames carry mappings | Column-to-aesthetic pairs live in `:mapping` |
-;; | What vs how | `pj/frame` declares what; `pj/lay-*` declares how |
+;; | A pose describes a plot | `pj/pose`, `pj/lay-*` return poses; inspect with `kind/pprint` |
+;; | Poses carry mappings | Column-to-aesthetic pairs live in `:mapping` |
+;; | What vs how | `pj/pose` declares what; `pj/lay-*` declares how |
 ;; | Inference fills gaps | Omit choices, the library infers from data |
-;; | Frames compose | `pj/arrange` tiles sibling frames; composites nest under `:frames` |
+;; | Poses compose | `pj/arrange` tiles sibling poses; composites nest under `:poses` |
 ;;
 ;; ## What's Next
 ;;

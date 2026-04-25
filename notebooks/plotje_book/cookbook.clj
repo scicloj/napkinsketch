@@ -51,7 +51,7 @@
 ;; Fit a linear regression per group to reveal trends across species.
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     (pj/lay-point {:alpha 0.6})
     (pj/lay-smooth {:stat :linear-model}))
 
@@ -156,7 +156,7 @@
 
 ;; ### Different data per layer
 ;;
-;; Each `lay-*` accepts `{:data ...}` to override the frame-level
+;; Each `lay-*` accepts `{:data ...}` to override the pose-level
 ;; dataset. This lets you overlay marks from two different tables --
 ;; ggplot2's `geom_line(data=df2) + geom_point(data=df1)` pattern.
 
@@ -217,7 +217,7 @@
 ;; Scatter + per-group regression to compare smoker tipping patterns.
 
 (-> (rdatasets/reshape2-tips)
-    (pj/frame :total-bill :tip {:color :smoker})
+    (pj/pose :total-bill :tip {:color :smoker})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     (pj/options {:title "Tipping Behavior"
@@ -237,7 +237,7 @@
 ;; confidence bands.
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     (pj/lay-point {:alpha 0.5})
     (pj/lay-smooth {:stat :linear-model :confidence-band true})
     (pj/options {:title "Sepal Regression with Confidence Bands"}))
@@ -329,7 +329,7 @@
 ;; This makes the plot square when x and y have equal ranges.
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     (pj/coord :fixed)
@@ -361,7 +361,7 @@
 ;; Add `{:confidence-band true}` to a LOESS smoother for a bootstrap confidence band.
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:confidence-band true})
     (pj/options {:title "LOESS with 95% CI"}))
@@ -388,7 +388,7 @@
 (pj/arrange [iris-sepal iris-petal]
             {:title "Iris Dashboard" :cols 2})
 
-(kind/test-last [(fn [v] (and (pj/frame? v)
+(kind/test-last [(fn [v] (and (pj/pose? v)
                               (= "Iris Dashboard" (-> v :opts :title))))])
 
 ;; ### Labeled scatter
@@ -446,7 +446,7 @@
 ;; Per-species regression reveals different slopes.
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (pj/frame :bill-length-mm :bill-depth-mm {:color :species})
+    (pj/pose :bill-length-mm :bill-depth-mm {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     (pj/options {:title "Bill Length vs Depth with Regression"}))
@@ -480,7 +480,7 @@
 ;; Flipper length vs body mass -- a strong positive correlation.
 
 (-> (rdatasets/palmerpenguins-penguins)
-    (pj/frame :flipper-length-mm :body-mass-g {:color :species})
+    (pj/pose :flipper-length-mm :body-mass-g {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     (pj/options {:title "Flipper Length vs Body Mass"}))
@@ -504,7 +504,7 @@
 ;; Tipping behavior: smokers vs non-smokers.
 
 (-> (rdatasets/reshape2-tips)
-    (pj/frame :total-bill :tip {:color :smoker})
+    (pj/pose :total-bill :tip {:color :smoker})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     (pj/options {:title "Tipping: Smokers vs Non-Smokers"
@@ -550,7 +550,7 @@
 ;; Engine displacement vs highway fuel efficiency, colored by vehicle class.
 
 (-> (rdatasets/ggplot2-mpg)
-    (pj/frame :displ :hwy {:color :class})
+    (pj/pose :displ :hwy {:color :class})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     (pj/options {:title "Displacement vs Highway MPG by Class"}))

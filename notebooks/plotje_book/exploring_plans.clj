@@ -4,7 +4,7 @@
 ;; structure called a **plan** before rendering anything. This notebook
 ;; walks through the plan step by step, building intuition for the
 ;; data model by looking at what `pj/plan` produces for different
-;; frames.
+;; poses.
 ;;
 ;; You would explore plans when:
 ;;
@@ -43,7 +43,7 @@
                                 (= 5 (:points s)))))])
 
 ;; And here is the plan -- the data structure that drives the rendering.
-;; We'll use `pj/plan` with the same frame:
+;; We'll use `pj/plan` with the same pose:
 
 (def tiny-pl (-> tiny
                  (pj/lay-point :x :y)
@@ -111,7 +111,7 @@ tiny-pl
 
 ;; ### The layer
 ;;
-;; Each layer in the frame produces one plan-level layer entry. Our
+;; Each layer in the pose produces one plan-level layer entry. Our
 ;; scatter has a single point layer:
 
 (def tiny-layer (first (:layers tiny-panel)))
@@ -350,7 +350,7 @@ bar-layer
 ;; layer gets one segment per group:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :petal-length :petal-width {:color :species})
+    (pj/pose :petal-length :petal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model}))
 
@@ -358,7 +358,7 @@ bar-layer
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 (def grp-pl (-> (rdatasets/datasets-iris)
-                (pj/frame :petal-length :petal-width {:color :species})
+                (pj/pose :petal-length :petal-width {:color :species})
                 pj/lay-point
                 (pj/lay-smooth {:stat :linear-model})
                 pj/plan))
@@ -480,14 +480,14 @@ opts-pl
 
 ;; ## Plan vs Plot -- Side by Side
 ;;
-;; `pj/plan` and `pj/plot` accept the same frame.
+;; `pj/plan` and `pj/plot` accept the same pose.
 ;; `pj/plan` returns the intermediate data map; `pj/plot` returns the final SVG.
 
 ;; The plan (a plain Clojure map):
 
 (def final-sk
   (-> (rdatasets/datasets-iris)
-      (pj/frame :petal-length :petal-width {:color :species})
+      (pj/pose :petal-length :petal-width {:color :species})
       pj/lay-point
       (pj/lay-smooth {:stat :linear-model})))
 

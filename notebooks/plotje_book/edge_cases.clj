@@ -442,8 +442,8 @@
 ;; appear as axis labels on each cell.
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame {:color :species})
-    (pj/frame (pj/cross [:sepal-length :sepal-width :petal-length]
+    (pj/pose {:color :species})
+    (pj/pose (pj/cross [:sepal-length :sepal-width :petal-length]
                         [:sepal-length :sepal-width :petal-length])))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)
@@ -493,7 +493,7 @@
 
 (try
   (-> {:x [1 2 3]}
-      (pj/frame :x)
+      (pj/pose :x)
       (pj/lay {:mark :boxplot :stat :bin})
       pj/plot)
   (catch Exception e

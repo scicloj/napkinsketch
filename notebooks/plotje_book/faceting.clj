@@ -15,7 +15,7 @@
 
 ;; ## Facet Wrap
 ;;
-;; `pj/facet` splits a frame into panels by one categorical column.
+;; `pj/facet` splits a pose into panels by one categorical column.
 ;; The default direction is `:col` -- a horizontal row of panels:
 
 (-> (rdatasets/datasets-iris)
@@ -71,7 +71,7 @@
 ;; Layers compose with faceting -- scatter plus regression per panel:
 
 (-> (rdatasets/reshape2-tips)
-    (pj/frame :total-bill :tip {:color :sex})
+    (pj/pose :total-bill :tip {:color :sex})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     (pj/facet-grid :smoker :sex))
@@ -142,8 +142,8 @@
 (def cols [:sepal-length :sepal-width :petal-length :petal-width])
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame {:color :species})
-    (pj/frame (pj/cross cols cols)))
+    (pj/pose {:color :species})
+    (pj/pose (pj/cross cols cols)))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 16 (:panels s))

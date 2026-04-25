@@ -219,5 +219,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Frame Model**](./plotje_book.frame_model.html) -- how Plotje composes layers, aesthetics, and layer types
+;; - [**Pose Model**](./plotje_book.pose_model.html) -- how Plotje composes layers, aesthetics, and layer types
 ;; - [**Quickstart**](./plotje_book.quickstart.html) -- if you skipped straight here, go back and build your first plots

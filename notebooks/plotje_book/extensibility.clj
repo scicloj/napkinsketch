@@ -28,13 +28,13 @@
 ;; ## Overview
 ;;
 ;; The pipeline from data to plot has several stages, each governed
-;; by a multimethod. The frame API adds a composable front-end
+;; by a multimethod. The pose API adds a composable front-end
 ;; that resolves into the same pipeline:
 ;;
 ;; ```
-;; frame (pj/frame, pj/lay-*, pj/options, ...)
+;; pose (pj/pose, pj/lay-*, pj/options, ...)
 ;;                        |
-;;                   frame->draft
+;;                   pose->draft
 ;;                        v
 ;;                      draft
 ;;                        |
@@ -202,11 +202,11 @@
 ;;   ...)
 ;; ```
 ;;
-;; ### How to extend: register a layer type and create a frame-compatible layer function
+;; ### How to extend: register a layer type and create a pose-compatible layer function
 ;;
 ;; After defining `compute-stat` and `extract-layer` for your custom
 ;; mark, register a layer type and create a convenience function that
-;; works with the frame API:
+;; works with the pose API:
 ;;
 ;; ```clojure
 ;; ;; Register the layer type
@@ -220,8 +220,8 @@
 ;; ;; Or create a convenience function using lay:
 ;; (defn lay-waterfall
 ;;   ([sk] (pj/lay sk (layer-type/lookup :waterfall)))
-;;   ([data x y] (-> data (pj/frame x y) (pj/lay (layer-type/lookup :waterfall))))
-;;   ([data x y opts] (-> data (pj/frame x y) (pj/lay (merge (layer-type/lookup :waterfall) opts)))))
+;;   ([data x y] (-> data (pj/pose x y) (pj/lay (layer-type/lookup :waterfall))))
+;;   ([data x y opts] (-> data (pj/pose x y) (pj/lay (merge (layer-type/lookup :waterfall) opts)))))
 ;; ```
 ;;
 ;; Users can then call `(lay-waterfall data :category :amount)`.

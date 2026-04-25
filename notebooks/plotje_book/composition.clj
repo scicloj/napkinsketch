@@ -1,13 +1,13 @@
 ;; # Composition
 ;;
-;; Plotje's frame substrate lets you combine whole plots into a
-;; single rendered image. A **composite frame** holds other frames
-;; and a layout; each sub-frame renders independently and the
+;; Plotje's pose substrate lets you combine whole plots into a
+;; single rendered image. A **composite pose** holds other poses
+;; and a layout; each sub-pose renders independently and the
 ;; composite tiles them together.
 ;;
 ;; This chapter walks through composition patterns from simple
 ;; side-by-side arrangements to shared-scale marginal plots, using
-;; `pj/arrange` and explicit composite-frame maps. Dedicated
+;; `pj/arrange` and explicit composite-pose maps. Dedicated
 ;; constructors (`pj/mosaic`, `pj/with-marginals`) will land
 ;; post-alpha; until then, the primitives below cover the same
 ;; patterns -- compactly for simple cases, with a bit of literal map
@@ -28,9 +28,9 @@
 
 ;; ## Side-by-Side via `pj/arrange`
 ;;
-;; The simplest composite: two independent frames, placed next to
-;; each other. `pj/arrange` takes a vector of frames and returns a
-;; composite. Each sub-frame has its own data, mapping, layers, and
+;; The simplest composite: two independent poses, placed next to
+;; each other. `pj/arrange` takes a vector of poses and returns a
+;; composite. Each sub-pose has its own data, mapping, layers, and
 ;; options.
 
 (pj/arrange
@@ -42,7 +42,7 @@
                                 (= 300 (:points s)))))])
 
 ;; Pass `{:cols 1}` for a stacked arrangement (one column means each
-;; frame goes on its own row):
+;; pose goes on its own row):
 
 (pj/arrange
  [(-> iris (pj/lay-point :sepal-length :sepal-width {:color :species}))
@@ -51,35 +51,35 @@
 
 (kind/test-last [(fn [v] (= 2 (:panels (pj/svg-summary v))))])
 
-;; `pj/arrange` divides space equally among its sub-frames. For
+;; `pj/arrange` divides space equally among its sub-poses. For
 ;; unequal splits (e.g., give the first panel twice the space of the
 ;; second), construct the composite as an explicit map; the next
 ;; section shows how.
 
-;; ## Explicit Composite Frames
+;; ## Explicit Composite Poses
 ;;
-;; Under `pj/arrange` there is a plain-map composite frame. You can
+;; Under `pj/arrange` there is a plain-map composite pose. You can
 ;; construct one directly when you need finer control -- unequal
 ;; weights, shared scales, or (in future work) non-plot leaves like
 ;; text panels and KPIs.
 ;;
 ;; An explicit `:layout` accepts `:direction` (`:horizontal` or
-;; `:vertical`) and `:weights` (one weight per sub-frame). Here the
+;; `:vertical`) and `:weights` (one weight per sub-pose). Here the
 ;; first panel gets twice the space of the second:
 
 (def weighted
-  (pj/prepare-frame
+  (pj/prepare-pose
    {:data iris
     :layout {:direction :horizontal :weights [2 1]}
-    :frames [{:mapping {:x :sepal-length :y :sepal-width}
+    :poses [{:mapping {:x :sepal-length :y :sepal-width}
               :layers [{:layer-type :point}]}
              {:mapping {:x :petal-length :y :petal-width}
               :layers [{:layer-type :point}]}]}))
 
-;; `pj/prepare-frame` lifts a plain-map composite into a frame the
+;; `pj/prepare-pose` lifts a plain-map composite into a pose the
 ;; library treats like any other: data is coerced to a Tablecloth
 ;; dataset at every depth, the current configuration is captured for
-;; render time, and Kindly metadata is attached so the frame
+;; render time, and Kindly metadata is attached so the pose
 ;; auto-renders in a notebook viewer:
 
 weighted
@@ -89,22 +89,22 @@ weighted
                                 (= 300 (:points s)))))])
 
 ;; And printed, showing the composite's structure -- `:layout` with
-;; direction and weights at the top, then each sub-frame with its
+;; direction and weights at the top, then each sub-pose with its
 ;; own `:mapping` and `:layers`, and the outer `:data` dataset:
 
 (kind/pprint weighted)
 
 (kind/test-last [(fn [fr] (and (= [2 1] (get-in fr [:layout :weights]))
-                               (= 2 (count (:frames fr)))))])
+                               (= 2 (count (:poses fr)))))])
 
-;; The outer `:data` is inherited by both sub-frames. Each sub-frame
+;; The outer `:data` is inherited by both sub-poses. Each sub-pose
 ;; has its own `:mapping` and `:layers`, and need not repeat the
 ;; dataset. Subsequent examples in this chapter follow the same
 ;; shape and show only the rendered plot.
 
 ;; ## Shared Scales
 ;;
-;; By default, sibling frames in a composite compute their own
+;; By default, sibling poses in a composite compute their own
 ;; domains. That is fine when their columns differ, but for the same
 ;; column shown twice (e.g., a marginal above a scatter, or a mosaic
 ;; of scatters all measuring the same variable) you want the axes
@@ -112,11 +112,11 @@ weighted
 ;; column:
 
 (def shared-x
-  (pj/prepare-frame
+  (pj/prepare-pose
    {:data iris
     :share-scales #{:x}
     :layout {:direction :horizontal :weights [1 1]}
-    :frames [{:mapping {:x :sepal-length :y :sepal-width}
+    :poses [{:mapping {:x :sepal-length :y :sepal-width}
               :layers [{:layer-type :point}]}
              {:mapping {:x :sepal-length :y :petal-length}
               :layers [{:layer-type :point}]}]}))
@@ -138,11 +138,11 @@ shared-x
 ;; above the main plot -- is a vertical composite with shared x:
 
 (def marginal
-  (pj/prepare-frame
+  (pj/prepare-pose
    {:data iris
     :share-scales #{:x}
     :layout {:direction :vertical :weights [1 3]}
-    :frames [{:mapping {:x :sepal-length}
+    :poses [{:mapping {:x :sepal-length}
               :layers [{:layer-type :density}]}
              {:mapping {:x :sepal-length :y :sepal-width :color :species}
               :layers [{:layer-type :point}]}]}))
@@ -160,27 +160,27 @@ marginal
 
 ;; ## A Small Dashboard
 ;;
-;; Composite frames can combine heterogeneous chart types. Here is a
+;; Composite poses can combine heterogeneous chart types. Here is a
 ;; dashboard-style 2x2 layout: a histogram of sepal length, a boxplot
 ;; of sepal width by species, a scatter of petal dimensions, and a
 ;; density of petal length.
 ;;
 ;; Layouts today are one-dimensional (`:horizontal` or `:vertical`),
 ;; so a 2x2 grid is built as a vertical pair of horizontal pairs.
-;; The current `pj/arrange` does not accept composite frames as
+;; The current `pj/arrange` does not accept composite poses as
 ;; inputs, so the nesting is expressed as an explicit map:
 
 (def dashboard
-  (pj/prepare-frame
+  (pj/prepare-pose
    {:data iris
     :layout {:direction :vertical :weights [1 1]}
-    :frames [{:layout {:direction :horizontal :weights [1 1]}
-              :frames [{:mapping {:x :sepal-length}
+    :poses [{:layout {:direction :horizontal :weights [1 1]}
+              :poses [{:mapping {:x :sepal-length}
                         :layers [{:layer-type :histogram}]}
                        {:mapping {:x :species :y :sepal-width :color :species}
                         :layers [{:layer-type :boxplot}]}]}
              {:layout {:direction :horizontal :weights [1 1]}
-              :frames [{:mapping {:x :petal-length :y :petal-width :color :species}
+              :poses [{:mapping {:x :petal-length :y :petal-width :color :species}
                         :layers [{:layer-type :point}]}
                        {:mapping {:x :petal-length :color :species}
                         :layers [{:layer-type :density}]}]}]}))
@@ -205,9 +205,9 @@ dashboard
 ;; - **Plot-area alignment.** Leaves render with their own chrome
 ;;   padding, so plot-area edges may not line up across composite
 ;;   siblings.
-;; - **No shared legend.** Each sub-frame produces its own legend.
+;; - **No shared legend.** Each sub-pose produces its own legend.
 ;; - **Threading builds flat composites only.** `pj/arrange` today
-;;   rejects composite frames as inputs; for nested layouts, write
+;;   rejects composite poses as inputs; for nested layouts, write
 ;;   the composite as an explicit map as shown in the dashboard
 ;;   example above.
 ;;

@@ -23,7 +23,7 @@
 ;; We use the iris dataset throughout.
 
 ;; We define `base-plot` as a function because
-;; frames render at display time -- calling the function
+;; poses render at display time -- calling the function
 ;; produces a fresh specification that picks up the current configuration.
 
 (defn base-plot
@@ -350,9 +350,9 @@ precedence-plot
 
 (kind/test-last
  [(fn [v]
-    ;; arrange returns a composite frame holding the two sub-plots
-    (and (pj/frame? v)
-         (= 2 (count (:frames (first (:frames v)))))))])
+    ;; arrange returns a composite pose holding the two sub-plots
+    (and (pj/pose? v)
+         (= 2 (count (:poses (first (:poses v)))))))])
 
 ;; ## Palette Configuration
 ;;

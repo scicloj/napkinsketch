@@ -1,6 +1,6 @@
 ;; # Architecture
 ;;
-;; Plotje has a five-stage pipeline. You compose a frame --
+;; Plotje has a five-stage pipeline. You compose a pose --
 ;; a declarative description of data, mappings, and layers --
 ;; that flattens into a draft automatically.
 ;;
@@ -15,8 +15,8 @@
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]
-   ;; Frame substrate -- leaf->draft, resolve-tree
-   [scicloj.plotje.impl.frame :as frame-impl]
+   ;; Pose substrate -- leaf->draft, resolve-tree
+   [scicloj.plotje.impl.pose :as pose-impl]
    ;; Plan pipeline -- draft->plan, domains, ticks, legends, layout
    [scicloj.plotje.impl.plan :as plan-impl]
    ;; Malli schema validation
@@ -27,7 +27,7 @@
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  B[\"Frame<br/>(composable API)\"] -->|frame->draft| D[\"Draft<br/>(flat maps)\"]
+  B[\"Pose<br/>(composable API)\"] -->|pose->draft| D[\"Draft<br/>(flat maps)\"]
   D -->|draft->plan| P[\"Plan<br/>(data-space)\"]
   P -->|scales + coords| M[\"Membrane<br/>(drawing primitives)\"]
   M -->|tree walk| F[\"Plot<br/>(output)\"]
@@ -38,10 +38,10 @@ graph LR
   style F fill:#fce4ec
 ")
 
-;; - **Frame** -- the composable user API. Functions like
-;;   `pj/frame`, `pj/lay-point`, `pj/lay-rule-h`, `pj/options`,
+;; - **Pose** -- the composable user API. Functions like
+;;   `pj/pose`, `pj/lay-point`, `pj/lay-rule-h`, `pj/options`,
 ;;   `pj/facet`, `pj/arrange`, `pj/scale`, and `pj/coord` build up a
-;;   frame. No computation has happened yet.
+;;   pose. No computation has happened yet.
 ;;
 ;; - **Draft** -- a flat vector of maps produced by `pj/draft`.
 ;;   Each map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
@@ -56,7 +56,7 @@ graph LR
 ;; - **Plot** -- final output. A tree walk converts membrane records
 ;;   to SVG hiccup, which Clay/Kindly renders in notebooks.
 
-;; Most users only interact with the frame stage and never need to
+;; Most users only interact with the pose stage and never need to
 ;; think about the others. The stages below matter when you are debugging
 ;; unexpected output, building a custom renderer, or extending the library.
 
@@ -70,36 +70,36 @@ graph LR
    :y [2 4 3 5 4]
    :g [:a :a :b :b :b]})
 
-;; ### Frame
+;; ### Pose
 ;;
-;; The user composes a frame by threading data through
-;; composable functions. The frame records what to plot
+;; The user composes a pose by threading data through
+;; composable functions. The pose records what to plot
 ;; without doing any computation.
 
 (def trace-sk
   (-> trace-data
       (pj/lay-point :x :y {:color :g})))
 
-;; A frame is a plain Clojure map. The fields below are what you see
+;; A pose is a plain Clojure map. The fields below are what you see
 ;; while inspecting the threaded value:
 ;;
 ;; - `:data` -- the dataset (coerced to Tablecloth)
 ;;
-;; - `:mapping` -- mappings that flow into every layer on this frame
+;; - `:mapping` -- mappings that flow into every layer on this pose
 ;;
-;; - `:layers` -- layers placed on this frame
+;; - `:layers` -- layers placed on this pose
 ;;
-;; - `:frames` -- sub-frames; a leaf has none
+;; - `:poses` -- sub-poses; a leaf has none
 ;;
 ;; - `:opts` -- plot-level options (title, width, etc.)
 
-(pj/frame? trace-sk)
+(pj/pose? trace-sk)
 
 (kind/test-last [true?])
 
-;; Because a leaf frame has no sub-frames, this is a leaf:
+;; Because a leaf pose has no sub-poses, this is a leaf:
 
-(frame-impl/leaf? trace-sk)
+(pose-impl/leaf? trace-sk)
 
 (kind/test-last [true?])
 
@@ -125,8 +125,8 @@ graph LR
 
 ;; ### Draft
 ;;
-;; `pj/draft` flattens the frame into a vector of
-;; maps. Each map merges frame-level mappings, leaf mappings,
+;; `pj/draft` flattens the pose into a vector of
+;; maps. Each map merges pose-level mappings, leaf mappings,
 ;; and layer details into one flat map with `:data`, `:x`, `:y`, `:mark`, etc.
 
 (def trace-draft
@@ -194,9 +194,9 @@ trace-membrane
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; ### Shortcut: Frame to Plan
+;; ### Shortcut: Pose to Plan
 ;;
-;; In practice, `pj/plan` does the frame-to-plan conversion
+;; In practice, `pj/plan` does the pose-to-plan conversion
 ;; in one step -- computing the draft and running `draft->plan`
 ;; internally.
 
@@ -210,7 +210,7 @@ trace-membrane
 ;;
 ;; | Stage | Type | Coordinates |
 ;; |:------|:-----|:------------|
-;; | Frame | Plain map (leaf or composite) | N/A (declarative) |
+;; | Pose | Plain map (leaf or composite) | N/A (declarative) |
 ;; | Draft | Vector of maps | N/A (declarative) |
 ;; | Plan | Clojure maps + dtype buffers | Data space |
 ;; | Membrane | Record tree | Drawing units |
@@ -219,7 +219,7 @@ trace-membrane
 ;; ## The Plan Boundary
 ;;
 ;; The plan is the boundary between description and rendering. The
-;; frame and draft stages assemble the description. The plan resolves
+;; pose and draft stages assemble the description. The plan resolves
 ;; it into computed geometry, domains, ticks, and legend -- still as
 ;; plain data, before any layout. The membrane and plot stages
 ;; then produce the rendered output.
@@ -227,7 +227,7 @@ trace-membrane
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  A[\"Frame + draft\"] -->|plan| P[\"Plan\"]
+  A[\"Pose + draft\"] -->|plan| P[\"Plan\"]
   P --> R[\"membrane + plot\"]
   style A fill:#e8f5e9
   style P fill:#fff3e0
@@ -248,18 +248,18 @@ graph LR
 
 ;; ## Multi-Layer Example
 ;;
-;; A frame can hold multiple layers that share one mapping.
+;; A pose can hold multiple layers that share one mapping.
 ;; Here, scatter points and per-species regression lines share
 ;; the same panel because both `lay-point` and `lay-smooth`
 ;; target the same `:petal-length`/`:petal-width` mapping.
 
 (def multi-sk
   (-> (rdatasets/datasets-iris)
-      (pj/frame :petal-length :petal-width {:color :species})
+      (pj/pose :petal-length :petal-width {:color :species})
       pj/lay-point
       (pj/lay-smooth {:stat :linear-model})))
 
-;; The frame has one leaf with two frame-level layers:
+;; The pose has one leaf with two pose-level layers:
 
 (count (:layers multi-sk))
 
@@ -308,7 +308,7 @@ multi-plan
 ;; And the rendered result:
 
 (-> (rdatasets/datasets-iris)
-    (pj/frame :petal-length :petal-width {:color :species})
+    (pj/pose :petal-length :petal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
     (pj/options {:title "Iris Petals with Regression"}))
@@ -322,7 +322,7 @@ multi-plan
 ^:kindly/hide-code
 (kind/mermaid "
 graph TD
-  API[\"api.clj\"] --> FR[\"impl/frame.clj\"]
+  API[\"api.clj\"] --> FR[\"impl/pose.clj\"]
   API --> RES[\"impl/resolve.clj\"]
   API --> PL[\"impl/plan.clj\"]
   API --> COMP[\"impl/compositor.clj\"]
@@ -349,7 +349,7 @@ graph TD
   style MEMBRANE fill:#f8bbd0
 ")
 
-;; `impl/frame.clj` holds the frame substrate: `resolve-tree` (merges
+;; `impl/pose.clj` holds the pose substrate: `resolve-tree` (merges
 ;; mappings/data/opts down from root to every leaf), `leaf->draft`
 ;; (flattens a leaf into draft maps with optional facet expansion),
 ;; and the multi-pair / grid composite utilities.

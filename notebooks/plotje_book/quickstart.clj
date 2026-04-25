@@ -138,27 +138,27 @@
 
 ;; ## Inference
 ;;
-;; `pj/frame` declares which columns to plot without committing to a
-;; chart type. When a pipeline ends at `pj/frame` (no `pj/lay-*`),
+;; `pj/pose` declares which columns to plot without committing to a
+;; chart type. When a pipeline ends at `pj/pose` (no `pj/lay-*`),
 ;; Plotje picks the chart type from the column types.
 ;; Two numerical columns produce a scatter plot:
 
 (-> iris
-    (pj/frame :sepal-length :sepal-width))
+    (pj/pose :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; A single categorical column produces a bar chart:
 
 (-> iris
-    (pj/frame :species))
+    (pj/pose :species))
 
 (kind/test-last [(fn [v] (= 3 (:polygons (pj/svg-summary v))))])
 
 ;; A single numerical column produces a histogram:
 
 (-> iris
-    (pj/frame :sepal-length))
+    (pj/pose :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
@@ -166,13 +166,13 @@
 
 ;; ## Multiple Layers
 ;;
-;; Use `pj/frame` to set column mappings for a frame,
-;; then add layers with `pj/lay-*`. All layers on this frame
-;; inherit the frame's mappings. Here `(pj/lay-smooth {:stat :linear-model})` adds a linear model
+;; Use `pj/pose` to set column mappings for a pose,
+;; then add layers with `pj/lay-*`. All layers on this pose
+;; inherit the pose's mappings. Here `(pj/lay-smooth {:stat :linear-model})` adds a linear model
 ;; (regression line) per group:
 
 (-> iris
-    (pj/frame :sepal-length :sepal-width {:color :species})
+    (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model}))
 
@@ -204,7 +204,7 @@
              (pj/lay-histogram iris :sepal-length {:color :species})]
             {:cols 2})
 
-(kind/test-last [(fn [v] (pj/frame? v))])
+(kind/test-last [(fn [v] (pj/pose? v))])
 
 ;; ## Export
 
@@ -221,7 +221,7 @@
 
 ;; ## What's Next
 ;;
-;; - [**Frame Model**](./plotje_book.frame_model.html) -- the mental model behind composable plotting
+;; - [**Pose Model**](./plotje_book.pose_model.html) -- the mental model behind composable plotting
 ;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- data formats, marks, stats, color, grouping, coordinates
 ;; - [**Scatter Plots**](./plotje_book.scatter.html) -- the most common starting point for chart types
 ;; - [**Cookbook**](./plotje_book.cookbook.html) -- recipes for common multi-layer plots
