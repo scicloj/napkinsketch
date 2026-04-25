@@ -539,7 +539,7 @@
                  :y-label "Price ($, log scale)"
                  :format :bufimg}))
 
-(kind/test-last [(fn [v] (instance? java.awt.image.BufferedImage v))])
+(kind/test-last [(fn [v] (instance? java.awt.image.BufferedImage (pj/plot v)))])
 
 ;; ### Summary with error bars (mean +/- SE)
 ;; Source: [Vega-Lite: Error Bars with CI](https://vega.github.io/vega-lite/examples/layer_point_errorbar_ci.html)
@@ -953,7 +953,7 @@
                  :y-label "Price ($)"
                  :format :bufimg}))
 
-(kind/test-last [(fn [v] (instance? java.awt.image.BufferedImage v))])
+(kind/test-last [(fn [v] (instance? java.awt.image.BufferedImage (pj/plot v)))])
 
 ;; ### Scatter colored by continuous variable
 ;; Source: [D3 Graph Gallery: Scatter Color](https://d3-graph-gallery.com/graph/scatter_basic.html)
