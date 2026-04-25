@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Renamed: `frame` -> `pose`
+
+The library's central concept is now **`pose`** -- the deliberate
+arrangement of a data subject before laying layers on it. Where a
+`frame` was a composable specification of a plot, a `pose` is the
+same value with a name that better matches the painter's-studio
+metaphor already implicit in `lay-*` and `plot`. A study composed
+of poses; a tableau of poses.
+
+This is a mechanical rename, no API behaviour change:
+
+- Constructor `pj/frame` -> `pj/pose`.
+- Predicate `pj/frame?` -> `pj/pose?`.
+- Builder `pj/prepare-frame` -> `pj/prepare-pose`.
+- Sub-pose slot `:frames` -> `:poses` on every map shape.
+- Internal namespace `scicloj.plotje.impl.frame` ->
+  `scicloj.plotje.impl.pose`; schema `Frame` -> `Pose`.
+- Two foundations chapters renamed:
+  `frame_model.clj` -> `pose_model.clj`,
+  `frame_rules.clj` -> `pose_rules.clj`. `chapters.edn` updated.
+- `lay-*` constructors are unchanged -- only the central
+  concept-word changes; the layer registry, mark and stat names,
+  and the rest of the API stay put.
+
+The on-disk working directory is still named `napkinsketch/` and
+the GitHub remote still points at `scicloj/napkinsketch` -- those
+remain deliberate carryovers, distinct from the concept rename.
+
+This is the third central-name change pre-0.1.0
+(`Sketch` -> `frame` -> `pose`). The earlier renames were driven
+by the move to a recursive plain-map substrate; this one is a
+naming refinement only. The painter's-studio metaphor that
+`lay-*` and `plot` already used now reaches the type at the
+center of the API.
+
 ### Renamed: napkinsketch -> Plotje (and `sk` -> `pj`)
 
 The library is now **Plotje** -- Dutch for "a little plot". Two
@@ -29,7 +64,7 @@ Migration is mechanical: `s/napkinsketch/plotje/g` plus update the
 
 ### Matrix layout for threaded multi-position composites
 
-Threading `(pj/frame fr :x :y)` over a leaf-with-position now
+Threading `(pj/pose fr :x :y)` over a leaf-with-position now
 promotes to a composite whose layout is `:matrix`: distinct x-cols
 become grid columns, distinct y-cols become grid rows, leaves land
 at their `(col-of-x, row-of-y)` intersection. Empty cells render
@@ -47,14 +82,14 @@ the main scatter sits at `(:x, :y)`.
 The previous flat-row layout is still reachable via:
 `(pj/options fr {:layout {:direction :horizontal}})`.
 
-`(pj/frame data [[:a :b] [:c :d]])` (multi-pair literal) and
+`(pj/pose data [[:a :b] [:c :d]])` (multi-pair literal) and
 `pj/arrange` keep their current row layouts. SPLOM via `pj/cross`
 still uses its own grid composite shape (could be unified with
 matrix later).
 
 ### SPLOM visual-chrome cleanup
 
-The SPLOM (`(pj/frame data (pj/cross cols cols))`) had three
+The SPLOM (`(pj/pose data (pj/cross cols cols))`) had three
 visible defects on diagonal cells; two are fixed:
 
 - Per-cell axis-name labels (e.g. y-axis label "sl" inside the
@@ -71,7 +106,7 @@ most were nearly invisible -- is now fixed too. See below.
 
 ### SPLOM diagonal histograms render against a count axis
 
-`frame/inject-shared-scales` now skips the `:y-scale-domain` stamp
+`pose/inject-shared-scales` now skips the `:y-scale-domain` stamp
 on any leaf whose every effective layer resolves to a stat in
 `#{:bin :count :density}`. The diagonal cells of a SPLOM (which
 per-cell inference picks as `:bar :bin` histograms) get their own
@@ -90,23 +125,23 @@ take. Worked examples + visual diversity coverage in
 `notebooks/scale_coordination_exploration.clj`. Resolves the
 last visual regression in the post-Phase-6 corpus.
 
-### Frame inference and rendering fixes
+### Pose inference and rendering fixes
 
-A handful of bugs in the post-Phase-6 frame pipeline, surfaced by
+A handful of bugs in the post-Phase-6 pose pipeline, surfaced by
 a regression corpus comparing pre-Phase-6 Sketch behaviour to
-current frame behaviour. All shipped:
+current pose behaviour. All shipped:
 
-- `pj/frame` 1-arity now auto-infers a position mapping from the
-  first 1-3 columns of its data (`(pj/frame {:x [...] :y [...]})`
-  yields a frame with `:mapping {:x :x :y :y}` and renders without
+- `pj/pose` 1-arity now auto-infers a position mapping from the
+  first 1-3 columns of its data (`(pj/pose {:x [...] :y [...]})`
+  yields a pose with `:mapping {:x :x :y :y}` and renders without
   an explicit `pj/lay-*` call). 4+ column data leaves the mapping
   empty -- gentler than the sketch-era `sk/view` which threw.
-- `ensure-frame` now routes raw-data inputs through `prepare-frame`,
+- `ensure-pose` now routes raw-data inputs through `prepare-pose`,
   so Kindly auto-render metadata is attached on every entry path
-  (previously only `pj/frame` itself attached it; `(pj/lay-point
+  (previously only `pj/pose` itself attached it; `(pj/lay-point
   raw-data)` bypassed the wrapper and the result didn't auto-render
   in notebooks).
-- `pj/save` and `pj/save-png` now route composite frames through
+- `pj/save` and `pj/save-png` now route composite poses through
   the compositor. They used to call `plan->plot` directly on the
   top-level plan, which has empty `:panels` for composites and
   rendered as a blank document.
@@ -117,11 +152,11 @@ current frame behaviour. All shipped:
 ### Documentation
 
 `inference_rules.clj` updated to document the few-column inference
-on `pj/frame` 1-arity (which had been left out of the rule table).
+on `pj/pose` 1-arity (which had been left out of the rule table).
 
 ### SPLOM strip labels
 
-Grid composites built from `(pj/frame data (pj/cross cols cols))`
+Grid composites built from `(pj/pose data (pj/cross cols cols))`
 now render strip labels above the top row (one per column,
 naming the y column) and to the left of the leftmost column (one
 per row, naming the x column) -- matching the legacy `pj/view`
@@ -133,74 +168,74 @@ with long column names don't squeeze the per-panel width. The
 ### Retired: pj/sketch, pj/view, and impl/sketch.clj
 
 The Sketch record, its constructors, and its adapter surface are
-gone. The frame substrate is now the only internal spec type.
+gone. The pose substrate is now the only internal spec type.
 
 Removed user-facing API:
 
-- `pj/sketch`, `pj/view`, `pj/sketch?` -- use `pj/frame`, `pj/lay-*`,
-  and `pj/frame?` instead.
+- `pj/sketch`, `pj/view`, `pj/sketch?` -- use `pj/pose`, `pj/lay-*`,
+  and `pj/pose?` instead.
 - The `Sketch` record itself (`impl/sketch.clj`, ~348 lines).
 
 Internal changes the deletion required:
 
-- `pj/lay-*` on raw data now coerces through `pj/frame` and returns a
-  frame; previously the adapter returned a Sketch record.
+- `pj/lay-*` on raw data now coerces through `pj/pose` and returns a
+  pose; previously the adapter returned a Sketch record.
 - `pj/with-data`, `pj/options`, `pj/scale`, `pj/coord`, `pj/save`, and
-  `pj/save-png` all coerce non-frame inputs via a new private
-  `ensure-frame` helper (raw data -> leaf frame) rather than the old
+  `pj/save-png` all coerce non-pose inputs via a new private
+  `ensure-pose` helper (raw data -> leaf pose) rather than the old
   `ensure-sk` (raw data -> Sketch).
-- `pj/facet` and `pj/facet-grid` write to the frame's `:opts` instead
+- `pj/facet` and `pj/facet-grid` write to the pose's `:opts` instead
   of routing through `ensure-sk`. The facet-expansion logic moved
   from `impl/sketch.clj`'s `expand-facets` into
-  `impl/frame/leaf->draft`: when a leaf's `:opts` carry
+  `impl/pose/leaf->draft`: when a leaf's `:opts` carry
   `:facet-col`/`:facet-row`, the draft is multiplied across distinct
   facet values, each variant carrying filtered `:data` and a
   `:facet-col`/`:facet-row` label that `plan.clj` detects to build
-  the facet grid. Composite frames are rejected explicitly (see
+  the facet grid. Composite poses are rejected explicitly (see
   `dev-notes/facet-composite-deferral.md`).
 - `impl/sketch_schema.clj` renamed to `impl/plan_schema.clj` -- it
   was misnamed; the namespace holds Malli schemas for the plan data
   model, not the Sketch record.
 - Multi-column `pj/lay-*` (`(pj/lay-histogram data [:a :b :c])`) now
-  builds a multi-pair composite via `pj/frame` and attaches a bare
+  builds a multi-pair composite via `pj/pose` and attaches a bare
   layer at the root; the layer flows to every panel via
   `resolve-tree`. Previously this path created N views with N
   identical layers.
-- The `sketch_rules.clj` notebook was retired -- `frame_rules.clj`
+- The `sketch_rules.clj` notebook was retired -- `pose_rules.clj`
   is the live replacement.
 
 Known shape changes from the retirement:
 
 - `(pj/lay-point data :x :y {:color :g})` now places `:color` on the
-  layer's own `:mapping`, not on the frame's root `:mapping`. Semantic
+  layer's own `:mapping`, not on the pose's root `:mapping`. Semantic
   behaviour at render time is unchanged.
 - Chaining two `pj/lay-*` calls with different position columns on
   the same leaf no longer silently creates two panels; both layers
   attach to the same leaf. To create two panels, promote explicitly
-  via `(pj/frame data [[:a :b] [:c :d]])`.
+  via `(pj/pose data [[:a :b] [:c :d]])`.
 
-### Frame-native pipeline (Phase 6 slice 2)
+### Pose-native pipeline (Phase 6 slice 2)
 
-The frame substrate now runs the full draft emission pipeline on its
-own. `pj/plan`, `pj/plot`, and `pj/draft` read a leaf frame directly
-via a new `impl.frame/leaf->draft`; the compositor reads each
+The pose substrate now runs the full draft emission pipeline on its
+own. `pj/plan`, `pj/plot`, and `pj/draft` read a leaf pose directly
+via a new `impl.pose/leaf->draft`; the compositor reads each
 resolved leaf the same way. The Sketch detour
-(`leaf-frame->sketch` -> `sketch->draft`) is no longer on the frame
+(`leaf-pose->sketch` -> `sketch->draft`) is no longer on the pose
 path.
 
 User-visible behavior:
 
-- Fixes an edge case where a leaf frame with `:x`/`:y` only on a
-  layer (not on the frame's own `:mapping`) used to emit an empty
+- Fixes an edge case where a leaf pose with `:x`/`:y` only on a
+  layer (not on the pose's own `:mapping`) used to emit an empty
   draft. The layer's position is now read and the draft carries one
   entry per layer.
-- `pj/with-data` accepts frames directly and keeps them as frames
-  (it used to force frames through the Sketch adapter, returning a
+- `pj/with-data` accepts poses directly and keeps them as poses
+  (it used to force poses through the Sketch adapter, returning a
   Sketch record).
-- `pj/frame` gains a multi-pair arity: `(pj/frame fr [[:a :b]
-  [:c :d] ...])` and `(pj/frame fr [:a :b :c])` append panels in
+- `pj/pose` gains a multi-pair arity: `(pj/pose fr [[:a :b]
+  [:c :d] ...])` and `(pj/pose fr [:a :b :c])` append panels in
   one call.
-- `(pj/frame fr (pj/cross cols cols))` builds a SPLOM: when the
+- `(pj/pose fr (pj/cross cols cols))` builds a SPLOM: when the
   pairs form an M x N Cartesian rectangle, the result is a nested
   rows-of-cols composite with `:share-scales #{:x :y}`. The
   compositor renders one shared legend on the right (when the
@@ -212,26 +247,26 @@ User-visible behavior:
   omits `pj/lay-point`:
   ```clojure
   (-> data
-      (pj/frame {:color :species})
-      (pj/frame (pj/cross cols cols)))
+      (pj/pose {:color :species})
+      (pj/pose (pj/cross cols cols)))
   ```
 
 User-facing examples across the book and gallery have been migrated
-to `pj/frame`. SPLOM examples in gallery, scatter, faceting,
-customization, and edge_cases all use the new frame-native pattern.
+to `pj/pose`. SPLOM examples in gallery, scatter, faceting,
+customization, and edge_cases all use the new pose-native pattern.
 
 Also fixed: `promote-leaf` was dropping `:opts` when the leaf got
 wrapped into a composite. Plot-level options set via `pj/options`
 before promotion now correctly carry to the new composite's root.
 
-### Breaking: `pj/arrange` returns a composite frame
+### Breaking: `pj/arrange` returns a composite pose
 
-`pj/arrange` now returns a composite frame (a plain-map value) instead
+`pj/arrange` now returns a composite pose (a plain-map value) instead
 of CSS-grid hiccup. The composite renders through the membrane
 rendering pipeline, so both `:svg` (default) and `:bufimg` targets work
 the same way they do for single plots.
 
-- Inputs must be sketches or leaf frames. Pre-rendered hiccup is no
+- Inputs must be sketches or leaf poses. Pre-rendered hiccup is no
   longer accepted -- combine hiccup yourself with `[:div ...]` if you
   want raw hiccup composition.
 - `:gap` (CSS string) is removed. Leaves tile tightly; add spacing
@@ -250,7 +285,7 @@ Migration for the common case:
 (pj/arrange [sk-a sk-b])
 ```
 
-The composite frame auto-renders in notebooks via `kind/fn`, and
+The composite pose auto-renders in notebooks via `kind/fn`, and
 passing it to `pj/plot` returns SVG hiccup as before.
 
 ### Facet deferral (internal)
@@ -387,21 +422,21 @@ plots look identical to pre-rewrite renders.
 
 Plotje is a composable plotting library for Clojure, inspired by
 the Grammar of Graphics. Plots are built by threading data through a
-sequence of small transformations. The resulting frame is a plain
+sequence of small transformations. The resulting pose is a plain
 Clojure value that auto-renders in Kindly-compatible notebooks (Clay
 and friends) -- no explicit render call required.
 
 ### Features
 
 **Composable pipeline.** Everything you do to build a plot -- create
-a frame (`pj/frame`), add layers (`pj/lay-*`), set aesthetic
+a pose (`pj/pose`), add layers (`pj/lay-*`), set aesthetic
 mappings, apply scales and coordinate transforms, add facets, attach
 annotations, set plot options -- flows through `->`. Every function
-takes a frame and returns a frame, so there is no plot-assembly
+takes a pose and returns a pose, so there is no plot-assembly
 order to memorize.
 
 **Scoped mappings.** Aesthetic mappings (color, size, alpha, shape,
-group, text) flow down a frame's tree from the root to every leaf
+group, text) flow down a pose's tree from the root to every leaf
 and then into each layer. Lower scopes override higher ones; `nil`
 is an explicit cancellation. Scope is lexical: you set a mapping
 where you want it to apply.
@@ -443,11 +478,11 @@ scales with custom midpoints are also supported.
 
 **Annotations.** Reference lines (`pj/lay-rule-h`, `pj/lay-rule-v`)
 and shaded bands (`pj/lay-band-h`, `pj/lay-band-v`) as first-class
-layers. Annotations attached at the root frame apply to every panel;
-annotations attached at a leaf frame apply only to that panel.
+layers. Annotations attached at the root pose apply to every panel;
+annotations attached at a leaf pose apply only to that panel.
 
-**Per-scope data override.** `:data` can be set at the root frame,
-nested frame, or layer level for mixed-data composites like
+**Per-scope data override.** `:data` can be set at the root pose,
+nested pose, or layer level for mixed-data composites like
 `layer A with dataset 1 + layer B with dataset 2`.
 
 **Flexible input.** Tablecloth datasets, plain maps of columns,
@@ -474,7 +509,7 @@ the rest.
 
 **Clear errors on natural mistakes.** Missing or typoed column
 references, mixed-type columns, unknown layer types, unknown options
-on `pj/frame`/`pj/options`/`pj/lay-*`, categorical columns passed
+on `pj/pose`/`pj/options`/`pj/lay-*`, categorical columns passed
 to numeric stats, and numeric x passed to categorical marks all fail
 with a clear, actionable error pointing at the offending input.
 
@@ -495,8 +530,8 @@ through a complete end-to-end custom mark.
 Twenty-eight executable chapters:
 
 - **Getting Started** — quickstart
-- **Foundations** — datasets, frame model, core concepts, options
-  and scopes, frame rules, inference rules, layer types, glossary
+- **Foundations** — datasets, pose model, core concepts, options
+  and scopes, pose rules, inference rules, layer types, glossary
 - **Chart Types** — scatter, distributions, ranking, change over
   time, relationships, polar
 - **How-to Guides** — cookbook, configuration, customization,
@@ -648,11 +683,11 @@ produce crashes on canonical inputs.
 **Mixing keyword and string column references:**
 
 - Mapping the same column with a keyword in one place and a string
-  in another (e.g. `(pj/frame ds {:color :group})` then
+  in another (e.g. `(pj/pose ds {:color :group})` then
   `(pj/lay-point :x :y {:color "group"})`) is not normalized: the
   scope hierarchy treats them as different keys and the result is a
   silent empty plot. Workaround: pick one form (keyword or string)
-  and use it consistently within a frame.
+  and use it consistently within a pose.
 
 **ggplot2 features not yet implemented:**
 

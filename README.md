@@ -2,7 +2,7 @@
 # Plotje
 Simple and easy plotting
 
-NapkinSketch is a Clojure library for composable plotting, inspired by
+Plotje is a Clojure library for composable plotting, inspired by
 the Grammar of Graphics.
 
 
@@ -50,13 +50,11 @@ Line chart with point markers from plain Clojure data:
 ```
 ![](readme_files/image0.svg)
 
-Scatter plot matrix (SPLOM) — all pairwise combinations with color
-grouping; diagonal cells show histograms, off-diagonal cells show
-scatter plots (per-cell inference picks the layer type):
+Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping:
 ```clj
 (-> (rdatasets/datasets-iris)
-    (pj/frame {:color :species})
-    (pj/frame (pj/cross [:sepal-length :sepal-width
+    (pj/pose {:color :species})
+    (pj/pose (pj/cross [:sepal-length :sepal-width
                          :petal-length :petal-width]
                         [:sepal-length :sepal-width
                          :petal-length :petal-width]))
