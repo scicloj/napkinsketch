@@ -65,10 +65,30 @@ visible defects on diagonal cells; two are fixed:
   guarantee makes per-cell ticks redundant across the rest of the
   grid.
 
-The third issue -- diagonal histograms render against the column's
-shared y-domain (data range) instead of a count axis, so most are
-nearly invisible -- is documented but not fixed. See
-`dev-notes/regression-corpus/notes/diagonal-histogram-scale.md`.
+The third issue -- diagonal histograms rendered against the
+column's shared y-domain (data range) instead of a count axis, so
+most were nearly invisible -- is now fixed too. See below.
+
+### SPLOM diagonal histograms render against a count axis
+
+`frame/inject-shared-scales` now skips the `:y-scale-domain` stamp
+on any leaf whose every effective layer resolves to a stat in
+`#{:bin :count :density}`. The diagonal cells of a SPLOM (which
+per-cell inference picks as `:bar :bin` histograms) get their own
+count y-axis instead of inheriting the shared data domain that
+their column's other cells use. Off-diagonal scatters and
+`:bin2d` / `:density-2d` heatmaps are unaffected -- the latter
+have their count on the fill aesthetic, not on y, so they still
+participate in shared y-domain coordination.
+
+The exemption is bounded by predicted stat (the same precedence
+`leaf->draft` and `resolve/resolve-draft-layer` use), so it
+correctly handles explicit `:stat`, registered `:layer-type`
+entries, explicit `:mark` (defaults to `:identity`), and the
+empty-layers + non-empty-mapping shape that SPLOM diagonal cells
+take. Worked examples + visual diversity coverage in
+`notebooks/scale_coordination_exploration.clj`. Resolves the
+last visual regression in the post-Phase-6 corpus.
 
 ### Frame inference and rendering fixes
 

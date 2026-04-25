@@ -345,6 +345,74 @@
             (:layers leaf))
       (get-in leaf [:mapping axis])))
 
+(def ^:private stat-driven-y-stats
+  "Stats whose y-axis output is a count or density rather than a
+   function of the y-mapped data column. Leaves whose every layer
+   resolves to one of these stats should not have a shared
+   y-scale-domain stamped on them -- their y axis is independent
+   of the column that other cells in the same y-bucket share.
+
+   :bin     1D histogram (count per numeric bin)
+   :count   categorical count per category
+   :density 1D KDE (density per numeric value)
+
+   :bin2d / :density-2d are NOT included: those are 2D heatmaps
+   whose count/density goes to the fill aesthetic, leaving y as a
+   data axis that participates in sharing normally."
+  #{:bin :count :density})
+
+(defn- predicted-stat
+  "Predict the stat that plan/draft->plan will assign to this layer
+   when emitted via leaf->draft. Mirrors the precedence used by
+   resolve/resolve-draft-layer and leaf->draft:
+     - explicit :stat                 -> use it
+     - :layer-type registered + :stat -> stat from registry
+     - :layer-type registered + :mark -> :identity
+     - explicit :mark, no :stat       -> :identity
+     - none of the above              -> infer via resolve/infer-layer-type
+   Returns nil when prediction is impossible (no data, no x/y)."
+  [layer leaf-mapping leaf-data]
+  (let [lt-key (:layer-type layer)
+        lt-info (when (and lt-key (keyword? lt-key) (not= :infer lt-key))
+                  (layer-type/lookup lt-key))]
+    (cond
+      (:stat layer)         (:stat layer)
+      (:stat lt-info)       (:stat lt-info)
+      (or (:mark layer)
+          (:mark lt-info))  :identity
+      :else
+      (let [v (merge leaf-mapping (:mapping layer))]
+        (when (and leaf-data (or (:x v) (:y v)))
+          (try
+            (let [{:keys [x-type y-type x-temporal? y-temporal?]}
+                  (resolve/infer-column-types leaf-data v)]
+              (:stat (resolve/infer-layer-type v x-type y-type
+                                               x-temporal? y-temporal?)))
+            (catch Throwable _ nil)))))))
+
+(defn- effective-layers
+  "The layers that will actually render for a leaf. When the user
+   provided layers, those. When :layers is empty but :mapping is
+   non-empty, leaf->draft synthesizes one :infer placeholder, so
+   we model that as a single empty {} layer."
+  [layers mapping]
+  (cond
+    (seq layers)  layers
+    (seq mapping) [{}]
+    :else         []))
+
+(defn- y-axis-stat-driven?
+  "True if every effective layer of this leaf will resolve to a stat
+   whose y-axis is independent of the y-mapped data column. Such a
+   leaf should not be stamped with a shared y-scale-domain."
+  [layers mapping data]
+  (let [effective (effective-layers layers mapping)]
+    (and (seq effective)
+         (every? (fn [layer]
+                   (contains? stat-driven-y-stats
+                              (predicted-stat layer mapping data)))
+                 effective))))
+
 (defn- col-values
   "Non-nil values for a column ref from a dataset, tolerant of
    keyword/string name mismatches (tablecloth sometimes stores names
@@ -388,15 +456,21 @@
    `inherited-domains` carries `{axis {col-ref [lo hi]}}` down the
    tree. `inherited-mapping` carries the ancestor-merged mapping so a
    leaf can resolve its effective axis column from (inherited + own +
-   layer) when deciding which bucket to claim."
+   layer) when deciding which bucket to claim. `inherited-data` is
+   the nearest-ancestor dataset, threaded through so a leaf can
+   predict whether its layers' y axis is stat-driven (count/density)
+   and skip the shared y-domain stamp on such leaves -- e.g., the
+   diagonal histogram cells of a SPLOM."
   ([frame]
-   (inject-shared-scales frame {} {}))
-  ([frame inherited-domains inherited-mapping]
+   (inject-shared-scales frame {} {} nil))
+  ([frame inherited-domains inherited-mapping inherited-data]
    (let [my-mapping  (merge inherited-mapping (:mapping frame))
+         my-data     (or (:data frame) inherited-data)
          my-shares   (:share-scales frame)
          new-domains (when (and my-shares (seq (:frames frame)))
                        (let [subtree (resolve-tree frame
-                                                   {:mapping inherited-mapping}
+                                                   {:mapping inherited-mapping
+                                                    :data inherited-data}
                                                    [])]
                          (into {}
                                (keep
@@ -425,7 +499,14 @@
                x-col (effective-axis-col frame-ctx :x)
                y-col (effective-axis-col frame-ctx :y)
                x-dom (get-in child-domains [:x x-col])
-               y-dom (get-in child-domains [:y y-col])]
+               y-dom (get-in child-domains [:y y-col])
+               ;; Drop the y-domain when this leaf's y-axis is
+               ;; stat-driven (count/density) -- the shared-data
+               ;; bucket value would clip the bars / curve.
+               y-dom (when-not (y-axis-stat-driven? (:layers frame)
+                                                    my-mapping
+                                                    my-data)
+                       y-dom)]
            (if (or x-dom y-dom)
              (update frame :opts merge
                      (cond-> {}
@@ -435,7 +516,7 @@
          frame)
        (update frame :frames
                (fn [children]
-                 (mapv #(inject-shared-scales % child-domains my-mapping)
+                 (mapv #(inject-shared-scales % child-domains my-mapping my-data)
                        children)))))))
 
 ;; ---- Leaf-to-draft ----

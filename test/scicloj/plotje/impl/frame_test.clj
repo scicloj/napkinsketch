@@ -293,3 +293,74 @@
       (is (every? #(= [10.0 30.0] (:y-scale-domain (:opts %)))
                   (filter #(= :b (get-in % [:layers 0 :mapping :y])) leaves))
           "leaves with :y :b share the :b domain"))))
+
+(deftest inject-shared-scales-stat-driven-y-test
+  (testing "leaves whose y axis is stat-driven (count/density) skip the y-domain stamp"
+    (let [ds (tc/dataset {:a [1.0 2.0 3.0]
+                          :b [10.0 20.0 30.0]})
+          ;; SPLOM where one leaf is an explicit histogram on the y=:b
+          ;; column. The other y=:b leaf is a scatter -- it should
+          ;; still get the shared :b domain. The histogram leaf
+          ;; should NOT, since its rendered y-axis is a count axis.
+          tree {:data ds
+                :share-scales #{:y}
+                :frames [{:layers [{:layer-type :point :mapping {:x :a :y :b}}]}
+                         {:layers [{:layer-type :histogram :mapping {:x :b}}]
+                          ;; Force the histogram leaf into the :y :b
+                          ;; bucket via its frame mapping; the layer
+                          ;; itself still stat-bins on x.
+                          :mapping {:y :b}}]}
+          [scatter hist] (frame/resolve-tree (frame/inject-shared-scales tree))]
+      (is (= [10.0 30.0] (:y-scale-domain (:opts scatter)))
+          "scatter leaf still gets the shared y-domain")
+      (is (nil? (:y-scale-domain (:opts hist)))
+          "histogram leaf does not get the shared y-domain (its y-axis is count, not data)"))))
+
+(deftest inject-shared-scales-empty-layers-diagonal-test
+  (testing "an empty-layers leaf whose diagonal mapping infers to :bin gets exempted"
+    (let [ds (tc/dataset {:a [1.0 2.0 3.0]
+                          :b [10.0 20.0 30.0]})
+          ;; This mirrors the SPLOM diagonal cell shape produced by
+          ;; (pj/cross cols cols): the leaf has :x = :y mapping and
+          ;; empty layers. Per-cell inference picks {:mark :bar :stat :bin}.
+          tree {:data ds
+                :share-scales #{:y}
+                :frames [{:mapping {:x :a :y :a} :layers []}      ;; diagonal: will infer :bin
+                         {:mapping {:x :b :y :a}                  ;; off-diagonal: will infer scatter
+                          :layers [{:layer-type :point}]}]}
+          [diag off] (frame/resolve-tree (frame/inject-shared-scales tree))]
+      (is (nil? (:y-scale-domain (:opts diag)))
+          "diagonal cell (inferred to :bin) skips the y-stamp")
+      (is (= [1.0 3.0] (:y-scale-domain (:opts off)))
+          "off-diagonal scatter still gets the shared y-domain"))))
+
+(deftest inject-shared-scales-bin2d-not-exempted-test
+  (testing ":bin2d (heatmap) is NOT exempted -- its y is a data axis, count goes to fill"
+    (let [ds (tc/dataset {:a [1.0 2.0 3.0]
+                          :b [10.0 20.0 30.0]})
+          tree {:data ds
+                :share-scales #{:y}
+                :frames [{:layers [{:layer-type :point :mapping {:x :a :y :b}}]}
+                         {:layers [{:layer-type :tile
+                                    :stat :bin2d
+                                    :mapping {:x :a :y :b}}]}]}
+          [scatter heatmap] (frame/resolve-tree (frame/inject-shared-scales tree))]
+      (is (= [10.0 30.0] (:y-scale-domain (:opts scatter))))
+      (is (= [10.0 30.0] (:y-scale-domain (:opts heatmap)))
+          "heatmap participates in shared y-domain because its y is data, not count"))))
+
+(deftest inject-shared-scales-explicit-density-stat-test
+  (testing "explicit :stat :density triggers the exemption"
+    (let [ds (tc/dataset {:a [1.0 2.0 3.0]
+                          :b [10.0 20.0 30.0]})
+          tree {:data ds
+                :share-scales #{:y}
+                :frames [{:layers [{:layer-type :point :mapping {:x :a :y :b}}]}
+                         {:mapping {:y :b}
+                          :layers [{:layer-type :line
+                                    :stat :density
+                                    :mapping {:x :a}}]}]}
+          [scatter density] (frame/resolve-tree (frame/inject-shared-scales tree))]
+      (is (= [10.0 30.0] (:y-scale-domain (:opts scatter))))
+      (is (nil? (:y-scale-domain (:opts density)))
+          ":density layer's y axis is density values, not data"))))
