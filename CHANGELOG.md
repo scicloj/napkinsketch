@@ -406,6 +406,43 @@ current pose behaviour. All shipped:
   `:strip-w` to 0 for composites without strip labels, fixing an
   NPE in `clojure.lang.Numbers/isPos`.
 
+### Input-validation guards close four silent-failure paths
+
+Four entry-point inputs that used to silently produce nonsense or
+leak raw exceptions now throw with clear `ex-info`:
+
+- `(pj/pose nil)` and `(pj/lay-* nil ...)` -- previously returned an
+  empty pose / empty plot. Now throw with guidance to use `(pj/pose)`
+  for an explicit empty pose or pass real data. The template idiom
+  `(pj/pose nil {:x :x :y :y})` (mapping without data, attached
+  later via `pj/with-data`) still works -- nil is rejected only
+  when no other arguments distinguish it from an empty pose.
+- `(pj/pose 42)`, `(pj/pose "string")`, `(pj/pose :keyword)` --
+  previously coerced through `tc/dataset` to a 1-row, 2-column
+  garbage frame whose second column literally contained an
+  exception message. Now throw naming the offending type.
+- `(pj/save (pj/pose) "x.svg")` and `pj/save-png` on an empty
+  pose -- previously wrote a blank file. Now throw with guidance.
+- `(pj/pose data x y :not-a-map)` -- previously leaked a raw
+  `ClassCastException` from a `dissoc` on a keyword. Now throws
+  with a one-line message naming the bad opts argument.
+
+### Opt-in strict option-key checking
+
+New `:strict` config flag (default `false`). When `false`, an
+unrecognized option key on `pj/pose`, `pj/lay-*`, or `pj/options`
+prints a stderr warning and the key is silently stripped (the
+historical behavior). When `true`, the same case throws an
+`ex-info` naming the unknown key and listing the accepted set.
+
+Set via `plotje.edn`, `(pj/with-config {:strict true} ...)`, or
+`(pj/set-config! {:strict true})`. Aimed at users who want
+typo-mistakes (`{:colour :species}`, `{:scale-x :log}`) to surface
+as errors instead of warnings that get lost in notebook output.
+The default may move to `true` in 0.2.0 once we have a sense of
+how often it would catch real mistakes vs. fire on benign
+forward-compat keys.
+
 ### Documentation
 
 `inference_rules.clj` updated to document the few-column inference

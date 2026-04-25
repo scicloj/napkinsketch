@@ -351,6 +351,7 @@
    :title-offset ["Labels" "Pixel offset for the title from the top"]
    :strip-height ["Labels" "Height of facet strip label bars"]
    :validate ["Behavior" "When true, validate plans against Malli schema"]
+   :strict ["Behavior" "When true, throw on unknown option keys instead of warning and stripping"]
    :default-color ["Behavior" "Fallback color when no color mapping is set"]
    :palette ["Color" "Categorical palette — keyword, vector, or map"]
    :color-scale ["Color" "Continuous color scale — :sequential, :diverging, or keyword"]

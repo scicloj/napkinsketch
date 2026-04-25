@@ -36,4 +36,6 @@
 
  ;; ---------- Behavior ----------
  ;; :validate true      ;; validate poses against Malli schema
+ ;; :strict true        ;; throw on unknown option keys (typos like {:colour :species})
+ ;;                     ;; instead of warning to stderr and silently stripping
  }

@@ -55,7 +55,11 @@
  :strip-height 16
 
  ;; Behavior
+ ;; :validate -- run Malli plan validation at plot time
+ ;; :strict   -- throw on unknown option keys instead of warning + stripping
+ ;;              (off by default in 0.1.0; opt in via plotje.edn or with-config)
  :validate true
+ :strict false
 
  ;; Fallback
  :default-color "#333"}

@@ -216,10 +216,63 @@
 ;; ---- API ----
 
 (defn- coerce-dataset
-  "Coerce data to a tablecloth dataset. Returns nil for nil."
+  "Coerce data to a tablecloth dataset. Returns nil for nil; throws
+   on non-collection scalars (numbers, strings, keywords) since
+   tc/dataset would silently wrap them in a 1-row garbage frame."
   [d]
-  (when d
-    (if (tc/dataset? d) d (tc/dataset d))))
+  (cond
+    (nil? d)         nil
+    (tc/dataset? d)  d
+    (or (map? d) (sequential? d)) (tc/dataset d)
+    :else            (throw (ex-info
+                             (str "Cannot use " (pr-str (type d))
+                                  " as plot data. Pass a tablecloth"
+                                  " dataset, a map of {:column [values]},"
+                                  " or a sequence of row-maps. Got: "
+                                  (pr-str d))
+                             {:value d :type (type d)}))))
+
+(defn- validate-pose-input!
+  "Throw on nil or non-collection scalars when the caller needs real
+   data. Used by ensure-pose and pj/pose 1-arity, where nil cannot
+   be a template (no mapping carries it forward)."
+  [caller x]
+  (cond
+    (nil? x)
+    (throw (ex-info
+            (str caller " was called with nil as data. Pass a"
+                 " tablecloth dataset, a map of {:column [values]},"
+                 " or a sequence of row-maps; or use (pj/pose) for"
+                 " an empty pose.")
+            {:caller caller :value nil}))
+
+    (and (not (tc/dataset? x))
+         (not (map? x))
+         (not (sequential? x)))
+    (throw (ex-info
+            (str caller " was called with " (pr-str (type x))
+                 " as data: " (pr-str x)
+                 ". Pass a tablecloth dataset, a map of {:column"
+                 " [values]}, or a sequence of row-maps.")
+            {:caller caller :value x :type (type x)}))))
+
+(defn- validate-template-data!
+  "Like validate-pose-input!, but nil-tolerant -- nil here is the
+   template idiom `(pj/pose nil {...})` where the mapping is set
+   first and data is attached later via pj/with-data. Still rejects
+   non-collection scalars."
+  [caller x]
+  (when (and (some? x)
+             (not (tc/dataset? x))
+             (not (map? x))
+             (not (sequential? x)))
+    (throw (ex-info
+            (str caller " was called with " (pr-str (type x))
+                 " as data: " (pr-str x)
+                 ". Pass a tablecloth dataset, a map of {:column"
+                 " [values]}, a sequence of row-maps, or nil"
+                 " (template; attach data later via pj/with-data).")
+            {:caller caller :value x :type (type x)}))))
 
 (defn- try-infer-mapping
   "Infer a position/color mapping from the first 1-3 columns of a
@@ -264,12 +317,16 @@
    leaf pose with :data set and no mapping, and is run through
    prepare-pose so Kindly auto-render metadata is attached -- the
    metadata is preserved by subsequent assoc/update calls in the
-   lay-*/options/pose pipelines."
+   lay-*/options/pose pipelines.
+
+   Throws on nil or non-collection scalars (via coerce-dataset).
+   Use (pj/pose) for an explicit empty leaf instead of passing nil."
   [x]
   (if (pose? x)
     x
-    (let [d (coerce-dataset x)]
-      (prepare-pose (cond-> {:layers []} d (assoc :data d))))))
+    (do (validate-pose-input! "ensure-pose" x)
+        (let [d (coerce-dataset x)]
+          (prepare-pose (cond-> {:layers []} d (assoc :data d)))))))
 
 (def ^:private view-mapping-keys
   "Keys accepted in a pose mapping."
@@ -282,23 +339,38 @@
         (keys defaults/config-key-docs)))
 
 (defn- warn-and-strip-unknown-opts
-  "Warn if `opts` contains keys outside `accepted` and return `opts`
-   with only the accepted keys retained. `caller` is used in the
-   warning message (e.g. \"pj/pose\", \"lay-point\"). If opts is
-   nil or not a map, returns it unchanged. Stripping makes the
-   warning honest: keys the library does not recognize are dropped
-   rather than silently propagated into mapping maps, where they
-   could leak into downstream resolution."
+  "Validate `opts` against `accepted`. `caller` is used in the message
+   (e.g. \"pj/pose\", \"lay-point\"). If opts is nil or not a map,
+   returns it unchanged.
+
+   Behavior depends on the resolved config's :strict flag (read from
+   set-config!, *config* binding, plotje.edn, and library defaults --
+   in that precedence order):
+
+   - :strict false (default in 0.1.0) -- print a warning and return
+     opts with unknown keys stripped, so they don't propagate into
+     downstream resolution.
+   - :strict true -- throw an ex-info naming the unknown keys and
+     listing the accepted set."
   [caller opts accepted]
   (if-not (and (map? opts) (seq opts))
     opts
     (let [unknown (remove accepted (keys opts))]
-      (when (seq unknown)
-        (println (str "Warning: " caller
-                      " does not recognize option(s): " (vec unknown)
-                      ". Accepted: " (vec (sort accepted)))))
       (if (seq unknown)
-        (select-keys opts (filter accepted (keys opts)))
+        (if (:strict (defaults/config))
+          (throw (ex-info (str caller " does not recognize option(s): "
+                               (vec unknown)
+                               ". Accepted: " (vec (sort accepted))
+                               ". (Set :strict false in plotje.edn or"
+                               " via with-config to downgrade to a"
+                               " warning.)")
+                          {:caller caller
+                           :unknown (vec unknown)
+                           :accepted (set accepted)}))
+          (do (println (str "Warning: " caller
+                            " does not recognize option(s): " (vec unknown)
+                            ". Accepted: " (vec (sort accepted))))
+              (select-keys opts (filter accepted (keys opts)))))
         opts))))
 
 (def ^:private pose-keys
@@ -682,10 +754,12 @@
   ([x]
    (cond
      (pose? x) x
-     :else      (let [d (coerce-dataset x)
-                      mapping (or (try-infer-mapping d) {})]
-                  (prepare-pose (pose-from-data x mapping)))))
+     :else      (do (validate-pose-input! "pj/pose" x)
+                    (let [d (coerce-dataset x)
+                          mapping (or (try-infer-mapping d) {})]
+                      (prepare-pose (pose-from-data x mapping))))))
   ([x y]
+   (when-not (pose? x) (validate-template-data! "pj/pose" x))
    (cond
      (and (sequential? y) (not (map? y)))
      (multi-pair-pose x y)
@@ -700,6 +774,7 @@
          (prepare-pose (extend-or-promote x mapping))
          (prepare-pose (pose-from-data x mapping))))))
   ([x y z]
+   (when-not (pose? x) (validate-template-data! "pj/pose" x))
    (if (map? z)
      ;; (pj/pose data x-col opts-map) -- univariate position plus opts
      (let [opts      (warn-and-strip-unknown-opts "pj/pose" z view-mapping-keys)
@@ -713,6 +788,14 @@
          (prepare-pose (extend-or-promote x mapping))
          (prepare-pose (pose-from-data x mapping))))))
   ([x y z opts]
+   (when-not (pose? x) (validate-template-data! "pj/pose" x))
+   (when-not (or (nil? opts) (map? opts))
+     (throw (ex-info
+             (str "pj/pose 4-arity expects an opts map as the last"
+                  " argument, got " (pr-str (type opts)) ": "
+                  (pr-str opts) ". Wrap aesthetic options in a map,"
+                  " e.g. {:color :species}.")
+             {:caller "pj/pose" :value opts})))
    (let [opts      (warn-and-strip-unknown-opts "pj/pose" opts view-mapping-keys)
          data-over (:data opts)
          mapping   (-> opts (dissoc :data) (merge {:x y :y z}))]
@@ -1595,6 +1678,25 @@
 
 ;; ---- Save ----
 
+(defn- assert-saveable-pose!
+  "Throw if `fr` would render as a blank document. A pose is saveable
+   if it is a composite (has :poses), or if it has data plus at least
+   one of :layers / :mapping / :poses. Catches the silent-blank-file
+   case where an empty `(pj/pose)` reaches `pj/save` / `pj/save-png`."
+  [caller fr]
+  (let [composite? (seq (:poses fr))
+        has-data? (some? (:data fr))
+        has-layers? (seq (:layers fr))
+        has-mapping? (seq (:mapping fr))]
+    (when-not (or composite?
+                  (and has-data? (or has-layers? has-mapping?)))
+      (throw (ex-info
+              (str caller " was given an empty pose -- nothing to"
+                   " render. Attach data and a layer first, e.g."
+                   " (-> data (pj/lay-point :x :y))," " or use"
+                   " pj/pose with sub-poses for a composite.")
+              {:caller caller :pose fr})))))
+
 (defn save
   "Save a plot to an SVG file.
    fr   -- a pose.
@@ -1609,6 +1711,7 @@
   ([fr path opts]
    (let [path-str (str path)
          fr (ensure-pose fr)]
+     (assert-saveable-pose! "pj/save" fr)
      (when-not (.endsWith path-str ".svg")
        (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
      (let [fr (if (seq opts) (options fr opts) fr)
@@ -1637,6 +1740,7 @@
   ([fr path opts]
    (require 'scicloj.plotje.render.bufimg)
    (let [fr (ensure-pose fr)
+         _ (assert-saveable-pose! "pj/save-png" fr)
          fr (if (seq opts) (options fr opts) fr)
          ;; Same composite/leaf branch as pj/save: composites go through
          ;; the compositor (one membrane tree), leaves through plan->plot.

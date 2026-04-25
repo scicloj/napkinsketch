@@ -79,7 +79,7 @@
 
 (-> (rdatasets/datasets-iris)
     (pj/pose [[:sepal-length :sepal-width]
-               [:petal-length :petal-width]])
+              [:petal-length :petal-width]])
     (pj/lay-point {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
@@ -107,7 +107,7 @@
 (-> (rdatasets/datasets-iris)
     (pj/pose {:color :species})
     (pj/pose (pj/cross [:sepal-length :petal-length]
-                        [:sepal-width :petal-width])))
+                       [:sepal-width :petal-width])))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:panels s))
@@ -644,7 +644,7 @@ plan1
 
 (count pj/config-key-docs)
 
-(kind/test-last [(fn [n] (= 36 n))])
+(kind/test-last [(fn [n] (= 37 n))])
 
 (kind/doc #'pj/plot-option-docs)
 
