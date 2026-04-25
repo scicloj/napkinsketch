@@ -31,9 +31,9 @@ This is a mechanical rename, no API behaviour change:
   concept-word changes; the layer registry, mark and stat names,
   and the rest of the API stay put.
 
-The on-disk working directory is still named `napkinsketch/` and
-the GitHub remote still points at `scicloj/napkinsketch` -- those
-remain deliberate carryovers, distinct from the concept rename.
+The on-disk working directory is still named `napkinsketch/`; the
+GitHub remote was renamed to `scicloj/plotje` after the pose rename
+landed.
 
 This is the third central-name change pre-0.1.0
 (`Sketch` -> `frame` -> `pose`). The earlier renames were driven
@@ -56,9 +56,9 @@ atomic mechanical commits, no API behaviour change:
   `napkinsketch.edn` -> `plotje.edn`.
 - GitHub repo URLs and Clay remote-repo updated accordingly.
 
-The on-disk working directory is still named `napkinsketch/` and
-the GitHub remote still points at `scicloj/napkinsketch` -- both
-deliberate carryovers until the repo is renamed on GitHub.
+The GitHub remote was later renamed to `scicloj/plotje`; the on-disk
+working directory is still named `napkinsketch/` (a deliberate
+carryover, distinct from the rename).
 Migration is mechanical: `s/napkinsketch/plotje/g` plus update the
 `:as` alias on every require.
 
