@@ -292,6 +292,22 @@
                     (double grid-w)
                     (double (- h top-pad strip-h))]
          layout (frame/compute-layout injected grid-rect)
+         ;; In matrix layout, the strip labels at the top carry the
+         ;; column's x-col name and the strip labels on the left carry
+         ;; the row's y-col name. Suppress the per-leaf x-label /
+         ;; y-label so they don't render redundantly inside each cell.
+         ;; Same idea SPLOM cells use, applied uniformly here.
+         leaves (if matrix-axes
+                  (let [suppress-x? (seq (:col-labels matrix-axes))
+                        suppress-y? (seq (:row-labels matrix-axes))]
+                    (mapv (fn [leaf]
+                            (update leaf :opts
+                                    (fn [opts]
+                                      (cond-> (or opts {})
+                                        suppress-x? (assoc :suppress-x-label true)
+                                        suppress-y? (assoc :suppress-y-label true)))))
+                          leaves))
+                  leaves)
          leaf-trees (mapv (fn [leaf]
                             (leaf->membrane leaf (get layout (:path leaf))))
                           leaves)
