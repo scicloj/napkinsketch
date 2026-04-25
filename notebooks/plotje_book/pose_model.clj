@@ -25,9 +25,19 @@
 ;; In Plotje, every plot you compose is a **pose** -- a plain
 ;; Clojure value that describes what to show. Every function in
 ;; the API takes a pose and returns a pose, so plots build up
-;; through ordinary `->` threading. The simplest pose carries some
-;; data and picks columns. With no explicit chart type, the library
-;; infers one from the column types:
+;; through ordinary `->` threading.
+;;
+;; The API has two verb-noun pairs working in parallel: `pj/pose`
+;; *poses* the data into a *pose*; `pj/lay-*` *lays* a *layer*
+;; onto the pose. A pose is what you arrange before drawing --
+;; which columns become axes, which become aesthetics. Layers are
+;; the visual elements you lay onto it: points, lines, smooths,
+;; bars. A composite pose extends to a scene with multiple
+;; arranged subjects, each available for its own layers.
+;;
+;; The simplest pose carries some data and picks columns. With no
+;; explicit chart type, the library infers one from the column
+;; types:
 
 (-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width))
