@@ -399,7 +399,7 @@
 
 (deftest views-to-plan-test
   (let [views (-> tiny-ds
-                  (pj/frame [[:x :y]])
+                  (pj/pose [[:x :y]])
                   pj/lay-point)
         pl (pj/plan views)]
     (is (map? pl))
@@ -414,7 +414,7 @@
 
 (deftest plan-with-color-test
   (let [ds (tc/dataset {:x [1 2 3 4] :y [1 2 3 4] :g ["a" "a" "b" "b"]})
-        views (-> ds (pj/frame [[:x :y]]) (pj/lay-point {:color :g}))
+        views (-> ds (pj/pose [[:x :y]]) (pj/lay-point {:color :g}))
         pl (pj/plan views)]
     (is (:legend pl))
     (is (= 2 (count (:entries (:legend pl)))))))
@@ -422,18 +422,18 @@
 (deftest plan-faceted-test
   (let [ds (tc/dataset {:x [1 2 3 4 5 6] :y [1 2 3 4 5 6]
                         :g ["a" "a" "b" "b" "c" "c"]})
-        views (-> ds (pj/frame [[:x :y]]) (pj/facet :g) pj/lay-point)
+        views (-> ds (pj/pose [[:x :y]]) (pj/facet :g) pj/lay-point)
         pl (pj/plan views)]
     (is (= 3 (count (:panels pl))))))
 
 (deftest coord-fixed-test
   (testing "coord :fixed end-to-end — equal ranges produce square panel"
     (let [ds (tc/dataset {:x [0 10 5] :y [0 10 5]})
-          pl (-> ds (pj/frame :x :y) (pj/coord :fixed) pj/lay-point pj/plan)]
+          pl (-> ds (pj/pose :x :y) (pj/coord :fixed) pj/lay-point pj/plan)]
       (is (== (:panel-width pl) (:panel-height pl)) "Equal data ranges → square panel")))
   (testing "coord :fixed end-to-end — asymmetric ranges"
     (let [ds (tc/dataset {:x [0 100 50] :y [0 10 5]})
-          pl (-> ds (pj/frame :x :y) (pj/coord :fixed) pj/lay-point pj/plan)]
+          pl (-> ds (pj/pose :x :y) (pj/coord :fixed) pj/lay-point pj/plan)]
       (is (> (:panel-width pl) (:panel-height pl)) "Wide data → wider panel"))))
 
 (deftest diverging-color-test
@@ -462,7 +462,7 @@
     (is (fn? (defaults/resolve-gradient-fn {:low "#FF0000" :mid "#FFFFFF" :high "#0000FF"}))))
   (testing "diverging end-to-end"
     (let [ds (tc/dataset {:x (range 10) :y (range 10) :z (map #(- % 5) (range 10))})
-          fig (-> ds (pj/frame :x :y)
+          fig (-> ds (pj/pose :x :y)
                   (pj/lay-point {:color :z})
                   (pj/plot {:color-scale :diverging :color-midpoint 0}))
           s (pj/svg-summary fig)]
@@ -471,7 +471,7 @@
 (deftest loess-se-test
   (testing "LOESS with SE produces ribbon"
     (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
-          fig (-> ds (pj/frame :x :y)
+          fig (-> ds (pj/pose :x :y)
                   pj/lay-point
                   (pj/lay-smooth {:confidence-band true :bootstrap-resamples 50})
                   pj/plot)
@@ -481,7 +481,7 @@
       (is (= 1 (:polygons s)) "confidence ribbon polygon")))
   (testing "LOESS without SE has no ribbon"
     (let [ds (tc/dataset {:x (range 20) :y (map #(+ (* 0.1 % %) (Math/sin %)) (range 20))})
-          fig (-> ds (pj/frame :x :y)
+          fig (-> ds (pj/pose :x :y)
                   pj/lay-point
                   pj/lay-smooth
                   pj/plot)
@@ -490,27 +490,27 @@
       (is (zero? (:polygons s)))))
   (testing "LOESS dedup handles duplicate x values"
     (let [ds (tc/dataset {:x [1 1 2 2 3 3 4 4 5 5] :y [2 3 4 5 6 7 8 9 10 11]})
-          fig (-> ds (pj/frame :x :y) pj/lay-smooth pj/plot)
+          fig (-> ds (pj/pose :x :y) pj/lay-smooth pj/plot)
           s (pj/svg-summary fig)]
       (is (= 1 (:lines s))))))
 
 (deftest arrange-test
-  (testing "flat sketches -> composite frame of leaves"
-    (let [sk1 (-> tiny-ds (pj/frame :x :y) pj/lay-point)
-          sk2 (-> tiny-ds (pj/frame :x :y) pj/lay-point)
+  (testing "flat sketches -> composite pose of leaves"
+    (let [sk1 (-> tiny-ds (pj/pose :x :y) pj/lay-point)
+          sk2 (-> tiny-ds (pj/pose :x :y) pj/lay-point)
           result (pj/arrange [sk1 sk2])]
-      (is (pj/frame? result))
-      (is (= 1 (count (:frames result))) "one row with both leaves")
-      (is (= 2 (count (:frames (first (:frames result))))))))
+      (is (pj/pose? result))
+      (is (= 1 (count (:poses result))) "one row with both leaves")
+      (is (= 2 (count (:poses (first (:poses result))))))))
   (testing "nested rows -> outer vertical of rows"
-    (let [sk1 (-> tiny-ds (pj/frame :x :y) pj/lay-point)
+    (let [sk1 (-> tiny-ds (pj/pose :x :y) pj/lay-point)
           result (pj/arrange [[sk1 sk1] [sk1 sk1]])]
-      (is (pj/frame? result))
-      (is (= 2 (count (:frames result))) "two rows")
-      (is (every? #(= 2 (count (:frames %))) (:frames result))
+      (is (pj/pose? result))
+      (is (= 2 (count (:poses result))) "two rows")
+      (is (every? #(= 2 (count (:poses %))) (:poses result))
           "each row has two leaves")))
   (testing "title flows through to composite opts"
-    (let [sk1 (-> tiny-ds (pj/frame :x :y) pj/lay-point)
+    (let [sk1 (-> tiny-ds (pj/pose :x :y) pj/lay-point)
           result (pj/arrange [sk1 sk1] {:title "Test" :cols 2})]
       (is (= "Test" (-> result :opts :title)))
       (let [plotted (pj/plot result)]
@@ -518,13 +518,13 @@
         (is (some #(= "Test" %) (:texts (pj/svg-summary plotted)))
             "title text appears in rendered svg"))))
   (testing "hiccup input is rejected with a clear error"
-    (let [pre-rendered (-> tiny-ds (pj/frame :x :y) pj/lay-point pj/plot)]
+    (let [pre-rendered (-> tiny-ds (pj/pose :x :y) pj/lay-point pj/plot)]
       (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                            #"must be a leaf frame"
+                            #"must be a leaf pose"
                             (pj/arrange [pre-rendered pre-rendered]))))))
 
 (deftest valid-plan-test
-  (let [views (-> tiny-ds (pj/frame [[:x :y]]) pj/lay-point)
+  (let [views (-> tiny-ds (pj/pose [[:x :y]]) pj/lay-point)
         pl (pj/plan views)]
     (is (pj/valid-plan? pl))))
 
@@ -704,7 +704,7 @@
 ;; ---- Config affects plan output ----
 
 (deftest config-affects-plan-test
-  (let [views (-> tiny-ds (pj/frame [[:x :y]]) pj/lay-point)]
+  (let [views (-> tiny-ds (pj/pose [[:x :y]]) pj/lay-point)]
     (testing "default width/height in plan"
       (let [s (pj/plan views)]
         (is (= 600 (:width s)))
@@ -734,7 +734,7 @@
 ;; ---- Config affects rendered SVG ----
 
 (deftest config-affects-render-test
-  (let [views (-> tiny-ds (pj/frame [[:x :y]]) pj/lay-point)]
+  (let [views (-> tiny-ds (pj/pose [[:x :y]]) pj/lay-point)]
     (testing "default theme bg appears in SVG"
       (let [svg (pj/plot views)
             summary (pj/svg-summary svg)]
@@ -764,7 +764,7 @@
   (let [ds (tc/dataset {:x [1 2 3 4 5 6]
                         :y [10 20 30 15 25 35]
                         :g ["a" "a" "a" "b" "b" "b"]})
-        views (-> ds (pj/frame [[:x :y]]) (pj/lay-point {:color :g}))]
+        views (-> ds (pj/pose [[:x :y]]) (pj/lay-point {:color :g}))]
     (testing "default palette produces colored points"
       (let [svg (pj/plot views)
             summary (pj/svg-summary svg)]
@@ -785,7 +785,7 @@
 ;; ---- Config validation flag ----
 
 (deftest config-validate-flag-test
-  (let [views (-> tiny-ds (pj/frame [[:x :y]]) pj/lay-point)]
+  (let [views (-> tiny-ds (pj/pose [[:x :y]]) pj/lay-point)]
     (testing "validate true (default) — valid plan passes"
       (is (some? (pj/plan views))))
     (testing "validate false skips schema check"
@@ -803,7 +803,7 @@
 (deftest two-point-dataset-test
   (testing "regression with exactly 2 points — lm needs n>=3 so falls back gracefully"
     (let [ds (tc/dataset {:x [1 2] :y [3 4]})
-          views (-> ds (pj/frame :x :y) pj/lay-point)]
+          views (-> ds (pj/pose :x :y) pj/lay-point)]
       (is (some? (pj/plan views))))))
 
 (deftest all-same-values-test
@@ -833,7 +833,7 @@
   (testing "polar coordinate plan structure"
     (let [ds (tc/dataset {:cat ["A" "B" "C"] :val [10 20 30]})
           views (-> ds
-                    (pj/frame :cat :val)
+                    (pj/pose :cat :val)
                     pj/lay-bar
                     (pj/coord :polar))
           pl (pj/plan views)]
@@ -842,7 +842,7 @@
 (deftest flip-coord-test
   (testing "flipped coordinates swap x/y domains"
     (let [views (-> cat-ds
-                    (pj/frame :cat :val)
+                    (pj/pose :cat :val)
                     pj/lay-bar
                     (pj/coord :flip))
           pl (pj/plan views)
@@ -852,7 +852,7 @@
 (deftest labs-test
   (testing "axis labels propagate to plan via options"
     (let [pl (-> tiny-ds
-                 (pj/frame :x :y)
+                 (pj/pose :x :y)
                  pj/lay-point
                  (pj/options {:x-label "X Axis" :y-label "Y Axis"})
                  pj/plan)]
@@ -860,7 +860,7 @@
       (is (= "Y Axis" (:y-label pl)))))
   (testing "title/subtitle/caption propagate via options"
     (let [pl (-> tiny-ds
-                 (pj/frame :x :y)
+                 (pj/pose :x :y)
                  pj/lay-point
                  (pj/options {:title "T" :subtitle "ST" :caption "C"})
                  pj/plan)]
@@ -872,7 +872,7 @@
   (testing "log scale is recorded in plan"
     (let [ds (tc/dataset {:x [1 10 100 1000] :y [1 2 3 4]})
           views (-> ds
-                    (pj/frame :x :y)
+                    (pj/pose :x :y)
                     pj/lay-point
                     (pj/scale :x :log))
           pl (pj/plan views)
@@ -994,7 +994,7 @@
 (deftest multiple-layers-test
   (testing "plan with point + line layers"
     (let [views (-> tiny-ds
-                    (pj/frame :x :y)
+                    (pj/pose :x :y)
                     pj/lay-point
                     pj/lay-line)
           pl (pj/plan views)
@@ -1010,7 +1010,7 @@
 
 (deftest plan-dimensions-test
   (testing "custom width and height"
-    (let [views (-> tiny-ds (pj/frame :x :y) pj/lay-point)
+    (let [views (-> tiny-ds (pj/pose :x :y) pj/lay-point)
           pl (pj/plan views {:width 800 :height 300})]
       (is (= 800 (:width pl)))
       (is (= 300 (:height pl))))))
@@ -1019,7 +1019,7 @@
   (testing "cross plot (full grid) shows all strip labels"
     (let [ds (tc/dataset {:a [1 2 3 4 5] :b [5 4 3 2 1] :c [2 4 6 8 10]})
           views (-> ds
-                    (pj/frame (pj/cross [:a :b :c] [:a :b :c]))
+                    (pj/pose (pj/cross [:a :b :c] [:a :b :c]))
                     pj/lay-point)
           svg (pj/plot views)
           s (pj/svg-summary svg)
@@ -1034,7 +1034,7 @@
     (let [ds (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                          {:key-fn keyword})
           path (str (java.io.File/createTempFile "plotje" ".svg"))
-          views (-> ds (pj/frame :sepal_length :sepal_width)
+          views (-> ds (pj/pose :sepal_length :sepal_width)
                     (pj/lay-point {:color :species}))]
       (pj/save views path)
       (let [content (slurp path)]
@@ -1061,7 +1061,7 @@
                                      (jt/local-date 2025 6 1)
                                      (jt/local-date 2025 12 1)]
                               :val [10 20 30]})
-                 (pj/frame :date :val)
+                 (pj/pose :date :val)
                  pj/lay-point
                  pj/plan)]
       (is (= 1 (count (:panels pl))))
@@ -1079,41 +1079,41 @@
   (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                          {:key-fn keyword})]
     (testing "String column refs in 3-arity view"
-      (let [s (-> iris (pj/frame "sepal_length" "sepal_width")
+      (let [s (-> iris (pj/pose "sepal_length" "sepal_width")
                   pj/lay-point pj/plot pj/svg-summary)]
         (is (= 150 (:points s)))))
     (testing "String columns in vector spec"
-      (let [s (-> iris (pj/frame [["sepal_length" "sepal_width"]])
+      (let [s (-> iris (pj/pose [["sepal_length" "sepal_width"]])
                   pj/lay-point pj/plot pj/svg-summary)]
         (is (= 150 (:points s)))))
     (testing "String column in mark options"
-      (let [s (-> iris (pj/frame :sepal_length :sepal_width)
+      (let [s (-> iris (pj/pose :sepal_length :sepal_width)
                   (pj/lay-point {:color "species"}) pj/plot pj/svg-summary)]
         (is (= 150 (:points s)))
         (is (some #{"setosa"} (:texts s)))))
     (testing "Dataset with string column names"
       (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
-            s (-> ds (pj/frame :x :y) pj/lay-point pj/plot pj/svg-summary)]
+            s (-> ds (pj/pose :x :y) pj/lay-point pj/plot pj/svg-summary)]
         (is (= 3 (:points s)))))
     (testing "Dataset with string columns + string spec"
       (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
-            s (-> ds (pj/frame "x" "y") pj/lay-point pj/plot pj/svg-summary)]
+            s (-> ds (pj/pose "x" "y") pj/lay-point pj/plot pj/svg-summary)]
         (is (= 3 (:points s)))))
     (testing "String in facet"
-      (let [s (-> iris (pj/frame :sepal_length :sepal_width)
+      (let [s (-> iris (pj/pose :sepal_length :sepal_width)
                   (pj/facet "species") pj/lay-point pj/plot pj/svg-summary)]
         (is (= 3 (:panels s)))))
     (testing "String in cross"
       (is (= 9 (count (pj/cross ["a" "b" "c"] ["a" "b" "c"])))))
     (testing "Literal color string still works"
       (let [v (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
-                  (pj/frame :x :y)
+                  (pj/pose :x :y)
                   (pj/lay-point {:color "#FF0000"})
                   pj/plot)]
         (is (= 3 (:points (pj/svg-summary v))))))
     (testing "Typo still gives error at plan time"
       (is (thrown? clojure.lang.ExceptionInfo
-                   (-> iris (pj/frame :sepl_length :sepal_width)
+                   (-> iris (pj/pose :sepl_length :sepal_width)
                        pj/lay-point pj/plot))))))
 
 (deftest string-column-in-lay-test
@@ -1133,13 +1133,13 @@
 (deftest named-color-test
   (testing "Named color strings work as fixed colors"
     (let [s (-> {:x [1 2 3] :y [4 5 6]}
-                (pj/frame :x :y)
+                (pj/pose :x :y)
                 (pj/lay-point {:color "red"})
                 pj/plot pj/svg-summary)]
       (is (= 3 (:points s)))))
   (testing "Named color produces correct RGBA"
     (let [pl (-> {:x [1 2 3] :y [4 5 6]}
-                 (pj/frame :x :y)
+                 (pj/pose :x :y)
                  (pj/lay-point {:color "steelblue"})
                  pj/plan)
           c (:color (first (:groups (first (:layers (first (:panels pl)))))))]
@@ -1148,7 +1148,7 @@
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
                           #"Unknown color"
                           (-> {:x [1 2 3] :y [4 5 6]}
-                              (pj/frame :x :y)
+                              (pj/pose :x :y)
                               (pj/lay-point {:color "notacolor"})
                               pj/plot)))))
 
@@ -1159,24 +1159,24 @@
           xy-ds (tc/dataset {:x (range 10) :y (range 10)})
           eb-ds (tc/dataset {:x ["a" "b"] :y [10 20] :y-min [8 17] :y-max [12 23]})
           txt-ds (tc/dataset {:x [1 2] :y [3 4] :n ["a" "b"]})
-          cases [["point" (-> iris (pj/frame :sepal_length :sepal_width) (pj/lay-point {:color :species}))]
-                 ["bar" (-> iris (pj/frame :species) pj/lay-bar)]
-                 ["histogram" (-> iris (pj/frame :sepal_length) pj/lay-histogram)]
-                 ["line" (-> xy-ds (pj/frame :x :y) pj/lay-line)]
-                 ["step" (-> xy-ds (pj/frame :x :y) pj/lay-step)]
-                 ["lm" (-> iris (pj/frame :sepal_length :sepal_width) (pj/lay-smooth {:stat :linear-model :confidence-band true}))]
-                 ["loess" (-> iris (pj/frame :sepal_length :sepal_width) pj/lay-smooth)]
-                 ["area" (-> xy-ds (pj/frame :x :y) pj/lay-area)]
-                 ["boxplot" (-> iris (pj/frame :species :sepal_width) pj/lay-boxplot)]
-                 ["violin" (-> iris (pj/frame :species :sepal_width) pj/lay-violin)]
-                 ["density" (-> iris (pj/frame :sepal_length) pj/lay-density)]
-                 ["ridgeline" (-> iris (pj/frame :species :sepal_width) pj/lay-ridgeline)]
-                 ["text" (-> txt-ds (pj/frame :x :y) (pj/lay-text {:text :n}))]
-                 ["tile" (-> iris (pj/frame :sepal_length :sepal_width) pj/lay-tile)]
-                 ["contour" (-> iris (pj/frame :sepal_length :sepal_width) pj/lay-contour)]
-                 ["errorbar" (-> eb-ds (pj/frame :x :y) (pj/lay-errorbar {:y-min :y-min :y-max :y-max}))]
-                 ["lollipop" (-> eb-ds (pj/frame :x :y) pj/lay-lollipop)]
-                 ["summary" (-> iris (pj/frame :species :sepal_width) pj/lay-summary)]]]
+          cases [["point" (-> iris (pj/pose :sepal_length :sepal_width) (pj/lay-point {:color :species}))]
+                 ["bar" (-> iris (pj/pose :species) pj/lay-bar)]
+                 ["histogram" (-> iris (pj/pose :sepal_length) pj/lay-histogram)]
+                 ["line" (-> xy-ds (pj/pose :x :y) pj/lay-line)]
+                 ["step" (-> xy-ds (pj/pose :x :y) pj/lay-step)]
+                 ["lm" (-> iris (pj/pose :sepal_length :sepal_width) (pj/lay-smooth {:stat :linear-model :confidence-band true}))]
+                 ["loess" (-> iris (pj/pose :sepal_length :sepal_width) pj/lay-smooth)]
+                 ["area" (-> xy-ds (pj/pose :x :y) pj/lay-area)]
+                 ["boxplot" (-> iris (pj/pose :species :sepal_width) pj/lay-boxplot)]
+                 ["violin" (-> iris (pj/pose :species :sepal_width) pj/lay-violin)]
+                 ["density" (-> iris (pj/pose :sepal_length) pj/lay-density)]
+                 ["ridgeline" (-> iris (pj/pose :species :sepal_width) pj/lay-ridgeline)]
+                 ["text" (-> txt-ds (pj/pose :x :y) (pj/lay-text {:text :n}))]
+                 ["tile" (-> iris (pj/pose :sepal_length :sepal_width) pj/lay-tile)]
+                 ["contour" (-> iris (pj/pose :sepal_length :sepal_width) pj/lay-contour)]
+                 ["errorbar" (-> eb-ds (pj/pose :x :y) (pj/lay-errorbar {:y-min :y-min :y-max :y-max}))]
+                 ["lollipop" (-> eb-ds (pj/pose :x :y) pj/lay-lollipop)]
+                 ["summary" (-> iris (pj/pose :species :sepal_width) pj/lay-summary)]]]
       (doseq [[mark-name views] cases]
         (testing mark-name
           (is (pj/valid-plan? (pj/plan views {:validate false}))))))))
@@ -1343,9 +1343,9 @@
                           :value (map #(Math/sin (* % 0.5)) (range 36))})]
 
     (testing "lay-tile with :color produces the same plan as :fill"
-      (let [p-color (-> data (pj/frame :col :row {:color :value})
+      (let [p-color (-> data (pj/pose :col :row {:color :value})
                         pj/lay-tile pj/plan)
-            p-fill (-> data (pj/frame :col :row {:fill :value})
+            p-fill (-> data (pj/pose :col :row {:fill :value})
                        pj/lay-tile pj/plan)
             tiles-color (-> p-color :panels first :layers first :tiles)
             tiles-fill (-> p-fill :panels first :layers first :tiles)]
@@ -1362,7 +1362,7 @@
       (is (some? (-> (tc/dataset {:x [1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0]
                                   :y [1.0 2.1 3.0 4.2 5.1 6.0 7.0 8.1 9.0 10.0]
                                   :g ["a" "a" "a" "a" "a" "b" "b" "b" "b" "b"]})
-                     (pj/frame :x :y {:color :g})
+                     (pj/pose :x :y {:color :g})
                      pj/lay-density-2d pj/plan))))))
 
 (deftest mixed-type-column-test
@@ -1409,14 +1409,14 @@
   (testing "layer-level :x / :y on lay-* doesn't trigger an unknown-opt warning"
     (let [out (with-out-str
                 (-> {:a [1 2 3] :b [4 5 6] :c [7 8 9] :d [10 11 12]}
-                    (pj/frame :a :b)
+                    (pj/pose :a :b)
                     (pj/lay-point {:x :c :y :d})))]
       (is (not (re-find #"does not recognize option" out))))))
 
 (deftest plot-level-keys-stripped-from-wrong-scope-test
   ;; persona-skeptical-round-6 F1/F5/F6: plot-level keys like
   ;; :x-scale and :coord used to emit an "unrecognized option"
-  ;; warning but still propagate into the layer's or frame's
+  ;; warning but still propagate into the layer's or pose's
   ;; mapping and leak into the final panel (identical output to
   ;; the canonical pj/scale / pj/coord form). Now the warning is
   ;; honest: unknown keys are stripped from the mapping, so the
@@ -1424,7 +1424,7 @@
   (let [ds {:x [1 10 100] :y [1 2 3]}]
 
     (testing "layer-level :x-scale is stripped, not honored"
-      (let [fr (-> ds (pj/frame :x :y) (pj/lay-point {:x-scale {:type :log}}))
+      (let [fr (-> ds (pj/pose :x :y) (pj/lay-point {:x-scale {:type :log}}))
             layer-mapping (:mapping (first (:layers fr)))
             panel (first (:panels (pj/plan fr)))]
         (is (not (contains? (or layer-mapping {}) :x-scale))
@@ -1432,16 +1432,16 @@
         (is (= :linear (get-in panel [:x-scale :type]))
             "panel x-scale should stay at default :linear")))
 
-    (testing "frame-level :x-scale is stripped, not honored"
-      (let [fr (-> ds (pj/frame :x :y {:x-scale {:type :log}}) pj/lay-point)
+    (testing "pose-level :x-scale is stripped, not honored"
+      (let [fr (-> ds (pj/pose :x :y {:x-scale {:type :log}}) pj/lay-point)
             panel (first (:panels (pj/plan fr)))]
         (is (not (contains? (:mapping fr) :x-scale))
-            ":x-scale should not appear in frame mapping")
+            ":x-scale should not appear in pose mapping")
         (is (= :linear (get-in panel [:x-scale :type]))
             "panel x-scale should stay at default :linear")))
 
     (testing "layer-level :coord is stripped, not honored"
-      (let [fr (-> ds (pj/frame :x :y) (pj/lay-point {:coord :flip}))
+      (let [fr (-> ds (pj/pose :x :y) (pj/lay-point {:coord :flip}))
             layer-mapping (:mapping (first (:layers fr)))
             panel (first (:panels (pj/plan fr)))]
         (is (not (contains? (or layer-mapping {}) :coord))
@@ -1450,12 +1450,12 @@
             "panel coord should not reflect a stripped layer-level :flip")))
 
     (testing "canonical pj/scale still works"
-      (let [fr (-> ds (pj/frame :x :y) pj/lay-point (pj/scale :x :log))
+      (let [fr (-> ds (pj/pose :x :y) pj/lay-point (pj/scale :x :log))
             panel (first (:panels (pj/plan fr)))]
         (is (= :log (get-in panel [:x-scale :type])))))
 
     (testing "canonical pj/coord still works"
-      (let [fr (-> ds (pj/frame :x :y) pj/lay-point (pj/coord :flip))
+      (let [fr (-> ds (pj/pose :x :y) pj/lay-point (pj/coord :flip))
             panel (first (:panels (pj/plan fr)))]
         (is (= :flip (:coord panel)))))))
 
@@ -1559,14 +1559,14 @@
 (deftest unknown-option-warning-test
   ;; persona-16 H1. Closes P1-R3 F2/F3/F4, Skept-R4 F4, P5-R2 L4.
   (let [data {:x [1 2 3] :y [10 20 30]}]
-    (testing "pj/frame (position + opts) warns on unknown option key"
-      (let [out (with-out-str (-> data (pj/frame :x :y {:colour :y}) pj/lay-point))]
-        (is (re-find #"Warning: pj/frame does not recognize option" out))
+    (testing "pj/pose (position + opts) warns on unknown option key"
+      (let [out (with-out-str (-> data (pj/pose :x :y {:colour :y}) pj/lay-point))]
+        (is (re-find #"Warning: pj/pose does not recognize option" out))
         (is (re-find #":colour" out))))
 
-    (testing "pj/frame (aesthetic-only opts) warns on unknown option key"
-      (let [out (with-out-str (pj/frame data {:colour :y}))]
-        (is (re-find #"Warning: pj/frame does not recognize option" out))))
+    (testing "pj/pose (aesthetic-only opts) warns on unknown option key"
+      (let [out (with-out-str (pj/pose data {:colour :y}))]
+        (is (re-find #"Warning: pj/pose does not recognize option" out))))
 
     (testing "pj/options warns on unknown option key"
       (let [out (with-out-str (-> data (pj/lay-point :x :y) (pj/options {:titel "Hi"})))]
@@ -1574,7 +1574,7 @@
         (is (re-find #":titel" out))))
 
     (testing "valid options stay quiet"
-      (is (= "" (with-out-str (-> data (pj/frame :x :y {:color :y}))))))))
+      (is (= "" (with-out-str (-> data (pj/pose :x :y {:color :y}))))))))
 
 (deftest raw-data-plan-plot-test
   ;; persona-16 H2. Closes P1-R3 F2/F3, P9-R2 L2.
@@ -1591,7 +1591,7 @@
     (testing "unknown layer type keyword throws with registered list"
       (is (thrown-with-msg? clojure.lang.ExceptionInfo
                             #"Unknown layer type: :stackedbar.*Registered layer types"
-                            (-> data (pj/frame :x :y) (pj/lay :stackedbar) pj/plan))))))
+                            (-> data (pj/pose :x :y) (pj/lay :stackedbar) pj/plan))))))
 
 (deftest scale-type-validation-test
   ;; persona-16 H12. Closes P1-R3 F5.
@@ -1668,12 +1668,12 @@
                 (pj/lay-errorbar :x :y {:y-min :lo :y-max :hi}) pj/plan)]
       (is (= 1 (count (:panels p)))))))
 
-(deftest frame-color-mapping-composes-test
+(deftest pose-color-mapping-composes-test
   ;; persona-16 B5. Closes P1-R3 F1, P9-R2 F14.
-  ;; A color aesthetic on a frame composes with the position mapping.
+  ;; A color aesthetic on a pose composes with the position mapping.
   (let [data {:x [1 2 3] :y [10 20 30] :g ["a" "b" "c"]}]
-    (testing "leaf frame renders with merged color mapping"
-      (let [p (-> data (pj/frame :x :y {:color :g}) pj/lay-point pj/plan)
+    (testing "leaf pose renders with merged color mapping"
+      (let [p (-> data (pj/pose :x :y {:color :g}) pj/lay-point pj/plan)
             layer (first (:layers (first (:panels p))))]
         (is (= 3 (count (:groups layer))) "one group per :g value")))))
 
@@ -1703,7 +1703,7 @@
 ;; ============================================================
 
 (defn- summary
-  "Render a frame and return svg-summary."
+  "Render a pose and return svg-summary."
   [fr]
   (pj/svg-summary (pj/plot fr)))
 
@@ -1711,8 +1711,8 @@
   (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
                          {:key-fn keyword})]
     (testing "Scatter + lm"
-      (let [s (summary (-> (pj/frame iris {:color :species})
-                           (pj/frame :sepal_length :sepal_width)
+      (let [s (summary (-> (pj/pose iris {:color :species})
+                           (pj/pose :sepal_length :sepal_width)
                            (pj/lay-point {:alpha 0.5})
                            (pj/lay-smooth {:stat :linear-model})))]
         (is (= 1 (:panels s)))
@@ -1720,15 +1720,15 @@
         (is (= 3 (:lines s)))))
 
     (testing "SPLOM inference"
-      (let [s (summary (-> (pj/frame iris {:color :species})
-                           (pj/frame (pj/cross [:sepal_length :sepal_width :petal_length]
+      (let [s (summary (-> (pj/pose iris {:color :species})
+                           (pj/pose (pj/cross [:sepal_length :sepal_width :petal_length]
                                                [:sepal_length :sepal_width :petal_length]))))]
         (is (= 9 (:panels s)))
         (is (= 900 (:points s)))))
 
     (testing "Simpson's paradox via nil cancellation"
-      (let [s (summary (-> (pj/frame iris {:color :species})
-                           (pj/frame :sepal_length :sepal_width)
+      (let [s (summary (-> (pj/pose iris {:color :species})
+                           (pj/pose :sepal_length :sepal_width)
                            (pj/lay-point {:alpha 0.4})
                            (pj/lay-smooth {:stat :linear-model})
                            (pj/lay-smooth {:stat :linear-model :color nil})))]
@@ -1737,8 +1737,8 @@
         (is (= 4 (:lines s)))))
 
     (testing "Faceted + per-view layers"
-      (let [s (summary (-> (pj/frame iris)
-                           (pj/frame :sepal_length :sepal_width)
+      (let [s (summary (-> (pj/pose iris)
+                           (pj/pose :sepal_length :sepal_width)
                            pj/lay-point
                            pj/lay-smooth
                            (pj/facet :species)))]
@@ -1748,7 +1748,7 @@
 
     (testing "Data-first (no sketch call)"
       (let [s (summary (-> iris
-                           (pj/frame :sepal_length :sepal_width {:color :species})
+                           (pj/pose :sepal_length :sepal_width {:color :species})
                            (pj/lay-point {:alpha 0.5})
                            (pj/lay-smooth {:stat :linear-model})))]
         (is (= 1 (:panels s)))
@@ -1756,50 +1756,50 @@
         (is (= 3 (:lines s)))))
 
     (testing "Recipe"
-      (let [recipe (-> (pj/frame)
-                       (pj/frame :sepal_length :sepal_width)
+      (let [recipe (-> (pj/pose)
+                       (pj/pose :sepal_length :sepal_width)
                        (pj/lay-point)
                        (pj/lay-smooth {:stat :linear-model}))
             s (summary (pj/with-data recipe iris))]
         (is (= 1 (:panels s)))
         (is (= 150 (:points s)))))
 
-    ;; "Mixed grid" (composite + facet) is deferred. Once two pj/frame
+    ;; "Mixed grid" (composite + facet) is deferred. Once two pj/pose
     ;; calls promote the leaf to a composite, pj/facet can't thread
     ;; through -- facet still routes through ensure-sk, which rejects
     ;; composites (see dev-notes/facet-composite-deferral.md).
 
     (testing "Inference: one numerical column"
-      (let [s (summary (-> (pj/frame iris)
-                           (pj/frame :sepal_length)))]
+      (let [s (summary (-> (pj/pose iris)
+                           (pj/pose :sepal_length)))]
         (is (pos? (:polygons s)))
         (is (zero? (:points s)))))
 
     (testing "Inference: one categorical column"
-      (let [s (summary (-> (pj/frame iris)
-                           (pj/frame :species)))]
+      (let [s (summary (-> (pj/pose iris)
+                           (pj/pose :species)))]
         (is (= 3 (:polygons s)))))
 
     (testing "2D facet grid"
       (let [tips (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
                              {:key-fn keyword})
-            s (summary (-> (pj/frame tips {:color :smoker})
-                           (pj/frame :total_bill :tip)
+            s (summary (-> (pj/pose tips {:color :smoker})
+                           (pj/pose :total_bill :tip)
                            (pj/lay-point {:alpha 0.5})
                            (pj/facet-grid :day :sex)))]
         (is (= 8 (:panels s)))))
 
     (testing "Options pass through"
-      (let [s (summary (-> (pj/frame iris)
-                           (pj/frame :sepal_length :sepal_width)
+      (let [s (summary (-> (pj/pose iris)
+                           (pj/pose :sepal_length :sepal_width)
                            (pj/lay-point)
                            (pj/options {:title "Test" :width 400})))]
         (is (= 1 (:panels s)))
         (is (some #{"Test"} (:texts s)))))
 
-    (testing "Frame first, then layers"
+    (testing "Pose first, then layers"
       (let [s (summary (-> iris
-                           (pj/frame :sepal_length :sepal_width {:color :species})
+                           (pj/pose :sepal_length :sepal_width {:color :species})
                            (pj/lay-point {:alpha 0.5})
                            (pj/lay-smooth {:stat :linear-model})))]
         (is (= 1 (:panels s)))
@@ -1872,7 +1872,7 @@
       ;; layers when a view contained an annotation method. Stage 3
       ;; removed that check.
       (let [p (pj/plan (-> ds
-                           (pj/frame :x :y)
+                           (pj/pose :x :y)
                            pj/lay-point
                            (pj/lay-rule-h :x :y {:y-intercept 3})))
             panel (first (:panels p))]
@@ -1905,7 +1905,7 @@
       ;; render the annotation. Domain comes from the view's data
       ;; columns plus the annotation's own position.
       (let [p (pj/plan (-> ds
-                           (pj/frame :x :y)
+                           (pj/pose :x :y)
                            (pj/lay-rule-h :x :y {:y-intercept 3})))
             panel (first (:panels p))]
         (is (= 1 (count (:panels p))))
@@ -1919,7 +1919,7 @@
 
     (testing "annotation-only panel with band extends domain to include band"
       (let [p (pj/plan (-> ds
-                           (pj/frame :x :y)
+                           (pj/pose :x :y)
                            (pj/lay-band-h :x :y {:y-min 10 :y-max 20})))
             panel (first (:panels p))
             [y-lo y-hi] (:y-domain panel)]

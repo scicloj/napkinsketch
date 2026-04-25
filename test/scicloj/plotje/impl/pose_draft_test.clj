@@ -1,19 +1,19 @@
-(ns scicloj.plotje.impl.frame-draft-test
-  "Specification for frame/leaf->draft. Pins the shape that plan.clj
+(ns scicloj.plotje.impl.pose-draft-test
+  "Specification for pose/leaf->draft. Pins the shape that plan.clj
    and the compositor depend on: one draft entry per applicable layer,
-   merged mapping (frame < layer-type-info < layer), layer-level
+   merged mapping (pose < layer-type-info < layer), layer-level
    :stat / :position / :mark as sibling keys, plot-level
    :x-scale / :y-scale / :coord stamped from :opts, and -- when
    :opts carry :facet-col / :facet-row -- one entry per facet variant
    with filtered :data and string facet labels.
 
    Also pins edge case B (leaf has no :x/:y in its own :mapping but
-   layers carry :x/:y) -- the frame-native path emits one entry per
+   layers carry :x/:y) -- the pose-native path emits one entry per
    layer with :x/:y sourced from the layer, which is the behavior a
-   user would expect of the frame model."
+   user would expect of the pose model."
   (:require [clojure.test :refer [deftest testing is]]
             [tablecloth.api :as tc]
-            [scicloj.plotje.impl.frame :as frame]))
+            [scicloj.plotje.impl.pose :as pose]))
 
 (def iris
   (tc/dataset {:a [1.0 2.0 3.0]
@@ -26,7 +26,7 @@
 
 (deftest leaf-with-position-single-layer-test
   (testing "leaf :x/:y + one bare layer -- one draft, mark from the layer type"
-    (let [draft (frame/leaf->draft
+    (let [draft (pose/leaf->draft
                  {:data iris
                   :mapping {:x :a :y :b}
                   :layers [{:layer-type :point :mapping {}}]})]
@@ -35,17 +35,17 @@
       (is (= :b (:y (first draft))))
       (is (= :point (:mark (first draft)))))))
 
-(deftest frame-aesthetic-flows-into-layer-test
-  (testing "frame-level :color flows into the draft entry"
-    (let [draft (frame/leaf->draft
+(deftest pose-aesthetic-flows-into-layer-test
+  (testing "pose-level :color flows into the draft entry"
+    (let [draft (pose/leaf->draft
                  {:data iris
                   :mapping {:x :a :y :b :color :species}
                   :layers [{:layer-type :point :mapping {}}]})]
       (is (= :species (:color (first draft)))))))
 
-(deftest layer-overrides-frame-mapping-test
+(deftest layer-overrides-pose-mapping-test
   (testing "layer mapping wins on shared keys"
-    (let [draft (frame/leaf->draft
+    (let [draft (pose/leaf->draft
                  {:data iris
                   :mapping {:x :a :y :b :color :species}
                   :layers [{:layer-type :point :mapping {:color :a}}]})]
@@ -53,7 +53,7 @@
 
 (deftest multiple-layers-yield-multiple-drafts-test
   (testing "each layer becomes one draft entry"
-    (let [draft (frame/leaf->draft
+    (let [draft (pose/leaf->draft
                  {:data iris
                   :mapping {:x :a :y :b}
                   :layers [{:layer-type :point :mapping {}}
@@ -64,19 +64,19 @@
 (deftest structural-keys-carry-through-test
   (testing ":stat / :position / :mark siblings on a layer carry through"
     (is (= :linear-model
-           (:stat (first (frame/leaf->draft
+           (:stat (first (pose/leaf->draft
                           {:data iris
                            :mapping {:x :a :y :b}
                            :layers [{:layer-type :smooth :mapping {} :stat :linear-model}]})))))
     (is (= :dodge
-           (:position (first (frame/leaf->draft
+           (:position (first (pose/leaf->draft
                               {:data iris
                                :mapping {:x :a :y :b}
                                :layers [{:layer-type :bar :mapping {} :position :dodge}]})))))))
 
 (deftest empty-layers-yield-infer-placeholder-test
   (testing "no layers -> one {:mark :infer ...} draft entry"
-    (let [draft (frame/leaf->draft
+    (let [draft (pose/leaf->draft
                  {:data iris
                   :mapping {:x :a :y :b}
                   :layers []})]
@@ -84,12 +84,12 @@
 
 (deftest no-mapping-no-layers-yields-empty-draft-test
   (testing "a bare leaf with data only produces no draft"
-    (is (empty? (frame/leaf->draft {:data iris :layers []}))
+    (is (empty? (pose/leaf->draft {:data iris :layers []}))
         "nothing to infer from -- let plan produce a minimal placeholder.")))
 
 (deftest plot-level-opts-stamped-on-every-entry-test
   (testing ":x-scale/:y-scale/:coord on leaf opts stamp on each draft entry"
-    (let [[e] (frame/leaf->draft
+    (let [[e] (pose/leaf->draft
                {:data iris
                 :mapping {:x :a :y :b}
                 :layers [{:layer-type :point :mapping {}}]
@@ -101,12 +101,12 @@
       (is (= :flip (:coord e))))))
 
 ;; ============================================================
-;; Edge case B: layers carry position, frame :mapping does not
+;; Edge case B: layers carry position, pose :mapping does not
 ;; ============================================================
 
 (deftest edge-case-b-layer-carries-position-test
   (testing "leaf has no :x/:y; layer has :x/:y -- one draft entry per layer"
-    (let [draft (frame/leaf->draft
+    (let [draft (pose/leaf->draft
                  {:data iris
                   :layers [{:layer-type :point :mapping {:x :a :y :b}}]})]
       (is (= 1 (count draft)))
@@ -116,7 +116,7 @@
 
 (deftest edge-case-b-multiple-layers-test
   (testing "two layers both carrying position -- two draft entries"
-    (let [draft (frame/leaf->draft
+    (let [draft (pose/leaf->draft
                  {:data iris
                   :layers [{:layer-type :point :mapping {:x :a :y :b}}
                            {:layer-type :line  :mapping {:x :a :y :b}}]})]
@@ -130,7 +130,7 @@
 
 (deftest facet-col-expands-draft-test
   (testing ":opts {:facet-col col} multiplies the draft by distinct values"
-    (let [draft (frame/leaf->draft
+    (let [draft (pose/leaf->draft
                  {:data iris
                   :mapping {:x :a :y :b}
                   :layers [{:layer-type :point :mapping {}}]
@@ -147,7 +147,7 @@
                           :y [1 2 3 4]
                           :c ["A" "B" "A" "B"]
                           :r ["X" "X" "Y" "Y"]})
-          draft (frame/leaf->draft
+          draft (pose/leaf->draft
                  {:data ds
                   :mapping {:x :x :y :y}
                   :layers [{:layer-type :point :mapping {}}]

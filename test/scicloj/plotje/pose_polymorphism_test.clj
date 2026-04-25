@@ -1,20 +1,20 @@
-(ns scicloj.plotje.frame-polymorphism-test
-  "Specification for Phase 6's polymorphic pj/frame.
+(ns scicloj.plotje.pose-polymorphism-test
+  "Specification for Phase 6's polymorphic pj/pose.
 
    These tests describe the target behavior after the Sketch record
-   and :views adapter are retired. pj/frame dispatches on its first
-   argument: raw data creates a leaf; an existing frame may be
+   and :views adapter are retired. pj/pose dispatches on its first
+   argument: raw data creates a leaf; an existing pose may be
    extended, promoted to a composite, or appended-to. Empty :mapping
    and :opts are never present in output (strict elision, Reading A
    per Phase 6 design discussion 2026-04-24).
 
    Design reference: memory/project_phase_6_design.md and
-   dev-notes/frame-rules-draft.md. Case labels (C1, E2, P3, ...) match
+   dev-notes/pose-rules-draft.md. Case labels (C1, E2, P3, ...) match
    the test-first outline in the design doc."
   (:require [clojure.test :refer [deftest testing is]]
             [tablecloth.api :as tc]
             [scicloj.plotje.api :as pj]
-            [scicloj.plotje.impl.frame :as frame]))
+            [scicloj.plotje.impl.pose :as pose]))
 
 ;; ============================================================
 ;; Shared fixtures
@@ -32,11 +32,11 @@
                :species ["setosa" "setosa" "versicolor"]}))
 
 (defn- all-nodes
-  "Seq of every frame and layer in the tree -- for property checks."
+  "Seq of every pose and layer in the tree -- for property checks."
   [fr]
   (concat [fr]
           (:layers fr)
-          (mapcat all-nodes (:frames fr))))
+          (mapcat all-nodes (:poses fr))))
 
 (defn- no-empty-map-output? [fr]
   (every? (fn [node]
@@ -49,38 +49,38 @@
 ;; ============================================================
 
 (deftest creation-raw-data-test
-  (testing "C1: (pj/frame) -- arity-0 empty leaf, mapping elided"
-    (let [f (pj/frame)]
+  (testing "C1: (pj/pose) -- arity-0 empty leaf, mapping elided"
+    (let [f (pj/pose)]
       (is (= [] (:layers f)))
       (is (not (contains? f :mapping)))
       (is (not (contains? f :data)))
-      (is (not (contains? f :frames)))))
+      (is (not (contains? f :poses)))))
 
-  (testing "C2: (pj/frame iris) -- data only, mapping elided"
-    (let [f (pj/frame iris)]
+  (testing "C2: (pj/pose iris) -- data only, mapping elided"
+    (let [f (pj/pose iris)]
       (is (tc/dataset? (:data f)))
       (is (= [] (:layers f)))
       (is (not (contains? f :mapping)))
-      (is (not (contains? f :frames)))))
+      (is (not (contains? f :poses)))))
 
-  (testing "C3: (pj/frame iris {:color :species}) -- aesthetic-only mapping"
-    (let [f (pj/frame iris {:color :species})]
+  (testing "C3: (pj/pose iris {:color :species}) -- aesthetic-only mapping"
+    (let [f (pj/pose iris {:color :species})]
       (is (= {:color :species} (:mapping f)))
       (is (= [] (:layers f)))
-      (is (not (contains? f :frames)))))
+      (is (not (contains? f :poses)))))
 
-  (testing "C4: (pj/frame iris :a) -- positional x only"
-    (let [f (pj/frame iris :a)]
+  (testing "C4: (pj/pose iris :a) -- positional x only"
+    (let [f (pj/pose iris :a)]
       (is (= {:x :a} (:mapping f)))
       (is (= [] (:layers f)))))
 
-  (testing "C5: (pj/frame iris :a :b) -- positional x and y"
-    (let [f (pj/frame iris :a :b)]
+  (testing "C5: (pj/pose iris :a :b) -- positional x and y"
+    (let [f (pj/pose iris :a :b)]
       (is (= {:x :a :y :b} (:mapping f)))
       (is (= [] (:layers f)))))
 
-  (testing "C6: (pj/frame iris :a :b {:color :species}) -- position + opts"
-    (let [f (pj/frame iris :a :b {:color :species})]
+  (testing "C6: (pj/pose iris :a :b {:color :species}) -- position + opts"
+    (let [f (pj/pose iris :a :b {:color :species})]
       (is (= {:x :a :y :b :color :species} (:mapping f)))
       (is (= [] (:layers f))))))
 
@@ -89,53 +89,53 @@
 ;; ============================================================
 ;;
 ;; When a leaf has no position-bearing state (no :x/:y in its own
-;; :mapping, no position-carrying layers), a subsequent pj/frame call
+;; :mapping, no position-carrying layers), a subsequent pj/pose call
 ;; extends the leaf's mapping rather than promoting to composite.
 
 (deftest extend-leaf-test
   (testing "E1: empty leaf, then position -- extends mapping"
-    (let [f (-> iris pj/frame (pj/frame :a :b))]
+    (let [f (-> iris pj/pose (pj/pose :a :b))]
       (is (= {:x :a :y :b} (:mapping f)))
       (is (= [] (:layers f)))
-      (is (not (contains? f :frames)))))
+      (is (not (contains? f :poses)))))
 
   (testing "E2: aesthetic-only leaf, then position -- extends mapping"
-    (let [f (-> iris (pj/frame {:color :species}) (pj/frame :a :b))]
+    (let [f (-> iris (pj/pose {:color :species}) (pj/pose :a :b))]
       (is (= {:x :a :y :b :color :species} (:mapping f)))
       (is (= [] (:layers f)))
-      (is (not (contains? f :frames))))))
+      (is (not (contains? f :poses))))))
 
 ;; ============================================================
 ;; Promote -- leaf-with-position plus a new position (P1-P3)
 ;; ============================================================
 ;;
 ;; When the receiver leaf already carries position (:x or :y in its
-;; :mapping), another position-bearing pj/frame call promotes to a
+;; :mapping), another position-bearing pj/pose call promotes to a
 ;; composite. Aesthetic parts split to the composite's root; position
-;; parts stay on the per-panel sub-frames.
+;; parts stay on the per-panel sub-poses.
 
 (deftest promote-via-position-test
   (testing "P1 (guiding): identical positions -- two identical panels"
-    (let [f (-> iris (pj/frame :a :b) (pj/frame :a :b))]
-      (is (= 2 (count (:frames f))))
-      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
-      (is (= {:x :a :y :b} (-> f :frames (nth 1) :mapping)))
+    (let [f (-> iris (pj/pose :a :b) (pj/pose :a :b))]
+      (is (= 2 (count (:poses f))))
+      (is (= {:x :a :y :b} (-> f :poses (nth 0) :mapping)))
+      (is (= {:x :a :y :b} (-> f :poses (nth 1) :mapping)))
       (is (not (contains? f :mapping)))
       (is (not (contains? f :layers)))))
 
   (testing "P2: distinct positions -- two distinct panels"
-    (let [f (-> iris (pj/frame :a :b) (pj/frame :c :d))]
-      (is (= 2 (count (:frames f))))
-      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
-      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping)))
+    (let [f (-> iris (pj/pose :a :b) (pj/pose :c :d))]
+      (is (= 2 (count (:poses f))))
+      (is (= {:x :a :y :b} (-> f :poses (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :poses (nth 1) :mapping)))
       (is (not (contains? f :mapping)))))
 
   (testing "P3: aesthetic in first call splits to root; positions to panels"
-    (let [f (-> iris (pj/frame :a :b {:color :species}) (pj/frame :c :d))]
+    (let [f (-> iris (pj/pose :a :b {:color :species}) (pj/pose :c :d))]
       (is (= {:color :species} (:mapping f)))
-      (is (= 2 (count (:frames f))))
-      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
-      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping))))))
+      (is (= 2 (count (:poses f))))
+      (is (= {:x :a :y :b} (-> f :poses (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :poses (nth 1) :mapping))))))
 
 ;; ============================================================
 ;; Promote -- aesthetic-only call on leaf-with-position (A1-A2)
@@ -147,20 +147,20 @@
 
 (deftest promote-via-aesthetic-test
   (testing "A1: aesthetic-only on leaf-with-position promotes, no new panel"
-    (let [f (-> iris (pj/frame :a :b) (pj/frame {:color :species}))]
+    (let [f (-> iris (pj/pose :a :b) (pj/pose {:color :species}))]
       (is (= {:color :species} (:mapping f)))
-      (is (= 1 (count (:frames f))))
-      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))))
+      (is (= 1 (count (:poses f))))
+      (is (= {:x :a :y :b} (-> f :poses (nth 0) :mapping)))))
 
   (testing "A2: aesthetic-then-position gives root aesthetic + two panels"
     (let [f (-> iris
-                (pj/frame :a :b)
-                (pj/frame {:color :species})
-                (pj/frame :c :d))]
+                (pj/pose :a :b)
+                (pj/pose {:color :species})
+                (pj/pose :c :d))]
       (is (= {:color :species} (:mapping f)))
-      (is (= 2 (count (:frames f))))
-      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
-      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping))))))
+      (is (= 2 (count (:poses f))))
+      (is (= {:x :a :y :b} (-> f :poses (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :poses (nth 1) :mapping))))))
 
 ;; ============================================================
 ;; Layer partitioning during promotion (L1-L4)
@@ -168,70 +168,70 @@
 ;;
 ;; Partition rule is single and self-describing: inspect each layer's
 ;; own :mapping. Layers carrying :x or :y ("panel-origin") stay with
-;; sub-frame 1. Layers without :x/:y ("root-origin") move to the new
+;; sub-pose 1. Layers without :x/:y ("root-origin") move to the new
 ;; composite's root :layers -- they distribute to every panel via
 ;; resolve-tree.
 
 (deftest layer-partitioning-test
   (testing "L1 (Pattern D): bare lay-point routes to root, flows to both"
-    (let [f (-> iris (pj/frame :a :b) pj/lay-point (pj/frame :c :d))]
+    (let [f (-> iris (pj/pose :a :b) pj/lay-point (pj/pose :c :d))]
       (is (= 1 (count (:layers f))))
       (is (= :point (-> f :layers (nth 0) :layer-type)))
       (is (not (contains? (-> f :layers (nth 0)) :mapping)))
-      (is (= 2 (count (:frames f))))
-      (is (= [] (-> f :frames (nth 0) :layers)))
-      (is (= [] (-> f :frames (nth 1) :layers)))))
+      (is (= 2 (count (:poses f))))
+      (is (= [] (-> f :poses (nth 0) :layers)))
+      (is (= [] (-> f :poses (nth 1) :layers)))))
 
-  (testing "L2: position-matching lay-point stays in sub-frame 1"
+  (testing "L2: position-matching lay-point stays in sub-pose 1"
     (let [f (-> iris
-                (pj/frame :a :b)
+                (pj/pose :a :b)
                 (pj/lay-point :a :b)
-                (pj/frame :c :d))]
+                (pj/pose :c :d))]
       (is (or (not (contains? f :layers))
               (= [] (:layers f))))
-      (is (= 1 (count (-> f :frames (nth 0) :layers))))
-      (is (= :point (-> f :frames (nth 0) :layers (nth 0) :layer-type)))
-      (is (= [] (-> f :frames (nth 1) :layers)))))
+      (is (= 1 (count (-> f :poses (nth 0) :layers))))
+      (is (= :point (-> f :poses (nth 0) :layers (nth 0) :layer-type)))
+      (is (= [] (-> f :poses (nth 1) :layers)))))
 
   (testing "L3: mixed bare + position layers partition correctly"
     (let [f (-> iris
-                (pj/frame :a :b)
+                (pj/pose :a :b)
                 pj/lay-point
                 (pj/lay-line :a :b)
-                (pj/frame :c :d))]
+                (pj/pose :c :d))]
       (is (= 1 (count (:layers f))))
       (is (= :point (-> f :layers (nth 0) :layer-type)))
-      (is (= 1 (count (-> f :frames (nth 0) :layers))))
-      (is (= :line (-> f :frames (nth 0) :layers (nth 0) :layer-type)))
-      (is (= [] (-> f :frames (nth 1) :layers)))))
+      (is (= 1 (count (-> f :poses (nth 0) :layers))))
+      (is (= :line (-> f :poses (nth 0) :layers (nth 0) :layer-type)))
+      (is (= [] (-> f :poses (nth 1) :layers)))))
 
   (testing "L4: aesthetic-only on layer (no :x/:y) routes to root"
     (let [f (-> iris
-                (pj/frame :a :b)
+                (pj/pose :a :b)
                 (pj/lay-point {:color :species})
-                (pj/frame :c :d))]
+                (pj/pose :c :d))]
       (is (= 1 (count (:layers f))))
       (is (= {:color :species} (-> f :layers (nth 0) :mapping)))
-      (is (= [] (-> f :frames (nth 0) :layers)))
-      (is (= [] (-> f :frames (nth 1) :layers))))))
+      (is (= [] (-> f :poses (nth 0) :layers)))
+      (is (= [] (-> f :poses (nth 1) :layers))))))
 
 ;; ============================================================
 ;; No-op on empty call (N1-N2)
 ;; ============================================================
 ;;
-;; A 1-arity pj/frame on an existing leaf or composite returns the
-;; input unchanged. (Distinct from (pj/frame data) where `data` is raw
+;; A 1-arity pj/pose on an existing leaf or composite returns the
+;; input unchanged. (Distinct from (pj/pose data) where `data` is raw
 ;; -- that creates a new leaf; see C2.)
 
 (deftest no-op-empty-call-test
-  (testing "N1: (pj/frame leaf) returns leaf unchanged"
-    (let [leaf (pj/frame iris :a :b)
-          again (pj/frame leaf)]
+  (testing "N1: (pj/pose leaf) returns leaf unchanged"
+    (let [leaf (pj/pose iris :a :b)
+          again (pj/pose leaf)]
       (is (= leaf again))))
 
-  (testing "N2: (pj/frame composite) returns composite unchanged"
-    (let [composite (-> iris (pj/frame :a :b) (pj/frame :c :d))
-          again (pj/frame composite)]
+  (testing "N2: (pj/pose composite) returns composite unchanged"
+    (let [composite (-> iris (pj/pose :a :b) (pj/pose :c :d))
+          again (pj/pose composite)]
       (is (= composite again)))))
 
 ;; ============================================================
@@ -239,100 +239,100 @@
 ;; ============================================================
 
 (deftest composite-append-test
-  (testing "K1: three pj/frame position calls in a row give three panels"
+  (testing "K1: three pj/pose position calls in a row give three panels"
     (let [f (-> iris
-                (pj/frame :a :b)
-                (pj/frame :c :d)
-                (pj/frame :e :f))]
-      (is (= 3 (count (:frames f))))
-      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
-      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping)))
-      (is (= {:x :e :y :f} (-> f :frames (nth 2) :mapping))))))
+                (pj/pose :a :b)
+                (pj/pose :c :d)
+                (pj/pose :e :f))]
+      (is (= 3 (count (:poses f))))
+      (is (= {:x :a :y :b} (-> f :poses (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :poses (nth 1) :mapping)))
+      (is (= {:x :e :y :f} (-> f :poses (nth 2) :mapping))))))
 
 ;; ============================================================
-;; Multi-pair pj/frame -- broadcast N panels in one call (M1-M6)
+;; Multi-pair pj/pose -- broadcast N panels in one call (M1-M6)
 ;; ============================================================
 ;;
-;; (pj/frame fr [[:a :b] [:c :d]]) and (pj/frame fr [:a :b :c]) expand
-;; to an iterated sequence of (pj/frame fr ...) calls, one per pair or
-;; column. The result is equivalent to threading pj/frame N times.
+;; (pj/pose fr [[:a :b] [:c :d]]) and (pj/pose fr [:a :b :c]) expand
+;; to an iterated sequence of (pj/pose fr ...) calls, one per pair or
+;; column. The result is equivalent to threading pj/pose N times.
 ;; This restores the panel-broadcast half of the old pj/view that was
 ;; dropped in slice 1. The canonical use is SPLOM:
 ;;
-;;   (-> data (pj/frame {:color :species})
+;;   (-> data (pj/pose {:color :species})
 ;;            pj/lay-point
-;;            (pj/frame (pj/cross cols cols)))
+;;            (pj/pose (pj/cross cols cols)))
 
 (deftest multi-pair-raw-data-bivariate-test
-  (testing "M1: (pj/frame data [[:a :b] [:c :d]]) -- vector of pairs"
-    (let [f (pj/frame iris [[:a :b] [:c :d]])]
-      (is (= 2 (count (:frames f))))
-      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
-      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping))))))
+  (testing "M1: (pj/pose data [[:a :b] [:c :d]]) -- vector of pairs"
+    (let [f (pj/pose iris [[:a :b] [:c :d]])]
+      (is (= 2 (count (:poses f))))
+      (is (= {:x :a :y :b} (-> f :poses (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :poses (nth 1) :mapping))))))
 
 (deftest multi-pair-raw-data-univariate-test
-  (testing "M2: (pj/frame data [:a :b :c]) -- vector of columns"
-    (let [f (pj/frame iris [:a :b :c])]
-      (is (= 3 (count (:frames f))))
-      (is (= {:x :a} (-> f :frames (nth 0) :mapping)))
-      (is (= {:x :b} (-> f :frames (nth 1) :mapping)))
-      (is (= {:x :c} (-> f :frames (nth 2) :mapping))))))
+  (testing "M2: (pj/pose data [:a :b :c]) -- vector of columns"
+    (let [f (pj/pose iris [:a :b :c])]
+      (is (= 3 (count (:poses f))))
+      (is (= {:x :a} (-> f :poses (nth 0) :mapping)))
+      (is (= {:x :b} (-> f :poses (nth 1) :mapping)))
+      (is (= {:x :c} (-> f :poses (nth 2) :mapping))))))
 
 (deftest multi-pair-extend-existing-test
   (testing "M3: threaded onto a leaf-with-position -- promote + append"
-    (let [f (-> iris (pj/frame :a :b) (pj/frame [[:c :d] [:e :f]]))]
-      (is (= 3 (count (:frames f))))
-      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
-      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping)))
-      (is (= {:x :e :y :f} (-> f :frames (nth 2) :mapping))))))
+    (let [f (-> iris (pj/pose :a :b) (pj/pose [[:c :d] [:e :f]]))]
+      (is (= 3 (count (:poses f))))
+      (is (= {:x :a :y :b} (-> f :poses (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :poses (nth 1) :mapping)))
+      (is (= {:x :e :y :f} (-> f :poses (nth 2) :mapping))))))
 
 (deftest multi-pair-root-layer-flows-test
   (testing "M4: root layer flows to every panel via resolve-tree"
-    (let [f (-> iris pj/frame pj/lay-point (pj/frame [[:a :b] [:c :d]]))]
-      (is (= 2 (count (:frames f))))
+    (let [f (-> iris pj/pose pj/lay-point (pj/pose [[:a :b] [:c :d]]))]
+      (is (= 2 (count (:poses f))))
       (is (= 1 (count (:layers f))))
       (is (= :point (-> f :layers (nth 0) :layer-type))))))
 
 (deftest multi-pair-root-aesthetic-splom-pattern-test
   (testing "M5: full SPLOM pattern -- root aesthetic + root layer + N panels"
     (let [f (-> iris
-                (pj/frame {:color :species})
+                (pj/pose {:color :species})
                 pj/lay-point
-                (pj/frame [[:a :b] [:c :d]]))]
+                (pj/pose [[:a :b] [:c :d]]))]
       (is (= {:color :species} (:mapping f)))
-      (is (= 2 (count (:frames f))))
+      (is (= 2 (count (:poses f))))
       (is (= 1 (count (:layers f))))
-      (is (= {:x :a :y :b} (-> f :frames (nth 0) :mapping)))
-      (is (= {:x :c :y :d} (-> f :frames (nth 1) :mapping))))))
+      (is (= {:x :a :y :b} (-> f :poses (nth 0) :mapping)))
+      (is (= {:x :c :y :d} (-> f :poses (nth 1) :mapping))))))
 
 (deftest multi-pair-cross-utility-test
-  (testing "M6: (pj/frame data (pj/cross cols cols)) builds a SPLOM grid"
+  (testing "M6: (pj/pose data (pj/cross cols cols)) builds a SPLOM grid"
     ;; (pj/cross cols cols) is the canonical SPLOM input -- an MxM
     ;; Cartesian rectangle. See the G1-G5 tests below for the full
     ;; grid-shape contract; here we pin that it is NOT the flat
     ;; composite (which was the slice-1 behaviour).
     (let [cols [:a :b]
-          f (pj/frame iris (pj/cross cols cols))]
-      (is (= 2 (count (:frames f))) "2 rows, not 4 flat sub-frames")
+          f (pj/pose iris (pj/cross cols cols))]
+      (is (= 2 (count (:poses f))) "2 rows, not 4 flat sub-poses")
       (is (= :vertical (get-in f [:layout :direction])))
       (is (= #{:x :y} (:share-scales f))))))
 
 (deftest multi-pair-iteration-equivalence-test
-  (testing "M7: (pj/frame fr vec-of-pairs) -- non-rectangular pair list threads per-pair"
+  (testing "M7: (pj/pose fr vec-of-pairs) -- non-rectangular pair list threads per-pair"
     ;; 3 pairs that do NOT form a Cartesian rectangle -- keeps flat
-    ;; behaviour; equivalent to threading pj/frame three times.
+    ;; behaviour; equivalent to threading pj/pose three times.
     (let [expected (-> iris
-                       (pj/frame :a :b)
-                       (pj/frame :c :d)
-                       (pj/frame :e :f))
-          actual (pj/frame iris [[:a :b] [:c :d] [:e :f]])]
+                       (pj/pose :a :b)
+                       (pj/pose :c :d)
+                       (pj/pose :e :f))
+          actual (pj/pose iris [[:a :b] [:c :d] [:e :f]])]
       (is (= expected actual)))))
 
 ;; ============================================================
-;; Multi-pair pj/frame -- rectangular grid reshape (G1-G5)
+;; Multi-pair pj/pose -- rectangular grid reshape (G1-G5)
 ;; ============================================================
 ;;
-;; When multi-pair pj/frame receives pairs that form an M x N
+;; When multi-pair pj/pose receives pairs that form an M x N
 ;; Cartesian rectangle (every combination of unique first-elements
 ;; with unique second-elements, in cross-order), the result is a
 ;; nested composite: outer :vertical of M rows; each row is
@@ -343,61 +343,61 @@
 
 (deftest multi-pair-grid-splom-shape-test
   (testing "G1: (pj/cross cols cols) produces M x N nested composite"
-    (let [f (pj/frame iris (pj/cross [:a :b] [:c :d]))]
+    (let [f (pj/pose iris (pj/cross [:a :b] [:c :d]))]
       (is (= :vertical (get-in f [:layout :direction])))
       (is (= #{:x :y} (:share-scales f)))
-      (is (= 2 (count (:frames f))) "2 rows")
-      (let [row-0 (first (:frames f))
-            row-1 (second (:frames f))]
+      (is (= 2 (count (:poses f))) "2 rows")
+      (let [row-0 (first (:poses f))
+            row-1 (second (:poses f))]
         (is (= :horizontal (get-in row-0 [:layout :direction])))
-        (is (= 2 (count (:frames row-0))) "2 cells per row")
-        (is (= 2 (count (:frames row-1))))
+        (is (= 2 (count (:poses row-0))) "2 cells per row")
+        (is (= 2 (count (:poses row-1))))
         ;; row 0: x = :a, y varies [:c :d]
-        (is (= {:x :a :y :c} (:mapping (first (:frames row-0)))))
-        (is (= {:x :a :y :d} (:mapping (second (:frames row-0)))))
+        (is (= {:x :a :y :c} (:mapping (first (:poses row-0)))))
+        (is (= {:x :a :y :d} (:mapping (second (:poses row-0)))))
         ;; row 1: x = :b, y varies [:c :d]
-        (is (= {:x :b :y :c} (:mapping (first (:frames row-1)))))
-        (is (= {:x :b :y :d} (:mapping (second (:frames row-1)))))))))
+        (is (= {:x :b :y :c} (:mapping (first (:poses row-1)))))
+        (is (= {:x :b :y :d} (:mapping (second (:poses row-1)))))))))
 
 (deftest multi-pair-grid-3x3-test
   (testing "G2: 3 x 3 SPLOM via pj/cross"
     (let [cols [:a :b :c]
-          f (pj/frame iris (pj/cross cols cols))]
-      (is (= 3 (count (:frames f))) "3 rows")
-      (is (every? #(= 3 (count (:frames %))) (:frames f)) "3 cells each"))))
+          f (pj/pose iris (pj/cross cols cols))]
+      (is (= 3 (count (:poses f))) "3 rows")
+      (is (every? #(= 3 (count (:poses %))) (:poses f)) "3 cells each"))))
 
 (deftest multi-pair-grid-root-aesthetic-test
   (testing "G3: SPLOM pattern -- root aesthetic + root layer + grid"
     (let [f (-> iris
-                (pj/frame {:color :species})
+                (pj/pose {:color :species})
                 pj/lay-point
-                (pj/frame (pj/cross [:a :b] [:c :d])))]
+                (pj/pose (pj/cross [:a :b] [:c :d])))]
       (is (= {:color :species} (:mapping f))
           "root aesthetic preserved")
       (is (= 1 (count (:layers f)))
           "root layer preserved")
       (is (= :point (-> f :layers first :layer-type)))
-      (is (= 2 (count (:frames f))) "2 rows")
-      (is (every? #(= 2 (count (:frames %))) (:frames f)) "2 cells each"))))
+      (is (= 2 (count (:poses f))) "2 rows")
+      (is (every? #(= 2 (count (:poses %))) (:poses f)) "2 cells each"))))
 
 (deftest multi-pair-grid-non-rectangular-falls-through-test
   (testing "G4: non-rectangular pair list keeps flat composite"
     ;; 2 pairs: [:a :b] [:c :d] -- would need [:a :d] [:c :b] for a 2x2
     ;; rectangle, so falls through to flat reduce.
-    (let [f (pj/frame iris [[:a :b] [:c :d]])]
-      (is (= 2 (count (:frames f))))
-      ;; Flat composite -- each sub-frame is a leaf with mapping, no
-      ;; nested :frames
-      (is (every? #(not (contains? % :frames)) (:frames f))))))
+    (let [f (pj/pose iris [[:a :b] [:c :d]])]
+      (is (= 2 (count (:poses f))))
+      ;; Flat composite -- each sub-pose is a leaf with mapping, no
+      ;; nested :poses
+      (is (every? #(not (contains? % :poses)) (:poses f))))))
 
 (deftest multi-pair-grid-1xN-falls-through-test
   (testing "G5: a 1xN shape does not grid-reshape"
     ;; (pj/cross [:a] [:b :c :d]) gives 3 pairs but only 1 unique x --
     ;; 1 row. We require at least 2 rows and 2 cols to reshape.
-    (let [f (pj/frame iris (pj/cross [:a] [:b :c :d]))]
-      ;; Falls through to flat -- 3 sub-frames at root
-      (is (= 3 (count (:frames f))))
-      (is (every? #(not (contains? % :frames)) (:frames f)))
+    (let [f (pj/pose iris (pj/cross [:a] [:b :c :d]))]
+      ;; Falls through to flat -- 3 sub-poses at root
+      (is (= 3 (count (:poses f))))
+      (is (every? #(not (contains? % :poses)) (:poses f)))
       (is (not (contains? f :share-scales))))))
 
 ;; ============================================================
@@ -406,28 +406,28 @@
 
 (deftest integration-lay-resolve-test
   (testing "I1: root-origin layer reaches both panels through resolve-tree"
-    (let [f (-> iris (pj/frame :a :b) pj/lay-point (pj/frame :c :d))
-          leaves (frame/resolve-tree f)]
+    (let [f (-> iris (pj/pose :a :b) pj/lay-point (pj/pose :c :d))
+          leaves (pose/resolve-tree f)]
       (is (= 2 (count leaves)))
       (is (every? (fn [leaf] (= 1 (count (:layers leaf)))) leaves)
           "each resolved leaf carries the root layer")))
 
   (testing "I2: panel-specific layer does not leak across panels"
     (let [f (-> iris
-                (pj/frame :a :b)
+                (pj/pose :a :b)
                 (pj/lay-point :a :b)
-                (pj/frame :c :d))
-          leaves (frame/resolve-tree f)
+                (pj/pose :c :d))
+          leaves (pose/resolve-tree f)
           layers-per-leaf (mapv #(count (:layers %)) leaves)]
       (is (= [1 0] layers-per-leaf)
           "leaf 1 has the layer; leaf 2 does not")))
 
   (testing "I3: root aesthetic merges into both resolved leaves' mappings"
     (let [f (-> iris
-                (pj/frame :a :b)
-                (pj/frame {:color :species})
-                (pj/frame :c :d))
-          leaves (frame/resolve-tree f)]
+                (pj/pose :a :b)
+                (pj/pose {:color :species})
+                (pj/pose :c :d))
+          leaves (pose/resolve-tree f)]
       (is (= 2 (count leaves)))
       (is (every? (fn [leaf] (= :species (get-in leaf [:mapping :color])))
                   leaves)))))
@@ -437,53 +437,53 @@
 ;; ============================================================
 
 (deftest no-empty-map-output-property-test
-  (testing "No frame or layer in the resulting tree carries {} for mapping or opts"
-    (is (no-empty-map-output? (pj/frame)))
-    (is (no-empty-map-output? (pj/frame iris)))
-    (is (no-empty-map-output? (pj/frame iris :a :b)))
-    (is (no-empty-map-output? (-> iris (pj/frame :a :b) (pj/frame :c :d))))
-    (is (no-empty-map-output? (-> iris (pj/frame :a :b) pj/lay-point)))
+  (testing "No pose or layer in the resulting tree carries {} for mapping or opts"
+    (is (no-empty-map-output? (pj/pose)))
+    (is (no-empty-map-output? (pj/pose iris)))
+    (is (no-empty-map-output? (pj/pose iris :a :b)))
+    (is (no-empty-map-output? (-> iris (pj/pose :a :b) (pj/pose :c :d))))
+    (is (no-empty-map-output? (-> iris (pj/pose :a :b) pj/lay-point)))
     (is (no-empty-map-output?
-         (-> iris (pj/frame :a :b) pj/lay-point (pj/frame :c :d))))))
+         (-> iris (pj/pose :a :b) pj/lay-point (pj/pose :c :d))))))
 
-(deftest frames-preserve-call-order-test
-  (testing "Sub-frames appear in left-to-right pj/frame invocation order"
+(deftest poses-preserve-call-order-test
+  (testing "Sub-poses appear in left-to-right pj/pose invocation order"
     (let [f (-> iris
-                (pj/frame :a :b)
-                (pj/frame :c :d)
-                (pj/frame :e :f))]
+                (pj/pose :a :b)
+                (pj/pose :c :d)
+                (pj/pose :e :f))]
       (is (= [{:x :a :y :b} {:x :c :y :d} {:x :e :y :f}]
-             (mapv :mapping (:frames f)))))))
+             (mapv :mapping (:poses f)))))))
 
 (deftest promotion-shape-idempotence-test
-  (testing "Threading pj/frame three times equals threading twice + once"
+  (testing "Threading pj/pose three times equals threading twice + once"
     (let [three-in-a-row (-> iris
-                             (pj/frame :a :b)
-                             (pj/frame :c :d)
-                             (pj/frame :e :f))
+                             (pj/pose :a :b)
+                             (pj/pose :c :d)
+                             (pj/pose :e :f))
           built-in-two   (let [two (-> iris
-                                       (pj/frame :a :b)
-                                       (pj/frame :c :d))]
-                           (pj/frame two :e :f))]
+                                       (pj/pose :a :b)
+                                       (pj/pose :c :d))]
+                           (pj/pose two :e :f))]
       (is (= three-in-a-row built-in-two)))))
 
 ;; ============================================================
-;; Layer position vs frame position -- overlay semantics
+;; Layer position vs pose position -- overlay semantics
 ;; ============================================================
 ;;
 ;; When a leaf already carries position and `pj/lay-*` is called with
 ;; a non-matching position, the new position lives on the LAYER's
 ;; own `:mapping` rather than creating a new panel. At render, the
-;; layer's position overrides the frame's via merge -- an overlay on
+;; layer's position overrides the pose's via merge -- an overlay on
 ;; the same panel. This differs from the old Sketch-world behavior
 ;; (where a non-matching position would have created a new view /
-;; panel); in the frame world, adding a panel is an explicit `pj/frame`
+;; panel); in the pose world, adding a panel is an explicit `pj/pose`
 ;; call. Pinned here so the next slice can't silently change it.
 
 (deftest leaf-layer-non-matching-position-test
   (testing "leaf with position, lay-* with non-matching position -- overlay"
     (let [f (-> iris
-                (pj/frame :a :b)
+                (pj/pose :a :b)
                 (pj/lay-point :c :d))]
       (is (= {:x :a :y :b} (:mapping f))
           "leaf's own mapping is unchanged")
@@ -491,7 +491,7 @@
           "one layer added, no panel added")
       (is (= {:x :c :y :d} (-> f :layers (nth 0) :mapping))
           "the non-matching position lives on the layer's :mapping")
-      (is (not (contains? f :frames))
+      (is (not (contains? f :poses))
           "no promotion to composite"))))
 
 ;; ============================================================
@@ -504,7 +504,7 @@
 
 (deftest layer-structural-keys-test
   (testing ":stat is a sibling key, not inside :mapping"
-    (let [layer (-> (pj/frame iris :a :b)
+    (let [layer (-> (pj/pose iris :a :b)
                     (pj/lay-smooth {:stat :linear-model})
                     :layers
                     first)]
@@ -512,7 +512,7 @@
       (is (not (contains? (or (:mapping layer) {}) :stat)))))
 
   (testing ":position is a sibling key, not inside :mapping"
-    (let [layer (-> (pj/frame iris :a :b)
+    (let [layer (-> (pj/pose iris :a :b)
                     (pj/lay-bar {:position :dodge})
                     :layers
                     first)]
@@ -520,7 +520,7 @@
       (is (not (contains? (or (:mapping layer) {}) :position)))))
 
   (testing ":mark (user override) is a sibling key, not inside :mapping"
-    (let [layer (-> (pj/frame iris :a :b)
+    (let [layer (-> (pj/pose iris :a :b)
                     (pj/lay-point {:mark :line})
                     :layers
                     first)]
@@ -528,7 +528,7 @@
       (is (not (contains? (or (:mapping layer) {}) :mark)))))
 
   (testing "aesthetic keys stay in :mapping"
-    (let [layer (-> (pj/frame iris :a :b)
+    (let [layer (-> (pj/pose iris :a :b)
                     (pj/lay-point {:color :species :alpha 0.5})
                     :layers
                     first)]

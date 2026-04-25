@@ -1,9 +1,9 @@
-(ns scicloj.plotje.impl.frame-schema-test
-  "Tests for the Frame Malli schema."
+(ns scicloj.plotje.impl.pose-schema-test
+  "Tests for the Pose Malli schema."
   (:require [clojure.test :refer [deftest testing is]]
-            [scicloj.plotje.impl.frame-schema :as fs]))
+            [scicloj.plotje.impl.pose-schema :as fs]))
 
-(deftest leaf-frame-validity-test
+(deftest leaf-pose-validity-test
   (testing "leaf with layers but no data/mapping is valid"
     (is (fs/valid? {:layers [{:layer-type :point}]})))
 
@@ -19,18 +19,18 @@
                               :stat :linear-model
                               :mark :line}]}))))
 
-(deftest composite-frame-validity-test
-  (testing "composite with frames and layout is valid"
-    (is (fs/valid? {:frames [{:layers [{:layer-type :point}]}
+(deftest composite-pose-validity-test
+  (testing "composite with poses and layout is valid"
+    (is (fs/valid? {:poses [{:layers [{:layer-type :point}]}
                              {:layers [{:layer-type :line}]}]
                     :layout {:direction :horizontal :weights [1 1]}})))
 
   (testing "nested composites are valid"
-    (is (fs/valid? {:frames [{:frames [{:layers [{:layer-type :point}]}]}]})))
+    (is (fs/valid? {:poses [{:poses [{:layers [{:layer-type :point}]}]}]})))
 
   (testing "composite with :share-scales is valid"
     (is (fs/valid? {:share-scales #{:x :y}
-                    :frames [{:layers [{:layer-type :point}]}
+                    :poses [{:layers [{:layer-type :point}]}
                              {:layers [{:layer-type :point}]}]}))))
 
 (deftest rejection-test
@@ -38,16 +38,16 @@
     (is (not (fs/valid? "string"))))
 
   (testing "bad :layout :direction rejected"
-    (is (not (fs/valid? {:frames []
+    (is (not (fs/valid? {:poses []
                          :layout {:direction :diagonal}}))))
 
   (testing "non-positive :weights rejected"
-    (is (not (fs/valid? {:frames []
+    (is (not (fs/valid? {:poses []
                          :layout {:weights [1 -1]}}))))
 
   (testing ":share-scales with unknown axis rejected"
     (is (not (fs/valid? {:share-scales #{:z}
-                         :frames []}))))
+                         :poses []}))))
 
   (testing ":mapping keys must be keywords"
     (is (not (fs/valid? {:layers [{:mapping {"x" :foo}}]}))))
