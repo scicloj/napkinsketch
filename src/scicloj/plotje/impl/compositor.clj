@@ -80,13 +80,21 @@
   "Pixel height reserved at the top of a composite when :title is set."
   30)
 
+(def ^:private composite-text-color
+  "Text color for composite-level chrome (title + strip labels).
+   Matches the leaf title color in render/membrane.clj so single
+   plots and composite plots use the same shade -- earlier code
+   used [0.1 0.1 0.1] which rendered as rgb(25,25,25), visibly
+   darker than leaf titles' rgb(51,51,51)."
+  [0.2 0.2 0.2 1.0])
+
 (defn- title-drawable
   "Membrane drawable for a centered title band at the top of a
    composite of width w. Nil when no title."
   [title w]
   (when title
     (ui/translate (/ (double w) 2.0) 16
-                  (ui/with-color [0.1 0.1 0.1 1.0]
+                  (ui/with-color composite-text-color
                     (assoc (ui/label title (ui/font nil 15))
                            :text-anchor "middle")))))
 
@@ -148,7 +156,7 @@
      (let [cw (/ (double grid-w) n-cols)
            cx (+ (double grid-x) (* ci cw) (/ cw 2.0))]
        (ui/translate cx (double strip-top)
-                     (ui/with-color [0.1 0.1 0.1 1.0]
+                     (ui/with-color composite-text-color
                        (assoc (ui/label label (ui/font nil grid-strip-font-size))
                               :text-anchor "middle")))))))
 
@@ -166,7 +174,7 @@
        (let [rh (/ (double grid-h) n-rows)
              cy (+ (double grid-y) (* ri rh) (/ rh 2.0))]
          (ui/translate label-x cy
-                       (ui/with-color [0.1 0.1 0.1 1.0]
+                       (ui/with-color composite-text-color
                          (assoc (ui/label label (ui/font nil grid-strip-font-size))
                                 :text-anchor "middle"))))))))
 
@@ -182,7 +190,7 @@
      (let [[x _ w _] rect
            cx (+ (double x) (/ (double w) 2.0))]
        (ui/translate cx (double strip-top)
-                     (ui/with-color [0.1 0.1 0.1 1.0]
+                     (ui/with-color composite-text-color
                        (assoc (ui/label label (ui/font nil grid-strip-font-size))
                               :text-anchor "middle")))))))
 
@@ -200,7 +208,7 @@
        (let [[_ y _ h] rect
              cy (+ (double y) (/ (double h) 2.0))]
          (ui/translate label-x cy
-                       (ui/with-color [0.1 0.1 0.1 1.0]
+                       (ui/with-color composite-text-color
                          (assoc (ui/label label (ui/font nil grid-strip-font-size))
                                 :text-anchor "middle"))))))))
 
