@@ -185,8 +185,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./plotje_book.frame_model.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Frame Model</span></span></a>
+  <a href="./plotje_book.pose_model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Pose Model</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -203,8 +203,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./plotje_book.frame_rules.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Frame Rules</span></span></a>
+  <a href="./plotje_book.pose_rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Pose Rules</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -415,12 +415,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#pipeline-overview" id="toc-pipeline-overview" class="nav-link active" data-scroll-target="#pipeline-overview">Pipeline Overview</a></li>
   <li><a href="#pipeline-trace" id="toc-pipeline-trace" class="nav-link" data-scroll-target="#pipeline-trace">Pipeline Trace</a>
   <ul>
-  <li><a href="#frame" id="toc-frame" class="nav-link" data-scroll-target="#frame">Frame</a></li>
+  <li><a href="#pose" id="toc-pose" class="nav-link" data-scroll-target="#pose">Pose</a></li>
   <li><a href="#draft" id="toc-draft" class="nav-link" data-scroll-target="#draft">Draft</a></li>
   <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan">Plan</a></li>
   <li><a href="#membrane" id="toc-membrane" class="nav-link" data-scroll-target="#membrane">Membrane</a></li>
   <li><a href="#plot" id="toc-plot" class="nav-link" data-scroll-target="#plot">Plot</a></li>
-  <li><a href="#shortcut-frame-to-plan" id="toc-shortcut-frame-to-plan" class="nav-link" data-scroll-target="#shortcut-frame-to-plan">Shortcut: Frame to Plan</a></li>
+  <li><a href="#shortcut-pose-to-plan" id="toc-shortcut-pose-to-plan" class="nav-link" data-scroll-target="#shortcut-pose-to-plan">Shortcut: Pose to Plan</a></li>
   <li><a href="#pipeline-summary" id="toc-pipeline-summary" class="nav-link" data-scroll-target="#pipeline-summary">Pipeline Summary</a></li>
   </ul></li>
   <li><a href="#the-plan-boundary" id="toc-the-plan-boundary" class="nav-link" data-scroll-target="#the-plan-boundary">The Plan Boundary</a></li>
@@ -465,7 +465,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" type="text/javascript"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11.10.1/dist/mermaid.min.js" type="text/javascript"></script>
-<p>Plotje has a five-stage pipeline. You compose a frame – a declarative description of data, mappings, and layers – that flattens into a draft automatically.</p>
+<p>Plotje has a five-stage pipeline. You compose a pose – a declarative description of data, mappings, and layers – that flattens into a draft automatically.</p>
 <p>This notebook traces a small example through every stage, explains the plan boundary, and shows the namespace structure.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> plotje-book.architecture</span>
@@ -476,8 +476,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>   [scicloj.metamorph.ml.rdatasets <span class="at">:as</span> rdatasets]</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Plotje -- composable plotting</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>   [scicloj.plotje.api <span class="at">:as</span> pj]</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Frame substrate -- leaf-&gt;draft, resolve-tree</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>   [scicloj.plotje.impl.frame <span class="at">:as</span> frame-impl]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Pose substrate -- leaf-&gt;draft, resolve-tree</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>   [scicloj.plotje.impl.pose <span class="at">:as</span> pose-impl]</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Plan pipeline -- draft-&gt;plan, domains, ticks, legends, layout</span></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>   [scicloj.plotje.impl.plan <span class="at">:as</span> plan-impl]</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Malli schema validation</span></span>
@@ -487,7 +487,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="pipeline-overview">Pipeline Overview</h2>
 <div class="mermaid">
 graph LR
-  B["Frame<br>(composable API)"] --&gt;|frame-&gt;draft| D["Draft<br>(flat maps)"]
+  B["Pose<br>(composable API)"] --&gt;|pose-&gt;draft| D["Draft<br>(flat maps)"]
   D --&gt;|draft-&gt;plan| P["Plan<br>(data-space)"]
   P --&gt;|scales + coords| M["Membrane<br>(drawing primitives)"]
   M --&gt;|tree walk| F["Plot<br>(output)"]
@@ -498,13 +498,13 @@ graph LR
   style F fill:#fce4ec
 </div>
 <ul>
-<li><p><strong>Frame</strong> – the composable user API. Functions like <code>pj/frame</code>, <code>pj/lay-point</code>, <code>pj/lay-rule-h</code>, <code>pj/options</code>, <code>pj/facet</code>, <code>pj/arrange</code>, <code>pj/scale</code>, and <code>pj/coord</code> build up a frame. No computation has happened yet.</p></li>
+<li><p><strong>Pose</strong> – the composable user API. Functions like <code>pj/pose</code>, <code>pj/lay-point</code>, <code>pj/lay-rule-h</code>, <code>pj/options</code>, <code>pj/facet</code>, <code>pj/arrange</code>, <code>pj/scale</code>, and <code>pj/coord</code> build up a pose. No computation has happened yet.</p></li>
 <li><p><strong>Draft</strong> – a flat vector of maps produced by <code>pj/draft</code>. Each map has <code>:data</code>, <code>:x</code>, <code>:y</code>, <code>:mark</code>, <code>:stat</code>, and aesthetic keys – one per leaf-and-layer combination, with all scope merged.</p></li>
 <li><p><strong>Plan</strong> – fully resolved plan. Data-space geometry, domains, tick info, legend. Plain Clojure maps and dtype-next buffers. No rendering primitives.</p></li>
 <li><p><strong>Membrane</strong> – positioned drawing primitives (Translate, WithColor, Path, Label, etc.).</p></li>
 <li><p><strong>Plot</strong> – final output. A tree walk converts membrane records to SVG hiccup, which Clay/Kindly renders in notebooks.</p></li>
 </ul>
-<p>Most users only interact with the frame stage and never need to think about the others. The stages below matter when you are debugging unexpected output, building a custom renderer, or extending the library.</p>
+<p>Most users only interact with the pose stage and never need to think about the others. The stages below matter when you are debugging unexpected output, building a custom renderer, or extending the library.</p>
 </section>
 <section id="pipeline-trace" class="level2">
 <h2 class="anchored" data-anchor-id="pipeline-trace">Pipeline Trace</h2>
@@ -515,31 +515,31 @@ graph LR
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>   <span class="at">:y</span> [<span class="dv">2</span> <span class="dv">4</span> <span class="dv">3</span> <span class="dv">5</span> <span class="dv">4</span>]</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>   <span class="at">:g</span> [<span class="at">:a</span> <span class="at">:a</span> <span class="at">:b</span> <span class="at">:b</span> <span class="at">:b</span>]})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<section id="frame" class="level3">
-<h3 class="anchored" data-anchor-id="frame">Frame</h3>
-<p>The user composes a frame by threading data through composable functions. The frame records what to plot without doing any computation.</p>
+<section id="pose" class="level3">
+<h3 class="anchored" data-anchor-id="pose">Pose</h3>
+<p>The user composes a pose by threading data through composable functions. The pose records what to plot without doing any computation.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> trace-sk</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> trace-data</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>      (pj/lay-point <span class="at">:x</span> <span class="at">:y</span> {<span class="at">:color</span> <span class="at">:g</span>})))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>A frame is a plain Clojure map. The fields below are what you see while inspecting the threaded value:</p>
+<p>A pose is a plain Clojure map. The fields below are what you see while inspecting the threaded value:</p>
 <ul>
 <li><p><code>:data</code> – the dataset (coerced to Tablecloth)</p></li>
-<li><p><code>:mapping</code> – mappings that flow into every layer on this frame</p></li>
-<li><p><code>:layers</code> – layers placed on this frame</p></li>
-<li><p><code>:frames</code> – sub-frames; a leaf has none</p></li>
+<li><p><code>:mapping</code> – mappings that flow into every layer on this pose</p></li>
+<li><p><code>:layers</code> – layers placed on this pose</p></li>
+<li><p><code>:poses</code> – sub-poses; a leaf has none</p></li>
 <li><p><code>:opts</code> – plot-level options (title, width, etc.)</p></li>
 </ul>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(pj/frame? trace-sk)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(pj/pose? trace-sk)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Because a leaf frame has no sub-frames, this is a leaf:</p>
+<p>Because a leaf pose has no sub-poses, this is a leaf:</p>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(frame-impl/leaf? trace-sk)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(pose-impl/leaf? trace-sk)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -567,7 +567,7 @@ graph LR
 </section>
 <section id="draft" class="level3">
 <h3 class="anchored" data-anchor-id="draft">Draft</h3>
-<p><code>pj/draft</code> flattens the frame into a vector of maps. Each map merges frame-level mappings, leaf mappings, and layer details into one flat map with <code>:data</code>, <code>:x</code>, <code>:y</code>, <code>:mark</code>, etc.</p>
+<p><code>pj/draft</code> flattens the pose into a vector of maps. Each map merges pose-level mappings, leaf mappings, and layer details into one flat map with <code>:data</code>, <code>:x</code>, <code>:y</code>, <code>:mark</code>, etc.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> trace-draft</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  (pj/draft trace-sk))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1635,9 +1635,9 @@ graph LR
 </div>
 <svg font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" height="400.0" role="img" viewbox="0 0 600.0 400.0" width="600.0" xmlns="http://www.w3.org/2000/svg"><g><g transform="translate(12.00,181.00)"><g transform="rotate(-90.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">y</text></g></g></g><g transform="translate(271.25,382.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="13" text-anchor="middle">x</text></g></g><g transform="translate(510.00,2.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="11">g</text></g></g><g transform="translate(510.00,20.00)"><g><g transform="translate(0.00,0.00)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.00,0.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">a</text></g></g></g></g><g transform="translate(510.00,36.00)"><g><g transform="translate(0.00,0.00)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="1.0" height="8" rx="4.0" ry="4.0" stroke="none" width="8" x="0" y="0"></rect></g></g></g><g transform="translate(12.00,0.00)"><g><text dominant-baseline="hanging" fill="rgb(51,51,51)" fill-opacity="1.0" font-size="10">b</text></g></g></g></g><g transform="translate(52.50,10.00)"><g><g><rect fill="rgb(232,232,232)" fill-opacity="1.0" height="342.0" stroke="none" width="437.5" x="0" y="0"></rect></g></g></g><g transform="translate(42.50,0.00)"><g><g><g><g><polyline fill="none" points="29.89,10.00 29.89,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="79.60,10.00 79.60,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="129.32,10.00 129.32,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="179.03,10.00 179.03,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="228.75,10.00 228.75,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="278.47,10.00 278.47,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="328.18,10.00 328.18,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="377.90,10.00 377.90,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="427.61,10.00 427.61,352.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,336.45 447.50,336.45" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,284.64 447.50,284.64" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,232.82 447.50,232.82" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,181.00 447.50,181.00" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,129.18 447.50,129.18" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,77.36 447.50,77.36" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g><g><g><polyline fill="none" points="10.00,25.55 447.50,25.55" stroke="rgb(245,245,245)" stroke-opacity="1.0" stroke-width="0.6"></polyline></g></g></g><g data-row-idx="0" transform="translate(26.89,333.45)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="1" transform="translate(126.32,126.18)"><g><g><rect fill="rgb(228,26,28)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="2" transform="translate(225.75,229.82)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="3" transform="translate(325.18,22.55)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g data-row-idx="4" transform="translate(424.61,126.18)"><g><g><rect fill="rgb(55,126,184)" fill-opacity="0.75" height="6.0" rx="3.0" ry="3.0" stroke="none" width="6.0" x="0" y="0"></rect></g></g></g><g transform="translate(29.89,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">1.0</text></g></g><g transform="translate(79.60,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">1.5</text></g></g><g transform="translate(129.32,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">2.0</text></g></g><g transform="translate(179.03,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">2.5</text></g></g><g transform="translate(228.75,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">3.0</text></g></g><g transform="translate(278.47,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">3.5</text></g></g><g transform="translate(328.18,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">4.0</text></g></g><g transform="translate(377.90,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">4.5</text></g></g><g transform="translate(427.61,364.00)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="middle">5.0</text></g></g><g transform="translate(7.00,330.95)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">2.0</text></g></g><g transform="translate(7.00,279.14)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">2.5</text></g></g><g transform="translate(7.00,227.32)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">3.0</text></g></g><g transform="translate(7.00,175.50)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">3.5</text></g></g><g transform="translate(7.00,123.68)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">4.0</text></g></g><g transform="translate(7.00,71.86)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">4.5</text></g></g><g transform="translate(7.00,20.05)"><g><text dominant-baseline="hanging" fill="rgb(102,102,102)" fill-opacity="1.0" font-size="11" text-anchor="end">5.0</text></g></g></g></g></g></svg>
 </section>
-<section id="shortcut-frame-to-plan" class="level3">
-<h3 class="anchored" data-anchor-id="shortcut-frame-to-plan">Shortcut: Frame to Plan</h3>
-<p>In practice, <code>pj/plan</code> does the frame-to-plan conversion in one step – computing the draft and running <code>draft-&gt;plan</code> internally.</p>
+<section id="shortcut-pose-to-plan" class="level3">
+<h3 class="anchored" data-anchor-id="shortcut-pose-to-plan">Shortcut: Pose to Plan</h3>
+<p>In practice, <code>pj/plan</code> does the pose-to-plan conversion in one step – computing the draft and running <code>draft-&gt;plan</code> internally.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> shortcut-plan </span>(pj/plan trace-sk))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1660,7 +1660,7 @@ graph LR
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Frame</td>
+<td style="text-align: left;">Pose</td>
 <td style="text-align: left;">Plain map (leaf or composite)</td>
 <td style="text-align: left;">N/A (declarative)</td>
 </tr>
@@ -1690,10 +1690,10 @@ graph LR
 </section>
 <section id="the-plan-boundary" class="level2">
 <h2 class="anchored" data-anchor-id="the-plan-boundary">The Plan Boundary</h2>
-<p>The plan is the boundary between description and rendering. The frame and draft stages assemble the description. The plan resolves it into computed geometry, domains, ticks, and legend – still as plain data, before any layout. The membrane and plot stages then produce the rendered output.</p>
+<p>The plan is the boundary between description and rendering. The pose and draft stages assemble the description. The plan resolves it into computed geometry, domains, ticks, and legend – still as plain data, before any layout. The membrane and plot stages then produce the rendered output.</p>
 <div class="mermaid">
 graph LR
-  A["Frame + draft"] --&gt;|plan| P["Plan"]
+  A["Pose + draft"] --&gt;|plan| P["Plan"]
   P --&gt; R["membrane + plot"]
   style A fill:#e8f5e9
   style P fill:#fff3e0
@@ -1709,15 +1709,15 @@ graph LR
 </section>
 <section id="multi-layer-example" class="level2">
 <h2 class="anchored" data-anchor-id="multi-layer-example">Multi-Layer Example</h2>
-<p>A frame can hold multiple layers that share one mapping. Here, scatter points and per-species regression lines share the same panel because both <code>lay-point</code> and <code>lay-smooth</code> target the same <code>:petal-length</code>/<code>:petal-width</code> mapping.</p>
+<p>A pose can hold multiple layers that share one mapping. Here, scatter points and per-species regression lines share the same panel because both <code>lay-point</code> and <code>lay-smooth</code> target the same <code>:petal-length</code>/<code>:petal-width</code> mapping.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> multi-sk</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>      (pj/frame <span class="at">:petal-length</span> <span class="at">:petal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>      (pj/pose <span class="at">:petal-length</span> <span class="at">:petal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
 <span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>      pj/lay-point</span>
 <span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>      (pj/lay-smooth {<span class="at">:stat</span> <span class="at">:linear-model</span>})))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The frame has one leaf with two frame-level layers:</p>
+<p>The pose has one leaf with two pose-level layers:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> (<span class="at">:layers</span> multi-sk))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1904,7 +1904,7 @@ graph LR
 <p>And the rendered result:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    (pj/frame <span class="at">:petal-length</span> <span class="at">:petal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    (pj/pose <span class="at">:petal-length</span> <span class="at">:petal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
 <span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    pj/lay-point</span>
 <span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    (pj/lay-smooth {<span class="at">:stat</span> <span class="at">:linear-model</span>})</span>
 <span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>    (pj/options {<span class="at">:title</span> <span class="st">"Iris Petals with Regression"</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1915,7 +1915,7 @@ graph LR
 <h2 class="anchored" data-anchor-id="namespace-structure">Namespace Structure</h2>
 <div class="mermaid">
 graph TD
-  API["api.clj"] --&gt; FR["impl/frame.clj"]
+  API["api.clj"] --&gt; FR["impl/pose.clj"]
   API --&gt; RES["impl/resolve.clj"]
   API --&gt; PL["impl/plan.clj"]
   API --&gt; COMP["impl/compositor.clj"]
@@ -1941,7 +1941,7 @@ graph TD
   style SVG fill:#f8bbd0
   style MEMBRANE fill:#f8bbd0
 </div>
-<p><code>impl/frame.clj</code> holds the frame substrate: <code>resolve-tree</code> (merges mappings/data/opts down from root to every leaf), <code>leaf-&gt;draft</code> (flattens a leaf into draft maps with optional facet expansion), and the multi-pair / grid composite utilities. <code>impl/compositor.clj</code> handles composite rendering – each leaf becomes a sub-plot, tiled via layout. <code>impl/plan.clj</code> holds <code>draft-&gt;plan</code> (domains, ticks, legends, layout). <code>impl/resolve.clj</code> holds <code>resolve-draft-layer</code> (single draft layer resolution, column type inference, grouping).</p>
+<p><code>impl/pose.clj</code> holds the pose substrate: <code>resolve-tree</code> (merges mappings/data/opts down from root to every leaf), <code>leaf-&gt;draft</code> (flattens a leaf into draft maps with optional facet expansion), and the multi-pair / grid composite utilities. <code>impl/compositor.clj</code> handles composite rendering – each leaf becomes a sub-plot, tiled via layout. <code>impl/plan.clj</code> holds <code>draft-&gt;plan</code> (domains, ticks, legends, layout). <code>impl/resolve.clj</code> holds <code>resolve-draft-layer</code> (single draft layer resolution, column type inference, grouping).</p>
 <p>The <code>impl/</code> directory is pure data – no membrane dependency. The <code>render/</code> directory uses membrane for layout and SVG conversion.</p>
 </section>
 <section id="dependencies" class="level2">

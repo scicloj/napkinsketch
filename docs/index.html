@@ -184,8 +184,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./plotje_book.frame_model.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Frame Model</span></span></a>
+  <a href="./plotje_book.pose_model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Pose Model</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -202,8 +202,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./plotje_book.frame_rules.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Frame Rules</span></span></a>
+  <a href="./plotje_book.pose_rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Pose Rules</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -459,7 +459,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Simple and easy plotting</p>
 <section id="preface" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Preface</h1>
-<p>NapkinSketch is a Clojure library for composable plotting, inspired by the Grammar of Graphics.</p>
+<p>Plotje is a Clojure library for composable plotting, inspired by the Grammar of Graphics.</p>
 <section id="general-info" class="level2">
 <h2 class="anchored" data-anchor-id="general-info">General info</h2>
 <table class="caption-top table">
@@ -509,10 +509,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    pj/lay-point</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    (pj/options {<span class="at">:title</span> <span class="st">"Monthly Sales"</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><img src="readme_files/image0.svg" class="img-fluid"></p>
-<p>Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping; diagonal cells show histograms, off-diagonal cells show scatter plots (per-cell inference picks the layer type):</p>
+<p>Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clj code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    (pj/frame {<span class="at">:color</span> <span class="at">:species</span>})</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    (pj/frame (pj/cross [<span class="at">:sepal-length</span> <span class="at">:sepal-width</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    (pj/pose {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    (pj/pose (pj/cross [<span class="at">:sepal-length</span> <span class="at">:sepal-width</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">:petal-length</span> <span class="at">:petal-width</span>]</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>                        [<span class="at">:sepal-length</span> <span class="at">:sepal-width</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                         <span class="at">:petal-length</span> <span class="at">:petal-width</span>]))</span>

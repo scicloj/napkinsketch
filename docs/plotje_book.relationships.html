@@ -185,8 +185,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./plotje_book.frame_model.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Frame Model</span></span></a>
+  <a href="./plotje_book.pose_model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Pose Model</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -203,8 +203,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./plotje_book.frame_rules.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Frame Rules</span></span></a>
+  <a href="./plotje_book.pose_rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Pose Rules</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -489,7 +489,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Fit a regression line per group.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    (pj/frame <span class="at">:petal-length</span> <span class="at">:petal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    (pj/pose <span class="at">:petal-length</span> <span class="at">:petal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    pj/lay-point</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    (pj/lay-smooth {<span class="at">:stat</span> <span class="at">:linear-model</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -500,7 +500,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Pass <code>{:confidence-band true}</code> to show a 95% confidence band around the line.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    (pj/frame <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    (pj/pose <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    pj/lay-point</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    (pj/lay-smooth {<span class="at">:stat</span> <span class="at">:linear-model</span> <span class="at">:confidence-band</span> <span class="va">true</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -511,7 +511,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Do smokers and non-smokers tip differently?</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/reshape2-tips)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    (pj/frame <span class="at">:total-bill</span> <span class="at">:tip</span> {<span class="at">:color</span> <span class="at">:smoker</span>})</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    (pj/pose <span class="at">:total-bill</span> <span class="at">:tip</span> {<span class="at">:color</span> <span class="at">:smoker</span>})</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    pj/lay-point</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    (pj/lay-smooth {<span class="at">:stat</span> <span class="at">:linear-model</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>

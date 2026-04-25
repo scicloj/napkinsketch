@@ -185,8 +185,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./plotje_book.frame_model.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Frame Model</span></span></a>
+  <a href="./plotje_book.pose_model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Pose Model</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -203,8 +203,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./plotje_book.frame_rules.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Frame Rules</span></span></a>
+  <a href="./plotje_book.pose_rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Pose Rules</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -483,7 +483,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>   [scicloj.plotje.api <span class="at">:as</span> pj]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We use the iris dataset throughout.</p>
-<p>We define <code>base-plot</code> as a function because frames render at display time – calling the function produces a fresh specification that picks up the current configuration.</p>
+<p>We define <code>base-plot</code> as a function because poses render at display time – calling the function produces a fresh specification that picks up the current configuration.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> base-plot</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  [] (<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
