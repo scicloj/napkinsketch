@@ -5,7 +5,10 @@ All notable changes to plotje will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.1.0] - 2026-04-25
+
+First public alpha release. The API and visual defaults are still
+subject to change based on early adopter feedback.
 
 ### Renamed: `frame` -> `pose`
 
@@ -61,6 +64,209 @@ working directory is still named `napkinsketch/` (a deliberate
 carryover, distinct from the rename).
 Migration is mechanical: `s/napkinsketch/plotje/g` plus update the
 `:as` alias on every require.
+
+### Retired: pj/sketch, pj/view, and impl/sketch.clj
+
+The Sketch record, its constructors, and its adapter surface are
+gone. The pose substrate is now the only internal spec type.
+
+Removed user-facing API:
+
+- `pj/sketch`, `pj/view`, `pj/sketch?` -- use `pj/pose`, `pj/lay-*`,
+  and `pj/pose?` instead.
+- The `Sketch` record itself (`impl/sketch.clj`, ~348 lines).
+
+Internal changes the deletion required:
+
+- `pj/lay-*` on raw data now coerces through `pj/pose` and returns a
+  pose; previously the adapter returned a Sketch record.
+- `pj/with-data`, `pj/options`, `pj/scale`, `pj/coord`, `pj/save`, and
+  `pj/save-png` all coerce non-pose inputs via a new private
+  `ensure-pose` helper (raw data -> leaf pose) rather than the old
+  `ensure-sk` (raw data -> Sketch).
+- `pj/facet` and `pj/facet-grid` write to the pose's `:opts` instead
+  of routing through `ensure-sk`. The facet-expansion logic moved
+  from `impl/sketch.clj`'s `expand-facets` into
+  `impl/pose/leaf->draft`: when a leaf's `:opts` carry
+  `:facet-col`/`:facet-row`, the draft is multiplied across distinct
+  facet values, each variant carrying filtered `:data` and a
+  `:facet-col`/`:facet-row` label that `plan.clj` detects to build
+  the facet grid. Composite poses are rejected explicitly (see
+  `dev-notes/facet-composite-deferral.md`).
+- `impl/sketch_schema.clj` renamed to `impl/plan_schema.clj` -- it
+  was misnamed; the namespace holds Malli schemas for the plan data
+  model, not the Sketch record.
+- Multi-column `pj/lay-*` (`(pj/lay-histogram data [:a :b :c])`) now
+  builds a multi-pair composite via `pj/pose` and attaches a bare
+  layer at the root; the layer flows to every panel via
+  `resolve-tree`. Previously this path created N views with N
+  identical layers.
+- The `sketch_rules.clj` notebook was retired -- `pose_rules.clj`
+  is the live replacement.
+
+Known shape changes from the retirement:
+
+- `(pj/lay-point data :x :y {:color :g})` now places `:color` on the
+  layer's own `:mapping`, not on the pose's root `:mapping`. Semantic
+  behaviour at render time is unchanged.
+- Chaining two `pj/lay-*` calls with different position columns on
+  the same leaf no longer silently creates two panels; both layers
+  attach to the same leaf. To create two panels, promote explicitly
+  via `(pj/pose data [[:a :b] [:c :d]])`.
+
+### Breaking: `pj/arrange` returns a composite pose
+
+`pj/arrange` now returns a composite pose (a plain-map value) instead
+of CSS-grid hiccup. The composite renders through the membrane
+rendering pipeline, so both `:svg` (default) and `:bufimg` targets work
+the same way they do for single plots.
+
+- Inputs must be poses. Pre-rendered hiccup is no longer accepted --
+  combine hiccup yourself with `[:div ...]` if you want raw hiccup
+  composition.
+- `:gap` (CSS string) is removed. Leaves tile tightly; add spacing
+  later at the composite level if needed.
+- `:title` still works; it renders as a centered band above the grid.
+- New option `:share-scales` (default `#{}`) shares x/y domains across
+  arranged cells when set to a subset of `#{:x :y}`.
+
+Migration for the common case:
+
+```clojure
+;; Before
+(pj/arrange [(pj/plot pose-a) (pj/plot pose-b)])
+
+;; After
+(pj/arrange [pose-a pose-b])
+```
+
+The composite pose auto-renders in notebooks via `kind/fn`, and
+passing it to `pj/plot` returns SVG hiccup as before.
+
+### Breaking: annotations are now layers
+
+Reference lines and shaded bands used to live in `[:opts :annotations]`,
+applied uniformly to every panel, and were attached with a separate
+`pj/annotate` wrapper around `pj/rule-h`/`pj/rule-v`/`pj/band-h`/`pj/band-v`.
+This release replaces that entire path with first-class layers:
+
+- `pj/lay-rule-h` / `pj/lay-rule-v` -- horizontal / vertical reference line
+- `pj/lay-band-h` / `pj/lay-band-v` -- horizontal / vertical shaded band
+
+These are ordinary `lay-*` functions: bare arity attaches at the root
+pose (every panel sees it), the four-argument arity with column refs
+attaches at view scope (only panels matching the view's x/y mapping),
+and the position lives in the opts map (`:y-intercept` for
+`lay-rule-h`, `:x-intercept` for `lay-rule-v`, `:y-min`/`:y-max` for
+`lay-band-h`, `:x-min`/`:x-max` for `lay-band-v`). Appearance
+aesthetics (`:color`, `:alpha`) are literal values in the same opts
+map.
+
+The old API is removed: `pj/annotate`, `pj/rule-h`, `pj/rule-v`,
+`pj/band-h`, `pj/band-v`, and the `[:opts :annotations]` slot no longer
+exist. Migration is mechanical -- replace each call with the corresponding
+`pj/lay-*` form. Column-mapped positions (one rule per row, ggplot2's
+`geom_hline(aes(yintercept=...))`) are deferred to a future milestone;
+literal positions only in this release.
+
+### Breaking: `:width`/`:height` are now total SVG dimensions
+
+Prior to this release, `:width` and `:height` in plot options
+referred to the **panel drawing area** only -- the actual SVG came
+out wider and taller than the user asked for, once axis labels,
+legends, and facet strips were added. This never matched the
+convention in matplotlib, plotly, vega-lite, or ggplot2's `ggsave`.
+
+As of this release, `:width` and `:height` are the **total SVG
+dimensions**. Panel dimensions are derived by subtracting layout
+overhead (y-axis label + tick labels, x-axis label, title, legend,
+facet strips) from the total. The plot you ask for is the plot you
+get.
+
+Two new escape-hatch options, `:panel-width` and `:panel-height`,
+pin the panel size on their axis when you do want a specific panel
+size regardless of overhead. Either or both can be set.
+
+The new semantics apply to every layout type: single-panel plots,
+facet grids, SPLOMs, and `pj/arrange` dashboards all honor the
+total `:width`/`:height` as a hard bound. SPLOMs in particular
+used to use `:panel-size` from cfg and silently ignore
+`:width`/`:height`; now they derive panel dimensions from the
+total the same way faceted layouts do. Large SPLOMs (6+ variables)
+at the default 600x400 will end up with small panels -- bump
+`:width`/`:height` or pin `:panel-width`/`:panel-height`
+explicitly. The `:panel-size` cfg key still exists for backwards
+compatibility but is no longer consulted by the layout pipeline.
+
+`pj/arrange` defaults `:width`/`:height` from cfg (600 and 400)
+when they aren't passed, always re-plans sub-poses at the
+derived per-cell size so text stays at native resolution, and
+wraps the result in a fixed-width CSS grid. Pre-rendered hiccup
+plots pass through unchanged and inherit the CSS grid cell size.
+To restore the old "each plot at its own full size" behavior,
+pre-render each pose with `pj/plot` before passing to arrange.
+
+The layout pipeline was rewritten around three pure functions
+(`compute-scene` / `compute-padding` / `compute-dims`, in
+`impl/layout.clj`) that feed off the data-derived scene and never
+touch pixel math twice. A single reformulation -- running the tick
+picker at a pixel budget equal to `:height` instead of the unknown
+real panel height -- breaks the classic
+`y-label-pad ↔ panel-width` cycle. Label widths are monotonic
+non-decreasing in tick count for every supported scale type, so
+the over-estimate is always safe. See
+`dev-notes/design-width-inference.md` for the full design.
+
+Most existing plots shrink visibly (panels previously ~600x400 now
+render around ~560x368 at the default total size). Generated tests
+count panel/point/line counts rather than pixel positions, so the
+test suite passes with no changes beyond updating a handful of
+explicit width assertions.
+
+### Pose-native pipeline (Phase 6 slice 2)
+
+The pose substrate now runs the full draft emission pipeline on its
+own. `pj/plan`, `pj/plot`, and `pj/draft` read a leaf pose directly
+via a new `impl.pose/leaf->draft`; the compositor reads each
+resolved leaf the same way. The Sketch detour
+(`leaf-pose->sketch` -> `sketch->draft`) is no longer on the pose
+path.
+
+User-visible behavior:
+
+- Fixes an edge case where a leaf pose with `:x`/`:y` only on a
+  layer (not on the pose's own `:mapping`) used to emit an empty
+  draft. The layer's position is now read and the draft carries one
+  entry per layer.
+- `pj/with-data` accepts poses directly and keeps them as poses
+  (it used to force poses through the Sketch adapter, returning a
+  Sketch record).
+- `pj/pose` gains a multi-pair arity: `(pj/pose fr [[:a :b]
+  [:c :d] ...])` and `(pj/pose fr [:a :b :c])` append panels in
+  one call.
+- `(pj/pose fr (pj/cross cols cols))` builds a SPLOM: when the
+  pairs form an M x N Cartesian rectangle, the result is a nested
+  rows-of-cols composite with `:share-scales #{:x :y}`. The
+  compositor renders one shared legend on the right (when the
+  composite root carries a color/size/alpha aesthetic), suppresses
+  x-axis labels on non-bottom rows and y-axis labels on non-leftmost
+  columns, and lets per-cell inference pick the layer type --
+  scatter off-diagonal, histogram on the diagonal where x = y
+  (matching the legacy pj/view SPLOM behaviour). The idiomatic SPLOM
+  omits `pj/lay-point`:
+  ```clojure
+  (-> data
+      (pj/pose {:color :species})
+      (pj/pose (pj/cross cols cols)))
+  ```
+
+User-facing examples across the book and gallery have been migrated
+to `pj/pose`. SPLOM examples in gallery, scatter, faceting,
+customization, and edge_cases all use the new pose-native pattern.
+
+Also fixed: `promote-leaf` was dropping `:opts` when the leaf got
+wrapped into a composite. Plot-level options set via `pj/options`
+before promotion now correctly carry to the new composite's root.
 
 ### Matrix layout for threaded multi-position composites
 
@@ -125,35 +331,6 @@ take. Worked examples + visual diversity coverage in
 `notebooks/scale_coordination_exploration.clj`. Resolves the
 last visual regression in the post-Phase-6 corpus.
 
-### Pose inference and rendering fixes
-
-A handful of bugs in the post-Phase-6 pose pipeline, surfaced by
-a regression corpus comparing pre-Phase-6 Sketch behaviour to
-current pose behaviour. All shipped:
-
-- `pj/pose` 1-arity now auto-infers a position mapping from the
-  first 1-3 columns of its data (`(pj/pose {:x [...] :y [...]})`
-  yields a pose with `:mapping {:x :x :y :y}` and renders without
-  an explicit `pj/lay-*` call). 4+ column data leaves the mapping
-  empty -- gentler than the sketch-era `sk/view` which threw.
-- `ensure-pose` now routes raw-data inputs through `prepare-pose`,
-  so Kindly auto-render metadata is attached on every entry path
-  (previously only `pj/pose` itself attached it; `(pj/lay-point
-  raw-data)` bypassed the wrapper and the result didn't auto-render
-  in notebooks).
-- `pj/save` and `pj/save-png` now route composite poses through
-  the compositor. They used to call `plan->plot` directly on the
-  top-level plan, which has empty `:panels` for composites and
-  rendered as a blank document.
-- `render.membrane/plan->membrane` now defaults `:strip-h` and
-  `:strip-w` to 0 for composites without strip labels, fixing an
-  NPE in `clojure.lang.Numbers/isPos`.
-
-### Documentation
-
-`inference_rules.clj` updated to document the few-column inference
-on `pj/pose` 1-arity (which had been left out of the rule table).
-
 ### SPLOM strip labels
 
 Grid composites built from `(pj/pose data (pj/cross cols cols))`
@@ -164,220 +341,6 @@ SPLOM chrome. Labels are drawn at the compositor level rather
 than plumbed through each cell's plan, so tight SPLOM layouts
 with long column names don't squeeze the per-panel width. The
 `cross-grid-strip-labels-test` no longer carries a FIXME.
-
-### Retired: pj/sketch, pj/view, and impl/sketch.clj
-
-The Sketch record, its constructors, and its adapter surface are
-gone. The pose substrate is now the only internal spec type.
-
-Removed user-facing API:
-
-- `pj/sketch`, `pj/view`, `pj/sketch?` -- use `pj/pose`, `pj/lay-*`,
-  and `pj/pose?` instead.
-- The `Sketch` record itself (`impl/sketch.clj`, ~348 lines).
-
-Internal changes the deletion required:
-
-- `pj/lay-*` on raw data now coerces through `pj/pose` and returns a
-  pose; previously the adapter returned a Sketch record.
-- `pj/with-data`, `pj/options`, `pj/scale`, `pj/coord`, `pj/save`, and
-  `pj/save-png` all coerce non-pose inputs via a new private
-  `ensure-pose` helper (raw data -> leaf pose) rather than the old
-  `ensure-sk` (raw data -> Sketch).
-- `pj/facet` and `pj/facet-grid` write to the pose's `:opts` instead
-  of routing through `ensure-sk`. The facet-expansion logic moved
-  from `impl/sketch.clj`'s `expand-facets` into
-  `impl/pose/leaf->draft`: when a leaf's `:opts` carry
-  `:facet-col`/`:facet-row`, the draft is multiplied across distinct
-  facet values, each variant carrying filtered `:data` and a
-  `:facet-col`/`:facet-row` label that `plan.clj` detects to build
-  the facet grid. Composite poses are rejected explicitly (see
-  `dev-notes/facet-composite-deferral.md`).
-- `impl/sketch_schema.clj` renamed to `impl/plan_schema.clj` -- it
-  was misnamed; the namespace holds Malli schemas for the plan data
-  model, not the Sketch record.
-- Multi-column `pj/lay-*` (`(pj/lay-histogram data [:a :b :c])`) now
-  builds a multi-pair composite via `pj/pose` and attaches a bare
-  layer at the root; the layer flows to every panel via
-  `resolve-tree`. Previously this path created N views with N
-  identical layers.
-- The `sketch_rules.clj` notebook was retired -- `pose_rules.clj`
-  is the live replacement.
-
-Known shape changes from the retirement:
-
-- `(pj/lay-point data :x :y {:color :g})` now places `:color` on the
-  layer's own `:mapping`, not on the pose's root `:mapping`. Semantic
-  behaviour at render time is unchanged.
-- Chaining two `pj/lay-*` calls with different position columns on
-  the same leaf no longer silently creates two panels; both layers
-  attach to the same leaf. To create two panels, promote explicitly
-  via `(pj/pose data [[:a :b] [:c :d]])`.
-
-### Pose-native pipeline (Phase 6 slice 2)
-
-The pose substrate now runs the full draft emission pipeline on its
-own. `pj/plan`, `pj/plot`, and `pj/draft` read a leaf pose directly
-via a new `impl.pose/leaf->draft`; the compositor reads each
-resolved leaf the same way. The Sketch detour
-(`leaf-pose->sketch` -> `sketch->draft`) is no longer on the pose
-path.
-
-User-visible behavior:
-
-- Fixes an edge case where a leaf pose with `:x`/`:y` only on a
-  layer (not on the pose's own `:mapping`) used to emit an empty
-  draft. The layer's position is now read and the draft carries one
-  entry per layer.
-- `pj/with-data` accepts poses directly and keeps them as poses
-  (it used to force poses through the Sketch adapter, returning a
-  Sketch record).
-- `pj/pose` gains a multi-pair arity: `(pj/pose fr [[:a :b]
-  [:c :d] ...])` and `(pj/pose fr [:a :b :c])` append panels in
-  one call.
-- `(pj/pose fr (pj/cross cols cols))` builds a SPLOM: when the
-  pairs form an M x N Cartesian rectangle, the result is a nested
-  rows-of-cols composite with `:share-scales #{:x :y}`. The
-  compositor renders one shared legend on the right (when the
-  composite root carries a color/size/alpha aesthetic), suppresses
-  x-axis labels on non-bottom rows and y-axis labels on non-leftmost
-  columns, and lets per-cell inference pick the layer type --
-  scatter off-diagonal, histogram on the diagonal where x = y
-  (matching the legacy pj/view SPLOM behaviour). The idiomatic SPLOM
-  omits `pj/lay-point`:
-  ```clojure
-  (-> data
-      (pj/pose {:color :species})
-      (pj/pose (pj/cross cols cols)))
-  ```
-
-User-facing examples across the book and gallery have been migrated
-to `pj/pose`. SPLOM examples in gallery, scatter, faceting,
-customization, and edge_cases all use the new pose-native pattern.
-
-Also fixed: `promote-leaf` was dropping `:opts` when the leaf got
-wrapped into a composite. Plot-level options set via `pj/options`
-before promotion now correctly carry to the new composite's root.
-
-### Breaking: `pj/arrange` returns a composite pose
-
-`pj/arrange` now returns a composite pose (a plain-map value) instead
-of CSS-grid hiccup. The composite renders through the membrane
-rendering pipeline, so both `:svg` (default) and `:bufimg` targets work
-the same way they do for single plots.
-
-- Inputs must be sketches or leaf poses. Pre-rendered hiccup is no
-  longer accepted -- combine hiccup yourself with `[:div ...]` if you
-  want raw hiccup composition.
-- `:gap` (CSS string) is removed. Leaves tile tightly; add spacing
-  later at the composite level if needed.
-- `:title` still works; it renders as a centered band above the grid.
-- New option `:share-scales` (default `#{}`) shares x/y domains across
-  arranged cells when set to a subset of `#{:x :y}`.
-
-Migration for the common case:
-
-```clojure
-;; Before
-(pj/arrange [(pj/plot sk-a) (pj/plot sk-b)])
-
-;; After
-(pj/arrange [sk-a sk-b])
-```
-
-The composite pose auto-renders in notebooks via `kind/fn`, and
-passing it to `pj/plot` returns SVG hiccup as before.
-
-### Facet deferral (internal)
-
-The pre-alpha refactor plan listed `pj/facet` and `pj/facet-grid` for
-migration onto the composite substrate in this slice. We chose to
-defer -- see `dev-notes/facet-composite-deferral.md` for the rationale
-(unified-membrane guarantee, Option C for shared chrome).
-
-## [0.1.0] - 2026-04-21
-
-First public alpha release. The API and visual defaults are still
-subject to change based on early adopter feedback.
-
-### Breaking: annotations are now layers
-
-Reference lines and shaded bands used to live in `[:opts :annotations]`,
-applied uniformly to every panel, and were attached with a separate
-`pj/annotate` wrapper around `pj/rule-h`/`pj/rule-v`/`pj/band-h`/`pj/band-v`.
-This release replaces that entire path with first-class layers:
-
-- `pj/lay-rule-h` / `pj/lay-rule-v` -- horizontal / vertical reference line
-- `pj/lay-band-h` / `pj/lay-band-v` -- horizontal / vertical shaded band
-
-These are ordinary `lay-*` functions: bare arity is sketch-scope (every
-panel), the four-argument arity with column refs is view-scope (only
-panels matching the view's x/y mapping), and the position lives in the
-opts map (`:y-intercept` for `lay-rule-h`, `:x-intercept` for
-`lay-rule-v`, `:y-min`/`:y-max` for `lay-band-h`, `:x-min`/`:x-max` for
-`lay-band-v`). Appearance aesthetics (`:color`, `:alpha`) are literal
-values in the same opts map.
-
-The old API is removed: `pj/annotate`, `pj/rule-h`, `pj/rule-v`,
-`pj/band-h`, `pj/band-v`, and the `[:opts :annotations]` slot no longer
-exist. Migration is mechanical -- replace each call with the corresponding
-`pj/lay-*` form. Column-mapped positions (one rule per row, ggplot2's
-`geom_hline(aes(yintercept=...))`) are deferred to a future milestone;
-literal positions only in this release.
-
-### Breaking: `:width`/`:height` are now total SVG dimensions
-
-Prior to this release, `:width` and `:height` in plot options
-referred to the **panel drawing area** only -- the actual SVG came
-out wider and taller than the user asked for, once axis labels,
-legends, and facet strips were added. This never matched the
-convention in matplotlib, plotly, vega-lite, or ggplot2's `ggsave`.
-
-As of this release, `:width` and `:height` are the **total SVG
-dimensions**. Panel dimensions are derived by subtracting layout
-overhead (y-axis label + tick labels, x-axis label, title, legend,
-facet strips) from the total. The plot you ask for is the plot you
-get.
-
-Two new escape-hatch options, `:panel-width` and `:panel-height`,
-pin the panel size on their axis when you do want a specific panel
-size regardless of overhead. Either or both can be set.
-
-The new semantics apply to every layout type: single-panel plots,
-facet grids, SPLOMs, and `pj/arrange` dashboards all honor the
-total `:width`/`:height` as a hard bound. SPLOMs in particular
-used to use `:panel-size` from cfg and silently ignore
-`:width`/`:height`; now they derive panel dimensions from the
-total the same way faceted layouts do. Large SPLOMs (6+ variables)
-at the default 600x400 will end up with small panels -- bump
-`:width`/`:height` or pin `:panel-width`/`:panel-height`
-explicitly. The `:panel-size` cfg key still exists for backwards
-compatibility but is no longer consulted by the layout pipeline.
-
-`pj/arrange` defaults `:width`/`:height` from cfg (600 and 400)
-when they aren't passed, always re-plans sub-sketches at the
-derived per-cell size so text stays at native resolution, and
-wraps the result in a fixed-width CSS grid. Pre-rendered hiccup
-plots pass through unchanged and inherit the CSS grid cell size.
-To restore the old "each plot at its own full size" behavior,
-pre-render each sketch with `pj/plot` before passing to arrange.
-
-The layout pipeline was rewritten around three pure functions
-(`compute-scene` / `compute-padding` / `compute-dims`, in
-`impl/layout.clj`) that feed off the data-derived scene and never
-touch pixel math twice. A single reformulation -- running the tick
-picker at a pixel budget equal to `:height` instead of the unknown
-real panel height -- breaks the classic
-`y-label-pad ↔ panel-width` cycle. Label widths are monotonic
-non-decreasing in tick count for every supported scale type, so
-the over-estimate is always safe. See
-`dev-notes/design-width-inference.md` for the full design.
-
-Most existing plots shrink visibly (panels previously ~600x400 now
-render around ~560x368 at the default total size). Generated tests
-count panel/point/line counts rather than pixel positions, so the
-test suite passes with no changes beyond updating a handful of
-explicit width assertions.
 
 ### Visual default changes
 
@@ -417,6 +380,42 @@ The spread-index palette sampling from an earlier draft was
 reverted. Authorial ordering of discrete palettes (the first N
 colors of `:set1` etc.) is preserved, so existing categorical
 plots look identical to pre-rewrite renders.
+
+### Pose inference and rendering fixes
+
+A handful of bugs in the post-Phase-6 pose pipeline, surfaced by
+a regression corpus comparing pre-Phase-6 Sketch behaviour to
+current pose behaviour. All shipped:
+
+- `pj/pose` 1-arity now auto-infers a position mapping from the
+  first 1-3 columns of its data (`(pj/pose {:x [...] :y [...]})`
+  yields a pose with `:mapping {:x :x :y :y}` and renders without
+  an explicit `pj/lay-*` call). 4+ column data leaves the mapping
+  empty -- gentler than the sketch-era `sk/view` which threw.
+- `ensure-pose` now routes raw-data inputs through `prepare-pose`,
+  so Kindly auto-render metadata is attached on every entry path
+  (previously only `pj/pose` itself attached it; `(pj/lay-point
+  raw-data)` bypassed the wrapper and the result didn't auto-render
+  in notebooks).
+- `pj/save` and `pj/save-png` now route composite poses through
+  the compositor. They used to call `plan->plot` directly on the
+  top-level plan, which has empty `:panels` for composites and
+  rendered as a blank document.
+- `render.membrane/plan->membrane` now defaults `:strip-h` and
+  `:strip-w` to 0 for composites without strip labels, fixing an
+  NPE in `clojure.lang.Numbers/isPos`.
+
+### Documentation
+
+`inference_rules.clj` updated to document the few-column inference
+on `pj/pose` 1-arity (which had been left out of the rule table).
+
+### Facet deferral (internal)
+
+The pre-alpha refactor plan listed `pj/facet` and `pj/facet-grid` for
+migration onto the composite substrate in this slice. We chose to
+defer -- see `dev-notes/facet-composite-deferral.md` for the rationale
+(unified-membrane guarantee, Option C for shared chrome).
 
 ### Overview
 
@@ -551,19 +550,20 @@ Combined with a hand-written core test suite, the project runs over
 Five-stage pipeline:
 
 ```
-sketch -> draft -> plan -> membrane -> figure
+pose -> draft -> plan -> membrane -> figure
 ```
 
-- **Sketch** — user-facing composable value (`data + mapping + views
-  + layers + opts`)
-- **Draft** — flat maps produced by `pj/draft` (one per view-layer
-  combination), the bridge between API composition and planning
+- **Pose** — user-facing composable value (`data + mapping + layers`,
+  with optional `sub-poses + layout + opts`). Plain recursive map.
+- **Draft** — flat maps produced by `pj/draft` (one per applicable
+  layer in each leaf pose), the bridge between API composition and
+  planning.
 - **Plan** — plain Clojure data with dtype-next buffers (domains,
   ticks, legends, layout, resolved layers); serializable, inspectable,
-  rendered by multiple backends
+  rendered by multiple backends.
 - **Membrane** — drawable primitives (rectangles, paths, text,
-  translated/colored groups)
-- **Figure** — terminal output: SVG hiccup or raster PNG
+  translated/colored groups).
+- **Figure** — terminal output: SVG hiccup or raster PNG.
 
 The pipeline's layering is strict: data transformations live under
 `impl/`; drawing primitives live under `render/`; nothing in
@@ -636,12 +636,12 @@ produce crashes on canonical inputs.
   no-op. Only column mappings to `:shape` take effect.
 - Faceted panels default to free scales per panel (ggplot2's default
   is fixed); an explicit `:facet-scales :fixed` option is pending.
-  A consequence: a sketch-scope annotation (`pj/lay-rule-*` /
-  `pj/lay-band-*`) is invisible in any panel whose per-panel domain
-  doesn't contain the intercept -- for example, `{:y-intercept 6.0}`
-  on a species-faceted scatter won't appear in setosa if setosa's
-  y-range is [4, 5.5]. Workaround: pin the y-domain explicitly via
-  `(pj/scale :y {:domain [...]})`.
+  A consequence: an annotation attached at the root pose
+  (`pj/lay-rule-*` / `pj/lay-band-*`) is invisible in any panel
+  whose per-panel domain doesn't contain the intercept -- for
+  example, `{:y-intercept 6.0}` on a species-faceted scatter won't
+  appear in setosa if setosa's y-range is [4, 5.5]. Workaround:
+  pin the y-domain explicitly via `(pj/scale :y {:domain [...]})`.
 - Annotations are silently skipped under `(pj/coord :polar)`. A polar
   rule would need to render as a circle (fixed radius) or spoke
   (fixed angle); those shapes are not implemented. Use Cartesian or
@@ -671,7 +671,7 @@ produce crashes on canonical inputs.
   original request even when `:panel-width` pins the real size --
   inspect `:total-width`/`:total-height` for the rendered canvas.
 - `pj/plan` called on a plan or on a hiccup value now throws a
-  clear error. Call `pj/plan` only on sketches.
+  clear error. Call `pj/plan` only on poses.
 
 **Schema errors that could be friendlier:**
 
