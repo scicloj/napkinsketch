@@ -1,12 +1,12 @@
 (ns scicloj.plotje.impl.compositor
-  "Composite-frame rendering. Each leaf produces its own membrane
+  "Composite-pose rendering. Each leaf produces its own membrane
    tree via plan->membrane, and the compositor tiles those trees by
    wrapping them in ui/translate. The resulting membrane tree is
    handed to membrane->plot, which dispatches on format (:svg,
    :bufimg, ...).
 
    Shared scales are reconciled before rendering by stamping a forced
-   domain on matching leaves (impl.frame/inject-shared-scales).
+   domain on matching leaves (impl.pose/inject-shared-scales).
 
    When the composite root carries a legend-producing mapping
    (:color/:size/:alpha), the compositor renders ONE legend at
@@ -15,7 +15,7 @@
    reserved strip on the right side of the grid."
   (:require [membrane.ui :as ui]
             [scicloj.plotje.impl.defaults :as defaults]
-            [scicloj.plotje.impl.frame :as frame]
+            [scicloj.plotje.impl.pose :as pose]
             [scicloj.plotje.impl.plan :as plan]
             [scicloj.plotje.impl.render :as render-impl]
             [scicloj.plotje.impl.resolve :as resolve]
@@ -53,7 +53,7 @@
         leaf-opts (assoc (or (:opts leaf) {})
                          :width (max 1 (long-or rw 1))
                          :height (max 1 (long-or rh 1)))]
-    (plan/draft->plan (frame/leaf->draft leaf) leaf-opts)))
+    (plan/draft->plan (pose/leaf->draft leaf) leaf-opts)))
 
 (defn- leaf->membrane
   "Build a translated membrane tree for a leaf at its pixel rectangle.
@@ -71,8 +71,8 @@
     (ui/translate (double x) (double y) tree)))
 
 (defn- outer-dimensions
-  [frame]
-  (let [opts (or (:opts frame) {})]
+  [pose]
+  (let [opts (or (:opts pose) {})]
     [(long-or (:width opts) default-width)
      (long-or (:height opts) default-height)]))
 
@@ -137,7 +137,7 @@
 (defn- matrix-col-strip-drawables
   "Like col-strip-drawables but for `:direction :matrix` composites,
    where leaves are at flat paths `[i]` and the (col, row) position
-   comes from frame/matrix-axes. Places one centered label above
+   comes from pose/matrix-axes. Places one centered label above
    each column at strip-top, computing the column center directly
    from the grid rect rather than looking it up via a SPLOM path."
   [col-labels [grid-x _ grid-w _] n-cols strip-top]
@@ -218,7 +218,7 @@
           leaf-opts (-> (or (:opts leaf) {})
                         (dissoc :suppress-legend)
                         (assoc :width 600 :height 400))]
-      (plan/draft->plan (frame/leaf->draft leaf) leaf-opts))))
+      (plan/draft->plan (pose/leaf->draft leaf) leaf-opts))))
 
 (defn- shared-legend-drawables
   "Build membrane drawables for the shared legend positioned at
@@ -245,7 +245,7 @@
     (vec (apply concat sections))))
 
 (defn composite->plot
-  "Render a composite frame by building a single membrane tree (one
+  "Render a composite pose by building a single membrane tree (one
    translated sub-tree per leaf, plus an optional title band and an
    optional shared legend) and dispatching to membrane->plot. Format
    defaults to :svg; :bufimg and other registered formats work the
@@ -260,8 +260,8 @@
          ;; don't inherit them. The composite itself still renders
          ;; chrome via the title band above the leaf trees.
          stripped (composite-with-stripped-leaf-opts composite)
-         injected (frame/inject-shared-scales stripped)
-         leaves (frame/resolve-tree injected)
+         injected (pose/inject-shared-scales stripped)
+         leaves (pose/resolve-tree injected)
          ;; Detect whether the composite has a shared aesthetic that
          ;; will produce a legend at each leaf. If so, reserve a
          ;; strip on the right for one shared legend and shrink the
@@ -270,13 +270,13 @@
          legend-w (if shared? shared-legend-strip-w 0)
          ;; Grid-composite (rows-of-cols SPLOM) stamps :grid-strip-labels
          ;; on its root. Matrix-direction composites have the labels
-         ;; derived lazily from leaf positions via frame/matrix-axes.
+         ;; derived lazily from leaf positions via pose/matrix-axes.
          ;; Either way, we end up with :col-labels / :row-labels.
          ;; Reserve strip-h at the top for column labels and strip-w
          ;; at the left for row labels, and draw the strips outside
          ;; the cell rects so per-cell layout stays untouched.
          matrix-axes (when (= :matrix (:direction (:layout composite)))
-                       (frame/matrix-axes composite))
+                       (pose/matrix-axes composite))
          {:keys [col-labels row-labels]} (or (:grid-strip-labels composite)
                                              (when matrix-axes
                                                {:col-labels (:col-labels matrix-axes)
@@ -291,7 +291,7 @@
                     (double (+ top-pad strip-h))
                     (double grid-w)
                     (double (- h top-pad strip-h))]
-         layout (frame/compute-layout injected grid-rect)
+         layout (pose/compute-layout injected grid-rect)
          ;; In matrix layout, the strip labels at the top carry the
          ;; column's x-col name and the strip labels on the left carry
          ;; the row's y-col name. Suppress the per-leaf x-label /
@@ -347,9 +347,9 @@
   [composite]
   (let [[w h] (outer-dimensions composite)
         stripped (composite-with-stripped-leaf-opts composite)
-        injected (frame/inject-shared-scales stripped)
-        leaves (frame/resolve-tree injected)
-        layout (frame/compute-layout injected [0 0 w h])
+        injected (pose/inject-shared-scales stripped)
+        leaves (pose/resolve-tree injected)
+        layout (pose/compute-layout injected [0 0 w h])
         sub-plots (mapv (fn [leaf]
                           (let [rect (get layout (:path leaf))]
                             {:path (:path leaf)

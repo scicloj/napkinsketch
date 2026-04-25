@@ -1,6 +1,6 @@
 (ns scicloj.plotje.impl.plan
   "Draft-to-plan pipeline: domains, ticks, legends, layout, and grid inference.
-   Takes draft maps (from frame/leaf->draft) and produces a Plan record
+   Takes draft maps (from pose/leaf->draft) and produces a Plan record
    with all geometry needed for rendering."
   (:require [wadogo.scale :as ws]
             [java-time.api :as jt]
@@ -903,7 +903,7 @@
 
          ;; Plot-level annotations -- from pj/lay-rule-* / pj/lay-band-*
          ;; layers extracted above. Root-scope annotations (carried
-         ;; down through frame/resolve-tree) need deduping because
+         ;; down through pose/resolve-tree) need deduping because
          ;; facet expansion repeats the same annotation for every
          ;; panel. Strip :x/:y on root-scope so they apply to all
          ;; panels. Panel-scope annotations keep their :x/:y so
@@ -913,7 +913,7 @@
          ;; silently dropped (annotations don't participate in
          ;; column-mapped scales).
          ;; Legacy: :__sketch-scope was set by impl/sketch.clj's
-         ;; draft emitter; frame/leaf->draft does not stamp it, so
+         ;; draft emitter; pose/leaf->draft does not stamp it, so
          ;; the sketch-scope filter returns an empty vec today. Kept
          ;; defensively in case a caller hand-builds a draft.
          clean-aesthetics (fn [m]

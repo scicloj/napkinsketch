@@ -1,14 +1,14 @@
-(ns scicloj.plotje.impl.frame
-  "Frame substrate -- the recursive plain-map type that is the
+(ns scicloj.plotje.impl.pose
+  "Pose substrate -- the recursive plain-map type that is the
    library's spec vocabulary. This namespace holds the pure tree
    operations (resolve, layout, shared-scale injection) and the
    leaf->draft emitter that feeds plan.clj.
 
-   Shape of a frame:
+   Shape of a pose:
      {:data         ?  dataset (inherited from ancestor if absent)
       :mapping      ?  aesthetic mappings (merges with ancestors)
       :layers       ?  layers at this level (accumulate into leaves)
-      :frames       ?  sub-frames; absence = leaf
+      :poses       ?  sub-poses; absence = leaf
       :layout       ?  {:direction :horizontal|:vertical
                         :weights   [pos-num ...]}
       :opts         ?  plot options (inheritable)
@@ -22,30 +22,30 @@
 
 ;; ---- Structural predicates ----
 
-(defn frame?
-  "True if x looks frame-shaped: a map carrying at least one of
-   :layers or :frames. Permissive by design -- schema-level validation
-   lives in impl.frame-schema."
+(defn pose?
+  "True if x looks pose-shaped: a map carrying at least one of
+   :layers or :poses. Permissive by design -- schema-level validation
+   lives in impl.pose-schema."
   [x]
   (and (map? x)
        (or (contains? x :layers)
-           (contains? x :frames))))
+           (contains? x :poses))))
 
 (defn leaf?
-  "A leaf frame has no sub-frames. (An empty :frames vector also
+  "A leaf pose has no sub-poses. (An empty :poses vector also
    counts as leaf because it has nothing to tile.)"
   [f]
-  (not (seq (:frames f))))
+  (not (seq (:poses f))))
 
 (defn composite?
-  "A composite frame has at least one sub-frame."
+  "A composite pose has at least one sub-pose."
   [f]
   (not (leaf? f)))
 
 ;; ---- Tree resolver ----
 
 (defn resolve-tree
-  "Walk the frame tree top-down, merging parent context into each
+  "Walk the pose tree top-down, merging parent context into each
    descendant. Returns a vector of resolved leaves; each leaf carries
    merged :data, :mapping, :layers, :opts, and a :path vector of
    indices describing its position in the tree.
@@ -58,27 +58,27 @@
    - :opts     -- merged (child overrides on key collision).
 
    Extra keys on a leaf (anything not in
-   #{:data :mapping :layers :frames :layout :opts :share-scales})
+   #{:data :mapping :layers :poses :layout :opts :share-scales})
    pass through to the resolved leaf so callers can attach metadata
    like :path-labels from facet-style generators."
-  ([frame]
-   (resolve-tree frame {} []))
-  ([frame parent-ctx path]
-   (let [ctx {:data    (or (:data frame) (:data parent-ctx))
-              :mapping (merge {} (:mapping parent-ctx) (:mapping frame))
+  ([pose]
+   (resolve-tree pose {} []))
+  ([pose parent-ctx path]
+   (let [ctx {:data    (or (:data pose) (:data parent-ctx))
+              :mapping (merge {} (:mapping parent-ctx) (:mapping pose))
               :layers  (into (vec (:layers parent-ctx))
-                             (:layers frame))
-              :opts    (merge {} (:opts parent-ctx) (:opts frame))}]
-     (if (leaf? frame)
-       (let [structural-keys #{:data :mapping :layers :frames :layout
+                             (:layers pose))
+              :opts    (merge {} (:opts parent-ctx) (:opts pose))}]
+     (if (leaf? pose)
+       (let [structural-keys #{:data :mapping :layers :poses :layout
                                :opts :share-scales}
              extras (into {} (remove (fn [[k _]] (structural-keys k))
-                                     frame))]
+                                     pose))]
          [(merge extras (assoc ctx :path path))])
        (into []
              (mapcat (fn [[i child]]
                        (resolve-tree child ctx (conj path i))))
-             (map vector (range) (:frames frame)))))))
+             (map vector (range) (:poses pose)))))))
 
 ;; ---- Layout computer ----
 
@@ -193,7 +193,7 @@
           positions)))
 
 (defn compute-layout
-  "Walk the frame tree and assign a pixel rectangle to each leaf.
+  "Walk the pose tree and assign a pixel rectangle to each leaf.
    Returns a map of path -> [x y w h].
 
    Composite :layout is {:direction :horizontal|:vertical|:matrix
@@ -212,24 +212,24 @@
    Rectangle arithmetic is in doubles; callers that need integer
    pixels should coerce at the render boundary (see pj/plot's
    width/height coercion)."
-  ([frame rect]
-   (compute-layout frame rect []))
-  ([frame [x y w h] path]
+  ([pose rect]
+   (compute-layout pose rect []))
+  ([pose [x y w h] path]
    (cond
-     (leaf? frame)
+     (leaf? pose)
      {path [(double x) (double y) (double w) (double h)]}
 
-     (= :matrix (:direction (:layout frame)))
+     (= :matrix (:direction (:layout pose)))
      ;; Matrix layout: rect math handled by compute-matrix-layout, but
      ;; we still need to recurse into any nested composites that aren't
      ;; themselves matrix. For now we only support flat matrix
      ;; composites (children are leaves), since that's all
-     ;; extend-or-promote / multi-pair-frame produce. Nested matrix-
+     ;; extend-or-promote / multi-pair-pose produce. Nested matrix-
      ;; in-matrix is reserved for a future iteration.
-     (let [cell-rects (compute-matrix-layout frame [x y w h])]
+     (let [cell-rects (compute-matrix-layout pose [x y w h])]
        (into {}
              (map (fn [[child-i [cx cy cw ch]]]
-                    (let [child (nth (:frames frame) child-i)
+                    (let [child (nth (:poses pose) child-i)
                           full-path (into path [child-i])]
                       [full-path [cx cy cw ch]])))
              ;; cell-rects keys are paths within the composite (single
@@ -240,8 +240,8 @@
 
      :else
      (let [{:keys [direction weights] :or {direction :horizontal}}
-           (:layout frame)
-           children (:frames frame)
+           (:layout pose)
+           children (:poses pose)
            n (count children)
            ws (normalize-weights (or weights (repeat n 1)))
            horizontal? (= direction :horizontal)]
@@ -266,27 +266,27 @@
 
 (defn last-leaf-path
   "Return the path vector of the last leaf visited in left-to-right
-   depth-first order. Nil if the frame is itself a leaf with no path
+   depth-first order. Nil if the pose is itself a leaf with no path
    context (the caller is the root leaf)."
-  [frame]
-  (if (leaf? frame)
+  [pose]
+  (if (leaf? pose)
     []
-    (let [n (count (:frames frame))]
+    (let [n (count (:poses pose))]
       (when (pos? n)
-        (into [(dec n)] (last-leaf-path (peek (:frames frame))))))))
+        (into [(dec n)] (last-leaf-path (peek (:poses pose))))))))
 
 (defn leaf-at
-  "Fetch the leaf at `path` in `frame`. Returns nil if the path does
+  "Fetch the leaf at `path` in `pose`. Returns nil if the path does
    not land on a leaf."
-  [frame path]
-  (let [node (reduce (fn [f i] (get-in f [:frames i])) frame path)]
+  [pose path]
+  (let [node (reduce (fn [f i] (get-in f [:poses i])) pose path)]
     (when (leaf? node) node)))
 
 (defn path->update-in-path
   "Translate a leaf path like [0 1] into the get-in / update-in navigation
-   [:frames 0 :frames 1]. A root path [] translates to []."
+   [:poses 0 :poses 1]. A root path [] translates to []."
   [path]
-  (into [] (mapcat (fn [i] [:frames i])) path))
+  (into [] (mapcat (fn [i] [:poses i])) path))
 
 (defn canonicalize-col
   "Canonicalize a column ref to a string key for matching. A keyword
@@ -299,7 +299,7 @@
     :else (str col)))
 
 (defn last-matching-leaf-path
-  "Walk `frame` in left-to-right DFS order. Return the :path of the
+  "Walk `pose` in left-to-right DFS order. Return the :path of the
    last leaf whose effective :x and :y (after ancestor-merge of
    :mapping) match `position-mapping`. Matching is keyword/string
    tolerant. Returns nil if no leaf matches.
@@ -308,10 +308,10 @@
    value matches a leaf whose effective mapping has no entry for that
    axis. Matching is against resolved positional mappings only --
    a bare leaf (no :x/:y) matches a bare position mapping."
-  [frame position-mapping]
+  [pose position-mapping]
   (let [px (canonicalize-col (:x position-mapping))
         py (canonicalize-col (:y position-mapping))]
-    (->> (resolve-tree frame)
+    (->> (resolve-tree pose)
          (keep (fn [leaf]
                  (when (and (= (canonicalize-col (get-in leaf [:mapping :x])) px)
                             (= (canonicalize-col (get-in leaf [:mapping :y])) py))
@@ -320,7 +320,7 @@
 
 ;; ---- Shared-scale injection ----
 ;;
-;; The load-bearing primitive surfaced by the nested-frames PoC.
+;; The load-bearing primitive surfaced by the nested-poses PoC.
 ;;
 ;; When a composite declares :share-scales #{:x} (or :y, or both), we
 ;; compute a shared domain across descendants and stamp it onto each
@@ -448,7 +448,7 @@
            (max (second a) (second b))]))
 
 (defn inject-shared-scales
-  "Walk a frame tree. For each composite with :share-scales, compute a
+  "Walk a pose tree. For each composite with :share-scales, compute a
    union domain per (axis, effective-column) bucket across descendant
    leaves, and stamp those domains onto matching leaves' :opts as
    :x-scale-domain / :y-scale-domain. Returns a new tree.
@@ -461,14 +461,14 @@
    predict whether its layers' y axis is stat-driven (count/density)
    and skip the shared y-domain stamp on such leaves -- e.g., the
    diagonal histogram cells of a SPLOM."
-  ([frame]
-   (inject-shared-scales frame {} {} nil))
-  ([frame inherited-domains inherited-mapping inherited-data]
-   (let [my-mapping  (merge inherited-mapping (:mapping frame))
-         my-data     (or (:data frame) inherited-data)
-         my-shares   (:share-scales frame)
-         new-domains (when (and my-shares (seq (:frames frame)))
-                       (let [subtree (resolve-tree frame
+  ([pose]
+   (inject-shared-scales pose {} {} nil))
+  ([pose inherited-domains inherited-mapping inherited-data]
+   (let [my-mapping  (merge inherited-mapping (:mapping pose))
+         my-data     (or (:data pose) inherited-data)
+         my-shares   (:share-scales pose)
+         new-domains (when (and my-shares (seq (:poses pose)))
+                       (let [subtree (resolve-tree pose
                                                    {:mapping inherited-mapping
                                                     :data inherited-data}
                                                    [])]
@@ -493,28 +493,28 @@
          child-domains (merge-with (partial merge-with union-domain)
                                    inherited-domains
                                    new-domains)]
-     (if (leaf? frame)
+     (if (leaf? pose)
        (if (seq child-domains)
-         (let [frame-ctx {:mapping my-mapping :layers (:layers frame)}
-               x-col (effective-axis-col frame-ctx :x)
-               y-col (effective-axis-col frame-ctx :y)
+         (let [pose-ctx {:mapping my-mapping :layers (:layers pose)}
+               x-col (effective-axis-col pose-ctx :x)
+               y-col (effective-axis-col pose-ctx :y)
                x-dom (get-in child-domains [:x x-col])
                y-dom (get-in child-domains [:y y-col])
                ;; Drop the y-domain when this leaf's y-axis is
                ;; stat-driven (count/density) -- the shared-data
                ;; bucket value would clip the bars / curve.
-               y-dom (when-not (y-axis-stat-driven? (:layers frame)
+               y-dom (when-not (y-axis-stat-driven? (:layers pose)
                                                     my-mapping
                                                     my-data)
                        y-dom)]
            (if (or x-dom y-dom)
-             (update frame :opts merge
+             (update pose :opts merge
                      (cond-> {}
                        x-dom (assoc :x-scale-domain x-dom)
                        y-dom (assoc :y-scale-domain y-dom)))
-             frame))
-         frame)
-       (update frame :frames
+             pose))
+         pose)
+       (update pose :poses
                (fn [children]
                  (mapv #(inject-shared-scales % child-domains my-mapping my-data)
                        children)))))))
@@ -652,9 +652,9 @@
             :facet-row (defaults/fmt-category-label rv)}))))))
 
 (defn leaf->draft
-  "Emit a draft vector from a leaf frame. A draft has one entry per
+  "Emit a draft vector from a leaf pose. A draft has one entry per
    applicable layer; each entry is a flat map carrying the merged
-   aesthetic mapping (frame < layer-type-info < layer), the layer's
+   aesthetic mapping (pose < layer-type-info < layer), the layer's
    :stat/:position/:mark as first-class siblings, and plot-level
    :x-scale/:y-scale/:coord stamped from :opts.
 
