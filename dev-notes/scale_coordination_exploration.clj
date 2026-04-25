@@ -1,8 +1,20 @@
 ;; # Scale-coordination bug -- diversity exploration
 ;;
-;; A working notebook to enumerate the variants of the
-;; SPLOM-diagonal-histogram scale-coordination bug and to test the
-;; proposed fix's coverage against three design questions:
+;; A dev-notes scratch file used to enumerate the variants of the
+;; SPLOM-diagonal-histogram scale-coordination bug while designing
+;; the fix shipped 2026-04-25 (commit 9133a6b). Lives in dev-notes
+;; rather than notebooks/ because it's an exploration / testing
+;; tool, not part of the published book. Render via:
+;;
+;;   (require 'scicloj.clay.v2.api)
+;;   (scicloj.clay.v2.api/make!
+;;     {:format [:html]
+;;      :base-source-path "dev-notes"
+;;      :source-path "scale_coordination_exploration.clj"
+;;      :base-target-path "/tmp/scale-explore-out"
+;;      :show false})
+;;
+;; Three design questions the exploration was structured around:
 ;;
 ;; * Q1 -- where does the per-cell-scale exemption live, and which
 ;;   stats trigger it?
