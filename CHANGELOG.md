@@ -294,54 +294,49 @@ The previous flat-row layout is still reachable via:
 still uses its own grid composite shape (could be unified with
 matrix later).
 
-### SPLOM visual-chrome cleanup
+### SPLOM rendering fixes
 
 The SPLOM (`(pj/pose data (pj/cross cols cols))`) had three
-visible defects on diagonal cells; two are fixed:
+visible defects on diagonal cells; all three are now fixed.
 
-- Per-cell axis-name labels (e.g. y-axis label "sl" inside the
-  leftmost column's cells) now suppressed everywhere -- the col/row
-  strip labels carry the axis-variable name.
-- Per-cell tick numbers now appear only on the bottom row (x-ticks)
-  and leftmost column (y-ticks). The `:share-scales #{:x :y}`
-  guarantee makes per-cell ticks redundant across the rest of the
-  grid.
+**Per-cell axis-name labels and tick numbers suppressed.** Inside
+each cell, the y-axis label (e.g. "sl" in the leftmost column's
+cells) is no longer drawn -- the col/row strip labels carry the
+axis-variable name. Per-cell tick numbers now appear only on the
+bottom row (x-ticks) and leftmost column (y-ticks); the
+`:share-scales #{:x :y}` guarantee makes per-cell ticks redundant
+across the rest of the grid.
 
-The third issue -- diagonal histograms rendered against the
-column's shared y-domain (data range) instead of a count axis, so
-most were nearly invisible -- is now fixed too. See below.
-
-### SPLOM diagonal histograms render against a count axis
-
+**Diagonal histograms render against a count axis.**
 `pose/inject-shared-scales` now skips the `:y-scale-domain` stamp
 on any leaf whose every effective layer resolves to a stat in
-`#{:bin :count :density}`. The diagonal cells of a SPLOM (which
-per-cell inference picks as `:bar :bin` histograms) get their own
-count y-axis instead of inheriting the shared data domain that
-their column's other cells use. Off-diagonal scatters and
+`#{:bin :count :density}`. The diagonal cells (which per-cell
+inference picks as `:bar :bin` histograms) get their own count
+y-axis instead of inheriting the shared data domain that their
+column's other cells use. Off-diagonal scatters and
 `:bin2d` / `:density-2d` heatmaps are unaffected -- the latter
 have their count on the fill aesthetic, not on y, so they still
-participate in shared y-domain coordination.
+participate in shared y-domain coordination. The exemption is
+bounded by predicted stat (the same precedence `leaf->draft` and
+`resolve/resolve-draft-layer` use), so it correctly handles
+explicit `:stat`, registered `:layer-type` entries, explicit
+`:mark` (defaults to `:identity`), and the empty-layers +
+non-empty-mapping shape that SPLOM diagonal cells take. Worked
+examples + visual diversity coverage in
+`notebooks/scale_coordination_exploration.clj`.
 
-The exemption is bounded by predicted stat (the same precedence
-`leaf->draft` and `resolve/resolve-draft-layer` use), so it
-correctly handles explicit `:stat`, registered `:layer-type`
-entries, explicit `:mark` (defaults to `:identity`), and the
-empty-layers + non-empty-mapping shape that SPLOM diagonal cells
-take. Worked examples + visual diversity coverage in
-`notebooks/scale_coordination_exploration.clj`. Resolves the
-last visual regression in the post-Phase-6 corpus.
+**Strip labels.** Grid composites built from
+`(pj/pose data (pj/cross cols cols))` now render strip labels
+above the top row (one per column, naming the y column) and to
+the left of the leftmost column (one per row, naming the x
+column) -- matching the legacy `sk/view` SPLOM chrome. Labels are
+drawn at the compositor level rather than plumbed through each
+cell's plan, so tight SPLOM layouts with long column names don't
+squeeze the per-panel width. The `cross-grid-strip-labels-test`
+no longer carries a FIXME.
 
-### SPLOM strip labels
-
-Grid composites built from `(pj/pose data (pj/cross cols cols))`
-now render strip labels above the top row (one per column,
-naming the y column) and to the left of the leftmost column (one
-per row, naming the x column) -- matching the legacy `pj/view`
-SPLOM chrome. Labels are drawn at the compositor level rather
-than plumbed through each cell's plan, so tight SPLOM layouts
-with long column names don't squeeze the per-panel width. The
-`cross-grid-strip-labels-test` no longer carries a FIXME.
+Together these resolve the last visual regression in the
+post-Phase-6 corpus.
 
 ### Visual default changes
 
@@ -442,18 +437,6 @@ as errors instead of warnings that get lost in notebook output.
 The default may move to `true` in 0.2.0 once we have a sense of
 how often it would catch real mistakes vs. fire on benign
 forward-compat keys.
-
-### Documentation
-
-`inference_rules.clj` updated to document the few-column inference
-on `pj/pose` 1-arity (which had been left out of the rule table).
-
-### Facet deferral (internal)
-
-The pre-alpha refactor plan listed `pj/facet` and `pj/facet-grid` for
-migration onto the composite substrate in this slice. We chose to
-defer -- see `dev-notes/facet-composite-deferral.md` for the rationale
-(unified-membrane guarantee, Option C for shared chrome).
 
 ### Overview
 

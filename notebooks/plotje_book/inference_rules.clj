@@ -22,42 +22,16 @@
    ;; R datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
-;; ## What Gets Inferred
+;; ## A Worked Example
 ;;
-;; When you write `(-> data (pj/lay-point :x :y))` -- or even just
-;; `(pj/lay-point data)` or `(pj/pose data)` -- the library fills
-;; in everything needed to render a plot. Here is the full list of
-;; inference steps, in the order they happen:
-;;
-;; 1. **Column selection** -- which columns map to x, y, and color (inferred from dataset shape when omitted)
-;; 2. **Column types** -- whether x and y are numerical, categorical, or temporal
-;; 3. **Aesthetic resolution** -- whether `:color`, `:size`, `:alpha`, and `:text` are column references or fixed values
-;; 4. **Grouping** -- which columns split data into subsets (explicit `:group` plus a categorical `:color`)
-;; 5. **Layer type** -- which mark and stat to use (e.g., scatter, histogram, bar, line, boxplot)
-;; 6. **Domains** -- data extent for each axis, with padding
-;; 7. **Ticks** -- nice round values and formatted labels
-;; 8. **Axis labels** -- derived from column names
-;; 9. **Legends** -- entries for color, size, and alpha legends, plus the room they take in the plot margin
-;; 10. **Layout** -- whether panels form a single plot, a facet grid, or a multi-variable grid
-;; 11. **Coordinate flipping** -- whether axes are swapped after layout (polar has its own chapter)
-;;
-;; Each rule has a sensible default and an explicit override.
-;; The sections below demonstrate each rule with live examples.
-;; Two cross-cutting sections follow the rule-by-rule tour: how the
-;; rules combine in multi-layer plots, and a diagram of the full
-;; resolution pipeline.
-
-;; ## Inspecting the Plan
-;;
-;; A **plan** is the fully resolved data structure Plotje builds
-;; from a pose right before rendering. It is a plain Clojure map
+;; Before the rule-by-rule tour, here is the kind of inference the
+;; chapter is going to dissect: a five-point scatter, then the **plan**
+;; that produced it. A plan is the fully resolved data structure Plotje
+;; builds from a pose right before rendering -- a plain Clojure map
 ;; with domains, ticks, scales, resolved layers, legend, and layout
-;; dimensions -- every inference decision made explicit in one place.
-;;
-;; `pj/plan` is the function that produces it. You can call it on
-;; any pose to see exactly what the library decided. Throughout
-;; this chapter we use `pj/plan` to peek inside after each example
-;; and check which rules fired.
+;; dimensions, every inference decision made explicit in one place.
+;; `pj/plan` is the function that produces it; we will use it to peek
+;; inside after each example.
 
 (def five-points
   {:x [1.0 2.0 3.0 4.0 5.0]
@@ -100,6 +74,31 @@ scatter-pose
 ;; - `:layout` has `:legend-w 0` -- no space reserved for a legend
 ;; - The single layer has `:mark :point` and a single `:groups` entry with all 5 data
 ;;   points, colored in the default color (steel blue)
+;;
+;; Each of those bullets is its own inference rule, with a default
+;; and an explicit override. The rest of the chapter walks them.
+
+;; ## What Gets Inferred (Chapter Map)
+;;
+;; The sections below cover each inference rule in detail. Skip to
+;; the one you need; the order roughly follows the resolution
+;; pipeline:
+;;
+;; 1. **Column selection** -- which columns map to x, y, and color (inferred from dataset shape when omitted)
+;; 2. **Column types** -- whether x and y are numerical, categorical, or temporal
+;; 3. **Aesthetic resolution** -- whether `:color`, `:size`, `:alpha`, and `:text` are column references or fixed values
+;; 4. **Grouping** -- which columns split data into subsets (explicit `:group` plus a categorical `:color`)
+;; 5. **Layer type** -- which mark and stat to use (e.g., scatter, histogram, bar, line, boxplot)
+;; 6. **Domains** -- data extent for each axis, with padding
+;; 7. **Ticks** -- nice round values and formatted labels
+;; 8. **Axis labels** -- derived from column names
+;; 9. **Legends** -- entries for color, size, and alpha legends, plus the room they take in the plot margin
+;; 10. **Layout** -- whether panels form a single plot, a facet grid, or a multi-variable grid
+;; 11. **Coordinate flipping** -- whether axes are swapped after layout (polar has its own chapter)
+;;
+;; Two cross-cutting sections follow the rule-by-rule tour: how
+;; the rules combine in multi-layer plots, and a diagram of the
+;; full resolution pipeline.
 
 ;; ## Column Selection
 ;;

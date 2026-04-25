@@ -100,15 +100,13 @@
 ;; ---
 ;; ## Mappings and Layers
 ;;
-;; A pose is built from two kinds of content:
+;; The [Pose Model](./plotje_book.pose_model.html) chapter introduced
+;; the mapping-vs-layer split (what vs how). This section is the
+;; practical follow-up: how the split plays out across multi-layer
+;; plots and explicit-vs-shorthand calls.
 ;;
-;; - **Mapping** -- what to show (which columns define the axes and aesthetics)
-;; - **Layer** -- how to show it (which chart type, with what options)
-;;
-;; The mapping says "show sepal length versus sepal width." A layer
-;; says "show it as points" or "fit a regression line." When you want
-;; multiple layers sharing the same axes, declare the mapping once
-;; with `pj/pose`, then add layers with `pj/lay-*`:
+;; Declare a mapping once with `pj/pose`, then add layers with
+;; `pj/lay-*` -- both layers share the same axes:
 
 (-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width)
@@ -118,19 +116,6 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
-
-;; Printed, the mapping-and-layers split is visible in the pose
-;; value -- `:mapping` at the top, `:layers` alongside it, one entry
-;; per call:
-
-(-> (rdatasets/datasets-iris)
-    (pj/pose :sepal-length :sepal-width)
-    pj/lay-point
-    (pj/lay-smooth {:stat :linear-model})
-    kind/pprint)
-
-(kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
-                              (= :sepal-length (get-in v [:mapping :x]))))])
 
 ;; One mapping, two layers: points and a regression line.
 ;;
@@ -374,7 +359,10 @@ two-panel
 ;; ---
 ;; ## The Pose
 ;;
-;; A pose is a composable value. A simple leaf pose carries:
+;; The [Pose Model](./plotje_book.pose_model.html) chapter walked
+;; through the shape of a pose end to end. This is the per-field
+;; reference card -- what each slot holds and which API call sets
+;; it:
 ;;
 ;; | Field | Contains | Set by |
 ;; |:------|:---------|:-------|
@@ -383,57 +371,10 @@ two-panel
 ;; | `:layers` | layers attached to the pose | `pj/lay-*` |
 ;; | `:opts` | title, width, theme, scale, coord | `pj/options`, `pj/scale`, `pj/coord` |
 ;;
-;; Here is a pose with all four fields set, constructed as an
-;; explicit map through `pj/prepare-pose`:
-
-(def my-pose
-  (pj/prepare-pose
-   {:data (rdatasets/datasets-iris)
-    :mapping {:x :sepal-length :y :sepal-width :color :species}
-    :layers [{:layer-type :point}
-             {:layer-type :smooth :mapping {:stat :linear-model}}]
-    :opts {:title "Iris"}}))
-
-my-pose
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s))
-                                (some #{"Iris"} (:texts s)))))])
-
-;; And the same value printed, showing the four fields above:
-
-(kind/pprint my-pose)
-
-(kind/test-last [(fn [fr] (= #{:data :mapping :layers :opts}
-                             (set (keys fr))))])
-
-;; The more common way to build a pose of this shape is the
-;; threaded form -- `pj/pose` to set data and mapping, `pj/lay-*`
-;; for each layer, `pj/options` for plot-level options:
-
-(-> (rdatasets/datasets-iris)
-    (pj/pose :sepal-length :sepal-width {:color :species})
-    pj/lay-point
-    (pj/lay-smooth {:stat :linear-model})
-    (pj/options {:title "Iris"}))
-
-(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
-
-;; Printed, the threaded form carries the same fields as
-;; `my-pose` above -- `:mapping` up top, `:layers` alongside it,
-;; `:opts` holding the title:
-
-(-> (rdatasets/datasets-iris)
-    (pj/pose :sepal-length :sepal-width {:color :species})
-    pj/lay-point
-    (pj/lay-smooth {:stat :linear-model})
-    (pj/options {:title "Iris"})
-    kind/pprint)
-
-(kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
-                              (= :species (get-in v [:mapping :color]))
-                              (= "Iris" (get-in v [:opts :title]))))])
+;; A composite pose adds `:poses` (sub-poses) and optionally
+;; `:layout` and `:share-scales`; see the
+;; [Composition](./plotje_book.composition.html) chapter for that
+;; shape.
 
 ;; ---
 ;; ## Mark, Stat, and Position

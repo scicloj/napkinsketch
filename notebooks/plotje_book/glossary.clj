@@ -256,15 +256,65 @@ my-pose
 
 ;; ## Layer
 ;;
-;; A **layer** is a plan-level descriptor: resolved mark type,
-;; style, and groups of data-space geometry. Layers live inside
-;; panels in the plan.
+;; A **layer** is a layer type placed on a pose, optionally with
+;; scoped mappings. Created by `pj/lay-*`. Layers attach to a pose
+;; either at the root (`(pj/lay-point pose)`) where they flow to
+;; every leaf, or with columns (`(pj/lay-point pose :x :y)`) where
+;; they attach to the matching leaf.
+
+(-> my-pose :layers first :layer-type)
+
+(kind/test-last [(fn [k] (= :point k))])
+
+;; ## Plan Layer
+;;
+;; A **plan layer** is the resolved descriptor inside a plan panel:
+;; resolved mark type, style, and groups of data-space geometry.
+;; The user-level layer becomes the plan layer through `pj/plan`.
 
 (-> my-pose
     pj/plan
     (get-in [:panels 0 :layers 0]))
 
 (kind/test-last [(fn [m] (= :point (:mark m)))])
+
+;; ## Dataset
+;;
+;; A **dataset** is the tabular data backing a plot. Plotje uses
+;; [Tablecloth](https://scicloj.github.io/tablecloth/) datasets
+;; internally; raw input (a map of `{column-name [values]}`, a
+;; sequence of row-maps, or a CSV/URL string) is coerced via
+;; `tablecloth.api/dataset` at construction time. The dataset lives
+;; on a pose under `:data`; per-layer and per-sub-pose `:data`
+;; overrides are also supported.
+
+;; ## Pipeline
+;;
+;; The **pipeline** is the five-stage flow from user code to
+;; rendered output: `pose -> draft -> plan -> membrane -> figure`.
+;; A pose is what you compose; `pj/draft` flattens it into a vector
+;; of maps; `pj/plan` resolves geometry and layout; the membrane
+;; layer turns the plan into drawable primitives; the figure is the
+;; terminal SVG hiccup or PNG output. See the
+;; [Architecture](./plotje_book.architecture.html) chapter for the
+;; per-stage details.
+
+;; ## Sub-plot
+;;
+;; A **sub-plot** is one resolved sub-pose in a composite pose's
+;; plan. Where a plain leaf-pose's plan carries `:panels` (one per
+;; faceted variant), a composite pose's plan carries `:sub-plots`
+;; (one per sub-pose), each with its own nested `:plan` map. The
+;; compositor reads `:sub-plots` and tiles their rendered membranes
+;; into the final canvas.
+
+;; ## Resolve Tree
+;;
+;; The **resolve tree** is the scope-merge walk that propagates a
+;; root pose's `:mapping`, `:opts`, and root-attached `:layers`
+;; downward into every descendant leaf during plan construction.
+;; Lower (narrower) scopes override higher ones; root-attached
+;; layers reach every applicable leaf in the tree.
 
 ;; ## Domain
 ;;
@@ -531,7 +581,11 @@ my-pose
 ;; | Leaf pose | Pose describing one plot panel | `pj/pose`, `pj/lay-*` with columns |
 ;; | Composite pose | Pose containing sub-poses and a layout | `pj/arrange`, `pj/facet`, `pj/facet-grid` |
 ;; | Mapping | Column-to-aesthetic association on a pose or layer | `pj/pose` mapping, `pj/lay-*` opts |
-;; | Layer | Method attached to a pose | `pj/lay-*` |
+;; | Layer | Layer type attached to a pose, optionally with scoped mappings | `pj/lay-*` |
+;; | Dataset | Tabular data backing a plot (Tablecloth) | `:data` slot, `pj/with-data` |
+;; | Pipeline | Five-stage flow `pose -> draft -> plan -> membrane -> figure` | Architecture chapter |
+;; | Sub-plot | One resolved sub-pose in a composite pose's plan | `:sub-plots` in plan |
+;; | Resolve tree | Scope-merge walk: root mappings propagate to every leaf | Internal to `pj/plan` |
 ;; | Draft | Vector of flat maps from merging pose and layer mappings | `pj/draft`, automatic during `pj/plan` |
 ;; | Layer type | Mark + stat + position bundle | `pj/layer-type-lookup`, `pj/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in layer-type map |
