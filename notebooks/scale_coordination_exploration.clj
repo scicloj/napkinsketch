@@ -130,8 +130,8 @@
 ;; ### Variant 2a -- histogram + KDE on the same leaf
 ;;
 ;; Both layers are count/density-axis stats; the "every layer"
-;; rule still exempts the leaf cleanly. This is the natural
-;; "histogram with smoothing curve" composition.
+;; rule still exempts the leaf from shared y-scale. This is the
+;; natural "histogram with smoothing curve" composition.
 
 (def density-data
   (tc/dataset {:x (concat (repeatedly 100 #(+ 2 (rand)))
@@ -141,10 +141,24 @@
     (pj/lay-histogram :x)
     (pj/lay-density :x))
 
-;; (The density curve is invisible because density values are tiny
-;; against the count axis. That is a separate within-leaf scale
-;; coordination issue; both layers DID land on a single leaf, which
-;; is what we wanted to verify.)
+;; The density curve is invisible above. The y-axis is the
+;; histogram's count [0, ~50], and density values [0, ~0.3] get
+;; squashed against zero. Both layers landed on a single leaf, but
+;; the within-leaf y-domain is computed as the union of all layers'
+;; y-data -- so the count axis dominates.
+;;
+;; The user-facing fix is to normalize the histogram to a density
+;; scale. Then both layers measure density, share the same axis,
+;; and read together:
+
+(-> density-data
+    (pj/lay-histogram :x {:normalize :density})
+    (pj/lay-density :x))
+
+;; This matches ggplot's behavior. The library does not auto-detect
+;; the mismatch -- we follow the principle that a user who layers
+;; two stat-driven geoms together is asking for the union of their
+;; y-data, and we leave the choice of normalization to them.
 
 ;; ### Variant 2b -- histogram + scatter forced onto one leaf
 ;;
@@ -162,10 +176,23 @@
     (pj/lay-point))
 
 ;; The bars dominate the cell; scatter points squash at the bottom.
-;; This is ALREADY broken at plan stage, before any shared-scale
-;; logic runs. The fix's "every layer" exemption rule does not
-;; address it; mixed-axis cells stay broken until a separate fix
-;; gives within-leaf scales a per-stat sense of axis ownership.
+;; This is the same within-leaf y-coordination issue as 2a, just
+;; with a stat-driven layer (`:bin`) and a data-driven layer
+;; (`:identity`) instead of two stat-driven layers.
+;;
+;; Same workaround applies: normalize the histogram so its y-axis
+;; is on a comparable scale to the scatter's y data:
+
+(-> scatter-hist-data
+    (pj/frame {:x :x :y :y})
+    (pj/lay-histogram {:normalize :density})
+    (pj/lay-point))
+
+;; The density bars peak around 1.7 and the scatter points span
+;; [0, 1] -- they coexist on a shared y-axis [0, 1.7]. Not a
+;; perfectly aligned visual, but both layers are now legible.
+;; Real applications usually pick a normalization tuned to the data
+;; (e.g. `(pj/options {:y-scale {:domain [0 1]}})` to clip).
 
 ;; ## Q3 -- representative leaf for shared legend
 ;;
@@ -196,12 +223,15 @@
 ;;   histogram cells of a SPLOM correctly render against a count
 ;;   axis, while off-diagonal scatters keep their shared-data domain.
 ;;
-;; * **Q2** -- not in scope of this fix. Mixed-axis cells (a layer
-;;   with a count-axis stat plus a layer with a data-axis stat on the
-;;   same leaf) are already broken in plan stage before shared scales
-;;   ever come in. The "every layer is count-axis" rule is the right
-;;   granularity for the shared-scale exemption; the underlying
-;;   within-leaf mixed-axis problem is a separate item.
+;; * **Q2** -- mixed-axis cells (count-axis layers plus data-axis
+;;   layers on the same leaf, OR two count-axis layers with
+;;   different value ranges like histogram + density) follow ggplot's
+;;   convention: the y-axis is the union of all layers' y-data. The
+;;   user-facing fix is `{:normalize :density}` on the histogram to
+;;   put both layers on a comparable scale; both 2a and 2b above
+;;   demonstrate it. The library does not auto-detect or auto-rescale
+;;   here -- by design, layering stat-driven layers leaves the
+;;   normalization choice with the user.
 ;;
 ;; * **Q3** -- not a real bug. The compositor's representative leaf
 ;;   for the shared legend reads from the leaf's mapping (which
