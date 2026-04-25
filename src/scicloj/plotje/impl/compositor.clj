@@ -134,6 +134,42 @@
   (let [max-chars (reduce max 0 (map count row-labels))]
     (+ 8 (* max-chars 7))))
 
+(defn- matrix-col-strip-drawables
+  "Like col-strip-drawables but for `:direction :matrix` composites,
+   where leaves are at flat paths `[i]` and the (col, row) position
+   comes from frame/matrix-axes. Places one centered label above
+   each column at strip-top, computing the column center directly
+   from the grid rect rather than looking it up via a SPLOM path."
+  [col-labels [grid-x _ grid-w _] n-cols strip-top]
+  (vec
+   (for [ci (range n-cols)
+         :let [label (nth col-labels ci nil)]
+         :when label]
+     (let [cw (/ (double grid-w) n-cols)
+           cx (+ (double grid-x) (* ci cw) (/ cw 2.0))]
+       (ui/translate cx (double strip-top)
+                     (ui/with-color [0.1 0.1 0.1 1.0]
+                       (assoc (ui/label label (ui/font nil grid-strip-font-size))
+                              :text-anchor "middle")))))))
+
+(defn- matrix-row-strip-drawables
+  "Like row-strip-drawables but for `:direction :matrix` composites.
+   Places one centered label to the left of each row, computing the
+   row center directly from the grid rect."
+  [row-labels [_ grid-y _ grid-h] n-rows strip-left strip-right]
+  (let [label-x (+ (double strip-left)
+                   (/ (- (double strip-right) (double strip-left)) 2.0))]
+    (vec
+     (for [ri (range n-rows)
+           :let [label (nth row-labels ri nil)]
+           :when label]
+       (let [rh (/ (double grid-h) n-rows)
+             cy (+ (double grid-y) (* ri rh) (/ rh 2.0))]
+         (ui/translate label-x cy
+                       (ui/with-color [0.1 0.1 0.1 1.0]
+                         (assoc (ui/label label (ui/font nil grid-strip-font-size))
+                                :text-anchor "middle"))))))))
+
 (defn- col-strip-drawables
   "Build a vector of membrane drawables: one centered text per column
    label, positioned above its column's top-row rect."
@@ -233,11 +269,18 @@
          shared? (has-shared-aesthetic? composite)
          legend-w (if shared? shared-legend-strip-w 0)
          ;; Grid-composite (rows-of-cols SPLOM) stamps :grid-strip-labels
-         ;; on its root. Reserve strip-h at the top for column labels
-         ;; and strip-w at the left for row labels, and draw the
-         ;; strips outside the cell rects so per-cell layout stays
-         ;; untouched.
-         {:keys [col-labels row-labels]} (:grid-strip-labels composite)
+         ;; on its root. Matrix-direction composites have the labels
+         ;; derived lazily from leaf positions via frame/matrix-axes.
+         ;; Either way, we end up with :col-labels / :row-labels.
+         ;; Reserve strip-h at the top for column labels and strip-w
+         ;; at the left for row labels, and draw the strips outside
+         ;; the cell rects so per-cell layout stays untouched.
+         matrix-axes (when (= :matrix (:direction (:layout composite)))
+                       (frame/matrix-axes composite))
+         {:keys [col-labels row-labels]} (or (:grid-strip-labels composite)
+                                             (when matrix-axes
+                                               {:col-labels (:col-labels matrix-axes)
+                                                :row-labels (:row-labels matrix-axes)}))
          strips? (boolean (or (seq col-labels) (seq row-labels)))
          strip-h (if (seq col-labels) grid-strip-h 0)
          strip-w (if (seq row-labels) (grid-strip-w row-labels) 0)
@@ -253,11 +296,17 @@
                             (leaf->membrane leaf (get layout (:path leaf))))
                           leaves)
          col-strips (when (and strips? (seq col-labels))
-                      (col-strip-drawables col-labels layout n-cols
-                                           (+ top-pad 2)))
+                      (if matrix-axes
+                        (matrix-col-strip-drawables col-labels grid-rect n-cols
+                                                    (+ top-pad 2))
+                        (col-strip-drawables col-labels layout n-cols
+                                             (+ top-pad 2))))
          row-strips (when (and strips? (seq row-labels))
-                      (row-strip-drawables row-labels layout n-rows
-                                           0 strip-w))
+                      (if matrix-axes
+                        (matrix-row-strip-drawables row-labels grid-rect n-rows
+                                                    0 strip-w)
+                        (row-strip-drawables row-labels layout n-rows
+                                             0 strip-w)))
          ;; Build the shared legend from a representative leaf's plan.
          ;; Use the first leaf's rectangle as the sizing context.
          legend-tree (when shared?

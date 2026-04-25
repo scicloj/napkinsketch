@@ -91,14 +91,123 @@
                       {:weights (vec weights)})))
     (mapv #(/ (double %) total) weights)))
 
+(def ^:private no-x-key
+  "Sentinel row/col key for leaves that have no :x mapping (univariate
+   on y) or no :y mapping (univariate on x). They get their own grid
+   row/column distinct from any data column."
+  ::no-x)
+
+(def ^:private no-y-key
+  ::no-y)
+
+(defn matrix-axes
+  "For a composite whose layout is `:matrix`, walk its leaves in
+   DFS order and compute the grid axes:
+
+   - col-key per leaf: the leaf's :x mapping. Two leaves sharing
+     (x, y) keep the same col-key.
+   - row-key per leaf: the leaf's :y mapping, with a DFS-occurrence
+     discriminator when (x, y) repeats. The first (a, b) gets row
+     b; the second (a, b) gets row [b 1]; the third [b 2]; etc.
+     Same column, new row in DFS order.
+   - col-keys / row-keys: distinct keys in order of first appearance.
+   - col-labels / row-labels: human-readable strings via
+     defaults/fmt-name; nil when only one column or one row exists
+     so we don't render a redundant strip header.
+
+   Univariate leaves (missing :x or :y) use the no-x-key / no-y-key
+   sentinels so they get their own grid lane.
+
+   Returns {:col-keys [...] :row-keys [...]
+            :col-labels [...|nil] :row-labels [...|nil]
+            :positions {path -> [col-idx row-idx]}
+            :x-vars [...] :y-vars [...]}.
+
+   The compositor consumes :positions for rect math and the labels
+   for strip rendering; :x-vars / :y-vars surface in plan introspection."
+  [composite]
+  (let [resolved   (resolve-tree composite)
+        leaves     (filterv :path resolved)
+        path+xy    (mapv (fn [leaf]
+                           (let [m (:mapping leaf)]
+                             [(:path leaf)
+                              (or (:x m) no-x-key)
+                              (or (:y m) no-y-key)]))
+                         leaves)
+        ;; DFS-occurrence index for each (x, y) pair.
+        xy-counts  (volatile! {})
+        annotated  (mapv (fn [[path x y]]
+                           (let [counts  (vswap! xy-counts update [x y] (fnil inc 0))
+                                 sub     (dec (get counts [x y]))
+                                 row-key (if (zero? sub) y [y sub])]
+                             {:path path :col-key x :row-key row-key
+                              :x x :y y}))
+                         path+xy)
+        col-keys   (vec (distinct (map :col-key annotated)))
+        row-keys   (vec (distinct (map :row-key annotated)))
+        col-idx    (zipmap col-keys (range))
+        row-idx    (zipmap row-keys (range))
+        positions  (into {} (map (fn [{:keys [path col-key row-key]}]
+                                   [path [(col-idx col-key) (row-idx row-key)]])
+                                 annotated))
+        ;; Strip labels: use the data-column name for non-sentinel keys;
+        ;; nil for sentinels and for single-axis grids.
+        label-of   (fn [k]
+                     (cond
+                       (= k no-x-key) ""
+                       (= k no-y-key) ""
+                       (vector? k)    (defaults/fmt-name (first k))
+                       :else          (defaults/fmt-name k)))
+        col-labels (when (> (count col-keys) 1) (mapv label-of col-keys))
+        row-labels (when (> (count row-keys) 1) (mapv label-of row-keys))
+        x-vars     (vec (distinct (keep #(when-not (= % no-x-key) %)
+                                        (map :x annotated))))
+        y-vars     (vec (distinct (keep #(when-not (= % no-y-key) %)
+                                        (map :y annotated))))]
+    {:col-keys   col-keys
+     :row-keys   row-keys
+     :col-labels col-labels
+     :row-labels row-labels
+     :positions  positions
+     :x-vars     x-vars
+     :y-vars     y-vars}))
+
+(defn- compute-matrix-layout
+  "Place each leaf in its (col, row) cell of an n-cols x n-rows grid.
+   Empty cells get no entry in the returned map. The grid takes the
+   full rect; cells are equal-sized (matrix layouts don't honour
+   :weights -- columns and rows are determined by the data, not by
+   user-supplied proportions)."
+  [composite [x y w h]]
+  (let [{:keys [col-keys row-keys positions]} (matrix-axes composite)
+        n-cols (max 1 (count col-keys))
+        n-rows (max 1 (count row-keys))
+        cw     (/ (double w) n-cols)
+        rh     (/ (double h) n-rows)]
+    (into {}
+          (map (fn [[path [ci ri]]]
+                 [path [(+ (double x) (* ci cw))
+                        (+ (double y) (* ri rh))
+                        cw
+                        rh]]))
+          positions)))
+
 (defn compute-layout
   "Walk the frame tree and assign a pixel rectangle to each leaf.
    Returns a map of path -> [x y w h].
 
-   Composite :layout is {:direction :horizontal|:vertical
+   Composite :layout is {:direction :horizontal|:vertical|:matrix
                          :weights   [pos-num ...]}. Defaults:
      :direction :horizontal
      :weights   (repeat n 1)  (equal share)
+
+   Matrix layout (`:direction :matrix`) places leaves on a grid
+   derived from their :x / :y mappings -- distinct x-cols become
+   grid columns, distinct y-cols become grid rows, leaves land at
+   their (x, y) intersection cell. Duplicate (x, y) pairs stack
+   into new rows in DFS order. Empty cells get no entry. See
+   `matrix-axes` for the full algorithm and the corresponding
+   strip-label derivation. :weights are ignored under :matrix.
 
    Rectangle arithmetic is in doubles; callers that need integer
    pixels should coerce at the render boundary (see pj/plot's
@@ -106,8 +215,30 @@
   ([frame rect]
    (compute-layout frame rect []))
   ([frame [x y w h] path]
-   (if (leaf? frame)
+   (cond
+     (leaf? frame)
      {path [(double x) (double y) (double w) (double h)]}
+
+     (= :matrix (:direction (:layout frame)))
+     ;; Matrix layout: rect math handled by compute-matrix-layout, but
+     ;; we still need to recurse into any nested composites that aren't
+     ;; themselves matrix. For now we only support flat matrix
+     ;; composites (children are leaves), since that's all
+     ;; extend-or-promote / multi-pair-frame produce. Nested matrix-
+     ;; in-matrix is reserved for a future iteration.
+     (let [cell-rects (compute-matrix-layout frame [x y w h])]
+       (into {}
+             (map (fn [[child-i [cx cy cw ch]]]
+                    (let [child (nth (:frames frame) child-i)
+                          full-path (into path [child-i])]
+                      [full-path [cx cy cw ch]])))
+             ;; cell-rects keys are paths within the composite (single
+             ;; integer for direct children); convert to absolute paths.
+             (map (fn [[child-path rect]]
+                    [(first child-path) rect])
+                  cell-rects)))
+
+     :else
      (let [{:keys [direction weights] :or {direction :horizontal}}
            (:layout frame)
            children (:frames frame)

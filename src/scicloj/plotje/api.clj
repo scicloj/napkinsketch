@@ -464,7 +464,14 @@
         panel-2         (when (seq incoming-pos)
                           {:mapping incoming-pos :layers []})
         frames          (filterv some? [panel-1 panel-2])]
-    (cond-> {:frames frames}
+    (cond-> {:frames frames
+             ;; Threaded `(pj/frame fr :x :y)` over a leaf-with-position
+             ;; promotes into a composite. By default the layout is
+             ;; matrix: distinct x-cols become grid columns, distinct
+             ;; y-cols become grid rows, leaves land at their (x, y)
+             ;; intersection. The user can override later with
+             ;; (pj/options fr {:layout {:direction :horizontal}}).
+             :layout {:direction :matrix}}
       (:data leaf)      (assoc :data (:data leaf))
       (seq root-aesth)  (assoc :mapping root-aesth)
       (seq root-layers) (assoc :layers root-layers)
