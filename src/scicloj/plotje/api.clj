@@ -547,11 +547,17 @@
    stamped as #{:x :y} so columns share x-axis domains and rows share
    y-axis domains -- SPLOM behavior.
 
-   Each cell also carries :opts with two compositor-facing flags:
-   :suppress-legend everywhere (one shared legend at composite level)
-   and :suppress-x-label / :suppress-y-label everywhere (the row and
-   column strip labels at the composite carry the axis-variable name,
-   so the per-cell axis labels would only duplicate them).
+   Each cell also carries :opts:
+   - :suppress-legend on every cell -- one shared legend at composite
+     level.
+   - :suppress-x-label and :suppress-y-label on every cell -- the
+     strip labels carry the axis-variable name; per-cell axis labels
+     would duplicate them.
+   - :suppress-x-ticks on every cell except the bottom row -- only
+     the bottom row's tick numbers stay, since tick scales are
+     shared down the column via :share-scales.
+   - :suppress-y-ticks on every cell except the leftmost column --
+     same reasoning, tick scales shared across the row.
 
    The composite root carries :grid-strip-labels so the compositor
    can draw column strip labels above the top row and row strip
@@ -562,6 +568,7 @@
         root-m    (:mapping base)
         root-l    (:layers base)
         root-o    (:opts base)
+        n-rows    (count rows)
         col->name (fn [c] (if (keyword? c) (name c) (str c)))
         ;; Each column shares its y column; each row shares its x
         ;; column. Strip labels live at the composite root, not on
@@ -569,16 +576,20 @@
         col-labels (when (seq rows)
                      (mapv (fn [[_ y]] (col->name y)) (first rows)))
         row-labels (mapv (fn [row] (col->name (first (first row)))) rows)
-        cells      (fn [_row-idx row]
-                     (vec
-                      (map
-                       (fn [[x y]]
-                         {:mapping {:x x :y y}
-                          :opts {:suppress-legend true
-                                 :suppress-x-label true
-                                 :suppress-y-label true}
-                          :layers []})
-                       row)))
+        cells      (fn [row-idx row]
+                     (let [bottom? (= row-idx (dec n-rows))]
+                       (vec
+                        (map-indexed
+                         (fn [col-idx [x y]]
+                           (let [leftmost? (zero? col-idx)]
+                             {:mapping {:x x :y y}
+                              :opts (cond-> {:suppress-legend true
+                                             :suppress-x-label true
+                                             :suppress-y-label true}
+                                      (not bottom?)   (assoc :suppress-x-ticks true)
+                                      (not leftmost?) (assoc :suppress-y-ticks true))
+                              :layers []}))
+                         row))))
         row-frames (vec
                     (map-indexed
                      (fn [row-idx row]

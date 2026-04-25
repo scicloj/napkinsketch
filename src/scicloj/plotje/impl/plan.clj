@@ -1075,6 +1075,18 @@
          ;; --- Phase 5: compute ticks at the final panel dimensions ---
          m (if multi? (:margin-multi cfg) (:margin cfg))
          panels (mapv #(finalize-panel % pw ph m cfg annotations) panel-domains)
+         ;; :suppress-x-ticks / :suppress-y-ticks on opts blank the
+         ;; tick set for the corresponding axis. Compositor sets these
+         ;; on inner cells of grid-composites (SPLOM) so only the
+         ;; bottom row carries x-tick numbers and only the leftmost
+         ;; column carries y-tick numbers -- matches the legacy SPLOM
+         ;; chrome and avoids visual noise from per-cell tick text.
+         empty-ticks {:values [] :labels [] :categorical? false}
+         panels (cond-> panels
+                  (:suppress-x-ticks opts)
+                  (->> (mapv #(assoc % :x-ticks empty-ticks)))
+                  (:suppress-y-ticks opts)
+                  (->> (mapv #(assoc % :y-ticks empty-ticks))))
 
          plan
          (resolve/map->Plan
