@@ -294,12 +294,13 @@ and then into each layer. Lower scopes override higher ones; `nil`
 is an explicit cancellation. Scope is lexical: you set a mapping
 where you want it to apply.
 
-**29 layer functions** covering the common chart types: point, line,
-step, area, stacked-area, histogram, bar, stacked-bar,
-stacked-bar-fill, value-bar, lm (linear model), loess, text, label,
-density, tile, density2d, contour, boxplot, violin, ridgeline, rug,
-summary (mean + SE), errorbar, lollipop, plus four annotation layers
-(lay-rule-h, lay-rule-v, lay-band-h, lay-band-v).
+**~25 layer functions** covering the common chart types: point, line,
+step, area, histogram, bar, value-bar, smooth (linear-model and loess
+stats), text, label, density, tile, density2d, contour, boxplot,
+violin, ridgeline, rug, summary (mean + SE), errorbar, lollipop, plus
+four annotation layers (lay-rule-h, lay-rule-v, lay-band-h,
+lay-band-v). Stack/dodge/fill positions are now options on lay-bar
+and lay-area rather than separate layer functions.
 
 **Statistics built in.** Histogram binning, categorical counts, OLS
 regression (with optional confidence ribbons), LOESS with bootstrap
@@ -330,11 +331,11 @@ scales with custom midpoints are also supported.
 
 **Annotations.** Reference lines (`pj/lay-rule-h`, `pj/lay-rule-v`)
 and shaded bands (`pj/lay-band-h`, `pj/lay-band-v`) as first-class
-layers. Sketch-scope annotations apply to every panel; view-scope
-annotations apply only to panels matching the view's x/y mapping.
+layers. Annotations attached at the root frame apply to every panel;
+annotations attached at a leaf frame apply only to that panel.
 
-**Per-scope data override.** `:data` can be set at sketch, view, or
-layer level for mixed-data composites like
+**Per-scope data override.** `:data` can be set at the root frame,
+nested frame, or layer level for mixed-data composites like
 `layer A with dataset 1 + layer B with dataset 2`.
 
 **Flexible input.** Tablecloth datasets, plain maps of columns,
@@ -360,9 +361,9 @@ defaults. Theme values deep-merge so partial overrides don't clobber
 the rest.
 
 **Clear errors on natural mistakes.** Missing or typoed column
-references, mixed-type columns, unknown methods, unknown options on
-`view`/`sketch`/`options`/`lay-*`, categorical columns passed to
-numeric stats, and numeric x passed to categorical marks all fail
+references, mixed-type columns, unknown layer types, unknown options
+on `pj/frame`/`pj/options`/`pj/lay-*`, categorical columns passed
+to numeric stats, and numeric x passed to categorical marks all fail
 with a clear, actionable error pointing at the offending input.
 
 **Plan inspection.** `pj/plan` returns a plain Clojure data structure
@@ -382,8 +383,8 @@ through a complete end-to-end custom mark.
 Twenty-eight executable chapters:
 
 - **Getting Started** — quickstart
-- **Foundations** — datasets, sketch model, core concepts, options
-  and scopes, sketch rules, inference rules, methods, glossary
+- **Foundations** — datasets, frame model, core concepts, options
+  and scopes, frame rules, inference rules, layer types, glossary
 - **Chart Types** — scatter, distributions, ranking, change over
   time, relationships, polar
 - **How-to Guides** — cookbook, configuration, customization,
@@ -395,8 +396,8 @@ Twenty-eight executable chapters:
   waterfall extension, edge cases, development
 
 Every notebook embeds runnable regression tests via `kind/test-last`.
-Combined with a hand-written core test suite, the project runs ~920
-tests / ~1340 assertions.
+Combined with a hand-written core test suite, the project runs over
+1000 tests / over 1600 assertions.
 
 ### Architecture
 
