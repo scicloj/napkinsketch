@@ -16,11 +16,11 @@
 
 ;; ## Pose
 ;;
-;; A **pose** is the unified composable value in Plotje. A
-;; leaf pose describes one plot panel; a composite pose contains
-;; sub-poses arranged together. Every function in the API
-;; (`pj/pose`, `pj/lay-*`, `pj/facet`, `pj/arrange`, `pj/options`,
-;; `pj/scale`, `pj/coord`) takes a pose and returns a pose.
+;; A **pose** is the composable value in Plotje. A leaf pose
+;; describes one plot panel; a composite pose contains sub-poses
+;; arranged together. Every function in the API (`pj/pose`,
+;; `pj/lay-*`, `pj/facet`, `pj/arrange`, `pj/options`, `pj/scale`,
+;; `pj/coord`) takes a pose and returns a pose.
 ;; Poses auto-render in
 ;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).

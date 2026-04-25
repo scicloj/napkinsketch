@@ -22,8 +22,11 @@ the Grammar of Graphics.
 Add to your `deps.edn`:
 
 ```clojure
-org.scicloj/plotje {:mvn/version "0.1.0"}
+org.scicloj/plotje {:mvn/version "0.1.0-SNAPSHOT"}
 ```
+
+(The first tagged release `0.1.0` is staged but not yet published.
+Snapshots are deployed from `main` via `./snapshot.sh`.)
 
 Plotje is intended to be used with data-visualization tools
 that support the [Kindly](https://scicloj.github.io/kindly) convention

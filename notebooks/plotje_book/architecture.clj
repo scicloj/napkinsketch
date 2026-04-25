@@ -76,7 +76,7 @@ graph LR
 ;; composable functions. The pose records what to plot
 ;; without doing any computation.
 
-(def trace-sk
+(def trace-pose
   (-> trace-data
       (pj/lay-point :x :y {:color :g})))
 
@@ -93,13 +93,13 @@ graph LR
 ;;
 ;; - `:opts` -- plot-level options (title, width, etc.)
 
-(pj/pose? trace-sk)
+(pj/pose? trace-pose)
 
 (kind/test-last [true?])
 
 ;; Because a leaf pose has no sub-poses, this is a leaf:
 
-(pose-impl/leaf? trace-sk)
+(pose-impl/leaf? trace-pose)
 
 (kind/test-last [true?])
 
@@ -108,18 +108,18 @@ graph LR
 ;; on the layer so a subsequent `pj/lay-*` with different opts does
 ;; not disturb it:
 
-(:mapping trace-sk)
+(:mapping trace-pose)
 
 (kind/test-last [(fn [m] (and (= :x (:x m))
                               (= :y (:y m))))])
 
-(get-in trace-sk [:layers 0 :layer-type])
+(get-in trace-pose [:layers 0 :layer-type])
 
 (kind/test-last [(fn [m] (= :point m))])
 
 ;; The :color mapping lives on the layer's own :mapping:
 
-(get-in trace-sk [:layers 0 :mapping :color])
+(get-in trace-pose [:layers 0 :mapping :color])
 
 (kind/test-last [(fn [m] (= :g m))])
 
@@ -130,7 +130,7 @@ graph LR
 ;; and layer details into one flat map with `:data`, `:x`, `:y`, `:mark`, etc.
 
 (def trace-draft
-  (pj/draft trace-sk))
+  (pj/draft trace-pose))
 
 (count trace-draft)
 
@@ -200,7 +200,7 @@ trace-membrane
 ;; in one step -- computing the draft and running `draft->plan`
 ;; internally.
 
-(def shortcut-plan (pj/plan trace-sk))
+(def shortcut-plan (pj/plan trace-pose))
 
 (ss/valid? shortcut-plan)
 

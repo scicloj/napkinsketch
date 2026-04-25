@@ -38,7 +38,7 @@
 ;; `:layers`, and `:opts` -- everything except the `:data` field,
 ;; which is omitted for readability.
 
-(defn sk-summary
+(defn pose-summary
   "Print pose structure without :data (for readability)."
   [fr]
   (-> (select-keys fr [:mapping :layers :opts])
@@ -79,7 +79,7 @@
 (-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width)
     (pj/lay-point {:color :species})
-    sk-summary)
+    pose-summary)
 
 (kind/test-last
  [(fn [m]
@@ -150,7 +150,7 @@
     pj/lay-point
     (pj/options {:title "Iris"})
     (pj/coord :flip)
-    sk-summary)
+    pose-summary)
 
 (kind/test-last
  [(fn [m]
@@ -245,7 +245,7 @@ demo
 
 ;; The pose structure:
 
-(sk-summary demo)
+(pose-summary demo)
 
 (kind/test-last
  [(fn [m]

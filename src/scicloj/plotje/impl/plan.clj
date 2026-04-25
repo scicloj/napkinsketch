@@ -38,7 +38,7 @@
     (when (seq parsed)
       (when (> (count types) 1)
         (throw (ex-info (str "Cannot merge numeric and categorical domains on " axis-key
-                             ". Each view must use a consistent column type for this axis.")
+                             ". Each layer must use a consistent column type for this axis.")
                         {:axis axis-key
                          :domains (mapv :vals parsed)})))
       (let [vals (mapcat :vals parsed)]
@@ -564,14 +564,14 @@
         y-types (distinct (keep (comp :type :y-scale) draft-layers))
         coords (distinct (keep :coord draft-layers))]
     (when (> (count x-types) 1)
-      (println (str "Warning: Views have conflicting x-scale types " (vec x-types)
-                    ". Using first view's scale: " (first x-types) ".")))
+      (println (str "Warning: Layers have conflicting x-scale types " (vec x-types)
+                    ". Using first layer's scale: " (first x-types) ".")))
     (when (> (count y-types) 1)
-      (println (str "Warning: Views have conflicting y-scale types " (vec y-types)
-                    ". Using first view's scale: " (first y-types) ".")))
+      (println (str "Warning: Layers have conflicting y-scale types " (vec y-types)
+                    ". Using first layer's scale: " (first y-types) ".")))
     (when (> (count coords) 1)
-      (println (str "Warning: Views have conflicting coord types " (vec coords)
-                    ". Using first view's coord: " (first coords) ".")))))
+      (println (str "Warning: Layers have conflicting coord types " (vec coords)
+                    ". Using first layer's coord: " (first coords) ".")))))
 
 ;; ================================================================
 ;; Grid Layout

@@ -35,5 +35,5 @@
  ;; :line-width 2
 
  ;; ---------- Behavior ----------
- ;; :validate true      ;; validate sketches against Malli schema
+ ;; :validate true      ;; validate poses against Malli schema
  }

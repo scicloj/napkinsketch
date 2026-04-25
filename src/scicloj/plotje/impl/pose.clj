@@ -615,11 +615,11 @@
   [data facet-col facet-row]
   (when (and facet-col (sequential? facet-col))
     (throw (ex-info (str "Facet column must be a single keyword or string, got vector: " (pr-str facet-col)
-                         ". For 2D grids use (pj/facet-grid sk col-col row-col).")
+                         ". For 2D grids use (pj/facet-grid pose col-col row-col).")
                     {:facet-col facet-col})))
   (when (and facet-row (sequential? facet-row))
     (throw (ex-info (str "Facet row must be a single keyword or string, got vector: " (pr-str facet-row)
-                         ". For 2D grids use (pj/facet-grid sk col-col row-col).")
+                         ". For 2D grids use (pj/facet-grid pose col-col row-col).")
                     {:facet-row facet-row})))
   (let [nc? (resolve/column-ref? facet-col)
         nr? (resolve/column-ref? facet-row)

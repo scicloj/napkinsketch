@@ -2,9 +2,11 @@
 ;;
 ;; This chapter is the specification for how `pj/pose`, `pj/lay-*`,
 ;; `pj/arrange`, `pj/options`, `pj/scale`, `pj/coord`, `pj/facet`,
-;; and `pj/cross` compose in the pose world. Twenty-eight rules
-;; across eight sections; each rule is demonstrated with a rendered
-;; pose (or plan), a printed structure, and a verified assertion.
+;; and `pj/cross` compose in the pose world. Twenty-nine rules
+;; across seven sections (Construction, Layer Placement, Leaf
+;; Identity, Scope, Options, Assembly, Layout); each rule is
+;; demonstrated with a rendered pose (or plan), a printed structure,
+;; and a verified assertion.
 ;;
 ;; Read [Pose Model](./plotje_book.pose_model.html) first --
 ;; this chapter is the proof layer, not a teaching chapter. Every
@@ -181,7 +183,7 @@
          (= {:x :petal-length :y :petal-width}
             (:mapping (second (:poses fr))))))])
 
-;; **Property P-C3b -- plot-level options stay at root on promotion.**
+;; **Property P-C3 -- plot-level options stay at root on promotion.**
 ;; A `:title` set via `pj/options` before promotion does not demote
 ;; into sub-pose 1; it lives on the composite root's `:opts`.
 
@@ -451,7 +453,7 @@
             (:layer-type (first (:layers (first (:poses fr))))))))])
 
 ;; Keyword/string tolerance -- the string form matches a keyword
-;; leaf (LP2e):
+;; leaf (LP2 with LI2 keyword/string equivalence):
 
 (-> iris
     (pj/pose :sepal-length :sepal-width)
@@ -620,9 +622,9 @@
    {:data iris
     :mapping {:color :species}
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
-              :layers [{:layer-type :point}]}
-             {:mapping {:x :petal-length :y :petal-width}
-              :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}
+            {:mapping {:x :petal-length :y :petal-width}
+             :layers [{:layer-type :point}]}]}))
 
 s1-composite
 
@@ -635,16 +637,16 @@ s1-composite
                 (= 3 (count (:groups (first (:layers (first pp)))))))
               panels)))])
 
-;; **Property P-S1a -- sibling independence.** A sub-pose's own
+;; **Property P-S1 -- sibling independence.** A sub-pose's own
 ;; mapping does not leak into its siblings.
 
 (def s1-siblings
   (pj/prepare-pose
    {:data iris
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
-              :layers [{:layer-type :point}]}
-             {:mapping {:x :petal-length :y :petal-width :color :species}
-              :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}
+            {:mapping {:x :petal-length :y :petal-width :color :species}
+             :layers [{:layer-type :point}]}]}))
 
 s1-siblings
 
@@ -670,10 +672,10 @@ s1-siblings
   (pj/prepare-pose
    {:data iris
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
-              :layers [{:layer-type :point}]}
-             {:mapping {:x :a :y :b}
-              :data (tc/dataset {:a [1 2 3] :b [3 5 4]})
-              :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}
+            {:mapping {:x :a :y :b}
+             :data (tc/dataset {:a [1 2 3] :b [3 5 4]})
+             :layers [{:layer-type :point}]}]}))
 
 s2-tree
 
@@ -1009,7 +1011,7 @@ l4-shared
 (-> iris
     (pj/pose {:color :species})
     (pj/pose (pj/cross [:sepal-length :sepal-width]
-                        [:petal-length :petal-width])))
+                       [:petal-length :petal-width])))
 
 (kind/test-last
  [(fn [fr]

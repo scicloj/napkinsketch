@@ -23,9 +23,11 @@
 ;; ## Idea 1: A pose describes a plot
 ;;
 ;; In Plotje, every plot you compose is a **pose** -- a plain
-;; Clojure value that describes what to show. The simplest pose
-;; names some data and picks columns. With no explicit chart type,
-;; the library infers one from the column types:
+;; Clojure value that describes what to show. Every function in
+;; the API takes a pose and returns a pose, so plots build up
+;; through ordinary `->` threading. The simplest pose carries some
+;; data and picks columns. With no explicit chart type, the library
+;; infers one from the column types:
 
 (-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width))
@@ -168,9 +170,9 @@ multi-layer
    {:data (rdatasets/datasets-iris)
     :layout {:direction :horizontal}
     :poses [{:mapping {:x :sepal-length :y :sepal-width :color :species}
-              :layers [{:layer-type :point}]}
-             {:mapping {:x :petal-length :y :petal-width :color :species}
-              :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}
+            {:mapping {:x :petal-length :y :petal-width :color :species}
+             :layers [{:layer-type :point}]}]}))
 
 two-panel
 

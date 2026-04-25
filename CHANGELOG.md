@@ -213,7 +213,7 @@ The layout pipeline was rewritten around three pure functions
 touch pixel math twice. A single reformulation -- running the tick
 picker at a pixel budget equal to `:height` instead of the unknown
 real panel height -- breaks the classic
-`y-label-pad ↔ panel-width` cycle. Label widths are monotonic
+`y-label-pad <-> panel-width` cycle. Label widths are monotonic
 non-decreasing in tick count for every supported scale type, so
 the over-estimate is always safe. See
 `dev-notes/design-width-inference.md` for the full design.
@@ -253,7 +253,7 @@ User-visible behavior:
   x-axis labels on non-bottom rows and y-axis labels on non-leftmost
   columns, and lets per-cell inference pick the layer type --
   scatter off-diagonal, histogram on the diagonal where x = y
-  (matching the legacy pj/view SPLOM behaviour). The idiomatic SPLOM
+  (matching the legacy sk/view SPLOM behaviour). The idiomatic SPLOM
   omits `pj/lay-point`:
   ```clojure
   (-> data
@@ -455,18 +455,18 @@ confidence bands, 1D and 2D kernel density estimation (the 2D case
 uses Silverman's rule for the product-kernel bandwidth), 2D binning
 for heatmaps, boxplot five-number summary with R type 7 quartiles,
 violin density per category, and mean + standard error summaries.
-Every stat is a multimethod — you can register new ones.
+Every stat is a multimethod -- you can register new ones.
 
 **Faceting.** `pj/facet` for single-variable paneling (one row or
-column of panels), `pj/facet-grid` for row x column grids, `pj/cross`
-as a helper for building scatter-plot matrices (SPLOM), and
-`pj/distribution` for the diagonal of a SPLOM (univariate
-distributions).
+column of panels), `pj/facet-grid` for row x column grids, and
+`pj/cross` as a helper for building scatter-plot matrices (SPLOM).
+On the SPLOM diagonal, per-cell inference picks histograms
+(univariate distributions) without an explicit lay-* call.
 
 **Coordinate systems.** Cartesian (default), flip, polar, and fixed
 (1:1 aspect ratio).
 
-**Scales.** Linear, log, categorical, and datetime — type is
+**Scales.** Linear, log, categorical, and datetime -- type is
 auto-detected from the column and can be overridden via `pj/scale`.
 
 **Continuous and categorical color.** Numeric columns map to a
@@ -527,19 +527,19 @@ through a complete end-to-end custom mark.
 
 ### Book
 
-Twenty-eight executable chapters:
+Twenty-nine executable chapters:
 
-- **Getting Started** — quickstart
-- **Foundations** — datasets, pose model, core concepts, options
+- **Getting Started** -- quickstart
+- **Foundations** -- datasets, pose model, core concepts, options
   and scopes, pose rules, inference rules, layer types, glossary
-- **Chart Types** — scatter, distributions, ranking, change over
+- **Chart Types** -- scatter, distributions, ranking, change over
   time, relationships, polar
-- **How-to Guides** — cookbook, configuration, customization,
-  faceting, troubleshooting
-- **Reference** — api reference
-- **Gallery** — ~140 examples reproducing charts from the R Graph
+- **How-to Guides** -- cookbook, configuration, customization,
+  faceting, composition, troubleshooting
+- **Reference** -- api reference
+- **Gallery** -- ~150 examples reproducing charts from the R Graph
   Gallery, Vega-Lite Examples, Python Graph Gallery, ECharts, and D3
-- **Internals** — exploring plans, architecture, extensibility,
+- **Internals** -- exploring plans, architecture, extensibility,
   waterfall extension, edge cases, development
 
 Every notebook embeds runnable regression tests via `kind/test-last`.
@@ -554,17 +554,17 @@ Five-stage pipeline:
 pose -> draft -> plan -> membrane -> figure
 ```
 
-- **Pose** — user-facing composable value (`data + mapping + layers`,
+- **Pose** -- user-facing composable value (`data + mapping + layers`,
   with optional `sub-poses + layout + opts`). Plain recursive map.
-- **Draft** — flat maps produced by `pj/draft` (one per applicable
+- **Draft** -- flat maps produced by `pj/draft` (one per applicable
   layer in each leaf pose), the bridge between API composition and
   planning.
-- **Plan** — plain Clojure data with dtype-next buffers (domains,
+- **Plan** -- plain Clojure data with dtype-next buffers (domains,
   ticks, legends, layout, resolved layers); serializable, inspectable,
   rendered by multiple backends.
-- **Membrane** — drawable primitives (rectangles, paths, text,
+- **Membrane** -- drawable primitives (rectangles, paths, text,
   translated/colored groups).
-- **Figure** — terminal output: SVG hiccup or raster PNG.
+- **Figure** -- terminal output: SVG hiccup or raster PNG.
 
 The pipeline's layering is strict: data transformations live under
 `impl/`; drawing primitives live under `render/`; nothing in
@@ -614,20 +614,20 @@ produce crashes on canonical inputs.
   bin externally and render with explicit numeric bin centers, or
   use `pj/lay-value-bar` with `{:color :value}` for a
   categorical-axis "heatmap" look.
-- `pj/lay-stacked-bar` / `pj/lay-stacked-bar-fill` are count-only
-  and reject a `y` column -- there is no clean way to render a
+- `pj/lay-bar` with `:position :stack` (or `:fill`) is count-only
+  and rejects a `y` column -- there is no clean way to render a
   stacked bar chart of pre-aggregated values (e.g. a "messages
   per year broken down by tenure bucket" chart where the counts
-  are already computed). `pj/lay-stacked-area` does accept
-  pre-aggregated `y`, so the pattern works there. Workarounds:
-  lift the aggregation (expand each row back into count-many
-  duplicate rows so `:count` sums to the pre-aggregated value),
-  or use `pj/lay-stacked-area` on a numeric x. A proper fix
-  (either lift the restriction when `y` is supplied, or add a
-  `pj/lay-stacked-value-bar`) is planned. Reported in
-  user-report-2 Issue 2.
-- Stack order in `pj/lay-stacked-area` and
-  `pj/lay-stacked-bar` follows the sort order of the `:color`
+  are already computed). `pj/lay-area` with `:position :stack`
+  does accept pre-aggregated `y`, so the pattern works there.
+  Workarounds: lift the aggregation (expand each row back into
+  count-many duplicate rows so `:count` sums to the pre-aggregated
+  value), or use `pj/lay-area` with `:position :stack` on a
+  numeric x. A proper fix (lifting the count-only restriction
+  when `y` is supplied) is planned. Reported in user-report-2
+  Issue 2.
+- Stack order in `pj/lay-area` and `pj/lay-bar` (with
+  `:position :stack`) follows the sort order of the `:color`
   column. There is no `:stack-order` / `:color-order` option yet,
   so forcing a specific bottom-to-top order requires prefixing
   category labels with sort-stable ordinal characters

@@ -22,7 +22,7 @@
            :class-dir class-dir
            :target "target"
            :src-dirs ["src"]
-           :resource-dirs [])))
+           :resource-dirs ["resources"])))
 
 (defn run-tests
   "Run tests via cognitect test runner"
@@ -55,8 +55,8 @@
         version (get-version opts)]
     (println "\nWriting pom.xml...")
     (b/write-pom (assoc opts :pom-data (pom-template version)))
-    (println "\nCopying source...")
-    (b/copy-dir {:src-dirs ["src"] :target-dir class-dir})
+    (println "\nCopying source and resources...")
+    (b/copy-dir {:src-dirs ["src" "resources"] :target-dir class-dir})
     (println "\nBuilding JAR..." (:jar-file opts))
     (b/jar opts))
   opts)

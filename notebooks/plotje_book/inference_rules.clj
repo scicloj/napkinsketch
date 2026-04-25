@@ -151,7 +151,7 @@ scatter-pose
 
 (def two-col-pose
   (pj/pose {:x [1.0 2.0 3.0 4.0 5.0]
-             :y [1.0 4.0 9.0 16.0 25.0]}))
+            :y [1.0 4.0 9.0 16.0 25.0]}))
 
 two-col-pose
 
@@ -592,7 +592,7 @@ explicit-group-pose
 ;; When you use `pj/pose` without an explicit `pj/lay-*` call,
 ;; Plotje infers the **layer type** -- a mark + stat bundle --
 ;; from the column types of the referenced columns. Internally,
-;; `infer-method` in `resolve.clj` applies these rules.
+;; `infer-layer-type` in `resolve.clj` applies these rules.
 ;;
 ;; ### Single-column cases (or x = y on the diagonal)
 ;;
@@ -1157,19 +1157,19 @@ multi-pose
 ^:kindly/hide-code
 (kind/mermaid "
 graph TD
-  VIEWS[\"views + options\"]
-  VIEWS --> CT[\"Column Types<br/>(infer-column-types)\"]
-  VIEWS --> AE[\"Aesthetics<br/>(resolve-aesthetics)\"]
+  POSE[\"pose + options\"]
+  POSE --> CT[\"Column Types<br/>(infer-column-types)\"]
+  POSE --> AE[\"Aesthetics<br/>(resolve-aesthetics)\"]
   CT --> GR[\"Grouping<br/>(infer-grouping)\"]
   AE --> GR
-  CT --> ME[\"Layer type<br/>(infer-method)\"]
+  CT --> ME[\"Layer type<br/>(infer-layer-type)\"]
   GR --> STATS[\"Statistics<br/>(compute-stat)\"]
   ME --> STATS
 
   STATS --> DOM[\"Domains<br/>(collect-domain + pad-domain)\"]
   DOM --> TK[\"Ticks<br/>(compute-ticks)\"]
 
-  VIEWS --> LBL[\"Labels<br/>(resolve-labels)\"]
+  POSE --> LBL[\"Labels<br/>(resolve-labels)\"]
   AE --> LEG[\"Color Legend<br/>(build-legend)\"]
   AE --> SLEG[\"Size Legend<br/>(build-size-legend)\"]
   AE --> ALEG[\"Alpha Legend<br/>(build-alpha-legend)\"]
@@ -1189,7 +1189,7 @@ graph TD
   LAYOUT --> PLAN
   STATS --> PLAN
 
-  style VIEWS fill:#e8f5e9
+  style POSE fill:#e8f5e9
   style PLAN fill:#fff3e0
   style STATS fill:#e3f2fd
   style DOM fill:#e3f2fd

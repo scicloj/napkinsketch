@@ -432,7 +432,7 @@
           both-numerical?  (and (= x-type :numerical) (= y-type :numerical))
           ;; Prefer the user-facing layer-function name (:layer-type) over the
           ;; internal :mark for error messages. The :layer-type key is stamped
-          ;; onto the draft layer by resolve-layer-type-info in sketch.clj;
+          ;; onto the draft layer by resolve-layer-type-info in pose.clj;
           ;; fall back to :mark if it is missing (e.g. a raw layer-type map).
           user-fn-name (or (:layer-type v) mark)
           _ (when (and (contains? both-axes-marks mark)

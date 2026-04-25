@@ -165,7 +165,7 @@
   "A reference line or band annotation. Dispatched on :mark:
    rule-h requires :y-intercept; rule-v requires :x-intercept;
    band-h requires :y-min and :y-max; band-v requires :x-min and :x-max.
-   :color must be a literal string (not a column reference); sketch-level
+   :color must be a literal string (not a column reference); pose-level
    column-mapped aesthetics are filtered before annotations reach the plan."
   [:multi {:dispatch :mark}
    [:rule-h [:map
