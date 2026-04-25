@@ -4,7 +4,7 @@
   [scicloj.kindly.v4.kind :as kind]
   [scicloj.metamorph.ml.rdatasets :as rdatasets]
   [scicloj.plotje.api :as pj]
-  [scicloj.plotje.impl.frame :as frame-impl]
+  [scicloj.plotje.impl.pose :as pose-impl]
   [scicloj.plotje.impl.plan :as plan-impl]
   [scicloj.plotje.impl.plan-schema :as ss]
   [clojure.test :refer [deftest is]]))
@@ -13,7 +13,7 @@
 (def
  v3_l27
  (kind/mermaid
-  "\ngraph LR\n  B[\"Frame<br/>(composable API)\"] -->|frame->draft| D[\"Draft<br/>(flat maps)\"]\n  D -->|draft->plan| P[\"Plan<br/>(data-space)\"]\n  P -->|scales + coords| M[\"Membrane<br/>(drawing primitives)\"]\n  M -->|tree walk| F[\"Plot<br/>(output)\"]\n  style B fill:#d1c4e9\n  style D fill:#e8f5e9\n  style P fill:#fff3e0\n  style M fill:#e3f2fd\n  style F fill:#fce4ec\n"))
+  "\ngraph LR\n  B[\"Pose<br/>(composable API)\"] -->|pose->draft| D[\"Draft<br/>(flat maps)\"]\n  D -->|draft->plan| P[\"Plan<br/>(data-space)\"]\n  P -->|scales + coords| M[\"Membrane<br/>(drawing primitives)\"]\n  M -->|tree walk| F[\"Plot<br/>(output)\"]\n  style B fill:#d1c4e9\n  style D fill:#e8f5e9\n  style P fill:#fff3e0\n  style M fill:#e3f2fd\n  style F fill:#fce4ec\n"))
 
 
 (def
@@ -26,13 +26,13 @@
  (def trace-sk (-> trace-data (pj/lay-point :x :y {:color :g}))))
 
 
-(def v9_l96 (pj/frame? trace-sk))
+(def v9_l96 (pj/pose? trace-sk))
 
 
 (deftest t10_l98 (is (true? v9_l96)))
 
 
-(def v12_l102 (frame-impl/leaf? trace-sk))
+(def v12_l102 (pose-impl/leaf? trace-sk))
 
 
 (deftest t13_l104 (is (true? v12_l102)))
@@ -156,7 +156,7 @@
 (def
  v51_l227
  (kind/mermaid
-  "\ngraph LR\n  A[\"Frame + draft\"] -->|plan| P[\"Plan\"]\n  P --> R[\"membrane + plot\"]\n  style A fill:#e8f5e9\n  style P fill:#fff3e0\n  style R fill:#e3f2fd\n"))
+  "\ngraph LR\n  A[\"Pose + draft\"] -->|plan| P[\"Plan\"]\n  P --> R[\"membrane + plot\"]\n  style A fill:#e8f5e9\n  style P fill:#fff3e0\n  style R fill:#e3f2fd\n"))
 
 
 (def
@@ -165,7 +165,7 @@
   multi-sk
   (->
    (rdatasets/datasets-iris)
-   (pj/frame :petal-length :petal-width {:color :species})
+   (pj/pose :petal-length :petal-width {:color :species})
    pj/lay-point
    (pj/lay-smooth {:stat :linear-model}))))
 
@@ -248,7 +248,7 @@
  v73_l310
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :petal-length :petal-width {:color :species})
+  (pj/pose :petal-length :petal-width {:color :species})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})
   (pj/options {:title "Iris Petals with Regression"})))
@@ -268,4 +268,4 @@
 (def
  v76_l322
  (kind/mermaid
-  "\ngraph TD\n  API[\"api.clj\"] --> FR[\"impl/frame.clj\"]\n  API --> RES[\"impl/resolve.clj\"]\n  API --> PL[\"impl/plan.clj\"]\n  API --> COMP[\"impl/compositor.clj\"]\n  FR --> RES\n  COMP --> FR\n  COMP --> PL\n  PL --> RES\n  PL --> STAT[\"impl/stat.clj\"]\n  PL --> SCALE[\"impl/scale.clj\"]\n  PL --> DEFAULTS[\"impl/defaults.clj\"]\n  PL --> PS[\"impl/plan_schema.clj\"]\n  API --> RENDER[\"impl/render.clj\"]\n  RENDER --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style FR fill:#d1c4e9\n  style COMP fill:#d1c4e9\n  style PL fill:#d1c4e9\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))
+  "\ngraph TD\n  API[\"api.clj\"] --> FR[\"impl/pose.clj\"]\n  API --> RES[\"impl/resolve.clj\"]\n  API --> PL[\"impl/plan.clj\"]\n  API --> COMP[\"impl/compositor.clj\"]\n  FR --> RES\n  COMP --> FR\n  COMP --> PL\n  PL --> RES\n  PL --> STAT[\"impl/stat.clj\"]\n  PL --> SCALE[\"impl/scale.clj\"]\n  PL --> DEFAULTS[\"impl/defaults.clj\"]\n  PL --> PS[\"impl/plan_schema.clj\"]\n  API --> RENDER[\"impl/render.clj\"]\n  RENDER --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  style API fill:#c8e6c9\n  style FR fill:#d1c4e9\n  style COMP fill:#d1c4e9\n  style PL fill:#d1c4e9\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n"))

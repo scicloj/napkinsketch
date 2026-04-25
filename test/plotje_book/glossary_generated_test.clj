@@ -11,14 +11,14 @@
 (def
  v3_l28
  (def
-  my-frame
+  my-pose
   (->
    (rdatasets/datasets-iris)
    (pj/lay-point :sepal-length :sepal-width {:color :species})
    (pj/options {:title "Iris"}))))
 
 
-(def v4_l33 my-frame)
+(def v4_l33 my-pose)
 
 
 (deftest
@@ -47,7 +47,7 @@
 (deftest t9_l126 (is ((fn [y0s] (every? pos? y0s)) v8_l121)))
 
 
-(def v11_l140 (-> my-frame pj/draft kind/pprint))
+(def v11_l140 (-> my-pose pj/draft kind/pprint))
 
 
 (deftest
@@ -113,7 +113,7 @@
  v26_l223
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   pj/lay-point))
 
 
@@ -122,7 +122,7 @@
  (is ((fn [v] (pos? (:points (pj/svg-summary v)))) v26_l223)))
 
 
-(def v29_l240 (def my-plan (pj/plan my-frame)))
+(def v29_l240 (def my-plan (pj/plan my-pose)))
 
 
 (def v30_l242 (sort (keys my-plan)))
@@ -139,7 +139,7 @@
  (is ((fn [ks] (some #{:y-domain :x-domain :layers} ks)) v33_l253)))
 
 
-(def v36_l263 (-> my-frame pj/plan (get-in [:panels 0 :layers 0])))
+(def v36_l263 (-> my-pose pj/plan (get-in [:panels 0 :layers 0])))
 
 
 (deftest t37_l267 (is ((fn [m] (= :point (:mark m))) v36_l263)))

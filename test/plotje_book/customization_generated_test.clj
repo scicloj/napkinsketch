@@ -102,7 +102,7 @@
   {:x (range 1 50),
    :y
    (map
-    (fn* [p1__83793#] (* 2 (Math/pow 1.1 p1__83793#)))
+    (fn* [p1__72197#] (* 2 (Math/pow 1.1 p1__72197#)))
     (range 1 50))}))
 
 
@@ -413,9 +413,9 @@
  v80_l313
  (->
   (rdatasets/datasets-iris)
-  (pj/frame {:color :species})
+  (pj/pose {:color :species})
   pj/lay-point
-  (pj/frame (pj/cross splom-cols splom-cols))
+  (pj/pose (pj/cross splom-cols splom-cols))
   (pj/options {:brush true})))
 
 

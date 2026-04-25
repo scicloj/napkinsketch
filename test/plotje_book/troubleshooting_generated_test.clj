@@ -16,7 +16,7 @@
 
 (def
  v6_l51
- (-> (rdatasets/datasets-iris) (pj/frame :species :sepal-width)))
+ (-> (rdatasets/datasets-iris) (pj/pose :species :sepal-width)))
 
 
 (deftest
@@ -91,7 +91,7 @@
  v24_l185
  (->
   (rdatasets/datasets-chickwts)
-  (pj/frame :feed)
+  (pj/pose :feed)
   pj/lay-bar
   (pj/coord :polar)))
 
@@ -149,7 +149,7 @@
 
 (def
  v36_l274
- (def template (-> (pj/frame nil {:x :x, :y :y}) pj/lay-point)))
+ (def template (-> (pj/pose nil {:x :x, :y :y}) pj/lay-point)))
 
 
 (def v37_l278 (-> template (pj/with-data {:x [1 2 3], :y [4 5 6]})))

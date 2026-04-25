@@ -31,7 +31,7 @@
  v6_l33
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :petal-length :petal-width {:color :species})
+  (pj/pose :petal-length :petal-width {:color :species})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})))
 
@@ -51,7 +51,7 @@
  v9_l46
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width {:color :species})
+  (pj/pose :sepal-length :sepal-width {:color :species})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model, :confidence-band true})))
 
@@ -71,7 +71,7 @@
  v12_l59
  (->
   (rdatasets/reshape2-tips)
-  (pj/frame :total-bill :tip {:color :smoker})
+  (pj/pose :total-bill :tip {:color :smoker})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})))
 
@@ -96,9 +96,9 @@
     :y
     (mapv
      (fn*
-      [p1__82966#]
+      [p1__71370#]
       (+
-       (Math/sin (* p1__82966# 0.2))
+       (Math/sin (* p1__71370# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (pj/lay-point :x :y)

@@ -13,7 +13,7 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__82872#] (Math/sin (* p1__82872# 0.3))) (range 30))}))
+   (map (fn* [p1__71276#] (Math/sin (* p1__71276# 0.3))) (range 30))}))
 
 
 (def v4_l21 (-> wave (pj/lay-line :x :y)))
@@ -37,8 +37,8 @@
   {:x (concat (range 30) (range 30)),
    :y
    (concat
-    (map (fn* [p1__82873#] (Math/sin (* p1__82873# 0.3))) (range 30))
-    (map (fn* [p1__82874#] (Math/cos (* p1__82874# 0.3))) (range 30))),
+    (map (fn* [p1__71277#] (Math/sin (* p1__71277# 0.3))) (range 30))
+    (map (fn* [p1__71278#] (Math/cos (* p1__71278# 0.3))) (range 30))),
    :fn (concat (repeat 30 :sin) (repeat 30 :cos))}))
 
 
@@ -83,7 +83,7 @@
  v15_l64
  (->
   growth
-  (pj/frame :day :value {:color :group})
+  (pj/pose :day :value {:color :group})
   pj/lay-line
   pj/lay-point))
 
@@ -119,7 +119,7 @@
  v21_l90
  (->
   growth
-  (pj/frame :day :value {:color :group})
+  (pj/pose :day :value {:color :group})
   pj/lay-step
   pj/lay-point))
 
@@ -140,7 +140,7 @@
  (->
   {:x (range 30),
    :y
-   (map (fn* [p1__82875#] (Math/sin (* p1__82875# 0.3))) (range 30))}
+   (map (fn* [p1__71279#] (Math/sin (* p1__71279# 0.3))) (range 30))}
   (pj/lay-area :x :y)))
 
 

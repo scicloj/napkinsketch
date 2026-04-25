@@ -11,7 +11,7 @@
  v3_l41
  (defn
   sk-summary
-  "Print frame structure without :data (for readability)."
+  "Print pose structure without :data (for readability)."
   [fr]
   (-> (select-keys fr [:mapping :layers :opts]) kind/pprint)))
 
@@ -20,7 +20,7 @@
  v5_l71
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/lay-point {:color :species})))
 
 
@@ -33,7 +33,7 @@
  v8_l79
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/lay-point {:color :species})
   sk-summary))
 
@@ -49,7 +49,7 @@
  v11_l138
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   pj/lay-point
   (pj/options {:title "Iris"})
   (pj/coord :flip)))
@@ -64,7 +64,7 @@
  v14_l148
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   pj/lay-point
   (pj/options {:title "Iris"})
   (pj/coord :flip)
@@ -103,7 +103,7 @@
   demo
   (->
    (rdatasets/datasets-iris)
-   (pj/frame :sepal-length :sepal-width)
+   (pj/pose :sepal-length :sepal-width)
    (pj/lay-point {:color :species})
    (pj/options {:title "Iris measurements"})
    (pj/coord :flip))))

@@ -87,7 +87,7 @@
  v15_l73
  (->
   (rdatasets/reshape2-tips)
-  (pj/frame :total-bill :tip {:color :sex})
+  (pj/pose :total-bill :tip {:color :sex})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})
   (pj/facet-grid :smoker :sex)))
@@ -184,8 +184,8 @@
  v34_l144
  (->
   (rdatasets/datasets-iris)
-  (pj/frame {:color :species})
-  (pj/frame (pj/cross cols cols))))
+  (pj/pose {:color :species})
+  (pj/pose (pj/cross cols cols))))
 
 
 (deftest

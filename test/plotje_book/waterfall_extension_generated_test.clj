@@ -173,7 +173,7 @@
  v16_l157
  (->
   pnl-data
-  (pj/frame :category :amount)
+  (pj/pose :category :amount)
   (pj/lay (layer-type/lookup :waterfall))
   (pj/options
    {:title "Profit & Loss Waterfall", :width 500, :height 350})
@@ -197,11 +197,11 @@
   lay-waterfall
   ([sk] (pj/lay sk (layer-type/lookup :waterfall)))
   ([data x y]
-   (-> data (pj/frame x y) (pj/lay (layer-type/lookup :waterfall))))
+   (-> data (pj/pose x y) (pj/lay (layer-type/lookup :waterfall))))
   ([data x y opts]
    (->
     data
-    (pj/frame x y)
+    (pj/pose x y)
     (pj/lay (merge (layer-type/lookup :waterfall) opts))))))
 
 

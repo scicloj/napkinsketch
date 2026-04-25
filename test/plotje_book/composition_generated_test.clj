@@ -54,10 +54,10 @@
  v10_l70
  (def
   weighted
-  (pj/prepare-frame
+  (pj/prepare-pose
    {:data iris,
     :layout {:direction :horizontal, :weights [2 1]},
-    :frames
+    :poses
     [{:mapping {:x :sepal-length, :y :sepal-width},
       :layers [{:layer-type :point}]}
      {:mapping {:x :petal-length, :y :petal-width},
@@ -88,7 +88,7 @@
     [fr]
     (and
      (= [2 1] (get-in fr [:layout :weights]))
-     (= 2 (count (:frames fr)))))
+     (= 2 (count (:poses fr)))))
    v15_l95)))
 
 
@@ -96,11 +96,11 @@
  v18_l114
  (def
   shared-x
-  (pj/prepare-frame
+  (pj/prepare-pose
    {:data iris,
     :share-scales #{:x},
     :layout {:direction :horizontal, :weights [1 1]},
-    :frames
+    :poses
     [{:mapping {:x :sepal-length, :y :sepal-width},
       :layers [{:layer-type :point}]}
      {:mapping {:x :sepal-length, :y :petal-length},
@@ -125,11 +125,11 @@
  v22_l140
  (def
   marginal
-  (pj/prepare-frame
+  (pj/prepare-pose
    {:data iris,
     :share-scales #{:x},
     :layout {:direction :vertical, :weights [1 3]},
-    :frames
+    :poses
     [{:mapping {:x :sepal-length}, :layers [{:layer-type :density}]}
      {:mapping {:x :sepal-length, :y :sepal-width, :color :species},
       :layers [{:layer-type :point}]}]})))
@@ -153,18 +153,18 @@
  v26_l173
  (def
   dashboard
-  (pj/prepare-frame
+  (pj/prepare-pose
    {:data iris,
     :layout {:direction :vertical, :weights [1 1]},
-    :frames
+    :poses
     [{:layout {:direction :horizontal, :weights [1 1]},
-      :frames
+      :poses
       [{:mapping {:x :sepal-length},
         :layers [{:layer-type :histogram}]}
        {:mapping {:x :species, :y :sepal-width, :color :species},
         :layers [{:layer-type :boxplot}]}]}
      {:layout {:direction :horizontal, :weights [1 1]},
-      :frames
+      :poses
       [{:mapping {:x :petal-length, :y :petal-width, :color :species},
         :layers [{:layer-type :point}]}
        {:mapping {:x :petal-length, :color :species},

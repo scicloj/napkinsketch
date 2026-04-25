@@ -18,7 +18,7 @@
  v6_l45
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/lay-point {:color :species})))
 
 
@@ -31,7 +31,7 @@
  v9_l55
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/lay-point {:color :species})
   kind/pprint))
 
@@ -83,7 +83,7 @@
  v21_l113
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})))
 
@@ -103,7 +103,7 @@
  v24_l126
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})
   kind/pprint))
@@ -157,7 +157,7 @@
  v34_l183
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width {:color :species})
+  (pj/pose :sepal-length :sepal-width {:color :species})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})))
 
@@ -171,7 +171,7 @@
  v37_l197
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/lay-point {:color :species})
   (pj/lay-smooth {:stat :linear-model})))
 
@@ -191,7 +191,7 @@
  v40_l209
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/lay-point {:color :species})
   (pj/lay-smooth {:stat :linear-model})
   kind/pprint))
@@ -212,7 +212,7 @@
  v43_l227
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width {:color :species})
+  (pj/pose :sepal-length :sepal-width {:color :species})
   (pj/lay-point {:color nil})
   (pj/lay-smooth {:stat :linear-model})))
 
@@ -232,7 +232,7 @@
  v46_l240
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width {:color :species})
+  (pj/pose :sepal-length :sepal-width {:color :species})
   (pj/lay-point {:color nil})
   (pj/lay-smooth {:stat :linear-model})
   kind/pprint))
@@ -256,7 +256,7 @@
   setosa
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__80947#] (= "setosa" (:species p1__80947#))))))
+   (fn* [p1__69351#] (= "setosa" (:species p1__69351#))))))
 
 
 (def
@@ -265,14 +265,14 @@
   versicolor
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__80948#] (= "versicolor" (:species p1__80948#))))))
+   (fn* [p1__69352#] (= "versicolor" (:species p1__69352#))))))
 
 
 (def
  v51_l278
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/lay-point {:data setosa})
   (pj/lay-smooth {:stat :linear-model, :data versicolor})))
 
@@ -292,7 +292,7 @@
  v54_l291
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/lay-point {:data setosa})
   (pj/lay-smooth {:stat :linear-model, :data versicolor})
   kind/pprint))
@@ -352,8 +352,7 @@
  v63_l345
  (->
   (rdatasets/datasets-iris)
-  (pj/frame
-   [[:sepal-length :sepal-width] [:petal-length :petal-width]])
+  (pj/pose [[:sepal-length :sepal-width] [:petal-length :petal-width]])
   (pj/lay-point)))
 
 
@@ -366,8 +365,7 @@
  v66_l353
  (->
   (rdatasets/datasets-iris)
-  (pj/frame
-   [[:sepal-length :sepal-width] [:petal-length :petal-width]])
+  (pj/pose [[:sepal-length :sepal-width] [:petal-length :petal-width]])
   (pj/lay-point)
   kind/pprint))
 
@@ -378,11 +376,11 @@
   ((fn
     [v]
     (and
-     (= 2 (count (:frames v)))
-     (= :sepal-length (get-in v [:frames 0 :mapping :x]))
-     (= :sepal-width (get-in v [:frames 0 :mapping :y]))
-     (= :petal-length (get-in v [:frames 1 :mapping :x]))
-     (= :petal-width (get-in v [:frames 1 :mapping :y]))))
+     (= 2 (count (:poses v)))
+     (= :sepal-length (get-in v [:poses 0 :mapping :x]))
+     (= :sepal-width (get-in v [:poses 0 :mapping :y]))
+     (= :petal-length (get-in v [:poses 1 :mapping :x]))
+     (= :petal-width (get-in v [:poses 1 :mapping :y]))))
    v66_l353)))
 
 
@@ -401,8 +399,8 @@
 (def
  v72_l389
  (def
-  my-frame
-  (pj/prepare-frame
+  my-pose
+  (pj/prepare-pose
    {:data (rdatasets/datasets-iris),
     :mapping {:x :sepal-length, :y :sepal-width, :color :species},
     :layers
@@ -411,7 +409,7 @@
     :opts {:title "Iris"}})))
 
 
-(def v73_l397 my-frame)
+(def v73_l397 my-pose)
 
 
 (deftest
@@ -428,7 +426,7 @@
    v73_l397)))
 
 
-(def v76_l406 (kind/pprint my-frame))
+(def v76_l406 (kind/pprint my-pose))
 
 
 (deftest
@@ -442,7 +440,7 @@
  v79_l415
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width {:color :species})
+  (pj/pose :sepal-length :sepal-width {:color :species})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})
   (pj/options {:title "Iris"})))
@@ -457,7 +455,7 @@
  v82_l427
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width {:color :species})
+  (pj/pose :sepal-length :sepal-width {:color :species})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})
   (pj/options {:title "Iris"})
@@ -524,7 +522,7 @@
 
 (def
  v100_l528
- (-> (rdatasets/datasets-iris) (pj/frame :sepal-length :sepal-width)))
+ (-> (rdatasets/datasets-iris) (pj/pose :sepal-length :sepal-width)))
 
 
 (deftest
@@ -532,7 +530,7 @@
  (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v100_l528)))
 
 
-(def v103_l535 (-> (rdatasets/datasets-iris) (pj/frame :sepal-length)))
+(def v103_l535 (-> (rdatasets/datasets-iris) (pj/pose :sepal-length)))
 
 
 (deftest
@@ -582,7 +580,7 @@
  (def
   scatter-with-regression
   (->
-   (pj/frame nil {:x :x, :y :y, :color :group})
+   (pj/pose nil {:x :x, :y :y, :color :group})
    pj/lay-point
    (pj/lay-smooth {:stat :linear-model})
    (pj/options {:title "Scatter with Regression"}))))
@@ -703,7 +701,7 @@
  v137_l677
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width {:group :species})
+  (pj/pose :sepal-length :sepal-width {:group :species})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})))
 
@@ -805,7 +803,7 @@
  v155_l770
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/facet :species)
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})))
@@ -826,7 +824,7 @@
  v158_l783
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/facet :species)
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})
@@ -864,10 +862,10 @@
   ((fn
     [v]
     (and
-     (= 3 (count (:frames v)))
-     (= :sepal-length (get-in v [:frames 0 :mapping :x]))
-     (= :sepal-width (get-in v [:frames 1 :mapping :x]))
-     (= :petal-length (get-in v [:frames 2 :mapping :x]))))
+     (= 3 (count (:poses v)))
+     (= :sepal-length (get-in v [:poses 0 :mapping :x]))
+     (= :sepal-width (get-in v [:poses 1 :mapping :x]))
+     (= :petal-length (get-in v [:poses 2 :mapping :x]))))
    v164_l803)))
 
 

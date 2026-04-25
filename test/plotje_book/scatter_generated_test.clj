@@ -233,8 +233,8 @@
  v37_l152
  (->
   (rdatasets/datasets-iris)
-  (pj/frame {:color :species})
-  (pj/frame (pj/cross cols cols))))
+  (pj/pose {:color :species})
+  (pj/pose (pj/cross cols cols))))
 
 
 (deftest

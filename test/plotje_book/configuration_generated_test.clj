@@ -341,7 +341,7 @@
  (is
   ((fn
     [v]
-    (and (pj/frame? v) (= 2 (count (:frames (first (:frames v)))))))
+    (and (pj/pose? v) (= 2 (count (:poses (first (:poses v)))))))
    v74_l341)))
 
 

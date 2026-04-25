@@ -130,7 +130,7 @@
    v31_l130)))
 
 
-(def v34_l146 (-> iris (pj/frame :sepal-length :sepal-width)))
+(def v34_l146 (-> iris (pj/pose :sepal-length :sepal-width)))
 
 
 (deftest
@@ -138,7 +138,7 @@
  (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v34_l146)))
 
 
-(def v37_l153 (-> iris (pj/frame :species)))
+(def v37_l153 (-> iris (pj/pose :species)))
 
 
 (deftest
@@ -146,7 +146,7 @@
  (is ((fn [v] (= 3 (:polygons (pj/svg-summary v)))) v37_l153)))
 
 
-(def v40_l160 (-> iris (pj/frame :sepal-length)))
+(def v40_l160 (-> iris (pj/pose :sepal-length)))
 
 
 (deftest
@@ -158,7 +158,7 @@
  v43_l174
  (->
   iris
-  (pj/frame :sepal-length :sepal-width {:color :species})
+  (pj/pose :sepal-length :sepal-width {:color :species})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})))
 
@@ -209,7 +209,7 @@
   {:cols 2}))
 
 
-(deftest t50_l207 (is ((fn [v] (pj/frame? v)) v49_l203)))
+(deftest t50_l207 (is ((fn [v] (pj/pose? v)) v49_l203)))
 
 
 (def

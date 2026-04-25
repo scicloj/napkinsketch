@@ -31,14 +31,14 @@
    :ci-hi [12.0 18.0 14.5 20.5]}))
 
 
-(def v7_l39 (kind/doc #'pj/frame))
+(def v7_l39 (kind/doc #'pj/pose))
 
 
 (def
  v9_l43
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   pj/lay-point))
 
 
@@ -57,7 +57,7 @@
  v12_l53
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width {:color :species})
+  (pj/pose :sepal-length :sepal-width {:color :species})
   pj/lay-point
   (pj/lay-smooth {:stat :linear-model})))
 
@@ -80,7 +80,7 @@
  v16_l68
  (def
   scatter-template
-  (-> (pj/frame nil {:x :x, :y :y, :color :group}) pj/lay-point)))
+  (-> (pj/pose nil {:x :x, :y :y, :color :group}) pj/lay-point)))
 
 
 (def v17_l72 (-> scatter-template (pj/with-data tiny)))
@@ -95,8 +95,7 @@
  v20_l80
  (->
   (rdatasets/datasets-iris)
-  (pj/frame
-   [[:sepal-length :sepal-width] [:petal-length :petal-width]])
+  (pj/pose [[:sepal-length :sepal-width] [:petal-length :petal-width]])
   (pj/lay-point {:color :species})))
 
 
@@ -115,7 +114,7 @@
  v23_l91
  (->
   (rdatasets/datasets-iris)
-  (pj/frame {:x :sepal-length, :y :sepal-width})
+  (pj/pose {:x :sepal-length, :y :sepal-width})
   pj/lay-point))
 
 
@@ -147,8 +146,8 @@
  v29_l107
  (->
   (rdatasets/datasets-iris)
-  (pj/frame {:color :species})
-  (pj/frame
+  (pj/pose {:color :species})
+  (pj/pose
    (pj/cross
     [:sepal-length :petal-length]
     [:sepal-width :petal-width]))))
@@ -190,7 +189,7 @@
  v37_l134
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   (pj/lay :point)))
 
 
@@ -224,7 +223,7 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__84244#] (Math/sin (* p1__84244# 0.3))) (range 30))}))
+   (map (fn* [p1__72648#] (Math/sin (* p1__72648# 0.3))) (range 30))}))
 
 
 (def v44_l153 (-> wave (pj/lay-line :x :y)))
@@ -333,9 +332,9 @@
     :y
     (mapv
      (fn*
-      [p1__84245#]
+      [p1__72649#]
       (+
-       (Math/sin (* p1__84245# 0.2))
+       (Math/sin (* p1__72649# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (pj/lay-point :x :y)
@@ -836,7 +835,7 @@
   {:cols 2}))
 
 
-(deftest t153_l486 (is ((fn [v] (pj/frame? v)) v152_l478)))
+(deftest t153_l486 (is ((fn [v] (pj/pose? v)) v152_l478)))
 
 
 (def v155_l490 (kind/doc #'pj/plot))
@@ -873,10 +872,10 @@
    v161_l505)))
 
 
-(def v164_l515 (kind/doc #'pj/frame?))
+(def v164_l515 (kind/doc #'pj/pose?))
 
 
-(def v166_l519 (pj/frame? (-> tiny (pj/frame :x :y) pj/lay-point)))
+(def v166_l519 (pj/pose? (-> tiny (pj/pose :x :y) pj/lay-point)))
 
 
 (deftest t167_l521 (is (true? v166_l519)))
@@ -920,7 +919,7 @@
  v183_l555
  (->
   (rdatasets/datasets-iris)
-  (pj/frame :sepal-length :sepal-width)
+  (pj/pose :sepal-length :sepal-width)
   pj/lay-point
   pj/draft
   kind/pprint))
