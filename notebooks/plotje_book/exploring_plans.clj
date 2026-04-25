@@ -485,15 +485,15 @@ opts-pl
 
 ;; The plan (a plain Clojure map):
 
-(def final-sk
+(def final-pose
   (-> (rdatasets/datasets-iris)
       (pj/pose :petal-length :petal-width {:color :species})
       pj/lay-point
       (pj/lay-smooth {:stat :linear-model})))
 
-(def final-pl (pj/plan final-sk {:title "Iris Petals"}))
+(def final-plan (pj/plan final-pose {:title "Iris Petals"}))
 
-final-pl
+final-plan
 
 (kind/test-last [(fn [m] (= "Iris Petals" (:title m)))])
 
@@ -502,13 +502,13 @@ final-pl
 (mapv (fn [l]
         {:mark (:mark l)
          :n-groups (count (:groups l))})
-      (:layers (first (:panels final-pl))))
+      (:layers (first (:panels final-plan))))
 
 (kind/test-last [(fn [ls] (= 2 (count ls)))])
 
 ;; The rendered plot (SVG):
 
-(-> final-sk (pj/options {:title "Iris Petals"}))
+(-> final-pose (pj/options {:title "Iris Petals"}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
@@ -593,7 +593,7 @@ final-pl
 
 (kind/test-last [true?])
 
-(pj/valid-plan? final-pl)
+(pj/valid-plan? final-plan)
 
 (kind/test-last [true?])
 

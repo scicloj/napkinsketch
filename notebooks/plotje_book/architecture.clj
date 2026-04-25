@@ -253,7 +253,7 @@ graph LR
 ;; the same panel because both `lay-point` and `lay-smooth`
 ;; target the same `:petal-length`/`:petal-width` mapping.
 
-(def multi-sk
+(def multi-pose
   (-> (rdatasets/datasets-iris)
       (pj/pose :petal-length :petal-width {:color :species})
       pj/lay-point
@@ -261,11 +261,11 @@ graph LR
 
 ;; The pose has one leaf with two pose-level layers:
 
-(count (:layers multi-sk))
+(count (:layers multi-pose))
 
 (kind/test-last [(fn [n] (= 2 n))])
 
-(mapv :layer-type (:layers multi-sk))
+(mapv :layer-type (:layers multi-pose))
 
 (kind/test-last [(fn [v] (and (= :point (first v))
                               (= :smooth (second v))))])
@@ -273,7 +273,7 @@ graph LR
 ;; The draft produces two maps -- one per layer -- both sharing
 ;; the same columns:
 
-(def multi-draft (pj/draft multi-sk))
+(def multi-draft (pj/draft multi-pose))
 
 (count multi-draft)
 
@@ -287,7 +287,7 @@ graph LR
 ;; Building a plan with a title and checking the layers:
 
 (def multi-plan
-  (pj/plan multi-sk {:title "Iris Petals with Regression"}))
+  (pj/plan multi-pose {:title "Iris Petals with Regression"}))
 
 (mapv (fn [layer]
         {:mark (:mark layer)
