@@ -73,10 +73,22 @@
 
 (defrecord Plan [panels width height])
 
-(defn plan?
-  "True if x is a plan (the resolved data-space geometry)."
+(defrecord CompositePlan [width height sub-plots chrome])
+
+(defn leaf-plan?
+  "True if x is a leaf plan (single-pose resolved geometry)."
   [x]
   (instance? Plan x))
+
+(defn composite-plan?
+  "True if x is a composite plan (a tree of sub-plots with chrome)."
+  [x]
+  (instance? CompositePlan x))
+
+(defn plan?
+  "True if x is a plan (leaf or composite)."
+  [x]
+  (or (leaf-plan? x) (composite-plan? x)))
 
 (defrecord Layer [mark style])
 

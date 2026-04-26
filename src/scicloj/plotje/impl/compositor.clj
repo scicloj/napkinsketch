@@ -55,21 +55,6 @@
                          :height (max 1 (long-or rh 1)))]
     (plan/draft->plan (pose/leaf->draft leaf) leaf-opts)))
 
-(defn- leaf->membrane
-  "Build a translated membrane tree for a leaf at its pixel rectangle.
-   Calls plan->membrane on the leaf's plan and wraps the result in a
-   ui/translate positioned at (x, y) in the composite coordinate space."
-  [leaf [x y _ _ :as rect]]
-  (let [p (leaf->plan leaf rect)
-        ;; plan->membrane accepts tooltip as a kwarg; forward it from
-        ;; the plan's opts when present so interactive behaviour on
-        ;; single plots carries over to leaves in a composite.
-        tooltip? (:tooltip (or (:opts p) {}))
-        tree (if tooltip?
-               (membrane/plan->membrane p :tooltip true)
-               (membrane/plan->membrane p))]
-    (ui/translate (double x) (double y) tree)))
-
 (defn- outer-dimensions
   [pose]
   (let [opts (or (:opts pose) {})]
@@ -252,118 +237,182 @@
                           alpha-legend]])]
     (vec (apply concat sections))))
 
-(defn composite->plot
-  "Render a composite pose by building a single membrane tree (one
-   translated sub-tree per leaf, plus an optional title band and an
-   optional shared legend) and dispatching to membrane->plot. Format
-   defaults to :svg; :bufimg and other registered formats work the
-   same as for single plots."
-  ([composite] (composite->plot composite :svg))
-  ([composite format]
-   (let [[w h] (outer-dimensions composite)
-         opts (or (:opts composite) {})
-         title (:title opts)
-         top-pad (if title title-band-h 0)
-         ;; Strip composite-chrome keys before resolve-tree so leaves
-         ;; don't inherit them. The composite itself still renders
-         ;; chrome via the title band above the leaf trees.
-         stripped (composite-with-stripped-leaf-opts composite)
-         injected (pose/inject-shared-scales stripped)
-         leaves (pose/resolve-tree injected)
-         ;; Detect whether the composite has a shared aesthetic that
-         ;; will produce a legend at each leaf. If so, reserve a
-         ;; strip on the right for one shared legend and shrink the
-         ;; grid area accordingly.
-         shared? (has-shared-aesthetic? composite)
-         legend-w (if shared? shared-legend-strip-w 0)
-         ;; Grid-composite (rows-of-cols SPLOM) stamps :grid-strip-labels
-         ;; on its root. Matrix-direction composites have the labels
-         ;; derived lazily from leaf positions via pose/matrix-axes.
-         ;; Either way, we end up with :col-labels / :row-labels.
-         ;; Reserve strip-h at the top for column labels and strip-w
-         ;; at the left for row labels, and draw the strips outside
-         ;; the cell rects so per-cell layout stays untouched.
-         matrix-axes (when (= :matrix (:direction (:layout composite)))
-                       (pose/matrix-axes composite))
-         {:keys [col-labels row-labels]} (or (:grid-strip-labels composite)
-                                             (when matrix-axes
-                                               {:col-labels (:col-labels matrix-axes)
-                                                :row-labels (:row-labels matrix-axes)}))
-         strips? (boolean (or (seq col-labels) (seq row-labels)))
-         strip-h (if (seq col-labels) grid-strip-h 0)
-         strip-w (if (seq row-labels) (grid-strip-w row-labels) 0)
-         n-cols (count col-labels)
-         n-rows (count row-labels)
-         grid-w (max 1 (- w legend-w strip-w))
-         grid-rect [(double strip-w)
-                    (double (+ top-pad strip-h))
-                    (double grid-w)
-                    (double (- h top-pad strip-h))]
-         layout (pose/compute-layout injected grid-rect)
-         ;; In matrix layout, the strip labels at the top carry the
-         ;; column's x-col name and the strip labels on the left carry
-         ;; the row's y-col name. Suppress the per-leaf x-label /
-         ;; y-label so they don't render redundantly inside each cell.
-         ;; Same idea SPLOM cells use, applied uniformly here.
-         leaves (if matrix-axes
-                  (let [suppress-x? (seq (:col-labels matrix-axes))
-                        suppress-y? (seq (:row-labels matrix-axes))]
-                    (mapv (fn [leaf]
-                            (update leaf :opts
-                                    (fn [opts]
-                                      (cond-> (or opts {})
-                                        suppress-x? (assoc :suppress-x-label true)
-                                        suppress-y? (assoc :suppress-y-label true)))))
-                          leaves))
-                  leaves)
-         leaf-trees (mapv (fn [leaf]
-                            (leaf->membrane leaf (get layout (:path leaf))))
-                          leaves)
-         col-strips (when (and strips? (seq col-labels))
-                      (if matrix-axes
-                        (matrix-col-strip-drawables col-labels grid-rect n-cols
-                                                    (+ top-pad 2))
-                        (col-strip-drawables col-labels layout n-cols
-                                             (+ top-pad 2))))
-         row-strips (when (and strips? (seq row-labels))
-                      (if matrix-axes
-                        (matrix-row-strip-drawables row-labels grid-rect n-rows
-                                                    0 strip-w)
-                        (row-strip-drawables row-labels layout n-rows
-                                             0 strip-w)))
-         ;; Build the shared legend from a representative leaf's plan.
-         ;; Use the first leaf's rectangle as the sizing context.
-         legend-tree (when shared?
-                       (let [rep-plan (rep-leaf-plan leaves)]
-                         (shared-legend-drawables
-                          rep-plan (+ (double strip-w) grid-w 20)
-                          (double (+ top-pad strip-h)))))
-         composed (cond-> leaf-trees
-                    (seq col-strips) (into col-strips)
-                    (seq row-strips) (into row-strips)
-                    (seq legend-tree) (into legend-tree)
-                    title             (conj (title-drawable title w)))
-         render-opts (assoc opts
-                            :total-width w
-                            :total-height h)]
-     (render-impl/membrane->plot (vec composed) format render-opts))))
+(defn- resolve-composite-chrome
+  "Compute the resolved leaves, layout map, and chrome geometry for a
+   composite pose. Shared by composite->plan and composite->plot so
+   both paths see the same dimensions and the same per-leaf opt
+   adjustments (:suppress-x-label / :suppress-y-label for matrix
+   layouts).
 
-(defn composite->plan
-  "Return a Plan record flagged :composite? with a :sub-plots vector
-   of {:path :rect :plan} so downstream tooling can introspect without
-   re-resolving."
+   Returns:
+     {:width  outer width
+      :height outer height
+      :leaves resolved leaves with shared-scale + suppress-* applied
+      :layout map of leaf-path -> [x y w h]
+      :shared? true when the composite carries a legend-producing root mapping
+      :chrome {:title :title-band-h :grid-rect :legend-w :strip-h :strip-w
+               :col-labels :row-labels :n-cols :n-rows :matrix? :layout}}"
   [composite]
   (let [[w h] (outer-dimensions composite)
+        opts (or (:opts composite) {})
+        title (:title opts)
+        top-pad (if title title-band-h 0)
+        ;; Strip composite-chrome keys before resolve-tree so leaves
+        ;; don't inherit them. The composite itself still renders
+        ;; chrome via the title band above the leaf trees.
         stripped (composite-with-stripped-leaf-opts composite)
         injected (pose/inject-shared-scales stripped)
+        ;; Detect whether the composite has a shared aesthetic that
+        ;; will produce a legend at each leaf. If so, reserve a
+        ;; strip on the right for one shared legend and shrink the
+        ;; grid area accordingly.
+        shared? (has-shared-aesthetic? composite)
+        legend-w (if shared? shared-legend-strip-w 0)
+        ;; Grid-composite (rows-of-cols SPLOM) stamps :grid-strip-labels
+        ;; on its root. Matrix-direction composites have the labels
+        ;; derived lazily from leaf positions via pose/matrix-axes.
+        ;; Either way, we end up with :col-labels / :row-labels.
+        ;; Reserve strip-h at the top for column labels and strip-w
+        ;; at the left for row labels, and draw the strips outside
+        ;; the cell rects so per-cell layout stays untouched.
+        matrix-axes (when (= :matrix (:direction (:layout composite)))
+                      (pose/matrix-axes composite))
+        {:keys [col-labels row-labels]}
+        (or (:grid-strip-labels composite)
+            (when matrix-axes
+              {:col-labels (:col-labels matrix-axes)
+               :row-labels (:row-labels matrix-axes)}))
+        col-labels (vec col-labels)
+        row-labels (vec row-labels)
+        strip-h (if (seq col-labels) grid-strip-h 0)
+        strip-w (if (seq row-labels) (grid-strip-w row-labels) 0)
+        n-cols (count col-labels)
+        n-rows (count row-labels)
+        grid-w (max 1 (- w legend-w strip-w))
+        grid-rect [(double strip-w)
+                   (double (+ top-pad strip-h))
+                   (double grid-w)
+                   (double (- h top-pad strip-h))]
+        layout (pose/compute-layout injected grid-rect)
         leaves (pose/resolve-tree injected)
-        layout (pose/compute-layout injected [0 0 w h])
+        ;; In matrix layout, the strip labels at the top carry the
+        ;; column's x-col name and the strip labels on the left carry
+        ;; the row's y-col name. Suppress the per-leaf x-label /
+        ;; y-label so they don't render redundantly inside each cell.
+        ;; Same idea SPLOM cells use, applied uniformly here.
+        leaves (if matrix-axes
+                 (let [suppress-x? (seq (:col-labels matrix-axes))
+                       suppress-y? (seq (:row-labels matrix-axes))]
+                   (mapv (fn [leaf]
+                           (update leaf :opts
+                                   (fn [o]
+                                     (cond-> (or o {})
+                                       suppress-x? (assoc :suppress-x-label true)
+                                       suppress-y? (assoc :suppress-y-label true)))))
+                         leaves))
+                 leaves)
+        chrome {:title title
+                :title-band-h top-pad
+                :grid-rect grid-rect
+                :legend-w legend-w
+                :strip-h strip-h
+                :strip-w strip-w
+                :col-labels col-labels
+                :row-labels row-labels
+                :n-cols n-cols
+                :n-rows n-rows
+                :matrix? (boolean matrix-axes)
+                :layout layout}]
+    {:width w
+     :height h
+     :leaves leaves
+     :layout layout
+     :shared? shared?
+     :chrome chrome}))
+
+(defn composite->plan
+  "Return a CompositePlan record carrying :width :height :sub-plots
+   :chrome. :sub-plots is a vector of {:path :rect :plan}, one per
+   resolved leaf at its rect inside the composite. :chrome carries the
+   resolved geometry (title-band height, grid-rect, strip labels and
+   their dimensions, shared-legend spec when present) needed to render
+   the composite as a single figure -- so plan->membrane is a pure
+   plan-consumer that does not need the original pose.
+
+   The defrecord carries `:composite?` true for back-compat with code
+   that treated the previous flagged-Plan shape as the composite
+   indicator."
+  [composite]
+  (let [{:keys [width height leaves layout shared? chrome]}
+        (resolve-composite-chrome composite)
         sub-plots (mapv (fn [leaf]
                           (let [rect (get layout (:path leaf))]
                             {:path (:path leaf)
                              :rect rect
                              :plan (leaf->plan leaf rect)}))
-                        leaves)]
-    (assoc (resolve/->Plan [] w h)
-           :composite? true
-           :sub-plots sub-plots)))
+                        leaves)
+        ;; Compute shared-legend spec once if the composite carries a
+        ;; legend-producing aesthetic. Stored in chrome so plan->membrane
+        ;; renders without re-resolving (eliminates the rep-leaf-plan
+        ;; N+1 issue).
+        shared-legend (when shared?
+                        (when-let [rep-plan (rep-leaf-plan leaves)]
+                          (select-keys rep-plan
+                                       [:legend :size-legend :alpha-legend])))
+        chrome (assoc chrome :shared-legend shared-legend)]
+    (assoc (resolve/->CompositePlan width height sub-plots chrome)
+           :composite? true)))
+
+(defn composite->plot
+  "Render a composite pose by building a single membrane tree (one
+   translated sub-tree per leaf, plus an optional title band and an
+   optional shared legend) and dispatching to membrane->plot. Format
+   defaults to :svg; :bufimg and other registered formats work the
+   same as for single plots.
+
+   Drives off `composite->plan` so chrome geometry and shared-legend
+   spec are computed once."
+  ([composite] (composite->plot composite :svg))
+  ([composite format]
+   (let [composite-plan (composite->plan composite)
+         {:keys [width height sub-plots chrome]} composite-plan
+         opts (or (:opts composite) {})
+         {:keys [title title-band-h grid-rect strip-h strip-w
+                 col-labels row-labels n-cols n-rows matrix?
+                 shared-legend layout]} chrome
+         strips? (boolean (or (seq col-labels) (seq row-labels)))
+         leaf-trees (mapv (fn [{:keys [plan rect]}]
+                            (let [tooltip? (:tooltip (or (:opts plan) {}))
+                                  tree (if tooltip?
+                                         (membrane/plan->membrane plan :tooltip true)
+                                         (membrane/plan->membrane plan))
+                                  [x y _ _] rect]
+                              (ui/translate (double x) (double y) tree)))
+                          sub-plots)
+         col-strips (when (and strips? (seq col-labels))
+                      (if matrix?
+                        (matrix-col-strip-drawables col-labels grid-rect n-cols
+                                                    (+ title-band-h 2))
+                        (col-strip-drawables col-labels layout n-cols
+                                             (+ title-band-h 2))))
+         row-strips (when (and strips? (seq row-labels))
+                      (if matrix?
+                        (matrix-row-strip-drawables row-labels grid-rect n-rows
+                                                    0 strip-w)
+                        (row-strip-drawables row-labels layout n-rows
+                                             0 strip-w)))
+         [_ _ grid-w _] grid-rect
+         legend-tree (when shared-legend
+                       (shared-legend-drawables
+                        shared-legend
+                        (+ (double strip-w) (double grid-w) 20)
+                        (double (+ title-band-h strip-h))))
+         composed (cond-> leaf-trees
+                    (seq col-strips) (into col-strips)
+                    (seq row-strips) (into row-strips)
+                    (seq legend-tree) (into legend-tree)
+                    title             (conj (title-drawable title width)))
+         render-opts (assoc opts
+                            :total-width width
+                            :total-height height)]
+     (render-impl/membrane->plot (vec composed) format render-opts))))
