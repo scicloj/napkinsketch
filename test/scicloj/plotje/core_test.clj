@@ -1463,13 +1463,19 @@
   ;; persona-09-R2 F10/F11/F12. Low-severity input validation.
   (testing "options with width/height = 0 throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #":width must be a positive number"
+                          #":width must round to a positive integer"
                           (-> {:a [1 2 3] :b [4 5 6]} (pj/lay-point :a :b)
                               (pj/options {:width 0}))))
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #":height must be a positive number"
+                          #":height must round to a positive integer"
                           (-> {:a [1 2 3] :b [4 5 6]} (pj/lay-point :a :b)
                               (pj/options {:height -100})))))
+
+  (testing "options with fractional width that rounds to 0 throws (persona R2 internals)"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #":width must round to a positive integer"
+                          (-> {:a [1 2 3] :b [4 5 6]} (pj/lay-point :a :b)
+                              (pj/options {:width 0.4})))))
 
   (testing "histogram with :bins <= 0 throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
@@ -1482,7 +1488,28 @@
   (testing "histogram with :binwidth <= 0 throws"
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
                           #":binwidth must be a positive number"
-                          (-> {:x [1 2 3]} (pj/lay-histogram :x {:binwidth 0}) pj/plan)))))
+                          (-> {:x [1 2 3]} (pj/lay-histogram :x {:binwidth 0}) pj/plan))))
+
+  (testing "lay-rule-h/v 1-arity throws helpful error pointing at the required intercept opt"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"requires an opts map with :y-intercept"
+                          (pj/lay-rule-h (pj/pose))))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"requires an opts map with :x-intercept"
+                          (pj/lay-rule-v (pj/pose)))))
+
+  (testing "lay-band-h/v 1-arity throws helpful error pointing at min/max opts"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"requires an opts map with :y-min and :y-max"
+                          (pj/lay-band-h (pj/pose))))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"requires an opts map with :x-min and :x-max"
+                          (pj/lay-band-v (pj/pose)))))
+
+  (testing "lay-* with unknown :position throws (parallel to :mark/:stat validation)"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #":position :nonsense.*not a registered position"
+                          (pj/lay-point {:a [1 2] :b [3 4]} :a :b {:position :nonsense})))))
 
 (deftest alpha-on-marks-test
   ;; persona-16 H4 + H7. Closes P11-R2 F1, F2.
@@ -1722,7 +1749,7 @@
     (testing "SPLOM inference"
       (let [s (summary (-> (pj/pose iris {:color :species})
                            (pj/pose (pj/cross [:sepal_length :sepal_width :petal_length]
-                                               [:sepal_length :sepal_width :petal_length]))))]
+                                              [:sepal_length :sepal_width :petal_length]))))]
         (is (= 9 (:panels s)))
         (is (= 900 (:points s)))))
 

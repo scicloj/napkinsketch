@@ -949,6 +949,14 @@
        (remove #{:default})
        set))
 
+(defn- registered-positions []
+  (->> (methods position/apply-position)
+       keys
+       (keep (fn [k] (cond (keyword? k) k
+                           (and (vector? k) (keyword? (first k))) (first k))))
+       (remove #{:default})
+       set))
+
 (defn- validate-mark-stat [fn-name opts]
   (when-let [m (:mark opts)]
     (when-not (contains? (registered-marks) m)
@@ -961,7 +969,13 @@
       (throw (ex-info (str fn-name " got :stat " (pr-str s)
                            ", which is not a registered stat. Registered stats: "
                            (vec (sort (registered-stats))))
-                      {:stat s :registered (sort (registered-stats))})))))
+                      {:stat s :registered (sort (registered-stats))}))))
+  (when-let [p (:position opts)]
+    (when-not (contains? (registered-positions) p)
+      (throw (ex-info (str fn-name " got :position " (pr-str p)
+                           ", which is not a registered position. Registered positions: "
+                           (vec (sort (registered-positions))))
+                      {:position p :registered (sort (registered-positions))})))))
 
 (def ^:private layer-structural-keys
   "User-supplied layer options that are layer-structural (not
@@ -1202,6 +1216,18 @@
                            "Swap the arguments or check the source of the values.")
                       {:layer-type layer-type-key :opts opts})))))
 
+(defn- assert-rule-1-arity! [layer-type-key]
+  (let [k (rule-position-key layer-type-key)]
+    (throw (ex-info (str "lay-" (name layer-type-key) " requires an opts map with " k ". "
+                         "Example: (pj/lay-" (name layer-type-key) " pose {" k " 3.0}).")
+                    {:layer-type layer-type-key}))))
+
+(defn- assert-band-1-arity! [layer-type-key]
+  (let [[lo-k hi-k] (band-position-keys layer-type-key)]
+    (throw (ex-info (str "lay-" (name layer-type-key) " requires an opts map with " lo-k " and " hi-k ". "
+                         "Example: (pj/lay-" (name layer-type-key) " pose {" lo-k " 2.0 " hi-k " 4.0}).")
+                    {:layer-type layer-type-key}))))
+
 (defn lay-rule-h
   "Add :rule-h layer -- horizontal reference line at y = y-intercept.
    Position comes from opts (not data columns); :y-intercept is required.
@@ -1212,6 +1238,7 @@
    (lay-rule-h pose {:y-intercept 3})           -- root-level, flows to every panel
    (lay-rule-h pose :x :y {:y-intercept 3})     -- panel-scope (columns pick or create a sub-pose)
    (lay-rule-h pose {:y-intercept 3 :color \"red\" :alpha 0.5})"
+  ([_sk-or-data] (assert-rule-1-arity! :rule-h))
   ([sk-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-layer-type :rule-h sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-layer-type :rule-h sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (assert-rule-opts! :rule-h [opts]) (lay-layer-type :rule-h sk-or-data x y opts)))
@@ -1226,6 +1253,7 @@
    (lay-rule-v pose {:x-intercept 5})           -- root-level, flows to every panel
    (lay-rule-v pose :x :y {:x-intercept 5})     -- panel-scope (columns pick or create a sub-pose)
    (lay-rule-v pose {:x-intercept 5 :color \"red\" :alpha 0.5})"
+  ([_sk-or-data] (assert-rule-1-arity! :rule-v))
   ([sk-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-layer-type :rule-v sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-layer-type :rule-v sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (assert-rule-opts! :rule-v [opts]) (lay-layer-type :rule-v sk-or-data x y opts)))
@@ -1241,6 +1269,7 @@
    (lay-band-h pose {:y-min 2 :y-max 4})            -- root-level, flows to every panel
    (lay-band-h pose :x :y {:y-min 2 :y-max 4})      -- panel-scope (columns pick or create a sub-pose)
    (lay-band-h pose {:y-min 2 :y-max 4 :color \"blue\" :alpha 0.3})"
+  ([_sk-or-data] (assert-band-1-arity! :band-h))
   ([sk-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-layer-type :band-h sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-layer-type :band-h sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (assert-band-opts! :band-h [opts]) (lay-layer-type :band-h sk-or-data x y opts)))
@@ -1256,6 +1285,7 @@
    (lay-band-v pose {:x-min 4 :x-max 6})            -- root-level, flows to every panel
    (lay-band-v pose :x :y {:x-min 4 :x-max 6})      -- panel-scope (columns pick or create a sub-pose)
    (lay-band-v pose {:x-min 4 :x-max 6 :color \"blue\" :alpha 0.3})"
+  ([_sk-or-data] (assert-band-1-arity! :band-v))
   ([sk-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-layer-type :band-v sk-or-data x-or-opts))
   ([sk-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-layer-type :band-v sk-or-data x y-or-opts))
   ([sk-or-data x y opts] (assert-band-opts! :band-v [opts]) (lay-layer-type :band-v sk-or-data x y opts)))
@@ -1464,10 +1494,12 @@
   (let [opts (warn-and-strip-unknown-opts "pj/options" opts plot-options-keys)
         opts (reduce (fn [m k]
                        (if-let [v (get m k)]
-                         (do (when-not (and (number? v) (pos? v))
-                               (throw (ex-info (str k " must be a positive number, got: " (pr-str v))
-                                               {:option k :value v})))
-                             (assoc m k (long (Math/round (double v)))))
+                         (let [rounded (long (Math/round (double v)))]
+                           (when-not (and (number? v) (pos? rounded))
+                             (throw (ex-info (str k " must round to a positive integer, got: "
+                                                  (pr-str v) " (rounds to " rounded ")")
+                                             {:option k :value v :rounded rounded})))
+                           (assoc m k rounded))
                          m))
                      opts
                      [:width :height])]
