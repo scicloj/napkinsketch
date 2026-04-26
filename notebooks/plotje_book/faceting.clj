@@ -86,7 +86,7 @@
 ;; By default all panels share the same axis ranges. Use the `:scales`
 ;; option to let axes vary per panel.
 ;;
-;; Shared (default) -- all panels have the same y-range:
+;; Shared (default) -- all panels carry the same x and y ranges:
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -97,18 +97,31 @@
                            (and (= 3 (:panels s))
                                 (= 150 (:points s)))))])
 
+;; Inspect the coordinated domains directly:
+
+(->> (-> (rdatasets/datasets-iris)
+         (pj/lay-point :sepal-length :sepal-width)
+         (pj/facet :species)
+         pj/plan
+         :panels)
+     (mapv :x-domain))
+
+(kind/test-last [(fn [doms] (apply = doms))])
+
 ;; Free y -- each panel has its own y-range:
 
-(-> (rdatasets/datasets-iris)
-    (pj/lay-point :sepal-length :sepal-width {:color :species})
-    (pj/facet :species)
-    (pj/options {:scales :free-y}))
+(->> (-> (rdatasets/datasets-iris)
+         (pj/lay-point :sepal-length :sepal-width)
+         (pj/facet :species)
+         (pj/options {:scales :free-y})
+         pj/plan
+         :panels)
+     (mapv :y-domain))
 
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 3 (:panels s))
-                                (= 150 (:points s)))))])
+(kind/test-last [(fn [doms] (= 3 (count (distinct doms))))])
 
-;; Other options: `:free-x`, `:free` (both axes free).
+;; Other values: `:free-x` (x per-panel, y shared), `:free`
+;; (both axes per-panel).
 
 ;; ## Facet Plan Structure
 ;;

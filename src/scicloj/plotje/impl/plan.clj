@@ -657,6 +657,41 @@
      :facet-row-vals (when has-facet-row? row-vals)
      :panels panels}))
 
+(defn- coordinate-facet-domains
+  "Replace each panel's :x-dom and/or :y-dom with the cross-panel
+   aggregate so faceted layouts share scales. Numeric domains
+   merge as `[min(lows), max(highs)]`; categorical domains union
+   their distinct values. Controlled by `:scales` opt:
+     :shared (default) -- coordinate both axes
+     :free-y           -- coordinate x only (y per-panel)
+     :free-x           -- coordinate y only (x per-panel)
+     :free             -- no coordination (per-panel)
+
+   Only applied when the layout is `:facet-grid` -- multi-variable
+   layouts (where panels carry different x/y vars) keep per-panel
+   domains because aggregating across different columns is
+   meaningless."
+  [panel-domains scales-opt]
+  (let [scales (or scales-opt :shared)
+        share-x? (#{:shared :free-y} scales)
+        share-y? (#{:shared :free-x} scales)
+        agg (fn [k]
+              (let [doms (keep k panel-domains)]
+                (when (seq doms)
+                  (let [numeric? (and (seq (first doms))
+                                      (number? (first (first doms))))]
+                    (if numeric?
+                      [(reduce min (map first doms))
+                       (reduce max (map second doms))]
+                      (vec (distinct (mapcat seq doms))))))))
+        x-agg (when share-x? (agg :x-dom))
+        y-agg (when share-y? (agg :y-dom))]
+    (mapv (fn [pd]
+            (cond-> pd
+              x-agg (assoc :x-dom x-agg)
+              y-agg (assoc :y-dom y-agg)))
+          panel-domains)))
+
 (defn- resolve-panel-domains
   "Given a panel-data map (with :stat-results, :layers, and :draft-layers),
    compute the oriented x/y domains, scale specs, and temporal extents.
@@ -983,6 +1018,16 @@
                                             :x-scale (:y-scale d) :y-scale (:x-scale d)
                                             :x-te (:y-te d) :y-te (:x-te d))))
                                panel-domains)
+                         panel-domains)
+
+         ;; Facet scale coordination: by default, faceted layouts share
+         ;; one x-domain and one y-domain across all panels so panels
+         ;; are visually comparable. The :scales opt controls which axes
+         ;; coordinate. Multi-variable layouts (different x/y vars per
+         ;; panel) skip this -- aggregating across different columns
+         ;; would be meaningless.
+         panel-domains (if (= layout-type :facet-grid)
+                         (coordinate-facet-domains panel-domains (:scales opts))
                          panel-domains)
 
          ;; --- Phase 3: labels, legends, and the three layout fns ---

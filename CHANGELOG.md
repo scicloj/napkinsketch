@@ -459,6 +459,31 @@ The default may move to `true` in 0.2.0 once we have a sense of
 how often it would catch real mistakes vs. fire on benign
 forward-compat keys.
 
+### Faceted plots share scales by default
+
+`pj/facet` and `pj/facet-grid` now coordinate the x-domain and
+y-domain across all panels, matching ggplot2's `facet_wrap`
+default. Previously each panel's domain was computed from its own
+data, so the leftmost panel's tick labels (the only ones rendered)
+implied a shared scale that didn't actually exist; points at the
+same numeric position landed at different pixel heights across
+panels.
+
+The `:scales` option, documented in the `Faceting` chapter but
+silently dropped in prior releases, is now wired up:
+
+  | Value      | Behavior                                    |
+  |:-----------|:--------------------------------------------|
+  | `:shared`  | both axes coordinated (default)             |
+  | `:free-y`  | x coordinated; y per-panel                  |
+  | `:free-x`  | y coordinated; x per-panel                  |
+  | `:free`    | both axes per-panel (the previous behavior) |
+
+User-set domains via `pj/scale` continue to win over coordination.
+Multi-pair composites built via `pj/pose` (where panels carry
+different x/y columns) are unaffected -- coordination only fires
+when the layout is a `:facet-grid`.
+
 ### Overview
 
 Plotje is a composable plotting library for Clojure, inspired by

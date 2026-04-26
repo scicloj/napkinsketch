@@ -224,7 +224,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__119857#] (Math/sin (* p1__119857# 0.3)))
+    (fn* [p1__124136#] (Math/sin (* p1__124136# 0.3)))
     (range 30))}))
 
 
@@ -334,9 +334,9 @@
     :y
     (mapv
      (fn*
-      [p1__119858#]
+      [p1__124137#]
       (+
-       (Math/sin (* p1__119858# 0.2))
+       (Math/sin (* p1__124137# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (pj/lay-point :x :y)
@@ -1060,7 +1060,7 @@
 (def v223_l651 (count pj/plot-option-docs))
 
 
-(deftest t224_l653 (is ((fn [n] (= 11 n)) v223_l651)))
+(deftest t224_l653 (is ((fn [n] (= 12 n)) v223_l651)))
 
 
 (def v225_l655 (kind/doc #'pj/layer-option-docs))
