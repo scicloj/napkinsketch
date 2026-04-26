@@ -480,19 +480,34 @@
 ;; panel); in the pose world, adding a panel is an explicit `pj/pose`
 ;; call. Pinned here so the next slice can't silently change it.
 
-(deftest leaf-layer-non-matching-position-test
-  (testing "leaf with position, lay-* with non-matching position -- overlay"
+(deftest leaf-layer-non-matching-position-rejected-test
+  ;; Pre-alpha: distinct positional aesthetics mean distinct poses
+  ;; (Pose Rule LP2). Calling lay-* with x/y columns that conflict
+  ;; with the leaf's own mapping throws -- to draw with different
+  ;; columns, build a multi-pair pose or use pj/arrange with
+  ;; explicit sub-poses.
+  (testing "leaf with position, lay-* with non-matching position -- throws"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"conflict with the pose's existing position"
+                          (-> iris
+                              (pj/pose :a :b)
+                              (pj/lay-point :c :d)))))
+  (testing "the error message names both conflicting axes"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #":x.*:y|:y.*:x"
+                          (-> iris
+                              (pj/pose :a :b)
+                              (pj/lay-point :c :d)))))
+  (testing "matching position passes -- redundant :mapping on the layer is fine"
     (let [f (-> iris
                 (pj/pose :a :b)
-                (pj/lay-point :c :d))]
-      (is (= {:x :a :y :b} (:mapping f))
-          "leaf's own mapping is unchanged")
-      (is (= 1 (count (:layers f)))
-          "one layer added, no panel added")
-      (is (= {:x :c :y :d} (-> f :layers (nth 0) :mapping))
-          "the non-matching position lives on the layer's :mapping")
-      (is (not (contains? f :poses))
-          "no promotion to composite"))))
+                (pj/lay-point :a :b))]
+      (is (= {:x :a :y :b} (:mapping f)))
+      (is (= 1 (count (:layers f))))))
+  (testing "string/keyword equivalence (Rule LI2): :a matches \"a\""
+    (is (= 1 (count (:layers (-> iris
+                                 (pj/pose :a :b)
+                                 (pj/lay-point "a" "b"))))))))
 
 ;; ============================================================
 ;; Layer structural keys -- :stat, :position, :mark (Decision 1)

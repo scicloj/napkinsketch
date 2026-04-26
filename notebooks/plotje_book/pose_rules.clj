@@ -463,26 +463,27 @@
     (and (not (contains? fr :poses))
          (= 1 (count (:layers fr)))))])
 
-;; **Note on leaf-input with non-matching position (overlay).** When
-;; the receiver is a single leaf that carries position and the
-;; `lay-*` call carries a **different** position, the call does
-;; *not* promote to a composite. Instead, the layer's own `:mapping`
-;; carries the new position; at render, the layer's position
-;; overrides the leaf's via scope merge -- an overlay on the same
-;; panel. Adding a new panel in the pose world requires an
-;; explicit `pj/pose` call.
+;; **Note on leaf-input with non-matching position (rejected).**
+;; A panel has a single x-axis and a single y-axis. When the
+;; receiver is a single leaf that carries position and the `lay-*`
+;; call carries a **different** position, the call **throws** --
+;; distinct positional aesthetics mean distinct poses, and a layer
+;; can't override the pose's position to a different column.
+;; To draw with different x/y columns, build a multi-pair pose
+;; (`pj/pose data [[:a :b] [:c :d]]`) for separate panels, or
+;; arrange two leaves with `pj/arrange`.
 
-(-> iris
-    (pj/pose :sepal-length :sepal-width)
-    (pj/lay-point :petal-length :petal-width))
+(try
+  (-> iris
+      (pj/pose :sepal-length :sepal-width)
+      (pj/lay-point :petal-length :petal-width))
+  (catch clojure.lang.ExceptionInfo e
+    (ex-message e)))
 
 (kind/test-last
- [(fn [fr]
-    (and (not (contains? fr :poses))
-         (= {:x :sepal-length :y :sepal-width} (:mapping fr))
-         (= 1 (count (:layers fr)))
-         (= {:x :petal-length :y :petal-width}
-            (:mapping (first (:layers fr))))))])
+ [(fn [msg]
+    (and (string? msg)
+         (re-find #"conflict with the pose's existing position" msg)))])
 
 ;; ### Rule LP3: on a composite, position-carrying `lay-*` misses append a new leaf at root
 ;;

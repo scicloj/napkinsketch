@@ -484,6 +484,54 @@ Multi-pair composites built via `pj/pose` (where panels carry
 different x/y columns) are unaffected -- coordination only fires
 when the layout is a `:facet-grid`.
 
+### Pose Rule LP2: distinct positional aesthetics mean distinct poses
+
+Calling `pj/lay-*` on a leaf-with-position with a *different* x or
+y column now throws. The rule the library was already trying to
+teach -- a panel has a single x-axis and a single y-axis --
+becomes structural: a layer can't override the pose's position to
+a different column.
+
+```clojure
+;; Throws: "lay-point was given position columns that conflict
+;; with the pose's existing position..."
+(-> iris
+    (pj/pose :sepal-length :sepal-width)
+    (pj/lay-point :petal-length :petal-width))
+```
+
+Previously the layer's distinct mapping silently overlaid on the
+same panel with a union x/y domain. Bucketing for shared scales
+arbitrarily picked the first non-nil layer column (an alpha-only
+"PoC simplification" called out in the source). That overlay
+behavior was both undocumented in the spec ("Pose Rule LP2"
+described an overlay note that contradicted the rule's own name)
+and contradicted the prose in the gallery's multi-line examples
+("each in its own panel" -- but they were on one panel).
+
+To draw with different x/y columns, use a multi-pair pose for
+separate panels:
+
+```clojure
+(-> data
+    (pj/pose [[:date :unemploy] [:date :uempmed]])
+    pj/lay-line)
+```
+
+Or arrange explicit sub-poses for mixed layer types per panel:
+
+```clojure
+(pj/arrange
+ [(-> data (pj/lay-point :displ :hwy))
+  (-> data (pj/lay-line :displ :cty))])
+```
+
+String-vs-keyword equivalence (Rule LI2) is honored by the check:
+`:a` and `"a"` are the same column ref and don't trigger the
+rejection. The same-column case (`(pj/lay-point pose :a :b)` on a
+leaf with `:mapping {:x :a :y :b}`) continues to pass through
+silently.
+
 ### Composite `:share-scales` is now a plot option
 
 `:share-scales` (the set of axes coordinated across composite

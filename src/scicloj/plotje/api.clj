@@ -1078,9 +1078,47 @@
           (update :layers (fnil conj []) bare-layer))
 
       (seq position-mapping)
-      (update fr :layers (fnil conj [])
-              (elide-empty-maps
-               (update bare-layer :mapping (fnil merge {}) position-mapping)))
+      (let [leaf-mapping (:mapping fr)
+            ;; Normalize column refs for comparison: keyword "foo" and
+            ;; string "foo" are equivalent column references per Rule
+            ;; LI2 (string-tolerance).
+            same-col? (fn [a b]
+                        (or (= a b)
+                            (and (or (keyword? a) (string? a))
+                                 (or (keyword? b) (string? b))
+                                 (= (name a) (name b)))))
+            disagreements (for [k [:x :y]
+                                :let [pos-v (get position-mapping k)
+                                      leaf-v (get leaf-mapping k)]
+                                :when (and pos-v leaf-v
+                                           (not (same-col? pos-v leaf-v)))]
+                            [k pos-v leaf-v])]
+        (when (seq disagreements)
+          (throw (ex-info
+                  (str "lay-" (name layer-type-key)
+                       " was given position columns that conflict with"
+                       " the pose's existing position. A panel has a"
+                       " single x-axis and a single y-axis, so a layer"
+                       " can't override the pose's position to a"
+                       " different column. Conflicts: "
+                       (pr-str (mapv (fn [[k pos-v leaf-v]]
+                                       {k {:layer pos-v :pose leaf-v}})
+                                     disagreements))
+                       ". To draw with different x/y columns, build a"
+                       " separate sub-pose: e.g.\n"
+                       "  (pj/arrange [base-pose"
+                       " (-> data (pj/lay-" (name layer-type-key)
+                       " " (or (:x position-mapping) ":x")
+                       " " (or (:y position-mapping) ":y") "))])\n"
+                       "or thread a multi-pair pose:"
+                       " (pj/pose data [[:a :b] [:c :d]]).")
+                  {:caller (str "pj/lay-" (name layer-type-key))
+                   :pose-mapping leaf-mapping
+                   :layer-mapping position-mapping
+                   :conflicts (mapv first disagreements)})))
+        (update fr :layers (fnil conj [])
+                (elide-empty-maps
+                 (update bare-layer :mapping (fnil merge {}) position-mapping))))
 
       :else
       (update fr :layers (fnil conj []) bare-layer))))

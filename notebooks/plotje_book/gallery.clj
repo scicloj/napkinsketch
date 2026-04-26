@@ -1592,46 +1592,48 @@
 (kind/test-last [(fn [v] (pos? (:points (pj/svg-summary v))))])
 
 ;; ---
-;; ## Overlay and Multi-Variable
+;; ## Multi-Variable
 
-;; ### Two variables on one axis
+;; ### Two y-variables side by side
 ;; Source: [Vega-Lite: Layered Line](https://vega.github.io/vega-lite/examples/layer_line_color_rule.html)
 
-;; Two different y-variables, each in its own panel:
+;; Two different y-variables, each in its own panel. Distinct
+;; positional aesthetics mean distinct poses (Pose Rule LP2);
+;; threading two pairs through `pj/pose` produces a horizontal
+;; row of panels.
 
 (-> (rdatasets/ggplot2-economics)
-    (pj/lay-line :date :unemploy)
-    (pj/lay-line :date :uempmed)
-    (pj/options {:title "Unemployment: Total vs Median Duration"
-                 :x-label "Date"
-                 :y-label "Value"}))
+    (pj/pose [[:date :unemploy] [:date :uempmed]])
+    pj/lay-line
+    (pj/options {:title "Unemployment: Total vs Median Duration"}))
 
 (kind/test-last [(fn [v] (>= (:lines (pj/svg-summary v)) 2))])
 
-;; ### Three overlaid series
+;; ### Three series side by side
 ;; Source: [ECharts: Multi Line](https://echarts.apache.org/examples/en/editor.html?c=line-smooth)
 
 (-> (rdatasets/ggplot2-economics)
-    (pj/lay-line :date :unemploy)
-    (pj/lay-line :date :uempmed)
-    (pj/lay-line :date :psavert)
-    (pj/options {:title "US Economic Indicators (Three Series)"
-                 :x-label "Date"
-                 :y-label "Value"}))
+    (pj/pose [[:date :unemploy] [:date :uempmed] [:date :psavert]])
+    pj/lay-line
+    (pj/options {:title "US Economic Indicators"}))
 
 (kind/test-last [(fn [v] (>= (:lines (pj/svg-summary v)) 3))])
 
-;; ### Overlay: scatter + line (predicted vs observed)
+;; ### Scatter + line, one per panel
 ;; Source: [D3 Graph Gallery: Connected Scatter](https://d3-graph-gallery.com/graph/connectedscatter_basic.html)
 
-;; Highway MPG as scatter, city MPG as line, both against displacement:
+;; Highway MPG as a scatter and city MPG as a line, side by side.
+;; The two columns get separate panels (Rule LP2). Each panel uses
+;; a different layer type, threaded onto its own sub-pose via
+;; `pj/arrange`.
 
-(-> (rdatasets/ggplot2-mpg)
-    (pj/lay-point :displ :hwy)
-    (pj/lay-line :displ :cty)
-    (pj/options {:title "MPG: Highway (points) vs City (line)"
-                 :x-label "Displacement (L)"
-                 :y-label "MPG"}))
+(pj/arrange
+ [(-> (rdatasets/ggplot2-mpg)
+      (pj/lay-point :displ :hwy)
+      (pj/options {:title "Highway"}))
+  (-> (rdatasets/ggplot2-mpg)
+      (pj/lay-line :displ :cty)
+      (pj/options {:title "City"}))])
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (pos? (:points s))
