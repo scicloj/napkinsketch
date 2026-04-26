@@ -199,14 +199,6 @@ at the default 600x400 will end up with small panels -- bump
 explicitly. The `:panel-size` cfg key still exists for backwards
 compatibility but is no longer consulted by the layout pipeline.
 
-`pj/arrange` defaults `:width`/`:height` from cfg (600 and 400)
-when they aren't passed, always re-plans sub-poses at the
-derived per-cell size so text stays at native resolution, and
-wraps the result in a fixed-width CSS grid. Pre-rendered hiccup
-plots pass through unchanged and inherit the CSS grid cell size.
-To restore the old "each plot at its own full size" behavior,
-pre-render each pose with `pj/plot` before passing to arrange.
-
 The layout pipeline was rewritten around three pure functions
 (`compute-scene` / `compute-padding` / `compute-dims`, in
 `impl/layout.clj`) that feed off the data-derived scene and never
@@ -361,6 +353,12 @@ The previous approach guessed at label width from a char-count
 heuristic and offset the translation; the browser now handles
 centering with exact glyph metrics.
 
+Composite text color (titles + strip labels in `pj/arrange`,
+SPLOM, matrix-layout composites) was lifted from RGB `25` to
+`51`, matching the leaf-title default. Previously composite chrome
+text was perceptibly darker than per-leaf chrome; the two now
+read as one design.
+
 ### Palette vs color-scale
 
 Passing a continuous-gradient keyword (`:viridis`, `:inferno`,
@@ -449,7 +447,7 @@ notebook auto-render paths.
 
 New `:strict` config flag (default `false`). When `false`, an
 unrecognized option key on `pj/pose`, `pj/lay-*`, or `pj/options`
-prints a stderr warning and the key is silently stripped (the
+prints a warning to stdout and the key is silently stripped (the
 historical behavior). When `true`, the same case throws an
 `ex-info` naming the unknown key and listing the accepted set.
 
