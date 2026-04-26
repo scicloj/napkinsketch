@@ -489,35 +489,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="usage" class="level2">
 <h2 class="anchored" data-anchor-id="usage">Usage</h2>
-<p>Add to your <code>deps.edn</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>org.scicloj/plotje {<span class="at">:mvn/version</span> <span class="st">"0.1.0-SNAPSHOT"</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>(The first tagged release <code>0.1.0</code> is staged but not yet published. Snapshots are deployed from <code>main</code> via <code>./snapshot.sh</code>.)</p>
+<p>While the first release <code>0.1.0</code> is being prepared, install Plotje directly from GitHub by adding this to your <code>deps.edn</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>io.github.scicloj/plotje</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>{<span class="at">:git/url</span> <span class="st">"https://github.com/scicloj/plotje.git"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:git/sha</span> <span class="st">"&lt;sha-from-main&gt;"</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Once 0.1.0 is published to Clojars, the install line will become:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>org.scicloj/plotje {<span class="at">:mvn/version</span> <span class="st">"0.1.0"</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Snapshots from <code>main</code> will also be on Clojars (deployed via <code>./snapshot.sh</code>).</p>
 <p>Plotje is intended to be used with data-visualization tools that support the <a href="https://scicloj.github.io/kindly">Kindly</a> convention such as <a href="https://scicloj.github.io/clay/">Clay</a>.</p>
 </section>
 <section id="quick-example" class="level2">
 <h2 class="anchored" data-anchor-id="quick-example">Quick example</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clj code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> readme</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span> [scicloj.plotje.api <span class="at">:as</span> pj]</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>            [scicloj.metamorph.ml.rdatasets <span class="at">:as</span> rdatasets]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clj code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> readme</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span> [scicloj.plotje.api <span class="at">:as</span> pj]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>            [scicloj.metamorph.ml.rdatasets <span class="at">:as</span> rdatasets]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Line chart with point markers from plain Clojure data:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clj code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> [{<span class="at">:month</span> <span class="st">"Jan"</span> <span class="at">:sales</span> <span class="dv">120</span>}</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:month</span> <span class="st">"Feb"</span> <span class="at">:sales</span> <span class="dv">95</span>}</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:month</span> <span class="st">"Mar"</span> <span class="at">:sales</span> <span class="dv">140</span>}</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:month</span> <span class="st">"Apr"</span> <span class="at">:sales</span> <span class="dv">175</span>}</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:month</span> <span class="st">"May"</span> <span class="at">:sales</span> <span class="dv">160</span>}</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:month</span> <span class="st">"Jun"</span> <span class="at">:sales</span> <span class="dv">210</span>}]</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    (pj/lay-line <span class="at">:month</span> <span class="at">:sales</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    pj/lay-point</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    (pj/options {<span class="at">:title</span> <span class="st">"Monthly Sales"</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clj code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> [{<span class="at">:month</span> <span class="st">"Jan"</span> <span class="at">:sales</span> <span class="dv">120</span>}</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:month</span> <span class="st">"Feb"</span> <span class="at">:sales</span> <span class="dv">95</span>}</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:month</span> <span class="st">"Mar"</span> <span class="at">:sales</span> <span class="dv">140</span>}</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:month</span> <span class="st">"Apr"</span> <span class="at">:sales</span> <span class="dv">175</span>}</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:month</span> <span class="st">"May"</span> <span class="at">:sales</span> <span class="dv">160</span>}</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:month</span> <span class="st">"Jun"</span> <span class="at">:sales</span> <span class="dv">210</span>}]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    (pj/lay-line <span class="at">:month</span> <span class="at">:sales</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    pj/lay-point</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    (pj/options {<span class="at">:title</span> <span class="st">"Monthly Sales"</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><img src="readme_files/image0.svg" class="img-fluid"></p>
 <p>Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clj code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    (pj/pose {<span class="at">:color</span> <span class="at">:species</span>})</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    (pj/pose (pj/cross [<span class="at">:sepal-length</span> <span class="at">:sepal-width</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">:petal-length</span> <span class="at">:petal-width</span>]</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>                        [<span class="at">:sepal-length</span> <span class="at">:sepal-width</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                         <span class="at">:petal-length</span> <span class="at">:petal-width</span>]))</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    (pj/options {<span class="at">:title</span> <span class="st">"Iris SPLOM"</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode clj code-with-copy"><code class="sourceCode clojure"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    (pj/pose {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    (pj/pose (pj/cross [<span class="at">:sepal-length</span> <span class="at">:sepal-width</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">:petal-length</span> <span class="at">:petal-width</span>]</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                        [<span class="at">:sepal-length</span> <span class="at">:sepal-width</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                         <span class="at">:petal-length</span> <span class="at">:petal-width</span>]))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    (pj/options {<span class="at">:title</span> <span class="st">"Iris SPLOM"</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><img src="readme_files/image1.svg" class="img-fluid"></p>
 </section>
 <section id="documentation" class="level2">

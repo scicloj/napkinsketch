@@ -14,7 +14,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__118485#] (Math/sin (* p1__118485# 0.3)))
+    (fn* [p1__127857#] (Math/sin (* p1__127857# 0.3)))
     (range 30))}))
 
 
@@ -39,9 +39,9 @@
   {:x (concat (range 30) (range 30)),
    :y
    (concat
-    (map (fn* [p1__118486#] (Math/sin (* p1__118486# 0.3))) (range 30))
+    (map (fn* [p1__127858#] (Math/sin (* p1__127858# 0.3))) (range 30))
     (map
-     (fn* [p1__118487#] (Math/cos (* p1__118487# 0.3)))
+     (fn* [p1__127859#] (Math/cos (* p1__127859# 0.3)))
      (range 30))),
    :fn (concat (repeat 30 :sin) (repeat 30 :cos))}))
 
@@ -144,7 +144,7 @@
  (->
   {:x (range 30),
    :y
-   (map (fn* [p1__118488#] (Math/sin (* p1__118488# 0.3))) (range 30))}
+   (map (fn* [p1__127860#] (Math/sin (* p1__127860# 0.3))) (range 30))}
   (pj/lay-area :x :y)))
 
 
