@@ -11,9 +11,7 @@
     (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model})
-    (pj/options {:title "Sepal length vs width by species"
-                 :width 700
-                 :height 420}))
+    (pj/options {:width 700 :height 420}))
 
 ;; Plotje is a Clojure library for composable plotting, inspired by
 ;; the Grammar of Graphics.
