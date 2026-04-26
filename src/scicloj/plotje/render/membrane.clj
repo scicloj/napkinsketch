@@ -179,13 +179,14 @@
    Dispatches on plan defrecord type so leaf and composite plans can take
    different rendering paths.
 
-   Optional kwargs:
-     :tooltip — when truthy, enables tooltip text generation on data marks."
+   2-arity takes an opts map. Recognized keys:
+     :tooltip -- when truthy, enables tooltip text generation on data marks."
   (fn [plan & _] (type plan)))
 
 (defmethod plan->membrane Plan
-  [plan & {:keys [tooltip] :as opts}]
-  (let [cfg (defaults/resolve-config opts)
+  [plan opts]
+  (let [{:keys [tooltip]} opts
+        cfg (defaults/resolve-config opts)
         {:keys [margin total-width total-height panel-width panel-height
                 title subtitle caption x-label y-label
                 legend size-legend alpha-legend

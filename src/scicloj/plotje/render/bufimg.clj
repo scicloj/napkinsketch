@@ -16,8 +16,7 @@
 (defmethod render/plan->plot :bufimg [plan _ opts]
   (let [render-opts (select-keys opts [:width :height :theme :palette
                                        :color-scale :color-midpoint])
-        membrane-tree (apply membrane/plan->membrane plan
-                             (mapcat identity render-opts))]
+        membrane-tree (membrane/plan->membrane plan render-opts)]
     (render/membrane->plot membrane-tree :bufimg
                            (assoc opts
                                   :total-width (:total-width plan)

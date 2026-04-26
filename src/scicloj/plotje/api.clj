@@ -194,10 +194,14 @@
 
 (defn plan->membrane
   "Convert a plan into a membrane drawable tree.
-   (plan->membrane (plan fr))"
-  [plan-data & {:as opts}]
-  (expect-type plan-data resolve/plan? "plan (from pj/plan)" "pj/plan->membrane")
-  (membrane/plan->membrane plan-data opts))
+   The 1-arity uses no rendering options. The 2-arity takes an
+   opts map with optional :tooltip, :theme, :palette, etc.
+   (plan->membrane (plan fr))
+   (plan->membrane (plan fr) {:tooltip true})"
+  ([plan-data] (plan->membrane plan-data {}))
+  ([plan-data opts]
+   (expect-type plan-data resolve/plan? "plan (from pj/plan)" "pj/plan->membrane")
+   (membrane/plan->membrane plan-data opts)))
 
 (defn membrane->plot
   "Convert a membrane drawable tree into a figure for the given format.
@@ -1662,12 +1666,17 @@
    returns a CompositeDraft carrying per-leaf drafts (each
    contextualized -- shared-scale domains injected, suppress-* flags
    applied), the resolved chrome geometry, and the layout (path -> rect).
-   (draft pose)"
-  [pose]
-  (let [fr (ensure-pose pose "pj/draft")]
-    (if (pose/composite? fr)
-      (compositor/composite-pose->draft fr)
-      (pose/leaf->draft fr))))
+   The 2-arity folds opts into the pose first via pj/options, mirroring
+   the 2-arity of pj/plan and pj/plot.
+   (draft pose)
+   (draft pose {:width 800 :title \"Plot\"})"
+  ([pose]
+   (let [fr (ensure-pose pose "pj/draft")]
+     (if (pose/composite? fr)
+       (compositor/composite-pose->draft fr)
+       (pose/leaf->draft fr))))
+  ([pose opts]
+   (draft (options pose opts))))
 
 (defn plan
   "Convert a pose into a plan. For a leaf pose, returns a `Plan`

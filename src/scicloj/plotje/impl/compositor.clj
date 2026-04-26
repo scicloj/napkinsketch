@@ -404,7 +404,7 @@
 ;; layers chrome drawables (title, strip labels, shared legend) on
 ;; top.
 (defmethod membrane/plan->membrane CompositePlan
-  [composite-plan & _opts]
+  [composite-plan _opts]
   (let [{:keys [width sub-plots chrome]} composite-plan
         {:keys [title title-band-h grid-rect strip-h strip-w
                 col-labels row-labels n-cols n-rows matrix?
@@ -413,8 +413,8 @@
         leaf-trees (mapv (fn [{:keys [plan rect]}]
                            (let [tooltip? (:tooltip (or (:opts plan) {}))
                                  tree (if tooltip?
-                                        (membrane/plan->membrane plan :tooltip true)
-                                        (membrane/plan->membrane plan))
+                                        (membrane/plan->membrane plan {:tooltip true})
+                                        (membrane/plan->membrane plan {}))
                                  [x y _ _] rect]
                              (ui/translate (double x) (double y) tree)))
                          sub-plots)

@@ -308,8 +308,7 @@
 (defmethod render/plan->plot :svg [plan _ opts]
   (let [render-opts (select-keys opts [:tooltip :width :height :theme :palette
                                        :color-scale :color-midpoint])
-        membrane-tree (apply membrane/plan->membrane plan
-                             (mapcat identity render-opts))]
+        membrane-tree (membrane/plan->membrane plan render-opts)]
     (render/membrane->plot membrane-tree :svg
                            (assoc opts
                                   :total-width (:total-width plan)
