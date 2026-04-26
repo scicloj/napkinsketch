@@ -1,6 +1,5 @@
-;; Simple and easy plotting
-
-;; # Preface
+;; # Plotje
+;; Composable plotting in Clojure
 
 ^{:clay {:hide-code true}}
 (ns index

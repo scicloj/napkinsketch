@@ -896,9 +896,9 @@
    dataset -- otherwise an error is thrown naming the missing columns
    and listing what is available. Per-layer / per-sub-pose `:data`
    still overrides the top-level data.
-   (with-data fr data)"
-  [sk data]
-  (let [fr (ensure-pose sk "pj/with-data")
+   (with-data pose data)"
+  [pose data]
+  (let [fr (ensure-pose pose "pj/with-data")
         ds (coerce-dataset data)]
     (when ds
       (validate-columns-present (column-refs-in-pose fr) ds))
@@ -1037,11 +1037,11 @@
   "Add a root-scope layer. The layer attaches to :layers and flows via
    pose/resolve-tree to every descendant leaf (composite) or renders
    on the single panel (leaf)."
-  ([sk-or-data layer-type-key]
-   (lay sk-or-data layer-type-key nil))
-  ([sk-or-data layer-type-key opts]
+  ([pose-or-data layer-type-key]
+   (lay pose-or-data layer-type-key nil))
+  ([pose-or-data layer-type-key opts]
    (let [layer (build-layer layer-type-key opts)]
-     (update (ensure-pose sk-or-data "pj/lay") :layers (fnil conj []) layer))))
+     (update (ensure-pose pose-or-data "pj/lay") :layers (fnil conj []) layer))))
 
 (defn- x-only?
   "True if layer-type-key is registered as x-only (rejects :y column)."
@@ -1101,9 +1101,9 @@
    3-arity: two keywords -> bivariate; keyword+map -> univariate+opts;
             vector+map -> multi-pair broadcast with opts.
    4-arity: bivariate layer with opts."
-  ([layer-type-key sk-or-data]
-   (let [was-raw? (not (pose? sk-or-data))
-         fr (ensure-pose sk-or-data (str "pj/lay-" (name layer-type-key)))
+  ([layer-type-key pose-or-data]
+   (let [was-raw? (not (pose? pose-or-data))
+         fr (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key)))
          d (:data fr)]
      (if (and was-raw? d)
        ;; Raw-data 1-arity: auto-infer columns from the first 1-3 columns
@@ -1117,8 +1117,8 @@
          (lay-on-pose (assoc fr :mapping mapping)
                       layer-type-key nil nil))
        (lay-on-pose fr layer-type-key nil nil))))
-  ([layer-type-key sk-or-data x-or-opts]
-   (let [fr (ensure-pose sk-or-data (str "pj/lay-" (name layer-type-key)))]
+  ([layer-type-key pose-or-data x-or-opts]
+   (let [fr (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key)))]
      (cond
        (map? x-or-opts)
        (lay-on-pose fr layer-type-key nil x-or-opts)
@@ -1134,8 +1134,8 @@
 
        :else
        (lay-on-pose fr layer-type-key nil nil))))
-  ([layer-type-key sk-or-data x y-or-opts]
-   (let [fr (ensure-pose sk-or-data (str "pj/lay-" (name layer-type-key)))]
+  ([layer-type-key pose-or-data x y-or-opts]
+   (let [fr (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key)))]
      (cond
        ;; Parallel vectors -> build a multi-panel composite via pj/pose
        ;; with paired x/y, then attach the bare layer at the root so it
@@ -1160,7 +1160,7 @@
 
        :else
        (lay-on-pose fr layer-type-key {:x x} y-or-opts))))
-  ([layer-type-key sk-or-data x y opts]
+  ([layer-type-key pose-or-data x y opts]
    (when (x-only? layer-type-key)
      (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
                      {:layer-type layer-type-key :x x :y y})))
@@ -1172,7 +1172,7 @@
                           " a map, e.g. {:color :species}.")
                      {:caller (str "pj/lay-" (name layer-type-key))
                       :value opts})))
-   (lay-on-pose (ensure-pose sk-or-data (str "pj/lay-" (name layer-type-key))) layer-type-key {:x x :y y} opts)))
+   (lay-on-pose (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key))) layer-type-key {:x x :y y} opts)))
 
 (defn lay-point
   "Add a :point (scatter) layer to a pose.
@@ -1183,10 +1183,10 @@
    (lay-point fr {:color :species})        -- bare layer with aesthetic opts
    (lay-point data :x :y)                 -- coerce data to a leaf, then attach
    (lay-point data :x :y {:color :c})     -- same with aesthetic opts"
-  ([sk-or-data] (lay-layer-type :point sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :point sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :point sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :point sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :point pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :point pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :point pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :point pose-or-data x y opts)))
 
 (defn- last-opts
   "Return the trailing opts map from a lay-* arg list (or nil)."
@@ -1259,10 +1259,10 @@
    (lay-rule-h pose {:y-intercept 3})           -- root-level, flows to every panel
    (lay-rule-h pose :x :y {:y-intercept 3})     -- panel-scope (columns pick or create a sub-pose)
    (lay-rule-h pose {:y-intercept 3 :color \"red\" :alpha 0.5})"
-  ([_sk-or-data] (assert-rule-1-arity! :rule-h))
-  ([sk-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-layer-type :rule-h sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-layer-type :rule-h sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (assert-rule-opts! :rule-h [opts]) (lay-layer-type :rule-h sk-or-data x y opts)))
+  ([_pose-or-data] (assert-rule-1-arity! :rule-h))
+  ([pose-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-layer-type :rule-h pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-layer-type :rule-h pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (assert-rule-opts! :rule-h [opts]) (lay-layer-type :rule-h pose-or-data x y opts)))
 
 (defn lay-rule-v
   "Add :rule-v layer -- vertical reference line at x = x-intercept.
@@ -1274,10 +1274,10 @@
    (lay-rule-v pose {:x-intercept 5})           -- root-level, flows to every panel
    (lay-rule-v pose :x :y {:x-intercept 5})     -- panel-scope (columns pick or create a sub-pose)
    (lay-rule-v pose {:x-intercept 5 :color \"red\" :alpha 0.5})"
-  ([_sk-or-data] (assert-rule-1-arity! :rule-v))
-  ([sk-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-layer-type :rule-v sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-layer-type :rule-v sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (assert-rule-opts! :rule-v [opts]) (lay-layer-type :rule-v sk-or-data x y opts)))
+  ([_pose-or-data] (assert-rule-1-arity! :rule-v))
+  ([pose-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-layer-type :rule-v pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-layer-type :rule-v pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (assert-rule-opts! :rule-v [opts]) (lay-layer-type :rule-v pose-or-data x y opts)))
 
 (defn lay-band-h
   "Add :band-h layer -- horizontal shaded band between y = y-min and y = y-max.
@@ -1290,10 +1290,10 @@
    (lay-band-h pose {:y-min 2 :y-max 4})            -- root-level, flows to every panel
    (lay-band-h pose :x :y {:y-min 2 :y-max 4})      -- panel-scope (columns pick or create a sub-pose)
    (lay-band-h pose {:y-min 2 :y-max 4 :color \"blue\" :alpha 0.3})"
-  ([_sk-or-data] (assert-band-1-arity! :band-h))
-  ([sk-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-layer-type :band-h sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-layer-type :band-h sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (assert-band-opts! :band-h [opts]) (lay-layer-type :band-h sk-or-data x y opts)))
+  ([_pose-or-data] (assert-band-1-arity! :band-h))
+  ([pose-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-layer-type :band-h pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-layer-type :band-h pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (assert-band-opts! :band-h [opts]) (lay-layer-type :band-h pose-or-data x y opts)))
 
 (defn lay-band-v
   "Add :band-v layer -- vertical shaded band between x = x-min and x = x-max.
@@ -1306,182 +1306,182 @@
    (lay-band-v pose {:x-min 4 :x-max 6})            -- root-level, flows to every panel
    (lay-band-v pose :x :y {:x-min 4 :x-max 6})      -- panel-scope (columns pick or create a sub-pose)
    (lay-band-v pose {:x-min 4 :x-max 6 :color \"blue\" :alpha 0.3})"
-  ([_sk-or-data] (assert-band-1-arity! :band-v))
-  ([sk-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-layer-type :band-v sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-layer-type :band-v sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (assert-band-opts! :band-v [opts]) (lay-layer-type :band-v sk-or-data x y opts)))
+  ([_pose-or-data] (assert-band-1-arity! :band-v))
+  ([pose-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-layer-type :band-v pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-layer-type :band-v pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (assert-band-opts! :band-v [opts]) (lay-layer-type :band-v pose-or-data x y opts)))
 
 (defn lay-line
   "Add :line layer type -- connected line through data points.
    Requires x (numerical) and y (numerical).
    Accepts :color, :alpha, :size (stroke width), :nudge-x, :nudge-y."
-  ([sk-or-data] (lay-layer-type :line sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :line sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :line sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :line sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :line pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :line pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :line pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :line pose-or-data x y opts)))
 
 (defn lay-step
   "Add :step layer type -- staircase line (horizontal then vertical).
    Requires x and y (both numerical)."
-  ([sk-or-data] (lay-layer-type :step sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :step sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :step sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :step sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :step pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :step pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :step pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :step pose-or-data x y opts)))
 
 (defn lay-area
   "Add :area layer type -- filled region between y and the baseline.
    Requires x and y (both numerical). Accepts :color, :alpha."
-  ([sk-or-data] (lay-layer-type :area sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :area sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :area sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :area sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :area pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :area pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :area pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :area pose-or-data x y opts)))
 
 (defn lay-histogram
   "Add :histogram layer type -- bin numerical values into bars.
    X-only: pass one column. Accepts :bins (count), :binwidth, :color,
    :normalize (:density for density-normalized heights)."
-  ([sk-or-data] (lay-layer-type :histogram sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :histogram sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :histogram sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :histogram sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :histogram pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :histogram pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :histogram pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :histogram pose-or-data x y opts)))
 
 (defn lay-bar
   "Add :bar layer type -- count occurrences of each category.
    X-only: pass one categorical column. Accepts :color for grouped bars."
-  ([sk-or-data] (lay-layer-type :bar sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :bar sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :bar sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :bar sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :bar pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :bar pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :bar pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :bar pose-or-data x y opts)))
 
 (defn lay-value-bar
   "Add :value-bar layer type -- bars with pre-computed heights.
    Requires categorical x and numerical y. Unlike :bar (which counts),
    :value-bar uses the y value directly as the bar height."
-  ([sk-or-data] (lay-layer-type :value-bar sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :value-bar sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :value-bar sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :value-bar sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :value-bar pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :value-bar pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :value-bar pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :value-bar pose-or-data x y opts)))
 
 (defn lay-smooth
   "Add :smooth layer type -- a smoothed trend line.
    Defaults to LOESS (local regression). Pass {:stat :linear-model} for
    ordinary least squares instead. Requires x and y (both numerical).
    Accepts {:confidence-band true} for a confidence ribbon."
-  ([sk-or-data] (lay-layer-type :smooth sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :smooth sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :smooth sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :smooth sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :smooth pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :smooth pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :smooth pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :smooth pose-or-data x y opts)))
 
 (defn lay-density
   "Add :density layer type -- kernel density estimate curve.
    X-only: pass one numerical column. Accepts :color, :bandwidth."
-  ([sk-or-data] (lay-layer-type :density sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :density sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :density sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :density sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :density pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :density pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :density pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :density pose-or-data x y opts)))
 
 (defn lay-tile
   "Add :tile layer type -- colored grid cells (heatmap).
    With :fill option: pre-computed tile colors from a column.
    Without :fill: auto-binned 2D histogram (stat :bin2d)."
-  ([sk-or-data] (lay-layer-type :tile sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :tile sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :tile sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :tile sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :tile pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :tile pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :tile pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :tile pose-or-data x y opts)))
 
 (defn lay-density-2d
   "Add :density-2d layer type -- 2D kernel density heatmap.
    Requires x and y (both numerical). Produces a smoothed density
    surface as colored tiles with a continuous gradient legend."
-  ([sk-or-data] (lay-layer-type :density-2d sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :density-2d sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :density-2d sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :density-2d sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :density-2d pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :density-2d pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :density-2d pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :density-2d pose-or-data x y opts)))
 
 (defn lay-contour
   "Add :contour layer type -- iso-density contour lines from 2D KDE.
    Requires x and y (both numerical). Accepts {:levels 10} for
    the number of contour levels."
-  ([sk-or-data] (lay-layer-type :contour sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :contour sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :contour sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :contour sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :contour pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :contour pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :contour pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :contour pose-or-data x y opts)))
 
 (defn lay-boxplot
   "Add :boxplot layer type -- box-and-whisker plot.
    Requires categorical x and numerical y. Shows median, quartiles,
    whiskers, and outliers. Accepts :color for grouped boxplots."
-  ([sk-or-data] (lay-layer-type :boxplot sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :boxplot sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :boxplot sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :boxplot sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :boxplot pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :boxplot pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :boxplot pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :boxplot pose-or-data x y opts)))
 
 (defn lay-violin
   "Add :violin layer type -- mirrored density estimate by category.
    Requires categorical x and numerical y. Accepts :color, :bandwidth."
-  ([sk-or-data] (lay-layer-type :violin sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :violin sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :violin sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :violin sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :violin pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :violin pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :violin pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :violin pose-or-data x y opts)))
 
 (defn lay-ridgeline
   "Add :ridgeline layer type -- stacked density curves by category.
    Requires categorical x and numerical y. Categories stack vertically
    with density curves rendered horizontally."
-  ([sk-or-data] (lay-layer-type :ridgeline sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :ridgeline sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :ridgeline sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :ridgeline sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :ridgeline pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :ridgeline pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :ridgeline pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :ridgeline pose-or-data x y opts)))
 
 (defn lay-summary
   "Add :summary layer type -- mean +/- standard error per category.
    Requires categorical x and numerical y. Shows a point at the mean
    with error bars for +/- 1 SE. Accepts :color for grouped summaries."
-  ([sk-or-data] (lay-layer-type :summary sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :summary sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :summary sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :summary sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :summary pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :summary pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :summary pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :summary pose-or-data x y opts)))
 
 (defn lay-errorbar
   "Add :errorbar layer type -- vertical error bars from pre-computed bounds.
    Requires x, y, and {:y-min :col :y-max :col} for lower/upper bounds."
-  ([sk-or-data] (lay-layer-type :errorbar sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :errorbar sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :errorbar sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :errorbar sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :errorbar pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :errorbar pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :errorbar pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :errorbar pose-or-data x y opts)))
 
 (defn lay-lollipop
   "Add :lollipop layer type -- dot on a stem from the baseline.
    Requires categorical x and numerical y. Like value-bar but with
    a circle+line instead of a filled rectangle."
-  ([sk-or-data] (lay-layer-type :lollipop sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :lollipop sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :lollipop sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :lollipop sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :lollipop pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :lollipop pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :lollipop pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :lollipop pose-or-data x y opts)))
 
 (defn lay-text
   "Add :text layer type -- text labels at data coordinates.
    Requires x, y, and {:text :column} for label content."
-  ([sk-or-data] (lay-layer-type :text sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :text sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :text sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :text sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :text pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :text pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :text pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :text pose-or-data x y opts)))
 
 (defn lay-label
   "Add :label layer type -- text labels with background box at data coordinates.
    Like :text but with a rectangular background for readability."
-  ([sk-or-data] (lay-layer-type :label sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :label sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :label sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :label sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :label pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :label pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :label pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :label pose-or-data x y opts)))
 
 (defn lay-rug
   "Add :rug layer type -- short tick marks along the axis showing individual values.
    X-only: pass one column. Often layered with density or scatter."
-  ([sk-or-data] (lay-layer-type :rug sk-or-data))
-  ([sk-or-data x-or-opts] (lay-layer-type :rug sk-or-data x-or-opts))
-  ([sk-or-data x y-or-opts] (lay-layer-type :rug sk-or-data x y-or-opts))
-  ([sk-or-data x y opts] (lay-layer-type :rug sk-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :rug pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :rug pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :rug pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :rug pose-or-data x y opts)))
 
 (defn- deep-merge
   "Recursively merge maps. Non-map values are overwritten."
@@ -1505,14 +1505,14 @@
    integer pixel dimensions through to render. On a composite pose
    the options attach to the root so every descendant leaf inherits
    them via resolve-tree."
-  [sk opts]
+  [pose opts]
   (when-not (or (nil? opts) (map? opts))
     (throw (ex-info (str "pj/options expects an opts map as the second"
                          " argument, got " (pr-str (type opts)) ": "
                          (pr-str opts) ". Wrap plot-level options in"
                          " a map, e.g. {:title \"...\" :width 800}.")
                     {:caller "pj/options" :value opts})))
-  (let [fr (ensure-pose sk "pj/options")
+  (let [fr (ensure-pose pose "pj/options")
         opts (warn-and-strip-unknown-opts "pj/options" opts plot-options-keys)
         opts (reduce (fn [m k]
                        (if-let [v (get m k)]
@@ -1545,20 +1545,20 @@
    Faceting is plot-level -- every panel is faceted the same way.
    Composite poses are not supported yet (see
    dev-notes/facet-composite-deferral.md)."
-  ([sk col] (facet sk col :col))
-  ([sk col direction]
-   (reject-composite-for-facet sk)
+  ([pose col] (facet pose col :col))
+  ([pose col direction]
+   (reject-composite-for-facet pose)
    (let [k (case direction :col :facet-col :row :facet-row)]
-     (update-opts sk assoc k col))))
+     (update-opts pose assoc k col))))
 
 (defn facet-grid
   "Facet a pose by two columns (2D grid).
    Faceting is plot-level -- every panel is faceted the same way.
    Composite poses are not supported yet (see
    dev-notes/facet-composite-deferral.md)."
-  [sk col-col row-col]
-  (reject-composite-for-facet sk)
-  (update-opts sk assoc :facet-col col-col :facet-row row-col))
+  [pose col-col row-col]
+  (reject-composite-for-facet pose)
+  (update-opts pose assoc :facet-col col-col :facet-row row-col))
 
 (def ^:private valid-scale-types
   "Scale types accepted by pj/scale. :linear and :log are the two
@@ -1572,11 +1572,11 @@
    with :type, optional :domain, and optional :breaks (explicit tick
    locations). On a composite pose the scale attaches to the root so
    every descendant leaf inherits it via resolve-tree.
-   (scale fr :x :log)                                -- log scale on x-axis
-   (scale fr :x {:type :categorical :domain [...]})  -- explicit category order
-   (scale fr :y {:type :linear :breaks [0 5 10]})    -- pin tick locations
-   (scale fr :y {:type :log :domain [1 1000]})       -- log scale with explicit range"
-  [fr channel scale-type]
+   (scale pose :x :log)                                -- log scale on x-axis
+   (scale pose :x {:type :categorical :domain [...]})  -- explicit category order
+   (scale pose :y {:type :linear :breaks [0 5 10]})    -- pin tick locations
+   (scale pose :y {:type :log :domain [1 1000]})       -- log scale with explicit range"
+  [pose channel scale-type]
   (let [k (case channel :x :x-scale :y :y-scale
                 (throw (ex-info (str "Scale channel must be :x or :y, got: " channel)
                                 {:channel channel})))
@@ -1585,46 +1585,46 @@
       (throw (ex-info (str "Unknown scale type: " type-kw
                            ". Supported: " (vec (sort valid-scale-types)))
                       {:scale-type type-kw :supported (vec (sort valid-scale-types))})))
-    (update-opts fr assoc k (if (map? scale-type)
-                              (merge {:type :linear} scale-type)
-                              {:type scale-type}))))
+    (update-opts pose assoc k (if (map? scale-type)
+                                (merge {:type :linear} scale-type)
+                                {:type scale-type}))))
 
 (defn coord
   "Set coordinate transform on a pose. Coord is plot-level -- it
    applies across every panel. On a composite pose the coord attaches
    to the root so every descendant leaf inherits it via resolve-tree.
-   (coord fr :flip) -- flipped coordinates."
-  [fr coord-type]
+   (coord pose :flip) -- flipped coordinates."
+  [pose coord-type]
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
                     {:coord coord-type})))
-  (update-opts fr assoc :coord coord-type))
+  (update-opts pose assoc :coord coord-type))
 
 (defn draft
   "Flatten a leaf pose into a draft -- a vector of flat maps, one per
    applicable layer, with all scope merged: data, mappings, and layer
    type fully determined.
-   (draft fr)"
-  [fr]
-  (pose/leaf->draft (ensure-pose fr "pj/draft")))
+   (draft pose)"
+  [pose]
+  (pose/leaf->draft (ensure-pose pose "pj/draft")))
 
 (defn plan
   "Convert a pose into a plan. Each leaf is one panel. On a composite
    pose, returns a wrapper plan with :composite? true and :sub-plots
    tying each leaf path to its rect and sub-plan.
-   (plan fr)
-   (plan fr {:title \"My Plot\"})"
-  ([sk]
-   (when (plan? sk)
+   (plan pose)
+   (plan pose {:title \"My Plot\"})"
+  ([pose]
+   (when (plan? pose)
      (throw (ex-info (str "pj/plan expects a pose, not a plan. "
                           "Use the plan directly, or call pj/plot on the pose.")
                      {:got :plan})))
-   (let [fr (ensure-pose sk "pj/plan")]
+   (let [fr (ensure-pose pose "pj/plan")]
      (if (pose/composite? fr)
        (compositor/composite->plan fr)
        (plan/draft->plan (pose/leaf->draft fr) (:opts fr {})))))
-  ([sk opts]
-   (plan (options sk opts))))
+  ([pose opts]
+   (plan (options pose opts))))
 
 (defn- ensure-renderer-loaded!
   "Lazy-load the renderer namespace for non-default formats. The :svg
@@ -1643,24 +1643,24 @@
 
    On a composite pose, leaves are rendered individually and tiled
    via the compositor's layout, in the same chosen format.
-   (plot fr)
-   (plot fr {:width 800 :title \"My Plot\"})
-   (plot fr {:format :bufimg})  ;; returns a BufferedImage"
-  ([sk]
-   (when (plan? sk)
+   (plot pose)
+   (plot pose {:width 800 :title \"My Plot\"})
+   (plot pose {:format :bufimg})  ;; returns a BufferedImage"
+  ([pose]
+   (when (plan? pose)
      (throw (ex-info (str "pj/plot expects a pose, not a plan. "
                           "A plan is the resolved geometry; call "
                           "pj/plan->plot on the plan, or pass the "
                           "original pose to pj/plot.")
                      {:got :plan})))
-   (let [fr (ensure-pose sk "pj/plot")
+   (let [fr (ensure-pose pose "pj/plot")
          fmt (or (:format (:opts fr)) :svg)]
      (ensure-renderer-loaded! fmt)
      (if (pose/composite? fr)
        (compositor/composite->plot fr fmt)
        (render-impl/plan->plot (plan fr) fmt (:opts fr {})))))
-  ([sk opts]
-   (plot (options sk opts))))
+  ([pose opts]
+   (plot (options pose opts))))
 
 ;; ---- SVG Summary ----
 
@@ -1819,7 +1819,7 @@
    a warning -- the file still gets the bytes the resolved format
    produces, but the extension is misleading.
 
-   fr   -- a pose.
+   pose -- a pose.
    path -- file path (string or java.io.File).
    opts -- same options as plot (:format, :width, :height, :title, ...).
    Tooltip and brush interactivity are not included in saved files.
@@ -1827,15 +1827,15 @@
    (save my-pose \"plot.svg\")                       ;; SVG
    (save my-pose \"plot.png\")                       ;; inferred PNG
    (save my-pose \"plot.svg\" {:format :bufimg})     ;; opts override (warns)"
-  ([fr path] (save fr path nil))
-  ([fr path opts]
+  ([pose path] (save pose path nil))
+  ([pose path opts]
    (when-not (or (nil? opts) (map? opts))
      (throw (ex-info (str "pj/save expects an opts map as the third"
                           " argument, got " (pr-str (type opts)) ": "
                           (pr-str opts) ".")
                      {:caller "pj/save" :value opts})))
    (let [path-str (str path)
-         fr (ensure-pose fr "pj/save")
+         fr (ensure-pose pose "pj/save")
          _ (assert-saveable-pose! "pj/save" fr)
          fr (if (seq opts) (options fr opts) fr)
          path-fmt (infer-format-from-path path-str)
@@ -1868,13 +1868,13 @@
 (defn save-png
   "Save a plot as a PNG file. Convenience wrapper around `pj/save`
    that pins `:format :bufimg`. Equivalent to:
-     (pj/save fr path (assoc opts :format :bufimg))
-   fr   -- a pose.
+     (pj/save pose path (assoc opts :format :bufimg))
+   pose -- a pose.
    path -- file path (string or java.io.File).
    opts -- same options as save (:width, :height, :title, :theme, ...).
    Returns the path.
    (save-png my-pose \"plot.png\")
    (save-png my-pose \"plot.png\" {:width 800 :height 600})"
-  ([fr path] (save-png fr path nil))
-  ([fr path opts]
-   (save fr path (assoc (or opts {}) :format :bufimg))))
+  ([pose path] (save-png pose path nil))
+  ([pose path opts]
+   (save pose path (assoc (or opts {}) :format :bufimg))))
