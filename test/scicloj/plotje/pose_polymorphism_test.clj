@@ -315,7 +315,7 @@
           f (pj/pose iris (pj/cross cols cols))]
       (is (= 2 (count (:poses f))) "2 rows, not 4 flat sub-poses")
       (is (= :vertical (get-in f [:layout :direction])))
-      (is (= #{:x :y} (:share-scales f))))))
+      (is (= #{:x :y} (get-in f [:opts :share-scales]))))))
 
 (deftest multi-pair-iteration-equivalence-test
   (testing "M7: (pj/pose fr vec-of-pairs) -- non-rectangular pair list threads per-pair"
@@ -345,7 +345,7 @@
   (testing "G1: (pj/cross cols cols) produces M x N nested composite"
     (let [f (pj/pose iris (pj/cross [:a :b] [:c :d]))]
       (is (= :vertical (get-in f [:layout :direction])))
-      (is (= #{:x :y} (:share-scales f)))
+      (is (= #{:x :y} (get-in f [:opts :share-scales])))
       (is (= 2 (count (:poses f))) "2 rows")
       (let [row-0 (first (:poses f))
             row-1 (second (:poses f))]
@@ -398,7 +398,7 @@
       ;; Falls through to flat -- 3 sub-poses at root
       (is (= 3 (count (:poses f))))
       (is (every? #(not (contains? % :poses)) (:poses f)))
-      (is (not (contains? f :share-scales))))))
+      (is (not (contains? (:opts f) :share-scales))))))
 
 ;; ============================================================
 ;; Integration with pj/lay-* and resolve-tree (I1-I3)

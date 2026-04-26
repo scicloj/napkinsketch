@@ -453,6 +453,11 @@
    leaves, and stamp those domains onto matching leaves' :opts as
    :x-scale-domain / :y-scale-domain. Returns a new tree.
 
+   :share-scales may live in `(:opts pose)` (the canonical location;
+   set via pj/options or pj/arrange) or directly at the top of the
+   pose (legacy location for hand-built composites). The :opts entry
+   wins if both are present.
+
    `inherited-domains` carries `{axis {col-ref [lo hi]}}` down the
    tree. `inherited-mapping` carries the ancestor-merged mapping so a
    leaf can resolve its effective axis column from (inherited + own +
@@ -466,7 +471,8 @@
   ([pose inherited-domains inherited-mapping inherited-data]
    (let [my-mapping  (merge inherited-mapping (:mapping pose))
          my-data     (or (:data pose) inherited-data)
-         my-shares   (:share-scales pose)
+         my-shares   (or (get-in pose [:opts :share-scales])
+                         (:share-scales pose))
          new-domains (when (and my-shares (seq (:poses pose)))
                        (let [subtree (resolve-tree pose
                                                    {:mapping inherited-mapping

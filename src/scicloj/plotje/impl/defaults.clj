@@ -376,6 +376,7 @@
    :panel-width ["Layout" "Pin panel width in pixels (escape hatch; :width becomes derived total)"]
    :panel-height ["Layout" "Pin panel height in pixels (escape hatch; :height becomes derived total)"]
    :scales ["Layout" "Facet scale coordination — :shared (default), :free, :free-x, :free-y"]
+   :share-scales ["Layout" "Composite scale coordination — set of axes (#{:x}, #{:y}, or #{:x :y}) shared across composite cells"]
    :config ["Config" "Nested config map merged into resolved config"]})
 
 (defn config

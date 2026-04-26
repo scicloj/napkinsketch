@@ -690,14 +690,13 @@
                        :poses (cells row-idx row)})
                     rows))
         composite (cond-> {:layout             {:direction :vertical}
-                           :share-scales       #{:x :y}
                            :grid-strip-labels  {:col-labels col-labels
                                                 :row-labels row-labels}
+                           :opts              (merge {:share-scales #{:x :y}} root-o)
                            :poses             row-poses}
                     (some? root-data) (assoc :data root-data)
                     (seq root-m)      (assoc :mapping root-m)
-                    (seq root-l)      (assoc :layers root-l)
-                    (seq root-o)      (assoc :opts root-o))]
+                    (seq root-l)      (assoc :layers root-l))]
     (prepare-pose composite)))
 
 (defn- multi-pair-pose
@@ -1768,12 +1767,12 @@
                            {:layout {:direction :horizontal}
                             :poses (vec row)})
                          row-partitions)
-         composite (cond-> {:opts (cond-> {:width  (long (Math/round (double width)))
-                                           :height (long (Math/round (double height)))}
-                                    title (assoc :title title))
-                            :layout {:direction :vertical}
-                            :poses row-poses}
-                     (seq share-scales) (assoc :share-scales (set share-scales)))]
+         composite {:opts (cond-> {:width  (long (Math/round (double width)))
+                                   :height (long (Math/round (double height)))}
+                            title (assoc :title title)
+                            (seq share-scales) (assoc :share-scales (set share-scales)))
+                    :layout {:direction :vertical}
+                    :poses row-poses}]
      (kind/fn composite
        {:kindly/f (render-composite defaults/*config*)}))))
 

@@ -52,8 +52,7 @@
 ;; | `:layers` | pose | per-scope layers |
 ;; | `:poses` | composite only | sub-poses |
 ;; | `:layout` | composite | direction + weights |
-;; | `:opts` | root | plot-level options |
-;; | `:share-scales` | composite | axes shared across sub-poses |
+;; | `:opts` | root | plot-level options (incl. composite-level keys like `:share-scales`) |
 ;;
 ;; A **leaf pose** has `:data`, `:mapping`, `:layers`; no `:poses`.
 ;; A **composite pose** has `:poses`; sub-poses can be leaves or
@@ -362,7 +361,7 @@
 (kind/test-last
  [(fn [fr]
     (and (= "Arranged" (get-in fr [:opts :title]))
-         (= #{:y} (:share-scales fr))))])
+         (= #{:y} (get-in fr [:opts :share-scales]))))])
 
 ;; ---
 ;; ## Layer Placement
@@ -1016,7 +1015,7 @@ l4-shared
 (kind/test-last
  [(fn [fr]
     (and (= :vertical (get-in fr [:layout :direction]))
-         (= #{:x :y} (:share-scales fr))
+         (= #{:x :y} (get-in fr [:opts :share-scales]))
          (= 2 (count (:poses fr)))
          (every? #(= 2 (count (:poses %))) (:poses fr))
          (= {:color :species} (:mapping fr))))])

@@ -484,6 +484,28 @@ Multi-pair composites built via `pj/pose` (where panels carry
 different x/y columns) are unaffected -- coordination only fires
 when the layout is a `:facet-grid`.
 
+### Composite `:share-scales` is now a plot option
+
+`:share-scales` (the set of axes coordinated across composite
+cells) used to live at the top level of a composite pose --
+alongside `:poses` and `:layout`. It is now a plot option that
+lives in `:opts`, so users can tweak it after the fact:
+
+```clojure
+(-> (pj/arrange [a b c])
+    (pj/options {:share-scales #{:x}}))
+```
+
+Previously the same call silently dropped the key, since `pj/options`
+did not recognize it as a plot option. The compositor reads
+`:share-scales` from `:opts` first and falls back to the legacy
+top-level location, so hand-built composites that put the key at
+the top continue to work without changes.
+
+`pj/arrange` and the SPLOM grid constructor now write into
+`:opts`. Test code that asserts the storage location should look
+in `(get-in pose [:opts :share-scales])`.
+
 ### Overview
 
 Plotje is a composable plotting library for Clojure, inspired by
