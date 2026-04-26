@@ -19,14 +19,23 @@ the Grammar of Graphics.
 
 ## Usage
 
-Add to your `deps.edn`:
+While the first release `0.1.0` is being prepared, install Plotje
+directly from GitHub by adding this to your `deps.edn`:
 
 ```clojure
-org.scicloj/plotje {:mvn/version "0.1.0-SNAPSHOT"}
+io.github.scicloj/plotje
+{:git/url "https://github.com/scicloj/plotje.git"
+ :git/sha "<sha-from-main>"}
 ```
 
-(The first tagged release `0.1.0` is staged but not yet published.
-Snapshots are deployed from `main` via `./snapshot.sh`.)
+Once 0.1.0 is published to Clojars, the install line will become:
+
+```clojure
+org.scicloj/plotje {:mvn/version "0.1.0"}
+```
+
+Snapshots from `main` will also be on Clojars (deployed via
+`./snapshot.sh`).
 
 Plotje is intended to be used with data-visualization tools
 that support the [Kindly](https://scicloj.github.io/kindly) convention

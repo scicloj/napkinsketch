@@ -8,11 +8,11 @@
   [clojure.test :refer [deftest is]]))
 
 
-(def v2_l27 (def iris (rdatasets/datasets-iris)))
+(def v2_l25 (def iris (rdatasets/datasets-iris)))
 
 
 (def
- v4_l36
+ v4_l34
  (pj/arrange
   [(->
     iris
@@ -23,18 +23,18 @@
 
 
 (deftest
- t5_l40
+ t5_l38
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v4_l36)))
+   v4_l34)))
 
 
 (def
- v7_l47
+ v7_l45
  (pj/arrange
   [(->
     iris
@@ -46,12 +46,12 @@
 
 
 (deftest
- t8_l52
- (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v7_l47)))
+ t8_l50
+ (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v7_l45)))
 
 
 (def
- v10_l70
+ v10_l68
  (def
   weighted
   (pj/prepare-pose
@@ -64,36 +64,36 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v12_l85 weighted)
+(def v12_l83 weighted)
 
 
 (deftest
- t13_l87
+ t13_l85
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v12_l85)))
+   v12_l83)))
 
 
-(def v15_l95 (kind/pprint weighted))
+(def v15_l93 (kind/pprint weighted))
 
 
 (deftest
- t16_l97
+ t16_l95
  (is
   ((fn
     [fr]
     (and
      (= [2 1] (get-in fr [:layout :weights]))
      (= 2 (count (:poses fr)))))
-   v15_l95)))
+   v15_l93)))
 
 
 (def
- v18_l114
+ v18_l112
  (def
   shared-x
   (pj/prepare-pose
@@ -107,22 +107,22 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v19_l124 shared-x)
+(def v19_l122 shared-x)
 
 
 (deftest
- t20_l126
+ t20_l124
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v19_l124)))
+   v19_l122)))
 
 
 (def
- v22_l140
+ v22_l138
  (def
   marginal
   (pj/prepare-pose
@@ -135,22 +135,22 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v23_l150 marginal)
+(def v23_l148 marginal)
 
 
 (deftest
- t24_l152
+ t24_l150
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 150 (:points s)) (pos? (:polygons s)))))
-   v23_l150)))
+   v23_l148)))
 
 
 (def
- v26_l173
+ v26_l171
  (def
   dashboard
   (pj/prepare-pose
@@ -171,9 +171,9 @@
         :layers [{:layer-type :density}]}]}]})))
 
 
-(def v27_l188 dashboard)
+(def v27_l186 dashboard)
 
 
 (deftest
- t28_l190
- (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v27_l188)))
+ t28_l188
+ (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v27_l186)))

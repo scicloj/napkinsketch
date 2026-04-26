@@ -7,11 +7,9 @@
 ;;
 ;; This chapter walks through composition patterns from simple
 ;; side-by-side arrangements to shared-scale marginal plots, using
-;; `pj/arrange` and explicit composite-pose maps. Dedicated
-;; constructors (`pj/mosaic`, `pj/with-marginals`) will land
-;; post-alpha; until then, the primitives below cover the same
-;; patterns -- compactly for simple cases, with a bit of literal map
-;; construction for nested layouts.
+;; `pj/arrange` and explicit composite-pose maps -- compactly for
+;; simple cases, with a bit of literal map construction for nested
+;; layouts.
 
 (ns plotje-book.composition
   (:require
@@ -72,9 +70,9 @@
    {:data iris
     :layout {:direction :horizontal :weights [2 1]}
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
-              :layers [{:layer-type :point}]}
-             {:mapping {:x :petal-length :y :petal-width}
-              :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}
+            {:mapping {:x :petal-length :y :petal-width}
+             :layers [{:layer-type :point}]}]}))
 
 ;; `pj/prepare-pose` lifts a plain-map composite into a pose the
 ;; library treats like any other: data is coerced to a Tablecloth
@@ -117,9 +115,9 @@ weighted
     :share-scales #{:x}
     :layout {:direction :horizontal :weights [1 1]}
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
-              :layers [{:layer-type :point}]}
-             {:mapping {:x :sepal-length :y :petal-length}
-              :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}
+            {:mapping {:x :sepal-length :y :petal-length}
+             :layers [{:layer-type :point}]}]}))
 
 shared-x
 
@@ -143,9 +141,9 @@ shared-x
     :share-scales #{:x}
     :layout {:direction :vertical :weights [1 3]}
     :poses [{:mapping {:x :sepal-length}
-              :layers [{:layer-type :density}]}
-             {:mapping {:x :sepal-length :y :sepal-width :color :species}
-              :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :density}]}
+            {:mapping {:x :sepal-length :y :sepal-width :color :species}
+             :layers [{:layer-type :point}]}]}))
 
 marginal
 
@@ -175,15 +173,15 @@ marginal
    {:data iris
     :layout {:direction :vertical :weights [1 1]}
     :poses [{:layout {:direction :horizontal :weights [1 1]}
-              :poses [{:mapping {:x :sepal-length}
-                        :layers [{:layer-type :histogram}]}
-                       {:mapping {:x :species :y :sepal-width :color :species}
-                        :layers [{:layer-type :boxplot}]}]}
-             {:layout {:direction :horizontal :weights [1 1]}
-              :poses [{:mapping {:x :petal-length :y :petal-width :color :species}
-                        :layers [{:layer-type :point}]}
-                       {:mapping {:x :petal-length :color :species}
-                        :layers [{:layer-type :density}]}]}]}))
+             :poses [{:mapping {:x :sepal-length}
+                      :layers [{:layer-type :histogram}]}
+                     {:mapping {:x :species :y :sepal-width :color :species}
+                      :layers [{:layer-type :boxplot}]}]}
+            {:layout {:direction :horizontal :weights [1 1]}
+             :poses [{:mapping {:x :petal-length :y :petal-width :color :species}
+                      :layers [{:layer-type :point}]}
+                     {:mapping {:x :petal-length :color :species}
+                      :layers [{:layer-type :density}]}]}]}))
 
 dashboard
 
@@ -193,25 +191,22 @@ dashboard
 ;; two rows; each row is itself a horizontal composite of two plots.
 ;; The top-level `:data` is inherited by every leaf.
 
-;; ## Known Limitations
+;; ## Notes on the current implementation
 ;;
-;; The alpha ships composition with a few deliberate gaps. Each will
-;; be addressed in 0.2.0 or later:
+;; A few details about how composition renders today, in case they
+;; matter for a layout you're sketching:
 ;;
-;; - **Chrome duplication.** Each leaf renders its own axes, labels,
-;;   and ticks. Shared scales align the ranges but not the visible
-;;   chrome -- you will see the x-axis label on both panels of a
-;;   marginal plot.
-;; - **Plot-area alignment.** Leaves render with their own chrome
-;;   padding, so plot-area edges may not line up across composite
-;;   siblings.
-;; - **No shared legend.** Each sub-pose produces its own legend.
-;; - **Threading builds flat composites only.** `pj/arrange` today
-;;   rejects composite poses as inputs; for nested layouts, write
-;;   the composite as an explicit map as shown in the dashboard
-;;   example above.
-;;
-;; See the alpha release notes for the full list.
+;; - **Each leaf carries its own chrome** -- axes, labels, ticks.
+;;   Shared scales align the data ranges across panels, but the
+;;   visible chrome is per-leaf, so a marginal plot shows the
+;;   x-axis label on both the main and the marginal panel.
+;; - **Plot-area edges may not line up** across composite siblings,
+;;   since each leaf computes its own chrome padding.
+;; - **Each sub-pose produces its own legend.**
+;; - **Nested composites use the explicit map form.** `pj/arrange`
+;;   takes leaf poses; for a row of rows or column of rows, write
+;;   the composite as an explicit map (the dashboard example above
+;;   shows the shape).
 
 ;; ## What's Next
 ;;

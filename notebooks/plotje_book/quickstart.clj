@@ -221,6 +221,7 @@
 
 ;; ## What's Next
 ;;
+;; - [**Datasets**](./plotje_book.datasets.html) -- what kinds of data Plotje accepts (tablecloth datasets, maps of vectors, sequences of row maps)
 ;; - [**Pose Model**](./plotje_book.pose_model.html) -- the mental model behind composable plotting
 ;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- data formats, marks, stats, color, grouping, coordinates
 ;; - [**Scatter Plots**](./plotje_book.scatter.html) -- the most common starting point for chart types
