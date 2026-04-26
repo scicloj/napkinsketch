@@ -32,9 +32,9 @@
 
 (kind/test-last [(fn [ds] (= 150 (count (tc/rows ds))))])
 
-;; The dataset has 150 rows and 5 columns. Four columns are
-;; **numerical** (measurements in centimeters) and one is
-;; **categorical** (the species name -- one of three strings).
+;; The dataset has 150 rows and 6 columns: a `:rownames` index plus
+;; four **numerical** measurements (in centimeters) and one
+;; **categorical** column (the species name -- one of three strings).
 ;;
 ;; This distinction matters: Plotje treats numerical and
 ;; categorical columns differently when choosing axes, colors, and
@@ -766,4 +766,5 @@ two-panel
 
 ;; ## What's Next
 ;;
+;; - [**Options and Scopes**](./plotje_book.options_and_scopes.html) -- where options live and how scope determines what they reach
 ;; - [**Pose Rules**](./plotje_book.pose_rules.html) -- 29 rules that formalize the model with tested assertions

@@ -164,8 +164,9 @@
 ;; on whether the cell is univariate (x = y) or bivariate. All panels
 ;; share the color aesthetic set at the composite root.
 ;;
-;; See the [Faceting](./plotje_book.faceting.html) chapter for
-;; more SPLOM variations, including brush selection.
+;; See the [Faceting](./plotje_book.faceting.html) chapter for more
+;; SPLOM variations, and the [Customization](./plotje_book.customization.html)
+;; chapter for brush selection.
 
 ;; ## What's Next
 ;;

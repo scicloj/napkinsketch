@@ -47,9 +47,8 @@ my-pose
 ;; ## Composite Pose
 ;;
 ;; A **composite pose** is a pose that contains other poses under
-;; `:poses` plus an optional `:layout`. Created by `pj/arrange` (and
-;; later, by `pj/mosaic` and `pj/with-marginals`). Its leaves render
-;; independently and are tiled into the final plot.
+;; `:poses` plus an optional `:layout`. Created by `pj/arrange`. Its
+;; leaves render independently and are tiled into the final plot.
 ;;
 ;; For hand-built composite maps (needed when you want features beyond
 ;; what `pj/arrange` offers -- unequal weights, nested poses,
@@ -291,10 +290,10 @@ my-pose
 ;; ## Pipeline
 ;;
 ;; The **pipeline** is the five-stage flow from user code to
-;; rendered output: `pose -> draft -> plan -> membrane -> figure`.
+;; rendered output: `pose -> draft -> plan -> membrane -> plot`.
 ;; A pose is what you compose; `pj/draft` flattens it into a vector
 ;; of maps; `pj/plan` resolves geometry and layout; the membrane
-;; layer turns the plan into drawable primitives; the figure is the
+;; layer turns the plan into drawable primitives; the plot is the
 ;; terminal SVG hiccup or PNG output. See the
 ;; [Architecture](./plotje_book.architecture.html) chapter for the
 ;; per-stage details.
@@ -384,10 +383,10 @@ my-pose
 ;; - `pj/facet` creates a row or column of panels
 ;; - `pj/facet-grid` creates a row-by-column grid from two columns
 ;;
-;; By default each panel has its own domains, derived from the data
-;; in that panel -- so scales are independent per panel. To force
-;; shared axis ranges across panels, pin the domain explicitly with
-;; `(pj/scale :x {:domain [lo hi]})` (and/or `:y`).
+;; By default all panels share the same x and y domains, derived
+;; from the full dataset (`:scales :shared`). To let each panel use
+;; its own data range, set `{:scales :free}` (or `:free-x`/`:free-y`)
+;; in `pj/options`.
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width)
@@ -579,11 +578,11 @@ my-pose
 ;; |:-----|:-----|:-------------|
 ;; | Pose | Composable value: data + mapping + layers (+ sub-poses) | All `pj/` functions return poses |
 ;; | Leaf pose | Pose describing one plot panel | `pj/pose`, `pj/lay-*` with columns |
-;; | Composite pose | Pose containing sub-poses and a layout | `pj/arrange`, `pj/facet`, `pj/facet-grid` |
+;; | Composite pose | Pose containing sub-poses and a layout | `pj/arrange` |
 ;; | Mapping | Column-to-aesthetic association on a pose or layer | `pj/pose` mapping, `pj/lay-*` opts |
 ;; | Layer | Layer type attached to a pose, optionally with scoped mappings | `pj/lay-*` |
 ;; | Dataset | Tabular data backing a plot (Tablecloth) | `:data` slot, `pj/with-data` |
-;; | Pipeline | Five-stage flow `pose -> draft -> plan -> membrane -> figure` | Architecture chapter |
+;; | Pipeline | Five-stage flow `pose -> draft -> plan -> membrane -> plot` | Architecture chapter |
 ;; | Sub-plot | One resolved sub-pose in a composite pose's plan | `:sub-plots` in plan |
 ;; | Resolve tree | Scope-merge walk: root mappings propagate to every leaf | Internal to `pj/plan` |
 ;; | Draft | Vector of flat maps from merging pose and layer mappings | `pj/draft`, automatic during `pj/plan` |

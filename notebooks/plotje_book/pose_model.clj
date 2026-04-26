@@ -36,8 +36,8 @@
 ;; onto the pose. A pose is what you arrange before drawing --
 ;; which columns become axes, which become aesthetics. Layers are
 ;; the visual elements you lay onto it: points, lines, smooths,
-;; bars. A composite pose extends to a scene with multiple
-;; arranged subjects, each available for its own layers.
+;; bars. A composite pose contains sub-poses arranged side by side,
+;; each able to carry its own layers.
 ;;
 ;; The simplest pose carries some data and picks columns. With no
 ;; explicit chart type, the library infers one from the column

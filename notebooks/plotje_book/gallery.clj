@@ -370,7 +370,7 @@
                            (and (pos? (:points s))
                                 (pos? (:lines s)))))])
 
-;; ## Multi-panel
+;; ## Multi-Panel
 
 ;; ### Faceted scatter
 ;; Source: [R Graph Gallery: Scatter Plot](https://r-graph-gallery.com/scatterplot.html)
@@ -710,8 +710,6 @@
 ;;
 ;; - **Marginal plots** -- side panels with density/histogram along scatter
 ;;   axes. Needs layout support for panels with different sizes.
-;;
-;; - **Free scales** -- faceted panels with independent y ranges.
 ;;
 ;; - **Gradient line** -- line where color varies along the path (e.g.,
 ;;   temperature over time). Needs per-segment coloring.

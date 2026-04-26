@@ -2,7 +2,7 @@
 ;;
 ;; **You do not need to know about datasets to plot with Plotje** --
 ;; you can pass plain Clojure data (maps, vectors of maps) directly.
-;; But understanding datasets is recommended background for three reasons:
+;; But understanding datasets is recommended background for four reasons:
 ;;
 ;; - **Performance**: datasets are columnar and backed by typed arrays.
 ;;   For large data (thousands of rows and above), they are significantly
