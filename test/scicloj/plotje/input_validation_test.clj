@@ -11,19 +11,19 @@
   (testing "(pj/pose nil) throws with helpful message"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
-         #"called with nil as data"
+         #"requires data, but got nil"
          (pj/pose nil))))
 
   (testing "(pj/lay-point nil :x :y) throws (via ensure-pose)"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
-         #"called with nil as data"
+         #"requires data, but got nil"
          (pj/lay-point nil :x :y))))
 
   (testing "(pj/options nil ...) throws (via ensure-pose)"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
-         #"called with nil as data"
+         #"requires data, but got nil"
          (pj/options nil {:title "x"}))))
 
   (testing "the empty-pose 0-arity is unaffected"
@@ -33,25 +33,25 @@
   (testing "(pj/pose 42) throws"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
-         #"as data"
+         #"requires data"
          (pj/pose 42))))
 
   (testing "(pj/pose \"hello\") throws"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
-         #"as data"
+         #"requires data"
          (pj/pose "hello"))))
 
   (testing "(pj/pose :a-keyword) throws"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
-         #"as data"
+         #"requires data"
          (pj/pose :a-keyword))))
 
   (testing "(pj/pose 42 :x :y) also throws (multi-arity rejects scalar)"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
-         #"as data"
+         #"requires data"
          (pj/pose 42 :x :y))))
 
   (testing "valid map data still works"
@@ -154,6 +154,48 @@
 
   (testing "(pj/lay-point ds :x :y {}) is accepted"
     (is (pj/pose? (pj/lay-point tiny :x :y {})))))
+
+(deftest error-messages-name-the-public-caller
+  (testing "error from pj/lay-point on nil names pj/lay-point, not the private helper"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"^pj/lay-point requires data"
+         (pj/lay-point nil :x :y))))
+
+  (testing "error from pj/options on nil names pj/options"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"^pj/options requires data"
+         (pj/options nil {:title "x"}))))
+
+  (testing "error from pj/save on nil names pj/save"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"^pj/save requires data"
+         (pj/save nil "/tmp/x.svg"))))
+
+  (testing "error from pj/draft on nil names pj/draft"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"^pj/draft requires data"
+         (pj/draft nil)))))
+
+(deftest save-rejects-nonexistent-parent-dir
+  (testing "pj/save into a nonexistent directory throws guidance, not raw IOException"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"parent directory .* does not exist"
+         (pj/save (pj/lay-point tiny :x :y)
+                  "/tmp/_plotje_no_such_dir_at_all/x.svg")))))
+
+(deftest strict-config-rejects-non-boolean
+  (testing "non-boolean :strict value throws at first read with explanation"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":strict config value must be true or false"
+         (pj/with-config {:strict :yes}
+           (pj/options (pj/lay-point tiny :x :y)
+                       {:nonexistent-key 1}))))))
 
 (deftest plot-on-plan-throws
   (testing "(pj/plot (pj/plan pose)) throws with helpful message"

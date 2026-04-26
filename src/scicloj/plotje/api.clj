@@ -235,12 +235,18 @@
 (defn- validate-pose-input!
   "Throw on nil or non-collection scalars when the caller needs real
    data. Used by ensure-pose and pj/pose 1-arity, where nil cannot
-   be a template (no mapping carries it forward)."
+   be a template (no mapping carries it forward).
+
+   `caller` is a public-facing function name (e.g. \"pj/pose\",
+   \"pj/lay-point\") used as the prefix in user-visible messages.
+   Internal helper names should never reach this argument -- the
+   error is shown to the end user, who never called the helper
+   directly."
   [caller x]
   (cond
     (nil? x)
     (throw (ex-info
-            (str caller " was called with nil as data. Pass a"
+            (str caller " requires data, but got nil. Pass a"
                  " tablecloth dataset, a map of {:column [values]},"
                  " or a sequence of row-maps; or use (pj/pose) for"
                  " an empty pose.")
@@ -250,8 +256,8 @@
          (not (map? x))
          (not (sequential? x)))
     (throw (ex-info
-            (str caller " was called with " (pr-str (type x))
-                 " as data: " (pr-str x)
+            (str caller " requires data, but got " (pr-str (type x))
+                 ": " (pr-str x)
                  ". Pass a tablecloth dataset, a map of {:column"
                  " [values]}, or a sequence of row-maps.")
             {:caller caller :value x :type (type x)}))))
@@ -267,8 +273,8 @@
              (not (map? x))
              (not (sequential? x)))
     (throw (ex-info
-            (str caller " was called with " (pr-str (type x))
-                 " as data: " (pr-str x)
+            (str caller " requires data, but got " (pr-str (type x))
+                 ": " (pr-str x)
                  ". Pass a tablecloth dataset, a map of {:column"
                  " [values]}, a sequence of row-maps, or nil"
                  " (template; attach data later via pj/with-data).")
@@ -319,14 +325,20 @@
    metadata is preserved by subsequent assoc/update calls in the
    lay-*/options/pose pipelines.
 
-   Throws on nil or non-collection scalars (via coerce-dataset).
-   Use (pj/pose) for an explicit empty leaf instead of passing nil."
-  [x]
-  (if (pose? x)
-    x
-    (do (validate-pose-input! "ensure-pose" x)
-        (let [d (coerce-dataset x)]
-          (prepare-pose (cond-> {:layers []} d (assoc :data d)))))))
+   Throws on nil or non-collection scalars (via validate-pose-input!).
+   Use (pj/pose) for an explicit empty leaf instead of passing nil.
+
+   `caller` (optional) is the public-facing function name shown in
+   error messages so the user sees \"pj/lay-point requires data...\"
+   instead of an internal helper name. Defaults to \"pj/pose\" since
+   most validation paths originate from a pose-shaped call."
+  ([x] (ensure-pose x "pj/pose"))
+  ([x caller]
+   (if (pose? x)
+     x
+     (do (validate-pose-input! caller x)
+         (let [d (coerce-dataset x)]
+           (prepare-pose (cond-> {:layers []} d (assoc :data d))))))))
 
 (def ^:private view-mapping-keys
   "Keys accepted in a pose mapping."
@@ -355,9 +367,17 @@
   [caller opts accepted]
   (if-not (and (map? opts) (seq opts))
     opts
-    (let [unknown (remove accepted (keys opts))]
+    (let [unknown (remove accepted (keys opts))
+          strict-val (:strict (defaults/config))]
+      (when-not (or (nil? strict-val) (boolean? strict-val))
+        (throw (ex-info (str ":strict config value must be true or false, got: "
+                             (pr-str strict-val) ". Truthy non-boolean values"
+                             " (keywords, strings, numbers) were silently"
+                             " treated as enabled in earlier releases; this"
+                             " is now an error.")
+                        {:value strict-val})))
       (if (seq unknown)
-        (if (:strict (defaults/config))
+        (if strict-val
           (throw (ex-info (str caller " does not recognize option(s): "
                                (vec unknown)
                                ". Accepted: " (vec (sort accepted))
@@ -877,7 +897,7 @@
    still overrides the top-level data.
    (with-data fr data)"
   [sk data]
-  (let [fr (ensure-pose sk)
+  (let [fr (ensure-pose sk "pj/with-data")
         ds (coerce-dataset data)]
     (when ds
       (validate-columns-present (column-refs-in-pose fr) ds))
@@ -1020,7 +1040,7 @@
    (lay sk-or-data layer-type-key nil))
   ([sk-or-data layer-type-key opts]
    (let [layer (build-layer layer-type-key opts)]
-     (update (ensure-pose sk-or-data) :layers (fnil conj []) layer))))
+     (update (ensure-pose sk-or-data "pj/lay") :layers (fnil conj []) layer))))
 
 (defn- x-only?
   "True if layer-type-key is registered as x-only (rejects :y column)."
@@ -1082,7 +1102,7 @@
    4-arity: bivariate layer with opts."
   ([layer-type-key sk-or-data]
    (let [was-raw? (not (pose? sk-or-data))
-         fr (ensure-pose sk-or-data)
+         fr (ensure-pose sk-or-data (str "pj/lay-" (name layer-type-key)))
          d (:data fr)]
      (if (and was-raw? d)
        ;; Raw-data 1-arity: auto-infer columns from the first 1-3 columns
@@ -1097,7 +1117,7 @@
                       layer-type-key nil nil))
        (lay-on-pose fr layer-type-key nil nil))))
   ([layer-type-key sk-or-data x-or-opts]
-   (let [fr (ensure-pose sk-or-data)]
+   (let [fr (ensure-pose sk-or-data (str "pj/lay-" (name layer-type-key)))]
      (cond
        (map? x-or-opts)
        (lay-on-pose fr layer-type-key nil x-or-opts)
@@ -1114,7 +1134,7 @@
        :else
        (lay-on-pose fr layer-type-key nil nil))))
   ([layer-type-key sk-or-data x y-or-opts]
-   (let [fr (ensure-pose sk-or-data)]
+   (let [fr (ensure-pose sk-or-data (str "pj/lay-" (name layer-type-key)))]
      (cond
        ;; Parallel vectors -> build a multi-panel composite via pj/pose
        ;; with paired x/y, then attach the bare layer at the root so it
@@ -1151,7 +1171,7 @@
                           " a map, e.g. {:color :species}.")
                      {:caller (str "pj/lay-" (name layer-type-key))
                       :value opts})))
-   (lay-on-pose (ensure-pose sk-or-data) layer-type-key {:x x :y y} opts)))
+   (lay-on-pose (ensure-pose sk-or-data (str "pj/lay-" (name layer-type-key))) layer-type-key {:x x :y y} opts)))
 
 (defn lay-point
   "Add a :point (scatter) layer to a pose.
@@ -1491,7 +1511,8 @@
                          (pr-str opts) ". Wrap plot-level options in"
                          " a map, e.g. {:title \"...\" :width 800}.")
                     {:caller "pj/options" :value opts})))
-  (let [opts (warn-and-strip-unknown-opts "pj/options" opts plot-options-keys)
+  (let [fr (ensure-pose sk "pj/options")
+        opts (warn-and-strip-unknown-opts "pj/options" opts plot-options-keys)
         opts (reduce (fn [m k]
                        (if-let [v (get m k)]
                          (let [rounded (long (Math/round (double v)))]
@@ -1503,7 +1524,7 @@
                          m))
                      opts
                      [:width :height])]
-    (update-opts sk deep-merge opts)))
+    (update-opts fr deep-merge opts)))
 
 (defn- reject-composite-for-facet
   "Throw if the input is a composite pose. Facet on composites would
@@ -1584,7 +1605,7 @@
    type fully determined.
    (draft fr)"
   [fr]
-  (pose/leaf->draft (ensure-pose fr)))
+  (pose/leaf->draft (ensure-pose fr "pj/draft")))
 
 (defn plan
   "Convert a pose into a plan. Each leaf is one panel. On a composite
@@ -1597,7 +1618,7 @@
      (throw (ex-info (str "pj/plan expects a pose, not a plan. "
                           "Use the plan directly, or call pj/plot on the pose.")
                      {:got :plan})))
-   (let [fr (ensure-pose sk)]
+   (let [fr (ensure-pose sk "pj/plan")]
      (if (pose/composite? fr)
        (compositor/composite->plan fr)
        (plan/draft->plan (pose/leaf->draft fr) (:opts fr {})))))
@@ -1631,7 +1652,7 @@
                           "pj/plan->plot on the plan, or pass the "
                           "original pose to pj/plot.")
                      {:got :plan})))
-   (let [fr (ensure-pose sk)
+   (let [fr (ensure-pose sk "pj/plot")
          fmt (or (:format (:opts fr)) :svg)]
      (ensure-renderer-loaded! fmt)
      (if (pose/composite? fr)
@@ -1813,7 +1834,7 @@
                           (pr-str opts) ".")
                      {:caller "pj/save" :value opts})))
    (let [path-str (str path)
-         fr (ensure-pose fr)
+         fr (ensure-pose fr "pj/save")
          _ (assert-saveable-pose! "pj/save" fr)
          fr (if (seq opts) (options fr opts) fr)
          path-fmt (infer-format-from-path path-str)
@@ -1822,6 +1843,13 @@
        (println (str "Warning: pj/save writing " (name resolved-fmt)
                      " bytes to a path with extension suggesting "
                      (name path-fmt) ": " path-str)))
+     (when-let [parent (.getParentFile (java.io.File. path-str))]
+       (when-not (.isDirectory parent)
+         (throw (ex-info (str "pj/save: cannot write to " path-str
+                              " -- parent directory " (.getPath parent)
+                              " does not exist. Create it first or pick"
+                              " an existing directory.")
+                         {:path path-str :parent (.getPath parent)}))))
      (ensure-renderer-loaded! resolved-fmt)
      (let [out (if (pose/composite? fr)
                  (compositor/composite->plot fr resolved-fmt)
