@@ -507,16 +507,18 @@ precedence-plot
 (kind/test-last [(fn [v] (false? v))])
 
 ;; `pj/explain-plan` pinpoints the problem.  The `:errors` key in
-;; the returned map shows exactly which path failed and why:
+;; the returned map shows exactly which path failed and why.  The
+;; `:in` key is the value-path (where in the plan the bad value
+;; lives); `:value` is the offending value:
 
 (-> (pj/explain-plan bad-plan)
     :errors
     first
-    (select-keys [:path :in :value]))
+    (select-keys [:in :value]))
 
 (kind/test-last
  [(fn [m]
-    (and (= [:width] (:path m))
+    (and (= [:width] (:in m))
          (= "not-a-number" (:value m))))])
 
 ;; With validation enabled (the default), `pj/plan` would throw

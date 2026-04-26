@@ -298,8 +298,9 @@
 
 ;; ---- Plan (top-level) ----
 
-(def PlanSchema
-  "A fully resolved plan.
+(def LeafPlanSchema
+  "A fully resolved leaf plan -- the geometry for a single
+   composable pose with one or more panels (one per facet variant).
    Data-space geometry, no membrane types, no datasets.
    Numeric arrays (xs, ys, etc.) may be dtype-next buffers."
   [:map
@@ -324,10 +325,59 @@
    [:panels [:vector Panel]]
    [:layout Layout]])
 
+(def Rect
+  "A pixel rectangle as `[x y w h]`."
+  [:vector {:min 4 :max 4} number?])
+
+(def SubPlot
+  "One entry in a CompositePlan's :sub-plots: a leaf plan placed at a
+   pose-tree path with its rect inside the composite."
+  [:map
+   [:path [:vector int?]]
+   [:rect Rect]
+   [:plan LeafPlanSchema]])
+
+(def CompositeChrome
+  "Resolved chrome geometry on a CompositePlan. All inputs the
+   plan->membrane CompositePlan defmethod needs to render -- title,
+   grid-rect, strip labels and dimensions, shared-legend spec, and
+   the per-leaf rect map."
+  [:map
+   [:title {:optional true} [:maybe string?]]
+   [:title-band-h number?]
+   [:grid-rect Rect]
+   [:legend-w number?]
+   [:strip-h number?]
+   [:strip-w number?]
+   [:col-labels [:vector any?]]
+   [:row-labels [:vector any?]]
+   [:n-cols int?]
+   [:n-rows int?]
+   [:matrix? boolean?]
+   [:shared-legend {:optional true}
+    [:maybe [:map
+             [:legend {:optional true} [:maybe Legend]]
+             [:size-legend {:optional true} [:maybe SizeLegend]]
+             [:alpha-legend {:optional true} [:maybe AlphaLegend]]]]]
+   [:layout [:map-of [:vector int?] Rect]]])
+
+(def CompositePlanSchema
+  "A fully resolved composite plan. Tiles per-leaf plans by rect with
+   shared chrome (title band, strip labels, shared legend) on top."
+  [:map
+   [:width pos-int?]
+   [:height pos-int?]
+   [:sub-plots [:vector SubPlot]]
+   [:chrome CompositeChrome]])
+
+(def PlanSchema
+  "Top-level plan schema -- accepts either shape."
+  [:or LeafPlanSchema CompositePlanSchema])
+
 ;; ---- Validation Helpers ----
 
 (defn valid?
-  "Check if a plan is valid."
+  "Check if a plan is valid (leaf or composite)."
   [plan]
   (m/validate PlanSchema plan))
 

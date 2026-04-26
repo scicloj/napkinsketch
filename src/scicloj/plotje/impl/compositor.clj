@@ -17,7 +17,6 @@
             [scicloj.plotje.impl.defaults :as defaults]
             [scicloj.plotje.impl.pose :as pose]
             [scicloj.plotje.impl.plan :as plan]
-            [scicloj.plotje.impl.render :as render-impl]
             [scicloj.plotje.impl.resolve :as resolve]
             [scicloj.plotje.render.membrane :as membrane])
   (:import [scicloj.plotje.impl.resolve CompositePlan]))
@@ -216,10 +215,8 @@
 
 (defn- resolve-composite-chrome
   "Compute the resolved leaves, layout map, and chrome geometry for a
-   composite pose. Shared by composite->plan and composite->plot so
-   both paths see the same dimensions and the same per-leaf opt
-   adjustments (:suppress-x-label / :suppress-y-label for matrix
-   layouts).
+   composite pose. Used by composite-pose->draft to produce the
+   sub-drafts and the chrome-spec.
 
    Returns:
      {:width  outer width
@@ -405,9 +402,7 @@
 ;; each sub-plot's leaf plan (dispatching to the LeafPlan method),
 ;; translates each result into the composite coordinate space, and
 ;; layers chrome drawables (title, strip labels, shared legend) on
-;; top. This is the slice-2 unification: the parallel implementation
-;; that lived inside composite->plot moves into the canonical
-;; pipeline as a defmethod.
+;; top.
 (defmethod membrane/plan->membrane CompositePlan
   [composite-plan & _opts]
   (let [{:keys [width sub-plots chrome]} composite-plan
@@ -448,17 +443,3 @@
                    title             (conj (title-drawable title width)))]
     (vec composed)))
 
-(defn composite->plot
-  "Render a composite pose by going through the canonical
-   `pose -> plan -> membrane -> plot` pipeline. The CompositePlan
-   defmethod of plan->membrane builds the tree (per-leaf trees +
-   chrome drawables); membrane->plot dispatches by format."
-  ([composite] (composite->plot composite :svg))
-  ([composite format]
-   (let [composite-plan (composite->plan composite)
-         tree (membrane/plan->membrane composite-plan)
-         opts (or (:opts composite) {})
-         render-opts (assoc opts
-                            :total-width (:width composite-plan)
-                            :total-height (:height composite-plan))]
-     (render-impl/membrane->plot tree format render-opts))))

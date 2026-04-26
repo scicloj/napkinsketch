@@ -260,6 +260,34 @@
       (is (= [0 30] (:domain leaf0-x-scale))
           "the shared domain is the union of each leaf's data range"))))
 
+(deftest composite-plan-validates-test
+  (testing "pj/valid-plan? returns true for a CompositePlan;
+            pj/explain-plan returns nil"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :poses [{:layers [{:layer-type :point}]}
+                             {:layers [{:layer-type :line}]}]}
+          p (pj/plan composite)]
+      (is (pj/valid-plan? p)
+          "a well-formed composite plan validates")
+      (is (nil? (pj/explain-plan p))
+          "explain-plan returns nil for a valid composite plan")))
+  (testing "schema rejects a malformed composite plan"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :poses [{:layers [{:layer-type :point}]}
+                             {:layers [{:layer-type :point}]}]}
+          p (pj/plan composite)
+          bad (assoc p :width "not-a-number")]
+      (is (false? (pj/valid-plan? bad))
+          "string width is rejected")
+      (is (some? (pj/explain-plan bad))
+          "explain-plan surfaces the error"))))
+
 ;; ============================================================
 ;; Composite shared scales (Phase 4 Slice C)
 ;; ============================================================

@@ -496,23 +496,23 @@
 
 
 (def
- v120_l512
+ v120_l514
  (->
   (pj/explain-plan bad-plan)
   :errors
   first
-  (select-keys [:path :in :value])))
+  (select-keys [:in :value])))
 
 
 (deftest
- t121_l517
+ t121_l519
  (is
-  ((fn [m] (and (= [:width] (:path m)) (= "not-a-number" (:value m))))
-   v120_l512)))
+  ((fn [m] (and (= [:width] (:in m)) (= "not-a-number" (:value m))))
+   v120_l514)))
 
 
 (def
- v123_l526
+ v123_l528
  (try
   (let
    [plan
@@ -530,19 +530,19 @@
 
 
 (deftest
- t124_l537
+ t124_l539
  (is
   ((fn
     [m]
     (and
      (:caught m)
      (= "Plan does not conform to schema" (:message m))))
-   v123_l526)))
+   v123_l528)))
 
 
-(def v126_l546 (pj/plan (base-plot) {:validate false}))
+(def v126_l548 (pj/plan (base-plot) {:validate false}))
 
 
 (deftest
- t127_l548
- (is ((fn [plan] (and (map? plan) (= 600 (:width plan)))) v126_l546)))
+ t127_l550
+ (is ((fn [plan] (and (map? plan) (= 600 (:width plan)))) v126_l548)))
