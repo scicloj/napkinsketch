@@ -601,7 +601,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><p><code>:x-label</code> is <code>"x"</code> – derived from the column keyword</p></li>
 <li><p><code>:legend</code> is <code>nil</code> – no color mapping</p></li>
 <li><p><code>:layout</code> has <code>:legend-w 0</code> – no space reserved for a legend</p></li>
-<li><p>The single layer has <code>:mark :point</code> and a single <code>:groups</code> entry with all 5 data points, colored in the default color (steel blue)</p></li>
+<li><p>The single layer has <code>:mark :point</code> and a single <code>:groups</code> entry with all 5 data points, colored in the default color (dark gray, <code>#333</code>)</p></li>
 </ul>
 <p>Each of those bullets is its own inference rule, with a default and an explicit override. The rest of the chapter walks them.</p>
 </section>
@@ -1112,7 +1112,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="no-color-default-gray" class="level3">
 <h3 class="anchored" data-anchor-id="no-color-default-gray">No color – default gray</h3>
-<p>Look back at the first scatter plan above – its single <code>:groups</code> entry has the default color (steel blue). No legend.</p>
+<p>Look back at the first scatter plan above – its single <code>:groups</code> entry has the default color (dark gray, <code>#333</code>). No legend.</p>
 </section>
 </section>
 <section id="grouping" class="level2">
@@ -2676,17 +2676,17 @@ graph TD
 <tr class="even">
 <td style="text-align: left;">Domain extent</td>
 <td style="text-align: left;">data range + 5% padding</td>
-<td style="text-align: left;"><code>(pj/scale sk :x {:domain [0 10]})</code></td>
+<td style="text-align: left;"><code>(pj/scale pose :x {:domain [0 10]})</code></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Domain zero-anchor</td>
 <td style="text-align: left;">bar/stacked charts include zero</td>
-<td style="text-align: left;"><code>(pj/scale sk :y {:domain [5 20]})</code></td>
+<td style="text-align: left;"><code>(pj/scale pose :y {:domain [5 20]})</code></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Fill domain</td>
 <td style="text-align: left;"><code>[0.0, 1.0]</code> for fill position</td>
-<td style="text-align: left;"><code>(pj/scale sk :y {:domain [0 2]})</code></td>
+<td style="text-align: left;"><code>(pj/scale pose :y {:domain [0 2]})</code></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Tick values</td>

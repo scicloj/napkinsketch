@@ -470,7 +470,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="idea-1-a-pose-describes-a-plot" class="level2">
 <h2 class="anchored" data-anchor-id="idea-1-a-pose-describes-a-plot">Idea 1: A pose describes a plot</h2>
-<p>In Plotje, every plot you compose is a <strong>pose</strong> – a plain Clojure value that describes what to show. Every function in the API takes a pose and returns a pose, so plots build up through ordinary <code>-&gt;</code> threading.</p>
+<p>In Plotje, every plot you compose is a <strong>pose</strong> – a plain Clojure value that describes what to show. The composition functions (<code>pj/pose</code>, <code>pj/lay-*</code>, <code>pj/options</code>, <code>pj/scale</code>, <code>pj/coord</code>, <code>pj/facet</code>, <code>pj/arrange</code>) all take a pose and return a pose, so plots build up through ordinary <code>-&gt;</code> threading. Output functions (<code>pj/plan</code>, <code>pj/plot</code>, <code>pj/save</code>, <code>pj/draft</code>) take a pose and return a different shape – a plan, an SVG, a file path – and so close the pipeline.</p>
 <p>The API has two verb-noun pairs working in parallel: <code>pj/pose</code> <em>poses</em> the data into a <em>pose</em>; <code>pj/lay-*</code> <em>lays</em> a <em>layer</em> onto the pose. A pose is what you arrange before drawing – which columns become axes, which become aesthetics. Layers are the visual elements you lay onto it: points, lines, smooths, bars. A composite pose extends to a scene with multiple arranged subjects, each available for its own layers.</p>
 <p>The simplest pose carries some data and picks columns. With no explicit chart type, the library infers one from the column types:</p>
 <div class="sourceClojure">
@@ -716,12 +716,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>|       <span class="dv">150</span> |           <span class="fl">5.9</span> |          <span class="fl">3.0</span> |           <span class="fl">5.1</span> |          <span class="fl">1.8</span> | virginica |</span>
 <span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The principle: <strong><code>resolved</code> = <code>(or your-choice (inferred-from-data))</code></strong>.</p>
+<p>The principle: <strong>the inferred value fills in only when you have not specified one yourself.</strong> Explicit choices flow down the pose tree and override inference. (One subtlety: an explicit <code>nil</code> is a real choice and cancels inheritance – it does not fall back to inference. See Pose Rule S3 for the precise semantics.)</p>
 <p>This works for marks (the shape shown, like points or bars), stats (the computation before rendering, like binning), color types, and grouping. See <a href="./plotje_book.inference_rules.html">Inference Rules</a> for the full set.</p>
 </section>
 <section id="idea-5-poses-compose" class="level2">
 <h2 class="anchored" data-anchor-id="idea-5-poses-compose">Idea 5: Poses compose</h2>
-<p>Every function in the API takes a pose and returns a pose. A <strong>composite</strong> pose is a plain map too – with <code>:poses</code> holding its sub-poses and <code>:layout</code> describing how to tile them. Here is a two-panel composite written as an explicit map:</p>
+<p>Composition functions take a pose and return a pose. A <strong>composite</strong> pose is a plain map too – with <code>:poses</code> holding its sub-poses and <code>:layout</code> describing how to tile them. Here is a two-panel composite written as an explicit map:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> two-panel</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  (pj/prepare-pose</span>
