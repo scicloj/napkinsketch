@@ -340,8 +340,9 @@
          (let [d (coerce-dataset x)]
            (prepare-pose (cond-> {:layers []} d (assoc :data d))))))))
 
-(def ^:private view-mapping-keys
-  "Keys accepted in a pose mapping."
+(def ^:private pose-mapping-keys
+  "Keys accepted in a pose mapping (column refs + per-pose
+   data override + type-classification overrides)."
   (into defaults/column-keys #{:data :color-type :x-type :y-type}))
 
 (def ^:private plot-options-keys
@@ -787,7 +788,7 @@
      :else
      (if (map? y)
        (let [opts      (or (warn-and-strip-unknown-opts
-                            "pj/pose" y view-mapping-keys)
+                            "pj/pose" y pose-mapping-keys)
                            {})
              data-over (:data opts)
              mapping   (dissoc opts :data)]
@@ -804,7 +805,7 @@
    (when-not (pose? x) (validate-template-data! "pj/pose" x))
    (if (map? z)
      ;; (pj/pose data x-col opts-map) -- univariate position plus opts
-     (let [opts      (warn-and-strip-unknown-opts "pj/pose" z view-mapping-keys)
+     (let [opts      (warn-and-strip-unknown-opts "pj/pose" z pose-mapping-keys)
            data-over (:data opts)
            mapping   (-> opts (dissoc :data) (merge {:x y}))]
        (check-position-mapping "pj/pose" mapping)
@@ -825,7 +826,7 @@
                   (pr-str opts) ". Wrap aesthetic options in a map,"
                   " e.g. {:color :species}.")
              {:caller "pj/pose" :value opts})))
-   (let [opts      (warn-and-strip-unknown-opts "pj/pose" opts view-mapping-keys)
+   (let [opts      (warn-and-strip-unknown-opts "pj/pose" opts pose-mapping-keys)
          data-over (:data opts)
          mapping   (-> opts (dissoc :data) (merge {:x y :y z}))]
      (check-position-mapping "pj/pose" mapping)
@@ -919,7 +920,7 @@
                            " in a " context "'s options map.")
                       fk)))))
 
-(defn- add-view-layer-to-composite
+(defn- add-leaf-layer-to-composite
   "Walk the composite depth-first and append the layer to the last
    leaf whose effective :x/:y (after ancestor-merge) match
    `position-mapping`. On miss, append a fresh leaf at the root level."
@@ -1051,13 +1052,13 @@
   "Append a layer to a pose following the DFS-last identity rule.
 
    Composite + position: the layer lands on the last leaf whose
-   effective :x/:y match (via add-view-layer-to-composite), or a
+   effective :x/:y match (via add-leaf-layer-to-composite), or a
    fresh sub-pose is appended at the root.
 
    Leaf whose own :mapping has no :x/:y, called with a position:
    extend the leaf's :mapping with the position and append a bare
-   layer. (Matches the old view-creation semantics where a
-   position-bearing lay-* on a bare pose sets the pose's position.)
+   layer. A position-bearing lay-* on a bare pose sets the pose's
+   position.
 
    Leaf whose own :mapping already has position, called with a
    position: append a layer carrying its own :mapping so downstream
@@ -1070,7 +1071,7 @@
         pose-pos? (or (:x (:mapping fr)) (:y (:mapping fr)))]
     (cond
       (and (pose/composite? fr) (seq position-mapping))
-      (add-view-layer-to-composite fr position-mapping bare-layer)
+      (add-leaf-layer-to-composite fr position-mapping bare-layer)
 
       (and (seq position-mapping) (not pose-pos?))
       (-> fr

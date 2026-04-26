@@ -947,34 +947,21 @@
          ;; literal :alpha (number); column-mapped aesthetics are
          ;; silently dropped (annotations don't participate in
          ;; column-mapped scales).
-         ;; Legacy: :__sketch-scope was set by impl/sketch.clj's
-         ;; draft emitter; pose/leaf->draft does not stamp it, so
-         ;; the sketch-scope filter returns an empty vec today. Kept
-         ;; defensively in case a caller hand-builds a draft.
          clean-aesthetics (fn [m]
                             (cond-> m
                               (not (string? (:color m))) (dissoc :color)
                               (not (number? (:alpha m))) (dissoc :alpha)))
          annotation-position-keys [:y-intercept :x-intercept :y-min :y-max :x-min :x-max]
-         sketch-scope-anns (->> layer-annotations
-                                (filter :__sketch-scope)
-                                (map #(-> %
-                                          (select-keys (into [:mark :color :alpha] annotation-position-keys))
-                                          clean-aesthetics))
-                                distinct
-                                vec)
-         ;; View-scope annotations also cross-product when a view is
-         ;; expanded by pj/facet (one identical copy per facet panel).
-         ;; Dedup by content so finalize-panel matches a single
-         ;; annotation against every panel that shares the view's x/y.
-         view-scope-anns (->> layer-annotations
-                              (remove :__sketch-scope)
-                              (map #(-> %
-                                        (select-keys (into [:mark :color :alpha :x :y] annotation-position-keys))
-                                        clean-aesthetics))
-                              distinct
-                              vec)
-         annotations (into sketch-scope-anns view-scope-anns)
+         ;; Annotations cross-product when a leaf is expanded by
+         ;; pj/facet (one identical copy per facet panel). Dedup by
+         ;; content so finalize-panel matches a single annotation
+         ;; against every panel that shares the leaf's x/y.
+         annotations (->> layer-annotations
+                          (map #(-> %
+                                    (select-keys (into [:mark :color :alpha :x :y] annotation-position-keys))
+                                    clean-aesthetics))
+                          distinct
+                          vec)
 
          ;; --- Phase 1: compute stats for every panel (no pixel math) ---
          tagged-by-idx (group-by :__entry-idx tagged-draft-layers)
