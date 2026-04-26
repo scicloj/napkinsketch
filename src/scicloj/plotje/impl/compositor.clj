@@ -48,14 +48,6 @@
                y-dom (update :y-scale domain->scale-entry y-dom)))
       leaf)))
 
-(defn- leaf->plan
-  [leaf [_ _ rw rh]]
-  (let [leaf (apply-shared-scale-domains leaf)
-        leaf-opts (assoc (or (:opts leaf) {})
-                         :width (max 1 (long-or rw 1))
-                         :height (max 1 (long-or rh 1)))]
-    (plan/draft->plan (pose/leaf->draft leaf) leaf-opts)))
-
 (defn- outer-dimensions
   [pose]
   (let [opts (or (:opts pose) {})]
@@ -198,22 +190,6 @@
                          (assoc (ui/label label (ui/font nil grid-strip-font-size))
                                 :text-anchor "middle"))))))))
 
-(defn- rep-leaf-plan
-  "Build a plan for the first resolved leaf with :suppress-legend
-   removed, so the plan carries legend data. Returns the plan or
-   nil if there are no leaves.
-
-   Uses a comfortably large :width/:height so the plan's layout math
-   always succeeds -- we only consume :legend/:size-legend/:alpha-legend
-   from the returned plan, not its panel geometry."
-  [leaves]
-  (when-let [first-leaf (first leaves)]
-    (let [leaf (apply-shared-scale-domains first-leaf)
-          leaf-opts (-> (or (:opts leaf) {})
-                        (dissoc :suppress-legend)
-                        (assoc :width 600 :height 400))]
-      (plan/draft->plan (pose/leaf->draft leaf) leaf-opts))))
-
 (defn- shared-legend-drawables
   "Build membrane drawables for the shared legend positioned at
    (legend-x, legend-y-top). Takes the representative plan's legend
@@ -331,38 +307,79 @@
      :shared? shared?
      :chrome chrome}))
 
-(defn composite->plan
-  "Return a CompositePlan record carrying :width :height :sub-plots
-   :chrome. :sub-plots is a vector of {:path :rect :plan}, one per
-   resolved leaf at its rect inside the composite. :chrome carries the
-   resolved geometry (title-band height, grid-rect, strip labels and
-   their dimensions, shared-legend spec when present) needed to render
-   the composite as a single figure -- so plan->membrane is a pure
-   plan-consumer that does not need the original pose.
+(defn composite-pose->draft
+  "Resolve a composite pose into a CompositeDraft. Each sub-draft entry
+   carries the leaf's path, its rect inside the composite, the
+   contextualized leaf draft (shared-scale domains injected,
+   per-leaf opts adjusted), and the per-leaf opts (width/height
+   merged from the rect).
 
-   The defrecord carries `:composite?` true for back-compat with code
-   that treated the previous flagged-Plan shape as the composite
-   indicator."
+   Per-leaf draft contextualization happens here, not at plan stage:
+     - Shared-scale domains are stamped via inject-shared-scales /
+       apply-shared-scale-domains, so per-leaf drafts carry forced
+       :x-scale / :y-scale.
+     - Matrix-layout strip labels suppress the per-leaf x-label /
+       y-label (so axis labels appear only on the strip, not inside
+       each cell).
+
+   The chrome-spec captures the resolved chrome geometry for the
+   composite as a whole; the layout map (path -> rect) is kept as a
+   first-class field on the CompositeDraft so downstream stages do
+   not need to recompute layout from the original pose tree."
   [composite]
   (let [{:keys [width height leaves layout shared? chrome]}
         (resolve-composite-chrome composite)
-        sub-plots (mapv (fn [leaf]
-                          (let [rect (get layout (:path leaf))]
-                            {:path (:path leaf)
-                             :rect rect
-                             :plan (leaf->plan leaf rect)}))
-                        leaves)
-        ;; Compute shared-legend spec once if the composite carries a
-        ;; legend-producing aesthetic. Stored in chrome so plan->membrane
-        ;; renders without re-resolving (eliminates the rep-leaf-plan
-        ;; N+1 issue).
-        shared-legend (when shared?
-                        (when-let [rep-plan (rep-leaf-plan leaves)]
-                          (select-keys rep-plan
-                                       [:legend :size-legend :alpha-legend])))
-        chrome (assoc chrome :shared-legend shared-legend)]
+        sub-drafts (mapv (fn [leaf]
+                           (let [rect (get layout (:path leaf))
+                                 [_ _ rw rh] rect
+                                 leaf' (apply-shared-scale-domains leaf)
+                                 leaf-opts (assoc (or (:opts leaf') {})
+                                                  :width (max 1 (long-or rw 1))
+                                                  :height (max 1 (long-or rh 1)))
+                                 draft (pose/leaf->draft leaf')]
+                             {:path (:path leaf)
+                              :rect rect
+                              :draft draft
+                              :opts leaf-opts}))
+                         leaves)
+        chrome-spec (assoc chrome :shared? shared?)]
+    (resolve/->CompositeDraft width height sub-drafts chrome-spec layout)))
+
+(defn composite-draft->plan
+  "Convert a CompositeDraft into a CompositePlan. Per sub-draft, this
+   calls draft->plan to produce a leaf plan and wraps it with its rect
+   and path in :sub-plots. The shared-legend spec is computed once
+   from a representative leaf draft (eliminating the rep-leaf-plan
+   N+1 issue from the round-2 internals review)."
+  [composite-draft]
+  (let [{:keys [width height sub-drafts chrome-spec layout]} composite-draft
+        sub-plots (mapv (fn [{:keys [path rect draft opts]}]
+                          {:path path
+                           :rect rect
+                           :plan (plan/draft->plan draft opts)})
+                        sub-drafts)
+        shared-legend (when (:shared? chrome-spec)
+                        (when-let [first-sub (first sub-drafts)]
+                          (let [rep-opts (-> (:opts first-sub)
+                                             (dissoc :suppress-legend)
+                                             (assoc :width 600 :height 400))
+                                rep-plan (plan/draft->plan (:draft first-sub) rep-opts)]
+                            (select-keys rep-plan
+                                         [:legend :size-legend :alpha-legend]))))
+        chrome (-> chrome-spec
+                   (dissoc :shared?)
+                   (assoc :shared-legend shared-legend)
+                   (assoc :layout layout))]
     (assoc (resolve/->CompositePlan width height sub-plots chrome)
            :composite? true)))
+
+(defn composite->plan
+  "Compose pose -> draft -> plan for a composite pose. Returns a
+   CompositePlan. The defrecord carries `:composite?` true for
+   back-compat with code that treated the previous flagged-Plan shape
+   as the composite indicator."
+  [composite]
+  (composite-draft->plan (composite-pose->draft composite)))
 
 ;; ---- plan->membrane dispatch for composites ----
 ;;

@@ -207,6 +207,60 @@
              (mapv :path (:sub-plots p)))))))
 
 ;; ============================================================
+;; Composite drafts (Slice 3 of the composite-pipeline-seam refactor)
+;; ============================================================
+;;
+;; pj/draft on a composite returns a CompositeDraft -- a record with
+;; :sub-drafts (one entry per resolved leaf, each carrying :path :rect
+;; :draft :opts), :chrome-spec (the resolved chrome geometry inputs),
+;; and :layout (path -> rect). Per-leaf drafts inside :sub-drafts are
+;; contextualized: shared-scale domains have been injected and the
+;; composite has applied any chrome-driven leaf-opt adjustments.
+
+(deftest composite-draft-shape-test
+  (testing "pj/draft on a composite returns a CompositeDraft"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :poses [{:layers [{:layer-type :point}]}
+                             {:layers [{:layer-type :line}]}]}
+          d (pj/draft composite)]
+      (is (= "scicloj.plotje.impl.resolve.CompositeDraft"
+             (.getName (class d)))
+          "draft is a CompositeDraft record")
+      (is (= 2 (count (:sub-drafts d)))
+          "one :sub-drafts entry per leaf")
+      (is (every? (fn [sd] (every? (set (keys sd)) [:path :rect :draft :opts]))
+                  (:sub-drafts d))
+          "each sub-draft carries :path :rect :draft :opts")
+      (is (every? vector? (map :draft (:sub-drafts d)))
+          "each :draft is a vector of layer maps")
+      (is (= [[0] [1]] (mapv :path (:sub-drafts d)))
+          "DFS paths in order"))))
+
+(deftest composite-draft-contextualizes-shared-scales-test
+  (testing "shared-scale injection runs at draft emission, so per-leaf
+            drafts inside :sub-drafts already carry forced :x-scale"
+    (let [ds-a (tc/dataset {:x [0 1 2] :y [1 2 3]})
+          ds-b (tc/dataset {:x [10 20 30] :y [1 2 3]})
+          composite {:share-scales #{:x}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :poses [{:data ds-a :mapping {:x :x :y :y}
+                              :layers [{:layer-type :point}]}
+                             {:data ds-b :mapping {:x :x :y :y}
+                              :layers [{:layer-type :point}]}]}
+          d (pj/draft composite)
+          ;; Each leaf's draft entries should now carry :x-scale with
+          ;; the shared domain [0 30], not their own narrow domains.
+          leaf0-x-scale (-> d :sub-drafts (get 0) :draft first :x-scale)
+          leaf1-x-scale (-> d :sub-drafts (get 1) :draft first :x-scale)]
+      (is (= leaf0-x-scale leaf1-x-scale)
+          "both per-leaf drafts carry the same :x-scale")
+      (is (= [0 30] (:domain leaf0-x-scale))
+          "the shared domain is the union of each leaf's data range"))))
+
+;; ============================================================
 ;; Composite shared scales (Phase 4 Slice C)
 ;; ============================================================
 ;;

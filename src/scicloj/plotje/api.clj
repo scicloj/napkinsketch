@@ -1638,12 +1638,18 @@
   (update-opts pose assoc :coord coord-type))
 
 (defn draft
-  "Flatten a leaf pose into a draft -- a vector of flat maps, one per
-   applicable layer, with all scope merged: data, mappings, and layer
-   type fully determined.
+  "Resolve a pose into a draft. For a leaf pose, returns a vector of
+   flat maps -- one per applicable layer, with all scope merged: data,
+   mappings, and layer type fully determined. For a composite pose,
+   returns a CompositeDraft carrying per-leaf drafts (each
+   contextualized -- shared-scale domains injected, suppress-* flags
+   applied), the resolved chrome geometry, and the layout (path -> rect).
    (draft pose)"
   [pose]
-  (pose/leaf->draft (ensure-pose pose "pj/draft")))
+  (let [fr (ensure-pose pose "pj/draft")]
+    (if (pose/composite? fr)
+      (compositor/composite-pose->draft fr)
+      (pose/leaf->draft fr))))
 
 (defn plan
   "Convert a pose into a plan. Each leaf is one panel. On a composite

@@ -75,6 +75,8 @@
 
 (defrecord CompositePlan [width height sub-plots chrome])
 
+(defrecord CompositeDraft [width height sub-drafts chrome-spec layout])
+
 (defn leaf-plan?
   "True if x is a leaf plan (single-pose resolved geometry)."
   [x]
@@ -89,6 +91,11 @@
   "True if x is a plan (leaf or composite)."
   [x]
   (or (leaf-plan? x) (composite-plan? x)))
+
+(defn composite-draft?
+  "True if x is a composite draft (a tree of sub-drafts with chrome-spec)."
+  [x]
+  (instance? CompositeDraft x))
 
 (defrecord Layer [mark style])
 
