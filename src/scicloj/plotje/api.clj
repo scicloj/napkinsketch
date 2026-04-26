@@ -1652,9 +1652,12 @@
       (pose/leaf->draft fr))))
 
 (defn plan
-  "Convert a pose into a plan. Each leaf is one panel. On a composite
-   pose, returns a wrapper plan with :composite? true and :sub-plots
-   tying each leaf path to its rect and sub-plan.
+  "Convert a pose into a plan. For a leaf pose, returns a `Plan`
+   record with one panel per facet variant. For a composite pose,
+   returns a `CompositePlan` record with `:sub-plots` tying each leaf
+   path to its rect and sub-plan, plus `:chrome` carrying the
+   resolved layout geometry (title-band, grid-rect, strip labels,
+   shared-legend spec).
    (plan pose)
    (plan pose {:title \"My Plot\"})"
   ([pose]
@@ -1663,9 +1666,7 @@
                           "Use the plan directly, or call pj/plot on the pose.")
                      {:got :plan})))
    (let [fr (ensure-pose pose "pj/plan")]
-     (if (pose/composite? fr)
-       (compositor/composite->plan fr)
-       (plan/draft->plan (pose/leaf->draft fr) (:opts fr {})))))
+     (compositor/pose->plan fr (:opts fr {}))))
   ([pose opts]
    (plan (options pose opts))))
 
@@ -1685,7 +1686,10 @@
    which `plan->plot` / `membrane->plot` defmethod runs.
 
    On a composite pose, leaves are rendered individually and tiled
-   via the compositor's layout, in the same chosen format.
+   via the layout in the resolved chrome, in the same chosen format.
+   The pose flows through the canonical
+   `pose -> draft -> plan -> membrane -> plot` pipeline for both
+   leaf and composite shapes.
    (plot pose)
    (plot pose {:width 800 :title \"My Plot\"})
    (plot pose {:format :bufimg})  ;; returns a BufferedImage"
@@ -1699,9 +1703,7 @@
    (let [fr (ensure-pose pose "pj/plot")
          fmt (or (:format (:opts fr)) :svg)]
      (ensure-renderer-loaded! fmt)
-     (if (pose/composite? fr)
-       (compositor/composite->plot fr fmt)
-       (render-impl/plan->plot (plan fr) fmt (:opts fr {})))))
+     (render-impl/plan->plot (plan fr) fmt (:opts fr {}))))
   ([pose opts]
    (plot (options pose opts))))
 
@@ -1895,9 +1897,7 @@
                               " an existing directory.")
                          {:path path-str :parent (.getPath parent)}))))
      (ensure-renderer-loaded! resolved-fmt)
-     (let [out (if (pose/composite? fr)
-                 (compositor/composite->plot fr resolved-fmt)
-                 (render-impl/plan->plot (plan fr) resolved-fmt (:opts fr {})))]
+     (let [out (render-impl/plan->plot (plan fr) resolved-fmt (:opts fr {}))]
        (case resolved-fmt
          :svg    (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                                  (svg/hiccup->svg-str out)))

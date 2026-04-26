@@ -371,7 +371,15 @@
                    (assoc :shared-legend shared-legend)
                    (assoc :layout layout))]
     (assoc (resolve/->CompositePlan width height sub-plots chrome)
-           :composite? true)))
+           :composite? true
+           ;; Mirror the LeafPlan keys read by the plan->plot
+           ;; defmethods (render/svg.clj, render/bufimg.clj) -- these
+           ;; are how render-opts flow into membrane->plot. Without
+           ;; them, plan->plot on a CompositePlan would build a
+           ;; figure with no title and zero outer dimensions.
+           :total-width width
+           :total-height height
+           :title (:title chrome))))
 
 (defn composite->plan
   "Compose pose -> draft -> plan for a composite pose. Returns a
@@ -380,6 +388,16 @@
    as the composite indicator."
   [composite]
   (composite-draft->plan (composite-pose->draft composite)))
+
+(defn pose->plan
+  "Single entry point that resolves any pose into a plan -- LeafPlan
+   for leaves, CompositePlan for composites. Public-API entry points
+   (`pj/plan`, `pj/plot`, `pj/save`) call through here so the
+   shape-dispatch happens in one place."
+  [pose opts]
+  (if (pose/composite? pose)
+    (composite->plan pose)
+    (plan/draft->plan (pose/leaf->draft pose) opts)))
 
 ;; ---- plan->membrane dispatch for composites ----
 ;;
