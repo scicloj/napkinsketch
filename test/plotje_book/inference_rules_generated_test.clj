@@ -31,16 +31,19 @@
  t10_l54
  (is
   ((fn
-    [pl]
+    [plan]
     (and
-     (= :single (:layout-type pl))
-     (= 1 (count (:panels pl)))
-     (= "x" (:x-label pl))
-     (= "y" (:y-label pl))
-     (nil? (:legend pl))
-     (zero? (get-in pl [:layout :legend-w]))
+     (= :single (:layout-type plan))
+     (= 1 (count (:panels plan)))
+     (= "x" (:x-label plan))
+     (= "y" (:y-label plan))
+     (nil? (:legend plan))
+     (zero? (get-in plan [:layout :legend-w]))
      (let
-      [p (first (:panels pl)) g (first (:groups (first (:layers p))))]
+      [p
+       (first (:panels plan))
+       g
+       (first (:groups (first (:layers p))))]
       (and
        (= :linear (get-in p [:x-scale :type]))
        (= 1 (count (:groups (first (:layers p)))))
@@ -107,8 +110,8 @@
  t26_l163
  (is
   ((fn
-    [fr]
-    (and (= {:x :x, :y :y} (:mapping fr)) (empty? (:layers fr))))
+    [pose]
+    (and (= {:x :x, :y :y} (:mapping pose)) (empty? (:layers pose))))
    v25_l161)))
 
 
@@ -151,9 +154,9 @@
  t37_l218
  (is
   ((fn
-    [pl]
+    [plan]
     (let
-     [p (first (:panels pl))]
+     [p (first (:panels plan))]
      (and
       (= ["cat" "dog" "bird" "fish"] (:x-domain p))
       (true? (:categorical? (:x-ticks p))))))
@@ -244,13 +247,13 @@
  t55_l304
  (is
   ((fn
-    [pl]
+    [plan]
     (let
-     [layer (first (:layers (first (:panels pl))))]
+     [layer (first (:layers (first (:panels plan))))]
      (and
       (= 2 (count (:groups layer)))
-      (some? (:legend pl))
-      (= 100 (get-in pl [:layout :legend-w])))))
+      (some? (:legend plan))
+      (= 100 (get-in plan [:layout :legend-w])))))
    v54_l302)))
 
 
@@ -276,13 +279,13 @@
  t62_l330
  (is
   ((fn
-    [pl]
+    [plan]
     (and
-     (nil? (:legend pl))
-     (zero? (get-in pl [:layout :legend-w]))
+     (nil? (:legend plan))
+     (zero? (get-in plan [:layout :legend-w]))
      (let
       [layer
-       (first (:layers (first (:panels pl))))
+       (first (:layers (first (:panels plan))))
        c
        (:color (first (:groups layer)))]
       (and
@@ -317,10 +320,11 @@
 (def
  v69_l385
  (let
-  [pl (pj/plan red-color-pose)]
-  {:legend (:legend pl),
+  [plan (pj/plan red-color-pose)]
+  {:legend (:legend plan),
    :color
-   (:color (first (:groups (first (:layers (first (:panels pl)))))))}))
+   (:color
+    (first (:groups (first (:layers (first (:panels plan)))))))}))
 
 
 (deftest
@@ -336,13 +340,13 @@
 (def
  v73_l421
  (let
-  [pl
+  [plan
    (pj/plan colored-pose)
    layer
-   (first (:layers (first (:panels pl))))]
+   (first (:layers (first (:panels plan))))]
   {:group-count (count (:groups layer)),
    :group-labels (mapv :label (:groups layer)),
-   :has-legend? (some? (:legend pl))}))
+   :has-legend? (some? (:legend plan))}))
 
 
 (deftest
@@ -372,13 +376,13 @@
 (def
  v78_l449
  (let
-  [pl
+  [plan
    (pj/plan numeric-color-pose)
    layer
-   (first (:layers (first (:panels pl))))]
+   (first (:layers (first (:panels plan))))]
   {:group-count (count (:groups layer)),
-   :legend-type (:type (:legend pl)),
-   :color-stops (count (:stops (:legend pl)))}))
+   :legend-type (:type (:legend plan)),
+   :color-stops (count (:stops (:legend plan)))}))
 
 
 (deftest
@@ -415,12 +419,12 @@
 (def
  v85_l486
  (let
-  [pl
+  [plan
    (pj/plan study-continuous-pose)
    layer
-   (first (:layers (first (:panels pl))))]
+   (first (:layers (first (:panels plan))))]
   {:group-count (count (:groups layer)),
-   :legend-type (:type (:legend pl))}))
+   :legend-type (:type (:legend plan))}))
 
 
 (deftest
@@ -450,12 +454,12 @@
 (def
  v90_l503
  (let
-  [pl
+  [plan
    (pj/plan study-categorical-pose)
    layer
-   (first (:layers (first (:panels pl))))]
+   (first (:layers (first (:panels plan))))]
   {:group-count (count (:groups layer)),
-   :legend-entries (count (:entries (:legend pl)))}))
+   :legend-entries (count (:entries (:legend plan)))}))
 
 
 (deftest
@@ -507,12 +511,12 @@
 (def
  v99_l545
  (let
-  [pl
+  [plan
    (pj/plan explicit-group-pose)
    layer
-   (first (:layers (first (:panels pl))))]
+   (first (:layers (first (:panels plan))))]
   {:group-count (count (:groups layer)),
-   :has-legend? (some? (:legend pl))}))
+   :has-legend? (some? (:legend plan))}))
 
 
 (deftest
@@ -580,9 +584,9 @@
  t113_l637
  (is
   ((fn
-    [pl]
+    [plan]
     (let
-     [layer (first (:layers (first (:panels pl))))]
+     [layer (first (:layers (first (:panels plan))))]
      (= :bar (:mark layer))))
    v112_l635)))
 
@@ -616,9 +620,9 @@
  t120_l659
  (is
   ((fn
-    [pl]
+    [plan]
     (let
-     [layer (first (:layers (first (:panels pl))))]
+     [layer (first (:layers (first (:panels plan))))]
      (= :bar (:mark layer))))
    v119_l657)))
 
@@ -641,9 +645,9 @@
  t127_l676
  (is
   ((fn
-    [pl]
+    [plan]
     (let
-     [layer (first (:layers (first (:panels pl))))]
+     [layer (first (:layers (first (:panels plan))))]
      (= :rect (:mark layer))))
    v126_l674)))
 
@@ -666,9 +670,9 @@
  t134_l696
  (is
   ((fn
-    [pl]
+    [plan]
     (let
-     [layer (first (:layers (first (:panels pl))))]
+     [layer (first (:layers (first (:panels plan))))]
      (= :point (:mark layer))))
    v133_l694)))
 
@@ -701,9 +705,9 @@
  t141_l715
  (is
   ((fn
-    [pl]
+    [plan]
     (let
-     [layer (first (:layers (first (:panels pl))))]
+     [layer (first (:layers (first (:panels plan))))]
      (= :line (:mark layer))))
    v140_l713)))
 
@@ -733,9 +737,9 @@
  t148_l734
  (is
   ((fn
-    [pl]
+    [plan]
     (let
-     [layer (first (:layers (first (:panels pl))))]
+     [layer (first (:layers (first (:panels plan))))]
      (and (= :boxplot (:mark layer)) (= 3 (count (:boxes layer))))))
    v147_l732)))
 
@@ -765,9 +769,9 @@
  t155_l754
  (is
   ((fn
-    [pl]
+    [plan]
     (let
-     [layer (first (:layers (first (:panels pl))))]
+     [layer (first (:layers (first (:panels plan))))]
      (and (= :boxplot (:mark layer)) (= 3 (count (:boxes layer))))))
    v154_l752)))
 
@@ -778,7 +782,7 @@
 (def
  v158_l766
  (let
-  [pl (pj/plan scatter-pose) p (first (:panels pl))]
+  [plan (pj/plan scatter-pose) p (first (:panels plan))]
   {:x-domain (:x-domain p),
    :data-range [1.0 5.0],
    :padding-each-side (* 0.05 (- 5.0 1.0))}))
@@ -802,7 +806,7 @@
 (def
  v162_l784
  (let
-  [pl (pj/plan bar-pose) p (first (:panels pl))]
+  [plan (pj/plan bar-pose) p (first (:panels plan))]
   {:y-domain (:y-domain p)}))
 
 
@@ -837,7 +841,7 @@
 (def
  v171_l826
  (let
-  [pl (pj/plan scatter-pose) p (first (:panels pl))]
+  [plan (pj/plan scatter-pose) p (first (:panels plan))]
   {:x-tick-values (:values (:x-ticks p)),
    :x-tick-labels (:labels (:x-ticks p))}))
 
@@ -871,7 +875,7 @@
 (def
  v176_l848
  (let
-  [pl (pj/plan log-scale-pose) p (first (:panels pl))]
+  [plan (pj/plan log-scale-pose) p (first (:panels plan))]
   {:tick-values (:values (:x-ticks p)),
    :tick-labels (:labels (:x-ticks p))}))
 
@@ -893,7 +897,7 @@
 (def
  v180_l864
  (let
-  [pl (pj/plan bar-pose) p (first (:panels pl))]
+  [plan (pj/plan bar-pose) p (first (:panels plan))]
   (:values (:x-ticks p))))
 
 
@@ -917,8 +921,8 @@
 (def
  v185_l881
  (let
-  [pl (pj/plan iris-label-pose)]
-  {:x-label (:x-label pl), :y-label (:y-label pl)}))
+  [plan (pj/plan iris-label-pose)]
+  {:x-label (:x-label plan), :y-label (:y-label plan)}))
 
 
 (deftest
@@ -941,8 +945,8 @@
 (def
  v190_l896
  (let
-  [pl (pj/plan x-only-pose)]
-  {:x-label (:x-label pl), :y-label (:y-label pl)}))
+  [plan (pj/plan x-only-pose)]
+  {:x-label (:x-label plan), :y-label (:y-label plan)}))
 
 
 (deftest
@@ -967,8 +971,8 @@
 (def
  v195_l912
  (let
-  [pl (pj/plan explicit-label-pose)]
-  {:x-label (:x-label pl), :y-label (:y-label pl)}))
+  [plan (pj/plan explicit-label-pose)]
+  {:x-label (:x-label plan), :y-label (:y-label plan)}))
 
 
 (deftest
@@ -1219,8 +1223,8 @@
 (def
  v253_l1109
  (let
-  [pl (pj/plan flipped-labels-pose)]
-  {:x-label (:x-label pl), :y-label (:y-label pl)}))
+  [plan (pj/plan flipped-labels-pose)]
+  {:x-label (:x-label plan), :y-label (:y-label plan)}))
 
 
 (deftest
@@ -1261,7 +1265,9 @@
 (deftest
  t261_l1143
  (is
-  ((fn [pl] (let [p (first (:panels pl))] (= 2 (count (:layers p)))))
+  ((fn
+    [plan]
+    (let [p (first (:panels plan))] (= 2 (count (:layers p)))))
    v260_l1141)))
 
 

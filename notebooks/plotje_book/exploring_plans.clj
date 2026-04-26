@@ -45,7 +45,7 @@
 ;; And here is the plan -- the data structure that drives the rendering.
 ;; We'll use `pj/plan` with the same pose:
 
-(def tiny-pl (-> tiny
+(def tiny-plan (-> tiny
                  (pj/lay-point :x :y)
                  pj/plan))
 
@@ -54,7 +54,7 @@
 ;; At the top level, a plan describes dimensions and layout.
 ;; Here is the entire plan -- a plain Clojure map:
 
-tiny-pl
+tiny-plan
 
 (kind/test-last [(fn [m] (and (= 600 (:width m))
                               (= 400 (:height m))
@@ -76,7 +76,7 @@ tiny-pl
 ;; The plan contains one or more panels. A simple plot has one panel;
 ;; faceting and SPLOM (scatter plot matrix) produce multiple. Each panel holds its own data space:
 
-(def tiny-panel (first (:panels tiny-pl)))
+(def tiny-panel (first (:panels tiny-plan)))
 
 (keys tiny-panel)
 
@@ -153,20 +153,20 @@ tiny-layer
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-(def iris-pl (-> (rdatasets/datasets-iris)
+(def iris-plan (-> (rdatasets/datasets-iris)
                  (pj/lay-point :sepal-length :sepal-width {:color :species})
                  pj/plan))
 
 ;; Here is the full plan -- notice the legend and three groups:
 
-iris-pl
+iris-plan
 
 (kind/test-last [(fn [m] (and (= 3 (count (:entries (:legend m))))
                               (= 1 (count (:panels m)))))])
 
 ;; Now we have three groups -- one per species:
 
-(def iris-layer (first (:layers (first (:panels iris-pl)))))
+(def iris-layer (first (:layers (first (:panels iris-plan)))))
 
 (count (:groups iris-layer))
 
@@ -184,7 +184,7 @@ iris-pl
 
 ;; The legend describes the color mapping:
 
-(:legend iris-pl)
+(:legend iris-plan)
 
 (kind/test-last [(fn [leg] (= 3 (count (:entries leg))))])
 
@@ -196,24 +196,24 @@ iris-pl
 ;; When `:color` maps to a **numeric** column, the plan stores
 ;; per-point colors and a continuous gradient legend.
 
-(def cont-pl (-> (rdatasets/datasets-iris)
+(def cont-plan (-> (rdatasets/datasets-iris)
                  (pj/lay-point :sepal-length :sepal-width {:color :petal-length})
                  pj/plan))
 
-(:legend cont-pl)
+(:legend cont-plan)
 
 (kind/test-last [(fn [m] (= :continuous (:type m)))])
 
 ;; The legend has pre-computed gradient stops -- no functions:
 
-(select-keys (:legend cont-pl) [:title :type :min :max :color-scale])
+(select-keys (:legend cont-plan) [:title :type :min :max :color-scale])
 
 (kind/test-last [(fn [m] (and (= :continuous (:type m))
                               (not (contains? m :gradient-fn))))])
 
 ;; Twenty evenly spaced stops store the gradient colors:
 
-(count (:stops (:legend cont-pl)))
+(count (:stops (:legend cont-plan)))
 
 (kind/test-last [(fn [n] (= 20 n))])
 
@@ -229,15 +229,15 @@ iris-pl
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-(def hist-pl (-> (rdatasets/datasets-iris)
+(def hist-plan (-> (rdatasets/datasets-iris)
                  (pj/lay-histogram :sepal-length)
                  pj/plan))
 
-hist-pl
+hist-plan
 
 (kind/test-last [(fn [m] (= 1 (count (:panels m))))])
 
-(def hist-layer (first (:layers (first (:panels hist-pl)))))
+(def hist-layer (first (:layers (first (:panels hist-plan)))))
 
 (:mark hist-layer)
 
@@ -267,11 +267,11 @@ hist-pl
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
 
-(def bar-pl (-> (rdatasets/palmerpenguins-penguins)
+(def bar-plan (-> (rdatasets/palmerpenguins-penguins)
                 (pj/lay-bar :island {:color :species})
                 pj/plan))
 
-(def bar-layer (first (:layers (first (:panels bar-pl)))))
+(def bar-layer (first (:layers (first (:panels bar-plan)))))
 
 ;; The mark type is `:rect` and the layer knows the categories:
 
@@ -297,11 +297,11 @@ bar-layer
 ;;
 ;; Stacking changes the position field:
 
-(def stacked-pl (-> (rdatasets/palmerpenguins-penguins)
+(def stacked-plan (-> (rdatasets/palmerpenguins-penguins)
                     (pj/lay-bar :island {:position :stack :color :species})
                     pj/plan))
 
-(def stacked-layer (first (:layers (first (:panels stacked-pl)))))
+(def stacked-layer (first (:layers (first (:panels stacked-plan)))))
 
 (:position stacked-layer)
 
@@ -322,16 +322,16 @@ bar-layer
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
-(def lm-pl (-> (rdatasets/datasets-iris)
+(def lm-plan (-> (rdatasets/datasets-iris)
                (pj/lay-point :sepal-length :sepal-width)
                (pj/lay-smooth {:stat :linear-model})
                pj/plan))
 
 ;; Two layers -- points and line:
 
-(mapv :mark (:layers (first (:panels lm-pl))))
+(mapv :mark (:layers (first (:panels lm-plan))))
 (kind/test-last [(fn [marks] (= [:point :line] marks))])
-(def lm-layer (second (:layers (first (:panels lm-pl)))))
+(def lm-layer (second (:layers (first (:panels lm-plan)))))
 
 ;; Its group has endpoints -- a line segment in data space:
 
@@ -357,13 +357,13 @@ bar-layer
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
-(def grp-pl (-> (rdatasets/datasets-iris)
+(def grp-plan (-> (rdatasets/datasets-iris)
                 (pj/pose :petal-length :petal-width {:color :species})
                 pj/lay-point
                 (pj/lay-smooth {:stat :linear-model})
                 pj/plan))
 
-(let [line-layer (second (:layers (first (:panels grp-pl))))]
+(let [line-layer (second (:layers (first (:panels grp-plan))))]
   (mapv (fn [g]
           {:color (:color g)
            :x1 (some-> (:x1 g) (Math/round) int)
@@ -388,11 +388,11 @@ bar-layer
                            (and (= 1 (:panels s))
                                 (= 1 (:lines s)))))])
 
-(def wave-pl (-> wave
+(def wave-plan (-> wave
                  (pj/lay-line :x :y)
                  pj/plan))
 
-(def wave-group (first (:groups (first (:layers (first (:panels wave-pl)))))))
+(def wave-group (first (:groups (first (:layers (first (:panels wave-plan)))))))
 
 {:n-points (count (:xs wave-group))
  :first-x (first (:xs wave-group))
@@ -417,11 +417,11 @@ bar-layer
                            (and (= 1 (:panels s))
                                 (= 4 (:polygons s)))))])
 
-(def sales-pl (-> sales
+(def sales-plan (-> sales
                   (pj/lay-value-bar :product :revenue)
                   pj/plan))
 
-(let [g (first (:groups (first (:layers (first (:panels sales-pl))))))]
+(let [g (first (:groups (first (:layers (first (:panels sales-plan))))))]
   {:xs (:xs g)
    :ys (:ys g)})
 
@@ -431,18 +431,18 @@ bar-layer
 ;;
 ;; Setting `:coord :flip` swaps x and y in the plan's panel:
 
-(def flip-pl (-> (rdatasets/datasets-iris)
+(def flip-plan (-> (rdatasets/datasets-iris)
                  (pj/lay-bar :species)
                  (pj/coord :flip)
                  pj/plan))
 
-(:coord (first (:panels flip-pl)))
+(:coord (first (:panels flip-plan)))
 
 (kind/test-last [(fn [c] (= :flip c))])
 
 ;; The domains are swapped -- the categorical axis is now y:
 
-(let [p (first (:panels flip-pl))]
+(let [p (first (:panels flip-plan))]
   {:x-domain-type (if (number? (first (:x-domain p))) :numeric :categorical)
    :y-domain-type (if (number? (first (:y-domain p))) :numeric :categorical)})
 
@@ -456,7 +456,7 @@ bar-layer
 ;;
 ;; Title, labels, and dimensions are recorded in the plan:
 
-(def opts-pl (-> (rdatasets/datasets-iris)
+(def opts-plan (-> (rdatasets/datasets-iris)
                  (pj/lay-point :sepal-length :sepal-width)
                  (pj/plan {:title "My Custom Title"
                            :x-label "Length (cm)"
@@ -464,7 +464,7 @@ bar-layer
                            :width 800
                            :height 300})))
 
-opts-pl
+opts-plan
 
 (kind/test-last [(fn [m] (and (= "My Custom Title" (:title m))
                               (= 800 (:width m))
@@ -472,7 +472,7 @@ opts-pl
 
 ;; The layout records how much space to reserve for each label:
 
-(:layout opts-pl)
+(:layout opts-plan)
 
 (kind/test-last [(fn [lay] (and (pos? (:title-pad lay))
                                 (pos? (:x-label-pad lay))
@@ -519,7 +519,7 @@ final-plan
 ;; Faceting produces plans with multiple panels. Each panel has
 ;; its own domains, ticks, and layers, plus grid positioning.
 
-(def faceted-pl
+(def faceted-plan
   (-> (rdatasets/datasets-iris)
       (pj/lay-point :sepal-length :sepal-width {:color :species})
       (pj/facet :species)
@@ -527,26 +527,26 @@ final-plan
 
 ;; The grid tells us the layout:
 
-(:grid faceted-pl)
+(:grid faceted-plan)
 
 (kind/test-last [(fn [g] (and (= 1 (:rows g)) (= 3 (:cols g))))])
 
 ;; Three panels -- one per species:
 
-(count (:panels faceted-pl))
+(count (:panels faceted-plan))
 
 (kind/test-last [(fn [n] (= 3 n))])
 
 ;; Each panel has a grid position and strip label:
 
-(:panels faceted-pl)
+(:panels faceted-plan)
 
 (kind/test-last [(fn [ps] (and (= 3 (count ps))
                                (every? :col-label ps)))])
 
 ;; Panel-level domains show the data range for each subset:
 
-(:panels faceted-pl)
+(:panels faceted-plan)
 
 (kind/test-last [(fn [ps] (every? :x-domain ps))])
 
@@ -555,13 +555,13 @@ final-plan
 
 ;; The plan also records per-panel pixel dimensions:
 
-(select-keys faceted-pl [:layout-type :grid :total-width :total-height])
+(select-keys faceted-plan [:layout-type :grid :total-width :total-height])
 
 (kind/test-last [(fn [m] (= :facet-grid (:layout-type m)))])
 
 ;; Multi-panel plans validate against the same Malli schema:
 
-(pj/valid-plan? faceted-pl)
+(pj/valid-plan? faceted-plan)
 
 (kind/test-last [true?])
 
@@ -573,23 +573,23 @@ final-plan
 ;;
 ;; You can also check manually with `pj/valid-plan?`:
 
-(pj/valid-plan? tiny-pl)
+(pj/valid-plan? tiny-plan)
 
 (kind/test-last [true?])
 
-(pj/valid-plan? iris-pl)
+(pj/valid-plan? iris-plan)
 
 (kind/test-last [true?])
 
-(pj/valid-plan? hist-pl)
+(pj/valid-plan? hist-plan)
 
 (kind/test-last [true?])
 
-(pj/valid-plan? bar-pl)
+(pj/valid-plan? bar-plan)
 
 (kind/test-last [true?])
 
-(pj/valid-plan? lm-pl)
+(pj/valid-plan? lm-plan)
 
 (kind/test-last [true?])
 
@@ -599,7 +599,7 @@ final-plan
 
 ;; When a plan is invalid, `pj/explain-plan` shows which part failed:
 
-(pj/explain-plan (assoc tiny-pl :width "not-a-number"))
+(pj/explain-plan (assoc tiny-plan :width "not-a-number"))
 
 (kind/test-last [some?])
 
@@ -610,13 +610,13 @@ final-plan
 ;; etc.). The buffers support `nth`, `count`, `seq`, and standard
 ;; sequence operations.
 
-(type (:xs (first (:groups (first (:layers (first (:panels tiny-pl))))))))
+(type (:xs (first (:groups (first (:layers (first (:panels tiny-plan))))))))
 
 (kind/test-last [(fn [t] (not= clojure.lang.PersistentVector t))])
 
 ;; You can convert any numeric buffer to a plain vector with `vec`:
 
-(vec (:xs (first (:groups (first (:layers (first (:panels tiny-pl))))))))
+(vec (:xs (first (:groups (first (:layers (first (:panels tiny-plan))))))))
 
 (kind/test-last [(fn [v] (and (vector? v) (number? (first v))))])
 

@@ -1,4 +1,3 @@
-
 ;; # Faceting
 ;;
 ;; Faceting splits data into subsets and draws each in its own panel,
@@ -127,23 +126,23 @@
 ;;
 ;; Under the hood, faceting produces multiple panels in the plan:
 
-(def faceted-pl
+(def faceted-plan
   (-> (rdatasets/datasets-iris)
       (pj/lay-point :sepal-length :sepal-width {:color :species})
       (pj/facet :species)
       pj/plan))
 
-(:grid faceted-pl)
+(:grid faceted-plan)
 
 (kind/test-last [(fn [g] (and (= 1 (:rows g)) (= 3 (:cols g))))])
 
-(count (:panels faceted-pl))
+(count (:panels faceted-plan))
 
 (kind/test-last [(fn [n] (= 3 n))])
 
 ;; Each panel has a grid position and a strip label:
 
-(:panels faceted-pl)
+(:panels faceted-plan)
 
 (kind/test-last [(fn [ps] (= 3 (count ps)))])
 

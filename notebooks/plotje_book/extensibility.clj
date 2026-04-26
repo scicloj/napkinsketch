@@ -219,7 +219,7 @@
 ;;
 ;; ;; Or create a convenience function using lay:
 ;; (defn lay-waterfall
-;;   ([sk] (pj/lay sk (layer-type/lookup :waterfall)))
+;;   ([pose] (pj/lay pose (layer-type/lookup :waterfall)))
 ;;   ([data x y] (-> data (pj/pose x y) (pj/lay (layer-type/lookup :waterfall))))
 ;;   ([data x y opts] (-> data (pj/pose x y) (pj/lay (merge (layer-type/lookup :waterfall) opts)))))
 ;; ```
@@ -240,6 +240,7 @@
 ;; | Dispatch value | Path |
 ;; |:---------------|:-----|
 ;; | `:svg` | plan, then membrane, then `membrane->plot :svg` |
+;; | `:bufimg` | plan, then membrane, then `membrane->plot :bufimg` (raster image) |
 ;;
 ;; Dispatch function: `(fn [plan format opts] format)`
 
@@ -286,7 +287,7 @@
 ;;
 ;; ```clojure
 ;; (require '[mylib.render.plotly])
-;; (pj/plot views {:format :plotly})
+;; (pj/plot pose {:format :plotly})
 ;; ```
 
 ;; ## `membrane->plot`
@@ -298,6 +299,7 @@
 ;; | Dispatch value | Output |
 ;; |:---------------|:-------|
 ;; | `:svg` | SVG hiccup wrapped in `kind/hiccup` |
+;; | `:bufimg` | Java BufferedImage wrapped in `kind/buffered-image` (raster) |
 ;;
 ;; Dispatch function: `(fn [membrane-tree format opts] format)`
 
@@ -357,7 +359,7 @@
 ;;
 ;; Dispatch: inferred from the domain type and scale spec.
 ;; Categorical domains dispatch to `:categorical`. Numerical domains default to
-;; `:linear`, overridden to `:log` by `(pj/scale sk :x :log)`.
+;; `:linear`, overridden to `:log` by `(pj/scale pose :x :log)`.
 
 ;; ## `make-coord`
 ;;

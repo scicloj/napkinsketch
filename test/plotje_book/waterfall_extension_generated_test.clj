@@ -195,7 +195,7 @@
  v19_l176
  (defn
   lay-waterfall
-  ([sk] (pj/lay sk (layer-type/lookup :waterfall)))
+  ([pose] (pj/lay pose (layer-type/lookup :waterfall)))
   ([data x y]
    (-> data (pj/pose x y) (pj/lay (layer-type/lookup :waterfall))))
   ([data x y opts]

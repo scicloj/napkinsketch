@@ -35,7 +35,7 @@
 ;; There are two kinds of tests:
 ;;
 ;; - **Hand-written tests** in `test/scicloj/plotje/` -- unit tests for
-;; core logic (view resolution, plan resolution, rendering, etc.)
+;; core logic (pose resolution, plan resolution, rendering, etc.)
 ;;
 ;; - **Generated tests** in `test/plotje_book/` -- produced from notebooks
 ;; every time [Clay](https://scicloj.github.io/clay/) renders notebooks

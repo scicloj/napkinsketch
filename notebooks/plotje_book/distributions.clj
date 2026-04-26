@@ -74,6 +74,7 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (pos? (:polygons s)))))])
+
 ;; ## Density Plot
 
 ;; A smooth curve estimating the probability density function.
@@ -139,10 +140,10 @@
 
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
-(let [pl (-> (rdatasets/reshape2-tips)
-             (pj/lay-boxplot :day :total-bill {:color :smoker})
-             pj/plan)
-      panel (first (:panels pl))
+(let [plan (-> (rdatasets/reshape2-tips)
+               (pj/lay-boxplot :day :total-bill {:color :smoker})
+               pj/plan)
+      panel (first (:panels plan))
       box-layer (first (filter #(= :boxplot (:mark %)) (:layers panel)))
       cats (:color-categories box-layer)]
   (count cats))
@@ -191,10 +192,10 @@
 
 ;; Verify dodge positioning: each color group gets a distinct offset.
 
-(let [pl (-> (rdatasets/reshape2-tips)
-             (pj/lay-violin :day :total-bill {:color :smoker})
-             pj/plan)
-      panel (first (:panels pl))
+(let [plan (-> (rdatasets/reshape2-tips)
+               (pj/lay-violin :day :total-bill {:color :smoker})
+               pj/plan)
+      panel (first (:panels plan))
       viol-layer (first (filter #(= :violin (:mark %)) (:layers panel)))
       cats (:color-categories viol-layer)]
   (count cats))

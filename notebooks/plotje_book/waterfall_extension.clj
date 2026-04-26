@@ -11,7 +11,7 @@
 ;; - `layer->membrane` -- render bars as membrane drawables
 ;;
 ;; After reading this, you should be able to add any custom chart
-;; type to plotje.
+;; type to Plotje.
 
 (ns plotje-book.waterfall-extension
   (:require
@@ -174,7 +174,7 @@
 ;; function:
 
 (defn lay-waterfall
-  ([sk] (pj/lay sk (layer-type/lookup :waterfall)))
+  ([pose] (pj/lay pose (layer-type/lookup :waterfall)))
   ([data x y] (-> data (pj/pose x y) (pj/lay (layer-type/lookup :waterfall))))
   ([data x y opts] (-> data (pj/pose x y) (pj/lay (merge (layer-type/lookup :waterfall) opts)))))
 
@@ -226,5 +226,5 @@
 
 ;; ## What's Next
 ;;
-;; - [**Extensibility**](./plotje_book.extensibility.html) -- reference for all seven extension points
+;; - [**Extensibility**](./plotje_book.extensibility.html) -- reference for all eight extension points
 ;; - [**Architecture**](./plotje_book.architecture.html) -- the five-stage pipeline in detail

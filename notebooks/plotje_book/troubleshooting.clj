@@ -176,8 +176,11 @@
 ;;
 ;; **Symptom**: Errors or unexpected output with `(pj/coord :polar)`.
 ;;
-;; **Cause**: Not all marks support polar coordinates. Currently
-;; `:point`, `:bar`, and `:line` work well with polar.
+;; **Cause**: Not all marks support polar coordinates. The marks
+;; that work with polar are `:bar`, `:point`, `:rect`, `:rug`, and
+;; `:text` (verified by the polar coord function in source). Layer
+;; types built on these marks (such as `:value-bar` and
+;; `:histogram`, which both render as bars) work too.
 ;;
 ;; **Fix**: Use a supported mark. A bar chart flipped to polar
 ;; becomes a rose chart:
@@ -214,7 +217,7 @@
 ;; ## Faceting Keys in a Layer or Pose Options Map
 ;;
 ;; **Symptom**: An error like
-;; `"Faceting is plot-level, not layer-level. Use (pj/facet sk col) ..."`
+;; `"Faceting is plot-level, not layer-level. Use (pj/facet pose col) ..."`
 ;; when you put `:facet-col`, `:facet-row`, `:facet-x`, or
 ;; `:facet-y` inside a `pj/pose` or `pj/lay-*` options map.
 ;;

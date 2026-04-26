@@ -40,8 +40,8 @@
 
 (defn pose-summary
   "Print pose structure without :data (for readability)."
-  [fr]
-  (-> (select-keys fr [:mapping :layers :opts])
+  [pose]
+  (-> (select-keys pose [:mapping :layers :opts])
       kind/pprint))
 
 ;; ---

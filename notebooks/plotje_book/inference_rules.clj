@@ -51,13 +51,13 @@ scatter-pose
 
 (pj/plan scatter-pose)
 
-(kind/test-last [(fn [pl] (and (= :single (:layout-type pl))
-                               (= 1 (count (:panels pl)))
-                               (= "x" (:x-label pl))
-                               (= "y" (:y-label pl))
-                               (nil? (:legend pl))
-                               (zero? (get-in pl [:layout :legend-w]))
-                               (let [p (first (:panels pl))
+(kind/test-last [(fn [plan] (and (= :single (:layout-type plan))
+                               (= 1 (count (:panels plan)))
+                               (= "x" (:x-label plan))
+                               (= "y" (:y-label plan))
+                               (nil? (:legend plan))
+                               (zero? (get-in plan [:layout :legend-w]))
+                               (let [p (first (:panels plan))
                                      g (first (:groups (first (:layers p))))]
                                  (and (= :linear (get-in p [:x-scale :type]))
                                       (= 1 (count (:groups (first (:layers p)))))
@@ -160,8 +160,8 @@ two-col-pose
 
 (-> two-col-pose (select-keys [:mapping :layers]) kind/pprint)
 
-(kind/test-last [(fn [fr] (and (= {:x :x :y :y} (:mapping fr))
-                               (empty? (:layers fr))))])
+(kind/test-last [(fn [pose] (and (= {:x :x :y :y} (:mapping pose))
+                               (empty? (:layers pose))))])
 
 ;; ### 4+ columns
 ;;
@@ -172,7 +172,7 @@ two-col-pose
 ;;   columns, asking you to pass explicit `:x` and `:y`.
 ;; - `(pj/pose data)` is gentler -- it builds a pose with the data
 ;;   attached but no mapping, so you can add one downstream with
-;;   `(pj/pose fr :col-a :col-b)` or `(pj/lay-point fr :col-a :col-b)`.
+;;   `(pj/pose pose :col-a :col-b)` or `(pj/lay-point pose :col-a :col-b)`.
 ;;
 ;; When you provide explicit columns, inference is skipped -- you
 ;; are in full control:
@@ -215,7 +215,7 @@ bar-pose
 
 (pj/plan bar-pose)
 
-(kind/test-last [(fn [pl] (let [p (first (:panels pl))]
+(kind/test-last [(fn [plan] (let [p (first (:panels plan))]
                             (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
                                  (true? (:categorical? (:x-ticks p))))))])
 
@@ -301,10 +301,10 @@ colored-pose
 
 (pj/plan colored-pose)
 
-(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
                             (and (= 2 (count (:groups layer)))
-                                 (some? (:legend pl))
-                                 (= 100 (get-in pl [:layout :legend-w])))))])
+                                 (some? (:legend plan))
+                                 (= 100 (get-in plan [:layout :legend-w])))))])
 
 ;; Two entries in `:groups`, each with its own `:color` (RGBA),
 ;; `:xs`, `:ys`, and `:label`. A `:legend` appeared with 2 entries.
@@ -327,9 +327,9 @@ fixed-color-pose
 
 (pj/plan fixed-color-pose)
 
-(kind/test-last [(fn [pl] (and (nil? (:legend pl))
-                               (zero? (get-in pl [:layout :legend-w]))
-                               (let [layer (first (:layers (first (:panels pl))))
+(kind/test-last [(fn [plan] (and (nil? (:legend plan))
+                               (zero? (get-in plan [:layout :legend-w]))
+                               (let [layer (first (:layers (first (:panels plan))))
                                      c (:color (first (:groups layer)))]
                                  (and (= 1 (count (:groups layer)))
                                       (> (nth c 0) 0.85)
@@ -382,9 +382,9 @@ fixed-color-pose
 
 red-color-pose
 
-(let [pl (pj/plan red-color-pose)]
-  {:legend (:legend pl)
-   :color (:color (first (:groups (first (:layers (first (:panels pl)))))))})
+(let [plan (pj/plan red-color-pose)]
+  {:legend (:legend plan)
+   :color (:color (first (:groups (first (:layers (first (:panels plan)))))))})
 
 (kind/test-last [(fn [m] (and (nil? (:legend m))
                               (> (first (:color m)) 0.9)))])
@@ -418,11 +418,11 @@ red-color-pose
 
 colored-pose
 
-(let [pl (pj/plan colored-pose)
-      layer (first (:layers (first (:panels pl))))]
+(let [plan (pj/plan colored-pose)
+      layer (first (:layers (first (:panels plan))))]
   {:group-count (count (:groups layer))
    :group-labels (mapv :label (:groups layer))
-   :has-legend? (some? (:legend pl))})
+   :has-legend? (some? (:legend plan))})
 
 (kind/test-last [(fn [m] (and (= 2 (:group-count m))
                               (= ["a" "b"] (:group-labels m))
@@ -446,11 +446,11 @@ colored-pose
 
 numeric-color-pose
 
-(let [pl (pj/plan numeric-color-pose)
-      layer (first (:layers (first (:panels pl))))]
+(let [plan (pj/plan numeric-color-pose)
+      layer (first (:layers (first (:panels plan))))]
   {:group-count (count (:groups layer))
-   :legend-type (:type (:legend pl))
-   :color-stops (count (:stops (:legend pl)))})
+   :legend-type (:type (:legend plan))
+   :color-stops (count (:stops (:legend plan)))})
 
 (kind/test-last [(fn [m] (and (= 1 (:group-count m))
                               (= :continuous (:legend-type m))
@@ -483,10 +483,10 @@ numeric-color-pose
 
 study-continuous-pose
 
-(let [pl (pj/plan study-continuous-pose)
-      layer (first (:layers (first (:panels pl))))]
+(let [plan (pj/plan study-continuous-pose)
+      layer (first (:layers (first (:panels plan))))]
   {:group-count (count (:groups layer))
-   :legend-type (:type (:legend pl))})
+   :legend-type (:type (:legend plan))})
 
 (kind/test-last [(fn [m] (and (= 1 (:group-count m))
                               (= :continuous (:legend-type m))))])
@@ -500,10 +500,10 @@ study-continuous-pose
 
 study-categorical-pose
 
-(let [pl (pj/plan study-categorical-pose)
-      layer (first (:layers (first (:panels pl))))]
+(let [plan (pj/plan study-categorical-pose)
+      layer (first (:layers (first (:panels plan))))]
   {:group-count (count (:groups layer))
-   :legend-entries (count (:entries (:legend pl)))})
+   :legend-entries (count (:entries (:legend plan)))})
 
 (kind/test-last [(fn [m] (and (= 3 (:group-count m))
                               (= 3 (:legend-entries m))))])
@@ -542,10 +542,10 @@ study-categorical-pose
 
 explicit-group-pose
 
-(let [pl (pj/plan explicit-group-pose)
-      layer (first (:layers (first (:panels pl))))]
+(let [plan (pj/plan explicit-group-pose)
+      layer (first (:layers (first (:panels plan))))]
   {:group-count (count (:groups layer))
-   :has-legend? (some? (:legend pl))})
+   :has-legend? (some? (:legend plan))})
 
 (kind/test-last [(fn [m] (and (= 2 (:group-count m))
                               (false? (:has-legend? m))))])
@@ -634,7 +634,7 @@ hist-pose
 
 (pj/plan hist-pose)
 
-(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
                             (= :bar (:mark layer))))])
 
 ;; The layer mark is `:bar` -- the layer data contains `:bins` with
@@ -656,7 +656,7 @@ temporal-hist-pose
 
 (pj/plan temporal-hist-pose)
 
-(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
                             (= :bar (:mark layer))))])
 
 ;; A single categorical column produces a bar chart of counts:
@@ -673,7 +673,7 @@ count-pose
 
 (pj/plan count-pose)
 
-(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
                             (= :rect (:mark layer))))])
 
 ;; Mark is `:rect` with `:counts` -- the `:count` stat tallied each
@@ -693,7 +693,7 @@ num-num-pose
 
 (pj/plan num-num-pose)
 
-(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
                             (= :point (:mark layer))))])
 
 ;; A temporal x with a numerical y infers a time-series line. Row
@@ -712,7 +712,7 @@ ts-line-pose
 
 (pj/plan ts-line-pose)
 
-(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
                             (= :line (:mark layer))))])
 
 ;; A categorical x with a numerical y infers a boxplot -- the default
@@ -731,7 +731,7 @@ boxplot-pose
 
 (pj/plan boxplot-pose)
 
-(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
                             (and (= :boxplot (:mark layer))
                                  (= 3 (count (:boxes layer))))))])
 
@@ -751,7 +751,7 @@ horizontal-boxplot-pose
 
 (pj/plan horizontal-boxplot-pose)
 
-(kind/test-last [(fn [pl] (let [layer (first (:layers (first (:panels pl))))]
+(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
                             (and (= :boxplot (:mark layer))
                                  (= 3 (count (:boxes layer))))))])
 
@@ -763,8 +763,8 @@ horizontal-boxplot-pose
 
 scatter-pose
 
-(let [pl (pj/plan scatter-pose)
-      p (first (:panels pl))]
+(let [plan (pj/plan scatter-pose)
+      p (first (:panels plan))]
   {:x-domain (:x-domain p)
    :data-range [1.0 5.0]
    :padding-each-side (* 0.05 (- 5.0 1.0))})
@@ -781,8 +781,8 @@ scatter-pose
 
 bar-pose
 
-(let [pl (pj/plan bar-pose)
-      p (first (:panels pl))]
+(let [plan (pj/plan bar-pose)
+      p (first (:panels plan))]
   {:y-domain (:y-domain p)})
 
 (kind/test-last [(fn [m] (<= (first (:y-domain m)) 0))])
@@ -823,8 +823,8 @@ fill-pose
 
 scatter-pose
 
-(let [pl (pj/plan scatter-pose)
-      p (first (:panels pl))]
+(let [plan (pj/plan scatter-pose)
+      p (first (:panels plan))]
   {:x-tick-values (:values (:x-ticks p))
    :x-tick-labels (:labels (:x-ticks p))})
 
@@ -845,8 +845,8 @@ scatter-pose
 
 log-scale-pose
 
-(let [pl (pj/plan log-scale-pose)
-      p (first (:panels pl))]
+(let [plan (pj/plan log-scale-pose)
+      p (first (:panels plan))]
   {:tick-values (:values (:x-ticks p))
    :tick-labels (:labels (:x-ticks p))})
 
@@ -861,8 +861,8 @@ log-scale-pose
 
 bar-pose
 
-(let [pl (pj/plan bar-pose)
-      p (first (:panels pl))]
+(let [plan (pj/plan bar-pose)
+      p (first (:panels plan))]
   (:values (:x-ticks p)))
 
 (kind/test-last [(fn [v] (= ["cat" "dog" "bird" "fish"] v))])
@@ -878,9 +878,9 @@ bar-pose
 
 iris-label-pose
 
-(let [pl (pj/plan iris-label-pose)]
-  {:x-label (:x-label pl)
-   :y-label (:y-label pl)})
+(let [plan (pj/plan iris-label-pose)]
+  {:x-label (:x-label plan)
+   :y-label (:y-label plan)})
 
 (kind/test-last [(fn [m] (and (= "sepal length" (:x-label m))
                               (= "sepal width" (:y-label m))))])
@@ -893,9 +893,9 @@ iris-label-pose
 
 x-only-pose
 
-(let [pl (pj/plan x-only-pose)]
-  {:x-label (:x-label pl)
-   :y-label (:y-label pl)})
+(let [plan (pj/plan x-only-pose)]
+  {:x-label (:x-label plan)
+   :y-label (:y-label plan)})
 
 (kind/test-last [(fn [m] (and (= "x" (:x-label m))
                               (nil? (:y-label m))))])
@@ -909,9 +909,9 @@ x-only-pose
 
 explicit-label-pose
 
-(let [pl (pj/plan explicit-label-pose)]
-  {:x-label (:x-label pl)
-   :y-label (:y-label pl)})
+(let [plan (pj/plan explicit-label-pose)]
+  {:x-label (:x-label plan)
+   :y-label (:y-label plan)})
 
 (kind/test-last [(fn [m] (and (= "Length (cm)" (:x-label m))
                               (= "Width (cm)" (:y-label m))))])
@@ -1106,9 +1106,9 @@ flip-pose
 
 flipped-labels-pose
 
-(let [pl (pj/plan flipped-labels-pose)]
-  {:x-label (:x-label pl)
-   :y-label (:y-label pl)})
+(let [plan (pj/plan flipped-labels-pose)]
+  {:x-label (:x-label plan)
+   :y-label (:y-label plan)})
 
 (kind/test-last [(fn [m] (and (= "y" (:x-label m))
                               (= "x" (:y-label m))))])
@@ -1140,7 +1140,7 @@ multi-pose
 
 (pj/plan multi-pose)
 
-(kind/test-last [(fn [pl] (let [p (first (:panels pl))]
+(kind/test-last [(fn [plan] (let [p (first (:panels plan))]
                             (= 2 (count (:layers p)))))])
 
 ;; Two layers -- one `:point`, one `:line` -- sharing the same domain.

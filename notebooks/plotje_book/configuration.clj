@@ -564,7 +564,7 @@ precedence-plot
 ;;
 ;; | Mechanism | Scope | Persistence | Example |
 ;; |:----------|:------|:------------|:--------|
-;; | plot options | single call | none | `(pj/options {...})` or `(pj/plot sk {...})` |
+;; | plot options | single call | none | `(pj/options {...})` or `(pj/plot pose {...})` |
 ;; | `with-config` | lexical body | until body exits | `(pj/with-config {:width 800} ...)` |
 ;; | `set-config!` | global | until reset | `(pj/set-config! {:width 800})` |
 ;; | `plotje.edn` | project | file on disk | `{:width 800}` in project root |

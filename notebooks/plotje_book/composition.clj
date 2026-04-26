@@ -92,8 +92,8 @@ weighted
 
 (kind/pprint weighted)
 
-(kind/test-last [(fn [fr] (and (= [2 1] (get-in fr [:layout :weights]))
-                               (= 2 (count (:poses fr)))))])
+(kind/test-last [(fn [pose] (and (= [2 1] (get-in pose [:layout :weights]))
+                               (= 2 (count (:poses pose)))))])
 
 ;; The outer `:data` is inherited by both sub-poses. Each sub-pose
 ;; has its own `:mapping` and `:layers`, and need not repeat the

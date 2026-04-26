@@ -85,10 +85,10 @@
  t16_l95
  (is
   ((fn
-    [fr]
+    [pose]
     (and
-     (= [2 1] (get-in fr [:layout :weights]))
-     (= 2 (count (:poses fr)))))
+     (= [2 1] (get-in pose [:layout :weights]))
+     (= 2 (count (:poses pose)))))
    v15_l93)))
 
 

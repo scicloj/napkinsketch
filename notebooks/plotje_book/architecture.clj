@@ -322,12 +322,12 @@ multi-plan
 ^:kindly/hide-code
 (kind/mermaid "
 graph TD
-  API[\"api.clj\"] --> FR[\"impl/pose.clj\"]
+  API[\"api.clj\"] --> POSE[\"impl/pose.clj\"]
   API --> RES[\"impl/resolve.clj\"]
   API --> PL[\"impl/plan.clj\"]
   API --> COMP[\"impl/compositor.clj\"]
-  FR --> RES
-  COMP --> FR
+  POSE --> RES
+  COMP --> POSE
   COMP --> PL
   PL --> RES
   PL --> STAT[\"impl/stat.clj\"]
