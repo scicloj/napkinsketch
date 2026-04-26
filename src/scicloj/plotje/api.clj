@@ -310,7 +310,7 @@
   [x]
   (pose/pose? x))
 
-(declare prepare-pose)
+(declare prepare-pose check-position-mapping)
 
 (defn- ensure-pose
   "Coerce input to a pose. Poses pass through. Raw data becomes a
@@ -770,6 +770,7 @@
                           "pj/pose" y view-mapping-keys)
                          {})
                      {:x y})]
+       (check-position-mapping "pj/pose" mapping)
        (if (pose? x)
          (prepare-pose (extend-or-promote x mapping))
          (prepare-pose (pose-from-data x mapping))))))
@@ -780,10 +781,12 @@
      (let [opts      (warn-and-strip-unknown-opts "pj/pose" z view-mapping-keys)
            data-over (:data opts)
            mapping   (-> opts (dissoc :data) (merge {:x y}))]
+       (check-position-mapping "pj/pose" mapping)
        (if (pose? x)
          (prepare-pose (extend-or-promote x mapping))
          (prepare-pose (pose-from-data (or data-over x) mapping))))
      (let [mapping {:x y :y z}]
+       (check-position-mapping "pj/pose" mapping)
        (if (pose? x)
          (prepare-pose (extend-or-promote x mapping))
          (prepare-pose (pose-from-data x mapping))))))
@@ -799,6 +802,7 @@
    (let [opts      (warn-and-strip-unknown-opts "pj/pose" opts view-mapping-keys)
          data-over (:data opts)
          mapping   (-> opts (dissoc :data) (merge {:x y :y z}))]
+     (check-position-mapping "pj/pose" mapping)
      (if (pose? x)
        (prepare-pose (extend-or-promote x mapping))
        (prepare-pose (pose-from-data (or data-over x) mapping))))))
@@ -1119,6 +1123,14 @@
    (when (x-only? layer-type-key)
      (throw (ex-info (str "lay-" (name layer-type-key) " uses only the x column; do not pass a y column")
                      {:layer-type layer-type-key :x x :y y})))
+   (when-not (or (nil? opts) (map? opts))
+     (throw (ex-info (str "lay-" (name layer-type-key)
+                          " 4-arity expects an opts map as the last"
+                          " argument, got " (pr-str (type opts)) ": "
+                          (pr-str opts) ". Wrap aesthetic options in"
+                          " a map, e.g. {:color :species}.")
+                     {:caller (str "pj/lay-" (name layer-type-key))
+                      :value opts})))
    (lay-on-pose (ensure-pose sk-or-data) layer-type-key {:x x :y y} opts)))
 
 (defn lay-point
@@ -1437,6 +1449,12 @@
    the options attach to the root so every descendant leaf inherits
    them via resolve-tree."
   [sk opts]
+  (when-not (or (nil? opts) (map? opts))
+    (throw (ex-info (str "pj/options expects an opts map as the second"
+                         " argument, got " (pr-str (type opts)) ": "
+                         (pr-str opts) ". Wrap plot-level options in"
+                         " a map, e.g. {:title \"...\" :width 800}.")
+                    {:caller "pj/options" :value opts})))
   (let [opts (warn-and-strip-unknown-opts "pj/options" opts plot-options-keys)
         opts (reduce (fn [m k]
                        (if-let [v (get m k)]
@@ -1569,6 +1587,12 @@
    (plot fr {:width 800 :title \"My Plot\"})
    (plot fr {:format :bufimg})  ;; returns a BufferedImage"
   ([sk]
+   (when (plan? sk)
+     (throw (ex-info (str "pj/plot expects a pose, not a plan. "
+                          "A plan is the resolved geometry; call "
+                          "pj/plan->plot on the plan, or pass the "
+                          "original pose to pj/plot.")
+                     {:got :plan})))
    (let [fr (ensure-pose sk)
          fmt (or (:format (:opts fr)) :svg)]
      (ensure-renderer-loaded! fmt)

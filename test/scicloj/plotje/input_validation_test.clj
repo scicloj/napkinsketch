@@ -110,3 +110,93 @@
 
   (testing "(pj/pose data x y {}) is accepted"
     (is (pj/pose? (pj/pose [{:a 1 :b 2}] :a :b {})))))
+
+(deftest options-non-map-throws
+  (testing "(pj/options pose <vector>) throws with helpful message"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"opts map as the second argument"
+         (pj/options (pj/lay-point tiny :x :y) [:not :a :map]))))
+
+  (testing "(pj/options pose 42) throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"opts map as the second argument"
+         (pj/options (pj/lay-point tiny :x :y) 42))))
+
+  (testing "(pj/options pose nil) is accepted (no-op)"
+    (is (pj/pose? (pj/options (pj/lay-point tiny :x :y) nil))))
+
+  (testing "(pj/options pose {}) is accepted"
+    (is (pj/pose? (pj/options (pj/lay-point tiny :x :y) {})))))
+
+(deftest lay-star-non-map-opts-throws
+  (testing "(pj/lay-point ds :x :y <vector>) throws with helpful message"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"opts map as the last argument"
+         (pj/lay-point tiny :x :y [:not :a :map]))))
+
+  (testing "(pj/lay-point ds :x :y 42) throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"opts map as the last argument"
+         (pj/lay-point tiny :x :y 42))))
+
+  (testing "(pj/lay-line ds :x :y :not-a-map) throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"opts map as the last argument"
+         (pj/lay-line tiny :x :y :foo))))
+
+  (testing "(pj/lay-point ds :x :y nil) is accepted as no-opts"
+    (is (pj/pose? (pj/lay-point tiny :x :y nil))))
+
+  (testing "(pj/lay-point ds :x :y {}) is accepted"
+    (is (pj/pose? (pj/lay-point tiny :x :y {})))))
+
+(deftest plot-on-plan-throws
+  (testing "(pj/plot (pj/plan pose)) throws with helpful message"
+    (let [pl (pj/plan (pj/lay-point tiny :x :y))]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"pj/plot expects a pose, not a plan"
+           (pj/plot pl)))))
+
+  (testing "the helpful error mentions pj/plan->plot as alternative"
+    (let [pl (pj/plan (pj/lay-point tiny :x :y))]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"pj/plan->plot"
+           (pj/plot pl))))))
+
+(deftest pose-scalar-column-ref-throws
+  (testing "(pj/pose data {:x 5}) throws with helpful column-ref message"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":x must be a column reference"
+         (pj/pose tiny {:x 5}))))
+
+  (testing "(pj/pose data {:y 3.14}) throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":y must be a column reference"
+         (pj/pose tiny {:x :x :y 3.14}))))
+
+  (testing "(pj/pose data 5 :y) 3-arity scalar in x-slot also throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":x must be a column reference"
+         (pj/pose tiny 5 :y))))
+
+  (testing "(pj/pose data :x 5) 3-arity scalar in y-slot also throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":y must be a column reference"
+         (pj/pose tiny :x 5))))
+
+  (testing "valid keyword column refs still work"
+    (is (pj/pose? (pj/pose tiny {:x :x :y :y}))))
+
+  (testing "valid string column refs still work"
+    (is (pj/pose? (pj/pose tiny {:x "x" :y "y"})))))
