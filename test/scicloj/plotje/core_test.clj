@@ -760,25 +760,39 @@
 
 ;; ---- Config with palette ----
 
+(defn- group-colors-from-plan [pl]
+  ;; Each panel's first layer has :groups; each group has :color [r g b a].
+  (->> (:panels pl)
+       (mapcat :layers)
+       (mapcat :groups)
+       (keep :color)
+       (mapv vec)
+       distinct
+       set))
+
 (deftest config-palette-test
   (let [ds (tc/dataset {:x [1 2 3 4 5 6]
                         :y [10 20 30 15 25 35]
                         :g ["a" "a" "a" "b" "b" "b"]})
         views (-> ds (pj/pose [[:x :y]]) (pj/lay-point {:color :g}))]
-    (testing "default palette produces colored points"
-      (let [svg (pj/plot views)
-            summary (pj/svg-summary svg)]
-        (is (= 6 (:points summary)))))
-    (testing "per-call palette :dark2 works"
-      (let [svg (pj/plot views {:palette :dark2})
-            summary (pj/svg-summary svg)]
-        (is (= 6 (:points summary)))))
-    (testing "set-config! palette works"
+    (testing "default palette assigns distinct colors per category"
+      (let [colors (group-colors-from-plan (pj/plan views))]
+        (is (= 2 (count colors))
+            "two categories, two colors")))
+    (testing "per-call :palette :dark2 produces colors that differ from default"
+      (let [default-colors (group-colors-from-plan (pj/plan views))
+            dark2-colors (group-colors-from-plan (pj/plan views {:palette :dark2}))]
+        (is (= 2 (count dark2-colors)))
+        (is (not= default-colors dark2-colors)
+            "palette change must actually change the rendered colors")))
+    (testing "set-config! palette flows through"
       (try
-        (pj/set-config! {:palette :set2})
-        (let [svg (pj/plot views)
-              summary (pj/svg-summary svg)]
-          (is (= 6 (:points summary))))
+        (let [default-colors (group-colors-from-plan (pj/plan views))]
+          (pj/set-config! {:palette :set2})
+          (let [set2-colors (group-colors-from-plan (pj/plan views))]
+            (is (= 2 (count set2-colors)))
+            (is (not= default-colors set2-colors)
+                ":set2 palette must produce colors distinct from default")))
         (finally
           (pj/set-config! nil))))))
 
@@ -786,10 +800,23 @@
 
 (deftest config-validate-flag-test
   (let [views (-> tiny-ds (pj/pose [[:x :y]]) pj/lay-point)]
-    (testing "validate true (default) — valid plan passes"
+    (testing "validate true (default) -- valid plan passes"
       (is (some? (pj/plan views))))
     (testing "validate false skips schema check"
-      (is (some? (pj/plan views {:validate false}))))))
+      (is (some? (pj/plan views {:validate false}))))
+    (testing "validate true throws when the plan fails schema"
+      ;; Force the schema check to fail by stubbing the explain
+      ;; function. The flag must actually drive whether the throw
+      ;; happens; the previous test only covered the happy path
+      ;; on both branches, so the flag could have been ignored.
+      (with-redefs [scicloj.plotje.impl.plan-schema/explain
+                    (fn [_] {:errors [:fake]})]
+        (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                              #"does not conform to schema"
+                              (pj/plan views))
+            ":validate true must throw on schema failure")
+        (is (some? (pj/plan views {:validate false}))
+            ":validate false must skip the throw")))))
 
 ;; ---- Edge case tests ----
 

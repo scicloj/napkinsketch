@@ -27,8 +27,9 @@
   (testing "composite with no :format returns SVG hiccup"
     (let [out (pj/plot (pj/arrange [(pj/lay-point tiny :x :y)
                                     (pj/lay-point tiny :x :y)]))]
-      (is (or (vector? out)
-              (= :hiccup (some-> out meta :kindly/kind)))))))
+      (is (vector? out) "SVG hiccup is a vector")
+      (is (= :svg (first out))
+          "SVG hiccup starts with :svg, not a wrapper tag"))))
 
 (deftest composite-pose-bufimg-format
   (testing "composite with {:format :bufimg} returns a BufferedImage"
