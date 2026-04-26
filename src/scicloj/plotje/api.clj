@@ -765,15 +765,21 @@
      (multi-pair-pose x y)
 
      :else
-     (let [mapping (if (map? y)
-                     (or (warn-and-strip-unknown-opts
-                          "pj/pose" y view-mapping-keys)
-                         {})
-                     {:x y})]
-       (check-position-mapping "pj/pose" mapping)
-       (if (pose? x)
-         (prepare-pose (extend-or-promote x mapping))
-         (prepare-pose (pose-from-data x mapping))))))
+     (if (map? y)
+       (let [opts      (or (warn-and-strip-unknown-opts
+                            "pj/pose" y view-mapping-keys)
+                           {})
+             data-over (:data opts)
+             mapping   (dissoc opts :data)]
+         (check-position-mapping "pj/pose" mapping)
+         (if (pose? x)
+           (prepare-pose (extend-or-promote x mapping))
+           (prepare-pose (pose-from-data (or data-over x) mapping))))
+       (let [mapping {:x y}]
+         (check-position-mapping "pj/pose" mapping)
+         (if (pose? x)
+           (prepare-pose (extend-or-promote x mapping))
+           (prepare-pose (pose-from-data x mapping)))))))
   ([x y z]
    (when-not (pose? x) (validate-template-data! "pj/pose" x))
    (if (map? z)

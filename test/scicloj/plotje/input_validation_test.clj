@@ -170,6 +170,33 @@
            #"pj/plan->plot"
            (pj/plot pl))))))
 
+(deftest pose-2-arity-extracts-data-from-opts
+  (testing "(pj/pose nil {:data X :x ... :y ...}) attaches X as data, mapping omits :data"
+    (let [data {:a [1 2 3] :b [4 5 6]}
+          p    (pj/pose nil {:data data :x :a :y :b})]
+      (is (pj/pose? p))
+      (is (= data (:data p)))
+      (is (= {:x :a :y :b} (:mapping p)))))
+
+  (testing "(pj/pose data {:data new-data ...}) opts :data overrides positional data"
+    (let [orig {:x [1 2] :y [3 4]}
+          new  {:a [10 20] :b [30 40]}
+          p    (pj/pose orig {:data new :x :a :y :b})]
+      (is (= new (:data p)))
+      (is (= {:x :a :y :b} (:mapping p)))))
+
+  (testing "(pj/pose data {:x ... :y ...}) without :data uses positional data"
+    (let [data {:a [1 2 3] :b [4 5 6]}
+          p    (pj/pose data {:x :a :y :b})]
+      (is (= data (:data p)))
+      (is (= {:x :a :y :b} (:mapping p)))))
+
+  (testing "extending an existing pose ignores opts :data (mirror 3/4-arity)"
+    (let [base (pj/pose {:a [1 2] :b [3 4]} {:x :a :y :b})
+          ext  (pj/pose base {:data {:c [9]} :color :a})]
+      (is (= (:data base) (:data ext))
+          "existing pose's data wins; use pj/with-data to replace"))))
+
 (deftest pose-scalar-column-ref-throws
   (testing "(pj/pose data {:x 5}) throws with helpful column-ref message"
     (is (thrown-with-msg?
