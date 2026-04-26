@@ -25,9 +25,27 @@
 ;; ---- Type predicates ----
 
 (defn plan?
-  "Return true if x is a plan (the resolved data-space geometry from pj/plan)."
+  "Return true if x is a plan (leaf or composite) -- the resolved
+   geometry returned by pj/plan."
   [x]
   (resolve/plan? x))
+
+(defn leaf-plan?
+  "Return true if x is a leaf plan (single-pose resolved geometry)."
+  [x]
+  (resolve/leaf-plan? x))
+
+(defn composite-plan?
+  "Return true if x is a composite plan (a tree of sub-plots with
+   shared chrome)."
+  [x]
+  (resolve/composite-plan? x))
+
+(defn composite-draft?
+  "Return true if x is a composite draft (a tree of sub-drafts with
+   shared chrome-spec, returned by pj/draft on a composite pose)."
+  [x]
+  (resolve/composite-draft? x))
 
 (defn layer?
   "Return true if x is a layer (resolved geometry for one mark in a plan)."
