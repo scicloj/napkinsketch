@@ -192,6 +192,41 @@
 
 ;; ---- Pipeline Internals ----
 
+(defn draft->plan
+  "Convert a draft into a plan. Dispatches on draft shape: composite
+   drafts go through compositor/composite-draft->plan (which uses the
+   chrome-spec already baked in at draft emission); leaf drafts (vectors
+   of layer maps) go through plan/draft->plan.
+
+   Plan-stage opts (:width, :height, :title, ...) for leaf drafts must
+   be set on the pose before drafting via pj/options. For composite
+   drafts those opts are already part of the chrome-spec.
+   (draft->plan (draft pose))"
+  [draft]
+  (cond
+    (resolve/composite-draft? draft) (compositor/composite-draft->plan draft)
+    (and (vector? draft) (every? map? draft)) (plan/draft->plan draft {})
+    :else (throw (ex-info (str "pj/draft->plan expects a draft (from pj/draft); got "
+                               (pr-str (type draft)) ": "
+                               (pr-str draft))
+                          {:value draft :caller "pj/draft->plan"}))))
+
+(defn draft->membrane
+  "Compose draft -> plan -> membrane. The 2-arity takes an opts map
+   for plan->membrane (e.g. {:tooltip true}).
+   (draft->membrane (draft pose))
+   (draft->membrane (draft pose) {:tooltip true})"
+  ([draft] (draft->membrane draft {}))
+  ([draft opts]
+   (membrane/plan->membrane (draft->plan draft) opts)))
+
+(defn draft->plot
+  "Compose draft -> plan -> plot for the given format.
+   (draft->plot (draft pose) :svg {})
+   (draft->plot (draft pose) :bufimg {})"
+  [draft format opts]
+  (render-impl/plan->plot (draft->plan draft) format opts))
+
 (defn plan->membrane
   "Convert a plan into a membrane drawable tree.
    The 1-arity uses no rendering options. The 2-arity takes an

@@ -289,6 +289,60 @@
           "explain-plan surfaces the error"))))
 
 ;; ============================================================
+;; Public draft transitions (pj/draft->plan, pj/draft->membrane,
+;; pj/draft->plot) and the shape predicates
+;; ============================================================
+;;
+;; These close the gap where pj/draft existed but the user could not
+;; continue the canonical pipeline from a draft value through public
+;; API alone.
+
+(deftest draft-to-plan-leaf-roundtrip-test
+  (testing "pj/draft->plan on a leaf draft equals pj/plan on the pose"
+    (let [pose (-> (tc/dataset {:x [1 2 3] :y [1 2 3]})
+                   (pj/lay-point :x :y))
+          via-direct (pj/plan pose)
+          via-draft (pj/draft->plan (pj/draft pose))]
+      (is (pj/leaf-plan? via-draft)
+          "draft->plan on a leaf draft returns a leaf plan")
+      (is (= (:total-width via-direct) (:total-width via-draft))
+          "outer dimensions agree")
+      (is (= (count (:panels via-direct)) (count (:panels via-draft)))
+          "same panel count"))))
+
+(deftest draft-to-plan-composite-roundtrip-test
+  (testing "pj/draft->plan on a CompositeDraft equals pj/plan on the composite pose"
+    (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
+          composite {:data ds
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :poses [{:layers [{:layer-type :point}]}
+                             {:layers [{:layer-type :line}]}]}
+          via-direct (pj/plan composite)
+          via-draft (pj/draft->plan (pj/draft composite))]
+      (is (pj/composite-plan? via-draft)
+          "draft->plan on a CompositeDraft returns a composite plan")
+      (is (= (:width via-direct) (:width via-draft))
+          "outer width agrees")
+      (is (= (count (:sub-plots via-direct)) (count (:sub-plots via-draft)))
+          "same number of sub-plots"))))
+
+(deftest draft-to-plan-rejects-non-draft-test
+  (testing "pj/draft->plan throws on a non-draft input"
+    (is (thrown-with-msg? Exception #"expects a draft"
+                          (pj/draft->plan "not a draft")))
+    (is (thrown-with-msg? Exception #"expects a draft"
+                          (pj/draft->plan {:not :a :draft :no})))))
+
+(deftest draft-to-plot-svg-test
+  (testing "pj/draft->plot :svg returns SVG hiccup"
+    (let [pose (-> (tc/dataset {:x [1 2 3] :y [1 2 3]})
+                   (pj/lay-point :x :y))
+          svg (pj/draft->plot (pj/draft pose) :svg {})]
+      (is (vector? svg))
+      (is (= :svg (first svg))))))
+
+;; ============================================================
 ;; Composite shared scales (Phase 4 Slice C)
 ;; ============================================================
 ;;
