@@ -57,3 +57,86 @@
            clojure.lang.ExceptionInfo
            #"Unknown render format"
            (pj/plot pose))))))
+
+;; ---- pj/save format resolution (B2: opts > extension > :svg default) ----
+
+(defn- read-magic [path]
+  (let [bs (with-open [in (java.io.FileInputStream. ^String path)]
+             (let [buf (byte-array 8)
+                   n (.read in buf)]
+               (vec (take n buf))))]
+    bs))
+
+(defn- svg? [path]
+  ;; SVG starts with "<?xml" => bytes 0x3C 0x3F 0x78 0x6D 0x6C
+  (let [bs (read-magic path)]
+    (= [0x3C 0x3F 0x78 0x6D 0x6C] (mapv #(bit-and ^int % 0xFF) (take 5 bs)))))
+
+(defn- png? [path]
+  ;; PNG magic: 0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A
+  (let [bs (read-magic path)]
+    (= [0x89 0x50 0x4E 0x47] (mapv #(bit-and ^int % 0xFF) (take 4 bs)))))
+
+(deftest save-svg-extension-default
+  (testing "(pj/save pose \"x.svg\") writes SVG"
+    (let [path "/tmp/_plotje_save_format_a.svg"
+          pose (pj/lay-point tiny :x :y)]
+      (pj/save pose path)
+      (is (svg? path))
+      (.delete (java.io.File. path)))))
+
+(deftest save-png-extension-infers-bufimg
+  (testing "(pj/save pose \"x.png\") infers :bufimg from extension and writes PNG"
+    (let [path "/tmp/_plotje_save_format_b.png"
+          pose (pj/lay-point tiny :x :y)]
+      (pj/save pose path)
+      (is (png? path))
+      (.delete (java.io.File. path)))))
+
+(deftest save-opts-format-overrides-extension
+  (testing "(pj/save pose \"x.png\" {:format :svg}) writes SVG (opts wins, warns)"
+    (let [path "/tmp/_plotje_save_format_c.png"
+          pose (pj/lay-point tiny :x :y)]
+      (pj/save pose path {:format :svg})
+      (is (svg? path))
+      (.delete (java.io.File. path))))
+
+  (testing "(pj/save pose \"x.svg\" {:format :bufimg}) writes PNG (opts wins, warns)"
+    (let [path "/tmp/_plotje_save_format_d.svg"
+          pose (pj/lay-point tiny :x :y)]
+      (pj/save pose path {:format :bufimg})
+      (is (png? path))
+      (.delete (java.io.File. path)))))
+
+(deftest save-opts-format-on-pose
+  (testing ":format set via pj/options on the pose flows through pj/save"
+    (let [path "/tmp/_plotje_save_format_e.png"
+          pose (-> tiny
+                   (pj/lay-point :x :y)
+                   (pj/options {:format :bufimg}))]
+      (pj/save pose path)
+      (is (png? path))
+      (.delete (java.io.File. path)))))
+
+(deftest save-png-wrapper-pins-bufimg
+  (testing "pj/save-png writes PNG regardless of path extension"
+    (let [path "/tmp/_plotje_save_format_f.svg"
+          pose (pj/lay-point tiny :x :y)]
+      (pj/save-png pose path)
+      (is (png? path))
+      (.delete (java.io.File. path)))))
+
+(deftest save-default-fallback-svg
+  (testing "(pj/save pose \"x.unknownext\") falls back to :svg"
+    (let [path "/tmp/_plotje_save_format_g.unknownext"
+          pose (pj/lay-point tiny :x :y)]
+      (pj/save pose path)
+      (is (svg? path))
+      (.delete (java.io.File. path)))))
+
+(deftest save-non-map-opts-throws
+  (testing "(pj/save pose path <vector>) throws with helpful message"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"opts map as the third"
+         (pj/save (pj/lay-point tiny :x :y) "/tmp/_x.svg" [:not :a :map])))))

@@ -1738,54 +1738,76 @@
                    " pj/pose with sub-poses for a composite.")
               {:caller caller :pose fr})))))
 
+(defn- infer-format-from-path
+  "Map a path's file extension to a render format. Returns nil for
+   unknown extensions; callers fall back to opts or default."
+  [path-str]
+  (let [lower (.toLowerCase ^String path-str)]
+    (cond
+      (.endsWith lower ".svg") :svg
+      (.endsWith lower ".png") :bufimg
+      :else nil)))
+
 (defn save
-  "Save a plot to an SVG file.
+  "Save a plot to a file. Format resolution, in precedence order:
+   1. `:format` in the pose's `:opts` (or the 3-arity `opts` map) wins.
+   2. Otherwise inferred from the path extension (`.svg` -> `:svg`,
+      `.png` -> `:bufimg`).
+   3. Default `:svg`.
+
+   When the resolved format and the path extension disagree, prints
+   a warning -- the file still gets the bytes the resolved format
+   produces, but the extension is misleading.
+
    fr   -- a pose.
    path -- file path (string or java.io.File).
-   opts -- same options as plot (:width, :height, :title, :theme, etc.).
+   opts -- same options as plot (:format, :width, :height, :title, ...).
    Tooltip and brush interactivity are not included in saved files.
    Returns the path.
-   (save my-pose \"plot.svg\")
-   (save my-pose \"plot.svg\" {:width 800 :height 600})"
-  ([fr path]
-   (save fr path {}))
+   (save my-pose \"plot.svg\")                       ;; SVG
+   (save my-pose \"plot.png\")                       ;; inferred PNG
+   (save my-pose \"plot.svg\" {:format :bufimg})     ;; opts override (warns)"
+  ([fr path] (save fr path nil))
   ([fr path opts]
+   (when-not (or (nil? opts) (map? opts))
+     (throw (ex-info (str "pj/save expects an opts map as the third"
+                          " argument, got " (pr-str (type opts)) ": "
+                          (pr-str opts) ".")
+                     {:caller "pj/save" :value opts})))
    (let [path-str (str path)
-         fr (ensure-pose fr)]
-     (assert-saveable-pose! "pj/save" fr)
-     (when-not (.endsWith path-str ".svg")
-       (println (str "Warning: save produces SVG output, but path does not end with .svg: " path-str)))
-     (let [fr (if (seq opts) (options fr opts) fr)
-           ;; Composites render via the compositor (one membrane tree
-           ;; built by tiling each leaf's plan). Plain leaves render
-           ;; via the per-plan path. Without this branch, composite
-           ;; poses save as empty SVG because the top-level plan
-           ;; carries :sub-plots rather than :panels.
-           svg-hiccup (if (pose/composite? fr)
-                        (compositor/composite->plot fr :svg)
-                        (render-impl/plan->plot (plan fr) :svg (:opts fr {})))]
-       (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                       (svg/hiccup->svg-str svg-hiccup)))
+         fr (ensure-pose fr)
+         _ (assert-saveable-pose! "pj/save" fr)
+         fr (if (seq opts) (options fr opts) fr)
+         path-fmt (infer-format-from-path path-str)
+         resolved-fmt (or (:format (:opts fr)) path-fmt :svg)]
+     (when (and path-fmt (not= path-fmt resolved-fmt))
+       (println (str "Warning: pj/save writing " (name resolved-fmt)
+                     " bytes to a path with extension suggesting "
+                     (name path-fmt) ": " path-str)))
+     (ensure-renderer-loaded! resolved-fmt)
+     (let [out (if (pose/composite? fr)
+                 (compositor/composite->plot fr resolved-fmt)
+                 (render-impl/plan->plot (plan fr) resolved-fmt (:opts fr {})))]
+       (case resolved-fmt
+         :svg    (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                                 (svg/hiccup->svg-str out)))
+         :bufimg ((resolve 'scicloj.plotje.render.bufimg/save-png) out path)
+         (throw (ex-info (str "pj/save does not know how to write format "
+                              (pr-str resolved-fmt) " to a file. Supported: "
+                              ":svg, :bufimg.")
+                         {:format resolved-fmt :path path-str})))
        path))))
 
 (defn save-png
-  "Save a plot to a PNG file via membrane's Java2D backend.
+  "Save a plot as a PNG file. Convenience wrapper around `pj/save`
+   that pins `:format :bufimg`. Equivalent to:
+     (pj/save fr path (assoc opts :format :bufimg))
    fr   -- a pose.
    path -- file path (string or java.io.File).
-   opts -- same options as save (:width, :height, :title, :theme, etc.).
+   opts -- same options as save (:width, :height, :title, :theme, ...).
    Returns the path.
    (save-png my-pose \"plot.png\")
    (save-png my-pose \"plot.png\" {:width 800 :height 600})"
-  ([fr path]
-   (save-png fr path {}))
+  ([fr path] (save-png fr path nil))
   ([fr path opts]
-   (require 'scicloj.plotje.render.bufimg)
-   (let [fr (ensure-pose fr)
-         _ (assert-saveable-pose! "pj/save-png" fr)
-         fr (if (seq opts) (options fr opts) fr)
-         ;; Same composite/leaf branch as pj/save: composites go through
-         ;; the compositor (one membrane tree), leaves through plan->plot.
-         img (if (pose/composite? fr)
-               (compositor/composite->plot fr :bufimg)
-               (render-impl/plan->plot (plan fr) :bufimg (:opts fr {})))]
-     ((resolve 'scicloj.plotje.render.bufimg/save-png) img path))))
+   (save fr path (assoc (or opts {}) :format :bufimg))))
