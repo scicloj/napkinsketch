@@ -124,7 +124,9 @@
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
+                                (= 150 (:points s))
+                                (contains? (:alphas s) 0.5)
+                                (contains? (:sizes s) 5.0))))])
 
 ;; `:size` controls line thickness on line-based marks:
 
@@ -139,7 +141,8 @@
     (pj/lay-bar :species {:alpha 0.4}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (= 3 (:polygons s))))])
+                           (and (= 3 (:polygons s))
+                                (contains? (:alphas s) 0.4))))])
 
 ;; ## Annotations
 

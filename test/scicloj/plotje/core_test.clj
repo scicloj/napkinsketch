@@ -1538,6 +1538,50 @@
                           #":position :nonsense.*not a registered position"
                           (pj/lay-point {:a [1 2] :b [3 4]} :a :b {:position :nonsense})))))
 
+(deftest svg-summary-aesthetic-coverage-test
+  ;; persona round-2 (test-quality auditor) flagged that notebook
+  ;; tests asserting only :points / :lines / :panels could pass even
+  ;; if a :color "#hex" / :size N / :alpha N / :shape :col mapping
+  ;; were silently dropped (the regression class that bit
+  ;; tile-color-synonym-test). pj/svg-summary now extracts data-mark
+  ;; aesthetic variety so a single predicate catches each failure
+  ;; mode.
+  (let [iris-ds (tc/dataset {:x (range 60)
+                             :y (mapv (partial * 2) (range 60))
+                             :g (concat (repeat 20 "a") (repeat 20 "b") (repeat 20 "c"))})
+        base    (-> iris-ds (pj/lay-point :x :y))]
+    (testing ":colors set is non-empty even on a default plot"
+      (is (seq (:colors (pj/svg-summary base)))))
+
+    (testing "explicit :color literal appears in :colors set"
+      (let [s (pj/svg-summary (-> iris-ds (pj/lay-point :x :y {:color "#E74C3C"})))]
+        (is (contains? (:colors s) "rgb(231,76,60)")
+            "the literal #E74C3C must reach the rendered SVG")))
+
+    (testing ":color column mapping produces strictly more colors than the default"
+      (let [s-default (pj/svg-summary base)
+            s-mapped  (pj/svg-summary (-> iris-ds (pj/lay-point :x :y {:color :g})))]
+        (is (> (count (:colors s-mapped)) (count (:colors s-default)))
+            "mapping :color :g (3 categories) must add colors beyond default")))
+
+    (testing "explicit :size literal appears in :sizes set"
+      (let [s (pj/svg-summary (-> iris-ds (pj/lay-point :x :y {:size 12})))]
+        (is (contains? (:sizes s) 12.0)
+            "the literal :size 12 must reach the rendered :rx")))
+
+    (testing "explicit :alpha literal appears in :alphas set"
+      (let [s (pj/svg-summary (-> iris-ds (pj/lay-point :x :y {:alpha 0.3})))]
+        (is (contains? (:alphas s) 0.3)
+            "the literal :alpha 0.3 must reach the rendered fill-opacity")))
+
+    (testing ":shape column mapping produces multiple SVG primitive types"
+      (let [s-default (pj/svg-summary base)
+            s-mapped  (pj/svg-summary (-> iris-ds (pj/lay-point :x :y {:shape :g})))]
+        (is (= 1 (count (:shapes s-default)))
+            "default plot uses a single primitive type")
+        (is (> (count (:shapes s-mapped)) 1)
+            "mapping :shape :g (3 categories) must produce multiple primitive types")))))
+
 (deftest alpha-on-marks-test
   ;; persona-16 H4 + H7. Closes P11-R2 F1, F2.
   ;; H4: line/step/lm/loess/errorbar/lollipop -- alpha was put in style but

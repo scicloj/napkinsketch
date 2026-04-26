@@ -279,7 +279,9 @@
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (pos? (:lines s))
-                                (pos? (:points s)))))])
+                                (pos? (:points s))
+                                (contains? (:colors s) "rgb(33,150,243)")
+                                (contains? (:sizes s) 3.0))))])
 
 ;; ### Contour + scatter
 

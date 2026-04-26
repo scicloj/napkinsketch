@@ -442,11 +442,12 @@
 (defn svg-summary
   "Extract structural summary from SVG hiccup for testing.
    Returns a map with :width, :height, :panels, :points, :lines,
-   :polygons, :tiles, :visible-tiles, and :texts — useful for asserting
-   plot structure.
+   :polygons, :tiles, :visible-tiles, :texts, :colors, :sizes,
+   :alphas, and :shapes — useful for asserting plot structure and
+   that aesthetic mappings (color/size/alpha/shape) took effect.
    (svg-summary (plot views))  — summary of rendered SVG
 
-   Counts:
+   Structure counts:
    :panels  — number of plot panels (large background rectangles)
    :points  — number of data point markers (small rounded rects)
    :lines   — number of non-grid polylines (data lines, annotations, whiskers)
@@ -454,6 +455,13 @@
    :tiles   — number of heatmap tile rectangles (small rects without border-radius)
    :visible-tiles — tiles with positive width and height (excludes degenerate zero-extent tiles)
    :texts   — vector of all text content strings
+
+   Aesthetic-coverage sets (extracted across data shapes only;
+   theme/legend/axis chrome is excluded):
+   :colors  — sorted set of distinct fill/stroke colors
+   :sizes   — sorted set of distinct point :rx values
+   :alphas  — sorted set of distinct non-default opacity values
+   :shapes  — sorted set of distinct SVG element types used by data marks
 
    Accepts an optional theme map to detect grid-colored polylines correctly
    when a custom theme is used."
@@ -516,7 +524,38 @@
                                             (pos? (double (:height a)))))
                                     tile-rects)
          ;; Lines: filter out grid-colored polylines (theme-derived)
-         data-polylines (remove #(= grid-color (get (second %) :stroke)) polylines)]
+         data-polylines (remove #(= grid-color (get (second %) :stroke)) polylines)
+         ;; Aesthetic coverage: extract user-visible color/size/alpha/
+         ;; shape variety across data shapes. Useful for asserting that
+         ;; mapping a column to an aesthetic actually took effect (a
+         ;; regression that silently dropped :color "#hex" or
+         ;; :size 10 wouldn't change point counts but WOULD reduce
+         ;; these sets to a single default value).
+         data-shapes (concat data-rects data-polylines polygons
+                             visible-tile-rects)
+         data-attrs  (map second data-shapes)
+         non-default-color? (fn [c] (and c (not= c grid-color) (not= c bg-color)))
+         data-colors (->> data-attrs
+                          (mapcat (juxt :fill :stroke))
+                          (filter non-default-color?)
+                          (into (sorted-set)))
+         data-sizes  (->> data-rects
+                          (map second)
+                          (keep :rx)
+                          (map double)
+                          (filter pos?)
+                          (into (sorted-set)))
+         data-alphas (->> data-attrs
+                          (mapcat (juxt :fill-opacity :stroke-opacity))
+                          (keep identity)
+                          (map double)
+                          ;; Drop the default fully-opaque value so the
+                          ;; set reports user-set alphas, not noise.
+                          (remove #(== 1.0 %))
+                          (into (sorted-set)))
+         data-prims  (->> data-shapes
+                          (map first)
+                          (into (sorted-set)))]
      {:width (:width attrs)
       :height (:height attrs)
       :panels (count panel-rects)
@@ -525,4 +564,8 @@
       :polygons (count polygons)
       :tiles (count tile-rects)
       :visible-tiles (count visible-tile-rects)
-      :texts (mapv last texts)})))
+      :texts (mapv last texts)
+      :colors data-colors
+      :sizes data-sizes
+      :alphas data-alphas
+      :shapes data-prims})))

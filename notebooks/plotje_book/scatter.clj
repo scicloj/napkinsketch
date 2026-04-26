@@ -57,7 +57,8 @@
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
-                                (= 150 (:points s)))))])
+                                (= 150 (:points s))
+                                (contains? (:colors s) "rgb(231,76,60)"))))])
 
 ;; ## Custom Dimensions
 
