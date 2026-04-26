@@ -92,10 +92,10 @@
 ;; one layer. For a single-panel plot the scope hierarchy has two
 ;; levels, from narrow to broad:
 ;;
-;; | Scope  | Set via           | Reaches                    |
-;; |:-------|:------------------|:---------------------------|
-;; | Layer  | `pj/lay-*` opts   | that one layer             |
-;; | Pose  | `pj/pose` opts   | every layer on this pose  |
+;; | Scope  | Set via              | Reaches                    |
+;; |:-------|:---------------------|:---------------------------|
+;; | Layer  | `pj/lay-*` mapping   | that one layer             |
+;; | Pose   | `pj/pose` mapping    | every layer on this pose  |
 ;;
 ;; When the same key is set at both scopes, the narrower one wins.
 ;;
@@ -289,7 +289,7 @@ demo
 ;; - [Pose Rules](./plotje_book.pose_rules.html) --
 ;;   precise rules for each pose-world function: `pj/pose`,
 ;;   `pj/lay-*`, `pj/arrange`, `pj/options`, `pj/scale`, `pj/coord`,
-;;   `pj/facet`. Twenty-eight rules with tested assertions.
+;;   `pj/facet`. Twenty-nine rules with tested assertions.
 ;; - [Configuration](./plotje_book.configuration.html) --
 ;;   the four configuration sources and every configuration key.
 ;; - [Glossary](./plotje_book.glossary.html) -- definitions

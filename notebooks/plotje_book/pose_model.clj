@@ -23,9 +23,13 @@
 ;; ## Idea 1: A pose describes a plot
 ;;
 ;; In Plotje, every plot you compose is a **pose** -- a plain
-;; Clojure value that describes what to show. Every function in
-;; the API takes a pose and returns a pose, so plots build up
-;; through ordinary `->` threading.
+;; Clojure value that describes what to show. The composition
+;; functions (`pj/pose`, `pj/lay-*`, `pj/options`, `pj/scale`,
+;; `pj/coord`, `pj/facet`, `pj/arrange`) all take a pose and
+;; return a pose, so plots build up through ordinary `->`
+;; threading. Output functions (`pj/plan`, `pj/plot`, `pj/save`,
+;; `pj/draft`) take a pose and return a different shape -- a plan,
+;; an SVG, a file path -- and so close the pipeline.
 ;;
 ;; The API has two verb-noun pairs working in parallel: `pj/pose`
 ;; *poses* the data into a *pose*; `pj/lay-*` *lays* a *layer*
@@ -161,7 +165,12 @@ multi-layer
 
 (kind/test-last [(fn [v] (empty? (:layers v)))])
 
-;; The principle: **`resolved` = `(or your-choice (inferred-from-data))`**.
+;; The principle: **the inferred value fills in only when you have
+;; not specified one yourself.** Explicit choices flow down the
+;; pose tree and override inference. (One subtlety: an explicit
+;; `nil` is a real choice and cancels inheritance -- it does not
+;; fall back to inference. See Pose Rule S3 for the precise
+;; semantics.)
 ;;
 ;; This works for marks (the shape shown, like points or bars), stats
 ;; (the computation before rendering, like binning), color types, and
@@ -170,7 +179,7 @@ multi-layer
 
 ;; ## Idea 5: Poses compose
 ;;
-;; Every function in the API takes a pose and returns a pose.
+;; Composition functions take a pose and return a pose.
 ;; A **composite** pose is a plain map too -- with `:poses`
 ;; holding its sub-poses and `:layout` describing how to tile
 ;; them. Here is a two-panel composite written as an explicit map:

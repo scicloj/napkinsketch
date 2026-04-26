@@ -90,8 +90,8 @@ my-pose
 ;;
 ;; The **mark** is the visual shape shown for each data point or
 ;; group. Several layer types may share the same mark -- for
-;; instance, `lm` and `loess` both produce lines, and `area`,
-;; `stacked-area`, and `density` all produce filled regions.
+;; instance, `:line` and `:smooth` both produce lines, and `:area`
+;; and `:density` both produce filled regions.
 ;; See the [Layer Types](./plotje_book.layer_types.html) chapter for
 ;; a table of all built-in marks.
 

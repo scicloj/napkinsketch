@@ -177,7 +177,7 @@ two-panel
 
 ;; ### Layer-level mapping
 ;;
-;; Opts in `pj/lay-*` scope to that layer alone:
+;; A mapping in `pj/lay-*` scopes to that layer alone:
 
 (-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width)
@@ -766,4 +766,4 @@ two-panel
 
 ;; ## What's Next
 ;;
-;; - [**Pose Rules**](./plotje_book.pose_rules.html) -- 28 rules that formalize the model with tested assertions
+;; - [**Pose Rules**](./plotje_book.pose_rules.html) -- 29 rules that formalize the model with tested assertions

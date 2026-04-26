@@ -7,7 +7,7 @@
 ;; Add Plotje to your `deps.edn`:
 ;;
 ;; ```clojure
-;; {:deps {org.scicloj/plotje {:mvn/version "..."}}}
+;; {:deps {org.scicloj/plotje {:mvn/version "0.1.0-SNAPSHOT"}}}
 ;; ```
 ;;
 ;; Then require the API:

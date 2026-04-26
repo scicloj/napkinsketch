@@ -73,7 +73,7 @@ scatter-pose
 ;; - `:legend` is `nil` -- no color mapping
 ;; - `:layout` has `:legend-w 0` -- no space reserved for a legend
 ;; - The single layer has `:mark :point` and a single `:groups` entry with all 5 data
-;;   points, colored in the default color (steel blue)
+;;   points, colored in the default color (dark gray, `#333`)
 ;;
 ;; Each of those bullets is its own inference rule, with a default
 ;; and an explicit override. The rest of the chapter walks them.
@@ -394,7 +394,7 @@ red-color-pose
 ;; ### No color -- default gray
 
 ;; Look back at the first scatter plan above -- its single `:groups`
-;; entry has the default color (steel blue). No legend.
+;; entry has the default color (dark gray, `#333`). No legend.
 
 ;; ## Grouping
 ;;
@@ -1211,9 +1211,9 @@ graph TD
 ;; | Aesthetic classification | keyword = column, string = color/column | explicit `:color` keyword vs hex string |
 ;; | Grouping | categorical color column | `:group` aesthetic |
 ;; | Layer type (mark + stat) | column types (see table above) | `pj/lay-point`, `pj/lay-histogram`, etc. |
-;; | Domain extent | data range + 5% padding | `(pj/scale sk :x {:domain [0 10]})` |
-;; | Domain zero-anchor | bar/stacked charts include zero | `(pj/scale sk :y {:domain [5 20]})` |
-;; | Fill domain | `[0.0, 1.0]` for fill position | `(pj/scale sk :y {:domain [0 2]})` |
+;; | Domain extent | data range + 5% padding | `(pj/scale pose :x {:domain [0 10]})` |
+;; | Domain zero-anchor | bar/stacked charts include zero | `(pj/scale pose :y {:domain [5 20]})` |
+;; | Fill domain | `[0.0, 1.0]` for fill position | `(pj/scale pose :y {:domain [0 2]})` |
 ;; | Tick values | round intervals (linear), powers of 10 (log) | wadogo scale configuration |
 ;; | Tick labels | number formatting, calendar formatting | wadogo label formatting |
 ;; | Axis labels | column name, with underscores replaced by spaces | `(pj/options {:x-label "Custom"})` |
