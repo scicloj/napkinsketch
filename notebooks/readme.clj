@@ -13,6 +13,8 @@
     (pj/lay-smooth {:stat :linear-model})
     (pj/options {:width 700 :height 420}))
 
+;; ---------------------
+
 ;; Plotje is a Clojure library for composable plotting, inspired by
 ;; the Grammar of Graphics.
 ;;
