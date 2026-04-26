@@ -1,6 +1,20 @@
 ;; # Plotje
-;; Simple and easy plotting
-;;
+;; Composable plotting in Clojure
+
+^:kindly/hide-code
+(ns readme
+  (:require [scicloj.plotje.api :as pj]
+            [scicloj.metamorph.ml.rdatasets :as rdatasets]))
+
+^:kindly/hide-code
+(-> (rdatasets/datasets-iris)
+    (pj/pose :sepal-length :sepal-width {:color :species})
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model})
+    (pj/options {:title "Sepal length vs width by species"
+                 :width 700
+                 :height 420}))
+
 ;; Plotje is a Clojure library for composable plotting, inspired by
 ;; the Grammar of Graphics.
 ;;
@@ -16,7 +30,16 @@
 ;;
 ;; ## Usage
 ;;
-;; Add to your `deps.edn`:
+;; While the first release `0.1.0` is being prepared, install Plotje
+;; directly from GitHub by adding this to your `deps.edn`:
+;;
+;; ```clojure
+;; io.github.scicloj/plotje
+;; {:git/url "https://github.com/scicloj/plotje.git"
+;;  :git/sha "<sha-from-main>"}
+;; ```
+;;
+;; Once 0.1.0 is published to Clojars, the install line will become:
 ;;
 ;; ```clojure
 ;; org.scicloj/plotje {:mvn/version "0.1.0"}
@@ -27,11 +50,7 @@
 ;; such as [Clay](https://scicloj.github.io/clay/).
 ;;
 ;; ## Quick example
-
-(ns readme
-  (:require [scicloj.plotje.api :as pj]
-            [scicloj.metamorph.ml.rdatasets :as rdatasets]))
-
+;;
 ;; Line chart with point markers from plain Clojure data:
 
 (-> [{:month "Jan" :sales 120}
@@ -49,9 +68,9 @@
 (-> (rdatasets/datasets-iris)
     (pj/pose {:color :species})
     (pj/pose (pj/cross [:sepal-length :sepal-width
-                         :petal-length :petal-width]
-                        [:sepal-length :sepal-width
-                         :petal-length :petal-width]))
+                        :petal-length :petal-width]
+                       [:sepal-length :sepal-width
+                        :petal-length :petal-width]))
     (pj/options {:title "Iris SPLOM"}))
 
 ;; ## Documentation

@@ -1,6 +1,8 @@
 
 # Plotje
-Simple and easy plotting
+Composable plotting in Clojure
+
+![](readme_files/image0.svg)
 
 Plotje is a Clojure library for composable plotting, inspired by
 the Grammar of Graphics.
@@ -34,20 +36,13 @@ Once 0.1.0 is published to Clojars, the install line will become:
 org.scicloj/plotje {:mvn/version "0.1.0"}
 ```
 
-Snapshots from `main` will also be on Clojars (deployed via
-`./snapshot.sh`).
-
 Plotje is intended to be used with data-visualization tools
 that support the [Kindly](https://scicloj.github.io/kindly) convention
 such as [Clay](https://scicloj.github.io/clay/).
 
 
 ## Quick example
-```clj
-(ns readme
-  (:require [scicloj.plotje.api :as pj]
-            [scicloj.metamorph.ml.rdatasets :as rdatasets]))
-```
+
 Line chart with point markers from plain Clojure data:
 ```clj
 (-> [{:month "Jan" :sales 120}
@@ -60,19 +55,19 @@ Line chart with point markers from plain Clojure data:
     pj/lay-point
     (pj/options {:title "Monthly Sales"}))
 ```
-![](readme_files/image0.svg)
+![](readme_files/image1.svg)
 
 Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping:
 ```clj
 (-> (rdatasets/datasets-iris)
     (pj/pose {:color :species})
     (pj/pose (pj/cross [:sepal-length :sepal-width
-                         :petal-length :petal-width]
-                        [:sepal-length :sepal-width
-                         :petal-length :petal-width]))
+                        :petal-length :petal-width]
+                       [:sepal-length :sepal-width
+                        :petal-length :petal-width]))
     (pj/options {:title "Iris SPLOM"}))
 ```
-![](readme_files/image1.svg)
+![](readme_files/image2.svg)
 
 
 ## Documentation
