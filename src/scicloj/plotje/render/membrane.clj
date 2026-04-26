@@ -4,7 +4,9 @@
    to SVG, PNG, or any other format membrane supports."
   (:require [membrane.ui :as ui]
             [scicloj.plotje.impl.defaults :as defaults]
-            [scicloj.plotje.render.panel :as panel]))
+            [scicloj.plotje.impl.resolve :as resolve]
+            [scicloj.plotje.render.panel :as panel])
+  (:import [scicloj.plotje.impl.resolve Plan CompositePlan]))
 
 ;; ---- Legend ----
 
@@ -171,11 +173,17 @@
 
 ;; ---- Plan → Membrane ----
 
-(defn plan->membrane
+(defmulti plan->membrane
   "Build a membrane drawable tree from a plan.
    Returns a vector of membrane drawables representing the complete plot.
+   Dispatches on plan defrecord type so leaf and composite plans can take
+   different rendering paths.
+
    Optional kwargs:
      :tooltip — when truthy, enables tooltip text generation on data marks."
+  (fn [plan & _] (type plan)))
+
+(defmethod plan->membrane Plan
   [plan & {:keys [tooltip] :as opts}]
   (let [cfg (defaults/resolve-config opts)
         {:keys [margin total-width total-height panel-width panel-height

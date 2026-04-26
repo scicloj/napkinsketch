@@ -19,7 +19,8 @@
             [scicloj.plotje.impl.plan :as plan]
             [scicloj.plotje.impl.render :as render-impl]
             [scicloj.plotje.impl.resolve :as resolve]
-            [scicloj.plotje.render.membrane :as membrane]))
+            [scicloj.plotje.render.membrane :as membrane])
+  (:import [scicloj.plotje.impl.resolve CompositePlan]))
 
 (def ^:private default-width 600)
 (def ^:private default-height 400)
@@ -363,56 +364,66 @@
     (assoc (resolve/->CompositePlan width height sub-plots chrome)
            :composite? true)))
 
-(defn composite->plot
-  "Render a composite pose by building a single membrane tree (one
-   translated sub-tree per leaf, plus an optional title band and an
-   optional shared legend) and dispatching to membrane->plot. Format
-   defaults to :svg; :bufimg and other registered formats work the
-   same as for single plots.
+;; ---- plan->membrane dispatch for composites ----
+;;
+;; The CompositePlan defmethod recurses: it calls plan->membrane on
+;; each sub-plot's leaf plan (dispatching to the LeafPlan method),
+;; translates each result into the composite coordinate space, and
+;; layers chrome drawables (title, strip labels, shared legend) on
+;; top. This is the slice-2 unification: the parallel implementation
+;; that lived inside composite->plot moves into the canonical
+;; pipeline as a defmethod.
+(defmethod membrane/plan->membrane CompositePlan
+  [composite-plan & _opts]
+  (let [{:keys [width sub-plots chrome]} composite-plan
+        {:keys [title title-band-h grid-rect strip-h strip-w
+                col-labels row-labels n-cols n-rows matrix?
+                shared-legend layout]} chrome
+        strips? (boolean (or (seq col-labels) (seq row-labels)))
+        leaf-trees (mapv (fn [{:keys [plan rect]}]
+                           (let [tooltip? (:tooltip (or (:opts plan) {}))
+                                 tree (if tooltip?
+                                        (membrane/plan->membrane plan :tooltip true)
+                                        (membrane/plan->membrane plan))
+                                 [x y _ _] rect]
+                             (ui/translate (double x) (double y) tree)))
+                         sub-plots)
+        col-strips (when (and strips? (seq col-labels))
+                     (if matrix?
+                       (matrix-col-strip-drawables col-labels grid-rect n-cols
+                                                   (+ title-band-h 2))
+                       (col-strip-drawables col-labels layout n-cols
+                                            (+ title-band-h 2))))
+        row-strips (when (and strips? (seq row-labels))
+                     (if matrix?
+                       (matrix-row-strip-drawables row-labels grid-rect n-rows
+                                                   0 strip-w)
+                       (row-strip-drawables row-labels layout n-rows
+                                            0 strip-w)))
+        [_ _ grid-w _] grid-rect
+        legend-tree (when shared-legend
+                      (shared-legend-drawables
+                       shared-legend
+                       (+ (double strip-w) (double grid-w) 20)
+                       (double (+ title-band-h strip-h))))
+        composed (cond-> leaf-trees
+                   (seq col-strips) (into col-strips)
+                   (seq row-strips) (into row-strips)
+                   (seq legend-tree) (into legend-tree)
+                   title             (conj (title-drawable title width)))]
+    (vec composed)))
 
-   Drives off `composite->plan` so chrome geometry and shared-legend
-   spec are computed once."
+(defn composite->plot
+  "Render a composite pose by going through the canonical
+   `pose -> plan -> membrane -> plot` pipeline. The CompositePlan
+   defmethod of plan->membrane builds the tree (per-leaf trees +
+   chrome drawables); membrane->plot dispatches by format."
   ([composite] (composite->plot composite :svg))
   ([composite format]
    (let [composite-plan (composite->plan composite)
-         {:keys [width height sub-plots chrome]} composite-plan
+         tree (membrane/plan->membrane composite-plan)
          opts (or (:opts composite) {})
-         {:keys [title title-band-h grid-rect strip-h strip-w
-                 col-labels row-labels n-cols n-rows matrix?
-                 shared-legend layout]} chrome
-         strips? (boolean (or (seq col-labels) (seq row-labels)))
-         leaf-trees (mapv (fn [{:keys [plan rect]}]
-                            (let [tooltip? (:tooltip (or (:opts plan) {}))
-                                  tree (if tooltip?
-                                         (membrane/plan->membrane plan :tooltip true)
-                                         (membrane/plan->membrane plan))
-                                  [x y _ _] rect]
-                              (ui/translate (double x) (double y) tree)))
-                          sub-plots)
-         col-strips (when (and strips? (seq col-labels))
-                      (if matrix?
-                        (matrix-col-strip-drawables col-labels grid-rect n-cols
-                                                    (+ title-band-h 2))
-                        (col-strip-drawables col-labels layout n-cols
-                                             (+ title-band-h 2))))
-         row-strips (when (and strips? (seq row-labels))
-                      (if matrix?
-                        (matrix-row-strip-drawables row-labels grid-rect n-rows
-                                                    0 strip-w)
-                        (row-strip-drawables row-labels layout n-rows
-                                             0 strip-w)))
-         [_ _ grid-w _] grid-rect
-         legend-tree (when shared-legend
-                       (shared-legend-drawables
-                        shared-legend
-                        (+ (double strip-w) (double grid-w) 20)
-                        (double (+ title-band-h strip-h))))
-         composed (cond-> leaf-trees
-                    (seq col-strips) (into col-strips)
-                    (seq row-strips) (into row-strips)
-                    (seq legend-tree) (into legend-tree)
-                    title             (conj (title-drawable title width)))
          render-opts (assoc opts
-                            :total-width width
-                            :total-height height)]
-     (render-impl/membrane->plot (vec composed) format render-opts))))
+                            :total-width (:width composite-plan)
+                            :total-height (:height composite-plan))]
+     (render-impl/membrane->plot tree format render-opts))))
