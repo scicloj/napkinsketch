@@ -1,16 +1,17 @@
 ;; # Pose Rules
 ;;
-;; This chapter is the specification for how `pj/pose`, `pj/lay-*`,
-;; `pj/arrange`, `pj/options`, `pj/scale`, `pj/coord`, `pj/facet`,
-;; and `pj/cross` compose in the pose world. Twenty-nine rules
-;; across seven sections (Construction, Layer Placement, Leaf
-;; Identity, Scope, Options, Assembly, Layout); each rule is
-;; demonstrated with a rendered pose (or plan), a printed structure,
-;; and a verified assertion.
+;; Pose Model gave the mental picture; this chapter proves it. Each
+;; of the 29 rules below carries a rendered pose (or plan), a
+;; printed structure, and a tested assertion, so the model claims
+;; are verified on every run.
 ;;
-;; Read [Pose Model](./plotje_book.pose_model.html) first --
-;; this chapter is the proof layer, not a teaching chapter. Every
-;; rule is tested on every run.
+;; The rules are organized into seven sections (Construction, Layer
+;; Placement, Leaf Identity, Scope, Options, Assembly, Layout) and
+;; cover every call shape of `pj/pose`, `pj/lay-*`, `pj/arrange`,
+;; `pj/options`, `pj/scale`, `pj/coord`, `pj/facet`, and `pj/cross`.
+;;
+;; Read [Pose Model](./plotje_book.pose_model.html) first -- this
+;; chapter is the proof layer, not a teaching chapter.
 
 (ns plotje-book.pose-rules
   (:require
