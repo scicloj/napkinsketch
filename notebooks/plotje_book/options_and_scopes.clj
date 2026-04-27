@@ -45,7 +45,7 @@
       kind/pprint))
 
 ;; ---
-;; ## Layer options
+;; ## Layer Options
 ;;
 ;; Layer options describe a specific layer. They include:
 ;;
@@ -110,7 +110,7 @@
 ;; the detailed combination rules for each category of layer option.
 
 ;; ---
-;; ## Plot options
+;; ## Plot Options
 ;;
 ;; Plot options describe the plot as a whole: its title, labels,
 ;; axis scales, coordinate system, facets. A plot has one of each
@@ -223,7 +223,7 @@
          (number? (:margin m))))])
 
 ;; ---
-;; ## A worked example
+;; ## A Worked Example
 ;;
 ;; The pose below touches two categories explicitly. The third,
 ;; configuration, shows up at render time.
@@ -282,7 +282,7 @@ demo
 ;; | `theme_set(...)`, `options(...)`             | configuration               |
 
 ;; ---
-;; ## See also
+;; ## See Also
 ;;
 ;; - [Core Concepts](./plotje_book.core_concepts.html) --
 ;;   the scope hierarchy for layer options in full.

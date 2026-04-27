@@ -40,7 +40,7 @@
    ;; Rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
-;; ## Plain data works
+;; ## Plain Data Works
 ;;
 ;; Plotje accepts plain Clojure data -- a map of columns or a
 ;; vector of row maps. No dataset wrapping needed:
@@ -57,7 +57,7 @@
 ;; This is all you need for quick plots. The rest of this chapter
 ;; covers datasets, which become useful as your data grows.
 
-;; ## What is a dataset?
+;; ## What Is a Dataset?
 ;;
 ;; A dataset is a columnar table backed by efficient typed arrays.
 ;; It is the Clojure equivalent of an R data frame or a Python pandas
@@ -69,7 +69,7 @@
 ;; higher-level wrapper with a more ergonomic API. Plotje
 ;; uses Tablecloth internally and in its documentation.
 
-;; ## Creating datasets
+;; ## Creating Datasets
 ;;
 ;; ### From a map of columns
 

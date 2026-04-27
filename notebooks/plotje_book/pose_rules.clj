@@ -1022,7 +1022,7 @@ l4-shared
          (= {:color :species} (:mapping pose))))])
 
 ;; ---
-;; ## A note on `pj/cross`
+;; ## A Note on `pj/cross`
 ;;
 ;; `pj/cross` is not a rule. It is a pure pair-generator --
 ;; `(for [x xs y ys] [x y])` -- returning `[x-col y-col]` pairs. It

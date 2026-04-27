@@ -191,7 +191,7 @@ dashboard
 ;; two rows; each row is itself a horizontal composite of two plots.
 ;; The top-level `:data` is inherited by every leaf.
 
-;; ## Notes on the current implementation
+;; ## Notes on the Current Implementation
 ;;
 ;; A few details about how composition renders today, in case they
 ;; matter for a layout you're sketching:
