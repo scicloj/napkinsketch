@@ -398,7 +398,6 @@
 
 (-> (rdatasets/datasets-iris)
     (pj/pose {:color :species})
-    pj/lay-point
     (pj/pose (pj/cross splom-cols splom-cols))
     (pj/options {:brush true}))
 

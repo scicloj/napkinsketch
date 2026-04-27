@@ -146,34 +146,11 @@
 
 (kind/test-last [(fn [ps] (= 3 (count ps)))])
 
-;; ## [SPLOM](https://en.wikipedia.org/wiki/Scatter_plot#Scatter_plot_matrices) (Scatter Plot Matrix)
-;;
-;; `pj/cross` generates all pairs of columns. Combined with the
-;; multi-variable layout, this produces a scatter plot matrix (SPLOM):
-
-(def cols [:sepal-length :sepal-width :petal-length :petal-width])
-
-(-> (rdatasets/datasets-iris)
-    (pj/pose {:color :species})
-    (pj/pose (pj/cross cols cols)))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 16 (:panels s))
-                                (= (* 12 150) (:points s))
-                                (pos? (:polygons s)))))])
-
-(kind/test-last
- [(fn [v]
-    (->> (:sub-plots (pj/plan v))
-         (every? (fn [{:keys [path plan]}]
-                   (let [[r c] path
-                         mark (-> plan :panels first :layers first :mark)]
-                     (= mark (if (= r c) :bar :point)))))))])
-
-;; Diagonal panels (where x = y) show histograms -- inference detects
-;; same-column pairs. Off-diagonal panels show scatter plots. All
-;; panels are colored by species (the color mapping is at the
-;; composite root).
+;; A related multi-panel layout, the **scatter plot matrix (SPLOM)**,
+;; uses `pj/cross` rather than `pj/facet` -- the panels show all
+;; pairs of variables instead of one variable split across panels.
+;; See the [Scatter](./plotje_book.scatter.html) chapter for the
+;; canonical SPLOM example.
 
 ;; ## Comparing Multiple Columns
 ;;

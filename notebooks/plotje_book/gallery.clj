@@ -702,16 +702,6 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
-;; ### Scatter matrix (SPLOM) with color
-;; Source: [Vega-Lite: Scatter Matrix](https://vega.github.io/vega-lite/examples/interactive_splom.html)
-
-(-> (rdatasets/datasets-iris)
-    (pj/pose {:color :species})
-    (pj/pose (pj/cross [:sepal-length :sepal-width :petal-length :petal-width]
-                       [:sepal-length :sepal-width :petal-length :petal-width])))
-
-(kind/test-last [(fn [v] (= 16 (:panels (pj/svg-summary v))))])
-
 ;; ### Density normalized histogram overlay
 ;; Source: [Python Graph Gallery: Histogram + Density](https://python-graph-gallery.com/density-and-histogram-together/)
 
