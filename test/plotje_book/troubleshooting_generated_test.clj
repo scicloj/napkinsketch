@@ -215,3 +215,40 @@
 (deftest
  t47_l369
  (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v46_l364)))
+
+
+(def
+ v49_l388
+ (->
+  {:cat ["A" "A" "B" "B" "C" "C"],
+   :y [10 20 30 40 50 60],
+   :group ["a" "b" "a" "b" "a" "b"]}
+  (pj/lay-value-bar :cat :y {:color :group, :position :dodge})))
+
+
+(deftest
+ t50_l393
+ (is ((fn [v] (= 6 (:polygons (pj/svg-summary v)))) v49_l388)))
+
+
+(def
+ v52_l411
+ (-> (rdatasets/datasets-chickwts) (pj/pose :feed) pj/lay-bar))
+
+
+(deftest
+ t53_l415
+ (is
+  ((fn
+    [v]
+    (pos?
+     (count
+      (filter
+       #{"soybean"
+         "meatmeal"
+         "sunflower"
+         "horsebean"
+         "casein"
+         "linseed"}
+       (:texts (pj/svg-summary v))))))
+   v52_l411)))

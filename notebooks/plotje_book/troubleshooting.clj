@@ -368,6 +368,54 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
+;; ## Dodge Has No Effect on Point Layers
+
+;; **Symptom**: Adding `:position :dodge` to `pj/lay-point` (or other
+;; non-bar marks) does not spread points apart by group -- the plot
+;; looks identical to the version without `:position :dodge`.
+;;
+;; **Cause**: `:position :dodge` is implemented for bar-family marks
+;; (`pj/lay-bar`, `pj/lay-value-bar`). On point/line/jitter and
+;; several other marks the option is accepted but silently ignored.
+;;
+;; **Fix for now**: For grouped categorical layouts use
+;; `pj/lay-value-bar` (or `pj/lay-bar` when binning a count); dodge
+;; works there. To distinguish overlapping points by group on a
+;; numeric x, encode the group with `:color`, `:shape`, or
+;; pre-compute small offsets in the data. A proper dodge for points
+;; is tracked in `CHANGELOG.md` Known limitations.
+
+(-> {:cat   ["A" "A" "B" "B" "C" "C"]
+     :y     [10 20 30 40 50 60]
+     :group ["a" "b" "a" "b" "a" "b"]}
+    (pj/lay-value-bar :cat :y {:color :group :position :dodge}))
+
+(kind/test-last [(fn [v] (= 6 (:polygons (pj/svg-summary v))))])
+
+;; ## Polar Bar Chart Has No Category Labels
+
+;; **Symptom**: A bar chart flipped to polar (`(pj/coord :polar)`)
+;; renders as a rose chart, but no category text appears anywhere
+;; around the wedges.
+;;
+;; **Cause**: Polar coord does not currently emit angular tick labels
+;; for bar-family marks -- the underlying axis machinery places
+;; labels along Cartesian axes that polar replaces with a circular
+;; layout, and the equivalent angular ticks are not yet implemented.
+;;
+;; **Fix for now**: Drop `(pj/coord :polar)` for the labeled view, or
+;; combine the polar plot with a separate Cartesian-coord version
+;; for the legend. A proper rose-chart label pass is tracked in
+;; `CHANGELOG.md` Known limitations.
+
+(-> (rdatasets/datasets-chickwts)
+    (pj/pose :feed)
+    pj/lay-bar)
+
+(kind/test-last [(fn [v] (pos? (count (filter #{"casein" "horsebean" "linseed"
+                                                "meatmeal" "soybean" "sunflower"}
+                                              (:texts (pj/svg-summary v))))))])
+
 ;; ## Heatmap with Categorical Axes
 ;;
 ;; **Symptom**: `"class java.lang.String cannot be cast to class
