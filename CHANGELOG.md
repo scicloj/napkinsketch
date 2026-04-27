@@ -11,6 +11,31 @@ Staged for the upcoming first public alpha release. The API and
 visual defaults are still subject to change based on early adopter
 feedback.
 
+### Retired: `pj/prepare-pose` (consolidated into `pj/pose`)
+
+`pj/pose` is now the single public constructor. The 1-arity
+`(pj/pose hand-typed-map)` accepts a literal pose-shaped map --
+previously the role of `pj/prepare-pose`, which retires from the
+public API. Existing notebooks and tests have been migrated.
+
+The literal-map path validates the map (warns on unknown top-level
+keys and `:mapping` keys at every depth, throws on non-column-ref
+position mappings) and tags it for notebook auto-render. It does
+not normalize the shape: keys are not reordered, `:data` is not
+coerced at construction time (the pipeline coerces per leaf at
+draft time), and empty `:mapping`/`:opts` are not elided. The
+user's typed shape is preserved verbatim apart from the metadata.
+The cosmetic cleanup is reserved for constructor paths where
+`pj/pose`, `pj/lay-*`, `pj/options`, `pj/arrange`, and friends
+build the map themselves.
+
+Validation also now fires at every public entry point -- `pj/plot`,
+`pj/plan`, `pj/draft`, `pj/lay-*` -- so a literal map with a typo
+surfaces a single warning at the entry point rather than crashing
+deep in the pipeline. (Idempotent on already-tagged input, so the
+same map flowing through several public functions warns once, not
+once per call.)
+
 ### Renamed: `frame` -> `pose`
 
 The library's central concept is now **`pose`** -- the deliberate

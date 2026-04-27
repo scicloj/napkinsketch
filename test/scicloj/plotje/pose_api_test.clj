@@ -1,7 +1,7 @@
 (ns scicloj.plotje.pose-api-test
   "Tests for the pj/pose public constructor, polymorphic dispatch,
    and composite-pose semantics (lay-*, options/scale/coord,
-   prepare-pose)."
+   literal-map poses)."
   (:require [clojure.test :refer [deftest testing is]]
             [tablecloth.api :as tc]
             [scicloj.plotje.api :as pj]))
@@ -717,22 +717,21 @@
       (is (= :g (get-in fr [:mapping :color])) "good keys survive"))))
 
 ;; ============================================================
-;; pj/prepare-pose: promote hand-built pose maps
+;; pj/pose 1-arity on a literal pose-shaped map
 ;; ============================================================
 
-(deftest prepare-pose-attaches-kindly-test
-  (testing "leaf map: prepare-pose attaches :kind/fn metadata"
-    (let [fr (pj/prepare-pose
+(deftest pose-literal-map-attaches-kindly-test
+  (testing "leaf map: pj/pose attaches :kind/fn metadata"
+    (let [fr (pj/pose
               {:data {:x [1 2 3] :y [4 5 6]}
                :mapping {:x :x :y :y}
                :layers [{:layer-type :point}]})]
       (is (pj/pose? fr))
-      (is (= :kind/fn (:kindly/kind (meta fr))))
-      (is (tc/dataset? (:data fr)) "data coerced to dataset")))
+      (is (= :kind/fn (:kindly/kind (meta fr))))))
 
-  (testing "composite map: prepare-pose attaches :kind/fn metadata"
+  (testing "composite map: pj/pose attaches :kind/fn metadata"
     (let [ds (tc/dataset {:x [1 2 3] :y [4 5 6]})
-          fr (pj/prepare-pose
+          fr (pj/pose
               {:data ds
                :layout {:direction :horizontal}
                :poses [{:mapping {:x :x :y :y}
@@ -742,54 +741,32 @@
       (is (= :kind/fn (:kindly/kind (meta fr))))
       (is (= 2 (:panels (pj/svg-summary fr)))))))
 
-(deftest prepare-pose-coerces-data-recursively-test
-  (testing ":data on nested sub-poses is coerced to a dataset"
-    (let [fr (pj/prepare-pose
-              {:layout {:direction :horizontal}
-               :poses [{:data {:a [1 2] :b [3 4]}
-                        :mapping {:x :a :y :b}
-                        :layers [{:layer-type :point}]}
-                       {:data {:c [10 20] :d [30 40]}
-                        :mapping {:x :c :y :d}
-                        :layers [{:layer-type :point}]}]})]
-      (is (every? tc/dataset?
-                  (map :data (:poses fr)))
-          "each sub-pose's :data is a tablecloth dataset"))))
+(deftest pose-literal-map-preserves-shape-test
+  (testing "the user's typed map is preserved verbatim (no key reorder, no coercion)"
+    (let [raw-data {:x [1 2 3] :y [4 5 6]}
+          input    {:data raw-data
+                    :mapping {:x :x :y :y}
+                    :layers [{:layer-type :point}]}
+          fr       (pj/pose input)]
+      (is (= input (with-meta fr nil))
+          "value is unchanged apart from metadata")
+      (is (identical? raw-data (:data fr))
+          ":data is not coerced -- the pipeline coerces per leaf at draft time"))))
 
-(deftest prepare-pose-key-order-test
-  (testing "reorder places :data before :poses; :poses last"
-    (let [ds (tc/dataset {:x [1 2] :y [3 4]})
-          composite (pj/prepare-pose
-                     {:data ds
-                      :layout {:direction :horizontal}
-                      :poses [{:mapping {:x :x :y :y}
-                               :layers [{:layer-type :point}]}]})]
-      (is (= [:layout :data :poses] (vec (keys composite)))
-          "outer keys print in readable order")))
-
-  (testing "leaf: :data goes last (no :poses to precede)"
-    (let [leaf (pj/prepare-pose
-                {:data {:x [1 2] :y [3 4]}
-                 :mapping {:x :x :y :y}
-                 :layers [{:layer-type :point}]
-                 :opts {:title "t"}})]
-      (is (= [:opts :mapping :layers :data] (vec (keys leaf)))))))
-
-(deftest prepare-pose-idempotent-test
+(deftest pose-literal-map-idempotent-test
   (testing "wrapping twice yields a value with the same rendered SVG"
     (let [m0 {:data {:x [1 2 3] :y [4 5 6]}
               :mapping {:x :x :y :y}
               :layers [{:layer-type :point}]}
-          m1 (pj/prepare-pose m0)
-          m2 (pj/prepare-pose m1)]
+          m1 (pj/pose m0)
+          m2 (pj/pose m1)]
       (is (= :kind/fn (:kindly/kind (meta m2))))
-      (is (= (pj/svg-summary m1) (pj/svg-summary m2)))
-      (is (tc/dataset? (:data m2)) "still coerced after double pass"))))
+      (is (= (pj/svg-summary m1) (pj/svg-summary m2))))))
 
-(deftest prepare-pose-outer-layers-distribute-test
+(deftest pose-literal-map-outer-layers-distribute-test
   (testing "an outer-scope :layer on a composite renders in every leaf"
     (let [ds (tc/dataset {:x [1 2 3] :a [4 5 6] :b [7 8 9]})
-          fr (pj/prepare-pose
+          fr (pj/pose
               {:data ds
                :mapping {:x :x}
                :layers [{:layer-type :point}]
@@ -800,11 +777,11 @@
       (is (= 6 (:points summary))
           "3 points per leaf x 2 leaves = 6; outer :layers distributes"))))
 
-(deftest prepare-pose-warns-unknown-keys-test
+(deftest pose-literal-map-warns-unknown-keys-test
   (testing ":pose (singular) and other typos trigger a warning"
     (let [warnings (java.io.StringWriter.)
           fr (binding [*out* warnings]
-               (pj/prepare-pose
+               (pj/pose
                 {:data {:x [1 2] :y [3 4]}
                  :mapping {:x :x :y :y}
                  :layers [{:layer-type :point}]
@@ -814,4 +791,34 @@
       (is (re-find #":pose" msg))
       (is (re-find #":shared-scales" msg))
       (is (contains? fr :pose)
-          "unknown keys are warned but not stripped (might be extensions)"))))
+          "unknown keys are warned but not stripped (might be extensions)")))
+
+  (testing "unknown :mapping keys also warn"
+    (let [warnings (java.io.StringWriter.)]
+      (binding [*out* warnings]
+        (pj/pose {:data {:x [1 2] :y [3 4]}
+                  :mapping {:x :x :y :y :colour :y}  ; typo: British spelling
+                  :layers [{:layer-type :point}]}))
+      (is (re-find #":colour" (str warnings))))))
+
+(deftest pose-literal-map-position-check-test
+  (testing "non-column-ref :x or :y throws with a helpful message"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"must be a column reference"
+         (pj/pose {:data {:x [1 2] :y [3 4]}
+                   :mapping {:x 5 :y :y}  ; :x is a scalar, not a col ref
+                   :layers [{:layer-type :point}]})))))
+
+(deftest pose-literal-map-validation-via-plot-test
+  (testing "calling pj/plot directly on a literal map also validates"
+    (let [warnings (java.io.StringWriter.)]
+      (binding [*out* warnings]
+        (pj/plot {:data (tc/dataset {:x [1 2] :y [3 4]})
+                  :mapping {:x :x :y :y}
+                  :layers [{:layer-type :point}]
+                  :pose []})  ; typo
+        nil)
+      (is (re-find #":pose" (str warnings)))
+      (is (= 1 (count (re-seq #"Warning: pose has unexpected" (str warnings))))
+          "validation fires once -- ensure-pose short-circuits on already-lifted maps"))))

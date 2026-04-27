@@ -373,14 +373,20 @@
   [x]
   (pose/pose? x))
 
-(declare prepare-pose check-position-mapping)
+(declare prepare-pose pose-kind validate-pose-shape check-position-mapping)
 
 (defn- ensure-pose
-  "Coerce input to a pose. Poses pass through. Raw data becomes a
-   leaf pose with :data set and no mapping, and is run through
-   prepare-pose so Kindly auto-render metadata is attached -- the
-   metadata is preserved by subsequent assoc/update calls in the
-   lay-*/options/pose pipelines.
+  "Coerce input to a pose. A pose-shaped map is lifted via pose-kind
+   (validated, *config* captured, Kindly metadata attached) so that
+   any public entry point -- pj/pose, pj/plot, pj/plan, pj/draft,
+   pj/lay-* -- surfaces typos at the entry point rather than deep in
+   the pipeline. Idempotent: a map already carrying Kindly metadata
+   passes through unchanged.
+
+   Raw data becomes a leaf pose with :data set and no mapping, and
+   is run through prepare-pose so Kindly auto-render metadata is
+   attached -- the metadata is preserved by subsequent assoc/update
+   calls in the lay-*/options/pose pipelines.
 
    Throws on nil or non-collection scalars (via validate-pose-input!).
    Use (pj/pose) for an explicit empty leaf instead of passing nil.
@@ -392,7 +398,7 @@
   ([x] (ensure-pose x "pj/pose"))
   ([x caller]
    (if (pose? x)
-     x
+     (pose-kind x)
      (do (validate-pose-input! caller x)
          (let [d (coerce-dataset x)]
            (prepare-pose (cond-> {:layers []} d (assoc :data d))))))))
@@ -473,10 +479,22 @@
   [fr]
   (let [unknown (remove pose-keys (keys fr))]
     (when (seq unknown)
-      (println (str "Warning: pj/prepare-pose got unexpected "
-                    "top-level key(s): " (vec unknown)
+      (println (str "Warning: pose has unexpected top-level key(s): "
+                    (vec unknown)
                     ". Known pose keys: " (vec (sort pose-keys)))))
     fr))
+
+(defn- warn-unknown-mapping-keys
+  "Warn about keys in a :mapping map that are not in pose-mapping-keys.
+   `context` (e.g. \"pj/pose\", \"pj/pose layer\") prefixes the message
+   so the user can tell which mapping has the typo. Returns nil."
+  [m context]
+  (let [unknown (remove pose-mapping-keys (keys m))]
+    (when (seq unknown)
+      (println (str "Warning: " context " :mapping has unexpected"
+                    " key(s): " (vec unknown)
+                    ". Known mapping keys: "
+                    (vec (sort pose-mapping-keys)))))))
 
 (defn- reorder-pose-keys
   "Return a copy of fr with known keys in pose-print-order, followed
@@ -500,17 +518,19 @@
     (and (contains? m :opts)    (empty? (:opts m)))    (dissoc :opts)))
 
 (defn- normalize-pose
-  "Recursively validate top-level keys, coerce :data to a Tablecloth
-   dataset at every depth, apply empty-map elision to the pose and
-   its layers, and reorder keys for readable printing."
+  "Recursively coerce :data to a Tablecloth dataset at every depth,
+   apply empty-map elision to the pose and its layers, and reorder
+   keys for readable printing. Validation (warnings on unknown keys,
+   throws on bad position mappings) lives upstream in pose-kind /
+   prepare-pose so a single literal map flowing through both paths
+   is only validated once."
   [fr]
-  (let [validated (warn-unknown-pose-keys fr)
-        coerced (cond-> validated
-                  (:data validated)
+  (let [coerced (cond-> fr
+                  (:data fr)
                   (update :data coerce-dataset)
-                  (:poses validated)
+                  (:poses fr)
                   (update :poses (partial mapv normalize-pose))
-                  (:layers validated)
+                  (:layers fr)
                   (update :layers (partial mapv elide-empty-maps)))]
     (reorder-pose-keys (elide-empty-maps coerced))))
 
@@ -526,46 +546,72 @@
         (plot fr))
       (plot fr))))
 
-(defn prepare-pose
-  "Prepare a plain-map pose for use: coerce :data at every depth,
-   capture the current *config* for render-time restoration, and
-   attach Kindly metadata so notebook viewers auto-render the pose.
-
-   Use this when you construct a pose by hand to get features beyond
-   what pj/arrange covers: unequal :weights in :layout, nested
-   :poses, cross-sibling :share-scales on differing columns, or a
-   composite-level :layers that should distribute to every descendant
-   leaf. For a flat row or column of plots, prefer pj/arrange.
-
-   Accepts any pose-shaped map. All of :data, :mapping, :layers,
-   :opts, :poses, :layout, :share-scales are legal at any depth.
-   Unknown top-level keys are warned and otherwise left in place.
-
-   Keys are reordered for readable printing: small declarative keys
-   first, :data before :poses so each level's data stays beside its
-   level's other keys.
-
-   (pj/prepare-pose {:data iris
-                      :mapping {:x :a :y :b}
-                      :layers [{:layer-type :point}]})
-   (pj/prepare-pose {:data iris
-                      :poses [...]
-                      :layout {:direction :vertical :weights [1 3]}})
-   (pj/prepare-pose {:data iris
-                      :mapping {:x :a}
-                      :layers [{:layer-type :point}]
-                      :poses [{:mapping {:y :b}}
-                               {:mapping {:y :c}}]})
-      ;; outer :layers distributes to both sub-poses"
+(defn- prepare-pose
+  "Internal: fully prepare a pose built by a constructor path
+   (pj/pose typed arities, pj/lay-*, pj/options, pj/facet, pj/arrange,
+   etc.). Coerces :data at every depth, applies cosmetic cleanup
+   (key reordering, empty-map elision), captures the current *config*
+   for render-time restoration, and attaches Kindly auto-render
+   metadata. Idempotent on already-tagged input -- skips revalidation
+   so a pose that flowed through pose-kind earlier does not warn
+   twice. Literal user-typed maps go through pose-kind instead, which
+   skips the cosmetic cleanup so the typed shape is preserved."
   [fr-map]
   (when-not (map? fr-map)
-    (throw (ex-info (str "pj/prepare-pose expects a pose map, got "
+    (throw (ex-info (str "prepare-pose expects a pose map, got "
                          (pr-str (type fr-map)))
                     {:got fr-map})))
+  (when-not (-> fr-map meta :kindly/kind)
+    (validate-pose-shape fr-map "pj/pose"))
   (let [prepared (normalize-pose fr-map)
         captured defaults/*config*]
     (kind/fn prepared
       {:kindly/f (render-pose-map captured)})))
+
+(defn- validate-pose-shape
+  "Walk a pose-shaped map and validate it: warn on unknown top-level
+   keys at every depth, warn on unknown :mapping keys, throw on
+   non-column-ref position mappings. Returns fr unchanged. Used by
+   pose-kind to surface typos at the literal-map entry point with
+   the same safety net the typed pj/pose arities provide."
+  [fr context]
+  (warn-unknown-pose-keys fr)
+  (when-let [m (:mapping fr)]
+    (warn-unknown-mapping-keys m context)
+    (check-position-mapping context m))
+  (doseq [layer (:layers fr)]
+    (when-let [lm (:mapping layer)]
+      (warn-unknown-mapping-keys lm (str context " layer"))
+      (check-position-mapping (str context " layer") lm)))
+  (doseq [sub (:poses fr)]
+    (validate-pose-shape sub (str context " sub-pose")))
+  fr)
+
+(defn- pose-kind
+  "Lift a pose-shaped map into a notebook-renderable pose: validate
+   the shape (recursive unknown-key warnings, position-mapping check),
+   capture the current *config* for render-time restoration, and
+   attach Kindly auto-render metadata.
+
+   Idempotent: if the map already carries Kindly metadata (e.g. from
+   a prior pose-kind or prepare-pose call), pass it through unchanged.
+   This keeps validation and *config* capture single-shot per pose,
+   so a literal map flowing through pj/plot -- which calls ensure-pose
+   on the way in and again indirectly via pj/plan -- warns once, not
+   twice.
+
+   Unlike prepare-pose this does not normalize the map's shape:
+   :data is not coerced at top level (the pipeline coerces per leaf
+   at draft time), keys are not reordered, and empty :mapping/:opts
+   are not elided. The user's typed map is preserved verbatim except
+   for the metadata. Used by pj/pose 1-arity and ensure-pose on
+   pose-shaped input."
+  [fr]
+  (if (-> fr meta :kindly/kind)
+    fr
+    (do (validate-pose-shape fr "pj/pose")
+        (let [captured defaults/*config*]
+          (kind/fn fr {:kindly/f (render-pose-map captured)})))))
 
 ;; ---- pj/pose polymorphism (Phase 6) ----
 
@@ -825,12 +871,14 @@
      (pj/pose fr [[:a :b] [:c :d]])      -- multi-pair: append N panels
      (pj/pose fr (pj/cross cols cols))   -- SPLOM N^2 panels in one call
 
-   For hand-built composite poses (nested :poses, explicit :weights,
-   etc.) use pj/prepare-pose."
+   On a hand-built pose-shaped map (1-arity, input has :layers or
+   :poses): the map is validated and tagged with Kindly auto-render
+   metadata, but its keys are not reordered and its :data is not
+   coerced -- the typed shape is preserved verbatim."
   ([] (prepare-pose {:layers []}))
   ([x]
    (cond
-     (pose? x) x
+     (pose? x) (pose-kind x)
      :else      (do (validate-pose-input! "pj/pose" x)
                     (let [d (coerce-dataset x)
                           mapping (or (try-infer-mapping d) {})]
