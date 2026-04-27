@@ -688,6 +688,10 @@
         opts         (or (:opts leaf) {})
         x-scale      (:x-scale opts)
         y-scale      (:y-scale opts)
+        size-scale   (:size-scale opts)
+        alpha-scale  (:alpha-scale opts)
+        fill-scale   (:fill-scale opts)
+        color-scale  (:color-scale opts)
         coord-type   (:coord opts)
         layers       (or (:layers leaf) [])
         ;; An entirely empty leaf (no mapping, no layers) has nothing
@@ -714,9 +718,13 @@
              (assoc :data d
                     :__entry-idx variant-idx)
              (cond->
-              x-scale    (assoc :x-scale x-scale)
-              y-scale    (assoc :y-scale y-scale)
-              coord-type (assoc :coord coord-type)
+              x-scale     (assoc :x-scale x-scale)
+              y-scale     (assoc :y-scale y-scale)
+              size-scale  (assoc :size-scale size-scale)
+              alpha-scale (assoc :alpha-scale alpha-scale)
+              fill-scale  (assoc :fill-scale fill-scale)
+              color-scale (assoc :color-scale color-scale)
+              coord-type  (assoc :coord coord-type)
               (:facet-col variant) (assoc :facet-col (:facet-col variant))
               (:facet-row variant) (assoc :facet-row (:facet-row variant)))
              (cond-> (= :infer (:mark resolved))

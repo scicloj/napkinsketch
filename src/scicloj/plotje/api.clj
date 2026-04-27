@@ -309,6 +309,15 @@
                  " an empty pose.")
             {:caller caller :value nil}))
 
+    (and (vector? x) (keyword? (first x)))
+    (throw (ex-info
+            (str caller " expects a pose, but got what looks like a "
+                 "rendered hiccup vector (head: " (pr-str (first x))
+                 "). If you're inspecting the rendered output via pj/plot,"
+                 " pass the pose itself to " caller ", not the result of"
+                 " pj/plot.")
+            {:caller caller :value-head (first x)}))
+
     (and (not (tc/dataset? x))
          (not (map? x))
          (not (sequential? x)))
@@ -1719,31 +1728,64 @@
   (reject-composite-for-facet pose)
   (update-opts pose assoc :facet-col col-col :facet-row row-col))
 
-(def ^:private valid-scale-types
-  "Scale types accepted by pj/scale. :linear and :log are the two
-   continuous types; :categorical lets users supply an explicit ordering
-   via a :domain spec for categorical axes."
+(def ^:private channel->scale-key
+  "Channel keyword to the opts key holding its scale spec."
+  {:x :x-scale :y :y-scale
+   :size :size-scale :alpha :alpha-scale
+   :fill :fill-scale :color :color-scale})
+
+(def ^:private visual-scale-channels
+  "Continuous visual channels. These accept :linear and :log only --
+   :categorical does not apply to a continuous encoding."
+  #{:size :alpha :fill :color})
+
+(def ^:private valid-axis-scale-types
+  "Scale types accepted on :x / :y. :linear and :log are continuous;
+   :categorical lets users supply an explicit ordering via :domain."
   #{:linear :log :categorical})
 
+(def ^:private valid-visual-scale-types
+  "Scale types accepted on :size / :alpha / :fill / :color."
+  #{:linear :log})
+
 (defn scale
-  "Set axis scale on a pose. Scale is plot-level -- it applies
-   across every panel. Accepts a type keyword or a scale spec map
-   with :type, optional :domain, and optional :breaks (explicit tick
-   locations). On a composite pose the scale attaches to the root so
-   every descendant leaf inherits it via resolve-tree.
+  "Set scale on a pose. Scale is plot-level -- it applies across every
+   panel. Accepts a type keyword or a scale spec map with :type, optional
+   :domain, and optional :breaks (explicit tick locations). On a composite
+   pose the scale attaches to the root so every descendant leaf inherits
+   it via resolve-tree.
+
+   Axis channels (:x, :y) accept :linear, :log, :categorical.
+   Visual channels (:size, :alpha, :fill, :color) accept :linear and
+   :log only -- :categorical does not apply to a continuous encoding.
+
    (scale pose :x :log)                                -- log scale on x-axis
    (scale pose :x {:type :categorical :domain [...]})  -- explicit category order
    (scale pose :y {:type :linear :breaks [0 5 10]})    -- pin tick locations
-   (scale pose :y {:type :log :domain [1 1000]})       -- log scale with explicit range"
+   (scale pose :y {:type :log :domain [1 1000]})       -- log scale with explicit range
+   (scale pose :size :log)                             -- log-spaced point sizes
+   (scale pose :fill :log)                             -- log-spaced tile fill"
   [pose channel scale-type]
-  (let [k (case channel :x :x-scale :y :y-scale
-                (throw (ex-info (str "Scale channel must be :x or :y, got: " channel)
-                                {:channel channel})))
+  (let [k (or (channel->scale-key channel)
+              (throw (ex-info (str "Scale channel must be one of "
+                                   (vec (sort (keys channel->scale-key)))
+                                   ", got: " channel)
+                              {:channel channel})))
+        visual? (visual-scale-channels channel)
+        valid-types (if visual? valid-visual-scale-types valid-axis-scale-types)
         type-kw (if (map? scale-type) (:type scale-type) scale-type)]
-    (when-not (or (nil? type-kw) (valid-scale-types type-kw))
-      (throw (ex-info (str "Unknown scale type: " type-kw
-                           ". Supported: " (vec (sort valid-scale-types)))
-                      {:scale-type type-kw :supported (vec (sort valid-scale-types))})))
+    (when-not (or (nil? type-kw) (valid-types type-kw))
+      (throw (ex-info
+              (cond
+                (and visual? (= type-kw :categorical))
+                (str "Visual channel " channel " is continuous and does not"
+                     " support :categorical scale. Supported: "
+                     (vec (sort valid-types)) ".")
+                :else
+                (str "Unknown scale type: " type-kw ". Supported for "
+                     channel ": " (vec (sort valid-types)) "."))
+              {:channel channel :scale-type type-kw
+               :supported (vec (sort valid-types))})))
     (update-opts pose assoc k (if (map? scale-type)
                                 (merge {:type :linear} scale-type)
                                 {:type scale-type}))))

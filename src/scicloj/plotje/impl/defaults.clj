@@ -248,6 +248,19 @@
     (let [span (- (double vmax) (double vmin))]
       (if (<= span 0) 0.5 (/ (- (double v) (double vmin)) span)))))
 
+(defn normalize-continuous
+  "Remap a value v from [vmin, vmax] to [0,1] using a scale-type aware
+   transform. :linear (default) uses normalize-midpoint with the optional
+   midpoint. :log uses log10 endpoints; midpoint is ignored under :log."
+  [scale-type v vmin vmax midpoint]
+  (if (= scale-type :log)
+    (let [vl   (Math/log10 (max 1e-300 (double v)))
+          minl (Math/log10 (max 1e-300 (double vmin)))
+          maxl (Math/log10 (max 1e-300 (double vmax)))
+          span (- maxl minl)]
+      (if (<= span 0) 0.5 (/ (- vl minl) span)))
+    (normalize-midpoint v vmin vmax midpoint)))
+
 ;; ---- Name Formatting ----
 
 (defn fmt-name

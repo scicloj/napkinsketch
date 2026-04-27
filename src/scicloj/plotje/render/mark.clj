@@ -161,18 +161,30 @@
         ;; Dodge support: when dodge-ctx present and x is categorical band scale
         {:keys [n-groups]} (:dodge-ctx layer)
         dodge? (and n-groups x-bandwidth)
+        size-log? (= :log (:type (:size-scale layer)))
+        alpha-log? (= :log (:type (:alpha-scale layer)))
         size-bufs (keep :sizes groups)
         size-scale (when (seq size-bufs)
                      (let [lo (reduce min (map dfn/reduce-min size-bufs))
-                           hi (reduce max (map dfn/reduce-max size-bufs))
-                           span (max 1e-6 (- (double hi) (double lo)))]
-                       (fn [v] (+ 2.0 (* 6.0 (/ (- (double v) (double lo)) span))))))
+                           hi (reduce max (map dfn/reduce-max size-bufs))]
+                       (if size-log?
+                         (let [lo-l (Math/log10 (max 1e-300 (double lo)))
+                               hi-l (Math/log10 (max 1e-300 (double hi)))
+                               span (max 1e-6 (- hi-l lo-l))]
+                           (fn [v] (+ 2.0 (* 6.0 (/ (- (Math/log10 (max 1e-300 (double v))) lo-l) span)))))
+                         (let [span (max 1e-6 (- (double hi) (double lo)))]
+                           (fn [v] (+ 2.0 (* 6.0 (/ (- (double v) (double lo)) span))))))))
         alpha-bufs (keep :alphas groups)
         alpha-scale (when (seq alpha-bufs)
                       (let [lo (reduce min (map dfn/reduce-min alpha-bufs))
-                            hi (reduce max (map dfn/reduce-max alpha-bufs))
-                            span (max 1e-6 (- (double hi) (double lo)))]
-                        (fn [v] (+ 0.2 (* 0.8 (/ (- (double v) (double lo)) span))))))
+                            hi (reduce max (map dfn/reduce-max alpha-bufs))]
+                        (if alpha-log?
+                          (let [lo-l (Math/log10 (max 1e-300 (double lo)))
+                                hi-l (Math/log10 (max 1e-300 (double hi)))
+                                span (max 1e-6 (- hi-l lo-l))]
+                            (fn [v] (+ 0.2 (* 0.8 (/ (- (Math/log10 (max 1e-300 (double v))) lo-l) span)))))
+                          (let [span (max 1e-6 (- (double hi) (double lo)))]
+                            (fn [v] (+ 0.2 (* 0.8 (/ (- (double v) (double lo)) span))))))))
         shape-bufs (keep :shapes groups)
         shape-map (when (seq shape-bufs)
                     (let [all-vals (distinct (apply concat shape-bufs))]

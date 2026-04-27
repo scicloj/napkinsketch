@@ -178,53 +178,69 @@
 
 ;; ---- Per-Panel Resolution ----
 
+(def ^:private channel->scale-keyword
+  "Channel keyword to the resolved-layer key holding its scale spec.
+   Mirrors the public pj/scale surface for axes (:x, :y) and continuous
+   visual channels (:size, :alpha, :fill, :color)."
+  {:x :x-scale :y :y-scale
+   :size :size-scale :alpha :alpha-scale
+   :fill :fill-scale :color :color-scale})
+
+(defn- log-scaled-cols
+  "Return [[channel column-name] ...] for every channel in `rv` whose
+   scale is {:type :log} and whose data column reference resolves to a
+   keyword in the dataset."
+  [rv]
+  (vec
+   (for [[ch scale-key] channel->scale-keyword
+         :let [col (get rv ch)]
+         :when (and (= :log (:type (get rv scale-key)))
+                    (keyword? col))]
+     [ch col])))
+
 (defn- filter-log-nonpositive
-  "Filter rows with non-positive values on log-scaled axes.
-   When :x-scale or :y-scale is {:type :log}, removes rows where
-   the corresponding column has values <= 0 and prints a warning.
-   Throws a clear error if log scale is applied to non-numeric data.
+  "Filter rows with non-positive values on log-scaled channels.
+   When any of :x-scale / :y-scale / :size-scale / :alpha-scale /
+   :fill-scale / :color-scale is {:type :log}, removes rows where the
+   corresponding column has values <= 0 and prints a warning. Throws a
+   clear error if log scale is applied to non-numeric data.
    Returns the resolved draft layer with filtered :data."
   [rv]
   (let [ds (:data rv)]
     (if-not (tc/dataset? ds)
       rv
-      (let [x-log? (= :log (:type (:x-scale rv)))
-            y-log? (= :log (:type (:y-scale rv)))
-            x-col (when (and x-log? (keyword? (:x rv))) (:x rv))
-            y-col (when (and y-log? (keyword? (:y rv))) (:y rv))
-            _ (when (and x-col (ds x-col)
-                         (not (casting/numeric-type? (dtype/elemwise-datatype (ds x-col)))))
-                (throw (ex-info (str "Log scale requires numeric data, but column " x-col " is non-numeric.")
-                                {:column x-col :type (dtype/elemwise-datatype (ds x-col))})))
-            _ (when (and y-col (ds y-col)
-                         (not (casting/numeric-type? (dtype/elemwise-datatype (ds y-col)))))
-                (throw (ex-info (str "Log scale requires numeric data, but column " y-col " is non-numeric.")
-                                {:column y-col :type (dtype/elemwise-datatype (ds y-col))})))
+      (let [pairs (filter (fn [[_ col]] (ds col)) (log-scaled-cols rv))
+            _ (doseq [[ch col] pairs]
+                (when-not (casting/numeric-type? (dtype/elemwise-datatype (ds col)))
+                  (throw (ex-info (str "Log scale on " ch " requires numeric data, but column "
+                                       col " is non-numeric.")
+                                  {:channel ch :column col
+                                   :type (dtype/elemwise-datatype (ds col))}))))
             n-before (tc/row-count ds)
-            ds (if (and x-col (ds x-col))
-                 (tc/select-rows ds (dfn/> (ds x-col) 0))
-                 ds)
-            ds (if (and y-col (ds y-col))
-                 (tc/select-rows ds (dfn/> (ds y-col) 0))
-                 ds)
+            ds (reduce (fn [ds [_ col]]
+                         (tc/select-rows ds (dfn/> (ds col) 0)))
+                       ds
+                       pairs)
             n-after (tc/row-count ds)
             removed (- n-before n-after)]
         (when (pos? removed)
-          (let [axes (cond
-                       (and x-col y-col) (str x-col " and " y-col)
-                       x-col (str x-col)
-                       :else (str y-col))]
-            (println (str "Warning: Removed " removed " rows containing non-positive values (log scale on " axes ")."))))
+          (let [where (str/join " and " (map (fn [[_ col]] (str col)) pairs))]
+            (println (str "Warning: Removed " removed " rows containing non-positive values (log scale on " where ")."))))
         (if (pos? removed)
           (assoc rv :data ds)
           rv)))))
 
 (defn- numeric-col-ref
   "If the value at `k` in resolved draft layer `rv` is a column ref that exists in
-   `ds` and has a numeric dtype, return the resolved column name; else nil."
+   `ds` and has a numeric dtype, return the resolved column name; else nil.
+   For :x and :y, a user-declared `:x-type :categorical` / `:y-type :categorical`
+   suppresses the numeric treatment -- otherwise packed temporal columns
+   (e.g. :packed-local-date) report as numeric and trip later finite? checks."
   [rv ds k]
-  (let [v (get rv k)]
-    (when (and v (resolve/column-ref? v))
+  (let [v (get rv k)
+        type-key (case k :x :x-type :y :y-type nil)
+        declared-cat? (and type-key (= :categorical (get rv type-key)))]
+    (when (and v (resolve/column-ref? v) (not declared-cat?))
       (let [col (resolve/resolve-col-name ds v)]
         (when (and col (ds col)
                    (casting/numeric-type? (dtype/elemwise-datatype (ds col))))
@@ -489,6 +505,33 @@
                       (/ (Math/round (* v factor)) factor)))
                   (range n))))))))
 
+(defn- continuous-channel-mapper
+  "Build a function that maps a data value to a visual property in
+   [pixel-lo, pixel-hi] using a linear or log scale.
+   `scale-type` is :linear (default) or :log."
+  [scale-type d-min d-max pixel-lo pixel-hi]
+  (let [pixel-span (- (double pixel-hi) (double pixel-lo))]
+    (if (= scale-type :log)
+      (let [lo-l (Math/log10 (max 1e-300 (double d-min)))
+            hi-l (Math/log10 (max 1e-300 (double d-max)))
+            span (max 1e-6 (- hi-l lo-l))]
+        (fn [v] (+ (double pixel-lo)
+                   (* pixel-span
+                      (/ (- (Math/log10 (max 1e-300 (double v))) lo-l)
+                         span)))))
+      (let [span (max 1e-6 (- (double d-max) (double d-min)))]
+        (fn [v] (+ (double pixel-lo)
+                   (* pixel-span (/ (- (double v) (double d-min)) span))))))))
+
+(defn- continuous-channel-ticks
+  "Pick `n` tick values across [d-min, d-max] for a continuous channel
+   legend. Log scale uses the shared 1-2-5 log-tick generator; linear
+   falls through to nice-legend-values."
+  [scale-type d-min d-max n]
+  (if (= scale-type :log)
+    (vec (scale/log-ticks [d-min d-max] n))
+    (nice-legend-values d-min d-max n)))
+
 (defn- build-size-legend
   "Build size legend when :size maps to a numerical column. Returns nil
    when all values are nil/NaN (suppressing the legend).
@@ -500,18 +543,20 @@
                                         (:data %)) resolved-all)]
     (when (seq size-draft-layers)
       (let [size-col (:size (first size-draft-layers))
+            scale-type (or (:type (:size-scale (first size-draft-layers))) :linear)
             all-bufs (map #(aesthetic-col % :size) size-draft-layers)]
         (when-let [all-vals (finite-vals all-bufs)]
           (let [s-min (dfn/reduce-min all-vals)
                 s-max (dfn/reduce-max all-vals)
-                span (max 1e-6 (- (double s-max) (double s-min)))
-                values (nice-legend-values s-min s-max 5)]
+                values (continuous-channel-ticks scale-type s-min s-max 5)
+                radius-fn (continuous-channel-mapper scale-type s-min s-max 2.0 8.0)]
             {:title (or opts-title size-col)
              :type :size
              :min s-min :max s-max
+             :scale-type scale-type
              :entries (vec (for [v values]
                              {:value v
-                              :radius (+ 2.0 (* 6.0 (/ (- (double v) (double s-min)) span)))}))}))))))
+                              :radius (radius-fn v)}))}))))))
 
 (defn- build-alpha-legend
   "Build alpha legend when :alpha maps to a numerical column. Returns nil
@@ -524,18 +569,20 @@
                                          (:data %)) resolved-all)]
     (when (seq alpha-draft-layers)
       (let [alpha-col (:alpha (first alpha-draft-layers))
+            scale-type (or (:type (:alpha-scale (first alpha-draft-layers))) :linear)
             all-bufs (map #(aesthetic-col % :alpha) alpha-draft-layers)]
         (when-let [all-vals (finite-vals all-bufs)]
           (let [a-min (dfn/reduce-min all-vals)
                 a-max (dfn/reduce-max all-vals)
-                span (max 1e-6 (- (double a-max) (double a-min)))
-                values (nice-legend-values a-min a-max 5)]
+                values (continuous-channel-ticks scale-type a-min a-max 5)
+                alpha-fn (continuous-channel-mapper scale-type a-min a-max 0.2 1.0)]
             {:title (or opts-title alpha-col)
              :type :alpha
              :min a-min :max a-max
+             :scale-type scale-type
              :entries (vec (for [v values]
                              {:value v
-                              :alpha (+ 0.2 (* 0.8 (/ (- (double v) (double a-min)) span)))}))}))))))
+                              :alpha (alpha-fn v)}))}))))))
 
 ;; ---- Main Entry Point ----
 
@@ -777,7 +824,10 @@
 (defn- build-fill-fallback-legend
   "If no color legend was built (no :color column), check for tile
    layers with computed fill ranges (:bin2d, :density-2d, or identity tiles
-   with :fill). Returns a continuous legend map or nil."
+   with :fill). Returns a continuous legend map or nil.
+   When :fill-scale or :color-scale is {:type :log}, the gradient
+   stops sample colors in log-space and the legend carries log-spaced
+   ticks for the renderer to label."
   [panel-data resolved-all cfg]
   (let [stat-fill-range (some (fn [pd]
                                 (some :fill-range (:stat-results pd)))
@@ -794,21 +844,43 @@
                                       (when (seq vals)
                                         [(dfn/reduce-min vals) (dfn/reduce-max vals)]))))
                                 resolved-all))
-        [f-lo f-hi] (or stat-fill-range view-fill-range)]
+        [f-lo f-hi] (or stat-fill-range view-fill-range)
+        scale-type (or (some #(:type (:fill-scale %)) resolved-all)
+                       (some #(:type (:color-scale %)) resolved-all)
+                       :linear)]
     (when f-lo
       (let [grad-fn (:gradient-fn cfg)
             title (cond
                     (= stat-kind :bin2d) :count
                     (= stat-kind :density-2d) :relative-density
                     :else :fill)
-            n-stops 20]
-        {:title title
-         :type :continuous
-         :min f-lo :max f-hi
-         :color-scale (:color-scale cfg)
-         :stops (vec (for [i (range n-stops)
-                           :let [t (/ (double i) (dec n-stops))]]
-                       {:t t :color (grad-fn t)}))}))))
+            n-stops 20
+            log? (= :log scale-type)
+            ;; For log: sample t in [0,1] but compute the corresponding
+            ;; data value via the inverse log map and show colors at
+            ;; that data value's normalized position. Since the scale
+            ;; is log, the gradient bar reads "low log-value at top, high
+            ;; log-value at bottom" -- which means the gradient looks
+            ;; the same as the linear case. The visual difference is in
+            ;; the labels (log-spaced ticks).
+            stops (vec (for [i (range n-stops)
+                             :let [t (/ (double i) (dec n-stops))]]
+                         {:t t :color (grad-fn t)}))
+            ticks (when log?
+                    (let [tick-vals (scale/log-ticks [f-lo f-hi] 5)
+                          lo-l (Math/log10 (max 1e-300 (double f-lo)))
+                          hi-l (Math/log10 (max 1e-300 (double f-hi)))
+                          span (max 1e-6 (- hi-l lo-l))]
+                      (vec (for [v tick-vals]
+                             {:value v
+                              :t (/ (- (Math/log10 (max 1e-300 (double v))) lo-l) span)}))))]
+        (cond-> {:title title
+                 :type :continuous
+                 :min f-lo :max f-hi
+                 :scale-type scale-type
+                 :color-scale (:color-scale cfg)
+                 :stops stops}
+          ticks (assoc :ticks ticks))))))
 
 (defn- synthesize-annotation-domain
   "For an annotation draft layer in an annotation-only panel, compute

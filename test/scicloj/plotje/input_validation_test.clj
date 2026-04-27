@@ -269,3 +269,32 @@
 
   (testing "valid string column refs still work"
     (is (pj/pose? (pj/pose tiny {:x "x" :y "y"})))))
+
+(deftest hiccup-vector-input-throws-test
+  ;; user-report-3 issue 3: pj/save-png on the hiccup output of pj/plot
+  ;; previously failed with a deep "Tensors must be 2 dimensional" error
+  ;; from tc/dataset. Detect a hiccup-shaped vector at the input gate.
+  (let [hiccup [:svg {:width 100} [:rect {:x 1 :y 1 :width 50 :height 50}]]]
+    (testing "(pj/pose hiccup) throws with rendered-hiccup guidance"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"rendered hiccup vector"
+           (pj/pose hiccup))))
+
+    (testing "(pj/lay-point hiccup ...) throws with rendered-hiccup guidance"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"rendered hiccup vector"
+           (pj/lay-point hiccup :x :y))))
+
+    (testing "(pj/save-png hiccup ...) throws with rendered-hiccup guidance"
+      (let [path "/tmp/_plotje_hiccup_input_test.png"]
+        (is (thrown-with-msg?
+             clojure.lang.ExceptionInfo
+             #"rendered hiccup vector"
+             (pj/save-png hiccup path)))
+        (is (not (.exists (java.io.File. path)))
+            "no file written"))))
+
+  (testing "vectors of row-maps are not flagged as hiccup"
+    (is (pj/pose? (pj/pose [{:a 1 :b 2} {:a 3 :b 4}])))))

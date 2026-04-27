@@ -471,6 +471,14 @@
                                    "(e.g., species names) for the x-axis, or pass "
                                    "{:x-type :categorical} to treat a numeric column as categorical.")
                               {:mark mark :x (:x v) :x-type x-type})))
+          _ (when (and (contains? x-only-cat-marks mark)
+                       (= stat (x-only-cat-marks mark))
+                       (= y-type :categorical))
+              (throw (ex-info (str "lay-" (name user-fn-name) " requires a numerical :y column, "
+                                   "but :y-type was declared :categorical. Drop the :y-type "
+                                   "override; to flip the chart so categories appear on the "
+                                   "visual y-axis, add (pj/coord :flip).")
+                              {:mark mark :y (:y v) :y-type y-type})))
           ;; Reject x-only views (no :y) for layer types that require y.
           ;; Otherwise prepare-points silently fabricates y=0 for every
           ;; point and renders a flat line at the bottom of a [0, 1] domain.

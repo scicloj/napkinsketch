@@ -130,6 +130,8 @@
         c-min (when all-color-buf (dfn/reduce-min all-color-buf))
         c-max (when all-color-buf (dfn/reduce-max all-color-buf))]
     (-> {:mark :point
+         :size-scale (:size-scale view)
+         :alpha-scale (:alpha-scale view)
          :style (cond-> {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
                          :radius (or (:fixed-size view) (:point-radius cfg))}
                   (:jitter view) (assoc :jitter (:jitter view))
@@ -144,7 +146,8 @@
                       (some? color) (assoc :label (defaults/fmt-category-label color))
                       (and numeric-color? color-values)
                       (assoc :colors (vec (map (fn [v]
-                                                 (let [t (defaults/normalize-midpoint v (or c-min 0) (or c-max 1) (:color-midpoint cfg))
+                                                 (let [scale-type (or (:type (:color-scale view)) :linear)
+                                                       t (defaults/normalize-continuous scale-type v (or c-min 0) (or c-max 1) (:color-midpoint cfg))
                                                        grad-fn (:gradient-fn cfg)]
                                                    (grad-fn t)))
                                                color-values)))
@@ -319,6 +322,11 @@
                        (:color view)))
         grad-fn (:gradient-fn cfg)
         midpoint (:color-midpoint cfg)
+        ;; :fill-scale wins over :color-scale; :color-scale is honored on
+        ;; tiles when the user wrote :color (synonym for :fill).
+        fill-scale-type (or (:type (:fill-scale view))
+                            (:type (:color-scale view))
+                            :linear)
         ;; Two paths: bin2d/kde2d stat produces :tiles as a dataset;
         ;; identity stat with :fill uses point groups
         tiles (if (and (:tiles stat)
@@ -331,7 +339,8 @@
                       with-color (tc/add-column tile-ds :color
                                                 (fn [ds]
                                                   (mapv (fn [f]
-                                                          (grad-fn (defaults/normalize-midpoint
+                                                          (grad-fn (defaults/normalize-continuous
+                                                                    fill-scale-type
                                                                     f f-lo f-hi midpoint)))
                                                         (ds :fill))))]
                   (vec (tc/rows (tc/select-columns with-color
@@ -364,7 +373,8 @@
                                                 (fn [ds]
                                                   (if fill-vals
                                                     (mapv (fn [f]
-                                                            (grad-fn (defaults/normalize-midpoint
+                                                            (grad-fn (defaults/normalize-continuous
+                                                                      fill-scale-type
                                                                       f (or f-lo 0) (or f-hi 1) midpoint)))
                                                           fill-vals)
                                                     (vec (repeat (tc/row-count ds)
@@ -374,6 +384,8 @@
                                 :as-maps))))]
     {:mark :tile
      :style {:opacity (or (:fixed-alpha view) 1.0)}
+     :fill-scale (:fill-scale view)
+     :color-scale (:color-scale view)
      :tiles tiles}))
 
 (defn- marching-squares-segments

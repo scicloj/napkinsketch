@@ -1654,6 +1654,104 @@
     (is (some? (-> {:cat ["a" "b" "c"] :y [10 20 30]}
                    (pj/lay-value-bar :cat :y) pj/plan)))))
 
+(deftest lollipop-y-type-categorical-rejected-test
+  ;; user-report-3 issue 4: passing :y-type :categorical on a numeric :y
+  ;; column previously NPE'd deep in the renderer; the layer requires a
+  ;; numerical :y column.
+  (testing "lay-lollipop with :y-type :categorical throws clear guidance"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"requires a numerical :y column.*pj/coord :flip"
+                          (-> {:cat ["a" "b" "c"] :n [10 5 8]}
+                              (pj/lay-lollipop :cat :n {:y-type :categorical})
+                              pj/plan))))
+
+  (testing "lay-lollipop without the bogus override still works"
+    (is (some? (-> {:cat ["a" "b" "c"] :n [10 5 8]}
+                   (pj/lay-lollipop :cat :n)
+                   (pj/coord :flip)
+                   pj/plan)))))
+
+(deftest x-type-categorical-on-localdate-test
+  ;; user-report-3 issue 2: {:x-type :categorical} on a LocalDate column
+  ;; previously ClassCastException'd inside filter-infinities because
+  ;; :packed-local-date reports as a numeric dtype.
+  (testing "lay-lollipop with :x-type :categorical on a LocalDate column"
+    (let [d (tc/dataset {:date [(java.time.LocalDate/of 2024 1 1)
+                                (java.time.LocalDate/of 2024 6 1)
+                                (java.time.LocalDate/of 2024 12 1)]
+                         :value [3 8 5]})]
+      (is (some? (-> d
+                     (pj/lay-lollipop :date :value {:x-type :categorical})
+                     (pj/coord :flip)
+                     pj/plan))))))
+
+(deftest visual-channel-scales-test
+  ;; user-report-3 issue 1: pj/scale extended to :size, :alpha, :fill, :color.
+  (let [d (tc/dataset {:user [:a :b :c] :n [10 100 1000]})]
+
+    (testing "pj/scale :size :log produces a log-spaced size legend"
+      (let [plan (-> d
+                     (pj/lay-point :user :n {:size :n :x-type :categorical})
+                     (pj/scale :size :log)
+                     pj/plan)
+            sl (:size-legend plan)]
+        (is (= :log (:scale-type sl)))
+        ;; log10(10), log10(100), log10(1000) = 1, 2, 3 are evenly spaced,
+        ;; so the radii should be too (2.0, 5.0, 8.0 for [2.0, 8.0] range).
+        (is (= [10.0 100.0 1000.0] (mapv :value (:entries sl))))
+        (is (= [2.0 5.0 8.0] (mapv :radius (:entries sl))))))
+
+    (testing "pj/scale :alpha :log produces a log-spaced alpha legend"
+      (let [plan (-> d
+                     (pj/lay-point :user :n {:alpha :n :x-type :categorical})
+                     (pj/scale :alpha :log)
+                     pj/plan)
+            al (:alpha-legend plan)]
+        (is (= :log (:scale-type al)))
+        (is (= [10.0 100.0 1000.0] (mapv :value (:entries al))))))
+
+    (testing "linear remains the default and is unchanged"
+      (let [plan (-> d
+                     (pj/lay-point :user :n {:size :n :x-type :categorical})
+                     pj/plan)]
+        (is (= :linear (:scale-type (:size-legend plan))))))
+
+    (testing "non-positive values warn under :size :log (mirroring axis behavior)"
+      (let [d-zero (tc/dataset {:user [:a :b :c :d] :n [10 100 1000 0]})
+            out (with-out-str
+                  (-> d-zero
+                      (pj/lay-point :user :n {:size :n :x-type :categorical})
+                      (pj/scale :size :log)
+                      pj/plan))]
+        (is (re-find #"non-positive values \(log scale on :n\)" out))))
+
+    (testing ":categorical rejected on continuous visual channels"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Visual channel :size is continuous"
+                            (pj/scale (pj/pose d) :size :categorical)))
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Visual channel :fill is continuous"
+                            (pj/scale (pj/pose d) :fill :categorical)))))
+
+  (testing ":fill :log on a tile heatmap plans cleanly with log scale-type"
+    (let [d (tc/dataset (for [r (range 10) c (range 10)]
+                          {:r r :c c :v (Math/pow 10.0 (/ (+ r c) 4.0))}))
+          plan (-> d
+                   (pj/lay-tile :r :c {:fill :v})
+                   (pj/scale :fill :log)
+                   pj/plan)
+          legend (:legend plan)]
+      (is (= :continuous (:type legend)))
+      (is (= :log (:scale-type legend)))
+      (is (seq (:ticks legend)) "log-spaced tick labels populated")))
+
+  (testing "user-report-3 repro: pj/plot succeeds on size :log"
+    (let [d (tc/dataset {:user [:a :b :c] :n [10 100 1000]})]
+      (is (some? (-> d
+                     (pj/lay-point :user :n {:size :n :x-type :categorical})
+                     (pj/scale :size :log)
+                     pj/plot))))))
+
 (deftest unknown-option-warning-test
   ;; persona-16 H1. Closes P1-R3 F2/F3/F4, Skept-R4 F4, P5-R2 L4.
   (let [data {:x [1 2 3] :y [10 20 30]}]
