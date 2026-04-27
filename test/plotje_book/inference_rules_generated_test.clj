@@ -1098,7 +1098,7 @@
     (and
      (= :alpha (:type leg))
      (= :a (:title leg))
-     (pos? (count (:entries leg)))))
+     (= 4 (count (:entries leg)))))
    v226_l1004)))
 
 

@@ -52,16 +52,16 @@ scatter-pose
 (pj/plan scatter-pose)
 
 (kind/test-last [(fn [plan] (and (= :single (:layout-type plan))
-                               (= 1 (count (:panels plan)))
-                               (= "x" (:x-label plan))
-                               (= "y" (:y-label plan))
-                               (nil? (:legend plan))
-                               (zero? (get-in plan [:layout :legend-w]))
-                               (let [p (first (:panels plan))
-                                     g (first (:groups (first (:layers p))))]
-                                 (and (= :linear (get-in p [:x-scale :type]))
-                                      (= 1 (count (:groups (first (:layers p)))))
-                                      (= (scicloj.plotje.impl.defaults/hex->rgba (:default-color (scicloj.plotje.impl.defaults/config))) (:color g))))))])
+                                 (= 1 (count (:panels plan)))
+                                 (= "x" (:x-label plan))
+                                 (= "y" (:y-label plan))
+                                 (nil? (:legend plan))
+                                 (zero? (get-in plan [:layout :legend-w]))
+                                 (let [p (first (:panels plan))
+                                       g (first (:groups (first (:layers p))))]
+                                   (and (= :linear (get-in p [:x-scale :type]))
+                                        (= 1 (count (:groups (first (:layers p)))))
+                                        (= (scicloj.plotje.impl.defaults/hex->rgba (:default-color (scicloj.plotje.impl.defaults/config))) (:color g))))))])
 
 ;; Notice in the plan above:
 ;;
@@ -161,7 +161,7 @@ two-col-pose
 (-> two-col-pose (select-keys [:mapping :layers]) kind/pprint)
 
 (kind/test-last [(fn [pose] (and (= {:x :x :y :y} (:mapping pose))
-                               (empty? (:layers pose))))])
+                                 (empty? (:layers pose))))])
 
 ;; ### 4+ columns
 ;;
@@ -216,8 +216,8 @@ bar-pose
 (pj/plan bar-pose)
 
 (kind/test-last [(fn [plan] (let [p (first (:panels plan))]
-                            (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
-                                 (true? (:categorical? (:x-ticks p))))))])
+                              (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
+                                   (true? (:categorical? (:x-ticks p))))))])
 
 ;; The x-domain is `["cat" "dog" "bird" "fish"]` -- strings in order of
 ;; appearance. The ticks have `:categorical? true`. The y-domain starts
@@ -302,9 +302,9 @@ colored-pose
 (pj/plan colored-pose)
 
 (kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                            (and (= 2 (count (:groups layer)))
-                                 (some? (:legend plan))
-                                 (= 100 (get-in plan [:layout :legend-w])))))])
+                              (and (= 2 (count (:groups layer)))
+                                   (some? (:legend plan))
+                                   (= 100 (get-in plan [:layout :legend-w])))))])
 
 ;; Two entries in `:groups`, each with its own `:color` (RGBA),
 ;; `:xs`, `:ys`, and `:label`. A `:legend` appeared with 2 entries.
@@ -328,14 +328,14 @@ fixed-color-pose
 (pj/plan fixed-color-pose)
 
 (kind/test-last [(fn [plan] (and (nil? (:legend plan))
-                               (zero? (get-in plan [:layout :legend-w]))
-                               (let [layer (first (:layers (first (:panels plan))))
-                                     c (:color (first (:groups layer)))]
-                                 (and (= 1 (count (:groups layer)))
-                                      (> (nth c 0) 0.85)
-                                      (< (nth c 1) 0.35)
-                                      (< (nth c 2) 0.30)
-                                      (== 1.0 (nth c 3))))))])
+                                 (zero? (get-in plan [:layout :legend-w]))
+                                 (let [layer (first (:layers (first (:panels plan))))
+                                       c (:color (first (:groups layer)))]
+                                   (and (= 1 (count (:groups layer)))
+                                        (> (nth c 0) 0.85)
+                                        (< (nth c 1) 0.35)
+                                        (< (nth c 2) 0.30)
+                                        (== 1.0 (nth c 3))))))])
 
 ;; A single `:groups` entry with red RGBA values. No `:legend`,
 ;; `:legend-w` is 0. The hex string was converted to
@@ -635,7 +635,7 @@ hist-pose
 (pj/plan hist-pose)
 
 (kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                            (= :bar (:mark layer))))])
+                              (= :bar (:mark layer))))])
 
 ;; The layer mark is `:bar` -- the layer data contains `:bins` with
 ;; `:x0`, `:x1`, `:count` -- the result of the `:bin` stat.
@@ -657,7 +657,7 @@ temporal-hist-pose
 (pj/plan temporal-hist-pose)
 
 (kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                            (= :bar (:mark layer))))])
+                              (= :bar (:mark layer))))])
 
 ;; A single categorical column produces a bar chart of counts:
 
@@ -674,7 +674,7 @@ count-pose
 (pj/plan count-pose)
 
 (kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                            (= :rect (:mark layer))))])
+                              (= :rect (:mark layer))))])
 
 ;; Mark is `:rect` with `:counts` -- the `:count` stat tallied each
 ;; of the 4 categories.
@@ -694,7 +694,7 @@ num-num-pose
 (pj/plan num-num-pose)
 
 (kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                            (= :point (:mark layer))))])
+                              (= :point (:mark layer))))])
 
 ;; A temporal x with a numerical y infers a time-series line. Row
 ;; order is preserved, so pre-sort temporal data to avoid zigzag:
@@ -713,7 +713,7 @@ ts-line-pose
 (pj/plan ts-line-pose)
 
 (kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                            (= :line (:mark layer))))])
+                              (= :line (:mark layer))))])
 
 ;; A categorical x with a numerical y infers a boxplot -- the default
 ;; for summarizing a distribution across groups:
@@ -732,8 +732,8 @@ boxplot-pose
 (pj/plan boxplot-pose)
 
 (kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                            (and (= :boxplot (:mark layer))
-                                 (= 3 (count (:boxes layer))))))])
+                              (and (= :boxplot (:mark layer))
+                                   (= 3 (count (:boxes layer))))))])
 
 ;; A numerical x with a categorical y infers a horizontal boxplot --
 ;; the same summary laid out with the category axis on y:
@@ -752,8 +752,8 @@ horizontal-boxplot-pose
 (pj/plan horizontal-boxplot-pose)
 
 (kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                            (and (= :boxplot (:mark layer))
-                                 (= 3 (count (:boxes layer))))))])
+                              (and (= :boxplot (:mark layer))
+                                   (= 3 (count (:boxes layer))))))])
 
 ;; ## Domains
 ;;
@@ -1005,7 +1005,7 @@ alpha-legend-pose
 
 (kind/test-last [(fn [leg] (and (= :alpha (:type leg))
                                 (= :a (:title leg))
-                                (pos? (count (:entries leg)))))])
+                                (= 4 (count (:entries leg)))))])
 
 ;; No alpha mapping means no alpha legend:
 
@@ -1141,7 +1141,7 @@ multi-pose
 (pj/plan multi-pose)
 
 (kind/test-last [(fn [plan] (let [p (first (:panels plan))]
-                            (= 2 (count (:layers p)))))])
+                              (= 2 (count (:layers p)))))])
 
 ;; Two layers -- one `:point`, one `:line` -- sharing the same domain.
 ;; The `:line` layer has `:mark :line` and its groups contain
