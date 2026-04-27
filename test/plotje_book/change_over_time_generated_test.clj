@@ -13,7 +13,9 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__86769#] (Math/sin (* p1__86769# 0.3))) (range 30))}))
+   (map
+    (fn* [p1__113230#] (Math/sin (* p1__113230# 0.3)))
+    (range 30))}))
 
 
 (def v4_l21 (-> wave (pj/lay-line :x :y)))
@@ -37,8 +39,10 @@
   {:x (concat (range 30) (range 30)),
    :y
    (concat
-    (map (fn* [p1__86770#] (Math/sin (* p1__86770# 0.3))) (range 30))
-    (map (fn* [p1__86771#] (Math/cos (* p1__86771# 0.3))) (range 30))),
+    (map (fn* [p1__113231#] (Math/sin (* p1__113231# 0.3))) (range 30))
+    (map
+     (fn* [p1__113232#] (Math/cos (* p1__113232# 0.3)))
+     (range 30))),
    :fn (concat (repeat 30 :sin) (repeat 30 :cos))}))
 
 
@@ -140,7 +144,7 @@
  (->
   {:x (range 30),
    :y
-   (map (fn* [p1__86772#] (Math/sin (* p1__86772# 0.3))) (range 30))}
+   (map (fn* [p1__113233#] (Math/sin (* p1__113233# 0.3))) (range 30))}
   (pj/lay-area :x :y)))
 
 
@@ -236,3 +240,23 @@
      [s (pj/svg-summary v)]
      (and (= 12 (:points s)) (= 2 (:lines s)))))
    v34_l154)))
+
+
+(def
+ v37_l176
+ (->
+  {:t (range 12), :delta [-3 -1 -2 0 2 4 -1 3 5 -2 1 4]}
+  (pj/lay-line :t :delta)
+  pj/lay-point
+  (pj/lay-rule-h {:y-intercept 0, :color "#888"})))
+
+
+(deftest
+ t38_l182
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 12 (:points s)) (= 2 (:lines s)))))
+   v37_l176)))

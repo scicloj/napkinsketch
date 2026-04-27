@@ -166,6 +166,23 @@
 ;; See [Inference Rules](./plotje_book.inference_rules.html)
 ;; for details on how dates are detected and formatted.
 
+;; ## Zero-Line Baseline
+
+;; Time series with positive and negative values often benefit from a
+;; horizontal reference at zero, drawn with `pj/lay-rule-h`. The rule
+;; takes its position from the options map -- not from a data column
+;; -- so it's an annotation, not a data layer.
+
+(-> {:t (range 12)
+     :delta [-3 -1 -2 0 2 4 -1 3 5 -2 1 4]}
+    (pj/lay-line :t :delta)
+    pj/lay-point
+    (pj/lay-rule-h {:y-intercept 0 :color "#888"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 12 (:points s))
+                                (= 2 (:lines s)))))])
+
 ;; ## What's Next
 ;;
 ;; - [**Relationships**](./plotje_book.relationships.html) -- heatmaps, contours, and 2D density
