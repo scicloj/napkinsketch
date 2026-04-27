@@ -1,10 +1,13 @@
 ;; # Core Concepts
 ;;
-;; This chapter covers the core concepts you need for daily use.
-;; If you have not read the
-;; [Pose Model](./plotje_book.pose_model.html)
-;; chapter, start there -- it introduces the mental model behind
-;; composable plotting.
+;; The vocabulary you reach for daily: data, mappings, scope, layer
+;; types, and how they fit together. This chapter takes the mental
+;; model from Pose Model and turns it into a working reference you
+;; can scan while building a plot.
+;;
+;; Read [Pose Model](./plotje_book.pose_model.html) first if you
+;; have not -- this chapter assumes the five-idea framing it
+;; introduces.
 
 (ns plotje-book.core-concepts
   (:require
