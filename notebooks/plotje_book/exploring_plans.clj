@@ -16,7 +16,7 @@
 
 (ns plotje-book.exploring-plans
   (:require
-   ;; rdatasets -- standard datasets
+   ;; Rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]

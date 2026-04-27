@@ -7,7 +7,7 @@
   (:require
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]
-   ;; R datasets
+   ;; Rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]

@@ -15,7 +15,7 @@
    [fastmath.random :as rng]
    ;; Java-time -- idiomatic date/time construction
    [java-time.api :as jt]
-   ;; RDatasets -- additional datasets beyond the shared ones
+   ;; Rdatasets -- additional datasets beyond the shared ones
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## Quick Recipes

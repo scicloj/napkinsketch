@@ -19,7 +19,7 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]
-   ;; R datasets
+   ;; Rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
 ;; ## A Worked Example

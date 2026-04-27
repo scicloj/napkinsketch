@@ -18,7 +18,7 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Tablecloth -- dataset operations
    [tablecloth.api :as tc]
-   ;; RDatasets -- standard datasets
+   ;; Rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]))

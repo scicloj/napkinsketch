@@ -10,7 +10,7 @@
 
 (ns plotje-book.extensibility
   (:require
-   ;; Datasets
+   ;; Rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Kindly -- notebook rendering protocol
    [scicloj.kindly.v4.kind :as kind]

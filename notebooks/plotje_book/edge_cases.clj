@@ -6,7 +6,7 @@
 
 (ns plotje-book.edge-cases
   (:require
-   ;; rdatasets -- standard datasets
+   ;; Rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Tablecloth -- dataset manipulation
    [tablecloth.api :as tc]

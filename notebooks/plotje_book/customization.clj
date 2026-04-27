@@ -9,7 +9,7 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]
-   ;; RDatasets -- standard datasets
+   ;; Rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Clojure2d -- palette and gradient discovery
    [clojure2d.color :as c2d]))
