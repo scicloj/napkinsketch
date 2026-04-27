@@ -125,6 +125,19 @@
                            (and (= 150 (:points s))
                                 (every? (set (:texts s)) ["2" "3" "4"]))))])
 
+;; Order a categorical axis explicitly with `:type :categorical`
+;; and a `:domain` vector. Without this, categories appear in their
+;; order of first occurrence in the data.
+
+(-> {:size ["medium" "small" "large"]
+     :count [12 30 7]}
+    (pj/lay-value-bar :size :count)
+    (pj/scale :x {:type :categorical :domain ["large" "medium" "small"]}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)
+                               labels (filter #{"large" "medium" "small"} (:texts s))]
+                           (= ["large" "medium" "small"] (vec labels))))])
+
 ;; ## Mark Styling
 
 ;; Pass `:alpha` and `:size` directly to layer functions.
