@@ -76,7 +76,36 @@ scatter-pose
 ;;   points, colored in the default color (dark gray, `#333`)
 ;;
 ;; Each of those bullets is its own inference rule, with a default
-;; and an explicit override. The rest of the chapter walks them.
+;; and an explicit override.
+
+;; ## Overrides at a Glance
+;;
+;; Every inference rule has an explicit override. The table below
+;; lists them all -- scan it to find what you need, then jump to the
+;; matching section for the details and worked examples.
+;;
+;; | What is inferred | Default | Override |
+;; |:-----------------|:--------|:---------|
+;; | Column selection | one column fills x; two fill x, y; three fill x, y, color | explicit column args in `pj/pose` or `pj/lay-*` |
+;; | Column type | dtype inspection | `:x-type`, `:y-type`, `:color-type` in pose or layer options |
+;; | Aesthetic classification | keyword = column, string = color/column | explicit `:color` keyword vs hex string |
+;; | Grouping | categorical color column | `:group` aesthetic |
+;; | Layer type (mark + stat) | column types (see Layer Type section) | `pj/lay-point`, `pj/lay-histogram`, etc. |
+;; | Domain extent | data range + 5% padding | `(pj/scale pose :x {:domain [0 10]})` |
+;; | Domain zero-anchor | bar/stacked charts include zero | `(pj/scale pose :y {:domain [5 20]})` |
+;; | Fill domain | `[0.0, 1.0]` for fill position | `(pj/scale pose :y {:domain [0 2]})` |
+;; | Tick values | round intervals (linear), powers of 10 (log) | wadogo scale configuration |
+;; | Tick labels | number formatting, calendar formatting | wadogo label formatting |
+;; | Axis labels | column name, with underscores replaced by spaces | `(pj/options {:x-label "Custom"})` |
+;; | Color legend | categorical = discrete, numerical = continuous, none = no legend | `:color` mapping controls presence |
+;; | Size legend | 5 graduated circles when `:size` maps to numerical column | `:size` mapping controls presence |
+;; | Alpha legend | 5 graduated opacity squares when `:alpha` maps to numerical column | `:alpha` mapping controls presence |
+;; | Layout padding | adjusts for title, labels, legend | `:width`, `:height` in options |
+;; | Layout type | single, facet-grid, multi-variable | `pj/facet`, multiple x-y pairs |
+;; | Coordinate system | `:cartesian` | `(pj/coord :flip)`, `(pj/coord :polar)` |
+;;
+;; The plan captures the result of all inference. When in doubt,
+;; inspect the plan.
 
 ;; The sections below walk each rule in detail. The order roughly
 ;; follows the resolution pipeline -- column selection, column types,
@@ -1186,33 +1215,6 @@ graph TD
 ;; Layer type -- are the per-leaf inference steps (in `resolve.clj`).
 ;; The remaining boxes are the plan-level orchestration steps
 ;; (in `plan.clj` and `scale.clj`).
-
-;; ## Summary
-;;
-;; Every inference can be overridden. Here is the complete list:
-;;
-;; | What is inferred | Default | Override |
-;; |:-----------------|:--------|:---------|
-;; | Column selection | one column fills x; two fill x, y; three fill x, y, color | explicit column args in `pj/pose` or `pj/lay-*` |
-;; | Column type | dtype inspection | `:x-type`, `:y-type`, `:color-type` in pose or layer options |
-;; | Aesthetic classification | keyword = column, string = color/column | explicit `:color` keyword vs hex string |
-;; | Grouping | categorical color column | `:group` aesthetic |
-;; | Layer type (mark + stat) | column types (see table above) | `pj/lay-point`, `pj/lay-histogram`, etc. |
-;; | Domain extent | data range + 5% padding | `(pj/scale pose :x {:domain [0 10]})` |
-;; | Domain zero-anchor | bar/stacked charts include zero | `(pj/scale pose :y {:domain [5 20]})` |
-;; | Fill domain | `[0.0, 1.0]` for fill position | `(pj/scale pose :y {:domain [0 2]})` |
-;; | Tick values | round intervals (linear), powers of 10 (log) | wadogo scale configuration |
-;; | Tick labels | number formatting, calendar formatting | wadogo label formatting |
-;; | Axis labels | column name, with underscores replaced by spaces | `(pj/options {:x-label "Custom"})` |
-;; | Color legend | categorical = discrete, numerical = continuous, none = no legend | `:color` mapping controls presence |
-;; | Size legend | 5 graduated circles when `:size` maps to numerical column | `:size` mapping controls presence |
-;; | Alpha legend | 5 graduated opacity squares when `:alpha` maps to numerical column | `:alpha` mapping controls presence |
-;; | Layout padding | adjusts for title, labels, legend | `:width`, `:height` in options |
-;; | Layout type | single, facet-grid, multi-variable | `pj/facet`, multiple x-y pairs |
-;; | Coordinate system | `:cartesian` | `(pj/coord :flip)`, `(pj/coord :polar)` |
-;;
-;; The plan captures the result of all inference. When in doubt,
-;; look at the plan.
 
 ;; ## What's Next
 ;;
