@@ -682,6 +682,12 @@ plan1
 
 (kind/test-last [(fn [n] (= 25 n))])
 
+(first (pj/registered-layer-types))
+
+(kind/test-last [(fn [[k m]] (and (keyword? k)
+                                  (some? (:mark m))
+                                  (some? (:stat m))))])
+
 ;; ## Documentation Helpers
 ;;
 ;; Query the self-documenting dispatch tables for any extensible concept.
