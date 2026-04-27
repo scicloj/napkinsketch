@@ -31,12 +31,12 @@
 ;; `pj/draft`) take a pose and return a different shape -- a plan,
 ;; an SVG, a file path -- and so close the pipeline.
 ;;
-;; The API has two verb-noun pairs working in parallel: `pj/pose`
-;; *poses* the data into a *pose*; `pj/lay-*` *lays* a *layer*
-;; onto the pose. A pose is what you arrange before drawing --
-;; which columns become axes, which become aesthetics. Layers are
-;; the visual elements you lay onto it: points, lines, smooths,
-;; bars. A composite pose contains sub-poses arranged side by side,
+;; Two core operators do the work: `pj/pose` builds a pose by
+;; declaring which columns carry which aesthetics, and `pj/lay-*`
+;; adds a layer to a pose. A pose is what you arrange before
+;; drawing -- which columns become axes, which become aesthetics.
+;; Layers are the visual elements: points, lines, smooths, bars.
+;; A composite pose contains sub-poses arranged side by side,
 ;; each able to carry its own layers.
 ;;
 ;; The simplest pose carries some data and picks columns. With no
