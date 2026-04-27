@@ -96,6 +96,20 @@
                            (and (= 10 (:points s))
                                 (= 2 (:lines s)))))])
 
+;; ## Stacked Step
+
+;; Each group stacks above the previous, with horizontal-then-vertical
+;; segments.
+
+(-> {:x (concat (range 5) (range 5) (range 5))
+     :y (concat [1 2 3 4 5] [2 2 2 2 2] [3 1 2 1 2])
+     :group (concat (repeat 5 "A") (repeat 5 "B") (repeat 5 "C"))}
+    (pj/lay-step :x :y {:position :stack :color :group}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:lines s)))))])
+
 ;; ## Area
 
 ;; Filled area under a line.
@@ -162,6 +176,20 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 12 (:points s))
                                 (= 2 (:lines s)))))])
+
+;; ## Area Over Dates
+
+;; Filled area also works on a date axis -- useful for cumulative
+;; metrics where the volume below the curve carries meaning.
+
+(-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
+            #inst "2024-04-01" #inst "2024-05-01" #inst "2024-06-01"]
+     :sales [10 25 30 22 35 40]}
+    (pj/lay-area :date :sales))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 1 (:polygons s)))))])
 
 ;; See [Inference Rules](./plotje_book.inference_rules.html)
 ;; for details on how dates are detected and formatted.
