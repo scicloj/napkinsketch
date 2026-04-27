@@ -332,10 +332,11 @@ fixed-color-pose
                                  (let [layer (first (:layers (first (:panels plan))))
                                        c (:color (first (:groups layer)))]
                                    (and (= 1 (count (:groups layer)))
-                                        (> (nth c 0) 0.85)
-                                        (< (nth c 1) 0.35)
-                                        (< (nth c 2) 0.30)
-                                        (== 1.0 (nth c 3))))))])
+                                        (= [(/ 231.0 255.0)
+                                            (/ 76.0 255.0)
+                                            (/ 60.0 255.0)
+                                            1.0]
+                                           c)))))])
 
 ;; A single `:groups` entry with red RGBA values. No `:legend`,
 ;; `:legend-w` is 0. The hex string was converted to
