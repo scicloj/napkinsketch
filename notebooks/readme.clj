@@ -73,10 +73,6 @@
              {:color :species})
     (pj/options {:title "Iris SPLOM"}))
 
-;; ## Documentation
-;;
-;; [Full documentation](https://scicloj.github.io/plotje/)
-;;
 ;; ## License
 ;;
 ;; Copyright © 2025-2026 Scicloj
