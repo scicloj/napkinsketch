@@ -102,7 +102,7 @@
   {:x (range 1 50),
    :y
    (map
-    (fn* [p1__110155#] (* 2 (Math/pow 1.1 p1__110155#)))
+    (fn* [p1__113337#] (* 2 (Math/pow 1.1 p1__113337#)))
     (range 1 50))}))
 
 
@@ -389,36 +389,62 @@
 
 
 (def
- v73_l293
+ v73_l291
+ (->
+  (rdatasets/datasets-iris)
+  (pj/lay-point :sepal-length :sepal-width {:color :species})
+  (pj/options {:legend-position :top})))
+
+
+(deftest
+ t74_l295
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v73_l291)))
+
+
+(def
+ v76_l301
+ (->
+  (rdatasets/datasets-iris)
+  (pj/lay-point :sepal-length :sepal-width {:color :species})
+  (pj/options {:legend-position :none})
+  pj/plan
+  (get-in [:layout :legend-w])))
+
+
+(deftest t77_l307 (is (zero? v76_l301)))
+
+
+(def
+ v79_l313
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
   (pj/options {:tooltip true})))
 
 
-(deftest t74_l297 (is ((fn [v] (= :div (first (pj/plot v)))) v73_l293)))
+(deftest t80_l317 (is ((fn [v] (= :div (first (pj/plot v)))) v79_l313)))
 
 
 (def
- v76_l303
+ v82_l323
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
   (pj/options {:brush true})))
 
 
-(deftest t77_l307 (is ((fn [v] (= :div (first (pj/plot v)))) v76_l303)))
+(deftest t83_l327 (is ((fn [v] (= :div (first (pj/plot v)))) v82_l323)))
 
 
 (def
- v79_l313
+ v85_l333
  (def
   splom-cols
   [:sepal-length :sepal-width :petal-length :petal-width]))
 
 
 (def
- v80_l315
+ v86_l335
  (->
   (rdatasets/datasets-iris)
   (pj/pose {:color :species})
@@ -427,4 +453,4 @@
   (pj/options {:brush true})))
 
 
-(deftest t81_l321 (is ((fn [v] (= :div (first (pj/plot v)))) v80_l315)))
+(deftest t87_l341 (is ((fn [v] (= :div (first (pj/plot v)))) v86_l335)))

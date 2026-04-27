@@ -286,6 +286,26 @@
                            (and (= 150 (:points s))
                                 (< (:width s) 700))))])
 
+;; Legend on top:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:legend-position :top}))
+
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
+
+;; No legend at all -- useful when the color encoding is documented
+;; in the title or caption rather than a separate legend. The plan's
+;; `:legend-w` becomes 0, so the panel takes the full width:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:legend-position :none})
+    pj/plan
+    (get-in [:layout :legend-w]))
+
+(kind/test-last [zero?])
+
 ;; ## Tooltip
 ;;
 ;; Enable mouseover data values with `{:tooltip true}`.
