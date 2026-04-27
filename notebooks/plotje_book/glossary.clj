@@ -502,7 +502,7 @@ my-pose
 
 (count (c2d/find-palette #".*"))
 
-(kind/test-last [(fn [n] (< 1000 n))])
+(kind/test-last [(fn [n] (<= 5000 n))])
 
 ;; ## Gradient
 ;;

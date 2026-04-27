@@ -260,7 +260,7 @@
 (def v70_l503 (count (c2d/find-palette #".*")))
 
 
-(deftest t71_l505 (is ((fn [n] (< 1000 n)) v70_l503)))
+(deftest t71_l505 (is ((fn [n] (<= 5000 n)) v70_l503)))
 
 
 (def v73_l543 (count pj/plot-option-docs))
