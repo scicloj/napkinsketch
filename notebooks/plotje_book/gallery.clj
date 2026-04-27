@@ -690,30 +690,6 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
-;; ---
-;; ## Gaps and Low-Hanging Fruits
-;;
-;; Examples from the galleries that Plotje cannot reproduce yet,
-;; but could with modest effort:
-;;
-;; - **Pie / Donut chart** -- could work with polar coord + stacked bar
-;;   if bar rendering supported 360-degree arcs. Currently polar only does
-;;   rose charts (one wedge per bar).
-;;
-;; - **Slope chart / Dumbbell** -- needs two x positions per row connected
-;;   by a line segment. Could be done with a new `:segment` mark that
-;;   draws from (x1,y) to (x2,y).
-;;
-;; - **Strip plot / Bee swarm** -- needs jitter on a categorical axis.
-;;   Currently jitter is pixel-based random offset on point marks,
-;;   not category-aware layout.
-;;
-;; - **Marginal plots** -- side panels with density/histogram along scatter
-;;   axes. Needs layout support for panels with different sizes.
-;;
-;; - **Gradient line** -- line where color varies along the path (e.g.,
-;;   temperature over time). Needs per-segment coloring.
-
 ;; ### Equal aspect ratio scatter
 ;; Source: [D3 Graph Gallery: scatter basic](https://d3-graph-gallery.com/graph/scatter_basic.html)
 ;; Using coord :fixed to ensure 1 data unit = 1 data unit on both axes.
@@ -777,32 +753,6 @@
     (pj/options {:title "Iris: Scatter with Rug Marks"}))
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
-
-;; ---
-;; ## Additional Gaps
-;;
-;; More patterns from these galleries that Plotje cannot yet do:
-;;
-;; - **Grouped boxplot side-by-side** -- ECharts and Vega-Lite show
-;;   multiple boxplots per category with dodge positioning.
-;;   Plotje has dodge for bars but not boxplots with a separate
-;;   color group. (Partial support: `{:color :smoker}` on boxplot works
-;;   but visual quality needs checking.)
-;;
-;; - **Candlestick / OHLC** -- common in ECharts for financial data.
-;;   Needs a new mark type with open/high/low/close channels.
-;;
-;; - **Gauge chart** -- ECharts specialty. Not a statistical graphic.
-;;
-;; - **Funnel chart** -- ECharts. Could approximate with horizontal
-;;   bars of decreasing width, but not natively supported.
-;;
-;; - **Radar / Spider chart** -- Vega-Lite and ECharts. Needs a new
-;;   coordinate system (radial with fixed angles per category).
-;;
-;; - **Diverging bar** -- Python Graph Gallery. Bars extending in both
-;;   directions from a center line. Could approximate with value-bar
-;;   using negative values if clamp-zero is handled correctly (now fixed).
 
 ;; ---
 ;; ## Connected Scatter and Evolution Charts
