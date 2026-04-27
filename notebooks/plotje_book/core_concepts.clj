@@ -161,8 +161,8 @@ two-panel
 ;; | `(pj/pose ... {:color :c})` | All layers on this pose |
 ;; | `(pj/lay-point ... {:color :c})` | This layer only |
 ;;
-;; This is **lexical scope** -- the same principle as in programming
-;; languages. Lower levels override higher ones.
+;; This is **lexical scope** -- the closest enclosing definition
+;; wins.
 
 ;; ### Pose-level mapping
 ;;
