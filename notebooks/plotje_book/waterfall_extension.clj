@@ -4,14 +4,11 @@
 ;; scratch -- a **[waterfall chart](https://en.wikipedia.org/wiki/Waterfall_chart)** that shows running totals as
 ;; colored bars (green for increases, red for decreases).
 ;;
-;; It demonstrates all three extension points needed for a new mark:
+;; It uses all three extension points needed for a new mark:
 ;;
 ;; - `compute-stat` -- transform raw values into cumulative bars
 ;; - `extract-layer` -- convert stat output into plan geometry
 ;; - `layer->membrane` -- render bars as membrane drawables
-;;
-;; After reading this, you should be able to add any custom chart
-;; type to Plotje.
 
 (ns plotje-book.waterfall-extension
   (:require
