@@ -92,10 +92,12 @@
 ;; a pose's `:mapping` holds the "what" (columns to aesthetics),
 ;; and its `:layers` holds the "how" (one entry per chart-type
 ;; layer). Declaring the mapping once lets several layers share it
-;; -- scatter points and a regression line per species here:
+;; -- scatter points and a regression line per species. Written as
+;; a literal map -- `pj/pose` accepts the nested-map shape
+;; directly:
 
 (def multi-layer
-  (pj/prepare-pose
+  (pj/pose
    {:data (rdatasets/datasets-iris)
     :mapping {:x :sepal-length :y :sepal-width :color :species}
     :layers [{:layer-type :point}
@@ -185,7 +187,7 @@ multi-layer
 ;; them. Here is a two-panel composite written as an explicit map:
 
 (def two-panel
-  (pj/prepare-pose
+  (pj/pose
    {:data (rdatasets/datasets-iris)
     :layout {:direction :horizontal}
     :poses [{:mapping {:x :sepal-length :y :sepal-width :color :species}

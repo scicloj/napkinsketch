@@ -51,7 +51,7 @@
  v9_l66
  (def
   weighted
-  (pj/prepare-pose
+  (pj/pose
    {:data (rdatasets/datasets-iris),
     :layout {:direction :horizontal, :weights [2 1]},
     :poses
@@ -61,39 +61,39 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v11_l81 weighted)
+(def v11_l78 weighted)
 
 
 (deftest
- t12_l83
+ t12_l80
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v11_l81)))
+   v11_l78)))
 
 
-(def v14_l91 (kind/pprint weighted))
+(def v14_l88 (kind/pprint weighted))
 
 
 (deftest
- t15_l93
+ t15_l90
  (is
   ((fn
     [pose]
     (and
      (= [2 1] (get-in pose [:layout :weights]))
      (= 2 (count (:poses pose)))))
-   v14_l91)))
+   v14_l88)))
 
 
 (def
- v17_l110
+ v17_l107
  (def
   shared-x
-  (pj/prepare-pose
+  (pj/pose
    {:data (rdatasets/datasets-iris),
     :share-scales #{:x},
     :layout {:direction :horizontal, :weights [1 1]},
@@ -104,25 +104,25 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v18_l120 shared-x)
+(def v18_l117 shared-x)
 
 
 (deftest
- t19_l122
+ t19_l119
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v18_l120)))
+   v18_l117)))
 
 
 (def
- v21_l136
+ v21_l133
  (def
   marginal
-  (pj/prepare-pose
+  (pj/pose
    {:data (rdatasets/datasets-iris),
     :share-scales #{:x},
     :layout {:direction :vertical, :weights [1 3]},
@@ -132,25 +132,25 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v22_l146 marginal)
+(def v22_l143 marginal)
 
 
 (deftest
- t23_l148
+ t23_l145
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 150 (:points s)) (pos? (:polygons s)))))
-   v22_l146)))
+   v22_l143)))
 
 
 (def
- v25_l169
+ v25_l166
  (def
   dashboard
-  (pj/prepare-pose
+  (pj/pose
    {:data (rdatasets/datasets-iris),
     :layout {:direction :vertical, :weights [1 1]},
     :poses
@@ -168,9 +168,9 @@
         :layers [{:layer-type :density}]}]}]})))
 
 
-(def v26_l184 dashboard)
+(def v26_l181 dashboard)
 
 
 (deftest
- t27_l186
- (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v26_l184)))
+ t27_l183
+ (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v26_l181)))

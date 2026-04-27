@@ -64,7 +64,7 @@
 ;; first panel gets twice the space of the second:
 
 (def weighted
-  (pj/prepare-pose
+  (pj/pose
    {:data (rdatasets/datasets-iris)
     :layout {:direction :horizontal :weights [2 1]}
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
@@ -72,11 +72,8 @@
             {:mapping {:x :petal-length :y :petal-width}
              :layers [{:layer-type :point}]}]}))
 
-;; `pj/prepare-pose` lifts a plain-map composite into a pose the
-;; library treats like any other: data is coerced to a Tablecloth
-;; dataset at every depth, the current configuration is captured for
-;; render time, and Kindly metadata is attached so the pose
-;; auto-renders in a notebook viewer:
+;; `pj/pose` accepts a literal composite map and tags it for notebook
+;; auto-render -- the same pose value the threaded API produces:
 
 weighted
 
@@ -108,7 +105,7 @@ weighted
 ;; column:
 
 (def shared-x
-  (pj/prepare-pose
+  (pj/pose
    {:data (rdatasets/datasets-iris)
     :share-scales #{:x}
     :layout {:direction :horizontal :weights [1 1]}
@@ -134,7 +131,7 @@ shared-x
 ;; above the main plot -- is a vertical composite with shared x:
 
 (def marginal
-  (pj/prepare-pose
+  (pj/pose
    {:data (rdatasets/datasets-iris)
     :share-scales #{:x}
     :layout {:direction :vertical :weights [1 3]}
@@ -167,7 +164,7 @@ marginal
 ;; inputs, so the nesting is expressed as an explicit map:
 
 (def dashboard
-  (pj/prepare-pose
+  (pj/pose
    {:data (rdatasets/datasets-iris)
     :layout {:direction :vertical :weights [1 1]}
     :poses [{:layout {:direction :horizontal :weights [1 1]}

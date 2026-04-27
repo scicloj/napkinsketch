@@ -619,7 +619,7 @@
 ;; composite with `:color` declared at root:
 
 (def s1-composite
-  (pj/prepare-pose
+  (pj/pose
    {:data iris
     :mapping {:color :species}
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
@@ -642,7 +642,7 @@ s1-composite
 ;; mapping does not leak into its siblings.
 
 (def s1-siblings
-  (pj/prepare-pose
+  (pj/pose
    {:data iris
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
              :layers [{:layer-type :point}]}
@@ -670,7 +670,7 @@ s1-siblings
 ;; merge -- it is picked, wholesale.
 
 (def s2-tree
-  (pj/prepare-pose
+  (pj/pose
    {:data iris
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
              :layers [{:layer-type :point}]}

@@ -52,28 +52,16 @@ my-pose
 ;;
 ;; Some features are not yet exposed through `pj/arrange` -- unequal
 ;; weights, nested poses, and cross-sibling shared scales. To use
-;; them, build the composite as a literal map and wrap it with
-;; `pj/prepare-pose` so it carries the Kindly metadata needed to
-;; auto-render.
-
-;; ## Prepare Pose
-;;
-;; `pj/prepare-pose` lifts a hand-built pose map (leaf or composite)
-;; to a first-class pose value. It coerces `:data` at every depth,
-;; captures the current configuration for render-time restoration,
-;; and attaches Kindly metadata so the pose auto-renders in notebook
-;; viewers. Use it when you construct a composite pose by literal
-;; map and want it to behave like one built with `pj/pose` or
-;; `pj/arrange`.
+;; them, build the composite as a literal map; `pj/pose` accepts the
+;; literal form.
 
 ;; ## Arrange
 ;;
 ;; `pj/arrange` builds a composite pose from a sequence of poses.
 ;; Each input pose becomes a sub-pose; the result is a composite
 ;; that tiles them via `:layout` (direction and optional weights).
-;; Use `pj/prepare-pose` on a literal map for features `pj/arrange`
-;; does not yet expose -- nested composites or
-;; `:share-scales`.
+;; For features `pj/arrange` does not yet expose -- nested composites
+;; or `:share-scales` -- pass a literal map to `pj/pose`.
 
 ;; ## Layer Type
 ;;
