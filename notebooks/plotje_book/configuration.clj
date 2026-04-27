@@ -560,6 +560,38 @@ precedence-plot
 ;; (pj/set-config! nil)  ;; re-enable
 ;; ```
 
+;; ## Strict Option Checking
+;;
+;; When you pass an unknown key to `pj/options`, `pj/lay-*`, or
+;; `pj/plot`, Plotje by default warns and strips it. The `:strict`
+;; config flag turns the warning into a thrown exception -- useful
+;; in tests or pipelines where a typo should fail loudly rather
+;; than silently render a default plot.
+
+;; Default behavior: warn and continue.
+
+(pj/with-config {:strict false}
+  (-> (rdatasets/datasets-iris)
+      (pj/lay-point :sepal-length :sepal-width)
+      (pj/options {:nonsense-key 42})
+      pj/plan
+      :width))
+
+(kind/test-last [(fn [w] (= 600 w))])
+
+;; With `:strict true`, the same call throws.
+
+(pj/with-config {:strict true}
+  (try
+    (-> (rdatasets/datasets-iris)
+        (pj/lay-point :sepal-length :sepal-width)
+        (pj/options {:nonsense-key 42})
+        pj/plan)
+    (catch Exception e (.getMessage e))))
+
+(kind/test-last [(fn [msg] (and (string? msg)
+                                (re-find #"does not recognize" msg)))])
+
 ;; ## Summary
 ;;
 ;; | Mechanism | Scope | Persistence | Example |

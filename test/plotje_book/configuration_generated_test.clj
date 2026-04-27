@@ -548,3 +548,38 @@
 (deftest
  t127_l550
  (is ((fn [plan] (and (map? plan) (= 600 (:width plan)))) v126_l548)))
+
+
+(def
+ v129_l573
+ (pj/with-config
+  {:strict false}
+  (->
+   (rdatasets/datasets-iris)
+   (pj/lay-point :sepal-length :sepal-width)
+   (pj/options {:nonsense-key 42})
+   pj/plan
+   :width)))
+
+
+(deftest t130_l580 (is ((fn [w] (= 600 w)) v129_l573)))
+
+
+(def
+ v132_l584
+ (pj/with-config
+  {:strict true}
+  (try
+   (->
+    (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width)
+    (pj/options {:nonsense-key 42})
+    pj/plan)
+   (catch Exception e (.getMessage e)))))
+
+
+(deftest
+ t133_l592
+ (is
+  ((fn [msg] (and (string? msg) (re-find #"does not recognize" msg)))
+   v132_l584)))
