@@ -364,6 +364,43 @@
     (and (= "Arranged" (get-in pose [:opts :title]))
          (= #{:y} (get-in pose [:opts :share-scales]))))])
 
+;; ### Rule C9: 3-arity `pj/pose` with a pair sequence and opts folds aesthetic-attach into multi-pair
+;;
+;; When `pj/pose` receives three arguments where the second is a
+;; pair sequence (a vector of `[x y]` pairs, typically the output
+;; of `pj/cross`) and the third is an opts map, the call is
+;; equivalent to two chained calls: the opts mapping is attached to
+;; the base first (Rule C2 or C4), then the pair sequence is
+;; processed on top (Rule L5 for rectangular grids, otherwise a
+;; flat one-panel-per-pair composite). The aesthetic lands on the
+;; composite root and flows to every cell.
+
+(-> iris
+    (pj/pose (pj/cross [:sepal-length :sepal-width]
+                       [:petal-length :petal-width])
+             {:color :species}))
+
+(kind/test-last
+ [(fn [pose]
+    (and (= {:color :species} (:mapping pose))
+         (= 2 (count (:poses pose)))
+         (every? #(= 2 (count (:poses %))) (:poses pose))))])
+
+;; **Property P-C9 -- multi-pair fold.** The 3-arity form is
+;; structurally equal to the two-call form.
+
+(let [a (-> iris
+            (pj/pose {:color :species})
+            (pj/pose (pj/cross [:sepal-length :sepal-width]
+                               [:petal-length :petal-width])))
+      b (-> iris
+            (pj/pose (pj/cross [:sepal-length :sepal-width]
+                               [:petal-length :petal-width])
+                     {:color :species}))]
+  (= a b))
+
+(kind/test-last [true?])
+
 ;; ---
 ;; ## Layer Placement
 ;;
@@ -1010,9 +1047,9 @@ l4-shared
 ;; (see Rules C3 / C6).
 
 (-> iris
-    (pj/pose {:color :species})
     (pj/pose (pj/cross [:sepal-length :sepal-width]
-                       [:petal-length :petal-width])))
+                       [:petal-length :petal-width])
+             {:color :species}))
 
 (kind/test-last
  [(fn [pose]

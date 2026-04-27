@@ -410,9 +410,9 @@
 ;; show histograms -- per-cell inference picks the layer type:
 
 (-> (rdatasets/datasets-iris)
-    (pj/pose {:color :species})
     (pj/pose (pj/cross [:sepal-length :sepal-width :petal-length :petal-width]
-                       [:sepal-length :sepal-width :petal-length :petal-width]))
+                       [:sepal-length :sepal-width :petal-length :petal-width])
+             {:color :species})
     (pj/options {:title "Iris SPLOM"}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]

@@ -857,6 +857,9 @@
      (pj/pose data :x-col :y-col {:color :c}) -- positional x/y + opts
      (pj/pose data [[:a :b] [:c :d]])         -- multi-pair: N bivariate panels
      (pj/pose data [:a :b :c])                -- multi-pair: N univariate panels
+     (pj/pose data (pj/cross cols cols) {:color :c})
+                                              -- multi-pair plus aesthetic
+                                                 mapping at the composite root
 
    Threaded over an existing pose (first argument is a pose):
      (pj/pose fr)                        -- pass-through; lifts a literal
@@ -872,6 +875,9 @@
                                              or (on leaf-with-position) promote
      (pj/pose fr [[:a :b] [:c :d]])      -- multi-pair: append N panels
      (pj/pose fr (pj/cross cols cols))   -- SPLOM N^2 panels in one call
+     (pj/pose fr (pj/cross cols cols) {:color :c})
+                                         -- SPLOM plus aesthetic mapping
+                                            at the composite root
 
    On a hand-built pose-shaped map (1-arity, input has :layers or
    :poses): the map is validated and tagged with Kindly auto-render
@@ -909,7 +915,14 @@
            (prepare-pose (pose-from-data x mapping)))))))
   ([x y z]
    (when-not (pose? x) (validate-template-data! "pj/pose" x))
-   (if (map? z)
+   (cond
+     ;; (pj/pose data multi-pair opts-map) -- attach mapping to the base,
+     ;; then multi-pair on top, so opts (e.g. {:color :species}) lives at
+     ;; the composite root and flows into every panel.
+     (and (sequential? y) (not (map? y)) (map? z))
+     (multi-pair-pose (pose x z) y)
+
+     (map? z)
      ;; (pj/pose data x-col opts-map) -- univariate position plus opts
      (let [opts      (warn-and-strip-unknown-opts "pj/pose" z pose-mapping-keys)
            data-over (:data opts)
@@ -918,6 +931,8 @@
        (if (pose? x)
          (prepare-pose (extend-or-promote x mapping))
          (prepare-pose (pose-from-data (or data-over x) mapping))))
+
+     :else
      (let [mapping {:x y :y z}]
        (check-position-mapping "pj/pose" mapping)
        (if (pose? x)

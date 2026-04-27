@@ -166,8 +166,7 @@
 (def cols [:sepal-length :sepal-width :petal-length :petal-width])
 
 (-> (rdatasets/datasets-iris)
-    (pj/pose {:color :species})
-    (pj/pose (pj/cross cols cols)))
+    (pj/pose (pj/cross cols cols) {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 16 (:panels s))

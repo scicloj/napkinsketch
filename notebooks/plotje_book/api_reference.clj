@@ -105,9 +105,9 @@
 ;; Combine `pj/cross` with `pj/pose` to build a SPLOM:
 
 (-> (rdatasets/datasets-iris)
-    (pj/pose {:color :species})
     (pj/pose (pj/cross [:sepal-length :petal-length]
-                       [:sepal-width :petal-width])))
+                       [:sepal-width :petal-width])
+             {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 4 (:panels s))

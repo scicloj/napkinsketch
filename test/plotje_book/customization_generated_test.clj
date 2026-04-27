@@ -165,7 +165,7 @@
   {:x (range 1 50),
    :y
    (map
-    (fn* [p1__91001#] (* 2 (Math/pow 1.1 p1__91001#)))
+    (fn* [p1__90851#] (* 2 (Math/pow 1.1 p1__90851#)))
     (range 1 50))}))
 
 
@@ -546,11 +546,10 @@
  v101_l399
  (->
   (rdatasets/datasets-iris)
-  (pj/pose {:color :species})
-  (pj/pose (pj/cross splom-cols splom-cols))
+  (pj/pose (pj/cross splom-cols splom-cols) {:color :species})
   (pj/options {:brush true})))
 
 
 (deftest
- t102_l404
+ t102_l403
  (is ((fn [v] (= :div (first (pj/plot v)))) v101_l399)))

@@ -257,12 +257,11 @@
  v40_l168
  (->
   (rdatasets/datasets-iris)
-  (pj/pose {:color :species})
-  (pj/pose (pj/cross cols cols))))
+  (pj/pose (pj/cross cols cols) {:color :species})))
 
 
 (deftest
- t41_l172
+ t41_l171
  (is
   ((fn
     [v]
@@ -276,7 +275,7 @@
 
 
 (deftest
- t42_l177
+ t42_l176
  (is
   ((fn
     [v]

@@ -301,7 +301,6 @@
 
 (kind/test-last [(fn [v] (= 3 (:points (pj/svg-summary v))))])
 
-
 ;; ### Continuous color -- constant value
 ;;
 ;; All points have the same numeric color value. The gradient
@@ -321,7 +320,6 @@
     (pj/options {:color-scale :diverging :color-midpoint 0}))
 
 (kind/test-last [(fn [v] (= 20 (:points (pj/svg-summary v))))])
-
 
 ;; ### Dates with very narrow range (two days apart)
 
@@ -381,7 +379,6 @@
                            (and (= 20 (:points s))
                                 (= 1 (:lines s)))))])
 
-
 ;; ### Polar with many categories
 
 (-> {:cat (map #(str "cat-" %) (range 12))
@@ -433,16 +430,15 @@
 
 (kind/test-last [(fn [v] (= 100 (:points (pj/svg-summary v))))])
 
-
 ;; ### Full grid -- cross plot
 ;;
 ;; `pj/cross` produces a full NxN grid of panels. Column names
 ;; appear as axis labels on each cell.
 
 (-> (rdatasets/datasets-iris)
-    (pj/pose {:color :species})
     (pj/pose (pj/cross [:sepal-length :sepal-width :petal-length]
-                        [:sepal-length :sepal-width :petal-length])))
+                       [:sepal-length :sepal-width :petal-length])
+             {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)
                                texts (:texts s)

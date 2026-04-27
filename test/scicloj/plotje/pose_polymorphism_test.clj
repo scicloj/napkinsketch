@@ -380,6 +380,21 @@
       (is (= 2 (count (:poses f))) "2 rows")
       (is (every? #(= 2 (count (:poses %))) (:poses f)) "2 cells each"))))
 
+(deftest multi-pair-grid-with-opts-arity-test
+  (testing "G3b: 3-arity (pj/pose data multi-pair opts-map) folds the
+            two-call SPLOM idiom into one call -- aesthetic at the root,
+            grid below."
+    (let [a (-> iris
+                (pj/pose {:color :species})
+                (pj/pose (pj/cross [:a :b] [:c :d])))
+          b (-> iris
+                (pj/pose (pj/cross [:a :b] [:c :d]) {:color :species}))]
+      (is (= a b) "two-call and one-call forms are pose-equal")
+      (is (= {:color :species} (:mapping b))
+          "root aesthetic mapping lives at the composite root")
+      (is (= 2 (count (:poses b))) "2 rows")
+      (is (every? #(= 2 (count (:poses %))) (:poses b)) "2 cells each"))))
+
 (deftest multi-pair-grid-non-rectangular-falls-through-test
   (testing "G4: non-rectangular pair list keeps flat composite"
     ;; 2 pairs: [:a :b] [:c :d] -- would need [:a :d] [:c :b] for a 2x2

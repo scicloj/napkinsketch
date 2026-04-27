@@ -397,8 +397,7 @@
 (def splom-cols [:sepal-length :sepal-width :petal-length :petal-width])
 
 (-> (rdatasets/datasets-iris)
-    (pj/pose {:color :species})
-    (pj/pose (pj/cross splom-cols splom-cols))
+    (pj/pose (pj/cross splom-cols splom-cols) {:color :species})
     (pj/options {:brush true}))
 
 (kind/test-last [(fn [v] (= :div (first (pj/plot v))))])

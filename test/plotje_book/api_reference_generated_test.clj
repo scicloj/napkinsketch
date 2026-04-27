@@ -146,11 +146,9 @@
  v29_l107
  (->
   (rdatasets/datasets-iris)
-  (pj/pose {:color :species})
   (pj/pose
-   (pj/cross
-    [:sepal-length :petal-length]
-    [:sepal-width :petal-width]))))
+   (pj/cross [:sepal-length :petal-length] [:sepal-width :petal-width])
+   {:color :species})))
 
 
 (deftest
@@ -223,7 +221,7 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__91461#] (Math/sin (* p1__91461# 0.3))) (range 30))}))
+   (map (fn* [p1__88991#] (Math/sin (* p1__88991# 0.3))) (range 30))}))
 
 
 (def v45_l162 (-> wave (pj/lay-line :x :y)))
@@ -332,9 +330,9 @@
     :y
     (mapv
      (fn*
-      [p1__91462#]
+      [p1__88992#]
       (+
-       (Math/sin (* p1__91462# 0.2))
+       (Math/sin (* p1__88992# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (pj/lay-point :x :y)
