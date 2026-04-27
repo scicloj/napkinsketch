@@ -141,6 +141,21 @@
                            (and (= 150 (:points s))
                                 (some #{"petal length"} (:texts s)))))])
 
+;; ## Shape by Species
+
+;; Map `:shape` to a categorical column to render each group with a
+;; different marker shape. Useful for monochrome printing or to
+;; reinforce the color encoding.
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:shape :species}))
+
+(kind/test-last
+ [(fn [v]
+    (let [layer (-> v pj/plan :panels first :layers first)
+          shape-values (set (mapcat :shapes (:groups layer)))]
+      (= 3 (count shape-values))))])
+
 ;; ## Scatter Plot Matrix (SPLOM)
 ;;
 ;; `pj/cross` generates all combinations of two lists. Passing

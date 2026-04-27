@@ -228,12 +228,33 @@
 
 
 (def
- v36_l151
+ v36_l150
+ (->
+  (rdatasets/datasets-iris)
+  (pj/lay-point :sepal-length :sepal-width {:shape :species})))
+
+
+(deftest
+ t37_l153
+ (is
+  ((fn
+    [v]
+    (let
+     [layer
+      (-> v pj/plan :panels first :layers first)
+      shape-values
+      (set (mapcat :shapes (:groups layer)))]
+     (= 3 (count shape-values))))
+   v36_l150)))
+
+
+(def
+ v39_l166
  (def cols [:sepal-length :sepal-width :petal-length :petal-width]))
 
 
 (def
- v37_l153
+ v40_l168
  (->
   (rdatasets/datasets-iris)
   (pj/pose {:color :species})
@@ -241,7 +262,7 @@
 
 
 (deftest
- t38_l157
+ t41_l172
  (is
   ((fn
     [v]
@@ -251,11 +272,11 @@
       (= 16 (:panels s))
       (= (* 12 150) (:points s))
       (pos? (:polygons s)))))
-   v37_l153)))
+   v40_l168)))
 
 
 (deftest
- t39_l162
+ t42_l177
  (is
   ((fn
     [v]
@@ -267,4 +288,4 @@
        (let
         [[r c] path mark (-> plan :panels first :layers first :mark)]
         (= mark (if (= r c) :bar :point)))))))
-   v37_l153)))
+   v40_l168)))
