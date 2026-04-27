@@ -1103,9 +1103,9 @@ flipped-labels-pose
 ;; After flipping, the visual x-axis shows "y" and the visual y-axis
 ;; shows "x" -- labels track the visual axes.
 ;;
-;; Polar coordinates (`:coord :polar`) are a larger transform -- rose
-;; charts, radial bars, and related plots. The
-;; [Polar Coordinates](./plotje_book.polar.html) chapter covers them in depth.
+;; Polar coordinates (`:coord :polar`) are covered separately --
+;; see the [Polar Coordinates](./plotje_book.polar.html) chapter
+;; for rose charts, radial bars, and related plots.
 
 ;; ## Multi-Layer Plans
 ;;
