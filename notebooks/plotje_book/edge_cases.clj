@@ -23,7 +23,8 @@
    ;; dtype-next core -- const-reader for temporal sequences
    [tech.v3.datatype :as dtype]))
 
-;; ## Missing Data
+;; ## Data Shape
+;; ### Missing Data
 
 ;; Rows with `nil` values are dropped before rendering.
 
@@ -38,7 +39,7 @@
                            (and (= 1 (:panels s))
                                 (= 3 (:points s)))))])
 
-;; ## Infinite Values
+;; ### Infinite Values
 ;;
 ;; Rows with `Double/POSITIVE_INFINITY` or `Double/NEGATIVE_INFINITY`
 ;; are filtered automatically with a warning -- similar to log-scale filtering.
@@ -54,7 +55,7 @@
                            (and (= 1 (:panels s))
                                 (= 3 (:points s))
                                 (not (clojure.string/includes? (str v) "NaN")))))])
-;; ## Single Point
+;; ### Single Point
 
 ;; A lone data point should render without errors.
 
@@ -65,7 +66,7 @@
                            (and (= 1 (:panels s))
                                 (= 1 (:points s)))))])
 
-;; ## Two Points with Regression
+;; ### Two Points with Regression
 
 ;; Regression requires at least 3 points. With only 2,
 ;; the line is omitted and the points still render.
@@ -78,7 +79,7 @@
                            (and (= 2 (:points s))
                                 (zero? (:lines s)))))])
 
-;; ## Three Points with Regression
+;; ### Three Points with Regression
 
 ;; With 3 points, the regression line appears.
 
@@ -90,7 +91,7 @@
                            (and (= 3 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; ## Constant X
+;; ### Constant X
 
 ;; All x values are the same -- the plot should still render.
 
@@ -101,7 +102,7 @@
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; ## Constant Y
+;; ### Constant Y
 
 ;; All y values are the same.
 
@@ -112,7 +113,8 @@
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; ## Negative Values
+;; ## Numeric Range
+;; ### Negative Values
 
 ;; Data spanning positive and negative ranges.
 
@@ -123,7 +125,7 @@
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; ## Very Large Values
+;; ### Very Large Values
 
 (-> {:x [1e6 2e6 3e6] :y [1e9 2e9 3e9]}
     (pj/lay-point :x :y))
@@ -132,7 +134,7 @@
                            (and (= 1 (:panels s))
                                 (= 3 (:points s)))))])
 
-;; ## Very Small Values
+;; ### Very Small Values
 
 (-> {:x [0.001 0.002 0.003] :y [0.0001 0.0002 0.0003]}
     (pj/lay-point :x :y))
@@ -141,7 +143,7 @@
                            (and (= 1 (:panels s))
                                 (= 3 (:points s)))))])
 
-;; ## Large Dataset
+;; ### Large Dataset
 
 ;; 1000 random points, colored by group.
 
@@ -158,7 +160,7 @@
                            (and (= 1 (:panels s))
                                 (= 1000 (:points s)))))])
 
-;; ## Many Categories
+;; ### Many Categories
 
 ;; A bar chart with 12 categories.
 
@@ -171,7 +173,7 @@
                            (and (= 1 (:panels s))
                                 (= 12 (:polygons s)))))])
 
-;; ## Computed Columns
+;; ### Computed Columns
 
 ;; Derive a new column and plot it.
 
@@ -184,7 +186,7 @@
                            (and (= 1 (:panels s))
                                 (= 150 (:points s)))))])
 
-;; ## Filtered Subset
+;; ### Filtered Subset
 
 ;; Plot only one species.
 
@@ -198,7 +200,7 @@
                            (and (= 50 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; ## Position Edge Cases
+;; ## Position and Layout
 
 ;; ### Stacked bar -- single group
 
@@ -265,7 +267,7 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
-;; ## Log Scale Edge Cases
+;; ## Scale and Coordinate
 
 ;; ### Log scale with clean powers of 10
 
@@ -299,7 +301,6 @@
 
 (kind/test-last [(fn [v] (= 3 (:points (pj/svg-summary v))))])
 
-;; ## Continuous Color Edge Cases
 
 ;; ### Continuous color -- constant value
 ;;
@@ -321,7 +322,6 @@
 
 (kind/test-last [(fn [v] (= 20 (:points (pj/svg-summary v))))])
 
-;; ## Temporal Scale Edge Cases
 
 ;; ### Dates with very narrow range (two days apart)
 
@@ -381,7 +381,6 @@
                            (and (= 20 (:points s))
                                 (= 1 (:lines s)))))])
 
-;; ## Coordinate Edge Cases
 
 ;; ### Polar with many categories
 
@@ -434,7 +433,6 @@
 
 (kind/test-last [(fn [v] (= 100 (:points (pj/svg-summary v))))])
 
-;; ## Multi-Panel Edge Cases
 
 ;; ### Full grid -- cross plot
 ;;
@@ -452,7 +450,6 @@
                            (and (= 9 (:panels s))
                                 (seq (filter col-label? texts)))))])
 ;; ## Error Messages
-;;
 ;; Plotje produces clear error messages for common mistakes.
 
 ;; ### Non-existent column
