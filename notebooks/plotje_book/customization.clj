@@ -63,6 +63,17 @@
                                 (some #{"Iris Measurements"} (:texts s))
                                 (some (fn [t] (.contains ^String t "Sepal dimensions")) (:texts s)))))])
 
+;; Legend titles default to the column name. Override with
+;; `:color-label`, `:size-label`, or `:alpha-label`:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/options {:color-label "Species (override)"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"Species (override)"} (:texts s)))))])
+
 ;; ## Scales
 
 ;; Use a log scale for data spanning orders of magnitude.
