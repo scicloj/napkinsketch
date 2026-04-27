@@ -69,6 +69,8 @@
 ;; Transforms raw data into a statistical summary. Each layer type
 ;; uses a stat to prepare data for rendering.
 ;;
+;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
+
 (kind/table
  {:column-names ["Dispatch value" "What it does"]
   :row-maps
@@ -81,8 +83,6 @@
                       "What it does" (pj/stat-doc k)})))})
 
 (kind/test-last [(fn [t] (= 11 (count (:row-maps t))))])
-;;
-;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
 
 ;; The stat is part of the **layer type** returned by
 ;; `layer-type/lookup`. For example, `(layer-type/lookup :histogram)`
@@ -133,6 +133,8 @@
 ;; Converts a stat result into a plan layer descriptor -- a plain
 ;; map with data-space geometry and resolved colors.
 ;;
+;; Dispatch function: `(fn [view stat all-colors cfg] (:mark view))`
+
 (kind/table
  {:column-names ["Dispatch value" "Output"]
   :row-maps
@@ -145,8 +147,6 @@
                       "Output" (pj/mark-doc k)})))})
 
 (kind/test-last [(fn [t] (= 17 (count (:row-maps t))))])
-;;
-;; Dispatch function: `(fn [view stat all-colors cfg] (:mark view))`
 
 ;; A plan layer looks like this:
 
@@ -165,6 +165,8 @@
 ;; This is the "membrane path" -- used when the target format goes through
 ;; membrane (e.g., SVG).
 ;;
+;; Dispatch function: `(fn [layer ctx] (:mark layer))`
+
 (kind/table
  {:column-names ["Dispatch value" "Membrane output"]
   :row-maps
@@ -177,8 +179,6 @@
                       "Membrane output" (pj/membrane-mark-doc k)})))})
 
 (kind/test-last [(fn [t] (= 17 (count (:row-maps t))))])
-;;
-;; Dispatch function: `(fn [layer ctx] (:mark layer))`
 ;;
 ;; ### How to extend: add a new mark type
 ;;
@@ -237,12 +237,12 @@
 ;; then plot. Other renderers can skip membrane and go directly from
 ;; plan to their target format.
 ;;
+;; Dispatch function: `(fn [plan format opts] format)`
+;;
 ;; | Dispatch value | Path |
 ;; |:---------------|:-----|
 ;; | `:svg` | plan, then membrane, then `membrane->plot :svg` |
 ;; | `:bufimg` | plan, then membrane, then `membrane->plot :bufimg` (raster image) |
-;;
-;; Dispatch function: `(fn [plan format opts] format)`
 
 ;; Using `plan->plot` directly:
 
@@ -296,12 +296,12 @@
 ;; This is the extensibility point for membrane-based output formats --
 ;; formats that share the same drawable tree but walk it differently.
 ;;
+;; Dispatch function: `(fn [membrane-tree format opts] format)`
+;;
 ;; | Dispatch value | Output |
 ;; |:---------------|:-------|
 ;; | `:svg` | SVG hiccup wrapped in `kind/hiccup` |
 ;; | `:bufimg` | Java BufferedImage wrapped in `kind/buffered-image` (raster) |
-;;
-;; Dispatch function: `(fn [membrane-tree format opts] format)`
 
 ;; `pj/plan->membrane` builds the tree, `pj/membrane->plot` converts it:
 

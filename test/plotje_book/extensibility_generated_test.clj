@@ -14,7 +14,7 @@
 
 
 (def
- v3_l72
+ v3_l74
  (kind/table
   {:column-names ["Dispatch value" "What it does"],
    :row-maps
@@ -31,7 +31,7 @@
        "What it does" (pj/stat-doc k)})))}))
 
 
-(deftest t4_l83 (is ((fn [t] (= 11 (count (:row-maps t)))) v3_l72)))
+(deftest t4_l85 (is ((fn [t] (= 11 (count (:row-maps t)))) v3_l74)))
 
 
 (def v6_l91 (layer-type/lookup :histogram))
@@ -53,7 +53,7 @@
 
 
 (def
- v15_l136
+ v15_l138
  (kind/table
   {:column-names ["Dispatch value" "Output"],
    :row-maps
@@ -70,7 +70,7 @@
        "Output" (pj/mark-doc k)})))}))
 
 
-(deftest t16_l147 (is ((fn [t] (= 17 (count (:row-maps t)))) v15_l136)))
+(deftest t16_l149 (is ((fn [t] (= 17 (count (:row-maps t)))) v15_l138)))
 
 
 (def
@@ -96,7 +96,7 @@
 
 
 (def
- v21_l168
+ v21_l170
  (kind/table
   {:column-names ["Dispatch value" "Membrane output"],
    :row-maps
@@ -113,7 +113,7 @@
        "Membrane output" (pj/membrane-mark-doc k)})))}))
 
 
-(deftest t22_l179 (is ((fn [t] (= 17 (count (:row-maps t)))) v21_l168)))
+(deftest t22_l181 (is ((fn [t] (= 17 (count (:row-maps t)))) v21_l170)))
 
 
 (def
