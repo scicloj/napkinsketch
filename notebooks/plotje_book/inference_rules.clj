@@ -78,26 +78,11 @@ scatter-pose
 ;; Each of those bullets is its own inference rule, with a default
 ;; and an explicit override. The rest of the chapter walks them.
 
-;; ## What Gets Inferred (Chapter Map)
-;;
-;; The sections below cover each inference rule in detail. Skip to
-;; the one you need; the order roughly follows the resolution
-;; pipeline:
-;;
-;; 1. **Column selection** -- which columns map to x, y, and color (inferred from dataset shape when omitted)
-;; 2. **Column types** -- whether x and y are numerical, categorical, or temporal
-;; 3. **Aesthetic resolution** -- whether `:color`, `:size`, `:alpha`, and `:text` are column references or fixed values
-;; 4. **Grouping** -- which columns split data into subsets (explicit `:group` plus a categorical `:color`)
-;; 5. **Layer type** -- which mark and stat to use (e.g., scatter, histogram, bar, line, boxplot)
-;; 6. **Domains** -- data extent for each axis, with padding
-;; 7. **Ticks** -- nice round values and formatted labels
-;; 8. **Axis labels** -- derived from column names
-;; 9. **Legends** -- entries for color, size, and alpha legends, plus the room they take in the plot margin
-;; 10. **Layout** -- whether panels form a single plot, a facet grid, or a multi-variable grid
-;; 11. **Coordinate flipping** -- whether axes are swapped after layout (polar has its own chapter)
-;;
-;; Two cross-cutting sections follow the rule-by-rule tour: how
-;; the rules combine in multi-layer plots, and a diagram of the
+;; The sections below walk each rule in detail. The order roughly
+;; follows the resolution pipeline -- column selection, column types,
+;; aesthetics, grouping, layer type, domains, ticks, labels, legends,
+;; layout, coord flip -- with two cross-cutting closing sections on
+;; how the rules combine in multi-layer plots and a diagram of the
 ;; full resolution pipeline.
 
 ;; ## Column Selection
