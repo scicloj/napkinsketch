@@ -12,7 +12,7 @@
 ;;   the renderer received (domains, groups, tick values)
 ;; - **Building a custom renderer** -- you need to understand the plan
 ;;   structure to consume it
-;; - **Validating** -- you want to assert plan properties in tests
+;; - **Validating plans** -- you want to assert plan properties in tests
 
 (ns plotje-book.exploring-plans
   (:require
@@ -46,8 +46,8 @@
 ;; We'll use `pj/plan` with the same pose:
 
 (def tiny-plan (-> tiny
-                 (pj/lay-point :x :y)
-                 pj/plan))
+                   (pj/lay-point :x :y)
+                   pj/plan))
 
 ;; ### What's in a plan?
 ;;
@@ -154,8 +154,8 @@ tiny-layer
                                 (= 150 (:points s)))))])
 
 (def iris-plan (-> (rdatasets/datasets-iris)
-                 (pj/lay-point :sepal-length :sepal-width {:color :species})
-                 pj/plan))
+                   (pj/lay-point :sepal-length :sepal-width {:color :species})
+                   pj/plan))
 
 ;; Here is the full plan -- notice the legend and three groups:
 
@@ -197,8 +197,8 @@ iris-plan
 ;; per-point colors and a continuous gradient legend.
 
 (def cont-plan (-> (rdatasets/datasets-iris)
-                 (pj/lay-point :sepal-length :sepal-width {:color :petal-length})
-                 pj/plan))
+                   (pj/lay-point :sepal-length :sepal-width {:color :petal-length})
+                   pj/plan))
 
 (:legend cont-plan)
 
@@ -230,8 +230,8 @@ iris-plan
                                 (pos? (:polygons s)))))])
 
 (def hist-plan (-> (rdatasets/datasets-iris)
-                 (pj/lay-histogram :sepal-length)
-                 pj/plan))
+                   (pj/lay-histogram :sepal-length)
+                   pj/plan))
 
 hist-plan
 
@@ -268,8 +268,8 @@ hist-plan
                                 (pos? (:polygons s)))))])
 
 (def bar-plan (-> (rdatasets/palmerpenguins-penguins)
-                (pj/lay-bar :island {:color :species})
-                pj/plan))
+                  (pj/lay-bar :island {:color :species})
+                  pj/plan))
 
 (def bar-layer (first (:layers (first (:panels bar-plan)))))
 
@@ -298,8 +298,8 @@ bar-layer
 ;; Stacking changes the position field:
 
 (def stacked-plan (-> (rdatasets/palmerpenguins-penguins)
-                    (pj/lay-bar :island {:position :stack :color :species})
-                    pj/plan))
+                      (pj/lay-bar :island {:position :stack :color :species})
+                      pj/plan))
 
 (def stacked-layer (first (:layers (first (:panels stacked-plan)))))
 
@@ -323,9 +323,9 @@ bar-layer
                                 (= 1 (:lines s)))))])
 
 (def lm-plan (-> (rdatasets/datasets-iris)
-               (pj/lay-point :sepal-length :sepal-width)
-               (pj/lay-smooth {:stat :linear-model})
-               pj/plan))
+                 (pj/lay-point :sepal-length :sepal-width)
+                 (pj/lay-smooth {:stat :linear-model})
+                 pj/plan))
 
 ;; Two layers -- points and line:
 
@@ -358,10 +358,10 @@ bar-layer
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 (def grp-plan (-> (rdatasets/datasets-iris)
-                (pj/pose :petal-length :petal-width {:color :species})
-                pj/lay-point
-                (pj/lay-smooth {:stat :linear-model})
-                pj/plan))
+                  (pj/pose :petal-length :petal-width {:color :species})
+                  pj/lay-point
+                  (pj/lay-smooth {:stat :linear-model})
+                  pj/plan))
 
 (let [line-layer (second (:layers (first (:panels grp-plan))))]
   (mapv (fn [g]
@@ -389,8 +389,8 @@ bar-layer
                                 (= 1 (:lines s)))))])
 
 (def wave-plan (-> wave
-                 (pj/lay-line :x :y)
-                 pj/plan))
+                   (pj/lay-line :x :y)
+                   pj/plan))
 
 (def wave-group (first (:groups (first (:layers (first (:panels wave-plan)))))))
 
@@ -418,8 +418,8 @@ bar-layer
                                 (= 4 (:polygons s)))))])
 
 (def sales-plan (-> sales
-                  (pj/lay-value-bar :product :revenue)
-                  pj/plan))
+                    (pj/lay-value-bar :product :revenue)
+                    pj/plan))
 
 (let [g (first (:groups (first (:layers (first (:panels sales-plan))))))]
   {:xs (:xs g)
@@ -432,9 +432,9 @@ bar-layer
 ;; Setting `:coord :flip` swaps x and y in the plan's panel:
 
 (def flip-plan (-> (rdatasets/datasets-iris)
-                 (pj/lay-bar :species)
-                 (pj/coord :flip)
-                 pj/plan))
+                   (pj/lay-bar :species)
+                   (pj/coord :flip)
+                   pj/plan))
 
 (:coord (first (:panels flip-plan)))
 
@@ -457,12 +457,12 @@ bar-layer
 ;; Title, labels, and dimensions are recorded in the plan:
 
 (def opts-plan (-> (rdatasets/datasets-iris)
-                 (pj/lay-point :sepal-length :sepal-width)
-                 (pj/plan {:title "My Custom Title"
-                           :x-label "Length (cm)"
-                           :y-label "Width (cm)"
-                           :width 800
-                           :height 300})))
+                   (pj/lay-point :sepal-length :sepal-width)
+                   (pj/plan {:title "My Custom Title"
+                             :x-label "Length (cm)"
+                             :y-label "Width (cm)"
+                             :width 800
+                             :height 300})))
 
 opts-plan
 
