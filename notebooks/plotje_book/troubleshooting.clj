@@ -176,13 +176,13 @@
 ;;
 ;; **Symptom**: Errors or unexpected output with `(pj/coord :polar)`.
 ;;
-;; **Cause**: Not all marks support polar coordinates. The marks
-;; that work with polar are `:bar`, `:point`, `:rect`, `:rug`, and
-;; `:text` (verified by the polar coord function in source). Layer
-;; types built on these marks (such as `:value-bar` and
-;; `:histogram`, which both render as bars) work too.
+;; **Cause**: Polar coordinates currently support a subset of marks:
+;; `:bar`, `:point`, `:rect`, `:rug`, and `:text` (verified by the
+;; polar coord function in source). Layer types built on these marks
+;; (such as `:value-bar` and `:histogram`, which both render as
+;; bars) work too.
 ;;
-;; **Fix**: Use a supported mark. A bar chart flipped to polar
+;; **Fix for now**: Use a supported mark. A bar chart flipped to polar
 ;; becomes a rose chart:
 
 (-> (rdatasets/datasets-chickwts)
@@ -192,8 +192,10 @@
 
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
-;; See the [Polar Coordinates](./plotje_book.polar.html) chapter for the
-;; full set of supported marks and examples.
+;; Support for `:line`, `:area`, and other marks in polar is
+;; planned. See the [Polar Coordinates](./plotje_book.polar.html)
+;; chapter for the full set of currently supported marks and
+;; examples.
 
 ;; ## Tooltip and Brush Not Working
 ;;
@@ -294,7 +296,7 @@
 ;; order they appear in the data (matching ggplot2's
 ;; `coord_flip()`).
 ;;
-;; **Fix**: Sort the dataset ascending before plotting -- the
+;; **Fix for now**: Sort the dataset ascending before plotting -- the
 ;; ascending order shows up top-to-bottom on the flipped axis,
 ;; so the biggest value lands at the top:
 

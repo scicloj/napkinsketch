@@ -102,7 +102,7 @@
 
 
 (def
- v27_l211
+ v27_l213
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -110,12 +110,12 @@
 
 
 (deftest
- t28_l215
- (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v27_l211)))
+ t28_l217
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v27_l213)))
 
 
 (def
- v30_l231
+ v30_l233
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width)
@@ -123,12 +123,12 @@
 
 
 (deftest
- t31_l235
- (is ((fn [v] (= 3 (:panels (pj/svg-summary v)))) v30_l231)))
+ t31_l237
+ (is ((fn [v] (= 3 (:panels (pj/svg-summary v)))) v30_l233)))
 
 
 (def
- v33_l253
+ v33_l255
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width)
@@ -143,25 +143,25 @@
 
 
 (deftest
- t34_l260
- (is ((fn [v] (some #{"mean"} (:texts (pj/svg-summary v)))) v33_l253)))
+ t34_l262
+ (is ((fn [v] (some #{"mean"} (:texts (pj/svg-summary v)))) v33_l255)))
 
 
 (def
- v36_l277
+ v36_l279
  (def template (-> (pj/pose nil {:x :x, :y :y}) pj/lay-point)))
 
 
-(def v37_l281 (-> template (pj/with-data {:x [1 2 3], :y [4 5 6]})))
+(def v37_l283 (-> template (pj/with-data {:x [1 2 3], :y [4 5 6]})))
 
 
 (deftest
- t38_l284
- (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v37_l281)))
+ t38_l286
+ (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v37_l283)))
 
 
 (def
- v40_l301
+ v40_l303
  (->
   [{:category "A", :value 100}
    {:category "B", :value 50}
@@ -173,12 +173,12 @@
 
 
 (deftest
- t41_l309
- (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v40_l301)))
+ t41_l311
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v40_l303)))
 
 
 (def
- v43_l331
+ v43_l333
  (->
   {:x (concat (range 5) (range 5)),
    :y [1 2 3 4 5 2 2 2 3 3],
@@ -187,5 +187,5 @@
 
 
 (deftest
- t44_l336
- (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v43_l331)))
+ t44_l338
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v43_l333)))
