@@ -184,9 +184,10 @@ two-col-pose
 
 ;; ## Column Types
 ;;
-;; Once columns are selected, the next step is determining the type of each column: **numerical**, **categorical**,
-;; or **temporal**? This determines the scale type, domain, tick style,
-;; and the default mark.
+;; Once columns are selected, the next step is determining the type
+;; of each column -- **numerical**, **categorical**, or **temporal**.
+;; This determines the scale type, domain, tick style, and the
+;; default mark.
 ;;
 ;; | Column dtype | Inferred type |
 ;; |:-------------|:--------------|
