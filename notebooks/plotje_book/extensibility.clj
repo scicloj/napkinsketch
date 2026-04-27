@@ -450,7 +450,10 @@
 ;; | A new coordinate system | `make-coord` |
 ;; | A new position adjustment | `apply-position` |
 
-;; ## What's Next
+;; ## Background
 ;;
 ;; - [**Architecture**](./plotje_book.architecture.html) -- the five-stage pipeline and key libraries
+
+;; ## What's Next
+;;
 ;; - [**Edge Cases**](./plotje_book.edge_cases.html) -- how the library handles unusual inputs
