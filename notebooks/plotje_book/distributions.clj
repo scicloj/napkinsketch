@@ -112,6 +112,22 @@
             (and (= 1 (:panels s))
                  (= 1 (:polygons s)))))])
 
+;; ## Rug
+
+;; A rug shows the raw data positions as short tick marks along the
+;; axis. Layered with a density curve, it shows the smooth shape and
+;; the underlying observations together.
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-density :sepal-length)
+    pj/lay-rug)
+
+(kind/test-last
+ [(fn [v] (let [s (pj/svg-summary v)]
+            (and (= 1 (:panels s))
+                 (= 1 (:polygons s))
+                 (= 150 (:lines s)))))])
+
 ;; ## Boxplot
 
 ;; Median, quartiles, whiskers at 1.5xIQR (interquartile range), and outlier points.
