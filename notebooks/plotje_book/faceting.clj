@@ -162,6 +162,14 @@
                                 (= (* 12 150) (:points s))
                                 (pos? (:polygons s)))))])
 
+(kind/test-last
+ [(fn [v]
+    (->> (:sub-plots (pj/plan v))
+         (every? (fn [{:keys [path plan]}]
+                   (let [[r c] path
+                         mark (-> plan :panels first :layers first :mark)]
+                     (= mark (if (= r c) :bar :point)))))))])
+
 ;; Diagonal panels (where x = y) show histograms -- inference detects
 ;; same-column pairs. Off-diagonal panels show scatter plots. All
 ;; panels are colored by species (the color mapping is at the

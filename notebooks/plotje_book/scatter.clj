@@ -159,6 +159,14 @@
                                 (= (* 12 150) (:points s))
                                 (pos? (:polygons s)))))])
 
+(kind/test-last
+ [(fn [v]
+    (->> (:sub-plots (pj/plan v))
+         (every? (fn [{:keys [path plan]}]
+                   (let [[r c] path
+                         mark (-> plan :panels first :layers first :mark)]
+                     (= mark (if (= r c) :bar :point)))))))])
+
 ;; Per-cell inference picks the layer type for each panel: diagonal
 ;; cells (x = y) get histograms; off-diagonal cells get scatter
 ;; plots. All panels share the color aesthetic set at the composite

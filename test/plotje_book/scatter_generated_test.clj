@@ -252,3 +252,19 @@
       (= (* 12 150) (:points s))
       (pos? (:polygons s)))))
    v37_l153)))
+
+
+(deftest
+ t39_l162
+ (is
+  ((fn
+    [v]
+    (->>
+     (:sub-plots (pj/plan v))
+     (every?
+      (fn
+       [{:keys [path plan]}]
+       (let
+        [[r c] path mark (-> plan :panels first :layers first :mark)]
+        (= mark (if (= r c) :bar :point)))))))
+   v37_l153)))
