@@ -22,14 +22,20 @@
         sw-r (/ sw 2.0)]
     (if (= :continuous (:type legend))
       ;; Continuous gradient legend
-      (let [{:keys [min max stops color-scale]} legend
+      (let [{:keys [min max stops color-scale ticks]} legend
             ;; If render-time config overrides the color-scale, resolve fresh
             render-cs (:color-scale cfg)
             override? (and render-cs (not= render-cs color-scale))
             grad-fn (when override?
                       (defaults/resolve-gradient-fn render-cs))
             bar-h 120 bar-w 12
-            n-stops (count stops)]
+            n-stops (count stops)
+            fmt-tick (fn [v]
+                       (let [v (double v)]
+                         (cond
+                           (zero? v) "0"
+                           (and (>= v 1.0) (== v (Math/floor v))) (str (long v))
+                           :else (format "%.4g" v))))]
         (vec
          (concat
           (when title
@@ -46,13 +52,20 @@
                           (ui/with-color [cr cg cb 1.0]
                             (ui/with-style ::ui/style-fill
                               (ui/rectangle bar-w (/ bar-h n-stops))))))
-          ;; Min/max labels
-          [(ui/translate (+ x bar-w 4) (+ y bar-h -4)
-                         (ui/with-color title-color
-                           (ui/label (format "%.4g" (double min)) (ui/font nil 10))))
-           (ui/translate (+ x bar-w 4) (+ y 6)
-                         (ui/with-color title-color
-                           (ui/label (format "%.4g" (double max)) (ui/font nil 10))))])))
+          (if (seq ticks)
+            ;; Log scale: label every tick value at its t-position.
+            (for [{:keys [value t]} ticks
+                  :let [ty (+ y (* (- 1.0 (double t)) bar-h) -4)]]
+              (ui/translate (+ x bar-w 4) ty
+                            (ui/with-color title-color
+                              (ui/label (fmt-tick value) (ui/font nil 10)))))
+            ;; Linear scale: just min/max at the ends.
+            [(ui/translate (+ x bar-w 4) (+ y bar-h -4)
+                           (ui/with-color title-color
+                             (ui/label (format "%.4g" (double min)) (ui/font nil 10))))
+             (ui/translate (+ x bar-w 4) (+ y 6)
+                           (ui/with-color title-color
+                             (ui/label (format "%.4g" (double max)) (ui/font nil 10))))]))))
       ;; Categorical swatch legend
       (let [{:keys [entries]} legend]
         (vec

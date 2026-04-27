@@ -1750,6 +1750,14 @@
       (is (some? (-> d
                      (pj/lay-point :user :n {:size :n :x-type :categorical})
                      (pj/scale :size :log)
+                     pj/plot)))))
+
+  (testing "user-report-3 repro: pj/plot succeeds on tile fill :log"
+    (let [d (tc/dataset (for [r (range 5) c (range 5)]
+                          {:r r :c c :v (Math/pow 10.0 (/ (+ r c) 2.0))}))]
+      (is (some? (-> d
+                     (pj/lay-tile :r :c {:fill :v})
+                     (pj/scale :fill :log)
                      pj/plot))))))
 
 (deftest unknown-option-warning-test
