@@ -242,13 +242,17 @@ two-panel
 ;; ### How scope is applied
 ;;
 ;; The same scoping principle governs three things -- mappings,
-;; layers, and data -- each with its own combination rule:
+;; layers, and data -- but each combines differently when pose
+;; level meets layer level:
 ;;
-;; | What | Pose level | Layer level | Combination |
-;; |:-----|:------------|:------------|:------------|
-;; | Mapping | `pj/pose` mapping | `pj/lay-*` options | `merge` -- innermost wins, `nil` erases |
-;; | Layer | `pj/lay-*` | -- (leaf) | layers accumulate |
-;; | Data | first argument | `:data` in layer options | innermost non-nil wins |
+;; - **Mappings**: pose and layer mappings merge; the innermost
+;;   wins on conflict, and an explicit `nil` erases a mapping
+;;   inherited from above.
+;; - **Layers**: every `pj/lay-*` accumulates a new layer; layers
+;;   do not override, they pile up.
+;; - **Data**: the first argument to `pj/pose`/`pj/lay-*` sets the
+;;   pose-level dataset; passing `:data` in a layer's options
+;;   overrides it for that layer alone (innermost non-nil wins).
 
 ;; ### Layer-level data
 ;;
