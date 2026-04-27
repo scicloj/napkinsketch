@@ -54,7 +54,7 @@
 ;;   binning, ...), and a position adjustment (dodge, stack,
 ;;   jitter). The layer type is chosen by which `pj/lay-*` function
 ;;   you call; its constituents can be overridden via `:mark`,
-;;   `:stat`, and `:position` keys in the opts map.
+;;   `:stat`, and `:position` keys in the options map.
 ;; - **Layer-type parameters** -- knobs specific to the layer type,
 ;;   like `:bandwidth` for `pj/lay-density` or `:bins` for
 ;;   `pj/lay-histogram`.
@@ -66,7 +66,7 @@
 ;; - **Data** -- a per-layer `:data` key, if the layer should
 ;;   use a different dataset from the rest of the pose.
 ;;
-;; The primary way to set them is in the opts map of `pj/lay-*`:
+;; The primary way to set them is in the options map of `pj/lay-*`:
 
 (-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width)
@@ -180,7 +180,7 @@
 ;; same as **pose-level**, which names a scope position (the
 ;; top of the layer-options scope hierarchy) within another
 ;; category. Trying to set a plot option inside an `pj/lay-*`
-;; opts map -- for example `{:x-scale {:type :log}}` -- is a
+;; options map -- for example `{:x-scale {:type :log}}` -- is a
 ;; category mistake: plot options belong in `:opts` via their
 ;; dedicated functions above.
 

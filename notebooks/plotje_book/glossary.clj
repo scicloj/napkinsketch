@@ -399,7 +399,7 @@ my-pose
 ;;
 ;; An **annotation** is a non-data mark that adds visual reference
 ;; to a plot. Annotations are not connected to data columns -- they
-;; overlay fixed positions passed via opts (`:y-intercept` or
+;; overlay fixed positions passed via options (`:y-intercept` or
 ;; `:x-intercept` for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max`
 ;; for bands). They are regular layers, so they attach under the
 ;; same three cases as any `lay-*`: bare call sits on the pose,
@@ -579,7 +579,7 @@ my-pose
 ;; | Pose | Composable value: data + mapping + layers (+ sub-poses) | All `pj/` functions return poses |
 ;; | Leaf pose | Pose describing one plot panel | `pj/pose`, `pj/lay-*` with columns |
 ;; | Composite pose | Pose containing sub-poses and a layout | `pj/arrange` |
-;; | Mapping | Column-to-aesthetic association on a pose or layer | `pj/pose` mapping, `pj/lay-*` opts |
+;; | Mapping | Column-to-aesthetic association on a pose or layer | `pj/pose` mapping, `pj/lay-*` options |
 ;; | Layer | Layer type attached to a pose, optionally with scoped mappings | `pj/lay-*` |
 ;; | Dataset | Tabular data backing a plot (Tablecloth) | `:data` slot, `pj/with-data` |
 ;; | Pipeline | Five-stage flow `pose -> draft -> plan -> membrane -> plot` | Architecture chapter |
@@ -605,7 +605,7 @@ my-pose
 ;; | Annotation | Non-data reference marks (rules, bands) | `pj/lay-rule-*`, `pj/lay-band-*` |
 ;; | Legend | Color/size/alpha key from aesthetic mappings | Automatic in plan |
 ;; | Plot options | Title, subtitle, caption, labels, dimensions | `pj/options` |
-;; | Layer options | Per-layer aesthetics and layer-type parameters | `pj/lay-*` opts map |
+;; | Layer options | Per-layer aesthetics and layer-type parameters | `pj/lay-*` options map |
 ;; | Theme | Visual styling: background, grid, fonts | `:theme` in `pj/options` |
 ;; | Palette | Ordered color set for categorical aesthetics | `:palette` in `pj/options` |
 ;; | Gradient | Continuous color ramp for numerical mappings | `:color-scale` in `pj/options` |

@@ -243,13 +243,13 @@ two-panel
 ;;
 ;; | What | Pose level | Layer level | Combination |
 ;; |:-----|:------------|:------------|:------------|
-;; | Mapping | `pj/pose` mapping | `pj/lay-*` opts | `merge` -- innermost wins, `nil` erases |
+;; | Mapping | `pj/pose` mapping | `pj/lay-*` options | `merge` -- innermost wins, `nil` erases |
 ;; | Layer | `pj/lay-*` | -- (leaf) | layers accumulate |
-;; | Data | first argument | `:data` in layer opts | innermost non-nil wins |
+;; | Data | first argument | `:data` in layer options | innermost non-nil wins |
 
 ;; ### Layer-level data
 ;;
-;; Pass `:data` in the opts map of `pj/lay-*` to give that layer its
+;; Pass `:data` in the options map of `pj/lay-*` to give that layer its
 ;; own dataset:
 
 (def setosa
@@ -648,7 +648,7 @@ two-panel
 
 ;; Reference lines and shaded bands are themselves layers, added with
 ;; `pj/lay-rule-h`, `pj/lay-rule-v`, `pj/lay-band-h`, `pj/lay-band-v`.
-;; Positions come from the opts map (`:y-intercept` / `:x-intercept` for
+;; Positions come from the options map (`:y-intercept` / `:x-intercept` for
 ;; rules; `:y-min`/`:y-max` or `:x-min`/`:x-max` for bands); appearance
 ;; aesthetics like `:color` and `:alpha` work the same way they do on
 ;; any other layer.

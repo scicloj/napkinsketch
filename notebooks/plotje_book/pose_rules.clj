@@ -332,7 +332,7 @@
 ;; ### Rule C8: `pj/arrange` composes poses into a composite
 ;;
 ;; `pj/arrange` takes a sequence of poses (leaves in alpha) plus
-;; optional layout opts and returns a composite. The inputs become
+;; optional layout options and returns a composite. The inputs become
 ;; the composite's `:poses`, wrapped in a 2-level row-and-column
 ;; layout.
 
@@ -710,7 +710,7 @@ s2-tree
 
 ;; ### Rule S4: layer `:mapping` is the narrowest scope
 ;;
-;; A mapping written in a layer's own `:mapping` (aesthetic opts
+;; A mapping written in a layer's own `:mapping` (aesthetic options
 ;; passed to `lay-*`) scopes to that layer only. Other layers --
 ;; even on the same leaf -- do not see it. This is the terminal
 ;; case of S1: the layer's mapping is innermost in the merge.

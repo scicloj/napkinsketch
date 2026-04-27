@@ -104,8 +104,8 @@ graph LR
 (kind/test-last [true?])
 
 ;; The mapping carries the position aesthetics (from the positional
-;; :x / :y arguments); the color aesthetic (from the opts map) rides
-;; on the layer so a subsequent `pj/lay-*` with different opts does
+;; :x / :y arguments); the color aesthetic (from the options map) rides
+;; on the layer so a subsequent `pj/lay-*` with different options does
 ;; not disturb it:
 
 (:mapping trace-pose)
@@ -350,7 +350,7 @@ graph TD
 ")
 
 ;; `impl/pose.clj` holds the pose substrate: `resolve-tree` (merges
-;; mappings/data/opts down from root to every leaf), `leaf->draft`
+;; mappings/data/options down from root to every leaf), `leaf->draft`
 ;; (flattens a leaf into draft maps with optional facet expansion),
 ;; and the multi-pair / grid composite utilities.
 ;; `impl/compositor.clj` handles composite rendering -- each leaf

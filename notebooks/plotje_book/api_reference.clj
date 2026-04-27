@@ -366,7 +366,7 @@
 ;; ## Annotations
 
 ;; Reference lines and shaded bands are regular layers. Position comes
-;; from the opts map (`:y-intercept` for `lay-rule-h`, `:x-intercept`
+;; from the options map (`:y-intercept` for `lay-rule-h`, `:x-intercept`
 ;; for `lay-rule-v`; `:y-min`/`:y-max` for `lay-band-h`,
 ;; `:x-min`/`:x-max` for `lay-band-v`); appearance aesthetics like
 ;; `:color` and `:alpha` work the same as on any other layer. Without

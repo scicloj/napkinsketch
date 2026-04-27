@@ -147,7 +147,7 @@
 
 ;; Reference lines and shaded bands are layers added with
 ;; `pj/lay-rule-h`, `pj/lay-rule-v`, `pj/lay-band-h`, `pj/lay-band-v`.
-;; Position comes from the opts map (`:y-intercept` or `:x-intercept`
+;; Position comes from the options map (`:y-intercept` or `:x-intercept`
 ;; for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max` for bands);
 ;; appearance aesthetics (`:color`, `:alpha`) work the same way they
 ;; do on any other layer.
