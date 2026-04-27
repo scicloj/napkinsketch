@@ -456,4 +456,5 @@
 
 ;; ## What's Next
 ;;
+;; - [**Waterfall Extension**](./plotje_book.waterfall_extension.html) -- a worked example that uses the extension points above to add a new chart type
 ;; - [**Edge Cases**](./plotje_book.edge_cases.html) -- how the library handles unusual inputs

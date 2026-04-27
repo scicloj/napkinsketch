@@ -387,3 +387,8 @@ graph TD
 ;;
 ;; - [Kindly](https://scicloj.github.io/kindly/) &
 ;;   [Clay](https://scicloj.github.io/clay/) -- notebook rendering
+
+;; ## What's Next
+;;
+;; - [**Exploring Plans**](./plotje_book.exploring_plans.html) -- a hands-on tour of the plan stage, building intuition for the data shape that the pipeline produces
+;; - [**Extensibility**](./plotje_book.extensibility.html) -- add custom marks, stats, scales, coordinate systems, and output formats by extending the multimethods at each pipeline stage

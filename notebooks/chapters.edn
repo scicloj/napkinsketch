@@ -21,8 +21,8 @@
                      "troubleshooting"]
  "📖 Reference" ["api_reference"]
  "🖼 Gallery" ["gallery"]
- "🔬 Internals" ["exploring_plans"
-                 "architecture"
+ "🔬 Internals" ["architecture"
+                 "exploring_plans"
                  "extensibility"
                  "waterfall_extension"
                  "edge_cases"

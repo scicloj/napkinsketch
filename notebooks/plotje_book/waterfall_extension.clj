@@ -221,7 +221,11 @@
 
 (kind/test-last [(fn [v] (true? v))])
 
-;; ## What's Next
+;; ## Background
 ;;
 ;; - [**Extensibility**](./plotje_book.extensibility.html) -- reference for all eight extension points
 ;; - [**Architecture**](./plotje_book.architecture.html) -- the five-stage pipeline in detail
+
+;; ## What's Next
+;;
+;; - [**Edge Cases**](./plotje_book.edge_cases.html) -- how the library handles unusual inputs

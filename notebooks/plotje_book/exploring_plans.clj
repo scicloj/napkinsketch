@@ -1,10 +1,10 @@
 ;; # Exploring Plans
 ;;
-;; When Plotje renders a plot, it builds an intermediate data
-;; structure called a **plan** before rendering anything. This notebook
-;; walks through the plan step by step, building intuition for the
-;; data model by looking at what `pj/plan` produces for different
-;; poses.
+;; The [Architecture](./plotje_book.architecture.html) chapter
+;; introduced the five-stage pipeline that turns a pose into a
+;; rendered plot. This notebook zooms into one of those stages --
+;; the **plan** -- walking through it step by step to build
+;; intuition for what `pj/plan` produces for different poses.
 ;;
 ;; You would explore plans when:
 ;;
@@ -606,9 +606,9 @@ final-plan
 ;; ## Data Types
 ;;
 ;; Plans are plain inspectable data -- maps, numbers, strings,
-;; keywords, and dtype-next buffers for numeric arrays (see [Architecture](./plotje_book.architecture.html)) (`:xs`, `:ys`,
-;; etc.). The buffers support `nth`, `count`, `seq`, and standard
-;; sequence operations.
+;; keywords, and dtype-next buffers for numeric arrays (`:xs`,
+;; `:ys`, etc.). The buffers support `nth`, `count`, `seq`, and
+;; standard sequence operations.
 
 (type (:xs (first (:groups (first (:layers (first (:panels tiny-plan))))))))
 
@@ -622,5 +622,4 @@ final-plan
 
 ;; ## What's Next
 ;;
-;; - [**Architecture**](./plotje_book.architecture.html) -- the five-stage pipeline in detail
 ;; - [**Extensibility**](./plotje_book.extensibility.html) -- add custom marks, stats, and renderers
