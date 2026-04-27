@@ -112,8 +112,7 @@
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
-                                (some #{"2"} (:texts s))
-                                (some #{"4"} (:texts s)))))])
+                                (every? (set (:texts s)) ["2" "3" "4"]))))])
 
 ;; ## Mark Styling
 
