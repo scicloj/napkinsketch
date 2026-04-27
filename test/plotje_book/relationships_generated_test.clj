@@ -96,9 +96,9 @@
     :y
     (mapv
      (fn*
-      [p1__89427#]
+      [p1__83461#]
       (+
-       (Math/sin (* p1__89427# 0.2))
+       (Math/sin (* p1__83461# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (pj/lay-point :x :y)

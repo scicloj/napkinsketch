@@ -551,7 +551,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Four functions write plot options to the pose’s <code>:opts</code> field:</p>
 <ul>
 <li><p><code>pj/options</code> – plot text (title, subtitle, caption, axis and legend labels) and panel dimensions. It also accepts configuration keys as per-plot overrides (see Configuration below).</p></li>
-<li><p><code>pj/scale</code> – axis scale (log, categorical, fixed domain).</p></li>
+<li><p><code>pj/scale</code> – scale on an axis (<code>:x</code>, <code>:y</code>) or a continuous visual channel (<code>:size</code>, <code>:alpha</code>, <code>:fill</code>, <code>:color</code>). Axis scales accept <code>:linear</code>, <code>:log</code>, <code>:categorical</code>; visual channels accept <code>:linear</code> and <code>:log</code>.</p></li>
 <li><p><code>pj/coord</code> – coordinate system (cartesian, flipped, polar, fixed).</p></li>
 <li><p><code>pj/facet</code> and <code>pj/facet-grid</code> – split the plot into panels by a column.</p></li>
 </ul>
