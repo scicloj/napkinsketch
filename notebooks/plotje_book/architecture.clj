@@ -38,23 +38,26 @@ graph LR
   style F fill:#fce4ec
 ")
 
-;; - **Pose** -- the composable user API. Functions like
-;;   `pj/pose`, `pj/lay-point`, `pj/lay-rule-h`, `pj/options`,
-;;   `pj/facet`, `pj/arrange`, `pj/scale`, and `pj/coord` build up a
-;;   pose. No computation has happened yet.
+;; - **Pose** -- a composable description of data, mappings, and
+;;   layers. Built by `pj/pose`, `pj/lay-*`, `pj/options`, `pj/facet`,
+;;   `pj/arrange`, `pj/scale`, and `pj/coord`. No computation has
+;;   happened yet.
 ;;
-;; - **Draft** -- a flat vector of maps produced by `pj/draft`.
-;;   Each map has `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic
-;;   keys -- one per leaf-and-layer combination, with all scope merged.
+;; - **Draft** -- a flat vector of maps, one per applicable
+;;   layer-and-leaf combination with scope merged. Each map has
+;;   `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic keys.
+;;   Produced by `pj/draft`.
 ;;
-;; - **Plan** -- fully resolved plan. Data-space geometry, domains, tick info,
-;;   legend. Plain Clojure maps and dtype-next buffers. No rendering primitives.
+;; - **Plan** -- fully resolved geometry in data space (domains,
+;;   ticks, legends, computed shapes), as plain Clojure maps and
+;;   dtype-next buffers. Produced by `pj/plan`. No rendering
+;;   primitives yet.
 ;;
-;; - **Membrane** -- positioned drawing primitives
-;;   (Translate, WithColor, Path, Label, etc.).
+;; - **Membrane** -- positioned drawing primitives (Translate,
+;;   WithColor, Path, Label, ...). Produced by `pj/plan->membrane`.
 ;;
-;; - **Plot** -- final output. A tree walk converts membrane records
-;;   to SVG hiccup, which Clay/Kindly renders in notebooks.
+;; - **Plot** -- final output (SVG hiccup or BufferedImage).
+;;   Produced by `pj/membrane->plot` walking the membrane tree.
 
 ;; Most users only interact with the pose stage and never need to
 ;; think about the others. The stages below matter when you are debugging
