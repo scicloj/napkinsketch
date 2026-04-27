@@ -141,6 +141,34 @@
                  (= 3 (:polygons s))
                  (pos? (:lines s)))))])
 
+;; The 1.5xIQR claim is structural: each whisker stays within the
+;; Tukey fence `[Q1 - 1.5*IQR, Q3 + 1.5*IQR]`, and every outlier
+;; falls outside it.
+
+(let [plan (-> (rdatasets/datasets-iris)
+               (pj/lay-boxplot :species :sepal-width)
+               pj/plan)
+      box-layer (first (filter #(= :boxplot (:mark %))
+                               (:layers (first (:panels plan)))))]
+  (mapv (fn [{:keys [q1 q3 whisker-lo whisker-hi outliers]}]
+          (let [iqr (- q3 q1)
+                lo-fence (- q1 (* 1.5 iqr))
+                hi-fence (+ q3 (* 1.5 iqr))]
+            {:whisker-lo-in-fence (>= whisker-lo lo-fence)
+             :whisker-hi-in-fence (<= whisker-hi hi-fence)
+             :outliers-outside-fence
+             (every? (fn [o] (or (< o lo-fence) (> o hi-fence)))
+                     outliers)}))
+        (:boxes box-layer)))
+
+(kind/test-last
+ [(fn [results]
+    (and (= 3 (count results))
+         (every? (fn [r] (and (:whisker-lo-in-fence r)
+                              (:whisker-hi-in-fence r)
+                              (:outliers-outside-fence r)))
+                 results)))])
+
 ;; ## Grouped Boxplot
 
 ;; Side-by-side boxplots colored by a grouping variable.
