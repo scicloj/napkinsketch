@@ -116,10 +116,7 @@
 ;; The Clojure bridge is provided by the
 ;; [metamorph.ml](https://github.com/scicloj/metamorph.ml) library.
 ;; You can add it as a direct dependency:
-;;
-;; ```clojure
-;; org.scicloj/metamorph.ml {:mvn/version "..."}
-;; ```
+;; [![Clojars Project](https://img.shields.io/clojars/v/org.scicloj/metamorph.ml.svg)](https://clojars.org/org.scicloj/metamorph.ml)
 ;;
 ;; Or use the [Noj](https://scicloj.github.io/noj/) toolkit, which
 ;; includes it along with other data science libraries.
