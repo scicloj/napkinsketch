@@ -175,14 +175,14 @@
 ;; question; the underlying plan structure allows per-panel
 ;; scales, but the current API treats them as plot-level.
 ;;
-;; A note on terminology: other chapters may refer to these
-;; values as **plot-level** -- a category name. That is not the
-;; same as **pose-level**, which names a scope position (the
-;; top of the layer-options scope hierarchy) within another
-;; category. Trying to set a plot option inside an `pj/lay-*`
-;; options map -- for example `{:x-scale {:type :log}}` -- is a
-;; category mistake: plot options belong in `:opts` via their
-;; dedicated functions above.
+;; A note on terminology: other chapters call these values
+;; *plot-level options*. Be aware that *plot-level* here names a
+;; category, while *pose-level* (used for layer options) names a
+;; position in a scope hierarchy -- the shared word "level"
+;; refers to different things. Putting a plot option inside a
+;; `pj/lay-*` options map -- for example `{:x-scale {:type :log}}`
+;; -- is a category mistake: plot options belong in `:opts` via
+;; their dedicated functions above.
 
 ;; ---
 ;; ## Configuration
