@@ -2,6 +2,7 @@
  "🧱 Foundations" ["datasets"
                    "pose_model"
                    "core_concepts"
+                   "composition"
                    "options_and_scopes"
                    "pose_rules"
                    "inference_rules"
@@ -17,7 +18,6 @@
                      "configuration"
                      "customization"
                      "faceting"
-                     "composition"
                      "troubleshooting"]
  "📖 Reference" ["api_reference"]
  "🖼 Gallery" ["gallery"]

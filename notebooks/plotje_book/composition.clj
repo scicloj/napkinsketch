@@ -212,7 +212,10 @@ dashboard
 
 ;; ## What's Next
 ;;
-;; - [**Faceting**](./plotje_book.faceting.html) -- panel
-;;   splits by a categorical column (a data-driven composite)
-;; - [**Gallery**](./plotje_book.gallery.html) -- more
-;;   composition examples alongside single-plot chart types
+;; - [**Options and Scopes**](./plotje_book.options_and_scopes.html) --
+;;   the taxonomy of layer options, plot options, and configuration
+;;   (next chapter in Foundations)
+;; - [**Faceting**](./plotje_book.faceting.html) -- panel splits by
+;;   a categorical column (a data-driven composite, covered in How-to)
+;; - [**Gallery**](./plotje_book.gallery.html) -- more composition
+;;   examples alongside single-plot chart types

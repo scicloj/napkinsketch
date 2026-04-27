@@ -1038,3 +1038,12 @@ l4-shared
 
 (kind/test-last
  [(fn [pairs] (= [[:a :c] [:a :d] [:b :c] [:b :d]] pairs))])
+
+;; ## What's Next
+;;
+;; - [**Inference Rules**](./plotje_book.inference_rules.html) --
+;;   how Plotje fills in defaults (column types, marks, stats,
+;;   scales) when you do not specify them
+;; - [**Layer Types**](./plotje_book.layer_types.html) -- the
+;;   registry of mark + stat + position combinations the rules
+;;   above orchestrate
