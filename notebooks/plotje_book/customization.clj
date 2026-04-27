@@ -158,6 +158,43 @@
                                labels (filter #{"large" "medium" "small"} (:texts s))]
                            (= ["large" "medium" "small"] (vec labels))))])
 
+;; ### Log scale on visual channels
+;;
+;; `pj/scale` works on continuous visual channels too -- `:size`,
+;; `:alpha`, `:fill`, and `:color`. When the encoded column spans
+;; many orders of magnitude, a log scale spaces the legend ticks
+;; logarithmically and maps the visual property (radius, alpha,
+;; gradient color) in log-space, so each tick step represents the
+;; same multiplicative ratio. `:categorical` does not apply to a
+;; continuous encoding -- visual channels accept `:linear` (the
+;; default) and `:log` only.
+
+;; Point sizes from a column whose values jump by factors of ten:
+
+(-> {:user [:a :b :c] :n [10 100 1000]}
+    (pj/lay-point :user :n {:size :n :x-type :categorical})
+    (pj/scale :size :log))
+
+(kind/test-last [(fn [v] (= 3 (:points (pj/svg-summary v))))])
+
+;; The size legend's tick values are the original numbers (10,
+;; 100, 1000), but the dot radii grow in log-space -- each step
+;; reflects the same factor, matching what you see at the same data
+;; values in the plot.
+
+;; Tile heatmap with log-scaled fill:
+
+(-> (for [r (range 5) c (range 5)]
+      {:r r :c c :v (Math/pow 10.0 (/ (+ r c) 2.0))})
+    (pj/lay-tile :r :c {:fill :v})
+    (pj/scale :fill :log))
+
+(kind/test-last [(fn [v] (>= (:visible-tiles (pj/svg-summary v)) 25))])
+
+;; The continuous fill legend draws log-spaced tick labels along
+;; the gradient bar so a tile's color reads as its log-space
+;; position between the data minimum and maximum.
+
 ;; ### Column type overrides
 ;;
 ;; A column's inferred type (numerical / categorical / temporal) drives

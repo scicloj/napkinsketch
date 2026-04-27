@@ -802,10 +802,14 @@ s2-tree
 
 ;; ### Rule O2: `pj/scale` and `pj/coord` are plot-level options
 ;;
-;; `pj/scale` and `pj/coord` write into `:opts` as `:x-scale` /
-;; `:y-scale` and `:coord`. They apply to every leaf in the tree
-;; uniformly. (Per-panel scale variation is an open design
-;; question; today both are plot-wide.)
+;; `pj/scale` writes into `:opts` under one of `:x-scale`,
+;; `:y-scale`, `:size-scale`, `:alpha-scale`, `:fill-scale`, or
+;; `:color-scale` -- one key per channel. Axis channels (`:x`,
+;; `:y`) accept `:linear`, `:log`, `:categorical`; visual channels
+;; (`:size`, `:alpha`, `:fill`, `:color`) accept `:linear` and
+;; `:log`. `pj/coord` writes `:coord`. They apply to every leaf in
+;; the tree uniformly. (Per-panel scale variation is an open
+;; design question; today all are plot-wide.)
 
 (-> iris
     (pj/pose :sepal-length :sepal-width)
@@ -817,6 +821,17 @@ s2-tree
  [(fn [pose]
     (and (= {:type :log} (get-in pose [:opts :x-scale]))
          (= :flip (get-in pose [:opts :coord]))))])
+
+;; A visual channel routes to its own opts key:
+
+(-> iris
+    (pj/pose :sepal-length :sepal-width {:size :petal-length})
+    pj/lay-point
+    (pj/scale :size :log))
+
+(kind/test-last
+ [(fn [pose]
+    (= {:type :log} (get-in pose [:opts :size-scale])))])
 
 ;; ### Rule O3: `pj/facet` writes the faceting column to `:opts`
 ;;

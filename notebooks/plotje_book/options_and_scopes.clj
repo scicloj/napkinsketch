@@ -123,7 +123,10 @@
 ;;   and legend labels) and panel dimensions. It also accepts
 ;;   configuration keys as per-plot overrides (see Configuration
 ;;   below).
-;; - `pj/scale` -- axis scale (log, categorical, fixed domain).
+;; - `pj/scale` -- scale on an axis (`:x`, `:y`) or a continuous
+;;   visual channel (`:size`, `:alpha`, `:fill`, `:color`). Axis
+;;   scales accept `:linear`, `:log`, `:categorical`; visual channels
+;;   accept `:linear` and `:log`.
 ;; - `pj/coord` -- coordinate system (cartesian, flipped, polar,
 ;;   fixed).
 ;; - `pj/facet` and `pj/facet-grid` -- split the plot into panels

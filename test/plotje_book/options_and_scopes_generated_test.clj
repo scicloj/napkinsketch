@@ -46,7 +46,7 @@
 
 
 (def
- v11_l138
+ v11_l141
  (->
   (rdatasets/datasets-iris)
   (pj/pose :sepal-length :sepal-width)
@@ -56,12 +56,12 @@
 
 
 (deftest
- t12_l144
- (is ((fn [v] (some #{"Iris"} (:texts (pj/svg-summary v)))) v11_l138)))
+ t12_l147
+ (is ((fn [v] (some #{"Iris"} (:texts (pj/svg-summary v)))) v11_l141)))
 
 
 (def
- v14_l148
+ v14_l151
  (->
   (rdatasets/datasets-iris)
   (pj/pose :sepal-length :sepal-width)
@@ -72,21 +72,21 @@
 
 
 (deftest
- t15_l155
+ t15_l158
  (is
   ((fn
     [m]
     (and
      (= "Iris" (get-in m [:opts :title]))
      (= :flip (get-in m [:opts :coord]))))
-   v14_l148)))
+   v14_l151)))
 
 
-(def v17_l217 (select-keys (pj/config) [:width :height :margin]))
+(def v17_l220 (select-keys (pj/config) [:width :height :margin]))
 
 
 (deftest
- t18_l219
+ t18_l222
  (is
   ((fn
     [m]
@@ -94,11 +94,11 @@
      (number? (:width m))
      (number? (:height m))
      (number? (:margin m))))
-   v17_l217)))
+   v17_l220)))
 
 
 (def
- v20_l231
+ v20_l234
  (def
   demo
   (->
@@ -109,21 +109,21 @@
    (pj/coord :flip))))
 
 
-(def v22_l242 demo)
+(def v22_l245 demo)
 
 
 (deftest
- t23_l244
+ t23_l247
  (is
   ((fn [v] (some #{"Iris measurements"} (:texts (pj/svg-summary v))))
-   v22_l242)))
+   v22_l245)))
 
 
-(def v25_l248 (pose-summary demo))
+(def v25_l251 (pose-summary demo))
 
 
 (deftest
- t26_l250
+ t26_l253
  (is
   ((fn
     [m]
@@ -131,4 +131,4 @@
      (= :species (get-in m [:layers 0 :mapping :color]))
      (= "Iris measurements" (get-in m [:opts :title]))
      (= :flip (get-in m [:opts :coord]))))
-   v25_l248)))
+   v25_l251)))

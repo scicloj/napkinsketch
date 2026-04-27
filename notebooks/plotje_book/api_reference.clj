@@ -458,6 +458,15 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 150 (:points s))))])
 
+;; Log scale on a visual channel (`:size`, `:alpha`, `:fill`, or
+;; `:color`):
+
+(-> {:user [:a :b :c] :n [10 100 1000]}
+    (pj/lay-point :user :n {:size :n :x-type :categorical})
+    (pj/scale :size :log))
+
+(kind/test-last [(fn [v] (= 3 (:points (pj/svg-summary v))))])
+
 ;; ## Faceting
 
 (kind/doc #'pj/facet)
