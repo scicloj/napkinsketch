@@ -134,15 +134,31 @@
 ;; `Sepal.Length`).
 ;;
 ;; A few datasets used throughout this book:
-;;
-;; | Function | Rows | Description |
-;; |:---------|-----:|:------------|
-;; | `rdatasets/datasets-iris` | 150 | Iris flower measurements by species |
-;; | `rdatasets/reshape2-tips` | 244 | Restaurant tips with bill, day, time, smoker |
-;; | `rdatasets/ggplot2-mpg` | 234 | Fuel economy for 38 car models |
-;; | `rdatasets/ggplot2-diamonds` | 53,940 | Diamond price, carat, cut, color, clarity |
-;; | `rdatasets/gapminder-gapminder` | 1,704 | Country-level life expectancy and GDP |
-;; | `rdatasets/datasets-mtcars` | 32 | Motor Trend car road tests |
+
+(kind/table
+ {:column-names ["Function" "Rows" "Description"]
+  :row-maps
+  (let [mpg (rdatasets/ggplot2-mpg)]
+    [{"Function" (kind/code "rdatasets/datasets-iris")
+      "Rows" (tc/row-count (rdatasets/datasets-iris))
+      "Description" "Iris flower measurements by species"}
+     {"Function" (kind/code "rdatasets/reshape2-tips")
+      "Rows" (tc/row-count (rdatasets/reshape2-tips))
+      "Description" "Restaurant tips with bill, day, time, smoker"}
+     {"Function" (kind/code "rdatasets/ggplot2-mpg")
+      "Rows" (tc/row-count mpg)
+      "Description" (str "Fuel economy for "
+                         (count (distinct (mpg :model)))
+                         " car models")}
+     {"Function" (kind/code "rdatasets/ggplot2-diamonds")
+      "Rows" (tc/row-count (rdatasets/ggplot2-diamonds))
+      "Description" "Diamond price, carat, cut, color, clarity"}
+     {"Function" (kind/code "rdatasets/gapminder-gapminder")
+      "Rows" (tc/row-count (rdatasets/gapminder-gapminder))
+      "Description" "Country-level life expectancy and GDP"}
+     {"Function" (kind/code "rdatasets/datasets-mtcars")
+      "Rows" (tc/row-count (rdatasets/datasets-mtcars))
+      "Description" "Motor Trend car road tests"}])})
 
 ;; ## Useful Tablecloth operations
 ;;

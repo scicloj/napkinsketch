@@ -61,35 +61,66 @@
 (deftest t16_l103 (is ((fn [ds] (= 150 (tc/row-count ds))) v15_l100)))
 
 
-(def v18_l131 (rdatasets/datasets-iris))
+(def v18_l128 (rdatasets/datasets-iris))
 
 
 (deftest
- t19_l133
+ t19_l130
  (is
   ((fn [ds] (and (tc/dataset? ds) (= 150 (tc/row-count ds))))
-   v18_l131)))
-
-
-(def v21_l157 (tc/head (rdatasets/datasets-iris) 3))
-
-
-(deftest t22_l159 (is ((fn [ds] (= 3 (tc/row-count ds))) v21_l157)))
+   v18_l128)))
 
 
 (def
- v24_l163
+ v21_l138
+ (kind/table
+  {:column-names ["Function" "Rows" "Description"],
+   :row-maps
+   (let
+    [mpg (rdatasets/ggplot2-mpg)]
+    [{"Function" (kind/code "rdatasets/datasets-iris"),
+      "Rows" (tc/row-count (rdatasets/datasets-iris)),
+      "Description" "Iris flower measurements by species"}
+     {"Function" (kind/code "rdatasets/reshape2-tips"),
+      "Rows" (tc/row-count (rdatasets/reshape2-tips)),
+      "Description" "Restaurant tips with bill, day, time, smoker"}
+     {"Function" (kind/code "rdatasets/ggplot2-mpg"),
+      "Rows" (tc/row-count mpg),
+      "Description"
+      (str
+       "Fuel economy for "
+       (count (distinct (mpg :model)))
+       " car models")}
+     {"Function" (kind/code "rdatasets/ggplot2-diamonds"),
+      "Rows" (tc/row-count (rdatasets/ggplot2-diamonds)),
+      "Description" "Diamond price, carat, cut, color, clarity"}
+     {"Function" (kind/code "rdatasets/gapminder-gapminder"),
+      "Rows" (tc/row-count (rdatasets/gapminder-gapminder)),
+      "Description" "Country-level life expectancy and GDP"}
+     {"Function" (kind/code "rdatasets/datasets-mtcars"),
+      "Rows" (tc/row-count (rdatasets/datasets-mtcars)),
+      "Description" "Motor Trend car road tests"}])}))
+
+
+(def v23_l170 (tc/head (rdatasets/datasets-iris) 3))
+
+
+(deftest t24_l172 (is ((fn [ds] (= 3 (tc/row-count ds))) v23_l170)))
+
+
+(def
+ v26_l176
  (->
   (rdatasets/datasets-iris)
   (tc/select-rows
-   (fn* [p1__96593#] (= "setosa" (:species p1__96593#))))))
+   (fn* [p1__82021#] (= "setosa" (:species p1__82021#))))))
 
 
-(deftest t25_l166 (is ((fn [ds] (= 50 (tc/row-count ds))) v24_l163)))
+(deftest t27_l179 (is ((fn [ds] (= 50 (tc/row-count ds))) v26_l176)))
 
 
 (def
- v27_l170
+ v29_l183
  (->
   (rdatasets/datasets-iris)
   (tc/group-by [:species])
@@ -98,45 +129,45 @@
     (fn [ds] (/ (reduce + (ds :sepal-length)) (tc/row-count ds)))})))
 
 
-(deftest t28_l175 (is ((fn [ds] (= 3 (tc/row-count ds))) v27_l170)))
+(deftest t30_l188 (is ((fn [ds] (= 3 (tc/row-count ds))) v29_l183)))
 
 
 (def
- v30_l179
+ v32_l192
  (->
   (rdatasets/datasets-mtcars)
   (tc/order-by [:mpg] :desc)
   (tc/head 3)))
 
 
-(deftest t31_l183 (is ((fn [ds] (= 3 (tc/row-count ds))) v30_l179)))
+(deftest t33_l196 (is ((fn [ds] (= 3 (tc/row-count ds))) v32_l192)))
 
 
-(def v33_l187 (tc/column-names (rdatasets/datasets-iris)))
+(def v35_l200 (tc/column-names (rdatasets/datasets-iris)))
 
 
-(deftest t34_l189 (is ((fn [cols] (= 6 (count cols))) v33_l187)))
+(deftest t36_l202 (is ((fn [cols] (= 6 (count cols))) v35_l200)))
 
 
-(def v36_l193 (tc/row-count (rdatasets/ggplot2-diamonds)))
+(def v38_l206 (tc/row-count (rdatasets/ggplot2-diamonds)))
 
 
-(deftest t37_l195 (is ((fn [n] (= 53940 n)) v36_l193)))
+(deftest t39_l208 (is ((fn [n] (= 53940 n)) v38_l206)))
 
 
-(def v39_l205 (-> {:x [1 2 3], :y [4 5 6]} (pj/lay-point :x :y)))
+(def v41_l218 (-> {:x [1 2 3], :y [4 5 6]} (pj/lay-point :x :y)))
 
 
 (deftest
- t40_l208
- (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v39_l205)))
+ t42_l221
+ (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v41_l218)))
 
 
 (def
- v42_l212
+ v44_l225
  (-> (tc/dataset {:x [1 2 3], :y [4 5 6]}) (pj/lay-point :x :y)))
 
 
 (deftest
- t43_l215
- (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v42_l212)))
+ t45_l228
+ (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v44_l225)))
