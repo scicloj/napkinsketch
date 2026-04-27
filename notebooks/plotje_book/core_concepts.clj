@@ -436,18 +436,6 @@ two-panel
 ;; wins; wherever you don't, the library picks something
 ;; sensible.
 ;;
-;; Among the things that get inferred this way are the columns
-;; used for aesthetics, the chart type, the type of each column
-;; (numerical, categorical, or temporal), the scale applied to
-;; each axis, and the palette or gradient chosen for the color
-;; aesthetic. Other details -- legend structure, scale domain,
-;; tick placement, stat parameters, grouping -- are inferred
-;; too, but mostly stay out of the way until you want to adjust
-;; them.
-;;
-;; Two kinds of inference show up often enough to be worth seeing
-;; directly: column inference and layer-type inference.
-;;
 ;; **Column inference** kicks in when a dataset has up to three
 ;; columns and you call `pj/pose` (or a `pj/lay-*`) without
 ;; naming any column. Plotje pairs the columns with
@@ -485,21 +473,12 @@ two-panel
 
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
-;; In both cases the inferred plot is the same one you would
-;; get from `pj/lay-point` or `pj/lay-histogram`. Inference is a
-;; shorthand, not a separate rendering path.
-;;
-;; Every inferred choice can be overridden. Want a specific
-;; chart type? Use the matching `pj/lay-*` function instead of
-;; leaving the pose bare. Want a particular scale? Pass
-;; `pj/scale`. Want a numeric column to be treated as categorical?
-;; Add `{:x-type :categorical}`, `{:y-type :categorical}`, or
-;; `{:color-type :categorical}` to the pose or layer, depending
-;; on which axis the column feeds. Inference exists so small
-;; poses stay small, not to take decisions away from you. The
-;; [Inference Rules](./plotje_book.inference_rules.html)
-;; chapter lists the full decision logic and the override for
-;; each case.
+;; In both cases the inferred plot is the same one you would get
+;; from `pj/lay-point` or `pj/lay-histogram`. Inference is a
+;; shorthand, not a separate rendering path. Every inferred
+;; choice can be overridden -- see
+;; [Inference Rules](./plotje_book.inference_rules.html) for the
+;; full decision logic and override knobs.
 
 ;; ---
 ;; ## Incremental Building
