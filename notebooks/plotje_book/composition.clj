@@ -199,8 +199,12 @@ dashboard
 ;;   visible chrome is per-leaf, so a marginal plot shows the
 ;;   x-axis label on both the main and the marginal panel.
 ;; - **Plot-area edges may not line up** across composite siblings,
-;;   since each leaf computes its own chrome padding.
-;; - **Each sub-pose produces its own legend.**
+;;   since each leaf computes its own chrome padding -- two sub-poses
+;;   with different label lengths can produce visibly different panel
+;;   widths.
+;; - **Each sub-pose produces its own legend** -- if you map `:color`
+;;   in two sibling sub-poses, the rendered plot shows two legends
+;;   rather than a merged one.
 ;; - **Nested composites use the explicit map form.** `pj/arrange`
 ;;   takes leaf poses; for a row of rows or column of rows, write
 ;;   the composite as an explicit map (the dashboard example above
