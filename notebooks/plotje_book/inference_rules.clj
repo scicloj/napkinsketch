@@ -580,7 +580,7 @@ explicit-group-pose
 ;; from the column types of the referenced columns. Internally,
 ;; `infer-layer-type` in `resolve.clj` applies these rules.
 ;;
-;; ### Single-column cases (or x = y on the diagonal)
+;; ### Single-column cases
 ;;
 ;; | Column type | Inferred | Mark + stat |
 ;; |:------------|:---------|:------------|
