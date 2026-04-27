@@ -7,9 +7,9 @@
 ;; plain maps -- rather than a custom DSL.
 ;;
 ;; This chapter introduces the mental model in five ideas. Each idea
-;; shows a rendered plot alongside the printed pose value, so the
-;; curious reader can see both what the library did and how the
-;; underlying data looks.
+;; shows a rendered plot followed by the printed pose value, so you
+;; can see both what the library produces and the data structure
+;; underneath.
 
 (ns plotje-book.pose-model
   (:require
@@ -59,8 +59,8 @@
                               (= :sepal-length (:x (:mapping v)))))])
 
 ;; A pose is a plain Clojure map. The dataset lives under `:data`,
-;; the column mapping under `:mapping`, chart-type layers (empty
-;; here -- we never attached one) under `:layers`, and plot-level
+;; the column mapping under `:mapping`, chart-type layers under
+;; `:layers` (empty here, since none was attached), and plot-level
 ;; options under `:opts`.
 
 ;; ## Idea 2: Poses carry mappings
