@@ -50,10 +50,11 @@ my-pose
 ;; `:poses` plus an optional `:layout`. Created by `pj/arrange`. Its
 ;; leaves render independently and are tiled into the final plot.
 ;;
-;; For hand-built composite maps (needed when you want features beyond
-;; what `pj/arrange` offers -- unequal weights, nested poses,
-;; cross-sibling shared scales), wrap the map with `pj/prepare-pose`
-;; so it carries the Kindly metadata needed to auto-render.
+;; Some features are not yet exposed through `pj/arrange` -- unequal
+;; weights, nested poses, and cross-sibling shared scales. To use
+;; them, build the composite as a literal map and wrap it with
+;; `pj/prepare-pose` so it carries the Kindly metadata needed to
+;; auto-render.
 
 ;; ## Prepare Pose
 ;;
@@ -64,6 +65,15 @@ my-pose
 ;; viewers. Use it when you construct a composite pose by literal
 ;; map and want it to behave like one built with `pj/pose` or
 ;; `pj/arrange`.
+
+;; ## Arrange
+;;
+;; `pj/arrange` builds a composite pose from a sequence of poses.
+;; Each input pose becomes a sub-pose; the result is a composite
+;; that tiles them via `:layout` (direction and optional weights).
+;; Use `pj/prepare-pose` on a literal map for features `pj/arrange`
+;; does not yet expose -- nested composites or
+;; `:share-scales`.
 
 ;; ## Layer Type
 ;;
@@ -141,6 +151,14 @@ my-pose
 (kind/test-last [(fn [d] (and (vector? d)
                               (= 1 (count d))
                               (= :point (:mark (first d)))))])
+
+;; ## Mapping
+;;
+;; A **mapping** is a binding from a column (or literal value) to
+;; an aesthetic. Mappings live on a pose -- where they flow into
+;; every layer attached to it -- or on a single layer, where they
+;; scope to that layer alone. Lower scope wins on conflict; an
+;; explicit `nil` cancels a mapping inherited from above.
 
 ;; ## Aesthetic
 ;;
@@ -602,6 +620,7 @@ my-pose
 ;; | Coord | Coordinate system (cartesian, flip, polar, fixed) | `pj/coord` |
 ;; | Facet | Split into panels by a categorical column | `pj/facet`, `pj/facet-grid` |
 ;; | Arrange | Compose multiple poses into a grid | `pj/arrange` |
+;; | Share scales | Make sibling sub-poses of a composite pose share data ranges across named axes | `:share-scales` in composite `:opts` |
 ;; | Annotation | Non-data reference marks (rules, bands) | `pj/lay-rule-*`, `pj/lay-band-*` |
 ;; | Legend | Color/size/alpha key from aesthetic mappings | Automatic in plan |
 ;; | Plot options | Title, subtitle, caption, labels, dimensions | `pj/options` |
