@@ -138,6 +138,26 @@
                                labels (filter #{"large" "medium" "small"} (:texts s))]
                            (= ["large" "medium" "small"] (vec labels))))])
 
+;; ### Column type overrides
+;;
+;; A column's inferred type (numerical / categorical / temporal) drives
+;; scale type, axis formatting, and which marks accept it. To override
+;; the inference, pass `:x-type`, `:y-type`, or `:color-type` in the
+;; layer or pose options. For example, a numeric column representing
+;; subject IDs:
+
+(-> {:hour [9 10 11 12] :count [5 8 12 7]}
+    (pj/lay-value-bar :hour :count {:x-type :categorical}))
+
+(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
+
+;; The override propagates into column-type inference, so every
+;; downstream step (scale type, tick placement, domain) treats the
+;; column as the overridden type. See
+;; [Inference Rules](./plotje_book.inference_rules.html) for the full
+;; mechanism, and the [Troubleshooting](./plotje_book.troubleshooting.html)
+;; chapter for the symptoms each override addresses.
+
 ;; ## Mark Styling
 
 ;; Pass `:alpha` and `:size` directly to layer functions.
