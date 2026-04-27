@@ -859,7 +859,9 @@
      (pj/pose data [:a :b :c])                -- multi-pair: N univariate panels
 
    Threaded over an existing pose (first argument is a pose):
-     (pj/pose fr)                        -- no-op, returns fr unchanged
+     (pj/pose fr)                        -- pass-through; lifts a literal
+                                             map for notebook auto-render
+                                             if it is not already tagged
      (pj/pose fr :x-col :y-col)          -- extend a leaf-without-position,
                                              or promote a leaf-with-position
                                              into a 2-panel composite, or
