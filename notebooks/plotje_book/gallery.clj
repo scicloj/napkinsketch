@@ -481,6 +481,39 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 5 (:polygons s))))])
 
+;; ### Rose chart: tips by day
+;; Source: [ECharts: Polar Bar](https://echarts.apache.org/examples/en/editor.html?c=bar-polar-stack)
+
+(-> (rdatasets/reshape2-tips)
+    (pj/pose :day)
+    pj/lay-bar
+    (pj/coord :polar)
+    (pj/options {:title "Tips Count by Day (Rose)"}))
+
+(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
+
+;; ### Rose chart: chick weights by feed
+;; Source: [ECharts: Nightingale Rose](https://echarts.apache.org/examples/en/editor.html?c=pie-roseType)
+
+(-> (rdatasets/datasets-chickwts)
+    (pj/pose :feed)
+    pj/lay-bar
+    (pj/coord :polar)
+    (pj/options {:title "Chick Count by Feed (Rose)"}))
+
+(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
+
+;; ### Polar value bar
+;; Source: [ECharts: Polar Bar](https://echarts.apache.org/examples/en/editor.html?c=bar-polar-real-estate)
+
+(-> (tc/dataset {:day ["Mon" "Tue" "Wed" "Thu" "Fri" "Sat" "Sun"]
+                 :hours [8 7 6 9 5 3 4]})
+    (pj/lay-value-bar :day :hours)
+    (pj/coord :polar)
+    (pj/options {:title "Weekly Working Hours (Polar)"}))
+
+(kind/test-last [(fn [v] (= 7 (:polygons (pj/svg-summary v))))])
+
 ;; ---
 ;; ## Additional Examples from Visualization Galleries
 
@@ -1876,41 +1909,6 @@
 (kind/test-last [(fn [v] (= 4 (:panels (pj/svg-summary v))))])
 
 ;; ---
-;; ## Polar Charts
-
-;; ### Rose chart: tips by day
-;; Source: [ECharts: Polar Bar](https://echarts.apache.org/examples/en/editor.html?c=bar-polar-stack)
-
-(-> (rdatasets/reshape2-tips)
-    (pj/pose :day)
-    pj/lay-bar
-    (pj/coord :polar)
-    (pj/options {:title "Tips Count by Day (Rose)"}))
-
-(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
-
-;; ### Rose chart: chick weights by feed
-;; Source: [ECharts: Nightingale Rose](https://echarts.apache.org/examples/en/editor.html?c=pie-roseType)
-
-(-> (rdatasets/datasets-chickwts)
-    (pj/pose :feed)
-    pj/lay-bar
-    (pj/coord :polar)
-    (pj/options {:title "Chick Count by Feed (Rose)"}))
-
-(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
-
-;; ### Polar value bar
-;; Source: [ECharts: Polar Bar](https://echarts.apache.org/examples/en/editor.html?c=bar-polar-real-estate)
-
-(-> (tc/dataset {:day ["Mon" "Tue" "Wed" "Thu" "Fri" "Sat" "Sun"]
-                 :hours [8 7 6 9 5 3 4]})
-    (pj/lay-value-bar :day :hours)
-    (pj/coord :polar)
-    (pj/options {:title "Weekly Working Hours (Polar)"}))
-
-(kind/test-last [(fn [v] (= 7 (:polygons (pj/svg-summary v))))])
-
 ;; ---
 ;; ## Scale Variations
 
