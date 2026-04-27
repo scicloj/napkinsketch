@@ -8,54 +8,51 @@
   [clojure.test :refer [deftest is]]))
 
 
-(def v2_l25 (def iris (rdatasets/datasets-iris)))
-
-
 (def
- v4_l34
+ v3_l32
  (pj/arrange
   [(->
-    iris
+    (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width {:color :species}))
    (->
-    iris
+    (rdatasets/datasets-iris)
     (pj/lay-point :petal-length :petal-width {:color :species}))]))
 
 
 (deftest
- t5_l38
+ t4_l36
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v4_l34)))
+   v3_l32)))
 
 
 (def
- v7_l45
+ v6_l43
  (pj/arrange
   [(->
-    iris
+    (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width {:color :species}))
    (->
-    iris
+    (rdatasets/datasets-iris)
     (pj/lay-point :petal-length :petal-width {:color :species}))]
   {:cols 1}))
 
 
 (deftest
- t8_l50
- (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v7_l45)))
+ t7_l48
+ (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v6_l43)))
 
 
 (def
- v10_l68
+ v9_l66
  (def
   weighted
   (pj/prepare-pose
-   {:data iris,
+   {:data (rdatasets/datasets-iris),
     :layout {:direction :horizontal, :weights [2 1]},
     :poses
     [{:mapping {:x :sepal-length, :y :sepal-width},
@@ -64,40 +61,40 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v12_l83 weighted)
+(def v11_l81 weighted)
 
 
 (deftest
- t13_l85
+ t12_l83
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v12_l83)))
+   v11_l81)))
 
 
-(def v15_l93 (kind/pprint weighted))
+(def v14_l91 (kind/pprint weighted))
 
 
 (deftest
- t16_l95
+ t15_l93
  (is
   ((fn
     [pose]
     (and
      (= [2 1] (get-in pose [:layout :weights]))
      (= 2 (count (:poses pose)))))
-   v15_l93)))
+   v14_l91)))
 
 
 (def
- v18_l112
+ v17_l110
  (def
   shared-x
   (pj/prepare-pose
-   {:data iris,
+   {:data (rdatasets/datasets-iris),
     :share-scales #{:x},
     :layout {:direction :horizontal, :weights [1 1]},
     :poses
@@ -107,26 +104,26 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v19_l122 shared-x)
+(def v18_l120 shared-x)
 
 
 (deftest
- t20_l124
+ t19_l122
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v19_l122)))
+   v18_l120)))
 
 
 (def
- v22_l138
+ v21_l136
  (def
   marginal
   (pj/prepare-pose
-   {:data iris,
+   {:data (rdatasets/datasets-iris),
     :share-scales #{:x},
     :layout {:direction :vertical, :weights [1 3]},
     :poses
@@ -135,26 +132,26 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v23_l148 marginal)
+(def v22_l146 marginal)
 
 
 (deftest
- t24_l150
+ t23_l148
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 150 (:points s)) (pos? (:polygons s)))))
-   v23_l148)))
+   v22_l146)))
 
 
 (def
- v26_l171
+ v25_l169
  (def
   dashboard
   (pj/prepare-pose
-   {:data iris,
+   {:data (rdatasets/datasets-iris),
     :layout {:direction :vertical, :weights [1 1]},
     :poses
     [{:layout {:direction :horizontal, :weights [1 1]},
@@ -171,9 +168,9 @@
         :layers [{:layer-type :density}]}]}]})))
 
 
-(def v27_l186 dashboard)
+(def v26_l184 dashboard)
 
 
 (deftest
- t28_l188
- (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v27_l186)))
+ t27_l186
+ (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v26_l184)))

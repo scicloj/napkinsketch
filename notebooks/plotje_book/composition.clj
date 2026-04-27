@@ -22,8 +22,6 @@
    ;; Rdatasets -- standard datasets
    [scicloj.metamorph.ml.rdatasets :as rdatasets]))
 
-(def iris (rdatasets/datasets-iris))
-
 ;; ## Side-by-Side via `pj/arrange`
 ;;
 ;; The simplest composite: two independent poses, placed next to
@@ -32,8 +30,8 @@
 ;; options.
 
 (pj/arrange
- [(-> iris (pj/lay-point :sepal-length :sepal-width {:color :species}))
-  (-> iris (pj/lay-point :petal-length :petal-width {:color :species}))])
+ [(-> (rdatasets/datasets-iris) (pj/lay-point :sepal-length :sepal-width {:color :species}))
+  (-> (rdatasets/datasets-iris) (pj/lay-point :petal-length :petal-width {:color :species}))])
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -43,8 +41,8 @@
 ;; pose goes on its own row):
 
 (pj/arrange
- [(-> iris (pj/lay-point :sepal-length :sepal-width {:color :species}))
-  (-> iris (pj/lay-point :petal-length :petal-width {:color :species}))]
+ [(-> (rdatasets/datasets-iris) (pj/lay-point :sepal-length :sepal-width {:color :species}))
+  (-> (rdatasets/datasets-iris) (pj/lay-point :petal-length :petal-width {:color :species}))]
  {:cols 1})
 
 (kind/test-last [(fn [v] (= 2 (:panels (pj/svg-summary v))))])
@@ -67,7 +65,7 @@
 
 (def weighted
   (pj/prepare-pose
-   {:data iris
+   {:data (rdatasets/datasets-iris)
     :layout {:direction :horizontal :weights [2 1]}
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
              :layers [{:layer-type :point}]}
@@ -93,7 +91,7 @@ weighted
 (kind/pprint weighted)
 
 (kind/test-last [(fn [pose] (and (= [2 1] (get-in pose [:layout :weights]))
-                               (= 2 (count (:poses pose)))))])
+                                 (= 2 (count (:poses pose)))))])
 
 ;; The outer `:data` is inherited by both sub-poses. Each sub-pose
 ;; has its own `:mapping` and `:layers`, and need not repeat the
@@ -111,7 +109,7 @@ weighted
 
 (def shared-x
   (pj/prepare-pose
-   {:data iris
+   {:data (rdatasets/datasets-iris)
     :share-scales #{:x}
     :layout {:direction :horizontal :weights [1 1]}
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
@@ -137,7 +135,7 @@ shared-x
 
 (def marginal
   (pj/prepare-pose
-   {:data iris
+   {:data (rdatasets/datasets-iris)
     :share-scales #{:x}
     :layout {:direction :vertical :weights [1 3]}
     :poses [{:mapping {:x :sepal-length}
@@ -170,7 +168,7 @@ marginal
 
 (def dashboard
   (pj/prepare-pose
-   {:data iris
+   {:data (rdatasets/datasets-iris)
     :layout {:direction :vertical :weights [1 1]}
     :poses [{:layout {:direction :horizontal :weights [1 1]}
              :poses [{:mapping {:x :sepal-length}

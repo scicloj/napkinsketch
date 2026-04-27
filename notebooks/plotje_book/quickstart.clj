@@ -29,9 +29,7 @@
 ;;
 ;; Load the classic [iris](https://en.wikipedia.org/wiki/Iris_flower_data_set) dataset and scatter two columns:
 
-(def iris (rdatasets/datasets-iris))
-
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
@@ -75,7 +73,7 @@
 
 ;; Map a column to `:color` to color points by group.
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width {:color :species}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
@@ -89,7 +87,7 @@
 ;;
 ;; **Histogram** -- pass a single column for automatic binning:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/lay-histogram :sepal-length))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
@@ -99,7 +97,7 @@
 
 ;; **Bar chart** -- count occurrences of a categorical column:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/lay-bar :species))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
@@ -108,7 +106,7 @@
 
 ;; **Horizontal bars** -- flip with `pj/coord`:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/lay-bar :species)
     (pj/coord :flip))
 
@@ -127,7 +125,7 @@
 
 ;; **Boxplot** -- compare distributions across categories:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/lay-boxplot :species :sepal-width))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
@@ -143,21 +141,21 @@
 ;; Plotje picks the chart type from the column types.
 ;; Two numerical columns produce a scatter plot:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width))
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; A single categorical column produces a bar chart:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/pose :species))
 
 (kind/test-last [(fn [v] (= 3 (:polygons (pj/svg-summary v))))])
 
 ;; A single numerical column produces a histogram:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length))
 
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
@@ -171,7 +169,7 @@
 ;; inherit the pose's mappings. Here `(pj/lay-smooth {:stat :linear-model})` adds a linear model
 ;; (regression line) per group:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width {:color :species})
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model}))
@@ -184,7 +182,7 @@
 ;;
 ;; Use `pj/options` for width, height, title, and axis labels:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/lay-point :petal-length :petal-width {:color :species})
     (pj/options {:width 500 :height 350
                  :title "Iris Petals"
@@ -200,8 +198,8 @@
 ;;
 ;; Combine multiple plots with `pj/arrange`:
 
-(pj/arrange [(pj/lay-point iris :sepal-length :sepal-width {:color :species})
-             (pj/lay-histogram iris :sepal-length {:color :species})]
+(pj/arrange [(pj/lay-point (rdatasets/datasets-iris) :sepal-length :sepal-width {:color :species})
+             (pj/lay-histogram (rdatasets/datasets-iris) :sepal-length {:color :species})]
             {:cols 2})
 
 (kind/test-last [(fn [v] (pj/pose? v))])
@@ -210,7 +208,7 @@
 
 ;; Save a plot to SVG with `pj/save`. It writes the file and returns the path:
 
-(-> iris
+(-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width)
     (pj/save "/tmp/iris-scatter.svg"))
 
