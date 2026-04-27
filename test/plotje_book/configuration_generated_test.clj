@@ -274,10 +274,12 @@
    v62_l261)))
 
 
-(def v65_l301 (count (:theme (pj/config))))
+(def v65_l301 (set (keys (:theme (pj/config)))))
 
 
-(deftest t66_l303 (is ((fn [n] (= 3 n)) v65_l301)))
+(deftest
+ t66_l303
+ (is ((fn [s] (= #{:font-size :grid :bg} s)) v65_l301)))
 
 
 (def

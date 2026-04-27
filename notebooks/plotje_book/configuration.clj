@@ -298,9 +298,9 @@ precedence-plot
 ;; - `:grid` -- grid line color (hex string)
 ;; - `:font-size` -- tick label font size (number)
 
-(count (:theme (pj/config)))
+(set (keys (:theme (pj/config))))
 
-(kind/test-last [(fn [n] (= 3 n))])
+(kind/test-last [(fn [s] (= #{:bg :grid :font-size} s))])
 
 ;; All configuration merging uses **deep-merge** -- nested maps like `:theme`
 ;; are merged recursively at every level (`pj/options`, `pj/with-config`,
