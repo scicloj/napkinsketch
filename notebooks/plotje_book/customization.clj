@@ -74,6 +74,26 @@
                            (and (= 150 (:points s))
                                 (some #{"Species (override)"} (:texts s)))))])
 
+;; The size legend title comes from `:size-label`:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:size :petal-length})
+    (pj/options {:size-label "Petal length (override)"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"Petal length (override)"} (:texts s)))))])
+
+;; And `:alpha-label` overrides the alpha legend title:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:alpha :petal-length})
+    (pj/options {:alpha-label "Petal length (override)"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"Petal length (override)"} (:texts s)))))])
+
 ;; ## Scales
 
 ;; Use a log scale for data spanning orders of magnitude.
