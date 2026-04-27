@@ -34,6 +34,37 @@
 
 (kind/test-last [(fn [v] (some #{:sepal-length} v))])
 
+;; ## Mixed Keyword and String Column References
+
+;; **Symptom**: A plot that should show data renders empty -- no
+;; points, no lines, no bars -- and no error is raised.
+;;
+;; **Cause**: Plotje treats keyword and string column references as
+;; distinct keys. If a dataset's column is named with a string but
+;; a mapping references it with a keyword (or vice versa), the
+;; lookup fails silently and the layer renders nothing.
+;;
+;; **Fix for now**: Pick one form -- keyword or string -- and use it
+;; consistently with the dataset's column keys. CSVs loaded without
+;; `:key-fn keyword` keep string column names; pass `{:key-fn keyword}`
+;; at load time to use keywords throughout, matching the convention
+;; used in this book.
+
+(let [string-keyed (-> (rdatasets/datasets-iris)
+                       (assoc "species-str"
+                              (mapv str ((rdatasets/datasets-iris)
+                                         :species))))]
+  (-> string-keyed
+      (pj/pose {:color "species-str"})
+      (pj/lay-point :sepal-length :sepal-width)))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (< 1 (count (:colors s))))))])
+
+;; A future normalization pass would let mixed forms refer to the
+;; same column. Tracked in `CHANGELOG.md` Known limitations.
+
 ;; ## Wrong Chart Type from Inference
 ;;
 ;; **Symptom**: `pj/pose` produces a chart type that isn't what you
