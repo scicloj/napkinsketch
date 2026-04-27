@@ -159,10 +159,10 @@
                                 (= (* 12 150) (:points s))
                                 (pos? (:polygons s)))))])
 
-;; Diagonal panels (where x = y) show histograms; off-diagonal panels
-;; show scatter plots. Per-cell inference picks the layer type based
-;; on whether the cell is univariate (x = y) or bivariate. All panels
-;; share the color aesthetic set at the composite root.
+;; Per-cell inference picks the layer type for each panel: diagonal
+;; cells (x = y) get histograms; off-diagonal cells get scatter
+;; plots. All panels share the color aesthetic set at the composite
+;; root.
 ;;
 ;; See the [Faceting](./plotje_book.faceting.html) chapter for more
 ;; SPLOM variations, and the [Customization](./plotje_book.customization.html)
