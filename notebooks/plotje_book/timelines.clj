@@ -1,7 +1,16 @@
 ;; # Timelines
 ;;
-;; Recipes for visualizing events, intervals, and movement over
-;; time. The chapter introduces `pj/lay-interval-h` for horizontal
+;; Where
+;; [Change Over Time](./plotje_book.change_over_time.html) covers
+;; marks that trace a numeric quantity evolving along a
+;; sequence (line, step, area, smooth), this chapter focuses on
+;; placing **discrete things** on a time axis: events,
+;; intervals, schedules. The y-axis here is a lane or a
+;; baseline rather than an evolving value -- temporal
+;; information is *where* something sits, not *how a value
+;; moves*.
+;;
+;; The chapter introduces `pj/lay-interval-h` for horizontal
 ;; interval bars (Gantt-style) and shows how existing primitives
 ;; combine to build calendar-aware visualizations.
 ;;
@@ -305,15 +314,66 @@
 
 ;; ## Multi-track activity timeline
 ;;
-;; A within-day comparison reads more clearly when the x-axis is
-;; hour-of-day (a small numeric range) and each day is its own
-;; lane. The `lay-interval-h` data shape is unchanged -- only
-;; the meaning of x changes from absolute time to hours since
-;; midnight.
+;; Two ways to look at "what happened when" across multiple
+;; days. The data shape is identical -- start, end, day, activity
+;; kind -- only the interpretation of the time axis differs. The
+;; right choice depends on what you want the reader to compare.
+
+;; ### Absolute time
+;;
+;; The literal approach: `:start` and `:end` are real
+;; datetimes, each bar covers its actual interval. Useful when
+;; absolute time matters (logs, scheduling tools) or when bars
+;; may cross day boundaries.
+
+(def activity-datetime
+  ;; A developer's week: meetings and deep-work blocks, with
+  ;; absolute timestamps.
+  {:start [#inst "2024-06-03T09:00" #inst "2024-06-03T10:30" #inst "2024-06-03T13:00"
+           #inst "2024-06-04T09:00" #inst "2024-06-04T11:00" #inst "2024-06-04T14:30"
+           #inst "2024-06-05T09:30" #inst "2024-06-05T13:00" #inst "2024-06-05T15:00"
+           #inst "2024-06-06T09:00" #inst "2024-06-06T10:00" #inst "2024-06-06T13:30"
+           #inst "2024-06-07T09:00" #inst "2024-06-07T11:00" #inst "2024-06-07T15:00"]
+   :end   [#inst "2024-06-03T10:30" #inst "2024-06-03T12:00" #inst "2024-06-03T17:00"
+           #inst "2024-06-04T11:00" #inst "2024-06-04T12:30" #inst "2024-06-04T17:00"
+           #inst "2024-06-05T13:00" #inst "2024-06-05T15:00" #inst "2024-06-05T17:00"
+           #inst "2024-06-06T10:00" #inst "2024-06-06T12:30" #inst "2024-06-06T17:00"
+           #inst "2024-06-07T11:00" #inst "2024-06-07T15:00" #inst "2024-06-07T17:00"]
+   :day   ["Mon" "Mon" "Mon" "Tue" "Tue" "Tue" "Wed" "Wed" "Wed"
+           "Thu" "Thu" "Thu" "Fri" "Fri" "Fri"]
+   :kind  ["meeting" "deep work" "deep work"
+           "deep work" "meeting" "deep work"
+           "deep work" "meeting" "deep work"
+           "meeting" "meeting" "deep work"
+           "deep work" "meeting" "deep work"]})
+
+(-> activity-datetime
+    (pj/lay-interval-h :start :day {:x-end :end :color :kind})
+    (pj/options {:title "A week of activity, absolute time"
+                 :y-label ""
+                 :x-label "datetime"
+                 :height 320}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 15 (:polygons s)))))])
+
+;; The bars are accurate but visually narrow: each block is
+;; only a few hours within a five-day axis, and the overnight
+;; gaps consume most of the width. Comparing Monday's morning
+;; to Wednesday's afternoon takes mental effort.
+
+;; ### Hour-of-day numeric
+;;
+;; Re-index the x-axis to "hours since midnight" and the
+;; within-day shape becomes the headline. The data structure
+;; is the same -- still `(start, end, day, kind)` -- but
+;; `start` and `end` are now hours-from-midnight numbers, and
+;; the x-axis spans the workday rather than the whole week.
 
 (def activity
-  ;; A developer's week: meetings, deep-work blocks. Hours since
-  ;; midnight; each row is one block.
+  ;; Same week as above, with hours-since-midnight in place of
+  ;; full datetimes.
   {:start [9.0 10.5 13.0      ;; Mon
            9.0 11.0 14.5      ;; Tue
            9.5 13.0 15.0      ;; Wed
@@ -337,7 +397,7 @@
 
 (-> activity
     (pj/lay-interval-h :start :day {:x-end :end :color :kind})
-    (pj/options {:title "A week, hour-by-hour"
+    (pj/options {:title "Same week, hour-by-hour"
                  :y-label ""
                  :x-label "hour of day"
                  :height 320}))
@@ -347,8 +407,10 @@
                                 (= 15 (:polygons s)))))])
 
 ;; At a glance: Wednesday's afternoon block is the longest
-;; uninterrupted deep-work stretch; Mondays start with a meeting,
-;; Fridays with deep work.
+;; uninterrupted deep-work stretch; Mondays start with a
+;; meeting, Fridays with deep work. The trade-off is that you
+;; lose absolute time -- "Monday 10am" no longer reads as a
+;; specific point on a calendar.
 
 ;; ## Faceting by category
 ;;

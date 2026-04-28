@@ -213,6 +213,7 @@
 
 ;; ## What's Next
 ;;
+;; - [**Timelines**](./plotje_book.timelines.html) -- events, intervals, and schedules on a time axis (Gantt charts, Marey diagrams, annotated time series)
 ;; - [**Relationships**](./plotje_book.relationships.html) -- heatmaps, contours, and 2D density
 ;; - [**Polar Coordinates**](./plotje_book.polar.html) -- radial charts for cyclical data
 ;; - [**Gallery**](./plotje_book.gallery.html) -- more chart variations with side-by-side code
