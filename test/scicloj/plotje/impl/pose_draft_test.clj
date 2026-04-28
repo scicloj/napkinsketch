@@ -138,8 +138,8 @@
       (is (= 2 (count draft)) "two distinct species in the test dataset")
       (is (every? :facet-col draft))
       (is (every? #(string? (:facet-col %)) draft))
-      (is (apply distinct? (map :__entry-idx draft))
-          "each variant gets its own :__entry-idx so plan groups them as separate panels"))))
+      (is (apply distinct? (map :__panel-idx draft))
+          "each variant gets its own :__panel-idx so plan groups them as separate panels"))))
 
 (deftest facet-row-and-col-expands-product-test
   (testing ":opts {:facet-col c :facet-row r} multiplies by the combined values"

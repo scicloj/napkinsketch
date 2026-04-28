@@ -679,7 +679,7 @@
 
    Data precedence: layer :data > leaf :data.
 
-   Every emitted draft carries :__entry-idx 0 because a single leaf is
+   Every emitted draft carries :__panel-idx 0 because a single leaf is
    a single panel; plan.clj uses the key to group layers by panel, and
    a leaf has no sub-panel structure."
   [leaf]
@@ -716,7 +716,7 @@
          (validate-columns resolved d)
          (-> resolved
              (assoc :data d
-                    :__entry-idx variant-idx)
+                    :__panel-idx variant-idx)
              (cond->
               x-scale     (assoc :x-scale x-scale)
               y-scale     (assoc :y-scale y-scale)

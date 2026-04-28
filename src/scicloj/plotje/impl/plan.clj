@@ -630,9 +630,9 @@
    - Faceted draft layers: :facet-col -> grid col, :facet-row -> grid row
    - Non-faceted draft layers: :x column -> grid col, :y column -> grid row
    Returns {:grid-cols N :grid-rows N :panels [{:draft-layers [...] :row R :col C ...}]}"
-  [entry-groups {:keys [grid-cols grid-rows] :as user-grid}]
-  (let [;; Detect faceting: check if any entry group has :facet-col or :facet-row
-        first-draft-layers (mapv #(first (:draft-layers %)) entry-groups)
+  [panel-groups {:keys [grid-cols grid-rows] :as user-grid}]
+  (let [;; Detect faceting: check if any panel group has :facet-col or :facet-row
+        first-draft-layers (mapv #(first (:draft-layers %)) panel-groups)
         has-facet-col? (some :facet-col first-draft-layers)
         has-facet-row? (some :facet-row first-draft-layers)
         faceted? (or has-facet-col? has-facet-row?)
@@ -648,11 +648,11 @@
         col-vals (if (empty? col-vals) [nil] col-vals)
         row-vals (if (empty? row-vals) [nil] row-vals)
 
-        ;; Position each entry
+        ;; Position each panel
         stack-counts (atom {})
         panels (vec
-                (for [eg entry-groups
-                      :let [v (first (:draft-layers eg))
+                (for [pg panel-groups
+                      :let [v (first (:draft-layers pg))
                             ;; Determine grid position
                             [ci col-label]
                             (if has-facet-col?
@@ -682,7 +682,7 @@
                             stack-key [ri ci]
                             sub (get @stack-counts stack-key 0)
                             _ (swap! stack-counts update stack-key (fnil inc 0))]]
-                  {:draft-layers (:draft-layers eg)
+                  {:draft-layers (:draft-layers pg)
                    :row (if (> sub 0) (+ (* ri (count col-vals)) sub) ri)
                    :col ci
                    :var-x (:x v) :var-y (:y v)
@@ -931,8 +931,8 @@
       y-fallback? (assoc :y-domain [0.0 1.0]))))
 
 (defn draft->plan
-  "Pipeline: convert a draft into a plan using entry-based grid layout.
-   Each entry = one panel. Grid position from structural columns.
+  "Pipeline: convert a draft into a plan using panel-based grid layout.
+   Grid position from structural columns.
 
    New layout pipeline (2026-04-11): stats first, then scene → padding →
    dimensions, then per-panel ticks at the now-known panel dimensions.
@@ -961,25 +961,25 @@
          ;; layers. Annotations skip the stat/extract-layer pipeline
          ;; and join the plot-level :annotations list merged below.
          ;; A draft-layer with only annotations (no data layer) still needs
-         ;; a panel inferred for it, so annotation-only entry-idx
+         ;; a panel inferred for it, so annotation-only panel-idx
          ;; groups are threaded into grid inference separately.
          layer-annotations (filterv #(resolve/annotation-marks (:mark %)) draft-layers)
          draft-layers (filterv #(not (resolve/annotation-marks (:mark %))) draft-layers)
-         data-entry-ids (set (map :__entry-idx draft-layers))
+         data-panel-ids (set (map :__panel-idx draft-layers))
          ann-only-by-idx (->> layer-annotations
-                              (remove #(contains? data-entry-ids (:__entry-idx %)))
-                              (group-by :__entry-idx))
+                              (remove #(contains? data-panel-ids (:__panel-idx %)))
+                              (group-by :__panel-idx))
 
-         ;; Group draft layers by source entry index. Annotation-only
+         ;; Group draft layers by source panel index. Annotation-only
          ;; entries get their own groups tagged :__annotation-only?
          ;; so downstream Phase 1 synthesizes their domains instead of
          ;; running the stat pipeline.
          draft-layer-groups (vec
                              (concat
-                              (for [[idx vs] (sort-by key (group-by :__entry-idx draft-layers))]
-                                {:entry-idx idx :draft-layers (vec vs)})
+                              (for [[idx vs] (sort-by key (group-by :__panel-idx draft-layers))]
+                                {:panel-idx idx :draft-layers (vec vs)})
                               (for [[idx vs] (sort-by key ann-only-by-idx)]
-                                {:entry-idx idx
+                                {:panel-idx idx
                                  :draft-layers (vec vs)
                                  :__annotation-only? true})))
 
@@ -1036,7 +1036,7 @@
                           vec)
 
          ;; --- Phase 1: compute stats for every panel (no pixel math) ---
-         tagged-by-idx (group-by :__entry-idx tagged-draft-layers)
+         tagged-by-idx (group-by :__panel-idx tagged-draft-layers)
          panel-data (mapv
                      (fn [pg]
                        (let [dls (:draft-layers pg)
@@ -1051,8 +1051,8 @@
                                       :stat-results (mapv synthesize-annotation-domain dls)
                                       :layers []})
                            :else
-                           (let [eidx (:__entry-idx (first dls))
-                                 panel-tagged (or (get tagged-by-idx eidx) dls)
+                           (let [pidx (:__panel-idx (first dls))
+                                 panel-tagged (or (get tagged-by-idx pidx) dls)
                                  pre-resolved (mapv :__resolved panel-tagged)]
                              (if (seq panel-tagged)
                                (merge pg (resolve-panel-draft-layers panel-tagged all-colors cfg
