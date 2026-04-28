@@ -54,7 +54,17 @@
     "href": "index.html#license",
     "title": "Plotje",
     "section": "License",
-    "text": "License\nCopyright © 2025-2026 Scicloj\nDistributed under the MIT License.\n\nsource: notebooks/index.clj",
+    "text": "License\nCopyright © 2025-2026 Scicloj\nDistributed under the MIT License.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Plotje</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#chapters-of-this-book",
+    "href": "index.html#chapters-of-this-book",
+    "title": "Plotje",
+    "section": "Chapters of this book",
+    "text": "Chapters of this book\n\n🚀 Getting Started\n\nQuickstart\n\n🧱 Foundations\n\nDatasets\nPose Model\nCore Concepts\nComposition\nOptions and Scopes\nPose Rules\nInference Rules\nLayer Types\nGlossary\n\n📊 Chart Types\n\nScatter Plots\nDistributions\nRanking\nChange Over Time\nRelationships\nPolar Coordinates\n\n🍳 How-to Guides\n\nCookbook\nConfiguration\nCustomization\nFaceting\nTroubleshooting\n\n📖 Reference\n\nAPI Reference\n\n🖼 Gallery\n\nGallery\n\n🔬 Internals\n\nArchitecture\nExploring Plans\nExtensibility\nExtension Example: Waterfall Chart\nEdge Cases\nDevelopment\n\n\n\nsource: notebooks/index.clj",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Plotje</span>"
     ]
