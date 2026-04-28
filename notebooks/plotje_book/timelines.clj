@@ -194,6 +194,24 @@
                  :x-label ""
                  :height 320}))
 
+;; ## Vertical bars via `coord :flip`
+;;
+;; `lay-interval-h` always binds the lane to the y data axis.
+;; To render visually vertical bars (lanes on the horizontal
+;; axis, time running upward), apply `pj/coord :flip` to the
+;; pose -- the renderer detects which axis carries the band and
+;; lays out the rectangles accordingly.
+
+(-> project
+    (pj/lay-interval-h :start :task {:x-end :end :color :team})
+    (pj/coord :flip)
+    (pj/options {:title "Same project, vertical via coord :flip"
+                 :height 360}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:polygons s)))))])
+
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 5 (:polygons s))))])
 

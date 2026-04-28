@@ -99,9 +99,9 @@
    (rdatasets/ggplot2-economics)
    (tc/select-rows
     (fn*
-     [p1__93483#]
+     [p1__94142#]
      (let
-      [d (:date p1__93483#)]
+      [d (:date p1__94142#)]
       (and (>= (.getYear d) 2000) (<= (.getYear d) 2014))))))))
 
 
@@ -218,14 +218,35 @@
     :height 320})))
 
 
+(def
+ v24_l205
+ (->
+  project
+  (pj/lay-interval-h :start :task {:x-end :end, :color :team})
+  (pj/coord :flip)
+  (pj/options
+   {:title "Same project, vertical via coord :flip", :height 360})))
+
+
 (deftest
- t23_l197
+ t25_l211
  (is
-  ((fn [v] (let [s (pj/svg-summary v)] (= 5 (:polygons s)))) v22_l189)))
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 1 (:panels s)) (= 5 (:polygons s)))))
+   v24_l205)))
+
+
+(deftest
+ t26_l215
+ (is
+  ((fn [v] (let [s (pj/svg-summary v)] (= 5 (:polygons s)))) v24_l205)))
 
 
 (def
- v25_l224
+ v28_l242
  (def
   trains
   (let
@@ -254,7 +275,7 @@
 
 
 (def
- v26_l245
+ v29_l263
  (->
   trains
   (pj/lay-line
@@ -273,18 +294,18 @@
 
 
 (deftest
- t27_l253
+ t30_l271
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:lines s)) (= 20 (:points s)))))
-   v26_l245)))
+   v29_l263)))
 
 
 (def
- v29_l271
+ v32_l289
  (def
   activity
   {:start
@@ -354,7 +375,7 @@
 
 
 (def
- v30_l295
+ v33_l313
  (->
   activity
   (pj/lay-interval-h :start :day {:x-end :end, :color :kind})
@@ -366,18 +387,18 @@
 
 
 (deftest
- t31_l302
+ t34_l320
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 15 (:polygons s)))))
-   v30_l295)))
+   v33_l313)))
 
 
 (def
- v33_l317
+ v36_l335
  (->
   activity
   (pj/lay-interval-h :start :day {:x-end :end, :color :kind})
@@ -390,18 +411,18 @@
 
 
 (deftest
- t34_l325
+ t37_l343
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 15 (:polygons s)))))
-   v33_l317)))
+   v36_l335)))
 
 
 (def
- v36_l345
+ v39_l363
  (let
   [plot-svg
    (pj/plot
