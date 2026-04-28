@@ -868,8 +868,6 @@ produce crashes on canonical inputs.
   (pj/lay-loess ...))` do not auto-generate a layer-kind legend to
   distinguish the two regression curves. Workaround: color each
   layer explicitly.
-- SPLOM row labels render left-anchored instead of right-anchored
-  (column labels are centered correctly).
 - Histograms, stacked bars, step plots, and other stat-derived
   marks do not default to a `"count"` or `"density"` y-label.
 - Linear continuous color legends (numeric `:color` mapping with
@@ -890,17 +888,20 @@ produce crashes on canonical inputs.
 
 **Marks:**
 
-- `:position :dodge` is silently ignored on nine marks including
-  `summary`. Workaround: pre-compute dodge offsets via `tc/group-by`.
+- `:position :dodge` is ignored at render-time on nine marks
+  including `summary` -- on `lay-bar` and `lay-summary` the dodge
+  request is dropped at construction; on `lay-point` and `lay-line`
+  the dodge metadata reaches the plan but no geometric offset is
+  applied. Workaround: pre-compute dodge offsets via `tc/group-by`.
 - Polar plots for bar-family marks don't auto-emit category labels
   -- rose charts currently render with zero text.
 - Stacked bars don't split positive and negative values; all-positive
   data works, but mixed-sign data stacks incorrectly.
 - `pj/lay-tile` (and the underlying `:bin2d` stat) requires numeric
-  x and y columns. Passing categorical axes throws
-  `ClassCastException: String cannot be cast to Number`. Workaround:
-  bin externally and render with explicit numeric bin centers, or
-  use `pj/lay-value-bar` with `{:color :value}` for a
+  x and y columns. Passing a categorical axis throws a clear
+  "Stat :bin2d requires a numeric column" error at plan time.
+  Workaround: bin externally and render with explicit numeric bin
+  centers, or use `pj/lay-value-bar` with `{:color :value}` for a
   categorical-axis "heatmap" look.
 - `pj/lay-bar` with `:position :stack` (or `:fill`) is count-only
   and rejects a `y` column -- there is no clean way to render a
@@ -921,8 +922,6 @@ produce crashes on canonical inputs.
   category labels with sort-stable ordinal characters
   (`"01: ..."`, `"02: ..."`), which leaks into the legend.
   Reported in user-report-2 minor observation.
-- `:shape` has no literal form -- `{:shape :triangle}` is a silent
-  no-op. Only column mappings to `:shape` take effect.
 - Faceted panels default to free scales per panel (ggplot2's default
   is fixed); an explicit `:facet-scales :fixed` option is pending.
   A consequence: an annotation attached at the root pose
@@ -935,10 +934,6 @@ produce crashes on canonical inputs.
   rule would need to render as a circle (fixed radius) or spoke
   (fixed angle); those shapes are not implemented. Use Cartesian or
   flip coords for annotated plots.
-- `pj/facet` and `pj/facet-grid` require a categorical column --
-  passing a numeric column (e.g. mpg's `:cyl`) produces empty
-  panels. Workaround: convert to string or keyword before faceting,
-  or pick an already-categorical column.
 - Large scatters produce large SVGs (~220 bytes/point). For >10k
   points, use `:format :bufimg` for raster output.
 - `pj/save-png` (and the `:bufimg` raster path generally) truncates
@@ -961,13 +956,6 @@ produce crashes on canonical inputs.
   inspect `:total-width`/`:total-height` for the rendered canvas.
 - `pj/plan` called on a plan or on a hiccup value now throws a
   clear error. Call `pj/plan` only on poses.
-
-**Schema errors that could be friendlier:**
-
-- Non-integer `:width`/`:height` (e.g. `(/ 800 2.0)` = 400.0)
-  fails with a Malli schema dump. Use `long` or integer literals.
-- Boolean columns in `:x`/`:y` fail with a Malli schema dump.
-  Convert to 0/1 or use as `:color` / `:shape` categorical.
 
 **Mixing keyword and string column references:**
 
