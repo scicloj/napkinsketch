@@ -284,6 +284,19 @@
                                  (if (= x-res y-res)
                                    x-type
                                    (column-type ds y-res))))
+        ;; If :x-end is given, it must share an axis with :x: same column type
+        ;; (both numerical or both temporal) and same data-type family. Catch
+        ;; mismatches early so the user does not see a downstream NaN/cast crash.
+        x-end-type (when x-end-res (column-type ds x-end-res))
+        _ (when (and x-end-type (not= x-end-type x-type))
+            (throw (ex-info (str ":x-end column " (pr-str (:x-end v))
+                                 " has type " x-end-type
+                                 " but :x " (pr-str (:x v))
+                                 " has type " x-type
+                                 ". They must share the same axis type "
+                                 "(both numerical or both temporal).")
+                            {:x (:x v) :x-end (:x-end v)
+                             :x-type x-type :x-end-type x-end-type})))
         x-temporal? (= x-type :temporal)
         y-temporal? (= y-type :temporal)
         ;; If x is temporal, x-end (when present) is implicitly temporal too —

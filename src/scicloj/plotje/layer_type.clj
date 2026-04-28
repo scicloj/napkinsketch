@@ -110,7 +110,12 @@
 (register! :text {:mark :text :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Text — data-driven labels."})
 (register! :label {:mark :label :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Label — text with background box."})
 (register! :rug {:mark :rug :stat :identity :x-only true :accepts [:side] :doc "Rug — axis-margin tick marks."})
-(register! :interval-h {:mark :interval-h :stat :identity :accepts [:x-end :interval-thickness] :doc "Interval — horizontal bars from x to x-end at categorical y. For Gantt-style timelines."})
+(register! :interval-h {:mark :interval-h :stat :identity :accepts [:x-end :interval-thickness]
+                        ;; Dodge/stack/fill don't compose with interval-h yet -- a Gantt
+                        ;; row may have multiple non-overlapping or overlapping intervals
+                        ;; per category and we draw each row's rect at the band centre.
+                        :rejects [:position]
+                        :doc "Interval — horizontal bars from x to x-end at categorical y. For Gantt-style timelines."})
 ;; Annotation methods reject the universal options that have no
 ;; meaning for a single rule/band: there are no groups to dodge or
 ;; stack, no shape/jitter to vary across an aggregated mark, and the

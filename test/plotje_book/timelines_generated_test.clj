@@ -99,9 +99,9 @@
    (rdatasets/ggplot2-economics)
    (tc/select-rows
     (fn*
-     [p1__91582#]
+     [p1__93483#]
      (let
-      [d (:date p1__91582#)]
+      [d (:date p1__93483#)]
       (and (>= (.getYear d) 2000) (<= (.getYear d) 2014))))))))
 
 
@@ -225,7 +225,7 @@
 
 
 (def
- v25_l216
+ v25_l224
  (def
   trains
   (let
@@ -254,7 +254,7 @@
 
 
 (def
- v26_l237
+ v26_l245
  (->
   trains
   (pj/lay-line
@@ -273,18 +273,18 @@
 
 
 (deftest
- t27_l245
+ t27_l253
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:lines s)) (= 20 (:points s)))))
-   v26_l237)))
+   v26_l245)))
 
 
 (def
- v29_l263
+ v29_l271
  (def
   activity
   {:start
@@ -354,7 +354,7 @@
 
 
 (def
- v30_l287
+ v30_l295
  (->
   activity
   (pj/lay-interval-h :start :day {:x-end :end, :color :kind})
@@ -366,18 +366,18 @@
 
 
 (deftest
- t31_l294
+ t31_l302
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 15 (:polygons s)))))
-   v30_l287)))
+   v30_l295)))
 
 
 (def
- v33_l309
+ v33_l317
  (->
   activity
   (pj/lay-interval-h :start :day {:x-end :end, :color :kind})
@@ -390,18 +390,18 @@
 
 
 (deftest
- t34_l317
+ t34_l325
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 15 (:polygons s)))))
-   v33_l309)))
+   v33_l317)))
 
 
 (def
- v36_l337
+ v36_l345
  (let
   [plot-svg
    (pj/plot
