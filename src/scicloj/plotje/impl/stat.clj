@@ -66,23 +66,23 @@
 ;; ---- Prepare Points ----
 
 (defn- validate-numeric-column
-  "Throw a clear error if the column referenced by `col-key` in `view` is categorical
+  "Throw a clear error if the column referenced by `col-key` in `draft-layer` is categorical
    but the stat requires numeric data."
-  [view col-key stat-name]
+  [draft-layer col-key stat-name]
   (let [type-key (keyword (str (name col-key) "-type"))
-        col-type (get view type-key)]
+        col-type (get draft-layer type-key)]
     (when (= col-type :categorical)
       (throw (ex-info (str "Stat :" (name stat-name) " requires a numeric column for :" (name col-key)
-                           ", but :" (name (get view col-key)) " is categorical.")
-                      {:stat stat-name :column (get view col-key) :column-type col-type})))))
+                           ", but :" (name (get draft-layer col-key)) " is categorical.")
+                      {:stat stat-name :column (get draft-layer col-key) :column-type col-type})))))
 
 (defn prepare-points
   "Clean data, compute domains, group by columns.
    Drops rows with missing values in x/y AND in any referenced numeric
    aesthetic column (color/size/alpha/y-min/y-max/fill) so downstream code
    never sees nil/NaN values where it tries to coerce to double."
-  [view]
-  (let [{:keys [data x y color color-type size alpha shape text-col x-type y-type group mark y-min y-max x-end fill]} view
+  [draft-layer]
+  (let [{:keys [data x y color color-type size alpha shape text-col x-type y-type group mark y-min y-max x-end fill]} draft-layer
         x-only? (or (nil? y) (= x y))
         data-idx (tc/add-column data :__row-idx (range (tc/row-count data)))
         ds-cols (set (tc/column-names data-idx))
@@ -152,11 +152,11 @@
 ;; ---- compute-stat multimethod ----
 
 (defmulti compute-stat
-  "Compute a statistical transform for a view."
-  (fn [view] (or (:stat view) :identity)))
+  "Compute a statistical transform for a draft-layer."
+  (fn [draft-layer] (or (:stat draft-layer) :identity)))
 
-(defmethod compute-stat :default [view]
-  (let [stat-key (or (:stat view) :identity)
+(defmethod compute-stat :default [draft-layer]
+  (let [stat-key (or (:stat draft-layer) :identity)
         registered (sort (filter keyword?
                                  (remove #(or (vector? %) (= :default %))
                                          (keys (methods compute-stat)))))]
@@ -178,13 +178,13 @@
 (defmethod compute-stat [:bin2d :doc] [_] "2D grid binning (heatmap counts)")
 (defmethod compute-stat [:density-2d :doc] [_] "Density 2D — 2D Gaussian kernel density estimation (KDE)")
 
-(defmethod compute-stat :identity [{:keys [mark x y x-type] :as view}]
+(defmethod compute-stat :identity [{:keys [mark x y x-type] :as draft-layer}]
   (when (and (#{:lollipop :errorbar :pointrange} mark)
              (or (nil? y) (= x y))
              (= x-type :categorical))
     (throw (ex-info (str "Mark :" (name mark) " requires both :x and :y columns with numeric :y.")
                     {:mark mark :x x :y y})))
-  (prepare-points view))
+  (prepare-points draft-layer))
 
 ;; ---- Binning ----
 
@@ -227,20 +227,20 @@
              :count (aget counts k)})
           (range n-bins))))
 
-(defmethod compute-stat :bin [{:keys [data x x-type group cfg normalize] :as view}]
-  (validate-numeric-column view :x :bin)
-  (when-let [b (:bins view)]
+(defmethod compute-stat :bin [{:keys [data x x-type group cfg normalize] :as draft-layer}]
+  (validate-numeric-column draft-layer :x :bin)
+  (when-let [b (:bins draft-layer)]
     (when-not (and (number? b) (pos? b))
       (throw (ex-info (str ":bins must be a positive number, got: " (pr-str b))
                       {:bins b}))))
-  (when-let [bw (:binwidth view)]
+  (when-let [bw (:binwidth draft-layer)]
     (when-not (and (number? bw) (pos? bw))
       (throw (ex-info (str ":binwidth must be a positive number, got: " (pr-str bw))
                       {:binwidth bw}))))
   (let [clean (cond-> (tc/drop-missing data [x])
                 (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))
         xs-col (clean x)
-        user-binwidth (:binwidth view)
+        user-binwidth (:binwidth draft-layer)
         ;; Compute a shared anchor when :binwidth is supplied, so every
         ;; group uses the same bin boundaries (important for stacked and
         ;; colored histograms — otherwise groups with different minima
@@ -252,7 +252,7 @@
       {:bins [] :max-count 0 :x-domain [0 1] :y-domain [0 1]}
       (let [;; Determine bin method: :bins (exact count) > :binwidth
             ;; (exact width) > cfg heuristic.
-            bin-arg (or (:bins view)
+            bin-arg (or (:bins draft-layer)
                         (:bin-method (or cfg defaults/defaults)))
             all-bin-data (group-by-columns
                           clean (or group [])
@@ -293,13 +293,13 @@
 
 ;; ---- Counting ----
 
-(defmethod compute-stat :count [view]
-  (when-not (= (:x-type view) :categorical)
+(defmethod compute-stat :count [draft-layer]
+  (when-not (= (:x-type draft-layer) :categorical)
     (throw (ex-info (str "Stat :count (used by lay-bar) requires a categorical column for :x, "
-                         "but " (:x view) " is " (name (or (:x-type view) :unknown))
-                         ". Use lay-histogram for numeric data, or convert " (:x view) " to a string column.")
-                    {:stat :count :x (:x view) :x-type (:x-type view)})))
-  (let [{:keys [data x x-type group]} view
+                         "but " (:x draft-layer) " is " (name (or (:x-type draft-layer) :unknown))
+                         ". Use lay-histogram for numeric data, or convert " (:x draft-layer) " to a string column.")
+                    {:stat :count :x (:x draft-layer) :x-type (:x-type draft-layer)})))
+  (let [{:keys [data x x-type group]} draft-layer
         group-cols (or group [])
         clean (cond-> (tc/drop-missing data [x])
                 (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))
@@ -385,11 +385,11 @@
      :x1 x-min :y1 (regr/predict model [x-min])
      :x2 x-max :y2 (regr/predict model [x-max])}))
 
-(defmethod compute-stat :linear-model [{:keys [data x y group cfg] :as view}]
-  (validate-numeric-column view :x :linear-model)
-  (validate-numeric-column view :y :linear-model)
-  (let [se (:confidence-band view)
-        level (or (:level view) 0.95)
+(defmethod compute-stat :linear-model [{:keys [data x y group cfg] :as draft-layer}]
+  (validate-numeric-column draft-layer :x :linear-model)
+  (validate-numeric-column draft-layer :y :linear-model)
+  (let [se (:confidence-band draft-layer)
+        level (or (:level draft-layer) 0.95)
         n-grid (or (:se-n-grid (or cfg defaults/defaults)) 80)
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)]
@@ -546,11 +546,11 @@
                         (range n-grid))]
         {:xs grid-xs :ys grid-ys :ymins ymins :ymaxs ymaxs}))))
 
-(defmethod compute-stat :loess [{:keys [data x y group cfg] :as view}]
-  (validate-numeric-column view :x :loess)
-  (validate-numeric-column view :y :loess)
-  (let [se (:confidence-band view)
-        level (or (:level view) 0.95)
+(defmethod compute-stat :loess [{:keys [data x y group cfg] :as draft-layer}]
+  (validate-numeric-column draft-layer :x :loess)
+  (validate-numeric-column draft-layer :y :loess)
+  (let [se (:confidence-band draft-layer)
+        level (or (:level draft-layer) 0.95)
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)
         ;; Adaptive bootstrap count: LOESS fits are O(n^1.7), so running
@@ -558,8 +558,8 @@
         ;; count down for large inputs while preserving good CI coverage
         ;; on small/medium datasets. Clamp to at least 20 so the
         ;; quantile estimates remain usable. Users can still override
-        ;; via an explicit `:bootstrap-resamples N` on the view.
-        n-boot (or (:bootstrap-resamples view)
+        ;; via an explicit `:bootstrap-resamples N` on the draft-layer.
+        n-boot (or (:bootstrap-resamples draft-layer)
                    (cond
                      (<= n 500)    200
                      (<= n 2000)   100
@@ -636,9 +636,9 @@
         grid-ys (dtype/emap kd :float64 grid-xs)]
     {:xs grid-xs :ys grid-ys}))
 
-(defmethod compute-stat :density [view]
-  (validate-numeric-column view :x :kde)
-  (let [{:keys [data x group cfg]} view
+(defmethod compute-stat :density [draft-layer]
+  (validate-numeric-column draft-layer :x :kde)
+  (let [{:keys [data x group cfg]} draft-layer
         clean (tc/drop-missing data [x])
         n (tc/row-count clean)
         n-grid (or (:kde-n-grid (or cfg defaults/defaults)) 100)
@@ -675,8 +675,8 @@
    downstream panel layout picks the right scale type on each axis.
    per-group-fn: (fn [num-col category color-or-nil]) -> map
    min-n: minimum row count to include a group."
-  [view min-n per-group-fn]
-  (let [{:keys [data x y x-type y-type group]} view
+  [draft-layer min-n per-group-fn]
+  (let [{:keys [data x y x-type y-type group]} draft-layer
         ;; Pick the categorical axis. When y is categorical (and x isn't),
         ;; the plot is horizontal; otherwise default to x as the cat axis.
         flipped? (and (= y-type :categorical) (not= x-type :categorical))
@@ -773,8 +773,8 @@
      :whisker-lo @whisker-lo :whisker-hi @whisker-hi
      :outliers (vec outliers)}))
 
-(defmethod compute-stat :boxplot [view]
-  (let [result (per-category-stat view 1
+(defmethod compute-stat :boxplot [draft-layer]
+  (let [result (per-category-stat draft-layer 1
                                   (fn [y-col cat cc]
                                     (cond-> (merge (five-number-summary y-col)
                                                    {:category cat})
@@ -787,16 +787,16 @@
 
 ;; ---- Violin ----
 
-(defmethod compute-stat :violin [view]
+(defmethod compute-stat :violin [draft-layer]
   ;; Validate the numeric axis -- y in vertical orientation, x in horizontal.
-  (let [num-axis (if (and (= (:y-type view) :categorical)
-                          (not= (:x-type view) :categorical))
+  (let [num-axis (if (and (= (:y-type draft-layer) :categorical)
+                          (not= (:x-type draft-layer) :categorical))
                    :x :y)]
-    (validate-numeric-column view num-axis :violin))
-  (let [{:keys [cfg]} view
+    (validate-numeric-column draft-layer num-axis :violin))
+  (let [{:keys [cfg]} draft-layer
         n-grid (or (:kde-n-grid (or cfg defaults/defaults)) 80)
         bandwidth (:kde-bandwidth (or cfg defaults/defaults))
-        result (per-category-stat view 2
+        result (per-category-stat draft-layer 2
                                   (fn [y-col cat cc]
                                     (let [kde (fit-kde y-col n-grid bandwidth)]
                                       (cond-> {:category cat
@@ -805,8 +805,8 @@
         ;; Expand the numeric-axis domain to cover the full KDE curve
         ;; (tails beyond raw data). Which axis is numeric depends on
         ;; orientation: y for vertical, x for horizontal.
-        flipped? (and (= (:y-type view) :categorical)
-                      (not= (:x-type view) :categorical))
+        flipped? (and (= (:y-type draft-layer) :categorical)
+                      (not= (:x-type draft-layer) :categorical))
         kde-nums-bufs (seq (map :ys (:items result)))
         kde-num-domain (when kde-nums-bufs
                          (let [all (dtype/concat-buffers kde-nums-bufs)]
@@ -827,8 +827,8 @@
 
 ;; ---- Summary (mean ± SE per category) ----
 
-(defmethod compute-stat :summary [{:keys [data x y x-type group] :as view}]
-  (validate-numeric-column view :y :summary)
+(defmethod compute-stat :summary [{:keys [data x y x-type group] :as draft-layer}]
+  (validate-numeric-column draft-layer :y :summary)
   (let [clean (cond-> (tc/drop-missing data [x y])
                 (= x-type :categorical) (tc/map-columns x [x] defaults/fmt-category-label))
         categories (distinct (clean x))]
@@ -862,9 +862,9 @@
          :x-domain categories
          :y-domain [y-min y-max]}))))
 
-(defmethod compute-stat :bin2d [{:keys [data x y cfg] :as view}]
-  (validate-numeric-column view :x :bin2d)
-  (validate-numeric-column view :y :bin2d)
+(defmethod compute-stat :bin2d [{:keys [data x y cfg] :as draft-layer}]
+  (validate-numeric-column draft-layer :x :bin2d)
+  (validate-numeric-column draft-layer :y :bin2d)
   (let [cfg (or cfg defaults/defaults)
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)]
@@ -911,9 +911,9 @@
          :y-domain [y-min y-max]
          :fill-range [0 max-count]}))))
 
-(defmethod compute-stat :density-2d [{:keys [data x y cfg] :as view}]
-  (validate-numeric-column view :x :kde2d)
-  (validate-numeric-column view :y :kde2d)
+(defmethod compute-stat :density-2d [{:keys [data x y cfg] :as draft-layer}]
+  (validate-numeric-column draft-layer :x :kde2d)
+  (validate-numeric-column draft-layer :y :kde2d)
   (let [cfg (or cfg defaults/defaults)
         clean (tc/drop-missing data [x y])
         n (tc/row-count clean)]
