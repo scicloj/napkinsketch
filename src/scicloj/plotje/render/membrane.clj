@@ -5,8 +5,7 @@
   (:require [membrane.ui :as ui]
             [scicloj.plotje.impl.defaults :as defaults]
             [scicloj.plotje.impl.resolve :as resolve]
-            [scicloj.plotje.render.panel :as panel])
-  (:import [scicloj.plotje.impl.resolve Plan CompositePlan]))
+            [scicloj.plotje.render.panel :as panel]))
 
 ;; ---- Legend ----
 
@@ -189,14 +188,17 @@
 (defmulti plan->membrane
   "Build a membrane drawable tree from a plan.
    Returns a vector of membrane drawables representing the complete plot.
-   Dispatches on plan defrecord type so leaf and composite plans can take
-   different rendering paths.
+   Dispatches on `(boolean (:composite? plan))` so leaf and composite plans
+   can take different rendering paths. Boolean dispatch (rather than dispatch
+   on the defrecord class) avoids retaining stale defrecord classes across
+   `:reload` of `impl/resolve.clj` -- a class-dispatched multimethod would
+   pin every old class object in the dispatch table.
 
    2-arity takes an opts map. Recognized keys:
      :tooltip -- when truthy, enables tooltip text generation on data marks."
-  (fn [plan & _] (type plan)))
+  (fn [plan & _] (boolean (:composite? plan))))
 
-(defmethod plan->membrane Plan
+(defmethod plan->membrane false
   [plan opts]
   (let [{:keys [tooltip]} opts
         cfg (defaults/resolve-config opts)

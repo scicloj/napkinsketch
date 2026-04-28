@@ -18,8 +18,7 @@
             [scicloj.plotje.impl.pose :as pose]
             [scicloj.plotje.impl.plan :as plan]
             [scicloj.plotje.impl.resolve :as resolve]
-            [scicloj.plotje.render.membrane :as membrane])
-  (:import [scicloj.plotje.impl.resolve CompositePlan]))
+            [scicloj.plotje.render.membrane :as membrane]))
 
 (def ^:private default-width 600)
 (def ^:private default-height 400)
@@ -403,7 +402,7 @@
 ;; translates each result into the composite coordinate space, and
 ;; layers chrome drawables (title, strip labels, shared legend) on
 ;; top.
-(defmethod membrane/plan->membrane CompositePlan
+(defmethod membrane/plan->membrane true
   [composite-plan _opts]
   (let [{:keys [width sub-plots chrome]} composite-plan
         {:keys [title title-band-h grid-rect strip-h strip-w
