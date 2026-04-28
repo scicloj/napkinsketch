@@ -86,7 +86,7 @@
    :text  {:numeric? false}})
 
 (def column-keys
-  "Set of keywords that can reference dataset columns in view maps."
+  "Set of keywords that can reference dataset columns in mappings."
   (set (keys aesthetic-registry)))
 
 (def numeric-aesthetic-keys

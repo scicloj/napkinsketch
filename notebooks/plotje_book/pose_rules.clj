@@ -881,7 +881,7 @@ s2-tree
       (and (some? rule)
            (= 3.0 (get-in rule [:mapping :y-intercept])))))])
 
-;; A view-scope annotation via the 4-arity attaches to a matching
+;; A pose-scope annotation via the 4-arity attaches to a matching
 ;; leaf, not every panel:
 
 (-> iris
