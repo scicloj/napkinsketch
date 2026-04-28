@@ -225,7 +225,7 @@
  (defmethod
   stat/compute-stat
   :quantile
-  [view]
+  [draft-layer]
   {:points [], :x-domain [0 1], :y-domain [0 1]}))
 
 

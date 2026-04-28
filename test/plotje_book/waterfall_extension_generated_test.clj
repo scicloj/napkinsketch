@@ -26,7 +26,7 @@
  (defmethod
   stat/compute-stat
   :waterfall
-  [{:keys [data x y x-type], :as view}]
+  [{:keys [data x y x-type], :as draft-layer}]
   (let
    [clean
     (tc/drop-missing data [x y])
@@ -89,7 +89,7 @@
  (defmethod
   extract/extract-layer
   :waterfall
-  [view stat all-colors cfg]
+  [draft-layer stat all-colors cfg]
   (let
    [bars
     (:waterfall-bars stat)
