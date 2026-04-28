@@ -40,12 +40,12 @@
   [x]
   (instance? CompositeDraft x))
 
-(defrecord Layer [mark style])
+(defrecord PlanLayer [mark style])
 
-(defn layer?
-  "True if x is a layer (resolved geometry for one mark)."
+(defn plan-layer?
+  "True if x is a plan-layer (resolved geometry for one mark)."
   [x]
-  (instance? Layer x))
+  (instance? PlanLayer x))
 
 (defrecord Method [mark stat])
 

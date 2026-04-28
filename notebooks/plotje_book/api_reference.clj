@@ -574,11 +574,11 @@
 
 (kind/test-last [true?])
 
-(kind/doc #'pj/layer?)
+(kind/doc #'pj/plan-layer?)
 
 ;; Check whether a value is a resolved plan layer:
 
-(pj/layer? (first (:layers (first (:panels (pj/plan (pj/lay-point tiny :x :y)))))))
+(pj/plan-layer? (first (:layers (first (:panels (pj/plan (pj/lay-point tiny :x :y)))))))
 
 (kind/test-last [true?])
 

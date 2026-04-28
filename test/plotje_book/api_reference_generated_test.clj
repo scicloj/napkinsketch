@@ -953,12 +953,12 @@
 (deftest t181_l575 (is (true? v180_l573)))
 
 
-(def v182_l577 (kind/doc #'pj/layer?))
+(def v182_l577 (kind/doc #'pj/plan-layer?))
 
 
 (def
  v184_l581
- (pj/layer?
+ (pj/plan-layer?
   (first
    (:layers (first (:panels (pj/plan (pj/lay-point tiny :x :y))))))))
 

@@ -303,7 +303,7 @@
   (let [resolved (or resolved (mapv (comp filter-log-nonpositive filter-infinities resolve/resolve-draft-layer) panel-draft-layers))
         stat-results (mapv #(stat/compute-stat (assoc % :cfg (merge cfg (:cfg %)))) resolved)
         raw-plan-layers (vec (map (fn [rv sr]
-                                    (-> (resolve/map->Layer (extract/extract-layer rv sr all-colors cfg))
+                                    (-> (resolve/map->PlanLayer (extract/extract-layer rv sr all-colors cfg))
                                         (assoc :y-domain (:y-domain sr)
                                                :x-domain (:x-domain sr))))
                                   resolved stat-results))

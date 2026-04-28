@@ -47,10 +47,10 @@
   [x]
   (resolve/composite-draft? x))
 
-(defn layer?
-  "Return true if x is a layer (resolved geometry for one mark in a plan)."
+(defn plan-layer?
+  "Return true if x is a plan-layer (resolved geometry for one mark)."
   [x]
-  (resolve/layer? x))
+  (resolve/plan-layer? x))
 
 (defn layer-type?
   "Return true if x is a layer type (mark + stat + position bundle from the registry)."

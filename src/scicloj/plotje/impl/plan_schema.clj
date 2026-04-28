@@ -142,7 +142,7 @@
    [:y-hi number?]
    [:color Color]])
 
-;; ---- Layer ----
+;; ---- PlanLayer ----
 
 (def MarkStyle
   [:map
@@ -191,8 +191,8 @@
              [:color {:optional true} string?]
              [:alpha {:optional true} number?]]]])
 
-(def Layer
-  "A rendered mark layer with data-space geometry."
+(def PlanLayer
+  "A plan-layer: a rendered mark with data-space geometry."
   [:map
    [:mark keyword?]
    [:style MarkStyle]
@@ -222,7 +222,7 @@
    [:coord [:enum :cartesian :flip :polar :fixed]]
    [:x-ticks TickInfo]
    [:y-ticks TickInfo]
-   [:layers [:vector Layer]]
+   [:layers [:vector PlanLayer]]
    [:row int?]
    [:col int?]
    [:annotations {:optional true} [:vector Annotation]]

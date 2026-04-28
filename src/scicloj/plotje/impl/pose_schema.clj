@@ -37,10 +37,11 @@
   "Aesthetic mapping: keyword key -> column ref or literal value."
   [:map-of keyword? any?])
 
-(def Layer
-  "A layer declaration inside a pose. :layer-type names a registered
-   entry; :mark / :stat / :position are layer-structural siblings
-   extracted from user opts by build-layer (Phase 6 decision 1)."
+(def PoseLayer
+  "A pose-layer: a layer declaration attached to a pose. :layer-type
+   names a registered entry; :mark / :stat / :position are
+   layer-structural siblings extracted from user opts by build-layer
+   (Phase 6 decision 1)."
   [:map
    [:layer-type {:optional true} keyword?]
    [:mark       {:optional true} keyword?]
@@ -57,7 +58,7 @@
    Shape:
      {:data         ?  dataset (inherited from ancestor if absent)
       :mapping      ?  aesthetic mappings (merges with ancestors)
-      :layers       ?  Layer vec at this level (accumulates into leaves)
+      :layers       ?  PoseLayer vec at this level (accumulates into leaves)
       :poses       ?  sub-poses; absent or empty = leaf
       :layout       ?  Layout for composites
       :opts         ?  plot options (inheritable)
@@ -67,13 +68,13 @@
    and mosaic attach metadata keys (:panel-label, :facet-row, ...) to
    leaves that pass through resolve-tree unchanged."
   [:schema {:registry {::pose [:map
-                                [:data {:optional true} any?]
-                                [:mapping {:optional true} Mapping]
-                                [:layers {:optional true} [:vector Layer]]
-                                [:poses {:optional true} [:vector [:ref ::pose]]]
-                                [:layout {:optional true} Layout]
-                                [:opts {:optional true} map?]
-                                [:share-scales {:optional true} ShareScales]]}}
+                               [:data {:optional true} any?]
+                               [:mapping {:optional true} Mapping]
+                               [:layers {:optional true} [:vector PoseLayer]]
+                               [:poses {:optional true} [:vector [:ref ::pose]]]
+                               [:layout {:optional true} Layout]
+                               [:opts {:optional true} map?]
+                               [:share-scales {:optional true} ShareScales]]}}
    [:ref ::pose]])
 
 ;; ---- Validation Helpers ----
