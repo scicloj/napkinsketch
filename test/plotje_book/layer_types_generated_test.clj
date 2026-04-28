@@ -53,7 +53,7 @@
      "Position" (kind/code (pr-str (or (:position m) :identity)))})}))
 
 
-(deftest t7_l73 (is ((fn [t] (= 25 (count (:row-maps t)))) v6_l63)))
+(deftest t7_l73 (is ((fn [t] (= 26 (count (:row-maps t)))) v6_l63)))
 
 
 (def
@@ -68,7 +68,7 @@
      "Used by" (used-by :mark mk)})}))
 
 
-(deftest t10_l92 (is ((fn [t] (= 21 (count (:row-maps t)))) v9_l84)))
+(deftest t10_l92 (is ((fn [t] (= 22 (count (:row-maps t)))) v9_l84)))
 
 
 (def

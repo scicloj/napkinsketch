@@ -72,7 +72,7 @@
 
 (kind/test-last
  [(fn [t]
-    (= 25 (count (:row-maps t))))])
+    (= 26 (count (:row-maps t))))])
 
 ;; ## Marks
 ;;
@@ -91,7 +91,7 @@
 
 (kind/test-last
  [(fn [t]
-    (= 21 (count (:row-maps t))))])
+    (= 22 (count (:row-maps t))))])
 
 ;; ## Stats
 ;;

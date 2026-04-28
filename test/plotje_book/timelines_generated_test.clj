@@ -9,7 +9,7 @@
 
 
 (def
- v3_l31
+ v3_l44
  (def
   computing-milestones
   {:date
@@ -28,7 +28,7 @@
 
 
 (def
- v4_l41
+ v4_l54
  (->
   computing-milestones
   (pj/lay-point :date :y {:size 6, :color "#2c3e50"})
@@ -41,7 +41,7 @@
 
 
 (deftest
- t5_l49
+ t5_l62
  (is
   ((fn
     [v]
@@ -56,16 +56,16 @@
         "ARPANET first link"
         "World Wide Web"
         "iPhone"]))))
-   v4_l41)))
+   v4_l54)))
 
 
 (def
- v7_l60
+ v7_l73
  (def with-staggered-y (assoc computing-milestones :y [2 1 1.5 2 1])))
 
 
 (def
- v8_l63
+ v8_l76
  (->
   with-staggered-y
   (pj/lay-point :date :y {:size 6, :color "#2c3e50"})
@@ -81,32 +81,32 @@
 
 
 (deftest
- t9_l71
+ t9_l84
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 5 (:points s)) (= 1 (:panels s)))))
-   v8_l63)))
+   v8_l76)))
 
 
 (def
- v11_l82
+ v11_l101
  (def
   unemployment
   (->
    (rdatasets/ggplot2-economics)
    (tc/select-rows
     (fn*
-     [p1__80939#]
+     [p1__83861#]
      (let
-      [d (:date p1__80939#)]
+      [d (:date p1__83861#)]
       (and (>= (.getYear d) 2000) (<= (.getYear d) 2014))))))))
 
 
 (def
- v12_l88
+ v12_l107
  (->
   unemployment
   (pj/lay-line :date :unemploy {:color "#34495e"})
@@ -126,18 +126,18 @@
 
 
 (deftest
- t13_l99
+ t13_l118
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (>= (:lines s) 1))))
-   v12_l88)))
+   v12_l107)))
 
 
 (def
- v15_l114
+ v15_l141
  (def
   project
   {:start
@@ -157,7 +157,7 @@
 
 
 (def
- v16_l122
+ v16_l149
  (->
   project
   (pj/lay-interval-h :start :task {:x-end :end, :color :team})
@@ -169,18 +169,18 @@
 
 
 (deftest
- t17_l129
+ t17_l156
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 5 (:polygons s)))))
-   v16_l122)))
+   v16_l149)))
 
 
 (def
- v19_l136
+ v19_l165
  (->
   (rdatasets/ggplot2-presidential)
   (pj/lay-interval-h :start :name {:x-end :end, :color :party})
@@ -193,18 +193,18 @@
 
 
 (deftest
- t20_l144
+ t20_l173
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 12 (:polygons s)))))
-   v19_l136)))
+   v19_l165)))
 
 
 (def
- v22_l159
+ v22_l188
  (->
   project
   (pj/lay-interval-h
@@ -219,13 +219,13 @@
 
 
 (deftest
- t23_l166
+ t23_l195
  (is
-  ((fn [v] (let [s (pj/svg-summary v)] (= 5 (:polygons s)))) v22_l159)))
+  ((fn [v] (let [s (pj/svg-summary v)] (= 5 (:polygons s)))) v22_l188)))
 
 
 (def
- v25_l181
+ v25_l214
  (def
   trains
   (let
@@ -254,7 +254,7 @@
 
 
 (def
- v26_l202
+ v26_l235
  (->
   trains
   (pj/lay-line
@@ -273,18 +273,18 @@
 
 
 (deftest
- t27_l210
+ t27_l243
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:lines s)) (= 20 (:points s)))))
-   v26_l202)))
+   v26_l235)))
 
 
 (def
- v29_l228
+ v29_l261
  (def
   activity
   {:start
@@ -354,7 +354,7 @@
 
 
 (def
- v30_l252
+ v30_l285
  (->
   activity
   (pj/lay-interval-h :start :day {:x-end :end, :color :kind})
@@ -366,18 +366,18 @@
 
 
 (deftest
- t31_l259
+ t31_l292
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 15 (:polygons s)))))
-   v30_l252)))
+   v30_l285)))
 
 
 (def
- v33_l274
+ v33_l307
  (->
   activity
   (pj/lay-interval-h :start :day {:x-end :end, :color :kind})
@@ -390,18 +390,18 @@
 
 
 (deftest
- t34_l282
+ t34_l315
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 15 (:polygons s)))))
-   v33_l274)))
+   v33_l307)))
 
 
 (def
- v36_l299
+ v36_l335
  (let
   [plot-svg
    (pj/plot

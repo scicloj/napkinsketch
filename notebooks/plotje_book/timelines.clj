@@ -1,8 +1,8 @@
 ;; # Timelines
 ;;
-;; Five recipes for visualizing events, intervals, and movement
-;; over time. The chapter introduces `pj/lay-interval-h` for
-;; horizontal interval bars and shows how existing primitives
+;; Recipes for visualizing events, intervals, and movement over
+;; time. The chapter introduces `pj/lay-interval-h` for horizontal
+;; interval bars (Gantt-style) and shows how existing primitives
 ;; combine to build calendar-aware visualizations.
 ;;
 ;; Pipeline reminder: every example threads data through one or
@@ -27,6 +27,19 @@
 ;; a single horizontal line, with a text label nudged above. The
 ;; vertical position is fixed (`y = 1`) because the y-axis here
 ;; carries no meaning -- it just provides a baseline.
+;;
+;; Sources for the milestones:
+;;
+;; - [Turing machine](https://en.wikipedia.org/wiki/Turing_machine)
+;;   (Alan Turing's 1936 paper "On Computable Numbers")
+;; - [Transistor](https://en.wikipedia.org/wiki/History_of_the_transistor)
+;;   (Bardeen, Brattain, and Shockley at Bell Labs, December 1947)
+;; - [ARPANET first link](https://en.wikipedia.org/wiki/ARPANET)
+;;   (UCLA-SRI message, October 1969)
+;; - [World Wide Web](https://en.wikipedia.org/wiki/World_Wide_Web)
+;;   (Tim Berners-Lee's proposal, March 1989)
+;; - [iPhone](https://en.wikipedia.org/wiki/IPhone_(1st_generation))
+;;   (first release, June 2007)
 
 (def computing-milestones
   {:date  [#inst "1936-01-01" #inst "1947-12-23" #inst "1969-10-29"
@@ -78,6 +91,12 @@
 ;; vertical reference lines. The rules sit at constants in the
 ;; options map -- not in a data column -- so they are treated as
 ;; annotations.
+;;
+;; The data is from
+;; [`ggplot2::economics`](https://github.com/tidyverse/ggplot2/blob/main/data-raw/economics.R),
+;; loaded here via the
+;; [Rdatasets](https://github.com/scicloj/metamorph.ml#rdatasets)
+;; bundle.
 
 (def unemployment
   (-> (rdatasets/ggplot2-economics)
@@ -100,12 +119,20 @@
                            (and (= 1 (:panels s))
                                 (>= (:lines s) 1))))])
 
-;; The two rules mark the start of the dot-com recession (March
-;; 2001) and the Lehman Brothers collapse (September 2008). The
-;; line shape relative to the rules tells the recession story
-;; without any prose.
+;; The two rules mark the start of the
+;; [dot-com recession](https://en.wikipedia.org/wiki/Early_2000s_recession)
+;; (March 2001) and the
+;; [Lehman Brothers collapse](https://en.wikipedia.org/wiki/Bankruptcy_of_Lehman_Brothers)
+;; (September 2008). The line shape relative to the rules tells
+;; the recession story without any prose.
 
 ;; ## Gantt chart with `lay-interval-h`
+;;
+;; The
+;; [Gantt chart](https://en.wikipedia.org/wiki/Gantt_chart) (Henry
+;; Gantt, ~1910) is the canonical "tasks-and-dates" picture: each
+;; row is a task, each bar's left edge is the start, the right
+;; edge is the end.
 ;;
 ;; `pj/lay-interval-h` draws one horizontal bar per row, from
 ;; `x` to `:x-end`, sitting at the lane named by the categorical
@@ -131,7 +158,9 @@
                                 (= 5 (:polygons s)))))])
 
 ;; A real-world Gantt: every US president's term since 1953,
-;; from `rdatasets/ggplot2-presidential`. Color encodes party.
+;; from
+;; [`ggplot2::presidential`](https://github.com/tidyverse/ggplot2/blob/main/data-raw/presidential.R).
+;; Color encodes party.
 
 (-> (rdatasets/ggplot2-presidential)
     (pj/lay-interval-h :start :name {:x-end :end :color :party})
@@ -168,11 +197,15 @@
 
 ;; ## Marey train schedule
 ;;
-;; Étienne-Jules Marey's classic 1885 diagram of Paris-Lyon
-;; trains has a categorical y-axis (stations, in physical order)
-;; and a temporal x-axis. Each train is a polyline; segments
-;; between stations slope down because time moves forward as the
-;; train moves south.
+;; [Étienne-Jules Marey](https://en.wikipedia.org/wiki/%C3%89tienne-Jules_Marey)'s
+;; classic 1885 diagram of Paris-Lyon trains
+;; ([context and image](https://en.wikipedia.org/wiki/Marey_chart),
+;; popularized in
+;; [Edward Tufte's *Visual Display of Quantitative Information*](https://en.wikipedia.org/wiki/The_Visual_Display_of_Quantitative_Information))
+;; has a categorical y-axis (stations, in physical order) and a
+;; temporal x-axis. Each train is a polyline; segments between
+;; stations slope down because time moves forward as the train
+;; moves south.
 ;;
 ;; Plotje builds this with `pj/lay-line` plus the existing
 ;; `:y-type :categorical` override, since the station order is
@@ -291,7 +324,10 @@
 ;; hover -- without any library changes.
 ;;
 ;; The cell below wraps a presidential-Gantt SVG in an HTML
-;; container with a tiny viewBox-based pan / zoom script. It is
+;; container with a tiny
+;; [viewBox](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox)-based
+;; pan / zoom script (the same trick used by libraries like
+;; [svg-pan-zoom](https://github.com/bumbu/svg-pan-zoom)). It is
 ;; purely additive: the SVG is the same one Plotje produces; the
 ;; wrapper adds an id, a cursor style, and a script that mutates
 ;; the viewBox in response to mouse events.

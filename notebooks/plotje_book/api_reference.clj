@@ -372,6 +372,16 @@
                            (and (= 3 (:points s))
                                 (= 3 (:lines s)))))])
 
+(kind/doc #'pj/lay-interval-h)
+
+(-> {:start [#inst "2024-01-01" #inst "2024-03-01" #inst "2024-05-01"]
+     :end   [#inst "2024-04-01" #inst "2024-06-01" #inst "2024-08-01"]
+     :task  ["Design" "Build" "Test"]}
+    (pj/lay-interval-h :start :task {:x-end :end}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (= 3 (:polygons s))))])
+
 ;; ## Annotations
 
 ;; Reference lines and shaded bands are regular layers. Position comes

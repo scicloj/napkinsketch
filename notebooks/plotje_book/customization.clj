@@ -264,6 +264,21 @@
                            (and (= 150 (:points s))
                                 (= 2 (:lines s)))))])
 
+;; On a temporal axis, the intercept can also be a date or instant
+;; (`LocalDate`, `LocalDateTime`, `Instant`, `java.util.Date`).
+;; Plotje converts it to the same numeric scale the data uses, so
+;; the rule lands at the right calendar position.
+
+(-> {:date  [#inst "2024-01-01" #inst "2024-04-01" #inst "2024-08-01"]
+     :value [3 5 9]}
+    (pj/lay-line :date :value)
+    (pj/lay-rule-v {:x-intercept (java.time.LocalDate/parse "2024-06-01")
+                    :color "#c0392b"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 2 (:lines s)))))])
+
 ;; Shaded bands use a default opacity of 0.15.
 ;; Pass `{:alpha ...}` to override.
 
