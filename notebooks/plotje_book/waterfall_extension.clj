@@ -46,7 +46,7 @@
 ;; that, the shape is a contract between the stat and its paired
 ;; extractor -- here we use `:waterfall-bars`.
 
-(defmethod stat/compute-stat :waterfall [{:keys [data x y x-type] :as view}]
+(defmethod stat/compute-stat :waterfall [{:keys [data x y x-type] :as draft-layer}]
   (let [clean (tc/drop-missing data [x y])
         categories (vec (distinct (clean x)))
         values (vec (clean y))
@@ -84,7 +84,7 @@
 ;;
 ;; We color bars green for positive amounts and red for negative.
 
-(defmethod extract/extract-layer :waterfall [view stat all-colors cfg]
+(defmethod extract/extract-layer :waterfall [draft-layer stat all-colors cfg]
   (let [bars (:waterfall-bars stat)
         green [0.2 0.7 0.3 1.0]
         red [0.85 0.25 0.25 1.0]]

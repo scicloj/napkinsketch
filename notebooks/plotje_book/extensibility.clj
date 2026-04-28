@@ -69,7 +69,7 @@
 ;; Transforms raw data into a statistical summary. Each layer type
 ;; uses a stat to prepare data for rendering.
 ;;
-;; Dispatch function: `(fn [view] (or (:stat view) :identity))`
+;; Dispatch function: `(fn [draft-layer] (or (:stat draft-layer) :identity))`
 
 (kind/table
  {:column-names ["Dispatch value" "What it does"]
@@ -112,8 +112,8 @@
 ;; Pseudocode:
 ;;
 ;; ```clojure
-;; (defmethod stat/compute-stat :loess [view]
-;;   ;; Compute LOESS smoothing from view's :data, :x, :y
+;; (defmethod stat/compute-stat :loess [draft-layer]
+;;   ;; Compute LOESS smoothing from draft-layer's :data, :x, :y
 ;;   ;; Return {:points [...] :x-domain [...] :y-domain [...]}
 ;;   ...)
 ;; ```
@@ -133,7 +133,7 @@
 ;; Converts a stat result into a plan layer descriptor -- a plain
 ;; map with data-space geometry and resolved colors.
 ;;
-;; Dispatch function: `(fn [view stat all-colors cfg] (:mark view))`
+;; Dispatch function: `(fn [draft-layer stat all-colors cfg] (:mark draft-layer))`
 
 (kind/table
  {:column-names ["Dispatch value" "Output"]
@@ -189,7 +189,7 @@
 ;;
 ;; ```clojure
 ;; ;; 1. Extract geometry from stat result
-;; (defmethod extract/extract-layer :area [view stat all-colors cfg]
+;; (defmethod extract/extract-layer :area [draft-layer stat all-colors cfg]
 ;;   {:mark :area
 ;;    :style {:opacity 0.5}
 ;;    :groups (vec (for [{:keys [color xs ys]} (:points stat)]
@@ -404,7 +404,7 @@
 ;;
 ;; Register both the implementation and a `[:key :doc]` defmethod:
 
-(defmethod stat/compute-stat :quantile [view]
+(defmethod stat/compute-stat :quantile [draft-layer]
   {:points [] :x-domain [0 1] :y-domain [0 1]})
 
 (defmethod stat/compute-stat [:quantile :doc] [_]
