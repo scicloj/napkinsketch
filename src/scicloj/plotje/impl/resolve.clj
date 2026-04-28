@@ -29,18 +29,6 @@
   [ds]
   ds)
 
-(defn parse-view-spec
-  "Parse a view spec: a keyword or string becomes a histogram view (x=y),
-  a vector becomes {:x ... :y ...}, a map passes through.
-  Column references are preserved as-is (keywords stay keywords, strings stay strings)."
-  [spec]
-  (cond
-    (keyword? spec) {:x spec :y spec}
-    (string? spec) {:x spec :y spec}
-    (map? spec) spec
-    :else {:x (first spec)
-           :y (second spec)}))
-
 (defn validate-columns
   "Check that every column-referencing key in view-map names a real column in ds.
    Accepts both keyword and string column refs, and checks for cross-type matches."
