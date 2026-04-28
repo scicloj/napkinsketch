@@ -53,9 +53,9 @@
    When :color is the same column as :x, dodge is suppressed — each x-band
    already contains exactly one color group, so dodging just shrinks and
    offsets the mark unnecessarily."
-  [view]
-  (or (:position view)
-      (if (and (:color view) (= (:color view) (:x view)))
+  [draft-layer]
+  (or (:position draft-layer)
+      (if (and (:color draft-layer) (= (:color draft-layer) (:x draft-layer)))
         :identity
         :dodge)))
 
@@ -74,10 +74,10 @@
    Options:
      :with-range? — include :ymins/:ymaxs (errorbar, pointrange)
      :with-labels? — include :labels from :labels key (text, label marks)"
-  [view stat all-colors cfg & {:keys [with-range? with-labels?]}]
+  [draft-layer stat all-colors cfg & {:keys [with-range? with-labels?]}]
   (let [groups (vec
                 (for [{:keys [color xs ys ymins ymaxs labels]} (:points stat)]
-                  (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                  (cond-> {:color (resolve-color all-colors color (:fixed-color draft-layer) cfg)
                            :xs xs :ys ys}
                     (some? color) (assoc :label (defaults/fmt-category-label color))
                     (and with-range? ymins) (assoc :ymins ymins)
@@ -87,12 +87,12 @@
                (not-any? :ymins groups))
       (throw (ex-info (str "errorbar/pointrange requires :y-min and :y-max columns. "
                            "Pass them as options: (pj/lay-errorbar :x :y {:y-min :lo :y-max :hi})")
-                      {:mark (:mark view)})))
+                      {:mark (:mark draft-layer)})))
     (when (and with-labels? (seq groups)
                (not-any? :labels groups))
       (throw (ex-info (str "text/label mark requires a :text column. "
                            "Pass it as an option: (pj/lay-text :x :y {:text :label-column})")
-                      {:mark (:mark view)})))
+                      {:mark (:mark draft-layer)})))
     groups))
 
 ;; ---- Geometry Extraction (stat → layer descriptors) ----
@@ -100,7 +100,7 @@
 (defmulti extract-layer
   "Extract data-space geometry from a resolved draft layer and its stat result.
    Returns a layer descriptor map."
-  (fn [view stat all-colors cfg] (:mark view)))
+  (fn [draft-layer stat all-colors cfg] (:mark draft-layer)))
 
 ;; ---- Doc methods (dispatching on [mark-key :doc]) ----
 
@@ -122,8 +122,8 @@
 (defmethod extract-layer [:label :doc] [_ _ _ _] "Label with background box")
 (defmethod extract-layer [:rug :doc] [_ _ _ _] "Axis-margin tick marks")
 (defmethod extract-layer [:interval-h :doc] [_ _ _ _] "Horizontal bars from x to x-end at categorical y")
-(defmethod extract-layer :point [view stat all-colors cfg]
-  (let [numeric-color? (= (:color-type view) :numerical)
+(defmethod extract-layer :point [draft-layer stat all-colors cfg]
+  (let [numeric-color? (= (:color-type draft-layer) :numerical)
         ;; For numeric color: compute global min/max for normalization
         all-color-buf (when numeric-color?
                         (let [bufs (keep :color-values (:points stat))]
@@ -131,23 +131,23 @@
         c-min (when all-color-buf (dfn/reduce-min all-color-buf))
         c-max (when all-color-buf (dfn/reduce-max all-color-buf))]
     (-> {:mark :point
-         :size-scale (:size-scale view)
-         :alpha-scale (:alpha-scale view)
-         :style (cond-> {:opacity (or (:fixed-alpha view) (:point-opacity cfg))
-                         :radius (or (:fixed-size view) (:point-radius cfg))}
-                  (:jitter view) (assoc :jitter (:jitter view))
+         :size-scale (:size-scale draft-layer)
+         :alpha-scale (:alpha-scale draft-layer)
+         :style (cond-> {:opacity (or (:fixed-alpha draft-layer) (:point-opacity cfg))
+                         :radius (or (:fixed-size draft-layer) (:point-radius cfg))}
+                  (:jitter draft-layer) (assoc :jitter (:jitter draft-layer))
                   (and (:point-stroke cfg)
                        (not= (:point-stroke cfg) "none"))
                   (assoc :stroke (:point-stroke cfg)
                          :stroke-width (or (:point-stroke-width cfg) 0)))
          :groups (vec
                   (for [{:keys [color xs ys sizes alphas shapes row-indices color-values]} (:points stat)]
-                    (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                    (cond-> {:color (resolve-color all-colors color (:fixed-color draft-layer) cfg)
                              :xs xs :ys ys}
                       (some? color) (assoc :label (defaults/fmt-category-label color))
                       (and numeric-color? color-values)
                       (assoc :colors (vec (map (fn [v]
-                                                 (let [scale-type (or (:type (:color-scale view)) :linear)
+                                                 (let [scale-type (or (:type (:color-scale draft-layer)) :linear)
                                                        t (defaults/normalize-continuous scale-type v (or c-min 0) (or c-max 1) (:color-midpoint cfg))
                                                        grad-fn (:gradient-fn cfg)]
                                                    (grad-fn t)))
@@ -156,149 +156,149 @@
                       alphas (assoc :alphas alphas)
                       shapes (assoc :shapes (vec shapes))
                       row-indices (assoc :row-indices row-indices))))}
-        (cond-> (:position view) (assoc :position (:position view)))
-        (apply-nudge view))))
+        (cond-> (:position draft-layer) (assoc :position (:position draft-layer)))
+        (apply-nudge draft-layer))))
 
-(defmethod extract-layer :bar [view stat all-colors cfg]
+(defmethod extract-layer :bar [draft-layer stat all-colors cfg]
   (check-stat stat :bins :bar)
   {:mark :bar
-   :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
+   :style {:opacity (or (:fixed-alpha draft-layer) (:bar-opacity cfg))}
    :groups (vec
             (for [{:keys [color bin-maps]} (:bins stat)]
-              {:color (resolve-color all-colors color (:fixed-color view) cfg)
+              {:color (resolve-color all-colors color (:fixed-color draft-layer) cfg)
                :bars (vec (for [{:keys [min max count]} bin-maps]
                             {:lo min :hi max :count count}))}))})
 
-(defmethod extract-layer :line [view stat all-colors cfg]
+(defmethod extract-layer :line [draft-layer stat all-colors cfg]
   (-> (cond-> {:mark :line
-               :style {:stroke-width (or (:fixed-size view) (:line-width cfg))
-                       :opacity (or (:fixed-alpha view) 1.0)}
+               :style {:stroke-width (or (:fixed-size draft-layer) (:line-width cfg))
+                       :opacity (or (:fixed-alpha draft-layer) 1.0)}
                :groups (vec
                         (concat
                          ;; Regression lines
                          (when-let [lines (:lines stat)]
                            (for [{:keys [color x1 y1 x2 y2]} lines]
-                             {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                             {:color (resolve-color all-colors color (:fixed-color draft-layer) cfg)
                               :label (defaults/fmt-category-label color)
                               :x1 x1 :y1 y1 :x2 x2 :y2 y2}))
                          ;; Polylines
                          (when-let [pts (:points stat)]
                            (for [{:keys [color xs ys]} pts]
-                             {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                             {:color (resolve-color all-colors color (:fixed-color draft-layer) cfg)
                               :label (defaults/fmt-category-label color)
                               :xs xs :ys ys}))))}
         ;; Confidence ribbons from :lm {:confidence-band true}
         (:ribbons stat)
         (assoc :ribbons (vec
                          (for [{:keys [color xs ymins ymaxs]} (:ribbons stat)]
-                           {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                           {:color (resolve-color all-colors color (:fixed-color draft-layer) cfg)
                             :xs xs :ymins ymins :ymaxs ymaxs})))
-        (:position view)
-        (assoc :position (:position view)))
-      (apply-nudge view)))
+        (:position draft-layer)
+        (assoc :position (:position draft-layer)))
+      (apply-nudge draft-layer)))
 
-(defmethod extract-layer :step [view stat all-colors cfg]
+(defmethod extract-layer :step [draft-layer stat all-colors cfg]
   {:mark :step
-   :style {:stroke-width (or (:fixed-size view) (:line-width cfg))
-           :opacity (or (:fixed-alpha view) 1.0)}
-   :groups (extract-xy-groups view stat all-colors cfg)})
+   :style {:stroke-width (or (:fixed-size draft-layer) (:line-width cfg))
+           :opacity (or (:fixed-alpha draft-layer) 1.0)}
+   :groups (extract-xy-groups draft-layer stat all-colors cfg)})
 
-(defmethod extract-layer :rect [view stat all-colors cfg]
+(defmethod extract-layer :rect [draft-layer stat all-colors cfg]
   (if (:bars stat)
     ;; Categorical bars (from :count stat) -- :count stat already validated
     {:mark :rect
-     :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
-     :position (default-position view)
+     :style {:opacity (or (:fixed-alpha draft-layer) (:bar-opacity cfg))}
+     :position (default-position draft-layer)
      :categories (vec (:categories stat))
      :groups (vec
               (for [{:keys [color counts]} (:bars stat)]
-                {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                {:color (resolve-color all-colors color (:fixed-color draft-layer) cfg)
                  :label (defaults/fmt-category-label color)
                  :counts (vec counts)}))}
     ;; Value bars (from :identity stat) -- need categorical x for band layout
     (do
-      (when-not (= (:x-type view) :categorical)
+      (when-not (= (:x-type draft-layer) :categorical)
         (throw (ex-info (str "Mark :rect (lay-value-bar) requires a categorical column for :x, "
-                             "but " (:x view) " is " (name (or (:x-type view) :unknown))
-                             ". Use lay-line/lay-point for numeric x, or convert " (:x view)
+                             "but " (:x draft-layer) " is " (name (or (:x-type draft-layer) :unknown))
+                             ". Use lay-line/lay-point for numeric x, or convert " (:x draft-layer)
                              " to a string column.")
-                        {:mark :rect :x (:x view) :x-type (:x-type view)})))
+                        {:mark :rect :x (:x draft-layer) :x-type (:x-type draft-layer)})))
       {:mark :rect
-       :style {:opacity (or (:fixed-alpha view) (:bar-opacity cfg))}
-       :position (default-position view)
+       :style {:opacity (or (:fixed-alpha draft-layer) (:bar-opacity cfg))}
+       :position (default-position draft-layer)
        :groups (vec
                 (for [{:keys [color xs ys]} (:points stat)]
-                  {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                  {:color (resolve-color all-colors color (:fixed-color draft-layer) cfg)
                    :label (defaults/fmt-category-label color)
                    :xs xs :ys ys}))})))
 
-(defmethod extract-layer :text [view stat all-colors cfg]
+(defmethod extract-layer :text [draft-layer stat all-colors cfg]
   (-> {:mark :text
-       :style {:font-size (or (:font-size view) 10)
-               :opacity (or (:fixed-alpha view) 1.0)}
-       :groups (extract-xy-groups view stat all-colors cfg :with-labels? true)}
-      (apply-nudge view)))
+       :style {:font-size (or (:font-size draft-layer) 10)
+               :opacity (or (:fixed-alpha draft-layer) 1.0)}
+       :groups (extract-xy-groups draft-layer stat all-colors cfg :with-labels? true)}
+      (apply-nudge draft-layer)))
 
-(defmethod extract-layer :label [view stat all-colors cfg]
+(defmethod extract-layer :label [draft-layer stat all-colors cfg]
   (-> {:mark :label
-       :style {:font-size (or (:font-size view) 10)
-               :opacity (or (:fixed-alpha view) 1.0)}
-       :groups (extract-xy-groups view stat all-colors cfg :with-labels? true)}
-      (apply-nudge view)))
+       :style {:font-size (or (:font-size draft-layer) 10)
+               :opacity (or (:fixed-alpha draft-layer) 1.0)}
+       :groups (extract-xy-groups draft-layer stat all-colors cfg :with-labels? true)}
+      (apply-nudge draft-layer)))
 
-(defmethod extract-layer :area [view stat all-colors cfg]
+(defmethod extract-layer :area [draft-layer stat all-colors cfg]
   (cond-> {:mark :area
-           :style {:opacity (or (:fixed-alpha view) 0.5)}
-           :groups (extract-xy-groups view stat all-colors cfg)}
-    (:position view) (assoc :position (:position view))))
+           :style {:opacity (or (:fixed-alpha draft-layer) 0.5)}
+           :groups (extract-xy-groups draft-layer stat all-colors cfg)}
+    (:position draft-layer) (assoc :position (:position draft-layer))))
 
-(defmethod extract-layer :errorbar [view stat all-colors cfg]
+(defmethod extract-layer :errorbar [draft-layer stat all-colors cfg]
   (-> {:mark :errorbar
-       :style {:stroke-width (or (:fixed-size view) 1.5)
-               :cap-width (or (:cap-width view) 6)
-               :opacity (or (:fixed-alpha view) 1.0)}
-       :groups (extract-xy-groups view stat all-colors cfg :with-range? true)}
-      (cond-> (:position view) (assoc :position (:position view)))
-      (apply-nudge view)))
+       :style {:stroke-width (or (:fixed-size draft-layer) 1.5)
+               :cap-width (or (:cap-width draft-layer) 6)
+               :opacity (or (:fixed-alpha draft-layer) 1.0)}
+       :groups (extract-xy-groups draft-layer stat all-colors cfg :with-range? true)}
+      (cond-> (:position draft-layer) (assoc :position (:position draft-layer)))
+      (apply-nudge draft-layer)))
 
-(defmethod extract-layer :lollipop [view stat all-colors cfg]
+(defmethod extract-layer :lollipop [draft-layer stat all-colors cfg]
   {:mark :lollipop
-   :style {:radius (or (:fixed-size view) (:point-radius cfg))
+   :style {:radius (or (:fixed-size draft-layer) (:point-radius cfg))
            :stroke-width 1.5
-           :opacity (or (:fixed-alpha view) 1.0)}
-   :position (default-position view)
-   :groups (extract-xy-groups view stat all-colors cfg)})
+           :opacity (or (:fixed-alpha draft-layer) 1.0)}
+   :position (default-position draft-layer)
+   :groups (extract-xy-groups draft-layer stat all-colors cfg)})
 
-(defmethod extract-layer :boxplot [view stat all-colors cfg]
+(defmethod extract-layer :boxplot [draft-layer stat all-colors cfg]
   (check-stat stat :boxes :boxplot)
   (let [color-cats (:color-categories stat)]
     {:mark :boxplot
-     :style {:box-width (or (:box-width view) 0.6)
-             :stroke-width (or (:fixed-size view) 1.5)
-             :opacity (or (:fixed-alpha view) 1.0)}
-     :position (default-position view)
+     :style {:box-width (or (:box-width draft-layer) 0.6)
+             :stroke-width (or (:fixed-size draft-layer) 1.5)
+             :opacity (or (:fixed-alpha draft-layer) 1.0)}
+     :position (default-position draft-layer)
      :color-categories color-cats
      :boxes (vec
              (for [b (:boxes stat)]
                (cond-> {:category (:category b)
-                        :color (resolve-color all-colors (:color b) (:fixed-color view) cfg)
+                        :color (resolve-color all-colors (:color b) (:fixed-color draft-layer) cfg)
                         :median (:median b) :q1 (:q1 b) :q3 (:q3 b)
                         :whisker-lo (:whisker-lo b) :whisker-hi (:whisker-hi b)}
                  (:color b) (assoc :color-category (:color b))
                  (seq (:outliers b)) (assoc :outliers (:outliers b)))))}))
 
-(defmethod extract-layer :violin [view stat all-colors cfg]
+(defmethod extract-layer :violin [draft-layer stat all-colors cfg]
   (check-stat stat :violins :violin)
   (let [color-cats (:color-categories stat)]
     {:mark :violin
-     :style {:opacity (or (:fixed-alpha view) 0.7)
-             :stroke-width (or (:fixed-size view) 1.0)}
-     :position (default-position view)
+     :style {:opacity (or (:fixed-alpha draft-layer) 0.7)
+             :stroke-width (or (:fixed-size draft-layer) 1.0)}
+     :position (default-position draft-layer)
      :color-categories color-cats
      :violins (vec
                (for [v (:violins stat)]
                  (cond-> {:category (:category v)
-                          :color (resolve-color all-colors (:color v) (:fixed-color view) cfg)
+                          :color (resolve-color all-colors (:color v) (:fixed-color draft-layer) cfg)
                           :ys (:ys v)
                           :densities (:densities v)}
                    (:color v) (assoc :color-category (:color v)))))}))
@@ -314,19 +314,19 @@
                            (double (sorted %)))
                        (range (dec n)))))))
 
-(defmethod extract-layer :tile [view stat all-colors cfg]
+(defmethod extract-layer :tile [draft-layer stat all-colors cfg]
   (let [;; Accept :color as a synonym for :fill on tiles -- users coming
         ;; from the other marks reach for :color by default. If both are
         ;; set, :fill wins (explicit).
-        fill-col (or (:fill view)
-                     (when (let [c (:color view)] (and c (or (keyword? c) (string? c))))
-                       (:color view)))
+        fill-col (or (:fill draft-layer)
+                     (when (let [c (:color draft-layer)] (and c (or (keyword? c) (string? c))))
+                       (:color draft-layer)))
         grad-fn (:gradient-fn cfg)
         midpoint (:color-midpoint cfg)
         ;; :fill-scale wins over :color-scale; :color-scale is honored on
         ;; tiles when the user wrote :color (synonym for :fill).
-        fill-scale-type (or (:type (:fill-scale view))
-                            (:type (:color-scale view))
+        fill-scale-type (or (:type (:fill-scale draft-layer))
+                            (:type (:color-scale draft-layer))
                             :linear)
         ;; Two paths: bin2d/kde2d stat produces :tiles as a dataset;
         ;; identity stat with :fill uses point groups
@@ -348,7 +348,7 @@
                                                    [:x-lo :x-hi :y-lo :y-hi :color])
                                 :as-maps)))
                 ;; identity path — derive tile bounds from point coordinates
-                (let [data (:data view)
+                (let [data (:data draft-layer)
                       ;; Resolve col ref against the dataset so keyword/string
                       ;; mismatches still find the column.
                       resolved-fill (when fill-col (resolve/resolve-col-name data fill-col))
@@ -384,9 +384,9 @@
                                                    [:x-lo :x-hi :y-lo :y-hi :color])
                                 :as-maps))))]
     {:mark :tile
-     :style {:opacity (or (:fixed-alpha view) 1.0)}
-     :fill-scale (:fill-scale view)
-     :color-scale (:color-scale view)
+     :style {:opacity (or (:fixed-alpha draft-layer) 1.0)}
+     :fill-scale (:fill-scale draft-layer)
+     :color-scale (:color-scale draft-layer)
      :tiles tiles}))
 
 (defn- marching-squares-segments
@@ -520,12 +520,12 @@
                     polyline (vec (concat (rseq backward) [p1] forward))]
                 (recur remaining (conj polylines polyline))))))))))
 
-(defmethod extract-layer :contour [view stat all-colors cfg]
+(defmethod extract-layer :contour [draft-layer stat all-colors cfg]
   (let [{:keys [grid fill-range]} stat]
     (if (nil? grid)
       {:mark :contour :levels [] :style {:stroke-width 1.5 :opacity 0.8}}
       (let [{:keys [densities n-grid x-lo x-hi y-lo y-hi x-step y-step max-d]} grid
-            n-levels (or (:levels view) 5)
+            n-levels (or (:levels draft-layer) 5)
             max-d (if (and max-d (Double/isFinite max-d) (pos? max-d)) max-d 1.0)
             ;; Threshold levels evenly spaced from 5% to 95% of max density.
             ;; ggplot2 uses a similar approach via pretty() over the density
@@ -547,42 +547,42 @@
                            :polylines (vec polylines)}))]
         {:mark :contour
          :levels levels
-         :style {:stroke-width (or (:fixed-size view) 1.5)
-                 :opacity (or (:fixed-alpha view) 0.8)}
+         :style {:stroke-width (or (:fixed-size draft-layer) 1.5)
+                 :opacity (or (:fixed-alpha draft-layer) 0.8)}
          :x-domain [x-lo x-hi]
          :y-domain [y-lo y-hi]}))))
 
-(defmethod extract-layer :ridgeline [view stat all-colors cfg]
+(defmethod extract-layer :ridgeline [draft-layer stat all-colors cfg]
   (check-stat stat :violins :ridgeline)
   (let [violins (:violins stat)
         categories (:categories stat)]
     {:mark :ridgeline
-     :style {:opacity (or (:fixed-alpha view) 0.7)}
+     :style {:opacity (or (:fixed-alpha draft-layer) 0.7)}
      :ridges (vec (for [v violins]
                     (cond-> {:category (:category v)
-                             :color (resolve-color all-colors (:color v) (:fixed-color view) cfg)
+                             :color (resolve-color all-colors (:color v) (:fixed-color draft-layer) cfg)
                              :ys (:ys v)
                              :densities (:densities v)}
                       (:color v) (assoc :color-category (:color v)))))
      :categories (vec categories)}))
 
-(defmethod extract-layer :rug [view stat all-colors cfg]
+(defmethod extract-layer :rug [draft-layer stat all-colors cfg]
   {:mark :rug
-   :style {:length (or (:length view) 6)
-           :stroke-width (or (:fixed-size view) 1.0)
-           :opacity (or (:fixed-alpha view) 0.5)}
-   :side (or (:side view) :x)
-   :groups (extract-xy-groups view stat all-colors cfg)})
+   :style {:length (or (:length draft-layer) 6)
+           :stroke-width (or (:fixed-size draft-layer) 1.0)
+           :opacity (or (:fixed-alpha draft-layer) 0.5)}
+   :side (or (:side draft-layer) :x)
+   :groups (extract-xy-groups draft-layer stat all-colors cfg)})
 
-(defmethod extract-layer :pointrange [view stat all-colors cfg]
+(defmethod extract-layer :pointrange [draft-layer stat all-colors cfg]
   {:mark :pointrange
-   :style {:radius (or (:fixed-size view) 3.5)
+   :style {:radius (or (:fixed-size draft-layer) 3.5)
            :stroke-width 1.5
-           :opacity (or (:fixed-alpha view) 1.0)}
-   :groups (extract-xy-groups view stat all-colors cfg :with-range? true)})
+           :opacity (or (:fixed-alpha draft-layer) 1.0)}
+   :groups (extract-xy-groups draft-layer stat all-colors cfg :with-range? true)})
 
-(defmethod extract-layer :interval-h [view stat all-colors cfg]
-  (let [numeric-color? (= (:color-type view) :numerical)
+(defmethod extract-layer :interval-h [draft-layer stat all-colors cfg]
+  (let [numeric-color? (= (:color-type draft-layer) :numerical)
         all-color-buf (when numeric-color?
                         (let [bufs (keep :color-values (:points stat))]
                           (when (seq bufs) (dtype/concat-buffers bufs))))
@@ -590,14 +590,14 @@
         c-max (when all-color-buf (dfn/reduce-max all-color-buf))
         groups (vec
                 (for [{:keys [color xs ys x-ends color-values row-indices]} (:points stat)]
-                  (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                  (cond-> {:color (resolve-color all-colors color (:fixed-color draft-layer) cfg)
                            :xs xs :ys ys :x-ends x-ends}
                     row-indices (assoc :row-indices row-indices)
                     (some? color) (assoc :label (defaults/fmt-category-label color))
                     (and numeric-color? color-values)
                     (assoc :colors
                            (vec (map (fn [v]
-                                       (let [scale-type (or (:type (:color-scale view)) :linear)
+                                       (let [scale-type (or (:type (:color-scale draft-layer)) :linear)
                                              t (defaults/normalize-continuous
                                                 scale-type v
                                                 (or c-min 0) (or c-max 1)
@@ -611,13 +611,13 @@
                            "(pj/lay-interval-h data :start :task {:x-end :end})")
                       {:mark :interval-h})))
     {:mark :interval-h
-     :style {:opacity (or (:fixed-alpha view) 0.85)
-             :interval-thickness (or (:interval-thickness view) 0.7)}
-     :x-temporal? (boolean (:x-temporal? view))
+     :style {:opacity (or (:fixed-alpha draft-layer) 0.85)
+             :interval-thickness (or (:interval-thickness draft-layer) 0.7)}
+     :x-temporal? (boolean (:x-temporal? draft-layer))
      :groups groups}))
 
-(defmethod extract-layer :default [view _stat _all-colors _cfg]
-  (let [mark (:mark view)
+(defmethod extract-layer :default [draft-layer _stat _all-colors _cfg]
+  (let [mark (:mark draft-layer)
         registered (sort (filter keyword?
                                  (remove #(or (vector? %) (= :default %))
                                          (keys (methods extract-layer)))))]
