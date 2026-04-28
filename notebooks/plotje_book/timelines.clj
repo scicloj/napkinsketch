@@ -435,10 +435,10 @@
 ;;
 ;; Pass `:tooltip true` to add hover-text on each interval, or
 ;; `:brush true` for drag-to-select highlighting (the same
-;; built-in mechanisms that work for points). For pan, zoom, or
-;; save-as-PNG, see the
-;; [Interactivity](./plotje_book.interactivity.html) chapter,
-;; which uses the presidential Gantt as one of its examples.
+;; built-in mechanisms that work for points). For more
+;; interaction patterns -- cross-panel linking, save-as-PNG --
+;; see the
+;; [Interactivity](./plotje_book.interactivity.html) chapter.
 
 (-> (rdatasets/ggplot2-presidential)
     (pj/lay-interval-h :start :name {:x-end :end :color :party})
@@ -453,7 +453,7 @@
 
 ;; ## What's next
 ;;
-;; - [**Interactivity**](./plotje_book.interactivity.html) -- tooltip, brush, pan/zoom, save-as-PNG
+;; - [**Interactivity**](./plotje_book.interactivity.html) -- tooltip, brush, cross-panel linking, save-as-PNG
 ;; - [**Change Over Time**](./plotje_book.change_over_time.html) -- line, step, area on a date axis
 ;; - [**Faceting**](./plotje_book.faceting.html) -- splitting one chart into many panels
 ;; - [**Customization**](./plotje_book.customization.html) -- titles, palettes, size, scales

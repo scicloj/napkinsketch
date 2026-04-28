@@ -9,7 +9,7 @@
 ;;   browser-side script automatically.
 ;; - **Custom wrappers**: wrap the SVG output with `kind/hiccup`
 ;;   plus a small `[:script ...]` form for behaviours not
-;;   provided out of the box (pan, zoom, save-as-PNG, etc.).
+;;   provided out of the box (e.g. save-as-PNG).
 ;;
 ;; The static GFM render of this notebook shows the SVGs as
 ;; flat images. Open the HTML rendering to see the interactions
@@ -106,64 +106,11 @@
                      (and (re-find #":data-tooltip" s)
                           (re-find #" → " s))))])
 
-;; ## Custom wrapper: pan and zoom
-;;
-;; For interactions that aren't built in, take Plotje's SVG and
-;; wrap it with `kind/hiccup` plus a small `[:script ...]`. The
-;; cell below adds viewBox-driven pan and zoom on the same
-;; presidential Gantt used in the timelines chapter.
-;;
-;; The wrapping pattern is: 1) call `pj/plot` to get SVG hiccup,
-;; 2) inject an `:id` and a `:data-orig-vb` carrying the original
-;; viewBox so the script can reset, 3) emit a sibling
-;; `[:script ...]` that mutates the viewBox in response to mouse
-;; events, 4) wrap the whole thing in `kind/hiccup`.
-
-(let [plot-svg (pj/plot
-                (-> (rdatasets/ggplot2-presidential)
-                    (pj/lay-interval-h :start :name {:x-end :end :color :party})
-                    (pj/options {:title "Drag to pan, wheel to zoom, double-click to reset"
-                                 :height 420
-                                 :palette ["#3498db" "#e74c3c"]})))
-      attrs (second plot-svg)
-      body (drop 2 plot-svg)
-      plot-id (str "pj-pz-" (System/nanoTime))
-      script (str "(function(){var s=document.getElementById('" plot-id "');"
-                  "if(!s)return;"
-                  "var o=s.dataset.origVb.split(/\\s+/).map(Number),"
-                  "v={x:o[0],y:o[1],w:o[2],h:o[3]},d=false,"
-                  "sx=0,sy=0,vx=0,vy=0;"
-                  "function a(){s.setAttribute('viewBox',v.x+' '+v.y+' '+v.w+' '+v.h);}"
-                  "s.addEventListener('mousedown',function(e){d=true;sx=e.clientX;sy=e.clientY;vx=v.x;vy=v.y;s.style.cursor='grabbing';});"
-                  "window.addEventListener('mouseup',function(){d=false;s.style.cursor='grab';});"
-                  "window.addEventListener('mousemove',function(e){if(!d)return;"
-                  "var r=s.getBoundingClientRect();"
-                  "v.x=vx-(e.clientX-sx)*v.w/r.width;v.y=vy-(e.clientY-sy)*v.h/r.height;a();});"
-                  "s.addEventListener('wheel',function(e){e.preventDefault();"
-                  "var r=s.getBoundingClientRect(),"
-                  "px=(e.clientX-r.left)/r.width,"
-                  "py=(e.clientY-r.top)/r.height,"
-                  "f=(e.deltaY*-1>0)?0.9:1.1,nw=v.w*f,nh=v.h*f;"
-                  "v.x+=(v.w-nw)*px;v.y+=(v.h-nh)*py;v.w=nw;v.h=nh;a();},{passive:false});"
-                  "s.addEventListener('dblclick',function(){v={x:o[0],y:o[1],w:o[2],h:o[3]};a();});"
-                  "})();")]
-  (kind/hiccup
-   [:div {:style "border:1px solid #ddd; padding:4px;"}
-    [:div {:style "font-size:12px; color:#666; margin-bottom:4px;"}
-     "drag to pan; mouse wheel to zoom; double-click to reset"]
-    (into [:svg (assoc attrs
-                       :id plot-id
-                       :style "cursor:grab; user-select:none;"
-                       :data-orig-vb (:viewBox attrs))]
-          body)
-    [:script script]]))
-
 ;; ## Custom wrapper: save as PNG
 ;;
 ;; Browsers can serialize an SVG element to a PNG via a `<canvas>`
 ;; round-trip. The wrapper below adds a "Save PNG" button that
-;; renders the current SVG (including any pan/zoom state) into
-;; a canvas and triggers a download.
+;; renders the current SVG into a canvas and triggers a download.
 
 (let [plot-svg (pj/plot
                 (-> (rdatasets/datasets-iris)
@@ -196,18 +143,36 @@
     (into [:svg (assoc attrs :id plot-id)] body)
     [:script script]]))
 
+;; ## Deferred: pan and zoom
+;;
+;; A naive viewBox-based pan/zoom wrapper is easy to write -- the
+;; SVG's `viewBox` attribute can be mutated on mouse events to
+;; rescale the whole picture. The catch is that this rescales
+;; *everything*: the title, axis labels, and tick numbers all
+;; move and resize along with the data marks, which is rarely
+;; what a chart reader wants.
+;;
+;; A useful pan/zoom keeps the chrome stable and rescales only
+;; the data area, recomputing tick positions as the visible
+;; range changes. That requires hooks Plotje doesn't expose yet
+;; (a marker on the panel `<g>` so a script can target it
+;; specifically, plus an axis-tick recompute path). Until those
+;; hooks land, this chapter does not ship a pan/zoom example --
+;; a misleading half-measure would give the wrong impression of
+;; what the library offers.
+
 ;; ## What's testable
 ;;
 ;; The cells above produce SVG hiccup containing all the markup
 ;; the browser needs (`data-tooltip`, `data-row-idx`,
-;; `nsk-tooltip` / `nsk-brush-sel` CSS, the wrapper scripts).
+;; `nsk-tooltip` / `nsk-brush-sel` CSS, the save-PNG script).
 ;; A Playwright-based check at
 ;; `dev-tools/check-interactivity.py` walks the rendered HTML
-;; and verifies that hover, drag, wheel, and click all do the
-;; right thing in a real Chromium instance.
+;; and verifies the data attributes, CSS rules, and the
+;; save-PNG button are all present in a real Chromium instance.
 
 ;; ## What's next
 ;;
-;; - [**Timelines**](./plotje_book.timelines.html) -- where the pan/zoom pattern came from
+;; - [**Timelines**](./plotje_book.timelines.html) -- where most of the example data came from
 ;; - [**Customization**](./plotje_book.customization.html) -- titles, palettes, scales
 ;; - [**Architecture**](./plotje_book.architecture.html) -- how the pipeline produces the SVG
