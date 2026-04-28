@@ -970,7 +970,7 @@
    validation. :color / :size / :alpha keyword values are also
    column refs, but the validator ignores string values since
    those are ambiguous (\"red\" might be a CSS color)."
-  [:x :y :color :size :alpha :group :text :y-min :y-max :fill :shape])
+  [:x :y :color :size :alpha :group :text :y-min :y-max :x-end :fill :shape])
 
 (defn- column-refs-in-mapping [m]
   (keep #(let [v (get m %)]
@@ -1379,13 +1379,59 @@
   "Per-layer-type required [lo-key hi-key] for pj/lay-band-*."
   {:band-h [:y-min :y-max] :band-v [:x-min :x-max]})
 
+(defn- temporal-intercept?
+  "True if v is a supported temporal value for a rule intercept on a
+   temporal axis (LocalDate, LocalDateTime, Instant, java.util.Date)."
+  [v]
+  (or (instance? java.time.LocalDate v)
+      (instance? java.time.LocalDateTime v)
+      (instance? java.time.Instant v)
+      (instance? java.util.Date v)))
+
+(defn- coerce-intercept
+  "Convert a temporal intercept to epoch-ms (double) so it lines up with
+   columns that have already been converted by `temporalize-column`. Numeric
+   values pass through unchanged. Mirrors `resolve/temporal->epoch-ms`."
+  [v]
+  (cond
+    (number? v) v
+    (instance? java.time.LocalDate v)
+    (-> ^java.time.LocalDate v
+        (.atStartOfDay (java.time.ZoneOffset/UTC))
+        .toInstant .toEpochMilli double)
+    (instance? java.time.LocalDateTime v)
+    (-> ^java.time.LocalDateTime v
+        (.toInstant java.time.ZoneOffset/UTC)
+        .toEpochMilli double)
+    (instance? java.time.Instant v)
+    (double (.toEpochMilli ^java.time.Instant v))
+    (instance? java.util.Date v)
+    (double (.getTime ^java.util.Date v))
+    :else v))
+
+(defn- coerce-rule-opts
+  "Convert temporal intercept (if present) to epoch-ms so the value lines
+   up with temporal columns after their conversion."
+  [layer-type-key opts]
+  (if-not (map? opts)
+    opts
+    (let [k (rule-position-key layer-type-key)
+          v (get opts k)]
+      (if (temporal-intercept? v)
+        (assoc opts k (coerce-intercept v))
+        opts))))
+
 (defn- assert-rule-opts! [layer-type-key args]
   (let [opts (last-opts args)
         k (rule-position-key layer-type-key)
         v (get opts k)]
-    (when-not (and (number? v) (Double/isFinite (double v)))
-      (throw (ex-info (str "lay-" (name layer-type-key) " requires a finite numeric " k " in its opts map. "
-                           "Example: (pj/lay-" (name layer-type-key) " pose {" k " 3.0})."
+    (when-not (or (and (number? v) (Double/isFinite (double v)))
+                  (temporal-intercept? v))
+      (throw (ex-info (str "lay-" (name layer-type-key) " requires a finite numeric "
+                           "or temporal " k " in its opts map. "
+                           "Example: (pj/lay-" (name layer-type-key) " pose {" k " 3.0})"
+                           " or (pj/lay-" (name layer-type-key) " pose {" k
+                           " #inst \"2024-06-15\"})."
                            (positional-hint args))
                       {:layer-type layer-type-key :opts opts})))))
 
@@ -1428,9 +1474,9 @@
    (lay-rule-h pose :x :y {:y-intercept 3})     -- panel-scope (columns pick or create a sub-pose)
    (lay-rule-h pose {:y-intercept 3 :color \"red\" :alpha 0.5})"
   ([_pose-or-data] (assert-rule-1-arity! :rule-h))
-  ([pose-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-layer-type :rule-h pose-or-data x-or-opts))
-  ([pose-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-layer-type :rule-h pose-or-data x y-or-opts))
-  ([pose-or-data x y opts] (assert-rule-opts! :rule-h [opts]) (lay-layer-type :rule-h pose-or-data x y opts)))
+  ([pose-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-layer-type :rule-h pose-or-data (coerce-rule-opts :rule-h x-or-opts)))
+  ([pose-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-layer-type :rule-h pose-or-data x (coerce-rule-opts :rule-h y-or-opts)))
+  ([pose-or-data x y opts] (assert-rule-opts! :rule-h [opts]) (lay-layer-type :rule-h pose-or-data x y (coerce-rule-opts :rule-h opts))))
 
 (defn lay-rule-v
   "Add :rule-v layer -- vertical reference line at x = x-intercept.
@@ -1443,9 +1489,9 @@
    (lay-rule-v pose :x :y {:x-intercept 5})     -- panel-scope (columns pick or create a sub-pose)
    (lay-rule-v pose {:x-intercept 5 :color \"red\" :alpha 0.5})"
   ([_pose-or-data] (assert-rule-1-arity! :rule-v))
-  ([pose-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-layer-type :rule-v pose-or-data x-or-opts))
-  ([pose-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-layer-type :rule-v pose-or-data x y-or-opts))
-  ([pose-or-data x y opts] (assert-rule-opts! :rule-v [opts]) (lay-layer-type :rule-v pose-or-data x y opts)))
+  ([pose-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-layer-type :rule-v pose-or-data (coerce-rule-opts :rule-v x-or-opts)))
+  ([pose-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-layer-type :rule-v pose-or-data x (coerce-rule-opts :rule-v y-or-opts)))
+  ([pose-or-data x y opts] (assert-rule-opts! :rule-v [opts]) (lay-layer-type :rule-v pose-or-data x y (coerce-rule-opts :rule-v opts))))
 
 (defn lay-band-h
   "Add :band-h layer -- horizontal shaded band between y = y-min and y = y-max.
@@ -1650,6 +1696,20 @@
   ([pose-or-data x-or-opts] (lay-layer-type :rug pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :rug pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :rug pose-or-data x y opts)))
+
+(defn lay-interval-h
+  "Add :interval-h layer type -- horizontal bar from x to x-end at categorical y.
+   Each row becomes one rectangle; the y column is treated categorically
+   so each distinct value occupies its own lane.
+   Required: x (numeric or temporal start), y (categorical lane),
+             :x-end column ref in opts (numeric or temporal end).
+   Accepts :color, :alpha, :height (band fill fraction, 0.0-1.0, default 0.7).
+   (lay-interval-h data :start :task {:x-end :end :color :status})"
+  ([pose-or-data x y opts]
+   (when-not (and (map? opts) (contains? opts :x-end))
+     (throw (ex-info "lay-interval-h requires :x-end in its opts map. Example: (pj/lay-interval-h data :start :task {:x-end :end})"
+                     {:opts opts})))
+   (lay-layer-type :interval-h pose-or-data x y opts)))
 
 (defn- deep-merge
   "Recursively merge maps. Non-map values are overwritten."

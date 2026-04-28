@@ -689,7 +689,7 @@ plan1
 
 (count (pj/registered-layer-types))
 
-(kind/test-last [(fn [n] (= 25 n))])
+(kind/test-last [(fn [n] (= 26 n))])
 
 (first (pj/registered-layer-types))
 

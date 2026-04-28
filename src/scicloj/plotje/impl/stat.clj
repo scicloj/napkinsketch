@@ -82,7 +82,7 @@
    aesthetic column (color/size/alpha/y-min/y-max/fill) so downstream code
    never sees nil/NaN values where it tries to coerce to double."
   [view]
-  (let [{:keys [data x y color color-type size alpha shape text-col x-type y-type group mark y-min y-max fill]} view
+  (let [{:keys [data x y color color-type size alpha shape text-col x-type y-type group mark y-min y-max x-end fill]} view
         x-only? (or (nil? y) (= x y))
         data-idx (tc/add-column data :__row-idx (range (tc/row-count data)))
         ds-cols (set (tc/column-names data-idx))
@@ -94,6 +94,7 @@
                          (col-ref? alpha) (conj alpha)
                          (col-ref? y-min)  (conj y-min)
                          (col-ref? y-max)  (conj y-max)
+                         (col-ref? x-end)  (conj x-end)
                          (col-ref? fill)  (conj fill))
         drop-cols (vec (distinct (concat (if x-only? [x] [x y]) aesthetic-cols)))
         clean (cond-> (tc/drop-missing data-idx drop-cols)
@@ -104,7 +105,13 @@
             ys-col (if x-only? nil (clean y))
             cat-x? (= x-type :categorical)
             cat-y? (= y-type :categorical)
-            x-dom (if cat-x? (distinct xs-col) (numeric-extent xs-col))
+            x-dom (if cat-x?
+                    (distinct xs-col)
+                    (let [[lo hi] (numeric-extent xs-col)]
+                      (if (col-ref? x-end)
+                        (let [[lo2 hi2] (numeric-extent (clean x-end))]
+                          [(min lo lo2) (max hi hi2)])
+                        [lo hi])))
             y-dom (cond
                     x-only? nil
                     cat-y? (distinct ys-col)
@@ -137,7 +144,8 @@
                             shape (assoc :shapes (ds shape))
                             text-col (assoc :labels (ds text-col))
                             y-min (assoc :ymins (ds y-min))
-                            y-max (assoc :ymaxs (ds y-max))))
+                            y-max (assoc :ymaxs (ds y-max))
+                            (col-ref? x-end) (assoc :x-ends (ds x-end))))
             groups (group-by-columns clean (or group []) point-group)]
         {:points groups :x-domain x-dom :y-domain y-dom}))))
 

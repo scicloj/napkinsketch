@@ -70,7 +70,7 @@
        "Output" (pj/mark-doc k)})))}))
 
 
-(deftest t16_l149 (is ((fn [t] (= 17 (count (:row-maps t)))) v15_l138)))
+(deftest t16_l149 (is ((fn [t] (= 18 (count (:row-maps t)))) v15_l138)))
 
 
 (def
@@ -113,7 +113,7 @@
        "Membrane output" (pj/membrane-mark-doc k)})))}))
 
 
-(deftest t22_l181 (is ((fn [t] (= 17 (count (:row-maps t)))) v21_l170)))
+(deftest t22_l181 (is ((fn [t] (= 18 (count (:row-maps t)))) v21_l170)))
 
 
 (def

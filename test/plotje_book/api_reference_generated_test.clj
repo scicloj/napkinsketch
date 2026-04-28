@@ -1099,7 +1099,7 @@
 (def v237_l690 (count (pj/registered-layer-types)))
 
 
-(deftest t238_l692 (is ((fn [n] (= 25 n)) v237_l690)))
+(deftest t238_l692 (is ((fn [n] (= 26 n)) v237_l690)))
 
 
 (def v239_l694 (first (pj/registered-layer-types)))

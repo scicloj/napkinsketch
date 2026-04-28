@@ -275,6 +275,7 @@
   [ds v]
   (let [x-res (resolve-col-name ds (:x v))
         y-res (resolve-col-name ds (:y v))
+        x-end-res (resolve-col-name ds (:x-end v))
         x-type (or (:x-type v) (column-type ds x-res))
         ;; When x and y reference the same column, propagate x-type to y-type
         ;; rather than returning nil — callers (e.g., `validate-numeric-column`)
@@ -285,10 +286,19 @@
                                    (column-type ds y-res))))
         x-temporal? (= x-type :temporal)
         y-temporal? (= y-type :temporal)
-        x-temp-extent (when x-temporal? (temporal-extent ds x-res))
+        ;; If x is temporal, x-end (when present) is implicitly temporal too —
+        ;; they must share an axis. Extend the temporal extent across both.
+        x-temp-extent (when x-temporal?
+                        (let [xe (temporal-extent ds x-res)
+                              xee (when x-end-res (temporal-extent ds x-end-res))]
+                          (if (and xe xee)
+                            [(jt/min (first xe) (first xee))
+                             (jt/max (second xe) (second xee))]
+                            xe)))
         y-temp-extent (when y-temporal? (temporal-extent ds y-res))
         ds (cond-> ds
              x-temporal? (temporalize-column x-res)
+             (and x-temporal? x-end-res) (temporalize-column x-end-res)
              y-temporal? (temporalize-column y-res))]
     {:ds ds
      :x-type (if x-temporal? :numerical x-type)
@@ -435,7 +445,9 @@
               (and (:text v) (column-ref? (:text v)))
               (assoc :text (resolve-col-name resolved-ds (:text v)))
               (and (:group v) (column-ref? (:group v)))
-              (assoc :group (resolve-col-name resolved-ds (:group v))))
+              (assoc :group (resolve-col-name resolved-ds (:group v)))
+              (and (:x-end v) (column-ref? (:x-end v)))
+              (assoc :x-end (resolve-col-name resolved-ds (:x-end v))))
           {:keys [color color-type fixed-color
                   size fixed-size alpha fixed-alpha text-col]} (resolve-aesthetics resolved-ds v)
           group (infer-grouping v color-type color)

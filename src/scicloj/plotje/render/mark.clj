@@ -136,6 +136,7 @@
 (defmethod layer->membrane [:tile :doc] [_ _] "Translated colored rectangles (heatmap cells)")
 (defmethod layer->membrane [:ridgeline :doc] [_ _] "Overlapping filled density curves")
 (defmethod layer->membrane [:rug :doc] [_ _] "Short stroked tick marks at axis margins")
+(defmethod layer->membrane [:interval-h :doc] [_ _] "Filled rectangles spanning x to x-end at categorical y")
 (defmethod layer->membrane [:step :doc] [_ _] "Stroked step polylines")
 (defmethod layer->membrane [:pointrange :doc] [_ _] "Point at mean + vertical SE line")
 (defmethod layer->membrane [:label :doc] [_ _] "Text label with filled background box")
@@ -879,3 +880,37 @@
   (if (:categories layer)
     (layer->membrane-categorical-bars layer ctx)
     (layer->membrane-value-bars layer ctx)))
+
+;; ---- Interval-h (Gantt-style horizontal bars) ----
+
+(defmethod layer->membrane :interval-h [layer ctx]
+  (let [{:keys [style groups]} layer
+        {:keys [sx sy]} ctx
+        {:keys [opacity height]} style
+        op (or opacity 0.85)
+        frac (or height 0.7)
+        ;; The categorical axis is y for interval-h.
+        y-band? (try (ws/data sy :bandwidth) (catch Exception _ nil))]
+    (when-not y-band?
+      (throw (ex-info (str "lay-interval-h requires a categorical :y column "
+                           "(use a string/keyword column, or pass {:y-type :categorical}).")
+                      {:mark :interval-h})))
+    (vec
+     (for [{:keys [color xs ys x-ends]} groups
+           i (range (clojure.core/count xs))
+           :let [x-start (xs i)
+                 x-end (x-ends i)
+                 y-cat (ys i)
+                 [cr cg cb _] color
+                 px-start (sx x-start)
+                 px-end (sx x-end)
+                 bp (band-position sy y-cat 0 1 frac)
+                 [px-lo px-hi] (if (< (double px-start) (double px-end))
+                                 [px-start px-end]
+                                 [px-end px-start])
+                 [py-lo py-hi] [(:lo bp) (:hi bp)]]]
+       (ui/with-color [cr cg cb op]
+         (ui/with-style ::ui/style-fill
+           (ui/path [px-lo py-lo] [px-hi py-lo]
+                    [px-hi py-hi] [px-lo py-hi]
+                    [px-lo py-lo])))))))

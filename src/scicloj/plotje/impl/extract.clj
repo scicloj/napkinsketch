@@ -121,6 +121,7 @@
 (defmethod extract-layer [:text :doc] [_ _ _ _] "Data-driven label")
 (defmethod extract-layer [:label :doc] [_ _ _ _] "Label with background box")
 (defmethod extract-layer [:rug :doc] [_ _ _ _] "Axis-margin tick marks")
+(defmethod extract-layer [:interval-h :doc] [_ _ _ _] "Horizontal bars from x to x-end at categorical y")
 (defmethod extract-layer :point [view stat all-colors cfg]
   (let [numeric-color? (= (:color-type view) :numerical)
         ;; For numeric color: compute global min/max for normalization
@@ -579,6 +580,22 @@
            :stroke-width 1.5
            :opacity (or (:fixed-alpha view) 1.0)}
    :groups (extract-xy-groups view stat all-colors cfg :with-range? true)})
+
+(defmethod extract-layer :interval-h [view stat all-colors cfg]
+  (let [groups (vec
+                (for [{:keys [color xs ys x-ends]} (:points stat)]
+                  (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
+                           :xs xs :ys ys :x-ends x-ends}
+                    (some? color) (assoc :label (defaults/fmt-category-label color)))))]
+    (when (and (seq groups) (not-any? :x-ends groups))
+      (throw (ex-info (str "lay-interval-h requires an :x-end column. "
+                           "Pass it as an option: "
+                           "(pj/lay-interval-h data :start :task {:x-end :end})")
+                      {:mark :interval-h})))
+    {:mark :interval-h
+     :style {:opacity (or (:fixed-alpha view) 0.85)
+             :height (or (:height view) 0.7)}
+     :groups groups}))
 
 (defmethod extract-layer :default [view _stat _all-colors _cfg]
   (let [mark (:mark view)
