@@ -269,7 +269,7 @@
       rv
       (let [numeric-cols (distinct
                           (keep #(numeric-col-ref rv ds %)
-                                [:x :y :color :size :alpha :y-min :y-max :x-end :fill]))
+                                defaults/numeric-aesthetic-keys))
             n-before (tc/row-count ds)
             ;; First pass: drop missing (nil)
             ds (if (seq numeric-cols)

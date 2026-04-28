@@ -65,11 +65,36 @@
    ;; Fallback
    :default-color "#333"})
 
-;; ---- Column Keys ----
+;; ---- Aesthetic Registry ----
+
+(def aesthetic-registry
+  "Per-aesthetic semantic properties. Single source of truth for the set
+   of mapping keys that can reference dataset columns. :numeric? marks
+   aesthetics whose column values, when present, are numeric -- those
+   are the keys eligible for finite-value filtering at plan time."
+  {:x     {:numeric? true}
+   :y     {:numeric? true}
+   :color {:numeric? true}
+   :size  {:numeric? true}
+   :alpha {:numeric? true}
+   :y-min {:numeric? true}
+   :y-max {:numeric? true}
+   :x-end {:numeric? true}
+   :fill  {:numeric? true}
+   :shape {:numeric? false}
+   :group {:numeric? false}
+   :text  {:numeric? false}})
 
 (def column-keys
   "Set of keywords that can reference dataset columns in view maps."
-  #{:x :y :color :size :alpha :shape :group :text :y-min :y-max :x-end :fill})
+  (set (keys aesthetic-registry)))
+
+(def numeric-aesthetic-keys
+  "Aesthetics whose column values are numeric -- subject to finite-value
+   filtering. Derived from aesthetic-registry."
+  (into []
+        (comp (filter (comp :numeric? val)) (map key))
+        aesthetic-registry))
 
 ;; ---- Shape Symbols ----
 
