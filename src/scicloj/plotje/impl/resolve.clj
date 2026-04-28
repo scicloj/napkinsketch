@@ -14,51 +14,6 @@
   [v]
   (or (keyword? v) (string? v)))
 
-(defn- normalize-col-ref
-  "Pass through column references as-is (no string→keyword conversion)."
-  [v]
-  v)
-
-(defn- normalize-col-refs
-  "Pass through column references as-is (no string→keyword conversion)."
-  [m]
-  m)
-
-(defn ensure-keyword-columns
-  "DEPRECATED — now a pass-through. String column names are preserved."
-  [ds]
-  ds)
-
-(defn validate-columns
-  "Check that every column-referencing key in view-map names a real column in ds.
-   Accepts both keyword and string column refs, and checks for cross-type matches."
-  ([ds view-map]
-   (let [col-names (set (tc/column-names ds))]
-     (doseq [k defaults/column-keys
-             :let [col (get view-map k)]
-             :when (and col (column-ref? col)
-                        (not (col-names col))
-                         ;; Check cross-type: keyword ref vs string col name, or vice versa
-                        (not (and (keyword? col) (col-names (name col))))
-                        (not (and (string? col) (col-names (keyword col)))))]
-       (throw (ex-info (str "Column " col " (from " k ") not found in dataset. Available: " (sort col-names))
-                       {:key k :column col :available (sort col-names)})))))
-  ([ds role col]
-   (let [col-names (set (tc/column-names ds))]
-     (when (and (column-ref? col)
-                (not (col-names col))
-                (not (and (keyword? col) (col-names (name col))))
-                (not (and (string? col) (col-names (keyword col)))))
-       (throw (ex-info (str "Column " col " (from " role ") not found in dataset. Available: " (sort col-names))
-                       {:key role :column col :available (sort col-names)}))))))
-
-(defn multi-spec?
-  "True if specs is a sequence of view specs rather than a single spec."
-  [specs]
-  (and (sequential? specs)
-       (let [fst (first specs)]
-         (or (sequential? fst) (map? fst)))))
-
 (defrecord Plan [panels width height])
 
 (defrecord CompositePlan [width height sub-plots chrome])
@@ -105,16 +60,6 @@
   "Mark types that render as annotations (rules, bands) rather than data layers."
   #{:rule-h :rule-v :band-h :band-v})
 
-;; ---- Coord ----
-
-(defn coord
-  "Set coordinate system on views."
-  [views c]
-  (when-not (#{:cartesian :flip :polar :fixed} c)
-    (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " (pr-str c))
-                    {:coord c})))
-  (mapv #(assoc % :coord c) views))
-
 ;; ---- Cross ----
 
 (defn cross
@@ -136,42 +81,6 @@
         (and (keyword? ref) (contains? names (name ref))) (name ref)
         (and (string? ref) (contains? names (keyword ref))) (keyword ref)
         :else ref))))
-
-(defn facet-grid
-  "Split each view by two categorical columns for a row x column grid.
-   Either column may be nil for a single-dimension facet.
-   Each resulting view gets :facet-row and :facet-col keys."
-  [views row-col col-col]
-  (vec
-   (mapcat
-    (fn [v]
-      (if-not (:data v)
-        [v]
-        (do
-          (when row-col (validate-columns (:data v) :facet-row row-col))
-          (when col-col (validate-columns (:data v) :facet-col col-col))
-          (let [row-col (when row-col (resolve-col-name (:data v) row-col))
-                col-col (when col-col (resolve-col-name (:data v) col-col))
-                group-cols (filterv some? [row-col col-col])
-                groups (tc/group-by (:data v) group-cols {:result-type :as-map})]
-            (map (fn [[gk gds]]
-                   (assoc v :data gds
-                          :facet-row (if row-col (get gk row-col) "_")
-                          :facet-col (if col-col (get gk col-col) "_")))
-                 groups)))))
-    views)))
-
-(defn facet
-  "Split each view by a categorical column.
-   Default layout is a horizontal row of panels.
-   Pass :col as direction for a vertical column of panels.
-   (facet views :species)        — horizontal row
-   (facet views :species :col)   — vertical column"
-  ([views col] (facet views col :row))
-  ([views col direction]
-   (case direction
-     :row (facet-grid views nil col)
-     :col (facet-grid views col nil))))
 
 ;; ---- Column Type Detection ----
 
@@ -375,9 +284,9 @@
 
 (def ^:private x-only-stats
   "Stats that consume only an x column and synthesize y themselves
-   (counts, bins, densities). Used to permit x-only views for marks
+   (counts, bins, densities). Used to permit x-only draft-layers for marks
    driven by these stats even when the layer-type registry's :x-only flag
-   is missing (e.g., tests that construct views directly)."
+   is missing (e.g., tests that construct draft-layers directly)."
   #{:bin :count :density})
 
 (defn infer-layer-type
@@ -492,7 +401,7 @@
                                    "override; to flip the chart so categories appear on the "
                                    "visual y-axis, add (pj/coord :flip).")
                               {:mark mark :y (:y v) :y-type y-type})))
-          ;; Reject x-only views (no :y) for layer types that require y.
+          ;; Reject x-only draft-layers (no :y) for layer types that require y.
           ;; Otherwise prepare-points silently fabricates y=0 for every
           ;; point and renders a flat line at the bottom of a [0, 1] domain.
           ;; Three sources of x-only permission:
@@ -553,17 +462,3 @@
                      resolved)]
       resolved)))
 
-;; ---- Scale Setter ----
-
-(defn scale
-  "Set scale options for :x or :y across all views."
-  ([views channel type-or-opts]
-   (when-not (#{:x :y} channel)
-     (throw (ex-info (str "Scale channel must be :x or :y, got: " (pr-str channel))
-                     {:channel channel})))
-   (if (map? type-or-opts)
-     (scale views channel (or (:type type-or-opts) :linear) (dissoc type-or-opts :type))
-     (scale views channel type-or-opts {})))
-  ([views channel type opts]
-   (let [k (case channel :x :x-scale :y :y-scale)]
-     (mapv #(assoc % k (merge {:type type} opts)) views))))
