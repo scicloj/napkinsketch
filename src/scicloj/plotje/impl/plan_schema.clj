@@ -253,7 +253,14 @@
     [:type [:= :continuous]]
     [:min number?]
     [:max number?]
-    [:color-scale {:optional true} [:maybe keyword?]]
+    ;; :color-scale carries the cfg's color-scale value, which may be a
+    ;; keyword (e.g. :viridis) or a map (e.g. {:type :log}); accept both.
+    [:color-scale {:optional true} [:maybe [:or keyword? map?]]]
+    ;; :scale-type and :ticks are added by the legend builder when the
+    ;; color scale is log (build-fill-fallback-legend, plan.clj). Both
+    ;; need to be declared optional so the plan validates.
+    [:scale-type {:optional true} [:enum :linear :log]]
+    [:ticks {:optional true} [:vector [:map [:value number?] [:t number?]]]]
     [:stops [:vector GradientStop]]]])
 
 (def SizeLegendEntry

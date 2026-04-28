@@ -582,11 +582,28 @@
    :groups (extract-xy-groups view stat all-colors cfg :with-range? true)})
 
 (defmethod extract-layer :interval-h [view stat all-colors cfg]
-  (let [groups (vec
-                (for [{:keys [color xs ys x-ends]} (:points stat)]
+  (let [numeric-color? (= (:color-type view) :numerical)
+        all-color-buf (when numeric-color?
+                        (let [bufs (keep :color-values (:points stat))]
+                          (when (seq bufs) (dtype/concat-buffers bufs))))
+        c-min (when all-color-buf (dfn/reduce-min all-color-buf))
+        c-max (when all-color-buf (dfn/reduce-max all-color-buf))
+        groups (vec
+                (for [{:keys [color xs ys x-ends color-values]} (:points stat)]
                   (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
                            :xs xs :ys ys :x-ends x-ends}
-                    (some? color) (assoc :label (defaults/fmt-category-label color)))))]
+                    (some? color) (assoc :label (defaults/fmt-category-label color))
+                    (and numeric-color? color-values)
+                    (assoc :colors
+                           (vec (map (fn [v]
+                                       (let [scale-type (or (:type (:color-scale view)) :linear)
+                                             t (defaults/normalize-continuous
+                                                scale-type v
+                                                (or c-min 0) (or c-max 1)
+                                                (:color-midpoint cfg))
+                                             grad-fn (:gradient-fn cfg)]
+                                         (grad-fn t)))
+                                     color-values))))))]
     (when (and (seq groups) (not-any? :x-ends groups))
       (throw (ex-info (str "lay-interval-h requires an :x-end column. "
                            "Pass it as an option: "

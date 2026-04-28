@@ -904,12 +904,14 @@
                            "(use a string/keyword column, or pass {:y-type :categorical}).")
                       {:mark :interval-h})))
     (vec
-     (for [{:keys [color xs ys x-ends]} groups
+     (for [{:keys [color colors xs ys x-ends]} groups
            i (range (clojure.core/count xs))
            :let [x-start (xs i)
                  x-end (x-ends i)
                  y-cat (ys i)
-                 [cr cg cb _] color
+                 ;; Per-row :colors (numeric color gradient) wins; otherwise
+                 ;; the group's resolved fixed/categorical color applies.
+                 [cr cg cb _] (if colors (nth colors i) color)
                  bp (band-position band-s y-cat 0 1 frac)
                  pts (bar-polygon coord-px bp-flipped?
                                   (:lo bp) (:hi bp)

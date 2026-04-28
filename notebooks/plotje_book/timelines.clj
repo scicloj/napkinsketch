@@ -194,6 +194,31 @@
                  :x-label ""
                  :height 320}))
 
+;; ## Numeric color
+;;
+;; Pass a numeric column to `:color` and Plotje grades each bar
+;; along a continuous gradient instead of a categorical palette.
+;; A continuous-color legend appears on the side, showing the
+;; mapped data range. The gradient uses the configured color
+;; scale (default linear; `(pj/scale :color :log)` on the pose
+;; for log-spaced ticks).
+
+(-> {:start [#inst "2024-01-01" #inst "2024-02-15" #inst "2024-04-01"
+             #inst "2024-05-10" #inst "2024-06-20"]
+     :end   [#inst "2024-03-15" #inst "2024-04-20" #inst "2024-06-30"
+             #inst "2024-07-10" #inst "2024-08-30"]
+     :task  ["Design" "Build" "Test" "Deploy" "Document"]
+     :cost  [10 35 22 8 18]}
+    (pj/lay-interval-h :start :task {:x-end :end :color :cost})
+    (pj/options {:title "Project plan -- bars colored by cost"
+                 :y-label "task"
+                 :x-label ""
+                 :height 320}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:polygons s)))))])
+
 ;; ## Vertical bars via `coord :flip`
 ;;
 ;; `lay-interval-h` always binds the lane to the y data axis.

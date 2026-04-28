@@ -99,9 +99,9 @@
    (rdatasets/ggplot2-economics)
    (tc/select-rows
     (fn*
-     [p1__94142#]
+     [p1__98324#]
      (let
-      [d (:date p1__94142#)]
+      [d (:date p1__98324#)]
       (and (>= (.getYear d) 2000) (<= (.getYear d) 2014))))))))
 
 
@@ -219,7 +219,43 @@
 
 
 (def
- v24_l205
+ v24_l206
+ (->
+  {:start
+   [#inst "2024-01-01T00:00:00.000-00:00"
+    #inst "2024-02-15T00:00:00.000-00:00"
+    #inst "2024-04-01T00:00:00.000-00:00"
+    #inst "2024-05-10T00:00:00.000-00:00"
+    #inst "2024-06-20T00:00:00.000-00:00"],
+   :end
+   [#inst "2024-03-15T00:00:00.000-00:00"
+    #inst "2024-04-20T00:00:00.000-00:00"
+    #inst "2024-06-30T00:00:00.000-00:00"
+    #inst "2024-07-10T00:00:00.000-00:00"
+    #inst "2024-08-30T00:00:00.000-00:00"],
+   :task ["Design" "Build" "Test" "Deploy" "Document"],
+   :cost [10 35 22 8 18]}
+  (pj/lay-interval-h :start :task {:x-end :end, :color :cost})
+  (pj/options
+   {:title "Project plan -- bars colored by cost",
+    :y-label "task",
+    :x-label "",
+    :height 320})))
+
+
+(deftest
+ t25_l218
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 1 (:panels s)) (= 5 (:polygons s)))))
+   v24_l206)))
+
+
+(def
+ v27_l230
  (->
   project
   (pj/lay-interval-h :start :task {:x-end :end, :color :team})
@@ -229,24 +265,24 @@
 
 
 (deftest
- t25_l211
+ t28_l236
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 5 (:polygons s)))))
-   v24_l205)))
+   v27_l230)))
 
 
 (deftest
- t26_l215
+ t29_l240
  (is
-  ((fn [v] (let [s (pj/svg-summary v)] (= 5 (:polygons s)))) v24_l205)))
+  ((fn [v] (let [s (pj/svg-summary v)] (= 5 (:polygons s)))) v27_l230)))
 
 
 (def
- v28_l242
+ v31_l267
  (def
   trains
   (let
@@ -275,7 +311,7 @@
 
 
 (def
- v29_l263
+ v32_l288
  (->
   trains
   (pj/lay-line
@@ -294,18 +330,18 @@
 
 
 (deftest
- t30_l271
+ t33_l296
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:lines s)) (= 20 (:points s)))))
-   v29_l263)))
+   v32_l288)))
 
 
 (def
- v32_l289
+ v35_l314
  (def
   activity
   {:start
@@ -375,7 +411,7 @@
 
 
 (def
- v33_l313
+ v36_l338
  (->
   activity
   (pj/lay-interval-h :start :day {:x-end :end, :color :kind})
@@ -387,18 +423,18 @@
 
 
 (deftest
- t34_l320
+ t37_l345
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 15 (:polygons s)))))
-   v33_l313)))
+   v36_l338)))
 
 
 (def
- v36_l335
+ v39_l360
  (->
   activity
   (pj/lay-interval-h :start :day {:x-end :end, :color :kind})
@@ -411,18 +447,18 @@
 
 
 (deftest
- t37_l343
+ t40_l368
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 15 (:polygons s)))))
-   v36_l335)))
+   v39_l360)))
 
 
 (def
- v39_l363
+ v42_l388
  (let
   [plot-svg
    (pj/plot
