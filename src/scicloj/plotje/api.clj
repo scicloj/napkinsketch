@@ -55,7 +55,7 @@
 (defn layer-type?
   "Return true if x is a layer type (mark + stat + position bundle from the registry)."
   [x]
-  (resolve/method? x))
+  (resolve/layer-type? x))
 
 (defn- expect-type
   "Validate that x is of the expected type. Throws with helpful message if not."

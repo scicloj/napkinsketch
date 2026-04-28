@@ -22,7 +22,7 @@
    [scicloj.kindly.v4.kind :as kind]
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]
-   ;; Method registry -- lookup mark/stat/position by keyword
+   ;; Layer-type registry -- lookup mark/stat/position by keyword
    [scicloj.plotje.layer-type :as layer-type]))
 
 ;; ## A Minimal Scatter Plot

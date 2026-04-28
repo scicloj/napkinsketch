@@ -20,7 +20,7 @@
    [scicloj.plotje.impl.stat :as stat]
    [scicloj.plotje.impl.extract :as extract]
    [scicloj.plotje.render.mark :as mark]
-   ;; Method registry -- to register our new chart type
+   ;; Layer-type registry -- to register our new chart type
    [scicloj.plotje.layer-type :as layer-type]
    ;; Membrane -- drawing primitives
    [membrane.ui :as ui]

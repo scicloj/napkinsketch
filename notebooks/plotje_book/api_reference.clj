@@ -704,7 +704,7 @@ plan1
 
 (kind/test-last [(fn [n] (pos? n))])
 
-;; ## Method Registry
+;; ## Layer Type Registry
 
 (kind/doc #'pj/layer-type-lookup)
 

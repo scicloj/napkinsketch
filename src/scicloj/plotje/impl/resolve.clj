@@ -47,12 +47,12 @@
   [x]
   (instance? PlanLayer x))
 
-(defrecord Method [mark stat])
+(defrecord LayerType [mark stat])
 
-(defn method?
-  "True if x is a method (mark + stat + position bundle)."
+(defn layer-type?
+  "True if x is a layer-type (mark + stat + position bundle)."
   [x]
-  (instance? Method x))
+  (instance? LayerType x))
 
 ;; ---- Layer ----
 

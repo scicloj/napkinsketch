@@ -61,7 +61,7 @@
    :mark, :stat, and optionally :position and :doc.
    Position defaults to nil (identity) — only :dodge, :stack, :fill are explicit."
   [k entry]
-  (swap! registry* assoc k (resolve/map->Method entry))
+  (swap! registry* assoc k (resolve/map->LayerType entry))
   k)
 
 (defn lookup
