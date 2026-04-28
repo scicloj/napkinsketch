@@ -391,6 +391,11 @@
 ;; `:color` and `:alpha` work the same as on any other layer. Without
 ;; x/y columns they attach at the root (every panel); with x/y
 ;; columns they attach to one matching leaf.
+;;
+;; Rule intercepts also accept temporal values (`LocalDate`,
+;; `LocalDateTime`, `Instant`, `java.util.Date`) so date-axis
+;; annotations need no manual conversion -- see the second
+;; `lay-rule-v` example below.
 
 (kind/doc #'pj/lay-rule-v)
 
@@ -401,6 +406,19 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
+
+;; A temporal rule on a date axis -- the same pose pattern, with
+;; `:x-intercept` taking a `LocalDate`.
+
+(-> {:date  [#inst "2024-01-01" #inst "2024-04-01" #inst "2024-08-01"]
+     :value [3 5 9]}
+    (pj/lay-line :date :value)
+    (pj/lay-rule-v {:x-intercept (java.time.LocalDate/parse "2024-06-01")
+                    :color "#c0392b"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 2 (:lines s)))))])
 
 (kind/doc #'pj/lay-rule-h)
 
