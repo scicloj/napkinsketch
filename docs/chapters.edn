@@ -12,12 +12,14 @@
                    "distributions"
                    "ranking"
                    "change_over_time"
+                   "timelines"
                    "relationships"
                    "polar"]
  "🍳 How-to Guides" ["cookbook"
                      "configuration"
                      "customization"
                      "faceting"
+                     "interactivity"
                      "troubleshooting"]
  "📖 Reference" ["api_reference"]
  "🖼 Gallery" ["gallery"]
