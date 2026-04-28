@@ -434,9 +434,9 @@
 ;; ## Interactive preview (experimental)
 ;;
 ;; Plotje renders SVG hiccup. Any Kindly-compatible notebook tool
-;; that handles `kind/hiccup` with `<script>` blocks can wrap a
-;; Plotje plot in a small JavaScript layer for pan, zoom, or
-;; hover -- without any library changes.
+;; that handles `kind/hiccup` with embedded `[:script ...]` forms
+;; can wrap a Plotje plot in a small JavaScript layer for pan,
+;; zoom, or hover -- without any library changes.
 ;;
 ;; The cell below wraps a presidential-Gantt SVG in an HTML
 ;; container with a tiny

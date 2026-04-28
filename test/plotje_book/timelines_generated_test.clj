@@ -99,9 +99,9 @@
    (rdatasets/ggplot2-economics)
    (tc/select-rows
     (fn*
-     [p1__99148#]
+     [p1__111623#]
      (let
-      [d (:date p1__99148#)]
+      [d (:date p1__111623#)]
       (and (>= (.getYear d) 2000) (<= (.getYear d) 2014))))))))
 
 
