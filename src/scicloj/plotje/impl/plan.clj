@@ -249,10 +249,10 @@
 (defn- aesthetic-col
   "Look up an aesthetic column from a resolved draft layer's :data, handling
    keyword/string column-name mismatches transparently. Returns nil when
-   the view has no :data, no value at `k`, or the column doesn't exist."
-  [view k]
-  (let [ds (:data view)
-        ref (get view k)]
+   the draft-layer has no :data, no value at `k`, or the column doesn't exist."
+  [draft-layer k]
+  (let [ds (:data draft-layer)
+        ref (get draft-layer k)]
     (when (and ds ref)
       (let [resolved-name (resolve/resolve-col-name ds ref)]
         (get ds resolved-name)))))
@@ -393,20 +393,20 @@
 
 (defn- resolve-labels
   "Resolve effective title and axis labels.
-   Title comes from opts only; axis labels fall back to view-level :x-label/:y-label
+   Title comes from opts only; axis labels fall back to draft-layer-level :x-label/:y-label
    (set via pj/options), then scale :label, then auto-inferred column name."
   [draft-layers x-vars y-vars x-scale-spec y-scale-spec
    title x-label y-label auto-label?]
-  (let [view-x-label (:x-label (first draft-layers))
-        view-y-label (:y-label (first draft-layers))]
+  (let [draft-layer-x-label (:x-label (first draft-layers))
+        draft-layer-y-label (:y-label (first draft-layers))]
     {:eff-title title
      :eff-x-label (or x-label
-                      view-x-label
+                      draft-layer-x-label
                       (:label x-scale-spec)
                       (when auto-label?
                         (when-let [x (first x-vars)] (defaults/fmt-name x))))
      :eff-y-label (or y-label
-                      view-y-label
+                      draft-layer-y-label
                       (:label y-scale-spec)
                       (when auto-label?
                         (when-let [y (first y-vars)]
@@ -625,8 +625,8 @@
 ;; ================================================================
 
 (defn- infer-grid
-  "Infer grid structure from view groups.
-   Each view group = one panel. Grid position determined by:
+  "Infer grid structure from panel groups (one panel per group).
+   Grid position determined by:
    - Faceted draft layers: :facet-col -> grid col, :facet-row -> grid row
    - Non-faceted draft layers: :x column -> grid col, :y column -> grid row
    Returns {:grid-cols N :grid-rows N :panels [{:draft-layers [...] :row R :col C ...}]}"
@@ -676,7 +676,7 @@
                                     ;; (avoids redundant y-label on single-row facets)
                                     show-label? (> (count row-vals) 1)]
                                 [(max 0 i) (when (and yv show-label?) (defaults/fmt-name yv))]))
-                            ;; Stacking: when multiple view groups share the same
+                            ;; Stacking: when multiple panel groups share the same
                             ;; grid position, offset each by one row below the base.
                             ;; sub=0 -> base position; sub>0 -> stacked below.
                             stack-key [ri ci]
@@ -837,14 +837,14 @@
                             (when (#{:bin2d :density-2d} (:stat rv))
                               (:stat rv)))
                           resolved-all))
-        view-fill-range (when-not stat-fill-range
-                          (some (fn [rv]
-                                  (when (and (= :tile (:mark rv)) (:fill rv) (:data rv))
-                                    (let [vals ((:data rv) (:fill rv))]
-                                      (when (seq vals)
-                                        [(dfn/reduce-min vals) (dfn/reduce-max vals)]))))
-                                resolved-all))
-        [f-lo f-hi] (or stat-fill-range view-fill-range)
+        draft-layer-fill-range (when-not stat-fill-range
+                                 (some (fn [rv]
+                                         (when (and (= :tile (:mark rv)) (:fill rv) (:data rv))
+                                           (let [vals ((:data rv) (:fill rv))]
+                                             (when (seq vals)
+                                               [(dfn/reduce-min vals) (dfn/reduce-max vals)]))))
+                                       resolved-all))
+        [f-lo f-hi] (or stat-fill-range draft-layer-fill-range)
         scale-type (or (some #(:type (:fill-scale %)) resolved-all)
                        (some #(:type (:color-scale %)) resolved-all)
                        :linear)]
@@ -885,14 +885,14 @@
 (defn- synthesize-annotation-domain
   "For an annotation draft layer in an annotation-only panel, compute
    a synthetic stat-result whose :x-domain / :y-domain come from the
-   view's data columns plus the annotation's own position values
+   draft-layer's data columns plus the annotation's own position values
    (:y-intercept / :x-intercept for rules, :y-min/:y-max or
    :x-min/:x-max for bands) so the panel's axes are well-defined even
-   when no data layer is attached to the view. Falls back to [0 1] on
+   when no data layer is attached to the panel. Falls back to [0 1] on
    the axis perpendicular to a rule (where the annotation alone supplies
    no extent) so the line still draws. Skips non-numeric columns
    (string/keyword/temporal) and nil cells so a categorical or
-   partly-missing column on a view-scope annotation-only panel doesn't
+   partly-missing column on a pose-scope annotation-only panel doesn't
    crash the reducer."
   [{:keys [mark data x y y-intercept x-intercept y-min y-max x-min x-max]}]
   (let [col-vals (fn [col]
@@ -960,7 +960,7 @@
          ;; (created by pj/lay-rule-*/pj/lay-band-*) from data draft
          ;; layers. Annotations skip the stat/extract-layer pipeline
          ;; and join the plot-level :annotations list merged below.
-         ;; A view with only annotations (no data layer) still needs
+         ;; A draft-layer with only annotations (no data layer) still needs
          ;; a panel inferred for it, so annotation-only entry-idx
          ;; groups are threaded into grid inference separately.
          layer-annotations (filterv #(resolve/annotation-marks (:mark %)) draft-layers)
@@ -1045,7 +1045,7 @@
                          (cond
                            ;; Annotation-only panel: no stat pipeline,
                            ;; synthesize domains from the annotation's
-                           ;; view data plus the annotation's positions.
+                           ;; draft-layer data plus the annotation's positions.
                            annotation-only?
                            (merge pg {:resolved []
                                       :stat-results (mapv synthesize-annotation-domain dls)
