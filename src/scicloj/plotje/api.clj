@@ -186,8 +186,30 @@
 ;; ---- Cross ----
 
 (defn cross
-  "Cartesian product of two sequences."
+  "Build a vector of [x y] pairs from two column-name sequences. Pair
+   with `pj/pose` for SPLOM grids: when an MxN rectangle of pairs is
+   threaded through `pj/pose`, the result is an MxN composite with
+   shared scales.
+
+   (pj/cross [:a :b] [:c :d])  ; =>  [[:a :c] [:a :d] [:b :c] [:b :d]]"
   [xs ys]
+  (when-not (sequential? xs)
+    (throw (ex-info (str "pj/cross expects two sequentials of column"
+                         " references, got xs: " (pr-str (type xs))
+                         " (" (pr-str xs) "). Use (pj/cross [:a :b]"
+                         " [:c :d]) for a 2x2 grid.")
+                    {:caller "pj/cross" :argument :xs :value xs})))
+  (when-not (sequential? ys)
+    (throw (ex-info (str "pj/cross expects two sequentials of column"
+                         " references, got ys: " (pr-str (type ys))
+                         " (" (pr-str ys) "). Use (pj/cross [:a :b]"
+                         " [:c :d]) for a 2x2 grid.")
+                    {:caller "pj/cross" :argument :ys :value ys})))
+  (when (or (empty? xs) (empty? ys))
+    (throw (ex-info (str "pj/cross got an empty sequence (xs: "
+                         (pr-str xs) ", ys: " (pr-str ys) "). Provide"
+                         " at least one column reference per side.")
+                    {:caller "pj/cross" :xs xs :ys ys})))
   (resolve/cross xs ys))
 
 ;; ---- Pipeline Internals ----
@@ -317,6 +339,15 @@
                  " pass the pose itself to " caller ", not the result of"
                  " pj/plot.")
             {:caller caller :value-head (first x)}))
+
+    (or (and (or (sequential? x) (and (map? x) (not (tc/dataset? x))))
+             (zero? (count x)))
+        (and (tc/dataset? x) (zero? (tc/row-count x))))
+    (throw (ex-info
+            (str caller " got an empty collection (" (pr-str x)
+                 "). Pass a dataset with at least one row, or use"
+                 " (pj/pose) for an empty pose template.")
+            {:caller caller :value x}))
 
     (and (not (tc/dataset? x))
          (not (map? x))
@@ -1744,12 +1775,17 @@
         opts (warn-and-strip-unknown-opts "pj/options" opts plot-options-keys)
         opts (reduce (fn [m k]
                        (if-let [v (get m k)]
-                         (let [rounded (long (Math/round (double v)))]
-                           (when-not (and (number? v) (pos? rounded))
-                             (throw (ex-info (str k " must round to a positive integer, got: "
-                                                  (pr-str v) " (rounds to " rounded ")")
-                                             {:option k :value v :rounded rounded})))
-                           (assoc m k rounded))
+                         (do
+                           (when-not (number? v)
+                             (throw (ex-info (str "pj/options " k " must be a number, got "
+                                                  (pr-str (type v)) ": " (pr-str v) ".")
+                                             {:caller "pj/options" :option k :value v :type (type v)})))
+                           (let [rounded (long (Math/round (double v)))]
+                             (when-not (pos? rounded)
+                               (throw (ex-info (str "pj/options " k " must round to a positive integer, got: "
+                                                    (pr-str v) " (rounds to " rounded ")")
+                                               {:caller "pj/options" :option k :value v :rounded rounded})))
+                             (assoc m k rounded)))
                          m))
                      opts
                      [:width :height])]

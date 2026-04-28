@@ -298,3 +298,83 @@
 
   (testing "vectors of row-maps are not flagged as hiccup"
     (is (pj/pose? (pj/pose [{:a 1 :b 2} {:a 3 :b 4}])))))
+
+(deftest empty-collection-data-throws
+  (testing "(pj/pose []) throws with empty-collection guidance"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"empty collection"
+         (pj/pose []))))
+
+  (testing "(pj/pose {}) throws with empty-collection guidance"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"empty collection"
+         (pj/pose {}))))
+
+  (testing "(pj/lay-point [] :x :y) also throws (via ensure-pose)"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"empty collection"
+         (pj/lay-point [] :x :y))))
+
+  (testing "the empty-pose 0-arity is unaffected"
+    (is (pj/pose? (pj/pose))))
+
+  (testing "the guidance points at (pj/pose) for the template"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"empty pose template"
+         (pj/pose [])))))
+
+(deftest options-width-height-non-number-throws
+  (testing "(pj/options pose {:width \"800\"}) throws with type message"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":width must be a number"
+         (pj/options (pj/lay-point tiny :x :y) {:width "800"}))))
+
+  (testing "(pj/options pose {:height :keyword}) throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":height must be a number"
+         (pj/options (pj/lay-point tiny :x :y) {:height :keyword}))))
+
+  (testing "(pj/options pose {:width 800.5}) still rounds correctly"
+    (let [p (pj/options (pj/lay-point tiny :x :y) {:width 800.5})]
+      (is (= 801 (-> p :opts :width)))))
+
+  (testing "(pj/options pose {:width 0.4}) throws round-to-zero error"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"must round to a positive integer"
+         (pj/options (pj/lay-point tiny :x :y) {:width 0.4})))))
+
+(deftest cross-argument-validation
+  (testing "(pj/cross :scalar :scalar) throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"two sequentials of column"
+         (pj/cross :a :b))))
+
+  (testing "(pj/cross [:a] :scalar) throws naming the bad argument"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"two sequentials of column"
+         (pj/cross [:a] :b))))
+
+  (testing "(pj/cross [] [:c :d]) throws on empty xs"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"empty sequence"
+         (pj/cross [] [:c :d]))))
+
+  (testing "(pj/cross [:a :b] []) throws on empty ys"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"empty sequence"
+         (pj/cross [:a :b] []))))
+
+  (testing "(pj/cross [:a :b] [:c :d]) returns the 2x2 cross product"
+    (is (= [[:a :c] [:a :d] [:b :c] [:b :d]]
+           (pj/cross [:a :b] [:c :d])))))
