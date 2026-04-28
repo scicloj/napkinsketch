@@ -179,15 +179,17 @@
 ;; literal duration of the term -- tight bars (Kennedy, Ford)
 ;; jump out next to long ones (Reagan, Obama).
 
-;; ## Adjusting bar height
+;; ## Adjusting bar thickness
 ;;
-;; The `:height` option controls how much of each row's band the
-;; bar fills. The default is `0.7`; smaller values leave more
-;; whitespace between rows, larger values approach overlap.
+;; The `:interval-thickness` option controls how much of each
+;; row's band the bar fills. The default is `0.7`; smaller values
+;; leave more whitespace between rows, larger values approach
+;; overlap.
 
 (-> project
-    (pj/lay-interval-h :start :task {:x-end :end :color :team :height 0.4})
-    (pj/options {:title "height = 0.4 -- thin bars"
+    (pj/lay-interval-h :start :task
+                       {:x-end :end :color :team :interval-thickness 0.4})
+    (pj/options {:title "interval-thickness = 0.4 -- thin bars"
                  :y-label "task"
                  :x-label ""
                  :height 320}))

@@ -1703,7 +1703,8 @@
    so each distinct value occupies its own lane.
    Required: x (numeric or temporal start), y (categorical lane),
              :x-end column ref in opts (numeric or temporal end).
-   Accepts :color, :alpha, :height (band fill fraction, 0.0-1.0, default 0.7).
+   Accepts :color, :alpha, :interval-thickness (band fill fraction,
+   0.0-1.0, default 0.7).
    (lay-interval-h data :start :task {:x-end :end :color :status})"
   ([pose-or-data] (lay-layer-type :interval-h pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :interval-h pose-or-data x-or-opts))

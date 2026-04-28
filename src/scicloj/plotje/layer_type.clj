@@ -50,7 +50,7 @@
    :x-min "Lower x bound of a vertical shaded band"
    :x-max "Upper x bound of a vertical shaded band"
    :x-end "Column keyword for the right-edge x value of a horizontal interval bar"
-   :height "Fraction (0.0–1.0) of the categorical band that an interval bar fills (default 0.7)"})
+   :interval-thickness "Fraction (0.0–1.0) of the categorical band that an interval bar fills (default 0.7)"})
 
 (def ^:private registry*
   "Atom holding keyword → layer-type entry map."
@@ -110,7 +110,7 @@
 (register! :text {:mark :text :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Text — data-driven labels."})
 (register! :label {:mark :label :stat :identity :accepts [:text :nudge-x :nudge-y] :doc "Label — text with background box."})
 (register! :rug {:mark :rug :stat :identity :x-only true :accepts [:side] :doc "Rug — axis-margin tick marks."})
-(register! :interval-h {:mark :interval-h :stat :identity :accepts [:x-end :height] :doc "Interval — horizontal bars from x to x-end at categorical y. For Gantt-style timelines."})
+(register! :interval-h {:mark :interval-h :stat :identity :accepts [:x-end :interval-thickness] :doc "Interval — horizontal bars from x to x-end at categorical y. For Gantt-style timelines."})
 ;; Annotation methods reject the universal options that have no
 ;; meaning for a single rule/band: there are no groups to dodge or
 ;; stack, no shape/jitter to vary across an aggregated mark, and the

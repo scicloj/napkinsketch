@@ -594,7 +594,7 @@
                       {:mark :interval-h})))
     {:mark :interval-h
      :style {:opacity (or (:fixed-alpha view) 0.85)
-             :height (or (:height view) 0.7)}
+             :interval-thickness (or (:interval-thickness view) 0.7)}
      :groups groups}))
 
 (defmethod extract-layer :default [view _stat _all-colors _cfg]

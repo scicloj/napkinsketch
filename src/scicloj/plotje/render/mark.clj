@@ -886,12 +886,20 @@
 (defmethod layer->membrane :interval-h [layer ctx]
   (let [{:keys [style groups]} layer
         {:keys [sx sy]} ctx
-        {:keys [opacity height]} style
+        coord-px (:coord-px ctx)
+        ;; Under default coords the lane is on sy; under :coord :flip
+        ;; the panel has already swapped domains so the lane lives on sx.
+        ;; Detect either way by looking for which scale carries a band.
+        sy-band? (try (ws/data sy :bandwidth) (catch Exception _ nil))
+        sx-band? (try (ws/data sx :bandwidth) (catch Exception _ nil))
+        band-s (cond sy-band? sy sx-band? sx :else nil)
+        num-s (if (= band-s sy) sx sy)
+        ;; bar-polygon's `flipped?` means "cat axis is vertical pixels".
+        bp-flipped? (= band-s sy)
+        {:keys [opacity interval-thickness]} style
         op (or opacity 0.85)
-        frac (or height 0.7)
-        ;; The categorical axis is y for interval-h.
-        y-band? (try (ws/data sy :bandwidth) (catch Exception _ nil))]
-    (when-not y-band?
+        frac (or interval-thickness 0.7)]
+    (when-not band-s
       (throw (ex-info (str "lay-interval-h requires a categorical :y column "
                            "(use a string/keyword column, or pass {:y-type :categorical}).")
                       {:mark :interval-h})))
@@ -902,15 +910,10 @@
                  x-end (x-ends i)
                  y-cat (ys i)
                  [cr cg cb _] color
-                 px-start (sx x-start)
-                 px-end (sx x-end)
-                 bp (band-position sy y-cat 0 1 frac)
-                 [px-lo px-hi] (if (< (double px-start) (double px-end))
-                                 [px-start px-end]
-                                 [px-end px-start])
-                 [py-lo py-hi] [(:lo bp) (:hi bp)]]]
+                 bp (band-position band-s y-cat 0 1 frac)
+                 pts (bar-polygon coord-px bp-flipped?
+                                  (:lo bp) (:hi bp)
+                                  (num-s x-start) (num-s x-end))]]
        (ui/with-color [cr cg cb op]
          (ui/with-style ::ui/style-fill
-           (ui/path [px-lo py-lo] [px-hi py-lo]
-                    [px-hi py-hi] [px-lo py-hi]
-                    [px-lo py-lo])))))))
+           (apply ui/path pts)))))))
