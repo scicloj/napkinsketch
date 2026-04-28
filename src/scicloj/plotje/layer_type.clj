@@ -45,10 +45,12 @@
    :y-max "Column keyword for upper error bound of an errorbar, or upper y bound of a horizontal shaded band"
    :side "Rug tick position — :x (default), :y, or :both"
    :density-2d-grid "2D density grid resolution — number of bins per axis (default 25)"
-   :y-intercept "Numeric y-axis position for a horizontal reference line"
-   :x-intercept "Numeric x-axis position for a vertical reference line"
+   :y-intercept "Numeric or temporal y-axis position for a horizontal reference line"
+   :x-intercept "Numeric or temporal x-axis position for a vertical reference line"
    :x-min "Lower x bound of a vertical shaded band"
-   :x-max "Upper x bound of a vertical shaded band"})
+   :x-max "Upper x bound of a vertical shaded band"
+   :x-end "Column keyword for the right-edge x value of a horizontal interval bar"
+   :height "Fraction (0.0–1.0) of the categorical band that an interval bar fills (default 0.7)"})
 
 (def ^:private registry*
   "Atom holding keyword → layer-type entry map."
@@ -82,6 +84,7 @@
    :boxplot :violin :ridgeline
    :summary :errorbar :lollipop
    :text :label :rug
+   :interval-h
    :rule-h :rule-v :band-h :band-v])
 
 ;; ---- Built-in layer types ----

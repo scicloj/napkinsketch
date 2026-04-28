@@ -1705,11 +1705,10 @@
              :x-end column ref in opts (numeric or temporal end).
    Accepts :color, :alpha, :height (band fill fraction, 0.0-1.0, default 0.7).
    (lay-interval-h data :start :task {:x-end :end :color :status})"
-  ([pose-or-data x y opts]
-   (when-not (and (map? opts) (contains? opts :x-end))
-     (throw (ex-info "lay-interval-h requires :x-end in its opts map. Example: (pj/lay-interval-h data :start :task {:x-end :end})"
-                     {:opts opts})))
-   (lay-layer-type :interval-h pose-or-data x y opts)))
+  ([pose-or-data] (lay-layer-type :interval-h pose-or-data))
+  ([pose-or-data x-or-opts] (lay-layer-type :interval-h pose-or-data x-or-opts))
+  ([pose-or-data x y-or-opts] (lay-layer-type :interval-h pose-or-data x y-or-opts))
+  ([pose-or-data x y opts] (lay-layer-type :interval-h pose-or-data x y opts)))
 
 (defn- deep-merge
   "Recursively merge maps. Non-map values are overwritten."
