@@ -589,9 +589,10 @@
         c-min (when all-color-buf (dfn/reduce-min all-color-buf))
         c-max (when all-color-buf (dfn/reduce-max all-color-buf))
         groups (vec
-                (for [{:keys [color xs ys x-ends color-values]} (:points stat)]
+                (for [{:keys [color xs ys x-ends color-values row-indices]} (:points stat)]
                   (cond-> {:color (resolve-color all-colors color (:fixed-color view) cfg)
                            :xs xs :ys ys :x-ends x-ends}
+                    row-indices (assoc :row-indices row-indices)
                     (some? color) (assoc :label (defaults/fmt-category-label color))
                     (and numeric-color? color-values)
                     (assoc :colors
@@ -612,6 +613,7 @@
     {:mark :interval-h
      :style {:opacity (or (:fixed-alpha view) 0.85)
              :interval-thickness (or (:interval-thickness view) 0.7)}
+     :x-temporal? (boolean (:x-temporal? view))
      :groups groups}))
 
 (defmethod extract-layer :default [view _stat _all-colors _cfg]

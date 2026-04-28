@@ -111,6 +111,32 @@
                 color-label (conj (str "color: " color-label)))]
     (str/join ", " parts)))
 
+(defn- fmt-temporal-val
+  "Format a temporalized x value (epoch-ms) as a date string."
+  [v]
+  (try
+    (let [ms (long (double v))
+          inst (java.time.Instant/ofEpochMilli ms)
+          ldt (java.time.LocalDateTime/ofInstant inst java.time.ZoneOffset/UTC)]
+      ;; Drop the time-of-day when it's exactly midnight (LocalDate-only inputs).
+      (if (= 0 (.getHour ldt) (.getMinute ldt) (.getSecond ldt))
+        (str (.toLocalDate ldt))
+        (.toString ldt)))
+    (catch Exception _ (fmt-val v))))
+
+(defn- make-interval-tooltip
+  "Build a tooltip for a horizontal interval bar -- shows the lane (y),
+   the start, the end, and the optional color label. When the x-axis is
+   temporal, x-start and x-end are formatted as date strings rather than
+   raw epoch-ms doubles."
+  [ctx x-temporal? y-cat x-start x-end color-label]
+  (let [{:keys [x-col-name y-col-name]} ctx
+        fmt-x (if x-temporal? fmt-temporal-val fmt-val)
+        parts (cond-> [(str y-col-name ": " (str y-cat))
+                       (str x-col-name ": " (fmt-x x-start) " → " (fmt-x x-end))]
+                color-label (conj (str "color: " color-label)))]
+    (str/join ", " parts)))
+
 ;; ---- layer->membrane multimethod ----
 ;; layer->membrane takes plan layer descriptors (data-space geometry,
 ;; resolved colors) and renders them as membrane drawable primitives.
@@ -884,8 +910,8 @@
 ;; ---- Interval-h (Gantt-style horizontal bars) ----
 
 (defmethod layer->membrane :interval-h [layer ctx]
-  (let [{:keys [style groups]} layer
-        {:keys [sx sy]} ctx
+  (let [{:keys [style groups x-temporal?]} layer
+        {:keys [sx sy tooltip]} ctx
         coord-px (:coord-px ctx)
         ;; Under default coords the lane is on sy; under :coord :flip
         ;; the panel has already swapped domains so the lane lives on sx.
@@ -904,7 +930,7 @@
                            "(use a string/keyword column, or pass {:y-type :categorical}).")
                       {:mark :interval-h})))
     (vec
-     (for [{:keys [color colors xs ys x-ends]} groups
+     (for [{:keys [color colors xs ys x-ends row-indices label]} groups
            i (range (clojure.core/count xs))
            :let [x-start (xs i)
                  x-end (x-ends i)
@@ -916,6 +942,11 @@
                  pts (bar-polygon coord-px bp-flipped?
                                   (:lo bp) (:hi bp)
                                   (num-s x-start) (num-s x-end))]]
-       (ui/with-color [cr cg cb op]
-         (ui/with-style ::ui/style-fill
-           (apply ui/path pts)))))))
+       (-> (ui/translate 0 0
+                         [(ui/with-color [cr cg cb op]
+                            (ui/with-style ::ui/style-fill
+                              (apply ui/path pts)))])
+           (cond->
+            row-indices (assoc :row-idx (row-indices i))
+            tooltip     (assoc :tooltip (make-interval-tooltip
+                                         ctx x-temporal? y-cat x-start x-end label))))))))
