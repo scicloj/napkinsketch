@@ -1,0 +1,461 @@
+(ns
+ plotje-book.timelines-generated-test
+ (:require
+  [tablecloth.api :as tc]
+  [scicloj.metamorph.ml.rdatasets :as rdatasets]
+  [scicloj.kindly.v4.kind :as kind]
+  [scicloj.plotje.api :as pj]
+  [clojure.test :refer [deftest is]]))
+
+
+(def
+ v3_l31
+ (def
+  computing-milestones
+  {:date
+   [#inst "1936-01-01T00:00:00.000-00:00"
+    #inst "1947-12-23T00:00:00.000-00:00"
+    #inst "1969-10-29T00:00:00.000-00:00"
+    #inst "1989-03-12T00:00:00.000-00:00"
+    #inst "2007-06-29T00:00:00.000-00:00"],
+   :y [1 1 1 1 1],
+   :event
+   ["Turing machine"
+    "Transistor"
+    "ARPANET first link"
+    "World Wide Web"
+    "iPhone"]}))
+
+
+(def
+ v4_l41
+ (->
+  computing-milestones
+  (pj/lay-point :date :y {:size 6, :color "#2c3e50"})
+  (pj/lay-text :date :y {:text :event, :nudge-y 0.3, :color "#2c3e50"})
+  (pj/options
+   {:title "Five milestones in computing",
+    :height 220,
+    :y-label "",
+    :x-label "year"})))
+
+
+(deftest
+ t5_l49
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and
+      (= 5 (:points s))
+      (every?
+       (set (:texts s))
+       ["Turing machine"
+        "Transistor"
+        "ARPANET first link"
+        "World Wide Web"
+        "iPhone"]))))
+   v4_l41)))
+
+
+(def
+ v7_l60
+ (def with-staggered-y (assoc computing-milestones :y [2 1 1.5 2 1])))
+
+
+(def
+ v8_l63
+ (->
+  with-staggered-y
+  (pj/lay-point :date :y {:size 6, :color "#2c3e50"})
+  (pj/lay-text
+   :date
+   :y
+   {:text :event, :nudge-y 0.18, :color "#2c3e50"})
+  (pj/options
+   {:title "Same milestones, staggered y for label clarity",
+    :height 260,
+    :y-label "",
+    :x-label "year"})))
+
+
+(deftest
+ t9_l71
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 5 (:points s)) (= 1 (:panels s)))))
+   v8_l63)))
+
+
+(def
+ v11_l82
+ (def
+  unemployment
+  (->
+   (rdatasets/ggplot2-economics)
+   (tc/select-rows
+    (fn*
+     [p1__80939#]
+     (let
+      [d (:date p1__80939#)]
+      (and (>= (.getYear d) 2000) (<= (.getYear d) 2014))))))))
+
+
+(def
+ v12_l88
+ (->
+  unemployment
+  (pj/lay-line :date :unemploy {:color "#34495e"})
+  (pj/lay-rule-v
+   {:x-intercept (java.time.LocalDate/parse "2008-09-15"),
+    :color "#c0392b",
+    :alpha 0.6})
+  (pj/lay-rule-v
+   {:x-intercept (java.time.LocalDate/parse "2001-03-01"),
+    :color "#7f8c8d",
+    :alpha 0.5})
+  (pj/options
+   {:title "US unemployment with recession markers",
+    :y-label "thousands unemployed",
+    :x-label "date",
+    :height 320})))
+
+
+(deftest
+ t13_l99
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 1 (:panels s)) (>= (:lines s) 1))))
+   v12_l88)))
+
+
+(def
+ v15_l114
+ (def
+  project
+  {:start
+   [#inst "2024-01-01T00:00:00.000-00:00"
+    #inst "2024-02-15T00:00:00.000-00:00"
+    #inst "2024-04-01T00:00:00.000-00:00"
+    #inst "2024-05-10T00:00:00.000-00:00"
+    #inst "2024-06-20T00:00:00.000-00:00"],
+   :end
+   [#inst "2024-03-15T00:00:00.000-00:00"
+    #inst "2024-04-20T00:00:00.000-00:00"
+    #inst "2024-06-30T00:00:00.000-00:00"
+    #inst "2024-07-10T00:00:00.000-00:00"
+    #inst "2024-08-30T00:00:00.000-00:00"],
+   :task ["Design" "Build" "Test" "Deploy" "Document"],
+   :team ["UX" "Eng" "QA" "Eng" "UX"]}))
+
+
+(def
+ v16_l122
+ (->
+  project
+  (pj/lay-interval-h :start :task {:x-end :end, :color :team})
+  (pj/options
+   {:title "Project plan -- bars colored by team",
+    :y-label "task",
+    :x-label "",
+    :height 320})))
+
+
+(deftest
+ t17_l129
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 1 (:panels s)) (= 5 (:polygons s)))))
+   v16_l122)))
+
+
+(def
+ v19_l136
+ (->
+  (rdatasets/ggplot2-presidential)
+  (pj/lay-interval-h :start :name {:x-end :end, :color :party})
+  (pj/options
+   {:title "US presidential terms since 1953",
+    :y-label "",
+    :x-label "year",
+    :height 420,
+    :palette ["#3498db" "#e74c3c"]})))
+
+
+(deftest
+ t20_l144
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 1 (:panels s)) (= 12 (:polygons s)))))
+   v19_l136)))
+
+
+(def
+ v22_l159
+ (->
+  project
+  (pj/lay-interval-h
+   :start
+   :task
+   {:x-end :end, :color :team, :height 0.4})
+  (pj/options
+   {:title "height = 0.4 -- thin bars",
+    :y-label "task",
+    :x-label "",
+    :height 320})))
+
+
+(deftest
+ t23_l166
+ (is
+  ((fn [v] (let [s (pj/svg-summary v)] (= 5 (:polygons s)))) v22_l159)))
+
+
+(def
+ v25_l181
+ (def
+  trains
+  (let
+   [stations
+    ["Paris" "Dijon" "Lyon" "Avignon" "Marseille"]
+    express
+    [6.0 8.0 9.5 11.5 13.0]
+    local
+    [7.0 9.5 11.5 14.0 16.0]
+    train-shifts
+    [["Express A" 0.0 express]
+     ["Local B" 1.0 local]
+     ["Express C" 2.5 express]
+     ["Local D" 4.0 local]]]
+   (vec
+    (for
+     [[name shift schedule]
+      train-shifts
+      [station hour]
+      (map vector stations schedule)
+      :let
+      [h (+ hour shift) hh (int h) mm (int (* 60 (- h hh)))]]
+     {:station station,
+      :time (java.time.LocalDateTime/of 2024 6 1 hh mm),
+      :train name})))))
+
+
+(def
+ v26_l202
+ (->
+  trains
+  (pj/lay-line
+   :time
+   :station
+   {:color :train, :y-type :categorical, :size 1.5})
+  (pj/lay-point
+   :time
+   :station
+   {:color :train, :y-type :categorical, :size 5})
+  (pj/options
+   {:title "Marey schedule -- Paris to Marseille",
+    :y-label "",
+    :x-label "time of day",
+    :height 320})))
+
+
+(deftest
+ t27_l210
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 1 (:panels s)) (= 4 (:lines s)) (= 20 (:points s)))))
+   v26_l202)))
+
+
+(def
+ v29_l228
+ (def
+  activity
+  {:start
+   [9.0
+    10.5
+    13.0
+    9.0
+    11.0
+    14.5
+    9.5
+    13.0
+    15.0
+    9.0
+    10.0
+    13.5
+    9.0
+    11.0
+    15.0],
+   :end
+   [10.5
+    12.0
+    17.0
+    11.0
+    12.5
+    17.0
+    13.0
+    15.0
+    17.0
+    10.0
+    12.5
+    17.0
+    11.0
+    15.0
+    17.0],
+   :day
+   ["Mon"
+    "Mon"
+    "Mon"
+    "Tue"
+    "Tue"
+    "Tue"
+    "Wed"
+    "Wed"
+    "Wed"
+    "Thu"
+    "Thu"
+    "Thu"
+    "Fri"
+    "Fri"
+    "Fri"],
+   :kind
+   ["meeting"
+    "deep work"
+    "deep work"
+    "deep work"
+    "meeting"
+    "deep work"
+    "deep work"
+    "meeting"
+    "deep work"
+    "meeting"
+    "meeting"
+    "deep work"
+    "deep work"
+    "meeting"
+    "deep work"]}))
+
+
+(def
+ v30_l252
+ (->
+  activity
+  (pj/lay-interval-h :start :day {:x-end :end, :color :kind})
+  (pj/options
+   {:title "A week, hour-by-hour",
+    :y-label "",
+    :x-label "hour of day",
+    :height 320})))
+
+
+(deftest
+ t31_l259
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 1 (:panels s)) (= 15 (:polygons s)))))
+   v30_l252)))
+
+
+(def
+ v33_l274
+ (->
+  activity
+  (pj/lay-interval-h :start :day {:x-end :end, :color :kind})
+  (pj/facet :kind)
+  (pj/options
+   {:title "Same week, faceted by activity kind",
+    :x-label "hour of day",
+    :y-label "",
+    :height 360})))
+
+
+(deftest
+ t34_l282
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 2 (:panels s)) (= 15 (:polygons s)))))
+   v33_l274)))
+
+
+(def
+ v36_l299
+ (let
+  [plot-svg
+   (pj/plot
+    (->
+     (rdatasets/ggplot2-presidential)
+     (pj/lay-interval-h :start :name {:x-end :end, :color :party})
+     (pj/options
+      {:title "Presidential terms (drag/wheel to explore)",
+       :height 420,
+       :palette ["#3498db" "#e74c3c"]})))
+   attrs
+   (second plot-svg)
+   body
+   (drop 2 plot-svg)
+   plot-id
+   (str "pj-" (System/nanoTime))
+   script
+   (str
+    "(function(){var s=document.getElementById('"
+    plot-id
+    "');"
+    "if(!s)return;"
+    "var o=s.dataset.origVb.split(/\\s+/).map(Number),"
+    "v={x:o[0],y:o[1],w:o[2],h:o[3]},d=false,"
+    "sx=0,sy=0,vx=0,vy=0;"
+    "function a(){s.setAttribute('viewBox',v.x+' '+v.y+' '+v.w+' '+v.h);}"
+    "s.addEventListener('mousedown',function(e){d=true;sx=e.clientX;sy=e.clientY;vx=v.x;vy=v.y;s.style.cursor='grabbing';});"
+    "window.addEventListener('mouseup',function(){d=false;s.style.cursor='grab';});"
+    "window.addEventListener('mousemove',function(e){if(!d)return;"
+    "var r=s.getBoundingClientRect();"
+    "v.x=vx-(e.clientX-sx)*v.w/r.width;v.y=vy-(e.clientY-sy)*v.h/r.height;a();});"
+    "s.addEventListener('wheel',function(e){e.preventDefault();"
+    "var r=s.getBoundingClientRect(),"
+    "px=(e.clientX-r.left)/r.width,"
+    "py=(e.clientY-r.top)/r.height,"
+    "f=(e.deltaY*-1>0)?0.9:1.1,nw=v.w*f,nh=v.h*f;"
+    "v.x+=(v.w-nw)*px;v.y+=(v.h-nh)*py;v.w=nw;v.h=nh;a();},{passive:false});"
+    "s.addEventListener('dblclick',function(){v={x:o[0],y:o[1],w:o[2],h:o[3]};a();});"
+    "})();")]
+  (kind/hiccup
+   [:div
+    {:style "border:1px solid #ddd; padding:4px;"}
+    [:div
+     {:style "font-size:12px; color:#666; margin-bottom:4px;"}
+     "drag to pan; mouse wheel to zoom; double-click to reset"]
+    (into
+     [:svg
+      (assoc
+       attrs
+       :id
+       plot-id
+       :style
+       "cursor:grab; user-select:none;"
+       :data-orig-vb
+       (:viewBox attrs))]
+     body)
+    [:script script]])))
