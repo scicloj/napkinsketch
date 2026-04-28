@@ -431,82 +431,29 @@
                            (and (= 2 (:panels s))
                                 (= 15 (:polygons s)))))])
 
-;; ## Interactive preview (experimental)
+;; ## Interactive timelines
 ;;
-;; Plotje renders SVG hiccup. Any Kindly-compatible notebook tool
-;; that handles `kind/hiccup` with embedded `[:script ...]` forms
-;; can wrap a Plotje plot in a small JavaScript layer for pan,
-;; zoom, or hover -- without any library changes.
-;;
-;; The cell below wraps a presidential-Gantt SVG in an HTML
-;; container with a tiny
-;; [viewBox](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox)-based
-;; pan / zoom script (the same trick used by libraries like
-;; [svg-pan-zoom](https://github.com/bumbu/svg-pan-zoom)). It is
-;; purely additive: the SVG is the same one Plotje produces; the
-;; wrapper adds an id, a cursor style, and a script that mutates
-;; the viewBox in response to mouse events.
+;; Pass `:tooltip true` to add hover-text on each interval, or
+;; `:brush true` for drag-to-select highlighting (the same
+;; built-in mechanisms that work for points). For pan, zoom, or
+;; save-as-PNG, see the
+;; [Interactivity](./plotje_book.interactivity.html) chapter,
+;; which uses the presidential Gantt as one of its examples.
 
-(let [plot-svg (pj/plot
-                (-> (rdatasets/ggplot2-presidential)
-                    (pj/lay-interval-h :start :name {:x-end :end :color :party})
-                    (pj/options {:title "Presidential terms (drag/wheel to explore)"
-                                 :height 420
-                                 :palette ["#3498db" "#e74c3c"]})))
-      attrs (second plot-svg)
-      body (drop 2 plot-svg)
-      plot-id (str "pj-" (System/nanoTime))
-      ;; The pan/zoom script reads data-original-viewbox to know
-      ;; how to reset, then mutates the viewBox attribute on each
-      ;; mouse event. Building the script as a single string keeps
-      ;; the source code display readable.
-      script (str "(function(){var s=document.getElementById('" plot-id "');"
-                  "if(!s)return;"
-                  "var o=s.dataset.origVb.split(/\\s+/).map(Number),"
-                  "v={x:o[0],y:o[1],w:o[2],h:o[3]},d=false,"
-                  "sx=0,sy=0,vx=0,vy=0;"
-                  "function a(){s.setAttribute('viewBox',v.x+' '+v.y+' '+v.w+' '+v.h);}"
-                  "s.addEventListener('mousedown',function(e){d=true;sx=e.clientX;sy=e.clientY;vx=v.x;vy=v.y;s.style.cursor='grabbing';});"
-                  "window.addEventListener('mouseup',function(){d=false;s.style.cursor='grab';});"
-                  "window.addEventListener('mousemove',function(e){if(!d)return;"
-                  "var r=s.getBoundingClientRect();"
-                  "v.x=vx-(e.clientX-sx)*v.w/r.width;v.y=vy-(e.clientY-sy)*v.h/r.height;a();});"
-                  "s.addEventListener('wheel',function(e){e.preventDefault();"
-                  "var r=s.getBoundingClientRect(),"
-                  "px=(e.clientX-r.left)/r.width,"
-                  "py=(e.clientY-r.top)/r.height,"
-                  "f=(e.deltaY*-1>0)?0.9:1.1,nw=v.w*f,nh=v.h*f;"
-                  "v.x+=(v.w-nw)*px;v.y+=(v.h-nh)*py;v.w=nw;v.h=nh;a();},{passive:false});"
-                  "s.addEventListener('dblclick',function(){v={x:o[0],y:o[1],w:o[2],h:o[3]};a();});"
-                  "})();")]
-  (kind/hiccup
-   [:div {:style "border:1px solid #ddd; padding:4px;"}
-    [:div {:style "font-size:12px; color:#666; margin-bottom:4px;"}
-     "drag to pan; mouse wheel to zoom; double-click to reset"]
-    (into [:svg (assoc attrs
-                       :id plot-id
-                       :style "cursor:grab; user-select:none;"
-                       :data-orig-vb (:viewBox attrs))]
-          body)
-    [:script script]]))
+(-> (rdatasets/ggplot2-presidential)
+    (pj/lay-interval-h :start :name {:x-end :end :color :party})
+    (pj/options {:title "Hover for term details"
+                 :tooltip true
+                 :height 420
+                 :palette ["#3498db" "#e74c3c"]}))
 
-;; What the wrapper does, end-to-end:
-;;
-;; 1. `pj/plot` returns SVG hiccup (a vector starting with `:svg`).
-;; 2. The let-bindings pull off the attributes map and child elements,
-;;    then re-emit the same SVG with an injected `:id` and a `:data-orig-vb`
-;;    holding the original viewBox so the script can reset on double-click.
-;; 3. A single `:script` element runs an IIFE: it attaches mousedown,
-;;    mousemove, wheel, and dblclick listeners that mutate `viewBox`.
-;; 4. The whole thing is wrapped in `kind/hiccup` so Clay's HTML output
-;;    treats it as live HTML rather than data.
-;;
-;; A production-grade interactive layer would add: bounded panning so
-;; the chart doesn't drift off-screen, animation easing on reset,
-;; programmatic reset from outside, and tap gestures on touchscreens.
+(kind/test-last [(fn [pose] (let [s (str (pj/plot pose))]
+                              (and (re-find #":data-tooltip" s)
+                                   (re-find #" → " s))))])
 
 ;; ## What's next
 ;;
+;; - [**Interactivity**](./plotje_book.interactivity.html) -- tooltip, brush, pan/zoom, save-as-PNG
 ;; - [**Change Over Time**](./plotje_book.change_over_time.html) -- line, step, area on a date axis
 ;; - [**Faceting**](./plotje_book.faceting.html) -- splitting one chart into many panels
 ;; - [**Customization**](./plotje_book.customization.html) -- titles, palettes, size, scales
