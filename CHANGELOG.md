@@ -11,6 +11,132 @@ Staged for the upcoming first public alpha release. The API and
 visual defaults are still subject to change based on early adopter
 feedback.
 
+### Internal: `plan->membrane` dispatch on `:composite?` flag
+
+The internal `plan->membrane` rendering pass now dispatches on a
+boolean `:composite?` flag carried on every plan, instead of on
+the runtime class of the plan record. This eliminates a
+class-retention vector that caused long-lived nREPL sessions to
+accumulate stale `Plan` and `CompositePlan` entries in the
+dispatch table across `:reload` cycles -- the dispatch table now
+stays at two boolean entries, regardless of how many times the
+plan namespace is reloaded.
+
+A separate, deeper class-retention path in `clojure.core/eval`
+was identified during the same investigation; that one lives
+upstream and is unaffected by this change. See
+`dev-notes/heap-leak-investigation-2026-04-28.md` and
+`dev-notes/clay-leak-diagnosis-2026-04-28.md`.
+
+### Breaking: terminology rename batch
+
+A six-step rename clarifies vocabulary across the pipeline. One
+public-API breaking change; the rest are internal:
+
+Public:
+
+- `pj/layer?` -> `pj/plan-layer?` (predicate for the plan-stage
+  layer record produced by `pj/plan`).
+
+Internal:
+
+- `Layer` defrecord -> `PlanLayer`.
+- `Layer` Malli schema -> `PoseLayer`.
+- `Method` defrecord -> `LayerType`.
+- `view` (as a noun naming a plan-stage element) -> `draft-layer`
+  across ~210 internal references.
+- `:__entry-idx` -> `:__panel-idx`, with follow-on identifier
+  renames.
+- Internal `method?` -> `layer-type?`. The public
+  `pj/layer-type?` was already correct.
+
+The rename batch also removed ~108 lines of dead code in
+`impl/resolve.clj` (six unused helpers, three private stubs)
+surfaced during the audit.
+
+Migration: `s/pj\/layer\?/pj\/plan-layer?/g` on consumer code.
+Internal record and schema names are not part of the public API.
+
+### `pj/lay-interval-h` (Gantt primitive) and temporal rule intercepts
+
+A new mark for horizontal interval ("Gantt") plots: each row
+gets a bar from `:x` to `:x-end`. Categorical and numeric color,
+`:interval-thickness` for bar height, and `(pj/coord :flip)` for
+vertical Gantts all participate.
+
+Companion fix: `pj/lay-rule-h` and `pj/lay-rule-v` now accept
+`LocalDate`, `Instant`, and `java.util.Date` intercepts on
+temporal axes. Previously only numeric intercepts were honored
+even on date x-axes.
+
+Also: schema relaxation around log color (which incidentally
+unblocks `pj/lay-tile` with `:log` color), tooltip and brush
+participation, and cross-panel linking. Worked examples in the
+`timelines.clj` and `interactivity.clj` exploratory notebooks
+(not currently in `chapters.edn`).
+
+### Input-validation guards close three more silent-failure paths
+
+Three additional entry-point inputs that used to crash deep or
+produce silent confusion now throw at the boundary:
+
+- `:x-type :categorical` on a `LocalDate` column now plans
+  cleanly. Previously failed with `ClassCastException` from
+  `dfn/finite?` -- the `:packed-local-date` representation
+  reports as numeric, so the infinity-filter path was wrong
+  for user-declared categorical date columns.
+- A pre-rendered hiccup vector at the input gate now throws
+  with guidance ("looks like a rendered hiccup vector -- pass
+  the pose itself, not the result of pj/plot") instead of a
+  deep `Tensors must be 2 dimensional` from `tc/dataset`.
+- `:y-type :categorical` on the marks that don't support
+  arbitrary y categoricals (`:lollipop`, `:summary`,
+  `:ridgeline`, `:pointrange`) now throws pointing at
+  `pj/coord :flip` as the correct path for vertical layouts.
+
+### `pj/scale` extended to visual channels
+
+`pj/scale` previously accepted only `:x` and `:y`. It now also
+accepts the four continuous visual channels `:size`, `:alpha`,
+`:fill`, and `:color`, with `:linear` and `:log` scale types.
+`:categorical` does not apply to a continuous encoding and is
+rejected on these channels.
+
+```clojure
+(pj/scale pose :size :log)         ; log-spaced point sizes
+(pj/scale pose :fill :log)         ; log-spaced tile fill
+(pj/scale pose :color
+          {:type :log :domain [0.001 100]})
+```
+
+Log-scaled fill legends carry intermediate tick labels along the
+gradient bar; non-positive values raise a clear error mirroring
+the axis-side log-scale guard. Documentation in
+`customization.clj`, `options_and_scopes.clj`, `pose_rules.clj`
+(Rule O2 generalized to all six channels), and
+`api_reference.clj`.
+
+### `pj/pose` 3-arity: multi-pair plus aesthetic opts
+
+`(pj/pose data multi-pair-spec opts)` folds the prior two-call
+SPLOM idiom into a single call:
+
+```clojure
+;; Before
+(-> data
+    (pj/pose {:color :species})
+    (pj/pose (pj/cross cols cols)))
+
+;; After
+(pj/pose data (pj/cross cols cols) {:color :species})
+```
+
+The opts map attaches at the composite root and flows into every
+panel, so the resulting structure is identical to the two-call
+form (Rule C9 with Property P-C9 in `pose_rules.clj`). SPLOM
+call sites in README, scatter, api_reference, gallery,
+edge_cases, and customization migrated to the new shape.
+
 ### Retired: `pj/prepare-pose` (consolidated into `pj/pose`)
 
 `pj/pose` is now the single public constructor. The 1-arity
@@ -746,10 +872,11 @@ produce crashes on canonical inputs.
   (column labels are centered correctly).
 - Histograms, stacked bars, step plots, and other stat-derived
   marks do not default to a `"count"` or `"density"` y-label.
-- Continuous color legends (numeric `:color` mapping) label only
-  the endpoint tick marks on the gradient bar. Intermediate
-  values are unlabeled, making it hard to map interior colors
-  back to data values.
+- Linear continuous color legends (numeric `:color` mapping with
+  `:linear` scale) label only the endpoint tick marks on the
+  gradient bar. Intermediate values are unlabeled, making it hard
+  to map interior colors back to data values. Log-scaled
+  continuous color and fill legends do carry intermediate ticks.
 - SPLOMs with 6+ variables at the default 600x400 have tight panels.
   Bump `:width`/`:height` or pin `:panel-width`/`:panel-height`.
 - Horizontal bars from `(pj/coord :flip)` render the first row of
