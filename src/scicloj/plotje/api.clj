@@ -241,7 +241,7 @@
 (defn membrane->plot
   "Convert a membrane drawable tree into a figure for the given format.
    Dispatches on format keyword; :svg is always available.
-   (membrane->plot (plan->membrane (plan views)) :svg {})"
+   (membrane->plot (plan->membrane (plan pose)) :svg {})"
   [membrane-tree format opts]
   (render-impl/membrane->plot membrane-tree format opts))
 

@@ -444,7 +444,7 @@
    :polygons, :tiles, :visible-tiles, :texts, :colors, :sizes,
    :alphas, and :shapes — useful for asserting plot structure and
    that aesthetic mappings (color/size/alpha/shape) took effect.
-   (svg-summary (plot views))  — summary of rendered SVG
+   (svg-summary (plot pose))  — summary of rendered SVG
 
    Structure counts:
    :panels  — number of plot panels (large background rectangles)
