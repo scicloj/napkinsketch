@@ -964,18 +964,10 @@
        (prepare-pose (extend-or-promote x mapping))
        (prepare-pose (pose-from-data (or data-over x) mapping))))))
 
-(def ^:private position-aesthetic-keys
-  "Mapping keys whose keyword values are always column references
-   (no literal-value path). Used by with-data's attach-time
-   validation. :color / :size / :alpha keyword values are also
-   column refs, but the validator ignores string values since
-   those are ambiguous (\"red\" might be a CSS color)."
-  [:x :y :color :size :alpha :group :text :y-min :y-max :x-end :fill :shape])
-
 (defn- column-refs-in-mapping [m]
   (keep #(let [v (get m %)]
            (when (keyword? v) v))
-        position-aesthetic-keys))
+        defaults/column-keys))
 
 (defn- column-refs-in-pose
   "Collect every keyword column reference used by a pose's :mapping,
