@@ -1848,21 +1848,32 @@
   "Channel keyword to the opts key holding its scale spec."
   {:x :x-scale :y :y-scale
    :size :size-scale :alpha :alpha-scale
-   :fill :fill-scale :color :color-scale})
+   :fill :fill-scale :color :color-scale
+   :shape :shape-scale :group :group-scale})
 
-(def ^:private visual-scale-channels
+(def ^:private continuous-visual-channels
   "Continuous visual channels. These accept :linear and :log only --
    :categorical does not apply to a continuous encoding."
   #{:size :alpha :fill :color})
+
+(def ^:private discrete-visual-channels
+  "Discrete visual channels. These accept :categorical only -- there
+   is no continuous interpretation for a shape symbol or a grouping
+   identity."
+  #{:shape :group})
 
 (def ^:private valid-axis-scale-types
   "Scale types accepted on :x / :y. :linear and :log are continuous;
    :categorical lets users supply an explicit ordering via :domain."
   #{:linear :log :categorical})
 
-(def ^:private valid-visual-scale-types
+(def ^:private valid-continuous-visual-scale-types
   "Scale types accepted on :size / :alpha / :fill / :color."
   #{:linear :log})
+
+(def ^:private valid-discrete-visual-scale-types
+  "Scale types accepted on :shape / :group."
+  #{:categorical})
 
 (defn scale
   "Set scale on a pose. Scale is plot-level -- it applies across every
@@ -1872,30 +1883,42 @@
    it at plan time.
 
    Axis channels (:x, :y) accept :linear, :log, :categorical.
-   Visual channels (:size, :alpha, :fill, :color) accept :linear and
-   :log only -- :categorical does not apply to a continuous encoding.
+   Continuous visual channels (:size, :alpha, :fill, :color) accept
+   :linear and :log only -- :categorical does not apply.
+   Discrete visual channels (:shape, :group) accept :categorical only --
+   :linear and :log do not apply to a discrete encoding. The :domain
+   on a discrete scale gives explicit category order for the legend.
 
    (scale pose :x :log)                                -- log scale on x-axis
    (scale pose :x {:type :categorical :domain [...]})  -- explicit category order
    (scale pose :y {:type :linear :breaks [0 5 10]})    -- pin tick locations
    (scale pose :y {:type :log :domain [1 1000]})       -- log scale with explicit range
    (scale pose :size :log)                             -- log-spaced point sizes
-   (scale pose :fill :log)                             -- log-spaced tile fill"
+   (scale pose :fill :log)                             -- log-spaced tile fill
+   (scale pose :shape {:type :categorical :domain [...]})  -- shape legend order"
   [pose channel scale-type]
   (let [k (or (channel->scale-key channel)
               (throw (ex-info (str "Scale channel must be one of "
                                    (vec (sort (keys channel->scale-key)))
                                    ", got: " channel)
                               {:channel channel})))
-        visual? (visual-scale-channels channel)
-        valid-types (if visual? valid-visual-scale-types valid-axis-scale-types)
+        cont-visual? (continuous-visual-channels channel)
+        disc-visual? (discrete-visual-channels channel)
+        valid-types (cond
+                      cont-visual? valid-continuous-visual-scale-types
+                      disc-visual? valid-discrete-visual-scale-types
+                      :else        valid-axis-scale-types)
         type-kw (if (map? scale-type) (:type scale-type) scale-type)]
     (when-not (or (nil? type-kw) (valid-types type-kw))
       (throw (ex-info
               (cond
-                (and visual? (= type-kw :categorical))
+                (and cont-visual? (= type-kw :categorical))
                 (str "Visual channel " channel " is continuous and does not"
                      " support :categorical scale. Supported: "
+                     (vec (sort valid-types)) ".")
+                (and disc-visual? (#{:linear :log} type-kw))
+                (str "Visual channel " channel " is discrete and does not"
+                     " support continuous scale (" type-kw "). Supported: "
                      (vec (sort valid-types)) ".")
                 :else
                 (str "Unknown scale type: " type-kw ". Supported for "
@@ -1903,7 +1926,8 @@
               {:channel channel :scale-type type-kw
                :supported (vec (sort valid-types))})))
     (update-opts pose assoc k (if (map? scale-type)
-                                (merge {:type :linear} scale-type)
+                                (merge {:type (if disc-visual? :categorical :linear)}
+                                       scale-type)
                                 {:type scale-type}))))
 
 (defn coord
