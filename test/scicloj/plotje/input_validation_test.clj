@@ -213,6 +213,38 @@
            #"pj/plan->plot"
            (pj/plot pl))))))
 
+(deftest draft-on-plan-throws
+  (testing "(pj/draft (pj/plan pose)) throws with helpful message"
+    (let [pl (pj/plan (pj/lay-point tiny :x :y))]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"pj/draft expects a pose, not a plan"
+           (pj/draft pl)))))
+
+  (testing "(pj/draft (pj/plan composite)) throws on composite plans too"
+    (let [pl (pj/plan (pj/arrange [(pj/lay-point tiny :x :y)
+                                   (pj/lay-line  tiny :x :y)]))]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"pj/draft expects a pose, not a plan"
+           (pj/draft pl))))))
+
+(deftest plot-on-draft-throws
+  (testing "(pj/plot (pj/draft pose)) throws with helpful message"
+    (let [d (pj/draft (pj/lay-point tiny :x :y))]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"pj/plot expects a pose, not a draft"
+           (pj/plot d)))))
+
+  (testing "(pj/plot (pj/draft composite)) throws on composite drafts too"
+    (let [d (pj/draft (pj/arrange [(pj/lay-point tiny :x :y)
+                                   (pj/lay-line  tiny :x :y)]))]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"pj/plot expects a pose, not a draft"
+           (pj/plot d))))))
+
 (deftest pose-2-arity-extracts-data-from-opts
   (testing "(pj/pose nil {:data X :x ... :y ...}) attaches X as data, mapping omits :data"
     (let [data {:a [1 2 3] :b [4 5 6]}

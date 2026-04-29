@@ -47,6 +47,18 @@
   [x]
   (resolve/composite-draft? x))
 
+(defn- draft-shape?
+  "True if x is the shape that pj/draft produces: a CompositeDraft
+   record, or a non-empty vector of draft layers (maps carrying the
+   internal :__panel-idx key). Used by cross-stage misuse guards on
+   pj/plan and pj/plot. The :__panel-idx check distinguishes a draft
+   from a vector of row maps used as plot data."
+  [x]
+  (or (resolve/composite-draft? x)
+      (and (vector? x)
+           (seq x)
+           (every? #(and (map? %) (contains? % :__panel-idx)) x))))
+
 (defn plan-layer?
   "Return true if x is a plan-layer (resolved geometry for one mark)."
   [x]
@@ -1953,6 +1965,12 @@
    (draft pose)
    (draft pose {:width 800 :title \"Plot\"})"
   ([pose]
+   (when (plan? pose)
+     (throw (ex-info (str "pj/draft expects a pose, not a plan. "
+                          "A plan is the resolved geometry produced "
+                          "by pj/plan; pass the original pose to "
+                          "pj/draft, or work with the plan directly.")
+                     {:got :plan})))
    (let [fr (ensure-pose pose "pj/draft")]
      (if (pose/composite? fr)
        (compositor/composite-pose->draft fr)
@@ -2009,6 +2027,12 @@
                           "pj/plan->plot on the plan, or pass the "
                           "original pose to pj/plot.")
                      {:got :plan})))
+   (when (draft-shape? pose)
+     (throw (ex-info (str "pj/plot expects a pose, not a draft. "
+                          "A draft is an intermediate stage produced "
+                          "by pj/draft; pass the original pose to "
+                          "pj/plot to render it end-to-end.")
+                     {:got :draft})))
    (let [fr (ensure-pose pose "pj/plot")
          fmt (or (:format (:opts fr)) :svg)]
      (ensure-renderer-loaded! fmt)
