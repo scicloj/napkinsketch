@@ -266,7 +266,7 @@
 (def v73_l549 (count pj/plot-option-docs))
 
 
-(deftest t74_l551 (is ((fn [n] (= 13 n)) v73_l549)))
+(deftest t74_l551 (is ((fn [n] (= 14 n)) v73_l549)))
 
 
 (def v76_l569 (count pj/layer-option-docs))

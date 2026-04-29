@@ -94,6 +94,25 @@
                            (and (= 150 (:points s))
                                 (some #{"Petal length (override)"} (:texts s)))))])
 
+;; ### Color vs Fill
+;;
+;; `:color` and `:fill` are kept separate, matching the ggplot2 model:
+;; `:color` paints the stroke or outline (point edge, line), and
+;; `:fill` paints the interior (tile, density2d cell, bar). For point
+;; layers and line layers `:color` is the natural channel; for area
+;; or interior-painted marks (`lay-tile`, `lay-density-2d`,
+;; `lay-bin2d`) `:fill` is the natural channel. They each have their
+;; own legend title override -- `:color-label` for `:color` and
+;; `:fill-label` for `:fill`:
+
+(-> {:x [1 2 3 1 2 3] :y [1 1 1 2 2 2] :z [10 20 30 40 50 60]}
+    (pj/lay-tile :x :y {:fill :z})
+    (pj/options {:fill-label "Score"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (some #{"Score"} (:texts s))
+                                (pos? (:visible-tiles s)))))])
+
 ;; ## Scales
 
 ;; Use a log scale for data spanning orders of magnitude.

@@ -409,6 +409,7 @@
    :x-label ["Content" "X-axis label (overrides inferred)"]
    :y-label ["Content" "Y-axis label (overrides inferred)"]
    :color-label ["Content" "Color legend title (overrides inferred column name)"]
+   :fill-label ["Content" "Fill legend title (overrides inferred column name; used by tile fills, density-2d, bin2d)"]
    :size-label ["Content" "Size legend title (overrides inferred column name)"]
    :alpha-label ["Content" "Alpha legend title (overrides inferred column name)"]
    :panel-width ["Layout" "Pin panel width in pixels (escape hatch; :width becomes derived total)"]

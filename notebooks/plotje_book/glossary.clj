@@ -548,7 +548,7 @@ my-pose
 
 (count pj/plot-option-docs)
 
-(kind/test-last [(fn [n] (= 13 n))])
+(kind/test-last [(fn [n] (= 14 n))])
 
 ;; ## Layer Options
 ;;

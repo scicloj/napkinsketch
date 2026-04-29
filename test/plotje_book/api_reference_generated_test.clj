@@ -221,7 +221,9 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__74131#] (Math/sin (* p1__74131# 0.3))) (range 30))}))
+   (map
+    (fn* [p1__466059#] (Math/sin (* p1__466059# 0.3)))
+    (range 30))}))
 
 
 (def v45_l162 (-> wave (pj/lay-line :x :y)))
@@ -330,9 +332,9 @@
     :y
     (mapv
      (fn*
-      [p1__74132#]
+      [p1__466060#]
       (+
-       (Math/sin (* p1__74132# 0.2))
+       (Math/sin (* p1__466060# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (pj/lay-point :x :y)
@@ -1119,7 +1121,7 @@
 (def v233_l697 (count pj/plot-option-docs))
 
 
-(deftest t234_l699 (is ((fn [n] (= 13 n)) v233_l697)))
+(deftest t234_l699 (is ((fn [n] (= 14 n)) v233_l697)))
 
 
 (def v235_l701 (kind/doc #'pj/layer-option-docs))

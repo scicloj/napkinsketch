@@ -827,8 +827,11 @@
    with :fill). Returns a continuous legend map or nil.
    When :fill-scale or :color-scale is {:type :log}, the gradient
    stops sample colors in log-space and the legend carries log-spaced
-   ticks for the renderer to label."
-  [panel-data resolved-all cfg]
+   ticks for the renderer to label.
+   `opts-title` (from a user-supplied `:fill-label` plot option)
+   overrides the inferred title (`:count`, `:relative-density`, or
+   `:fill`)."
+  [panel-data resolved-all cfg opts-title]
   (let [stat-fill-range (some (fn [pd]
                                 (some :fill-range (:stat-results pd)))
                               panel-data)
@@ -850,10 +853,11 @@
                        :linear)]
     (when f-lo
       (let [grad-fn (:gradient-fn cfg)
-            title (cond
-                    (= stat-kind :bin2d) :count
-                    (= stat-kind :density-2d) :relative-density
-                    :else :fill)
+            title (or opts-title
+                      (cond
+                        (= stat-kind :bin2d) :count
+                        (= stat-kind :density-2d) :relative-density
+                        :else :fill))
             n-stops 20
             log? (= :log scale-type)
             ;; For log: sample t in [0,1] but compute the corresponding
@@ -1115,7 +1119,8 @@
                   (build-legend resolved-all numeric-color? all-colors color-cols cfg (:color-label opts)))
          legend (or legend
                     (when-not suppress-legend?
-                      (build-fill-fallback-legend panel-data resolved-all cfg)))
+                      (build-fill-fallback-legend panel-data resolved-all cfg
+                                                  (:fill-label opts))))
          size-legend (when-not suppress-legend?
                        (build-size-legend resolved-all (:size-label opts)))
          alpha-legend (when-not suppress-legend?
