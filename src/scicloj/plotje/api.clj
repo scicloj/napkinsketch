@@ -767,7 +767,7 @@
     (some? data) (assoc :data data)
     (seq mapping) (assoc :mapping mapping)))
 
-(declare pose)
+(declare pose with-data)
 
 (defn- pairs->rows
   "Detect whether `pairs` forms a rectangular M x N grid -- every
@@ -930,6 +930,8 @@
      (pj/pose fr (pj/cross cols cols) {:color :c})
                                          -- SPLOM plus aesthetic mapping
                                             at the composite root
+     (pj/pose fr {:data X :color :c})    -- extend mapping AND replace
+                                            the top-level data with X
 
    On a hand-built pose-shaped map (1-arity, input has :layers or
    :poses): the map is validated and tagged with Kindly auto-render
@@ -961,7 +963,8 @@
              mapping   (dissoc opts :data)]
          (check-position-mapping "pj/pose" mapping)
          (if (pose? x)
-           (prepare-pose (extend-or-promote x mapping))
+           (cond-> (prepare-pose (extend-or-promote x mapping))
+             data-over (with-data data-over))
            (prepare-pose (pose-from-data (or data-over x) mapping))))
        (let [mapping {:x y}]
          (check-position-mapping "pj/pose" mapping)
@@ -984,7 +987,8 @@
            mapping   (-> opts (dissoc :data) (merge {:x y}))]
        (check-position-mapping "pj/pose" mapping)
        (if (pose? x)
-         (prepare-pose (extend-or-promote x mapping))
+         (cond-> (prepare-pose (extend-or-promote x mapping))
+           data-over (with-data data-over))
          (prepare-pose (pose-from-data (or data-over x) mapping))))
 
      :else
@@ -1007,7 +1011,8 @@
          mapping   (-> opts (dissoc :data) (merge {:x y :y z}))]
      (check-position-mapping "pj/pose" mapping)
      (if (pose? x)
-       (prepare-pose (extend-or-promote x mapping))
+       (cond-> (prepare-pose (extend-or-promote x mapping))
+         data-over (with-data data-over))
        (prepare-pose (pose-from-data (or data-over x) mapping))))))
 
 (defn- column-refs-in-mapping [m]

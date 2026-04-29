@@ -3,6 +3,7 @@
    failure gaps: nil data, non-collection data, empty-pose save, and
    non-map last arg in pj/pose's 4-arity."
   (:require [clojure.test :refer [deftest testing is]]
+            [tablecloth.api :as tc]
             [scicloj.plotje.api :as pj]))
 
 (def tiny {:x [1.0 2.0 3.0] :y [4.0 5.0 6.0]})
@@ -233,11 +234,12 @@
       (is (= data (:data p)))
       (is (= {:x :a :y :b} (:mapping p)))))
 
-  (testing "extending an existing pose ignores opts :data (mirror 3/4-arity)"
+  (testing "extending an existing pose: opts :data replaces the dataset"
     (let [base (pj/pose {:a [1 2] :b [3 4]} {:x :a :y :b})
-          ext  (pj/pose base {:data {:c [9]} :color :a})]
-      (is (= (:data base) (:data ext))
-          "existing pose's data wins; use pj/with-data to replace"))))
+          new  {:a [10 20 30] :b [40 50 60]}
+          ext  (pj/pose base {:data new :color :a})]
+      (is (= (tc/dataset new) (:data ext))
+          "opts :data replaces base's data on extend (consistent across arities)"))))
 
 (deftest pose-scalar-column-ref-throws
   (testing "(pj/pose data {:x 5}) throws with helpful column-ref message"
