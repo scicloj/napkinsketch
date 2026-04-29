@@ -434,6 +434,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#how-to-extend-add-a-new-mark-type" id="toc-how-to-extend-add-a-new-mark-type" class="nav-link" data-scroll-target="#how-to-extend-add-a-new-mark-type">How to extend: add a new mark type</a></li>
   <li><a href="#how-to-extend-register-a-layer-type-and-create-a-pose-compatible-layer-function" id="toc-how-to-extend-register-a-layer-type-and-create-a-pose-compatible-layer-function" class="nav-link" data-scroll-target="#how-to-extend-register-a-layer-type-and-create-a-pose-compatible-layer-function">How to extend: register a layer type and create a pose-compatible layer function</a></li>
+  <li><a href="#annotation-marks-live-on-the-panels-annotations-not-layers" id="toc-annotation-marks-live-on-the-panels-annotations-not-layers" class="nav-link" data-scroll-target="#annotation-marks-live-on-the-panels-annotations-not-layers">Annotation marks live on the panel’s <code>:annotations</code>, not <code>:layers</code></a></li>
   </ul></li>
   <li><a href="#plan-plot" id="toc-plan-plot" class="nav-link" data-scroll-target="#plan-plot"><code>plan-&gt;plot</code></a>
   <ul>
@@ -1121,6 +1122,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb63-13"><a href="#cb63-13" aria-hidden="true" tabindex="-1"></a>  ([data x y opts] (<span class="kw">-&gt;</span> data (pj/pose x y) (pj/lay (<span class="kw">merge</span> (layer-type/lookup <span class="at">:waterfall</span>) opts)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Users can then call <code>(lay-waterfall data :category :amount)</code>.</p>
 <p>Note: if your custom mark is not one of the built-in marks, you also need a <code>layer-&gt;membrane</code> defmethod for the SVG renderer. Without one, the library throws an error explaining which defmethod to add.</p>
+</section>
+<section id="annotation-marks-live-on-the-panels-annotations-not-layers" class="level3">
+<h3 class="anchored" data-anchor-id="annotation-marks-live-on-the-panels-annotations-not-layers">Annotation marks live on the panel’s <code>:annotations</code>, not <code>:layers</code></h3>
+<p>The four annotation marks – <code>:rule-h</code>, <code>:rule-v</code>, <code>:band-h</code>, <code>:band-v</code> – are split out of the per-panel <code>:layers</code> list during planning and rendered from a separate <code>:annotations</code> slot on each panel of the resolved plan. Extension authors building tooling that walks a plan should expect to find these on panel <code>:annotations</code>, not on panel <code>:layers</code>. The split is driven by <code>scicloj.plotje.impl.resolve/annotation-marks</code>, the canonical set of annotation mark keywords; if you add a custom annotation-style mark that should follow the same lifecycle, register it there.</p>
 </section>
 </section>
 <section id="plan-plot" class="level2">
