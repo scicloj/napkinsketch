@@ -448,6 +448,19 @@
                     "representative color from the gradient legend; use "
                     ":color-type :categorical to split into multiple lines.")))))
 
+(defn- warn-fill-scale-without-fill!
+  "Warn once when `:fill-scale` is set but no draft layer maps to
+   `:fill`. Most marks paint with `:color`, not `:fill`; this catches
+   the common slip of writing `(pj/scale :fill ...)` when `:color`
+   was meant."
+  [resolved-all opts]
+  (when (and (:fill-scale opts)
+             (not-any? :fill resolved-all))
+    (println "Warning: pj/scale :fill set but no descendant layer uses"
+             ":fill -- did you mean :color? :fill paints interior of"
+             "tile/density-2d/bin2d marks; :color paints stroke or"
+             "outline (point edge, line).")))
+
 (defn- build-legend
   "Build legend from resolved draft layers and color info. Returns nil when the
    legend would be empty (no data, or all nil/NaN in the color column).
@@ -1001,6 +1014,7 @@
          (collect-colors draft-layers)
          _ (warn-palette-wrap! all-colors cfg)
          _ (warn-monochrome-numeric-color! resolved-all)
+         _ (warn-fill-scale-without-fill! resolved-all opts)
 
          ;; Representative scale/coord (first draft layer) for plot-level decisions
          default-x-scale {:type :linear}
