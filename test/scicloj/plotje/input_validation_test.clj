@@ -629,3 +629,20 @@
   (testing "(pj/cross [:a :b] [:c :d]) returns the 2x2 cross product"
     (is (= [[:a :c] [:a :d] [:b :c] [:b :d]]
            (pj/cross [:a :b] [:c :d])))))
+
+(deftest pj-lay-eager-layer-type-validation
+  (let [pose (pj/pose tiny :x :y)]
+    (testing "unknown keyword throws at pj/lay, not deferred to plan"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Unknown layer type: :stackedbar.*Registered layer types"
+           (pj/lay pose :stackedbar))))
+
+    (testing "registered keyword passes through"
+      (is (some? (pj/lay pose :point))))
+
+    (testing ":infer sentinel passes through"
+      (is (some? (pj/lay pose :infer))))
+
+    (testing "extension map (entry shape) passes through"
+      (is (some? (pj/lay pose {:mark :point}))))))

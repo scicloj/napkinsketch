@@ -1264,6 +1264,25 @@
                    structural)
       d (assoc :data (coerce-dataset d)))))
 
+(defn- validate-lay-layer-type-key
+  "Reject an unregistered layer-type keyword at the pj/lay gate so
+   the user gets the same eager error that lay-* gives via :mark.
+   :infer is the auto-inference sentinel; maps are the extension
+   form (a layer-type entry produced by layer-type/lookup or hand-
+   built by an extension author)."
+  [layer-type-key]
+  (when (and (keyword? layer-type-key)
+             (not= :infer layer-type-key)
+             (nil? (layer-type/lookup layer-type-key)))
+    (let [registered (sort (keys (layer-type/registered)))]
+      (throw (ex-info (str "Unknown layer type: " layer-type-key
+                           ". Use pj/lay-* with a registered layer type, or "
+                           "(pj/layer-type-lookup ...) to inspect. Registered layer types: "
+                           (vec registered))
+                      {:caller "pj/lay"
+                       :layer-type layer-type-key
+                       :registered registered})))))
+
 (defn lay
   "Add a root-scope layer. The layer attaches to :layers and flows to
    every descendant leaf at plan time (composite) or renders on the
@@ -1271,6 +1290,7 @@
   ([pose-or-data layer-type-key]
    (lay pose-or-data layer-type-key nil))
   ([pose-or-data layer-type-key opts]
+   (validate-lay-layer-type-key layer-type-key)
    (let [layer (build-layer layer-type-key opts)]
      (update (ensure-pose pose-or-data "pj/lay") :layers (fnil conj []) layer))))
 
