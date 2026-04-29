@@ -387,6 +387,27 @@
            #"incompatible scale meaning"
            (pose/inject-shared-scales tree))))))
 
+(deftest inject-shared-scales-warns-on-free-conflict-test
+  (testing "share-scales :x warns when a sub-pose carries :scales :free"
+    (let [tree {:share-scales #{:x}
+                :poses [{:data (tc/dataset {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0]})
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}
+                        {:data (tc/dataset {:x [4.0 5.0 6.0] :y [40.0 50.0 60.0]})
+                         :opts {:scales :free}
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}]}
+          out (with-out-str (pose/inject-shared-scales tree))]
+      (is (re-find #":share-scales :x overrides a sub-pose's :scales :free" out))))
+
+  (testing "share-scales :y does not warn when sub-pose has :scales :free-x"
+    (let [tree {:share-scales #{:y}
+                :poses [{:data (tc/dataset {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0]})
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}
+                        {:data (tc/dataset {:x [4.0 5.0 6.0] :y [40.0 50.0 60.0]})
+                         :opts {:scales :free-x}
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}]}
+          out (with-out-str (pose/inject-shared-scales tree))]
+      (is (= "" out)))))
+
 (deftest inject-shared-scales-rejects-all-categorical-bucket-test
   (testing "share-scales refuses when no cell in the bucket has numeric values"
     (let [tree {:share-scales #{:x}

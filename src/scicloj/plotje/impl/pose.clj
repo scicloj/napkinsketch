@@ -523,6 +523,23 @@
              :column col
              :share-keys keys-set}))))
 
+(defn- warn-share-scales-overrides-free!
+  "Warn when a sub-pose carries :scales :free / :free-x / :free-y
+   on an axis that the composite is also trying to share. The share
+   wins; the sub-pose's directive is silently dropped today."
+  [subtree axes]
+  (doseq [axis axes
+          leaf subtree
+          :let [s (get-in leaf [:opts :scales])]
+          :when (or (= s :free)
+                    (and (= axis :x) (= s :free-x))
+                    (and (= axis :y) (= s :free-y)))]
+    (println (str "Warning: composite :share-scales " axis
+                  " overrides a sub-pose's :scales " s
+                  ". The share wins; the sub-pose's :scales setting"
+                  " is ignored. Drop one of the two to remove the"
+                  " conflict."))))
+
 (defn- assert-share-bucket-numeric!
   "Refuse :share-scales on a bucket whose data column is non-numeric.
    Categorical / temporal sharing is deferred to post-alpha; today
@@ -586,6 +603,7 @@
                                                    [])]
                          (validate-share-bucket-compatibility! subtree my-shares)
                          (assert-share-bucket-numeric! subtree my-shares)
+                         (warn-share-scales-overrides-free! subtree my-shares)
                          (into {}
                                (keep
                                 (fn [axis]
