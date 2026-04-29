@@ -1838,6 +1838,11 @@
    plan_schema.clj :legend-position enum."
   #{:right :bottom :top :none})
 
+(def ^:private valid-scales-values
+  "Enum of values accepted by :scales; mirrors the branches in
+   impl.plan/coordinate-facet-domains."
+  #{:shared :free :free-x :free-y})
+
 (defn options
   "Set plot-level options (title, labels, width, height, etc.).
    Nested maps (e.g. :theme) are deep-merged.
@@ -1879,6 +1884,16 @@
                          :option :legend-position
                          :value pos
                          :accepted valid-legend-positions}))))
+    (when (contains? opts :scales)
+      (let [v (:scales opts)]
+        (when-not (contains? valid-scales-values v)
+          (throw (ex-info (str "pj/options :scales must be one of "
+                               (vec (sort valid-scales-values))
+                               ", got: " (pr-str v) ".")
+                          {:caller "pj/options"
+                           :option :scales
+                           :value v
+                           :accepted valid-scales-values})))))
     (update-opts fr deep-merge opts)))
 
 (defn- reject-composite-for-facet

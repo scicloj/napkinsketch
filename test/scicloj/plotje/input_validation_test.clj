@@ -333,6 +333,28 @@
   (testing "options without :legend-position is unaffected"
     (is (pj/pose? (pj/options (pj/lay-point tiny :x :y) {:title "ok"})))))
 
+(deftest scales-enum-validates
+  (testing "non-enum :scales throws with accepted-set guidance"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":scales must be one of"
+         (pj/options (pj/lay-point tiny :x :y) {:scales :weird}))))
+
+  (testing "string is rejected -- must be a keyword from the enum"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":scales must be one of"
+         (pj/options (pj/lay-point tiny :x :y) {:scales "free"}))))
+
+  (testing "all enum values pass: :shared :free :free-x :free-y"
+    (doseq [v [:shared :free :free-x :free-y]]
+      (is (pj/pose? (pj/options (pj/lay-point tiny :x :y)
+                                {:scales v}))
+          (str "scales " v " should be accepted"))))
+
+  (testing "options without :scales is unaffected"
+    (is (pj/pose? (pj/options (pj/lay-point tiny :x :y) {:title "ok"})))))
+
 (deftest arrange-rejection-branches-on-type
   (testing "(pj/arrange [nil]) names nil specifically"
     (is (thrown-with-msg?
