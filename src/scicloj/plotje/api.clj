@@ -2107,24 +2107,54 @@
 
 (defn- coerce-arrange-input
   "Turn one pj/arrange input into a leaf-pose plain map. Accepts
-   pose-shaped leaf maps (passed through). Anything else -- including
-   pre-rendered hiccup -- throws with guidance."
+   pose-shaped leaf maps (passed through). Anything else throws with
+   a message tailored to the actual type -- nil, composite pose,
+   plain map, hiccup vector, plain vector -- so the user sees what
+   went wrong without re-reading the same hiccup advice for every
+   non-pose input."
   [p idx]
-  (cond
-    (and (pose? p) (pose/leaf? p)) p
-    (and (pose? p) (pose/composite? p))
-    (throw (ex-info (str "pj/arrange input at index " idx
-                         " is a composite pose. "
-                         nested-composite-rejection-msg)
-                    {:index idx}))
-    :else
-    (throw (ex-info (str "pj/arrange input at index " idx
-                         " must be a leaf pose. Got: "
-                         (pr-str (type p))
-                         ". Pre-rendered hiccup is not supported; wrap "
-                         "hiccup yourself with `[:div ...]` if you want "
-                         "raw composition.")
-                    {:index idx :type (type p)}))))
+  (let [prefix (str "pj/arrange input at index " idx)]
+    (cond
+      (and (pose? p) (pose/leaf? p)) p
+
+      (and (pose? p) (pose/composite? p))
+      (throw (ex-info (str prefix " is a composite pose. "
+                           nested-composite-rejection-msg)
+                      {:index idx}))
+
+      (nil? p)
+      (throw (ex-info (str prefix " is nil. Each input must be a leaf "
+                           "pose -- e.g. (pj/lay-point data :x :y). "
+                           "If you have an optional cell, drop it from "
+                           "the input sequence rather than passing nil.")
+                      {:index idx}))
+
+      (and (vector? p) (keyword? (first p)))
+      (throw (ex-info (str prefix " looks like rendered hiccup (head: "
+                           (pr-str (first p)) "). pj/arrange takes "
+                           "leaf poses, not pre-rendered output; pass "
+                           "the pose itself, or build your own [:div ...] "
+                           "if you want raw hiccup composition.")
+                      {:index idx :head (first p)}))
+
+      (vector? p)
+      (throw (ex-info (str prefix " is a plain vector. pj/arrange takes "
+                           "leaf poses; if you have a sequence of poses, "
+                           "splice them in (e.g. (apply pj/arrange poses)) "
+                           "or use the nested form for an explicit grid: "
+                           "(pj/arrange [[a b] [c d]]).")
+                      {:index idx :type (type p)}))
+
+      (map? p)
+      (throw (ex-info (str prefix " is a map but not a pose (no :layers "
+                           "or :poses key). Build a leaf pose first via "
+                           "pj/pose / pj/lay-* and pass that.")
+                      {:index idx :type (type p)}))
+
+      :else
+      (throw (ex-info (str prefix " must be a leaf pose. Got: "
+                           (pr-str (type p)) ".")
+                      {:index idx :type (type p)})))))
 
 (defn- render-composite
   "Kindly render function for a composite pose returned by pj/arrange.

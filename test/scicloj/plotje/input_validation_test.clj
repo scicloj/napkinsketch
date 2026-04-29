@@ -311,6 +311,39 @@
                    pj/plan
                    :panels)))))
 
+(deftest arrange-rejection-branches-on-type
+  (testing "(pj/arrange [nil]) names nil specifically"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"is nil\. Each input must be a leaf pose"
+         (pj/arrange [nil]))))
+
+  (testing "(pj/arrange [non-pose-map]) names the missing :layers/:poses"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"is a map but not a pose"
+         (pj/arrange [{:not-a :pose}]))))
+
+  (testing "(pj/arrange [hiccup-vector]) keeps hiccup-specific guidance"
+    (let [pre-rendered (pj/plot (pj/lay-point tiny :x :y))]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"looks like rendered hiccup"
+           (pj/arrange [pre-rendered pre-rendered])))))
+
+  (testing "(pj/arrange [scalar]) names the actual type"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"must be a leaf pose\. Got: java.lang.Long"
+         (pj/arrange [42]))))
+
+  (testing "plain vector inside an explicit grid hits the plain-vector branch"
+    (let [p (pj/lay-point tiny :x :y)]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"is a plain vector"
+           (pj/arrange [[p [1 2 3]]]))))))
+
 (deftest pose-2-arity-extracts-data-from-opts
   (testing "(pj/pose nil {:data X :x ... :y ...}) attaches X as data, mapping omits :data"
     (let [data {:a [1 2 3] :b [4 5 6]}

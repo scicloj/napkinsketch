@@ -520,7 +520,7 @@
   (testing "hiccup input is rejected with a clear error"
     (let [pre-rendered (-> tiny-ds (pj/pose :x :y) pj/lay-point pj/plot)]
       (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                            #"must be a leaf pose"
+                            #"looks like rendered hiccup"
                             (pj/arrange [pre-rendered pre-rendered]))))))
 
 (deftest valid-plan-test
