@@ -11,6 +11,89 @@ Staged for the upcoming first public alpha release. The API and
 visual defaults are still subject to change based on early adopter
 feedback.
 
+### `pj/lay-*` 2-arity (data + opts) now auto-infers position mapping
+
+Calling a `lay-*` function with raw data and an opts map -- e.g.
+`(pj/lay-point data {:color :species})` -- now auto-infers the `:x`
+and `:y` mapping from the dataset's first 1-3 columns, the same as
+the 1-arity raw-data path. Previously the 2-arity opts-map branch
+built a leaf with no mapping, so subsequent `pj/lay-*` calls
+couldn't attach to a panel.
+
+The same auto-infer fires for annotation marks: `(pj/lay-rule-h
+data {:y-intercept 5})` now binds `:x`/`:y` from the data's first
+two columns. Datasets with 4+ columns throw the same explicit-x/y
+guidance message that the 1-arity path already raised.
+
+### New plan-time warnings: unused pose mappings and out-of-range `:breaks`
+
+`pj/plan` now warns (or throws under `:strict true`) when:
+
+- A pose-level mapping key isn't accepted by any descendant layer.
+  For example, `(pj/pose data {:y-min :col})` followed by
+  `pj/lay-point` -- `:y-min` is layer-specific (only `:errorbar`
+  and `:band-h` accept it) and would silently drop. The warning
+  names the unused keys and suggests adding the consuming layer or
+  moving the key to a specific `lay-*` opts map.
+
+- User-supplied `:breaks` include values outside the data domain.
+  For example, `(pj/scale :y {:breaks [0 100 200]})` on data
+  spanning `[1.88 4.52]` -- the off-range ticks render off-panel
+  and the axis appears unlabelled. The warning names the
+  out-of-range values and suggests `:domain` for users who meant
+  to extend the visible range.
+
+Both warnings respect the existing `:strict` config toggle: under
+`(pj/with-config {:strict true} ...)` they upgrade to ex-info
+exceptions, matching how `pj/options` and other warn-and-strip
+gates behave under strict.
+
+### Better errors at API boundaries
+
+Several boundary errors that previously crashed deep or threw
+opaque messages now fire at the API gate with concrete guidance:
+
+- `pj/lay` rejects an unknown layer-type keyword eagerly with the
+  registered list, matching `lay-*`'s existing `:mark` validation.
+  Was previously deferred to draft time.
+
+- `pj/plan` on a bare-template pose (mapping set, no data, no
+  layers anywhere in the tree) throws a clear "no data and no
+  layers" message naming `pj/lay-*` and `pj/with-data` as recovery
+  paths. Previously fell through to extract-layer's `Unknown mark:
+  nil`.
+
+- `pj/facet` on an unknown direction (e.g. `:diagonal`) throws
+  ex-info naming the accepted set `#{:col :row}`. Previously
+  surfaced `case`'s default `IllegalArgumentException` ("No
+  matching clause: :diagonal").
+
+- The auto-infer error for raw-data inputs with 4+ columns now
+  branches on the layer-type's `:x-only` flag. X-only marks
+  (`:histogram`, `:bar`, `:density`, `:rug`) suggest
+  `(pj/lay-K data :x)` rather than `(pj/lay-K data :x :y)` --
+  following the previous suggestion would have produced a second
+  error from the y-rejection guard.
+
+### `lay-*` and `pj/coord` docstrings reflect the registry
+
+Each `pj/lay-K` docstring now ends with a uniformly-formatted
+"Accepted options:" block built from the layer-type registry at
+load time. Previously some `lay-*` (`:point`, `:line`) listed
+their options in prose while most others (`:step`, `:area`,
+`:density-2d`, `:contour`, `:boxplot`, `:violin`, ...) omitted
+them silently. The block is generated from
+`universal-layer-options` union the entry's `:accepts` minus
+`:rejects`; source docstrings keep their semantic prose
+(descriptions, required mappings, example calls), and the registry
+stays the single source of truth for the option list.
+
+`pj/coord`'s docstring also now documents all four directions
+(`:cartesian`, `:flip`, `:fixed`, `:polar`) with their semantics
+pulled from the corresponding `make-coord` doc methods. Previously
+only `:flip` was named in the docstring even though all four
+worked.
+
 ### Internal: `plan->membrane` dispatch on `:composite?` flag
 
 The internal `plan->membrane` rendering pass now dispatches on a

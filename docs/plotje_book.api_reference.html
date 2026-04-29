@@ -707,6 +707,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add a :point (scatter) layer to a pose. Without columns -&gt; bare layer at the pose’s root (flows to every leaf). With columns -&gt; position-bearing layer (attaches to the matching leaf via DFS-last identity, or appends a new sub-pose on miss). (lay-point fr) – bare layer at root (lay-point fr {:color :species}) – bare layer with aesthetic opts (lay-point data :x :y) – coerce data to a leaf, then attach (lay-point data :x :y {:color :c}) – same with aesthetic opts</p>
+<p>Accepted options: :alpha :color :color-type :data :group :jitter :mark :nudge-x :nudge-y :position :shape :size :stat :text :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -720,6 +721,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :line layer type – connected line through data points. Requires x (numerical) and y (numerical). Accepts :color, :alpha, :size (stroke width), :nudge-x, :nudge-y.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :nudge-x :nudge-y :position :size :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> wave </span>{<span class="at">:x</span> (<span class="kw">range</span> <span class="dv">30</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>           <span class="at">:y</span> (<span class="kw">map</span> #(Math/sin (<span class="kw">*</span> <span class="va">%</span> <span class="fl">0.3</span>)) (<span class="kw">range</span> <span class="dv">30</span>))})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -737,6 +739,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :histogram layer type – bin numerical values into bars. X-only: pass one column. Accepts :bins (count), :binwidth, :color, :normalize (:density for density-normalized heights).</p>
+<p>Accepted options: :alpha :bins :binwidth :color :color-type :data :group :mark :normalize :position :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-histogram <span class="at">:sepal-length</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -750,6 +753,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :bar layer type – count occurrences of each category. X-only: pass one categorical column. Accepts :color for grouped bars.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :position :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-bar <span class="at">:species</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -775,6 +779,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :value-bar layer type – bars with pre-computed heights. Requires categorical x and numerical y. Unlike :bar (which counts), :value-bar uses the y value directly as the bar height.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :position :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> sales</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-value-bar <span class="at">:product</span> <span class="at">:revenue</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -795,6 +800,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :smooth layer type – a smoothed trend line. Defaults to LOESS (local regression). Pass {:stat :linear-model} for ordinary least squares instead. Requires x and y (both numerical). Accepts {:confidence-band true} for a confidence ribbon.</p>
+<p>Accepted options: :alpha :bandwidth :bootstrap-resamples :color :color-type :confidence-band :data :group :mark :nudge-x :nudge-y :position :size :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (<span class="kw">let</span> [r (rng/rng <span class="at">:jdk</span> <span class="dv">42</span>)</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>          xs (<span class="kw">vec</span> (<span class="kw">range</span> <span class="dv">50</span>))]</span>
@@ -814,6 +820,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :density layer type – kernel density estimate curve. X-only: pass one numerical column. Accepts :color, :bandwidth.</p>
+<p>Accepted options: :alpha :bandwidth :color :color-type :data :group :mark :position :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-density <span class="at">:sepal-length</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -827,6 +834,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :area layer type – filled region between y and the baseline. Requires x and y (both numerical). Accepts :color, :alpha.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :position :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> wave</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-area <span class="at">:x</span> <span class="at">:y</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -850,6 +858,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :text layer type – text labels at data coordinates. Requires x, y, and {:text :column} for label content.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :nudge-x :nudge-y :position :stat :text :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> {<span class="at">:x</span> [<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span>] <span class="at">:y</span> [<span class="dv">4</span> <span class="dv">7</span> <span class="dv">5</span> <span class="dv">8</span>] <span class="at">:name</span> [<span class="st">"A"</span> <span class="st">"B"</span> <span class="st">"C"</span> <span class="st">"D"</span>]}</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-text <span class="at">:x</span> <span class="at">:y</span> {<span class="at">:text</span> <span class="at">:name</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -863,6 +872,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :label layer type – text labels with background box at data coordinates. Like :text but with a rectangular background for readability.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :nudge-x :nudge-y :position :stat :text :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> {<span class="at">:x</span> [<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span>] <span class="at">:y</span> [<span class="dv">4</span> <span class="dv">7</span> <span class="dv">5</span> <span class="dv">8</span>] <span class="at">:name</span> [<span class="st">"A"</span> <span class="st">"B"</span> <span class="st">"C"</span> <span class="st">"D"</span>]}</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:x</span> <span class="at">:y</span> {<span class="at">:size</span> <span class="dv">5</span>})</span>
@@ -877,6 +887,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :boxplot layer type – box-and-whisker plot. Requires categorical x and numerical y. Shows median, quartiles, whiskers, and outliers. Accepts :color for grouped boxplots.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :position :size :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-boxplot <span class="at">:species</span> <span class="at">:sepal-width</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -890,6 +901,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :violin layer type – mirrored density estimate by category. Requires categorical x and numerical y. Accepts :color, :bandwidth.</p>
+<p>Accepted options: :alpha :bandwidth :color :color-type :data :group :mark :position :size :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/reshape2-tips)</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-violin <span class="at">:day</span> <span class="at">:total-bill</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -903,6 +915,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :errorbar layer type – vertical error bars from pre-computed bounds. Requires x, y, and {:y-min :col :y-max :col} for lower/upper bounds.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :nudge-x :nudge-y :position :size :stat :x :x-type :y :y-max :y-min :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> measurements</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:treatment</span> <span class="at">:mean</span>)</span>
@@ -917,6 +930,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :lollipop layer type – dot on a stem from the baseline. Requires categorical x and numerical y. Like value-bar but with a circle+line instead of a filled rectangle.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :position :size :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> sales</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-lollipop <span class="at">:product</span> <span class="at">:revenue</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -930,6 +944,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :tile layer type – colored grid cells (heatmap). With :fill option: pre-computed tile colors from a column. Without :fill: auto-binned 2D histogram (stat :bin2d).</p>
+<p>Accepted options: :alpha :color :color-type :data :density-2d-grid :fill :group :mark :position :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-tile <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -943,6 +958,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :density-2d layer type – 2D kernel density heatmap. Requires x and y (both numerical). Produces a smoothed density surface as colored tiles with a continuous gradient legend.</p>
+<p>Accepted options: :alpha :color :color-type :data :density-2d-grid :group :mark :position :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-density<span class="dv">-2</span>d <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -956,6 +972,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :contour layer type – iso-density contour lines from 2D KDE. Requires x and y (both numerical). Accepts {:levels 10} for the number of contour levels.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :levels :mark :position :size :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-contour <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -969,6 +986,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :ridgeline layer type – stacked density curves by category. Requires categorical x and numerical y. Categories stack vertically with density curves rendered horizontally.</p>
+<p>Accepted options: :alpha :bandwidth :color :color-type :data :group :mark :position :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-ridgeline <span class="at">:species</span> <span class="at">:sepal-length</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -982,6 +1000,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :rug layer type – short tick marks along the axis showing individual values. X-only: pass one column. Often layered with density or scatter.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :position :side :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
@@ -996,6 +1015,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :step layer type – staircase line (horizontal then vertical). Requires x and y (both numerical).</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :position :size :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> tiny</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-step <span class="at">:x</span> <span class="at">:y</span>)</span>
@@ -1010,6 +1030,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :summary layer type – mean +/- standard error per category. Requires categorical x and numerical y. Shows a point at the mean with error bars for +/- 1 SE. Accepts :color for grouped summaries.</p>
+<p>Accepted options: :alpha :color :color-type :data :group :mark :position :size :stat :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-summary <span class="at">:species</span> <span class="at">:sepal-length</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1023,6 +1044,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :interval-h layer type – horizontal bar from x to x-end at categorical y. Each row becomes one rectangle; the y column is treated categorically so each distinct value occupies its own lane. Required: x (numeric or temporal start), y (categorical lane), :x-end column ref in opts (numeric or temporal end). Accepts :color, :alpha, :interval-thickness (band fill fraction, 0.0-1.0, default 0.7). (lay-interval-h data :start :task {:x-end :end :color :status})</p>
+<p>Accepted options: :alpha :color :color-type :data :group :interval-thickness :mark :stat :x :x-end :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> {<span class="at">:start</span> [#inst <span class="st">"2024-01-01"</span> #inst <span class="st">"2024-03-01"</span> #inst <span class="st">"2024-05-01"</span>]</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">:end</span>   [#inst <span class="st">"2024-04-01"</span> #inst <span class="st">"2024-06-01"</span> #inst <span class="st">"2024-08-01"</span>]</span>
@@ -1043,6 +1065,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :rule-v layer – vertical reference line at x = x-intercept. Position comes from opts (not data columns); :x-intercept is required. Accepts :x-intercept (numeric or temporal – LocalDate, LocalDateTime, Instant, java.util.Date), :color (literal string), :alpha. Temporal values are converted internally to match the x-axis scale so date-axis annotations work without manual conversion. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the rule there (only panels matching that leaf show it). (lay-rule-v pose {:x-intercept 5}) – root-level, flows to every panel (lay-rule-v pose :x :y {:x-intercept 5}) – panel-scope (columns pick or create a sub-pose) (lay-rule-v pose {:x-intercept 5 :color “red” :alpha 0.5}) (lay-rule-v pose {:x-intercept #inst “2008-09-15”})</p>
+<p>Accepted options: :alpha :color :data :mark :stat :x :x-intercept :y.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
@@ -1066,6 +1089,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :rule-h layer – horizontal reference line at y = y-intercept. Position comes from opts (not data columns); :y-intercept is required. Accepts :y-intercept (numeric or temporal – LocalDate, LocalDateTime, Instant, java.util.Date), :color (literal string), :alpha. Temporal values are converted internally to match the y-axis scale so date-axis annotations work without manual conversion. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the rule there (only panels matching that leaf show it). (lay-rule-h pose {:y-intercept 3}) – root-level, flows to every panel (lay-rule-h pose :x :y {:y-intercept 3}) – panel-scope (columns pick or create a sub-pose) (lay-rule-h pose {:y-intercept 3 :color “red” :alpha 0.5}) (lay-rule-h pose {:y-intercept (java.time.LocalDate/parse “2024-01-01”)})</p>
+<p>Accepted options: :alpha :color :data :mark :stat :x :y :y-intercept.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
@@ -1080,6 +1104,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :band-v layer – vertical shaded band between x = x-min and x = x-max. Position comes from opts (not data columns); :x-min and :x-max are required and :x-min must be &lt;= :x-max. Accepts :x-min (required), :x-max (required), :color (literal string), :alpha. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the band there (only panels matching that leaf show it). (lay-band-v pose {:x-min 4 :x-max 6}) – root-level, flows to every panel (lay-band-v pose :x :y {:x-min 4 :x-max 6}) – panel-scope (columns pick or create a sub-pose) (lay-band-v pose {:x-min 4 :x-max 6 :color “blue” :alpha 0.3})</p>
+<p>Accepted options: :alpha :color :data :mark :stat :x :x-max :x-min :y.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
@@ -1094,6 +1119,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
 <p>Add :band-h layer – horizontal shaded band between y = y-min and y = y-max. Position comes from opts (not data columns); :y-min and :y-max are required and :y-min must be &lt;= :y-max. Accepts :y-min (required), :y-max (required), :color (literal string), :alpha. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the band there (only panels matching that leaf show it). (lay-band-h pose {:y-min 2 :y-max 4}) – root-level, flows to every panel (lay-band-h pose :x :y {:y-min 2 :y-max 4}) – panel-scope (columns pick or create a sub-pose) (lay-band-h pose {:y-min 2 :y-max 4 :color “blue” :alpha 0.3})</p>
+<p>Accepted options: :alpha :color :data :mark :stat :x :y :y-max :y-min.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>
@@ -1107,7 +1133,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="coord" class="level3">
 <h3 class="anchored" data-anchor-id="coord"><code>coord</code></h3>
 <p><code>[pose coord-type]</code></p>
-<p>Set coordinate transform on a pose. Coord is plot-level – it applies across every panel. On a composite pose the coord attaches to the root so every descendant leaf inherits it at plan time. (coord pose :flip) – flipped coordinates.</p>
+<p>Set coordinate transform on a pose. Coord is plot-level – it applies across every panel. On a composite pose the coord attaches to the root so every descendant leaf inherits it at plan time.</p>
+<p>Supported coord-types: :cartesian – standard x-right, y-up mapping (the default). :flip – swap x and y axes (horizontal bars / boxplots). :fixed – equal aspect ratio (1 data unit = 1 data unit). :polar – radial mapping: x to angle, y to radius.</p>
 <p>Flip axes:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
