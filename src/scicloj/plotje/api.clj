@@ -2169,6 +2169,66 @@
     (:poses pose) (some find-bare-template-leaf (:poses pose))
     :else nil))
 
+(defn- layer-accepted-keys
+  "Set of keys a single layer accepts: universal layer options union
+   the layer-type's :accepts, minus its :rejects."
+  [layer]
+  (let [reg (when-let [k (:layer-type layer)]
+              (layer-type/lookup k))]
+    (-> (set layer-type/universal-layer-options)
+        (into (:accepts reg))
+        (set/difference (set (:rejects reg))))))
+
+(defn- layers-in-subtree
+  "All explicit layers reachable from this pose (its own :layers plus
+   every descendant sub-pose's layers)."
+  [pose]
+  (mapcat :layers (tree-seq :poses :poses pose)))
+
+(defn- accepted-keys-in-subtree
+  "Union of accepted keys across every layer reachable from this pose."
+  [pose]
+  (transduce (map layer-accepted-keys) set/union (layers-in-subtree pose)))
+
+(defn- check-pose-mappings-consumed!
+  "Walk every pose in the tree; warn (or strict-throw) when a pose's
+   :mapping carries keys that no descendant layer accepts. The pose's
+   own :mapping flows down to its descendants via resolve-tree, so a
+   key consumed by any descendant counts as live. Layer-only keys
+   like :y-min, :x-end, :fill, :text live in :accepts of specific
+   layer types; placing them at the pose with no consuming layer is
+   almost always a forgotten lay-errorbar / lay-tile / lay-interval-h."
+  [root]
+  (doseq [p (tree-seq :poses :poses root)
+          :when (seq (:mapping p))
+          ;; Skip when no explicit layer exists in the subtree -- the
+          ;; :infer path may pick a layer at draft time, and we have
+          ;; no way to know what it'll accept until then.
+          :when (seq (layers-in-subtree p))]
+    (let [accepted (accepted-keys-in-subtree p)
+          unused (vec (remove accepted (keys (:mapping p))))]
+      (when (seq unused)
+        (let [strict-val (:strict (defaults/config))
+              scope (if (= p root) "the root pose" "a sub-pose")
+              msg (str "pj/plan: pose-level mapping at " scope
+                       " carries key(s) " unused
+                       " that no descendant layer accepts."
+                       " Did you forget a consuming layer (e.g."
+                       " lay-errorbar for :y-min/:y-max, lay-tile for"
+                       " :fill, lay-interval-h for :x-end, lay-text for"
+                       " :text)? Or move the key to a specific lay-* opts"
+                       " map.")]
+          (when-not (or (nil? strict-val) (boolean? strict-val))
+            (throw (ex-info (str ":strict config value must be true or false, got: "
+                                 (pr-str strict-val))
+                            {:value strict-val})))
+          (if strict-val
+            (throw (ex-info msg
+                            {:caller "pj/plan"
+                             :unused-keys unused
+                             :scope (if (= p root) :root :sub-pose)}))
+            (println (str "Warning: " msg))))))))
+
 (defn plan
   "Convert a pose into a plan. For a leaf pose, returns a `Plan`
    record with one panel per facet variant. For a composite pose,
@@ -2195,6 +2255,7 @@
                          {:caller "pj/plan"
                           :pose-shape :bare-template
                           :mapping (:mapping bare)}))))
+     (check-pose-mappings-consumed! fr)
      (compositor/pose->plan fr (:opts fr {}))))
   ([pose opts]
    (plan (options pose opts))))

@@ -659,6 +659,49 @@
       (is (some? (pj/facet pose :y :col)))
       (is (some? (pj/facet pose :y :row))))))
 
+(deftest plan-warns-on-unused-pose-mapping-keys
+  (let [data (tc/dataset {:x [1 2 3] :y [10 20 30]
+                          :ymin [5 15 25] :ymax [15 25 35]})]
+    (testing ":y-min/:y-max at pose level with only lay-point warns"
+      (let [out (with-out-str
+                  (-> data
+                      (pj/pose {:x :x :y :y :y-min :ymin :y-max :ymax})
+                      pj/lay-point
+                      pj/plan))]
+        (is (re-find #":y-min" out))
+        (is (re-find #":y-max" out))
+        (is (re-find #"no descendant layer accepts" out))))
+
+    (testing "silent when consuming layer is present"
+      (let [out (with-out-str
+                  (-> data
+                      (pj/pose {:x :x :y :y :y-min :ymin :y-max :ymax})
+                      pj/lay-errorbar
+                      pj/plan))]
+        (is (= "" out))))
+
+    (testing "silent when no explicit layer (inference path)"
+      (let [out (with-out-str (pj/plan (pj/pose data :x :y)))]
+        (is (= "" out))))
+
+    (testing "silent when only universals at pose level"
+      (let [out (with-out-str
+                  (-> data
+                      (pj/pose {:x :x :y :y :color :y :alpha :y})
+                      pj/lay-point
+                      pj/plan))]
+        (is (= "" out))))
+
+    (testing "strict mode upgrades to throw"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"no descendant layer accepts"
+           (pj/with-config {:strict true}
+             (-> data
+                 (pj/pose {:x :x :y :y :y-min :ymin})
+                 pj/lay-point
+                 pj/plan)))))))
+
 (deftest plan-on-bare-template-throws-clear-error
   (testing "(pj/plan (pj/pose nil :x :y)) throws clear error instead of cryptic 'Unknown mark: nil'"
     (is (thrown-with-msg?
