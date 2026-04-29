@@ -1833,6 +1833,11 @@
   [sk-or-pose f & args]
   (apply update (ensure-pose sk-or-pose) :opts f args))
 
+(def ^:private valid-legend-positions
+  "Enum of values accepted by :legend-position; mirrors the
+   plan_schema.clj :legend-position enum."
+  #{:right :bottom :top :none})
+
 (defn options
   "Set plot-level options (title, labels, width, height, etc.).
    Nested maps (e.g. :theme) are deep-merged.
@@ -1865,6 +1870,15 @@
                          m))
                      opts
                      [:width :height])]
+    (when-let [pos (:legend-position opts)]
+      (when-not (contains? valid-legend-positions pos)
+        (throw (ex-info (str "pj/options :legend-position must be one of "
+                             (vec (sort valid-legend-positions))
+                             ", got: " (pr-str pos) ".")
+                        {:caller "pj/options"
+                         :option :legend-position
+                         :value pos
+                         :accepted valid-legend-positions}))))
     (update-opts fr deep-merge opts)))
 
 (defn- reject-composite-for-facet

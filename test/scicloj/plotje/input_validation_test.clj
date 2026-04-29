@@ -311,6 +311,28 @@
                    pj/plan
                    :panels)))))
 
+(deftest legend-position-enum-validates
+  (testing "non-enum :legend-position throws with accepted-set guidance"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":legend-position must be one of"
+         (pj/options (pj/lay-point tiny :x :y) {:legend-position :weird}))))
+
+  (testing "string is rejected -- must be a keyword from the enum"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":legend-position must be one of"
+         (pj/options (pj/lay-point tiny :x :y) {:legend-position "right"}))))
+
+  (testing "all enum values pass: :right :bottom :top :none"
+    (doseq [v [:right :bottom :top :none]]
+      (is (pj/pose? (pj/options (pj/lay-point tiny :x :y)
+                                {:legend-position v}))
+          (str "legend-position " v " should be accepted"))))
+
+  (testing "options without :legend-position is unaffected"
+    (is (pj/pose? (pj/options (pj/lay-point tiny :x :y) {:title "ok"})))))
+
 (deftest arrange-rejection-branches-on-type
   (testing "(pj/arrange [nil]) names nil specifically"
     (is (thrown-with-msg?
