@@ -413,12 +413,17 @@
    with data but no :mapping."
   [layer-type-key d]
   (or (try-infer-mapping d)
-      (let [cols (sort (tc/column-names d))]
+      (let [cols (sort (tc/column-names d))
+            x-only? (:x-only (layer-type/lookup layer-type-key))
+            example (if x-only?
+                      (str "(pj/lay-" (name layer-type-key) " data :x)")
+                      (str "(pj/lay-" (name layer-type-key) " data :x :y)"))]
         (throw (ex-info (str "Cannot auto-infer columns from " (count cols) " columns. "
-                             "Pass explicit x and y: (pj/lay-" (name layer-type-key)
-                             " data :x :y). Available columns: " cols)
+                             "Pass explicit " (if x-only? "x" "x and y")
+                             ": " example ". Available columns: " cols)
                         {:layer-type layer-type-key
                          :column-count (count cols)
+                         :x-only? (boolean x-only?)
                          :columns cols})))))
 
 (defn pose?

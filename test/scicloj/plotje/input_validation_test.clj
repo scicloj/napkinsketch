@@ -659,6 +659,32 @@
       (is (some? (pj/facet pose :y :col)))
       (is (some? (pj/facet pose :y :row))))))
 
+(deftest auto-infer-error-branches-on-x-only
+  (let [big (tc/dataset {:a [1] :b [2] :c [3] :d [4] :e [5]})]
+    (testing "bivariate mark suggests :x :y"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Pass explicit x and y: \(pj/lay-point data :x :y\)"
+           (pj/lay-point big))))
+
+    (testing "x-only mark suggests :x only"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Pass explicit x: \(pj/lay-histogram data :x\)"
+           (pj/lay-histogram big)))
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Pass explicit x: \(pj/lay-bar data :x\)"
+           (pj/lay-bar big)))
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Pass explicit x: \(pj/lay-density data :x\)"
+           (pj/lay-density big)))
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Pass explicit x: \(pj/lay-rug data :x\)"
+           (pj/lay-rug big))))))
+
 (deftest lay-star-docstrings-list-accepted-options
   (let [layer-type-keys (keys (scicloj.plotje.layer-type/registered))]
     (testing "every registered layer type has a corresponding pj/lay-K with an Accepted-options block"
