@@ -601,8 +601,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[x y z opts]</code></p>
 <p>Construct or extend a pose.</p>
 <p>On raw data (first argument is not itself a pose): (pj/pose) – empty leaf (pj/pose data) – leaf with data; on 1-3 column datasets the mapping is auto-inferred (:x, then :y, then :color) so the pose renders without an explicit mapping call (pj/pose data {:color :species}) – leaf with aesthetic mapping (pj/pose data :x-col) – leaf with {:x :x-col} (pj/pose data :x-col {:color :c}) – univariate x + opts (pj/pose data :x-col :y-col) – leaf with :x and :y (pj/pose data :x-col :y-col {:color :c}) – positional x/y + opts (pj/pose data [[:a :b] [:c :d]]) – multi-pair: N bivariate panels (pj/pose data [:a :b :c]) – multi-pair: N univariate panels (pj/pose data (pj/cross cols cols) {:color :c}) – multi-pair plus aesthetic mapping at the composite root</p>
-<p>Threaded over an existing pose (first argument is a pose): (pj/pose fr) – pass-through; lifts a literal map for notebook auto-render if it is not already tagged (pj/pose fr :x-col :y-col) – extend a leaf-without-position, or promote a leaf-with-position into a 2-panel composite, or append a panel to a composite (pj/pose fr :x-col :y-col {:color :c}) – same, with aesthetic routed to the composite root on promote (pj/pose fr {:color :c}) – aesthetic-only: extend mapping or (on leaf-with-position) promote (pj/pose fr [[:a :b] [:c :d]]) – multi-pair: append N panels (pj/pose fr (pj/cross cols cols)) – SPLOM N^2 panels in one call (pj/pose fr (pj/cross cols cols) {:color :c}) – SPLOM plus aesthetic mapping at the composite root</p>
-<p>On a hand-built pose-shaped map (1-arity, input has :layers or :poses): the map is validated and tagged with Kindly auto-render metadata, but its keys are not reordered and its :data is not coerced – the typed shape is preserved verbatim.</p>
+<p>Threaded over an existing pose (first argument is a pose): (pj/pose fr) – pass-through; lifts a literal map for notebook auto-render if it is not already tagged (pj/pose fr :x-col :y-col) – extend a leaf-without-position, or promote a leaf-with-position into a 2-panel composite, or append a panel to a composite (pj/pose fr :x-col :y-col {:color :c}) – same, with aesthetic routed to the composite root on promote (pj/pose fr {:color :c}) – aesthetic-only: extend mapping or (on leaf-with-position) promote (pj/pose fr [[:a :b] [:c :d]]) – multi-pair: append N panels (pj/pose fr (pj/cross cols cols)) – SPLOM N^2 panels in one call (pj/pose fr (pj/cross cols cols) {:color :c}) – SPLOM plus aesthetic mapping at the composite root (pj/pose fr {:data X :color :c}) – extend mapping AND replace the top-level data with X</p>
+<p>On a hand-built pose-shaped map (1-arity, input has :layers or :poses): the map is validated and tagged with Kindly auto-render metadata, but its keys are not reordered and its :data is not coerced – the typed shape is preserved verbatim. A flat composite (<code>:poses</code> of leaf maps) is supported; literal nested composites (any sub-pose itself has <code>:poses</code>) are rejected, matching <code>pj/arrange</code>’s rule that its elements must be leaves.</p>
 <p>Create a leaf pose with data and columns:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -661,7 +661,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="cross" class="level3">
 <h3 class="anchored" data-anchor-id="cross"><code>cross</code></h3>
 <p><code>[xs ys]</code></p>
-<p>Cartesian product of two sequences.</p>
+<p>Build a vector of [x y] pairs from two column-name sequences. Pair with <code>pj/pose</code> for SPLOM grids: when an MxN rectangle of pairs is threaded through <code>pj/pose</code>, the result is an MxN composite with shared scales.</p>
+<p>(pj/cross [:a :b] [:c :d]) ; =&gt; [[:a :c] [:a :d] [:b :c] [:b :d]]</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(pj/cross [<span class="at">:a</span> <span class="at">:b</span>] [<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -689,7 +690,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="lay"><code>lay</code></h3>
 <p><code>[pose-or-data layer-type-key]</code></p>
 <p><code>[pose-or-data layer-type-key opts]</code></p>
-<p>Add a root-scope layer. The layer attaches to :layers and flows via pose/resolve-tree to every descendant leaf (composite) or renders on the single panel (leaf).</p>
+<p>Add a root-scope layer. The layer attaches to :layers and flows to every descendant leaf at plan time (composite) or renders on the single panel (leaf).</p>
 <p>The generic layer adder. <code>pj/lay-point</code>, <code>pj/lay-bar</code>, etc. are convenience wrappers around <code>pj/lay</code> with a registered layer-type key. Use <code>pj/lay</code> directly when you have a custom layer type (from <code>pj/layer-type-lookup</code> on a registered key, or a raw layer-type map from an extension):</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1106,7 +1107,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="coord" class="level3">
 <h3 class="anchored" data-anchor-id="coord"><code>coord</code></h3>
 <p><code>[pose coord-type]</code></p>
-<p>Set coordinate transform on a pose. Coord is plot-level – it applies across every panel. On a composite pose the coord attaches to the root so every descendant leaf inherits it via resolve-tree. (coord pose :flip) – flipped coordinates.</p>
+<p>Set coordinate transform on a pose. Coord is plot-level – it applies across every panel. On a composite pose the coord attaches to the root so every descendant leaf inherits it at plan time. (coord pose :flip) – flipped coordinates.</p>
 <p>Flip axes:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1123,9 +1124,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="scale" class="level3">
 <h3 class="anchored" data-anchor-id="scale"><code>scale</code></h3>
 <p><code>[pose channel scale-type]</code></p>
-<p>Set scale on a pose. Scale is plot-level – it applies across every panel. Accepts a type keyword or a scale spec map with :type, optional :domain, and optional :breaks (explicit tick locations). On a composite pose the scale attaches to the root so every descendant leaf inherits it via resolve-tree.</p>
-<p>Axis channels (:x, :y) accept :linear, :log, :categorical. Visual channels (:size, :alpha, :fill, :color) accept :linear and :log only – :categorical does not apply to a continuous encoding.</p>
-<p>(scale pose :x :log) – log scale on x-axis (scale pose :x {:type :categorical :domain […]}) – explicit category order (scale pose :y {:type :linear :breaks [0 5 10]}) – pin tick locations (scale pose :y {:type :log :domain [1 1000]}) – log scale with explicit range (scale pose :size :log) – log-spaced point sizes (scale pose :fill :log) – log-spaced tile fill</p>
+<p>Set scale on a pose. Scale is plot-level – it applies across every panel. Accepts a type keyword or a scale spec map with :type, optional :domain, and optional :breaks (explicit tick locations). On a composite pose the scale attaches to the root so every descendant leaf inherits it at plan time.</p>
+<p>Axis channels (:x, :y) accept :linear, :log, :categorical. Continuous visual channels (:size, :alpha, :fill, :color) accept :linear and :log only – :categorical does not apply. Discrete visual channels (:shape, :group) accept :categorical only – :linear and :log do not apply to a discrete encoding. The :domain on a discrete scale gives explicit category order for the legend.</p>
+<p>(scale pose :x :log) – log scale on x-axis (scale pose :x {:type :categorical :domain […]}) – explicit category order (scale pose :y {:type :linear :breaks [0 5 10]}) – pin tick locations (scale pose :y {:type :log :domain [1 1000]}) – log scale with explicit range (scale pose :size :log) – log-spaced point sizes (scale pose :fill :log) – log-spaced tile fill (scale pose :shape {:type :categorical :domain […]}) – shape legend order</p>
 <p>Log scale:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1213,7 +1214,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="options" class="level3">
 <h3 class="anchored" data-anchor-id="options"><code>options</code></h3>
 <p><code>[pose opts]</code></p>
-<p>Set plot-level options (title, labels, width, height, etc.). Nested maps (e.g.&nbsp;:theme) are deep-merged. :width and :height are coerced to long (rounded) so the plan carries integer pixel dimensions through to render. On a composite pose the options attach to the root so every descendant leaf inherits them via resolve-tree.</p>
+<p>Set plot-level options (title, labels, width, height, etc.). Nested maps (e.g.&nbsp;:theme) are deep-merged. :width and :height are coerced to long (rounded) so the plan carries integer pixel dimensions through to render. On a composite pose the options attach to the root so every descendant leaf inherits them at plan time.</p>
 <p>Set render options on a pose:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb57"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> tiny</span>
@@ -1595,7 +1596,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb90"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">count</span> pj/plot-option-docs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb91"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb91"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="layer-option-docs" class="level3">
