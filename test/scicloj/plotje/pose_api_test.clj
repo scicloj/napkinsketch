@@ -444,6 +444,47 @@
       (is (= 2 (count (:sub-plots p)))
           "both locations resolve cleanly; pj/plan does not throw"))))
 
+(deftest composite-aware-chrome-shared-color-test
+  (testing "two cells with identical {:color :c} mapping share one composite-level legend"
+    (let [a (-> (tc/dataset {:x [1 2 3] :y [10 20 30] :c ["a" "a" "b"]})
+                (pj/lay-point :x :y {:color :c}))
+          b (-> (tc/dataset {:x [4 5 6] :y [40 50 60] :c ["a" "b" "b"]})
+                (pj/lay-point :x :y {:color :c}))
+          plan (pj/plan (pj/arrange [a b]))]
+      (is (= #{:color} (:shared-aesthetics (:chrome plan)))
+          "color is detected as unanimous across cells")
+      (is (some? (get-in plan [:chrome :shared-legend]))
+          "composite chrome carries one shared legend")
+      (is (every? nil? (mapv #(:legend (:plan %)) (:sub-plots plan)))
+          "no per-leaf legend duplication"))))
+
+(deftest composite-aware-chrome-mismatched-aesthetic-test
+  (testing "root :color overridden by sub-pose -> per-leaf legends, no shared"
+    (let [composite {:data (tc/dataset {:x [1 2 3] :y [10 20 30]
+                                        :c1 ["a" "a" "b"]
+                                        :c2 [1.0 2.0 3.0]})
+                     :mapping {:x :x :y :y :color :c1}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :poses [{:layers [{:layer-type :point}]}
+                             {:mapping {:color :c2}
+                              :layers [{:layer-type :point}]}]}
+          plan (pj/plan composite)]
+      (is (= #{} (:shared-aesthetics (:chrome plan)))
+          "color is not unanimous when sub-pose overrides")
+      (is (nil? (get-in plan [:chrome :shared-legend]))
+          "no shared legend at composite chrome")
+      (is (every? some? (mapv #(:legend (:plan %)) (:sub-plots plan)))
+          "each leaf renders its own legend"))))
+
+(deftest composite-tooltip-propagates-to-leaves-test
+  (testing "composite-level :tooltip true reaches every sub-plot's plan"
+    (let [a (-> (tc/dataset {:x [1 2 3] :y [10 20 30]}) (pj/lay-point :x :y))
+          b (-> (tc/dataset {:x [4 5 6] :y [40 50 60]}) (pj/lay-point :x :y))
+          composite (-> (pj/arrange [a b]) (pj/options {:tooltip true}))
+          plan (pj/plan composite)]
+      (is (every? :tooltip (mapv :plan (:sub-plots plan)))
+          "every sub-plot's plan record has :tooltip true"))))
+
 (deftest composite-share-scales-x-same-column-test
   (testing "two leaves sharing :x column get a unified x-domain"
     (let [ds1 (tc/dataset {:x [0 1 2] :y [1 2 3]})

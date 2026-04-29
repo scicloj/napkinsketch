@@ -86,16 +86,49 @@
   [composite]
   (update composite :opts #(apply dissoc % composite-chrome-opt-keys)))
 
-(defn- has-shared-aesthetic?
-  "True if the composite's root :mapping carries an aesthetic that
-   produces a legend at render time (:color, :size, :alpha). These
-   flow to every descendant leaf via resolve-tree, so rendering a
-   per-leaf legend duplicates the same information N times."
+(def ^:private legend-bearing-aesthetics
+  "Aesthetics that produce a legend at render time."
+  #{:color :size :alpha})
+
+(defn- leaf-aesthetic-values
+  "Set of mapping values an aesthetic resolves to inside a single
+   leaf (counting both the leaf's :mapping and each layer's
+   :mapping). Two leaves agree on the aesthetic when their value
+   sets are equal -- the same legend will be produced for both."
+  [leaf a]
+  (let [v (get-in leaf [:mapping a])
+        layer-vs (keep #(get-in % [:mapping a]) (:layers leaf))]
+    (cond-> (set layer-vs)
+      v (conj v))))
+
+(defn- shared-aesthetics-by-leaves
+  "The subset of legend-bearing aesthetics that produce the same
+   legend across every leaf. Considers the merged-down :mapping
+   (so root-level mappings flow into every leaf, and sub-pose-only
+   mappings count as shared when every sub-pose agrees). Layer-
+   level mappings (e.g. lay-point's opts {:color :c}) are folded
+   in, so a cell whose color comes from a layer mapping participates
+   in the unanimity check. When the result is non-empty, the
+   compositor renders one shared legend at composite level and
+   per-channel suppresses just those aesthetics on each leaf --
+   legends for non-unanimous aesthetics keep rendering per-leaf."
   [composite]
-  (let [m (:mapping composite)]
-    (or (contains? m :color)
-        (contains? m :size)
-        (contains? m :alpha))))
+  (let [leaves (pose/resolve-tree composite)]
+    (set
+     (filter (fn [a]
+               (let [vss (mapv #(leaf-aesthetic-values % a) leaves)]
+                 (and (every? seq vss) (apply = vss))))
+             legend-bearing-aesthetics))))
+
+(def ^:private aesthetic->suppress-key
+  {:color :suppress-color-legend
+   :size :suppress-size-legend
+   :alpha :suppress-alpha-legend})
+
+(def ^:private aesthetic->legend-plan-key
+  {:color :legend
+   :size :size-legend
+   :alpha :alpha-legend})
 
 (def ^:private shared-legend-strip-w
   "Pixel width reserved on the right side of the composite for the
@@ -235,11 +268,12 @@
         ;; chrome via the title band above the leaf trees.
         stripped (composite-with-stripped-leaf-opts composite)
         injected (pose/inject-shared-scales stripped)
-        ;; Detect whether the composite has a shared aesthetic that
-        ;; will produce a legend at each leaf. If so, reserve a
-        ;; strip on the right for one shared legend and shrink the
-        ;; grid area accordingly.
-        shared? (has-shared-aesthetic? composite)
+        ;; Detect which legend-bearing aesthetics are unanimous across
+        ;; all descendant leaves; those produce one shared legend at
+        ;; composite level. Aesthetics that disagree (or are absent)
+        ;; render per-leaf as before.
+        shared-aesthetics (shared-aesthetics-by-leaves composite)
+        shared? (boolean (seq shared-aesthetics))
         legend-w (if shared? shared-legend-strip-w 0)
         ;; Grid-composite (rows-of-cols SPLOM) stamps :grid-strip-labels
         ;; on its root. Matrix-direction composites have the labels
@@ -301,6 +335,7 @@
      :leaves leaves
      :layout layout
      :shared? shared?
+     :shared-aesthetics shared-aesthetics
      :chrome chrome}))
 
 (defn composite-pose->draft
@@ -323,22 +358,28 @@
    first-class field on the CompositeDraft so downstream stages do
    not need to recompute layout from the original pose tree."
   [composite]
-  (let [{:keys [width height leaves layout shared? chrome]}
+  (let [{:keys [width height leaves layout shared? shared-aesthetics chrome]}
         (resolve-composite-chrome composite)
+        suppress-keys (mapv aesthetic->suppress-key shared-aesthetics)
         sub-drafts (mapv (fn [leaf]
                            (let [rect (get layout (:path leaf))
                                  [_ _ rw rh] rect
                                  leaf' (apply-shared-scale-domains leaf)
-                                 leaf-opts (assoc (or (:opts leaf') {})
-                                                  :width (max 1 (long-or rw 1))
-                                                  :height (max 1 (long-or rh 1)))
+                                 leaf-opts (cond-> (assoc (or (:opts leaf') {})
+                                                          :width (max 1 (long-or rw 1))
+                                                          :height (max 1 (long-or rh 1)))
+                                             (seq suppress-keys)
+                                             (as-> $ (reduce #(assoc %1 %2 true)
+                                                             $ suppress-keys)))
                                  draft (pose/leaf->draft leaf')]
                              {:path (:path leaf)
                               :rect rect
                               :draft draft
                               :opts leaf-opts}))
                          leaves)
-        chrome-spec (assoc chrome :shared? shared?)]
+        chrome-spec (-> chrome
+                        (assoc :shared? shared?)
+                        (assoc :shared-aesthetics shared-aesthetics))]
     (resolve/->CompositeDraft width height sub-drafts chrome-spec layout)))
 
 (defn composite-draft->plan
@@ -356,12 +397,16 @@
                         sub-drafts)
         shared-legend (when (:shared? chrome-spec)
                         (when-let [first-sub (first sub-drafts)]
-                          (let [rep-opts (-> (:opts first-sub)
+                          (let [shared-aes (:shared-aesthetics chrome-spec)
+                                shared-suppress-keys (mapv aesthetic->suppress-key shared-aes)
+                                rep-opts (-> (:opts first-sub)
                                              (dissoc :suppress-legend)
+                                             (as-> $ (reduce #(dissoc %1 %2)
+                                                             $ shared-suppress-keys))
                                              (assoc :width 600 :height 400))
-                                rep-plan (plan/draft->plan (:draft first-sub) rep-opts)]
-                            (select-keys rep-plan
-                                         [:legend :size-legend :alpha-legend]))))
+                                rep-plan (plan/draft->plan (:draft first-sub) rep-opts)
+                                shared-keys (mapv aesthetic->legend-plan-key shared-aes)]
+                            (select-keys rep-plan shared-keys))))
         chrome (-> chrome-spec
                    (dissoc :shared?)
                    (assoc :shared-legend shared-legend)
@@ -410,7 +455,7 @@
                 shared-legend layout]} chrome
         strips? (boolean (or (seq col-labels) (seq row-labels)))
         leaf-trees (mapv (fn [{:keys [plan rect]}]
-                           (let [tooltip? (:tooltip (or (:opts plan) {}))
+                           (let [tooltip? (:tooltip plan)
                                  tree (if tooltip?
                                         (membrane/plan->membrane plan {:tooltip true})
                                         (membrane/plan->membrane plan {}))

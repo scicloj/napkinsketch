@@ -1125,19 +1125,28 @@
          eff-y-label (if (:suppress-y-label opts) nil eff-y-label)
 
          ;; Legends -- depend on resolved draft layers + cfg, not on pixel math.
-         ;; :suppress-legend on opts skips legend construction entirely; used
+         ;; :suppress-legend on opts skips ALL legend construction; used
          ;; by the compositor on sub-plots (e.g. SPLOM cells) so the legend
-         ;; doesn't eat the per-cell render rectangle.
+         ;; doesn't eat the per-cell render rectangle. The per-channel
+         ;; flags (:suppress-color-legend, :suppress-size-legend,
+         ;; :suppress-alpha-legend) are set by the aware-chrome path when
+         ;; only some aesthetics are unanimous across composite cells --
+         ;; the per-leaf legend renders for the non-unanimous aesthetics
+         ;; while the unanimous ones get one shared legend at composite
+         ;; level.
          suppress-legend? (:suppress-legend opts)
-         legend (when-not suppress-legend?
+         suppress-color? (or suppress-legend? (:suppress-color-legend opts))
+         suppress-size? (or suppress-legend? (:suppress-size-legend opts))
+         suppress-alpha? (or suppress-legend? (:suppress-alpha-legend opts))
+         legend (when-not suppress-color?
                   (build-legend resolved-all numeric-color? all-colors color-cols cfg (:color-label opts)))
          legend (or legend
-                    (when-not suppress-legend?
+                    (when-not suppress-color?
                       (build-fill-fallback-legend panel-data resolved-all cfg
                                                   (:fill-label opts))))
-         size-legend (when-not suppress-legend?
+         size-legend (when-not suppress-size?
                        (build-size-legend resolved-all (:size-label opts)))
-         alpha-legend (when-not suppress-legend?
+         alpha-legend (when-not suppress-alpha?
                         (build-alpha-legend resolved-all (:alpha-label opts)))
 
          ;; Scene: everything compute-padding + compute-dims need to
@@ -1223,6 +1232,7 @@
            :legend legend :size-legend size-legend :alpha-legend alpha-legend
            :legend-position (:legend-position padding)
            :panels panels
+           :tooltip (:tooltip opts)
            :layout (select-keys padding [:x-label-pad :y-label-pad :title-pad
                                          :subtitle-pad :caption-pad
                                          :legend-w :legend-h :strip-h :strip-w])})]
