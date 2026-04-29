@@ -123,6 +123,39 @@
       [(apply jt/min (map first extents))
        (apply jt/max (map second extents))])))
 
+(defn- warn-out-of-range-breaks!
+  "When user-supplied :breaks include values outside the [lo hi]
+   numeric domain, the corresponding ticks render off-panel and the
+   chart appears unlabelled. Print a warning naming the offending
+   values and suggesting :domain (which extends the axis range) for
+   users who meant to broaden the visible scale rather than just pin
+   tick locations. Strict mode upgrades to ex-info."
+  [breaks domain]
+  (let [[lo hi] domain]
+    (when (and (number? lo) (number? hi))
+      (let [out-of-range (vec (filter #(or (< (double %) (double lo))
+                                           (> (double %) (double hi)))
+                                      breaks))]
+        (when (seq out-of-range)
+          (let [strict-val (:strict (defaults/config))
+                msg (str "pj/scale :breaks " (vec breaks)
+                         " include value(s) " out-of-range
+                         " outside the data domain [" (double lo) " " (double hi)
+                         "]. Out-of-range tick(s) render off the panel."
+                         " To extend the axis to encompass these values,"
+                         " set :domain explicitly (e.g. {:domain [lo hi]}).")]
+            (when-not (or (nil? strict-val) (boolean? strict-val))
+              (throw (ex-info (str ":strict config value must be true or false, got: "
+                                   (pr-str strict-val))
+                              {:value strict-val})))
+            (if strict-val
+              (throw (ex-info msg
+                              {:caller "pj/plan"
+                               :breaks (vec breaks)
+                               :domain [lo hi]
+                               :out-of-range out-of-range}))
+              (println (str "Warning: " msg)))))))))
+
 (defn compute-ticks
   "Compute tick values and labels for a domain+pixel range, using wadogo transiently.
    When temporal-extent is provided (a [min max] pair of temporal objects),
@@ -146,6 +179,7 @@
          ;; they asked for, labelled with the same format the scale uses.
          (and user-breaks (sequential? user-breaks) (seq user-breaks))
          (let [vs (vec user-breaks)
+               _ (warn-out-of-range-breaks! vs domain)
                labels (if log?
                         (vec (scale/format-log-ticks vs))
                         (let [s (scale/make-scale domain pixel-range scale-spec)]

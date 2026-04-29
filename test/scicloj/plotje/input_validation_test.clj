@@ -659,6 +659,46 @@
       (is (some? (pj/facet pose :y :col)))
       (is (some? (pj/facet pose :y :row))))))
 
+(deftest plan-warns-on-out-of-range-breaks
+  (let [iris (tc/dataset {:sepal-length [4.0 5.0 6.0]
+                          :sepal-width  [2.0 3.0 4.0]})]
+    (testing "out-of-range breaks warn naming the offending values"
+      (let [out (with-out-str
+                  (-> iris
+                      (pj/lay-point :sepal-length :sepal-width)
+                      (pj/scale :y {:type :linear :breaks [0 100 200]})
+                      pj/plan))]
+        (is (re-find #":breaks" out))
+        (is (re-find #"\[0 100 200\]" out))
+        (is (re-find #"outside the data domain" out))
+        (is (re-find #":domain" out))))
+
+    (testing "in-range breaks silent"
+      (let [out (with-out-str
+                  (-> iris
+                      (pj/lay-point :sepal-length :sepal-width)
+                      (pj/scale :y {:type :linear :breaks [2.0 3.0 4.0]})
+                      pj/plan))]
+        (is (= "" out))))
+
+    (testing "partially out-of-range names only the offending values"
+      (let [out (with-out-str
+                  (-> iris
+                      (pj/lay-point :sepal-length :sepal-width)
+                      (pj/scale :y {:type :linear :breaks [3.0 100]})
+                      pj/plan))]
+        (is (re-find #"\[100\]" out))))
+
+    (testing "strict mode upgrades to throw"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"outside the data domain"
+           (pj/with-config {:strict true}
+             (-> iris
+                 (pj/lay-point :sepal-length :sepal-width)
+                 (pj/scale :y {:type :linear :breaks [0 100 200]})
+                 pj/plan)))))))
+
 (deftest plan-warns-on-unused-pose-mapping-keys
   (let [data (tc/dataset {:x [1 2 3] :y [10 20 30]
                           :ymin [5 15 25] :ymax [15 25 35]})]
