@@ -47,17 +47,19 @@
   [x]
   (resolve/composite-draft? x))
 
-(defn- draft-shape?
-  "True if x is the shape that pj/draft produces: a CompositeDraft
-   record, or a non-empty vector of draft layers (maps carrying the
+(defn draft?
+  "Return true if x is a draft -- the intermediate representation
+   produced by pj/draft. A draft is either a CompositeDraft record
+   or a non-empty vector of draft layers (maps carrying the
    internal :__panel-idx key). Used by cross-stage misuse guards on
    pj/plan and pj/plot. The :__panel-idx check distinguishes a draft
    from a vector of row maps used as plot data."
   [x]
-  (or (resolve/composite-draft? x)
-      (and (vector? x)
-           (seq x)
-           (every? #(and (map? %) (contains? % :__panel-idx)) x))))
+  (boolean
+   (or (resolve/composite-draft? x)
+       (and (vector? x)
+            (seq x)
+            (every? #(and (map? %) (contains? % :__panel-idx)) x)))))
 
 (defn plan-layer?
   "Return true if x is a plan-layer (resolved geometry for one mark)."
@@ -2100,7 +2102,7 @@
                           "pj/plan->plot on the plan, or pass the "
                           "original pose to pj/plot.")
                      {:got :plan})))
-   (when (draft-shape? pose)
+   (when (draft? pose)
      (throw (ex-info (str "pj/plot expects a pose, not a draft. "
                           "A draft is an intermediate stage produced "
                           "by pj/draft; pass the original pose to "

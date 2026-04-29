@@ -229,6 +229,34 @@
 ;; contextualized: shared-scale domains have been injected and the
 ;; composite has applied any chrome-driven leaf-opt adjustments.
 
+(deftest draft-predicate-test
+  (testing "pj/draft? recognizes leaf drafts (vector of :__panel-idx maps)"
+    (let [pose (-> (tc/dataset {:x [1 2 3] :y [1 2 3]})
+                   (pj/lay-point :x :y))]
+      (is (true? (pj/draft? (pj/draft pose))))))
+
+  (testing "pj/draft? recognizes composite drafts"
+    (let [composite {:data (tc/dataset {:x [1 2 3] :y [1 2 3]})
+                     :mapping {:x :x :y :y}
+                     :layout {:direction :horizontal :weights [1 1]}
+                     :poses [{:layers [{:layer-type :point}]}
+                             {:layers [{:layer-type :line}]}]}]
+      (is (true? (pj/draft? (pj/draft composite))))))
+
+  (testing "pj/draft? returns false on plans, poses, and plain data"
+    (let [pose (-> (tc/dataset {:x [1 2 3] :y [1 2 3]})
+                   (pj/lay-point :x :y))]
+      (is (false? (pj/draft? (pj/plan pose)))
+          "plan is not a draft")
+      (is (false? (pj/draft? pose))
+          "pose is not a draft")
+      (is (false? (pj/draft? [{:x 1 :y 2}]))
+          "vector of row-map plot data lacks :__panel-idx")
+      (is (false? (pj/draft? nil)))
+      (is (false? (pj/draft? []))
+          "empty vector is not a draft")
+      (is (false? (pj/draft? {:foo :bar}))))))
+
 (deftest composite-draft-shape-test
   (testing "pj/draft on a composite returns a CompositeDraft"
     (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
