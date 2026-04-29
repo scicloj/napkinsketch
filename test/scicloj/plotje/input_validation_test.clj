@@ -534,6 +534,38 @@
          #"empty pose template"
          (pj/pose [])))))
 
+(deftest zero-row-cell-renders-no-data-placeholder
+  (testing "zero-row pose with explicit layer renders 'no data' placeholder"
+    (let [empty-data (tc/dataset {:x [] :y []})
+          pose (-> empty-data
+                   (pj/pose {:x :x :y :y})
+                   (pj/lay :point))
+          texts (:texts (pj/svg-summary (pj/plot pose)))]
+      (is (some #(= % "no data") texts)
+          "rendered SVG includes the 'no data' placeholder text")))
+
+  (testing "populated panel does NOT show the placeholder"
+    (let [pose (pj/lay-point tiny :x :y)
+          texts (:texts (pj/svg-summary (pj/plot pose)))]
+      (is (not (some #(= % "no data") texts)))))
+
+  (testing "zero-row cell inside arrange composite shows placeholder only on that cell"
+    (let [a (-> tiny (pj/lay-point :x :y))
+          b (-> (tc/dataset {:x [] :y []})
+                (pj/pose {:x :x :y :y})
+                (pj/lay :point))
+          texts (:texts (pj/svg-summary (pj/plot (pj/arrange [a b]))))
+          n-no-data (count (filter #(= % "no data") texts))]
+      (is (= 1 n-no-data)
+          "the empty cell renders 'no data'; the populated cell does not")))
+
+  (testing "annotation-only panel does not get the placeholder"
+    (let [pose (-> tiny
+                   (pj/lay-point :x :y)
+                   (pj/lay-rule-h {:y-intercept 2}))
+          texts (:texts (pj/svg-summary (pj/plot pose)))]
+      (is (not (some #(= % "no data") texts))))))
+
 (deftest options-width-height-non-number-throws
   (testing "(pj/options pose {:width \"800\"}) throws with type message"
     (is (thrown-with-msg?

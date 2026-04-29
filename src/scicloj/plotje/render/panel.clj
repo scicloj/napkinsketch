@@ -241,6 +241,20 @@
                            (draw-band p1 p2 rgba horizontal-y-data?))
                  nil)))))
 
+        ;; "No data" placeholder for cells where the layers carry zero
+        ;; groups and there are no annotations -- previously these
+        ;; rendered as a blank grid with no visual indicator that the
+        ;; cell was empty by design.
+        no-data? (and (empty? annotations)
+                      (seq layers)
+                      (every? #(empty? (:groups %)) layers))
+        no-data-label (when no-data?
+                        (ui/translate (/ (double pw) 2.0)
+                                      (/ (double ph) 2.0)
+                                      (ui/with-color [0.5 0.5 0.5 1.0]
+                                        (assoc (ui/label "no data" (ui/font nil 12))
+                                               :text-anchor "middle"))))
+
         ;; Tick labels (conditional)
         ;; For ridgeline panels, y-tick labels must use ridgeline band positions
         ;; (with overlap padding) instead of the categorical scale positions.
@@ -258,4 +272,6 @@
                                                             :text-anchor "end")))))))
                           (render-tick-labels :y y-ticks sy pw ph m cfg)))]
     (vec (concat (when include-bg? [background])
-                 grid marks ann-marks x-tick-labels y-tick-labels))))
+                 grid marks ann-marks
+                 (when no-data-label [no-data-label])
+                 x-tick-labels y-tick-labels))))
