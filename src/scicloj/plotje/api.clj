@@ -1412,10 +1412,15 @@
                       layer-type-key nil nil))
        (lay-on-pose fr layer-type-key nil nil))))
   ([layer-type-key pose-or-data x-or-opts]
-   (let [fr (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key)))]
+   (let [was-raw? (not (pose? pose-or-data))
+         fr (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key)))]
      (cond
        (map? x-or-opts)
-       (lay-on-pose fr layer-type-key nil x-or-opts)
+       (let [d (:data fr)
+             fr (if (and was-raw? d (nil? (:mapping fr)))
+                  (assoc fr :mapping (auto-infer-mapping layer-type-key d))
+                  fr)]
+         (lay-on-pose fr layer-type-key nil x-or-opts))
 
        (or (keyword? x-or-opts) (string? x-or-opts))
        (lay-on-pose fr layer-type-key {:x x-or-opts} nil)

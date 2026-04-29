@@ -659,6 +659,33 @@
       (is (some? (pj/facet pose :y :col)))
       (is (some? (pj/facet pose :y :row))))))
 
+(deftest lay-2arity-opts-map-auto-infers-from-raw-data
+  (let [small (tc/dataset {:x [1.0 2.0] :y [10.0 20.0]})
+        big (tc/dataset {:a [1] :b [2] :c [3] :d [4] :e [5]})]
+    (testing "(lay-rule-h raw-data {:y-intercept ...}) auto-infers x/y mapping"
+      (let [pose (pj/lay-rule-h small {:y-intercept 5})]
+        (is (= {:x :x :y :y} (:mapping pose)))
+        (is (some? (:data pose)))))
+
+    (testing "(lay-point raw-data {:color ...}) auto-infers x/y mapping"
+      (is (= {:x :x :y :y}
+             (:mapping (pj/lay-point small {:color :x})))))
+
+    (testing "(lay-line raw-data {:color ...}) auto-infers"
+      (is (= {:x :x :y :y}
+             (:mapping (pj/lay-line small {:color :x})))))
+
+    (testing "raw data with 4+ columns throws (consistent with 1-arity)"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Cannot auto-infer columns from 5 columns"
+           (pj/lay-point big {:color :a}))))
+
+    (testing "pose input is unaffected -- no auto-infer triggers on a pose"
+      (let [bare-pose (pj/pose)
+            pose (pj/lay-point bare-pose {:color :x})]
+        (is (nil? (:mapping pose)))))))
+
 (deftest auto-infer-error-branches-on-x-only
   (let [big (tc/dataset {:a [1] :b [2] :c [3] :d [4] :e [5]})]
     (testing "bivariate mark suggests :x :y"
