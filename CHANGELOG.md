@@ -137,6 +137,18 @@ form (Rule C9 with Property P-C9 in `pose_rules.clj`). SPLOM
 call sites in README, scatter, api_reference, gallery,
 edge_cases, and customization migrated to the new shape.
 
+### Faceted scale defaults
+
+Faceted plots default to shared scales across panels (one y-domain
+spans every panel), matching ggplot2's `facet_wrap(scales="fixed")`
+default. An opt-in `:facet-scales :free` for per-panel domains is
+still pending; pin per-panel ranges explicitly with
+`(pj/scale :y {:domain [...]})` when needed.
+
+Root-pose annotations like `pj/lay-rule-*` / `pj/lay-band-*` are
+visible in every panel by default, since the shared domain
+encompasses the intercept.
+
 ### Retired: `pj/prepare-pose` (consolidated into `pj/pose`)
 
 `pj/pose` is now the single public constructor. The 1-arity
@@ -922,14 +934,6 @@ produce crashes on canonical inputs.
   category labels with sort-stable ordinal characters
   (`"01: ..."`, `"02: ..."`), which leaks into the legend.
   Reported in user-report-2 minor observation.
-- Faceted panels default to free scales per panel (ggplot2's default
-  is fixed); an explicit `:facet-scales :fixed` option is pending.
-  A consequence: an annotation attached at the root pose
-  (`pj/lay-rule-*` / `pj/lay-band-*`) is invisible in any panel
-  whose per-panel domain doesn't contain the intercept -- for
-  example, `{:y-intercept 6.0}` on a species-faceted scatter won't
-  appear in setosa if setosa's y-range is [4, 5.5]. Workaround:
-  pin the y-domain explicitly via `(pj/scale :y {:domain [...]})`.
 - Annotations are silently skipped under `(pj/coord :polar)`. A polar
   rule would need to render as a circle (fixed radius) or spoke
   (fixed angle); those shapes are not implemented. Use Cartesian or
