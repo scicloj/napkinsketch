@@ -659,6 +659,29 @@
       (is (some? (pj/facet pose :y :col)))
       (is (some? (pj/facet pose :y :row))))))
 
+(deftest plan-on-bare-template-throws-clear-error
+  (testing "(pj/plan (pj/pose nil :x :y)) throws clear error instead of cryptic 'Unknown mark: nil'"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"pj/plan got a pose with no data and no layers"
+         (pj/plan (pj/pose nil :x :y))))
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #"Add a layer with pj/lay-\*"
+         (pj/plan (pj/pose nil {:x :a :y :b})))))
+
+  (testing "zero-arity (pj/pose) is not a bare template -- still plannable"
+    (is (some? (pj/plan (pj/pose)))))
+
+  (testing "mapping + data + no layers is plannable (data-driven inference)"
+    (is (some? (pj/plan (pj/pose tiny :x :y)))))
+
+  (testing "composite with data at root + mapping-only sub-poses is plannable"
+    (is (some? (pj/plan (-> tiny
+                            (pj/pose :x :y)
+                            (pj/pose :y :x)
+                            pj/lay-point))))))
+
 (deftest lay-2arity-opts-map-auto-infers-from-raw-data
   (let [small (tc/dataset {:x [1.0 2.0] :y [10.0 20.0]})
         big (tc/dataset {:a [1] :b [2] :c [3] :d [4] :e [5]})]

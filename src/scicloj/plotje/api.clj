@@ -2140,6 +2140,35 @@
   ([pose opts]
    (draft (options pose opts))))
 
+(defn- pose-has-data-anywhere?
+  "True if any node in the pose tree carries :data -- either on the
+   pose itself, on any layer, or on any descendant sub-pose. Used to
+   distinguish the legitimate 'data at root flows to mapping-only
+   leaves' pattern from the 'no data anywhere' bare-template footgun."
+  [pose]
+  (or (some? (:data pose))
+      (some #(some? (:data %)) (:layers pose))
+      (some pose-has-data-anywhere? (:poses pose))))
+
+(defn- bare-template-leaf?
+  "True for a leaf pose carrying a mapping but no layers, no
+   annotations, and no own :data."
+  [leaf]
+  (and (not (:poses leaf))
+       (seq (:mapping leaf))
+       (empty? (:layers leaf))
+       (empty? (:annotations leaf))
+       (nil? (:data leaf))))
+
+(defn- find-bare-template-leaf
+  "Walk the pose tree looking for a bare-template leaf. Returns the
+   first one found (or nil)."
+  [pose]
+  (cond
+    (bare-template-leaf? pose) pose
+    (:poses pose) (some find-bare-template-leaf (:poses pose))
+    :else nil))
+
 (defn plan
   "Convert a pose into a plan. For a leaf pose, returns a `Plan`
    record with one panel per facet variant. For a composite pose,
@@ -2155,6 +2184,17 @@
                           "Use the plan directly, or call pj/plot on the pose.")
                      {:got :plan})))
    (let [fr (ensure-pose pose "pj/plan")]
+     (when (and (not (pose-has-data-anywhere? fr))
+                (find-bare-template-leaf fr))
+       (let [bare (find-bare-template-leaf fr)]
+         (throw (ex-info (str "pj/plan got a pose with no data and no layers. "
+                              "The mapping " (pr-str (:mapping bare))
+                              " is set, but nothing to plan from. "
+                              "Add a layer with pj/lay-* (e.g. (pj/lay-point pose :x :y)) "
+                              "or attach data via pj/with-data before calling pj/plan.")
+                         {:caller "pj/plan"
+                          :pose-shape :bare-template
+                          :mapping (:mapping bare)}))))
      (compositor/pose->plan fr (:opts fr {}))))
   ([pose opts]
    (plan (options pose opts))))
