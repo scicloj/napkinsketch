@@ -245,6 +245,46 @@
            #"pj/plot expects a pose, not a draft"
            (pj/plot d))))))
 
+(deftest alpha-constant-out-of-range-throws
+  (testing ":alpha > 1 throws at build-layer with helpful message"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":alpha must be in \[0, 1\]"
+         (pj/lay-point tiny :x :y {:alpha 1.5}))))
+
+  (testing ":alpha < 0 throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":alpha must be in \[0, 1\]"
+         (pj/lay-point tiny :x :y {:alpha -0.1}))))
+
+  (testing ":alpha 0 and 1 are accepted (closed interval)"
+    (is (pj/pose? (pj/lay-point tiny :x :y {:alpha 0})))
+    (is (pj/pose? (pj/lay-point tiny :x :y {:alpha 1}))))
+
+  (testing ":alpha as a column reference passes through"
+    (is (pj/pose? (pj/lay-point tiny :x :y {:alpha :y})))
+    (is (pj/pose? (pj/lay-point tiny :x :y {:alpha "y"})))))
+
+(deftest size-constant-non-positive-throws
+  (testing ":size 0 throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":size must be positive"
+         (pj/lay-point tiny :x :y {:size 0}))))
+
+  (testing ":size negative throws"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":size must be positive"
+         (pj/lay-point tiny :x :y {:size -3}))))
+
+  (testing "positive :size constant is accepted"
+    (is (pj/pose? (pj/lay-point tiny :x :y {:size 5}))))
+
+  (testing ":size as a column reference passes through"
+    (is (pj/pose? (pj/lay-point tiny :x :y {:size :y})))))
+
 (deftest pose-2-arity-extracts-data-from-opts
   (testing "(pj/pose nil {:data X :x ... :y ...}) attaches X as data, mapping omits :data"
     (let [data {:a [1 2 3] :b [4 5 6]}

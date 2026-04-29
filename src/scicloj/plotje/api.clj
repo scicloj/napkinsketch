@@ -1139,6 +1139,24 @@
                              (pr-str (keyword (name k))) ".")
                         {:option k :value v}))))))
 
+(defn- check-numeric-aesthetics
+  "Throw a helpful error if :alpha or :size in a layer's options is
+   a numeric constant outside its valid range. Column references
+   (keyword/string) pass through -- per-row range is enforced by the
+   encoder. :alpha must be in [0, 1] (an opacity); :size must be
+   positive (a radius / thickness)."
+  [context opts]
+  (when-let [v (get opts :alpha)]
+    (when (and (number? v) (not (<= 0 v 1)))
+      (throw (ex-info (str context " :alpha must be in [0, 1] when given "
+                           "as a constant, but got " (pr-str v) ".")
+                      {:option :alpha :value v}))))
+  (when-let [v (get opts :size)]
+    (when (and (number? v) (not (pos? v)))
+      (throw (ex-info (str context " :size must be positive when given "
+                           "as a constant, but got " (pr-str v) ".")
+                      {:option :size :value v})))))
+
 (defn- registered-marks []
   (->> (methods extract/extract-layer)
        keys
@@ -1200,6 +1218,7 @@
   (when opts
     (check-facet-keys "layer" opts)
     (check-position-mapping (str "lay-" (name layer-type-key)) opts)
+    (check-numeric-aesthetics (str "lay-" (name layer-type-key)) opts)
     (validate-mark-stat (str "lay-" (name layer-type-key)) opts))
   (let [opts (if (and opts (keyword? layer-type-key))
                (let [reg (layer-type/lookup layer-type-key)
