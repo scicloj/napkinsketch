@@ -158,33 +158,24 @@ marginal
 ;; of sepal width by species, a scatter of petal dimensions, and a
 ;; density of petal length.
 ;;
-;; Layouts today are one-dimensional (`:horizontal` or `:vertical`),
-;; so a 2x2 grid is built as a vertical pair of horizontal pairs.
-;; The current `pj/arrange` does not accept composite poses as
-;; inputs, so the nesting is expressed as an explicit map:
+;; Each cell is built as its own leaf pose, then `pj/arrange` takes
+;; rows of cells and produces the 2x2 grid:
 
 (def dashboard
-  (pj/pose
-   {:data (rdatasets/datasets-iris)
-    :layout {:direction :vertical :weights [1 1]}
-    :poses [{:layout {:direction :horizontal :weights [1 1]}
-             :poses [{:mapping {:x :sepal-length}
-                      :layers [{:layer-type :histogram}]}
-                     {:mapping {:x :species :y :sepal-width :color :species}
-                      :layers [{:layer-type :boxplot}]}]}
-            {:layout {:direction :horizontal :weights [1 1]}
-             :poses [{:mapping {:x :petal-length :y :petal-width :color :species}
-                      :layers [{:layer-type :point}]}
-                     {:mapping {:x :petal-length :color :species}
-                      :layers [{:layer-type :density}]}]}]}))
+  (let [iris (rdatasets/datasets-iris)]
+    (pj/arrange
+     [[(-> iris (pj/lay-histogram :sepal-length))
+       (-> iris (pj/lay-boxplot :species :sepal-width {:color :species}))]
+      [(-> iris (pj/lay-point :petal-length :petal-width {:color :species}))
+       (-> iris (pj/lay-density :petal-length {:color :species}))]])))
 
 dashboard
 
 (kind/test-last [(fn [v] (= 4 (:panels (pj/svg-summary v))))])
 
-;; Four panels, each its own layer type. The outer composite stacks
-;; two rows; each row is itself a horizontal composite of two plots.
-;; The top-level `:data` is inherited by every leaf.
+;; Four panels, each its own layer type. `pj/arrange` stacks the rows
+;; vertically; each row is laid out horizontally. Every cell is a
+;; leaf pose -- `pj/arrange` does not accept composite cells.
 
 ;; ## Notes on the Current Implementation
 ;;
@@ -202,10 +193,12 @@ dashboard
 ;; - **Each sub-pose produces its own legend** -- if you map `:color`
 ;;   in two sibling sub-poses, the rendered plot shows two legends
 ;;   rather than a merged one.
-;; - **Nested composites use the explicit map form.** `pj/arrange`
-;;   takes leaf poses; for a row of rows or column of rows, write
-;;   the composite as an explicit map (the dashboard example above
-;;   shows the shape).
+;; - **Multi-row layouts go through `pj/arrange`.** Both `pj/arrange`
+;;   and the explicit-map form accept only leaf cells; a row of rows
+;;   or column of rows is built by passing nested vectors of leaves
+;;   to `pj/arrange` (the dashboard example above shows the shape).
+;;   Nested composites (a sub-pose that is itself composite) are out
+;;   of scope today.
 
 ;; ## What's Next
 ;;

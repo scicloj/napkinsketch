@@ -147,30 +147,25 @@
 
 
 (def
- v25_l166
+ v25_l164
  (def
   dashboard
-  (pj/pose
-   {:data (rdatasets/datasets-iris),
-    :layout {:direction :vertical, :weights [1 1]},
-    :poses
-    [{:layout {:direction :horizontal, :weights [1 1]},
-      :poses
-      [{:mapping {:x :sepal-length},
-        :layers [{:layer-type :histogram}]}
-       {:mapping {:x :species, :y :sepal-width, :color :species},
-        :layers [{:layer-type :boxplot}]}]}
-     {:layout {:direction :horizontal, :weights [1 1]},
-      :poses
-      [{:mapping {:x :petal-length, :y :petal-width, :color :species},
-        :layers [{:layer-type :point}]}
-       {:mapping {:x :petal-length, :color :species},
-        :layers [{:layer-type :density}]}]}]})))
+  (let
+   [iris (rdatasets/datasets-iris)]
+   (pj/arrange
+    [[(-> iris (pj/lay-histogram :sepal-length))
+      (->
+       iris
+       (pj/lay-boxplot :species :sepal-width {:color :species}))]
+     [(->
+       iris
+       (pj/lay-point :petal-length :petal-width {:color :species}))
+      (-> iris (pj/lay-density :petal-length {:color :species}))]]))))
 
 
-(def v26_l181 dashboard)
+(def v26_l172 dashboard)
 
 
 (deftest
- t27_l183
- (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v26_l181)))
+ t27_l174
+ (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v26_l172)))

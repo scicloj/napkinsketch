@@ -627,6 +627,11 @@
     (validate-pose-shape sub (str context " sub-pose")))
   fr)
 
+(def ^:private nested-composite-rejection-msg
+  (str "Nested composites (composite-of-composite) are not supported."
+       " Build each cell as a separate leaf pose and pass them as a"
+       " flat sequence to a single `pj/arrange` call."))
+
 (defn- pose-kind
   "Lift a pose-shaped map into a notebook-renderable pose: validate
    the shape (recursive unknown-key warnings, position-mapping check),
@@ -649,7 +654,14 @@
   [fr]
   (if (-> fr meta :kindly/kind)
     fr
-    (do (validate-pose-shape fr "pj/pose")
+    (do (when (and (pose/composite? fr)
+                   (some pose/composite? (:poses fr)))
+          (throw (ex-info (str "pj/pose does not accept a nested composite"
+                               " (a `:poses` element that is itself a"
+                               " composite). "
+                               nested-composite-rejection-msg)
+                          {:got :nested-composite})))
+        (validate-pose-shape fr "pj/pose")
         (let [captured defaults/*config*]
           (kind/fn fr {:kindly/f (render-pose-map captured)})))))
 
@@ -922,7 +934,10 @@
    On a hand-built pose-shaped map (1-arity, input has :layers or
    :poses): the map is validated and tagged with Kindly auto-render
    metadata, but its keys are not reordered and its :data is not
-   coerced -- the typed shape is preserved verbatim."
+   coerced -- the typed shape is preserved verbatim. A flat composite
+   (`:poses` of leaf maps) is supported; literal nested composites
+   (any sub-pose itself has `:poses`) are rejected, matching
+   `pj/arrange`'s rule that its elements must be leaves."
   ([] (prepare-pose {:layers []}))
   ([x]
    (cond
@@ -2002,9 +2017,8 @@
     (and (pose? p) (pose/leaf? p)) p
     (and (pose? p) (pose/composite? p))
     (throw (ex-info (str "pj/arrange input at index " idx
-                         " is a composite pose. Nested arrangements "
-                         "are not supported yet -- flatten first, or "
-                         "open an issue.")
+                         " is a composite pose. "
+                         nested-composite-rejection-msg)
                     {:index idx}))
     :else
     (throw (ex-info (str "pj/arrange input at index " idx

@@ -11,6 +11,16 @@
                :y [2.0 4.0 1.0 5.0 3.0]
                :g ["a" "a" "b" "b" "b"]}))
 
+(defn- prelifted
+  "Tag a literal pose-shape map with Kindly metadata so it bypasses the
+   public lift gate. Used in tests that exercise the internal pipeline
+   on nested composite shapes -- the public `pj/pose` 1-arity rejects
+   literal nested composites (Decision C), but the pipeline still
+   handles them when tagged inputs flow through `pj/arrange`-style
+   builders."
+  [fr]
+  (vary-meta fr assoc :kindly/kind :kind/fn))
+
 ;; ============================================================
 ;; pj/pose constructor shape
 ;; ============================================================
@@ -136,13 +146,14 @@
   (testing "nested composite (horizontal outer, vertical inner) renders
             every descendant leaf"
     (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
-          composite {:data ds
-                     :mapping {:x :x :y :y}
-                     :layout {:direction :horizontal :weights [1 1]}
-                     :poses [{:layers [{:layer-type :point}]}
-                             {:layout {:direction :vertical :weights [1 1]}
-                              :poses [{:layers [{:layer-type :point}]}
-                                      {:layers [{:layer-type :point}]}]}]}
+          composite (prelifted
+                     {:data ds
+                      :mapping {:x :x :y :y}
+                      :layout {:direction :horizontal :weights [1 1]}
+                      :poses [{:layers [{:layer-type :point}]}
+                              {:layout {:direction :vertical :weights [1 1]}
+                               :poses [{:layers [{:layer-type :point}]}
+                                       {:layers [{:layer-type :point}]}]}]})
           svg (pj/plot composite)]
       (is (= 3 (:panels (pj/svg-summary svg)))
           "three leaves -> three panels"))))
@@ -195,13 +206,14 @@
 (deftest composite-plan-nested-paths-test
   (testing "paths in :sub-plots match the DFS order of leaves"
     (let [ds (tc/dataset {:x [1 2 3] :y [1 2 3]})
-          composite {:data ds
-                     :mapping {:x :x :y :y}
-                     :layout {:direction :horizontal :weights [1 1]}
-                     :poses [{:layers [{:layer-type :point}]}
-                             {:layout {:direction :vertical :weights [1 1]}
-                              :poses [{:layers [{:layer-type :point}]}
-                                      {:layers [{:layer-type :point}]}]}]}
+          composite (prelifted
+                     {:data ds
+                      :mapping {:x :x :y :y}
+                      :layout {:direction :horizontal :weights [1 1]}
+                      :poses [{:layers [{:layer-type :point}]}
+                              {:layout {:direction :vertical :weights [1 1]}
+                               :poses [{:layers [{:layer-type :point}]}
+                                       {:layers [{:layer-type :point}]}]}]})
           p (pj/plan composite)]
       (is (= [[0] [1 0] [1 1]]
              (mapv :path (:sub-plots p)))))))
@@ -446,18 +458,19 @@
   (testing "marginal-style: scatter + top density share :x = :a, right density
             uses :b (independent bucket)"
     (let [ds (tc/dataset {:a [0 1 2 3 4] :b [10 20 30 40 50]})
-          composite {:data ds
-                     :share-scales #{:x :y}
-                     :layout {:direction :vertical :weights [1 3]}
-                     :poses [;; top density on :a
-                             {:mapping {:x :a}
-                              :layers [{:layer-type :density}]}
+          composite (prelifted
+                     {:data ds
+                      :share-scales #{:x :y}
+                      :layout {:direction :vertical :weights [1 3]}
+                      :poses [;; top density on :a
+                              {:mapping {:x :a}
+                               :layers [{:layer-type :density}]}
                               ;; bottom row: scatter (a,b) + density on b (bucket-of-one)
-                             {:layout {:direction :horizontal :weights [3 1]}
-                              :poses [{:mapping {:x :a :y :b}
-                                       :layers [{:layer-type :point}]}
-                                      {:mapping {:x :b}
-                                       :layers [{:layer-type :density}]}]}]}
+                              {:layout {:direction :horizontal :weights [3 1]}
+                               :poses [{:mapping {:x :a :y :b}
+                                        :layers [{:layer-type :point}]}
+                                       {:mapping {:x :b}
+                                        :layers [{:layer-type :density}]}]}]})
           p (pj/plan composite)
           sub (:sub-plots p)
           top-density-x (-> sub (get 0) :plan :panels first :x-domain)
@@ -546,8 +559,9 @@
 
 (deftest composite-lay-nested-deep-match-test
   (testing "DFS finds a match at arbitrary depth"
-    (let [fr {:poses [{:layers [] :mapping {:x :a :y :b}}
-                      {:poses [{:layers [] :mapping {:x :a :y :b}}]}]}
+    (let [fr (prelifted
+              {:poses [{:layers [] :mapping {:x :a :y :b}}
+                       {:poses [{:layers [] :mapping {:x :a :y :b}}]}]})
           result (pj/lay-point fr :a :b)]
       (is (empty? (get-in result [:poses 0 :layers]))
           "shallow match is not picked")
