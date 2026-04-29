@@ -658,3 +658,23 @@
     (testing ":col and :row pass through"
       (is (some? (pj/facet pose :y :col)))
       (is (some? (pj/facet pose :y :row))))))
+
+(deftest lay-star-docstrings-list-accepted-options
+  (let [layer-type-keys (keys (scicloj.plotje.layer-type/registered))]
+    (testing "every registered layer type has a corresponding pj/lay-K with an Accepted-options block"
+      (doseq [k layer-type-keys]
+        (let [v (resolve (symbol "scicloj.plotje.api" (str "lay-" (name k))))
+              doc (:doc (meta v))]
+          (is (some? v) (str "missing pj/lay-" (name k)))
+          (is (re-find #"Accepted options:" doc)
+              (str "pj/lay-" (name k) " docstring lacks Accepted options block")))))
+
+    (testing "annotation rejects (:position :group :x-type :y-type :color-type) are filtered out for lay-rule-h"
+      (let [doc (:doc (meta #'pj/lay-rule-h))]
+        (is (not (re-find #":position" doc))
+            "lay-rule-h docstring should not list :position")
+        (is (not (re-find #":x-type" doc))
+            "lay-rule-h docstring should not list :x-type")))
+
+    (testing "lay-histogram lists its layer-type-specific :bins option"
+      (is (re-find #":bins\s|:bins$" (:doc (meta #'pj/lay-histogram)))))))

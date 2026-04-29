@@ -1840,6 +1840,52 @@
   ([pose-or-data x y-or-opts] (lay-layer-type :interval-h pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :interval-h pose-or-data x y opts)))
 
+(defn- wrap-options-list
+  "Wrap a sorted seq of option keywords across lines so the rendered
+   docstring stays readable. First line is prefixed with 'Accepted
+   options: '; continuation lines align under the first option."
+  [opts]
+  (let [prefix "   Accepted options: "
+        cont   "                     "
+        max-w  78]
+    (loop [[opt & more] opts
+           lines []
+           current prefix]
+      (if (nil? opt)
+        (str/join "\n" (conj lines (str current ".")))
+        (let [token (str opt)
+              candidate (if (= current prefix) token (str " " token))
+              fits? (<= (+ (count current) (count candidate) 1) max-w)]
+          (if fits?
+            (recur more lines (str current candidate))
+            (recur more (conj lines current) (str cont token))))))))
+
+(defn- append-accepted-options-block!
+  "Append the canonical accepted-options list to lay-K's docstring at
+   load time. The source docstring carries prose (description,
+   required mappings, examples); the registry is the single source of
+   truth for the accepted-keys list, so a registry change is
+   automatically reflected. Idempotent on reload via the
+   ::lay-doc-base meta key, which preserves the pre-append source
+   docstring across multiple invocations."
+  [layer-type-key]
+  (when-let [v (resolve (symbol "scicloj.plotje.api"
+                                (str "lay-" (name layer-type-key))))]
+    (let [reg (layer-type/lookup layer-type-key)
+          opts (-> (set layer-type/universal-layer-options)
+                   (into (:accepts reg))
+                   (set/difference (set (:rejects reg)))
+                   sort)
+          base (or (::lay-doc-base (meta v))
+                   (:doc (meta v))
+                   "")]
+      (alter-meta! v assoc
+                   :doc (str base "\n\n" (wrap-options-list opts))
+                   ::lay-doc-base base))))
+
+(doseq [k (keys (layer-type/registered))]
+  (append-accepted-options-block! k))
+
 (defn- deep-merge
   "Recursively merge maps. Non-map values are overwritten."
   [a b]
