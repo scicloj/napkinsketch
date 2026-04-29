@@ -365,7 +365,7 @@
       (is (= [1 2 3 4 5] (:xs (first (:groups layer))))))))
 
 ;; ============================================================
-;; method.clj — mark constructors
+;; layer_type.clj -- mark constructors
 ;; ============================================================
 
 (deftest mark-constructors-test
@@ -1144,7 +1144,7 @@
                        pj/lay-point pj/plot))))))
 
 (deftest string-column-in-lay-test
-  (testing "String column names in lay-point directly (no pj/view)"
+  (testing "String column names in lay-point directly (no explicit pj/pose)"
     (let [s (-> {"x" [1 2 3] "y" [4 5 6]}
                 (pj/lay-point "x" "y") pj/plot pj/svg-summary)]
       (is (= 3 (:points s)))))
@@ -1882,7 +1882,7 @@
         (is (= 3 (count (:groups layer))) "one group per :g value")))))
 
 (deftest facet-broadcast-test
-  (testing "Global method (loess) applies to all facet panels"
+  (testing "Root-scope lay-smooth (loess) applies to all facet panels"
     (let [iris (rdatasets/datasets-iris)
           s (-> iris
                 (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -1940,7 +1940,7 @@
         (is (= 150 (:points s)))
         (is (= 4 (:lines s)))))
 
-    (testing "Faceted + per-view layers"
+    (testing "Faceted + multiple layers"
       (let [s (summary (-> (pj/pose iris)
                            (pj/pose :sepal_length :sepal_width)
                            pj/lay-point
@@ -2021,11 +2021,11 @@
 
 (deftest lay-rule-band-test
   ;; Reference lines and shaded bands are first-class layers; these
-  ;; tests cover sketch-scope vs view-scope, facet interaction,
-  ;; color/alpha overrides, and annotation-only view domain synthesis.
+  ;; tests cover root-scope vs layer-scope, facet interaction,
+  ;; color/alpha overrides, and annotation-only domain synthesis.
   (let [ds (tc/dataset {:x [1 2 3 4 5] :y [2 4 3 5 4]})]
 
-    (testing "sketch-scope rule-h attaches a single annotation"
+    (testing "root-scope rule-h attaches a single annotation"
       (let [p (pj/plan (-> ds
                            (pj/lay-point :x :y)
                            (pj/lay-rule-h {:y-intercept 3})))
@@ -2034,7 +2034,7 @@
         (is (= :rule-h (:mark (first (:annotations panel)))))
         (is (= 3 (:y-intercept (first (:annotations panel)))))))
 
-    (testing "sketch-scope rule applies to every facet panel (deduped)"
+    (testing "root-scope rule applies to every facet panel (deduped)"
       ;; Without dedupe the cross-product would emit N copies per panel.
       (let [iris (tc/dataset "https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv"
                              {:key-fn keyword})
@@ -2071,10 +2071,8 @@
         (is (= 1 (:x-min band-v)))
         (is (= 3 (:x-max band-v)))))
 
-    (testing "view-scope rule with sketch-level data layer renders both"
-      ;; Regression: ann-view? in sketch.clj used to suppress sketch
-      ;; layers when a view contained an annotation method. Stage 3
-      ;; removed that check.
+    (testing "positioned rule with root-scope data layer renders both"
+      ;; Regression: data layer must coexist with a positioned annotation.
       (let [p (pj/plan (-> ds
                            (pj/pose :x :y)
                            pj/lay-point
@@ -2103,11 +2101,11 @@
         (is (clojure.string/includes? svg-red "rgb(255,0,0)"))
         (is (not (clojure.string/includes? svg-default "rgb(255,0,0)")))))
 
-    (testing "annotation-only view still produces a panel"
-      ;; Edge case: a view declared via pj/view with only a view-scope
-      ;; annotation (no data layer) should still infer a panel and
-      ;; render the annotation. Domain comes from the view's data
-      ;; columns plus the annotation's own position.
+    (testing "annotation-only pose still produces a panel"
+      ;; Edge case: a pose with only a positioned annotation (no data
+      ;; layer) should still infer a panel and render the annotation.
+      ;; Domain comes from the pose's data columns plus the
+      ;; annotation's own position.
       (let [p (pj/plan (-> ds
                            (pj/pose :x :y)
                            (pj/lay-rule-h :x :y {:y-intercept 3})))

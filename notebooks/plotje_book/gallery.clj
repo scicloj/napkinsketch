@@ -1238,8 +1238,8 @@
 ;; ### Violin + points (raincloud-like)
 ;; Source: [Python Graph Gallery: Raincloud Plot](https://python-graph-gallery.com/raincloud-plot/)
 
-;; Layering violin and points gives a view of both distribution shape
-;; and individual observations:
+;; Layering violin and points shows both distribution shape and
+;; individual observations:
 
 (-> (rdatasets/reshape2-tips)
     (pj/pose :day :total-bill)
