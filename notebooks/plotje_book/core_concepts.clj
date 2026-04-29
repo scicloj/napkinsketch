@@ -725,7 +725,7 @@ two-panel
 
 ;; Printed, each named column becomes a sub-pose with its own x
 ;; mapping; the bare `pj/lay-histogram` attaches at the root and
-;; flows into every panel via `resolve-tree`:
+;; flows into every panel at plan time:
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-histogram [:sepal-length :sepal-width :petal-length])

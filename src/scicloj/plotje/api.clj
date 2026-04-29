@@ -1187,9 +1187,9 @@
       d (assoc :data (coerce-dataset d)))))
 
 (defn lay
-  "Add a root-scope layer. The layer attaches to :layers and flows via
-   pose/resolve-tree to every descendant leaf (composite) or renders
-   on the single panel (leaf)."
+  "Add a root-scope layer. The layer attaches to :layers and flows to
+   every descendant leaf at plan time (composite) or renders on the
+   single panel (leaf)."
   ([pose-or-data layer-type-key]
    (lay pose-or-data layer-type-key nil))
   ([pose-or-data layer-type-key opts]
@@ -1763,7 +1763,7 @@
    :width and :height are coerced to long (rounded) so the plan carries
    integer pixel dimensions through to render. On a composite pose
    the options attach to the root so every descendant leaf inherits
-   them via resolve-tree."
+   them at plan time."
   [pose opts]
   (when-not (or (nil? opts) (map? opts))
     (throw (ex-info (str "pj/options expects an opts map as the second"
@@ -1849,7 +1849,7 @@
    panel. Accepts a type keyword or a scale spec map with :type, optional
    :domain, and optional :breaks (explicit tick locations). On a composite
    pose the scale attaches to the root so every descendant leaf inherits
-   it via resolve-tree.
+   it at plan time.
 
    Axis channels (:x, :y) accept :linear, :log, :categorical.
    Visual channels (:size, :alpha, :fill, :color) accept :linear and
@@ -1889,7 +1889,7 @@
 (defn coord
   "Set coordinate transform on a pose. Coord is plot-level -- it
    applies across every panel. On a composite pose the coord attaches
-   to the root so every descendant leaf inherits it via resolve-tree.
+   to the root so every descendant leaf inherits it at plan time.
    (coord pose :flip) -- flipped coordinates."
   [pose coord-type]
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)

@@ -240,9 +240,8 @@
 ;; is partitioned by a single test: a layer whose own `:mapping`
 ;; contains `:x` or `:y` is **panel-origin** and stays with
 ;; sub-pose 1; otherwise it is **root-origin** and moves to the
-;; composite's root `:layers`, flowing to every sub-pose via
-;; `resolve-tree`. No whitelist; the layer's own mapping is
-;; self-describing.
+;; composite's root `:layers`, flowing to every sub-pose at plan
+;; time. No whitelist; the layer's own mapping is self-describing.
 
 (-> iris
     (pj/pose :sepal-length :sepal-width)
@@ -258,9 +257,9 @@
          (= [] (:layers (second (:poses pose))))))])
 
 ;; The bare `pj/lay-point` call is root-origin: at render time it
-;; reaches both panels through the resolve-tree walk. Had we passed
-;; position -- `(pj/lay-point :sepal-length :sepal-width)` -- the
-;; layer would stay with sub-pose 1.
+;; reaches both panels. Had we passed position --
+;; `(pj/lay-point :sepal-length :sepal-width)` -- the layer would
+;; stay with sub-pose 1.
 
 (-> iris
     (pj/pose :sepal-length :sepal-width)
@@ -421,8 +420,7 @@
 ;; A `lay-*` call without position arguments attaches the layer to
 ;; the current pose's top-level `:layers`. On a leaf, that is the
 ;; leaf's own `:layers`. On a composite, it is the root `:layers`,
-;; and the layer flows into every descendant leaf via
-;; `resolve-tree`.
+;; and the layer flows into every descendant leaf at plan time.
 
 (-> iris
     (pj/pose :sepal-length :sepal-width)
@@ -435,7 +433,7 @@
          (empty? (or (:mapping (first (:layers pose))) {}))))])
 
 ;; On a composite, the same call attaches at root and reaches every
-;; panel through resolve-tree:
+;; panel at plan time:
 
 (-> (pj/arrange
      [(pj/pose iris :sepal-length :sepal-width)
@@ -451,9 +449,9 @@
 
 ;; **Property P-LP1 -- bare layers flow downward.** After adding one
 ;; bare layer to a composite, the composite's root `:layers` holds
-;; that single entry; `resolve-tree` walks each leaf with it
-;; prepended, so every sub-plot renders the layer on top of its
-;; inferred or explicit leaf layers.
+;; that single entry; at plan time each leaf inherits it (prepended),
+;; so every sub-plot renders the layer on top of its inferred or
+;; explicit leaf layers.
 
 (let [before (pj/arrange
               [(pj/pose iris :sepal-length :sepal-width)
@@ -1045,8 +1043,8 @@ l4-shared
 ;; `pj/cross cols cols`), the result is a nested **rows-of-cols**
 ;; composite with `:share-scales #{:x :y}` -- the canonical SPLOM
 ;; layout. Each cell inherits the base's `:data`, root `:mapping`,
-;; and root `:layers` via `resolve-tree`. The compositor applies
-;; three renderer flags on cells:
+;; and root `:layers` at plan time. The compositor applies three
+;; renderer flags on cells:
 ;;
 ;; - `:suppress-legend true` on every cell (one shared legend is
 ;;   drawn at composite level).
