@@ -361,6 +361,13 @@
   (let [{:keys [width height leaves layout shared? shared-aesthetics chrome]}
         (resolve-composite-chrome composite)
         suppress-keys (mapv aesthetic->suppress-key shared-aesthetics)
+        ;; When the composite carries its own title/subtitle/caption,
+        ;; suppress the same keys on each leaf so they don't double-
+        ;; render. The composite title sits in the title-band-h strip
+        ;; above the grid; per-leaf titles inside each cell would be
+        ;; redundant with the outer chrome.
+        composite-chrome-suppress (filterv #(get-in composite [:opts %])
+                                           [:title :subtitle :caption])
         sub-drafts (mapv (fn [leaf]
                            (let [rect (get layout (:path leaf))
                                  [_ _ rw rh] rect
@@ -370,7 +377,10 @@
                                                           :height (max 1 (long-or rh 1)))
                                              (seq suppress-keys)
                                              (as-> $ (reduce #(assoc %1 %2 true)
-                                                             $ suppress-keys)))
+                                                             $ suppress-keys))
+                                             (seq composite-chrome-suppress)
+                                             (as-> $ (reduce #(dissoc %1 %2)
+                                                             $ composite-chrome-suppress)))
                                  draft (pose/leaf->draft leaf')]
                              {:path (:path leaf)
                               :rect rect
