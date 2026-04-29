@@ -2224,6 +2224,16 @@
    (let [cfg (defaults/config)
          {:keys [cols title share-scales]
           :or {share-scales #{}}} opts
+         _ (when-not (and (or (set? share-scales)
+                              (sequential? share-scales))
+                          (every? #{:x :y} share-scales))
+             (throw (ex-info (str "pj/arrange :share-scales must be a"
+                                  " subset of #{:x :y}, got "
+                                  (pr-str share-scales) ".")
+                             {:caller "pj/arrange"
+                              :option :share-scales
+                              :value share-scales
+                              :accepted #{:x :y}})))
          width  (or (:width opts)  (:width cfg))
          height (or (:height opts) (:height cfg))
          nested? (and (sequential? plots)

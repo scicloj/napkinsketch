@@ -52,11 +52,11 @@
                 :opts    {:title "outer"}
                 :layers  [{:layer-type :lay-a}]
                 :poses  [{:layers [{:layer-type :lay-b}]}
-                          {:data    {:x [10 20]}
-                           :mapping {:color :override
-                                     :size  :other}
-                           :opts    {:title "inner"}
-                           :layers  [{:layer-type :lay-c}]}]}
+                         {:data    {:x [10 20]}
+                          :mapping {:color :override
+                                    :size  :other}
+                          :opts    {:title "inner"}
+                          :layers  [{:layer-type :lay-c}]}]}
           leaves (pose/resolve-tree tree)]
       (is (= 2 (count leaves)))
 
@@ -79,7 +79,7 @@
 (deftest resolve-tree-preserves-extras-test
   (testing "non-structural keys on a leaf pass through to the resolved leaf"
     (let [tree {:poses [{:layers [{:layer-type :point}]
-                          :panel-label "row=a, col=b"}]}
+                         :panel-label "row=a, col=b"}]}
           [l] (pose/resolve-tree tree)]
       (is (= "row=a, col=b" (:panel-label l))))))
 
@@ -119,15 +119,15 @@
     (is (thrown-with-msg? clojure.lang.ExceptionInfo
                           #"must sum to a positive number"
                           (pose/compute-layout {:layout {:weights [0 0]}
-                                                 :poses [{:layers []} {:layers []}]}
-                                                [0 0 100 100])))))
+                                                :poses [{:layers []} {:layers []}]}
+                                               [0 0 100 100])))))
 
 (deftest compute-layout-nested-test
   (testing "nested composite: outer vertical, inner row horizontal"
     (let [tree {:layout {:direction :vertical :weights [1 3]}
                 :poses [{:layers []} ; 25% top
-                         {:layout {:direction :horizontal :weights [3 1]}
-                          :poses [{:layers []} {:layers []}]}]}
+                        {:layout {:direction :horizontal :weights [3 1]}
+                         :poses [{:layers []} {:layers []}]}]}
           layout (pose/compute-layout tree [0 0 400 400])]
       ;; top band: full width, top quarter
       (is (= [0.0 0.0 400.0 100.0] (layout [0])))
@@ -149,14 +149,14 @@
                 {:poses [{:layers []} {:layers []}]})))
     (is (= [1 0] (pose/last-leaf-path
                   {:poses [{:layers []}
-                            {:poses [{:layers []}]}]}))))
+                           {:poses [{:layers []}]}]}))))
 
   (testing "empty-poses vector counts as a leaf (path = [])"
     (is (= [] (pose/last-leaf-path {:poses []})))))
 
 (deftest leaf-at-test
   (let [tree {:poses [{:layers [{:layer-type :point}]}
-                       {:poses [{:layers [{:layer-type :line}]}]}]}]
+                      {:poses [{:layers [{:layer-type :line}]}]}]}]
     (testing "path lands on a leaf"
       (is (= :point (-> (pose/leaf-at tree [0]) :layers first :layer-type)))
       (is (= :line (-> (pose/leaf-at tree [1 0]) :layers first :layer-type))))
@@ -178,7 +178,7 @@
     (is (= [1]
            (pose/last-matching-leaf-path
             {:poses [{:layers [] :mapping {:x :a :y :b}}
-                      {:layers [] :mapping {:x :a :y :b}}]}
+                     {:layers [] :mapping {:x :a :y :b}}]}
             {:x :a :y :b}))))
 
   (testing "no matching leaf returns nil"
@@ -203,7 +203,7 @@
   (testing "DFS order across different depths"
     (is (= [1 0] (pose/last-matching-leaf-path
                   {:poses [{:layers [] :mapping {:x :a :y :b}}
-                            {:poses [{:layers [] :mapping {:x :a :y :b}}]}]}
+                           {:poses [{:layers [] :mapping {:x :a :y :b}}]}]}
                   {:x :a :y :b}))))
 
   (testing "nil position components match bare leaves (no :x/:y mapping)"
@@ -230,9 +230,9 @@
   (testing "composite without :share-scales leaves leaves untouched"
     (let [tree {:data iris-like
                 :poses [{:layers [{:layer-type :point
-                                    :mapping {:x :sepal-length}}]}
-                         {:layers [{:layer-type :point
-                                    :mapping {:x :sepal-length}}]}]}
+                                   :mapping {:x :sepal-length}}]}
+                        {:layers [{:layer-type :point
+                                   :mapping {:x :sepal-length}}]}]}
           injected (pose/inject-shared-scales tree)
           leaves (pose/resolve-tree injected)]
       (is (every? #(nil? (:x-scale-domain (:opts %))) leaves)))))
@@ -241,11 +241,11 @@
   (testing "leaves sharing a column get a union x domain"
     (let [tree {:share-scales #{:x}
                 :poses [{:data (tc/dataset {:sepal-length [1.0 2.0 3.0]})
-                          :layers [{:layer-type :point
-                                    :mapping {:x :sepal-length}}]}
-                         {:data (tc/dataset {:sepal-length [10.0 20.0]})
-                          :layers [{:layer-type :point
-                                    :mapping {:x :sepal-length}}]}]}
+                         :layers [{:layer-type :point
+                                   :mapping {:x :sepal-length}}]}
+                        {:data (tc/dataset {:sepal-length [10.0 20.0]})
+                         :layers [{:layer-type :point
+                                   :mapping {:x :sepal-length}}]}]}
           leaves (pose/resolve-tree (pose/inject-shared-scales tree))]
       (is (= 2 (count leaves)))
       (is (= [1.0 20.0] (:x-scale-domain (:opts (first leaves)))))
@@ -256,9 +256,9 @@
     (let [tree {:data iris-like
                 :share-scales #{:x}
                 :poses [{:layers [{:layer-type :point
-                                    :mapping {:x :sepal-length}}]}
-                         {:layers [{:layer-type :point
-                                    :mapping {:x :sepal-width}}]}]}
+                                   :mapping {:x :sepal-length}}]}
+                        {:layers [{:layer-type :point
+                                   :mapping {:x :sepal-width}}]}]}
           [l1 l2] (pose/resolve-tree (pose/inject-shared-scales tree))]
       (is (= [4.0 8.0] (:x-scale-domain (:opts l1)))
           "first leaf gets the sepal-length domain")
@@ -274,11 +274,11 @@
                 :share-scales #{:x :y}
                 :layout {:direction :vertical}
                 :poses [{:layout {:direction :horizontal}
-                          :poses [{:layers [{:layer-type :point :mapping {:x :a :y :a}}]}
-                                   {:layers [{:layer-type :point :mapping {:x :b :y :a}}]}]}
-                         {:layout {:direction :horizontal}
-                          :poses [{:layers [{:layer-type :point :mapping {:x :a :y :b}}]}
-                                   {:layers [{:layer-type :point :mapping {:x :b :y :b}}]}]}]}
+                         :poses [{:layers [{:layer-type :point :mapping {:x :a :y :a}}]}
+                                 {:layers [{:layer-type :point :mapping {:x :b :y :a}}]}]}
+                        {:layout {:direction :horizontal}
+                         :poses [{:layers [{:layer-type :point :mapping {:x :a :y :b}}]}
+                                 {:layers [{:layer-type :point :mapping {:x :b :y :b}}]}]}]}
           leaves (pose/resolve-tree (pose/inject-shared-scales tree))]
       (is (= 4 (count leaves)))
       (is (every? #(= [1.0 3.0] (:x-scale-domain (:opts %)))
@@ -305,11 +305,11 @@
           tree {:data ds
                 :share-scales #{:y}
                 :poses [{:layers [{:layer-type :point :mapping {:x :a :y :b}}]}
-                         {:layers [{:layer-type :histogram :mapping {:x :b}}]
+                        {:layers [{:layer-type :histogram :mapping {:x :b}}]
                           ;; Force the histogram leaf into the :y :b
                           ;; bucket via its pose mapping; the layer
                           ;; itself still stat-bins on x.
-                          :mapping {:y :b}}]}
+                         :mapping {:y :b}}]}
           [scatter hist] (pose/resolve-tree (pose/inject-shared-scales tree))]
       (is (= [10.0 30.0] (:y-scale-domain (:opts scatter)))
           "scatter leaf still gets the shared y-domain")
@@ -326,8 +326,8 @@
           tree {:data ds
                 :share-scales #{:y}
                 :poses [{:mapping {:x :a :y :a} :layers []}      ;; diagonal: will infer :bin
-                         {:mapping {:x :b :y :a}                  ;; off-diagonal: will infer scatter
-                          :layers [{:layer-type :point}]}]}
+                        {:mapping {:x :b :y :a}                  ;; off-diagonal: will infer scatter
+                         :layers [{:layer-type :point}]}]}
           [diag off] (pose/resolve-tree (pose/inject-shared-scales tree))]
       (is (nil? (:y-scale-domain (:opts diag)))
           "diagonal cell (inferred to :bin) skips the y-stamp")
@@ -341,13 +341,63 @@
           tree {:data ds
                 :share-scales #{:y}
                 :poses [{:layers [{:layer-type :point :mapping {:x :a :y :b}}]}
-                         {:layers [{:layer-type :tile
-                                    :stat :bin2d
-                                    :mapping {:x :a :y :b}}]}]}
+                        {:layers [{:layer-type :tile
+                                   :stat :bin2d
+                                   :mapping {:x :a :y :b}}]}]}
           [scatter heatmap] (pose/resolve-tree (pose/inject-shared-scales tree))]
       (is (= [10.0 30.0] (:y-scale-domain (:opts scatter))))
       (is (= [10.0 30.0] (:y-scale-domain (:opts heatmap)))
           "heatmap participates in shared y-domain because its y is data, not count"))))
+
+(deftest inject-shared-scales-rejects-coord-conflict-test
+  (testing "share-scales :x refuses when one cell uses :coord :flip and another does not"
+    (let [tree {:share-scales #{:x}
+                :poses [{:data (tc/dataset {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0]})
+                         :opts {:coord :flip}
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}
+                        {:data (tc/dataset {:x [4.0 5.0 6.0] :y [40.0 50.0 60.0]})
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}]}]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"incompatible scale meaning"
+           (pose/inject-shared-scales tree))))))
+
+(deftest inject-shared-scales-rejects-mixed-type-test
+  (testing "share-scales refuses mixing numerical and categorical for the same column ref"
+    (let [tree {:share-scales #{:x}
+                :poses [{:data (tc/dataset {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0]})
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}
+                        {:data (tc/dataset {:x ["a" "b" "c"] :y [40.0 50.0 60.0]})
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}]}]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"incompatible scale meaning"
+           (pose/inject-shared-scales tree))))))
+
+(deftest inject-shared-scales-rejects-mixed-scale-type-test
+  (testing "share-scales refuses mixing :linear and :log on the same column"
+    (let [tree {:share-scales #{:x}
+                :poses [{:data (tc/dataset {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0]})
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}
+                        {:data (tc/dataset {:x [4.0 5.0 6.0] :y [40.0 50.0 60.0]})
+                         :opts {:x-scale {:type :log}}
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}]}]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"incompatible scale meaning"
+           (pose/inject-shared-scales tree))))))
+
+(deftest inject-shared-scales-rejects-all-categorical-bucket-test
+  (testing "share-scales refuses when no cell in the bucket has numeric values"
+    (let [tree {:share-scales #{:x}
+                :poses [{:data (tc/dataset {:x ["a" "b"] :y [1.0 2.0]})
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}
+                        {:data (tc/dataset {:x ["c" "d"] :y [3.0 4.0]})
+                         :layers [{:layer-type :point :mapping {:x :x :y :y}}]}]}]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"non-numeric across all sharing cells"
+           (pose/inject-shared-scales tree))))))
 
 (deftest inject-shared-scales-explicit-density-stat-test
   (testing "explicit :stat :density triggers the exemption"
@@ -356,10 +406,10 @@
           tree {:data ds
                 :share-scales #{:y}
                 :poses [{:layers [{:layer-type :point :mapping {:x :a :y :b}}]}
-                         {:mapping {:y :b}
-                          :layers [{:layer-type :line
-                                    :stat :density
-                                    :mapping {:x :a}}]}]}
+                        {:mapping {:y :b}
+                         :layers [{:layer-type :line
+                                   :stat :density
+                                   :mapping {:x :a}}]}]}
           [scatter density] (pose/resolve-tree (pose/inject-shared-scales tree))]
       (is (= [10.0 30.0] (:y-scale-domain (:opts scatter))))
       (is (nil? (:y-scale-domain (:opts density)))

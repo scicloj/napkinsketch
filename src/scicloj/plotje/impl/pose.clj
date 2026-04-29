@@ -13,7 +13,8 @@
                         :weights   [pos-num ...]}
       :opts         ?  plot options (inheritable)
       :share-scales ?  #{:x :y}  for composites}"
-  (:require [tablecloth.api :as tc]
+  (:require [clojure.string :as str]
+            [tablecloth.api :as tc]
             [tech.v3.datatype :as dtype]
             [tech.v3.datatype.functional :as dfn]
             [scicloj.plotje.impl.defaults :as defaults]
@@ -449,6 +450,109 @@
     :else [(min (first a) (first b))
            (max (second a) (second b))]))
 
+(defn- leaf-share-key
+  "Compatibility descriptor for a leaf when sharing scales on `axis`.
+   Two leaves whose effective-axis-col agree must produce the same
+   descriptor to be sharable; mismatches signal that the user wrote
+   :share-scales across cells that would mean different things on the
+   target axis (mixed coord, mixed numeric/categorical/temporal,
+   mixed linear/log).
+
+   Layers whose y axis is stat-driven (count/density on a histogram /
+   KDE / count layer) are not target-axis comparable for y-sharing;
+   the existing :y-axis-stat-driven? path skips the y-stamp entirely
+   for those leaves, so they are also exempt here."
+  [leaf axis]
+  (let [coord (or (get-in leaf [:opts :coord]) :cartesian)
+        scale-key (case axis :x :x-scale :y :y-scale)
+        scale-type (or (get-in leaf [:opts scale-key :type]) :linear)
+        col (effective-axis-col leaf axis)
+        ds (:data leaf)
+        type-temporal (when (and ds col)
+                        (try
+                          (let [{:keys [x-type y-type x-temporal? y-temporal?]}
+                                (resolve/infer-column-types ds {axis col})]
+                            (case axis
+                              :x [x-type x-temporal?]
+                              :y [y-type y-temporal?]))
+                          (catch Throwable _ nil)))]
+    {:coord coord :scale-type scale-type :type-temporal type-temporal}))
+
+(defn- describe-share-conflict
+  "Build a human-readable list of differing fields across a set of
+   share-keys, for use in the error message."
+  [keys-set]
+  (let [fields [:coord :scale-type :type-temporal]]
+    (->> fields
+         (keep (fn [field]
+                 (let [vs (set (map field keys-set))]
+                   (when (> (count vs) 1)
+                     (str (name field) " " (vec vs))))))
+         (str/join "; "))))
+
+(defn- validate-share-bucket-compatibility!
+  "For each (axis, col) bucket under share-scales, refuse when leaves
+   in the same bucket have incompatible coord / scale-type / inferred
+   type. Stat-driven y-axis leaves (count/density) are exempt on
+   axis :y -- they would skip the stamp downstream anyway. Throws an
+   ex-info naming the conflict."
+  [subtree axes]
+  (doseq [axis axes
+          [col leaves-in-bucket] (group-by #(effective-axis-col % axis) subtree)
+          :when col
+          :let [filtered (if (= axis :y)
+                           (remove (fn [l]
+                                     (y-axis-stat-driven? (:layers l)
+                                                          (:mapping l)
+                                                          (:data l)))
+                                   leaves-in-bucket)
+                           leaves-in-bucket)
+                keys-set (set (map #(leaf-share-key % axis) filtered))]
+          :when (> (count keys-set) 1)]
+    (throw (ex-info
+            (str ":share-scales " axis " refused: column "
+                 (pr-str col)
+                 " has incompatible scale meaning across cells ("
+                 (describe-share-conflict keys-set)
+                 "). Cells targeting :share-scales must agree on"
+                 " coord (e.g. cartesian vs flip), inferred column"
+                 " type (numerical / categorical / temporal), and"
+                 " scale type (linear / log).")
+            {:caller "share-scales"
+             :axis axis
+             :column col
+             :share-keys keys-set}))))
+
+(defn- assert-share-bucket-numeric!
+  "Refuse :share-scales on a bucket whose data column is non-numeric.
+   Categorical / temporal sharing is deferred to post-alpha; today
+   the silent path produces no shared domain."
+  [subtree axes]
+  (doseq [axis axes
+          [col leaves-in-bucket] (group-by #(effective-axis-col % axis) subtree)
+          :when col
+          :let [filtered (if (= axis :y)
+                           (remove (fn [l]
+                                     (y-axis-stat-driven? (:layers l)
+                                                          (:mapping l)
+                                                          (:data l)))
+                                   leaves-in-bucket)
+                           leaves-in-bucket)
+                vals (mapcat #(col-values (:data %)
+                                          (effective-axis-col % axis))
+                             filtered)]
+          :when (and (seq filtered) (seq vals) (not-any? number? vals))]
+    (throw (ex-info
+            (str ":share-scales " axis " refused: column "
+                 (pr-str col)
+                 " is non-numeric across all sharing cells, so a"
+                 " union domain is not defined. Drop :share-scales"
+                 " on this axis, or share scales only on numeric"
+                 " columns.")
+            {:caller "share-scales"
+             :axis axis
+             :column col}))))
+
 (defn inject-shared-scales
   "Walk a pose tree. For each composite with :share-scales, compute a
    union domain per (axis, effective-column) bucket across descendant
@@ -480,6 +584,8 @@
                                                    {:mapping inherited-mapping
                                                     :data inherited-data}
                                                    [])]
+                         (validate-share-bucket-compatibility! subtree my-shares)
+                         (assert-share-bucket-numeric! subtree my-shares)
                          (into {}
                                (keep
                                 (fn [axis]

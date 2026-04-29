@@ -388,6 +388,18 @@
            #"is a plain vector"
            (pj/arrange [[p [1 2 3]]]))))))
 
+(deftest arrange-share-scales-validation
+  (testing "non-#{:x :y} keys are rejected with the accepted set named"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":share-scales must be a subset of"
+         (pj/arrange [(pj/lay-point tiny :x :y)] {:share-scales #{:x :z}}))))
+
+  (testing ":share-scales accepts both #{:x} and #{:y} subsets"
+    (doseq [v [#{} #{:x} #{:y} #{:x :y} [:x] [:y]]]
+      (is (some? (pj/arrange [(pj/lay-point tiny :x :y)] {:share-scales v}))
+          (str "share-scales " v " should be accepted")))))
+
 (deftest single-leaf-arrange-overrides-width-warns
   (testing "single-leaf arrange with conflicting :width prints a warning"
     (let [pose (-> tiny
