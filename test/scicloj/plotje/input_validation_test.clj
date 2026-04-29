@@ -388,6 +388,36 @@
            #"is a plain vector"
            (pj/arrange [[p [1 2 3]]]))))))
 
+(deftest single-leaf-arrange-overrides-width-warns
+  (testing "single-leaf arrange with conflicting :width prints a warning"
+    (let [pose (-> tiny
+                   (pj/lay-point :x :y)
+                   (pj/options {:width 800 :height 400}))
+          out (with-out-str (pj/arrange [pose]))]
+      (is (re-find #"pj/arrange wraps a single leaf" out)
+          "warns about the single-leaf override")
+      (is (re-find #"800x400" out)
+          "names the leaf's overridden dimensions")))
+
+  (testing "matching :width does not warn"
+    (let [pose (-> tiny
+                   (pj/lay-point :x :y)
+                   (pj/options {:width 600 :height 400}))
+          out (with-out-str (pj/arrange [pose]))]
+      (is (= "" out)
+          "silent when leaf dims match composite dims")))
+
+  (testing "no width set on the leaf does not warn"
+    (let [pose (pj/lay-point tiny :x :y)
+          out (with-out-str (pj/arrange [pose]))]
+      (is (= "" out))))
+
+  (testing "multi-leaf arrange does not warn even with :width on a leaf"
+    (let [a (-> tiny (pj/lay-point :x :y) (pj/options {:width 800}))
+          b (pj/lay-point tiny :x :y)
+          out (with-out-str (pj/arrange [a b]))]
+      (is (= "" out)))))
+
 (deftest pose-2-arity-extracts-data-from-opts
   (testing "(pj/pose nil {:data X :x ... :y ...}) attaches X as data, mapping omits :data"
     (let [data {:a [1 2 3] :b [4 5 6]}

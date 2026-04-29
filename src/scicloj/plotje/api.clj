@@ -2235,6 +2235,22 @@
          _ (when (zero? n-plots)
              (throw (ex-info "pj/arrange requires at least one plot." {:plots plots})))
          leaves (vec (map-indexed (fn [i p] (coerce-arrange-input p i)) flat-plots))
+         _ (when (= 1 n-plots)
+             (let [leaf-opts (:opts (first leaves))
+                   leaf-w (:width leaf-opts)
+                   leaf-h (:height leaf-opts)
+                   composite-w (or (:width opts) (:width cfg))
+                   composite-h (or (:height opts) (:height cfg))]
+               (when (or (and leaf-w (not= (long leaf-w) (long composite-w)))
+                         (and leaf-h (not= (long leaf-h) (long composite-h))))
+                 (println (str "Warning: pj/arrange wraps a single leaf in"
+                               " a composite that fills the cell;"
+                               " the leaf's :width/:height ("
+                               (or leaf-w "-") "x" (or leaf-h "-") ") are"
+                               " overridden by the composite's geometry ("
+                               composite-w "x" composite-h "). Pass"
+                               " :width/:height to pj/arrange instead,"
+                               " or skip arrange and use the leaf directly.")))))
          n-cols (or cols
                     (if nested? (count (first rows-in))
                         (min 4 n-plots)))
