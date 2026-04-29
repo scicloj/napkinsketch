@@ -230,6 +230,18 @@
 ;; need a `layer->membrane` defmethod for the SVG renderer. Without one,
 ;; the library throws an error explaining which defmethod to add.
 
+;; ### Annotation marks live on the panel's `:annotations`, not `:layers`
+;;
+;; The four annotation marks -- `:rule-h`, `:rule-v`, `:band-h`,
+;; `:band-v` -- are split out of the per-panel `:layers` list during
+;; planning and rendered from a separate `:annotations` slot on each
+;; panel of the resolved plan. Extension authors building tooling that
+;; walks a plan should expect to find these on panel `:annotations`,
+;; not on panel `:layers`. The split is driven by
+;; `scicloj.plotje.impl.resolve/annotation-marks`, the canonical set of
+;; annotation mark keywords; if you add a custom annotation-style mark
+;; that should follow the same lifecycle, register it there.
+
 ;; ## `plan->plot`
 ;;
 ;; Orchestrates the full path from plan to plot. The `:svg`
