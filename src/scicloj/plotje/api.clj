@@ -1939,6 +1939,12 @@
   ([pose col] (facet pose col :col))
   ([pose col direction]
    (reject-composite-for-facet pose)
+   (when-not (#{:col :row} direction)
+     (throw (ex-info (str "pj/facet direction must be :col or :row, got: "
+                          (pr-str direction) ".")
+                     {:caller "pj/facet"
+                      :direction direction
+                      :accepted #{:col :row}})))
    (let [k (case direction :col :facet-col :row :facet-row)]
      (update-opts pose assoc k col))))
 

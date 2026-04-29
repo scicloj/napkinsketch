@@ -646,3 +646,15 @@
 
     (testing "extension map (entry shape) passes through"
       (is (some? (pj/lay pose {:mark :point}))))))
+
+(deftest pj-facet-bad-direction-throws-ex-info
+  (let [pose (pj/lay-point tiny :x :y)]
+    (testing "(pj/facet pose col :diagonal) throws ex-info naming the accepted directions"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"pj/facet direction must be :col or :row, got: :diagonal"
+           (pj/facet pose :y :diagonal))))
+
+    (testing ":col and :row pass through"
+      (is (some? (pj/facet pose :y :col)))
+      (is (some? (pj/facet pose :y :row))))))
