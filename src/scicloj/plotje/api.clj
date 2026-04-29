@@ -2041,7 +2041,12 @@
   "Set coordinate transform on a pose. Coord is plot-level -- it
    applies across every panel. On a composite pose the coord attaches
    to the root so every descendant leaf inherits it at plan time.
-   (coord pose :flip) -- flipped coordinates."
+
+   Supported coord-types:
+     :cartesian -- standard x-right, y-up mapping (the default).
+     :flip      -- swap x and y axes (horizontal bars / boxplots).
+     :fixed     -- equal aspect ratio (1 data unit = 1 data unit).
+     :polar     -- radial mapping: x to angle, y to radius."
   [pose coord-type]
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
