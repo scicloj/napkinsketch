@@ -425,7 +425,8 @@
   [x]
   (pose/pose? x))
 
-(declare prepare-pose pose-kind validate-pose-shape check-position-mapping)
+(declare prepare-pose pose-kind validate-pose-shape
+         check-position-mapping check-column-ref-types)
 
 (defn- ensure-pose
   "Coerce input to a pose. A pose-shaped map is lifted via pose-kind
@@ -630,10 +631,12 @@
   (warn-unknown-pose-keys fr)
   (when-let [m (:mapping fr)]
     (warn-unknown-mapping-keys m context)
+    (check-column-ref-types context m)
     (check-position-mapping context m))
   (doseq [layer (:layers fr)]
     (when-let [lm (:mapping layer)]
       (warn-unknown-mapping-keys lm (str context " layer"))
+      (check-column-ref-types (str context " layer") lm)
       (check-position-mapping (str context " layer") lm)))
   (doseq [sub (:poses fr)]
     (validate-pose-shape sub (str context " sub-pose")))
@@ -973,12 +976,14 @@
                            {})
              data-over (:data opts)
              mapping   (dissoc opts :data)]
+         (check-column-ref-types "pj/pose" mapping)
          (check-position-mapping "pj/pose" mapping)
          (if (pose? x)
            (cond-> (prepare-pose (extend-or-promote x mapping))
              data-over (with-data data-over))
            (prepare-pose (pose-from-data (or data-over x) mapping))))
        (let [mapping {:x y}]
+         (check-column-ref-types "pj/pose" mapping)
          (check-position-mapping "pj/pose" mapping)
          (if (pose? x)
            (prepare-pose (extend-or-promote x mapping))
@@ -997,6 +1002,7 @@
      (let [opts      (warn-and-strip-unknown-opts "pj/pose" z pose-mapping-keys)
            data-over (:data opts)
            mapping   (-> opts (dissoc :data) (merge {:x y}))]
+       (check-column-ref-types "pj/pose" mapping)
        (check-position-mapping "pj/pose" mapping)
        (if (pose? x)
          (cond-> (prepare-pose (extend-or-promote x mapping))
@@ -1005,6 +1011,7 @@
 
      :else
      (let [mapping {:x y :y z}]
+       (check-column-ref-types "pj/pose" mapping)
        (check-position-mapping "pj/pose" mapping)
        (if (pose? x)
          (prepare-pose (extend-or-promote x mapping))
@@ -1021,6 +1028,7 @@
    (let [opts      (warn-and-strip-unknown-opts "pj/pose" opts pose-mapping-keys)
          data-over (:data opts)
          mapping   (-> opts (dissoc :data) (merge {:x y :y z}))]
+     (check-column-ref-types "pj/pose" mapping)
      (check-position-mapping "pj/pose" mapping)
      (if (pose? x)
        (cond-> (prepare-pose (extend-or-promote x mapping))
@@ -1157,6 +1165,22 @@
                            "as a constant, but got " (pr-str v) ".")
                       {:option :size :value v})))))
 
+(defn- check-column-ref-types
+  "Throw a helpful error if any aesthetic mapping carries a symbol --
+   a common typo from omitting the colon on a keyword (`'x` instead
+   of `:x`) that previously flowed into resolution and crashed deep
+   in the pipeline. Nil is intentionally allowed: it cancels an
+   inherited mapping at the call site (see core_test
+   aesthetic-column-validation-test)."
+  [context mapping]
+  (doseq [[k v] mapping
+          :when (and (contains? defaults/column-keys k) (symbol? v))]
+    (throw (ex-info (str context " " k " is a symbol (" (pr-str v)
+                         "). A column reference must be a keyword or "
+                         "string -- did you mean " (pr-str (keyword (name v)))
+                         "?")
+                    {:option k :value v}))))
+
 (defn- registered-marks []
   (->> (methods extract/extract-layer)
        keys
@@ -1217,6 +1241,7 @@
   [layer-type-key opts]
   (when opts
     (check-facet-keys "layer" opts)
+    (check-column-ref-types (str "lay-" (name layer-type-key)) opts)
     (check-position-mapping (str "lay-" (name layer-type-key)) opts)
     (check-numeric-aesthetics (str "lay-" (name layer-type-key)) opts)
     (validate-mark-stat (str "lay-" (name layer-type-key)) opts))

@@ -285,6 +285,32 @@
   (testing ":size as a column reference passes through"
     (is (pj/pose? (pj/lay-point tiny :x :y {:size :y})))))
 
+(deftest mapping-value-symbol-throws
+  (testing "(pj/pose data {:x 'col}) -- symbol value rejects with did-you-mean"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":x is a symbol .* did you mean :x\?"
+         (pj/pose tiny {:x 'x :y :y}))))
+
+  (testing "(pj/pose data {:color 'species}) -- symbol on color"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":color is a symbol .* did you mean :species\?"
+         (pj/pose tiny {:x :x :y :y :color 'species}))))
+
+  (testing "(pj/lay-point ... {:color 'species}) at lay-* path"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo
+         #":color is a symbol"
+         (pj/lay-point tiny :x :y {:color 'species})))))
+
+(deftest mapping-value-nil-passes-through
+  (testing "{:color nil} on a layer cancels an inherited color (intentional)"
+    (is (some? (-> (pj/pose tiny {:x :x :y :y :color :y})
+                   (pj/lay-point {:color nil})
+                   pj/plan
+                   :panels)))))
+
 (deftest pose-2-arity-extracts-data-from-opts
   (testing "(pj/pose nil {:data X :x ... :y ...}) attaches X as data, mapping omits :data"
     (let [data {:a [1 2 3] :b [4 5 6]}
