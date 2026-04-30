@@ -746,7 +746,7 @@ s2-tree
 
 ;; ### Rule S4: layer `:mapping` is the narrowest scope
 ;;
-;; A mapping written in a layer's own `:mapping` (aesthetic options
+;; A mapping written in a layer's own `:mapping` (aesthetic mappings
 ;; passed to `lay-*`) scopes to that layer only. Other layers --
 ;; even on the same leaf -- do not see it. This is the terminal
 ;; case of S1: the layer's mapping is innermost in the merge.

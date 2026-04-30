@@ -70,6 +70,13 @@ Scatter plot matrix (SPLOM) — all pairwise combinations with color grouping:
 ![](readme_files/image2.svg)
 
 
+## Not yet supported
+
+A few common plotting tasks are not yet covered: dual y-axes,
+rolling-window statistics (compute the column externally before
+plotting), and Q-Q or other diagnostic plots.
+
+
 ## Documentation
 
 [Full documentation](https://scicloj.github.io/plotje/)

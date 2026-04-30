@@ -93,7 +93,7 @@
    :team ["UX" "Eng" "QA" "Eng" "UX"]}
   (pj/lay-interval-h :start :task {:x-end :end, :color :team})
   (pj/options
-   {:title "Hover for task: start → end, team",
+   {:title "Hover for task: start -> end, team",
     :tooltip true,
     :height 320})))
 

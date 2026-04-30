@@ -392,7 +392,8 @@ two-panel
 ;; - **Stat** -- the computation before rendering (identity, bin, linear-model, density, ...)
 ;; - **Position** -- how overlapping groups share space (identity, dodge, stack, ...)
 ;;
-;; A layer-type's name describes its intent. The mark describes the shape:
+;; A keyword like `:histogram` or `:point` names a layer-type --
+;; look it up to see its parts:
 
 (pj/layer-type-lookup :histogram)
 

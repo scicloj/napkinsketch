@@ -1029,7 +1029,7 @@
      (throw (ex-info
              (str "pj/pose 4-arity expects an opts map as the last"
                   " argument, got " (pr-str (type opts)) ": "
-                  (pr-str opts) ". Wrap aesthetic options in a map,"
+                  (pr-str opts) ". Wrap aesthetic mappings in a map,"
                   " e.g. {:color :species}.")
              {:caller "pj/pose" :value opts})))
    (let [opts      (warn-and-strip-unknown-opts "pj/pose" opts pose-mapping-keys)
@@ -1467,7 +1467,7 @@
      (throw (ex-info (str "lay-" (name layer-type-key)
                           " 4-arity expects an opts map as the last"
                           " argument, got " (pr-str (type opts)) ": "
-                          (pr-str opts) ". Wrap aesthetic options in"
+                          (pr-str opts) ". Wrap aesthetic mappings in"
                           " a map, e.g. {:color :species}.")
                      {:caller (str "pj/lay-" (name layer-type-key))
                       :value opts})))

@@ -268,7 +268,7 @@
 ;; The y-axis order follows the order each station first appears
 ;; in the data. With every train starting in Paris, Paris ends up
 ;; at the bottom and Marseille at the top -- which happens to
-;; give the geographic top-to-bottom Paris→Marseille reading. If
+;; give the geographic top-to-bottom Paris->Marseille reading. If
 ;; your data has a different first-station-encountered order, the
 ;; lanes will reorder accordingly; pre-sorting the rows is the
 ;; reliable way to guarantee a chosen lane order.
