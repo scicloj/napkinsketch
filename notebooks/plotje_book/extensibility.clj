@@ -148,7 +148,15 @@
 
 (kind/test-last [(fn [t] (= 18 (count (:row-maps t))))])
 
-;; A plan layer looks like this:
+;; A plan layer looks like this. Starting from a familiar iris
+;; scatter:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:color :species}))
+
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
+
+;; The plan layer extracted from that pose:
 
 (let [s (-> (rdatasets/datasets-iris)
             (pj/lay-point :sepal-length :sepal-width {:color :species})

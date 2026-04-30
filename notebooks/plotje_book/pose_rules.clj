@@ -172,6 +172,10 @@
 
 (-> iris
     (pj/pose :sepal-length :sepal-width {:color :species})
+    (pj/pose :petal-length :petal-width))
+
+(-> iris
+    (pj/pose :sepal-length :sepal-width {:color :species})
     (pj/pose :petal-length :petal-width)
     pose-summary)
 
@@ -301,6 +305,11 @@
 (-> iris
     (pj/pose :sepal-length :sepal-width)
     (pj/pose :petal-length :petal-width)
+    (pj/pose {:color :species}))
+
+(-> iris
+    (pj/pose :sepal-length :sepal-width)
+    (pj/pose :petal-length :petal-width)
     (pj/pose {:color :species})
     pose-summary)
 
@@ -317,17 +326,34 @@
 ;; unchanged. This makes the 1-arity `pj/pose` safe as a syntactic
 ;; nullity.
 
-(let [pose (-> iris (pj/pose :sepal-length :sepal-width))]
-  (= pose (pj/pose pose)))
+;; A leaf pose is unchanged by 1-arity `pj/pose`:
 
-(kind/test-last [true?])
+(-> iris (pj/pose :sepal-length :sepal-width))
 
-(let [pose (-> iris
-               (pj/pose :sepal-length :sepal-width)
-               (pj/pose :petal-length :petal-width))]
-  (= pose (pj/pose pose)))
+(-> iris (pj/pose :sepal-length :sepal-width) pose-summary)
 
-(kind/test-last [true?])
+(kind/test-last
+ [(fn [_]
+    (let [pose (-> iris (pj/pose :sepal-length :sepal-width))]
+      (= pose (pj/pose pose))))])
+
+;; A composite pose is also unchanged:
+
+(-> iris
+    (pj/pose :sepal-length :sepal-width)
+    (pj/pose :petal-length :petal-width))
+
+(-> iris
+    (pj/pose :sepal-length :sepal-width)
+    (pj/pose :petal-length :petal-width)
+    pose-summary)
+
+(kind/test-last
+ [(fn [_]
+    (let [pose (-> iris
+                   (pj/pose :sepal-length :sepal-width)
+                   (pj/pose :petal-length :petal-width))]
+      (= pose (pj/pose pose))))])
 
 ;; ### Rule C8: `pj/arrange` composes poses into a composite
 ;;
@@ -434,6 +460,11 @@
 
 ;; On a composite, the same call attaches at root and reaches every
 ;; panel when rendered:
+
+(-> (pj/arrange
+     [(pj/pose iris :sepal-length :sepal-width)
+      (pj/pose iris :petal-length :petal-width)])
+    pj/lay-point)
 
 (-> (pj/arrange
      [(pj/pose iris :sepal-length :sepal-width)
@@ -627,6 +658,9 @@
 
 ;; Storage preserves the user's input -- if you type a string, the
 ;; pose holds a string:
+
+(-> iris
+    (pj/pose "sepal-length" "sepal-width"))
 
 (-> iris
     (pj/pose "sepal-length" "sepal-width")

@@ -74,7 +74,19 @@
 
 
 (def
- v18_l153
+ v18_l154
+ (->
+  (rdatasets/datasets-iris)
+  (pj/lay-point :sepal-length :sepal-width {:color :species})))
+
+
+(deftest
+ t19_l157
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v18_l154)))
+
+
+(def
+ v21_l161
  (let
   [s
    (->
@@ -87,16 +99,16 @@
 
 
 (deftest
- t19_l159
+ t22_l167
  (is
   ((fn
     [m]
     (and (= :point (:mark m)) (number? (get-in m [:style :opacity]))))
-   v18_l153)))
+   v21_l161)))
 
 
 (def
- v21_l170
+ v24_l178
  (kind/table
   {:column-names ["Dispatch value" "Membrane output"],
    :row-maps
@@ -113,11 +125,11 @@
        "Membrane output" (pj/membrane-mark-doc k)})))}))
 
 
-(deftest t22_l181 (is ((fn [t] (= 18 (count (:row-maps t)))) v21_l170)))
+(deftest t25_l189 (is ((fn [t] (= 18 (count (:row-maps t)))) v24_l178)))
 
 
 (def
- v24_l267
+ v27_l275
  (def
   my-plan
   (->
@@ -126,32 +138,32 @@
    pj/plan)))
 
 
-(def v25_l272 (first (pj/plan->plot my-plan :svg {})))
+(def v28_l280 (first (pj/plan->plot my-plan :svg {})))
 
 
-(deftest t26_l274 (is ((fn [v] (= :svg v)) v25_l272)))
+(deftest t29_l282 (is ((fn [v] (= :svg v)) v28_l280)))
 
 
-(def v28_l278 (def my-figure (pj/plan->plot my-plan :svg {})))
+(def v31_l286 (def my-figure (pj/plan->plot my-plan :svg {})))
 
 
-(def v29_l280 (vector? my-figure))
+(def v32_l288 (vector? my-figure))
 
 
-(deftest t30_l282 (is ((fn [v] (true? v)) v29_l280)))
+(deftest t33_l290 (is ((fn [v] (true? v)) v32_l288)))
 
 
-(def v32_l326 (def my-membrane (pj/plan->membrane my-plan)))
+(def v35_l334 (def my-membrane (pj/plan->membrane my-plan)))
 
 
-(def v33_l328 (vector? my-membrane))
+(def v36_l336 (vector? my-membrane))
 
 
-(deftest t34_l330 (is ((fn [v] (true? v)) v33_l328)))
+(deftest t37_l338 (is ((fn [v] (true? v)) v36_l336)))
 
 
 (def
- v35_l332
+ v38_l340
  (first
   (pj/membrane->plot
    my-membrane
@@ -160,11 +172,11 @@
     :total-height (:total-height my-plan)})))
 
 
-(deftest t36_l336 (is ((fn [v] (= :svg v)) v35_l332)))
+(deftest t39_l344 (is ((fn [v] (= :svg v)) v38_l340)))
 
 
 (def
- v38_l366
+ v41_l374
  (kind/table
   {:column-names ["Dispatch value" "Scale type"],
    :row-maps
@@ -180,11 +192,11 @@
        "Scale type" (pj/scale-doc k)})))}))
 
 
-(deftest t39_l376 (is ((fn [t] (= 3 (count (:row-maps t)))) v38_l366)))
+(deftest t42_l384 (is ((fn [t] (= 3 (count (:row-maps t)))) v41_l374)))
 
 
 (def
- v41_l387
+ v44_l395
  (kind/table
   {:column-names ["Dispatch value" "Behavior"],
    :row-maps
@@ -201,27 +213,27 @@
        "Behavior" (pj/coord-doc k)})))}))
 
 
-(deftest t42_l398 (is ((fn [t] (= 4 (count (:row-maps t)))) v41_l387)))
+(deftest t45_l406 (is ((fn [t] (= 4 (count (:row-maps t)))) v44_l395)))
 
 
 (def
- v44_l405
+ v47_l413
  (-> (rdatasets/datasets-iris) (pj/lay-bar :species) (pj/coord :flip)))
 
 
 (deftest
- t45_l409
+ t48_l417
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v44_l405)))
+   v47_l413)))
 
 
 (def
- v47_l425
+ v50_l433
  (defmethod
   stat/compute-stat
   :quantile
@@ -230,7 +242,7 @@
 
 
 (def
- v48_l428
+ v51_l436
  (defmethod
   stat/compute-stat
   [:quantile :doc]
@@ -238,32 +250,32 @@
   "Quantile regression bands"))
 
 
-(def v50_l433 (pj/stat-doc :quantile))
+(def v53_l441 (pj/stat-doc :quantile))
 
 
 (deftest
- t51_l435
- (is ((fn [v] (= "Quantile regression bands" v)) v50_l433)))
+ t54_l443
+ (is ((fn [v] (= "Quantile regression bands" v)) v53_l441)))
 
 
-(def v53_l443 (remove-method stat/compute-stat [:quantile :doc]))
+(def v56_l451 (remove-method stat/compute-stat [:quantile :doc]))
 
 
-(def v54_l445 (pj/stat-doc :quantile))
+(def v57_l453 (pj/stat-doc :quantile))
 
 
-(deftest t55_l447 (is ((fn [v] (= "(no description)" v)) v54_l445)))
+(deftest t58_l455 (is ((fn [v] (= "(no description)" v)) v57_l453)))
 
 
-(def v57_l453 (remove-method stat/compute-stat :quantile))
+(def v60_l461 (remove-method stat/compute-stat :quantile))
 
 
 (def
- v58_l455
+ v61_l463
  (count
   (remove
    #{:default}
    (filter keyword? (keys (methods stat/compute-stat))))))
 
 
-(deftest t59_l457 (is ((fn [v] (= 11 v)) v58_l455)))
+(deftest t62_l465 (is ((fn [v] (= 11 v)) v61_l463)))

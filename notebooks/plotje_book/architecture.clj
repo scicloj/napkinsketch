@@ -83,6 +83,10 @@ graph LR
   (-> trace-data
       (pj/lay-point :x :y {:color :g})))
 
+trace-pose
+
+(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
+
 ;; A pose is a plain Clojure map. The fields below are what you see
 ;; while inspecting the threaded value:
 ;;
