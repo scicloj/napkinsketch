@@ -29,22 +29,13 @@
 
 ;; ## A pose describes a plot
 ;;
-;; In Plotje, every plot you compose is a **pose** -- a plain
-;; Clojure value that describes what to show. The composition
-;; functions (`pj/pose`, `pj/lay-*`, `pj/options`, `pj/scale`,
-;; `pj/coord`, `pj/facet`, `pj/arrange`) all take a pose and
-;; return a pose, so plots build up through ordinary `->`
-;; threading. Output functions (`pj/plan`, `pj/plot`, `pj/save`,
-;; `pj/draft`) take a pose and return a different shape -- a plan,
-;; an SVG, a file path -- and so close the pipeline.
-;;
-;; Two core operators do the work: `pj/pose` builds a pose by
-;; declaring which columns carry which aesthetics, and `pj/lay-*`
-;; adds a layer to a pose. A pose is what you arrange before
-;; drawing -- which columns become axes, which become aesthetics.
-;; Layers are the visual elements: points, lines, smooths, bars.
-;; A composite pose contains sub-poses arranged side by side,
-;; each able to carry its own layers.
+;; A pose flows through the pipeline. The composition functions --
+;; `pj/pose`, `pj/lay-*`, `pj/options`, `pj/scale`, `pj/coord`,
+;; `pj/facet`, `pj/arrange` -- all take a pose and return a pose,
+;; so plots build up through ordinary `->` threading. The output
+;; functions (`pj/plan`, `pj/plot`, `pj/save`, `pj/draft`) take a
+;; pose and return a different shape -- a plan, an SVG, a file
+;; path -- and so close the pipeline.
 ;;
 ;; The simplest pose carries some data and picks columns. With no
 ;; explicit chart type, the library infers one from the column
@@ -95,16 +86,15 @@
 
 ;; ## Poses carry layers
 ;;
-;; A **layer** is one entry in a pose's `:layers` vector. Each
-;; layer names a chart type -- point, line, bar, smooth, histogram,
-;; ridge -- and may carry layer-specific options like a stat.
-;; While the mapping holds the "what" (which columns flow to which
-;; aesthetics), the layers hold the "how" (which chart-type recipe
-;; draws those mappings). This split -- mapping for what, layer
-;; for how -- is the principle the rest of the library builds on.
-;; Declaring the mapping once lets several layers share it --
-;; scatter points and a regression line per species. Written as a
-;; literal map, `pj/pose` accepts the nested-map shape directly:
+;; A **layer** is a chart-type recipe -- mark, stat, position --
+;; attached to a pose. The pose says what to plot (its mapping
+;; picks the columns); the layer says how it is drawn (points, a
+;; smooth, error bars). Several layers attached to one pose share
+;; its mapping and coordinate system, so a scatter and its
+;; regression line stack as one picture. This split -- mapping for
+;; what, layer for how -- is the principle the rest of the library
+;; builds on. Written as a literal map, `pj/pose` accepts the
+;; nested-map shape directly:
 
 (def multi-layer
   (pj/pose
@@ -126,11 +116,6 @@ multi-layer
 (kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
                               (= :species (:color (:mapping v)))))])
 
-;; `:mapping` answers the "what" question -- which columns flow to
-;; which aesthetic -- and `:layers` answers the "how" question, with
-;; each entry naming a chart type and optional layer-specific
-;; options (`:stat :linear-model` on the smooth layer here).
-;;
 ;; The threaded form builds the same pose step by step: `pj/pose`
 ;; sets the mapping, then each `pj/lay-*` appends a layer.
 
@@ -144,9 +129,8 @@ multi-layer
                                 (= 3 (:lines s)))))])
 
 ;; Printed, the threaded form produces the same shape as the
-;; explicit-map form shown earlier -- `:mapping` at the top, `:layers`
-;; alongside it. `pj/pose` and `pj/lay-*` build the same pose value
-;; step by step.
+;; explicit-map form shown earlier -- `:mapping` at the top,
+;; `:layers` alongside it.
 
 (-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width {:color :species})
@@ -179,15 +163,15 @@ multi-layer
 
 ;; The principle: **the inferred value fills in only when you have
 ;; not specified one yourself.** Explicit choices flow down the
-;; pose tree and override inference. (One subtlety: an explicit
-;; `nil` is a real choice and cancels inheritance -- it does not
-;; fall back to inference. See Pose Rule S3 for the precise
-;; semantics.)
+;; pose tree and override inference; an explicit `nil` is a real
+;; choice and cancels inheritance, not a request for inference (see
+;; Pose Rule S3 for the precise semantics).
 ;;
-;; This works for marks (the shape shown, like points or bars), stats
-;; (the computation before rendering, like binning), color types, and
-;; grouping. See [Inference Rules](./plotje_book.inference_rules.html)
-;; for the full set.
+;; Inference covers marks (the shape shown, like points or bars),
+;; stats (the computation before rendering, like binning), color
+;; types, and grouping. See
+;; [Inference Rules](./plotje_book.inference_rules.html) for the
+;; full set.
 
 ;; ## Poses compose
 ;;
@@ -252,11 +236,10 @@ two-panel
                               (= 2 (count (:poses (first (:poses v)))))
                               (= :horizontal (get-in v [:poses 0 :layout :direction]))))])
 
-;; `pose`, `lay-*`, `arrange`, `facet`, `options`, `scale`, `coord`
-;; -- all take a pose and return a pose. The pipeline reads like a
-;; sentence; composites nest the same shape inside `:poses`. The
-;; [Composition](./plotje_book.composition.html) chapter
-;; covers the multi-pose patterns in depth.
+;; The pipeline reads like a sentence; composites nest the same
+;; shape inside `:poses`. The
+;; [Composition](./plotje_book.composition.html) chapter covers
+;; the multi-pose patterns in depth.
 
 ;; ## Summary
 ;;
@@ -264,7 +247,7 @@ two-panel
 ;; |:--------|:--------|
 ;; | A pose describes a plot | `pj/pose`, `pj/lay-*` return poses; inspect with `kind/pprint` |
 ;; | Poses carry mappings | Column-to-aesthetic pairs live in `:mapping` |
-;; | Poses carry layers | Each `pj/lay-*` appends an entry to `:layers`, naming a chart type |
+;; | Poses carry layers | Chart-type recipes attached via `pj/lay-*`, listed in `:layers` |
 ;; | What vs how | `pj/pose` declares what; `pj/lay-*` declares how |
 ;; | Inference fills gaps | Omit choices, the library infers from data |
 ;; | Poses compose | `pj/arrange` tiles sibling poses; composites nest under `:poses` |
