@@ -159,10 +159,7 @@
                          first
                          (str/replace "<!DOCTYPE html><html><head><title>R: " "")
                          (str/replace "</title>" "")))
-    (tc/select-columns [:function :rows :description])
-    kind/table)
-
-
+    (tc/select-columns [:function :rows :description]))
 
 ;; ## Useful Tablecloth operations
 ;;
