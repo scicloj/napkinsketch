@@ -731,7 +731,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="poses-compose" class="level2">
 <h2 class="anchored" data-anchor-id="poses-compose">Poses compose</h2>
-<p>Composition functions take a pose and return a pose. A <strong>composite</strong> pose is a plain map too – with <code>:poses</code> holding its sub-poses and <code>:layout</code> describing how to tile them. Here is a two-panel composite written as an explicit map:</p>
+<p>The poses we have built so far are <strong>leaf</strong> poses – each describes a single plot panel with its own data, mapping, and layers. A <strong>composite</strong> pose is the other shape: a plain map that holds sub-poses under <code>:poses</code> and an optional <code>:layout</code> describing how to tile them. Composition functions take any pose and return a pose. Here is a two-panel composite written as an explicit map:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> two-panel</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  (pj/pose</span>
