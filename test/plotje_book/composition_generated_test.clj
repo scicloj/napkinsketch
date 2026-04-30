@@ -150,22 +150,22 @@
  v25_l164
  (def
   dashboard
-  (let
-   [iris (rdatasets/datasets-iris)]
-   (pj/arrange
-    [[(-> iris (pj/lay-histogram :sepal-length))
-      (->
-       iris
-       (pj/lay-boxplot :species :sepal-width {:color :species}))]
-     [(->
-       iris
-       (pj/lay-point :petal-length :petal-width {:color :species}))
-      (-> iris (pj/lay-density :petal-length {:color :species}))]]))))
+  (pj/arrange
+   [[(-> (rdatasets/datasets-iris) (pj/lay-histogram :sepal-length))
+     (->
+      (rdatasets/datasets-iris)
+      (pj/lay-boxplot :species :sepal-width {:color :species}))]
+    [(->
+      (rdatasets/datasets-iris)
+      (pj/lay-point :petal-length :petal-width {:color :species}))
+     (->
+      (rdatasets/datasets-iris)
+      (pj/lay-density :petal-length {:color :species}))]])))
 
 
-(def v26_l172 dashboard)
+(def v26_l171 dashboard)
 
 
 (deftest
- t27_l174
- (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v26_l172)))
+ t27_l173
+ (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v26_l171)))
