@@ -210,21 +210,28 @@
 (pj/set-config! {:width 800 :height 350 :point-radius 5.0})
 
 ;; Layer a thread-local override on top for width and height
-;; (but not point-radius):
+;; (but not point-radius). The rendered plot reflects the merged
+;; configuration:
 
-(def precedence-result
+(def precedence-plot
   (pj/with-config {:width 1200 :height 500}
-    ;; Pass plot options for width only:
-    (let [plan (pj/plan (base-plot) {:width 900})]
-      {:plan-width (:width plan)
-       :plan-height (:height plan)})))
+    ;; Pass plot options for width only, and materialize the plot
+    ;; inside the with-config so the thread-local override applies:
+    (pj/plot (-> (base-plot)
+                 (pj/options {:width 900})))))
 
-precedence-result
+precedence-plot
 
 (kind/test-last
- [(fn [m]
-    (and (= 900 (:plan-width m)) ;; plot options win over with-config (1200) and set-config! (800)
-         (= 500 (:plan-height m))))]) ;; with-config wins over set-config! (350)
+ [(fn [v]
+    (let [s (pj/svg-summary v)]
+      (and (= 150 (:points s))
+           ;; Plot options win for :width (900 over with-config 1200
+           ;; and set-config! 800).
+           (= 900.0 (double (:width s)))
+           ;; with-config wins for :height (500 over set-config! 350,
+           ;; since plot options did not specify height).
+           (= 500.0 (double (:height s))))))])
 
 ;; We can verify point-radius too -- only set-config! touched it,
 ;; so it wins over the library default (3.0):
@@ -236,23 +243,6 @@ precedence-result
 precedence-point-radius
 
 (kind/test-last [(fn [v] (= 5.0 v))])
-
-;; The rendered plot reflects the same precedence:
-
-(def precedence-plot
-  (pj/with-config {:width 1200 :height 500}
-    (-> (base-plot)
-        (pj/options {:width 900}))))
-
-precedence-plot
-
-(kind/test-last
- [(fn [v]
-    (let [s (pj/svg-summary v)]
-      (and (= 150 (:points s))
-           ;; :width is the TOTAL SVG width, so the plot option
-           ;; value 900 shows up exactly in the output viewBox.
-           (= 900.0 (double (:width s))))))])
 
 ;; Clean up the global override.
 
@@ -429,13 +419,22 @@ precedence-plot
 
 (kind/test-last [(fn [v] (= 50 (:points (pj/svg-summary v))))])
 
-;; Color scale override via plot options -- inferno gradient:
+;; Color scale override via plot options -- inferno gradient. The
+;; chosen palette propagates so the rendered legend uses the
+;; matching gradient stops:
 
 (-> {:x (range 50) :y (range 50) :c (range 50)}
     (pj/lay-point :x :y {:color :c})
     (pj/options {:color-scale :inferno}))
 
-(kind/test-last [(fn [v] (= 50 (:points (pj/svg-summary v))))])
+(kind/test-last
+ [(fn [v]
+    (let [leg (:legend (pj/plan (-> {:x (range 50) :y (range 50) :c (range 50)}
+                                    (pj/lay-point :x :y {:color :c})
+                                    (pj/options {:color-scale :inferno}))))]
+      (and (= 50 (:points (pj/svg-summary v)))
+           (= :inferno (:color-scale leg))
+           (= :continuous (:type leg)))))])
 
 ;; Thread-local color scale via `with-config`:
 
@@ -444,19 +443,6 @@ precedence-plot
       (pj/lay-point :x :y {:color :c})))
 
 (kind/test-last [(fn [v] (= 50 (:points (pj/svg-summary v))))])
-
-;; The plan records `:color-scale` in its legend. The renderer
-;; uses the pre-computed gradient stops, or resolves a fresh gradient
-;; if the render-time configuration specifies a different color scale.
-
-(-> {:x (range 50) :y (range 50) :c (range 50)}
-    (pj/lay-point :x :y {:color :c})
-    (pj/plan {:color-scale :inferno})
-    :legend
-    (select-keys [:color-scale :type]))
-
-(kind/test-last [(fn [m] (and (= :inferno (:color-scale m))
-                              (= :continuous (:type m))))])
 
 ;; ## Validation Control
 ;;
@@ -568,16 +554,15 @@ precedence-plot
 ;; in tests or pipelines where a typo should fail loudly rather
 ;; than silently render a default plot.
 
-;; Default behavior: warn and continue.
+;; Default behavior: warn and continue. The plot renders normally,
+;; the unknown key is silently dropped:
 
 (pj/with-config {:strict false}
   (-> (rdatasets/datasets-iris)
       (pj/lay-point :sepal-length :sepal-width)
-      (pj/options {:nonsense-key 42})
-      pj/plan
-      :width))
+      (pj/options {:nonsense-key 42})))
 
-(kind/test-last [(fn [w] (= 600 w))])
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; With `:strict true`, the same call throws.
 
@@ -586,7 +571,7 @@ precedence-plot
     (-> (rdatasets/datasets-iris)
         (pj/lay-point :sepal-length :sepal-width)
         (pj/options {:nonsense-key 42})
-        pj/plan)
+        pj/plot)
     (catch Exception e (.getMessage e))))
 
 (kind/test-last [(fn [msg] (and (string? msg)

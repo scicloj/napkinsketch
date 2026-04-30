@@ -92,59 +92,39 @@
     (pj/facet :species)
     (pj/options {:scales :shared}))
 
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 3 (:panels s))
-                                (= 150 (:points s)))))])
-
-;; Inspect the coordinated domains directly:
-
-(->> (-> (rdatasets/datasets-iris)
-         (pj/lay-point :sepal-length :sepal-width)
-         (pj/facet :species)
-         pj/plan
-         :panels)
-     (mapv :x-domain))
-
-(kind/test-last [(fn [doms] (apply = doms))])
+(kind/test-last
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          doms (mapv :x-domain
+                     (:panels (pj/plan
+                               (-> (rdatasets/datasets-iris)
+                                   (pj/lay-point :sepal-length :sepal-width)
+                                   (pj/facet :species)))))]
+      (and (= 3 (:panels s))
+           (= 150 (:points s))
+           (apply = doms))))])
 
 ;; Free y -- each panel has its own y-range:
 
-(->> (-> (rdatasets/datasets-iris)
-         (pj/lay-point :sepal-length :sepal-width)
-         (pj/facet :species)
-         (pj/options {:scales :free-y})
-         pj/plan
-         :panels)
-     (mapv :y-domain))
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:color :species})
+    (pj/facet :species)
+    (pj/options {:scales :free-y}))
 
-(kind/test-last [(fn [doms] (= 3 (count (distinct doms))))])
+(kind/test-last
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          doms (mapv :y-domain
+                     (:panels (pj/plan
+                               (-> (rdatasets/datasets-iris)
+                                   (pj/lay-point :sepal-length :sepal-width)
+                                   (pj/facet :species)
+                                   (pj/options {:scales :free-y})))))]
+      (and (= 3 (:panels s))
+           (= 3 (count (distinct doms))))))])
 
 ;; Other values: `:free-x` (x per-panel, y shared), `:free`
 ;; (both axes per-panel).
-
-;; ## Facet Plan Structure
-;;
-;; Under the hood, faceting produces multiple panels in the plan:
-
-(def faceted-plan
-  (-> (rdatasets/datasets-iris)
-      (pj/lay-point :sepal-length :sepal-width {:color :species})
-      (pj/facet :species)
-      pj/plan))
-
-(:grid faceted-plan)
-
-(kind/test-last [(fn [g] (and (= 1 (:rows g)) (= 3 (:cols g))))])
-
-(count (:panels faceted-plan))
-
-(kind/test-last [(fn [n] (= 3 n))])
-
-;; Each panel has a grid position and a strip label:
-
-(:panels faceted-plan)
-
-(kind/test-last [(fn [ps] (= 3 (count ps)))])
 
 ;; A related multi-panel layout, the **scatter plot matrix (SPLOM)**,
 ;; uses `pj/cross` rather than `pj/facet` -- the panels show all

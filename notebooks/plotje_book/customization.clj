@@ -430,16 +430,21 @@
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; No legend at all -- useful when the color encoding is documented
-;; in the title or caption rather than a separate legend. The plan's
-;; `:legend-w` becomes 0, so the panel takes the full width:
+;; in the title or caption rather than a separate legend. The panel
+;; takes the full width since no legend strip is reserved:
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width {:color :species})
-    (pj/options {:legend-position :none})
-    pj/plan
-    (get-in [:layout :legend-w]))
+    (pj/options {:legend-position :none}))
 
-(kind/test-last [zero?])
+(kind/test-last
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          plan (pj/plan (-> (rdatasets/datasets-iris)
+                            (pj/lay-point :sepal-length :sepal-width {:color :species})
+                            (pj/options {:legend-position :none})))]
+      (and (= 150 (:points s))
+           (zero? (get-in plan [:layout :legend-w])))))])
 
 ;; ## Tooltip
 ;;

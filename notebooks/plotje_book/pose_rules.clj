@@ -1,9 +1,9 @@
 ;; # Pose Rules
 ;;
 ;; Poses gave the mental picture; this chapter proves it. Each
-;; of the 29 rules below carries a rendered pose (or plan), a
-;; printed structure, and a tested assertion, so the model claims
-;; are verified on every run.
+;; of the 29 rules below carries a rendered pose, a printed
+;; structure, and a tested assertion, so the model claims are
+;; verified on every run.
 ;;
 ;; The rules are organized into seven sections (Construction, Layer
 ;; Placement, Leaf Identity, Scope, Options, Assembly, Layout) and
@@ -420,7 +420,7 @@
 ;; A `lay-*` call without position arguments attaches the layer to
 ;; the current pose's top-level `:layers`. On a leaf, that is the
 ;; leaf's own `:layers`. On a composite, it is the root `:layers`,
-;; and the layer flows into every descendant leaf at plan time.
+;; and the layer flows into every descendant leaf when rendered.
 
 (-> iris
     (pj/pose :sepal-length :sepal-width)
@@ -433,7 +433,7 @@
          (empty? (or (:mapping (first (:layers pose))) {}))))])
 
 ;; On a composite, the same call attaches at root and reaches every
-;; panel at plan time:
+;; panel when rendered:
 
 (-> (pj/arrange
      [(pj/pose iris :sepal-length :sepal-width)
@@ -449,9 +449,9 @@
 
 ;; **Property P-LP1 -- bare layers flow downward.** After adding one
 ;; bare layer to a composite, the composite's root `:layers` holds
-;; that single entry; at plan time each leaf inherits it (prepended),
-;; so every sub-plot renders the layer on top of its inferred or
-;; explicit leaf layers.
+;; that single entry; each leaf inherits it (prepended), so every
+;; sub-plot renders the layer on top of its inferred or explicit
+;; leaf layers.
 
 (let [before (pj/arrange
               [(pj/pose iris :sepal-length :sepal-width)
@@ -898,15 +898,15 @@ s2-tree
 ;; ---
 ;; ## Assembly
 ;;
-;; How the rules above combine to produce rendered layers. The
-;; `pj/draft` pipeline stage is the observable output of assembly;
-;; each entry corresponds to one rendered layer.
+;; How the rules above combine to produce rendered layers. Each
+;; rendered layer corresponds to one (leaf, applicable-layer)
+;; pair, with all ancestor scope merged in.
 
 ;; ### Rule A1: one rendered layer per applicable (leaf, layer) pair
 ;;
-;; For each leaf in the resolved tree, the number of rendered
-;; layers equals the number of layers applicable to that leaf --
-;; the leaf's own plus all ancestor root-origin layers.
+;; For each leaf, the number of rendered layers equals the number
+;; of layers applicable to that leaf -- the leaf's own plus all
+;; ancestor root-origin layers.
 
 (-> iris
     (pj/pose :sepal-length :sepal-width)
@@ -926,26 +926,29 @@ s2-tree
 
 ;; ### Rule A2: each rendered layer carries fully merged scope
 ;;
-;; A draft entry reflects the full scope merge: effective `:data`,
-;; effective `:mapping` (covering both aesthetics and position),
-;; and `:layer-type` (plus any `:stat`, `:position`, `:mark`
-;; promoted to siblings). No scope level is dropped; no key is
-;; unresolved.
+;; Every layer rendered in the final plot reflects the full scope
+;; merge: the dataset, every mapping (positions and aesthetics)
+;; that flows into it, and the layer-type bundle (plus any
+;; `:stat`, `:position`, `:mark` overrides). No scope level is
+;; dropped; no key is unresolved.
 
 (-> iris
     (pj/pose :sepal-length :sepal-width {:color :species})
-    pj/lay-point
-    pj/draft)
+    pj/lay-point)
 
 (kind/test-last
- [(fn [drafts]
-    (and (= 1 (count drafts))
-         (let [d (first drafts)]
-           (and (= :sepal-length (:x d))
-                (= :sepal-width (:y d))
-                (= :species (:color d))
-                (= :point (:mark d))
-                (= 150 (tc/row-count (:data d)))))))])
+ [(fn [_]
+    (let [drafts (-> iris
+                     (pj/pose :sepal-length :sepal-width {:color :species})
+                     pj/lay-point
+                     pj/draft)]
+      (and (= 1 (count drafts))
+           (let [d (first drafts)]
+             (and (= :sepal-length (:x d))
+                  (= :sepal-width (:y d))
+                  (= :species (:color d))
+                  (= :point (:mark d))
+                  (= 150 (tc/row-count (:data d))))))))])
 
 ;; ---
 ;; ## Layout
@@ -956,21 +959,21 @@ s2-tree
 
 ;; ### Rule L1: each leaf produces a panel block
 ;;
-;; Each leaf in the resolved tree produces one **panel block** in
-;; the rendered plot. Without faceting, the block contains one
-;; panel. With `pj/facet` or `pj/facet-grid`, the block contains
-;; one panel per facet value (or per (row, col) pair).
+;; Each leaf produces one **panel block** in the rendered plot.
+;; Without faceting, the block contains one panel. With `pj/facet`
+;; or `pj/facet-grid`, the block contains one panel per facet value
+;; (or per (row, col) pair).
 
 (-> iris
     (pj/pose :sepal-length :sepal-width)
     (pj/pose :petal-length :petal-width)
-    pj/lay-point
-    pj/plan)
+    pj/lay-point)
 
 (kind/test-last
- [(fn [plan]
-    (and (:composite? plan)
-         (= 2 (count (:sub-plots plan)))))])
+ [(fn [pose]
+    (let [plan (pj/plan pose)]
+      (and (:composite? plan)
+           (= 2 (count (:sub-plots plan))))))])
 
 ;; ### Rule L2: layers within one leaf overlay within that leaf's panel block
 ;;
@@ -1043,7 +1046,7 @@ l4-shared
 ;; `pj/cross cols cols`), the result is a nested **rows-of-cols**
 ;; composite with `:share-scales #{:x :y}` -- the canonical SPLOM
 ;; layout. Each cell inherits the base's `:data`, root `:mapping`,
-;; and root `:layers` at plan time. The compositor applies three
+;; and root `:layers` when rendered. The compositor applies three
 ;; renderer flags on cells:
 ;;
 ;; - `:suppress-legend true` on every cell (one shared legend is

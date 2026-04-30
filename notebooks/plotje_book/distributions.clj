@@ -145,29 +145,28 @@
 ;; Tukey fence `[Q1 - 1.5*IQR, Q3 + 1.5*IQR]`, and every outlier
 ;; falls outside it.
 
-(let [plan (-> (rdatasets/datasets-iris)
-               (pj/lay-boxplot :species :sepal-width)
-               pj/plan)
-      box-layer (first (filter #(= :boxplot (:mark %))
-                               (:layers (first (:panels plan)))))]
-  (mapv (fn [{:keys [q1 q3 whisker-lo whisker-hi outliers]}]
-          (let [iqr (- q3 q1)
-                lo-fence (- q1 (* 1.5 iqr))
-                hi-fence (+ q3 (* 1.5 iqr))]
-            {:whisker-lo-in-fence (>= whisker-lo lo-fence)
-             :whisker-hi-in-fence (<= whisker-hi hi-fence)
-             :outliers-outside-fence
-             (every? (fn [o] (or (< o lo-fence) (> o hi-fence)))
-                     outliers)}))
-        (:boxes box-layer)))
-
 (kind/test-last
- [(fn [results]
-    (and (= 3 (count results))
-         (every? (fn [r] (and (:whisker-lo-in-fence r)
-                              (:whisker-hi-in-fence r)
-                              (:outliers-outside-fence r)))
-                 results)))])
+ [(fn [_]
+    (let [plan (-> (rdatasets/datasets-iris)
+                   (pj/lay-boxplot :species :sepal-width)
+                   pj/plan)
+          box-layer (first (filter #(= :boxplot (:mark %))
+                                   (:layers (first (:panels plan)))))
+          results (mapv (fn [{:keys [q1 q3 whisker-lo whisker-hi outliers]}]
+                          (let [iqr (- q3 q1)
+                                lo-fence (- q1 (* 1.5 iqr))
+                                hi-fence (+ q3 (* 1.5 iqr))]
+                            {:whisker-lo-in-fence (>= whisker-lo lo-fence)
+                             :whisker-hi-in-fence (<= whisker-hi hi-fence)
+                             :outliers-outside-fence
+                             (every? (fn [o] (or (< o lo-fence) (> o hi-fence)))
+                                     outliers)}))
+                        (:boxes box-layer))]
+      (and (= 3 (count results))
+           (every? (fn [r] (and (:whisker-lo-in-fence r)
+                                (:whisker-hi-in-fence r)
+                                (:outliers-outside-fence r)))
+                   results))))])
 
 ;; ## Grouped Boxplot
 
@@ -176,24 +175,20 @@
 (-> (rdatasets/reshape2-tips)
     (pj/lay-boxplot :day :total-bill {:color :smoker}))
 
-(kind/test-last
- [(fn [v] (let [s (pj/svg-summary v)]
-            (and (= 1 (:panels s))
-                 (= 8 (:polygons s))
-                 (pos? (:lines s)))))])
-
-;; Verify dodge positioning: each color group gets a distinct offset.
-
-(let [plan (-> (rdatasets/reshape2-tips)
-               (pj/lay-boxplot :day :total-bill {:color :smoker})
-               pj/plan)
-      panel (first (:panels plan))
-      box-layer (first (filter #(= :boxplot (:mark %)) (:layers panel)))
-      cats (:color-categories box-layer)]
-  (count cats))
+;; Each color group gets a distinct dodge offset, visible as
+;; side-by-side boxes within each day.
 
 (kind/test-last
- [(fn [v] (= 2 v))])
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          plan (pj/plan (-> (rdatasets/reshape2-tips)
+                            (pj/lay-boxplot :day :total-bill {:color :smoker})))
+          box-layer (first (filter #(= :boxplot (:mark %))
+                                   (:layers (first (:panels plan)))))]
+      (and (= 1 (:panels s))
+           (= 8 (:polygons s))
+           (pos? (:lines s))
+           (= 2 (count (:color-categories box-layer))))))])
 
 ;; ## Horizontal Boxplot
 
@@ -229,23 +224,19 @@
 (-> (rdatasets/reshape2-tips)
     (pj/lay-violin :day :total-bill {:color :smoker}))
 
-(kind/test-last
- [(fn [v] (let [s (pj/svg-summary v)]
-            (and (= 1 (:panels s))
-                 (= 8 (:polygons s)))))])
-
-;; Verify dodge positioning: each color group gets a distinct offset.
-
-(let [plan (-> (rdatasets/reshape2-tips)
-               (pj/lay-violin :day :total-bill {:color :smoker})
-               pj/plan)
-      panel (first (:panels plan))
-      viol-layer (first (filter #(= :violin (:mark %)) (:layers panel)))
-      cats (:color-categories viol-layer)]
-  (count cats))
+;; Each color group gets a distinct dodge offset, visible as
+;; side-by-side violins within each day.
 
 (kind/test-last
- [(fn [v] (= 2 v))])
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          plan (pj/plan (-> (rdatasets/reshape2-tips)
+                            (pj/lay-violin :day :total-bill {:color :smoker})))
+          viol-layer (first (filter #(= :violin (:mark %))
+                                    (:layers (first (:panels plan)))))]
+      (and (= 1 (:panels s))
+           (= 8 (:polygons s))
+           (= 2 (count (:color-categories viol-layer))))))])
 
 ;; ## Horizontal Violin
 

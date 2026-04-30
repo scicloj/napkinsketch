@@ -1,15 +1,17 @@
 ;; # Inference Rules
 ;;
 ;; Plotje infers many parameters automatically so you can write
-;; less and get reasonable defaults. This notebook shows those rules
-;; in action by examining the **plan** -- the resolved data structure
-;; that captures every inference decision.
+;; less and get reasonable defaults. This notebook walks each rule
+;; with a worked example: a small pose, the rendered plot, and a
+;; description of what was inferred. Every rule is also checked
+;; against the resolved plot on every run, so the claims here stay
+;; honest as the library evolves.
 ;;
-;; This chapter is a reference: each rule in detail, with its default,
-;; its override, and a plan-level check. For the conceptual overview,
-;; read [Poses](./plotje_book.pose_model.html) and
-;; [Core Concepts](./plotje_book.core_concepts.html) first. The
-;; examples here use small inline datasets so the full plan is readable.
+;; This chapter is a reference: each rule with its default and its
+;; override. For the conceptual overview, read [Poses](./plotje_book.pose_model.html)
+;; and [Core Concepts](./plotje_book.core_concepts.html) first. The
+;; examples use small inline datasets so the relationships are easy
+;; to read at a glance.
 
 (ns plotje-book.inference-rules
   (:require
@@ -24,14 +26,9 @@
 
 ;; ## A Worked Example
 ;;
-;; Before the rule-by-rule tour, here is the kind of inference the
-;; chapter is going to dissect: a five-point scatter, then the **plan**
-;; that produced it. A plan is the fully resolved data structure Plotje
-;; builds from a pose right before rendering -- a plain Clojure map
-;; with domains, ticks, scales, resolved layers, legend, and layout
-;; dimensions, every inference decision made explicit in one place.
-;; `pj/plan` is the function that produces it; we will use it to peek
-;; inside after each example.
+;; Before the rule-by-rule tour, here is what "inference" looks
+;; like in practice: a five-point scatter where Plotje filled in
+;; almost everything for us.
 
 (def five-points
   {:x [1.0 2.0 3.0 4.0 5.0]
@@ -41,41 +38,39 @@
   (-> five-points
       (pj/lay-point :x :y)))
 
-;; Here is the rendered plot:
-
 scatter-pose
 
-(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
+(kind/test-last
+ [(fn [v]
+    (let [plan (pj/plan scatter-pose)
+          p (first (:panels plan))
+          g (first (:groups (first (:layers p))))]
+      (and (= 5 (:points (pj/svg-summary v)))
+           (= :single (:layout-type plan))
+           (= 1 (count (:panels plan)))
+           (= "x" (:x-label plan))
+           (= "y" (:y-label plan))
+           (nil? (:legend plan))
+           (zero? (get-in plan [:layout :legend-w]))
+           (= :linear (get-in p [:x-scale :type]))
+           (= 1 (count (:groups (first (:layers p)))))
+           (= (scicloj.plotje.impl.defaults/hex->rgba
+               (:default-color (scicloj.plotje.impl.defaults/config)))
+              (:color g)))))])
 
-;; And the full plan that produced it:
-
-(pj/plan scatter-pose)
-
-(kind/test-last [(fn [plan] (and (= :single (:layout-type plan))
-                                 (= 1 (count (:panels plan)))
-                                 (= "x" (:x-label plan))
-                                 (= "y" (:y-label plan))
-                                 (nil? (:legend plan))
-                                 (zero? (get-in plan [:layout :legend-w]))
-                                 (let [p (first (:panels plan))
-                                       g (first (:groups (first (:layers p))))]
-                                   (and (= :linear (get-in p [:x-scale :type]))
-                                        (= 1 (count (:groups (first (:layers p)))))
-                                        (= (scicloj.plotje.impl.defaults/hex->rgba (:default-color (scicloj.plotje.impl.defaults/config))) (:color g))))))])
-
-;; Notice in the plan above:
+;; Notice what was inferred:
 ;;
-;; - `:x-domain` is `[0.8 5.2]` -- wider than the data range `[1.0, 5.0]`
-;;   because of 5% padding
-;; - `:x-scale` is `{:type :linear}` -- inferred from numeric data
-;; - `:x-ticks` has nice round values: `1.0, 1.5, 2.0, ...`
-;; - `:x-label` is `"x"` -- derived from the column keyword
-;; - `:legend` is `nil` -- no color mapping
-;; - `:layout` has `:legend-w 0` -- no space reserved for a legend
-;; - The single layer has `:mark :point` and a single `:groups` entry with all 5 data
-;;   points, colored in the default color (dark gray, `#333`)
+;; - The x-axis label `"x"` and y-axis label `"y"`, taken from
+;;   the column keywords
+;; - A linear scale on each axis, since both columns are numeric
+;; - The data range `[1.0, 5.0]` widened to `[0.8, 5.2]` -- a 5%
+;;   padding so the extreme points do not sit on the panel edge
+;; - Round tick values: `1.0, 1.5, 2.0, ...`
+;; - No legend, since no color mapping was given
+;; - A single point group rendered in the default color (dark gray,
+;;   `#333`)
 ;;
-;; Each of those bullets is its own inference rule, with a default
+;; Each of those decisions is its own inference rule, with a default
 ;; and an explicit override.
 
 ;; ## Overrides at a Glance
@@ -104,15 +99,12 @@ scatter-pose
 ;; | Layout type | single, facet-grid, multi-variable | `pj/facet`, multiple x-y pairs |
 ;; | Coordinate system | `:cartesian` | `(pj/coord :flip)`, `(pj/coord :polar)` |
 ;;
-;; The plan captures the result of all inference. When in doubt,
-;; inspect the plan.
-
 ;; The sections below walk each rule in detail. The order roughly
-;; follows the resolution pipeline -- column selection, column types,
-;; aesthetics, grouping, layer type, domains, ticks, labels, legends,
-;; layout, coord flip -- with two cross-cutting closing sections on
-;; how the rules combine in multi-layer plots and a diagram of the
-;; full resolution pipeline.
+;; follows how a pose is resolved into a plot -- column selection,
+;; column types, aesthetics, grouping, layer type, domains, ticks,
+;; labels, legends, layout, coord flip -- with two cross-cutting
+;; closing sections on how the rules combine in multi-layer plots
+;; and a diagram of the full resolution flow.
 
 ;; ## Column Selection
 ;;
@@ -126,10 +118,10 @@ scatter-pose
 ;; | 3 | first becomes x, second becomes y, third becomes color |
 ;; | 4+ | no inference -- see the note below |
 ;;
-;; The same rule applies to both entry points into the pipeline:
-;; `pj/lay-*` on raw data, and `pj/pose` on raw data. Both
-;; read the first 1-3 columns of the dataset in the order they
-;; appear and build the mapping from there.
+;; The same rule applies whether you start with `pj/lay-*` on raw
+;; data or `pj/pose` on raw data. Both read the first 1-3 columns
+;; of the dataset in the order they appear and build the mapping
+;; from there.
 ;;
 ;; One column:
 
@@ -209,8 +201,6 @@ two-col-pose
 ;; | string, keyword, boolean, symbol, text | `:categorical` |
 ;; | LocalDate, LocalDateTime, Instant, java.util.Date | `:temporal` (numerical, with calendar-aware ticks) |
 ;;
-;; Internally, `infer-column-types` in `resolve.clj` handles this step.
-;;
 ;; A categorical column produces a band scale with string domain values.
 ;; Compare:
 
@@ -224,18 +214,15 @@ two-col-pose
 
 bar-pose
 
-(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
+(kind/test-last
+ [(fn [v]
+    (let [p (first (:panels (pj/plan bar-pose)))]
+      (and (= 4 (:polygons (pj/svg-summary v)))
+           (= ["cat" "dog" "bird" "fish"] (:x-domain p))
+           (true? (:categorical? (:x-ticks p))))))])
 
-;; And the plan:
-
-(pj/plan bar-pose)
-
-(kind/test-last [(fn [plan] (let [p (first (:panels plan))]
-                              (and (= ["cat" "dog" "bird" "fish"] (:x-domain p))
-                                   (true? (:categorical? (:x-ticks p))))))])
-
-;; The x-domain is `["cat" "dog" "bird" "fish"]` -- strings in order of
-;; appearance. The ticks have `:categorical? true`. The y-domain starts
+;; The x-axis lays out the four animal names in order of appearance
+;; -- strings, treated as a categorical band scale. The y-axis starts
 ;; at zero because this is a bar chart.
 
 ;; ### Temporal columns
@@ -251,20 +238,19 @@ bar-pose
 
 temporal-pose
 
-(let [p (first (:panels (pj/plan temporal-pose)))]
-  {:x-domain-numeric? (number? (first (:x-domain p)))
-   :tick-count (count (:values (:x-ticks p)))
-   :first-tick-label (first (:labels (:x-ticks p)))})
+(kind/test-last
+ [(fn [_]
+    (let [p (first (:panels (pj/plan temporal-pose)))]
+      (and (number? (first (:x-domain p)))
+           (= 10 (count (:values (:x-ticks p))))
+           (= "Feb-01" (first (:labels (:x-ticks p)))))))])
 
-(kind/test-last [(fn [m] (and (true? (:x-domain-numeric? m))
-                              (= 10 (:tick-count m))
-                              (= "Feb-01" (:first-tick-label m))))])
-
-;; The x-domain contains epoch-millisecond numbers, but the 10 tick
-;; labels show human-readable dates like `"Feb-01"`. Plotje accepts
-;; `java.util.Date` (from `#inst`), `LocalDate`, `LocalDateTime`,
-;; and `Instant` -- all are converted to epoch-milliseconds for
-;; plotting, with calendar-aware tick formatting.
+;; The x-axis carries epoch-millisecond numbers internally, but the
+;; 10 tick labels show human-readable dates like `"Feb-01"`. Plotje
+;; accepts `java.util.Date` (from `#inst`), `LocalDate`,
+;; `LocalDateTime`, and `Instant` -- all are converted to
+;; epoch-milliseconds for plotting, with calendar-aware tick
+;; formatting.
 
 ;; ### Overriding inferred types with `:x-type` / `:y-type`
 ;;
@@ -280,11 +266,11 @@ temporal-pose
 
 hour-bar-pose
 
-(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
-
-(:x-domain (first (:panels (pj/plan hour-bar-pose))))
-
-(kind/test-last [(fn [d] (= ["9" "10" "11" "12"] d))])
+(kind/test-last
+ [(fn [v]
+    (and (= 4 (:polygons (pj/svg-summary v)))
+         (= ["9" "10" "11" "12"]
+            (:x-domain (first (:panels (pj/plan hour-bar-pose)))))))])
 
 ;; Four bars at discrete hour bands. Without the override,
 ;; `lay-value-bar` would reject the numeric `:hour` column; with
@@ -296,9 +282,9 @@ hour-bar-pose
 ;; ## Aesthetic Resolution
 ;;
 ;; The `:color` parameter triggers different behaviors depending on
-;; what you pass. Internally, `resolve-aesthetics` in `resolve.clj`
-;; classifies each aesthetic channel (`:color`, `:size`, `:alpha`,
-;; `:text`) as either a column reference or a fixed literal.
+;; what you pass. Each aesthetic channel (`:color`, `:size`,
+;; `:alpha`, `:text`) is classified as either a column reference or
+;; a fixed literal.
 
 ;; ### Column reference -- colored by palette
 
@@ -310,23 +296,21 @@ hour-bar-pose
 
 colored-pose
 
-(kind/test-last [(fn [v] (= 6 (:points (pj/svg-summary v))))])
+(kind/test-last
+ [(fn [v]
+    (let [plan (pj/plan colored-pose)
+          layer (first (:layers (first (:panels plan))))]
+      (and (= 6 (:points (pj/svg-summary v)))
+           (= 2 (count (:groups layer)))
+           (some? (:legend plan))
+           (= 100 (get-in plan [:layout :legend-w])))))])
 
-;; And the plan:
-
-(pj/plan colored-pose)
-
-(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                              (and (= 2 (count (:groups layer)))
-                                   (some? (:legend plan))
-                                   (= 100 (get-in plan [:layout :legend-w])))))])
-
-;; Two entries in `:groups`, each with its own `:color` (RGBA),
-;; `:xs`, `:ys`, and `:label`. A `:legend` appeared with 2 entries.
-;; The `:layout` now has `:legend-w 100` -- space reserved on the right.
+;; The categorical column `:g` splits the data into two groups, each
+;; with its own color drawn from the palette. A legend appears on the
+;; right (100 pixels wide) and the panel shrinks to make room.
 ;;
-;; Why two entries? Because `:g` is a categorical column. The next
-;; section explores this mechanism in detail.
+;; The next section explores why a categorical color column triggers
+;; grouping while a numeric color column does not.
 
 ;; ### Fixed color string -- single color, no legend
 
@@ -336,26 +320,24 @@ colored-pose
 
 fixed-color-pose
 
-(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
+(kind/test-last
+ [(fn [v]
+    (let [plan (pj/plan fixed-color-pose)
+          layer (first (:layers (first (:panels plan))))
+          c (:color (first (:groups layer)))]
+      (and (= 5 (:points (pj/svg-summary v)))
+           (nil? (:legend plan))
+           (zero? (get-in plan [:layout :legend-w]))
+           (= 1 (count (:groups layer)))
+           (= [(/ 231.0 255.0)
+               (/ 76.0 255.0)
+               (/ 60.0 255.0)
+               1.0]
+              c))))])
 
-;; And the plan:
-
-(pj/plan fixed-color-pose)
-
-(kind/test-last [(fn [plan] (and (nil? (:legend plan))
-                                 (zero? (get-in plan [:layout :legend-w]))
-                                 (let [layer (first (:layers (first (:panels plan))))
-                                       c (:color (first (:groups layer)))]
-                                   (and (= 1 (count (:groups layer)))
-                                        (= [(/ 231.0 255.0)
-                                            (/ 76.0 255.0)
-                                            (/ 60.0 255.0)
-                                            1.0]
-                                           c)))))])
-
-;; A single `:groups` entry with red RGBA values. No `:legend`,
-;; `:legend-w` is 0. The hex string was converted to
-;; `[0.906 0.298 0.235 1.0]`.
+;; A literal hex string maps every point to that single color: no
+;; grouping, no legend, no legend strip. The hex was parsed into the
+;; RGBA tuple `[0.906 0.298 0.235 1.0]`.
 
 ;; ### Named colors and string disambiguation
 ;;
@@ -398,30 +380,29 @@ fixed-color-pose
 
 red-color-pose
 
-(let [plan (pj/plan red-color-pose)]
-  {:legend (:legend plan)
-   :color (:color (first (:groups (first (:layers (first (:panels plan)))))))})
+(kind/test-last
+ [(fn [_]
+    (let [plan (pj/plan red-color-pose)
+          c (:color (first (:groups (first (:layers (first (:panels plan)))))))]
+      (and (nil? (:legend plan))
+           (> (first c) 0.9))))])
 
-(kind/test-last [(fn [m] (and (nil? (:legend m))
-                              (> (first (:color m)) 0.9)))])
-
-;; No legend, red RGBA -- treated as a fixed color, not a column.
+;; No legend, points drawn red -- treated as a fixed color, not a
+;; column.
 
 ;; ### No color -- default gray
 
-;; Look back at the first scatter plan above -- its single `:groups`
-;; entry has the default color (dark gray, `#333`). No legend.
+;; The Worked Example at the top of the chapter shows this case:
+;; with no `:color` mapping, all points render in the default dark
+;; gray (`#333`) and no legend appears.
 
 ;; ## Grouping
 ;;
-;; The `:groups` entries you saw above reflect a key concept:
+;; The colored examples above all rest on the same concept:
 ;; **grouping** controls how data is split into independent subsets.
 ;; Each group gets its own visual elements -- its own set of points,
 ;; its own regression line, its own density curve, its own bar in a
 ;; dodged layout.
-;;
-;; Internally, `infer-grouping` in `resolve.clj` builds the grouping
-;; vector from explicit `:group` and categorical color.
 ;;
 ;; Grouping can be **derived** (from a categorical `:color` mapping)
 ;; or **explicit** (via the `:group` aesthetic).
@@ -434,18 +415,15 @@ red-color-pose
 
 colored-pose
 
-(let [plan (pj/plan colored-pose)
-      layer (first (:layers (first (:panels plan))))]
-  {:group-count (count (:groups layer))
-   :group-labels (mapv :label (:groups layer))
-   :has-legend? (some? (:legend plan))})
+(kind/test-last
+ [(fn [_]
+    (let [plan (pj/plan colored-pose)
+          layer (first (:layers (first (:panels plan))))]
+      (and (= 2 (count (:groups layer)))
+           (= ["a" "b"] (mapv :label (:groups layer)))
+           (some? (:legend plan)))))])
 
-(kind/test-last [(fn [m] (and (= 2 (:group-count m))
-                              (= ["a" "b"] (:group-labels m))
-                              (true? (:has-legend? m))))])
-
-;; Two groups, two legend entries. Each group has its own `:xs`,
-;; `:ys`, and `:color`.
+;; Two groups, two legend entries -- one per category in `:g`.
 
 ;; ### Numeric color does not create groups
 ;;
@@ -462,18 +440,16 @@ colored-pose
 
 numeric-color-pose
 
-(let [plan (pj/plan numeric-color-pose)
-      layer (first (:layers (first (:panels plan))))]
-  {:group-count (count (:groups layer))
-   :legend-type (:type (:legend plan))
-   :color-stops (count (:stops (:legend plan)))})
+(kind/test-last
+ [(fn [_]
+    (let [plan (pj/plan numeric-color-pose)
+          layer (first (:layers (first (:panels plan))))]
+      (and (= 1 (count (:groups layer)))
+           (= :continuous (:type (:legend plan)))
+           (= 20 (count (:stops (:legend plan)))))))])
 
-(kind/test-last [(fn [m] (and (= 1 (:group-count m))
-                              (= :continuous (:legend-type m))
-                              (= 20 (:color-stops m))))])
-
-;; One group, continuous legend with 20 stops. No splitting occurred --
-;; the color is a visual encoding, not a grouping variable.
+;; A single group with a continuous legend of 20 color stops -- the
+;; color is a visual encoding, not a grouping variable.
 
 ;; ### Overriding color type with `:color-type`
 ;;
@@ -499,13 +475,12 @@ numeric-color-pose
 
 study-continuous-pose
 
-(let [plan (pj/plan study-continuous-pose)
-      layer (first (:layers (first (:panels plan))))]
-  {:group-count (count (:groups layer))
-   :legend-type (:type (:legend plan))})
-
-(kind/test-last [(fn [m] (and (= 1 (:group-count m))
-                              (= :continuous (:legend-type m))))])
+(kind/test-last
+ [(fn [_]
+    (let [plan (pj/plan study-continuous-pose)
+          layer (first (:layers (first (:panels plan))))]
+      (and (= 1 (count (:groups layer)))
+           (= :continuous (:type (:legend plan))))))])
 
 ;; With `:color-type :categorical` -- three groups, one per subject:
 
@@ -516,13 +491,12 @@ study-continuous-pose
 
 study-categorical-pose
 
-(let [plan (pj/plan study-categorical-pose)
-      layer (first (:layers (first (:panels plan))))]
-  {:group-count (count (:groups layer))
-   :legend-entries (count (:entries (:legend plan)))})
-
-(kind/test-last [(fn [m] (and (= 3 (:group-count m))
-                              (= 3 (:legend-entries m))))])
+(kind/test-last
+ [(fn [_]
+    (let [plan (pj/plan study-categorical-pose)
+          layer (first (:layers (first (:panels plan))))]
+      (and (= 3 (count (:groups layer)))
+           (= 3 (count (:entries (:legend plan)))))))])
 
 ;; The same data, the same columns -- but `:color-type :categorical`
 ;; changes inference from "one gradient" to "three distinct groups."
@@ -558,13 +532,12 @@ study-categorical-pose
 
 explicit-group-pose
 
-(let [plan (pj/plan explicit-group-pose)
-      layer (first (:layers (first (:panels plan))))]
-  {:group-count (count (:groups layer))
-   :has-legend? (some? (:legend plan))})
-
-(kind/test-last [(fn [m] (and (= 2 (:group-count m))
-                              (false? (:has-legend? m))))])
+(kind/test-last
+ [(fn [_]
+    (let [plan (pj/plan explicit-group-pose)
+          layer (first (:layers (first (:panels plan))))]
+      (and (= 2 (count (:groups layer)))
+           (nil? (:legend plan)))))])
 
 ;; Two groups, but no legend and no color differentiation.
 ;; Use `:group` when you need separate statistical fits but
@@ -606,8 +579,7 @@ explicit-group-pose
 ;;
 ;; When you use `pj/pose` without an explicit `pj/lay-*` call,
 ;; Plotje infers the **layer type** -- a mark + stat bundle --
-;; from the column types of the referenced columns. Internally,
-;; `infer-layer-type` in `resolve.clj` applies these rules.
+;; from the column types of the referenced columns.
 ;;
 ;; ### Single-column cases
 ;;
@@ -644,17 +616,15 @@ explicit-group-pose
 
 hist-pose
 
-(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
+(kind/test-last
+ [(fn [v]
+    (let [layer (first (:layers (first (:panels (pj/plan hist-pose)))))]
+      (and (pos? (:polygons (pj/svg-summary v)))
+           (= :bar (:mark layer)))))])
 
-;; The plan shows the inferred layer type:
-
-(pj/plan hist-pose)
-
-(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                              (= :bar (:mark layer))))])
-
-;; The layer mark is `:bar` -- the layer data contains `:bins` with
-;; `:x0`, `:x1`, `:count` -- the result of the `:bin` stat.
+;; The inferred layer is a histogram -- a `:bar` mark fed by the
+;; `:bin` stat, so the data is binned into rectangles before
+;; rendering.
 
 ;; A single temporal column also becomes a histogram, binned over
 ;; epoch-milliseconds with calendar-aware tick labels:
@@ -666,14 +636,11 @@ hist-pose
 
 temporal-hist-pose
 
-(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
-
-;; The plan shows the inferred layer type:
-
-(pj/plan temporal-hist-pose)
-
-(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                              (= :bar (:mark layer))))])
+(kind/test-last
+ [(fn [v]
+    (let [layer (first (:layers (first (:panels (pj/plan temporal-hist-pose)))))]
+      (and (pos? (:polygons (pj/svg-summary v)))
+           (= :bar (:mark layer)))))])
 
 ;; A single categorical column produces a bar chart of counts:
 
@@ -683,17 +650,14 @@ temporal-hist-pose
 
 count-pose
 
-(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
+(kind/test-last
+ [(fn [v]
+    (let [layer (first (:layers (first (:panels (pj/plan count-pose)))))]
+      (and (= 4 (:polygons (pj/svg-summary v)))
+           (= :rect (:mark layer)))))])
 
-;; The plan shows the inferred layer type:
-
-(pj/plan count-pose)
-
-(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                              (= :rect (:mark layer))))])
-
-;; Mark is `:rect` with `:counts` -- the `:count` stat tallied each
-;; of the 4 categories.
+;; The inferred layer uses a `:rect` mark fed by the `:count` stat,
+;; which tallied each of the 4 categories.
 
 ;; Two numerical columns produce a scatter (the chapter's opening
 ;; `scatter-pose` is such a pose):
@@ -703,14 +667,11 @@ count-pose
 
 num-num-pose
 
-(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
-
-;; The plan shows the inferred layer type:
-
-(pj/plan num-num-pose)
-
-(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                              (= :point (:mark layer))))])
+(kind/test-last
+ [(fn [v]
+    (let [layer (first (:layers (first (:panels (pj/plan num-num-pose)))))]
+      (and (= 5 (:points (pj/svg-summary v)))
+           (= :point (:mark layer)))))])
 
 ;; A temporal x with a numerical y infers a time-series line. Row
 ;; order is preserved, so pre-sort temporal data to avoid zigzag:
@@ -722,14 +683,11 @@ num-num-pose
 
 ts-line-pose
 
-(kind/test-last [(fn [v] (= 1 (:lines (pj/svg-summary v))))])
-
-;; The plan shows the inferred layer type:
-
-(pj/plan ts-line-pose)
-
-(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                              (= :line (:mark layer))))])
+(kind/test-last
+ [(fn [v]
+    (let [layer (first (:layers (first (:panels (pj/plan ts-line-pose)))))]
+      (and (= 1 (:lines (pj/svg-summary v)))
+           (= :line (:mark layer)))))])
 
 ;; A categorical x with a numerical y infers a boxplot -- the default
 ;; for summarizing a distribution across groups:
@@ -741,15 +699,12 @@ ts-line-pose
 
 boxplot-pose
 
-(kind/test-last [(fn [v] (pos? (:lines (pj/svg-summary v))))])
-
-;; The plan shows the inferred layer type:
-
-(pj/plan boxplot-pose)
-
-(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                              (and (= :boxplot (:mark layer))
-                                   (= 3 (count (:boxes layer))))))])
+(kind/test-last
+ [(fn [v]
+    (let [layer (first (:layers (first (:panels (pj/plan boxplot-pose)))))]
+      (and (pos? (:lines (pj/svg-summary v)))
+           (= :boxplot (:mark layer))
+           (= 3 (count (:boxes layer))))))])
 
 ;; A numerical x with a categorical y infers a horizontal boxplot --
 ;; the same summary laid out with the category axis on y:
@@ -761,35 +716,28 @@ boxplot-pose
 
 horizontal-boxplot-pose
 
-(kind/test-last [(fn [v] (pos? (:lines (pj/svg-summary v))))])
-
-;; The plan shows the inferred layer type:
-
-(pj/plan horizontal-boxplot-pose)
-
-(kind/test-last [(fn [plan] (let [layer (first (:layers (first (:panels plan))))]
-                              (and (= :boxplot (:mark layer))
-                                   (= 3 (count (:boxes layer))))))])
+(kind/test-last
+ [(fn [v]
+    (let [layer (first (:layers (first (:panels (pj/plan horizontal-boxplot-pose)))))]
+      (and (pos? (:lines (pj/svg-summary v)))
+           (= :boxplot (:mark layer))
+           (= 3 (count (:boxes layer))))))])
 
 ;; ## Domains
 ;;
 ;; Numerical domains extend 5% beyond the data range so points
-;; aren't clipped at the edges. Internally, `pad-domain` in
-;; `scale.clj` computes this padding.
+;; aren't clipped at the edges.
 
 scatter-pose
 
-(let [plan (pj/plan scatter-pose)
-      p (first (:panels plan))]
-  {:x-domain (:x-domain p)
-   :data-range [1.0 5.0]
-   :padding-each-side (* 0.05 (- 5.0 1.0))})
+(kind/test-last
+ [(fn [_]
+    (let [p (first (:panels (pj/plan scatter-pose)))]
+      (and (== 0.8 (first (:x-domain p)))
+           (== 5.2 (second (:x-domain p))))))])
 
-(kind/test-last [(fn [m] (and (== 0.8 (first (:x-domain m)))
-                              (== 5.2 (second (:x-domain m)))
-                              (== 0.2 (:padding-each-side m))))])
-
-;; The domain `[0.8, 5.2]` = data range `[1.0, 5.0]` +/- 0.2 (5% of 4.0).
+;; The x-domain is `[0.8, 5.2]` -- the data range `[1.0, 5.0]` plus
+;; 0.2 padding on each side (5% of the data range, 4.0).
 ;;
 ;; Special domain rules apply in certain contexts:
 ;;
@@ -797,11 +745,10 @@ scatter-pose
 
 bar-pose
 
-(let [plan (pj/plan bar-pose)
-      p (first (:panels plan))]
-  {:y-domain (:y-domain p)})
-
-(kind/test-last [(fn [m] (<= (first (:y-domain m)) 0))])
+(kind/test-last
+ [(fn [_]
+    (let [p (first (:panels (pj/plan bar-pose)))]
+      (<= (first (:y-domain p)) 0)))])
 
 ;; Percentage-filled layers normalize the y-domain to `[0.0, 1.0]`:
 
@@ -812,15 +759,16 @@ bar-pose
 
 fill-pose
 
-(:y-domain (first (:panels (pj/plan fill-pose))))
-
-(kind/test-last [(fn [d] (and (== 0.0 (first d))
-                              (== 1.0 (second d))))])
+(kind/test-last
+ [(fn [_]
+    (let [d (:y-domain (first (:panels (pj/plan fill-pose))))]
+      (and (== 0.0 (first d))
+           (== 1.0 (second d)))))])
 
 ;; The y-domain is exactly `[0.0, 1.0]` -- each category sums to 100%.
 
 ;; Multi-layer plots merge domains across layers -- see
-;; "Multi-Layer Plans" below.
+;; "Multi-Layer Plots" below.
 
 ;; ## Ticks
 ;;
@@ -839,15 +787,13 @@ fill-pose
 
 scatter-pose
 
-(let [plan (pj/plan scatter-pose)
-      p (first (:panels plan))]
-  {:x-tick-values (:values (:x-ticks p))
-   :x-tick-labels (:labels (:x-ticks p))})
-
-(kind/test-last [(fn [m] (and (= [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0]
-                                 (:x-tick-values m))
-                              (= ["1.0" "1.5" "2.0" "2.5" "3.0" "3.5" "4.0" "4.5" "5.0"]
-                                 (:x-tick-labels m))))])
+(kind/test-last
+ [(fn [_]
+    (let [p (first (:panels (pj/plan scatter-pose)))]
+      (and (= [1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0]
+              (:values (:x-ticks p)))
+           (= ["1.0" "1.5" "2.0" "2.5" "3.0" "3.5" "4.0" "4.5" "5.0"]
+              (:labels (:x-ticks p))))))])
 
 ;; Nine ticks from 1.0 to 5.0 at 0.5 intervals -- round and readable.
 ;;
@@ -861,13 +807,11 @@ scatter-pose
 
 log-scale-pose
 
-(let [plan (pj/plan log-scale-pose)
-      p (first (:panels plan))]
-  {:tick-values (:values (:x-ticks p))
-   :tick-labels (:labels (:x-ticks p))})
-
-(kind/test-last [(fn [m] (and (= [0.1 1.0 10.0 100.0 1000.0] (:tick-values m))
-                              (= ["0.1" "1" "10" "100" "1000"] (:tick-labels m))))])
+(kind/test-last
+ [(fn [_]
+    (let [p (first (:panels (pj/plan log-scale-pose)))]
+      (and (= [0.1 1.0 10.0 100.0 1000.0] (:values (:x-ticks p)))
+           (= ["0.1" "1" "10" "100" "1000"] (:labels (:x-ticks p))))))])
 
 ;; Five ticks at exact powers of 10 -- no irrational intermediates.
 ;; Whole numbers display without decimals, sub-1 values use minimal
@@ -877,16 +821,14 @@ log-scale-pose
 
 bar-pose
 
-(let [plan (pj/plan bar-pose)
-      p (first (:panels plan))]
-  (:values (:x-ticks p)))
-
-(kind/test-last [(fn [v] (= ["cat" "dog" "bird" "fish"] v))])
+(kind/test-last
+ [(fn [_]
+    (let [p (first (:panels (pj/plan bar-pose)))]
+      (= ["cat" "dog" "bird" "fish"] (:values (:x-ticks p)))))])
 
 ;; ## Axis Labels
 ;;
 ;; Labels come from column names. Underscores and hyphens become spaces.
-;; Internally, `resolve-labels` in `plan.clj` handles this.
 
 (def iris-label-pose
   (-> (rdatasets/datasets-iris)
@@ -894,12 +836,11 @@ bar-pose
 
 iris-label-pose
 
-(let [plan (pj/plan iris-label-pose)]
-  {:x-label (:x-label plan)
-   :y-label (:y-label plan)})
-
-(kind/test-last [(fn [m] (and (= "sepal length" (:x-label m))
-                              (= "sepal width" (:y-label m))))])
+(kind/test-last
+ [(fn [_]
+    (let [plan (pj/plan iris-label-pose)]
+      (and (= "sepal length" (:x-label plan))
+           (= "sepal width" (:y-label plan)))))])
 
 ;; When only one column is specified, the y-axis shows computed counts.
 ;; The system omits the y-label since it would repeat the column name:
@@ -909,12 +850,11 @@ iris-label-pose
 
 x-only-pose
 
-(let [plan (pj/plan x-only-pose)]
-  {:x-label (:x-label plan)
-   :y-label (:y-label plan)})
-
-(kind/test-last [(fn [m] (and (= "x" (:x-label m))
-                              (nil? (:y-label m))))])
+(kind/test-last
+ [(fn [_]
+    (let [plan (pj/plan x-only-pose)]
+      (and (= "x" (:x-label plan))
+           (nil? (:y-label plan)))))])
 
 ;; Explicit labels override inference:
 
@@ -925,45 +865,42 @@ x-only-pose
 
 explicit-label-pose
 
-(let [plan (pj/plan explicit-label-pose)]
-  {:x-label (:x-label plan)
-   :y-label (:y-label plan)})
-
-(kind/test-last [(fn [m] (and (= "Length (cm)" (:x-label m))
-                              (= "Width (cm)" (:y-label m))))])
+(kind/test-last
+ [(fn [_]
+    (let [plan (pj/plan explicit-label-pose)]
+      (and (= "Length (cm)" (:x-label plan))
+           (= "Width (cm)" (:y-label plan)))))])
 
 ;; ## Legends
 ;;
-;; A legend appears when a column is mapped to color. Internally,
-;; `build-legend` in `plan.clj` constructs the legend from
-;; the collected color information. Three cases:
+;; A legend appears when a column is mapped to color. Three cases:
 ;;
 ;; A categorical color mapping produces a discrete legend with one entry per category:
 
 colored-pose
 
-(:legend (pj/plan colored-pose))
+(kind/test-last
+ [(fn [_]
+    (let [leg (:legend (pj/plan colored-pose))]
+      (and (= :g (:title leg))
+           (= 2 (count (:entries leg))))))])
 
-(kind/test-last [(fn [leg] (and (= :g (:title leg))
-                                (= 2 (count (:entries leg)))))])
-
-;; Title is the column name. Each entry has a `:label` and `:color` (RGBA).
+;; The legend's title is the column name; each entry has a `:label`
+;; and a palette color.
 ;;
 ;; No color mapping means no legend:
 
 scatter-pose
 
-(:legend (pj/plan scatter-pose))
-
-(kind/test-last [nil?])
+(kind/test-last
+ [(fn [_] (nil? (:legend (pj/plan scatter-pose))))])
 
 ;; A fixed color string also suppresses the legend:
 
 fixed-color-pose
 
-(:legend (pj/plan fixed-color-pose))
-
-(kind/test-last [nil?])
+(kind/test-last
+ [(fn [_] (nil? (:legend (pj/plan fixed-color-pose))))])
 
 ;; A numeric color mapping produces a continuous legend (gradient bar):
 
@@ -973,16 +910,17 @@ fixed-color-pose
 
 continuous-color-pose
 
-(:legend (pj/plan continuous-color-pose))
-
-(kind/test-last [(fn [leg] (and (= :continuous (:type leg))
-                                (= 20 (count (:stops leg)))))])
+(kind/test-last
+ [(fn [_]
+    (let [leg (:legend (pj/plan continuous-color-pose))]
+      (and (= :continuous (:type leg))
+           (= 20 (count (:stops leg))))))])
 
 ;; ### Size Legend
 ;;
-;; When `:size` maps to a numerical column, a size legend shows graduated
-;; circles spanning the data range. Internally, `build-size-legend` in
-;; `plan.clj` generates five entries with proportional radii.
+;; When `:size` maps to a numerical column, a size legend shows
+;; five graduated circles spanning the data range, with radii
+;; proportional to the values they represent.
 
 (def size-legend-pose
   (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :s [10 20 30 40 50]}
@@ -990,26 +928,26 @@ continuous-color-pose
 
 size-legend-pose
 
-(:size-legend (pj/plan size-legend-pose))
+(kind/test-last
+ [(fn [_]
+    (let [leg (:size-legend (pj/plan size-legend-pose))]
+      (and (= :size (:type leg))
+           (= :s (:title leg))
+           (= 5 (count (:entries leg))))))])
 
-(kind/test-last [(fn [leg] (and (= :size (:type leg))
-                                (= :s (:title leg))
-                                (= 5 (count (:entries leg)))))])
-
-;; Each entry has a `:value` and `:radius`. No size mapping means no size legend:
+;; The legend has 5 entries, each pairing a value with a circle of
+;; the corresponding radius. No size mapping means no size legend:
 
 scatter-pose
 
-(:size-legend (pj/plan scatter-pose))
-
-(kind/test-last [nil?])
+(kind/test-last
+ [(fn [_] (nil? (:size-legend (pj/plan scatter-pose))))])
 
 ;; ### Alpha Legend
 ;;
 ;; When `:alpha` maps to a numerical column, an alpha legend shows
-;; graduated opacity squares. Internally, `build-alpha-legend` in
-;; `plan.clj` asks for about five nice 1/2/5 breaks; the exact count
-;; depends on the range (here the range [0.1, 0.9] yields four).
+;; graduated opacity squares -- about five nice 1/2/5 breaks; the
+;; exact count depends on the range (here `[0.1, 0.9]` yields four).
 
 (def alpha-legend-pose
   (-> {:x [1 2 3 4 5] :y [1 2 3 4 5] :a [0.1 0.3 0.5 0.7 0.9]}
@@ -1017,25 +955,24 @@ scatter-pose
 
 alpha-legend-pose
 
-(:alpha-legend (pj/plan alpha-legend-pose))
-
-(kind/test-last [(fn [leg] (and (= :alpha (:type leg))
-                                (= :a (:title leg))
-                                (= 4 (count (:entries leg)))))])
+(kind/test-last
+ [(fn [_]
+    (let [leg (:alpha-legend (pj/plan alpha-legend-pose))]
+      (and (= :alpha (:type leg))
+           (= :a (:title leg))
+           (= 4 (count (:entries leg))))))])
 
 ;; No alpha mapping means no alpha legend:
 
 scatter-pose
 
-(:alpha-legend (pj/plan scatter-pose))
-
-(kind/test-last [nil?])
+(kind/test-last
+ [(fn [_] (nil? (:alpha-legend (pj/plan scatter-pose))))])
 
 ;; ## Layout
 ;;
-;; The `:layout` map adjusts padding based on what elements are
-;; present. Internally, `compute-layout-dims` in `plan.clj`
-;; calculates the space needed for titles, labels, and legends.
+;; Layout padding adjusts based on what elements are present --
+;; titles, axis labels, and legends each reserve their own space.
 ;;
 ;; Compare a bare plot to one with title, labels, and legend:
 
@@ -1050,20 +987,18 @@ scatter-pose
 
 full-layout-pose
 
-(let [bare (pj/plan scatter-pose)
-      full (pj/plan full-layout-pose)]
-  {:bare-title-pad (get-in bare [:layout :title-pad])
-   :full-title-pad (get-in full [:layout :title-pad])
-   :bare-legend-w (get-in bare [:layout :legend-w])
-   :full-legend-w (get-in full [:layout :legend-w])})
+(kind/test-last
+ [(fn [_]
+    (let [bare (pj/plan scatter-pose)
+          full (pj/plan full-layout-pose)]
+      (and (zero? (get-in bare [:layout :title-pad]))
+           (pos? (get-in full [:layout :title-pad]))
+           (zero? (get-in bare [:layout :legend-w]))
+           (= 100 (get-in full [:layout :legend-w])))))])
 
-(kind/test-last [(fn [m] (and (zero? (:bare-title-pad m))
-                              (pos? (:full-title-pad m))
-                              (zero? (:bare-legend-w m))
-                              (= 100 (:full-legend-w m))))])
-
-;; The bare plot has zero title padding and zero legend width.
-;; The full plot adds padding for the title and 100 pixels for the legend.
+;; The bare plot reserves no space for a title and no legend strip.
+;; The full plot adds padding above for the title and 100 pixels on
+;; the right for the legend.
 
 ;; Layout type is also inferred from the pose structure:
 ;;
@@ -1073,15 +1008,14 @@ full-layout-pose
 
 scatter-pose
 
-(:layout-type (pj/plan scatter-pose))
-
-(kind/test-last [(fn [lt] (= :single lt))])
+(kind/test-last
+ [(fn [_] (= :single (:layout-type (pj/plan scatter-pose))))])
 
 ;; ## Coordinate Flipping
 ;;
-;; Setting `:coord :flip` swaps axes in the plan. The layer data
-;; stays the same -- the panel-level domains and ticks are swapped.
-;; Internally, `make-coord` in `coord.clj` handles the transformation.
+;; Setting `:coord :flip` swaps the visual axes. The data stays the
+;; same -- the categorical band that was on x ends up on y, with
+;; ticks and labels following along.
 
 (def normal-pose
   (-> animals
@@ -1096,19 +1030,15 @@ normal-pose
 
 flip-pose
 
-(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
-
-(let [np (first (:panels (pj/plan normal-pose)))
-      fp (first (:panels (pj/plan flip-pose)))]
-  {:normal {:x-categorical? (:categorical? (:x-ticks np))
-            :y-categorical? (:categorical? (:y-ticks np))}
-   :flipped {:x-categorical? (:categorical? (:x-ticks fp))
-             :y-categorical? (:categorical? (:y-ticks fp))}})
-
-(kind/test-last [(fn [m] (and (true? (get-in m [:normal :x-categorical?]))
-                              (not (get-in m [:normal :y-categorical?]))
-                              (not (get-in m [:flipped :x-categorical?]))
-                              (true? (get-in m [:flipped :y-categorical?]))))])
+(kind/test-last
+ [(fn [v]
+    (let [np (first (:panels (pj/plan normal-pose)))
+          fp (first (:panels (pj/plan flip-pose)))]
+      (and (= 4 (:polygons (pj/svg-summary v)))
+           (true? (:categorical? (:x-ticks np)))
+           (not (:categorical? (:y-ticks np)))
+           (not (:categorical? (:x-ticks fp)))
+           (true? (:categorical? (:y-ticks fp))))))])
 
 ;; The categorical axis moved from x to y.
 ;;
@@ -1122,12 +1052,11 @@ flip-pose
 
 flipped-labels-pose
 
-(let [plan (pj/plan flipped-labels-pose)]
-  {:x-label (:x-label plan)
-   :y-label (:y-label plan)})
-
-(kind/test-last [(fn [m] (and (= "y" (:x-label m))
-                              (= "x" (:y-label m))))])
+(kind/test-last
+ [(fn [_]
+    (let [plan (pj/plan flipped-labels-pose)]
+      (and (= "y" (:x-label plan))
+           (= "x" (:y-label plan)))))])
 
 ;; After flipping, the visual x-axis shows "y" and the visual y-axis
 ;; shows "x" -- labels track the visual axes.
@@ -1136,7 +1065,7 @@ flipped-labels-pose
 ;; see the [Polar Coordinates](./plotje_book.polar.html) chapter
 ;; for rose charts, radial bars, and related plots.
 
-;; ## Multi-Layer Plans
+;; ## Multi-Layer Plots
 ;;
 ;; When multiple layers share a panel, their domains are merged:
 
@@ -1148,73 +1077,68 @@ flipped-labels-pose
 
 multi-pose
 
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 5 (:points s))
-                                (= 1 (:lines s)))))])
-
-;; And the plan:
-
-(pj/plan multi-pose)
-
-(kind/test-last [(fn [plan] (let [p (first (:panels plan))]
-                              (= 2 (count (:layers p)))))])
+(kind/test-last
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          p (first (:panels (pj/plan multi-pose)))]
+      (and (= 5 (:points s))
+           (= 1 (:lines s))
+           (= 2 (count (:layers p))))))])
 
 ;; Two layers -- one `:point`, one `:line` -- sharing the same domain.
-;; The `:line` layer has `:mark :line` and its groups contain
-;; `:polyline-xs` and `:polyline-ys` -- the regression curve.
+;; The line carries the regression curve as a polyline.
 
 ;; ## Resolution Overview
 ;;
-;; All of the inference rules above feed into `draft->plan`, which
-;; orchestrates a resolution pipeline. The diagram below shows the
-;; key steps and their data dependencies:
+;; The diagram below sketches how the rules above combine -- which
+;; inferences feed which others on the way from a pose to a rendered
+;; plot:
 
 ^:kindly/hide-code
 (kind/mermaid "
 graph TD
   POSE[\"pose + options\"]
-  POSE --> CT[\"Column Types<br/>(infer-column-types)\"]
-  POSE --> AE[\"Aesthetics<br/>(resolve-aesthetics)\"]
-  CT --> GR[\"Grouping<br/>(infer-grouping)\"]
+  POSE --> CT[\"Column types\"]
+  POSE --> AE[\"Aesthetics\"]
+  CT --> GR[\"Grouping\"]
   AE --> GR
-  CT --> ME[\"Layer type<br/>(infer-layer-type)\"]
-  GR --> STATS[\"Statistics<br/>(compute-stat)\"]
+  CT --> ME[\"Layer type\"]
+  GR --> STATS[\"Statistics\"]
   ME --> STATS
 
-  STATS --> DOM[\"Domains<br/>(collect-domain + pad-domain)\"]
-  DOM --> TK[\"Ticks<br/>(compute-ticks)\"]
+  STATS --> DOM[\"Domains\"]
+  DOM --> TK[\"Ticks\"]
 
-  POSE --> LBL[\"Labels<br/>(resolve-labels)\"]
-  AE --> LEG[\"Color Legend<br/>(build-legend)\"]
-  AE --> SLEG[\"Size Legend<br/>(build-size-legend)\"]
-  AE --> ALEG[\"Alpha Legend<br/>(build-alpha-legend)\"]
+  POSE --> LBL[\"Axis labels\"]
+  AE --> LEG[\"Color legend\"]
+  AE --> SLEG[\"Size legend\"]
+  AE --> ALEG[\"Alpha legend\"]
 
-  DOM --> LAYOUT[\"Layout<br/>(compute-layout-dims)\"]
+  DOM --> LAYOUT[\"Layout\"]
   LBL --> LAYOUT
   LEG --> LAYOUT
   SLEG --> LAYOUT
   ALEG --> LAYOUT
 
-  DOM --> PLAN[\"Plan\"]
-  TK --> PLAN
-  LBL --> PLAN
-  LEG --> PLAN
-  SLEG --> PLAN
-  ALEG --> PLAN
-  LAYOUT --> PLAN
-  STATS --> PLAN
+  DOM --> PLOT[\"Rendered plot\"]
+  TK --> PLOT
+  LBL --> PLOT
+  LEG --> PLOT
+  SLEG --> PLOT
+  ALEG --> PLOT
+  LAYOUT --> PLOT
+  STATS --> PLOT
 
   style POSE fill:#e8f5e9
-  style PLAN fill:#fff3e0
+  style PLOT fill:#fff3e0
   style STATS fill:#e3f2fd
   style DOM fill:#e3f2fd
 ")
 
-;; Each box corresponds to a named function in the codebase.
-;; The top four boxes -- Column Types, Aesthetics, Grouping, and
-;; Layer type -- are the per-leaf inference steps (in `resolve.clj`).
-;; The remaining boxes are the plan-level orchestration steps
-;; (in `plan.clj` and `scale.clj`).
+;; Column types and aesthetic classification are the starting
+;; points; everything else flows from them. Statistics and domains
+;; together set the geometry; labels, legends, and layout round out
+;; the surrounding plot.
 
 ;; ## What's Next
 ;;
