@@ -38,7 +38,8 @@
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]
    ;; Rdatasets -- standard datasets
-   [scicloj.metamorph.ml.rdatasets :as rdatasets]))
+   [scicloj.metamorph.ml.rdatasets :as rdatasets]
+   [clojure.string :as str]))
 
 ;; ## Plain Data Works
 ;;
@@ -136,30 +137,32 @@
 ;; A few datasets used throughout this book:
 
 ^:kindly/hide-code
-(kind/table
- {:column-names ["Function" "Rows" "Description"]
-  :row-maps
-  (let [mpg (rdatasets/ggplot2-mpg)]
-    [{"Function" (kind/code "rdatasets/datasets-iris")
-      "Rows" (tc/row-count (rdatasets/datasets-iris))
-      "Description" "Iris flower measurements by species"}
-     {"Function" (kind/code "rdatasets/reshape2-tips")
-      "Rows" (tc/row-count (rdatasets/reshape2-tips))
-      "Description" "Restaurant tips with bill, day, time, smoker"}
-     {"Function" (kind/code "rdatasets/ggplot2-mpg")
-      "Rows" (tc/row-count mpg)
-      "Description" (str "Fuel economy for "
-                         (count (distinct (mpg :model)))
-                         " car models")}
-     {"Function" (kind/code "rdatasets/ggplot2-diamonds")
-      "Rows" (tc/row-count (rdatasets/ggplot2-diamonds))
-      "Description" "Diamond price, carat, cut, color, clarity"}
-     {"Function" (kind/code "rdatasets/gapminder-gapminder")
-      "Rows" (tc/row-count (rdatasets/gapminder-gapminder))
-      "Description" "Country-level life expectancy and GDP"}
-     {"Function" (kind/code "rdatasets/datasets-mtcars")
-      "Rows" (tc/row-count (rdatasets/datasets-mtcars))
-      "Description" "Motor Trend car road tests"}])})
+(-> {:var [#'rdatasets/datasets-iris
+           #'rdatasets/reshape2-tips
+           #'rdatasets/ggplot2-mpg
+           #'rdatasets/ggplot2-diamonds
+           #'rdatasets/gapminder-gapminder
+           #'rdatasets/datasets-mtcars]}
+    tc/dataset
+    (tc/map-columns :function :var
+                    #(-> % meta :name))
+    (tc/map-columns :dataset :var
+                    #(%))
+    (tc/map-columns :rows :dataset
+                    tc/row-count)
+    (tc/map-columns :description :var
+                    #(-> %
+                         meta
+                         :doc-link
+                         slurp
+                         str/split-lines
+                         first
+                         (str/replace "<!DOCTYPE html><html><head><title>" "")
+                         (str/replace "</title>" "")))
+    (tc/select-columns [:function :rows :description])
+    kind/table)
+
+
 
 ;; ## Useful Tablecloth operations
 ;;
