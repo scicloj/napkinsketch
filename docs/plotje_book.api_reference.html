@@ -531,7 +531,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#export" id="toc-export" class="nav-link" data-scroll-target="#export">Export</a>
   <ul>
   <li><a href="#save" id="toc-save" class="nav-link" data-scroll-target="#save"><code>save</code></a></li>
-  <li><a href="#save-png" id="toc-save-png" class="nav-link" data-scroll-target="#save-png"><code>save-png</code></a></li>
   </ul></li>
   </ul>
 </nav>
@@ -1766,9 +1765,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="save"><code>save</code></h3>
 <p><code>[pose path]</code></p>
 <p><code>[pose path opts]</code></p>
-<p>Save a plot to a file. Format resolution, in precedence order: 1. <code>:format</code> in the pose’s <code>:opts</code> (or the 3-arity <code>opts</code> map) wins. 2. Otherwise inferred from the path extension (<code>.svg</code> -&gt; <code>:svg</code>, <code>.png</code> -&gt; <code>:bufimg</code>). 3. Default <code>:svg</code>.</p>
+<p>Save a plot to a file. Format resolution, in precedence order: 1. <code>:format</code> in the 3-arity <code>opts</code> map wins (must be <code>:svg</code> or <code>:png</code>). 2. <code>:format</code> on the pose’s <code>:opts</code> (<code>:svg</code> or <code>:png</code>; legacy <code>:bufimg</code> is translated to <code>:png</code>). 3. Otherwise inferred from the path extension (<code>.svg</code> -&gt; <code>:svg</code>, <code>.png</code> -&gt; <code>:png</code>). 4. Default <code>:svg</code>.</p>
 <p>When the resolved format and the path extension disagree, prints a warning – the file still gets the bytes the resolved format produces, but the extension is misleading.</p>
-<p>pose – a pose. path – file path (string or java.io.File). opts – same options as plot (:format, :width, :height, :title, …). Tooltip and brush interactivity are not included in saved files. Returns the path. (save my-pose “plot.svg”) ;; SVG (save my-pose “plot.png”) ;; inferred PNG (save my-pose “plot.svg” {:format :bufimg}) ;; opts override (warns)</p>
+<p>The save vocabulary names the file format. The plot vocabulary (<code>pj/plot</code>’s <code>:format</code>) names the JVM return type – <code>:svg</code> for hiccup, <code>:bufimg</code> for a Java2D BufferedImage. A pose-level <code>:format</code> flows into both contexts; save reinterprets <code>:bufimg</code> as <code>:png</code> because what hits the disk is a PNG file.</p>
+<p>pose – a pose. path – file path (string or java.io.File). opts – same options as plot, but <code>:format</code> accepts only <code>:svg</code> or <code>:png</code>. Tooltip and brush interactivity are not included in saved files. Returns the path. (save my-pose “plot.svg”) ;; SVG (save my-pose “plot.png”) ;; inferred PNG (save my-pose “plot.svg” {:format :png}) ;; opts override (warns)</p>
 <p>Save a plot to an SVG file:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb112"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [<span class="kw">path</span> (<span class="kw">str</span> (java.io.File/createTempFile <span class="st">"plotje-example"</span> <span class="st">".svg"</span>))]</span>
@@ -1780,22 +1780,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb113"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-</section>
-<section id="save-png" class="level3">
-<h3 class="anchored" data-anchor-id="save-png"><code>save-png</code></h3>
-<p><code>[pose path]</code></p>
-<p><code>[pose path opts]</code></p>
-<p>Save a plot as a PNG file. Convenience wrapper around <code>pj/save</code> that pins <code>:format :bufimg</code>. Equivalent to: (pj/save pose path (assoc opts :format :bufimg)) pose – a pose. path – file path (string or java.io.File). opts – same options as save (:width, :height, :title, :theme, …). Returns the path. (save-png my-pose “plot.png”) (save-png my-pose “plot.png” {:width 800 :height 600})</p>
-<p>Save a plot to a PNG file via membrane’s Java2D backend. Returns the path:</p>
+<p>Save a plot to a PNG file. Extension inference picks the raster backend; the returned bytes start with the PNG magic header:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb114"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [<span class="kw">path</span> (<span class="kw">str</span> (java.io.File/createTempFile <span class="st">"plotje-example"</span> <span class="st">".png"</span>))]</span>
 <span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb114-3"><a href="#cb114-3" aria-hidden="true" tabindex="-1"></a>      (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
-<span id="cb114-4"><a href="#cb114-4" aria-hidden="true" tabindex="-1"></a>      (pj/save-png <span class="kw">path</span>))</span>
-<span id="cb114-5"><a href="#cb114-5" aria-hidden="true" tabindex="-1"></a>  (.exists (java.io.File. ^String <span class="kw">path</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb114-4"><a href="#cb114-4" aria-hidden="true" tabindex="-1"></a>      (pj/save <span class="kw">path</span>))</span>
+<span id="cb114-5"><a href="#cb114-5" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">with-open</span> [in (java.io.FileInputStream. <span class="kw">path</span>)]</span>
+<span id="cb114-6"><a href="#cb114-6" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">let</span> [bs (<span class="kw">byte-array</span> <span class="dv">8</span>)]</span>
+<span id="cb114-7"><a href="#cb114-7" aria-hidden="true" tabindex="-1"></a>      (.<span class="kw">read</span> in bs)</span>
+<span id="cb114-8"><a href="#cb114-8" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">mapv</span> #(<span class="kw">bit-and</span> ^<span class="kw">int</span> <span class="va">%</span> <span class="bn">0xFF</span>) (<span class="kw">vec</span> bs)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb115"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb115"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a>[<span class="dv">137</span> <span class="dv">80</span> <span class="dv">78</span> <span class="dv">71</span> <span class="dv">13</span> <span class="dv">10</span> <span class="dv">26</span> <span class="dv">10</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Pass <code>{:format :png}</code> explicitly when the path’s extension does not match the desired format, or when it is built dynamically:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb116"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [<span class="kw">path</span> (<span class="kw">str</span> (java.io.File/createTempFile <span class="st">"plotje-example"</span> <span class="st">".out"</span>))]</span>
+<span id="cb116-2"><a href="#cb116-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
+<span id="cb116-3"><a href="#cb116-3" aria-hidden="true" tabindex="-1"></a>      (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
+<span id="cb116-4"><a href="#cb116-4" aria-hidden="true" tabindex="-1"></a>      (pj/save <span class="kw">path</span> {<span class="at">:format</span> <span class="at">:png</span>}))</span>
+<span id="cb116-5"><a href="#cb116-5" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">with-open</span> [in (java.io.FileInputStream. <span class="kw">path</span>)]</span>
+<span id="cb116-6"><a href="#cb116-6" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">let</span> [bs (<span class="kw">byte-array</span> <span class="dv">4</span>)]</span>
+<span id="cb116-7"><a href="#cb116-7" aria-hidden="true" tabindex="-1"></a>      (.<span class="kw">read</span> in bs)</span>
+<span id="cb116-8"><a href="#cb116-8" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">mapv</span> #(<span class="kw">bit-and</span> ^<span class="kw">int</span> <span class="va">%</span> <span class="bn">0xFF</span>) (<span class="kw">vec</span> bs)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb117"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>[<span class="dv">137</span> <span class="dv">80</span> <span class="dv">78</span> <span class="dv">71</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div style="background-color:grey;height:2px;width:100%;"></div>
 <div><pre><small><small>source: <a href="https://github.com/scicloj/plotje/blob/main/notebooks/plotje_book/api_reference.clj">notebooks/plotje_book/api_reference.clj</a></small></small></pre></div>

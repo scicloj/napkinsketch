@@ -102,8 +102,8 @@
    :value
    (map
     (fn*
-     [p1__106294#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__106294#) 0.12)))))
+     [p1__80948#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__80948#) 0.12)))))
     (range 52))}))
 
 
@@ -456,7 +456,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__106295#] (= "virginica" p1__106295#))
+       (fn* [p1__80949#] (= "virginica" p1__80949#))
        (:texts s)))))
    v67_l305)))
 
@@ -510,8 +510,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__106296#] (Math/sin (/ p1__106296# 3.0))) (range 20)),
-   :change (map (fn* [p1__106297#] (- p1__106297# 10)) (range 20))}
+   (map (fn* [p1__80950#] (Math/sin (/ p1__80950# 3.0))) (range 20)),
+   :change (map (fn* [p1__80951#] (- p1__80951# 10)) (range 20))}
   (pj/lay-point :x :y {:color :change})
   (pj/options
    {:color-scale :diverging,
@@ -626,8 +626,8 @@
    ys
    (map
     (fn*
-     [p1__106298#]
-     (+ (* 3 p1__106298#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__80952#]
+     (+ (* 3 p1__80952#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}
@@ -935,3 +935,24 @@
 
 
 (deftest t137_l617 (is ((fn [v] (some? v)) v136_l612)))
+
+
+(def
+ v139_l624
+ (let
+  [path (str (java.io.File/createTempFile "plotje-diamonds" ".png"))]
+  (->
+   (rdatasets/ggplot2-diamonds)
+   (pj/lay-point :carat :price {:color :cut})
+   (pj/save path))
+  (with-open
+   [in (java.io.FileInputStream. path)]
+   (let
+    [bs (byte-array 8)]
+    (.read in bs)
+    (mapv (fn* [p1__80953#] (bit-and p1__80953# 255)) (vec bs))))))
+
+
+(deftest
+ t140_l634
+ (is ((fn [bs] (= [137 80 78 71 13 10 26 10] bs)) v139_l624)))

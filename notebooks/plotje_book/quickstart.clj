@@ -35,9 +35,9 @@
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; - `rdatasets/datasets-iris` loads the classic iris dataset from
-;; [R datasets](https://vincentarelbundock.github.io/Rdatasets/) as a
-;; [Tablecloth](https://scicloj.github.io/tablecloth/) dataset with
-;; keyword column names.
+;; [the RDatasets collection](./plotje_book.datasets.html#the-rdatasets-collection)
+;; as a [Tablecloth](https://scicloj.github.io/tablecloth/) dataset
+;; with keyword column names.
 ;; - `pj/lay-point` shows each row as a dot (scatter plot).
 
 ;; ## Plain Data

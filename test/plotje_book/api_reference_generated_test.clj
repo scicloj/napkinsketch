@@ -221,9 +221,7 @@
   wave
   {:x (range 30),
    :y
-   (map
-    (fn* [p1__107490#] (Math/sin (* p1__107490# 0.3)))
-    (range 30))}))
+   (map (fn* [p1__82153#] (Math/sin (* p1__82153# 0.3))) (range 30))}))
 
 
 (def v45_l162 (-> wave (pj/lay-line :x :y)))
@@ -332,9 +330,9 @@
     :y
     (mapv
      (fn*
-      [p1__107491#]
+      [p1__82154#]
       (+
-       (Math/sin (* p1__107491# 0.2))
+       (Math/sin (* p1__82154# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (pj/lay-point :x :y)
@@ -1235,18 +1233,41 @@
 (deftest t270_l780 (is (true? v269_l774)))
 
 
-(def v271_l782 (kind/doc #'pj/save-png))
-
-
 (def
- v273_l787
+ v272_l785
  (let
   [path (str (java.io.File/createTempFile "plotje-example" ".png"))]
   (->
    (rdatasets/datasets-iris)
    (pj/lay-point :sepal-length :sepal-width {:color :species})
-   (pj/save-png path))
-  (.exists (java.io.File. path))))
+   (pj/save path))
+  (with-open
+   [in (java.io.FileInputStream. path)]
+   (let
+    [bs (byte-array 8)]
+    (.read in bs)
+    (mapv (fn* [p1__82155#] (bit-and p1__82155# 255)) (vec bs))))))
 
 
-(deftest t274_l793 (is (true? v273_l787)))
+(deftest
+ t273_l794
+ (is ((fn [bs] (= [137 80 78 71 13 10 26 10] bs)) v272_l785)))
+
+
+(def
+ v275_l799
+ (let
+  [path (str (java.io.File/createTempFile "plotje-example" ".out"))]
+  (->
+   (rdatasets/datasets-iris)
+   (pj/lay-point :sepal-length :sepal-width {:color :species})
+   (pj/save path {:format :png}))
+  (with-open
+   [in (java.io.FileInputStream. path)]
+   (let
+    [bs (byte-array 4)]
+    (.read in bs)
+    (mapv (fn* [p1__82156#] (bit-and p1__82156# 255)) (vec bs))))))
+
+
+(deftest t276_l808 (is ((fn [bs] (= [137 80 78 71] bs)) v275_l799)))

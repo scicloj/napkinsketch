@@ -471,6 +471,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#svg-default" id="toc-svg-default" class="nav-link" data-scroll-target="#svg-default">SVG (default)</a></li>
   <li><a href="#bufferedimage-output" id="toc-bufferedimage-output" class="nav-link" data-scroll-target="#bufferedimage-output">BufferedImage output</a></li>
   <li><a href="#saving-to-png" id="toc-saving-to-png" class="nav-link" data-scroll-target="#saving-to-png">Saving to PNG</a></li>
+  <li><a href="#two-vocabularies-plot-return-type-vs-save-file-format" id="toc-two-vocabularies-plot-return-type-vs-save-file-format" class="nav-link" data-scroll-target="#two-vocabularies-plot-return-type-vs-save-file-format">Two vocabularies: plot return type vs save file format</a></li>
   </ul></li>
   <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s Next</a></li>
   </ul>
@@ -1027,10 +1028,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="saving-to-png" class="level3">
 <h3 class="anchored" data-anchor-id="saving-to-png">Saving to PNG</h3>
-<p>Use <code>pj/save-png</code> to write a raster image to disk:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/ggplot2-diamonds)</span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:carat</span> <span class="at">:price</span> {<span class="at">:color</span> <span class="at">:cut</span>})</span>
-<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    (pj/save-png <span class="st">"diamonds.png"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Use <code>pj/save</code> with a <code>.png</code> path to write a raster image to disk. The format is inferred from the extension:</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [<span class="kw">path</span> (<span class="kw">str</span> (java.io.File/createTempFile <span class="st">"plotje-diamonds"</span> <span class="st">".png"</span>))]</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> (rdatasets/ggplot2-diamonds)</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>      (pj/lay-point <span class="at">:carat</span> <span class="at">:price</span> {<span class="at">:color</span> <span class="at">:cut</span>})</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>      (pj/save <span class="kw">path</span>))</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Read the first eight bytes and check for PNG magic.</span></span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">with-open</span> [in (java.io.FileInputStream. <span class="kw">path</span>)]</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">let</span> [bs (<span class="kw">byte-array</span> <span class="dv">8</span>)]</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>      (.<span class="kw">read</span> in bs)</span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">mapv</span> #(<span class="kw">bit-and</span> ^<span class="kw">int</span> <span class="va">%</span> <span class="bn">0xFF</span>) (<span class="kw">vec</span> bs)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="printedClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>[<span class="dv">137</span> <span class="dv">80</span> <span class="dv">78</span> <span class="dv">71</span> <span class="dv">13</span> <span class="dv">10</span> <span class="dv">26</span> <span class="dv">10</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The same call with an explicit <code>{:format :png}</code> makes the format choice unambiguous, useful when the path is built dynamically:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/ggplot2-diamonds)</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:carat</span> <span class="at">:price</span> {<span class="at">:color</span> <span class="at">:cut</span>})</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>    (pj/save out-path {<span class="at">:format</span> <span class="at">:png</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="two-vocabularies-plot-return-type-vs-save-file-format" class="level3">
+<h3 class="anchored" data-anchor-id="two-vocabularies-plot-return-type-vs-save-file-format">Two vocabularies: plot return type vs save file format</h3>
+<p>The two paths above use the same <code>:format</code> keyword for different jobs. <code>pj/plot</code> names a JVM return type:</p>
+<ul>
+<li><code>:svg</code> – hiccup</li>
+<li><code>:bufimg</code> – a Java2D <code>BufferedImage</code></li>
+</ul>
+<p><code>pj/save</code> names the file format:</p>
+<ul>
+<li><code>:svg</code> – SVG file</li>
+<li><code>:png</code> – PNG file</li>
+</ul>
+<p>A pose’s <code>:opts {:format ...}</code> flows into both contexts. If you pin <code>:format :bufimg</code> on a pose so the notebook renders raster, saving that pose still produces a PNG file – the save path reinterprets the pose-level <code>:bufimg</code> as <code>:png</code> because what hits the disk is a PNG.</p>
 </section>
 </section>
 <section id="whats-next" class="level2">
