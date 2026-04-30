@@ -148,7 +148,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Plotje</span></span></a>
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -486,7 +486,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" type="text/javascript"></script>
 <p>The vocabulary you reach for daily: data, mappings, scope, layer types, and how they fit together. This chapter takes the mental model from Pose Model and turns it into a working reference you can scan while building a plot.</p>
-<p>Read <a href="./plotje_book.pose_model.html">Pose Model</a> first if you have not – this chapter assumes the five-idea framing it introduces.</p>
+<p>Read <a href="./plotje_book.pose_model.html">Pose Model</a> first if you have not – this chapter builds on the pose vocabulary it introduces.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> plotje-book.core-concepts</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span></span>
@@ -1223,7 +1223,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Stat</strong> – the computation before rendering (identity, bin, linear-model, density, …)</li>
 <li><strong>Position</strong> – how overlapping groups share space (identity, dodge, stack, …)</li>
 </ul>
-<p>A layer-type’s name describes its intent. The mark describes the shape:</p>
+<p>A keyword like <code>:histogram</code> or <code>:point</code> names a layer-type – look it up to see its parts:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>(pj/layer-type-lookup <span class="at">:histogram</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>

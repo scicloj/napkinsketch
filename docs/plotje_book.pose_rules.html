@@ -148,7 +148,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Plotje</span></span></a>
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -1075,7 +1075,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="rule-s4-layer-mapping-is-the-narrowest-scope" class="level3">
 <h3 class="anchored" data-anchor-id="rule-s4-layer-mapping-is-the-narrowest-scope">Rule S4: layer <code>:mapping</code> is the narrowest scope</h3>
-<p>A mapping written in a layer’s own <code>:mapping</code> (aesthetic options passed to <code>lay-*</code>) scopes to that layer only. Other layers – even on the same leaf – do not see it. This is the terminal case of S1: the layer’s mapping is innermost in the merge.</p>
+<p>A mapping written in a layer’s own <code>:mapping</code> (aesthetic mappings passed to <code>lay-*</code>) scopes to that layer only. Other layers – even on the same leaf – do not see it. This is the terminal case of S1: the layer’s mapping is innermost in the merge.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb60"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> iris</span>
 <span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>    (pj/pose <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>

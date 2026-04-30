@@ -148,7 +148,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Plotje</span></span></a>
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -655,7 +655,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="marey-train-schedule">Marey train schedule</h2>
 <p><a href="https://en.wikipedia.org/wiki/%C3%89tienne-Jules_Marey">Étienne-Jules Marey</a>’s classic 1885 diagram of Paris-Lyon trains (<a href="https://en.wikipedia.org/wiki/Marey_chart">context and image</a>, popularized in <a href="https://en.wikipedia.org/wiki/The_Visual_Display_of_Quantitative_Information">Edward Tufte’s <em>Visual Display of Quantitative Information</em></a>) has a categorical y-axis (stations, in physical order) and a temporal x-axis. Each train is a polyline; segments between stations slope down because time moves forward as the train moves south.</p>
 <p>Plotje builds this with <code>pj/lay-line</code> plus the existing <code>:y-type :categorical</code> override, since the station order is the physical north-to-south sequence (not alphabetical).</p>
-<p>The y-axis order follows the order each station first appears in the data. With every train starting in Paris, Paris ends up at the bottom and Marseille at the top – which happens to give the geographic top-to-bottom Paris→Marseille reading. If your data has a different first-station-encountered order, the lanes will reorder accordingly; pre-sorting the rows is the reliable way to guarantee a chosen lane order.</p>
+<p>The y-axis order follows the order each station first appears in the data. With every train starting in Paris, Paris ends up at the bottom and Marseille at the top – which happens to give the geographic top-to-bottom Paris-&gt;Marseille reading. If your data has a different first-station-encountered order, the lanes will reorder accordingly; pre-sorting the rows is the reliable way to guarantee a chosen lane order.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> trains</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">;; Four trains, each visiting five stations in order. Express trains</span></span>
