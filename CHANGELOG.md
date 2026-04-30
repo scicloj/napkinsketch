@@ -11,6 +11,23 @@ Staged for the upcoming first public alpha release. The API and
 visual defaults are still subject to change based on early adopter
 feedback.
 
+### `pj/save` format renamed: `:bufimg` -> `:png` (file vocabulary split from JVM-type vocabulary)
+
+The save path's `:format` keyword now uses `:png` for PNG files;
+the explicit 3-arity `opts` map rejects `:bufimg` with a clear
+error. The plot path's `:format` keyword keeps `:bufimg` (returns
+a Java2D `BufferedImage`) -- the two paths now use distinct
+vocabularies that match what the user gets: a JVM type from
+`pj/plot`, a file format from `pj/save`.
+
+A pose-level `:opts {:format :bufimg}` is silently translated to
+`:png` inside `pj/save`, so a pose pinned for a `BufferedImage`
+return continues to save as PNG without changes.
+
+Retired: `pj/save-png`. `(pj/save pose "out.png")` covers the
+extension-inference case; `(pj/save pose path {:format :png})`
+covers the explicit case.
+
 ### `pj/lay-*` 2-arity (data + opts) now auto-infers position mapping
 
 Calling a `lay-*` function with raw data and an opts map -- e.g.

@@ -214,8 +214,8 @@
 
 (kind/test-last [(fn [p] (and (string? p) (.endsWith ^String p ".svg")))])
 
-;; For PNG output, `pj/save-png` goes through a raster backend;
-;; see the Cookbook for other export paths.
+;; For PNG output, `(pj/save pose "x.png")` writes a raster image via
+;; the Java2D backend; see the Cookbook for other export paths.
 
 ;; ## What's Next
 ;;

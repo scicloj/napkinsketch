@@ -779,15 +779,13 @@ plan1
 
 (kind/test-last [true?])
 
-(kind/doc #'pj/save-png)
-
-;; Save a plot to a PNG file via membrane's Java2D backend.
-;; Returns the path:
+;; Save a plot to a PNG file (extension inference picks the raster
+;; backend). Returns the path:
 
 (let [path (str (java.io.File/createTempFile "plotje-example" ".png"))]
   (-> (rdatasets/datasets-iris)
       (pj/lay-point :sepal-length :sepal-width {:color :species})
-      (pj/save-png path))
+      (pj/save path))
   (.exists (java.io.File. ^String path)))
 
 (kind/test-last [true?])

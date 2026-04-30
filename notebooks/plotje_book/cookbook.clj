@@ -618,12 +618,12 @@
 
 ;; ### Saving to PNG
 ;;
-;; Use `pj/save-png` to write a raster image to disk:
+;; Use `pj/save` with a `.png` path to write a raster image to disk:
 
 ;; ```clojure
 ;; (-> (rdatasets/ggplot2-diamonds)
 ;;     (pj/lay-point :carat :price {:color :cut})
-;;     (pj/save-png "diamonds.png"))
+;;     (pj/save "diamonds.png"))
 ;; ```
 
 ;; ## What's Next

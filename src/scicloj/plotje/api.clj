@@ -2262,11 +2262,12 @@
 
 (defn- ensure-renderer-loaded!
   "Lazy-load the renderer namespace for non-default formats. The :svg
-   backend is loaded as a top-level require by api.clj; :bufimg is
-   side-loaded on first use to keep startup time down for SVG-only
-   users. Future formats register here."
+   backend is loaded as a top-level require by api.clj; the bufimg
+   backend (used for the :bufimg plot return type and the :png save
+   format) is side-loaded on first use to keep startup time down for
+   SVG-only users. Future formats register here."
   [fmt]
-  (when (= fmt :bufimg)
+  (when (or (= fmt :bufimg) (= fmt :png))
     (require 'scicloj.plotje.render.bufimg)))
 
 (defn plot
@@ -2479,7 +2480,7 @@
   "Throw if `fr` would render as a blank document. A pose is saveable
    if it is a composite (has :poses), or if it has data plus at least
    one of :layers / :mapping / :poses. Catches the silent-blank-file
-   case where an empty `(pj/pose)` reaches `pj/save` / `pj/save-png`."
+   case where an empty `(pj/pose)` reaches `pj/save`."
   [caller fr]
   (let [composite? (seq (:poses fr))
         has-data? (some? (:data fr))
@@ -2495,34 +2496,44 @@
               {:caller caller :pose fr})))))
 
 (defn- infer-format-from-path
-  "Map a path's file extension to a render format. Returns nil for
+  "Map a path's file extension to a save format. Returns nil for
    unknown extensions; callers fall back to opts or default."
   [path-str]
   (let [lower (.toLowerCase ^String path-str)]
     (cond
       (.endsWith lower ".svg") :svg
-      (.endsWith lower ".png") :bufimg
+      (.endsWith lower ".png") :png
       :else nil)))
 
 (defn save
   "Save a plot to a file. Format resolution, in precedence order:
-   1. `:format` in the pose's `:opts` (or the 3-arity `opts` map) wins.
-   2. Otherwise inferred from the path extension (`.svg` -> `:svg`,
-      `.png` -> `:bufimg`).
-   3. Default `:svg`.
+   1. `:format` in the 3-arity `opts` map wins (must be `:svg` or
+      `:png`).
+   2. `:format` on the pose's `:opts` (`:svg` or `:png`; legacy
+      `:bufimg` is translated to `:png`).
+   3. Otherwise inferred from the path extension (`.svg` -> `:svg`,
+      `.png` -> `:png`).
+   4. Default `:svg`.
 
    When the resolved format and the path extension disagree, prints
    a warning -- the file still gets the bytes the resolved format
    produces, but the extension is misleading.
 
+   The save vocabulary names the file format. The plot vocabulary
+   (`pj/plot`'s `:format`) names the JVM return type -- `:svg` for
+   hiccup, `:bufimg` for a Java2D BufferedImage. A pose-level
+   `:format` flows into both contexts; save reinterprets `:bufimg`
+   as `:png` because what hits the disk is a PNG file.
+
    pose -- a pose.
    path -- file path (string or java.io.File).
-   opts -- same options as plot (:format, :width, :height, :title, ...).
+   opts -- same options as plot, but `:format` accepts only `:svg`
+           or `:png`.
    Tooltip and brush interactivity are not included in saved files.
    Returns the path.
-   (save my-pose \"plot.svg\")                       ;; SVG
-   (save my-pose \"plot.png\")                       ;; inferred PNG
-   (save my-pose \"plot.svg\" {:format :bufimg})     ;; opts override (warns)"
+   (save my-pose \"plot.svg\")                    ;; SVG
+   (save my-pose \"plot.png\")                    ;; inferred PNG
+   (save my-pose \"plot.svg\" {:format :png})     ;; opts override (warns)"
   ([pose path] (save pose path nil))
   ([pose path opts]
    (when-not (or (nil? opts) (map? opts))
@@ -2530,12 +2541,21 @@
                           " argument, got " (pr-str (type opts)) ": "
                           (pr-str opts) ".")
                      {:caller "pj/save" :value opts})))
+   (when-let [opts-fmt (:format opts)]
+     (when-not (#{:svg :png} opts-fmt)
+       (throw (ex-info (str "pj/save :format must be :svg or :png, got "
+                            (pr-str opts-fmt) ". The save vocabulary names"
+                            " the file format; use pj/plot for in-memory"
+                            " return types like :bufimg.")
+                       {:caller "pj/save" :format opts-fmt}))))
    (let [path-str (str path)
          fr (ensure-pose pose "pj/save")
          _ (assert-saveable-pose! "pj/save" fr)
          fr (if (seq opts) (options fr opts) fr)
+         pose-fmt (:format (:opts fr))
+         pose-fmt (if (= pose-fmt :bufimg) :png pose-fmt)
          path-fmt (infer-format-from-path path-str)
-         resolved-fmt (or (:format (:opts fr)) path-fmt :svg)]
+         resolved-fmt (or pose-fmt path-fmt :svg)]
      (when (and path-fmt (not= path-fmt resolved-fmt))
        (println (str "Warning: pj/save writing " (name resolved-fmt)
                      " bytes to a path with extension suggesting "
@@ -2548,27 +2568,14 @@
                               " an existing directory.")
                          {:path path-str :parent (.getPath parent)}))))
      (ensure-renderer-loaded! resolved-fmt)
-     (let [out (render-impl/plan->plot (plan fr) resolved-fmt (:opts fr {}))]
-       (case resolved-fmt
-         :svg    (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                                 (svg/hiccup->svg-str out)))
-         :bufimg ((resolve 'scicloj.plotje.render.bufimg/save-png) out path)
-         (throw (ex-info (str "pj/save does not know how to write format "
-                              (pr-str resolved-fmt) " to a file. Supported: "
-                              ":svg, :bufimg.")
-                         {:format resolved-fmt :path path-str})))
-       path))))
-
-(defn save-png
-  "Save a plot as a PNG file. Convenience wrapper around `pj/save`
-   that pins `:format :bufimg`. Equivalent to:
-     (pj/save pose path (assoc opts :format :bufimg))
-   pose -- a pose.
-   path -- file path (string or java.io.File).
-   opts -- same options as save (:width, :height, :title, :theme, ...).
-   Returns the path.
-   (save-png my-pose \"plot.png\")
-   (save-png my-pose \"plot.png\" {:width 800 :height 600})"
-  ([pose path] (save-png pose path nil))
-  ([pose path opts]
-   (save pose path (assoc (or opts {}) :format :bufimg))))
+     (case resolved-fmt
+       :svg (let [out (render-impl/plan->plot (plan fr) :svg (:opts fr {}))]
+              (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                              (svg/hiccup->svg-str out))))
+       :png (let [img (render-impl/plan->plot (plan fr) :bufimg (:opts fr {}))]
+              ((resolve 'scicloj.plotje.render.bufimg/save-png) img path))
+       (throw (ex-info (str "pj/save does not know how to write format "
+                            (pr-str resolved-fmt) " to a file. Supported: "
+                            ":svg, :png.")
+                       {:format resolved-fmt :path path-str})))
+     path)))

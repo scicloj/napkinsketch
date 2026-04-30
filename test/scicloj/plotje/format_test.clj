@@ -86,8 +86,8 @@
       (is (svg? path))
       (.delete (java.io.File. path)))))
 
-(deftest save-png-extension-infers-bufimg
-  (testing "(pj/save pose \"x.png\") infers :bufimg from extension and writes PNG"
+(deftest save-png-extension-writes-png
+  (testing "(pj/save pose \"x.png\") infers :png from extension and writes PNG"
     (let [path "/tmp/_plotje_save_format_b.png"
           pose (pj/lay-point tiny :x :y)]
       (pj/save pose path)
@@ -102,16 +102,26 @@
       (is (svg? path))
       (.delete (java.io.File. path))))
 
-  (testing "(pj/save pose \"x.svg\" {:format :bufimg}) writes PNG (opts wins, warns)"
+  (testing "(pj/save pose \"x.svg\" {:format :png}) writes PNG (opts wins, warns)"
     (let [path "/tmp/_plotje_save_format_d.svg"
           pose (pj/lay-point tiny :x :y)]
-      (pj/save pose path {:format :bufimg})
+      (pj/save pose path {:format :png})
       (is (png? path))
       (.delete (java.io.File. path)))))
 
-(deftest save-opts-format-on-pose
-  (testing ":format set via pj/options on the pose flows through pj/save"
+(deftest save-opts-format-on-pose-png
+  (testing ":format :png set via pj/options on the pose flows through pj/save"
     (let [path "/tmp/_plotje_save_format_e.png"
+          pose (-> tiny
+                   (pj/lay-point :x :y)
+                   (pj/options {:format :png}))]
+      (pj/save pose path)
+      (is (png? path))
+      (.delete (java.io.File. path)))))
+
+(deftest save-translates-bufimg-from-pose-opts
+  (testing "pj/save translates legacy :bufimg from pose opts to :png"
+    (let [path "/tmp/_plotje_save_format_bufimg_alias.png"
           pose (-> tiny
                    (pj/lay-point :x :y)
                    (pj/options {:format :bufimg}))]
@@ -119,13 +129,14 @@
       (is (png? path))
       (.delete (java.io.File. path)))))
 
-(deftest save-png-wrapper-pins-bufimg
-  (testing "pj/save-png writes PNG regardless of path extension"
-    (let [path "/tmp/_plotje_save_format_f.svg"
+(deftest save-rejects-bufimg-in-opts-arg
+  (testing "pj/save :format :bufimg in the explicit opts arg throws -- save vocabulary is :svg/:png"
+    (let [path "/tmp/_plotje_save_format_bufimg_reject.png"
           pose (pj/lay-point tiny :x :y)]
-      (pj/save-png pose path)
-      (is (png? path))
-      (.delete (java.io.File. path)))))
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #":format must be :svg or :png"
+           (pj/save pose path {:format :bufimg}))))))
 
 (deftest save-default-fallback-svg
   (testing "(pj/save pose \"x.unknownext\") falls back to :svg"
