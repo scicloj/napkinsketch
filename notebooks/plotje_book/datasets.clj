@@ -135,6 +135,7 @@
 ;;
 ;; A few datasets used throughout this book:
 
+^:kindly/hide-code
 (kind/table
  {:column-names ["Function" "Rows" "Description"]
   :row-maps
