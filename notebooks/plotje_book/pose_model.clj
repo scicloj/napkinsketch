@@ -1,4 +1,4 @@
-;; # Pose Model
+;; # Poses and Layers
 ;;
 ;; Plotje is a composable plotting library inspired by
 ;; Wilkinson's [Grammar of Graphics](https://link.springer.com/book/10.1007/0-387-28695-0)
@@ -6,10 +6,17 @@
 ;; Its operators are shaped by Clojure idioms -- threading, merge,
 ;; plain maps -- rather than a custom DSL.
 ;;
-;; This chapter introduces the pose value step by step. Each section
-;; shows a rendered plot followed by the printed pose value, so you
-;; can see both what the library produces and the data structure
-;; underneath.
+;; Plotje calls the value at the heart of each plot a **pose**.
+;; The word is photographic: a pose is the arrangement you settle
+;; into before the picture is taken. In Plotje, the same shape is a
+;; plain Clojure value -- which columns become axes, which become
+;; color, which chart-type layers sit on top -- that you build,
+;; inspect, and recombine until you call `pj/plot` and capture it.
+;;
+;; This chapter introduces poses and layers step by step. Each
+;; section shows a rendered plot followed by the printed pose
+;; value, so you can see both what the library produces and the
+;; data structure underneath.
 
 (ns plotje-book.pose-model
   (:require
@@ -86,16 +93,18 @@
 ;; `:color -> :species` -- end up in the one `:mapping` map. Future
 ;; layers on this pose will inherit the whole set.
 
-;; ## What to show, how to show it
+;; ## Poses carry layers
 ;;
-;; The API separates **what** to plot from **how** to show it:
-;; a pose's `:mapping` holds the "what" (columns to aesthetics),
-;; and its `:layers` holds the "how" (one entry per chart-type
-;; layer). This split -- mapping for what, layer for how -- is the
-;; principle the rest of the library builds on. Declaring the
-;; mapping once lets several layers share it -- scatter points and
-;; a regression line per species. Written as a literal map,
-;; `pj/pose` accepts the nested-map shape directly:
+;; A **layer** is one entry in a pose's `:layers` vector. Each
+;; layer names a chart type -- point, line, bar, smooth, histogram,
+;; ridge -- and may carry layer-specific options like a stat.
+;; While the mapping holds the "what" (which columns flow to which
+;; aesthetics), the layers hold the "how" (which chart-type recipe
+;; draws those mappings). This split -- mapping for what, layer
+;; for how -- is the principle the rest of the library builds on.
+;; Declaring the mapping once lets several layers share it --
+;; scatter points and a regression line per species. Written as a
+;; literal map, `pj/pose` accepts the nested-map shape directly:
 
 (def multi-layer
   (pj/pose
@@ -255,6 +264,7 @@ two-panel
 ;; |:--------|:--------|
 ;; | A pose describes a plot | `pj/pose`, `pj/lay-*` return poses; inspect with `kind/pprint` |
 ;; | Poses carry mappings | Column-to-aesthetic pairs live in `:mapping` |
+;; | Poses carry layers | Each `pj/lay-*` appends an entry to `:layers`, naming a chart type |
 ;; | What vs how | `pj/pose` declares what; `pj/lay-*` declares how |
 ;; | Inference fills gaps | Omit choices, the library infers from data |
 ;; | Poses compose | `pj/arrange` tiles sibling poses; composites nest under `:poses` |

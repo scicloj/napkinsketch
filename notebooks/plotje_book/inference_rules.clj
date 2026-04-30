@@ -7,7 +7,7 @@
 ;;
 ;; This chapter is a reference: each rule in detail, with its default,
 ;; its override, and a plan-level check. For the conceptual overview,
-;; read [Pose Model](./plotje_book.pose_model.html) and
+;; read [Poses and Layers](./plotje_book.pose_model.html) and
 ;; [Core Concepts](./plotje_book.core_concepts.html) first. The
 ;; examples here use small inline datasets so the full plan is readable.
 

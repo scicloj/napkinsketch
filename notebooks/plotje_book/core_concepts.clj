@@ -2,10 +2,10 @@
 ;;
 ;; The vocabulary you reach for daily: data, mappings, scope, layer
 ;; types, and how they fit together. This chapter takes the mental
-;; model from Pose Model and turns it into a working reference you
-;; can scan while building a plot.
+;; model from Poses and Layers and turns it into a working
+;; reference you can scan while building a plot.
 ;;
-;; Read [Pose Model](./plotje_book.pose_model.html) first if you
+;; Read [Poses and Layers](./plotje_book.pose_model.html) first if you
 ;; have not -- this chapter builds on the pose vocabulary it
 ;; introduces.
 
@@ -103,7 +103,7 @@
 ;; ---
 ;; ## Mappings and Layers
 ;;
-;; The [Pose Model](./plotje_book.pose_model.html) chapter introduced
+;; The [Poses and Layers](./plotje_book.pose_model.html) chapter introduced
 ;; the mapping-vs-layer split (what vs how). This section is the
 ;; practical follow-up: how the split plays out across multi-layer
 ;; plots and explicit-vs-shorthand calls.
@@ -366,7 +366,7 @@ two-panel
 ;; ---
 ;; ## The Pose
 ;;
-;; The [Pose Model](./plotje_book.pose_model.html) chapter walked
+;; The [Poses and Layers](./plotje_book.pose_model.html) chapter walked
 ;; through the shape of a pose end to end. This is the per-field
 ;; reference card -- what each slot holds and which API call sets
 ;; it:

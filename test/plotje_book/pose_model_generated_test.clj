@@ -8,17 +8,17 @@
 
 
 (def
- v3_l46
+ v3_l53
  (-> (rdatasets/datasets-iris) (pj/pose :sepal-length :sepal-width)))
 
 
 (deftest
- t4_l49
- (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v3_l46)))
+ t4_l56
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v3_l53)))
 
 
 (def
- v6_l54
+ v6_l61
  (->
   (rdatasets/datasets-iris)
   (pj/pose :sepal-length :sepal-width)
@@ -26,26 +26,26 @@
 
 
 (deftest
- t7_l58
+ t7_l65
  (is
   ((fn [v] (and (seq (:data v)) (= :sepal-length (:x (:mapping v)))))
-   v6_l54)))
+   v6_l61)))
 
 
 (def
- v9_l72
+ v9_l79
  (->
   (rdatasets/datasets-iris)
   (pj/pose :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
- t10_l75
- (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v9_l72)))
+ t10_l82
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v9_l79)))
 
 
 (def
- v12_l79
+ v12_l86
  (->
   (rdatasets/datasets-iris)
   (pj/pose :sepal-length :sepal-width {:color :species})
@@ -53,12 +53,12 @@
 
 
 (deftest
- t13_l83
- (is ((fn [v] (= :species (:color (:mapping v)))) v12_l79)))
+ t13_l90
+ (is ((fn [v] (= :species (:color (:mapping v)))) v12_l86)))
 
 
 (def
- v15_l100
+ v15_l109
  (def
   multi-layer
   (pj/pose
@@ -69,34 +69,34 @@
      {:layer-type :smooth, :stat :linear-model}]})))
 
 
-(def v16_l107 multi-layer)
+(def v16_l116 multi-layer)
 
 
 (deftest
- t17_l109
+ t17_l118
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v16_l107)))
+   v16_l116)))
 
 
-(def v19_l115 (kind/pprint multi-layer))
+(def v19_l124 (kind/pprint multi-layer))
 
 
 (deftest
- t20_l117
+ t20_l126
  (is
   ((fn
     [v]
     (and (= 2 (count (:layers v))) (= :species (:color (:mapping v)))))
-   v19_l115)))
+   v19_l124)))
 
 
 (def
- v22_l128
+ v22_l137
  (->
   (rdatasets/datasets-iris)
   (pj/pose :sepal-length :sepal-width {:color :species})
@@ -105,18 +105,18 @@
 
 
 (deftest
- t23_l133
+ t23_l142
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v22_l128)))
+   v22_l137)))
 
 
 (def
- v25_l142
+ v25_l151
  (->
   (rdatasets/datasets-iris)
   (pj/pose :sepal-length :sepal-width {:color :species})
@@ -126,34 +126,34 @@
 
 
 (deftest
- t26_l148
+ t26_l157
  (is
   ((fn
     [v]
     (and
      (= 2 (count (:layers v)))
      (= :species (get-in v [:mapping :color]))))
-   v25_l142)))
+   v25_l151)))
 
 
-(def v28_l156 (-> (rdatasets/datasets-iris) (pj/pose :sepal-length)))
+(def v28_l165 (-> (rdatasets/datasets-iris) (pj/pose :sepal-length)))
 
 
 (deftest
- t29_l159
- (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v28_l156)))
+ t29_l168
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v28_l165)))
 
 
 (def
- v31_l165
+ v31_l174
  (-> (rdatasets/datasets-iris) (pj/pose :sepal-length) kind/pprint))
 
 
-(deftest t32_l169 (is ((fn [v] (empty? (:layers v))) v31_l165)))
+(deftest t32_l178 (is ((fn [v] (empty? (:layers v))) v31_l174)))
 
 
 (def
- v34_l190
+ v34_l199
  (def
   two-panel
   (pj/pose
@@ -166,36 +166,36 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v35_l199 two-panel)
+(def v35_l208 two-panel)
 
 
 (deftest
- t36_l201
+ t36_l210
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v35_l199)))
+   v35_l208)))
 
 
-(def v38_l207 (kind/pprint two-panel))
+(def v38_l216 (kind/pprint two-panel))
 
 
 (deftest
- t39_l209
+ t39_l218
  (is
   ((fn
     [v]
     (and
      (= 2 (count (:poses v)))
      (= :horizontal (get-in v [:layout :direction]))))
-   v38_l207)))
+   v38_l216)))
 
 
 (def
- v41_l216
+ v41_l225
  (pj/arrange
   [(->
     (rdatasets/datasets-iris)
@@ -208,12 +208,12 @@
 
 
 (deftest
- t42_l224
- (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v41_l216)))
+ t42_l233
+ (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v41_l225)))
 
 
 (def
- v44_l232
+ v44_l241
  (->
   (pj/arrange
    [(->
@@ -228,7 +228,7 @@
 
 
 (deftest
- t45_l241
+ t45_l250
  (is
   ((fn
     [v]
@@ -237,4 +237,4 @@
      (= 1 (count (:poses v)))
      (= 2 (count (:poses (first (:poses v)))))
      (= :horizontal (get-in v [:poses 0 :layout :direction]))))
-   v44_l232)))
+   v44_l241)))

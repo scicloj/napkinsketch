@@ -1,6 +1,6 @@
 ;; # Pose Rules
 ;;
-;; Pose Model gave the mental picture; this chapter proves it. Each
+;; Poses and Layers gave the mental picture; this chapter proves it. Each
 ;; of the 29 rules below carries a rendered pose (or plan), a
 ;; printed structure, and a tested assertion, so the model claims
 ;; are verified on every run.
@@ -10,7 +10,7 @@
 ;; cover every call shape of `pj/pose`, `pj/lay-*`, `pj/arrange`,
 ;; `pj/options`, `pj/scale`, `pj/coord`, `pj/facet`, and `pj/cross`.
 ;;
-;; Read [Pose Model](./plotje_book.pose_model.html) first -- this
+;; Read [Poses and Layers](./plotje_book.pose_model.html) first -- this
 ;; chapter is the proof layer, not a teaching chapter.
 
 (ns plotje-book.pose-rules
@@ -62,7 +62,7 @@
 ;; `:mark` when the user provides them.
 ;;
 ;; The rules below assume some familiarity with these shapes. If this
-;; is new, [Pose Model](./plotje_book.pose_model.html) shows
+;; is new, [Poses and Layers](./plotje_book.pose_model.html) shows
 ;; them in use before we formalize them here.
 
 ;; ---
