@@ -1765,10 +1765,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="save"><code>save</code></h3>
 <p><code>[pose path]</code></p>
 <p><code>[pose path opts]</code></p>
-<p>Save a plot to a file. Format resolution, in precedence order: 1. <code>:format</code> in the 3-arity <code>opts</code> map wins (must be <code>:svg</code> or <code>:png</code>). 2. <code>:format</code> on the pose’s <code>:opts</code> (<code>:svg</code> or <code>:png</code>; legacy <code>:bufimg</code> is translated to <code>:png</code>). 3. Otherwise inferred from the path extension (<code>.svg</code> -&gt; <code>:svg</code>, <code>.png</code> -&gt; <code>:png</code>). 4. Default <code>:svg</code>.</p>
+<p>Save a plot to a file. Format resolution, in precedence order: 1. <code>:format</code> in the pose’s <code>:opts</code> (or the 3-arity <code>opts</code> map) wins. 2. Otherwise inferred from the path extension (<code>.svg</code> -&gt; <code>:svg</code>, <code>.png</code> -&gt; <code>:bufimg</code>). 3. Default <code>:svg</code>.</p>
 <p>When the resolved format and the path extension disagree, prints a warning – the file still gets the bytes the resolved format produces, but the extension is misleading.</p>
-<p>The save vocabulary names the file format. The plot vocabulary (<code>pj/plot</code>’s <code>:format</code>) names the JVM return type – <code>:svg</code> for hiccup, <code>:bufimg</code> for a Java2D BufferedImage. A pose-level <code>:format</code> flows into both contexts; save reinterprets <code>:bufimg</code> as <code>:png</code> because what hits the disk is a PNG file.</p>
-<p>pose – a pose. path – file path (string or java.io.File). opts – same options as plot, but <code>:format</code> accepts only <code>:svg</code> or <code>:png</code>. Tooltip and brush interactivity are not included in saved files. Returns the path. (save my-pose “plot.svg”) ;; SVG (save my-pose “plot.png”) ;; inferred PNG (save my-pose “plot.svg” {:format :png}) ;; opts override (warns)</p>
+<p>pose – a pose. path – file path (string or java.io.File). opts – same options as plot (:format, :width, :height, :title, …). Tooltip and brush interactivity are not included in saved files. Returns the path. (save my-pose “plot.svg”) ;; SVG (save my-pose “plot.png”) ;; inferred PNG (save my-pose “plot.svg” {:format :bufimg}) ;; opts override (warns)</p>
 <p>Save a plot to an SVG file:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb112"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [<span class="kw">path</span> (<span class="kw">str</span> (java.io.File/createTempFile <span class="st">"plotje-example"</span> <span class="st">".svg"</span>))]</span>
@@ -1805,8 +1804,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb116-7"><a href="#cb116-7" aria-hidden="true" tabindex="-1"></a>      (.<span class="kw">read</span> in bs)</span>
 <span id="cb116-8"><a href="#cb116-8" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">mapv</span> #(<span class="kw">bit-and</span> ^<span class="kw">int</span> <span class="va">%</span> <span class="bn">0xFF</span>) (<span class="kw">vec</span> bs)))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="printedClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb117"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>[<span class="dv">137</span> <span class="dv">80</span> <span class="dv">78</span> <span class="dv">71</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Unknown render format: :png. Supported formats: [:bufimg :svg]. Renderers register themselves via defmethod plan-&gt;plot.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<pre><code>                      clojure.core/eval    core.clj: 3232
+                                    ...                 
+   plotje-book.api-reference/eval122949  REPL Input:     
+                scicloj.plotje.api/save     api.clj: 2551
+                                    ...                 
+scicloj.plotje.impl.render/eval80321/fn  render.clj:   10
+clojure.lang.ExceptionInfo: Unknown render format: :png. Supported formats: [:bufimg :svg]. Renderers register themselves via defmethod plan-&gt;plot.
+       format: :png
+    supported: [:bufimg :default :svg]
+
+</code></pre>
+</div>
+</div>
 </div>
 <div style="background-color:grey;height:2px;width:100%;"></div>
 <div><pre><small><small>source: <a href="https://github.com/scicloj/plotje/blob/main/notebooks/plotje_book/api_reference.clj">notebooks/plotje_book/api_reference.clj</a></small></small></pre></div>
