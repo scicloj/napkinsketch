@@ -1,4 +1,4 @@
-;; # Poses and Layers
+;; # Poses
 ;;
 ;; Plotje is a composable plotting library inspired by
 ;; Wilkinson's [Grammar of Graphics](https://link.springer.com/book/10.1007/0-387-28695-0)
@@ -13,7 +13,7 @@
 ;; color, which chart-type layers sit on top -- that you build,
 ;; inspect, and recombine until you call `pj/plot` and capture it.
 ;;
-;; This chapter introduces poses and layers step by step. Each
+;; This chapter introduces the pose value step by step. Each
 ;; section shows a rendered plot followed by the printed pose
 ;; value, so you can see both what the library produces and the
 ;; data structure underneath.
