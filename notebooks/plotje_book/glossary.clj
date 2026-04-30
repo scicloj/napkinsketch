@@ -34,8 +34,19 @@ my-pose
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-;; A pose is a plain Clojure value -- inspect it with `kind/pprint`
-;; or reach into its fields directly.
+;; A pose is a plain Clojure value -- printed, the same value reveals
+;; its underlying map shape with `:data`, `:mapping`, `:layers`, and
+;; `:opts`:
+
+(kind/pprint my-pose)
+
+(kind/test-last
+ [(fn [pose]
+    (and (some? (:data pose))
+         (= :sepal-length (get-in pose [:mapping :x]))
+         (= :sepal-width (get-in pose [:mapping :y]))
+         (= :species (get-in pose [:layers 0 :mapping :color]))
+         (= "Iris" (get-in pose [:opts :title]))))])
 
 ;; ## Leaf Pose
 ;;
@@ -66,11 +77,18 @@ my-pose
 ;; ## Layer Type
 ;;
 ;; A **layer type** is the bundle of mark + stat + position that
-;; determines how data becomes a visual element. See the
-;; [Layer Types](./plotje_book.layer_types.html) chapter for detailed
-;; tables of all built-in layer types, marks, stats, and positions.
+;; determines how data becomes a visual element. It is a context-free
+;; recipe; placing it on a pose produces a *layer* (next entry).
+;; See the [Layer Types](./plotje_book.layer_types.html) chapter for
+;; detailed tables of all built-in layer types, marks, stats, and
+;; positions.
+
+;; ## Layer
 ;;
-;; Layer types attach to poses in three ways, depending on what you
+;; A **layer** is a layer type placed on a pose, optionally with
+;; scoped mappings. Created by `pj/lay-*`.
+;;
+;; Layers attach to poses in three ways, depending on what you
 ;; pass to `pj/lay-*`:
 ;;
 ;; - **Bare** -- `pj/lay-*` without columns attaches the layer so it
@@ -82,6 +100,10 @@ my-pose
 ;; - **Non-matching columns** -- `pj/lay-*` with columns that do not
 ;;   match any existing leaf creates a fresh leaf pose with the
 ;;   layer attached.
+
+(-> my-pose :layers first :layer-type)
+
+(kind/test-last [(fn [k] (= :point k))])
 
 ;; ## Mark
 ;;
@@ -102,8 +124,12 @@ my-pose
 
 ;; ## Position
 ;;
-;; A **position** adjustment determines how groups share a categorical
-;; axis slot. Position runs between stat computation and rendering.
+;; A **position** adjustment determines how overlapping marks are
+;; placed in coordinate space: kept at their data values
+;; (`:identity`), dodged side-by-side along a categorical band
+;; (`:dodge`), stacked end-to-end so bar tops sit on the previous
+;; bar's top (`:stack`), or normalized to fill `[0, 1]` proportions
+;; (`:fill`). Position runs between stat computation and rendering.
 ;; You can override the default position by passing `:position` in
 ;; the layer options.
 ;; When multiple layers share `:position :dodge`, they are coordinated
@@ -140,18 +166,58 @@ my-pose
                               (= 1 (count d))
                               (= :point (:mark (first d)))))])
 
+;; ## Draft Layer
+;;
+;; A **draft layer** is one element of a draft -- a single map that
+;; bundles the layer type, the merged mappings (pose + layer scopes),
+;; and the effective dataset for one (leaf, applicable-layer) pair.
+;; It is the specification of what the renderer will draw for that
+;; layer, before any geometry, domains, or ticks are computed.
+;; The plan layer (entry below) is the same idea after geometry has
+;; been resolved.
+
+(-> my-pose pj/draft first kind/pprint)
+
+(kind/test-last
+ [(fn [d]
+    (and (some? (:data d))
+         (= :sepal-length (:x d))
+         (= :sepal-width (:y d))
+         (= :species (:color d))
+         (= :point (:mark d))))])
+
 ;; ## Mapping
 ;;
 ;; A **mapping** is a binding from a column (or literal value) to
-;; an aesthetic. Mappings live on a pose -- where they flow into
-;; every layer attached to it -- or on a single layer, where they
-;; scope to that layer alone. Lower scope wins on conflict; an
-;; explicit `nil` cancels a mapping inherited from above.
+;; an aesthetic. Aesthetics come in two groups:
+;;
+;; - **Positional aesthetics** (`:x`, `:y`, plus `:x-end`, `:x-min`,
+;;   `:x-max`, `:y-min`, `:y-max` for marks that need them) place
+;;   marks in coordinate space.
+;; - **Appearance aesthetics** (`:color`, `:size`, `:alpha`, `:shape`,
+;;   `:text`, `:fill`) shape how each mark looks.
+;;
+;; Mappings live on a pose -- where they flow into every layer
+;; attached to it -- or on a single layer, where they scope to that
+;; layer alone. Lower scope wins on conflict; an explicit `nil`
+;; cancels a mapping inherited from above.
 
 ;; ## Aesthetic
 ;;
-;; An **aesthetic** is a visual property of a mark that can be mapped
-;; to a data column. Plotje supports these aesthetic mappings:
+;; An **aesthetic** is a property of a mark that can be mapped to a
+;; data column or fixed to a literal value. Plotje supports two
+;; groups:
+;;
+;; **Positional aesthetics** -- where the mark sits:
+;;
+;; | Key | Controls | Column type |
+;; |:----|:---------|:------------|
+;; | `:x` | Horizontal position | Numerical, temporal, or categorical |
+;; | `:y` | Vertical position | Numerical, temporal, or categorical |
+;; | `:x-end`, `:x-min`, `:x-max` | Range endpoints (interval, band, rule marks) | Same type as `:x` |
+;; | `:y-min`, `:y-max` | Range endpoints (band, ribbon) | Same type as `:y` |
+;;
+;; **Appearance aesthetics** -- how the mark looks:
 ;;
 ;; | Key | Controls | Column type |
 ;; |:----|:---------|:------------|
@@ -258,18 +324,6 @@ my-pose
 (sort (keys (first (:panels my-plan))))
 
 (kind/test-last [(fn [ks] (some #{:x-domain :y-domain :layers} ks))])
-
-;; ## Layer
-;;
-;; A **layer** is a layer type placed on a pose, optionally with
-;; scoped mappings. Created by `pj/lay-*`. Layers attach to a pose
-;; either at the root (`(pj/lay-point pose)`) where they flow to
-;; every leaf, or with columns (`(pj/lay-point pose :x :y)`) where
-;; they attach to the matching leaf.
-
-(-> my-pose :layers first :layer-type)
-
-(kind/test-last [(fn [k] (= :point k))])
 
 ;; ## Plan Layer
 ;;
@@ -591,13 +645,14 @@ my-pose
 ;; | Pipeline | Five-stage flow `pose -> draft -> plan -> membrane -> plot` | Architecture chapter |
 ;; | Sub-plot | One resolved sub-pose in a composite pose's plan | `:sub-plots` in plan |
 ;; | Resolve tree | Scope-merge walk: root mappings propagate to every leaf | Internal to `pj/plan` |
-;; | Draft | Vector of flat maps from merging pose and layer mappings | `pj/draft`, automatic during `pj/plan` |
+;; | Draft | Vector of draft layers from merging pose and layer mappings | `pj/draft`, automatic during `pj/plan` |
+;; | Draft layer | One element of a draft: layer type + merged mappings + data | Element of `pj/draft` output |
 ;; | Layer type | Mark + stat + position bundle | `pj/layer-type-lookup`, `pj/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in layer-type map |
 ;; | Stat | Data transform: identity, bin, count, linear-model, density, ... | Key in layer-type map |
-;; | Position | How groups share space: dodge, stack, fill, identity | Key in layer-type map |
+;; | Position | How overlapping marks are placed: identity, dodge, stack, fill | Key in layer-type map |
 ;; | Inference | Auto-choosing mark/stat from column types | When `pj/lay-*` is omitted |
-;; | Aesthetic | Data-driven visual property: color, size, alpha | Key in mapping or layer |
+;; | Aesthetic | Mark property bindable to a column: positional (x, y, ...) or appearance (color, size, alpha, ...) | Key in mapping or layer |
 ;; | Group | Subset of data rendered together | From `:color` or `:group` |
 ;; | Plan | Fully resolved plot description | `pj/plan` |
 ;; | Panel | One plotting area (domain, ticks, layers) | One or more per plan |
