@@ -65,12 +65,12 @@
 
 (def weighted
   (pj/pose
-   {:data (rdatasets/datasets-iris)
-    :layout {:direction :horizontal :weights [2 1]}
+   {:layout {:direction :horizontal :weights [2 1]}
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
              :layers [{:layer-type :point}]}
             {:mapping {:x :petal-length :y :petal-width}
-             :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}]
+    :data (rdatasets/datasets-iris)}))
 
 ;; `pj/pose` accepts a literal composite map and tags it for notebook
 ;; auto-render -- the same pose value the threaded API produces:
@@ -106,13 +106,13 @@ weighted
 
 (def shared-x
   (pj/pose
-   {:data (rdatasets/datasets-iris)
-    :share-scales #{:x}
+   {:share-scales #{:x}
     :layout {:direction :horizontal :weights [1 1]}
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
              :layers [{:layer-type :point}]}
             {:mapping {:x :sepal-length :y :petal-length}
-             :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}]
+    :data (rdatasets/datasets-iris)}))
 
 shared-x
 
@@ -132,13 +132,13 @@ shared-x
 
 (def marginal
   (pj/pose
-   {:data (rdatasets/datasets-iris)
-    :share-scales #{:x}
+   {:share-scales #{:x}
     :layout {:direction :vertical :weights [1 3]}
     :poses [{:mapping {:x :sepal-length}
              :layers [{:layer-type :density}]}
             {:mapping {:x :sepal-length :y :sepal-width :color :species}
-             :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}]
+    :data (rdatasets/datasets-iris)}))
 
 marginal
 

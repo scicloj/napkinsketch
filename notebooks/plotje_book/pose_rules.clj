@@ -655,12 +655,12 @@
 
 (def s1-composite
   (pj/pose
-   {:data iris
-    :mapping {:color :species}
+   {:mapping {:color :species}
     :poses [{:mapping {:x :sepal-length :y :sepal-width}
              :layers [{:layer-type :point}]}
             {:mapping {:x :petal-length :y :petal-width}
-             :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}]
+    :data iris}))
 
 s1-composite
 
@@ -678,11 +678,11 @@ s1-composite
 
 (def s1-siblings
   (pj/pose
-   {:data iris
-    :poses [{:mapping {:x :sepal-length :y :sepal-width}
+   {:poses [{:mapping {:x :sepal-length :y :sepal-width}
              :layers [{:layer-type :point}]}
             {:mapping {:x :petal-length :y :petal-width :color :species}
-             :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]}]
+    :data iris}))
 
 s1-siblings
 
@@ -706,12 +706,12 @@ s1-siblings
 
 (def s2-tree
   (pj/pose
-   {:data iris
-    :poses [{:mapping {:x :sepal-length :y :sepal-width}
+   {:poses [{:mapping {:x :sepal-length :y :sepal-width}
              :layers [{:layer-type :point}]}
             {:mapping {:x :a :y :b}
-             :data (tc/dataset {:a [1 2 3] :b [3 5 4]})
-             :layers [{:layer-type :point}]}]}))
+             :layers [{:layer-type :point}]
+             :data (tc/dataset {:a [1 2 3] :b [3 5 4]})}]
+    :data iris}))
 
 s2-tree
 

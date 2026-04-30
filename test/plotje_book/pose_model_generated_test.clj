@@ -62,11 +62,10 @@
  (def
   multi-layer
   (pj/pose
-   {:data (rdatasets/datasets-iris),
-    :mapping {:x :sepal-length, :y :sepal-width, :color :species},
+   {:mapping {:x :sepal-length, :y :sepal-width, :color :species},
     :layers
-    [{:layer-type :point}
-     {:layer-type :smooth, :stat :linear-model}]})))
+    [{:layer-type :point} {:layer-type :smooth, :stat :linear-model}],
+    :data (rdatasets/datasets-iris)})))
 
 
 (def v16_l106 multi-layer)
@@ -157,13 +156,13 @@
  (def
   two-panel
   (pj/pose
-   {:data (rdatasets/datasets-iris),
-    :layout {:direction :horizontal},
+   {:layout {:direction :horizontal},
     :poses
     [{:mapping {:x :sepal-length, :y :sepal-width, :color :species},
       :layers [{:layer-type :point}]}
      {:mapping {:x :petal-length, :y :petal-width, :color :species},
-      :layers [{:layer-type :point}]}]})))
+      :layers [{:layer-type :point}]}],
+    :data (rdatasets/datasets-iris)})))
 
 
 (def v35_l195 two-panel)
