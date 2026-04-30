@@ -6,7 +6,7 @@
 ;; can scan while building a plot.
 ;;
 ;; Read [Pose Model](./plotje_book.pose_model.html) first if you
-;; have not -- this chapter assumes the five-idea framing it
+;; have not -- this chapter builds on the pose vocabulary it
 ;; introduces.
 
 (ns plotje-book.core-concepts

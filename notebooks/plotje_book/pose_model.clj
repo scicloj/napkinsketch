@@ -6,7 +6,7 @@
 ;; Its operators are shaped by Clojure idioms -- threading, merge,
 ;; plain maps -- rather than a custom DSL.
 ;;
-;; This chapter introduces the mental model in five ideas. Each idea
+;; This chapter introduces the pose value step by step. Each section
 ;; shows a rendered plot followed by the printed pose value, so you
 ;; can see both what the library produces and the data structure
 ;; underneath.
@@ -20,7 +20,7 @@
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]))
 
-;; ## Idea 1: A pose describes a plot
+;; ## A pose describes a plot
 ;;
 ;; In Plotje, every plot you compose is a **pose** -- a plain
 ;; Clojure value that describes what to show. The composition
@@ -63,10 +63,10 @@
 ;; `:layers` (empty here, since none was attached), and plot-level
 ;; options under `:opts`.
 
-;; ## Idea 2: Poses carry mappings
+;; ## Poses carry mappings
 ;;
 ;; A **mapping** connects columns to visual properties. We added
-;; `:x` and `:y` in Idea 1; the pose also accepts appearance
+;; `:x` and `:y` above; the pose also accepts appearance
 ;; aesthetics like `:color`, `:size`, `:alpha`, and `:shape`:
 
 (-> (rdatasets/datasets-iris)
@@ -86,22 +86,23 @@
 ;; `:color -> :species` -- end up in the one `:mapping` map. Future
 ;; layers on this pose will inherit the whole set.
 
-;; ## Idea 3: What to show, how to show it
+;; ## What to show, how to show it
 ;;
 ;; The API separates **what** to plot from **how** to show it:
 ;; a pose's `:mapping` holds the "what" (columns to aesthetics),
 ;; and its `:layers` holds the "how" (one entry per chart-type
-;; layer). Declaring the mapping once lets several layers share it
-;; -- scatter points and a regression line per species. Written as
-;; a literal map -- `pj/pose` accepts the nested-map shape
-;; directly:
+;; layer). This split -- mapping for what, layer for how -- is the
+;; principle the rest of the library builds on. Declaring the
+;; mapping once lets several layers share it -- scatter points and
+;; a regression line per species. Written as a literal map,
+;; `pj/pose` accepts the nested-map shape directly:
 
 (def multi-layer
   (pj/pose
    {:data (rdatasets/datasets-iris)
     :mapping {:x :sepal-length :y :sepal-width :color :species}
     :layers [{:layer-type :point}
-             {:layer-type :smooth :mapping {:stat :linear-model}}]}))
+             {:layer-type :smooth :stat :linear-model}]}))
 
 multi-layer
 
@@ -147,7 +148,7 @@ multi-layer
 (kind/test-last [(fn [v] (and (= 2 (count (:layers v)))
                               (= :species (get-in v [:mapping :color]))))])
 
-;; ## Idea 4: Inference fills the gaps
+;; ## Inference fills the gaps
 ;;
 ;; When you omit a choice, Plotje infers it from the data.
 ;; One numerical column becomes a histogram:
@@ -179,7 +180,7 @@ multi-layer
 ;; grouping. See [Inference Rules](./plotje_book.inference_rules.html)
 ;; for the full set.
 
-;; ## Idea 5: Poses compose
+;; ## Poses compose
 ;;
 ;; Composition functions take a pose and return a pose.
 ;; A **composite** pose is a plain map too -- with `:poses`
@@ -250,8 +251,8 @@ two-panel
 
 ;; ## Summary
 ;;
-;; | Idea | In code |
-;; |:-----|:--------|
+;; | Concept | In code |
+;; |:--------|:--------|
 ;; | A pose describes a plot | `pj/pose`, `pj/lay-*` return poses; inspect with `kind/pprint` |
 ;; | Poses carry mappings | Column-to-aesthetic pairs live in `:mapping` |
 ;; | What vs how | `pj/pose` declares what; `pj/lay-*` declares how |
