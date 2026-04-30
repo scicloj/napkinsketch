@@ -77,7 +77,7 @@
       (= 1 (:panels s))
       (pos? (:polygons s))
       (some
-       (fn* [p1__185083#] (= "Distribution of Total Bill" p1__185083#))
+       (fn* [p1__197059#] (= "Distribution of Total Bill" p1__197059#))
        (:texts s)))))
    v12_l53)))
 
@@ -188,97 +188,88 @@
    v30_l135)))
 
 
-(def
- v33_l148
- (let
-  [plan
-   (->
-    (rdatasets/datasets-iris)
-    (pj/lay-boxplot :species :sepal-width)
-    pj/plan)
-   box-layer
-   (first
-    (filter
-     (fn* [p1__185084#] (= :boxplot (:mark p1__185084#)))
-     (:layers (first (:panels plan)))))]
-  (mapv
-   (fn
-    [{:keys [q1 q3 whisker-lo whisker-hi outliers]}]
-    (let
-     [iqr
-      (- q3 q1)
-      lo-fence
-      (- q1 (* 1.5 iqr))
-      hi-fence
-      (+ q3 (* 1.5 iqr))]
-     {:whisker-lo-in-fence (>= whisker-lo lo-fence),
-      :whisker-hi-in-fence (<= whisker-hi hi-fence),
-      :outliers-outside-fence
-      (every? (fn [o] (or (< o lo-fence) (> o hi-fence))) outliers)}))
-   (:boxes box-layer))))
-
-
 (deftest
- t34_l164
+ t33_l148
  (is
   ((fn
-    [results]
-    (and
-     (= 3 (count results))
-     (every?
-      (fn
-       [r]
-       (and
-        (:whisker-lo-in-fence r)
-        (:whisker-hi-in-fence r)
-        (:outliers-outside-fence r)))
-      results)))
-   v33_l148)))
+    [_]
+    (let
+     [plan
+      (->
+       (rdatasets/datasets-iris)
+       (pj/lay-boxplot :species :sepal-width)
+       pj/plan)
+      box-layer
+      (first
+       (filter
+        (fn* [p1__197060#] (= :boxplot (:mark p1__197060#)))
+        (:layers (first (:panels plan)))))
+      results
+      (mapv
+       (fn
+        [{:keys [q1 q3 whisker-lo whisker-hi outliers]}]
+        (let
+         [iqr
+          (- q3 q1)
+          lo-fence
+          (- q1 (* 1.5 iqr))
+          hi-fence
+          (+ q3 (* 1.5 iqr))]
+         {:whisker-lo-in-fence (>= whisker-lo lo-fence),
+          :whisker-hi-in-fence (<= whisker-hi hi-fence),
+          :outliers-outside-fence
+          (every?
+           (fn [o] (or (< o lo-fence) (> o hi-fence)))
+           outliers)}))
+       (:boxes box-layer))]
+     (and
+      (= 3 (count results))
+      (every?
+       (fn
+        [r]
+        (and
+         (:whisker-lo-in-fence r)
+         (:whisker-hi-in-fence r)
+         (:outliers-outside-fence r)))
+       results))))
+   v30_l135)))
 
 
 (def
- v36_l176
+ v35_l175
  (->
   (rdatasets/reshape2-tips)
   (pj/lay-boxplot :day :total-bill {:color :smoker})))
 
 
 (deftest
- t37_l179
+ t37_l181
  (is
   ((fn
     [v]
     (let
-     [s (pj/svg-summary v)]
-     (and (= 1 (:panels s)) (= 8 (:polygons s)) (pos? (:lines s)))))
-   v36_l176)))
+     [s
+      (pj/svg-summary v)
+      plan
+      (pj/plan
+       (->
+        (rdatasets/reshape2-tips)
+        (pj/lay-boxplot :day :total-bill {:color :smoker})))
+      box-layer
+      (first
+       (filter
+        (fn* [p1__197061#] (= :boxplot (:mark p1__197061#)))
+        (:layers (first (:panels plan)))))]
+     (and
+      (= 1 (:panels s))
+      (= 8 (:polygons s))
+      (pos? (:lines s))
+      (= 2 (count (:color-categories box-layer))))))
+   v35_l175)))
 
 
 (def
- v39_l187
- (let
-  [plan
-   (->
-    (rdatasets/reshape2-tips)
-    (pj/lay-boxplot :day :total-bill {:color :smoker})
-    pj/plan)
-   panel
-   (first (:panels plan))
-   box-layer
-   (first
-    (filter
-     (fn* [p1__185085#] (= :boxplot (:mark p1__185085#)))
-     (:layers panel)))
-   cats
-   (:color-categories box-layer)]
-  (count cats)))
-
-
-(deftest t40_l195 (is ((fn [v] (= 2 v)) v39_l187)))
-
-
-(def
- v42_l202
+ v39_l197
  (->
   (rdatasets/datasets-iris)
   (pj/lay-boxplot :species :sepal-width)
@@ -286,75 +277,66 @@
 
 
 (deftest
- t43_l206
+ t40_l201
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)) (pos? (:lines s)))))
-   v42_l202)))
+   v39_l197)))
 
 
 (def
- v45_l217
+ v42_l212
  (-> (rdatasets/reshape2-tips) (pj/lay-violin :day :total-bill)))
 
 
 (deftest
- t46_l220
+ t43_l215
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v45_l217)))
+   v42_l212)))
 
 
 (def
- v48_l229
+ v45_l224
  (->
   (rdatasets/reshape2-tips)
   (pj/lay-violin :day :total-bill {:color :smoker})))
 
 
 (deftest
- t49_l232
+ t47_l230
  (is
   ((fn
     [v]
     (let
-     [s (pj/svg-summary v)]
-     (and (= 1 (:panels s)) (= 8 (:polygons s)))))
-   v48_l229)))
+     [s
+      (pj/svg-summary v)
+      plan
+      (pj/plan
+       (->
+        (rdatasets/reshape2-tips)
+        (pj/lay-violin :day :total-bill {:color :smoker})))
+      viol-layer
+      (first
+       (filter
+        (fn* [p1__197062#] (= :violin (:mark p1__197062#)))
+        (:layers (first (:panels plan)))))]
+     (and
+      (= 1 (:panels s))
+      (= 8 (:polygons s))
+      (= 2 (count (:color-categories viol-layer))))))
+   v45_l224)))
 
 
 (def
- v51_l239
- (let
-  [plan
-   (->
-    (rdatasets/reshape2-tips)
-    (pj/lay-violin :day :total-bill {:color :smoker})
-    pj/plan)
-   panel
-   (first (:panels plan))
-   viol-layer
-   (first
-    (filter
-     (fn* [p1__185086#] (= :violin (:mark p1__185086#)))
-     (:layers panel)))
-   cats
-   (:color-categories viol-layer)]
-  (count cats)))
-
-
-(deftest t52_l247 (is ((fn [v] (= 2 v)) v51_l239)))
-
-
-(def
- v54_l252
+ v49_l243
  (->
   (rdatasets/datasets-iris)
   (pj/lay-violin :species :petal-length)
@@ -362,72 +344,72 @@
 
 
 (deftest
- t55_l256
+ t50_l247
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v54_l252)))
+   v49_l243)))
 
 
 (def
- v57_l266
+ v52_l257
  (->
   (rdatasets/datasets-iris)
   (pj/lay-ridgeline :species :sepal-length)))
 
 
 (deftest
- t58_l269
+ t53_l260
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v57_l266)))
+   v52_l257)))
 
 
 (def
- v60_l278
+ v55_l269
  (->
   (rdatasets/datasets-iris)
   (pj/lay-ridgeline :species :sepal-length {:color :species})))
 
 
 (deftest
- t61_l281
+ t56_l272
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v60_l278)))
+   v55_l269)))
 
 
 (def
- v63_l292
+ v58_l283
  (pj/lay-histogram
   (rdatasets/datasets-iris)
   [:sepal-length :sepal-width :petal-length]))
 
 
 (deftest
- t64_l294
+ t59_l285
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 3 (:panels s)) (pos? (:polygons s)))))
-   v63_l292)))
+   v58_l283)))
 
 
 (def
- v66_l301
+ v61_l292
  (pj/lay-density
   (rdatasets/datasets-iris)
   [:sepal-length :sepal-width :petal-length]
@@ -435,11 +417,11 @@
 
 
 (deftest
- t67_l303
+ t62_l294
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 3 (:panels s)) (pos? (:polygons s)))))
-   v66_l301)))
+   v61_l292)))

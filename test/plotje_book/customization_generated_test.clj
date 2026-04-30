@@ -184,7 +184,7 @@
   {:x (range 1 50),
    :y
    (map
-    (fn* [p1__186465#] (* 2 (Math/pow 1.1 p1__186465#)))
+    (fn* [p1__198418#] (* 2 (Math/pow 1.1 p1__198418#)))
     (range 1 50))}))
 
 
@@ -577,16 +577,31 @@
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
-  (pj/options {:legend-position :none})
-  pj/plan
-  (get-in [:layout :legend-w])))
+  (pj/options {:legend-position :none})))
 
 
-(deftest t104_l442 (is (zero? v103_l436)))
+(deftest
+ t104_l440
+ (is
+  ((fn
+    [v]
+    (let
+     [s
+      (pj/svg-summary v)
+      plan
+      (pj/plan
+       (->
+        (rdatasets/datasets-iris)
+        (pj/lay-point :sepal-length :sepal-width {:color :species})
+        (pj/options {:legend-position :none})))]
+     (and
+      (= 150 (:points s))
+      (zero? (get-in plan [:layout :legend-w])))))
+   v103_l436)))
 
 
 (def
- v106_l448
+ v106_l453
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -594,12 +609,12 @@
 
 
 (deftest
- t107_l452
- (is ((fn [v] (= :div (first (pj/plot v)))) v106_l448)))
+ t107_l457
+ (is ((fn [v] (= :div (first (pj/plot v)))) v106_l453)))
 
 
 (def
- v109_l458
+ v109_l463
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -607,19 +622,19 @@
 
 
 (deftest
- t110_l462
- (is ((fn [v] (= :div (first (pj/plot v)))) v109_l458)))
+ t110_l467
+ (is ((fn [v] (= :div (first (pj/plot v)))) v109_l463)))
 
 
 (def
- v112_l468
+ v112_l473
  (def
   splom-cols
   [:sepal-length :sepal-width :petal-length :petal-width]))
 
 
 (def
- v113_l470
+ v113_l475
  (->
   (rdatasets/datasets-iris)
   (pj/pose (pj/cross splom-cols splom-cols) {:color :species})
@@ -627,5 +642,5 @@
 
 
 (deftest
- t114_l474
- (is ((fn [v] (= :div (first (pj/plot v)))) v113_l470)))
+ t114_l479
+ (is ((fn [v] (= :div (first (pj/plot v)))) v113_l475)))

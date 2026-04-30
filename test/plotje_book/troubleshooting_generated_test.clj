@@ -102,7 +102,7 @@
    (rdatasets/datasets-iris)
    (pj/lay-bar :species)
    (pj/scale :x :log)
-   pj/plan)
+   pj/plot)
   (catch Exception e (.getMessage e))))
 
 

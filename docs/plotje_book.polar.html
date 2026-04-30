@@ -468,7 +468,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" type="text/javascript"></script>
-<p>For <a href="https://en.wikipedia.org/wiki/Polar_coordinate_system">polar coordinates</a>, <code>(pj/coord :polar)</code> maps x to angle and y to radius. Bars become arc-interpolated wedges (rose charts), and scatter points wrap into a disc. Supported marks today are <code>:point</code>, <code>:bar</code>, <code>:rect</code>, <code>:text</code>, and <code>:rug</code>; other marks throw at plan time. Tick labels and axis labels are not yet rendered under <code>:polar</code>.</p>
+<p>For <a href="https://en.wikipedia.org/wiki/Polar_coordinate_system">polar coordinates</a>, <code>(pj/coord :polar)</code> maps x to angle and y to radius. Bars become arc-interpolated wedges (rose charts), and scatter points wrap into a disc. Supported marks today are <code>:point</code>, <code>:bar</code>, <code>:rect</code>, <code>:text</code>, and <code>:rug</code>; other marks raise a clear error. Tick labels and axis labels are not yet rendered under <code>:polar</code>.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> plotje-book.polar</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span></span>

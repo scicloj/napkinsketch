@@ -21,7 +21,7 @@
    (:layers pose)
    (update
     :layers
-    (partial mapv (fn* [p1__183793#] (dissoc p1__183793# :data))))
+    (partial mapv (fn* [p1__195886#] (dissoc p1__195886# :data))))
    (:poses pose)
    (update :poses (partial mapv strip-data)))))
 
@@ -414,7 +414,7 @@
      (= {:color :species} (:mapping pose))
      (= 2 (count (:poses pose)))
      (every?
-      (fn* [p1__183794#] (= 2 (count (:poses p1__183794#))))
+      (fn* [p1__195887#] (= 2 (count (:poses p1__195887#))))
       (:poses pose))))
    v63_l377)))
 
@@ -947,8 +947,8 @@
       rule
       (some
        (fn*
-        [p1__183795#]
-        (when (= :rule-h (:layer-type p1__183795#)) p1__183795#))
+        [p1__195888#]
+        (when (= :rule-h (:layer-type p1__195888#)) p1__195888#))
        layers)]
      (and (some? rule) (= 3.0 (get-in rule [:mapping :y-intercept])))))
    v145_l870)))
@@ -1009,47 +1009,56 @@
  (->
   iris
   (pj/pose :sepal-length :sepal-width {:color :species})
-  pj/lay-point
-  pj/draft))
+  pj/lay-point))
 
 
 (deftest
- t155_l940
+ t155_l939
  (is
   ((fn
-    [drafts]
-    (and
-     (= 1 (count drafts))
-     (let
-      [d (first drafts)]
-      (and
-       (= :sepal-length (:x d))
-       (= :sepal-width (:y d))
-       (= :species (:color d))
-       (= :point (:mark d))
-       (= 150 (tc/row-count (:data d)))))))
+    [_]
+    (let
+     [drafts
+      (->
+       iris
+       (pj/pose :sepal-length :sepal-width {:color :species})
+       pj/lay-point
+       pj/draft)]
+     (and
+      (= 1 (count drafts))
+      (let
+       [d (first drafts)]
+       (and
+        (= :sepal-length (:x d))
+        (= :sepal-width (:y d))
+        (= :species (:color d))
+        (= :point (:mark d))
+        (= 150 (tc/row-count (:data d))))))))
    v154_l935)))
 
 
 (def
- v157_l964
+ v157_l967
  (->
   iris
   (pj/pose :sepal-length :sepal-width)
   (pj/pose :petal-length :petal-width)
-  pj/lay-point
-  pj/plan))
+  pj/lay-point))
 
 
 (deftest
- t158_l970
+ t158_l972
  (is
-  ((fn [plan] (and (:composite? plan) (= 2 (count (:sub-plots plan)))))
-   v157_l964)))
+  ((fn
+    [pose]
+    (let
+     [plan (pj/plan pose)]
+     (and (:composite? plan) (= 2 (count (:sub-plots plan))))))
+   v157_l967)))
 
 
 (def
- v160_l982
+ v160_l985
  (->
   iris
   (pj/pose :sepal-length :sepal-width {:color :species})
@@ -1058,18 +1067,18 @@
 
 
 (deftest
- t161_l987
+ t161_l990
  (is
   ((fn
     [pose]
     (let
      [plan (pj/plan pose) panel (first (:panels plan))]
      (and (= 1 (count (:panels plan))) (= 2 (count (:layers panel))))))
-   v160_l982)))
+   v160_l985)))
 
 
 (def
- v163_l1000
+ v163_l1003
  (->
   iris
   (pj/pose :sepal-length :sepal-width)
@@ -1078,12 +1087,12 @@
 
 
 (deftest
- t164_l1005
- (is ((fn [pose] (= 3 (count (:panels (pj/plan pose))))) v163_l1000)))
+ t164_l1008
+ (is ((fn [pose] (= 3 (count (:panels (pj/plan pose))))) v163_l1003)))
 
 
 (def
- v166_l1023
+ v166_l1026
  (def
   l4-shared
   (pj/arrange
@@ -1092,11 +1101,11 @@
    {:share-scales #{:x}})))
 
 
-(def v167_l1029 l4-shared)
+(def v167_l1032 l4-shared)
 
 
 (deftest
- t168_l1031
+ t168_l1034
  (is
   ((fn
     [pose]
@@ -1106,15 +1115,15 @@
       domains
       (mapv
        (fn*
-        [p1__183796#]
-        (get-in p1__183796# [:plan :panels 0 :x-scale :domain]))
+        [p1__195889#]
+        (get-in p1__195889# [:plan :panels 0 :x-scale :domain]))
        sub-plots)]
      (and (= 2 (count domains)) (= (first domains) (second domains)))))
-   v167_l1029)))
+   v167_l1032)))
 
 
 (def
- v170_l1062
+ v170_l1065
  (->
   iris
   (pj/pose
@@ -1123,7 +1132,7 @@
 
 
 (deftest
- t171_l1067
+ t171_l1070
  (is
   ((fn
     [pose]
@@ -1132,17 +1141,17 @@
      (= #{:y :x} (get-in pose [:opts :share-scales]))
      (= 2 (count (:poses pose)))
      (every?
-      (fn* [p1__183797#] (= 2 (count (:poses p1__183797#))))
+      (fn* [p1__195890#] (= 2 (count (:poses p1__195890#))))
       (:poses pose))
      (= {:color :species} (:mapping pose))))
-   v170_l1062)))
+   v170_l1065)))
 
 
-(def v173_l1087 (pj/cross [:a :b] [:c :d]))
+(def v173_l1090 (pj/cross [:a :b] [:c :d]))
 
 
 (deftest
- t174_l1089
+ t174_l1092
  (is
   ((fn [pairs] (= [[:a :c] [:a :d] [:b :c] [:b :d]] pairs))
-   v173_l1087)))
+   v173_l1090)))
