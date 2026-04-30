@@ -97,6 +97,19 @@
 
 ;; ---- Panel Rendering ----
 
+(def ^:private layer-data-slot-keys
+  "Keys on a plan layer that may carry rendered geometry. Different
+   layer types use different slots: :groups for points/lines/areas/
+   bars/etc., :boxes for boxplot, :violins for violin, :ridges for
+   ridgeline, :tiles for tile and density-2d, :levels for contour."
+  #{:groups :tiles :boxes :violins :ridges :levels})
+
+(defn- layer-has-data?
+  "True if the plan layer has non-empty rendered geometry in any
+   recognized data slot."
+  [layer]
+  (some #(seq (get layer %)) layer-data-slot-keys))
+
 (defn panel->membrane
   "Convert a plan panel into a membrane drawable tree.
    Takes a panel map from draft->plan and pixel dimensions.
@@ -241,13 +254,14 @@
                            (draw-band p1 p2 rgba horizontal-y-data?))
                  nil)))))
 
-        ;; "No data" placeholder for cells where the layers carry zero
-        ;; groups and there are no annotations -- previously these
-        ;; rendered as a blank grid with no visual indicator that the
-        ;; cell was empty by design.
+        ;; "No data" placeholder for cells where every layer has
+        ;; empty geometry (in any of its data slots) and there are
+        ;; no annotations -- previously these rendered as a blank
+        ;; grid with no visual indicator that the cell was empty
+        ;; by design.
         no-data? (and (empty? annotations)
                       (seq layers)
-                      (every? #(empty? (:groups %)) layers))
+                      (not-any? layer-has-data? layers))
         no-data-label (when no-data?
                         (ui/translate (/ (double pw) 2.0)
                                       (/ (double ph) 2.0)
