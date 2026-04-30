@@ -186,7 +186,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./plotje_book.pose_model.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Pose Model</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Poses</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -516,9 +516,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" type="text/javascript"></script>
-<p>Pose Model gave the mental picture; this chapter proves it. Each of the 29 rules below carries a rendered pose (or plan), a printed structure, and a tested assertion, so the model claims are verified on every run.</p>
+<p>Poses gave the mental picture; this chapter proves it. Each of the 29 rules below carries a rendered pose (or plan), a printed structure, and a tested assertion, so the model claims are verified on every run.</p>
 <p>The rules are organized into seven sections (Construction, Layer Placement, Leaf Identity, Scope, Options, Assembly, Layout) and cover every call shape of <code>pj/pose</code>, <code>pj/lay-*</code>, <code>pj/arrange</code>, <code>pj/options</code>, <code>pj/scale</code>, <code>pj/coord</code>, <code>pj/facet</code>, and <code>pj/cross</code>.</p>
-<p>Read <a href="./plotje_book.pose_model.html">Pose Model</a> first – this chapter is the proof layer, not a teaching chapter.</p>
+<p>Read <a href="./plotje_book.pose_model.html">Poses</a> first – this chapter is the proof layer, not a teaching chapter.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> plotje-book.pose-rules</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span></span>
@@ -600,7 +600,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <p>A <strong>leaf pose</strong> has <code>:data</code>, <code>:mapping</code>, <code>:layers</code>; no <code>:poses</code>. A <strong>composite pose</strong> has <code>:poses</code>; sub-poses can be leaves or further composites. A <strong>layer</strong> is a map with <code>:layer-type</code> and an optional <code>:mapping</code>, plus sibling keys <code>:stat</code>, <code>:position</code>, <code>:mark</code> when the user provides them.</p>
-<p>The rules below assume some familiarity with these shapes. If this is new, <a href="./plotje_book.pose_model.html">Pose Model</a> shows them in use before we formalize them here.</p>
+<p>The rules below assume some familiarity with these shapes. If this is new, <a href="./plotje_book.pose_model.html">Poses</a> shows them in use before we formalize them here.</p>
 <hr>
 </section>
 <section id="construction" class="level2">
