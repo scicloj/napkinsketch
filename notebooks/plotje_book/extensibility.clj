@@ -255,6 +255,12 @@
 ;; |:---------------|:-----|
 ;; | `:svg` | plan, then membrane, then `membrane->plot :svg` |
 ;; | `:bufimg` | plan, then membrane, then `membrane->plot :bufimg` (raster image) |
+;;
+;; Note that `pj/save`'s `:png` file format is not a separate
+;; dispatch value -- it routes through the `:bufimg` path internally
+;; and encodes the resulting `BufferedImage` as PNG bytes on disk.
+;; The save-side keyword names the file format; the dispatch-side
+;; keyword names the JVM render target.
 
 ;; Using `plan->plot` directly:
 

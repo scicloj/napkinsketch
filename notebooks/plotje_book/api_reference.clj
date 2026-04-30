@@ -779,13 +779,30 @@ plan1
 
 (kind/test-last [true?])
 
-;; Save a plot to a PNG file (extension inference picks the raster
-;; backend). Returns the path:
+;; Save a plot to a PNG file. Extension inference picks the raster
+;; backend; the returned bytes start with the PNG magic header:
 
 (let [path (str (java.io.File/createTempFile "plotje-example" ".png"))]
   (-> (rdatasets/datasets-iris)
       (pj/lay-point :sepal-length :sepal-width {:color :species})
       (pj/save path))
-  (.exists (java.io.File. ^String path)))
+  (with-open [in (java.io.FileInputStream. path)]
+    (let [bs (byte-array 8)]
+      (.read in bs)
+      (mapv #(bit-and ^int % 0xFF) (vec bs)))))
 
-(kind/test-last [true?])
+(kind/test-last [(fn [bs] (= [137 80 78 71 13 10 26 10] bs))])
+
+;; Pass `{:format :png}` explicitly when the path's extension does
+;; not match the desired format, or when it is built dynamically:
+
+(let [path (str (java.io.File/createTempFile "plotje-example" ".out"))]
+  (-> (rdatasets/datasets-iris)
+      (pj/lay-point :sepal-length :sepal-width {:color :species})
+      (pj/save path {:format :png}))
+  (with-open [in (java.io.FileInputStream. path)]
+    (let [bs (byte-array 4)]
+      (.read in bs)
+      (mapv #(bit-and ^int % 0xFF) (vec bs)))))
+
+(kind/test-last [(fn [bs] (= [137 80 78 71] bs))])

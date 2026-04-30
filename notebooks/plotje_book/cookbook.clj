@@ -618,13 +618,48 @@
 
 ;; ### Saving to PNG
 ;;
-;; Use `pj/save` with a `.png` path to write a raster image to disk:
+;; Use `pj/save` with a `.png` path to write a raster image to disk.
+;; The format is inferred from the extension:
+
+(let [path (str (java.io.File/createTempFile "plotje-diamonds" ".png"))]
+  (-> (rdatasets/ggplot2-diamonds)
+      (pj/lay-point :carat :price {:color :cut})
+      (pj/save path))
+  ;; Read the first eight bytes and check for PNG magic.
+  (with-open [in (java.io.FileInputStream. path)]
+    (let [bs (byte-array 8)]
+      (.read in bs)
+      (mapv #(bit-and ^int % 0xFF) (vec bs)))))
+
+(kind/test-last [(fn [bs] (= [137 80 78 71 13 10 26 10] bs))])
+
+;; The same call with an explicit `{:format :png}` makes the format
+;; choice unambiguous, useful when the path is built dynamically:
 
 ;; ```clojure
 ;; (-> (rdatasets/ggplot2-diamonds)
 ;;     (pj/lay-point :carat :price {:color :cut})
-;;     (pj/save "diamonds.png"))
+;;     (pj/save out-path {:format :png}))
 ;; ```
+
+;; ### Two vocabularies: plot return type vs save file format
+;;
+;; The two paths above use the same `:format` keyword for different
+;; jobs. `pj/plot` names a JVM return type:
+;;
+;; - `:svg` -- hiccup
+;; - `:bufimg` -- a Java2D `BufferedImage`
+;;
+;; `pj/save` names the file format:
+;;
+;; - `:svg` -- SVG file
+;; - `:png` -- PNG file
+;;
+;; A pose's `:opts {:format ...}` flows into both contexts. If you
+;; pin `:format :bufimg` on a pose so the notebook renders raster,
+;; saving that pose still produces a PNG file -- the save path
+;; reinterprets the pose-level `:bufimg` as `:png` because what hits
+;; the disk is a PNG.
 
 ;; ## What's Next
 ;;
