@@ -151,6 +151,16 @@
 ;; cleanup section at the end of this notebook removes the
 ;; extension's defmethods:
 
+;; Capture the plan eagerly too, so the bar-color check works after
+;; the cleanup section below removes the extension's defmethods:
+
+(def waterfall-bars
+  (-> pnl-data
+      (pj/pose :category :amount)
+      (pj/lay (layer-type/lookup :waterfall))
+      pj/plan
+      :panels first :layers first :bars))
+
 (-> pnl-data
     (pj/pose :category :amount)
     (pj/lay (layer-type/lookup :waterfall))
@@ -158,9 +168,18 @@
                  :width 500 :height 350})
     pj/plot)
 
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 6 (:polygons s)))))])
+(kind/test-last
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          green [0.2 0.7 0.3 1.0]
+          red [0.85 0.25 0.25 1.0]
+          ;; Categories at positions 0, 2, 5 are positive.
+          positive-bars (mapv #(nth waterfall-bars %) [0 2 5])
+          negative-bars (mapv #(nth waterfall-bars %) [1 3 4])]
+      (and (= 1 (:panels s))
+           (= 6 (:polygons s))
+           (every? #(= green (:color %)) positive-bars)
+           (every? #(= red (:color %)) negative-bars))))])
 
 ;; Six bars -- one per category. Green for positive amounts (Revenue,
 ;; Gross Profit, Net Income), red for negative (COGS, OpEx, Tax).

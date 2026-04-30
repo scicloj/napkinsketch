@@ -46,12 +46,17 @@
  (is
   ((fn
     [pose]
-    (let [s (str (pj/plot pose))] (re-find #"nsk-brush-sel" s)))
+    (let
+     [s (str (pj/plot pose))]
+     (and
+      (re-find #"nsk-brush-sel" s)
+      (re-find #"\"0\.15\"|0\.15\b" s)
+      (re-find #"\(<\s*bw\s+3\)" s))))
    v6_l55)))
 
 
 (def
- v9_l73
+ v9_l79
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width)
@@ -64,18 +69,18 @@
 
 
 (deftest
- t10_l81
+ t10_l87
  (is
   ((fn
     [pose]
     (let
      [s (str (pj/plot pose))]
      (and (re-find #":data-row-idx" s) (re-find #"nsk-brush-sel" s))))
-   v9_l73)))
+   v9_l79)))
 
 
 (def
- v12_l93
+ v12_l99
  (->
   {:start
    [#inst "2024-01-01T00:00:00.000-00:00"
@@ -99,18 +104,18 @@
 
 
 (deftest
- t13_l104
+ t13_l110
  (is
   ((fn
     [pose]
     (let
      [s (str (pj/plot pose))]
      (and (re-find #":data-tooltip" s) (re-find #" → " s))))
-   v12_l93)))
+   v12_l99)))
 
 
 (def
- v15_l115
+ v15_l121
  (let
   [plot-svg
    (pj/plot

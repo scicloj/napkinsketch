@@ -57,9 +57,20 @@
 (-> (rdatasets/palmerpenguins-penguins)
     (pj/lay-bar :island {:position :fill :color :species}))
 
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (pos? (:polygons s)))))])
+(kind/test-last
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          panel (first (:panels (pj/plan
+                                 (-> (rdatasets/palmerpenguins-penguins)
+                                     (pj/lay-bar :island
+                                                 {:position :fill
+                                                  :color :species})))))
+          [y0 y1] (:y-domain panel)]
+      (and (= 1 (:panels s))
+           (pos? (:polygons s))
+           ;; The y-domain is normalized to [0.0, 1.0] -- proportions.
+           (== 0.0 y0)
+           (== 1.0 y1))))])
 
 ;; ## Horizontal Bar Chart
 
@@ -70,9 +81,18 @@
     (pj/coord :flip))
 
 (kind/test-last
- [(fn [v] (let [s (pj/svg-summary v)]
-            (and (= 1 (:panels s))
-                 (pos? (:polygons s)))))])
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          plan (pj/plan (-> (rdatasets/datasets-iris)
+                            (pj/lay-bar :species)
+                            (pj/coord :flip)))
+          panel (first (:panels plan))
+          iris-order (vec (distinct ((rdatasets/datasets-iris) :species)))]
+      (and (= 1 (:panels s))
+           (pos? (:polygons s))
+           ;; Categories on the y-axis follow the data order, not
+           ;; alphabetical order.
+           (= iris-order (:values (:y-ticks panel))))))])
 
 ;; `(pj/coord :flip)` draws categories **bottom-to-top in data
 ;; order**, matching ggplot2's `coord_flip()`. For a ranking chart

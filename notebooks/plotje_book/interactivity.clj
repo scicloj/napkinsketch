@@ -58,9 +58,15 @@
                  :brush true
                  :height 320}))
 
-(kind/test-last [(fn [pose]
-                   (let [s (str (pj/plot pose))]
-                     (re-find #"nsk-brush-sel" s)))])
+(kind/test-last
+ [(fn [pose]
+    (let [s (str (pj/plot pose))]
+      (and (re-find #"nsk-brush-sel" s)
+           ;; Outside-selection points dim to 0.15 opacity.
+           (re-find #"\"0\.15\"|0\.15\b" s)
+           ;; Drags shorter than 3 pixels each side clear the
+           ;; selection.
+           (re-find #"\(<\s*bw\s+3\)" s))))])
 
 ;; ## Cross-panel linked highlighting
 ;;

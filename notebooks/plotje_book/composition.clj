@@ -142,10 +142,20 @@ shared-x
 
 marginal
 
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 2 (:panels s))
-                                (= 150 (:points s))
-                                (pos? (:polygons s)))))])
+(kind/test-last
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          panels (mapv #(-> % :plan :panels first)
+                       (:sub-plots (pj/plan marginal)))
+          [d-x s-x] (mapv :x-domain panels)
+          [d-y s-y] (mapv :y-domain panels)]
+      (and (= 2 (:panels s))
+           (= 150 (:points s))
+           (pos? (:polygons s))
+           ;; Both panels share the same x-domain (sepal-length range).
+           (= d-x s-x)
+           ;; Each panel has its own y-domain (density vs sepal-width).
+           (not= d-y s-y))))])
 
 ;; The top panel's density curve aligns with the scatter's x-axis.
 ;; Each panel retains its own y-axis because `:share-scales` here
@@ -170,7 +180,14 @@ marginal
 
 dashboard
 
-(kind/test-last [(fn [v] (= 4 (:panels (pj/svg-summary v))))])
+(kind/test-last
+ [(fn [v]
+    (let [chrome (-> dashboard pj/plan :chrome)]
+      (and (= 4 (:panels (pj/svg-summary v)))
+           ;; The histogram cell has no :color, so :color is not
+           ;; shared across all leaves -- each colored cell renders
+           ;; its own legend (see Notes below).
+           (= #{} (:shared-aesthetics chrome)))))])
 
 ;; Four panels, each its own layer type. `pj/arrange` stacks the rows
 ;; vertically; each row is laid out horizontally. Every cell is a
@@ -206,6 +223,23 @@ dashboard
 ;;   to `pj/arrange` (the dashboard example above shows the shape).
 ;;   Nested composites (a sub-pose that is itself composite) are out
 ;;   of scope today.
+
+(kind/test-last
+ [(fn [_]
+    (let [iris (rdatasets/datasets-iris)
+          all-color (pj/arrange
+                     [(-> iris (pj/lay-point :sepal-length :sepal-width
+                                             {:color :species}))
+                      (-> iris (pj/lay-point :petal-length :petal-width
+                                             {:color :species}))])
+          mixed (pj/arrange
+                 [(-> iris (pj/lay-histogram :sepal-length))
+                  (-> iris (pj/lay-point :petal-length :petal-width
+                                         {:color :species}))])]
+      (and ;; All siblings share :color :species -> merged shared legend.
+       (= #{:color} (-> all-color pj/plan :chrome :shared-aesthetics))
+           ;; Histogram sibling lacks :color -> no shared legend; per-leaf.
+       (= #{} (-> mixed pj/plan :chrome :shared-aesthetics)))))])
 
 ;; ## What's Next
 ;;

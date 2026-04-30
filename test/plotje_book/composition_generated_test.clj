@@ -141,13 +141,27 @@
   ((fn
     [v]
     (let
-     [s (pj/svg-summary v)]
-     (and (= 2 (:panels s)) (= 150 (:points s)) (pos? (:polygons s)))))
+     [s
+      (pj/svg-summary v)
+      panels
+      (mapv
+       (fn* [p1__212137#] (-> p1__212137# :plan :panels first))
+       (:sub-plots (pj/plan marginal)))
+      [d-x s-x]
+      (mapv :x-domain panels)
+      [d-y s-y]
+      (mapv :y-domain panels)]
+     (and
+      (= 2 (:panels s))
+      (= 150 (:points s))
+      (pos? (:polygons s))
+      (= d-x s-x)
+      (not= d-y s-y))))
    v22_l143)))
 
 
 (def
- v25_l164
+ v25_l174
  (def
   dashboard
   (pj/arrange
@@ -163,9 +177,48 @@
       (pj/lay-density :petal-length {:color :species}))]])))
 
 
-(def v26_l171 dashboard)
+(def v26_l181 dashboard)
 
 
 (deftest
- t27_l173
- (is ((fn [v] (= 4 (:panels (pj/svg-summary v)))) v26_l171)))
+ t27_l183
+ (is
+  ((fn
+    [v]
+    (let
+     [chrome (-> dashboard pj/plan :chrome)]
+     (and
+      (= 4 (:panels (pj/svg-summary v)))
+      (= #{} (:shared-aesthetics chrome)))))
+   v26_l181)))
+
+
+(deftest
+ t29_l227
+ (is
+  ((fn
+    [_]
+    (let
+     [iris
+      (rdatasets/datasets-iris)
+      all-color
+      (pj/arrange
+       [(->
+         iris
+         (pj/lay-point :sepal-length :sepal-width {:color :species}))
+        (->
+         iris
+         (pj/lay-point :petal-length :petal-width {:color :species}))])
+      mixed
+      (pj/arrange
+       [(-> iris (pj/lay-histogram :sepal-length))
+        (->
+         iris
+         (pj/lay-point
+          :petal-length
+          :petal-width
+          {:color :species}))])]
+     (and
+      (= #{:color} (-> all-color pj/plan :chrome :shared-aesthetics))
+      (= #{} (-> mixed pj/plan :chrome :shared-aesthetics)))))
+   v26_l181)))

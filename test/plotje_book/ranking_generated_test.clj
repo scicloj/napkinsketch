@@ -76,29 +76,57 @@
   ((fn
     [v]
     (let
-     [s (pj/svg-summary v)]
-     (and (= 1 (:panels s)) (pos? (:polygons s)))))
+     [s
+      (pj/svg-summary v)
+      panel
+      (first
+       (:panels
+        (pj/plan
+         (->
+          (rdatasets/palmerpenguins-penguins)
+          (pj/lay-bar :island {:position :fill, :color :species})))))
+      [y0 y1]
+      (:y-domain panel)]
+     (and
+      (= 1 (:panels s))
+      (pos? (:polygons s))
+      (== 0.0 y0)
+      (== 1.0 y1))))
    v13_l57)))
 
 
 (def
- v16_l68
+ v16_l79
  (-> (rdatasets/datasets-iris) (pj/lay-bar :species) (pj/coord :flip)))
 
 
 (deftest
- t17_l72
+ t17_l83
  (is
   ((fn
     [v]
     (let
-     [s (pj/svg-summary v)]
-     (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v16_l68)))
+     [s
+      (pj/svg-summary v)
+      plan
+      (pj/plan
+       (->
+        (rdatasets/datasets-iris)
+        (pj/lay-bar :species)
+        (pj/coord :flip)))
+      panel
+      (first (:panels plan))
+      iris-order
+      (vec (distinct ((rdatasets/datasets-iris) :species)))]
+     (and
+      (= 1 (:panels s))
+      (pos? (:polygons s))
+      (= iris-order (:values (:y-ticks panel))))))
+   v16_l79)))
 
 
 (def
- v19_l87
+ v19_l107
  (->
   (rdatasets/reshape2-tips)
   (pj/lay-bar :day {:color :time})
@@ -106,71 +134,71 @@
 
 
 (deftest
- t20_l91
+ t20_l111
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v19_l87)))
+   v19_l107)))
 
 
-(def v22_l100 (-> sales (pj/lay-value-bar :product :revenue)))
+(def v22_l120 (-> sales (pj/lay-value-bar :product :revenue)))
 
 
 (deftest
- t23_l103
+ t23_l123
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v22_l100)))
+   v22_l120)))
 
 
 (def
- v25_l111
+ v25_l131
  (-> sales (pj/lay-value-bar :product :revenue) (pj/coord :flip)))
 
 
 (deftest
- t26_l115
+ t26_l135
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 4 (:polygons s)))))
-   v25_l111)))
+   v25_l131)))
 
 
-(def v28_l123 (-> sales (pj/lay-lollipop :product :revenue)))
+(def v28_l143 (-> sales (pj/lay-lollipop :product :revenue)))
 
 
 (deftest
- t29_l126
+ t29_l146
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
-   v28_l123)))
+   v28_l143)))
 
 
 (def
- v31_l134
+ v31_l154
  (-> sales (pj/lay-lollipop :product :revenue) (pj/coord :flip)))
 
 
 (deftest
- t32_l138
+ t32_l158
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
-   v31_l134)))
+   v31_l154)))

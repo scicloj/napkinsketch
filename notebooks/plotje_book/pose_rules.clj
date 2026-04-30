@@ -136,14 +136,13 @@
 ;; unpositioned extension yields a pose structurally equal to the
 ;; same content expressed as one call.
 
-(-> iris
-    pj/pose
-    (pj/pose {:color :species})
-    (pj/pose :sepal-length :sepal-width))
+(= (-> iris
+       pj/pose
+       (pj/pose {:color :species})
+       (pj/pose :sepal-length :sepal-width))
+   (pj/pose iris :sepal-length :sepal-width {:color :species}))
 
-(kind/test-last
- [(fn [pose]
-    (= pose (pj/pose iris :sepal-length :sepal-width {:color :species})))])
+(kind/test-last [true?])
 
 ;; ### Rule C3: `pj/pose` with position on a positioned leaf promotes to a composite
 ;;
@@ -196,6 +195,15 @@
     (pj/options {:title "Iris"})
     (pj/pose :petal-length :petal-width))
 
+;; The printed structure shows `:opts {:title "Iris"}` at root and no
+;; `:opts` on sub-pose 1:
+
+(-> iris
+    (pj/pose :sepal-length :sepal-width)
+    (pj/options {:title "Iris"})
+    (pj/pose :petal-length :petal-width)
+    pose-summary)
+
 (kind/test-last
  [(fn [pose]
     (and (= "Iris" (get-in pose [:opts :title]))
@@ -226,17 +234,15 @@
 ;; (C3's mapping-split path). Users can switch between the two
 ;; forms without changing the result.
 
-(-> iris
-    (pj/pose :sepal-length :sepal-width)
-    (pj/pose {:color :species})
-    (pj/pose :petal-length :petal-width))
+(= (-> iris
+       (pj/pose :sepal-length :sepal-width)
+       (pj/pose {:color :species})
+       (pj/pose :petal-length :petal-width))
+   (-> iris
+       (pj/pose :sepal-length :sepal-width {:color :species})
+       (pj/pose :petal-length :petal-width)))
 
-(kind/test-last
- [(fn [pose]
-    (= pose
-       (-> iris
-           (pj/pose :sepal-length :sepal-width {:color :species})
-           (pj/pose :petal-length :petal-width))))])
+(kind/test-last [true?])
 
 ;; ### Rule C5: layer partitioning at promotion splits layers by position presence
 ;;
@@ -326,34 +332,36 @@
 ;; unchanged. This makes the 1-arity `pj/pose` safe as a syntactic
 ;; nullity.
 
-;; A leaf pose is unchanged by 1-arity `pj/pose`:
+;; A leaf pose. First the rendered plot, then its structure:
 
-(-> iris (pj/pose :sepal-length :sepal-width))
+(def leaf-pose (-> iris (pj/pose :sepal-length :sepal-width)))
 
-(-> iris (pj/pose :sepal-length :sepal-width) pose-summary)
+leaf-pose
 
-(kind/test-last
- [(fn [_]
-    (let [pose (-> iris (pj/pose :sepal-length :sepal-width))]
-      (= pose (pj/pose pose))))])
+(pose-summary leaf-pose)
 
-;; A composite pose is also unchanged:
+;; Wrapping it with 1-arity `pj/pose` returns the same value:
 
-(-> iris
-    (pj/pose :sepal-length :sepal-width)
-    (pj/pose :petal-length :petal-width))
+(= leaf-pose (pj/pose leaf-pose))
 
-(-> iris
-    (pj/pose :sepal-length :sepal-width)
-    (pj/pose :petal-length :petal-width)
-    pose-summary)
+(kind/test-last [true?])
 
-(kind/test-last
- [(fn [_]
-    (let [pose (-> iris
-                   (pj/pose :sepal-length :sepal-width)
-                   (pj/pose :petal-length :petal-width))]
-      (= pose (pj/pose pose))))])
+;; A composite pose. The rendered plot, then its structure:
+
+(def composite-pose
+  (-> iris
+      (pj/pose :sepal-length :sepal-width)
+      (pj/pose :petal-length :petal-width)))
+
+composite-pose
+
+(pose-summary composite-pose)
+
+;; And again, 1-arity `pj/pose` is a no-op:
+
+(= composite-pose (pj/pose composite-pose))
+
+(kind/test-last [true?])
 
 ;; ### Rule C8: `pj/arrange` composes poses into a composite
 ;;

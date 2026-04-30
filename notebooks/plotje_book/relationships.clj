@@ -48,10 +48,29 @@
     pj/lay-point
     (pj/lay-smooth {:stat :linear-model :confidence-band true}))
 
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s))
-                                (= 3 (:polygons s)))))])
+(kind/test-last
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          base (-> (rdatasets/datasets-iris)
+                   (pj/pose :sepal-length :sepal-width {:color :species})
+                   pj/lay-point)
+          default-band (-> base
+                           (pj/lay-smooth {:stat :linear-model
+                                           :confidence-band true})
+                           pj/plan
+                           :panels first :layers last :ribbons)
+          explicit-95 (-> base
+                          (pj/lay-smooth {:stat :linear-model
+                                          :confidence-band true
+                                          :level 0.95})
+                          pj/plan
+                          :panels first :layers last :ribbons)]
+      (and (= 150 (:points s))
+           (= 3 (:lines s))
+           (= 3 (:polygons s))
+           ;; Default :confidence-band level is 0.95 -- ribbons match
+           ;; explicit :level 0.95.
+           (= default-band explicit-95))))])
 ;; ## Tips with Regression
 
 ;; Do smokers and non-smokers tip differently?

@@ -145,15 +145,25 @@
 ;; `LocalDateTime`, `Instant`) and picks calendar-aware tick
 ;; labels automatically.
 
-(-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
-            #inst "2024-04-01" #inst "2024-05-01" #inst "2024-06-01"]
-     :temperature [3 5 9 14 19 23]}
-    (pj/lay-line :date :temperature)
-    pj/lay-point)
+(def temp-pose
+  (-> {:date [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
+              #inst "2024-04-01" #inst "2024-05-01" #inst "2024-06-01"]
+       :temperature [3 5 9 14 19 23]}
+      (pj/lay-line :date :temperature)
+      pj/lay-point))
 
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 6 (:points s))
-                                (= 1 (:lines s)))))])
+temp-pose
+
+(kind/test-last
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          panel (first (:panels (pj/plan temp-pose)))
+          tick-labels (:labels (:x-ticks panel))]
+      (and (= 6 (:points s))
+           (= 1 (:lines s))
+           ;; Tick labels are calendar-aware (e.g., "Feb-01", not raw
+           ;; epoch-millisecond numbers).
+           (some #(re-find #"[A-Z][a-z]{2}" %) tick-labels))))])
 
 ;; ## Multiple Series Over Time
 

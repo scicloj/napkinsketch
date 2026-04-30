@@ -21,9 +21,21 @@
     (pj/lay-point :sepal-length :sepal-width {:color :species})
     (pj/facet :species))
 
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 3 (:panels s))
-                                (= 150 (:points s)))))])
+(kind/test-last
+ [(fn [v]
+    (let [s (pj/svg-summary v)
+          panels (:panels (pj/plan (-> (rdatasets/datasets-iris)
+                                       (pj/lay-point :sepal-length :sepal-width
+                                                     {:color :species})
+                                       (pj/facet :species))))
+          x-doms (mapv :x-domain panels)
+          y-doms (mapv :y-domain panels)]
+      (and (= 3 (:panels s))
+           (= 150 (:points s))
+           ;; Default :scales is :shared -- every panel shares both
+           ;; x-domain and y-domain.
+           (apply = x-doms)
+           (apply = y-doms))))])
 
 ;; Each species gets its own panel with a strip label on top.
 ;; Scales are shared by default -- all panels use the same x and y range,

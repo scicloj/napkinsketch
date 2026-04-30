@@ -204,6 +204,19 @@
                  :x-label ""
                  :height 320}))
 
+(kind/test-last
+ [(fn [_]
+    (let [default-style (-> (pj/lay-interval-h project :start :task
+                                               {:x-end :end})
+                            pj/plan
+                            :panels first :layers first :style)
+          custom-style (-> (pj/lay-interval-h project :start :task
+                                              {:x-end :end :interval-thickness 0.4})
+                           pj/plan
+                           :panels first :layers first :style)]
+      (and (== 0.7 (:interval-thickness default-style))
+           (== 0.4 (:interval-thickness custom-style)))))])
+
 ;; ## Numeric color
 ;;
 ;; Pass a numeric column to `:color` and Plotje grades each bar
