@@ -153,7 +153,7 @@
 
 
 (def
- v34_l183
+ v34_l186
  (def
   two-panel
   (pj/pose
@@ -166,36 +166,36 @@
       :layers [{:layer-type :point}]}]})))
 
 
-(def v35_l192 two-panel)
+(def v35_l195 two-panel)
 
 
 (deftest
- t36_l194
+ t36_l197
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v35_l192)))
+   v35_l195)))
 
 
-(def v38_l200 (kind/pprint two-panel))
+(def v38_l203 (kind/pprint two-panel))
 
 
 (deftest
- t39_l202
+ t39_l205
  (is
   ((fn
     [v]
     (and
      (= 2 (count (:poses v)))
      (= :horizontal (get-in v [:layout :direction]))))
-   v38_l200)))
+   v38_l203)))
 
 
 (def
- v41_l209
+ v41_l212
  (pj/arrange
   [(->
     (rdatasets/datasets-iris)
@@ -208,12 +208,12 @@
 
 
 (deftest
- t42_l217
- (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v41_l209)))
+ t42_l220
+ (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v41_l212)))
 
 
 (def
- v44_l225
+ v44_l228
  (->
   (pj/arrange
    [(->
@@ -228,7 +228,7 @@
 
 
 (deftest
- t45_l234
+ t45_l237
  (is
   ((fn
     [v]
@@ -237,4 +237,4 @@
      (= 1 (count (:poses v)))
      (= 2 (count (:poses (first (:poses v)))))
      (= :horizontal (get-in v [:poses 0 :layout :direction]))))
-   v44_l225)))
+   v44_l228)))

@@ -175,10 +175,13 @@ multi-layer
 
 ;; ## Poses compose
 ;;
-;; Composition functions take a pose and return a pose.
-;; A **composite** pose is a plain map too -- with `:poses`
-;; holding its sub-poses and `:layout` describing how to tile
-;; them. Here is a two-panel composite written as an explicit map:
+;; The poses we have built so far are **leaf** poses -- each
+;; describes a single plot panel with its own data, mapping, and
+;; layers. A **composite** pose is the other shape: a plain map
+;; that holds sub-poses under `:poses` and an optional `:layout`
+;; describing how to tile them. Composition functions take any
+;; pose and return a pose. Here is a two-panel composite written
+;; as an explicit map:
 
 (def two-panel
   (pj/pose
