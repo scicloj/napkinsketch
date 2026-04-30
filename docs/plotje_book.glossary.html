@@ -536,11 +536,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="composite-pose" class="level2">
 <h2 class="anchored" data-anchor-id="composite-pose">Composite Pose</h2>
 <p>A <strong>composite pose</strong> is a pose that contains other poses under <code>:poses</code> plus an optional <code>:layout</code>. Created by <code>pj/arrange</code>. Its leaves render independently and are tiled into the final plot.</p>
-<p>Some features are not yet exposed through <code>pj/arrange</code> – unequal weights, nested poses, and cross-sibling shared scales. To use them, build the composite as a literal map; <code>pj/pose</code> accepts the literal form.</p>
+<p>Some features are not yet exposed through <code>pj/arrange</code> – unequal weights and nested composite cells. To use them, build the composite as a literal map; <code>pj/pose</code> accepts the literal form.</p>
 </section>
 <section id="arrange" class="level2">
 <h2 class="anchored" data-anchor-id="arrange">Arrange</h2>
-<p><code>pj/arrange</code> builds a composite pose from a sequence of poses. Each input pose becomes a sub-pose; the result is a composite that tiles them via <code>:layout</code> (direction and optional weights). For features <code>pj/arrange</code> does not yet expose – nested composites or <code>:share-scales</code> – pass a literal map to <code>pj/pose</code>.</p>
+<p><code>pj/arrange</code> builds a composite pose from a sequence of poses. Each input pose becomes a sub-pose; the result is a composite that tiles them via <code>:layout</code>. It accepts <code>:cols</code>, <code>:title</code>, <code>:width</code>, <code>:height</code>, and <code>:share-scales</code>. For features it does not yet expose – unequal weights and nested composite cells – pass a literal map to <code>pj/pose</code>.</p>
 </section>
 <section id="layer-type" class="level2">
 <h2 class="anchored" data-anchor-id="layer-type">Layer Type</h2>

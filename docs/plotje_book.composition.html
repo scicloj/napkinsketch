@@ -624,9 +624,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="notes-on-the-current-implementation">Notes on the Current Implementation</h2>
 <p>A few details about how composition renders today, in case they matter for a layout you’re sketching:</p>
 <ul>
-<li><p><strong>Each leaf draws its own axes, labels, and ticks.</strong> Shared scales align the data ranges across panels, but these decorations are per-leaf, so a marginal plot shows the x-axis label on both the main and the marginal panel.</p></li>
+<li><p><strong>Each leaf draws its own axes, labels, and ticks.</strong> Shared scales align the data ranges across panels, but these decorations are per-leaf in <code>:horizontal</code> and <code>:vertical</code> layouts, so the marginal example renders the x-axis label on both the strip and the scatter. (Matrix layouts – the SPLOM grid in particular – replace per-leaf x/y labels with shared strip labels, and SPLOM additionally suppresses ticks on interior cells.)</p></li>
 <li><p><strong>Plot-area edges may not line up</strong> across composite siblings, since each leaf reserves its own padding for axes and labels – two sub-poses with different label lengths can produce visibly different panel widths.</p></li>
-<li><p><strong>Each sub-pose produces its own legend</strong> – if you map <code>:color</code> in two sibling sub-poses, the rendered plot shows two legends rather than a merged one.</p></li>
+<li><p><strong>Legends merge when sibling sub-poses agree on an aesthetic.</strong> If every leaf maps the same aesthetic identically (e.g., <code>:color :species</code> in all cells), the compositor renders a single shared legend at composite level. When the mappings disagree – or when only some leaves carry the aesthetic, as in the dashboard above – each leaf with that aesthetic renders its own legend.</p></li>
 <li><p><strong>Multi-row layouts go through <code>pj/arrange</code>.</strong> Both <code>pj/arrange</code> and the explicit-map form accept only leaf cells; a row of rows or column of rows is built by passing nested vectors of leaves to <code>pj/arrange</code> (the dashboard example above shows the shape). Nested composites (a sub-pose that is itself composite) are out of scope today.</p></li>
 </ul>
 </section>
