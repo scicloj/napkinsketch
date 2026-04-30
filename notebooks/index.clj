@@ -1,6 +1,5 @@
-;; # Plotje
 ;; Composable plotting in Clojure
-
+;; # Preface
 ^{:clay {:hide-code true}}
 (ns index
   (:require
