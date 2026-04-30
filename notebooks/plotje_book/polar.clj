@@ -3,8 +3,9 @@
 ;; For [polar coordinates](https://en.wikipedia.org/wiki/Polar_coordinate_system),
 ;; `(pj/coord :polar)` maps x to angle and y to radius. Bars become
 ;; arc-interpolated wedges (rose charts), and scatter points wrap into
-;; a disc. Currently best suited for point and bar-family marks;
-;; tick labels and axis labels are not yet rendered under `:polar`.
+;; a disc. Supported marks today are `:point`, `:bar`, `:rect`, `:text`,
+;; and `:rug`; other marks throw at plan time. Tick labels and axis
+;; labels are not yet rendered under `:polar`.
 
 (ns plotje-book.polar
   (:require

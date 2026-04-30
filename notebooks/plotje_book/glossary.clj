@@ -51,17 +51,17 @@ my-pose
 ;; leaves render independently and are tiled into the final plot.
 ;;
 ;; Some features are not yet exposed through `pj/arrange` -- unequal
-;; weights, nested poses, and cross-sibling shared scales. To use
-;; them, build the composite as a literal map; `pj/pose` accepts the
-;; literal form.
+;; weights and nested composite cells. To use them, build the
+;; composite as a literal map; `pj/pose` accepts the literal form.
 
 ;; ## Arrange
 ;;
 ;; `pj/arrange` builds a composite pose from a sequence of poses.
 ;; Each input pose becomes a sub-pose; the result is a composite
-;; that tiles them via `:layout` (direction and optional weights).
-;; For features `pj/arrange` does not yet expose -- nested composites
-;; or `:share-scales` -- pass a literal map to `pj/pose`.
+;; that tiles them via `:layout`. It accepts `:cols`, `:title`,
+;; `:width`, `:height`, and `:share-scales`. For features it does
+;; not yet expose -- unequal weights and nested composite cells --
+;; pass a literal map to `pj/pose`.
 
 ;; ## Layer Type
 ;;

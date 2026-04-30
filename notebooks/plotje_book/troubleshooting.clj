@@ -37,18 +37,22 @@
 ;; ## Mixed Keyword and String Column References
 
 ;; **Symptom**: A plot that should show data renders empty -- no
-;; points, no lines, no bars -- and no error is raised.
+;; points, no lines, no bars -- and no error is raised. Most
+;; commonly seen with CSVs loaded without `:key-fn keyword`,
+;; where the dataset has string column names but mappings use
+;; keywords.
 ;;
-;; **Cause**: Plotje treats keyword and string column references as
-;; distinct keys. If a dataset's column is named with a string but
-;; a mapping references it with a keyword (or vice versa), the
-;; lookup fails silently and the layer renders nothing.
+;; **Cause**: Plotje normalizes string vs. keyword refs in many
+;; paths -- a keyword-keyed dataset referenced with strings
+;; renders fine. The reverse direction (string-keyed dataset
+;; referenced with keywords) is not yet fully normalized, and
+;; the data-extraction step resolves to nothing, leaving an
+;; empty layer.
 ;;
-;; **Fix for now**: Pick one form -- keyword or string -- and use it
-;; consistently with the dataset's column keys. CSVs loaded without
-;; `:key-fn keyword` keep string column names; pass `{:key-fn keyword}`
-;; at load time to use keywords throughout, matching the convention
-;; used in this book.
+;; **Fix**: Pick one form -- keyword or string -- and use it
+;; consistently with the dataset's column keys. CSVs loaded with
+;; `{:key-fn keyword}` keep the keyword convention used elsewhere
+;; in this book.
 
 (let [string-keyed (-> (rdatasets/datasets-iris)
                        (assoc "species-str"
@@ -61,9 +65,6 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
                                 (< 1 (count (:colors s))))))])
-
-;; A future normalization pass would let mixed forms refer to the
-;; same column. Tracked in `CHANGELOG.md` Known limitations.
 
 ;; ## Wrong Chart Type from Inference
 ;;

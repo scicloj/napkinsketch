@@ -183,15 +183,23 @@ dashboard
 ;;
 ;; - **Each leaf draws its own axes, labels, and ticks.** Shared
 ;;   scales align the data ranges across panels, but these
-;;   decorations are per-leaf, so a marginal plot shows the
-;;   x-axis label on both the main and the marginal panel.
+;;   decorations are per-leaf in `:horizontal` and `:vertical`
+;;   layouts, so the marginal example renders the x-axis label
+;;   on both the strip and the scatter. (Matrix layouts -- the
+;;   SPLOM grid in particular -- replace per-leaf x/y labels with
+;;   shared strip labels, and SPLOM additionally suppresses ticks
+;;   on interior cells.)
 ;; - **Plot-area edges may not line up** across composite siblings,
 ;;   since each leaf reserves its own padding for axes and labels --
 ;;   two sub-poses with different label lengths can produce visibly
 ;;   different panel widths.
-;; - **Each sub-pose produces its own legend** -- if you map `:color`
-;;   in two sibling sub-poses, the rendered plot shows two legends
-;;   rather than a merged one.
+;; - **Legends merge when sibling sub-poses agree on an aesthetic.**
+;;   If every leaf maps the same aesthetic identically (e.g.,
+;;   `:color :species` in all cells), the compositor renders a
+;;   single shared legend at composite level. When the mappings
+;;   disagree -- or when only some leaves carry the aesthetic, as
+;;   in the dashboard above -- each leaf with that aesthetic
+;;   renders its own legend.
 ;; - **Multi-row layouts go through `pj/arrange`.** Both `pj/arrange`
 ;;   and the explicit-map form accept only leaf cells; a row of rows
 ;;   or column of rows is built by passing nested vectors of leaves

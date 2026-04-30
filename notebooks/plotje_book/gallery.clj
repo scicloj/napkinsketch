@@ -1718,9 +1718,9 @@
 ;; ### Facet-grid: rows by drive, columns by class
 ;; Source: [Vega-Lite: Trellis Grid Multi](https://vega.github.io/vega-lite/examples/trellis_scatter.html)
 ;;
-;; The Vega-Lite original facets by `:cyl` (a numeric column). Faceting
-;; currently requires categorical values, so this example uses `:class`
-;; instead -- see CHANGELOG's Known Limitations.
+;; The Vega-Lite original facets by `:cyl`. Plotje's `pj/facet-grid`
+;; accepts any column type -- distinct values become panel labels --
+;; so this example uses `:class` purely for visual variety.
 
 (-> (rdatasets/ggplot2-mpg)
     (pj/pose :displ :hwy)
