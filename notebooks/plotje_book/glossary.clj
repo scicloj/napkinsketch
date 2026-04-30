@@ -645,17 +645,26 @@ annotated
 
 (def my-membrane (pj/plan->membrane my-plan))
 
-;; The full tree expands to thousands of nested drawables (one
-;; primitive per data point, plus axes, gridlines, labels). The
-;; top-level shape is a vector of nine drawables -- here are the
-;; classes of those entries:
+;; A complete membrane is large -- one drawable per data point on
+;; top of axes, gridlines, ticks, and labels. Here is the full
+;; tree for `my-plan`:
 
-(mapv (fn [d] (-> d class .getSimpleName)) my-membrane)
+(kind/pprint my-membrane)
 
 (kind/test-last
- [(fn [classes]
-    (and (= 9 (count classes))
-         (every? string? classes)))])
+ [(fn [m]
+    (let [walk-text (fn walk [d]
+                      (cond
+                        (string? (:text d)) (:text d)
+                        (:drawable d) (walk (:drawable d))
+                        (:drawables d) (some walk (:drawables d))))
+          texts (mapv walk-text m)]
+      (and (vector? m)
+           (= 9 (count m))
+           ;; The first four top-level entries carry the title,
+           ;; axis labels, and legend title.
+           (= ["Iris" "sepal width" "sepal length" "species"]
+              (vec (take 4 texts))))))])
 
 ;; ## Plot
 ;;
