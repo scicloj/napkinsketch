@@ -15,7 +15,8 @@
 ;; combine to build calendar-aware visualizations.
 ;;
 ;; Pipeline reminder: every example threads data through one or
-;; more `pj/lay-*` calls, then through `pj/options` for chrome.
+;; more `pj/lay-*` calls, then through `pj/options` for titles
+;; and axis labels.
 ;; Plotje detects temporal columns automatically and picks
 ;; calendar-aware tick labels for the date axis.
 

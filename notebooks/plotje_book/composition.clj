@@ -182,14 +182,14 @@ dashboard
 ;; A few details about how composition renders today, in case they
 ;; matter for a layout you're sketching:
 ;;
-;; - **Each leaf carries its own chrome** -- axes, labels, ticks.
-;;   Shared scales align the data ranges across panels, but the
-;;   visible chrome is per-leaf, so a marginal plot shows the
+;; - **Each leaf draws its own axes, labels, and ticks.** Shared
+;;   scales align the data ranges across panels, but these
+;;   decorations are per-leaf, so a marginal plot shows the
 ;;   x-axis label on both the main and the marginal panel.
 ;; - **Plot-area edges may not line up** across composite siblings,
-;;   since each leaf computes its own chrome padding -- two sub-poses
-;;   with different label lengths can produce visibly different panel
-;;   widths.
+;;   since each leaf reserves its own padding for axes and labels --
+;;   two sub-poses with different label lengths can produce visibly
+;;   different panel widths.
 ;; - **Each sub-pose produces its own legend** -- if you map `:color`
 ;;   in two sibling sub-poses, the rendered plot shows two legends
 ;;   rather than a merged one.

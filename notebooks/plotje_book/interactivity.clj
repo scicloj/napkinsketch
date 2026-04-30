@@ -152,9 +152,9 @@
 ;; move and resize along with the data marks, which is rarely
 ;; what a chart reader wants.
 ;;
-;; A useful pan/zoom keeps the chrome stable and rescales only
-;; the data area, recomputing tick positions as the visible
-;; range changes. That requires hooks Plotje doesn't expose yet
+;; A useful pan/zoom keeps the title and axes stable and
+;; rescales only the data area, recomputing tick positions as
+;; the visible range changes. That requires hooks Plotje doesn't expose yet
 ;; (a marker on the panel `<g>` so a script can target it
 ;; specifically, plus an axis-tick recompute path). Until those
 ;; hooks land, this chapter does not ship a pan/zoom example --
