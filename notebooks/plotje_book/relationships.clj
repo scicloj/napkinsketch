@@ -225,6 +225,29 @@
 ;; column names produces a grid of scatter plots -- one per pair of
 ;; variables. The diagonal shows histograms (automatic inference
 ;; for same-column pairs).
+;;
+;; Start small: two variables crossed with themselves give a 2x2
+;; grid. Off-diagonal cells (where the row and column variables
+;; differ) get scatter plots; diagonal cells (where they match) get
+;; histograms.
+
+(def small-cols [:sepal-length :petal-length])
+
+(-> (rdatasets/datasets-iris)
+    (pj/pose (pj/cross small-cols small-cols) {:color :species}))
+
+(kind/test-last
+ [(fn [v]
+    (let [marks (->> (:sub-plots (pj/plan v))
+                     (mapv (fn [{:keys [path plan]}]
+                             (let [[r c] path
+                                   m (-> plan :panels first :layers first :mark)]
+                               [r c m]))))]
+      (and (= 4 (:panels (pj/svg-summary v)))
+           (every? (fn [[r c m]] (= m (if (= r c) :bar :point))) marks))))])
+
+;; The full 4x4 SPLOM follows the same pattern with iris's four
+;; numeric columns:
 
 (def cols [:sepal-length :sepal-width :petal-length :petal-width])
 

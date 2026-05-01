@@ -38,11 +38,15 @@
 ;; `:layers`, and `:opts` -- everything except the `:data` field,
 ;; which is omitted for readability.
 
+(defn strip-data [pose]
+  (cond-> (dissoc pose :data)
+    (:layers pose) (update :layers (partial mapv #(dissoc % :data)))
+    (:poses pose) (update :poses (partial mapv strip-data))))
+
 (defn pose-summary
   "Print pose structure without :data (for readability)."
   [pose]
-  (-> (select-keys pose [:mapping :layers :opts])
-      kind/pprint))
+  (kind/pprint (strip-data pose)))
 
 ;; ---
 ;; ## Layer Options
@@ -283,6 +287,14 @@ demo
 ;; | `+ scale_*()`, `+ coord_*()`, `+ facet_*()`  | plot option                 |
 ;; | `+ labs(...)`, one-off `+ theme(...)`        | plot option                 |
 ;; | `theme_set(...)`, `options(...)`             | configuration               |
+
+;; In ggplot2, these constructs are reached via separate function
+;; families (`labs()`, `theme()`, `coord_*()`, `scale_*()`). Plotje
+;; folds the plot-level concerns into one entry point: `pj/options`
+;; accepts title, axis labels, theme, legend position, dimensions,
+;; and other settings as keys in a single map. `pj/scale`, `pj/coord`,
+;; and `pj/facet` remain dedicated functions because each carries
+;; non-trivial structure, but everything else merges.
 
 ;; ---
 ;; ## See Also

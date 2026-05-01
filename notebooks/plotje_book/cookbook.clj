@@ -614,7 +614,7 @@
     (pj/options {:title "Diamonds (53,940 rows, BufferedImage)"
                  :format :bufimg}))
 
-(kind/test-last [(fn [v] (some? v))])
+(kind/test-last [(fn [v] (instance? java.awt.image.BufferedImage (pj/plot v)))])
 
 ;; ### Saving to PNG
 ;;

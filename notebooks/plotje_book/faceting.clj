@@ -156,6 +156,10 @@
 
 ;; ## Faceted Bar Chart
 
+;; Five bars total across the three island panels: Adelie appears on
+;; every island, while Gentoo lives only on Biscoe and Chinstrap only
+;; on Dream. Empty species-island combinations produce no bar.
+
 (-> (rdatasets/palmerpenguins-penguins)
     (pj/lay-bar :species {:color :species})
     (pj/facet :island))

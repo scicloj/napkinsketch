@@ -27,15 +27,27 @@
 
 ;; ## Grouped Lines
 
-;; Color separates multiple series.
+;; Color separates multiple series. Real datasets often start in
+;; **wide form** -- each series in its own column. Plotje plots
+;; **long form** -- one row per observation, with the series label
+;; in a column. Use `tc/pivot->longer` to reshape, then map the
+;; label column to `:color`. See
+;; [Datasets](./plotje_book.datasets.html) for more on the
+;; wide-to-long reshape.
 
-(def waves {:x (concat (range 30) (range 30))
-            :y (concat (map #(Math/sin (* % 0.3)) (range 30))
-                       (map #(Math/cos (* % 0.3)) (range 30)))
-            :fn (concat (repeat 30 :sin) (repeat 30 :cos))})
+(def waves-wide
+  (tc/dataset
+   {:x   (range 30)
+    :sin (map #(Math/sin (* % 0.3)) (range 30))
+    :cos (map #(Math/cos (* % 0.3)) (range 30))}))
+
+(def waves
+  (tc/pivot->longer waves-wide [:sin :cos]
+                    {:target-columns :function
+                     :value-column-name :y}))
 
 (-> waves
-    (pj/lay-line :x :y {:color :fn}))
+    (pj/lay-line :x :y {:color :function}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))

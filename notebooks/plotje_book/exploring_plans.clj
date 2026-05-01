@@ -107,7 +107,7 @@ tiny-plan
                               (= (count (:values t)) (count (:labels t)))))])
 
 ;; These are the actual numbers that will appear on the axis.
-;; They are in data space -- not pixel positions.
+;; They are in data space -- not drawing units.
 
 ;; ### The layer
 ;;
@@ -136,8 +136,8 @@ tiny-layer
                               (= [1 2 3 4 5] (mapv int (:xs g)))
                               (= [2 4 1 5 3] (mapv int (:ys g)))))])
 
-;; These are the original data values -- not pixel positions.
-;; The renderer maps them through scales to get pixel coordinates.
+;; These are the original data values -- not drawing units.
+;; The renderer maps them through scales to get drawing-unit coordinates.
 ;;
 ;; In other words, the plan describes geometry in data space.
 

@@ -95,16 +95,15 @@
                            (and (= 150 (:points s))
                                 (some #{"Petal length (override)"} (:texts s)))))])
 
-;; ### Color vs Fill
+;; ### Color and Fill
 ;;
-;; `:color` and `:fill` are kept separate, matching the ggplot2 model:
-;; `:color` paints the stroke or outline (point edge, line), and
-;; `:fill` paints the interior (tile, density2d cell, bar). For point
-;; layers and line layers `:color` is the natural channel; for area
-;; or interior-painted marks (`lay-tile`, `lay-density-2d`,
-;; `lay-bin2d`) `:fill` is the natural channel. They each have their
-;; own legend title override -- `:color-label` for `:color` and
-;; `:fill-label` for `:fill`:
+;; Most marks expose `:color` as the encoding channel -- scatter
+;; dots, lines, bar interiors, area fills, violins, lollipops -- all
+;; styled with `:color` and named via `:color-label` in the legend.
+;; The separate `:fill` channel is currently reserved for the heatmap
+;; family: `lay-tile` (and the `:bin2d` output beneath
+;; `lay-density-2d`) reads the encoded value as a continuous fill,
+;; with its own legend title override `:fill-label`:
 
 (-> {:x [1 2 3 1 2 3] :y [1 1 1 2 2 2] :z [10 20 30 40 50 60]}
     (pj/lay-tile :x :y {:fill :z})
@@ -113,6 +112,22 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (some #{"Score"} (:texts s))
                                 (pos? (:visible-tiles s)))))])
+
+;; **Coming from ggplot2.** ggplot's `colour=` (stroke) and `fill=`
+;; (interior) split is partial in Plotje today. On filled marks like
+;; `lay-bar`, `lay-area`, and `lay-violin`, the `:color` aesthetic
+;; paints the interior; there is no separate stroke channel, and
+;; `:fill` is not accepted. A `lay-bar` styled with `{:color :species}`
+;; produces one filled polygon per category:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-bar :species {:color :species}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)
+                               fills (disj (:colors s) "none")]
+                           (and (= 3 (:polygons s))
+                                ;; three distinct interior colors
+                                (= 3 (count fills)))))])
 
 ;; ## Scales
 
@@ -189,7 +204,27 @@
 ;; continuous encoding -- visual channels accept `:linear` (the
 ;; default) and `:log` only.
 
-;; Point sizes from a column whose values jump by factors of ten:
+;; Point sizes from a column whose values jump by factors of ten.
+;; Without `:scale :size :log`, the default linear mapping puts the
+;; n=10 and n=100 points at nearly the same radius -- only n=1000
+;; stands out. Linear scaling reflects absolute distance, which is
+;; dominated by the largest value:
+
+(-> {:user [:a :b :c] :n [10 100 1000]}
+    (pj/lay-point :user :n {:size :n :x-type :categorical}))
+
+(kind/test-last
+ [(fn [v]
+    (let [sizes (sort (:sizes (pj/svg-summary v)))]
+      ;; Linear scaling: smallest two radii are within 30% of each
+      ;; other; the largest radius is at least 3x the smallest.
+      (and (= 3 (count sizes))
+           (< (/ (second sizes) (first sizes)) 1.5)
+           (> (/ (last sizes) (first sizes)) 3.0))))])
+
+;; With `pj/scale :size :log`, each factor-of-10 step reflects the
+;; same proportional jump in radius, so the n=10 and n=100 points
+;; are now visibly distinct:
 
 (-> {:user [:a :b :c] :n [10 100 1000]}
     (pj/lay-point :user :n {:size :n :x-type :categorical})
@@ -286,6 +321,33 @@
                                 (= 150 (:points s))
                                 (contains? (:colors s) "rgb(231,76,60)"))))])
 
+;; **Coming from ggplot2.** In ggplot2, `colour="blue"` is always a
+;; literal CSS color. In Plotje, a string `:color` is interpreted as
+;; a column reference if a column with that name exists in the data,
+;; and falls back to a literal CSS color otherwise. Hex codes like
+;; `"#0000ff"` cannot collide with a column name and are
+;; unambiguous. A keyword `{:color :blue}` is always a column
+;; reference and throws a clear error if the column is missing.
+
+;; The `:blue` column wins -- three palette colors render, not a
+;; single literal blue.
+
+(-> {:x [1 2 3] :y [1 2 3] :blue ["a" "b" "c"]}
+    (pj/lay-point :x :y {:color "blue"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)
+                               colors (disj (:colors s) "none")]
+                           (= 3 (count colors))))])
+
+;; No `:blue` column -- "blue" parses as a literal CSS color.
+
+(-> {:x [1 2 3] :y [1 2 3]}
+    (pj/lay-point :x :y {:color "blue"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)
+                               colors (disj (:colors s) "none")]
+                           (= #{"rgb(0,0,255)"} colors)))])
+
 ;; ### Continuous Color
 ;;
 ;; When `:color` maps to a numeric column, Plotje uses a continuous
@@ -351,8 +413,8 @@
 ;; `pj/lay-rule-h`, `pj/lay-rule-v`, `pj/lay-band-h`, `pj/lay-band-v`.
 ;; Position comes from the options map (`:y-intercept` or `:x-intercept`
 ;; for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max` for bands);
-;; appearance aesthetics (`:color`, `:alpha`) work the same way they
-;; do on any other layer.
+;; `:color` overrides the default annotation color. Bands additionally
+;; honor `:alpha` to override the default 0.15 opacity (see below).
 
 ;; Horizontal and vertical reference lines.
 
@@ -540,7 +602,9 @@
 
 ;; ## Brush Selection
 ;;
-;; Enable drag-to-select with `{:brush true}`. Click to reset.
+;; Enable drag-to-select with `{:brush true}`. Drags shorter than
+;; three pixels per side clear the selection -- a simple click counts
+;; as a zero-pixel drag, so it resets too.
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width {:color :species})

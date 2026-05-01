@@ -59,6 +59,10 @@
 
 (kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
 
+;; Auto-inference covers 1-3 column datasets. With 4 or more
+;; columns Plotje cannot guess which to plot and asks you to be
+;; explicit -- pass column names like `(pj/lay-point data :x :y)`.
+
 ;; See [**Core Concepts**](./plotje_book.core_concepts.html) for more input formats.
 
 ;; String column names also work -- keywords are conventional but not

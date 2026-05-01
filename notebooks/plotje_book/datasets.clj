@@ -231,6 +231,52 @@
 ;; Both produce the same plot. Use whichever is more convenient for
 ;; your workflow.
 
+;; ## From Wide to Long
+;;
+;; Plotje plots **long-form** (tidy) data: one row per observation,
+;; with categories and groupings in their own columns. Real
+;; datasets often arrive in **wide form** -- each measurement in
+;; its own column. `tc/pivot->longer` is the canonical reshape:
+
+(def temps-wide
+  (tc/dataset
+   {:month   ["Jan" "Feb" "Mar"]
+    :tokyo   [3 5 9]
+    :paris   [4 6 11]
+    :nairobi [22 23 24]}))
+
+temps-wide
+
+(kind/test-last [(fn [ds] (= 4 (count (tc/column-names ds))))])
+
+;; Three city columns become two: a `:city` label column and a
+;; `:temperature` value column. The row count triples (3 months
+;; times 3 cities equals 9):
+
+(def temps-long
+  (tc/pivot->longer temps-wide [:tokyo :paris :nairobi]
+                    {:target-columns :city
+                     :value-column-name :temperature}))
+
+temps-long
+
+(kind/test-last [(fn [ds] (and (= 3 (count (tc/column-names ds)))
+                               (= 9 (tc/row-count ds))))])
+
+;; Plot the long form by mapping the new label column to `:color`:
+
+(-> temps-long
+    (pj/lay-line :month :temperature
+                 {:color :city :x-type :categorical}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 3 (:lines s)))))])
+
+;; The inverse, `tc/pivot->wider`, reshapes long back to wide --
+;; useful for tabular reports but rarely the right shape for
+;; plotting.
+
 ;; ## What's Next
 ;;
 ;; - [**Poses**](./plotje_book.pose_model.html) -- how Plotje composes layers, aesthetics, and layer types

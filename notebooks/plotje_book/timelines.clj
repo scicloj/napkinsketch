@@ -76,9 +76,11 @@
                                          "ARPANET first link"
                                          "World Wide Web" "iPhone"]))))])
 
-;; The text labels read horizontally even when dates are tightly
-;; clustered. For dense timelines, a different y for each event
-;; is a clean way to spread labels apart.
+;; The text labels read horizontally, which keeps them legible.
+;; When several events fall close together on the time axis, giving
+;; each event a different y spreads the labels apart vertically.
+;; Here we apply that technique to the same five milestones to
+;; demonstrate the layout pattern.
 
 (def with-staggered-y
   (assoc computing-milestones :y [2 1 1.5 2 1]))
@@ -117,9 +119,9 @@
 (-> unemployment
     (pj/lay-line :date :unemploy {:color "#34495e"})
     (pj/lay-rule-v {:x-intercept (java.time.LocalDate/parse "2008-09-15")
-                    :color "#c0392b" :alpha 0.6})
+                    :color "#c0392b"})
     (pj/lay-rule-v {:x-intercept (java.time.LocalDate/parse "2001-03-01")
-                    :color "#7f8c8d" :alpha 0.5})
+                    :color "#7f8c8d"})
     (pj/options {:title "US unemployment with recession markers"
                  :y-label "thousands unemployed"
                  :x-label "date"
@@ -127,7 +129,9 @@
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
-                                (>= (:lines s) 1))))])
+                                ;; one line for unemployment plus two
+                                ;; vertical recession-marker rules.
+                                (= 3 (:lines s)))))])
 
 ;; The two rules mark the start of the
 ;; [dot-com recession](https://en.wikipedia.org/wiki/Early_2000s_recession)
@@ -259,9 +263,6 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (= 5 (:polygons s)))))])
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (= 5 (:polygons s))))])
 
 ;; ## Marey train schedule
 ;;

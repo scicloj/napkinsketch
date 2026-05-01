@@ -677,6 +677,21 @@ two-panel
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
+;; `:fixed` locks the aspect ratio so one data unit on x equals one
+;; data unit on y -- useful for spatial data or when distances on
+;; the two axes should read the same. The panel width adjusts to
+;; preserve the ratio:
+
+(-> {:x [-1 1 -1 1] :y [-1 -1 1 1]}
+    (pj/lay-point :x :y)
+    (pj/coord :fixed))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 4 (:points s))
+                                ;; :fixed shrank width to preserve
+                                ;; aspect ratio; default would be 600.
+                                (< (:width s) 600))))])
+
 ;; `pj/scale` changes how a numeric axis is shown. `:log` applies
 ;; a logarithmic transformation:
 
@@ -755,4 +770,4 @@ two-panel
 ;;
 ;; - [**Composition**](./plotje_book.composition.html) -- composite poses, shared scales, and multi-panel patterns
 ;; - [**Options and Scopes**](./plotje_book.options_and_scopes.html) -- where options live and how scope determines what they reach
-;; - [**Pose Rules**](./plotje_book.pose_rules.html) -- 29 rules that formalize the model with tested assertions
+;; - [**Pose Rules**](./plotje_book.pose_rules.html) -- 30 rules that formalize the model with tested assertions

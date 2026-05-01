@@ -1,7 +1,7 @@
 ;; # Pose Rules
 ;;
 ;; Poses gave the mental picture; this chapter proves it. Each
-;; of the 29 rules below carries a rendered pose, a printed
+;; of the 30 rules below carries a rendered pose, a printed
 ;; structure, and a tested assertion, so the model claims are
 ;; verified on every run.
 ;;
@@ -511,7 +511,10 @@ composite-pose
 ;; effective `:x`/`:y` (after ancestor merge), the layer attaches to
 ;; the **last such leaf in left-to-right depth-first order**.
 ;; Matching is keyword/string tolerant. The layer's own `:mapping`
-;; carries the call's position.
+;; carries the call's position. This is the same "most recent
+;; matching leaf" rule the teaching chapters describe, formalized
+;; for composite poses where reading-order depth-first traversal
+;; gives the precise answer.
 
 (-> iris
     (pj/pose :sepal-length :sepal-width)

@@ -388,15 +388,25 @@
 ;; Reference lines and shaded bands are regular layers. Position comes
 ;; from the options map (`:y-intercept` for `lay-rule-h`, `:x-intercept`
 ;; for `lay-rule-v`; `:y-min`/`:y-max` for `lay-band-h`,
-;; `:x-min`/`:x-max` for `lay-band-v`); appearance aesthetics like
-;; `:color` and `:alpha` work the same as on any other layer. Without
-;; x/y columns they attach at the root (every panel); with x/y
-;; columns they attach to one matching leaf.
+;; `:x-min`/`:x-max` for `lay-band-v`); `:color` overrides the default
+;; annotation color, and bands additionally honor `:alpha` to override
+;; the default 0.15 opacity. Without x/y columns they attach at the
+;; root (every panel); with x/y columns they attach to one matching
+;; leaf.
 ;;
 ;; Rule intercepts also accept temporal values (`LocalDate`,
 ;; `LocalDateTime`, `Instant`, `java.util.Date`) so date-axis
 ;; annotations need no manual conversion -- see the second
 ;; `lay-rule-v` example below.
+;;
+;; **Note on `:y-min`/`:y-max`.** The same option keys carry two
+;; meanings depending on the layer kind. On `lay-band-h`/`-v` they
+;; are literal numeric bounds (the band sits at fixed coordinates,
+;; independent of the data). On `lay-errorbar` (above) they are
+;; column references -- one row per error bar, with `:y-min` and
+;; `:y-max` naming columns that supply the lower and upper bounds.
+;; ggplot2 keeps these separate via `aes()` (column) versus literal
+;; arguments; Plotje overloads the keyword and dispatches by mark.
 
 (kind/doc #'pj/lay-rule-v)
 

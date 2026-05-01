@@ -209,10 +209,9 @@
 ;; **Symptom**: Errors or unexpected output with `(pj/coord :polar)`.
 ;;
 ;; **Cause**: Polar coordinates currently support a subset of marks:
-;; `:bar`, `:point`, `:rect`, `:rug`, and `:text` (verified by the
-;; polar coord function in source). Layer types built on these marks
-;; (such as `:value-bar` and `:histogram`, which both render as
-;; bars) work too.
+;; `:bar`, `:point`, `:rect`, `:rug`, and `:text`. Layer types built
+;; on these marks (such as `:value-bar` and `:histogram`, which both
+;; render as bars) work too.
 ;;
 ;; **Fix for now**: Use a supported mark. A bar chart flipped to polar
 ;; becomes a rose chart:
@@ -404,6 +403,18 @@
 ;; labels along Cartesian axes that polar replaces with a circular
 ;; layout, and the equivalent angular ticks are not yet implemented.
 ;;
+;; The polar version shows the wedges sized by category, but the
+;; category names are absent:
+
+(-> (rdatasets/datasets-chickwts)
+    (pj/pose :feed)
+    pj/lay-bar
+    (pj/coord :polar))
+
+(kind/test-last [(fn [v] (zero? (count (filter #{"casein" "horsebean" "linseed"
+                                                 "meatmeal" "soybean" "sunflower"}
+                                               (:texts (pj/svg-summary v))))))])
+
 ;; **Fix for now**: Drop `(pj/coord :polar)` for the labeled view, or
 ;; combine the polar plot with a separate Cartesian-coord version
 ;; for the legend. A proper rose-chart label pass is tracked in

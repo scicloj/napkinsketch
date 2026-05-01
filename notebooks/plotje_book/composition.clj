@@ -27,7 +27,8 @@
 ;; The simplest composite: two independent poses, placed next to
 ;; each other. `pj/arrange` takes a vector of poses and returns a
 ;; composite. Each sub-pose has its own data, mapping, layers, and
-;; options.
+;; options. Coming from R, this is the same shape as patchwork's
+;; `p1 | p2` operator or cowplot's `plot_grid(p1, p2)`.
 
 (pj/arrange
  [(-> (rdatasets/datasets-iris) (pj/lay-point :sepal-length :sepal-width {:color :species}))

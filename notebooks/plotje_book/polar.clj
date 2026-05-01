@@ -2,10 +2,12 @@
 
 ;; For [polar coordinates](https://en.wikipedia.org/wiki/Polar_coordinate_system),
 ;; `(pj/coord :polar)` maps x to angle and y to radius. Bars become
-;; arc-interpolated wedges (rose charts), and scatter points wrap into
-;; a disc. Supported marks today are `:point`, `:bar`, `:rect`, `:text`,
-;; and `:rug`; other marks raise a clear error. Tick labels and axis
-;; labels are not yet rendered under `:polar`.
+;; arc-interpolated wedges (rose charts), and scatter points wrap onto
+;; a polar plane. The angular spread is set by the x-column's range,
+;; so a narrow range produces a wedge cluster rather than a full
+;; circle. Supported marks today are `:point`, `:bar`, `:rect`,
+;; `:text`, and `:rug`; other marks raise a clear error. Tick labels
+;; and axis labels are not yet rendered under `:polar`.
 
 (ns plotje-book.polar
   (:require
@@ -21,9 +23,11 @@
 
 ;; ## Polar Scatter
 ;;
-;; The same scatter plot, wrapped into polar space. x maps to angle
+;; The same scatter plot, wrapped onto a polar plane. x maps to angle
 ;; (clockwise from 12 o'clock), y maps to radius (center = minimum,
-;; edge = maximum).
+;; edge = maximum). Iris's `:sepal-length` spans roughly 4.3 to 7.9 --
+;; a narrow numeric range -- so the points cluster in an arc rather
+;; than spreading across the full circle.
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -63,7 +67,10 @@
 
 ;; ## Polar Stacked Bar
 ;;
-;; Stacked bars in polar show composition within each wedge.
+;; Stacked bars in polar show composition within each wedge. Without
+;; angular tick labels (not yet rendered under `:polar`), the legend
+;; carries the category identity -- read color back to species via
+;; the legend rather than around the wedge.
 
 (-> (rdatasets/palmerpenguins-penguins)
     (pj/lay-bar :island {:position :stack :color :species})

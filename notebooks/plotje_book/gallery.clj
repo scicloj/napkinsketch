@@ -454,7 +454,7 @@
 
 (-> (rdatasets/gapminder-gapminder)
     (tc/group-by [:year :continent])
-    (tc/aggregate {:pop (fn [ds] (reduce + (ds :pop)))})
+    (tc/aggregate {:pop (fn [ds] (dfn/sum (ds :pop)))})
     (tc/order-by [:year :continent])
     (pj/pose :year :pop {:color :continent})
     (pj/lay-area {:position :stack})
@@ -569,7 +569,11 @@
     (pj/scale :y :log)
     (pj/options {:title "Diamond Price by Carat (Log Scale)"
                  :x-label "Carat"
-                 :y-label "Price ($, log scale)"
+                 ;; bufimg truncates rotated y-axis labels after ~6
+                 ;; chars (membrane Java2D limitation, tracked in
+                 ;; CHANGELOG); keep it short so the rendered label
+                 ;; matches the prose.
+                 :y-label "Price"
                  :format :bufimg}))
 
 (kind/test-last [(fn [v] (instance? java.awt.image.BufferedImage (pj/plot v)))])
@@ -921,7 +925,8 @@
     (pj/lay-point :carat :price {:alpha 0.05})
     (pj/options {:title "Diamond Price vs Carat (alpha = 0.05)"
                  :x-label "Carat"
-                 :y-label "Price ($)"
+                 ;; bufimg truncates long rotated y-labels; keep short.
+                 :y-label "Price"
                  :format :bufimg}))
 
 (kind/test-last [(fn [v] (instance? java.awt.image.BufferedImage (pj/plot v)))])

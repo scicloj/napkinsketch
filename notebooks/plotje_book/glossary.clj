@@ -558,11 +558,12 @@ my-pose
 ;;
 ;; An **annotation** is a reference mark layered on a plot --
 ;; horizontal/vertical lines (rules) or shaded bands. Today,
-;; positions come from literal values in the options
+;; positions live in the layer's `:mapping` slot
 ;; (`:y-intercept` or `:x-intercept` for rules; `:y-min`/`:y-max`
-;; or `:x-min`/`:x-max` for bands), and a single annotation draws
-;; at exactly one place. Data-driven annotations (column refs in
-;; those slots, producing one mark per row, like ggplot2's
+;; or `:x-min`/`:x-max` for bands) as literal values rather than
+;; column references, and a single annotation draws at exactly
+;; one place. Data-driven annotations (column refs in those slots,
+;; producing one mark per row, like ggplot2's
 ;; `geom_hline(aes(yintercept = ...))`) are planned but not yet
 ;; implemented.
 ;;
@@ -852,7 +853,7 @@ annotated
 ;; | Facet | Split into panels by a categorical column | `pj/facet`, `pj/facet-grid` |
 ;; | Arrange | Compose multiple poses into a grid | `pj/arrange` |
 ;; | Share scales | Make sibling poses of a composite share data ranges across named axes | `:share-scales` in composite `:opts` |
-;; | Annotation | Reference marks (rules, bands); positions from literal options today, data-driven planned | `pj/lay-rule-*`, `pj/lay-band-*` |
+;; | Annotation | Reference marks (rules, bands); positions in `:mapping` as literal values today, data-driven planned | `pj/lay-rule-*`, `pj/lay-band-*` |
 ;; | Legend | Color/size/alpha key from aesthetic mappings | Automatic in plan |
 ;; | Plot options | Title, subtitle, caption, labels, dimensions | `pj/options` |
 ;; | Layer options | Per-layer aesthetics and layer-type parameters | `pj/lay-*` options map |
