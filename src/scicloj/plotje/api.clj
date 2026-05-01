@@ -26,7 +26,7 @@
 
 (defn plan?
   "Return true if x is a plan (leaf or composite) -- the resolved
-   geometry returned by pj/plan."
+   geometry returned by `pj/plan`."
   [x]
   (resolve/plan? x))
 
@@ -43,16 +43,16 @@
 
 (defn composite-draft?
   "Return true if x is a composite draft (a tree of sub-drafts with
-   shared chrome-spec, returned by pj/draft on a composite pose)."
+   shared chrome-spec, returned by `pj/draft` on a composite pose)."
   [x]
   (resolve/composite-draft? x))
 
 (defn draft?
   "Return true if x is a draft -- the intermediate representation
-   produced by pj/draft. A draft is either a CompositeDraft record
+   produced by `pj/draft`. A draft is either a CompositeDraft record
    or a non-empty vector of draft layers (maps carrying the
-   internal :__panel-idx key). Used by cross-stage misuse guards on
-   pj/plan and pj/plot. The :__panel-idx check distinguishes a draft
+   internal `:__panel-idx` key). Used by cross-stage misuse guards on
+   `pj/plan` and `pj/plot`. The `:__panel-idx` check distinguishes a draft
    from a vector of row maps used as plot data."
   [x]
   (boolean
@@ -139,7 +139,7 @@
 
 (defn mark-doc
   "Return the prose description for a mark keyword.
-   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
+   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
    (mark-doc :point) => \"Filled circle\""
   [k]
   (try
@@ -149,7 +149,7 @@
 
 (defn stat-doc
   "Return the prose description for a stat keyword.
-   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
+   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
    (stat-doc :bin) => \"Bin numerical values into ranges\""
   [k]
   (try
@@ -159,7 +159,7 @@
 
 (defn position-doc
   "Return the prose description for a position keyword.
-   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
+   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
    (position-doc :dodge) => \"Shift groups side-by-side within a band\""
   [k]
   (try
@@ -169,7 +169,7 @@
 
 (defn membrane-mark-doc
   "Return the prose description for how a mark renders to membrane drawables.
-   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
+   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
    (membrane-mark-doc :point) => \"Translated colored rounded-rectangles\""
   [k]
   (try
@@ -179,7 +179,7 @@
 
 (defn scale-doc
   "Return the prose description for a scale keyword.
-   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
+   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
    (scale-doc :linear) => \"Continuous linear mapping\""
   [k]
   (try
@@ -189,7 +189,7 @@
 
 (defn coord-doc
   "Return the prose description for a coordinate type keyword.
-   Returns \"(no description)\" if no [:key :doc] defmethod is registered.
+   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
    (coord-doc :polar) => \"Radial mapping: x->angle, y->radius\""
   [k]
   (try
@@ -234,8 +234,8 @@
    chrome-spec already baked in at draft emission); leaf drafts (vectors
    of layer maps) go through plan/draft->plan.
 
-   Plan-stage opts (:width, :height, :title, ...) for leaf drafts must
-   be set on the pose before drafting via pj/options. For composite
+   Plan-stage opts (`:width`, `:height`, `:title`, ...) for leaf drafts must
+   be set on the pose before drafting via `pj/options`. For composite
    drafts those opts are already part of the chrome-spec.
    (draft->plan (draft pose))"
   [draft]
@@ -249,7 +249,7 @@
 
 (defn draft->membrane
   "Compose draft -> plan -> membrane. The 2-arity takes an opts map
-   for plan->membrane (e.g. {:tooltip true}).
+   for plan->membrane (e.g. {`:tooltip` true}).
    (draft->membrane (draft pose))
    (draft->membrane (draft pose) {:tooltip true})"
   ([draft] (draft->membrane draft {}))
@@ -266,7 +266,7 @@
 (defn plan->membrane
   "Convert a plan into a membrane drawable tree.
    The 1-arity uses no rendering options. The 2-arity takes an
-   opts map with optional :tooltip, :theme, :palette, etc.
+   opts map with optional `:tooltip`, `:theme`, `:palette`, etc.
    (plan->membrane (plan fr))
    (plan->membrane (plan fr) {:tooltip true})"
   ([plan-data] (plan->membrane plan-data {}))
@@ -276,7 +276,7 @@
 
 (defn membrane->plot
   "Convert a membrane drawable tree into a figure for the given format.
-   Dispatches on format keyword; :svg is always available.
+   Dispatches on format keyword; `:svg` is always available.
    (membrane->plot (plan->membrane (plan pose)) :svg {})"
   [membrane-tree format opts]
   (render-impl/membrane->plot membrane-tree format opts))
@@ -284,7 +284,7 @@
 (defn plan->plot
   "Convert a plan into a figure for the given format.
    Dispatches on format keyword. Each renderer is a separate namespace
-   that registers a defmethod; :svg is always available.
+   that registers a defmethod; `:svg` is always available.
    (plan->plot (plan fr) :svg {})
    (plan->plot (plan fr) :plotly {})"
   [plan format opts]
@@ -428,7 +428,7 @@
 
 (defn pose?
   "Return true if x is a pose-shaped plain map (a map carrying at
-   least one of :layers or :poses)."
+   least one of `:layers` or `:poses`)."
   [x]
   (pose/pose? x))
 
@@ -955,9 +955,9 @@
      (pj/pose fr {:data X :color :c})    -- extend mapping AND replace
                                             the top-level data with X
 
-   On a hand-built pose-shaped map (1-arity, input has :layers or
-   :poses): the map is validated and tagged with Kindly auto-render
-   metadata, but its keys are not reordered and its :data is not
+   On a hand-built pose-shaped map (1-arity, input has `:layers` or
+   `:poses`): the map is validated and tagged with Kindly auto-render
+   metadata, but its keys are not reordered and its `:data` is not
    coerced -- the typed shape is preserved verbatim. A flat composite
    (`:poses` of leaf maps) is supported; literal nested composites
    (any sub-pose itself has `:poses`) are rejected, matching
@@ -1286,7 +1286,7 @@
                        :registered registered})))))
 
 (defn lay
-  "Add a root-scope layer. The layer attaches to :layers and flows to
+  "Add a root-scope layer. The layer attaches to `:layers` and flows to
    every descendant leaf at plan time (composite) or renders on the
    single panel (leaf)."
   ([pose-or-data layer-type-key]
@@ -1463,7 +1463,7 @@
    (lay-on-pose (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key))) layer-type-key {:x x :y y} opts)))
 
 (defn lay-point
-  "Add a :point (scatter) layer to a pose.
+  "Add a `:point` (scatter) layer to a pose.
    Without columns -> bare layer at the pose's root (flows to every leaf).
    With columns -> position-bearing layer (attaches to the matching leaf
    via DFS-last identity, or appends a new sub-pose on miss).
@@ -1604,10 +1604,10 @@
                     {:layer-type layer-type-key}))))
 
 (defn lay-rule-h
-  "Add :rule-h layer -- horizontal reference line at y = y-intercept.
-   Position comes from opts (not data columns); :y-intercept is required.
-   Accepts :y-intercept (numeric or temporal -- LocalDate, LocalDateTime,
-   Instant, java.util.Date) and :color (literal string).
+  "Add `:rule-h` layer -- horizontal reference line at y = y-intercept.
+   Position comes from opts (not data columns); `:y-intercept` is required.
+   Accepts `:y-intercept` (numeric or temporal -- LocalDate, LocalDateTime,
+   Instant, java.util.Date) and `:color` (literal string).
    Temporal values are converted internally to match the y-axis scale
    so date-axis annotations work without manual conversion.
    The 4-arity finds or creates a sub-pose with these x/y columns
@@ -1623,10 +1623,10 @@
   ([pose-or-data x y opts] (assert-rule-opts! :rule-h [opts]) (lay-layer-type :rule-h pose-or-data x y (coerce-rule-opts :rule-h opts))))
 
 (defn lay-rule-v
-  "Add :rule-v layer -- vertical reference line at x = x-intercept.
-   Position comes from opts (not data columns); :x-intercept is required.
-   Accepts :x-intercept (numeric or temporal -- LocalDate, LocalDateTime,
-   Instant, java.util.Date) and :color (literal string).
+  "Add `:rule-v` layer -- vertical reference line at x = x-intercept.
+   Position comes from opts (not data columns); `:x-intercept` is required.
+   Accepts `:x-intercept` (numeric or temporal -- LocalDate, LocalDateTime,
+   Instant, java.util.Date) and `:color` (literal string).
    Temporal values are converted internally to match the x-axis scale
    so date-axis annotations work without manual conversion.
    The 4-arity finds or creates a sub-pose with these x/y columns
@@ -1642,11 +1642,11 @@
   ([pose-or-data x y opts] (assert-rule-opts! :rule-v [opts]) (lay-layer-type :rule-v pose-or-data x y (coerce-rule-opts :rule-v opts))))
 
 (defn lay-band-h
-  "Add :band-h layer -- horizontal shaded band between y = y-min and y = y-max.
-   Position comes from opts (not data columns); :y-min and :y-max are
-   required and :y-min must be <= :y-max.
-   Accepts :y-min (required), :y-max (required), :color (literal
-   string), :alpha. Bounds may be numeric or temporal (LocalDate,
+  "Add `:band-h` layer -- horizontal shaded band between y = y-min and y = y-max.
+   Position comes from opts (not data columns); `:y-min` and `:y-max` are
+   required and `:y-min` must be <= `:y-max`.
+   Accepts `:y-min` (required), `:y-max` (required), `:color` (literal
+   string), `:alpha`. Bounds may be numeric or temporal (LocalDate,
    LocalDateTime, Instant, java.util.Date); temporal values are
    converted internally to match the y-axis scale.
    The 4-arity finds or creates a sub-pose with these x/y columns
@@ -1661,11 +1661,11 @@
   ([pose-or-data x y opts] (assert-band-opts! :band-h [opts]) (lay-layer-type :band-h pose-or-data x y (coerce-band-opts :band-h opts))))
 
 (defn lay-band-v
-  "Add :band-v layer -- vertical shaded band between x = x-min and x = x-max.
-   Position comes from opts (not data columns); :x-min and :x-max are
-   required and :x-min must be <= :x-max.
-   Accepts :x-min (required), :x-max (required), :color (literal
-   string), :alpha. Bounds may be numeric or temporal (LocalDate,
+  "Add `:band-v` layer -- vertical shaded band between x = x-min and x = x-max.
+   Position comes from opts (not data columns); `:x-min` and `:x-max` are
+   required and `:x-min` must be <= `:x-max`.
+   Accepts `:x-min` (required), `:x-max` (required), `:color` (literal
+   string), `:alpha`. Bounds may be numeric or temporal (LocalDate,
    LocalDateTime, Instant, java.util.Date); temporal values are
    converted internally to match the x-axis scale.
    The 4-arity finds or creates a sub-pose with these x/y columns
@@ -1680,16 +1680,16 @@
   ([pose-or-data x y opts] (assert-band-opts! :band-v [opts]) (lay-layer-type :band-v pose-or-data x y (coerce-band-opts :band-v opts))))
 
 (defn lay-line
-  "Add :line layer type -- connected line through data points.
+  "Add `:line` layer type -- connected line through data points.
    Requires x (numerical) and y (numerical).
-   Accepts :color, :alpha, :size (stroke width), :nudge-x, :nudge-y."
+   Accepts `:color`, `:alpha`, `:size` (stroke width), `:nudge-x`, `:nudge-y`."
   ([pose-or-data] (lay-layer-type :line pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :line pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :line pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :line pose-or-data x y opts)))
 
 (defn lay-step
-  "Add :step layer type -- staircase line (horizontal then vertical).
+  "Add `:step` layer type -- staircase line (horizontal then vertical).
    Requires x and y (both numerical)."
   ([pose-or-data] (lay-layer-type :step pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :step pose-or-data x-or-opts))
@@ -1697,68 +1697,68 @@
   ([pose-or-data x y opts] (lay-layer-type :step pose-or-data x y opts)))
 
 (defn lay-area
-  "Add :area layer type -- filled region between y and the baseline.
-   Requires x and y (both numerical). Accepts :color, :alpha."
+  "Add `:area` layer type -- filled region between y and the baseline.
+   Requires x and y (both numerical). Accepts `:color`, `:alpha`."
   ([pose-or-data] (lay-layer-type :area pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :area pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :area pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :area pose-or-data x y opts)))
 
 (defn lay-histogram
-  "Add :histogram layer type -- bin numerical values into bars.
-   X-only: pass one column. Accepts :bins (count), :binwidth, :color,
-   :normalize (:density for density-normalized heights)."
+  "Add `:histogram` layer type -- bin numerical values into bars.
+   X-only: pass one column. Accepts `:bins` (count), `:binwidth`, `:color`,
+   `:normalize` (`:density` for density-normalized heights)."
   ([pose-or-data] (lay-layer-type :histogram pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :histogram pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :histogram pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :histogram pose-or-data x y opts)))
 
 (defn lay-bar
-  "Add :bar layer type -- count occurrences of each category.
-   X-only: pass one categorical column. Accepts :color for grouped bars."
+  "Add `:bar` layer type -- count occurrences of each category.
+   X-only: pass one categorical column. Accepts `:color` for grouped bars."
   ([pose-or-data] (lay-layer-type :bar pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :bar pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :bar pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :bar pose-or-data x y opts)))
 
 (defn lay-value-bar
-  "Add :value-bar layer type -- bars with pre-computed heights.
-   Requires categorical x and numerical y. Unlike :bar (which counts),
-   :value-bar uses the y value directly as the bar height."
+  "Add `:value-bar` layer type -- bars with pre-computed heights.
+   Requires categorical x and numerical y. Unlike `:bar` (which counts),
+   `:value-bar` uses the y value directly as the bar height."
   ([pose-or-data] (lay-layer-type :value-bar pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :value-bar pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :value-bar pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :value-bar pose-or-data x y opts)))
 
 (defn lay-smooth
-  "Add :smooth layer type -- a smoothed trend line.
-   Defaults to LOESS (local regression). Pass {:stat :linear-model} for
+  "Add `:smooth` layer type -- a smoothed trend line.
+   Defaults to LOESS (local regression). Pass {`:stat` `:linear-model`} for
    ordinary least squares instead. Requires x and y (both numerical).
-   Accepts {:confidence-band true} for a confidence ribbon."
+   Accepts {`:confidence-band` true} for a confidence ribbon."
   ([pose-or-data] (lay-layer-type :smooth pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :smooth pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :smooth pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :smooth pose-or-data x y opts)))
 
 (defn lay-density
-  "Add :density layer type -- kernel density estimate curve.
-   X-only: pass one numerical column. Accepts :color, :bandwidth."
+  "Add `:density` layer type -- kernel density estimate curve.
+   X-only: pass one numerical column. Accepts `:color`, `:bandwidth`."
   ([pose-or-data] (lay-layer-type :density pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :density pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :density pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :density pose-or-data x y opts)))
 
 (defn lay-tile
-  "Add :tile layer type -- colored grid cells (heatmap).
-   With :fill option: pre-computed tile colors from a column.
-   Without :fill: auto-binned 2D histogram (stat :bin2d)."
+  "Add `:tile` layer type -- colored grid cells (heatmap).
+   With `:fill` option: pre-computed tile colors from a column.
+   Without `:fill`: auto-binned 2D histogram (stat `:bin2d`)."
   ([pose-or-data] (lay-layer-type :tile pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :tile pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :tile pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :tile pose-or-data x y opts)))
 
 (defn lay-density-2d
-  "Add :density-2d layer type -- 2D kernel density heatmap.
+  "Add `:density-2d` layer type -- 2D kernel density heatmap.
    Requires x and y (both numerical). Produces a smoothed density
    surface as colored tiles with a continuous gradient legend."
   ([pose-or-data] (lay-layer-type :density-2d pose-or-data))
@@ -1767,8 +1767,8 @@
   ([pose-or-data x y opts] (lay-layer-type :density-2d pose-or-data x y opts)))
 
 (defn lay-contour
-  "Add :contour layer type -- iso-density contour lines from 2D KDE.
-   Requires x and y (both numerical). Accepts {:levels 10} for
+  "Add `:contour` layer type -- iso-density contour lines from 2D KDE.
+   Requires x and y (both numerical). Accepts {`:levels` 10} for
    the number of contour levels."
   ([pose-or-data] (lay-layer-type :contour pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :contour pose-or-data x-or-opts))
@@ -1776,24 +1776,24 @@
   ([pose-or-data x y opts] (lay-layer-type :contour pose-or-data x y opts)))
 
 (defn lay-boxplot
-  "Add :boxplot layer type -- box-and-whisker plot.
+  "Add `:boxplot` layer type -- box-and-whisker plot.
    Requires categorical x and numerical y. Shows median, quartiles,
-   whiskers, and outliers. Accepts :color for grouped boxplots."
+   whiskers, and outliers. Accepts `:color` for grouped boxplots."
   ([pose-or-data] (lay-layer-type :boxplot pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :boxplot pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :boxplot pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :boxplot pose-or-data x y opts)))
 
 (defn lay-violin
-  "Add :violin layer type -- mirrored density estimate by category.
-   Requires categorical x and numerical y. Accepts :color, :bandwidth."
+  "Add `:violin` layer type -- mirrored density estimate by category.
+   Requires categorical x and numerical y. Accepts `:color`, `:bandwidth`."
   ([pose-or-data] (lay-layer-type :violin pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :violin pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :violin pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :violin pose-or-data x y opts)))
 
 (defn lay-ridgeline
-  "Add :ridgeline layer type -- stacked density curves by category.
+  "Add `:ridgeline` layer type -- stacked density curves by category.
    Requires categorical x and numerical y. Categories stack vertically
    with density curves rendered horizontally."
   ([pose-or-data] (lay-layer-type :ridgeline pose-or-data))
@@ -1802,24 +1802,24 @@
   ([pose-or-data x y opts] (lay-layer-type :ridgeline pose-or-data x y opts)))
 
 (defn lay-summary
-  "Add :summary layer type -- mean +/- standard error per category.
+  "Add `:summary` layer type -- mean +/- standard error per category.
    Requires categorical x and numerical y. Shows a point at the mean
-   with error bars for +/- 1 SE. Accepts :color for grouped summaries."
+   with error bars for +/- 1 SE. Accepts `:color` for grouped summaries."
   ([pose-or-data] (lay-layer-type :summary pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :summary pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :summary pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :summary pose-or-data x y opts)))
 
 (defn lay-errorbar
-  "Add :errorbar layer type -- vertical error bars from pre-computed bounds.
-   Requires x, y, and {:y-min :col :y-max :col} for lower/upper bounds."
+  "Add `:errorbar` layer type -- vertical error bars from pre-computed bounds.
+   Requires x, y, and {`:y-min` `:col` `:y-max` `:col`} for lower/upper bounds."
   ([pose-or-data] (lay-layer-type :errorbar pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :errorbar pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :errorbar pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :errorbar pose-or-data x y opts)))
 
 (defn lay-lollipop
-  "Add :lollipop layer type -- dot on a stem from the baseline.
+  "Add `:lollipop` layer type -- dot on a stem from the baseline.
    Requires categorical x and numerical y. Like value-bar but with
    a circle+line instead of a filled rectangle."
   ([pose-or-data] (lay-layer-type :lollipop pose-or-data))
@@ -1828,23 +1828,23 @@
   ([pose-or-data x y opts] (lay-layer-type :lollipop pose-or-data x y opts)))
 
 (defn lay-text
-  "Add :text layer type -- text labels at data coordinates.
-   Requires x, y, and {:text :column} for label content."
+  "Add `:text` layer type -- text labels at data coordinates.
+   Requires x, y, and {`:text` `:column`} for label content."
   ([pose-or-data] (lay-layer-type :text pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :text pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :text pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :text pose-or-data x y opts)))
 
 (defn lay-label
-  "Add :label layer type -- text labels with background box at data coordinates.
-   Like :text but with a rectangular background for readability."
+  "Add `:label` layer type -- text labels with background box at data coordinates.
+   Like `:text` but with a rectangular background for readability."
   ([pose-or-data] (lay-layer-type :label pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :label pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :label pose-or-data x y-or-opts))
   ([pose-or-data x y opts] (lay-layer-type :label pose-or-data x y opts)))
 
 (defn lay-rug
-  "Add :rug layer type -- short tick marks along the axis showing individual values.
+  "Add `:rug` layer type -- short tick marks along the axis showing individual values.
    X-only: pass one column. Often layered with density or scatter."
   ([pose-or-data] (lay-layer-type :rug pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :rug pose-or-data x-or-opts))
@@ -1852,12 +1852,12 @@
   ([pose-or-data x y opts] (lay-layer-type :rug pose-or-data x y opts)))
 
 (defn lay-interval-h
-  "Add :interval-h layer type -- horizontal bar from x to x-end at categorical y.
+  "Add `:interval-h` layer type -- horizontal bar from x to x-end at categorical y.
    Each row becomes one rectangle; the y column is treated categorically
    so each distinct value occupies its own lane.
    Required: x (numeric or temporal start), y (categorical lane),
              :x-end column ref in opts (numeric or temporal end).
-   Accepts :color, :alpha, :interval-thickness (band fill fraction,
+   Accepts `:color`, `:alpha`, `:interval-thickness` (band fill fraction,
    0.0-1.0, default 0.7).
    (lay-interval-h data :start :task {:x-end :end :color :status})"
   ([pose-or-data] (lay-layer-type :interval-h pose-or-data))
@@ -1938,8 +1938,8 @@
 
 (defn options
   "Set plot-level options (title, labels, width, height, etc.).
-   Nested maps (e.g. :theme) are deep-merged.
-   :width and :height are coerced to long (rounded) so the plan carries
+   Nested maps (e.g. `:theme`) are deep-merged.
+   `:width` and `:height` are coerced to long (rounded) so the plan carries
    integer pixel dimensions through to render. On a composite pose
    the options attach to the root so every descendant leaf inherits
    them at plan time."
@@ -2001,8 +2001,8 @@
 
 (defn facet
   "Facet a pose by a column.
-   Direction is :col (default, horizontal row) or :row (vertical column).
-   Faceting is plot-level -- every panel is faceted the same way.
+   `direction` is `:col` (default, horizontal row) or `:row` (vertical
+   column). Faceting is plot-level -- every panel is faceted the same way.
    Composite poses are not supported yet."
   ([pose col] (facet pose col :col))
   ([pose col direction]
@@ -2032,8 +2032,8 @@
    :shape :shape-scale :group :group-scale})
 
 (def ^:private continuous-visual-channels
-  "Continuous visual channels. These accept :linear and :log only --
-   :categorical does not apply to a continuous encoding."
+  "Continuous visual channels. These accept `:linear` and `:log` only --
+   `:categorical` does not apply to a continuous encoding."
   #{:size :alpha :fill :color})
 
 (def ^:private discrete-visual-channels
@@ -2057,16 +2057,16 @@
 
 (defn scale
   "Set scale on a pose. Scale is plot-level -- it applies across every
-   panel. Accepts a type keyword or a scale spec map with :type, optional
-   :domain, and optional :breaks (explicit tick locations). On a composite
+   panel. Accepts a type keyword or a scale spec map with `:type`, optional
+   `:domain`, and optional `:breaks` (explicit tick locations). On a composite
    pose the scale attaches to the root so every descendant leaf inherits
    it at plan time.
 
-   Axis channels (:x, :y) accept :linear, :log, :categorical.
-   Continuous visual channels (:size, :alpha, :fill, :color) accept
-   :linear and :log only -- :categorical does not apply.
-   Discrete visual channels (:shape, :group) accept :categorical only --
-   :linear and :log do not apply to a discrete encoding. The :domain
+   Axis channels (`:x`, `:y`) accept `:linear`, `:log`, `:categorical`.
+   Continuous visual channels (`:size`, `:alpha`, `:fill`, `:color`) accept
+   `:linear` and `:log` only -- `:categorical` does not apply.
+   Discrete visual channels (`:shape`, `:group`) accept `:categorical` only --
+   `:linear` and `:log` do not apply to a discrete encoding. The `:domain`
    on a discrete scale gives explicit category order for the legend.
 
    (scale pose :x :log)                                -- log scale on x-axis
@@ -2116,10 +2116,10 @@
    to the root so every descendant leaf inherits it at plan time.
 
    Supported coord-types:
-     :cartesian -- standard x-right, y-up mapping (the default).
-     :flip      -- swap x and y axes (horizontal bars / boxplots).
-     :fixed     -- equal aspect ratio (1 data unit = 1 data unit).
-     :polar     -- radial mapping: x to angle, y to radius."
+     `:cartesian` -- standard x-right, y-up mapping (the default).
+     `:flip`      -- swap x and y axes (horizontal bars / boxplots).
+     `:fixed`     -- equal aspect ratio (1 data unit = 1 data unit).
+     `:polar`     -- radial mapping: x to angle, y to radius."
   [pose coord-type]
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
@@ -2133,8 +2133,8 @@
    returns a CompositeDraft carrying per-leaf drafts (each
    contextualized -- shared-scale domains injected, suppress-* flags
    applied), the resolved chrome geometry, and the layout (path -> rect).
-   The 2-arity folds opts into the pose first via pj/options, mirroring
-   the 2-arity of pj/plan and pj/plot.
+   The 2-arity folds opts into the pose first via `pj/options`, mirroring
+   the 2-arity of `pj/plan` and `pj/plot`.
    (draft pose)
    (draft pose {:width 800 :title \"Plot\"})"
   ([pose]
@@ -2319,8 +2319,8 @@
 
 (defn svg-summary
   "Extract structural summary from SVG hiccup for testing.
-   Returns a map with :width, :height, :panels, :points, :lines,
-   :polygons, :tiles, :visible-tiles, and :texts -- useful for asserting
+   Returns a map with `:width`, `:height`, `:panels`, `:points`, `:lines`,
+   `:polygons`, `:tiles`, `:visible-tiles`, and `:texts` -- useful for asserting
    plot structure.
    Accepts SVG hiccup or a pose (auto-renders to SVG first).
    (svg-summary (plot fr))  -- summary of rendered SVG
@@ -2410,11 +2410,11 @@
    values outside the library.
 
    Opts:
-     :cols N          explicit column count (default: min(4, n-plots))
-     :title STRING    centered title band above the grid
-     :width W         total composite width in pixels
-     :height H        total composite height in pixels
-     :share-scales S  subset of #{:x :y} shared across cells (default: #{})
+     `:cols` N          explicit column count (default: min(4, n-plots))
+     `:title` STRING    centered title band above the grid
+     `:width` W         total composite width in pixels
+     `:height` H        total composite height in pixels
+     `:share-scales` S  subset of #{`:x` `:y`} shared across cells (default: #{})
 
    (arrange [fr-a fr-b])                           -- 1x2 row
    (arrange [fr-a fr-b fr-c] {:cols 2 :width 900}) -- 2x2 grid (wraps)

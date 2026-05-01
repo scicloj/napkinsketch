@@ -81,7 +81,7 @@
 ;; ---- Column Type Detection ----
 
 (defn column-type
-  "Classify a dataset column as :categorical, :numerical, or :temporal.
+  "Classify a dataset column as `:categorical`, `:numerical`, or `:temporal`.
    The column name must literally match a column in the dataset."
   [ds col]
   (let [resolved (resolve-col-name ds col)
@@ -157,11 +157,12 @@
 ;; ---- Resolve Draft Layer ----
 
 (defn infer-column-types
-  "Detect x and y column types (:categorical, :numerical, :temporal).
+  "Detect x and y column types (`:categorical`, `:numerical`, `:temporal`).
    Temporal columns are converted to epoch-ms numbers; their original
-   extents (as LocalDateTime) are preserved for wadogo :datetime ticks.
-   Returns a map with keys :ds, :x-type, :y-type, :x-temporal?, :y-temporal?,
-   :x-temporal-extent, :y-temporal-extent, :x-resolved, :y-resolved."
+   extents (as `LocalDateTime`) are preserved for wadogo `:datetime` ticks.
+   Returns a map with keys `:ds`, `:x-type`, `:y-type`, `:x-temporal?`,
+   `:y-temporal?`, `:x-temporal-extent`, `:y-temporal-extent`,
+   `:x-resolved`, `:y-resolved`."
   [ds v]
   (let [x-res (resolve-col-name ds (:x v))
         y-res (resolve-col-name ds (:y v))
@@ -315,8 +316,8 @@
    Delegates to `infer-column-types`, `resolve-aesthetics`, `infer-grouping`,
    and `infer-layer-type` — each named for the inference step it performs.
    Also normalizes user-facing shorthand options:
-     - :bandwidth → :cfg {:<stat>-bandwidth ...} (routed per stat)
-     - :tile with :fill → stat :identity"
+     - `:bandwidth` → `:cfg {:<stat>-bandwidth ...}` (routed per stat)
+     - `:tile` with `:fill` → stat `:identity`"
   [v]
   (if-not (:data v)
     v

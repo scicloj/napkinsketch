@@ -290,16 +290,17 @@
   (into [] (mapcat (fn [i] [:poses i])) path))
 
 (defn last-matching-leaf-path
-  "Walk `pose` in left-to-right DFS order. Return the :path of the
-   last leaf whose effective :x and :y (after ancestor-merge of
-   :mapping) match `position-mapping`. Matching is strict equality:
-   `:x` and `\"x\"` are different column references. Returns nil if no
-   leaf matches.
+  "Walk `pose` in left-to-right DFS order. Return the `:path` of the
+   last leaf whose effective `:x` and `:y` (after ancestor-merge of
+   `:mapping`) match `position-mapping`. Matching is strict equality:
+   `:x` and `\"x\"` are different column references. Returns `nil` if
+   no leaf matches.
 
-   `position-mapping` may carry either or both of :x and :y; a nil
-   value matches a leaf whose effective mapping has no entry for that
-   axis. Matching is against resolved positional mappings only --
-   a bare leaf (no :x/:y) matches a bare position mapping."
+   `position-mapping` may carry either or both of `:x` and `:y`; a
+   `nil` value matches a leaf whose effective mapping has no entry
+   for that axis. Matching is against resolved positional mappings
+   only -- a bare leaf (no `:x`/`:y`) matches a bare position
+   mapping."
   [pose position-mapping]
   (let [px (:x position-mapping)
         py (:y position-mapping)]
