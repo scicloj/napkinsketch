@@ -53,7 +53,9 @@ graph LR
 ;;   Produced by `pj/draft`.
 ;;
 ;; - **Plan** -- fully resolved geometry in data space (domains,
-;;   ticks, legends, computed shapes), as plain Clojure maps and
+;;   ticks, legends, computed shapes). A `Plan` record (composite
+;;   plots use `CompositePlan`) holding panels as plain maps,
+;;   layers as `PlanLayer` records, and numeric arrays as
 ;;   dtype-next buffers. Produced by `pj/plan`. No rendering
 ;;   primitives yet.
 ;;
@@ -156,8 +158,8 @@ trace-pose
 
 ;; ### Plan
 ;;
-;; `draft->plan` converts the draft into a plan -- a pure-data map
-;; with data-space geometry, resolved colors, computed domains, and tick info.
+;; `draft->plan` converts the draft into a plan -- a `Plan` record
+;; carrying data-space geometry, resolved colors, computed domains, and tick info.
 ;; The values are still in data space.
 
 (def trace-plan
@@ -222,10 +224,10 @@ trace-membrane
 ;; | Stage | Type | Coordinates |
 ;; |:------|:-----|:------------|
 ;; | Pose | Plain map (leaf or composite) | N/A (declarative) |
-;; | Draft | Vector of maps | N/A (declarative) |
-;; | Plan | Clojure maps + dtype buffers | Data space |
+;; | Draft | Vector of plain maps | N/A (declarative) |
+;; | Plan | `Plan` / `CompositePlan` record (with `PlanLayer` records and dtype buffers) | Data space |
 ;; | Membrane | Record tree | Drawing units |
-;; | Plot | Hiccup vectors | Drawing units |
+;; | Plot | Hiccup vector (`:svg`) or `BufferedImage` (`:bufimg`) | Drawing units |
 
 ;; ## The Plan Boundary
 ;;
@@ -245,9 +247,10 @@ graph LR
   style R fill:#e3f2fd
 ")
 
-;; The plan is plain inspectable data -- maps, numbers, strings,
-;; keywords, and dtype-next buffers for numeric arrays. It validates
-;; against a Malli schema.
+;; The plan is inspectable data -- `Plan` and `PlanLayer` records
+;; (which behave as maps), plain maps, numbers, strings, keywords,
+;; and dtype-next buffers for numeric arrays. It validates against
+;; a Malli schema.
 ;;
 ;; This separation enables:
 ;;
@@ -367,11 +370,14 @@ graph TD
 ;; `impl/compositor.clj` handles composite rendering -- each leaf
 ;; becomes a sub-plot, tiled via layout.
 ;; `impl/plan.clj` holds `draft->plan` (domains, ticks, legends, layout).
-;; `impl/resolve.clj` holds `resolve-draft-layer` (single draft layer resolution,
-;; column type inference, grouping).
+;; `impl/resolve.clj` defines the `Plan`, `CompositePlan`, `PlanLayer`,
+;; and `LayerType` records, and holds `resolve-draft-layer` (single
+;; draft layer resolution, column type inference, grouping).
 ;;
-;; The `impl/` directory is pure data -- no membrane dependency.
-;; The `render/` directory uses membrane for layout and SVG conversion.
+;; Most `impl/` namespaces are pure data with no membrane
+;; dependency. The exception is `impl/compositor.clj`, which bridges
+;; composite plans into membrane trees. The `render/` directory uses
+;; membrane for layout and SVG/raster conversion.
 
 ;; ## Dependencies
 ;;
