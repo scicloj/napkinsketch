@@ -1598,7 +1598,7 @@
   "Add :rule-h layer -- horizontal reference line at y = y-intercept.
    Position comes from opts (not data columns); :y-intercept is required.
    Accepts :y-intercept (numeric or temporal -- LocalDate, LocalDateTime,
-   Instant, java.util.Date), :color (literal string), :alpha.
+   Instant, java.util.Date) and :color (literal string).
    Temporal values are converted internally to match the y-axis scale
    so date-axis annotations work without manual conversion.
    The 4-arity finds or creates a sub-pose with these x/y columns
@@ -1606,7 +1606,7 @@
    it).
    (lay-rule-h pose {:y-intercept 3})           -- root-level, flows to every panel
    (lay-rule-h pose :x :y {:y-intercept 3})     -- panel-scope (columns pick or create a sub-pose)
-   (lay-rule-h pose {:y-intercept 3 :color \"red\" :alpha 0.5})
+   (lay-rule-h pose {:y-intercept 3 :color \"red\"})
    (lay-rule-h pose {:y-intercept (java.time.LocalDate/parse \"2024-01-01\")})"
   ([_pose-or-data] (assert-rule-1-arity! :rule-h))
   ([pose-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-layer-type :rule-h pose-or-data (coerce-rule-opts :rule-h x-or-opts)))
@@ -1617,7 +1617,7 @@
   "Add :rule-v layer -- vertical reference line at x = x-intercept.
    Position comes from opts (not data columns); :x-intercept is required.
    Accepts :x-intercept (numeric or temporal -- LocalDate, LocalDateTime,
-   Instant, java.util.Date), :color (literal string), :alpha.
+   Instant, java.util.Date) and :color (literal string).
    Temporal values are converted internally to match the x-axis scale
    so date-axis annotations work without manual conversion.
    The 4-arity finds or creates a sub-pose with these x/y columns
@@ -1625,7 +1625,7 @@
    it).
    (lay-rule-v pose {:x-intercept 5})           -- root-level, flows to every panel
    (lay-rule-v pose :x :y {:x-intercept 5})     -- panel-scope (columns pick or create a sub-pose)
-   (lay-rule-v pose {:x-intercept 5 :color \"red\" :alpha 0.5})
+   (lay-rule-v pose {:x-intercept 5 :color \"red\"})
    (lay-rule-v pose {:x-intercept #inst \"2008-09-15\"})"
   ([_pose-or-data] (assert-rule-1-arity! :rule-v))
   ([pose-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-layer-type :rule-v pose-or-data (coerce-rule-opts :rule-v x-or-opts)))
