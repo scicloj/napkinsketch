@@ -130,15 +130,27 @@
 
 ;; ## Numeric Column Rejected by a Categorical-Axis Mark
 ;;
-;; **Symptom**: An error like `"lay-value-bar requires a categorical
-;; column for :x, but :hour is numerical"`, or the equivalent for
-;; `:boxplot`, `:violin`, `:lollipop`, or similar marks that need a
-;; categorical axis.
+;; **Symptom**: An error like `"Mark :rect (lay-value-bar) requires
+;; a categorical column for :x, but :hour is numerical"`, or the
+;; equivalent for `:boxplot`, `:violin`, `:lollipop`, or similar
+;; marks that need a categorical axis.
 ;;
 ;; **Cause**: The column you passed (e.g., hour of day, year, subject
 ;; ID) contains numbers, so column-type inference classifies it as
 ;; `:numerical`. The mark needs `:categorical`.
 ;;
+;; A bar chart of hourly counts hits this -- `:hour` looks like
+;; integers, so it is inferred numerical:
+
+(try
+  (-> {:hour [9 10 11 12] :count [5 8 12 7]}
+      (pj/lay-value-bar :hour :count)
+      pj/plan)
+  (catch clojure.lang.ExceptionInfo e (ex-message e)))
+
+(kind/test-last
+ [(fn [msg] (re-find #"requires a categorical column for :x" msg))])
+
 ;; **Fix**: Add `:x-type :categorical` (or `:y-type :categorical` for
 ;; horizontal layouts) to override the inferred type. No need to
 ;; convert the column itself:
@@ -167,6 +179,17 @@
 ;; keys. They are set by the `pj/scale` function, not by a
 ;; `:scale-*` key.
 ;;
+;; The wrong form does not throw; it warns and silently falls back
+;; to a linear axis:
+
+(with-out-str
+  (-> (rdatasets/ggplot2-diamonds)
+      (pj/lay-point :carat :price {:scale-y :log})
+      pj/plan))
+
+(kind/test-last
+ [(fn [out] (re-find #"does not recognize option.*:scale-y" out))])
+
 ;; **Fix**: Use `pj/scale`:
 
 (-> (rdatasets/ggplot2-diamonds)
@@ -184,11 +207,21 @@
 
 ;; ## x-Only Layer Types Do Not Accept a y Column
 ;;
-;; **Symptom**: `"lay-histogram uses only the x column"` error.
+;; **Symptom**: `"lay-histogram uses only the x column; do not pass
+;; a y column"` error.
 ;;
 ;; **Cause**: Histogram, bar, density, and rug layer types use only
 ;; the x column. Passing a y column is an error.
-;;
+
+(try
+  (-> (rdatasets/datasets-iris)
+      (pj/lay-histogram :sepal-length :sepal-width)
+      pj/plan)
+  (catch clojure.lang.ExceptionInfo e (ex-message e)))
+
+(kind/test-last
+ [(fn [msg] (re-find #"uses only the x column" msg))])
+
 ;; **Fix**: Remove the y column:
 
 (-> (rdatasets/datasets-iris)
@@ -202,29 +235,41 @@
 ;;
 ;; **Cause**: Log scales only work with numerical columns. Categorical
 ;; columns (strings, keywords) have no meaningful log transform.
-;;
-;; **Fix**: Use a numerical column for the log-scaled axis, or drop
-;; the log scale on the categorical axis:
 
 (try
   (-> (rdatasets/datasets-iris)
       (pj/lay-bar :species)
       (pj/scale :x :log)
       pj/plot)
-  (catch Exception e (.getMessage e)))
+  (catch clojure.lang.ExceptionInfo e (ex-message e)))
 
-(kind/test-last [(fn [msg] (and (string? msg)
-                                (re-find #"[Ll]og scale" msg)))])
+(kind/test-last [(fn [msg] (re-find #"[Ll]og scale" msg))])
+
+;; **Fix**: Use a numerical column for the log-scaled axis, or drop
+;; the log scale on the categorical axis.
 
 ;; ## Polar Coordinates with Unsupported Marks
 ;;
-;; **Symptom**: Errors or unexpected output with `(pj/coord :polar)`.
+;; **Symptom**: `"Mark :line is not supported with polar
+;; coordinates. Supported polar marks: (:bar :point :rect :rug
+;; :text)"` (or the same message for `:area` and other unsupported
+;; marks).
 ;;
 ;; **Cause**: Polar coordinates currently support a subset of marks:
 ;; `:bar`, `:point`, `:rect`, `:rug`, and `:text`. Layer types built
 ;; on these marks (such as `:value-bar` and `:histogram`, which both
 ;; render as bars) work too.
-;;
+
+(try
+  (-> {:x [1 2 3 4 5] :y [2 4 3 5 4]}
+      (pj/lay-line :x :y)
+      (pj/coord :polar)
+      pj/plan)
+  (catch clojure.lang.ExceptionInfo e (ex-message e)))
+
+(kind/test-last
+ [(fn [msg] (re-find #"not supported with polar coordinates" msg))])
+
 ;; **Fix for now**: Use a supported mark. A bar chart flipped to polar
 ;; becomes a rose chart:
 
@@ -259,17 +304,27 @@
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-;; ## Faceting Keys in a Layer or Pose Options Map
+;; ## Faceting Keys in a Layer's Options Map
 ;;
 ;; **Symptom**: An error like
 ;; `"Faceting is plot-level, not layer-level. Use (pj/facet pose col) ..."`
 ;; when you put `:facet-col`, `:facet-row`, `:facet-x`, or
-;; `:facet-y` inside a `pj/pose` or `pj/lay-*` options map.
+;; `:facet-y` inside a `pj/lay-*` options map.
 ;;
 ;; **Cause**: Faceting configures the plot as a whole, not a single
-;; pose or layer. Those keys are not accepted in pose/layer
-;; mappings.
-;;
+;; layer. Putting these keys in a layer's options map is rejected
+;; with a guidance message.
+
+(try
+  (-> (rdatasets/datasets-iris)
+      (pj/pose :sepal-length :sepal-width)
+      (pj/lay-point {:facet-col :species})
+      pj/plan)
+  (catch clojure.lang.ExceptionInfo e (ex-message e)))
+
+(kind/test-last
+ [(fn [msg] (re-find #"Faceting is plot-level" msg))])
+
 ;; **Fix**: Use `pj/facet` (single-axis) or `pj/facet-grid`
 ;; (two-axis) as a top-level step in the pipeline:
 
@@ -283,7 +338,7 @@
 ;;
 ;; **Symptom**: An error like
 ;; `"lay-text :y must be a column reference (keyword or string),
-;; but got 200"`, typically when adding a text or label layer at a
+;; but got 3.0"`, typically when adding a text or label layer at a
 ;; fixed horizontal or vertical position. (Reference lines use
 ;; `pj/lay-rule-h` with `:y-intercept` or `pj/lay-rule-v` with
 ;; `:x-intercept` instead.)
@@ -291,7 +346,17 @@
 ;; **Cause**: `:x` and `:y` are position **mappings** -- they must
 ;; name a column that the stat can index into, not hold a scalar
 ;; constant.
-;;
+
+(try
+  (-> (rdatasets/datasets-iris)
+      (pj/lay-point :sepal-length :sepal-width)
+      (pj/lay-text {:x :sepal-length :y 3.0 :text :species})
+      pj/plan)
+  (catch clojure.lang.ExceptionInfo e (ex-message e)))
+
+(kind/test-last
+ [(fn [msg] (re-find #":y must be a column reference" msg))])
+
 ;; **Fix**: Provide a small one-row dataset via `:data` whose columns
 ;; hold the constant values, then reference those columns:
 
@@ -314,16 +379,25 @@
 ;; **Cause**: `pj/with-data` validates at attach time -- every
 ;; keyword column reference in the template must exist in the
 ;; dataset, or the attachment fails fast.
-;;
+
+(def template
+  (-> (pj/pose nil {:x :x :y :y :color :group})
+      pj/lay-point))
+
+(try
+  (-> template
+      (pj/with-data {:x [1 2 3] :y [4 5 6]}))
+  (catch clojure.lang.ExceptionInfo e (ex-message e)))
+
+(kind/test-last
+ [(fn [msg] (re-find #"\[:group\] not present in the dataset" msg))])
+
 ;; **Fix**: Either rename the dataset columns to match the
 ;; template (`tc/rename-columns`), or adjust the template to
 ;; reference the columns the dataset has.
 
-(def template
-  (-> (pj/pose nil {:x :x :y :y})
-      pj/lay-point))
-
-(-> template
+(-> (pj/pose nil {:x :x :y :y})
+    pj/lay-point
     (pj/with-data {:x [1 2 3] :y [4 5 6]}))
 
 (kind/test-last [(fn [v] (= 3 (:points (pj/svg-summary v))))])
@@ -339,6 +413,18 @@
 ;; order they appear in the data (matching ggplot2's
 ;; `coord_flip()`).
 ;;
+;; Descending data plotted as-is -- "A" (the biggest) renders at
+;; the bottom, not the top:
+
+(-> [{:category "A" :value 100}
+     {:category "B" :value 50}
+     {:category "C" :value 25}]
+    (tc/dataset)
+    (pj/lay-value-bar :category :value)
+    (pj/coord :flip))
+
+(kind/test-last [(fn [v] (= 3 (:polygons (pj/svg-summary v))))])
+
 ;; **Fix for now**: Sort the dataset ascending before plotting -- the
 ;; ascending order shows up top-to-bottom on the flipped axis,
 ;; so the biggest value lands at the top:
@@ -351,7 +437,7 @@
     (pj/lay-value-bar :category :value)
     (pj/coord :flip))
 
-(kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
+(kind/test-last [(fn [v] (= 3 (:polygons (pj/svg-summary v))))])
 
 ;; A future opt-in option (e.g. `(pj/coord :flip
 ;; {:reverse-categorical true})`) would spare the sort dance.
@@ -366,7 +452,16 @@
 ;; **Cause**: `pj/lay-bar {:position :stack}` is count-only -- it
 ;; bins by `x` internally and sums counts. It has no mode that
 ;; accepts a pre-computed `y`.
-;;
+
+(try
+  (-> {:x [1 2 3] :y [10 20 30] :group ["A" "B" "A"]}
+      (pj/lay-bar :x :y {:position :stack :color :group})
+      pj/plan)
+  (catch clojure.lang.ExceptionInfo e (ex-message e)))
+
+(kind/test-last
+ [(fn [msg] (re-find #"uses only the x column" msg))])
+
 ;; **Fix for now**: Either use `(pj/lay-area ... {:position :stack})`
 ;; on a numeric x (it accepts pre-aggregated `y`), or expand
 ;; aggregated rows back into count-many duplicates so the count
@@ -390,6 +485,21 @@
 ;; (`pj/lay-bar`, `pj/lay-value-bar`). On point/line/jitter and
 ;; several other marks the option is accepted but silently ignored.
 ;;
+;; The two plans below produce identical x-coordinates for the
+;; rendered points -- `:position :dodge` is a no-op on points:
+
+(def points-data
+  {:x [1 1 2 2 3 3] :y [10 15 20 25 30 35] :group ["A" "B" "A" "B" "A" "B"]})
+
+(defn point-xs [pose]
+  (-> pose pj/plan :panels first :layers first :groups
+      (->> (mapcat :xs) sort vec)))
+
+(= (point-xs (-> points-data (pj/lay-point :x :y {:color :group})))
+   (point-xs (-> points-data (pj/lay-point :x :y {:color :group :position :dodge}))))
+
+(kind/test-last [(fn [v] (true? v))])
+
 ;; **Fix for now**: For grouped categorical layouts use
 ;; `pj/lay-value-bar` (or `pj/lay-bar` when binning a count); dodge
 ;; works there. To distinguish overlapping points by group on a
@@ -450,7 +560,16 @@
 ;; requires numeric x and y columns -- the tile boundaries are
 ;; numeric intervals. Categorical axes are not yet supported for
 ;; tile.
-;;
+
+(try
+  (-> {:x ["a" "b" "c"] :y ["a" "b" "c"] :v [1 2 3]}
+      (pj/lay-tile :x :y {:fill :v})
+      pj/plan)
+  (catch Throwable t (.getMessage t)))
+
+(kind/test-last
+ [(fn [msg] (re-find #"String cannot be cast to.*Number" msg))])
+
 ;; **Fix for now**: Either render a numeric-indexed grid (convert
 ;; categorical labels to integer ticks and reposition the tick
 ;; labels afterwards), or approach the problem with
