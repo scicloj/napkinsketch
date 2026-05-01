@@ -25,9 +25,13 @@
            :resource-dirs ["resources"])))
 
 (defn run-tests
-  "Run tests via cognitect test runner"
+  "Run tests via cognitect test runner. Throws if any test fails so
+   `ci` does not silently proceed to JAR/pom on a red suite."
   [opts]
-  (b/process {:command-args ["clojure" "-M:test" "-m" "cognitect.test-runner"]})
+  (let [{:keys [exit]} (b/process {:command-args ["clojure" "-M:test" "-m" "cognitect.test-runner"]})]
+    (when-not (zero? exit)
+      (throw (ex-info (str "Tests failed (exit code " exit "); aborting build.")
+                      {:exit exit}))))
   opts)
 
 (defn- pom-template [version]
