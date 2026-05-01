@@ -7,10 +7,9 @@
    rectangle.
 
    Validation is not wired into any runtime path yet; Phase 6 of the
-   pre-alpha refactor (see dev-notes/pre-alpha-refactor-plan.md) adds
-   validation at public API boundaries. Until then, impl.pose operates
-   on structurally-valid poses by convention; this schema is the
-   authoritative definition of that convention.
+   pre-alpha refactor adds validation at public API boundaries. Until
+   then, impl.pose operates on structurally-valid poses by convention;
+   this schema is the authoritative definition of that convention.
 
    Decisions made in Phase 2:
    - A leaf with no :data and no :mapping is valid -- leaves inherit

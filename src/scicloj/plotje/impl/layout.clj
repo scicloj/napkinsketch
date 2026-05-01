@@ -14,8 +14,7 @@
    runs the tick picker at a pixel budget equal to the user-supplied
    `:height` (or `:width`), not the actual panel size. Label width is
    monotonic non-decreasing in tick count across every scale type we
-   support (verified at the REPL -- see dev-notes/design-width-inference.md),
-   so this over-estimate is always safe.
+   support (verified at the REPL), so this over-estimate is always safe.
 
    Pipeline:
 

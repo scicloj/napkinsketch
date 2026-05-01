@@ -176,9 +176,7 @@ plan namespace is reloaded.
 
 A separate, deeper class-retention path in `clojure.core/eval`
 was identified during the same investigation; that one lives
-upstream and is unaffected by this change. See
-`dev-notes/heap-leak-investigation-2026-04-28.md` and
-`dev-notes/clay-leak-diagnosis-2026-04-28.md`.
+upstream and is unaffected by this change.
 
 ### Breaking: terminology rename batch
 
@@ -407,8 +405,7 @@ Internal changes the deletion required:
   `:facet-col`/`:facet-row`, the draft is multiplied across distinct
   facet values, each variant carrying filtered `:data` and a
   `:facet-col`/`:facet-row` label that `plan.clj` detects to build
-  the facet grid. Composite poses are rejected explicitly (see
-  `dev-notes/facet-composite-deferral.md`).
+  the facet grid. Composite poses are rejected explicitly.
 - `impl/sketch_schema.clj` renamed to `impl/plan_schema.clj` -- it
   was misnamed; the namespace holds Malli schemas for the plan data
   model, not the Sketch record.
@@ -522,8 +519,7 @@ picker at a pixel budget equal to `:height` instead of the unknown
 real panel height -- breaks the classic
 `y-label-pad <-> panel-width` cycle. Label widths are monotonic
 non-decreasing in tick count for every supported scale type, so
-the over-estimate is always safe. See
-`dev-notes/design-width-inference.md` for the full design.
+the over-estimate is always safe.
 
 Most existing plots shrink visibly (panels previously ~600x400 now
 render around ~560x368 at the default total size). Generated tests

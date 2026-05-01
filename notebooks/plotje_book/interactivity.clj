@@ -149,16 +149,6 @@
     (into [:svg (assoc attrs :id plot-id)] body)
     [:script script]]))
 
-;; ## What's testable
-;;
-;; The cells above produce SVG hiccup containing all the markup
-;; the browser needs (`data-tooltip`, `data-row-idx`,
-;; `nsk-tooltip` / `nsk-brush-sel` CSS, the save-PNG script).
-;; A Playwright-based check at
-;; `dev-tools/check-interactivity.py` walks the rendered HTML
-;; and verifies the data attributes, CSS rules, and the
-;; save-PNG button are all present in a real Chromium instance.
-
 ;; ## See Also
 ;;
 ;; - [**Options and Scopes**](./plotje_book.options_and_scopes.html) -- where `:tooltip`, `:brush`, and other plot options live in the pose

@@ -8,9 +8,10 @@
    and :opts are never present in output (strict elision, Reading A
    per Phase 6 design discussion 2026-04-24).
 
-   Design reference: memory/project_phase_6_design.md and
-   dev-notes/pose-rules-draft.md. Case labels (C1, E2, P3, ...) match
-   the test-first outline in the design doc."
+   Case labels (A*, C*, E*, P*) are local identifiers grouping related
+   tests. The C* and A* families align with rule families taught in
+   notebooks/plotje_book/pose_rules.clj; E* (extension) and P* (panel)
+   are test-internal."
   (:require [clojure.test :refer [deftest testing is]]
             [tablecloth.api :as tc]
             [scicloj.plotje.api :as pj]

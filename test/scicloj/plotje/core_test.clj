@@ -1971,7 +1971,7 @@
     ;; "Mixed grid" (composite + facet) is deferred. Once two pj/pose
     ;; calls promote the leaf to a composite, pj/facet can't thread
     ;; through -- facet still routes through ensure-sk, which rejects
-    ;; composites (see dev-notes/facet-composite-deferral.md).
+    ;; composites.
 
     (testing "Inference: one numerical column"
       (let [s (summary (-> (pj/pose iris)

@@ -988,9 +988,8 @@
    New layout pipeline (2026-04-11): stats first, then scene → padding →
    dimensions, then per-panel ticks at the now-known panel dimensions.
    `:width`/`:height` are total SVG dimensions; panel dimensions are
-   derived by subtracting layout overhead. See dev-notes/design-width-inference.md
-   for the full design. `:panel-width`/`:panel-height` in opts are
-   escape hatches that pin panel size on their axis."
+   derived by subtracting layout overhead. `:panel-width`/`:panel-height`
+   in opts are escape hatches that pin panel size on their axis."
   ([draft] (draft->plan draft {}))
   ([draft {:keys [x-label y-label title subtitle caption
                   scales legend-position grid-cols grid-rows] :as opts}]

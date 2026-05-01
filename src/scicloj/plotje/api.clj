@@ -2002,22 +2002,19 @@
 
 (defn- reject-composite-for-facet
   "Throw if the input is a composite pose. Facet on composites would
-   cross the facet grid with the composite grid, which is deferred
-   (see dev-notes/facet-composite-deferral.md)."
+   cross the facet grid with the composite grid, which is deferred."
   [fr]
   (when (and (pose? fr) (pose/composite? fr))
     (throw (ex-info (str "pj/facet and pj/facet-grid are not yet supported on composite poses. "
-                         "The facet grid would cross the composite layout; see "
-                         "dev-notes/facet-composite-deferral.md. Flatten to a single leaf "
-                         "(or wait for Option C).")
+                         "The facet grid would cross the composite layout. "
+                         "Flatten to a single leaf.")
                     {:pose-kind :composite}))))
 
 (defn facet
   "Facet a pose by a column.
    Direction is :col (default, horizontal row) or :row (vertical column).
    Faceting is plot-level -- every panel is faceted the same way.
-   Composite poses are not supported yet (see
-   dev-notes/facet-composite-deferral.md)."
+   Composite poses are not supported yet."
   ([pose col] (facet pose col :col))
   ([pose col direction]
    (reject-composite-for-facet pose)
@@ -2033,8 +2030,7 @@
 (defn facet-grid
   "Facet a pose by two columns (2D grid).
    Faceting is plot-level -- every panel is faceted the same way.
-   Composite poses are not supported yet (see
-   dev-notes/facet-composite-deferral.md)."
+   Composite poses are not supported yet."
   [pose col-col row-col]
   (reject-composite-for-facet pose)
   (update-opts pose assoc :facet-col col-col :facet-row row-col))
