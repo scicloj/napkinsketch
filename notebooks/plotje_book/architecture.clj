@@ -1,8 +1,12 @@
 ;; # Architecture
 ;;
-;; Plotje has a five-stage pipeline. You compose a pose --
-;; a declarative description of data, mappings, and layers --
-;; that flattens into a draft automatically.
+;; Plotje has a five-stage pipeline: **pose** -> **draft** -> **plan**
+;; -> **membrane** -> **plot**. The pose is the hierarchical, composable
+;; specification you write. The draft is the same specification
+;; flattened -- one entry per applicable layer, with outer scope merged
+;; in. The plan replaces specification with computed geometry in data
+;; space. The membrane replaces data-space geometry with drawing
+;; primitives in drawing space. The plot is the rendered output.
 ;;
 ;; This notebook traces a small example through every stage,
 ;; explains the plan boundary, and shows the namespace structure.
