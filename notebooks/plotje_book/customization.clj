@@ -624,6 +624,11 @@
 
 (kind/test-last [(fn [v] (= :div (first (pj/plot v))))])
 
+;; ## See Also
+;;
+;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- the mapping and aesthetic vocabulary used throughout this chapter
+;; - [**Options and Scopes**](./plotje_book.options_and_scopes.html) -- where layer options, plot options, and configuration live
+
 ;; ## What's Next
 ;;
 ;; - [**Faceting**](./plotje_book.faceting.html) -- split any chart into panels by one or two variables

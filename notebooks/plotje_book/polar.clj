@@ -7,7 +7,10 @@
 ;; so a narrow range produces a wedge cluster rather than a full
 ;; circle. Supported marks today are `:point`, `:bar`, `:rect`,
 ;; `:text`, and `:rug`; other marks raise a clear error. Tick labels
-;; and axis labels are not yet rendered under `:polar`.
+;; and axis labels are not yet rendered under `:polar`, but legends
+;; render as they would on Cartesian coords -- a `:color` mapping
+;; produces a normal legend that can be repositioned via
+;; `:legend-position` (see [Customization](./plotje_book.customization.html)).
 
 (ns plotje-book.polar
   (:require
@@ -106,6 +109,10 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
                                 (some #{"Iris in Polar Space"} (:texts s)))))])
+
+;; ## See Also
+;;
+;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- coordinate systems and scale types
 
 ;; ## What's Next
 ;;

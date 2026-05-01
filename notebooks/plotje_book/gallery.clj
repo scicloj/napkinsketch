@@ -1999,3 +1999,26 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (pos? (:points s))
                                 (pos? (:lines s)))))])
+
+;; ## Timelines
+
+;; ### Gantt schedule by team
+;; Source: [R Graph Gallery: Gantt Chart](https://r-graph-gallery.com/web-time-series-and-facetting.html)
+
+;; Horizontal interval bars with one row per task, dates as bar
+;; bounds, and color encoding the responsible team.
+
+(-> {:task  ["Design" "Build" "Integration" "Testing" "Launch"]
+     :start [#inst "2024-01-01" #inst "2024-02-15"
+             #inst "2024-04-01" #inst "2024-05-01"
+             #inst "2024-06-01"]
+     :end   [#inst "2024-02-15" #inst "2024-04-15"
+             #inst "2024-05-01" #inst "2024-06-01"
+             #inst "2024-06-15"]
+     :team  ["A" "B" "B" "C" "A"]}
+    (pj/lay-interval-h :start :task {:x-end :end :color :team})
+    (pj/options {:title "Project Schedule by Team"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:polygons s)))))])

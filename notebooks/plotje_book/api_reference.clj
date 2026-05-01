@@ -585,6 +585,46 @@
 
 (kind/test-last [true?])
 
+(kind/doc #'pj/leaf-plan?)
+
+;; Check whether a plan is a leaf (single-panel resolved geometry).
+;; A non-composite plan from a leaf pose is a leaf plan:
+
+(pj/leaf-plan? (pj/plan (pj/lay-point tiny :x :y)))
+
+(kind/test-last [true?])
+
+(kind/doc #'pj/composite-plan?)
+
+;; Check whether a plan is a composite (a tree of sub-plots, returned
+;; by `pj/plan` on a composite pose like one from `pj/arrange`):
+
+(pj/composite-plan?
+ (pj/plan (pj/arrange [(pj/lay-point tiny :x :y)
+                       (pj/lay-point tiny :x :y)])))
+
+(kind/test-last [true?])
+
+(kind/doc #'pj/draft?)
+
+;; Check whether a value is a draft (from `pj/draft`). True for both
+;; leaf drafts (vectors of layer maps) and composite drafts:
+
+(pj/draft? (pj/draft (pj/lay-point tiny :x :y)))
+
+(kind/test-last [true?])
+
+(kind/doc #'pj/composite-draft?)
+
+;; Check whether a draft is a composite (a tree of sub-drafts,
+;; returned by `pj/draft` on a composite pose):
+
+(pj/composite-draft?
+ (pj/draft (pj/arrange [(pj/lay-point tiny :x :y)
+                        (pj/lay-point tiny :x :y)])))
+
+(kind/test-last [true?])
+
 (kind/doc #'pj/plan-layer?)
 
 ;; Check whether a value is a resolved plan layer:
@@ -673,6 +713,31 @@ plan1
 (kind/doc #'pj/plan->plot)
 
 (first (pj/plan->plot plan1 :svg {}))
+
+(kind/test-last [(fn [v] (= :svg v))])
+
+;; The `draft->*` family lets the same pipeline start from a draft
+;; instead of a fully-resolved plan. Useful when you have a draft in
+;; hand (e.g. from inspection) and want to skip re-running the
+;; layer-flattening step.
+
+(kind/doc #'pj/draft->plan)
+
+(def draft1 (pj/draft (pj/lay-point tiny :x :y)))
+
+(pj/plan? (pj/draft->plan draft1))
+
+(kind/test-last [true?])
+
+(kind/doc #'pj/draft->membrane)
+
+(vector? (pj/draft->membrane draft1))
+
+(kind/test-last [true?])
+
+(kind/doc #'pj/draft->plot)
+
+(first (pj/draft->plot draft1 :svg {}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 

@@ -216,6 +216,27 @@ temp-pose
 ;; See [Inference Rules](./plotje_book.inference_rules.html)
 ;; for details on how dates are detected and formatted.
 
+;; ## Smoothed Time Series
+
+;; A LOESS smoother overlaid on a noisy time series helps the eye
+;; pick out the underlying trend. `pj/lay-smooth` works on any
+;; numerical y axis, including dates on x.
+
+(-> {:date  [#inst "2024-01-01" #inst "2024-02-01" #inst "2024-03-01"
+             #inst "2024-04-01" #inst "2024-05-01" #inst "2024-06-01"
+             #inst "2024-07-01" #inst "2024-08-01" #inst "2024-09-01"
+             #inst "2024-10-01" #inst "2024-11-01" #inst "2024-12-01"]
+     :sales [10 14 12 18 22 19 25 28 24 30 27 33]}
+    (pj/pose :date :sales)
+    pj/lay-line
+    pj/lay-smooth)
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                ;; one raw line plus the LOESS smooth
+                                ;; overlay -- two lines total.
+                                (= 2 (:lines s)))))])
+
 ;; ## Zero-Line Baseline
 
 ;; Time series with positive and negative values often benefit from a

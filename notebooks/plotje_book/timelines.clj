@@ -466,7 +466,11 @@
                               (and (re-find #":data-tooltip" s)
                                    (re-find #" → " s))))])
 
-;; ## What's next
+;; ## See Also
+;;
+;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- mappings, aesthetics, and the inference rules behind temporal axes
+
+;; ## What's Next
 ;;
 ;; - [**Interactivity**](./plotje_book.interactivity.html) -- tooltip, brush, cross-panel linking, save-as-PNG
 ;; - [**Change Over Time**](./plotje_book.change_over_time.html) -- line, step, area on a date axis

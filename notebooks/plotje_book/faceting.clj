@@ -184,6 +184,11 @@
                                 (some #{"Iris by Species"} (:texts s))
                                 (some #{"Sepal Length (cm)"} (:texts s)))))])
 
+;; ## See Also
+;;
+;; - [**Composition**](./plotje_book.composition.html) -- composite poses, shared scales, and arbitrary layouts
+;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- mapping scope as it flows through faceted panels
+
 ;; ## What's Next
 ;;
 ;; - [**Troubleshooting**](./plotje_book.troubleshooting.html) -- common issues and how to fix them

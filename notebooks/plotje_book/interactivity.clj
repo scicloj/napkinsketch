@@ -177,7 +177,11 @@
 ;; and verifies the data attributes, CSS rules, and the
 ;; save-PNG button are all present in a real Chromium instance.
 
-;; ## What's next
+;; ## See Also
+;;
+;; - [**Options and Scopes**](./plotje_book.options_and_scopes.html) -- where `:tooltip`, `:brush`, and other plot options live in the pose
+
+;; ## What's Next
 ;;
 ;; - [**Timelines**](./plotje_book.timelines.html) -- where most of the example data came from
 ;; - [**Customization**](./plotje_book.customization.html) -- titles, palettes, scales

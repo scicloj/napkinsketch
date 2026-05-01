@@ -159,6 +159,27 @@
                            (and (= 4 (:points s))
                                 (= 4 (:lines s)))))])
 
+;; ## Lollipop with `:color`
+
+;; Map a categorical column to `:color` to distinguish groups
+;; visually -- here, products grouped by region.
+
+(-> {:product ["A" "B" "C" "D" "E" "F"]
+     :revenue [120 95 150 80 200 110]
+     :region  ["North" "South" "North" "South" "North" "South"]}
+    (pj/lay-lollipop :product :revenue {:color :region}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)
+                               fills (disj (:colors s) "none")]
+                           (and (= 6 (:points s))
+                                ;; one distinct interior color per region
+                                (= 2 (count fills)))))])
+
+;; ## See Also
+;;
+;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- mappings and aesthetic vocabulary
+;; - [**Distributions**](./plotje_book.distributions.html) -- when comparing categories also means comparing their distributions
+
 ;; ## What's Next
 ;;
 ;; - [**Change Over Time**](./plotje_book.change_over_time.html) -- line charts, step functions, and stacked areas

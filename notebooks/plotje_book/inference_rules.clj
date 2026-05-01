@@ -44,7 +44,16 @@ scatter-pose
  [(fn [v]
     (let [plan (pj/plan scatter-pose)
           p (first (:panels plan))
-          g (first (:groups (first (:layers p))))]
+          g (first (:groups (first (:layers p))))
+          ;; Render with an explicit :color set to the configured
+          ;; default; the rendered RGBA must match what we get with
+          ;; no :color (where inference picks the same default).
+          ;; This avoids reaching into the private hex->rgba helper.
+          default-hex (:default-color (pj/config))
+          explicit-default-color (-> {:x [1] :y [1]}
+                                     (pj/lay-point :x :y {:color default-hex})
+                                     pj/plan
+                                     :panels first :layers first :groups first :color)]
       (and (= 5 (:points (pj/svg-summary v)))
            (= :single (:layout-type plan))
            (= 1 (count (:panels plan)))
@@ -54,9 +63,7 @@ scatter-pose
            (zero? (get-in plan [:layout :legend-w]))
            (= :linear (get-in p [:x-scale :type]))
            (= 1 (count (:groups (first (:layers p)))))
-           (= (scicloj.plotje.impl.defaults/hex->rgba
-               (:default-color (scicloj.plotje.impl.defaults/config)))
-              (:color g)))))])
+           (= explicit-default-color (:color g)))))])
 
 ;; Notice what was inferred:
 ;;

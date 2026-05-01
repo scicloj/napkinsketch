@@ -321,6 +321,11 @@
 ;; The multi-column vector works with any `lay-*` function -- histograms,
 ;; density curves, boxplots, violin plots, and more.
 
+;; ## See Also
+;;
+;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- mappings and aesthetics referenced throughout
+;; - [**Relationships**](./plotje_book.relationships.html) -- two-distribution comparisons via heatmap, contour, and SPLOM
+
 ;; ## What's Next
 ;;
 ;; - [**Ranking**](./plotje_book.ranking.html) -- bar charts and lollipop plots for categorical comparisons

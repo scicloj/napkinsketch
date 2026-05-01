@@ -446,6 +446,10 @@
 ;; "categorical-heatmap" effect. A proper categorical-axis tile
 ;; is tracked in `CHANGELOG.md` Known limitations.
 
+;; ## See Also
+;;
+;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- the mapping and inference rules behind most of these symptoms
+
 ;; ## What's Next
 ;;
 ;; - [**Inference Rules**](./plotje_book.inference_rules.html) -- how defaults are chosen and overridden

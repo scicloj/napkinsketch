@@ -117,6 +117,26 @@
                            (and (= 150 (:points s))
                                 (= 1 (:lines s)))))])
 
+;; ### Gantt schedule
+;;
+;; A horizontal interval bar per task, with the bar's left edge at
+;; the start date and the right edge at the end date. The
+;; [Timelines](./plotje_book.timelines.html) chapter has more
+;; variations (color by team, vertical orientation, presidential
+;; terms); this is the minimal recipe.
+
+(-> {:task  ["Design" "Build" "Test" "Ship"]
+     :start [#inst "2024-01-01" #inst "2024-02-01"
+             #inst "2024-03-15" #inst "2024-04-15"]
+     :end   [#inst "2024-02-01" #inst "2024-03-20"
+             #inst "2024-04-15" #inst "2024-05-01"]}
+    (pj/lay-interval-h :start :task {:x-end :end})
+    (pj/options {:title "Project schedule"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 4 (:polygons s)))))])
+
 ;; ### Ridgeline with color
 ;;
 ;; Compare distribution shapes across categories with overlapping
@@ -660,6 +680,11 @@
 ;; saving that pose still produces a PNG file -- the save path
 ;; reinterprets the pose-level `:bufimg` as `:png` because what hits
 ;; the disk is a PNG.
+
+;; ## See Also
+;;
+;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- the mapping, scope, and identity rules behind these recipes
+;; - [**Composition**](./plotje_book.composition.html) -- composite poses for multi-panel layouts
 
 ;; ## What's Next
 ;;

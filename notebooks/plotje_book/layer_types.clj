@@ -74,6 +74,16 @@
  [(fn [t]
     (= 26 (count (:row-maps t))))])
 
+;; The "Position" column shows each layer-type's registered default.
+;; A few marks (`:bar`, `:value-bar`, `:lollipop`, `:boxplot`,
+;; `:violin`) carry no registered default and the table therefore
+;; lists `:identity` for them, but they apply `:dodge` at extract
+;; time when a categorical color or group splits the data into
+;; multiple sub-bars per category. So a colored
+;; `(pj/lay-bar :species {:color :group})` produces dodged bars
+;; even though the table shows `:identity` for `:bar`. To force a
+;; different layout, pass `:position` explicitly in the layer opts.
+
 ;; ## Marks
 ;;
 ;; A **mark** is the visual shape shown for each data point or

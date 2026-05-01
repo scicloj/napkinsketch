@@ -28,6 +28,13 @@
 ;; |License |[MIT](https://github.com/scicloj/plotje/blob/main/LICENSE)|
 ;; |Status |🛠alpha🛠|
 ;;
+;; > **Pre-alpha.** The API and visual defaults are still subject to
+;; > change based on early-adopter feedback. Known limitations and
+;; > running gaps are tracked in
+;; > [CHANGELOG.md](https://github.com/scicloj/plotje/blob/main/CHANGELOG.md)
+;; > and the
+;; > [Troubleshooting chapter](https://scicloj.github.io/plotje/plotje_book.troubleshooting.html).
+;;
 ;; ## Usage
 ;;
 ;; While the first release `0.1.0` is being prepared, install Plotje
@@ -44,6 +51,11 @@
 ;; ```clojure
 ;; org.scicloj/plotje {:mvn/version "0.1.0"}
 ;; ```
+;;
+;; Several core dependencies (kindly, fastmath, clojure2d, membrane,
+;; wadogo) are still on alpha or beta channels. Adopters may need
+;; to ride those alpha-channel transitives until they cut stable
+;; releases.
 ;;
 ;; Plotje is intended to be used with data-visualization tools
 ;; that support the [Kindly](https://scicloj.github.io/kindly) convention

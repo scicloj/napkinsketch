@@ -115,6 +115,39 @@
            ;; Default :confidence-band level is 0.95 -- ribbons match
            ;; explicit :level 0.95.
            (= default-band explicit-95))))])
+
+;; Pass `:level` to widen or narrow the band. A 99% interval covers
+;; more of the regression's uncertainty than the default 95%; an
+;; 80% interval covers less:
+
+(-> (rdatasets/datasets-iris)
+    (pj/pose :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model :confidence-band true :level 0.80}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)] (= 150 (:points s))))])
+
+(-> (rdatasets/datasets-iris)
+    (pj/pose :sepal-length :sepal-width)
+    pj/lay-point
+    (pj/lay-smooth {:stat :linear-model :confidence-band true :level 0.99}))
+
+(kind/test-last
+ [(fn [v]
+    (let [iris (rdatasets/datasets-iris)
+          median-width (fn [level]
+                         (let [r (-> iris
+                                     (pj/pose :sepal-length :sepal-width)
+                                     (pj/lay-smooth {:stat :linear-model
+                                                     :confidence-band true
+                                                     :level level})
+                                     pj/plan
+                                     :panels first :layers first :ribbons first)
+                               widths (map - (:ymaxs r) (:ymins r))]
+                           (nth (sort widths) (quot (count widths) 2))))]
+      ;; Wider :level produces a wider median band: 0.99 > 0.80.
+      (> (median-width 0.99) (median-width 0.80))))])
+
 ;; ## Tips with Regression
 
 ;; Do smokers and non-smokers tip differently?
@@ -275,6 +308,11 @@
 ;; See the [Faceting](./plotje_book.faceting.html) chapter for more
 ;; SPLOM variations, and the [Customization](./plotje_book.customization.html)
 ;; chapter for brush selection.
+
+;; ## See Also
+;;
+;; - [**Composition**](./plotje_book.composition.html) -- composite poses (the SPLOM is one) and shared scales
+;; - [**Distributions**](./plotje_book.distributions.html) -- one-variable shape and spread
 
 ;; ## What's Next
 ;;
