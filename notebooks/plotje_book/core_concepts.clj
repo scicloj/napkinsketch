@@ -589,6 +589,33 @@ two-panel
 
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
+;; **Coming from ggplot2.** In ggplot2, `colour="blue"` is always a
+;; literal CSS color. In Plotje, a string `:color` is interpreted as
+;; a column reference if a column with that name exists in the data,
+;; and falls back to a literal CSS color otherwise. Hex codes like
+;; `"#0000ff"` cannot collide with a column name and are unambiguous.
+;; A keyword `{:color :blue}` is always a column reference and throws
+;; a clear error if the column is missing.
+;;
+;; The `:blue` column wins -- three palette colors render, not a
+;; single literal blue:
+
+(-> {:x [1 2 3] :y [1 2 3] :blue ["a" "b" "c"]}
+    (pj/lay-point :x :y {:color "blue"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)
+                               colors (disj (:colors s) "none")]
+                           (= 3 (count colors))))])
+
+;; No `:blue` column -- "blue" parses as a literal CSS color:
+
+(-> {:x [1 2 3] :y [1 2 3]}
+    (pj/lay-point :x :y {:color "blue"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)
+                               colors (disj (:colors s) "none")]
+                           (= #{"rgb(0,0,255)"} colors)))])
+
 ;; Categorical color does more than set colors -- it creates
 ;; **groups**. Each group is processed independently: it gets its
 ;; own regression line, density curve, or boxplot:
@@ -599,8 +626,32 @@ two-panel
 (kind/test-last [(fn [v] (pos? (:polygons (pj/svg-summary v))))])
 
 ;; Other visual properties include `:alpha` (transparency), `:size`,
-;; and `:shape`. The `:group` option creates groups without changing
-;; colors:
+;; and `:shape`. Each accepts a literal value or a column reference,
+;; the same way `:color` does.
+;;
+;; **Bubble plot** -- `:size` mapped to a numeric column gives each
+;; point a radius reflecting the value:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width
+                  {:color :petal-length :size :petal-width :alpha 0.7}))
+
+(kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
+
+;; **Shape by category** -- `:shape` mapped to a categorical column
+;; renders each group with a different marker. Useful for monochrome
+;; printing or to reinforce the color encoding:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:shape :species}))
+
+(kind/test-last
+ [(fn [v]
+    (let [layer (-> v pj/plan :panels first :layers first)
+          shape-values (set (mapcat :shapes (:groups layer)))]
+      (= 3 (count shape-values))))])
+
+;; The `:group` option creates groups without changing colors:
 
 (-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width {:group :species})
@@ -664,7 +715,10 @@ two-panel
                               (= 5.0 (get-in v [:layers 2 :mapping :x-min]))))])
 
 ;; See the [Customization](./plotje_book.customization.html)
-;; chapter for themes, palettes, and annotation details.
+;; chapter for themes, palettes, and annotation appearance
+;; (default opacity, color overrides). Temporal intercepts
+;; (`LocalDate`, `Instant`) are covered in
+;; [Timelines](./plotje_book.timelines.html).
 
 ;; ---
 ;; ## Coordinates and Scales

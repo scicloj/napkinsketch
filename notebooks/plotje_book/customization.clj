@@ -1,8 +1,17 @@
 ;; # Customization
 ;;
-;; How to customize plots: dimensions, labels, scales, mark styling,
-;; aesthetic mappings, annotations, palettes, themes, legend
-;; placement, and interactivity.
+;; How to tweak the look of a plot: dimensions, labels, scales,
+;; mark styling, palettes, themes, and legend placement.
+;;
+;; Other appearance topics live in their natural homes:
+;; column-to-aesthetic mapping in
+;; [Core Concepts](./plotje_book.core_concepts.html), reference
+;; lines and bands in
+;; [Core Concepts](./plotje_book.core_concepts.html) (constant
+;; positions) and
+;; [Timelines](./plotje_book.timelines.html) (temporal intercepts),
+;; and tooltips/brushing in
+;; [Interactivity](./plotje_book.interactivity.html).
 
 (ns plotje-book.customization
   (:require
@@ -249,26 +258,10 @@
 ;; The continuous fill legend draws log-spaced tick labels along
 ;; the gradient bar so a tile's color reads as its log-space
 ;; position between the data minimum and maximum.
-
-;; ### Column type overrides
 ;;
-;; A column's inferred type (numerical / categorical / temporal) drives
-;; scale type, axis formatting, and which marks accept it. To override
-;; the inference, pass `:x-type`, `:y-type`, or `:color-type` in the
-;; layer or pose options. For example, a numeric column representing
-;; subject IDs:
-
-(-> {:hour [9 10 11 12] :count [5 8 12 7]}
-    (pj/lay-value-bar :hour :count {:x-type :categorical}))
-
-(kind/test-last [(fn [v] (= 4 (:polygons (pj/svg-summary v))))])
-
-;; The override propagates into column-type inference, so every
-;; downstream step (scale type, tick placement, domain) treats the
-;; column as the overridden type. See
-;; [Inference Rules](./plotje_book.inference_rules.html) for the full
-;; mechanism, and the [Troubleshooting](./plotje_book.troubleshooting.html)
-;; chapter for the symptoms each override addresses.
+;; To override the inferred type of a column (e.g. force a numeric
+;; `:hour` column to render as categorical bands), see
+;; [Inference Rules](./plotje_book.inference_rules.html).
 
 ;; ## Mark Styling
 
@@ -299,155 +292,21 @@
                            (and (= 3 (:polygons s))
                                 (contains? (:alphas s) 0.4))))])
 
-;; ## Aesthetic Mappings
+;; ## Annotation Appearance
 ;;
-;; Mark Styling above showed literal values like `:alpha 0.5` and
-;; `:size 5`. The same option keys also accept column references --
-;; `:color :species`, `:size :petal-length` -- mapping each row to a
-;; visual property. This section walks through the column-reference
-;; forms of `:color`, `:size`, and `:shape`.
-
-;; ### Fixed Color
-
-;; A fixed color string applies the same color to every point. Compare
-;; with `{:color :species}` (a column reference, which assigns a
-;; different color per group).
-
-(-> (rdatasets/datasets-iris)
-    (pj/lay-point :sepal-length :sepal-width {:color "#E74C3C"}))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s))
-                                (contains? (:colors s) "rgb(231,76,60)"))))])
-
-;; **Coming from ggplot2.** In ggplot2, `colour="blue"` is always a
-;; literal CSS color. In Plotje, a string `:color` is interpreted as
-;; a column reference if a column with that name exists in the data,
-;; and falls back to a literal CSS color otherwise. Hex codes like
-;; `"#0000ff"` cannot collide with a column name and are
-;; unambiguous. A keyword `{:color :blue}` is always a column
-;; reference and throws a clear error if the column is missing.
-
-;; The `:blue` column wins -- three palette colors render, not a
-;; single literal blue.
-
-(-> {:x [1 2 3] :y [1 2 3] :blue ["a" "b" "c"]}
-    (pj/lay-point :x :y {:color "blue"}))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)
-                               colors (disj (:colors s) "none")]
-                           (= 3 (count colors))))])
-
-;; No `:blue` column -- "blue" parses as a literal CSS color.
-
-(-> {:x [1 2 3] :y [1 2 3]}
-    (pj/lay-point :x :y {:color "blue"}))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)
-                               colors (disj (:colors s) "none")]
-                           (= #{"rgb(0,0,255)"} colors)))])
-
-;; ### Continuous Color
+;; Reference lines and bands are introduced in
+;; [Core Concepts](./plotje_book.core_concepts.html); on temporal
+;; axes, intercepts can be `LocalDate` / `Instant` values -- see
+;; [Timelines](./plotje_book.timelines.html). This section covers
+;; the appearance defaults you can override.
 ;;
-;; When `:color` maps to a numeric column, Plotje uses a continuous
-;; blue gradient instead of discrete palette colors.
-
-(-> (rdatasets/datasets-iris)
-    (pj/lay-point :sepal-length :sepal-width {:color :petal-length}))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 150 (:points s))
-                                (some #{"petal length"} (:texts s)))))])
-
-;; ### Bubble Plot
-;;
-;; Map `:size` to a numeric column to create a bubble plot. Each
-;; point's radius reflects the column value.
-
-(-> (rdatasets/reshape2-tips)
-    (pj/lay-point :total-bill :tip {:color :day :size :size}))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (pos? (:points s)))))])
-
-;; Combine size with alpha for dense data.
-
-(-> (rdatasets/reshape2-tips)
-    (pj/lay-point :total-bill :tip {:color :day :size :size :alpha 0.6}))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (pos? (:points s)))))])
-
-;; Combine continuous color with size -- a color-size bubble plot.
-
-(-> (rdatasets/datasets-iris)
-    (pj/lay-point :sepal-length :sepal-width
-                  {:color :petal-length :size :petal-width :alpha 0.7}))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (some #{"petal length"} (:texts s)))))])
-
-;; ### Shape by Category
-;;
-;; Map `:shape` to a categorical column to render each group with a
-;; different marker shape. Useful for monochrome printing or to
-;; reinforce the color encoding.
-
-(-> (rdatasets/datasets-iris)
-    (pj/lay-point :sepal-length :sepal-width {:shape :species}))
-
-(kind/test-last
- [(fn [v]
-    (let [layer (-> v pj/plan :panels first :layers first)
-          shape-values (set (mapcat :shapes (:groups layer)))]
-      (= 3 (count shape-values))))])
-
-;; ## Annotations
-
-;; Reference lines and shaded bands are layers added with
-;; `pj/lay-rule-h`, `pj/lay-rule-v`, `pj/lay-band-h`, `pj/lay-band-v`.
-;; Position comes from the options map (`:y-intercept` or `:x-intercept`
-;; for rules; `:y-min`/`:y-max` or `:x-min`/`:x-max` for bands);
-;; `:color` overrides the default annotation color. Bands additionally
-;; honor `:alpha` to override the default 0.15 opacity (see below).
-
-;; Horizontal and vertical reference lines.
-
-(-> (rdatasets/datasets-iris)
-    (pj/lay-point :sepal-length :sepal-width {:color :species})
-    (pj/lay-rule-h {:y-intercept 3.0})
-    (pj/lay-rule-v {:x-intercept 6.0}))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 2 (:lines s)))))])
-
-;; On a temporal axis, the intercept can also be a date or instant
-;; (`LocalDate`, `LocalDateTime`, `Instant`, `java.util.Date`).
-;; Plotje converts it to the same numeric scale the data uses, so
-;; the rule lands at the right calendar position.
-
-(-> {:date  [#inst "2024-01-01" #inst "2024-04-01" #inst "2024-08-01"]
-     :value [3 5 9]}
-    (pj/lay-line :date :value)
-    (pj/lay-rule-v {:x-intercept (java.time.LocalDate/parse "2024-06-01")
-                    :color "#c0392b"}))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 1 (:panels s))
-                                (= 2 (:lines s)))))])
-
-;; Shaded bands use a default opacity of 0.15.
-;; Pass `{:alpha ...}` to override.
+;; Shaded bands draw at a default opacity of 0.15:
 
 (:band-opacity (pj/config))
 
 (kind/test-last [(fn [v] (= 0.15 v))])
+
+;; Pass `{:alpha ...}` on a band layer to override:
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -457,11 +316,13 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (= 150 (:points s))))])
 
-;; Note: position values must be literal numbers in this release. A
-;; faceted plot with a different reference value per panel (column-mapped
-;; intercept, ggplot2's `geom_hline(aes(yintercept=...))`) is on the
-;; post-alpha roadmap. Today, an annotation added once with the same
-;; intercept appears on every panel of the faceted pose.
+;; Note: intercept and band-edge positions must be literal values
+;; (numbers, or temporal values on a time axis) in this release. A
+;; faceted plot with a different reference value per panel
+;; (column-mapped intercept, ggplot2's
+;; `geom_hline(aes(yintercept=...))`) is on the post-alpha roadmap.
+;; Today, an annotation added once with the same intercept appears
+;; on every panel of the faceted pose.
 
 ;; ## Palettes
 ;;
@@ -590,44 +451,11 @@
       (and (= 150 (:points s))
            (zero? (get-in plan [:layout :legend-w])))))])
 
-;; ## Tooltip
-;;
-;; Enable mouseover data values with `{:tooltip true}`.
-
-(-> (rdatasets/datasets-iris)
-    (pj/lay-point :sepal-length :sepal-width {:color :species})
-    (pj/options {:tooltip true}))
-
-(kind/test-last [(fn [v] (= :div (first (pj/plot v))))])
-
-;; ## Brush Selection
-;;
-;; Enable drag-to-select with `{:brush true}`. Drags shorter than
-;; three pixels per side clear the selection -- a simple click counts
-;; as a zero-pixel drag, so it resets too.
-
-(-> (rdatasets/datasets-iris)
-    (pj/lay-point :sepal-length :sepal-width {:color :species})
-    (pj/options {:brush true}))
-
-(kind/test-last [(fn [v] (= :div (first (pj/plot v))))])
-
-;; Brushing becomes especially useful in a SPLOM (scatter plot matrix).
-;; Drag to select points in any panel -- the selection
-;; highlights across all panels, revealing multivariate structure.
-
-(def splom-cols [:sepal-length :sepal-width :petal-length :petal-width])
-
-(-> (rdatasets/datasets-iris)
-    (pj/pose (pj/cross splom-cols splom-cols) {:color :species})
-    (pj/options {:brush true}))
-
-(kind/test-last [(fn [v] (= :div (first (pj/plot v))))])
-
 ;; ## See Also
 ;;
 ;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- the mapping and aesthetic vocabulary used throughout this chapter
 ;; - [**Options and Scopes**](./plotje_book.options_and_scopes.html) -- where layer options, plot options, and configuration live
+;; - [**Interactivity**](./plotje_book.interactivity.html) -- tooltips and brush selection
 
 ;; ## What's Next
 ;;
