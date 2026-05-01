@@ -84,18 +84,20 @@
 
 (defmacro with-config
   "Execute body with thread-local config overrides.
-   Overrides take precedence over set-config! and defaults,
+   Overrides take precedence over `set-config!` and defaults,
    but plot options still win.
-   (with-config {:theme {:bg \"#FFF\"}} (plot ...))"
+
+   - `(with-config {:theme {:bg \"#FFF\"}} (plot ...))`"
   [config-map & body]
   `(binding [defaults/*config* ~config-map]
      ~@body))
 
 (defn config
   "Return the effective resolved configuration as a map.
-   Merges: library defaults < plotje.edn < set-config! < *config*.
+   Merges: library defaults < `plotje.edn` < `set-config!` < `*config*`.
    Useful for inspecting which values are in effect.
-   (config)  -- show current resolved config"
+
+   - `(config)` -- show current resolved config."
   []
   (defaults/config))
 
@@ -119,15 +121,18 @@
 
 (defn set-config!
   "Set global config overrides. Persists across calls until reset.
-   (set-config! {:palette :dark2 :theme {:bg \"#FFFFFF\"}})
-   (set-config! nil)  -- reset to defaults"
+
+   - `(set-config! {:palette :dark2 :theme {:bg \"#FFFFFF\"}})` -- override
+     palette and background.
+   - `(set-config! nil)` -- reset to defaults."
   [m]
   (defaults/set-config! m))
 
 (defn layer-type-lookup
   "Look up a registered layer type by keyword. Returns the layer-type map
-   (with :mark, :stat, :position, :doc), or nil if not found.
-   (layer-type-lookup :histogram) => {:mark :bar, :stat :bin, ...}"
+   (with `:mark`, `:stat`, `:position`, `:doc`), or `nil` if not found.
+
+   - `(layer-type-lookup :histogram)` returns `{:mark :bar, :stat :bin, ...}`."
   [k]
   (layer-type/lookup k))
 
@@ -139,8 +144,9 @@
 
 (defn mark-doc
   "Return the prose description for a mark keyword.
-   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
-   (mark-doc :point) => \"Filled circle\""
+   Returns `\"(no description)\"` if no `[:key :doc]` defmethod is registered.
+
+   - `(mark-doc :point)` returns `\"Filled circle\"`."
   [k]
   (try
     (let [r (extract/extract-layer {:mark [k :doc]} nil nil nil)]
@@ -149,8 +155,9 @@
 
 (defn stat-doc
   "Return the prose description for a stat keyword.
-   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
-   (stat-doc :bin) => \"Bin numerical values into ranges\""
+   Returns `\"(no description)\"` if no `[:key :doc]` defmethod is registered.
+
+   - `(stat-doc :bin)` returns `\"Bin numerical values into ranges\"`."
   [k]
   (try
     (let [r (stat/compute-stat {:stat [k :doc]})]
@@ -159,8 +166,9 @@
 
 (defn position-doc
   "Return the prose description for a position keyword.
-   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
-   (position-doc :dodge) => \"Shift groups side-by-side within a band\""
+   Returns `\"(no description)\"` if no `[:key :doc]` defmethod is registered.
+
+   - `(position-doc :dodge)` returns `\"Shift groups side-by-side within a band\"`."
   [k]
   (try
     (let [r (position/apply-position [k :doc] nil)]
@@ -169,8 +177,9 @@
 
 (defn membrane-mark-doc
   "Return the prose description for how a mark renders to membrane drawables.
-   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
-   (membrane-mark-doc :point) => \"Translated colored rounded-rectangles\""
+   Returns `\"(no description)\"` if no `[:key :doc]` defmethod is registered.
+
+   - `(membrane-mark-doc :point)` returns `\"Translated colored rounded-rectangles\"`."
   [k]
   (try
     (let [r (mark/layer->membrane {:mark [k :doc]} nil)]
@@ -179,8 +188,9 @@
 
 (defn scale-doc
   "Return the prose description for a scale keyword.
-   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
-   (scale-doc :linear) => \"Continuous linear mapping\""
+   Returns `\"(no description)\"` if no `[:key :doc]` defmethod is registered.
+
+   - `(scale-doc :linear)` returns `\"Continuous linear mapping\"`."
   [k]
   (try
     (let [r (scale/make-scale [k :doc] nil nil)]
@@ -189,8 +199,9 @@
 
 (defn coord-doc
   "Return the prose description for a coordinate type keyword.
-   Returns \"(no description)\" if no [`:key` `:doc`] defmethod is registered.
-   (coord-doc :polar) => \"Radial mapping: x->angle, y->radius\""
+   Returns `\"(no description)\"` if no `[:key :doc]` defmethod is registered.
+
+   - `(coord-doc :polar)` returns `\"Radial mapping: x->angle, y->radius\"`."
   [k]
   (try
     (let [r (coord/make-coord [k :doc] nil nil nil nil nil)]
@@ -200,12 +211,12 @@
 ;; ---- Cross ----
 
 (defn cross
-  "Build a vector of [x y] pairs from two column-name sequences. Pair
+  "Build a vector of `[x y]` pairs from two column-name sequences. Pair
    with `pj/pose` for SPLOM grids: when an MxN rectangle of pairs is
    threaded through `pj/pose`, the result is an MxN composite with
    shared scales.
 
-   (pj/cross [:a :b] [:c :d])  ; =>  [[:a :c] [:a :d] [:b :c] [:b :d]]"
+   - `(pj/cross [:a :b] [:c :d])` returns `[[:a :c] [:a :d] [:b :c] [:b :d]]`."
   [xs ys]
   (when-not (sequential? xs)
     (throw (ex-info (str "pj/cross expects two sequentials of column"
@@ -230,14 +241,15 @@
 
 (defn draft->plan
   "Convert a draft into a plan. Dispatches on draft shape: composite
-   drafts go through compositor/composite-draft->plan (which uses the
+   drafts go through `compositor/composite-draft->plan` (which uses the
    chrome-spec already baked in at draft emission); leaf drafts (vectors
-   of layer maps) go through plan/draft->plan.
+   of layer maps) go through `plan/draft->plan`.
 
    Plan-stage opts (`:width`, `:height`, `:title`, ...) for leaf drafts must
    be set on the pose before drafting via `pj/options`. For composite
    drafts those opts are already part of the chrome-spec.
-   (draft->plan (draft pose))"
+
+   - `(draft->plan (draft pose))`"
   [draft]
   (cond
     (resolve/composite-draft? draft) (compositor/composite-draft->plan draft)
@@ -249,17 +261,19 @@
 
 (defn draft->membrane
   "Compose draft -> plan -> membrane. The 2-arity takes an opts map
-   for plan->membrane (e.g. {`:tooltip` true}).
-   (draft->membrane (draft pose))
-   (draft->membrane (draft pose) {:tooltip true})"
+   for `plan->membrane` (e.g. `{:tooltip true}`).
+
+   - `(draft->membrane (draft pose))`
+   - `(draft->membrane (draft pose) {:tooltip true})`"
   ([draft] (draft->membrane draft {}))
   ([draft opts]
    (membrane/plan->membrane (draft->plan draft) opts)))
 
 (defn draft->plot
   "Compose draft -> plan -> plot for the given format.
-   (draft->plot (draft pose) :svg {})
-   (draft->plot (draft pose) :bufimg {})"
+
+   - `(draft->plot (draft pose) :svg {})`
+   - `(draft->plot (draft pose) :bufimg {})`"
   [draft format opts]
   (render-impl/plan->plot (draft->plan draft) format opts))
 
@@ -267,8 +281,9 @@
   "Convert a plan into a membrane drawable tree.
    The 1-arity uses no rendering options. The 2-arity takes an
    opts map with optional `:tooltip`, `:theme`, `:palette`, etc.
-   (plan->membrane (plan fr))
-   (plan->membrane (plan fr) {:tooltip true})"
+
+   - `(plan->membrane (plan fr))`
+   - `(plan->membrane (plan fr) {:tooltip true})`"
   ([plan-data] (plan->membrane plan-data {}))
   ([plan-data opts]
    (expect-type plan-data resolve/plan? "plan (from pj/plan)" "pj/plan->membrane")
@@ -277,7 +292,8 @@
 (defn membrane->plot
   "Convert a membrane drawable tree into a figure for the given format.
    Dispatches on format keyword; `:svg` is always available.
-   (membrane->plot (plan->membrane (plan pose)) :svg {})"
+
+   - `(membrane->plot (plan->membrane (plan pose)) :svg {})`"
   [membrane-tree format opts]
   (render-impl/membrane->plot membrane-tree format opts))
 
@@ -285,8 +301,9 @@
   "Convert a plan into a figure for the given format.
    Dispatches on format keyword. Each renderer is a separate namespace
    that registers a defmethod; `:svg` is always available.
-   (plan->plot (plan fr) :svg {})
-   (plan->plot (plan fr) :plotly {})"
+
+   - `(plan->plot (plan fr) :svg {})`
+   - `(plan->plot (plan fr) :plotly {})`"
   [plan format opts]
   (expect-type plan resolve/plan? "plan (from pj/plan)" "pj/plan->plot")
   (render-impl/plan->plot plan format opts))
@@ -295,14 +312,16 @@
 
 (defn valid-plan?
   "Check if a plan conforms to the Malli schema.
-   (valid-plan? (plan pose))  -- true if valid"
+
+   - `(valid-plan? (plan pose))` -- true if valid."
   [plan]
   (ss/valid? plan))
 
 (defn explain-plan
   "Explain why a plan does not conform to the Malli schema.
-   Returns nil if valid, or a Malli explanation map if invalid.
-   (explain-plan (plan pose))"
+   Returns `nil` if valid, or a Malli explanation map if invalid.
+
+   - `(explain-plan (plan pose))`"
   [plan]
   (ss/explain plan))
 
@@ -918,49 +937,37 @@
 
    **On raw data (first argument is not itself a pose):**
 
-   ```clojure
-   (pj/pose)                                ;; empty leaf
-   (pj/pose data)                           ;; leaf with data; on 1-3
-                                            ;; column datasets the
-                                            ;; mapping is auto-inferred
-                                            ;; (:x, then :y, then :color)
-                                            ;; so the pose renders without
-                                            ;; an explicit mapping call
-   (pj/pose data {:color :species})         ;; leaf with aesthetic mapping
-   (pj/pose data :x-col)                    ;; leaf with {:x :x-col}
-   (pj/pose data :x-col {:color :c})        ;; univariate x + opts
-   (pj/pose data :x-col :y-col)             ;; leaf with :x and :y
-   (pj/pose data :x-col :y-col {:color :c}) ;; positional x/y + opts
-   (pj/pose data [[:a :b] [:c :d]])         ;; multi-pair: N bivariate panels
-   (pj/pose data [:a :b :c])                ;; multi-pair: N univariate panels
-   (pj/pose data (pj/cross cols cols) {:color :c})
-                                            ;; multi-pair plus aesthetic
-                                            ;; mapping at the composite root
-   ```
+   - `(pj/pose)` -- empty leaf.
+   - `(pj/pose data)` -- leaf with data; on 1-3 column datasets the
+     mapping is auto-inferred (`:x`, then `:y`, then `:color`) so the
+     pose renders without an explicit mapping call.
+   - `(pj/pose data {:color :species})` -- leaf with aesthetic mapping.
+   - `(pj/pose data :x-col)` -- leaf with `{:x :x-col}`.
+   - `(pj/pose data :x-col {:color :c})` -- univariate x with opts.
+   - `(pj/pose data :x-col :y-col)` -- leaf with `:x` and `:y`.
+   - `(pj/pose data :x-col :y-col {:color :c})` -- positional x/y with opts.
+   - `(pj/pose data [[:a :b] [:c :d]])` -- multi-pair: N bivariate panels.
+   - `(pj/pose data [:a :b :c])` -- multi-pair: N univariate panels.
+   - `(pj/pose data (pj/cross cols cols) {:color :c})` -- multi-pair plus
+     aesthetic mapping at the composite root.
 
    **Threaded over an existing pose (first argument is a pose):**
 
-   ```clojure
-   (pj/pose fr)                             ;; pass-through; lifts a
-                                            ;; literal map for notebook
-                                            ;; auto-render if it is not
-                                            ;; already tagged
-   (pj/pose fr :x-col :y-col)               ;; extend a leaf-without-position,
-                                            ;; or promote a leaf-with-position
-                                            ;; into a 2-panel composite, or
-                                            ;; append a panel to a composite
-   (pj/pose fr :x-col :y-col {:color :c})   ;; same, with aesthetic routed
-                                            ;; to the composite root on promote
-   (pj/pose fr {:color :c})                 ;; aesthetic-only: extend mapping
-                                            ;; or (on leaf-with-position) promote
-   (pj/pose fr [[:a :b] [:c :d]])           ;; multi-pair: append N panels
-   (pj/pose fr (pj/cross cols cols))        ;; SPLOM N^2 panels in one call
-   (pj/pose fr (pj/cross cols cols) {:color :c})
-                                            ;; SPLOM plus aesthetic mapping
-                                            ;; at the composite root
-   (pj/pose fr {:data X :color :c})         ;; extend mapping AND replace
-                                            ;; the top-level data with X
-   ```
+   - `(pj/pose fr)` -- pass-through; lifts a literal map for notebook
+     auto-render if it is not already tagged.
+   - `(pj/pose fr :x-col :y-col)` -- extend a leaf-without-position, or
+     promote a leaf-with-position into a 2-panel composite, or append a
+     panel to a composite.
+   - `(pj/pose fr :x-col :y-col {:color :c})` -- same, with aesthetic
+     routed to the composite root on promote.
+   - `(pj/pose fr {:color :c})` -- aesthetic-only: extend mapping or
+     (on leaf-with-position) promote.
+   - `(pj/pose fr [[:a :b] [:c :d]])` -- multi-pair: append N panels.
+   - `(pj/pose fr (pj/cross cols cols))` -- SPLOM N^2 panels in one call.
+   - `(pj/pose fr (pj/cross cols cols) {:color :c})` -- SPLOM plus aesthetic
+     mapping at the composite root.
+   - `(pj/pose fr {:data X :color :c})` -- extend mapping AND replace the
+     top-level data with X.
 
    **On a hand-built pose-shaped map (1-arity, input has `:layers` or
    `:poses`):** the map is validated and tagged with Kindly auto-render
@@ -1099,8 +1106,7 @@
    mapping, layers, sub-poses, and facet options must exist in the
    dataset -- otherwise an error is thrown naming the missing columns
    and listing what is available. Per-layer / per-sub-pose `:data`
-   still overrides the top-level data.
-   (with-data pose data)"
+   still overrides the top-level data."
   [pose data]
   (let [fr (ensure-pose pose "pj/with-data")
         ds (coerce-dataset data)]
@@ -1474,10 +1480,11 @@
    Without columns -> bare layer at the pose's root (flows to every leaf).
    With columns -> position-bearing layer (attaches to the matching leaf
    via DFS-last identity, or appends a new sub-pose on miss).
-   (lay-point fr)                         -- bare layer at root
-   (lay-point fr {:color :species})        -- bare layer with aesthetic opts
-   (lay-point data :x :y)                 -- coerce data to a leaf, then attach
-   (lay-point data :x :y {:color :c})     -- same with aesthetic opts"
+
+   - `(lay-point fr)` -- bare layer at root.
+   - `(lay-point fr {:color :species})` -- bare layer with aesthetic opts.
+   - `(lay-point data :x :y)` -- coerce data to a leaf, then attach.
+   - `(lay-point data :x :y {:color :c})` -- same with aesthetic opts."
   ([pose-or-data] (lay-layer-type :point pose-or-data))
   ([pose-or-data x-or-opts] (lay-layer-type :point pose-or-data x-or-opts))
   ([pose-or-data x y-or-opts] (lay-layer-type :point pose-or-data x y-or-opts))
@@ -1618,12 +1625,14 @@
    Temporal values are converted internally to match the y-axis scale
    so date-axis annotations work without manual conversion.
    The 4-arity finds or creates a sub-pose with these x/y columns
-   and attaches the rule there (only panels matching that leaf show
-   it).
-   (lay-rule-h pose {:y-intercept 3})           -- root-level, flows to every panel
-   (lay-rule-h pose :x :y {:y-intercept 3})     -- panel-scope (columns pick or create a sub-pose)
-   (lay-rule-h pose {:y-intercept 3 :color \"red\"})
-   (lay-rule-h pose {:y-intercept (java.time.LocalDate/parse \"2024-01-01\")})"
+   and attaches the rule there (only panels matching that leaf show it).
+
+   - `(lay-rule-h pose {:y-intercept 3})` -- root-level, flows to every panel.
+   - `(lay-rule-h pose :x :y {:y-intercept 3})` -- panel-scope (columns pick
+     or create a sub-pose).
+   - `(lay-rule-h pose {:y-intercept 3 :color \"red\"})` -- with override color.
+   - `(lay-rule-h pose {:y-intercept (java.time.LocalDate/parse \"2024-01-01\")})`
+     -- temporal intercept on a date axis."
   ([_pose-or-data] (assert-rule-1-arity! :rule-h))
   ([pose-or-data x-or-opts] (assert-rule-opts! :rule-h [x-or-opts]) (lay-layer-type :rule-h pose-or-data (coerce-rule-opts :rule-h x-or-opts)))
   ([pose-or-data x y-or-opts] (assert-rule-opts! :rule-h [y-or-opts]) (lay-layer-type :rule-h pose-or-data x (coerce-rule-opts :rule-h y-or-opts)))
@@ -1637,12 +1646,14 @@
    Temporal values are converted internally to match the x-axis scale
    so date-axis annotations work without manual conversion.
    The 4-arity finds or creates a sub-pose with these x/y columns
-   and attaches the rule there (only panels matching that leaf show
-   it).
-   (lay-rule-v pose {:x-intercept 5})           -- root-level, flows to every panel
-   (lay-rule-v pose :x :y {:x-intercept 5})     -- panel-scope (columns pick or create a sub-pose)
-   (lay-rule-v pose {:x-intercept 5 :color \"red\"})
-   (lay-rule-v pose {:x-intercept #inst \"2008-09-15\"})"
+   and attaches the rule there (only panels matching that leaf show it).
+
+   - `(lay-rule-v pose {:x-intercept 5})` -- root-level, flows to every panel.
+   - `(lay-rule-v pose :x :y {:x-intercept 5})` -- panel-scope (columns pick
+     or create a sub-pose).
+   - `(lay-rule-v pose {:x-intercept 5 :color \"red\"})` -- with override color.
+   - `(lay-rule-v pose {:x-intercept #inst \"2008-09-15\"})` -- temporal
+     intercept on a date axis."
   ([_pose-or-data] (assert-rule-1-arity! :rule-v))
   ([pose-or-data x-or-opts] (assert-rule-opts! :rule-v [x-or-opts]) (lay-layer-type :rule-v pose-or-data (coerce-rule-opts :rule-v x-or-opts)))
   ([pose-or-data x y-or-opts] (assert-rule-opts! :rule-v [y-or-opts]) (lay-layer-type :rule-v pose-or-data x (coerce-rule-opts :rule-v y-or-opts)))
@@ -1657,11 +1668,13 @@
    LocalDateTime, Instant, java.util.Date); temporal values are
    converted internally to match the y-axis scale.
    The 4-arity finds or creates a sub-pose with these x/y columns
-   and attaches the band there (only panels matching that leaf show
-   it).
-   (lay-band-h pose {:y-min 2 :y-max 4})            -- root-level, flows to every panel
-   (lay-band-h pose :x :y {:y-min 2 :y-max 4})      -- panel-scope (columns pick or create a sub-pose)
-   (lay-band-h pose {:y-min 2 :y-max 4 :color \"blue\" :alpha 0.3})"
+   and attaches the band there (only panels matching that leaf show it).
+
+   - `(lay-band-h pose {:y-min 2 :y-max 4})` -- root-level, flows to every panel.
+   - `(lay-band-h pose :x :y {:y-min 2 :y-max 4})` -- panel-scope (columns pick
+     or create a sub-pose).
+   - `(lay-band-h pose {:y-min 2 :y-max 4 :color \"blue\" :alpha 0.3})`
+     -- with color and opacity overrides."
   ([_pose-or-data] (assert-band-1-arity! :band-h))
   ([pose-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-layer-type :band-h pose-or-data (coerce-band-opts :band-h x-or-opts)))
   ([pose-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-layer-type :band-h pose-or-data x (coerce-band-opts :band-h y-or-opts)))
@@ -1676,11 +1689,13 @@
    LocalDateTime, Instant, java.util.Date); temporal values are
    converted internally to match the x-axis scale.
    The 4-arity finds or creates a sub-pose with these x/y columns
-   and attaches the band there (only panels matching that leaf show
-   it).
-   (lay-band-v pose {:x-min 4 :x-max 6})            -- root-level, flows to every panel
-   (lay-band-v pose :x :y {:x-min 4 :x-max 6})      -- panel-scope (columns pick or create a sub-pose)
-   (lay-band-v pose {:x-min 4 :x-max 6 :color \"blue\" :alpha 0.3})"
+   and attaches the band there (only panels matching that leaf show it).
+
+   - `(lay-band-v pose {:x-min 4 :x-max 6})` -- root-level, flows to every panel.
+   - `(lay-band-v pose :x :y {:x-min 4 :x-max 6})` -- panel-scope (columns pick
+     or create a sub-pose).
+   - `(lay-band-v pose {:x-min 4 :x-max 6 :color \"blue\" :alpha 0.3})`
+     -- with color and opacity overrides."
   ([_pose-or-data] (assert-band-1-arity! :band-v))
   ([pose-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-layer-type :band-v pose-or-data (coerce-band-opts :band-v x-or-opts)))
   ([pose-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-layer-type :band-v pose-or-data x (coerce-band-opts :band-v y-or-opts)))
@@ -2069,20 +2084,27 @@
    pose the scale attaches to the root so every descendant leaf inherits
    it at plan time.
 
-   Axis channels (`:x`, `:y`) accept `:linear`, `:log`, `:categorical`.
-   Continuous visual channels (`:size`, `:alpha`, `:fill`, `:color`) accept
-   `:linear` and `:log` only -- `:categorical` does not apply.
-   Discrete visual channels (`:shape`, `:group`) accept `:categorical` only --
-   `:linear` and `:log` do not apply to a discrete encoding. The `:domain`
-   on a discrete scale gives explicit category order for the legend.
+   Channels and accepted scale types:
 
-   (scale pose :x :log)                                -- log scale on x-axis
-   (scale pose :x {:type :categorical :domain [...]})  -- explicit category order
-   (scale pose :y {:type :linear :breaks [0 5 10]})    -- pin tick locations
-   (scale pose :y {:type :log :domain [1 1000]})       -- log scale with explicit range
-   (scale pose :size :log)                             -- log-spaced point sizes
-   (scale pose :fill :log)                             -- log-spaced tile fill
-   (scale pose :shape {:type :categorical :domain [...]})  -- shape legend order"
+   - Axis channels (`:x`, `:y`) accept `:linear`, `:log`, `:categorical`.
+   - Continuous visual channels (`:size`, `:alpha`, `:fill`, `:color`) accept
+     `:linear` and `:log` only -- `:categorical` does not apply.
+   - Discrete visual channels (`:shape`, `:group`) accept `:categorical`
+     only -- `:linear` and `:log` do not apply to a discrete encoding.
+
+   The `:domain` on a discrete scale gives explicit category order for the
+   legend.
+
+   - `(scale pose :x :log)` -- log scale on x-axis.
+   - `(scale pose :x {:type :categorical :domain [...]})` -- explicit
+     category order.
+   - `(scale pose :y {:type :linear :breaks [0 5 10]})` -- pin tick locations.
+   - `(scale pose :y {:type :log :domain [1 1000]})` -- log scale with
+     explicit range.
+   - `(scale pose :size :log)` -- log-spaced point sizes.
+   - `(scale pose :fill :log)` -- log-spaced tile fill.
+   - `(scale pose :shape {:type :categorical :domain [...]})` -- shape
+     legend order."
   [pose channel scale-type]
   (let [k (or (channel->scale-key channel)
               (throw (ex-info (str "Scale channel must be one of "
@@ -2123,10 +2145,11 @@
    to the root so every descendant leaf inherits it at plan time.
 
    Supported coord-types:
-     `:cartesian` -- standard x-right, y-up mapping (the default).
-     `:flip`      -- swap x and y axes (horizontal bars / boxplots).
-     `:fixed`     -- equal aspect ratio (1 data unit = 1 data unit).
-     `:polar`     -- radial mapping: x to angle, y to radius."
+
+   - `:cartesian` -- standard x-right, y-up mapping (the default).
+   - `:flip` -- swap x and y axes (horizontal bars / boxplots).
+   - `:fixed` -- equal aspect ratio (1 data unit = 1 data unit).
+   - `:polar` -- radial mapping: x to angle, y to radius."
   [pose coord-type]
   (when-not (#{:cartesian :flip :polar :fixed} coord-type)
     (throw (ex-info (str "Coordinate must be :cartesian, :flip, :polar, or :fixed, got: " coord-type)
@@ -2137,13 +2160,14 @@
   "Resolve a pose into a draft. For a leaf pose, returns a vector of
    flat maps -- one per applicable layer, with all scope merged: data,
    mappings, and layer type fully determined. For a composite pose,
-   returns a CompositeDraft carrying per-leaf drafts (each
+   returns a `CompositeDraft` carrying per-leaf drafts (each
    contextualized -- shared-scale domains injected, suppress-* flags
    applied), the resolved chrome geometry, and the layout (path -> rect).
    The 2-arity folds opts into the pose first via `pj/options`, mirroring
    the 2-arity of `pj/plan` and `pj/plot`.
-   (draft pose)
-   (draft pose {:width 800 :title \"Plot\"})"
+
+   - `(draft pose)`
+   - `(draft pose {:width 800 :title \"Plot\"})`"
   ([pose]
    (when (plan? pose)
      (throw (ex-info (str "pj/draft expects a pose, not a plan. "
@@ -2254,8 +2278,9 @@
    path to its rect and sub-plan, plus `:chrome` carrying the
    resolved layout geometry (title-band, grid-rect, strip labels,
    shared-legend spec).
-   (plan pose)
-   (plan pose {:title \"My Plot\"})"
+
+   - `(plan pose)`
+   - `(plan pose {:title \"My Plot\"})`"
   ([pose]
    (when (plan? pose)
      (throw (ex-info (str "pj/plan expects a pose, not a plan. "
@@ -2299,9 +2324,10 @@
    The pose flows through the canonical
    `pose -> draft -> plan -> membrane -> plot` pipeline for both
    leaf and composite shapes.
-   (plot pose)
-   (plot pose {:width 800 :title \"My Plot\"})
-   (plot pose {:format :bufimg})  ;; returns a BufferedImage"
+
+   - `(plot pose)`
+   - `(plot pose {:width 800 :title \"My Plot\"})`
+   - `(plot pose {:format :bufimg})` -- returns a BufferedImage."
   ([pose]
    (when (plan? pose)
      (throw (ex-info (str "pj/plot expects a pose, not a plan. "
@@ -2330,8 +2356,9 @@
    `:polygons`, `:tiles`, `:visible-tiles`, and `:texts` -- useful for asserting
    plot structure.
    Accepts SVG hiccup or a pose (auto-renders to SVG first).
-   (svg-summary (plot fr))  -- summary of rendered SVG
-   (svg-summary my-pose)   -- auto-renders pose (leaf or composite)"
+
+   - `(svg-summary (plot fr))` -- summary of rendered SVG.
+   - `(svg-summary my-pose)` -- auto-renders pose (leaf or composite)."
   ([svg-or-pose]
    (if (pose? svg-or-pose)
      (svg/svg-summary (plot svg-or-pose))
@@ -2417,15 +2444,17 @@
    values outside the library.
 
    Opts:
-     `:cols` N          explicit column count (default: min(4, n-plots))
-     `:title` STRING    centered title band above the grid
-     `:width` W         total composite width in pixels
-     `:height` H        total composite height in pixels
-     `:share-scales` S  subset of #{`:x` `:y`} shared across cells (default: #{})
 
-   (arrange [fr-a fr-b])                           -- 1x2 row
-   (arrange [fr-a fr-b fr-c] {:cols 2 :width 900}) -- 2x2 grid (wraps)
-   (arrange [[fr-a fr-b] [fr-c fr-d]])             -- explicit 2x2 grid"
+   - `:cols` -- explicit column count (default: min(4, n-plots)).
+   - `:title` -- centered title band above the grid.
+   - `:width` -- total composite width in pixels.
+   - `:height` -- total composite height in pixels.
+   - `:share-scales` -- subset of `#{:x :y}` shared across cells
+     (default: `#{}`).
+
+   - `(arrange [fr-a fr-b])` -- 1x2 row.
+   - `(arrange [fr-a fr-b fr-c] {:cols 2 :width 900})` -- 2x2 grid (wraps).
+   - `(arrange [[fr-a fr-b] [fr-c fr-d]])` -- explicit 2x2 grid."
   ([plots] (arrange plots {}))
   ([plots opts]
    (let [cfg (defaults/config)
@@ -2543,15 +2572,19 @@
    `:format` flows into both contexts; save reinterprets `:bufimg`
    as `:png` because what hits the disk is a PNG file.
 
-   pose -- a pose.
-   path -- file path (string or java.io.File).
-   opts -- same options as plot, but `:format` accepts only `:svg`
-           or `:png`.
+   Arguments:
+
+   - `pose` -- a pose.
+   - `path` -- file path (string or `java.io.File`).
+   - `opts` -- same options as plot, but `:format` accepts only `:svg`
+     or `:png`.
+
    Tooltip and brush interactivity are not included in saved files.
    Returns the path.
-   (save my-pose \"plot.svg\")                    ;; SVG
-   (save my-pose \"plot.png\")                    ;; inferred PNG
-   (save my-pose \"plot.svg\" {:format :png})     ;; opts override (warns)"
+
+   - `(save my-pose \"plot.svg\")` -- SVG.
+   - `(save my-pose \"plot.png\")` -- inferred PNG.
+   - `(save my-pose \"plot.svg\" {:format :png})` -- opts override (warns)."
   ([pose path] (save pose path nil))
   ([pose path opts]
    (when-not (or (nil? opts) (map? opts))
