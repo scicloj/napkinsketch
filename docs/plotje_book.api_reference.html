@@ -600,9 +600,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[x y z]</code></p>
 <p><code>[x y z opts]</code></p>
 <p>Construct or extend a pose.</p>
-<p>On raw data (first argument is not itself a pose): (pj/pose) – empty leaf (pj/pose data) – leaf with data; on 1-3 column datasets the mapping is auto-inferred (:x, then :y, then :color) so the pose renders without an explicit mapping call (pj/pose data {:color :species}) – leaf with aesthetic mapping (pj/pose data :x-col) – leaf with {:x :x-col} (pj/pose data :x-col {:color :c}) – univariate x + opts (pj/pose data :x-col :y-col) – leaf with :x and :y (pj/pose data :x-col :y-col {:color :c}) – positional x/y + opts (pj/pose data [[:a :b] [:c :d]]) – multi-pair: N bivariate panels (pj/pose data [:a :b :c]) – multi-pair: N univariate panels (pj/pose data (pj/cross cols cols) {:color :c}) – multi-pair plus aesthetic mapping at the composite root</p>
-<p>Threaded over an existing pose (first argument is a pose): (pj/pose fr) – pass-through; lifts a literal map for notebook auto-render if it is not already tagged (pj/pose fr :x-col :y-col) – extend a leaf-without-position, or promote a leaf-with-position into a 2-panel composite, or append a panel to a composite (pj/pose fr :x-col :y-col {:color :c}) – same, with aesthetic routed to the composite root on promote (pj/pose fr {:color :c}) – aesthetic-only: extend mapping or (on leaf-with-position) promote (pj/pose fr [[:a :b] [:c :d]]) – multi-pair: append N panels (pj/pose fr (pj/cross cols cols)) – SPLOM N^2 panels in one call (pj/pose fr (pj/cross cols cols) {:color :c}) – SPLOM plus aesthetic mapping at the composite root (pj/pose fr {:data X :color :c}) – extend mapping AND replace the top-level data with X</p>
-<p>On a hand-built pose-shaped map (1-arity, input has <code>:layers</code> or <code>:poses</code>): the map is validated and tagged with Kindly auto-render metadata, but its keys are not reordered and its <code>:data</code> is not coerced – the typed shape is preserved verbatim. A flat composite (<code>:poses</code> of leaf maps) is supported; literal nested composites (any sub-pose itself has <code>:poses</code>) are rejected, matching <code>pj/arrange</code>’s rule that its elements must be leaves.</p>
+<p><strong>On raw data (first argument is not itself a pose):</strong></p>
+<ul>
+<li><p><code>(pj/pose)</code> – empty leaf.</p></li>
+<li><p><code>(pj/pose data)</code> – leaf with data; on 1-3 column datasets the mapping is auto-inferred (<code>:x</code>, then <code>:y</code>, then <code>:color</code>) so the pose renders without an explicit mapping call.</p></li>
+<li><p><code>(pj/pose data {:color :species})</code> – leaf with aesthetic mapping.</p></li>
+<li><p><code>(pj/pose data :x-col)</code> – leaf with <code>{:x :x-col}</code>.</p></li>
+<li><p><code>(pj/pose data :x-col {:color :c})</code> – univariate x with opts.</p></li>
+<li><p><code>(pj/pose data :x-col :y-col)</code> – leaf with <code>:x</code> and <code>:y</code>.</p></li>
+<li><p><code>(pj/pose data :x-col :y-col {:color :c})</code> – positional x/y with opts.</p></li>
+<li><p><code>(pj/pose data [[:a :b] [:c :d]])</code> – multi-pair: N bivariate panels.</p></li>
+<li><p><code>(pj/pose data [:a :b :c])</code> – multi-pair: N univariate panels.</p></li>
+<li><p><code>(pj/pose data (pj/cross cols cols) {:color :c})</code> – multi-pair plus aesthetic mapping at the composite root.</p></li>
+</ul>
+<p><strong>Threaded over an existing pose (first argument is a pose):</strong></p>
+<ul>
+<li><p><code>(pj/pose fr)</code> – pass-through; lifts a literal map for notebook auto-render if it is not already tagged.</p></li>
+<li><p><code>(pj/pose fr :x-col :y-col)</code> – extend a leaf-without-position, or promote a leaf-with-position into a 2-panel composite, or append a panel to a composite.</p></li>
+<li><p><code>(pj/pose fr :x-col :y-col {:color :c})</code> – same, with aesthetic routed to the composite root on promote.</p></li>
+<li><p><code>(pj/pose fr {:color :c})</code> – aesthetic-only: extend mapping or (on leaf-with-position) promote.</p></li>
+<li><p><code>(pj/pose fr [[:a :b] [:c :d]])</code> – multi-pair: append N panels.</p></li>
+<li><p><code>(pj/pose fr (pj/cross cols cols))</code> – SPLOM N^2 panels in one call.</p></li>
+<li><p><code>(pj/pose fr (pj/cross cols cols) {:color :c})</code> – SPLOM plus aesthetic mapping at the composite root.</p></li>
+<li><p><code>(pj/pose fr {:data X :color :c})</code> – extend mapping AND replace the top-level data with X.</p></li>
+</ul>
+<p><strong>On a hand-built pose-shaped map (1-arity, input has <code>:layers</code> or <code>:poses</code>):</strong> the map is validated and tagged with Kindly auto-render metadata, but its keys are not reordered and its <code>:data</code> is not coerced – the typed shape is preserved verbatim. A flat composite (<code>:poses</code> of leaf maps) is supported; literal nested composites (any sub-pose itself has <code>:poses</code>) are rejected, matching <code>pj/arrange</code>’s rule that its elements must be leaves.</p>
 <p>Create a leaf pose with data and columns:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -630,7 +652,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
    (-&gt; template (pj/with-data my-data))
    (-&gt; template (pj/with-data other-data))</code></pre>
-<p>At attach time, every keyword column reference in the template’s mapping, layers, sub-poses, and facet options must exist in the dataset – otherwise an error is thrown naming the missing columns and listing what is available. Per-layer / per-sub-pose <code>:data</code> still overrides the top-level data. (with-data pose data)</p>
+<p>At attach time, every keyword column reference in the template’s mapping, layers, sub-poses, and facet options must exist in the dataset – otherwise an error is thrown naming the missing columns and listing what is available. Per-layer / per-sub-pose <code>:data</code> still overrides the top-level data.</p>
 <p>Attach or replace the top-level dataset on a pose. Useful for building a dataless template and applying it to many datasets:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> scatter-template</span></span>
@@ -661,8 +683,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="cross" class="level3">
 <h3 class="anchored" data-anchor-id="cross"><code>cross</code></h3>
 <p><code>[xs ys]</code></p>
-<p>Build a vector of [x y] pairs from two column-name sequences. Pair with <code>pj/pose</code> for SPLOM grids: when an MxN rectangle of pairs is threaded through <code>pj/pose</code>, the result is an MxN composite with shared scales.</p>
-<p>(pj/cross [:a :b] [:c :d]) ; =&gt; [[:a :c] [:a :d] [:b :c] [:b :d]]</p>
+<p>Build a vector of <code>[x y]</code> pairs from two column-name sequences. Pair with <code>pj/pose</code> for SPLOM grids: when an MxN rectangle of pairs is threaded through <code>pj/pose</code>, the result is an MxN composite with shared scales.</p>
+<ul>
+<li><code>(pj/cross [:a :b] [:c :d])</code> returns <code>[[:a :c] [:a :d] [:b :c] [:b :d]]</code>.</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(pj/cross [<span class="at">:a</span> <span class="at">:b</span>] [<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -706,7 +730,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x-or-opts]</code></p>
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
-<p>Add a <code>:point</code> (scatter) layer to a pose. Without columns -&gt; bare layer at the pose’s root (flows to every leaf). With columns -&gt; position-bearing layer (attaches to the matching leaf via DFS-last identity, or appends a new sub-pose on miss). (lay-point fr) – bare layer at root (lay-point fr {:color :species}) – bare layer with aesthetic opts (lay-point data :x :y) – coerce data to a leaf, then attach (lay-point data :x :y {:color :c}) – same with aesthetic opts</p>
+<p>Add a <code>:point</code> (scatter) layer to a pose. Without columns -&gt; bare layer at the pose’s root (flows to every leaf). With columns -&gt; position-bearing layer (attaches to the matching leaf via DFS-last identity, or appends a new sub-pose on miss).</p>
+<ul>
+<li><code>(lay-point fr)</code> – bare layer at root.</li>
+<li><code>(lay-point fr {:color :species})</code> – bare layer with aesthetic opts.</li>
+<li><code>(lay-point data :x :y)</code> – coerce data to a leaf, then attach.</li>
+<li><code>(lay-point data :x :y {:color :c})</code> – same with aesthetic opts.</li>
+</ul>
 <p>Accepted options: :alpha :color :color-type :data :group :jitter :mark :nudge-x :nudge-y :position :shape :size :stat :text :x :x-type :y :y-type.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1065,7 +1095,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x-or-opts]</code></p>
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
-<p>Add <code>:rule-v</code> layer – vertical reference line at x = x-intercept. Position comes from opts (not data columns); <code>:x-intercept</code> is required. Accepts <code>:x-intercept</code> (numeric or temporal – LocalDate, LocalDateTime, Instant, java.util.Date) and <code>:color</code> (literal string). Temporal values are converted internally to match the x-axis scale so date-axis annotations work without manual conversion. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the rule there (only panels matching that leaf show it). (lay-rule-v pose {:x-intercept 5}) – root-level, flows to every panel (lay-rule-v pose :x :y {:x-intercept 5}) – panel-scope (columns pick or create a sub-pose) (lay-rule-v pose {:x-intercept 5 :color “red”}) (lay-rule-v pose {:x-intercept #inst “2008-09-15”})</p>
+<p>Add <code>:rule-v</code> layer – vertical reference line at x = x-intercept. Position comes from opts (not data columns); <code>:x-intercept</code> is required. Accepts <code>:x-intercept</code> (numeric or temporal – LocalDate, LocalDateTime, Instant, java.util.Date) and <code>:color</code> (literal string). Temporal values are converted internally to match the x-axis scale so date-axis annotations work without manual conversion. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the rule there (only panels matching that leaf show it).</p>
+<ul>
+<li><p><code>(lay-rule-v pose {:x-intercept 5})</code> – root-level, flows to every panel.</p></li>
+<li><p><code>(lay-rule-v pose :x :y {:x-intercept 5})</code> – panel-scope (columns pick or create a sub-pose).</p></li>
+<li><p><code>(lay-rule-v pose {:x-intercept 5 :color "red"})</code> – with override color.</p></li>
+<li><p><code>(lay-rule-v pose {:x-intercept #inst "2008-09-15"})</code> – temporal intercept on a date axis.</p></li>
+</ul>
 <p>Accepted options: :alpha :color :data :mark :stat :x :x-intercept :y.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1089,7 +1125,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x-or-opts]</code></p>
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
-<p>Add <code>:rule-h</code> layer – horizontal reference line at y = y-intercept. Position comes from opts (not data columns); <code>:y-intercept</code> is required. Accepts <code>:y-intercept</code> (numeric or temporal – LocalDate, LocalDateTime, Instant, java.util.Date) and <code>:color</code> (literal string). Temporal values are converted internally to match the y-axis scale so date-axis annotations work without manual conversion. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the rule there (only panels matching that leaf show it). (lay-rule-h pose {:y-intercept 3}) – root-level, flows to every panel (lay-rule-h pose :x :y {:y-intercept 3}) – panel-scope (columns pick or create a sub-pose) (lay-rule-h pose {:y-intercept 3 :color “red”}) (lay-rule-h pose {:y-intercept (java.time.LocalDate/parse “2024-01-01”)})</p>
+<p>Add <code>:rule-h</code> layer – horizontal reference line at y = y-intercept. Position comes from opts (not data columns); <code>:y-intercept</code> is required. Accepts <code>:y-intercept</code> (numeric or temporal – LocalDate, LocalDateTime, Instant, java.util.Date) and <code>:color</code> (literal string). Temporal values are converted internally to match the y-axis scale so date-axis annotations work without manual conversion. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the rule there (only panels matching that leaf show it).</p>
+<ul>
+<li><p><code>(lay-rule-h pose {:y-intercept 3})</code> – root-level, flows to every panel.</p></li>
+<li><p><code>(lay-rule-h pose :x :y {:y-intercept 3})</code> – panel-scope (columns pick or create a sub-pose).</p></li>
+<li><p><code>(lay-rule-h pose {:y-intercept 3 :color "red"})</code> – with override color.</p></li>
+<li><p><code>(lay-rule-h pose {:y-intercept (java.time.LocalDate/parse "2024-01-01")})</code> – temporal intercept on a date axis.</p></li>
+</ul>
 <p>Accepted options: :alpha :color :data :mark :stat :x :y :y-intercept.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1104,7 +1146,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x-or-opts]</code></p>
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
-<p>Add <code>:band-v</code> layer – vertical shaded band between x = x-min and x = x-max. Position comes from opts (not data columns); <code>:x-min</code> and <code>:x-max</code> are required and <code>:x-min</code> must be &lt;= <code>:x-max</code>. Accepts <code>:x-min</code> (required), <code>:x-max</code> (required), <code>:color</code> (literal string), <code>:alpha</code>. Bounds may be numeric or temporal (LocalDate, LocalDateTime, Instant, java.util.Date); temporal values are converted internally to match the x-axis scale. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the band there (only panels matching that leaf show it). (lay-band-v pose {:x-min 4 :x-max 6}) – root-level, flows to every panel (lay-band-v pose :x :y {:x-min 4 :x-max 6}) – panel-scope (columns pick or create a sub-pose) (lay-band-v pose {:x-min 4 :x-max 6 :color “blue” :alpha 0.3})</p>
+<p>Add <code>:band-v</code> layer – vertical shaded band between x = x-min and x = x-max. Position comes from opts (not data columns); <code>:x-min</code> and <code>:x-max</code> are required and <code>:x-min</code> must be &lt;= <code>:x-max</code>. Accepts <code>:x-min</code> (required), <code>:x-max</code> (required), <code>:color</code> (literal string), <code>:alpha</code>. Bounds may be numeric or temporal (LocalDate, LocalDateTime, Instant, java.util.Date); temporal values are converted internally to match the x-axis scale. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the band there (only panels matching that leaf show it).</p>
+<ul>
+<li><p><code>(lay-band-v pose {:x-min 4 :x-max 6})</code> – root-level, flows to every panel.</p></li>
+<li><p><code>(lay-band-v pose :x :y {:x-min 4 :x-max 6})</code> – panel-scope (columns pick or create a sub-pose).</p></li>
+<li><p><code>(lay-band-v pose {:x-min 4 :x-max 6 :color "blue" :alpha 0.3})</code> – with color and opacity overrides.</p></li>
+</ul>
 <p>Accepted options: :alpha :color :data :mark :stat :x :x-max :x-min :y.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1119,7 +1166,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose-or-data x-or-opts]</code></p>
 <p><code>[pose-or-data x y-or-opts]</code></p>
 <p><code>[pose-or-data x y opts]</code></p>
-<p>Add <code>:band-h</code> layer – horizontal shaded band between y = y-min and y = y-max. Position comes from opts (not data columns); <code>:y-min</code> and <code>:y-max</code> are required and <code>:y-min</code> must be &lt;= <code>:y-max</code>. Accepts <code>:y-min</code> (required), <code>:y-max</code> (required), <code>:color</code> (literal string), <code>:alpha</code>. Bounds may be numeric or temporal (LocalDate, LocalDateTime, Instant, java.util.Date); temporal values are converted internally to match the y-axis scale. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the band there (only panels matching that leaf show it). (lay-band-h pose {:y-min 2 :y-max 4}) – root-level, flows to every panel (lay-band-h pose :x :y {:y-min 2 :y-max 4}) – panel-scope (columns pick or create a sub-pose) (lay-band-h pose {:y-min 2 :y-max 4 :color “blue” :alpha 0.3})</p>
+<p>Add <code>:band-h</code> layer – horizontal shaded band between y = y-min and y = y-max. Position comes from opts (not data columns); <code>:y-min</code> and <code>:y-max</code> are required and <code>:y-min</code> must be &lt;= <code>:y-max</code>. Accepts <code>:y-min</code> (required), <code>:y-max</code> (required), <code>:color</code> (literal string), <code>:alpha</code>. Bounds may be numeric or temporal (LocalDate, LocalDateTime, Instant, java.util.Date); temporal values are converted internally to match the y-axis scale. The 4-arity finds or creates a sub-pose with these x/y columns and attaches the band there (only panels matching that leaf show it).</p>
+<ul>
+<li><p><code>(lay-band-h pose {:y-min 2 :y-max 4})</code> – root-level, flows to every panel.</p></li>
+<li><p><code>(lay-band-h pose :x :y {:y-min 2 :y-max 4})</code> – panel-scope (columns pick or create a sub-pose).</p></li>
+<li><p><code>(lay-band-h pose {:y-min 2 :y-max 4 :color "blue" :alpha 0.3})</code> – with color and opacity overrides.</p></li>
+</ul>
 <p>Accepted options: :alpha :color :data :mark :stat :x :y :y-max :y-min.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1135,7 +1187,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="coord"><code>coord</code></h3>
 <p><code>[pose coord-type]</code></p>
 <p>Set coordinate transform on a pose. Coord is plot-level – it applies across every panel. On a composite pose the coord attaches to the root so every descendant leaf inherits it at plan time.</p>
-<p>Supported coord-types: <code>:cartesian</code> – standard x-right, y-up mapping (the default). <code>:flip</code> – swap x and y axes (horizontal bars / boxplots). <code>:fixed</code> – equal aspect ratio (1 data unit = 1 data unit). <code>:polar</code> – radial mapping: x to angle, y to radius.</p>
+<p>Supported coord-types:</p>
+<ul>
+<li><code>:cartesian</code> – standard x-right, y-up mapping (the default).</li>
+<li><code>:flip</code> – swap x and y axes (horizontal bars / boxplots).</li>
+<li><code>:fixed</code> – equal aspect ratio (1 data unit = 1 data unit).</li>
+<li><code>:polar</code> – radial mapping: x to angle, y to radius.</li>
+</ul>
 <p>Flip axes:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1153,8 +1211,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="scale"><code>scale</code></h3>
 <p><code>[pose channel scale-type]</code></p>
 <p>Set scale on a pose. Scale is plot-level – it applies across every panel. Accepts a type keyword or a scale spec map with <code>:type</code>, optional <code>:domain</code>, and optional <code>:breaks</code> (explicit tick locations). On a composite pose the scale attaches to the root so every descendant leaf inherits it at plan time.</p>
-<p>Axis channels (<code>:x</code>, <code>:y</code>) accept <code>:linear</code>, <code>:log</code>, <code>:categorical</code>. Continuous visual channels (<code>:size</code>, <code>:alpha</code>, <code>:fill</code>, <code>:color</code>) accept <code>:linear</code> and <code>:log</code> only – <code>:categorical</code> does not apply. Discrete visual channels (<code>:shape</code>, <code>:group</code>) accept <code>:categorical</code> only – <code>:linear</code> and <code>:log</code> do not apply to a discrete encoding. The <code>:domain</code> on a discrete scale gives explicit category order for the legend.</p>
-<p>(scale pose :x :log) – log scale on x-axis (scale pose :x {:type :categorical :domain […]}) – explicit category order (scale pose :y {:type :linear :breaks [0 5 10]}) – pin tick locations (scale pose :y {:type :log :domain [1 1000]}) – log scale with explicit range (scale pose :size :log) – log-spaced point sizes (scale pose :fill :log) – log-spaced tile fill (scale pose :shape {:type :categorical :domain […]}) – shape legend order</p>
+<p>Channels and accepted scale types:</p>
+<ul>
+<li><p>Axis channels (<code>:x</code>, <code>:y</code>) accept <code>:linear</code>, <code>:log</code>, <code>:categorical</code>.</p></li>
+<li><p>Continuous visual channels (<code>:size</code>, <code>:alpha</code>, <code>:fill</code>, <code>:color</code>) accept <code>:linear</code> and <code>:log</code> only – <code>:categorical</code> does not apply.</p></li>
+<li><p>Discrete visual channels (<code>:shape</code>, <code>:group</code>) accept <code>:categorical</code> only – <code>:linear</code> and <code>:log</code> do not apply to a discrete encoding.</p></li>
+</ul>
+<p>The <code>:domain</code> on a discrete scale gives explicit category order for the legend.</p>
+<ul>
+<li><p><code>(scale pose :x :log)</code> – log scale on x-axis.</p></li>
+<li><p><code>(scale pose :x {:type :categorical :domain [...]})</code> – explicit category order.</p></li>
+<li><p><code>(scale pose :y {:type :linear :breaks [0 5 10]})</code> – pin tick locations.</p></li>
+<li><p><code>(scale pose :y {:type :log :domain [1 1000]})</code> – log scale with explicit range.</p></li>
+<li><p><code>(scale pose :size :log)</code> – log-spaced point sizes.</p></li>
+<li><p><code>(scale pose :fill :log)</code> – log-spaced tile fill.</p></li>
+<li><p><code>(scale pose :shape {:type :categorical :domain [...]})</code> – shape legend order.</p></li>
+</ul>
 <p>Log scale:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1210,8 +1282,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[plots opts]</code></p>
 <p>Arrange multiple leaf poses in a grid. Returns a composite pose that renders through the compositor via membrane – so <code>:svg</code>, <code>:bufimg</code>, and any other membrane target work uniformly.</p>
 <p>Inputs must be leaf poses. Pre-rendered hiccup is not accepted; build your own <code>[:div ...]</code> if you need to combine already-rendered values outside the library.</p>
-<p>Opts: <code>:cols</code> N explicit column count (default: min(4, n-plots)) <code>:title</code> STRING centered title band above the grid <code>:width</code> W total composite width in pixels <code>:height</code> H total composite height in pixels <code>:share-scales</code> S subset of #{<code>:x</code> <code>:y</code>} shared across cells (default: #{})</p>
-<p>(arrange [fr-a fr-b]) – 1x2 row (arrange [fr-a fr-b fr-c] {:cols 2 :width 900}) – 2x2 grid (wraps) (arrange [[fr-a fr-b] [fr-c fr-d]]) – explicit 2x2 grid</p>
+<p>Opts:</p>
+<ul>
+<li><p><code>:cols</code> – explicit column count (default: min(4, n-plots)).</p></li>
+<li><p><code>:title</code> – centered title band above the grid.</p></li>
+<li><p><code>:width</code> – total composite width in pixels.</p></li>
+<li><p><code>:height</code> – total composite height in pixels.</p></li>
+<li><p><code>:share-scales</code> – subset of <code>#{:x :y}</code> shared across cells (default: <code>#{}</code>).</p></li>
+<li><p><code>(arrange [fr-a fr-b])</code> – 1x2 row.</p></li>
+<li><p><code>(arrange [fr-a fr-b fr-c] {:cols 2 :width 900})</code> – 2x2 grid (wraps).</p></li>
+<li><p><code>(arrange [[fr-a fr-b] [fr-c fr-d]])</code> – explicit 2x2 grid.</p></li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>(pj/arrange [(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>                 (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
@@ -1231,7 +1312,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>[pose]</code></p>
 <p><code>[pose opts]</code></p>
 <p>Render a pose to a figure. The format keyword in the pose’s <code>:opts</code> (<code>{:format :svg}</code> – default; <code>{:format :bufimg}</code> for raster PNG via Java2D; or any other registered backend) selects which <code>plan-&gt;plot</code> / <code>membrane-&gt;plot</code> defmethod runs.</p>
-<p>On a composite pose, leaves are rendered individually and tiled via the layout in the resolved chrome, in the same chosen format. The pose flows through the canonical <code>pose -&gt; draft -&gt; plan -&gt; membrane -&gt; plot</code> pipeline for both leaf and composite shapes. (plot pose) (plot pose {:width 800 :title “My Plot”}) (plot pose {:format :bufimg}) ;; returns a BufferedImage</p>
+<p>On a composite pose, leaves are rendered individually and tiled via the layout in the resolved chrome, in the same chosen format. The pose flows through the canonical <code>pose -&gt; draft -&gt; plan -&gt; membrane -&gt; plot</code> pipeline for both leaf and composite shapes.</p>
+<ul>
+<li><code>(plot pose)</code></li>
+<li><code>(plot pose {:width 800 :title "My Plot"})</code></li>
+<li><code>(plot pose {:format :bufimg})</code> – returns a BufferedImage.</li>
+</ul>
 <p>See the Customization notebook for options (title, theme, tooltip, brush, legend position, palette).</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb56"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> tiny</span>
@@ -1361,7 +1447,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="draft-1"><code>draft</code></h3>
 <p><code>[pose]</code></p>
 <p><code>[pose opts]</code></p>
-<p>Resolve a pose into a draft. For a leaf pose, returns a vector of flat maps – one per applicable layer, with all scope merged: data, mappings, and layer type fully determined. For a composite pose, returns a CompositeDraft carrying per-leaf drafts (each contextualized – shared-scale domains injected, suppress-* flags applied), the resolved chrome geometry, and the layout (path -&gt; rect). The 2-arity folds opts into the pose first via <code>pj/options</code>, mirroring the 2-arity of <code>pj/plan</code> and <code>pj/plot</code>. (draft pose) (draft pose {:width 800 :title “Plot”})</p>
+<p>Resolve a pose into a draft. For a leaf pose, returns a vector of flat maps – one per applicable layer, with all scope merged: data, mappings, and layer type fully determined. For a composite pose, returns a <code>CompositeDraft</code> carrying per-leaf drafts (each contextualized – shared-scale domains injected, suppress-* flags applied), the resolved chrome geometry, and the layout (path -&gt; rect). The 2-arity folds opts into the pose first via <code>pj/options</code>, mirroring the 2-arity of <code>pj/plan</code> and <code>pj/plot</code>.</p>
+<ul>
+<li><code>(draft pose)</code></li>
+<li><code>(draft pose {:width 800 :title "Plot"})</code></li>
+</ul>
 <p>Flatten a pose into a vector of draft layers – one per applicable layer, with all scope merged. Useful for inspecting exactly what the renderer will draw:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb74"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
@@ -1411,7 +1501,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="plan-1"><code>plan</code></h3>
 <p><code>[pose]</code></p>
 <p><code>[pose opts]</code></p>
-<p>Convert a pose into a plan. For a leaf pose, returns a <code>Plan</code> record with one panel per facet variant. For a composite pose, returns a <code>CompositePlan</code> record with <code>:sub-plots</code> tying each leaf path to its rect and sub-plan, plus <code>:chrome</code> carrying the resolved layout geometry (title-band, grid-rect, strip labels, shared-legend spec). (plan pose) (plan pose {:title “My Plot”})</p>
+<p>Convert a pose into a plan. For a leaf pose, returns a <code>Plan</code> record with one panel per facet variant. For a composite pose, returns a <code>CompositePlan</code> record with <code>:sub-plots</code> tying each leaf path to its rect and sub-plan, plus <code>:chrome</code> carrying the resolved layout geometry (title-band, grid-rect, strip labels, shared-legend spec).</p>
+<ul>
+<li><code>(plan pose)</code></li>
+<li><code>(plan pose {:title "My Plot"})</code></li>
+</ul>
 <p>Returns the intermediate plan data structure:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb76"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> plan1 </span>(<span class="kw">-&gt;</span> tiny</span>
@@ -1488,7 +1582,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="svg-summary"><code>svg-summary</code></h3>
 <p><code>[svg-or-pose]</code></p>
 <p><code>[svg-or-pose theme]</code></p>
-<p>Extract structural summary from SVG hiccup for testing. Returns a map with <code>:width</code>, <code>:height</code>, <code>:panels</code>, <code>:points</code>, <code>:lines</code>, <code>:polygons</code>, <code>:tiles</code>, <code>:visible-tiles</code>, and <code>:texts</code> – useful for asserting plot structure. Accepts SVG hiccup or a pose (auto-renders to SVG first). (svg-summary (plot fr)) – summary of rendered SVG (svg-summary my-pose) – auto-renders pose (leaf or composite)</p>
+<p>Extract structural summary from SVG hiccup for testing. Returns a map with <code>:width</code>, <code>:height</code>, <code>:panels</code>, <code>:points</code>, <code>:lines</code>, <code>:polygons</code>, <code>:tiles</code>, <code>:visible-tiles</code>, and <code>:texts</code> – useful for asserting plot structure. Accepts SVG hiccup or a pose (auto-renders to SVG first).</p>
+<ul>
+<li><code>(svg-summary (plot fr))</code> – summary of rendered SVG.</li>
+<li><code>(svg-summary my-pose)</code> – auto-renders pose (leaf or composite).</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb79"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>}) pj/svg-summary)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1532,7 +1630,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="valid-plan" class="level3">
 <h3 class="anchored" data-anchor-id="valid-plan"><code>valid-plan?</code></h3>
 <p><code>[plan]</code></p>
-<p>Check if a plan conforms to the Malli schema. (valid-plan? (plan pose)) – true if valid</p>
+<p>Check if a plan conforms to the Malli schema.</p>
+<ul>
+<li><code>(valid-plan? (plan pose))</code> – true if valid.</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb81"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>(pj/valid-plan? plan1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1543,7 +1644,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="explain-plan" class="level3">
 <h3 class="anchored" data-anchor-id="explain-plan"><code>explain-plan</code></h3>
 <p><code>[plan]</code></p>
-<p>Explain why a plan does not conform to the Malli schema. Returns nil if valid, or a Malli explanation map if invalid. (explain-plan (plan pose))</p>
+<p>Explain why a plan does not conform to the Malli schema. Returns <code>nil</code> if valid, or a Malli explanation map if invalid.</p>
+<ul>
+<li><code>(explain-plan (plan pose))</code></li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb83"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>(pj/explain-plan plan1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1558,7 +1662,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="plan-membrane"><code>plan-&gt;membrane</code></h3>
 <p><code>[plan-data]</code></p>
 <p><code>[plan-data opts]</code></p>
-<p>Convert a plan into a membrane drawable tree. The 1-arity uses no rendering options. The 2-arity takes an opts map with optional <code>:tooltip</code>, <code>:theme</code>, <code>:palette</code>, etc. (plan-&gt;membrane (plan fr)) (plan-&gt;membrane (plan fr) {:tooltip true})</p>
+<p>Convert a plan into a membrane drawable tree. The 1-arity uses no rendering options. The 2-arity takes an opts map with optional <code>:tooltip</code>, <code>:theme</code>, <code>:palette</code>, etc.</p>
+<ul>
+<li><code>(plan-&gt;membrane (plan fr))</code></li>
+<li><code>(plan-&gt;membrane (plan fr) {:tooltip true})</code></li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb85"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> m1 </span>(pj/plan-&gt;membrane plan1))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1572,7 +1680,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="membrane-plot" class="level3">
 <h3 class="anchored" data-anchor-id="membrane-plot"><code>membrane-&gt;plot</code></h3>
 <p><code>[membrane-tree format opts]</code></p>
-<p>Convert a membrane drawable tree into a figure for the given format. Dispatches on format keyword; <code>:svg</code> is always available. (membrane-&gt;plot (plan-&gt;membrane (plan pose)) :svg {})</p>
+<p>Convert a membrane drawable tree into a figure for the given format. Dispatches on format keyword; <code>:svg</code> is always available.</p>
+<ul>
+<li><code>(membrane-&gt;plot (plan-&gt;membrane (plan pose)) :svg {})</code></li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb88"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (pj/membrane-&gt;plot m1 <span class="at">:svg</span></span>
 <span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>                          {<span class="at">:total-width</span> (<span class="at">:total-width</span> plan1)</span>
@@ -1585,7 +1696,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="plan-plot" class="level3">
 <h3 class="anchored" data-anchor-id="plan-plot"><code>plan-&gt;plot</code></h3>
 <p><code>[plan format opts]</code></p>
-<p>Convert a plan into a figure for the given format. Dispatches on format keyword. Each renderer is a separate namespace that registers a defmethod; <code>:svg</code> is always available. (plan-&gt;plot (plan fr) :svg {}) (plan-&gt;plot (plan fr) :plotly {})</p>
+<p>Convert a plan into a figure for the given format. Dispatches on format keyword. Each renderer is a separate namespace that registers a defmethod; <code>:svg</code> is always available.</p>
+<ul>
+<li><code>(plan-&gt;plot (plan fr) :svg {})</code></li>
+<li><code>(plan-&gt;plot (plan fr) :plotly {})</code></li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb90"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (pj/plan-&gt;plot plan1 <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1597,8 +1712,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="draft-plan" class="level3">
 <h3 class="anchored" data-anchor-id="draft-plan"><code>draft-&gt;plan</code></h3>
 <p><code>[draft]</code></p>
-<p>Convert a draft into a plan. Dispatches on draft shape: composite drafts go through compositor/composite-draft-&gt;plan (which uses the chrome-spec already baked in at draft emission); leaf drafts (vectors of layer maps) go through plan/draft-&gt;plan.</p>
-<p>Plan-stage opts (<code>:width</code>, <code>:height</code>, <code>:title</code>, …) for leaf drafts must be set on the pose before drafting via <code>pj/options</code>. For composite drafts those opts are already part of the chrome-spec. (draft-&gt;plan (draft pose))</p>
+<p>Convert a draft into a plan. Dispatches on draft shape: composite drafts go through <code>compositor/composite-draft-&gt;plan</code> (which uses the chrome-spec already baked in at draft emission); leaf drafts (vectors of layer maps) go through <code>plan/draft-&gt;plan</code>.</p>
+<p>Plan-stage opts (<code>:width</code>, <code>:height</code>, <code>:title</code>, …) for leaf drafts must be set on the pose before drafting via <code>pj/options</code>. For composite drafts those opts are already part of the chrome-spec.</p>
+<ul>
+<li><code>(draft-&gt;plan (draft pose))</code></li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb92"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> draft1 </span>(pj/draft (pj/lay-point tiny <span class="at">:x</span> <span class="at">:y</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1613,7 +1731,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="draft-membrane"><code>draft-&gt;membrane</code></h3>
 <p><code>[draft]</code></p>
 <p><code>[draft opts]</code></p>
-<p>Compose draft -&gt; plan -&gt; membrane. The 2-arity takes an opts map for plan-&gt;membrane (e.g.&nbsp;{<code>:tooltip</code> true}). (draft-&gt;membrane (draft pose)) (draft-&gt;membrane (draft pose) {:tooltip true})</p>
+<p>Compose draft -&gt; plan -&gt; membrane. The 2-arity takes an opts map for <code>plan-&gt;membrane</code> (e.g.&nbsp;<code>{:tooltip true}</code>).</p>
+<ul>
+<li><code>(draft-&gt;membrane (draft pose))</code></li>
+<li><code>(draft-&gt;membrane (draft pose) {:tooltip true})</code></li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb95"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">vector?</span> (pj/draft-&gt;membrane draft1))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1624,7 +1746,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="draft-plot" class="level3">
 <h3 class="anchored" data-anchor-id="draft-plot"><code>draft-&gt;plot</code></h3>
 <p><code>[draft format opts]</code></p>
-<p>Compose draft -&gt; plan -&gt; plot for the given format. (draft-&gt;plot (draft pose) :svg {}) (draft-&gt;plot (draft pose) :bufimg {})</p>
+<p>Compose draft -&gt; plan -&gt; plot for the given format.</p>
+<ul>
+<li><code>(draft-&gt;plot (draft pose) :svg {})</code></li>
+<li><code>(draft-&gt;plot (draft pose) :bufimg {})</code></li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb97"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">first</span> (pj/draft-&gt;plot draft1 <span class="at">:svg</span> {}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1638,7 +1764,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="config" class="level3">
 <h3 class="anchored" data-anchor-id="config"><code>config</code></h3>
 <p><code>[]</code></p>
-<p>Return the effective resolved configuration as a map. Merges: library defaults &lt; plotje.edn &lt; set-config! &lt; <em>config</em>. Useful for inspecting which values are in effect. (config) – show current resolved config</p>
+<p>Return the effective resolved configuration as a map. Merges: library defaults &lt; <code>plotje.edn</code> &lt; <code>set-config!</code> &lt; <code>*config*</code>. Useful for inspecting which values are in effect.</p>
+<ul>
+<li><code>(config)</code> – show current resolved config.</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb99"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>(pj/config)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1681,12 +1810,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="set-config" class="level3">
 <h3 class="anchored" data-anchor-id="set-config"><code>set-config!</code></h3>
 <p><code>[m]</code></p>
-<p>Set global config overrides. Persists across calls until reset. (set-config! {:palette :dark2 :theme {:bg “#FFFFFF”}}) (set-config! nil) – reset to defaults</p>
+<p>Set global config overrides. Persists across calls until reset.</p>
+<ul>
+<li><p><code>(set-config! {:palette :dark2 :theme {:bg "#FFFFFF"}})</code> – override palette and background.</p></li>
+<li><p><code>(set-config! nil)</code> – reset to defaults.</p></li>
+</ul>
 </section>
 <section id="with-config" class="level3">
 <h3 class="anchored" data-anchor-id="with-config"><code>with-config</code></h3>
 <p><code>[config-map &amp; body]</code></p>
-<p>Execute body with thread-local config overrides. Overrides take precedence over set-config! and defaults, but plot options still win. (with-config {:theme {:bg “#FFF”}} (plot …))</p>
+<p>Execute body with thread-local config overrides. Overrides take precedence over <code>set-config!</code> and defaults, but plot options still win.</p>
+<ul>
+<li><code>(with-config {:theme {:bg "#FFF"}} (plot ...))</code></li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb101"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>(pj/with-config {<span class="at">:palette</span> <span class="at">:pastel1</span>}</span>
 <span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:palette</span> (pj/config)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1735,7 +1871,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="layer-type-lookup" class="level3">
 <h3 class="anchored" data-anchor-id="layer-type-lookup"><code>layer-type-lookup</code></h3>
 <p><code>[k]</code></p>
-<p>Look up a registered layer type by keyword. Returns the layer-type map (with :mark, :stat, :position, :doc), or nil if not found. (layer-type-lookup :histogram) =&gt; {:mark :bar, :stat :bin, …}</p>
+<p>Look up a registered layer type by keyword. Returns the layer-type map (with <code>:mark</code>, <code>:stat</code>, <code>:position</code>, <code>:doc</code>), or <code>nil</code> if not found.</p>
+<ul>
+<li><code>(layer-type-lookup :histogram)</code> returns <code>{:mark :bar, :stat :bin, ...}</code>.</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb109"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>(pj/layer-type-lookup <span class="at">:smooth</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1790,7 +1929,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="stat-doc" class="level3">
 <h3 class="anchored" data-anchor-id="stat-doc"><code>stat-doc</code></h3>
 <p><code>[k]</code></p>
-<p>Return the prose description for a stat keyword. Returns “(no description)” if no [<code>:key</code> <code>:doc</code>] defmethod is registered. (stat-doc :bin) =&gt; “Bin numerical values into ranges”</p>
+<p>Return the prose description for a stat keyword. Returns <code>"(no description)"</code> if no <code>[:key :doc]</code> defmethod is registered.</p>
+<ul>
+<li><code>(stat-doc :bin)</code> returns <code>"Bin numerical values into ranges"</code>.</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb115"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a>(pj/stat-doc <span class="at">:linear-model</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1801,7 +1943,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="mark-doc" class="level3">
 <h3 class="anchored" data-anchor-id="mark-doc"><code>mark-doc</code></h3>
 <p><code>[k]</code></p>
-<p>Return the prose description for a mark keyword. Returns “(no description)” if no [<code>:key</code> <code>:doc</code>] defmethod is registered. (mark-doc :point) =&gt; “Filled circle”</p>
+<p>Return the prose description for a mark keyword. Returns <code>"(no description)"</code> if no <code>[:key :doc]</code> defmethod is registered.</p>
+<ul>
+<li><code>(mark-doc :point)</code> returns <code>"Filled circle"</code>.</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb117"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>(pj/mark-doc <span class="at">:point</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1812,7 +1957,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="position-doc" class="level3">
 <h3 class="anchored" data-anchor-id="position-doc"><code>position-doc</code></h3>
 <p><code>[k]</code></p>
-<p>Return the prose description for a position keyword. Returns “(no description)” if no [<code>:key</code> <code>:doc</code>] defmethod is registered. (position-doc :dodge) =&gt; “Shift groups side-by-side within a band”</p>
+<p>Return the prose description for a position keyword. Returns <code>"(no description)"</code> if no <code>[:key :doc]</code> defmethod is registered.</p>
+<ul>
+<li><code>(position-doc :dodge)</code> returns <code>"Shift groups side-by-side within a band"</code>.</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb119"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a>(pj/position-doc <span class="at">:dodge</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1823,7 +1971,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="scale-doc" class="level3">
 <h3 class="anchored" data-anchor-id="scale-doc"><code>scale-doc</code></h3>
 <p><code>[k]</code></p>
-<p>Return the prose description for a scale keyword. Returns “(no description)” if no [<code>:key</code> <code>:doc</code>] defmethod is registered. (scale-doc :linear) =&gt; “Continuous linear mapping”</p>
+<p>Return the prose description for a scale keyword. Returns <code>"(no description)"</code> if no <code>[:key :doc]</code> defmethod is registered.</p>
+<ul>
+<li><code>(scale-doc :linear)</code> returns <code>"Continuous linear mapping"</code>.</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb121"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a>(pj/scale-doc <span class="at">:linear</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1834,7 +1985,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="coord-doc" class="level3">
 <h3 class="anchored" data-anchor-id="coord-doc"><code>coord-doc</code></h3>
 <p><code>[k]</code></p>
-<p>Return the prose description for a coordinate type keyword. Returns “(no description)” if no [<code>:key</code> <code>:doc</code>] defmethod is registered. (coord-doc :polar) =&gt; “Radial mapping: x-&gt;angle, y-&gt;radius”</p>
+<p>Return the prose description for a coordinate type keyword. Returns <code>"(no description)"</code> if no <code>[:key :doc]</code> defmethod is registered.</p>
+<ul>
+<li><code>(coord-doc :polar)</code> returns <code>"Radial mapping: x-&gt;angle, y-&gt;radius"</code>.</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb123"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a>(pj/coord-doc <span class="at">:cartesian</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1845,7 +1999,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="membrane-mark-doc" class="level3">
 <h3 class="anchored" data-anchor-id="membrane-mark-doc"><code>membrane-mark-doc</code></h3>
 <p><code>[k]</code></p>
-<p>Return the prose description for how a mark renders to membrane drawables. Returns “(no description)” if no [<code>:key</code> <code>:doc</code>] defmethod is registered. (membrane-mark-doc :point) =&gt; “Translated colored rounded-rectangles”</p>
+<p>Return the prose description for how a mark renders to membrane drawables. Returns <code>"(no description)"</code> if no <code>[:key :doc]</code> defmethod is registered.</p>
+<ul>
+<li><code>(membrane-mark-doc :point)</code> returns <code>"Translated colored rounded-rectangles"</code>.</li>
+</ul>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb125"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a>(pj/membrane-mark-doc <span class="at">:point</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1863,7 +2020,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Save a plot to a file. Format resolution, in precedence order: 1. <code>:format</code> in the 3-arity <code>opts</code> map wins (must be <code>:svg</code> or <code>:png</code>). 2. <code>:format</code> on the pose’s <code>:opts</code> (<code>:svg</code> or <code>:png</code>; legacy <code>:bufimg</code> is translated to <code>:png</code>). 3. Otherwise inferred from the path extension (<code>.svg</code> -&gt; <code>:svg</code>, <code>.png</code> -&gt; <code>:png</code>). 4. Default <code>:svg</code>.</p>
 <p>When the resolved format and the path extension disagree, prints a warning – the file still gets the bytes the resolved format produces, but the extension is misleading.</p>
 <p>The save vocabulary names the file format. The plot vocabulary (<code>pj/plot</code>’s <code>:format</code>) names the JVM return type – <code>:svg</code> for hiccup, <code>:bufimg</code> for a Java2D BufferedImage. A pose-level <code>:format</code> flows into both contexts; save reinterprets <code>:bufimg</code> as <code>:png</code> because what hits the disk is a PNG file.</p>
-<p>pose – a pose. path – file path (string or java.io.File). opts – same options as plot, but <code>:format</code> accepts only <code>:svg</code> or <code>:png</code>. Tooltip and brush interactivity are not included in saved files. Returns the path. (save my-pose “plot.svg”) ;; SVG (save my-pose “plot.png”) ;; inferred PNG (save my-pose “plot.svg” {:format :png}) ;; opts override (warns)</p>
+<p>Arguments:</p>
+<ul>
+<li><code>pose</code> – a pose.</li>
+<li><code>path</code> – file path (string or <code>java.io.File</code>).</li>
+<li><code>opts</code> – same options as plot, but <code>:format</code> accepts only <code>:svg</code> or <code>:png</code>.</li>
+</ul>
+<p>Tooltip and brush interactivity are not included in saved files. Returns the path.</p>
+<ul>
+<li><code>(save my-pose "plot.svg")</code> – SVG.</li>
+<li><code>(save my-pose "plot.png")</code> – inferred PNG.</li>
+<li><code>(save my-pose "plot.svg" {:format :png})</code> – opts override (warns).</li>
+</ul>
 <p>Save a plot to an SVG file:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb127"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">let</span> [<span class="kw">path</span> (<span class="kw">str</span> (java.io.File/createTempFile <span class="st">"plotje-example"</span> <span class="st">".svg"</span>))]</span>
