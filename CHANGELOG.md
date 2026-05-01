@@ -926,19 +926,20 @@ through a complete end-to-end custom mark.
 
 ### Book
 
-Twenty-nine executable chapters:
+Thirty executable chapters:
 
 - **Getting Started** -- quickstart
-- **Foundations** -- datasets, pose model, core concepts, options
-  and scopes, pose rules, inference rules, layer types, glossary
-- **Chart Types** -- scatter, distributions, ranking, change over
-  time, relationships, polar
+- **Foundations** -- datasets, poses, core concepts, composition,
+  options and scopes, pose rules, inference rules, layer types,
+  glossary
+- **Visualization Goals** -- distributions, ranking, change over time,
+  timelines, relationships
 - **How-to Guides** -- cookbook, configuration, customization,
-  faceting, composition, troubleshooting
+  faceting, polar, interactivity, troubleshooting
 - **Reference** -- api reference
 - **Gallery** -- ~150 examples reproducing charts from the R Graph
   Gallery, Vega-Lite Examples, Python Graph Gallery, ECharts, and D3
-- **Internals** -- exploring plans, architecture, extensibility,
+- **Internals** -- architecture, exploring plans, extensibility,
   waterfall extension, edge cases, development
 
 Every notebook embeds runnable regression tests via `kind/test-last`.
@@ -1072,6 +1073,24 @@ produce crashes on canonical inputs.
 
 **ggplot2 features not yet implemented:**
 
+- The `:fill` aesthetic is currently consumed only by `lay-tile`
+  (and the `:bin2d` output beneath `lay-density-2d`). On filled
+  marks like `lay-bar`, `lay-area`, and `lay-violin`, `:color`
+  paints the interior; there is no separate stroke channel.
+- The `:linetype` aesthetic (ggplot2's `aes(linetype=...)` for
+  solid vs. dashed lines) is not implemented. Workaround: encode
+  the same distinction via `:color` instead.
+- No `after_stat()` analog. ggplot2 idioms like
+  `geom_bar(aes(label=after_stat(count)))` and
+  `geom_histogram(aes(y=after_stat(density)))` reference computed
+  stat values inside aesthetic mappings; Plotje requires a
+  pre-computed column. Workaround: aggregate the data first via
+  `tc/group-by` + `tc/aggregate`, then map the count or density
+  column directly.
+- Theme support is shallow vs. ggplot2: today the theme map carries
+  `:bg`, `:grid`, `:font-size`, and a small handful of other keys.
+  Named theme presets (`theme_minimal`, `theme_bw`, `theme_classic`),
+  axis text rotation, panel borders, strip text styling, and
+  `legend.position` by coordinate are not yet exposed.
 - Per-layer `data`, `guides()` for per-aesthetic legend control,
-  named theme presets, `scale_*_sqrt`/`reverse`/`date`. All tracked
-  in the backlog.
+  `scale_*_sqrt`/`reverse`/`date`. All tracked in the backlog.
