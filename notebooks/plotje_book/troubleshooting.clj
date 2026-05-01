@@ -362,9 +362,7 @@
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width)
-    (pj/lay-text {:data (-> (tc/dataset {:sepal-length [6.5]
-                                         :species     ["mean"]})
-                            (tc/add-column :yy (constantly 3.5)))
+    (pj/lay-text {:data {:sepal-length [6.5] :species ["mean"] :yy [3.5]}
                   :x :sepal-length :y :yy :text :species}))
 
 (kind/test-last [(fn [v] (some #{"mean"} (:texts (pj/svg-summary v))))])
