@@ -11,6 +11,58 @@ Staged for the upcoming first public alpha release. The API and
 visual defaults are still subject to change based on early adopter
 feedback.
 
+### Fixed: four mark style options were silently stripped at the option gate
+
+A targeted audit of stat/extract code reading from `draft-layer`
+surfaced four sibling cases of the same bug shape as the `:level`
+fix below: an option was read internally with a default fallback,
+but never reached the draft-layer because it was missing from the
+corresponding layer-type's `:accepts` list. The validator at
+`api.clj:477-518` strips unknown keys, so every user value was
+discarded before it could matter.
+
+- `:font-size` on `pj/lay-text` and `pj/lay-label` (default 10) --
+  now flows through.
+- `:cap-width` on `pj/lay-errorbar` (default 6) -- now flows
+  through.
+- `:box-width` on `pj/lay-boxplot` (default 0.6) -- now flows
+  through.
+- `:length` on `pj/lay-rug` (default 6) -- now flows through.
+
+Each fix is a single keyword added to the `:accepts` list at
+`layer_type.clj`. Verified in REPL: passing an explicit value now
+shows up in the rendered plan instead of the default.
+
+### Fixed: `pj/lay-band-h` and `pj/lay-band-v` accept temporal bounds
+
+`{:y-min :y-max}` (and `{:x-min :x-max}`) previously required finite
+numeric bounds and threw an opaque "requires finite numeric" error
+when given a `LocalDate`, `LocalDateTime`, `Instant`, or
+`java.util.Date`. The sibling `lay-rule-h`/`lay-rule-v` already
+accepted temporal intercepts on a date axis; bands did not, so a
+user with a date axis could draw a vertical reference line but not
+a vertical shaded band.
+
+`lay-band-h` and `lay-band-v` now coerce temporal bounds to epoch-ms
+internally, mirroring the rule path. The `lo <= hi` precondition
+applies to coerced numeric values, so reversed temporal bounds
+throw a clear "requires :x-min <= :x-max" error.
+
+### Fixed: `pj/lay-smooth` honors `:level` for confidence band width
+
+`{:confidence-band true :level <p>}` previously silently stripped
+`:level` from the layer options because it was missing from the
+`:smooth` layer-type's `:accepts` list. Both the `:loess` and
+`:linear-model` stats already read `:level` and default to 0.95,
+but the option never reached them; users setting `:level 0.8` or
+`:level 0.99` saw no effect on the rendered band.
+
+Adding `:level` to `:smooth`'s accepts list closes the gap. After
+the fix, ribbon widths scale monotonically with the level: the
+iris linear-model band on `:sepal-length`/`:sepal-width` produces
+median ribbon widths of approximately 0.07, 0.13, 0.21, 0.30 at
+levels 0.5, 0.8, 0.95, 0.99 respectively.
+
 ### `pj/save` format renamed: `:bufimg` -> `:png` (file vocabulary split from JVM-type vocabulary)
 
 The save path's `:format` keyword now uses `:png` for PNG files;
@@ -1001,6 +1053,32 @@ produce crashes on canonical inputs.
 
 **Marks:**
 
+- **Aesthetic-gate vs. mark-consumer asymmetry.** Several aesthetics
+  are accepted at the universal pose-mapping gate but consumed only
+  by one or two mark extractors. Setting them on other marks is a
+  silent no-op rather than an error.
+
+  | Aesthetic | Consumed on | Silently no-op on |
+  |:----------|:------------|:------------------|
+  | `:size` (column ref) | `lay-point` | every other lay-* |
+  | `:alpha` (column ref) | `lay-point` | every other lay-* (literal `:alpha N` works on most via `:fixed-alpha`) |
+  | `:shape` | `lay-point` | text, label, lollipop, summary, ... |
+  | numeric (continuous) `:color` | `lay-point`, `lay-interval-h` | every other lay-* (a numeric column on a categorical-color path produces banded palette colors instead of a gradient) |
+  | tooltip / row-indices plumbing | `lay-point`, `lay-interval-h` | every other lay-* |
+
+  Workaround: pre-bin or convert the numeric column into a discrete
+  color column where appropriate, or use `lay-point` for the
+  mark where the aesthetic must vary per row.
+
+- `:alpha` on `pj/lay-rule-h`/`pj/lay-rule-v` is silently dropped at
+  render time (the rendering path reads `:color` only). Bands honor
+  `:alpha`. Workaround: use a lighter `:color` to simulate the
+  visual effect on rules.
+- `pj/lay-rule-h` rendered under `(pj/coord :flip)` becomes a
+  vertical line; `pj/lay-rule-v` becomes a horizontal line.
+  The mark name still reflects the unflipped semantics. Add a
+  one-line note in the surrounding prose if the chart's flipped
+  state is non-obvious.
 - `:position :dodge` is ignored at render-time on nine marks
   including `summary` -- on `lay-bar` and `lay-summary` the dodge
   request is dropped at construction; on `lay-point` and `lay-line`
