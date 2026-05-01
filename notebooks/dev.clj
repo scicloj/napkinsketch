@@ -18,10 +18,28 @@
              :chapters (mapv #(format "plotje_book/%s.clj" %) names)})
           chapters)))
 
+
+(defn make-readme!
+  "Render readme.clj as GitHub-flavored Markdown to the repo root.
+   Produces README.md and readme_files/ with SVG images."
+  []
+  (clay/make! {:format [:gfm]
+               :base-source-path "notebooks"
+               :source-path ["readme.clj"]
+               :base-target-path "."
+               :show false})
+  ;; Rename to conventional uppercase README.md
+  (let [src (java.io.File. "readme.md")
+        dst (java.io.File. "README.md")]
+    (when (.exists src)
+      (.delete dst)
+      (.renameTo src dst))))
+
 (defn make-book!
   "Render book HTML through Quarto.
   Use `:docs true` to render to the `docs` directory for publishing."
   [{:keys [docs]}]
+  (make-readme!)
   (clay/make! (merge {:format [:quarto :html]
                       :base-source-path "notebooks"
                       :source-path (into ["index.clj"] (chapters->parts (read-chapters)))
@@ -42,21 +60,6 @@
                :base-target-path "gfm"
                :show false}))
 
-(defn make-readme!
-  "Render readme.clj as GitHub-flavored Markdown to the repo root.
-   Produces README.md and readme_files/ with SVG images."
-  []
-  (clay/make! {:format [:gfm]
-               :base-source-path "notebooks"
-               :source-path ["readme.clj"]
-               :base-target-path "."
-               :show false})
-  ;; Rename to conventional uppercase README.md
-  (let [src (java.io.File. "readme.md")
-        dst (java.io.File. "README.md")]
-    (when (.exists src)
-      (.delete dst)
-      (.renameTo src dst))))
 
 (comment
   (make-readme!)
