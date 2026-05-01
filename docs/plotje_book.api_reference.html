@@ -1182,7 +1182,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="facet"><code>facet</code></h3>
 <p><code>[pose col]</code></p>
 <p><code>[pose col direction]</code></p>
-<p>Facet a pose by a column. Direction is :col (default, horizontal row) or :row (vertical column). Faceting is plot-level – every panel is faceted the same way. Composite poses are not supported yet (see dev-notes/facet-composite-deferral.md).</p>
+<p>Facet a pose by a column. Direction is :col (default, horizontal row) or :row (vertical column). Faceting is plot-level – every panel is faceted the same way. Composite poses are not supported yet.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>})</span>
@@ -1193,7 +1193,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="facet-grid" class="level3">
 <h3 class="anchored" data-anchor-id="facet-grid"><code>facet-grid</code></h3>
 <p><code>[pose col-col row-col]</code></p>
-<p>Facet a pose by two columns (2D grid). Faceting is plot-level – every panel is faceted the same way. Composite poses are not supported yet (see dev-notes/facet-composite-deferral.md).</p>
+<p>Facet a pose by two columns (2D grid). Faceting is plot-level – every panel is faceted the same way. Composite poses are not supported yet.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/reshape2-tips)</span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>    (pj/lay-point <span class="at">:total-bill</span> <span class="at">:tip</span> {<span class="at">:color</span> <span class="at">:sex</span>})</span>
