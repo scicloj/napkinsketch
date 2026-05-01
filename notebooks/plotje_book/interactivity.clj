@@ -149,24 +149,6 @@
     (into [:svg (assoc attrs :id plot-id)] body)
     [:script script]]))
 
-;; ## Deferred: pan and zoom
-;;
-;; A naive viewBox-based pan/zoom wrapper is easy to write -- the
-;; SVG's `viewBox` attribute can be mutated on mouse events to
-;; rescale the whole picture. The catch is that this rescales
-;; *everything*: the title, axis labels, and tick numbers all
-;; move and resize along with the data marks, which is rarely
-;; what a chart reader wants.
-;;
-;; A useful pan/zoom keeps the title and axes stable and
-;; rescales only the data area, recomputing tick positions as
-;; the visible range changes. That requires hooks Plotje doesn't expose yet
-;; (a marker on the panel `<g>` so a script can target it
-;; specifically, plus an axis-tick recompute path). Until those
-;; hooks land, this chapter does not ship a pan/zoom example --
-;; a misleading half-measure would give the wrong impression of
-;; what the library offers.
-
 ;; ## What's testable
 ;;
 ;; The cells above produce SVG hiccup containing all the markup
