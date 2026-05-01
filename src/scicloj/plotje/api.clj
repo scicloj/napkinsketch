@@ -1552,6 +1552,18 @@
         (assoc opts k (coerce-intercept v))
         opts))))
 
+(defn- coerce-band-opts
+  "Convert temporal :y-min/:y-max (or :x-min/:x-max) to epoch-ms so
+   the values line up with temporal columns after their conversion.
+   Mirrors coerce-rule-opts, but for the two-bound band case."
+  [layer-type-key opts]
+  (if-not (map? opts)
+    opts
+    (let [[lo-k hi-k] (band-position-keys layer-type-key)]
+      (cond-> opts
+        (temporal-intercept? (get opts lo-k)) (update lo-k coerce-intercept)
+        (temporal-intercept? (get opts hi-k)) (update hi-k coerce-intercept)))))
+
 (defn- assert-rule-opts! [layer-type-key args]
   (let [opts (last-opts args)
         k (rule-position-key layer-type-key)
@@ -1569,18 +1581,26 @@
 (defn- assert-band-opts! [layer-type-key args]
   (let [opts (last-opts args)
         [lo-k hi-k] (band-position-keys layer-type-key)
-        lo (get opts lo-k) hi (get opts hi-k)]
-    (when-not (and (number? lo) (number? hi)
-                   (Double/isFinite (double lo))
-                   (Double/isFinite (double hi)))
-      (throw (ex-info (str "lay-" (name layer-type-key) " requires finite numeric " lo-k " and " hi-k " in its opts map. "
-                           "Example: (pj/lay-" (name layer-type-key) " pose {" lo-k " 2.0 " hi-k " 4.0})."
+        lo (get opts lo-k) hi (get opts hi-k)
+        valid-bound? (fn [v]
+                       (or (and (number? v) (Double/isFinite (double v)))
+                           (temporal-intercept? v)))]
+    (when-not (and (valid-bound? lo) (valid-bound? hi))
+      (throw (ex-info (str "lay-" (name layer-type-key) " requires finite numeric or temporal "
+                           lo-k " and " hi-k " in its opts map. "
+                           "Example: (pj/lay-" (name layer-type-key) " pose {" lo-k " 2.0 " hi-k " 4.0}) "
+                           "or (pj/lay-" (name layer-type-key) " pose {" lo-k
+                           " #inst \"2024-01-01\" " hi-k " #inst \"2024-06-30\"})."
                            (positional-hint args))
                       {:layer-type layer-type-key :opts opts})))
-    (when-not (<= (double lo) (double hi))
-      (throw (ex-info (str "lay-" (name layer-type-key) " requires " lo-k " <= " hi-k ", got " lo-k " " lo " " hi-k " " hi ". "
-                           "Swap the arguments or check the source of the values.")
-                      {:layer-type layer-type-key :opts opts})))))
+    ;; Compare bounds in their coerced (numeric) form so temporal
+    ;; values are checked against each other meaningfully.
+    (let [lo-num (double (coerce-intercept lo))
+          hi-num (double (coerce-intercept hi))]
+      (when-not (<= lo-num hi-num)
+        (throw (ex-info (str "lay-" (name layer-type-key) " requires " lo-k " <= " hi-k ", got " lo-k " " lo " " hi-k " " hi ". "
+                             "Swap the arguments or check the source of the values.")
+                        {:layer-type layer-type-key :opts opts}))))))
 
 (defn- assert-rule-1-arity! [layer-type-key]
   (let [k (rule-position-key layer-type-key)]
@@ -1636,7 +1656,10 @@
   "Add :band-h layer -- horizontal shaded band between y = y-min and y = y-max.
    Position comes from opts (not data columns); :y-min and :y-max are
    required and :y-min must be <= :y-max.
-   Accepts :y-min (required), :y-max (required), :color (literal string), :alpha.
+   Accepts :y-min (required), :y-max (required), :color (literal
+   string), :alpha. Bounds may be numeric or temporal (LocalDate,
+   LocalDateTime, Instant, java.util.Date); temporal values are
+   converted internally to match the y-axis scale.
    The 4-arity finds or creates a sub-pose with these x/y columns
    and attaches the band there (only panels matching that leaf show
    it).
@@ -1644,15 +1667,18 @@
    (lay-band-h pose :x :y {:y-min 2 :y-max 4})      -- panel-scope (columns pick or create a sub-pose)
    (lay-band-h pose {:y-min 2 :y-max 4 :color \"blue\" :alpha 0.3})"
   ([_pose-or-data] (assert-band-1-arity! :band-h))
-  ([pose-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-layer-type :band-h pose-or-data x-or-opts))
-  ([pose-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-layer-type :band-h pose-or-data x y-or-opts))
-  ([pose-or-data x y opts] (assert-band-opts! :band-h [opts]) (lay-layer-type :band-h pose-or-data x y opts)))
+  ([pose-or-data x-or-opts] (assert-band-opts! :band-h [x-or-opts]) (lay-layer-type :band-h pose-or-data (coerce-band-opts :band-h x-or-opts)))
+  ([pose-or-data x y-or-opts] (assert-band-opts! :band-h [y-or-opts]) (lay-layer-type :band-h pose-or-data x (coerce-band-opts :band-h y-or-opts)))
+  ([pose-or-data x y opts] (assert-band-opts! :band-h [opts]) (lay-layer-type :band-h pose-or-data x y (coerce-band-opts :band-h opts))))
 
 (defn lay-band-v
   "Add :band-v layer -- vertical shaded band between x = x-min and x = x-max.
    Position comes from opts (not data columns); :x-min and :x-max are
    required and :x-min must be <= :x-max.
-   Accepts :x-min (required), :x-max (required), :color (literal string), :alpha.
+   Accepts :x-min (required), :x-max (required), :color (literal
+   string), :alpha. Bounds may be numeric or temporal (LocalDate,
+   LocalDateTime, Instant, java.util.Date); temporal values are
+   converted internally to match the x-axis scale.
    The 4-arity finds or creates a sub-pose with these x/y columns
    and attaches the band there (only panels matching that leaf show
    it).
@@ -1660,9 +1686,9 @@
    (lay-band-v pose :x :y {:x-min 4 :x-max 6})      -- panel-scope (columns pick or create a sub-pose)
    (lay-band-v pose {:x-min 4 :x-max 6 :color \"blue\" :alpha 0.3})"
   ([_pose-or-data] (assert-band-1-arity! :band-v))
-  ([pose-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-layer-type :band-v pose-or-data x-or-opts))
-  ([pose-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-layer-type :band-v pose-or-data x y-or-opts))
-  ([pose-or-data x y opts] (assert-band-opts! :band-v [opts]) (lay-layer-type :band-v pose-or-data x y opts)))
+  ([pose-or-data x-or-opts] (assert-band-opts! :band-v [x-or-opts]) (lay-layer-type :band-v pose-or-data (coerce-band-opts :band-v x-or-opts)))
+  ([pose-or-data x y-or-opts] (assert-band-opts! :band-v [y-or-opts]) (lay-layer-type :band-v pose-or-data x (coerce-band-opts :band-v y-or-opts)))
+  ([pose-or-data x y opts] (assert-band-opts! :band-v [opts]) (lay-layer-type :band-v pose-or-data x y (coerce-band-opts :band-v opts))))
 
 (defn lay-line
   "Add :line layer type -- connected line through data points.
