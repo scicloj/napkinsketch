@@ -4,8 +4,9 @@
 ;; `scicloj.plotje.api`.
 ;;
 ;; Each entry shows the docstring, a live example, and a test.
-;; For galleries of mark variations, see the Reference notebooks
-;; (Scatter, Distributions, Ranking, Change Over Time, Relationships).
+;; For galleries of mark variations, see the Visualization Goals
+;; chapters (Distributions, Ranking, Change Over Time, Timelines,
+;; Relationships).
 
 ^{:kindly/hide-code true
   :kindly/options {:kinds-that-hide-code #{:kind/doc}}}

@@ -1143,4 +1143,4 @@ graph TD
 ;; ## What's Next
 ;;
 ;; - [**Layer Types**](./plotje_book.layer_types.html) -- the full registry of marks, stats, and positions that inference selects from
-;; - [**Scatter Plots**](./plotje_book.scatter.html) -- see inference in action with the most common chart type
+;; - [**Relationships**](./plotje_book.relationships.html) -- see inference in action on scatter, regression, and SPLOM

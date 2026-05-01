@@ -1,7 +1,8 @@
 ;; # Customization
 ;;
 ;; How to customize plots: dimensions, labels, scales, mark styling,
-;; annotations, palettes, themes, legend placement, and interactivity.
+;; aesthetic mappings, annotations, palettes, themes, legend
+;; placement, and interactivity.
 
 (ns plotje-book.customization
   (:require
@@ -262,6 +263,87 @@
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 3 (:polygons s))
                                 (contains? (:alphas s) 0.4))))])
+
+;; ## Aesthetic Mappings
+;;
+;; Mark Styling above showed literal values like `:alpha 0.5` and
+;; `:size 5`. The same option keys also accept column references --
+;; `:color :species`, `:size :petal-length` -- mapping each row to a
+;; visual property. This section walks through the column-reference
+;; forms of `:color`, `:size`, and `:shape`.
+
+;; ### Fixed Color
+
+;; A fixed color string applies the same color to every point. Compare
+;; with `{:color :species}` (a column reference, which assigns a
+;; different color per group).
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:color "#E74C3C"}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s))
+                                (contains? (:colors s) "rgb(231,76,60)"))))])
+
+;; ### Continuous Color
+;;
+;; When `:color` maps to a numeric column, Plotje uses a continuous
+;; blue gradient instead of discrete palette colors.
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:color :petal-length}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s))
+                                (some #{"petal length"} (:texts s)))))])
+
+;; ### Bubble Plot
+;;
+;; Map `:size` to a numeric column to create a bubble plot. Each
+;; point's radius reflects the column value.
+
+(-> (rdatasets/reshape2-tips)
+    (pj/lay-point :total-bill :tip {:color :day :size :size}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:points s)))))])
+
+;; Combine size with alpha for dense data.
+
+(-> (rdatasets/reshape2-tips)
+    (pj/lay-point :total-bill :tip {:color :day :size :size :alpha 0.6}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (pos? (:points s)))))])
+
+;; Combine continuous color with size -- a color-size bubble plot.
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width
+                  {:color :petal-length :size :petal-width :alpha 0.7}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (some #{"petal length"} (:texts s)))))])
+
+;; ### Shape by Category
+;;
+;; Map `:shape` to a categorical column to render each group with a
+;; different marker shape. Useful for monochrome printing or to
+;; reinforce the color encoding.
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:shape :species}))
+
+(kind/test-last
+ [(fn [v]
+    (let [layer (-> v pj/plan :panels first :layers first)
+          shape-values (set (mapcat :shapes (:groups layer)))]
+      (= 3 (count shape-values))))])
 
 ;; ## Annotations
 

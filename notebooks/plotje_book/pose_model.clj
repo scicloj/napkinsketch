@@ -260,4 +260,4 @@ two-panel
 ;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- data formats, marks, stats, color, grouping, coordinates
 ;; - [**Composition**](./plotje_book.composition.html) -- composite poses and multi-panel patterns in depth
 ;; - [**Inference Rules**](./plotje_book.inference_rules.html) -- how Plotje chooses defaults
-;; - [**Scatter Plots**](./plotje_book.scatter.html) -- chart type examples to explore
+;; - [**Relationships**](./plotje_book.relationships.html) -- scatter, regression, density, and SPLOM examples to explore

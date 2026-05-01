@@ -184,6 +184,6 @@
 
 ;; ## What's Next
 ;;
-;; - [**Scatter Plots**](./plotje_book.scatter.html) -- see point, line, and regression layer types in action
+;; - [**Relationships**](./plotje_book.relationships.html) -- see point, line, and regression layer types in action
 ;; - [**Distributions**](./plotje_book.distributions.html) -- histograms, density, boxplots, violins
 ;; - [**Customization**](./plotje_book.customization.html) -- colors, palettes, themes, and per-layer options

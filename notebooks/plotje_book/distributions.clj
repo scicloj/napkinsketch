@@ -128,6 +128,28 @@
                  (= 1 (:polygons s))
                  (= 150 (:lines s)))))])
 
+;; ## Strip Plot (Jitter)
+;;
+;; When plotting a numeric column against a categorical column,
+;; points stack on the same band positions. `:jitter true` spreads
+;; them with small random offsets along the categorical axis.
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :species :sepal-width {:jitter true}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
+
+;; Pass a number to control the jitter amount in drawing units.
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :species :sepal-width {:jitter 10 :alpha 0.5}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s)))))])
+
 ;; ## Boxplot
 
 ;; Median, quartiles, whiskers at 1.5xIQR (interquartile range), and outlier points.

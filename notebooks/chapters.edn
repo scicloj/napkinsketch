@@ -8,17 +8,16 @@
                    "inference_rules"
                    "layer_types"
                    "glossary"]
- "📊 Chart Types" ["scatter"
-                   "distributions"
-                   "ranking"
-                   "change_over_time"
-                   "timelines"
-                   "relationships"
-                   "polar"]
+ "📊 Visualization Goals" ["distributions"
+                           "ranking"
+                           "change_over_time"
+                           "timelines"
+                           "relationships"]
  "🍳 How-to Guides" ["cookbook"
                      "configuration"
                      "customization"
                      "faceting"
+                     "polar"
                      "interactivity"
                      "troubleshooting"]
  "📖 Reference" ["api_reference"]

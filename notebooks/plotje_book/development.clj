@@ -75,10 +75,10 @@
 ;;
 ;; ```clojure
 ;; (require '[scicloj.clay.v2.api :as clay])
-;; (clay/make! {:source-path "plotje_book/scatter.clj"})
+;; (clay/make! {:source-path "plotje_book/relationships.clj"})
 ;; ```
 ;;
-;; This updates `test/plotje_book/scatter_generated_test.clj`.
+;; This updates `test/plotje_book/relationships_generated_test.clj`.
 ;; The generated test files are checked into version control.
 ;;
 ;; To regenerate all notebooks at once:

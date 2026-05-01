@@ -1,7 +1,14 @@
 ;; # Relationships
 ;;
-;; Regression, smoothing, density estimation, and heatmaps --
-;; revealing structure between two variables.
+;; Scatter plots, regression, smoothing, density estimation, and
+;; heatmaps -- revealing structure between two variables.
+;;
+;; Scatter is the foundation. Each row becomes a point in the
+;; plane, and the eye reads structure off the cloud. Regression
+;; and smoothing draw trend lines through it; 2D density and
+;; contours reveal where the cloud is dense or sparse; the
+;; scatter-plot matrix (SPLOM) at the end shows every pair of
+;; columns at once.
 
 (ns plotje-book.relationships
   (:require
@@ -13,6 +20,43 @@
    [scicloj.plotje.api :as pj]
    ;; Fastmath -- random number generation
    [fastmath.random :as rng]))
+
+;; ## Basic Scatter
+
+;; Sepal dimensions, no color -- the default mark.
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s))
+                                (zero? (:lines s)))))])
+
+;; ## Colored by Species
+
+;; Adding `:color :species` groups points by species with distinct colors.
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width {:color :species}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s))
+                                (zero? (:lines s)))))])
+
+;; ## Petal Dimensions
+
+;; Petal length vs width -- a strongly correlated pair, set up
+;; here as the running example for the regression sections below.
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :petal-length :petal-width {:color :species}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 150 (:points s))
+                                (zero? (:lines s)))))])
 
 ;; ## Linear Regression
 
@@ -175,7 +219,42 @@
                            (and (= 150 (:points s))
                                 (pos? (:lines s)))))])
 
+;; ## Scatter Plot Matrix (SPLOM)
+;;
+;; `pj/cross` generates all combinations of two lists. Passing
+;; column names produces a grid of scatter plots -- one per pair of
+;; variables. The diagonal shows histograms (automatic inference
+;; for same-column pairs).
+
+(def cols [:sepal-length :sepal-width :petal-length :petal-width])
+
+(-> (rdatasets/datasets-iris)
+    (pj/pose (pj/cross cols cols) {:color :species}))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 16 (:panels s))
+                                (= (* 12 150) (:points s))
+                                (pos? (:polygons s)))))])
+
+(kind/test-last
+ [(fn [v]
+    (->> (:sub-plots (pj/plan v))
+         (every? (fn [{:keys [path plan]}]
+                   (let [[r c] path
+                         mark (-> plan :panels first :layers first :mark)]
+                     (= mark (if (= r c) :bar :point)))))))])
+
+;; Per-cell inference picks the layer type for each panel: diagonal
+;; cells (x = y) get histograms; off-diagonal cells get scatter
+;; plots. All panels share the color aesthetic set at the composite
+;; root.
+;;
+;; See the [Faceting](./plotje_book.faceting.html) chapter for more
+;; SPLOM variations, and the [Customization](./plotje_book.customization.html)
+;; chapter for brush selection.
+
 ;; ## What's Next
 ;;
-;; - [**Polar Coordinates**](./plotje_book.polar.html) -- radial charts and pie-style visualizations
 ;; - [**Faceting**](./plotje_book.faceting.html) -- split any chart into panels by category
+;; - [**Polar Coordinates**](./plotje_book.polar.html) -- radial charts and pie-style visualizations
+;; - [**Customization**](./plotje_book.customization.html) -- mark styling, palettes, and themes

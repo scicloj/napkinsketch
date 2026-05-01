@@ -222,7 +222,7 @@
 ;; - [**Datasets**](./plotje_book.datasets.html) -- what kinds of data Plotje accepts (tablecloth datasets, maps of vectors, sequences of row maps)
 ;; - [**Poses**](./plotje_book.pose_model.html) -- the mental model behind composable plotting
 ;; - [**Core Concepts**](./plotje_book.core_concepts.html) -- data formats, marks, stats, color, grouping, coordinates
-;; - [**Scatter Plots**](./plotje_book.scatter.html) -- the most common starting point for chart types
+;; - [**Relationships**](./plotje_book.relationships.html) -- scatter plots, regression, density, and SPLOM
 ;; - [**Cookbook**](./plotje_book.cookbook.html) -- recipes for common multi-layer plots
 ;; - [**Configuration**](./plotje_book.configuration.html) -- themes, backgrounds, palettes, and other plot-level defaults
 ;; - [**Gallery**](./plotje_book.gallery.html) -- many more chart variations with side-by-side code
