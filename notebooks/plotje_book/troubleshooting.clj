@@ -15,56 +15,57 @@
 
 ;; ## Column Not Found
 ;;
-;; **Symptom**: `"Column :foo (from :x) not found in dataset"` error.
+;; **Symptom**: `"Column :foo (from :x) not found in dataset"`
+;; error, listing the available columns at the end of the message.
 ;;
-;; **Cause**: The column name does not exist in the dataset. CSV
-;; headers are strings by default -- without `{:key-fn keyword}`,
-;; columns have string names like `"sepal_length"` instead of
-;; `:sepal-length`.
+;; **Cause**: The column reference does not match a dataset column
+;; name. Matching is strict -- `:foo` matches keyword column `:foo`
+;; only, and `"foo"` matches string column `"foo"` only. The two
+;; forms do not interchange. Three common triggers:
 ;;
-;; **Fix**: Pass `{:key-fn keyword}` when loading the dataset:
-;;
-;; ```clojure
-;; (tc/dataset "data.csv" {:key-fn keyword})
-;; ```
-;;
-;; You can check available columns with:
+;; **1. Typo.** A misspelled column name. Always check the spelling
+;; against the dataset's actual columns:
 
 (tc/column-names (rdatasets/datasets-iris))
 
 (kind/test-last [(fn [v] (some #{:sepal-length} v))])
 
-;; ## Mixed Keyword and String Column References
+;; **2. Keyword vs string.** A CSV loaded without `:key-fn keyword`
+;; produces string column names; using a keyword reference against
+;; that dataset throws:
 
-;; **Symptom**: A plot that should show data renders empty -- no
-;; points, no lines, no bars -- and no error is raised. Most
-;; commonly seen with CSVs loaded without `:key-fn keyword`,
-;; where the dataset has string column names but mappings use
-;; keywords.
+(try
+  (-> (tc/dataset {"sepal_length" [5.0 6.0] "sepal_width" [3.0 3.5]})
+      (pj/pose :sepal_length :sepal_width)
+      pj/lay-point pj/plot)
+  (catch clojure.lang.ExceptionInfo e (ex-message e)))
+
+(kind/test-last
+ [(fn [msg] (re-find #"Column :sepal_\w+.*not found" msg))])
+
+;; The fix is to either pass `{:key-fn keyword}` when loading the
+;; CSV (so the dataset has keyword columns) or to use string
+;; references everywhere.
 ;;
-;; **Cause**: Plotje normalizes string vs. keyword refs in many
-;; paths -- a keyword-keyed dataset referenced with strings
-;; renders fine. The reverse direction (string-keyed dataset
-;; referenced with keywords) is not yet fully normalized, and
-;; the data-extraction step resolves to nothing, leaving an
-;; empty layer.
-;;
-;; **Fix**: Pick one form -- keyword or string -- and use it
-;; consistently with the dataset's column keys. CSVs loaded with
-;; `{:key-fn keyword}` keep the keyword convention used elsewhere
-;; in this book.
+;; **3. Whitespace or punctuation mismatch.** A column literally
+;; named `"sepal length"` (with a space) does not match
+;; `:sepal-length` (with a hyphen):
 
-(let [string-keyed (-> (rdatasets/datasets-iris)
-                       (assoc "species-str"
-                              (mapv str ((rdatasets/datasets-iris)
-                                         :species))))]
-  (-> string-keyed
-      (pj/pose {:color "species-str"})
-      (pj/lay-point :sepal-length :sepal-width)))
+(try
+  (-> (tc/dataset {"sepal length" [5.0 6.0] "sepal width" [3.0 3.5]})
+      (pj/pose :sepal-length :sepal-width)
+      pj/lay-point pj/plot)
+  (catch clojure.lang.ExceptionInfo e (ex-message e)))
 
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (< 1 (count (:colors s))))))])
+(kind/test-last
+ [(fn [msg] (re-find #"Column :sepal-\w+.*not found" msg))])
+
+;; Note that `:key-fn keyword` on `"sepal length"` produces
+;; `:sepal length` -- a keyword whose printed form contains a
+;; space, not the hyphenated form a Clojure reader would normally
+;; produce. Spaces and other special characters in CSV headers
+;; usually need a custom `:key-fn`, e.g.
+;; `(comp keyword #(clojure.string/replace % " " "-"))`.
 
 ;; ## Wrong Chart Type from Inference
 ;;
@@ -101,20 +102,31 @@
 ;; **Cause**: The inference system sees a numeric column and treats it
 ;; as continuous. Continuous color means no grouping -- all data stays
 ;; in one group with a gradient legend.
-;;
-;; **Fix**: Add `:color-type :categorical` to override the inference:
-;;
-;; ```clojure
-;; ;; Gradient (wrong for IDs):
-;; (pj/lay-line data :day :score {:color :subject})
-;;
-;; ;; Discrete groups (correct):
-;; (pj/lay-line data :day :score {:color :subject
-;;                                :color-type :categorical})
-;; ```
-;;
+
+(def subject-scores
+  {:day     [1 2 3 4 1 2 3 4 1 2 3 4]
+   :score   [3 5 4 6 6 7 5 8 8 9 7 10]
+   :subject [1 1 1 1 2 2 2 2 3 3 3 3]})
+
+;; Gradient (wrong for IDs) -- one line for the whole dataset, with
+;; the color sampled from the gradient legend. Plotje also prints a
+;; warning at the REPL pointing at the fix:
+
+(-> subject-scores
+    (pj/lay-line :day :score {:color :subject}))
+
+(kind/test-last [(fn [v] (= 1 (:lines (pj/svg-summary v))))])
+
+;; **Fix**: Add `:color-type :categorical` to override the inference --
+;; three discrete groups, one line per subject:
+
+(-> subject-scores
+    (pj/lay-line :day :score {:color :subject :color-type :categorical}))
+
+(kind/test-last [(fn [v] (= 3 (:lines (pj/svg-summary v))))])
+
 ;; See [Inference Rules](./plotje_book.inference_rules.html)
-;; for a worked example.
+;; for the full mechanism.
 
 ;; ## Numeric Column Rejected by a Categorical-Axis Mark
 ;;

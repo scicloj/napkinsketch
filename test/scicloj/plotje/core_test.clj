@@ -1102,46 +1102,44 @@
     (is (= ["0.001" "0.01" "0.1" "1" "10"]
            (scale/format-log-ticks [0.001 0.01 0.1 1.0 10.0])))))
 
-(deftest string-column-names-test
-  (let [iris (tc/dataset "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
-                         {:key-fn keyword})]
-    (testing "String column refs in 3-arity view"
-      (let [s (-> iris (pj/pose "sepal_length" "sepal_width")
-                  pj/lay-point pj/plot pj/svg-summary)]
-        (is (= 150 (:points s)))))
-    (testing "String columns in vector spec"
-      (let [s (-> iris (pj/pose [["sepal_length" "sepal_width"]])
-                  pj/lay-point pj/plot pj/svg-summary)]
-        (is (= 150 (:points s)))))
-    (testing "String column in mark options"
-      (let [s (-> iris (pj/pose :sepal_length :sepal_width)
-                  (pj/lay-point {:color "species"}) pj/plot pj/svg-summary)]
-        (is (= 150 (:points s)))
-        (is (some #{"setosa"} (:texts s)))))
-    (testing "Dataset with string column names"
-      (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
-            s (-> ds (pj/pose :x :y) pj/lay-point pj/plot pj/svg-summary)]
-        (is (= 3 (:points s)))))
-    (testing "Dataset with string columns + string spec"
-      (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
-            s (-> ds (pj/pose "x" "y") pj/lay-point pj/plot pj/svg-summary)]
-        (is (= 3 (:points s)))))
-    (testing "String in facet"
-      (let [s (-> iris (pj/pose :sepal_length :sepal_width)
-                  (pj/facet "species") pj/lay-point pj/plot pj/svg-summary)]
-        (is (= 3 (:panels s)))))
-    (testing "String in cross"
-      (is (= 9 (count (pj/cross ["a" "b" "c"] ["a" "b" "c"])))))
-    (testing "Literal color string still works"
-      (let [v (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
-                  (pj/pose :x :y)
-                  (pj/lay-point {:color "#FF0000"})
-                  pj/plot)]
-        (is (= 3 (:points (pj/svg-summary v))))))
-    (testing "Typo still gives error at plan time"
+(deftest column-name-matching-is-strict-test
+  ;; Column name matching is strict: a keyword reference does not
+  ;; match a string column name with the same characters and vice
+  ;; versa. Pick one form and use it consistently with the dataset's
+  ;; actual column names.
+  (testing "string refs on a string-keyed dataset work"
+    (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})
+          s (-> ds (pj/pose "x" "y") pj/lay-point pj/plot pj/svg-summary)]
+      (is (= 3 (:points s)))))
+  (testing "keyword refs on a keyword-keyed dataset work"
+    (let [ds (tc/dataset {:x [1 2 3] :y [4 5 6]})
+          s (-> ds (pj/pose :x :y) pj/lay-point pj/plot pj/svg-summary)]
+      (is (= 3 (:points s)))))
+  (testing "keyword refs on a string-keyed dataset throw"
+    (let [ds (tc/dataset {"x" [1 2 3] "y" [4 5 6]})]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"not found in dataset"
+                            (-> ds (pj/pose :x :y) pj/lay-point pj/plot)))))
+  (testing "string refs on a keyword-keyed dataset throw"
+    (let [ds (tc/dataset {:x [1 2 3] :y [4 5 6]})]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"not found in dataset"
+                            (-> ds (pj/pose "x" "y") pj/lay-point pj/plot)))))
+  (testing "string :color falls through to literal CSS when no string column matches"
+    ;; :color "#FF0000" is the canonical literal-color case and must
+    ;; keep working; it does not name any dataset column.
+    (let [v (-> (tc/dataset {:x [1 2 3] :y [4 5 6]})
+                (pj/pose :x :y)
+                (pj/lay-point {:color "#FF0000"})
+                pj/plot)]
+      (is (= 3 (:points (pj/svg-summary v))))))
+  (testing "Typo gives error at plan time"
+    (let [iris (tc/dataset {:sepal_length [5.0 6.0] :sepal_width [3.0 3.5]})]
       (is (thrown? clojure.lang.ExceptionInfo
                    (-> iris (pj/pose :sepl_length :sepal_width)
-                       pj/lay-point pj/plot))))))
+                       pj/lay-point pj/plot)))))
+  (testing "pj/cross is purely structural -- still works with strings"
+    (is (= 9 (count (pj/cross ["a" "b" "c"] ["a" "b" "c"]))))))
 
 (deftest string-column-in-lay-test
   (testing "String column names in lay-point directly (no explicit pj/pose)"
@@ -1411,22 +1409,29 @@
     (is (some? (-> {:x [1.0 2.0 3.0] :y [4.0 5.0 6.0]}
                    (pj/lay-point :x :y) pj/plan)))))
 
-(deftest aesthetic-cross-type-lookup-test
-  ;; persona-skeptical-round-4 F2: aesthetic columns must work whether
-  ;; the dataset has keyword or string column names. Build-legend used
-  ;; to crash with "No implementation of method :elemwise-datatype" when
-  ;; given a string-keyed dataset and a keyword color ref.
-  (testing "string-keyed dataset + keyword :color produces a working plot"
+(deftest aesthetic-cross-type-lookup-throws-test
+  ;; Strict matching: a keyword reference does not satisfy a string
+  ;; column name and vice versa. Position references that mismatch
+  ;; throw at validation time. String :color references that do not
+  ;; match any column fall through to literal CSS color (string
+  ;; :color is the documented disambiguation case).
+  (testing "string-keyed dataset + keyword position throws"
     (let [str-ds (tc/dataset {"x" [1.0 2.0 3.0]
                               "y" [10.0 20.0 30.0]
-                              "g" ["A" "B" "A"]})
-          pl (-> str-ds (pj/lay-point :x :y {:color :g}) pj/plan)]
-      (is (= 1 (count (:panels pl))))
-      (is (some? (:legend pl)) "legend built without crash")))
-
-  (testing "keyword-keyed dataset + string :color produces a working plot"
+                              "g" ["A" "B" "A"]})]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"not found in dataset"
+                            (-> str-ds (pj/lay-point :x :y {:color :g}) pj/plan)))))
+  (testing "keyword-keyed dataset + string position throws"
+    (let [kw-ds (tc/dataset {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0] :g ["A" "B" "A"]})]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"not found in dataset"
+                            (-> kw-ds (pj/lay-point "x" "y" {:color "g"}) pj/plan)))))
+  (testing "keyword-keyed dataset + string :color that is a valid CSS color falls through"
+    ;; \"red\" doesn't match any column, so :color is treated as a
+    ;; literal CSS color -- the plot renders without grouping.
     (let [kw-ds (tc/dataset {:x [1.0 2.0 3.0] :y [10.0 20.0 30.0] :g ["A" "B" "A"]})
-          pl (-> kw-ds (pj/lay-point :x :y {:color "g"}) pj/plan)]
+          pl (-> kw-ds (pj/lay-point :x :y {:color "red"}) pj/plan)]
       (is (= 1 (count (:panels pl)))))))
 
 (deftest layer-x-y-override-test

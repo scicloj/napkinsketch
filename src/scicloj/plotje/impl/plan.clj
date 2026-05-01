@@ -281,15 +281,14 @@
           col)))))
 
 (defn- aesthetic-col
-  "Look up an aesthetic column from a resolved draft layer's :data, handling
-   keyword/string column-name mismatches transparently. Returns nil when
-   the draft-layer has no :data, no value at `k`, or the column doesn't exist."
+  "Look up an aesthetic column from a resolved draft layer's :data.
+   Returns nil when the draft-layer has no :data, no value at `k`, or
+   the column name does not literally match a dataset column."
   [draft-layer k]
   (let [ds (:data draft-layer)
-        ref (get draft-layer k)]
-    (when (and ds ref)
-      (let [resolved-name (resolve/resolve-col-name ds ref)]
-        (get ds resolved-name)))))
+        col-name (get draft-layer k)]
+    (when (and ds col-name)
+      (get ds col-name))))
 
 (defn- filter-infinities
   "Filter rows containing non-finite values on numeric x/y and numeric

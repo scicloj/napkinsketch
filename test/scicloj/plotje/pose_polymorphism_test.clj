@@ -520,10 +520,12 @@
                 (pj/lay-point :a :b))]
       (is (= {:x :a :y :b} (:mapping f)))
       (is (= 1 (count (:layers f))))))
-  (testing "string/keyword equivalence (Rule LI2): :a matches \"a\""
-    (is (= 1 (count (:layers (-> iris
-                                 (pj/pose :a :b)
-                                 (pj/lay-point "a" "b"))))))))
+  (testing "string vs keyword: distinct column references, so position conflicts"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"conflict with the pose's existing position"
+                          (-> iris
+                              (pj/pose :a :b)
+                              (pj/lay-point "a" "b"))))))
 
 ;; ============================================================
 ;; Layer structural keys -- :stat, :position, :mark (Decision 1)

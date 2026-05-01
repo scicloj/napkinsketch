@@ -349,10 +349,7 @@
                                 :as-maps)))
                 ;; identity path — derive tile bounds from point coordinates
                 (let [data (:data draft-layer)
-                      ;; Resolve col ref against the dataset so keyword/string
-                      ;; mismatches still find the column.
-                      resolved-fill (when fill-col (resolve/resolve-col-name data fill-col))
-                      fill-vals (when resolved-fill (data resolved-fill))
+                      fill-vals (when fill-col (data fill-col))
                       f-lo (when (seq fill-vals) (dfn/reduce-min fill-vals))
                       f-hi (when (seq fill-vals) (dfn/reduce-max fill-vals))
                       all-xs (mapcat :xs (:points stat))

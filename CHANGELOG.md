@@ -837,11 +837,8 @@ Or arrange explicit sub-poses for mixed layer types per panel:
   (-> data (pj/lay-line :displ :cty))])
 ```
 
-String-vs-keyword equivalence (Rule LI2) is honored by the check:
-`:a` and `"a"` are the same column ref and don't trigger the
-rejection. The same-column case (`(pj/lay-point pose :a :b)` on a
-leaf with `:mapping {:x :a :y :b}`) continues to pass through
-silently.
+The same-column case (`(pj/lay-point pose :a :b)` on a leaf with
+`:mapping {:x :a :y :b}`) continues to pass through silently.
 
 ### Composite `:share-scales` is now a plot option
 

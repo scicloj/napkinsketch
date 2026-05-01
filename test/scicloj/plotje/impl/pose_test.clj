@@ -186,13 +186,13 @@
                {:poses [{:layers [] :mapping {:x :c :y :d}}]}
                {:x :a :y :b}))))
 
-  (testing "keyword/string tolerance -- :x matches \"x\" on either side"
-    (is (= [0] (pose/last-matching-leaf-path
-                {:poses [{:layers [] :mapping {:x "a" :y "b"}}]}
-                {:x :a :y :b})))
-    (is (= [0] (pose/last-matching-leaf-path
-                {:poses [{:layers [] :mapping {:x :a :y :b}}]}
-                {:x "a" :y "b"}))))
+  (testing "strict matching -- :x and \"x\" are distinct column references"
+    (is (nil? (pose/last-matching-leaf-path
+               {:poses [{:layers [] :mapping {:x "a" :y "b"}}]}
+               {:x :a :y :b})))
+    (is (nil? (pose/last-matching-leaf-path
+               {:poses [{:layers [] :mapping {:x :a :y :b}}]}
+               {:x "a" :y "b"}))))
 
   (testing "ancestor :mapping inherits into a bare leaf (resolve-tree merge)"
     (is (= [0] (pose/last-matching-leaf-path

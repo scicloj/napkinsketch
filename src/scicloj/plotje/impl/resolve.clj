@@ -70,24 +70,19 @@
 ;; ---- Faceting ----
 
 (defn resolve-col-name
-  "Find the actual column name in a dataset that matches a column reference.
-   Handles keyword/string mismatch: if ref is :x, checks for both :x and \"x\".
-   Returns the matching name, or ref unchanged if no match is found."
-  [ds ref]
-  (when (and ds ref)
-    (let [names (set (tc/column-names ds))]
-      (cond
-        (contains? names ref) ref
-        (and (keyword? ref) (contains? names (name ref))) (name ref)
-        (and (string? ref) (contains? names (keyword ref))) (keyword ref)
-        :else ref))))
+  "Look up a column name in a dataset. Returns the name unchanged
+   whether or not the dataset contains it; the existence check is
+   informational. Matching is strict: `:x` does not match a column
+   literally named `\"x\"`. The reference and the dataset column name
+   must be identical (same type, same characters)."
+  [_ds ref]
+  ref)
 
 ;; ---- Column Type Detection ----
 
 (defn column-type
   "Classify a dataset column as :categorical, :numerical, or :temporal.
-   Resolves keyword/string column-name mismatches via resolve-col-name
-   so callers don't have to."
+   The column name must literally match a column in the dataset."
   [ds col]
   (let [resolved (resolve-col-name ds col)
         c (when resolved (ds resolved))
@@ -165,8 +160,6 @@
   "Detect x and y column types (:categorical, :numerical, :temporal).
    Temporal columns are converted to epoch-ms numbers; their original
    extents (as LocalDateTime) are preserved for wadogo :datetime ticks.
-   Resolves column names to match the dataset's actual column names
-   (handles keyword/string mismatch).
    Returns a map with keys :ds, :x-type, :y-type, :x-temporal?, :y-temporal?,
    :x-temporal-extent, :y-temporal-extent, :x-resolved, :y-resolved."
   [ds v]
@@ -230,20 +223,12 @@
    :size, :size-is-col?, :fixed-size, :alpha, :alpha-is-col?, :fixed-alpha,
    :text-col."
   [ds v]
-  (let [color-val (let [cv (:color v)]
-                    (if (and (string? cv))
-                      ;; String :color — check if it matches a dataset column name
-                      (let [names (set (tc/column-names ds))]
-                        (cond
-                          (contains? names cv) cv
-                          (contains? names (keyword cv)) (keyword cv)
-                          :else cv))
-                      cv))
+  (let [color-val (:color v)
         color-is-col? (and color-val (column-ref? color-val)
-                           ;; After resolution, if color-val is a string that doesn't
-                           ;; match any column, it's a literal color
-                           (let [names (set (tc/column-names ds))]
-                             (contains? names (resolve-col-name ds color-val))))
+                           ;; A string :color is a column reference only when a
+                           ;; column with that exact name exists; otherwise it
+                           ;; is treated as a literal CSS color.
+                           (contains? (set (tc/column-names ds)) color-val))
         c-type (when color-is-col?
                  (or (:color-type v) (column-type ds color-val)))
         fixed-color (when (and color-val (not color-is-col?)) color-val)
@@ -329,7 +314,6 @@
   "Resolve a single draft layer: infer column types, aesthetics, grouping, and layer type.
    Delegates to `infer-column-types`, `resolve-aesthetics`, `infer-grouping`,
    and `infer-layer-type` — each named for the inference step it performs.
-   Resolves column names to match the dataset's actual names (keyword/string).
    Also normalizes user-facing shorthand options:
      - :bandwidth → :cfg {:<stat>-bandwidth ...} (routed per stat)
      - :tile with :fill → stat :identity"

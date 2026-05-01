@@ -509,12 +509,13 @@ composite-pose
 ;;
 ;; When `lay-*` carries `:x`/`:y` and at least one leaf has matching
 ;; effective `:x`/`:y` (after ancestor merge), the layer attaches to
-;; the **last such leaf in left-to-right depth-first order**.
-;; Matching is keyword/string tolerant. The layer's own `:mapping`
-;; carries the call's position. This is the same "most recent
-;; matching leaf" rule the teaching chapters describe, formalized
-;; for composite poses where reading-order depth-first traversal
-;; gives the precise answer.
+;; the **last such leaf in left-to-right depth-first order**. The
+;; layer's own `:mapping` carries the call's position. This is the
+;; same "most recent matching leaf" rule the teaching chapters
+;; describe, formalized for composite poses where reading-order
+;; depth-first traversal gives the precise answer. Matching is by
+;; strict equality: a column reference is the keyword or string the
+;; user typed, and the two forms are not interchangeable.
 
 (-> iris
     (pj/pose :sepal-length :sepal-width)
@@ -528,18 +529,6 @@ composite-pose
          (= 0 (count (:layers (second (:poses pose)))))
          (= :point
             (:layer-type (first (:layers (first (:poses pose))))))))])
-
-;; Keyword/string tolerance -- the string form matches a keyword
-;; leaf (LP2 with LI2 keyword/string equivalence):
-
-(-> iris
-    (pj/pose :sepal-length :sepal-width)
-    (pj/lay-point "sepal-length" "sepal-width"))
-
-(kind/test-last
- [(fn [pose]
-    (and (not (contains? pose :poses))
-         (= 1 (count (:layers pose)))))])
 
 ;; **Note on leaf-input with non-matching position (rejected).**
 ;; A panel has a single x-axis and a single y-axis. When the
@@ -650,35 +639,6 @@ composite-pose
 
 (kind/test-last
  [(fn [msg] (re-find #"Cannot auto-infer columns" msg))])
-
-;; ### Rule LI2: column references compare tolerantly between keywords and strings
-;;
-;; When matching column refs -- whether a `lay-*` call's position
-;; against a leaf's, or inside scope resolution -- `:x` and `"x"`
-;; are treated as the same column. The stored form is preserved
-;; as the user typed it; tolerance is a comparison property only.
-
-(-> iris
-    (pj/pose :sepal-length :sepal-width)
-    (pj/lay-point "sepal-length" "sepal-width"))
-
-(kind/test-last
- [(fn [pose]
-    (and (not (contains? pose :poses))
-         (= 1 (count (:layers pose)))))])
-
-;; Storage preserves the user's input -- if you type a string, the
-;; pose holds a string:
-
-(-> iris
-    (pj/pose "sepal-length" "sepal-width"))
-
-(-> iris
-    (pj/pose "sepal-length" "sepal-width")
-    pose-summary)
-
-(kind/test-last
- [(fn [pose] (= {:x "sepal-length" :y "sepal-width"} (:mapping pose)))])
 
 ;; ---
 ;; ## Scope

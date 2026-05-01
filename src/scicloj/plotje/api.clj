@@ -1062,15 +1062,12 @@
 
 (defn- validate-columns-present
   "Throw a helpful error if any of `refs` is absent from the
-   dataset's column-name set. Tolerates keyword/string mismatches
-   the same way resolve-col-name does."
+   dataset's column-name set. Matching is strict: a keyword reference
+   does not satisfy a string column name with the same characters and
+   vice versa."
   [refs ds]
   (let [cols (set (tc/column-names ds))
-        matches? (fn [r]
-                   (or (contains? cols r)
-                       (and (keyword? r) (contains? cols (name r)))
-                       (and (string? r) (contains? cols (keyword r)))))
-        missing (vec (remove matches? refs))]
+        missing (vec (remove cols refs))]
     (when (seq missing)
       (throw (ex-info (str "Cannot attach data: pose references column(s) "
                            missing
@@ -1336,19 +1333,11 @@
 
       (seq position-mapping)
       (let [leaf-mapping (:mapping fr)
-            ;; Normalize column refs for comparison: keyword "foo" and
-            ;; string "foo" are equivalent column references per Rule
-            ;; LI2 (string-tolerance).
-            same-col? (fn [a b]
-                        (or (= a b)
-                            (and (or (keyword? a) (string? a))
-                                 (or (keyword? b) (string? b))
-                                 (= (name a) (name b)))))
             disagreements (for [k [:x :y]
                                 :let [pos-v (get position-mapping k)
                                       leaf-v (get leaf-mapping k)]
                                 :when (and pos-v leaf-v
-                                           (not (same-col? pos-v leaf-v)))]
+                                           (not= pos-v leaf-v))]
                             [k pos-v leaf-v])]
         (when (seq disagreements)
           (throw (ex-info

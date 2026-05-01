@@ -590,27 +590,31 @@ two-panel
 (kind/test-last [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
 ;; **Coming from ggplot2.** In ggplot2, `colour="blue"` is always a
-;; literal CSS color. In Plotje, a string `:color` is interpreted as
-;; a column reference if a column with that name exists in the data,
-;; and falls back to a literal CSS color otherwise. Hex codes like
+;; literal CSS color. In Plotje, a string `{:color "blue"}` is
+;; interpreted as a column reference if **a column with that exact
+;; name exists in the data**, otherwise as a literal CSS color.
+;; Matching is strict: a string only matches a string column name,
+;; and a keyword only matches a keyword column name. Hex codes like
 ;; `"#0000ff"` cannot collide with a column name and are unambiguous.
 ;; A keyword `{:color :blue}` is always a column reference and throws
-;; a clear error if the column is missing.
+;; if the column is missing.
 ;;
-;; The `:blue` column wins -- three palette colors render, not a
-;; single literal blue:
+;; The disambiguation matters when the dataset uses string column
+;; names. With a string column literally named `"blue"`, the column
+;; wins -- three palette colors render, not a single literal blue:
 
-(-> {:x [1 2 3] :y [1 2 3] :blue ["a" "b" "c"]}
-    (pj/lay-point :x :y {:color "blue"}))
+(-> (tc/dataset {"x" [1 2 3] "y" [1 2 3] "blue" ["a" "b" "c"]})
+    (pj/lay-point "x" "y" {:color "blue"}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)
                                colors (disj (:colors s) "none")]
                            (= 3 (count colors))))])
 
-;; No `:blue` column -- "blue" parses as a literal CSS color:
+;; Same string `:color`, dataset without a `"blue"` column -- "blue"
+;; parses as a literal CSS color:
 
-(-> {:x [1 2 3] :y [1 2 3]}
-    (pj/lay-point :x :y {:color "blue"}))
+(-> (tc/dataset {"x" [1 2 3] "y" [1 2 3]})
+    (pj/lay-point "x" "y" {:color "blue"}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)
                                colors (disj (:colors s) "none")]

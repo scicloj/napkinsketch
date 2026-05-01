@@ -642,12 +642,14 @@
       (is (every? #(empty? (:layers %)) (:poses result))
           "no leaf was modified -- the layer is sketch-level"))))
 
-(deftest composite-lay-keyword-string-tolerance-test
-  (testing "lay-* :x-kw :y-kw matches leaf with string-named mapping"
+(deftest composite-lay-keyword-string-strict-test
+  (testing "lay-* with keyword :x/:y does not match a leaf with string-named mapping"
     (let [fr {:poses [{:layers [] :mapping {:x "x" :y "y"}}]}
           result (pj/lay-point fr :x :y)]
-      (is (= 1 (count (get-in result [:poses 0 :layers])))
-          "matched despite keyword vs string column-ref divergence"))))
+      (is (zero? (count (get-in result [:poses 0 :layers])))
+          "the existing leaf keeps no new layer -- keyword :x and string \"x\" are distinct")
+      (is (= 2 (count (:poses result)))
+          "a new leaf was appended at the composite root for the keyword position"))))
 
 (deftest composite-lay-ancestor-mapping-inherits-test
   (testing "ancestor :mapping with :x/:y makes a bare leaf matchable"

@@ -289,33 +289,24 @@
   [path]
   (into [] (mapcat (fn [i] [:poses i])) path))
 
-(defn canonicalize-col
-  "Canonicalize a column ref to a string key for matching. A keyword
-   and a string with the same name are treated as the same column,
-   so `:x` and `\"x\"` resolve identically during leaf matching."
-  [col]
-  (cond
-    (nil? col) nil
-    (keyword? col) (name col)
-    :else (str col)))
-
 (defn last-matching-leaf-path
   "Walk `pose` in left-to-right DFS order. Return the :path of the
    last leaf whose effective :x and :y (after ancestor-merge of
-   :mapping) match `position-mapping`. Matching is keyword/string
-   tolerant. Returns nil if no leaf matches.
+   :mapping) match `position-mapping`. Matching is strict equality:
+   `:x` and `\"x\"` are different column references. Returns nil if no
+   leaf matches.
 
    `position-mapping` may carry either or both of :x and :y; a nil
    value matches a leaf whose effective mapping has no entry for that
    axis. Matching is against resolved positional mappings only --
    a bare leaf (no :x/:y) matches a bare position mapping."
   [pose position-mapping]
-  (let [px (canonicalize-col (:x position-mapping))
-        py (canonicalize-col (:y position-mapping))]
+  (let [px (:x position-mapping)
+        py (:y position-mapping)]
     (->> (resolve-tree pose)
          (keep (fn [leaf]
-                 (when (and (= (canonicalize-col (get-in leaf [:mapping :x])) px)
-                            (= (canonicalize-col (get-in leaf [:mapping :y])) py))
+                 (when (and (= (get-in leaf [:mapping :x]) px)
+                            (= (get-in leaf [:mapping :y]) py))
                    (:path leaf))))
          last)))
 
@@ -417,22 +408,13 @@
                  effective))))
 
 (defn- col-values
-  "Non-nil values for a column ref from a dataset, tolerant of
-   keyword/string name mismatches (tablecloth sometimes stores names
-   as strings)."
+  "Non-nil values for a column reference from a dataset. The reference
+   must match a column name literally (a keyword does not match a
+   string column with the same characters and vice versa)."
   [ds col-ref]
   (when (and ds col-ref)
-    (let [col-names (set (tc/column-names ds))
-          col-name (cond
-                     (contains? col-names col-ref) col-ref
-                     (and (keyword? col-ref)
-                          (contains? col-names (name col-ref)))
-                     (name col-ref)
-                     (and (string? col-ref)
-                          (contains? col-names (keyword col-ref)))
-                     (keyword col-ref))]
-      (when col-name
-        (remove nil? (ds col-name))))))
+    (when (contains? (set (tc/column-names ds)) col-ref)
+      (remove nil? (ds col-ref)))))
 
 (defn- numeric-domain
   "[lo hi] across the numeric values in a sequence, or nil if none."
@@ -703,18 +685,14 @@
 (defn- validate-columns
   "Validate that every aesthetic column reference in the resolved
    mapping names a real column in the dataset. Rejects heterogeneous
-   object columns (mixed numbers/strings/keywords)."
+   object columns (mixed numbers/strings/keywords). Matching is
+   strict: a keyword reference does not match a string column name
+   and vice versa."
   [resolved d]
   (when d
     (let [col-names (set (tc/column-names d))
-          col-exists? (fn [col]
-                        (or (col-names col)
-                            (and (keyword? col) (col-names (name col)))
-                            (and (string? col) (col-names (keyword col)))))
-          col-lookup (fn [col]
-                       (or (get d col)
-                           (and (keyword? col) (get d (name col)))
-                           (and (string? col) (get d (keyword col)))))]
+          col-exists? col-names
+          col-lookup #(get d %)]
       (doseq [k defaults/column-keys
               :let [col (get resolved k)]
               :when (and col
