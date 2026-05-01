@@ -336,7 +336,7 @@
 
 
 (def
- v60_l581
+ v60_l582
  (def
   annotated
   (->
@@ -345,28 +345,28 @@
    (pj/lay-rule-h {:y-intercept 3.0}))))
 
 
-(def v61_l586 annotated)
+(def v61_l587 annotated)
 
 
-(def v62_l588 (kind/pprint (nth (:layers annotated) 1)))
+(def v62_l589 (kind/pprint (nth (:layers annotated) 1)))
 
 
 (deftest
- t63_l590
+ t63_l591
  (is
   ((fn
     [layer]
     (and
      (= :rule-h (:layer-type layer))
      (= 3.0 (get-in layer [:mapping :y-intercept]))))
-   v62_l588)))
+   v62_l589)))
 
 
-(def v65_l602 (kind/pprint (:legend my-plan)))
+(def v65_l603 (kind/pprint (:legend my-plan)))
 
 
 (deftest
- t66_l604
+ t66_l605
  (is
   ((fn
     [leg]
@@ -377,11 +377,11 @@
      (=
       ["setosa" "versicolor" "virginica"]
       (mapv :label (:entries leg)))))
-   v65_l602)))
+   v65_l603)))
 
 
 (def
- v68_l628
+ v68_l629
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -390,18 +390,18 @@
 
 
 (deftest
- t69_l632
- (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v68_l628)))
+ t69_l633
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v68_l629)))
 
 
-(def v71_l646 (def my-membrane (pj/plan->membrane my-plan)))
+(def v71_l647 (def my-membrane (pj/plan->membrane my-plan)))
 
 
-(def v73_l652 (kind/pprint my-membrane))
+(def v73_l653 (kind/pprint my-membrane))
 
 
 (deftest
- t74_l654
+ t74_l655
  (is
   ((fn
     [m]
@@ -425,17 +425,17 @@
       (=
        ["Iris" "sepal width" "sepal length" "species"]
        (vec (take 4 texts))))))
-   v73_l652)))
+   v73_l653)))
 
 
-(def v76_l677 (def my-plot (pj/plan->plot my-plan :svg {})))
+(def v76_l678 (def my-plot (pj/plan->plot my-plan :svg {})))
 
 
-(def v78_l684 (kind/hiccup my-plot))
+(def v78_l685 (kind/hiccup my-plot))
 
 
 (deftest
- t79_l686
+ t79_l687
  (is
   ((fn
     [v]
@@ -445,11 +445,11 @@
       (= :svg (first my-plot))
       (= 150 (:points s))
       (= 600.0 (double (:width s))))))
-   v78_l684)))
+   v78_l685)))
 
 
 (def
- v81_l702
+ v81_l703
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -457,18 +457,18 @@
 
 
 (deftest
- t82_l706
- (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v81_l702)))
+ t82_l707
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v81_l703)))
 
 
-(def v84_l712 (count (c2d/find-palette #".*")))
+(def v84_l713 (count (c2d/find-palette #".*")))
 
 
-(deftest t85_l714 (is ((fn [n] (<= 5000 n)) v84_l712)))
+(deftest t85_l715 (is ((fn [n] (<= 5000 n)) v84_l713)))
 
 
 (def
- v87_l726
+ v87_l727
  (->
   {:x (range 50), :y (range 50), :c (range 50)}
   (pj/lay-point :x :y {:color :c})
@@ -476,7 +476,7 @@
 
 
 (deftest
- t88_l730
+ t88_l731
  (is
   ((fn
     [v]
@@ -491,55 +491,55 @@
           {:x (range 50), :y (range 50), :c (range 50)}
           (pj/lay-point :x :y {:color :c})
           (pj/options {:color-scale :inferno}))))))))
-   v87_l726)))
+   v87_l727)))
 
 
 (def
- v90_l756
+ v90_l757
  (select-keys
   (pj/config)
   [:width :height :theme :palette :color-scale]))
 
 
 (deftest
- t91_l758
+ t91_l759
  (is
   ((fn
     [m]
     (and (number? (:width m)) (number? (:height m)) (map? (:theme m))))
-   v90_l756)))
+   v90_l757)))
 
 
-(def v93_l775 (sort (keys pj/plot-option-docs)))
+(def v93_l776 (sort (keys pj/plot-option-docs)))
 
 
 (deftest
- t94_l777
+ t94_l778
  (is
   ((fn
     [ks]
     (and
      (= 14 (count ks))
      (some #{:caption :title :y-label :x-label :subtitle} ks)))
-   v93_l775)))
+   v93_l776)))
 
 
-(def v96_l798 (sort (keys pj/layer-option-docs)))
+(def v96_l799 (sort (keys pj/layer-option-docs)))
 
 
 (deftest
- t97_l800
+ t97_l801
  (is
   ((fn
     [ks]
     (and
      (pos? (count ks))
      (some #{:group :color :size :alpha :position} ks)))
-   v96_l798)))
+   v96_l799)))
 
 
 (def
- v99_l813
+ v99_l814
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -547,11 +547,11 @@
 
 
 (deftest
- t100_l817
+ t100_l818
  (is
   ((fn
     [pose]
     (let
      [s (str (pj/plot pose))]
      (and (re-find #"data-tooltip" s) (re-find #"nsk-brush-sel" s))))
-   v99_l813)))
+   v99_l814)))

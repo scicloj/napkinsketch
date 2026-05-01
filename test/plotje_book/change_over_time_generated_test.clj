@@ -13,7 +13,7 @@
   wave
   {:x (range 30),
    :y
-   (map (fn* [p1__85297#] (Math/sin (* p1__85297# 0.3))) (range 30))}))
+   (map (fn* [p1__84734#] (Math/sin (* p1__84734# 0.3))) (range 30))}))
 
 
 (def v4_l21 (-> wave (pj/lay-line :x :y)))
@@ -31,47 +31,59 @@
 
 
 (def
- v7_l32
+ v7_l38
+ (def
+  waves-wide
+  (tc/dataset
+   {:x (range 30),
+    :sin
+    (map (fn* [p1__84735#] (Math/sin (* p1__84735# 0.3))) (range 30)),
+    :cos
+    (map
+     (fn* [p1__84736#] (Math/cos (* p1__84736# 0.3)))
+     (range 30))})))
+
+
+(def
+ v8_l44
  (def
   waves
-  {:x (concat (range 30) (range 30)),
-   :y
-   (concat
-    (map (fn* [p1__85298#] (Math/sin (* p1__85298# 0.3))) (range 30))
-    (map (fn* [p1__85299#] (Math/cos (* p1__85299# 0.3))) (range 30))),
-   :fn (concat (repeat 30 :sin) (repeat 30 :cos))}))
+  (tc/pivot->longer
+   waves-wide
+   [:sin :cos]
+   {:target-columns :function, :value-column-name :y})))
 
 
-(def v8_l37 (-> waves (pj/lay-line :x :y {:color :fn})))
+(def v9_l49 (-> waves (pj/lay-line :x :y {:color :function})))
 
 
 (deftest
- t9_l40
+ t10_l52
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 2 (:lines s)))))
-   v8_l37)))
+   v9_l49)))
 
 
-(def v11_l48 (-> wave (pj/lay-line :x :y {:size 4})))
+(def v12_l60 (-> wave (pj/lay-line :x :y {:size 4})))
 
 
 (deftest
- t12_l51
+ t13_l63
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:lines s)))))
-   v11_l48)))
+   v12_l60)))
 
 
 (def
- v14_l59
+ v15_l71
  (def
   growth
   {:day [1 2 3 4 5 1 2 3 4 5],
@@ -80,7 +92,7 @@
 
 
 (def
- v15_l64
+ v16_l76
  (->
   growth
   (pj/pose :day :value {:color :group})
@@ -89,34 +101,34 @@
 
 
 (deftest
- t16_l69
+ t17_l81
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 10 (:points s)) (= 2 (:lines s)))))
-   v15_l64)))
+   v16_l76)))
 
 
 (def
- v18_l77
+ v19_l89
  (-> {:x [1 2 3 4 5], :y [2 4 1 5 3]} (pj/lay-step :x :y) pj/lay-point))
 
 
 (deftest
- t19_l82
+ t20_l94
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 5 (:points s)) (= 1 (:lines s)))))
-   v18_l77)))
+   v19_l89)))
 
 
 (def
- v21_l90
+ v22_l102
  (->
   growth
   (pj/pose :day :value {:color :group})
@@ -125,18 +137,18 @@
 
 
 (deftest
- t22_l95
+ t23_l107
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 10 (:points s)) (= 2 (:lines s)))))
-   v21_l90)))
+   v22_l102)))
 
 
 (def
- v24_l104
+ v25_l116
  (->
   {:x (concat (range 5) (range 5) (range 5)),
    :y (concat [1 2 3 4 5] [2 2 2 2 2] [3 1 2 1 2]),
@@ -145,38 +157,38 @@
 
 
 (deftest
- t25_l109
+ t26_l121
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:lines s)))))
-   v24_l104)))
+   v25_l116)))
 
 
 (def
- v27_l117
+ v28_l129
  (->
   {:x (range 30),
    :y
-   (map (fn* [p1__85300#] (Math/sin (* p1__85300# 0.3))) (range 30))}
+   (map (fn* [p1__84737#] (Math/sin (* p1__84737# 0.3))) (range 30))}
   (pj/lay-area :x :y)))
 
 
 (deftest
- t28_l121
+ t29_l133
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:polygons s)))))
-   v27_l117)))
+   v28_l129)))
 
 
 (def
- v30_l129
+ v31_l141
  (->
   {:x (concat (range 10) (range 10) (range 10)),
    :y
@@ -189,18 +201,18 @@
 
 
 (deftest
- t31_l136
+ t32_l148
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 3 (:polygons s)))))
-   v30_l129)))
+   v31_l141)))
 
 
 (def
- v33_l148
+ v34_l160
  (def
   temp-pose
   (->
@@ -216,11 +228,11 @@
    pj/lay-point)))
 
 
-(def v34_l155 temp-pose)
+(def v35_l167 temp-pose)
 
 
 (deftest
- t35_l157
+ t36_l169
  (is
   ((fn
     [v]
@@ -235,13 +247,13 @@
       (= 6 (:points s))
       (= 1 (:lines s))
       (some
-       (fn* [p1__85301#] (re-find #"[A-Z][a-z]{2}" p1__85301#))
+       (fn* [p1__84738#] (re-find #"[A-Z][a-z]{2}" p1__84738#))
        tick-labels))))
-   v34_l155)))
+   v35_l167)))
 
 
 (def
- v37_l174
+ v38_l186
  (def
   months
   [#inst "2024-01-01T00:00:00.000-00:00"
@@ -253,7 +265,7 @@
 
 
 (def
- v38_l178
+ v39_l190
  (->
   {:date (concat months months),
    :temperature [3 5 9 14 19 23 15 17 19 22 25 28],
@@ -263,18 +275,18 @@
 
 
 (deftest
- t39_l186
+ t40_l198
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 12 (:points s)) (= 2 (:lines s)))))
-   v38_l178)))
+   v39_l190)))
 
 
 (def
- v41_l195
+ v42_l207
  (->
   {:date
    [#inst "2024-01-01T00:00:00.000-00:00"
@@ -288,18 +300,51 @@
 
 
 (deftest
- t42_l200
+ t43_l212
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (= 1 (:polygons s)))))
-   v41_l195)))
+   v42_l207)))
 
 
 (def
- v44_l214
+ v45_l225
+ (->
+  {:date
+   [#inst "2024-01-01T00:00:00.000-00:00"
+    #inst "2024-02-01T00:00:00.000-00:00"
+    #inst "2024-03-01T00:00:00.000-00:00"
+    #inst "2024-04-01T00:00:00.000-00:00"
+    #inst "2024-05-01T00:00:00.000-00:00"
+    #inst "2024-06-01T00:00:00.000-00:00"
+    #inst "2024-07-01T00:00:00.000-00:00"
+    #inst "2024-08-01T00:00:00.000-00:00"
+    #inst "2024-09-01T00:00:00.000-00:00"
+    #inst "2024-10-01T00:00:00.000-00:00"
+    #inst "2024-11-01T00:00:00.000-00:00"
+    #inst "2024-12-01T00:00:00.000-00:00"],
+   :sales [10 14 12 18 22 19 25 28 24 30 27 33]}
+  (pj/pose :date :sales)
+  pj/lay-line
+  pj/lay-smooth))
+
+
+(deftest
+ t46_l234
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 1 (:panels s)) (= 2 (:lines s)))))
+   v45_l225)))
+
+
+(def
+ v48_l247
  (->
   {:t (range 12), :delta [-3 -1 -2 0 2 4 -1 3 5 -2 1 4]}
   (pj/lay-line :t :delta)
@@ -308,11 +353,11 @@
 
 
 (deftest
- t45_l220
+ t49_l253
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 12 (:points s)) (= 2 (:lines s)))))
-   v44_l214)))
+   v48_l247)))

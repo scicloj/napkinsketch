@@ -912,6 +912,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </div>
 </div>
+<p>The “Position” column shows each layer-type’s registered default. A few marks (<code>:bar</code>, <code>:value-bar</code>, <code>:lollipop</code>, <code>:boxplot</code>, <code>:violin</code>) carry no registered default and the table therefore lists <code>:identity</code> for them, but they apply <code>:dodge</code> at extract time when a categorical color or group splits the data into multiple sub-bars per category. So a colored <code>(pj/lay-bar :species {:color :group})</code> produces dodged bars even though the table shows <code>:identity</code> for <code>:bar</code>. To force a different layout, pass <code>:position</code> explicitly in the layer opts.</p>
 </section>
 <section id="marks" class="level2">
 <h2 class="anchored" data-anchor-id="marks">Marks</h2>
@@ -1436,6 +1437,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 <td><div class="code-copy-outer-scaffold"><div>
 <pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:confidence-band
+ :level
  :bootstrap-resamples
  :bandwidth
  :size
@@ -1480,7 +1482,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:boxplot</code></pre>
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 <td><div class="code-copy-outer-scaffold"><div>
-<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:size]</code></pre>
+<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:size :box-width]</code></pre>
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 </tr>
 <tr class="odd">
@@ -1512,7 +1514,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:errorbar</code></pre>
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 <td><div class="code-copy-outer-scaffold"><div>
-<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:y-min :y-max :size :nudge-x :nudge-y]</code></pre>
+<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:y-min :y-max :size :cap-width :nudge-x :nudge-y]</code></pre>
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 </tr>
 <tr class="odd">
@@ -1528,7 +1530,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:text</code></pre>
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 <td><div class="code-copy-outer-scaffold"><div>
-<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:text :nudge-x :nudge-y]</code></pre>
+<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:text :font-size :nudge-x :nudge-y]</code></pre>
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 </tr>
 <tr class="odd">
@@ -1536,7 +1538,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:label</code></pre>
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 <td><div class="code-copy-outer-scaffold"><div>
-<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:text :nudge-x :nudge-y]</code></pre>
+<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:text :font-size :nudge-x :nudge-y]</code></pre>
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 </tr>
 <tr class="even">
@@ -1544,7 +1546,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre class="sourceCode language-clojure source-clojure bg-light code-with-copy"><code>:rug</code></pre>
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 <td><div class="code-copy-outer-scaffold"><div>
-<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:side]</code></pre>
+<pre class="sourceCode language-clojure printed-clojure code-with-copy"><code>[:side :length]</code></pre>
 </div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></td>
 </tr>
 <tr class="odd">

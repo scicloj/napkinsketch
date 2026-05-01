@@ -235,7 +235,7 @@
   setosa
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__83411#] (= "setosa" (:species p1__83411#))))))
+   (fn* [p1__82829#] (= "setosa" (:species p1__82829#))))))
 
 
 (def
@@ -244,7 +244,7 @@
   versicolor
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__83412#] (= "versicolor" (:species p1__83412#))))))
+   (fn* [p1__82830#] (= "versicolor" (:species p1__82830#))))))
 
 
 (def
@@ -686,7 +686,26 @@
 
 
 (def
- v136_l683
+ v136_l685
+ (->
+  {:x [-1 1 -1 1], :y [-1 -1 1 1]}
+  (pj/lay-point :x :y)
+  (pj/coord :fixed)))
+
+
+(deftest
+ t137_l689
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 4 (:points s)) (< (:width s) 600))))
+   v136_l685)))
+
+
+(def
+ v139_l698
  (->
   {:population [1000 5000 50000 200000 1000000 5000000],
    :area [2 8 30 120 500 2100]}
@@ -696,12 +715,12 @@
 
 
 (deftest
- t137_l689
- (is ((fn [v] (= 6 (:points (pj/svg-summary v)))) v136_l683)))
+ t140_l704
+ (is ((fn [v] (= 6 (:points (pj/svg-summary v)))) v139_l698)))
 
 
 (def
- v139_l698
+ v142_l713
  (->
   (rdatasets/datasets-iris)
   (pj/pose :sepal-length :sepal-width)
@@ -711,18 +730,18 @@
 
 
 (deftest
- t140_l704
+ t143_l719
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 3 (:panels s)) (= 150 (:points s)))))
-   v139_l698)))
+   v142_l713)))
 
 
 (def
- v142_l711
+ v145_l726
  (->
   (rdatasets/datasets-iris)
   (pj/pose :sepal-length :sepal-width)
@@ -733,24 +752,24 @@
 
 
 (deftest
- t143_l718
- (is ((fn [v] (= :species (get-in v [:opts :facet-col]))) v142_l711)))
+ t146_l733
+ (is ((fn [v] (= :species (get-in v [:opts :facet-col]))) v145_l726)))
 
 
 (def
- v145_l722
+ v148_l737
  (->
   (rdatasets/datasets-iris)
   (pj/lay-histogram [:sepal-length :sepal-width :petal-length])))
 
 
 (deftest
- t146_l725
- (is ((fn [v] (= 3 (:panels (pj/svg-summary v)))) v145_l722)))
+ t149_l740
+ (is ((fn [v] (= 3 (:panels (pj/svg-summary v)))) v148_l737)))
 
 
 (def
- v148_l731
+ v151_l746
  (->
   (rdatasets/datasets-iris)
   (pj/lay-histogram [:sepal-length :sepal-width :petal-length])
@@ -758,7 +777,7 @@
 
 
 (deftest
- t149_l735
+ t152_l750
  (is
   ((fn
     [v]
@@ -767,11 +786,11 @@
      (= :sepal-length (get-in v [:poses 0 :mapping :x]))
      (= :sepal-width (get-in v [:poses 1 :mapping :x]))
      (= :petal-length (get-in v [:poses 2 :mapping :x]))))
-   v148_l731)))
+   v151_l746)))
 
 
 (def
- v151_l742
+ v154_l757
  (pj/arrange
   [(->
     (rdatasets/datasets-iris)
@@ -782,5 +801,5 @@
 
 
 (deftest
- t152_l748
- (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v151_l742)))
+ t155_l763
+ (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v154_l757)))

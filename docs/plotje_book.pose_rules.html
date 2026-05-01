@@ -510,7 +510,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" type="text/javascript"></script>
-<p>Poses gave the mental picture; this chapter proves it. Each of the 29 rules below carries a rendered pose, a printed structure, and a tested assertion, so the model claims are verified on every run.</p>
+<p>Poses gave the mental picture; this chapter proves it. Each of the 30 rules below carries a rendered pose, a printed structure, and a tested assertion, so the model claims are verified on every run.</p>
 <p>The rules are organized into seven sections (Construction, Layer Placement, Leaf Identity, Scope, Options, Assembly, Layout) and cover every call shape of <code>pj/pose</code>, <code>pj/lay-*</code>, <code>pj/arrange</code>, <code>pj/options</code>, <code>pj/scale</code>, <code>pj/coord</code>, <code>pj/facet</code>, and <code>pj/cross</code>.</p>
 <p>Read <a href="./plotje_book.pose_model.html">Poses</a> first – this chapter is the proof layer, not a teaching chapter.</p>
 <div class="sourceClojure">
@@ -942,7 +942,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="rule-lp2-position-carrying-lay--attaches-to-the-dfs-last-matching-leaf" class="level3">
 <h3 class="anchored" data-anchor-id="rule-lp2-position-carrying-lay--attaches-to-the-dfs-last-matching-leaf">Rule LP2: position-carrying <code>lay-*</code> attaches to the DFS-last matching leaf</h3>
-<p>When <code>lay-*</code> carries <code>:x</code>/<code>:y</code> and at least one leaf has matching effective <code>:x</code>/<code>:y</code> (after ancestor merge), the layer attaches to the <strong>last such leaf in left-to-right depth-first order</strong>. Matching is keyword/string tolerant. The layer’s own <code>:mapping</code> carries the call’s position.</p>
+<p>When <code>lay-*</code> carries <code>:x</code>/<code>:y</code> and at least one leaf has matching effective <code>:x</code>/<code>:y</code> (after ancestor merge), the layer attaches to the <strong>last such leaf in left-to-right depth-first order</strong>. Matching is keyword/string tolerant. The layer’s own <code>:mapping</code> carries the call’s position. This is the same “most recent matching leaf” rule the teaching chapters describe, formalized for composite poses where reading-order depth-first traversal gives the precise answer.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> iris</span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>    (pj/pose <span class="at">:sepal-length</span> <span class="at">:sepal-width</span>)</span>

@@ -1221,7 +1221,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="annotation" class="level2">
 <h2 class="anchored" data-anchor-id="annotation">Annotation</h2>
-<p>An <strong>annotation</strong> is a reference mark layered on a plot – horizontal/vertical lines (rules) or shaded bands. Today, positions come from literal values in the options (<code>:y-intercept</code> or <code>:x-intercept</code> for rules; <code>:y-min</code>/<code>:y-max</code> or <code>:x-min</code>/<code>:x-max</code> for bands), and a single annotation draws at exactly one place. Data-driven annotations (column refs in those slots, producing one mark per row, like ggplot2’s <code>geom_hline(aes(yintercept = ...))</code>) are planned but not yet implemented.</p>
+<p>An <strong>annotation</strong> is a reference mark layered on a plot – horizontal/vertical lines (rules) or shaded bands. Today, positions live in the layer’s <code>:mapping</code> slot (<code>:y-intercept</code> or <code>:x-intercept</code> for rules; <code>:y-min</code>/<code>:y-max</code> or <code>:x-min</code>/<code>:x-max</code> for bands) as literal values rather than column references, and a single annotation draws at exactly one place. Data-driven annotations (column refs in those slots, producing one mark per row, like ggplot2’s <code>geom_hline(aes(yintercept = ...))</code>) are planned but not yet implemented.</p>
 <p>Annotations are regular layers, so they attach under the same three cases as any <code>lay-*</code>: bare call sits on the pose, matching columns join the most recent matching leaf, non-matching columns create a new leaf.</p>
 <table class="caption-top table">
 <colgroup>
@@ -3780,7 +3780,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Annotation</td>
-<td style="text-align: left;">Reference marks (rules, bands); positions from literal options today, data-driven planned</td>
+<td style="text-align: left;">Reference marks (rules, bands); positions in <code>:mapping</code> as literal values today, data-driven planned</td>
 <td style="text-align: left;"><code>pj/lay-rule-*</code>, <code>pj/lay-band-*</code></td>
 </tr>
 <tr class="even">

@@ -478,7 +478,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="side-by-side-via-pjarrange" class="level2">
 <h2 class="anchored" data-anchor-id="side-by-side-via-pjarrange">Side-by-Side via <code>pj/arrange</code></h2>
-<p>The simplest composite: two independent poses, placed next to each other. <code>pj/arrange</code> takes a vector of poses and returns a composite. Each sub-pose has its own data, mapping, layers, and options.</p>
+<p>The simplest composite: two independent poses, placed next to each other. <code>pj/arrange</code> takes a vector of poses and returns a composite. Each sub-pose has its own data, mapping, layers, and options. Coming from R, this is the same shape as patchwork’s <code>p1 | p2</code> operator or cowplot’s <code>plot_grid(p1, p2)</code>.</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(pj/arrange</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a> [(<span class="kw">-&gt;</span> (rdatasets/datasets-iris) (pj/lay-point <span class="at">:sepal-length</span> <span class="at">:sepal-width</span> {<span class="at">:color</span> <span class="at">:species</span>}))</span>

@@ -86,16 +86,16 @@
   (tc/map-columns
    :function
    :var
-   (fn* [p1__82959#] (-> p1__82959# meta :name)))
-  (tc/map-columns :dataset :var (fn* [p1__82960#] (p1__82960#)))
+   (fn* [p1__82361#] (-> p1__82361# meta :name)))
+  (tc/map-columns :dataset :var (fn* [p1__82362#] (p1__82362#)))
   (tc/map-columns :rows :dataset tc/row-count)
   (tc/map-columns
    :description
    :var
    (fn*
-    [p1__82961#]
+    [p1__82363#]
     (->
-     p1__82961#
+     p1__82363#
      meta
      :doc-link
      slurp
@@ -117,7 +117,7 @@
  (->
   (rdatasets/datasets-iris)
   (tc/select-rows
-   (fn* [p1__82962#] (= "setosa" (:species p1__82962#))))))
+   (fn* [p1__82364#] (= "setosa" (:species p1__82364#))))))
 
 
 (deftest t27_l180 (is ((fn [ds] (= 50 (tc/row-count ds))) v26_l177)))
@@ -175,3 +175,65 @@
 (deftest
  t45_l229
  (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v44_l226)))
+
+
+(def
+ v47_l241
+ (def
+  temps-wide
+  (tc/dataset
+   {:month ["Jan" "Feb" "Mar"],
+    :tokyo [3 5 9],
+    :paris [4 6 11],
+    :nairobi [22 23 24]})))
+
+
+(def v48_l248 temps-wide)
+
+
+(deftest
+ t49_l250
+ (is ((fn [ds] (= 4 (count (tc/column-names ds)))) v48_l248)))
+
+
+(def
+ v51_l256
+ (def
+  temps-long
+  (tc/pivot->longer
+   temps-wide
+   [:tokyo :paris :nairobi]
+   {:target-columns :city, :value-column-name :temperature})))
+
+
+(def v52_l261 temps-long)
+
+
+(deftest
+ t53_l263
+ (is
+  ((fn
+    [ds]
+    (and (= 3 (count (tc/column-names ds))) (= 9 (tc/row-count ds))))
+   v52_l261)))
+
+
+(def
+ v55_l268
+ (->
+  temps-long
+  (pj/lay-line
+   :month
+   :temperature
+   {:color :city, :x-type :categorical})))
+
+
+(deftest
+ t56_l272
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v)]
+     (and (= 1 (:panels s)) (= 3 (:lines s)))))
+   v55_l268)))

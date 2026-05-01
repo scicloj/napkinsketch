@@ -201,7 +201,7 @@
 
 
 (def
- v27_l159
+ v27_l163
  (->
   (rdatasets/palmerpenguins-penguins)
   (pj/lay-bar :species {:color :species})
@@ -209,18 +209,18 @@
 
 
 (deftest
- t28_l163
+ t28_l167
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 3 (:panels s)) (= 5 (:polygons s)))))
-   v27_l159)))
+   v27_l163)))
 
 
 (def
- v30_l171
+ v30_l175
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -232,7 +232,7 @@
 
 
 (deftest
- t31_l177
+ t31_l181
  (is
   ((fn
     [v]
@@ -243,4 +243,4 @@
       (= 150 (:points s))
       (some #{"Iris by Species"} (:texts s))
       (some #{"Sepal Length (cm)"} (:texts s)))))
-   v30_l171)))
+   v30_l175)))

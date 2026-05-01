@@ -114,7 +114,7 @@
 
 
 (def
- v27_l220
+ v27_l219
  (->
   (rdatasets/datasets-chickwts)
   (pj/pose :feed)
@@ -123,12 +123,12 @@
 
 
 (deftest
- t28_l225
- (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v27_l220)))
+ t28_l224
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v27_l219)))
 
 
 (def
- v30_l245
+ v30_l244
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})
@@ -136,12 +136,12 @@
 
 
 (deftest
- t31_l249
- (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v30_l245)))
+ t31_l248
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v30_l244)))
 
 
 (def
- v33_l265
+ v33_l264
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width)
@@ -149,12 +149,12 @@
 
 
 (deftest
- t34_l269
- (is ((fn [v] (= 3 (:panels (pj/svg-summary v)))) v33_l265)))
+ t34_l268
+ (is ((fn [v] (= 3 (:panels (pj/svg-summary v)))) v33_l264)))
 
 
 (def
- v36_l287
+ v36_l286
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width)
@@ -169,25 +169,25 @@
 
 
 (deftest
- t37_l294
- (is ((fn [v] (some #{"mean"} (:texts (pj/svg-summary v)))) v36_l287)))
+ t37_l293
+ (is ((fn [v] (some #{"mean"} (:texts (pj/svg-summary v)))) v36_l286)))
 
 
 (def
- v39_l311
+ v39_l310
  (def template (-> (pj/pose nil {:x :x, :y :y}) pj/lay-point)))
 
 
-(def v40_l315 (-> template (pj/with-data {:x [1 2 3], :y [4 5 6]})))
+(def v40_l314 (-> template (pj/with-data {:x [1 2 3], :y [4 5 6]})))
 
 
 (deftest
- t41_l318
- (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v40_l315)))
+ t41_l317
+ (is ((fn [v] (= 3 (:points (pj/svg-summary v)))) v40_l314)))
 
 
 (def
- v43_l335
+ v43_l334
  (->
   [{:category "A", :value 100}
    {:category "B", :value 50}
@@ -199,12 +199,12 @@
 
 
 (deftest
- t44_l343
- (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v43_l335)))
+ t44_l342
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v43_l334)))
 
 
 (def
- v46_l365
+ v46_l364
  (->
   {:x (concat (range 5) (range 5)),
    :y [1 2 3 4 5 2 2 2 3 3],
@@ -213,12 +213,12 @@
 
 
 (deftest
- t47_l370
- (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v46_l365)))
+ t47_l369
+ (is ((fn [v] (pos? (:polygons (pj/svg-summary v)))) v46_l364)))
 
 
 (def
- v49_l389
+ v49_l388
  (->
   {:cat ["A" "A" "B" "B" "C" "C"],
    :y [10 20 30 40 50 60],
@@ -227,17 +227,44 @@
 
 
 (deftest
- t50_l394
- (is ((fn [v] (= 6 (:polygons (pj/svg-summary v)))) v49_l389)))
+ t50_l393
+ (is ((fn [v] (= 6 (:polygons (pj/svg-summary v)))) v49_l388)))
 
 
 (def
- v52_l412
+ v52_l409
+ (->
+  (rdatasets/datasets-chickwts)
+  (pj/pose :feed)
+  pj/lay-bar
+  (pj/coord :polar)))
+
+
+(deftest
+ t53_l414
+ (is
+  ((fn
+    [v]
+    (zero?
+     (count
+      (filter
+       #{"soybean"
+         "meatmeal"
+         "sunflower"
+         "horsebean"
+         "casein"
+         "linseed"}
+       (:texts (pj/svg-summary v))))))
+   v52_l409)))
+
+
+(def
+ v55_l423
  (-> (rdatasets/datasets-chickwts) (pj/pose :feed) pj/lay-bar))
 
 
 (deftest
- t53_l416
+ t56_l427
  (is
   ((fn
     [v]
@@ -251,4 +278,4 @@
          "casein"
          "linseed"}
        (:texts (pj/svg-summary v))))))
-   v52_l412)))
+   v55_l423)))

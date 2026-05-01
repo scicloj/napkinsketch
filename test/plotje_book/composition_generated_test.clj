@@ -9,7 +9,7 @@
 
 
 (def
- v3_l32
+ v3_l33
  (pj/arrange
   [(->
     (rdatasets/datasets-iris)
@@ -20,18 +20,18 @@
 
 
 (deftest
- t4_l36
+ t4_l37
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v3_l32)))
+   v3_l33)))
 
 
 (def
- v6_l43
+ v6_l44
  (pj/arrange
   [(->
     (rdatasets/datasets-iris)
@@ -43,12 +43,12 @@
 
 
 (deftest
- t7_l48
- (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v6_l43)))
+ t7_l49
+ (is ((fn [v] (= 2 (:panels (pj/svg-summary v)))) v6_l44)))
 
 
 (def
- v9_l66
+ v9_l67
  (def
   weighted
   (pj/pose
@@ -61,36 +61,36 @@
     :data (rdatasets/datasets-iris)})))
 
 
-(def v11_l78 weighted)
+(def v11_l79 weighted)
 
 
 (deftest
- t12_l80
+ t12_l81
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v11_l78)))
+   v11_l79)))
 
 
-(def v14_l88 (kind/pprint weighted))
+(def v14_l89 (kind/pprint weighted))
 
 
 (deftest
- t15_l90
+ t15_l91
  (is
   ((fn
     [pose]
     (and
      (= [2 1] (get-in pose [:layout :weights]))
      (= 2 (count (:poses pose)))))
-   v14_l88)))
+   v14_l89)))
 
 
 (def
- v17_l107
+ v17_l108
  (def
   shared-x
   (pj/pose
@@ -104,22 +104,22 @@
     :data (rdatasets/datasets-iris)})))
 
 
-(def v18_l117 shared-x)
+(def v18_l118 shared-x)
 
 
 (deftest
- t19_l119
+ t19_l120
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v18_l117)))
+   v18_l118)))
 
 
 (def
- v21_l133
+ v21_l134
  (def
   marginal
   (pj/pose
@@ -132,11 +132,11 @@
     :data (rdatasets/datasets-iris)})))
 
 
-(def v22_l143 marginal)
+(def v22_l144 marginal)
 
 
 (deftest
- t23_l145
+ t23_l146
  (is
   ((fn
     [v]
@@ -145,7 +145,7 @@
       (pj/svg-summary v)
       panels
       (mapv
-       (fn* [p1__83750#] (-> p1__83750# :plan :panels first))
+       (fn* [p1__83175#] (-> p1__83175# :plan :panels first))
        (:sub-plots (pj/plan marginal)))
       [d-x s-x]
       (mapv :x-domain panels)
@@ -157,11 +157,11 @@
       (pos? (:polygons s))
       (= d-x s-x)
       (not= d-y s-y))))
-   v22_l143)))
+   v22_l144)))
 
 
 (def
- v25_l174
+ v25_l175
  (def
   dashboard
   (pj/arrange
@@ -177,11 +177,11 @@
       (pj/lay-density :petal-length {:color :species}))]])))
 
 
-(def v26_l181 dashboard)
+(def v26_l182 dashboard)
 
 
 (deftest
- t27_l183
+ t27_l184
  (is
   ((fn
     [v]
@@ -190,11 +190,11 @@
      (and
       (= 4 (:panels (pj/svg-summary v)))
       (= #{} (:shared-aesthetics chrome)))))
-   v26_l181)))
+   v26_l182)))
 
 
 (deftest
- t29_l227
+ t29_l228
  (is
   ((fn
     [_]
@@ -221,4 +221,4 @@
      (and
       (= #{:color} (-> all-color pj/plan :chrome :shared-aesthetics))
       (= #{} (-> mixed pj/plan :chrome :shared-aesthetics)))))
-   v26_l181)))
+   v26_l182)))

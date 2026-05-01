@@ -202,3 +202,23 @@
      [s (pj/svg-summary v)]
      (and (= 4 (:points s)) (= 4 (:lines s)))))
    v31_l154)))
+
+
+(def
+ v34_l167
+ (->
+  {:product ["A" "B" "C" "D" "E" "F"],
+   :revenue [120 95 150 80 200 110],
+   :region ["North" "South" "North" "South" "North" "South"]}
+  (pj/lay-lollipop :product :revenue {:color :region})))
+
+
+(deftest
+ t35_l172
+ (is
+  ((fn
+    [v]
+    (let
+     [s (pj/svg-summary v) fills (disj (:colors s) "none")]
+     (and (= 6 (:points s)) (= 2 (count fills)))))
+   v34_l167)))
