@@ -916,47 +916,54 @@
 (defn pose
   "Construct or extend a pose.
 
-   On raw data (first argument is not itself a pose):
-     (pj/pose)                                -- empty leaf
-     (pj/pose data)                           -- leaf with data; on 1-3
-                                                  column datasets the
-                                                  mapping is auto-inferred
-                                                  (:x, then :y, then :color)
-                                                  so the pose renders without
-                                                  an explicit mapping call
-     (pj/pose data {:color :species})         -- leaf with aesthetic mapping
-     (pj/pose data :x-col)                    -- leaf with {:x :x-col}
-     (pj/pose data :x-col {:color :c})        -- univariate x + opts
-     (pj/pose data :x-col :y-col)             -- leaf with :x and :y
-     (pj/pose data :x-col :y-col {:color :c}) -- positional x/y + opts
-     (pj/pose data [[:a :b] [:c :d]])         -- multi-pair: N bivariate panels
-     (pj/pose data [:a :b :c])                -- multi-pair: N univariate panels
-     (pj/pose data (pj/cross cols cols) {:color :c})
-                                              -- multi-pair plus aesthetic
-                                                 mapping at the composite root
+   **On raw data (first argument is not itself a pose):**
 
-   Threaded over an existing pose (first argument is a pose):
-     (pj/pose fr)                        -- pass-through; lifts a literal
-                                             map for notebook auto-render
-                                             if it is not already tagged
-     (pj/pose fr :x-col :y-col)          -- extend a leaf-without-position,
-                                             or promote a leaf-with-position
-                                             into a 2-panel composite, or
-                                             append a panel to a composite
-     (pj/pose fr :x-col :y-col {:color :c}) -- same, with aesthetic routed
-                                             to the composite root on promote
-     (pj/pose fr {:color :c})            -- aesthetic-only: extend mapping
-                                             or (on leaf-with-position) promote
-     (pj/pose fr [[:a :b] [:c :d]])      -- multi-pair: append N panels
-     (pj/pose fr (pj/cross cols cols))   -- SPLOM N^2 panels in one call
-     (pj/pose fr (pj/cross cols cols) {:color :c})
-                                         -- SPLOM plus aesthetic mapping
-                                            at the composite root
-     (pj/pose fr {:data X :color :c})    -- extend mapping AND replace
-                                            the top-level data with X
+   ```clojure
+   (pj/pose)                                ;; empty leaf
+   (pj/pose data)                           ;; leaf with data; on 1-3
+                                            ;; column datasets the
+                                            ;; mapping is auto-inferred
+                                            ;; (:x, then :y, then :color)
+                                            ;; so the pose renders without
+                                            ;; an explicit mapping call
+   (pj/pose data {:color :species})         ;; leaf with aesthetic mapping
+   (pj/pose data :x-col)                    ;; leaf with {:x :x-col}
+   (pj/pose data :x-col {:color :c})        ;; univariate x + opts
+   (pj/pose data :x-col :y-col)             ;; leaf with :x and :y
+   (pj/pose data :x-col :y-col {:color :c}) ;; positional x/y + opts
+   (pj/pose data [[:a :b] [:c :d]])         ;; multi-pair: N bivariate panels
+   (pj/pose data [:a :b :c])                ;; multi-pair: N univariate panels
+   (pj/pose data (pj/cross cols cols) {:color :c})
+                                            ;; multi-pair plus aesthetic
+                                            ;; mapping at the composite root
+   ```
 
-   On a hand-built pose-shaped map (1-arity, input has `:layers` or
-   `:poses`): the map is validated and tagged with Kindly auto-render
+   **Threaded over an existing pose (first argument is a pose):**
+
+   ```clojure
+   (pj/pose fr)                             ;; pass-through; lifts a
+                                            ;; literal map for notebook
+                                            ;; auto-render if it is not
+                                            ;; already tagged
+   (pj/pose fr :x-col :y-col)               ;; extend a leaf-without-position,
+                                            ;; or promote a leaf-with-position
+                                            ;; into a 2-panel composite, or
+                                            ;; append a panel to a composite
+   (pj/pose fr :x-col :y-col {:color :c})   ;; same, with aesthetic routed
+                                            ;; to the composite root on promote
+   (pj/pose fr {:color :c})                 ;; aesthetic-only: extend mapping
+                                            ;; or (on leaf-with-position) promote
+   (pj/pose fr [[:a :b] [:c :d]])           ;; multi-pair: append N panels
+   (pj/pose fr (pj/cross cols cols))        ;; SPLOM N^2 panels in one call
+   (pj/pose fr (pj/cross cols cols) {:color :c})
+                                            ;; SPLOM plus aesthetic mapping
+                                            ;; at the composite root
+   (pj/pose fr {:data X :color :c})         ;; extend mapping AND replace
+                                            ;; the top-level data with X
+   ```
+
+   **On a hand-built pose-shaped map (1-arity, input has `:layers` or
+   `:poses`):** the map is validated and tagged with Kindly auto-render
    metadata, but its keys are not reordered and its `:data` is not
    coerced -- the typed shape is preserved verbatim. A flat composite
    (`:poses` of leaf maps) is supported; literal nested composites
