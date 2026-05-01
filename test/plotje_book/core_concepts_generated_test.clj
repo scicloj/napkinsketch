@@ -235,7 +235,7 @@
   setosa
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__232126#] (= "setosa" (:species p1__232126#))))))
+   (fn* [p1__83411#] (= "setosa" (:species p1__83411#))))))
 
 
 (def
@@ -244,7 +244,7 @@
   versicolor
   (tc/select-rows
    (rdatasets/datasets-iris)
-   (fn* [p1__232127#] (= "versicolor" (:species p1__232127#))))))
+   (fn* [p1__83412#] (= "versicolor" (:species p1__83412#))))))
 
 
 (def
