@@ -155,6 +155,42 @@
       (is (= 1 @calls)
           "pj/draft calls pj/pose->draft once"))))
 
+(deftest membrane-equals-arrow-composition
+  (testing "pj/membrane = (-> pose ->pose pose->draft draft->plan (plan->membrane opts))"
+    (let [pose (-> (pj/lay-point tiny :x :y)
+                   (pj/options {:title "T" :width 700}))
+          via-public (pj/membrane pose)
+          via-arrows (-> pose
+                         pj/->pose
+                         pj/pose->draft
+                         pj/draft->plan
+                         (pj/plan->membrane (:opts pose {})))]
+      (is (vector? via-public))
+      (is (vector? via-arrows))
+      (is (= (:total-width (meta via-public))
+             (:total-width (meta via-arrows)))
+          "plan-derived dimensions agree on both paths")
+      (is (= "T" (:title (meta via-public)))
+          "title rides on the membrane meta from the pose's :opts"))))
+
+(deftest membrane-calls-the-pipeline
+  (testing "pj/membrane literally calls the public atomic steps up through plan->membrane"
+    (let [pose-draft-calls (atom 0)
+          draft-plan-calls (atom 0)
+          plan-membrane-calls (atom 0)
+          orig-pose->draft pj/pose->draft
+          orig-draft->plan pj/draft->plan
+          orig-plan->membrane pj/plan->membrane]
+      (with-redefs [pj/pose->draft   (fn [p] (swap! pose-draft-calls inc) (orig-pose->draft p))
+                    pj/draft->plan   (fn [d] (swap! draft-plan-calls inc) (orig-draft->plan d))
+                    pj/plan->membrane (fn
+                                        ([p] (swap! plan-membrane-calls inc) (orig-plan->membrane p))
+                                        ([p o] (swap! plan-membrane-calls inc) (orig-plan->membrane p o)))]
+        (pj/membrane (pj/lay-point tiny :x :y))
+        (is (= 1 @pose-draft-calls) "pj/membrane calls pj/pose->draft once")
+        (is (= 1 @draft-plan-calls) "pj/membrane calls pj/draft->plan once")
+        (is (= 1 @plan-membrane-calls) "pj/membrane calls pj/plan->membrane once")))))
+
 (deftest plot-calls-all-five-atomic-steps
   (testing "pj/plot literally calls each of the five public atomic steps"
     (let [pose-draft-calls (atom 0)

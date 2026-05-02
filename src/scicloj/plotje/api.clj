@@ -2349,6 +2349,48 @@
        (options opts)
        plan)))
 
+(defn membrane
+  "Resolve a pose into a membrane tree. Literal composition of the
+   atomic steps: `(-> x ->pose pose->draft draft->plan plan->membrane)`.
+   The 2-arity folds opts into the pose with `pj/options` first.
+
+   Returns a vector of `membrane.ui` drawing primitives carrying
+   plan-derived `:total-width`, `:total-height`, and `:title` as
+   metadata. Render-time options (`:tooltip`, `:theme`, `:palette`,
+   `:color-scale`, `:color-midpoint`) ride along on the pose's
+   `:opts` and reach `plan->membrane` through this call.
+
+   Useful for exploring rendering targets beyond the SVG and Java2D
+   backends Plotje wires in today: any consumer that walks a
+   membrane tree (a Membrane backend, a custom serializer) can take
+   the result of `pj/membrane` directly.
+
+   - `(membrane pose)`
+   - `(membrane pose {:tooltip true})`"
+  ([pose]
+   (when (plan? pose)
+     (throw (ex-info (str "pj/membrane expects a pose, not a plan. "
+                          "Call pj/plan->membrane on the plan, or "
+                          "pass the original pose to pj/membrane.")
+                     {:got :plan})))
+   (when (draft? pose)
+     (throw (ex-info (str "pj/membrane expects a pose, not a draft. "
+                          "Call pj/draft->plan and pj/plan->membrane "
+                          "on the draft, or pass the original pose "
+                          "to pj/membrane.")
+                     {:got :draft})))
+   (let [fr (->pose pose "pj/membrane")
+         opts (:opts fr {})]
+     (-> fr
+         pose->draft
+         draft->plan
+         (plan->membrane opts))))
+  ([pose opts]
+   (-> pose
+       (->pose "pj/membrane")
+       (options opts)
+       membrane)))
+
 (defn- ensure-renderer-loaded!
   "Lazy-load the renderer namespace for non-default formats. The :svg
    backend is loaded as a top-level require by api.clj; the bufimg

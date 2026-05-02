@@ -705,18 +705,27 @@ plan1
 ;; ## Pipeline
 ;;
 ;; The pipeline is a composition of atomic single-step transitions.
-;; The user-facing functions (`pj/draft`, `pj/plan`, `pj/plot`) are
-;; literal compositions of these steps:
-;;
-;; ```
-;; (defn draft [x]  (-> x ->pose pose->draft))
-;; (defn plan  [x]  (-> x ->pose pose->draft draft->plan))
-;; (defn plot  [x]  (-> x ->pose pose->draft draft->plan
-;;                      (plan->plot fmt opts)))
-;; ```
+;; The user-facing functions (`pj/draft`, `pj/plan`, `pj/membrane`,
+;; `pj/plot`) are literal compositions of these steps -- each one
+;; runs the chain up through its named stage.
 ;;
 ;; Each atomic step is independently callable, so you can stop the
 ;; pipeline at any point to inspect the intermediate value.
+
+(kind/doc #'pj/membrane)
+
+;; Resolve a pose into a membrane tree -- the format-agnostic
+;; vector of `membrane.ui` drawing primitives. Useful for exploring
+;; rendering targets beyond the SVG and Java2D backends Plotje
+;; wires in today.
+
+(let [m (pj/membrane (pj/lay-point tiny :x :y))]
+  {:vector? (vector? m)
+   :meta-keys (sort (keys (meta m)))})
+
+(kind/test-last [(fn [info] (and (:vector? info)
+                                 (= [:title :total-height :total-width]
+                                    (:meta-keys info))))])
 
 (kind/doc #'pj/->pose)
 

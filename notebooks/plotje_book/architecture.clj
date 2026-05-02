@@ -265,14 +265,30 @@ trace-pose
 ;;        (options opts)
 ;;        plan)))
 ;;
-;; (defn plot
+;; (defn membrane
 ;;   ([x]
+;;    (let [pose (->pose x)
+;;          opts (:opts pose {})]
+;;      (-> pose
+;;          pose->draft
+;;          draft->plan
+;;          (plan->membrane opts))))
+;;   ([x opts]
 ;;    (-> x
 ;;        ->pose
-;;        pose->draft
-;;        draft->plan
-;;        (plan->membrane render-opts)
-;;        (membrane->plot fmt opts)))
+;;        (options opts)
+;;        membrane)))
+;;
+;; (defn plot
+;;   ([x]
+;;    (let [pose (->pose x)
+;;          opts (:opts pose {})
+;;          fmt  (or (:format opts) :svg)]
+;;      (-> pose
+;;          pose->draft
+;;          draft->plan
+;;          (plan->membrane (render-opts-for-format fmt opts))
+;;          (membrane->plot fmt opts))))
 ;;   ([x opts]
 ;;    (-> x
 ;;        ->pose
@@ -283,12 +299,18 @@ trace-pose
 ;; All five atomic steps appear in `plot`'s source as a single
 ;; left-to-right pipeline. The plan-derived dimensions and title
 ;; ride along on the membrane tree as metadata, so `membrane->plot`
-;; can read them without needing the plan back. `render-opts` is
-;; the pose's `:opts` filtered by the format (the SVG renderer
-;; consumes `:tooltip`, the bufimg renderer cannot).
+;; can read them without needing the plan back. The `let` binds
+;; `opts` and `fmt` from the lifted pose; `render-opts-for-format`
+;; filters `opts` per format (the SVG renderer consumes
+;; `:tooltip`, the bufimg renderer cannot).
 ;;
-;; The 2-arity folds the options map into the pose using
-;; `pj/options` before dispatch.
+;; The 2-arity of each function folds the options map into the pose
+;; using `pj/options` before recursing into the 1-arity.
+;;
+;; `pj/membrane` is the analogous shortcut for the membrane stage,
+;; useful for consumers that want a membrane tree without choosing
+;; an output format yet -- a custom backend, a target Membrane
+;; itself supports but Plotje has not wired in yet.
 ;;
 ;; Because the compositions actually call the atomic steps, swapping
 ;; an atomic step (with `with-redefs` for testing, or with a custom
@@ -397,21 +419,43 @@ composite-pose
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
-;; `pj/pose->draft` returns a `CompositeDraft` -- wrap in
-;; `kind/pprint` to inspect:
+;; `pj/draft` (the composition `->pose ; pose->draft`) returns a
+;; `CompositeDraft` -- wrap in `kind/pprint` to inspect:
 
-(-> composite-pose pj/pose->draft kind/pprint)
+(-> composite-pose pj/draft kind/pprint)
 
 (kind/test-last [(fn [d] (and (pj/composite-draft? d)
                               (= 2 (count (:sub-drafts d)))))])
 
-;; And `pj/draft->plan` on a `CompositeDraft` returns a
-;; `CompositePlan`:
+;; `pj/plan` returns a `CompositePlan`:
 
-(-> composite-pose pj/pose->draft pj/draft->plan)
+(pj/plan composite-pose)
 
 (kind/test-last [(fn [p] (and (pj/composite-plan? p)
                               (= 2 (count (:sub-plots p)))))])
+
+;; `pj/membrane` returns the vector of drawing primitives -- one
+;; `Translate` per leaf plus chrome (column strip labels, shared
+;; legend, title if any). Plan-derived dimensions and title travel
+;; on the vector as metadata.
+
+(pj/membrane composite-pose)
+
+(kind/test-last [(fn [m] (and (vector? m)
+                              (pos? (count m))
+                              (let [{:keys [total-width total-height]} (meta m)]
+                                (and (number? total-width)
+                                     (number? total-height)))))])
+
+;; And `pj/plot` (the full pipeline) returns the SVG hiccup -- the
+;; same value `composite-pose` auto-renders to, just produced
+;; explicitly:
+
+(kind/hiccup (pj/plot composite-pose))
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 2 (:panels s))
+                                (= 300 (:points s)))))])
 
 ;; The composition `pj/plan = pj/->pose ; pj/pose->draft ;
 ;; pj/draft->plan` holds for both leaf and composite poses; the
@@ -521,7 +565,7 @@ multi-pose
 ;; `:point` layer keeps its mark; the `:smooth` layer-type expands
 ;; to `:line` after stat resolution:
 
-(def multi-draft (pj/pose->draft multi-pose))
+(def multi-draft (pj/draft multi-pose))
 
 (kind/pprint multi-draft)
 
@@ -545,9 +589,25 @@ multi-plan
                                      (= 3 (count (:groups (first layers))))
                                      (= 3 (count (:groups (second layers))))))))])
 
+;; The membrane is a vector of `Translate` records carrying the
+;; computed positions of every point and segment, plus chrome
+;; (axes, ticks, legend, title). Plan-derived dimensions ride on
+;; the vector as metadata.
+
+(def multi-membrane
+  (pj/membrane multi-pose {:title "Iris Petals with Regression"}))
+
+(kind/pprint multi-membrane)
+
+(kind/test-last [(fn [m] (and (vector? m)
+                              (pos? (count m))
+                              (= "Iris Petals with Regression"
+                                 (:title (meta m)))))])
+
 ;; And the rendered result with the title:
 
-(pj/options multi-pose {:title "Iris Petals with Regression"})
+(kind/hiccup
+ (pj/plot multi-pose {:title "Iris Petals with Regression"}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 150 (:points s))
