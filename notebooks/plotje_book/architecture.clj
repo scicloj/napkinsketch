@@ -85,7 +85,8 @@ graph LR
 ;; a distinct concern, and each boundary between stages buys
 ;; something concrete:
 ;;
-;; - The **pose** is what the user composes; the **draft** is the
+;; - The **pose** is what the user specifies.
+;; - The **draft** is the
 ;;   same specification flattened, with scope merged in. This
 ;;   boundary lets the layer engine run on a uniform input regardless
 ;;   of how the pose was built.
@@ -100,11 +101,13 @@ graph LR
 ;; - The **plot** is the format-specific output: SVG hiccup, a
 ;;   BufferedImage, or any other format a backend supports.
 ;;
-;; Three sources of leverage follow: each intermediate value can be
-;; inspected without running the rest; each transition can be
-;; tested in isolation; and any one stage can be swapped (a custom
-;; mark, stat, or output format) without touching the rest of the
-;; pipeline.
+;; Two sources of leverage follow that this chapter demonstrates:
+;; each intermediate value can be inspected without running the
+;; rest, and each transition can be tested in isolation. A third
+;; -- extending the pipeline through `defmethod` registration on
+;; its multimethod seams (`:stat` at the plan stage, `:mark` at
+;; the plan and membrane stages, `:format` at the plot stage) --
+;; is the subject of the Extensibility chapter.
 
 ;; ## The Atomic Steps
 ;;
