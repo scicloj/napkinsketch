@@ -44,6 +44,12 @@ graph LR
   style F fill:#fce4ec
 ")
 
+;; Two terms used throughout: **data space** is values in their
+;; original units (centimeters, dollars, dates, species names);
+;; **drawing space** is pixel coordinates inside the output canvas.
+;; The plan stage holds geometry in data space; the membrane stage
+;; holds geometry in drawing space.
+
 ;; The five stages:
 ;;
 ;; - **Pose** -- the composable specification you write. Built by
