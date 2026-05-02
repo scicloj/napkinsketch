@@ -78,6 +78,34 @@ graph LR
 ;; debugging unexpected output, building a custom renderer, or
 ;; extending the library.
 
+;; ## Why these stages?
+;;
+;; A simpler library could go from data to pixels in one function.
+;; Plotje splits the work into five stages because each stage serves
+;; a distinct concern, and each boundary between stages buys
+;; something concrete:
+;;
+;; - The **pose** is what the user composes; the **draft** is the
+;;   same specification flattened, with scope merged in. This
+;;   boundary lets the layer engine run on a uniform input regardless
+;;   of how the pose was built.
+;; - The **plan** holds geometry in data space -- domains, ticks,
+;;   computed shapes -- before any drawing. This boundary lets you
+;;   inspect and validate plot structure with Malli, and it lets
+;;   multiple renderers share the same computed plan.
+;; - The **membrane** holds drawing primitives in drawing space.
+;;   This boundary decouples "what to draw, where" from the output
+;;   format, so SVG and raster renderers consume the same membrane
+;;   tree.
+;; - The **plot** is the format-specific output: SVG hiccup, a
+;;   BufferedImage, or any other format a backend supports.
+;;
+;; Three sources of leverage follow: each intermediate value can be
+;; inspected without running the rest; each transition can be
+;; tested in isolation; and any one stage can be swapped (a custom
+;; mark, stat, or output format) without touching the rest of the
+;; pipeline.
+
 ;; ## The Atomic Steps
 ;;
 ;; Each transition is its own public function. Walk the example
@@ -147,7 +175,11 @@ trace-pose
 (def trace-plan
   (pj/draft->plan trace-draft))
 
-trace-plan
+;; The plan -- a `Plan` record carrying panels, total dimensions,
+;; ticks, the legend spec, and per-layer geometry (groups of
+;; dtype-next buffers):
+
+(kind/pprint trace-plan)
 
 (kind/test-last [(fn [v] (and (pj/leaf-plan? v)
                               (= 1 (count (:panels v)))
@@ -168,7 +200,10 @@ trace-plan
 
 (def trace-membrane (pj/plan->membrane trace-plan))
 
-trace-membrane
+;; The membrane tree -- a vector of `membrane.ui` records, each
+;; carrying a position and a drawing primitive:
+
+(kind/pprint trace-membrane)
 
 (kind/test-last [(fn [v] (and (vector? v)
                               (pos? (count v))
@@ -289,7 +324,7 @@ trace-membrane
 
 ;; ## Composite Poses
 ;;
-;; A composite pose -- one with `:poses` --
+;; A composite pose -- one with `:poses` inside --
 ;; flows through the same atomic steps. Each step dispatches
 ;; internally on shape: a leaf pose produces a `LeafDraft`; a
 ;; composite pose produces a `CompositeDraft`. The user-facing
@@ -369,6 +404,44 @@ graph LR
 ;;
 ;; - Adding alternate backends that consume plans (SVG and raster
 ;;   are implemented today)
+
+;; ## The Membrane Layer
+;;
+;; The membrane is Plotje's second important boundary: it separates
+;; data-space geometry from output-format bytes. Where the plan says
+;; "draw a point at data-coordinate (3.4, 7.1) in the color assigned
+;; to species `setosa`", the membrane says "translate to drawing
+;; coordinate (218, 134) and place a colored shape there." The plan
+;; is renderer-agnostic; the membrane is format-agnostic.
+;;
+;; This second boundary gives Plotje its **graphical modularity**:
+;; one membrane tree can be rendered to many output formats. A
+;; backend only has to know how to walk the membrane tree and emit
+;; bytes -- the pose, draft, plan, and membrane stages are reused
+;; unchanged. Adding a new format is a `defmethod plan->plot :foo`
+;; (and an accompanying `defmethod membrane->plot :foo`); everything
+;; upstream comes along for free.
+;;
+;; The membrane stage of Plotje is built on
+;; [Membrane](https://github.com/phronmophobic/membrane) -- the
+;; library that defines the primitive types Plotje uses
+;; (`Translate`, `WithColor`, `Path`, `Label`, `RoundedRectangle`,
+;; ...) and provides the rendering backends. Plotje constructs a
+;; membrane tree from a plan; Membrane renders it.
+;;
+;; Backends Plotje wires into Membrane today:
+;;
+;; - **SVG hiccup** -- the default. Renders in browsers, in
+;;   notebooks via Kindly/Clay, and writes to `.svg` files.
+;; - **Java2D / `BufferedImage`** -- raster output via
+;;   Membrane's Java2D backend. Used for `.png` files and any
+;;   consumer that wants a Java image.
+;;
+;; Membrane itself supports more rendering targets (terminal,
+;; native GUI, GL, ...) than Plotje currently exposes. Wiring a new
+;; target into Plotje is largely a `defmethod` away. The promise of
+;; this boundary is that as Membrane grows, Plotje can grow with it
+;; without rethinking how plots are described.
 
 ;; ## Multi-Layer Example
 ;;
@@ -464,11 +537,14 @@ graph TD
 ;; mappings/data/options down from root to every leaf), `leaf->draft`
 ;; (the leaf-pose flattening that the public `pj/pose->draft` calls),
 ;; and the multi-pair / grid composite utilities.
+
 ;; `impl/compositor.clj` handles composite chrome layout,
 ;; `composite-pose->draft`, and `composite-draft->plan` -- pure
 ;; data-side, no membrane dependency.
+
 ;; `impl/plan.clj` holds the leaf-plan computation (domains, ticks,
 ;; legends, layout) that the public `pj/draft->plan` calls.
+
 ;; `impl/resolve.clj` defines the `Plan`, `CompositePlan`,
 ;; `LeafDraft`, `CompositeDraft`, `PlanLayer`, and `LayerType`
 ;; records, and holds `resolve-draft-layer` (single draft layer
@@ -476,7 +552,9 @@ graph TD
 ;;
 ;; The `impl/` directory is pure data with no membrane dependency.
 ;; The `render/` directory uses membrane for layout and SVG/raster
-;; conversion. `render/composite.clj` carries the composite
+;; conversion. 
+
+;; `render/composite.clj` carries the composite
 ;; `plan->membrane` defmethod and the membrane drawables for
 ;; composite chrome (title, strip labels, shared legend).
 
