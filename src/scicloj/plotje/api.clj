@@ -47,19 +47,21 @@
   [x]
   (resolve/composite-draft? x))
 
+(defn leaf-draft?
+  "Return true if x is a leaf draft (a `LeafDraft` record carrying
+   `:layers` -- a vector of layer maps -- and `:opts` -- the
+   pose-level options that flow into the plan stage)."
+  [x]
+  (resolve/leaf-draft? x))
+
 (defn draft?
   "Return true if x is a draft -- the intermediate representation
-   produced by `pj/draft`. A draft is either a CompositeDraft record
-   or a non-empty vector of draft layers (maps carrying the
-   internal `:__panel-idx` key). Used by cross-stage misuse guards on
-   `pj/plan` and `pj/plot`. The `:__panel-idx` check distinguishes a draft
-   from a vector of row maps used as plot data."
+   produced by `pj/pose->draft` (and so by `pj/draft`). A draft is
+   either a `LeafDraft` record (leaf pose) or a `CompositeDraft`
+   record (composite pose). Used by cross-stage misuse guards on
+   `pj/plan` and `pj/plot`."
   [x]
-  (boolean
-   (or (resolve/composite-draft? x)
-       (and (vector? x)
-            (seq x)
-            (every? #(and (map? %) (contains? % :__panel-idx)) x)))))
+  (resolve/draft? x))
 
 (defn plan-layer?
   "Return true if x is a plan-layer (resolved geometry for one mark)."
@@ -240,20 +242,23 @@
 ;; ---- Pipeline Internals ----
 
 (defn draft->plan
-  "Convert a draft into a plan. Dispatches on draft shape: composite
-   drafts go through `compositor/composite-draft->plan` (which uses the
-   chrome-spec already baked in at draft emission); leaf drafts (vectors
-   of layer maps) go through `plan/draft->plan`.
+  "Single-step transition: convert a draft into a plan. Dispatches on
+   draft shape -- a `LeafDraft` carries `:layers` and pose-level `:opts`
+   that flow into `plan/draft->plan`; a `CompositeDraft` goes through
+   `compositor/composite-draft->plan` (which uses the chrome-spec already
+   baked in at draft emission).
 
-   Plan-stage opts (`:width`, `:height`, `:title`, ...) for leaf drafts must
-   be set on the pose before drafting via `pj/options`. For composite
-   drafts those opts are already part of the chrome-spec.
+   Plan-stage opts (`:width`, `:height`, `:title`, ...) ride on the
+   draft itself -- on the `LeafDraft`'s `:opts` for leaves, on the
+   `CompositeDraft`'s chrome-spec for composites. Set them on the pose
+   via `pj/options` before drafting.
 
    - `(draft->plan (draft pose))`"
   [draft]
   (cond
     (resolve/composite-draft? draft) (compositor/composite-draft->plan draft)
-    (and (vector? draft) (every? map? draft)) (plan/draft->plan draft {})
+    (resolve/leaf-draft? draft) (plan/draft->plan (:layers draft)
+                                                  (or (:opts draft) {}))
     :else (throw (ex-info (str "pj/draft->plan expects a draft (from pj/draft); got "
                                (pr-str (type draft)) ": "
                                (pr-str draft))
@@ -346,7 +351,7 @@
 
 (defn- validate-pose-input!
   "Throw on nil or non-collection scalars when the caller needs real
-   data. Used by ensure-pose and pj/pose 1-arity, where nil cannot
+   data. Used by ->pose and pj/pose 1-arity, where nil cannot
    be a template (no mapping carries it forward).
 
    `caller` is a public-facing function name (e.g. \"pj/pose\",
@@ -454,33 +459,55 @@
 (declare prepare-pose pose-kind validate-pose-shape
          check-position-mapping check-column-ref-types)
 
-(defn- ensure-pose
-  "Coerce input to a pose. A pose-shaped map is lifted via pose-kind
-   (validated, *config* captured, Kindly metadata attached) so that
-   any public entry point -- pj/pose, pj/plot, pj/plan, pj/draft,
-   pj/lay-* -- surfaces typos at the entry point rather than deep in
-   the pipeline. Idempotent: a map already carrying Kindly metadata
-   passes through unchanged.
+(defn ->pose
+  "Lift the input to a pose. The first atomic step of the pipeline.
+   Polymorphic on input:
 
-   Raw data becomes a leaf pose with :data set and no mapping, and
-   is run through prepare-pose so Kindly auto-render metadata is
-   attached -- the metadata is preserved by subsequent assoc/update
-   calls in the lay-*/options/pose pipelines.
+   - a pose-shaped map flows through `pose-kind` (validated, `*config*`
+     captured, Kindly auto-render metadata attached); idempotent on
+     input that already carries the metadata, so repeated lifts are
+     cheap;
+   - raw data (a dataset, vector of row maps, or column map) becomes
+     a leaf pose with `:data` set and no mapping, run through
+     `prepare-pose` so the Kindly metadata is attached.
 
-   Throws on nil or non-collection scalars (via validate-pose-input!).
-   Use (pj/pose) for an explicit empty leaf instead of passing nil.
+   Throws on nil or non-collection scalars. Use `(pj/pose)` for an
+   explicit empty leaf instead of passing nil.
 
-   `caller` (optional) is the public-facing function name shown in
-   error messages so the user sees \"pj/lay-point requires data...\"
-   instead of an internal helper name. Defaults to \"pj/pose\" since
-   most validation paths originate from a pose-shaped call."
-  ([x] (ensure-pose x "pj/pose"))
+   The optional `caller` argument names the public-facing function
+   shown in error messages, so users see \"pj/lay-point requires
+   data...\" rather than an internal helper name. Defaults to
+   \"pj/->pose\".
+
+   - `(->pose data)` -- raw dataset becomes a leaf pose
+   - `(->pose pose)` -- already a pose; idempotent lift"
+  ([x] (->pose x "pj/->pose"))
   ([x caller]
    (if (pose? x)
      (pose-kind x)
      (do (validate-pose-input! caller x)
          (let [d (coerce-dataset x)]
            (prepare-pose (cond-> {:layers []} d (assoc :data d))))))))
+
+(defn pose->draft
+  "Single-step transition: convert a pose into a draft. Dispatches on
+   pose shape -- a leaf pose becomes a `LeafDraft` (a record carrying
+   `:layers` -- a vector of one map per applicable layer with merged
+   scope -- and `:opts` -- the pose-level options that flow into the
+   plan stage); a composite pose becomes a `CompositeDraft` carrying
+   per-leaf drafts (each contextualized with shared-scale domains and
+   chrome-driven opt adjustments), the resolved chrome geometry, and
+   the layout (path -> rect).
+
+   - `(pose->draft (pj/lay-point data :x :y))`"
+  [pose]
+  (when-not (pose? pose)
+    (throw (ex-info (str "pj/pose->draft expects a pose; got "
+                         (pr-str (type pose)))
+                    {:value pose :caller "pj/pose->draft"})))
+  (if (pose/composite? pose)
+    (compositor/composite-pose->draft pose)
+    (resolve/->LeafDraft (pose/leaf->draft pose) (or (:opts pose) {}))))
 
 (def ^:private pose-mapping-keys
   "Keys accepted in a pose mapping (column refs + per-pose
@@ -682,7 +709,7 @@
    Idempotent: if the map already carries Kindly metadata (e.g. from
    a prior pose-kind or prepare-pose call), pass it through unchanged.
    This keeps validation and *config* capture single-shot per pose,
-   so a literal map flowing through pj/plot -- which calls ensure-pose
+   so a literal map flowing through pj/plot -- which calls ->pose
    on the way in and again indirectly via pj/plan -- warns once, not
    twice.
 
@@ -690,7 +717,7 @@
    :data is not coerced at top level (the pipeline coerces per leaf
    at draft time), keys are not reordered, and empty :mapping/:opts
    are not elided. The user's typed map is preserved verbatim except
-   for the metadata. Used by pj/pose 1-arity and ensure-pose on
+   for the metadata. Used by pj/pose 1-arity and ->pose on
    pose-shaped input."
   [fr]
   (if (-> fr meta :kindly/kind)
@@ -1108,7 +1135,7 @@
    and listing what is available. Per-layer / per-sub-pose `:data`
    still overrides the top-level data."
   [pose data]
-  (let [fr (ensure-pose pose "pj/with-data")
+  (let [fr (->pose pose "pj/with-data")
         ds (coerce-dataset data)]
     (when ds
       (validate-columns-present (column-refs-in-pose fr) ds))
@@ -1307,7 +1334,7 @@
   ([pose-or-data layer-type-key opts]
    (validate-lay-layer-type-key layer-type-key)
    (let [layer (build-layer layer-type-key opts)]
-     (update (ensure-pose pose-or-data "pj/lay") :layers (fnil conj []) layer))))
+     (update (->pose pose-or-data "pj/lay") :layers (fnil conj []) layer))))
 
 (defn- x-only?
   "True if layer-type-key is registered as x-only (rejects :y column)."
@@ -1399,7 +1426,7 @@
    4-arity: bivariate layer with opts."
   ([layer-type-key pose-or-data]
    (let [was-raw? (not (pose? pose-or-data))
-         fr (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key)))
+         fr (->pose pose-or-data (str "pj/lay-" (name layer-type-key)))
          d (:data fr)]
      (if (and was-raw? d)
        ;; Raw-data 1-arity: auto-infer columns from the first 1-3 columns
@@ -1415,7 +1442,7 @@
        (lay-on-pose fr layer-type-key nil nil))))
   ([layer-type-key pose-or-data x-or-opts]
    (let [was-raw? (not (pose? pose-or-data))
-         fr (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key)))]
+         fr (->pose pose-or-data (str "pj/lay-" (name layer-type-key)))]
      (cond
        (map? x-or-opts)
        (let [d (:data fr)
@@ -1436,7 +1463,7 @@
        :else
        (lay-on-pose fr layer-type-key nil nil))))
   ([layer-type-key pose-or-data x y-or-opts]
-   (let [fr (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key)))]
+   (let [fr (->pose pose-or-data (str "pj/lay-" (name layer-type-key)))]
      (cond
        ;; Parallel vectors -> build a multi-panel composite via pj/pose
        ;; with paired x/y, then attach the bare layer at the root so it
@@ -1473,7 +1500,7 @@
                           " a map, e.g. {:color :species}.")
                      {:caller (str "pj/lay-" (name layer-type-key))
                       :value opts})))
-   (lay-on-pose (ensure-pose pose-or-data (str "pj/lay-" (name layer-type-key))) layer-type-key {:x x :y y} opts)))
+   (lay-on-pose (->pose pose-or-data (str "pj/lay-" (name layer-type-key))) layer-type-key {:x x :y y} opts)))
 
 (defn lay-point
   "Add a `:point` (scatter) layer to a pose.
@@ -1942,11 +1969,11 @@
 
 (defn- update-opts
   "Update the root :opts of a pose. Non-pose inputs are coerced via
-   ensure-pose first. resolve-tree merges root :opts into every leaf,
+   ->pose first. resolve-tree merges root :opts into every leaf,
    so root-level writes act as plot-level options across the whole
    tree."
   [sk-or-pose f & args]
-  (apply update (ensure-pose sk-or-pose) :opts f args))
+  (apply update (->pose sk-or-pose) :opts f args))
 
 (def ^:private valid-legend-positions
   "Enum of values accepted by :legend-position; mirrors the
@@ -1972,7 +1999,7 @@
                          (pr-str opts) ". Wrap plot-level options in"
                          " a map, e.g. {:title \"...\" :width 800}.")
                     {:caller "pj/options" :value opts})))
-  (let [fr (ensure-pose pose "pj/options")
+  (let [fr (->pose pose "pj/options")
         opts (warn-and-strip-unknown-opts "pj/options" opts plot-options-keys)
         opts (reduce (fn [m k]
                        (if-let [v (get m k)]
@@ -2157,14 +2184,18 @@
   (update-opts pose assoc :coord coord-type))
 
 (defn draft
-  "Resolve a pose into a draft. For a leaf pose, returns a vector of
-   flat maps -- one per applicable layer, with all scope merged: data,
-   mappings, and layer type fully determined. For a composite pose,
-   returns a `CompositeDraft` carrying per-leaf drafts (each
-   contextualized -- shared-scale domains injected, suppress-* flags
-   applied), the resolved chrome geometry, and the layout (path -> rect).
-   The 2-arity folds opts into the pose first via `pj/options`, mirroring
-   the 2-arity of `pj/plan` and `pj/plot`.
+  "Resolve raw input into a draft. Literal composition of the atomic
+   steps: `(-> x ->pose pose->draft)`. The 2-arity folds opts into
+   the pose with `pj/options` first, mirroring `pj/plan` and `pj/plot`:
+   `(-> x ->pose (options opts) pose->draft)`.
+
+   For a leaf pose, returns a `LeafDraft` record (`:layers` is a
+   vector of flat maps, one per applicable layer with merged scope;
+   `:opts` carries the pose-level options that flow into the plan
+   stage). For a composite pose, returns a `CompositeDraft` carrying
+   per-leaf drafts (each contextualized -- shared-scale domains
+   injected, suppress-* flags applied), the resolved chrome geometry,
+   and the layout (path -> rect).
 
    - `(draft pose)`
    - `(draft pose {:width 800 :title \"Plot\"})`"
@@ -2175,12 +2206,9 @@
                           "by pj/plan; pass the original pose to "
                           "pj/draft, or work with the plan directly.")
                      {:got :plan})))
-   (let [fr (ensure-pose pose "pj/draft")]
-     (if (pose/composite? fr)
-       (compositor/composite-pose->draft fr)
-       (pose/leaf->draft fr))))
+   (-> pose (->pose "pj/draft") pose->draft))
   ([pose opts]
-   (draft (options pose opts))))
+   (-> pose (->pose "pj/draft") (options opts) pose->draft)))
 
 (defn- pose-has-data-anywhere?
   "True if any node in the pose tree carries :data -- either on the
@@ -2271,13 +2299,35 @@
                              :scope (if (= p root) :root :sub-pose)}))
             (println (str "Warning: " msg))))))))
 
+(defn- check-pose-shape!
+  "Pre-flight checks shared by pj/plan and pj/plot. Surfaces the
+   bare-template footgun (mapping set but no data and no layers) and
+   warns on pose-level mappings that no layer would consume."
+  [fr caller]
+  (when (and (not (pose-has-data-anywhere? fr))
+             (find-bare-template-leaf fr))
+    (let [bare (find-bare-template-leaf fr)]
+      (throw (ex-info (str caller " got a pose with no data and no layers. "
+                           "The mapping " (pr-str (:mapping bare))
+                           " is set, but nothing to plan from. "
+                           "Add a layer with pj/lay-* (e.g. (pj/lay-point pose :x :y)) "
+                           "or attach data via pj/with-data before calling " caller ".")
+                      {:caller caller
+                       :pose-shape :bare-template
+                       :mapping (:mapping bare)}))))
+  (check-pose-mappings-consumed! fr))
+
 (defn plan
-  "Convert a pose into a plan. For a leaf pose, returns a `Plan`
-   record with one panel per facet variant. For a composite pose,
-   returns a `CompositePlan` record with `:sub-plots` tying each leaf
-   path to its rect and sub-plan, plus `:chrome` carrying the
-   resolved layout geometry (title-band, grid-rect, strip labels,
-   shared-legend spec).
+  "Convert a pose into a plan. Literal composition of the atomic
+   steps: `(-> x ->pose pose->draft draft->plan)`. The 2-arity folds
+   opts into the pose with `pj/options` first:
+   `(-> x ->pose (options opts) pose->draft draft->plan)`.
+
+   For a leaf pose, returns a `Plan` record with one panel per facet
+   variant. For a composite pose, returns a `CompositePlan` record
+   with `:sub-plots` tying each leaf path to its rect and sub-plan,
+   plus `:chrome` carrying the resolved layout geometry (title-band,
+   grid-rect, strip labels, shared-legend spec).
 
    - `(plan pose)`
    - `(plan pose {:title \"My Plot\"})`"
@@ -2286,22 +2336,13 @@
      (throw (ex-info (str "pj/plan expects a pose, not a plan. "
                           "Use the plan directly, or call pj/plot on the pose.")
                      {:got :plan})))
-   (let [fr (ensure-pose pose "pj/plan")]
-     (when (and (not (pose-has-data-anywhere? fr))
-                (find-bare-template-leaf fr))
-       (let [bare (find-bare-template-leaf fr)]
-         (throw (ex-info (str "pj/plan got a pose with no data and no layers. "
-                              "The mapping " (pr-str (:mapping bare))
-                              " is set, but nothing to plan from. "
-                              "Add a layer with pj/lay-* (e.g. (pj/lay-point pose :x :y)) "
-                              "or attach data via pj/with-data before calling pj/plan.")
-                         {:caller "pj/plan"
-                          :pose-shape :bare-template
-                          :mapping (:mapping bare)}))))
-     (check-pose-mappings-consumed! fr)
-     (compositor/pose->plan fr (:opts fr {}))))
+   (let [fr (->pose pose "pj/plan")]
+     (check-pose-shape! fr "pj/plan")
+     (-> fr pose->draft draft->plan)))
   ([pose opts]
-   (plan (options pose opts))))
+   (let [fr (-> pose (->pose "pj/plan") (options opts))]
+     (check-pose-shape! fr "pj/plan")
+     (-> fr pose->draft draft->plan))))
 
 (defn- ensure-renderer-loaded!
   "Lazy-load the renderer namespace for non-default formats. The :svg
@@ -2341,12 +2382,17 @@
                           "by pj/draft; pass the original pose to "
                           "pj/plot to render it end-to-end.")
                      {:got :draft})))
-   (let [fr (ensure-pose pose "pj/plot")
+   (let [fr (->pose pose "pj/plot")
          fmt (or (:format (:opts fr)) :svg)]
      (ensure-renderer-loaded! fmt)
-     (render-impl/plan->plot (plan fr) fmt (:opts fr {}))))
+     (-> fr pose->draft draft->plan
+         (render-impl/plan->plot fmt (:opts fr {})))))
   ([pose opts]
-   (plot (options pose opts))))
+   (let [fr (-> pose (->pose "pj/plot") (options opts))
+         fmt (or (:format (:opts fr)) :svg)]
+     (ensure-renderer-loaded! fmt)
+     (-> fr pose->draft draft->plan
+         (render-impl/plan->plot fmt (:opts fr {}))))))
 
 ;; ---- SVG Summary ----
 
@@ -2600,7 +2646,7 @@
                             " return types like :bufimg.")
                        {:caller "pj/save" :format opts-fmt}))))
    (let [path-str (str path)
-         fr (ensure-pose pose "pj/save")
+         fr (->pose pose "pj/save")
          _ (assert-saveable-pose! "pj/save" fr)
          fr (if (seq opts) (options fr opts) fr)
          pose-fmt (:format (:opts fr))

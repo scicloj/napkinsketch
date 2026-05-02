@@ -20,6 +20,8 @@
 
 (defrecord CompositeDraft [width height sub-drafts chrome-spec layout])
 
+(defrecord LeafDraft [layers opts])
+
 (defn leaf-plan?
   "True if x is a leaf plan (single-pose resolved geometry)."
   [x]
@@ -39,6 +41,16 @@
   "True if x is a composite draft (a tree of sub-drafts with chrome-spec)."
   [x]
   (instance? CompositeDraft x))
+
+(defn leaf-draft?
+  "True if x is a leaf draft (a vector of draft layers + pose-level opts)."
+  [x]
+  (instance? LeafDraft x))
+
+(defn draft?
+  "True if x is a draft (leaf or composite)."
+  [x]
+  (or (leaf-draft? x) (composite-draft? x)))
 
 (defrecord PlanLayer [mark style])
 

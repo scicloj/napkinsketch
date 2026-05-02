@@ -645,9 +645,10 @@
 
 (kind/doc #'pj/draft)
 
-;; Flatten a pose into a vector of draft layers -- one
-;; per applicable layer, with all scope merged. Useful for
-;; inspecting exactly what the renderer will draw:
+;; Flatten a pose into a draft -- a `LeafDraft` record holding
+;; `:layers` (one map per applicable layer, with all scope merged)
+;; and `:opts` (pose-level options). Useful for inspecting exactly
+;; what the plan stage will consume:
 
 (-> (rdatasets/datasets-iris)
     (pj/pose :sepal-length :sepal-width)
@@ -655,9 +656,9 @@
     pj/draft
     kind/pprint)
 
-(kind/test-last [(fn [d] (and (vector? d)
-                              (= 1 (count d))
-                              (= :point (:mark (first d)))))])
+(kind/test-last [(fn [d] (and (pj/leaf-draft? d)
+                              (= 1 (count (:layers d)))
+                              (= :point (:mark (first (:layers d))))))])
 
 (kind/doc #'pj/plan)
 

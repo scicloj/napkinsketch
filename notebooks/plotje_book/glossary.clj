@@ -159,33 +159,36 @@ my-pose
 
 ;; ## Draft
 ;;
-;; A **draft** is a vector of flat maps produced by `pj/draft`. Each
-;; applicable layer in a pose resolves to one draft element by
-;; merging the pose and layer mappings. Draft elements carry all
-;; the information the pipeline needs: data, columns, mark, stat,
+;; A **draft** is the record produced by `pj/draft`. For a leaf
+;; pose, it is a `LeafDraft` carrying `:layers` (a vector of flat
+;; maps, one per applicable layer with merged pose-and-layer scope)
+;; and `:opts` (the pose-level options that flow into the plan
+;; stage). For a composite pose, it is a `CompositeDraft` carrying
+;; per-leaf drafts plus chrome geometry. Draft layers carry all the
+;; information the plan stage needs: data, columns, mark, stat,
 ;; color, grouping.
 ;;
-;; `pj/draft` is useful for inspecting exactly what the renderer
+;; `pj/draft` is useful for inspecting exactly what the plan stage
 ;; will consume before any domains, ticks, or coordinate math are
 ;; computed.
 
 (-> my-pose pj/draft kind/pprint)
 
-(kind/test-last [(fn [d] (and (vector? d)
-                              (= 1 (count d))
-                              (= :point (:mark (first d)))))])
+(kind/test-last [(fn [d] (and (pj/leaf-draft? d)
+                              (= 1 (count (:layers d)))
+                              (= :point (:mark (first (:layers d))))))])
 
 ;; ## Draft Layer
 ;;
-;; A **draft layer** is one element of a draft -- a single map that
-;; bundles the layer type, the merged mappings (pose + layer scopes),
-;; and the effective dataset for one (leaf, applicable-layer) pair.
-;; It is the specification of what the renderer will draw for that
-;; layer, before any geometry, domains, or ticks are computed.
-;; The plan layer (entry below) is the same idea after geometry has
-;; been resolved.
+;; A **draft layer** is one entry of a draft's `:layers` vector --
+;; a single map that bundles the layer type, the merged mappings
+;; (pose + layer scopes), and the effective dataset for one (leaf,
+;; applicable-layer) pair. It is the specification of what the
+;; renderer will draw for that layer, before any geometry, domains,
+;; or ticks are computed. The plan layer (entry below) is the same
+;; idea after geometry has been resolved.
 
-(-> my-pose pj/draft first kind/pprint)
+(-> my-pose pj/draft :layers first kind/pprint)
 
 (kind/test-last
  [(fn [d]

@@ -432,24 +432,6 @@
            :total-height height
            :title (:title chrome))))
 
-(defn composite->plan
-  "Compose pose -> draft -> plan for a composite pose. Returns a
-   CompositePlan. The defrecord carries `:composite?` true for
-   back-compat with code that treated the previous flagged-Plan shape
-   as the composite indicator."
-  [composite]
-  (composite-draft->plan (composite-pose->draft composite)))
-
-(defn pose->plan
-  "Single entry point that resolves any pose into a plan -- LeafPlan
-   for leaves, CompositePlan for composites. Public-API entry points
-   (`pj/plan`, `pj/plot`, `pj/save`) call through here so the
-   shape-dispatch happens in one place."
-  [pose opts]
-  (if (pose/composite? pose)
-    (composite->plan pose)
-    (plan/draft->plan (pose/leaf->draft pose) opts)))
-
 ;; ---- plan->membrane dispatch for composites ----
 ;;
 ;; The CompositePlan defmethod recurses: it calls plan->membrane on

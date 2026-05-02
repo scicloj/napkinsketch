@@ -943,12 +943,13 @@ s2-tree
 
 (kind/test-last
  [(fn [_]
-    (let [drafts (-> iris
-                     (pj/pose :sepal-length :sepal-width {:color :species})
-                     pj/lay-point
-                     pj/draft)]
-      (and (= 1 (count drafts))
-           (let [d (first drafts)]
+    (let [draft (-> iris
+                    (pj/pose :sepal-length :sepal-width {:color :species})
+                    pj/lay-point
+                    pj/draft)
+          layers (:layers draft)]
+      (and (= 1 (count layers))
+           (let [d (first layers)]
              (and (= :sepal-length (:x d))
                   (= :sepal-width (:y d))
                   (= :species (:color d))

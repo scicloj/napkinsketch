@@ -1,15 +1,18 @@
 ;; # Architecture
 ;;
 ;; Plotje has a five-stage pipeline: **pose** -> **draft** -> **plan**
-;; -> **membrane** -> **plot**. The pose is the hierarchical, composable
-;; specification you write. The draft is the same specification
-;; flattened -- one entry per applicable layer, with outer scope merged
-;; in. The plan replaces specification with computed geometry in data
-;; space. The membrane replaces data-space geometry with drawing
-;; primitives in drawing space. The plot is the rendered output.
+;; -> **membrane** -> **plot**. Each stage is produced from the
+;; previous one by a single atomic step. The user-facing functions
+;; `pj/draft`, `pj/plan`, and `pj/plot` are literal compositions of
+;; those atomic steps, with `pj/options` folded in to inject
+;; pose-level options. Building the API as composition makes each
+;; intermediate value inspectable, each transition independently
+;; testable, and the pipeline as a whole transparent.
 ;;
-;; This notebook traces a small example through every stage,
-;; explains the plan boundary, and shows the namespace structure.
+;; This chapter introduces the atomic steps, walks a small example
+;; through every stage, shows the user-facing functions as
+;; compositions, and explains how composite poses traverse the same
+;; pipeline through internal shape dispatch.
 
 (ns plotje-book.architecture
   (:require
@@ -19,10 +22,6 @@
    [scicloj.metamorph.ml.rdatasets :as rdatasets]
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]
-   ;; Pose substrate -- leaf->draft, resolve-tree
-   [scicloj.plotje.impl.pose :as pose-impl]
-   ;; Plan pipeline -- draft->plan, domains, ticks, legends, layout
-   [scicloj.plotje.impl.plan :as plan-impl]
    ;; Malli schema validation
    [scicloj.plotje.impl.plan-schema :as ss]))
 
@@ -31,10 +30,10 @@
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  B[\"Pose<br/>(composable API)\"] -->|pose->draft| D[\"Draft<br/>(flat maps)\"]
-  D -->|draft->plan| P[\"Plan<br/>(data-space)\"]
-  P -->|scales + coords| M[\"Membrane<br/>(drawing primitives)\"]
-  M -->|tree walk| F[\"Plot<br/>(output)\"]
+  B[\"Pose\"] -->|pj/pose->draft| D[\"Draft\"]
+  D -->|pj/draft->plan| P[\"Plan\"]
+  P -->|pj/plan->membrane| M[\"Membrane\"]
+  M -->|pj/membrane->plot| F[\"Plot\"]
   style B fill:#d1c4e9
   style D fill:#e8f5e9
   style P fill:#fff3e0
@@ -42,60 +41,75 @@ graph LR
   style F fill:#fce4ec
 ")
 
-;; - **Pose** -- a composable description of data, mappings, and
-;;   layers. Built by `pj/pose`, `pj/lay-*`, `pj/options`, `pj/facet`,
-;;   `pj/arrange`, `pj/scale`, and `pj/coord`. No computation has
-;;   happened yet.
+;; The five stages, and what each atomic step adds:
 ;;
-;; - **Draft** -- a flat vector of maps, one per applicable
-;;   layer-and-leaf combination with scope merged. Each map has
-;;   `:data`, `:x`, `:y`, `:mark`, `:stat`, and aesthetic keys.
-;;   Produced by `pj/draft`.
+;; - **Pose** -- the composable specification you write. Built by
+;;   `pj/pose`, `pj/lay-*`, `pj/options`, `pj/facet`, `pj/arrange`,
+;;   `pj/scale`, and `pj/coord`. No computation has happened yet.
+;;   `pj/->pose` lifts raw data into an empty leaf pose, so a dataset
+;;   can flow through the pipeline without an explicit constructor
+;;   call.
+;;
+;; - **Draft** -- the pose flattened. A `LeafDraft` record holds
+;;   `:layers` (a vector of one map per applicable layer with all
+;;   scope merged in -- `:data`, `:x`, `:y`, `:mark`, `:stat`, and
+;;   aesthetic keys) and `:opts` (the pose-level options that flow
+;;   into the plan stage). A composite pose produces a
+;;   `CompositeDraft` instead, carrying per-leaf drafts plus chrome
+;;   geometry. Produced by `pj/pose->draft`.
 ;;
 ;; - **Plan** -- fully resolved geometry in data space (domains,
 ;;   ticks, legends, computed shapes). A `Plan` record (composite
-;;   plots use `CompositePlan`) holding panels as plain maps,
-;;   layers as `PlanLayer` records, and numeric arrays as
-;;   dtype-next buffers. Produced by `pj/plan`. No rendering
-;;   primitives yet.
+;;   plots use `CompositePlan`) holding panels as plain maps, layers
+;;   as `PlanLayer` records, and numeric arrays as dtype-next
+;;   buffers. Produced by `pj/draft->plan`. No rendering primitives
+;;   yet.
 ;;
 ;; - **Membrane** -- positioned drawing primitives (Translate,
-;;   WithColor, Path, Label, ...). Produced by `pj/plan->membrane`.
+;;   WithColor, Path, Label, ...) in drawing space. Produced by
+;;   `pj/plan->membrane`.
 ;;
-;; - **Plot** -- final output (SVG hiccup or BufferedImage).
-;;   Produced by `pj/membrane->plot` walking the membrane tree.
+;; - **Plot** -- rendered output (SVG hiccup or BufferedImage).
+;;   Produced by `pj/membrane->plot`, dispatching on a `:format`
+;;   keyword.
 
 ;; Most users only interact with the pose stage and never need to
-;; think about the others. The stages below matter when you are debugging
-;; unexpected output, building a custom renderer, or extending the library.
+;; think about the others. The stages below matter when you are
+;; debugging unexpected output, building a custom renderer, or
+;; extending the library.
 
-;; ## Pipeline Trace
+;; ## The Atomic Steps
 ;;
-;; Let's trace a small example through all five stages,
-;; inspecting the intermediate values at each step.
+;; Each transition is its own public function. Walk the example
+;; below to see what enters and what leaves at each step.
 
 (def trace-data
   {:x [1 2 3 4 5]
    :y [2 4 3 5 4]
    :g [:a :a :b :b :b]})
 
-;; ### Pose
+;; ### Step 1: pj/->pose
 ;;
-;; The user composes a pose by threading data through
-;; composable functions. The pose records what to plot
-;; without doing any computation.
+;; Lift raw data (or a pose) to a pose. Polymorphic on input: a
+;; dataset becomes a leaf pose with `:data` set; an existing pose
+;; flows through unchanged (idempotent). This is what lets every
+;; downstream function accept either raw data or a pose.
 
 (def trace-pose
   (-> trace-data
+      pj/->pose
       (pj/lay-point :x :y {:color :g})))
 
 trace-pose
 
 (kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
 
-;; A pose is a plain Clojure map. The fields below are what you see
-;; while inspecting the threaded value:
-;;
+;; A pose is a plain Clojure map carrying:
+
+(sort (keys trace-pose))
+
+(kind/test-last [(fn [ks] (every? (set ks) [:layers]))])
+
 ;; - `:data` -- the dataset (coerced to Tablecloth)
 ;;
 ;; - `:mapping` -- mappings that flow into every layer on this pose
@@ -110,64 +124,50 @@ trace-pose
 
 (kind/test-last [true?])
 
-;; Because a leaf pose has no sub-poses, this is a leaf:
-
-(pose-impl/leaf? trace-pose)
-
-(kind/test-last [true?])
-
-;; The mapping carries the position aesthetics (from the positional
-;; :x / :y arguments); the color aesthetic (from the options map) rides
-;; on the layer so a subsequent `pj/lay-*` with different options does
-;; not disturb it:
-
-(:mapping trace-pose)
-
-(kind/test-last [(fn [m] (and (= :x (:x m))
-                              (= :y (:y m))))])
-
-(get-in trace-pose [:layers 0 :layer-type])
-
-(kind/test-last [(fn [m] (= :point m))])
-
-;; The :color mapping lives on the layer's own :mapping:
-
-(get-in trace-pose [:layers 0 :mapping :color])
-
-(kind/test-last [(fn [m] (= :g m))])
-
-;; ### Draft
+;; ### Step 2: pj/pose->draft
 ;;
-;; `pj/draft` flattens the pose into a vector of
-;; maps. Each map merges pose-level mappings, leaf mappings,
-;; and layer details into one flat map with `:data`, `:x`, `:y`, `:mark`, etc.
+;; Flatten a pose into a draft. For a leaf, returns a `LeafDraft`
+;; record carrying the merged layer maps and the pose-level opts.
 
 (def trace-draft
-  (pj/draft trace-pose))
+  (pj/pose->draft trace-pose))
 
-(count trace-draft)
+(type trace-draft)
 
-(kind/test-last [(fn [n] (= 1 n))])
+(kind/test-last [(fn [t] (= "scicloj.plotje.impl.resolve.LeafDraft" (.getName t)))])
 
-(select-keys (first trace-draft) [:x :y :mark :color])
+;; The `:layers` field is the vector of flattened layer maps -- one
+;; per applicable layer:
+
+(:layers trace-draft)
+
+(kind/test-last [(fn [v] (and (vector? v) (= 1 (count v))))])
+
+(select-keys (first (:layers trace-draft)) [:x :y :mark :color])
 
 (kind/test-last [(fn [m] (and (= :x (:x m))
                               (= :y (:y m))
                               (= :point (:mark m))
                               (= :g (:color m))))])
 
-;; ### Plan
+;; The `:opts` field carries plot-level options to be consumed by
+;; the plan stage. Empty here because we set none on the pose:
+
+(:opts trace-draft)
+
+(kind/test-last [(fn [m] (= {} m))])
+
+;; ### Step 3: pj/draft->plan
 ;;
-;; `draft->plan` converts the draft into a plan -- a `Plan` record
-;; carrying data-space geometry, resolved colors, computed domains, and tick info.
-;; The values are still in data space.
+;; Resolve the draft into computed geometry. Reads `:opts` from the
+;; draft to apply title, dimensions, axis labels, and so on.
 
 (def trace-plan
-  (plan-impl/draft->plan trace-draft {}))
+  (pj/draft->plan trace-draft))
 
-trace-plan
+(type trace-plan)
 
-(kind/test-last [(fn [v] (and (map? v) (contains? v :panels)))])
+(kind/test-last [(fn [t] (= "scicloj.plotje.impl.resolve.Plan" (.getName t)))])
 
 ;; The plan validates against a Malli schema:
 
@@ -175,20 +175,35 @@ trace-plan
 
 (kind/test-last [true?])
 
-;; ### Membrane
+;; A plan carries panels, total dimensions, ticks, legends, and
+;; layer geometry -- all in data space, no drawing primitives yet:
+
+(sort (keys trace-plan))
+
+(kind/test-last [(fn [ks] (every? (set ks) [:panels :total-width :total-height :legend]))])
+
+;; ### Step 4: pj/plan->membrane
 ;;
-;; `plan->membrane` converts the plan into a tree of membrane
-;; drawing primitives laid out for the rendered plot.
+;; Convert the plan into a tree of membrane drawing primitives,
+;; positioned in drawing-space coordinates.
 
 (def trace-membrane (pj/plan->membrane trace-plan))
 
-trace-membrane
+(count trace-membrane)
 
-(kind/test-last [(fn [v] (and (vector? v) (pos? (count v))))])
+(kind/test-last [(fn [n] (pos? n))])
 
-;; ### Plot
+;; The membrane tree is a vector of `membrane.ui` records -- each
+;; carries position and style for a drawing primitive:
+
+(mapv (fn [el] (.getSimpleName (class el))) trace-membrane)
+
+(kind/test-last [(fn [v] (every? string? v))])
+
+;; ### Step 5: pj/membrane->plot
 ;;
-;; `membrane->plot` converts the membrane tree into SVG hiccup.
+;; Convert the membrane tree into the rendered output for a chosen
+;; format. Dispatches on the format keyword; `:svg` is built in.
 
 (def trace-plot
   (pj/membrane->plot trace-membrane :svg
@@ -199,7 +214,7 @@ trace-membrane
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
-;; And this is what it looks like when rendered:
+;; And rendered:
 
 (kind/hiccup trace-plot)
 
@@ -207,26 +222,124 @@ trace-membrane
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; ### Shortcut: Pose to Plan
+;; ## Compositions: pj/draft, pj/plan, pj/plot
 ;;
-;; In practice, `pj/plan` does the pose-to-plan conversion
-;; in one step -- computing the draft and running `draft->plan`
-;; internally.
-
-(def shortcut-plan (pj/plan trace-pose))
-
-(ss/valid? shortcut-plan)
-
-(kind/test-last [true?])
-
-;; ### Pipeline Summary
+;; The user-facing functions are literal compositions of the atomic
+;; steps. Reading the source spells out the pipeline:
 ;;
+;; Pseudocode:
+;; ```
+;; (defn draft
+;;   ([x]      (-> x ->pose pose->draft))
+;;   ([x opts] (-> x ->pose (options opts) pose->draft)))
+;;
+;; (defn plan
+;;   ([x]      (-> x ->pose pose->draft draft->plan))
+;;   ([x opts] (-> x ->pose (options opts) pose->draft draft->plan)))
+;;
+;; (defn plot
+;;   ([x]      (-> x ->pose pose->draft draft->plan (plan->plot fmt opts)))
+;;   ([x opts] (-> x ->pose (options opts) pose->draft draft->plan
+;;                 (plan->plot fmt opts))))
+;; ```
+;;
+;; The 2-arity folds the options map into the pose using
+;; `pj/options` before dispatch. The transformation is then a clean
+;; left-to-right pipeline in which each step's output is the next
+;; step's input.
+;;
+;; Because the compositions actually call the atomic steps, swapping
+;; an atomic step (with `with-redefs` for testing, or with a custom
+;; `defmethod` for plan->membrane) automatically reaches every
+;; user-facing function.
+
+;; The composition holds at runtime:
+
+(let [pose-with-opts (-> trace-data
+                         (pj/lay-point :x :y {:color :g})
+                         (pj/options {:title "trace" :x-label "X" :width 700}))
+      via-plan (pj/plan pose-with-opts)
+      via-arrows (-> pose-with-opts pj/pose->draft pj/draft->plan)]
+  {:title-match (= (:title via-plan) (:title via-arrows))
+   :x-label-match (= (:x-label via-plan) (:x-label via-arrows))
+   :width-match (= (:width via-plan) (:width via-arrows))
+   :title (:title via-plan)
+   :x-label (:x-label via-plan)
+   :width (:width via-plan)})
+
+(kind/test-last [(fn [m] (and (:title-match m)
+                              (:x-label-match m)
+                              (:width-match m)
+                              (= "trace" (:title m))
+                              (= "X" (:x-label m))
+                              (= 700 (:width m))))])
+
+;; Plot-level options (title, x-label, width, ...) live on the
+;; pose's `:opts`, ride along on the `LeafDraft`'s `:opts`, and are
+;; consumed by `pj/draft->plan`. Going around the user-facing
+;; convenience and using the atomic steps directly produces the
+;; identical plan.
+
+;; ## Inspectability
+;;
+;; Because each stage is reified as a plain value (or a record), you
+;; can stop the pipeline at any point and inspect what's there.
+
+;; What's in the draft?
+(:layers (pj/pose->draft trace-pose))
+
+(kind/test-last [(fn [v] (= 1 (count v)))])
+
+;; What's the panel count of the plan?
+(count (:panels (pj/draft->plan (pj/pose->draft trace-pose))))
+
+(kind/test-last [(fn [n] (= 1 n))])
+
+;; What's in the membrane tree?
+(count (pj/plan->membrane (pj/draft->plan (pj/pose->draft trace-pose))))
+
+(kind/test-last [(fn [n] (pos? n))])
+
+;; ## Composite Poses
+;;
+;; A composite pose -- one with `:poses` rather than `:layers` --
+;; flows through the same atomic steps. Each step dispatches
+;; internally on shape: a leaf pose produces a `LeafDraft`; a
+;; composite pose produces a `CompositeDraft`. The user-facing
+;; pipeline is unchanged.
+
+(def composite-pose
+  (-> (rdatasets/datasets-iris)
+      (pj/pose :petal-length :petal-width {:color :species})
+      (pj/pose [[:petal-length :petal-width]
+                [:sepal-length :sepal-width]])
+      pj/lay-point))
+
+;; `pj/pose->draft` returns a `CompositeDraft` here:
+
+(type (pj/pose->draft composite-pose))
+
+(kind/test-last [(fn [t] (= "scicloj.plotje.impl.resolve.CompositeDraft" (.getName t)))])
+
+;; And `pj/draft->plan` on a `CompositeDraft` returns a
+;; `CompositePlan`:
+
+(type (-> composite-pose pj/pose->draft pj/draft->plan))
+
+(kind/test-last [(fn [t] (= "scicloj.plotje.impl.resolve.CompositePlan" (.getName t)))])
+
+;; The composition `pj/plan = pj/->pose ; pj/pose->draft ;
+;; pj/draft->plan` holds for both leaf and composite poses; the
+;; shape dispatch happens at the bottom of each atomic step.
+
+;; ## Pipeline Summary
+
 ;; | Stage | Type | Coordinates |
 ;; |:------|:-----|:------------|
 ;; | Pose | Plain map (leaf or composite) | N/A (declarative) |
-;; | Draft | Vector of plain maps | N/A (declarative) |
-;; | Plan | `Plan` / `CompositePlan` record (with `PlanLayer` records and dtype buffers) | Data space |
-;; | Membrane | Record tree | Drawing units |
+;; | Draft | `LeafDraft` or `CompositeDraft` record | N/A (declarative) |
+;; | Plan | `Plan` or `CompositePlan` record (with `PlanLayer` records and dtype buffers) | Data space |
+;; | Membrane | Record tree (membrane.ui primitives in a vector) | Drawing units |
 ;; | Plot | Hiccup vector (`:svg`) or `BufferedImage` (`:bufimg`) | Drawing units |
 
 ;; ## The Plan Boundary
@@ -234,7 +347,7 @@ trace-membrane
 ;; The plan is the boundary between description and rendering. The
 ;; pose and draft stages assemble the description. The plan resolves
 ;; it into computed geometry, domains, ticks, and legend -- still as
-;; plain data, before any layout. The membrane and plot stages
+;; inspectable data, before any layout. The membrane and plot stages
 ;; then produce the rendered output.
 
 ^:kindly/hide-code
@@ -247,10 +360,10 @@ graph LR
   style R fill:#e3f2fd
 ")
 
-;; The plan is inspectable data -- `Plan` and `PlanLayer` records
+;; The plan is inspectable as data -- `Plan` and `PlanLayer` records
 ;; (which behave as maps), plain maps, numbers, strings, keywords,
-;; and dtype-next buffers for numeric arrays. It validates against
-;; a Malli schema.
+;; and dtype-next buffers for numeric arrays. It validates against a
+;; Malli schema.
 ;;
 ;; This separation enables:
 ;;
@@ -258,14 +371,15 @@ graph LR
 ;;
 ;; - Validating plot structure with Malli
 ;;
-;; - Adding alternate backends that consume plans (SVG and raster are implemented today)
+;; - Adding alternate backends that consume plans (SVG and raster
+;;   are implemented today)
 
 ;; ## Multi-Layer Example
 ;;
-;; A pose can hold multiple layers that share one mapping.
-;; Here, scatter points and per-species regression lines share
-;; the same panel because both `lay-point` and `lay-smooth`
-;; target the same `:petal-length`/`:petal-width` mapping.
+;; A pose can hold multiple layers that share one mapping. Here,
+;; scatter points and per-species regression lines share the same
+;; panel because both `lay-point` and `lay-smooth` target the same
+;; `:petal-length`/`:petal-width` mapping.
 
 (def multi-pose
   (-> (rdatasets/datasets-iris)
@@ -284,16 +398,16 @@ graph LR
 (kind/test-last [(fn [v] (and (= :point (first v))
                               (= :smooth (second v))))])
 
-;; The draft produces two maps -- one per layer -- both sharing
-;; the same columns:
+;; The draft produces two layer maps -- one per layer -- both
+;; sharing the same columns:
 
-(def multi-draft (pj/draft multi-pose))
+(def multi-draft (pj/pose->draft multi-pose))
 
-(count multi-draft)
+(count (:layers multi-draft))
 
 (kind/test-last [(fn [n] (= 2 n))])
 
-(mapv :mark multi-draft)
+(mapv :mark (:layers multi-draft))
 
 (kind/test-last [(fn [v] (and (= :point (first v))
                               (= :line (second v))))])
@@ -314,10 +428,8 @@ graph LR
 
 ;; Title and legend are top-level plan keys:
 
-multi-plan
-
-(kind/test-last [(fn [m] (and (= "Iris Petals with Regression" (:title m))
-                              (= 3 (count (get-in m [:legend :entries])))))])
+(kind/test-last [(fn [_] (and (= "Iris Petals with Regression" (:title multi-plan))
+                              (= 3 (count (get-in multi-plan [:legend :entries])))))])
 
 ;; And the rendered result:
 
@@ -356,7 +468,6 @@ graph TD
   PANEL --> SCALE
   PANEL --> COORD[\"impl/coord.clj\"]
   style API fill:#c8e6c9
-  style FR fill:#d1c4e9
   style COMP fill:#d1c4e9
   style PL fill:#d1c4e9
   style SVG fill:#f8bbd0
@@ -365,14 +476,16 @@ graph TD
 
 ;; `impl/pose.clj` holds the pose substrate: `resolve-tree` (merges
 ;; mappings/data/options down from root to every leaf), `leaf->draft`
-;; (flattens a leaf into draft maps with optional facet expansion),
+;; (the leaf-pose flattening that the public `pj/pose->draft` calls),
 ;; and the multi-pair / grid composite utilities.
 ;; `impl/compositor.clj` handles composite rendering -- each leaf
 ;; becomes a sub-plot, tiled via layout.
-;; `impl/plan.clj` holds `draft->plan` (domains, ticks, legends, layout).
-;; `impl/resolve.clj` defines the `Plan`, `CompositePlan`, `PlanLayer`,
-;; and `LayerType` records, and holds `resolve-draft-layer` (single
-;; draft layer resolution, column type inference, grouping).
+;; `impl/plan.clj` holds the leaf-plan computation (domains, ticks,
+;; legends, layout) that the public `pj/draft->plan` calls.
+;; `impl/resolve.clj` defines the `Plan`, `CompositePlan`,
+;; `LeafDraft`, `CompositeDraft`, `PlanLayer`, and `LayerType`
+;; records, and holds `resolve-draft-layer` (single draft layer
+;; resolution, column type inference, grouping).
 ;;
 ;; Most `impl/` namespaces are pure data with no membrane
 ;; dependency. The exception is `impl/compositor.clj`, which bridges
