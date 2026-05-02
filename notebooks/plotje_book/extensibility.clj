@@ -27,39 +27,35 @@
 
 ;; ## Overview
 ;;
-;; The pipeline from data to plot has several stages, each governed
-;; by a multimethod. The pose API adds a composable front-end
-;; that resolves into the same pipeline:
-;;
-;; ```
-;; pose (pj/pose, pj/lay-*, pj/options, ...)
-;;                        |
-;;                   pose->draft
-;;                        v
-;;                      draft
-;;                        |
-;;                   draft->plan (compute-stat, extract-layer, ...)
-;;                        v
-;;                      plan
-;;                        |
-;;                    plan->plot (orchestrates full path)
-;;                        v
-;;             ----------------------
-;;           membrane path      direct path
-;;           plan->membrane     plan->plot
-;;                |
-;;           membrane->plot
-;;                v
-;;              plot                 plot
-;; ```
-;;
+;; The pipeline from pose to plot has five stages, with the
+;; transitions between them governed by multimethods or fixed-
+;; function steps. The dotted `plan->plot` edge is an alternative
+;; direct path -- skipping the membrane stage -- that backends can
+;; register against if they build their figure directly from plan
+;; data.
+
+^:kindly/hide-code
+(kind/mermaid "
+graph LR
+  B[\"Pose\"] -->|pj/pose->draft| D[\"Draft\"]
+  D -->|pj/draft->plan| P[\"Plan\"]
+  P -->|pj/plan->membrane| M[\"Membrane\"]
+  M -->|pj/membrane->plot| F[\"Plot\"]
+  P -.->|pj/plan->plot| F
+  style B fill:#d1c4e9
+  style D fill:#e8f5e9
+  style P fill:#fff3e0
+  style M fill:#e3f2fd
+  style F fill:#fce4ec
+")
+
 ;; | Multimethod | Namespace | Dispatches on | Purpose |
 ;; |:------------|:----------|:--------------|:--------|
 ;; | `compute-stat` | `impl/stat.clj` | `:stat` key | Transform data (identity, bin, count, lm, loess, kde, boxplot) |
 ;; | `extract-layer` | `impl/extract.clj` | `:mark` key | Convert a stat result into a plan layer descriptor |
 ;; | `layer->membrane` | `render/mark.clj` | `:mark` key | Render a plan layer as membrane drawables |
-;; | `plan->plot` | `impl/render.clj` | format keyword | Orchestrate the full path from plan to plot |
-;; | `membrane->plot` | `impl/render.clj` | format keyword | Convert a membrane tree into a plot |
+;; | `plan->plot` | `impl/render.clj` | format keyword | Convert a plan directly into a figure (the direct path) |
+;; | `membrane->plot` | `impl/render.clj` | format keyword | Convert a membrane tree into a figure (the membrane path) |
 ;; | `make-scale` | `impl/scale.clj` | domain type + spec | Build a wadogo scale |
 ;; | `make-coord` | `impl/coord.clj` | coord-type keyword | Build a coordinate function |
 ;; | `apply-position` | `impl/position.clj` | position keyword | Adjust group layout (dodge, stack, fill) |
