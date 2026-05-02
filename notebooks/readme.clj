@@ -28,25 +28,9 @@
 ;; |License |[MIT](https://github.com/scicloj/plotje/blob/main/LICENSE)|
 ;; |Status |🛠alpha🛠|
 ;;
-;; > **Pre-alpha.** The API and visual defaults are still subject to
-;; > change based on early-adopter feedback. Known limitations and
-;; > running gaps are tracked in
-;; > [CHANGELOG.md](https://github.com/scicloj/plotje/blob/main/CHANGELOG.md)
-;; > and the
-;; > [Troubleshooting chapter](https://scicloj.github.io/plotje/plotje_book.troubleshooting.html).
-;;
 ;; ## Usage
 ;;
-;; While the first release `0.1.0` is being prepared, install Plotje
-;; directly from GitHub by adding this to your `deps.edn`:
-;;
-;; ```clojure
-;; io.github.scicloj/plotje
-;; {:git/url "https://github.com/scicloj/plotje.git"
-;;  :git/sha "<sha-from-main>"}
-;; ```
-;;
-;; Once 0.1.0 is published to Clojars, the install line will become:
+;; Add to your `deps.edn`:
 ;;
 ;; ```clojure
 ;; org.scicloj/plotje {:mvn/version "0.1.0"}
