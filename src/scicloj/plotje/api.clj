@@ -2425,16 +2425,6 @@
        (options opts)
        membrane)))
 
-(defn- ensure-renderer-loaded!
-  "Lazy-load the renderer namespace for non-default formats. The :svg
-   backend is loaded as a top-level require by api.clj; the bufimg
-   backend (used for the :bufimg plot return type and the :png save
-   format) is side-loaded on first use to keep startup time down for
-   SVG-only users. Future formats register here."
-  [fmt]
-  (when (or (= fmt :bufimg) (= fmt :png))
-    (require 'scicloj.plotje.render.bufimg)))
-
 (defn plot
   "Render a pose to a figure. The format keyword in the pose's
    `:opts` (`{:format :svg}` -- default; `{:format :bufimg}` for
@@ -2469,7 +2459,6 @@
    (let [fr (->pose pose "pj/plot")
          opts (:opts fr {})
          fmt (or (:format opts) :svg)]
-     (ensure-renderer-loaded! fmt)
      (-> fr
          pose->draft
          draft->plan
@@ -2751,7 +2740,6 @@
                               " does not exist. Create it first or pick"
                               " an existing directory.")
                          {:path path-str :parent (.getPath parent)}))))
-     (ensure-renderer-loaded! resolved-fmt)
      (case resolved-fmt
        :svg (let [out (render-impl/plan->plot (plan fr) :svg (:opts fr {}))]
               (spit path (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
