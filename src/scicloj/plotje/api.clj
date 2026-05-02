@@ -256,14 +256,11 @@
 
    - `(draft->plan (draft pose))`"
   [draft]
-  (cond
-    (resolve/composite-draft? draft) (compositor/composite-draft->plan draft)
-    (resolve/leaf-draft? draft) (plan/draft->plan (:layers draft)
-                                                  (or (:opts draft) {}))
-    :else (throw (ex-info (str "pj/draft->plan expects a draft (from pj/draft); got "
-                               (pr-str (type draft)) ": "
-                               (pr-str draft))
-                          {:value draft :caller "pj/draft->plan"}))))
+  (expect-type draft draft? "draft (from pj/draft)" "pj/draft->plan")
+  (if (resolve/composite-draft? draft)
+    (compositor/composite-draft->plan draft)
+    (plan/draft->plan (:layers draft)
+                      (or (:opts draft) {}))))
 
 (defn draft->membrane
   "Compose draft -> plan -> membrane. The 2-arity takes an opts map
@@ -301,6 +298,9 @@
 
    - `(membrane->plot (plan->membrane (plan pose)) :svg {})`"
   [membrane-tree format opts]
+  (expect-type membrane-tree vector?
+               "membrane drawable tree (a vector from pj/plan->membrane or pj/membrane)"
+               "pj/membrane->plot")
   (render-impl/membrane->plot membrane-tree format opts))
 
 (defn plan->plot
@@ -502,10 +502,7 @@
 
    - `(pose->draft (pj/lay-point data :x :y))`"
   [pose]
-  (when-not (pose? pose)
-    (throw (ex-info (str "pj/pose->draft expects a pose; got "
-                         (pr-str (type pose)))
-                    {:value pose :caller "pj/pose->draft"})))
+  (expect-type pose pose? "pose" "pj/pose->draft")
   (if (pose/composite? pose)
     (compositor/composite-pose->draft pose)
     (resolve/->LeafDraft (pose/leaf->draft pose) (or (:opts pose) {}))))
@@ -2207,6 +2204,12 @@
                           "by pj/plan; pass the original pose to "
                           "pj/draft, or work with the plan directly.")
                      {:got :plan})))
+   (when (draft? pose)
+     (throw (ex-info (str "pj/draft expects a pose, not a draft. "
+                          "A draft is the intermediate stage produced "
+                          "by pj/draft; pass the original pose to "
+                          "pj/draft, or call pj/draft->plan on the draft.")
+                     {:got :draft})))
    (-> pose (->pose "pj/draft") pose->draft))
   ([pose opts]
    (-> pose
@@ -2231,7 +2234,6 @@
   (and (not (:poses leaf))
        (seq (:mapping leaf))
        (empty? (:layers leaf))
-       (empty? (:annotations leaf))
        (nil? (:data leaf))))
 
 (defn- find-bare-template-leaf
@@ -2340,6 +2342,12 @@
      (throw (ex-info (str "pj/plan expects a pose, not a plan. "
                           "Use the plan directly, or call pj/plot on the pose.")
                      {:got :plan})))
+   (when (draft? pose)
+     (throw (ex-info (str "pj/plan expects a pose, not a draft. "
+                          "A draft is the intermediate stage produced "
+                          "by pj/draft; pass the original pose to "
+                          "pj/plan, or call pj/draft->plan on the draft.")
+                     {:got :draft})))
    (let [fr (->pose pose "pj/plan")]
      (check-pose-shape! fr "pj/plan")
      (-> fr pose->draft draft->plan)))
