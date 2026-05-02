@@ -15,7 +15,7 @@
 
 
 (def
- v5_l146
+ v5_l148
  (def
   trace-pose
   (->
@@ -25,25 +25,25 @@
    (pj/lay-smooth {:stat :linear-model}))))
 
 
-(def v7_l154 trace-pose)
+(def v7_l156 trace-pose)
 
 
 (deftest
- t8_l156
+ t8_l158
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v7_l154)))
+   v7_l156)))
 
 
-(def v10_l164 (kind/pprint trace-pose))
+(def v10_l166 (kind/pprint trace-pose))
 
 
 (deftest
- t11_l166
+ t11_l168
  (is
   ((fn
     [v]
@@ -54,7 +54,7 @@
       [(:x (:mapping v)) (:y (:mapping v)) (:color (:mapping v))])
      (= 2 (count (:layers v)))
      (= [:point :smooth] (mapv :layer-type (:layers v)))))
-   v10_l164)))
+   v10_l166)))
 
 
 (def v13_l190 (def trace-draft (pj/pose->draft trace-pose)))
@@ -76,13 +76,13 @@
       (and
        (= [:point :line] (mapv :mark layers))
        (every?
-        (fn* [p1__88216#] (= :petal-length (:x p1__88216#)))
+        (fn* [p1__89876#] (= :petal-length (:x p1__89876#)))
         layers)
        (every?
-        (fn* [p1__88217#] (= :petal-width (:y p1__88217#)))
+        (fn* [p1__89877#] (= :petal-width (:y p1__89877#)))
         layers)
        (every?
-        (fn* [p1__88218#] (= :species (:color p1__88218#)))
+        (fn* [p1__89878#] (= :species (:color p1__89878#)))
         layers)))
      (= {} (:opts d))))
    v14_l193)))
@@ -136,8 +136,8 @@
      (pos? (count v))
      (every?
       (fn*
-       [p1__88219#]
-       (.startsWith (.getName (class p1__88219#)) "membrane.ui."))
+       [p1__89879#]
+       (.startsWith (.getName (class p1__89879#)) "membrane.ui."))
       v)))
    v27_l247)))
 
@@ -223,7 +223,7 @@
        2
        (count
         (filter
-         (fn* [p1__88220#] (.startsWith p1__88220# "rgb"))
+         (fn* [p1__89880#] (.startsWith p1__89880# "rgb"))
          (:colors s)))))))
    v40_l422)))
 

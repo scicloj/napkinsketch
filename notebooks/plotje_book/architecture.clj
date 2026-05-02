@@ -97,11 +97,12 @@ graph LR
 ;; ## Why these stages?
 ;;
 ;; A simpler library could go from data to pixels in one function.
-;; Plotje splits the work into five stages because each stage serves
-;; a distinct concern, and each boundary between stages buys
-;; something concrete:
+;; Plotje splits the work into five stages so each stage addresses
+;; a distinct concern, and each boundary between stages has a
+;; specific purpose:
 ;;
-;; - The **pose** is what the user composes; the **draft** is the
+;; - The **pose** is what the user specifies.
+;; - The **draft** is the
 ;;   same specification flattened, with scope merged in. This
 ;;   boundary lets the layer engine run on a uniform input
 ;;   regardless of how the pose was built (single layer, faceted
@@ -115,13 +116,15 @@ graph LR
 ;;   format, so SVG and raster renderers consume the same membrane
 ;;   tree.
 ;; - The **plot** is the format-specific output: SVG hiccup, a
-;;   BufferedImage, or any other format a backend supports.
+;;   `BufferedImage`, or any other format a backend supports.
 ;;
-;; Two payoffs follow. Every intermediate value can be inspected
-;; with `kind/pprint`. And the same pipeline can be extended by
-;; registering new methods at any stage -- mark, stat, scale,
-;; coordinate system, output format -- without modifying the core.
-;; The Extensibility chapter walks each extension point.
+;; This structure has two consequences. Every intermediate value
+;; can be inspected with `kind/pprint`. The same pipeline can be
+;; extended by registering new methods at any stage -- mark, stat,
+;; scale, coordinate system, output format -- without modifying the
+;; core.
+;; The [Extensibility](./plotje_book.extensibility.html)
+;; chapter walks each extension point.
 
 ;; ## The Atomic Steps
 ;;
@@ -137,11 +140,10 @@ graph LR
 ;; flows through unchanged (idempotent). This is what lets every
 ;; downstream function accept either raw data or a pose.
 ;;
-;; The example we'll trace through every stage: iris petal
+;; The example traced through every stage is iris petal
 ;; measurements, with a scatter and per-species regression line.
-;; Pose-level `:x`, `:y`, and `:color` mappings; two layers stacked
-;; on top of that mapping. Layered enough that the flatten step has
-;; visible work to do, small enough to print.
+;; Pose-level `:x`, `:y`, and `:color` mappings; two layers on top
+;; of that mapping.
 
 (def trace-pose
   (-> (rdatasets/datasets-iris)
@@ -157,7 +159,7 @@ trace-pose
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
-;; And the underlying value is a plain Clojure map -- `kind/pprint`
+;; The underlying value is a plain Clojure map -- `kind/pprint`
 ;; reveals the structure (without it, the auto-render would re-show
 ;; the plot):
 
@@ -177,13 +179,11 @@ trace-pose
 ;; Flatten a pose into a draft. For a leaf, returns a `LeafDraft`
 ;; record carrying the merged layer maps and the pose-level opts.
 ;; The pose-level mapping (`:x :petal-length`, `:y :petal-width`,
-;; `:color :species`) lands inside *each* of the two layer maps,
+;; `:color :species`) appears inside *each* of the two layer maps,
 ;; alongside layer-specific keys (`:mark`, `:stat`). The layer
 ;; engine downstream sees a uniform shape regardless of where each
-;; mapping was originally specified. A draft renders awkwardly by
-;; default (each layer carries an embedded dataset), so wrap it in
-;; `kind/pprint` to inspect. Keys prefixed with double underscores
-;; (e.g. `:__panel-idx`) are internal markers; they ride along
+;; mapping was originally specified. Keys prefixed with double
+;; underscores (e.g. `:__panel-idx`) are internal markers; they pass
 ;; through the plan stage and follow the Clojure "do not consume"
 ;; convention.
 
@@ -267,7 +267,7 @@ trace-pose
 
 (kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
-;; And rendered:
+;; Rendered:
 
 (kind/hiccup trace-plot)
 
@@ -281,7 +281,7 @@ trace-pose
 ;; Each pipeline stage has a user-facing convenience that runs the
 ;; chain from raw input up through that stage:
 ;;
-;; - **pj/pose** -- the asymmetric shortcut. Beyond `pj/->pose`,
+;; - **pj/pose** -- not a literal composition. Beyond `pj/->pose`,
 ;;   it infers mappings from 1-3 column datasets, parses positional
 ;;   column arguments (e.g. `(pj/pose data :x :y)`), builds
 ;;   rectangular composites from `pj/cross` pair lists, and extends
@@ -294,7 +294,7 @@ trace-pose
 ;;
 ;; The four stage-after-pose shortcuts (`pj/draft`, `pj/plan`,
 ;; `pj/membrane`, `pj/plot`) are literal compositions of the atomic
-;; steps. Reading the source spells out the pipeline:
+;; steps. Their source shows the pipeline directly:
 ;;
 ;; Pseudocode:
 ;; ```clojure
@@ -352,13 +352,12 @@ trace-pose
 ;;        plot)))
 ;; ```
 ;;
-;; In `plot`, the `let` lifts the pose, extracts `opts`, and reads
-;; `:format` so the rest of the chain has what it needs; the
-;; subsequent `->` thread runs the four atomic transitions
+;; In `plot`, the `let` binds `pose`, `opts`, and `fmt` for use in
+;; the subsequent `->` thread, which runs the four atomic transitions
 ;; (`pose->draft`, `draft->plan`, `plan->membrane`, `membrane->plot`)
-;; left to right. The plan-derived dimensions and title ride along
-;; on the membrane tree as metadata, so `membrane->plot` can read
-;; them without needing the plan back.
+;; in order. The plan-derived dimensions and title are attached to
+;; the membrane tree as metadata, so `membrane->plot` can read them
+;; without the plan.
 ;;
 ;; The 2-arity of each function folds the options map into the pose
 ;; using `pj/options` before recursing into the 1-arity.
@@ -368,10 +367,10 @@ trace-pose
 ;; an output format yet -- a custom backend, a target Membrane
 ;; itself supports but Plotje has not wired in yet.
 ;;
-;; Because the compositions actually call the atomic steps, swapping
-;; an atomic step (with `with-redefs` for testing, or with a custom
-;; `defmethod` for plan->membrane) automatically reaches every
-;; user-facing function.
+;; Because the compositions call the atomic steps, redefining an
+;; atomic step (with `with-redefs` for testing, or with a custom
+;; `defmethod` for plan->membrane) takes effect in every user-facing
+;; function.
 
 ;; The composition holds at runtime:
 
@@ -398,26 +397,23 @@ trace-pose
                               (= "Petal length" (:x-label m))
                               (= 700 (:width m))))])
 
-;; Plot-level options (title, x-label, width, ...) live on the
-;; pose's `:opts`, ride along on the `LeafDraft`'s `:opts`, and are
-;; consumed by `pj/draft->plan`. Going around the user-facing
-;; convenience and using the atomic steps directly produces the
-;; identical plan.
+;; Plot-level options (title, x-label, width, ...) are stored on the
+;; pose's `:opts`, copied into the `LeafDraft`'s `:opts`, and read
+;; by `pj/draft->plan`. Calling the atomic steps directly, without
+;; the user-facing convenience, produces the identical plan.
 ;;
-;; The same property gives you free inspectability: stop the chain
-;; at any stage to see what's there. `(-> data ... pj/pose->draft
+;; The same property allows inspection at any stage: stop the chain
+;; before the next atomic step. `(-> data ... pj/pose->draft
 ;; kind/pprint)` shows the draft; `(-> data ... pj/pose->draft
-;; pj/draft->plan)` shows the plan; and so on.
+;; pj/draft->plan)` shows the plan.
 
 ;; ## Where Inference Happens
 ;;
-;; A pipeline that only shuffled structure would be of little use.
-;; Plotje's pipeline is interesting because each atomic step also
-;; **infers**: it fills in choices the user did not bother to
-;; specify. Inference is what lets a tiny dataset alone -- no
-;; mapping, no layers, no opts -- still produce a complete plot.
-;; Every one-line example in this book is the work of the
-;; inference engine baked into the pipeline.
+;; Each atomic step also **infers**: it fills in choices the user
+;; did not specify. Inference is what lets a dataset alone -- with
+;; no mapping, no layers, no opts -- produce a complete plot. Most
+;; one-line examples in this book rely on inference at one or more
+;; stages.
 
 (pj/pose {:x [1 2 3 4 5]
           :y [2 4 3 5 4]
@@ -453,15 +449,14 @@ trace-pose
 ;;   mappings; the coordinate system defaults to `:cartesian`.
 ;;
 ;; All but mapping inference happens in the plan stage. Mapping
-;; inference runs at the front edge -- before any draft exists --
-;; so the rest of the pipeline always sees a pose with mappings.
-;; The plan stage is where the geometry, types, and layer choice
-;; get filled in: the draft is a specification with deliberate
-;; gaps, and the plan is the gap-filled, geometry-resolved snapshot
-;; ready to render. Every inferred default has an explicit override
-;; (`pj/scale`, `pj/coord`, `pj/options`, mapping keys like
-;; `:x-type`), so the user can opt out of any single inference
-;; without losing the others.
+;; inference runs earlier -- before any draft exists -- so the rest
+;; of the pipeline always sees a pose with mappings. The plan stage
+;; is where the geometry, types, and layer choice are resolved: the
+;; draft may leave them unspecified, and the plan fills them in.
+;; Every inferred default has an explicit override (`pj/scale`,
+;; `pj/coord`, `pj/options`, mapping keys like `:x-type`), so the
+;; user can opt out of any single inference without losing the
+;; others.
 
 ;; ## Composite Poses
 ;;
@@ -501,8 +496,8 @@ composite-pose
 
 ;; `pj/membrane` returns the vector of drawing primitives -- one
 ;; `Translate` per leaf plus chrome (column strip labels, shared
-;; legend, title if any). Plan-derived dimensions and title travel
-;; on the vector as metadata.
+;; legend, title if any). Plan-derived dimensions and title are
+;; attached to the vector as metadata.
 
 (pj/membrane composite-pose)
 
@@ -512,7 +507,7 @@ composite-pose
                                 (and (number? total-width)
                                      (number? total-height)))))])
 
-;; And `pj/plot` (the full pipeline) returns the SVG hiccup -- the
+;; `pj/plot` (the full pipeline) returns the SVG hiccup -- the
 ;; same value `composite-pose` auto-renders to at the top of this
 ;; section, just produced explicitly:
 
@@ -527,14 +522,15 @@ composite-pose
 ;; either way -- because each atomic step dispatches on shape at
 ;; the bottom of its call.
 
-;; The composite path also does cross-leaf work the leaf path
-;; cannot. When the composite carries `{:share-scales #{:x :y}}`,
-;; `pj/pose->draft` computes domains across all leaves and injects
-;; them into each per-leaf draft before `pj/draft->plan` runs --
-;; so the resulting panels share axes. This is why shared-scale
-;; resolution belongs to the composite stage and not to per-leaf
-;; planning. See the [Composition](./plotje_book.composition.html)
-;; chapter for worked examples.
+;; The composite path also performs cross-leaf work that has no
+;; per-leaf analogue. When the composite carries
+;; `{:share-scales #{:x :y}}`, `pj/pose->draft` computes domains
+;; across all leaves and inserts them into each per-leaf draft
+;; before `pj/draft->plan` runs, so the resulting panels share
+;; axes. Shared-scale resolution belongs to the composite stage
+;; rather than per-leaf planning. See the
+;; [Composition](./plotje_book.composition.html) chapter for worked
+;; examples.
 
 ;; ## The Plan Boundary
 ;;
@@ -570,22 +566,22 @@ graph LR
 
 ;; ## The Membrane Stage
 ;;
-;; The membrane is Plotje's second important boundary: it separates
-;; data-space geometry from output-format bytes. Where the plan says
-;; "draw a point at data-coordinate (3.4, 7.1) in the color assigned
-;; to species `setosa`", the membrane says "translate to drawing
-;; coordinate (218, 134) and place a colored shape there." The plan
-;; is renderer-agnostic; the membrane is format-agnostic.
+;; The membrane is the second pipeline boundary: it separates
+;; data-space geometry from output-format bytes. The plan describes
+;; what to draw in data coordinates (e.g. a point at (3.4, 7.1) in
+;; the color for species `setosa`); the membrane describes the same
+;; content in drawing coordinates (e.g. a translation to (218, 134)
+;; carrying a colored shape). The plan is renderer-agnostic; the
+;; membrane is format-agnostic.
 ;;
-;; This second boundary gives Plotje its **graphical modularity**:
-;; one membrane tree can be rendered to many output formats. The
-;; pose, draft, plan, and membrane stages are reused unchanged
-;; across formats. A new format that consumes the membrane tree
-;; registers a `defmethod membrane->plot :foo` (the dispatch step
-;; `pj/plot` and `pj/membrane->plot` walk through). A new format
-;; that goes from a plan straight to bytes (skipping membrane
-;; entirely -- e.g., a Plotly-spec target) registers a
-;; `defmethod plan->plot :foo` instead.
+;; This boundary lets one membrane tree be rendered to many output
+;; formats. The pose, draft, plan, and membrane stages are reused
+;; unchanged across formats. A new format that consumes the membrane
+;; tree registers a `defmethod membrane->plot :foo` (the dispatch
+;; step that `pj/plot` and `pj/membrane->plot` use). A new format
+;; that goes from a plan directly to bytes (skipping membrane --
+;; e.g., a Plotly-spec target) registers a `defmethod plan->plot
+;; :foo` instead.
 ;;
 ;; The membrane stage of Plotje is built on
 ;; [Membrane](https://github.com/phronmophobic/membrane) -- the
@@ -605,11 +601,10 @@ graph LR
 ;; Membrane itself supports more rendering targets (terminal,
 ;; native GUI, GL, ...) than Plotje currently exposes. Wiring a new
 ;; target into Plotje has not been done end-to-end yet -- the
-;; defmethod registration is the architectural plug, but each
-;; backend has its own conventions for opts and interactivity that
-;; need to be worked out. The promise of this boundary is that as
-;; Membrane grows, Plotje can grow with it without rethinking how
-;; plots are described.
+;; defmethod registration is the extension point, but each backend
+;; has its own conventions for opts and interactivity that need to
+;; be worked out. As Membrane grows, Plotje can incorporate new
+;; targets without changing how plots are described.
 
 ;; ## Pipeline Summary
 
@@ -680,7 +675,7 @@ graph TD
 
 ;; ## Dependencies
 ;;
-;; Plotje builds on several excellent Clojure libraries:
+;; Plotje builds on several Clojure libraries:
 ;;
 ;; - [Tablecloth](https://scicloj.github.io/tablecloth/) &
 ;;   [dtype-next](https://github.com/cnuernber/dtype-next) --
