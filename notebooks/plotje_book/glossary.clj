@@ -412,12 +412,12 @@ my-pose
 ;;
 ;; The **pipeline** is the five-stage flow from user code to
 ;; rendered output: `pose -> draft -> plan -> membrane -> plot`.
-;; A pose is what you compose; `pj/draft` flattens it into a vector
-;; of maps; `pj/plan` resolves geometry and layout; the membrane
-;; layer turns the plan into drawable primitives; the plot is the
-;; terminal SVG hiccup or PNG output. See the
-;; [Architecture](./plotje_book.architecture.html) chapter for the
-;; per-stage details.
+;; A pose is what you compose; `pj/draft` flattens it into a draft
+;; (a `LeafDraft` or `CompositeDraft` record); `pj/plan` resolves
+;; geometry and layout; the membrane stage turns the plan into
+;; drawable primitives; the plot is the terminal SVG hiccup or PNG
+;; output. See the [Architecture](./plotje_book.architecture.html)
+;; chapter for the per-stage details.
 
 ;; ## Sub-plot
 ;;
@@ -843,7 +843,7 @@ annotated
 ;; | Pipeline | Five-stage flow `pose -> draft -> plan -> membrane -> plot` | Architecture chapter |
 ;; | Sub-plot | One resolved entry of a composite pose's `:poses`, in the plan | `:sub-plots` in plan |
 ;; | Resolve tree | Scope-merge walk: root mappings propagate to every leaf | Internal to `pj/plan` |
-;; | Draft | Vector of draft layers from merging pose and layer mappings | `pj/draft`, automatic during `pj/plan` |
+;; | Draft | `LeafDraft` or `CompositeDraft` record carrying merged layer maps and pose-level options | `pj/draft`, automatic during `pj/plan` |
 ;; | Draft layer | One element of a draft: layer type + merged mappings + data | Element of `pj/draft` output |
 ;; | Layer type | Mark + stat + position bundle | `pj/layer-type-lookup`, `pj/lay-*` |
 ;; | Mark | Visual shape: point, line, bar, area, ... | Key in layer-type map |
@@ -870,6 +870,6 @@ annotated
 ;; | Palette | Ordered color set for categorical aesthetics | `:palette` in `pj/options` |
 ;; | Gradient | Continuous color ramp for numerical mappings | `:color-scale` in `pj/options` |
 ;; | Configuration | Global rendering defaults | `pj/config`, `pj/set-config!`, `pj/with-config` |
-;; | Membrane | Drawable tree (membrane library) | Internal rendering step |
+;; | Membrane | Drawable tree (Membrane library) carrying plan-derived dimensions and title as Clojure metadata | `pj/membrane`, `pj/plan->membrane` |
 ;; | Plot | Final output (SVG hiccup) | `pj/plot`, `pj/save` |
 ;; | Tooltip / Brush | JavaScript hover and selection interactions | `{:tooltip true}` in options |
