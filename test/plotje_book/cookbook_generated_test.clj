@@ -102,8 +102,8 @@
    :value
    (map
     (fn*
-     [p1__83320#]
-     (+ 100.0 (* 30.0 (Math/sin (* (double p1__83320#) 0.12)))))
+     [p1__85643#]
+     (+ 100.0 (* 30.0 (Math/sin (* (double p1__85643#) 0.12)))))
     (range 52))}))
 
 
@@ -485,7 +485,7 @@
      (and
       (pos? (:points s))
       (some
-       (fn* [p1__83321#] (= "virginica" p1__83321#))
+       (fn* [p1__85644#] (= "virginica" p1__85644#))
        (:texts s)))))
    v70_l325)))
 
@@ -539,8 +539,8 @@
  (->
   {:x (range 20),
    :y
-   (map (fn* [p1__83322#] (Math/sin (/ p1__83322# 3.0))) (range 20)),
-   :change (map (fn* [p1__83323#] (- p1__83323# 10)) (range 20))}
+   (map (fn* [p1__85645#] (Math/sin (/ p1__85645# 3.0))) (range 20)),
+   :change (map (fn* [p1__85646#] (- p1__85646# 10)) (range 20))}
   (pj/lay-point :x :y {:color :change})
   (pj/options
    {:color-scale :diverging,
@@ -655,8 +655,8 @@
    ys
    (map
     (fn*
-     [p1__83324#]
-     (+ (* 3 p1__83324#) 5 (* 2 (- (rng/drandom r) 0.5))))
+     [p1__85647#]
+     (+ (* 3 p1__85647#) 5 (* 2 (- (rng/drandom r) 0.5))))
     xs)]
   (->
    {:x xs, :y ys}
@@ -983,7 +983,7 @@
    (let
     [bs (byte-array 8)]
     (.read in bs)
-    (mapv (fn* [p1__83325#] (bit-and p1__83325# 255)) (vec bs))))))
+    (mapv (fn* [p1__85648#] (bit-and p1__85648# 255)) (vec bs))))))
 
 
 (deftest
