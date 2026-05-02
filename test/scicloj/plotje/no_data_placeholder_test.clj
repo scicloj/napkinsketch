@@ -1,13 +1,18 @@
 (ns scicloj.plotje.no-data-placeholder-test
-  "The 'no data' placeholder is drawn over panels whose layers carry
-   no rendered geometry (and that have no annotations). Different
-   layer types use different data slots -- :groups for points/lines/
-   bars/etc., :boxes for boxplot, :violins for violin, :ridges for
-   ridgeline, :tiles for tile/density-2d, :levels for contour. The
-   predicate must check all of these, not just :groups."
+  "The 'no data' placeholder is drawn over panels whose layers
+   render no geometry (and that have no annotations). The check
+   is driven by the rendered output, so it works for built-in
+   marks that store geometry in different slots (:groups, :boxes,
+   :violins, :ridges, :tiles, :levels) and for any extension mark
+   that stores geometry under a custom slot."
   (:require [clojure.test :refer [deftest testing is]]
             [scicloj.plotje.api :as pj]
-            [scicloj.metamorph.ml.rdatasets :as rdatasets]))
+            [scicloj.plotje.impl.extract :as extract]
+            [scicloj.plotje.impl.stat :as stat]
+            [scicloj.plotje.layer-type :as layer-type]
+            [scicloj.plotje.render.mark :as mark]
+            [scicloj.metamorph.ml.rdatasets :as rdatasets]
+            [membrane.ui :as ui]))
 
 (defn- has-no-data-text? [pose]
   (boolean (some #{"no data"} (:texts (pj/svg-summary pose)))))
@@ -67,3 +72,36 @@
                    (pj/lay-point :x :y))]
       (is (has-no-data-text? pose)
           "all-NaN y collapses :groups to empty -> 'no data' should appear"))))
+
+(deftest extension-with-custom-slot-does-not-show-no-data
+  (testing "an extension that stores geometry in a custom slot
+            (here :bars, mirroring waterfall_extension.clj) is
+            recognized by the rendered-marks check"
+    (try
+      (defmethod stat/compute-stat ::custom [{:keys [data x y]}]
+        {:bars (vec (for [row (range (count (data x)))]
+                      {:cat (nth (data x) row)
+                       :val (double (nth (data y) row))}))
+         :x-domain (vec (distinct (data x)))
+         :y-domain [0.0 (apply max (data y))]})
+      (defmethod extract/extract-layer ::custom [_ stat _ _]
+        {:mark ::custom :style {} :bars (:bars stat)})
+      (defmethod mark/layer->membrane ::custom [layer ctx]
+        (let [{:keys [sx sy]} ctx]
+          (vec (for [{:keys [cat val]} (:bars layer)
+                     :let [band (sx cat true)
+                           x0 (:rstart band) x1 (:rend band)
+                           y0 (sy 0.0) y1 (sy val)]]
+                 (ui/with-color [0.3 0.5 0.8 1.0]
+                   (ui/path [x0 y0] [x1 y0] [x1 y1] [x0 y1]))))))
+      (layer-type/register! ::custom {:mark ::custom :stat ::custom})
+      (let [pose (-> {:c ["A" "B" "C"] :v [1.0 2.0 3.0]}
+                     (pj/pose :c :v)
+                     (pj/lay (layer-type/lookup ::custom)))]
+        (is (not (has-no-data-text? pose))))
+      (finally
+        (remove-method stat/compute-stat ::custom)
+        (remove-method extract/extract-layer ::custom)
+        (remove-method mark/layer->membrane ::custom)
+        (swap! @(resolve 'scicloj.plotje.layer-type/registry*)
+               dissoc ::custom)))))
