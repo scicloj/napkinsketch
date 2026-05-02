@@ -204,19 +204,45 @@ trace-membrane
 ;; steps. Reading the source spells out the pipeline:
 ;;
 ;; Pseudocode:
-;; ```
+;; ```clojure
 ;; (defn draft
-;;   ([x]      (-> x ->pose pose->draft))
-;;   ([x opts] (-> x ->pose (options opts) pose->draft)))
+;;   ([x]
+;;    (-> x
+;;        ->pose
+;;        pose->draft))
+;;   ([x opts]
+;;    (-> x
+;;        ->pose
+;;        (options opts)
+;;        pose->draft)))
 ;;
 ;; (defn plan
-;;   ([x]      (-> x ->pose pose->draft draft->plan))
-;;   ([x opts] (-> x ->pose (options opts) pose->draft draft->plan)))
+;;   ([x]
+;;    (-> x
+;;        ->pose
+;;        pose->draft
+;;        draft->plan))
+;;   ([x opts]
+;;    (-> x
+;;        ->pose
+;;        (options opts)
+;;        pose->draft
+;;        draft->plan)))
 ;;
 ;; (defn plot
-;;   ([x]      (-> x ->pose pose->draft draft->plan (plan->plot fmt opts)))
-;;   ([x opts] (-> x ->pose (options opts) pose->draft draft->plan
-;;                 (plan->plot fmt opts))))
+;;   ([x]
+;;    (-> x
+;;        ->pose
+;;        pose->draft
+;;        draft->plan
+;;        (plan->plot fmt opts)))
+;;   ([x opts]
+;;    (-> x
+;;        ->pose
+;;        (options opts)
+;;        pose->draft
+;;        draft->plan
+;;        (plan->plot fmt opts))))
 ;; ```
 ;;
 ;; The 2-arity folds the options map into the pose using

@@ -118,8 +118,8 @@
      (pos? (count v))
      (every?
       (fn*
-       [p1__82343#]
-       (.startsWith (.getName (class p1__82343#)) "membrane.ui."))
+       [p1__82950#]
+       (.startsWith (.getName (class p1__82950#)) "membrane.ui."))
       v)))
    v27_l171)))
 
@@ -158,7 +158,7 @@
 
 
 (def
- v37_l234
+ v37_l260
  (let
   [pose-with-opts
    (->
@@ -178,7 +178,7 @@
 
 
 (deftest
- t38_l246
+ t38_l272
  (is
   ((fn
     [m]
@@ -189,11 +189,11 @@
      (= "trace" (:title m))
      (= "X" (:x-label m))
      (= 700 (:width m))))
-   v37_l234)))
+   v37_l260)))
 
 
 (def
- v40_l272
+ v40_l298
  (def
   composite-pose
   (->
@@ -204,48 +204,48 @@
    pj/lay-point)))
 
 
-(def v41_l279 composite-pose)
+(def v41_l305 composite-pose)
 
 
 (deftest
- t42_l281
+ t42_l307
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v41_l279)))
+   v41_l305)))
 
 
-(def v44_l288 (-> composite-pose pj/pose->draft kind/pprint))
+(def v44_l314 (-> composite-pose pj/pose->draft kind/pprint))
 
 
 (deftest
- t45_l290
+ t45_l316
  (is
   ((fn [d] (and (pj/composite-draft? d) (= 2 (count (:sub-drafts d)))))
-   v44_l288)))
+   v44_l314)))
 
 
-(def v47_l296 (-> composite-pose pj/pose->draft pj/draft->plan))
+(def v47_l322 (-> composite-pose pj/pose->draft pj/draft->plan))
 
 
 (deftest
- t48_l298
+ t48_l324
  (is
   ((fn [p] (and (pj/composite-plan? p) (= 2 (count (:sub-plots p)))))
-   v47_l296)))
+   v47_l322)))
 
 
 (def
- v50_l323
+ v50_l349
  (kind/mermaid
   "\ngraph LR\n  A[\"Pose + draft\"] -->|plan| P[\"Plan\"]\n  P --> R[\"membrane + plot\"]\n  style A fill:#e8f5e9\n  style P fill:#fff3e0\n  style R fill:#e3f2fd\n"))
 
 
 (def
- v52_l354
+ v52_l380
  (def
   multi-pose
   (->
@@ -255,28 +255,28 @@
    (pj/lay-smooth {:stat :linear-model}))))
 
 
-(def v53_l360 multi-pose)
+(def v53_l386 multi-pose)
 
 
 (deftest
- t54_l362
+ t54_l388
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v53_l360)))
+   v53_l386)))
 
 
-(def v56_l371 (def multi-draft (pj/pose->draft multi-pose)))
+(def v56_l397 (def multi-draft (pj/pose->draft multi-pose)))
 
 
-(def v57_l373 (kind/pprint multi-draft))
+(def v57_l399 (kind/pprint multi-draft))
 
 
 (deftest
- t58_l375
+ t58_l401
  (is
   ((fn
     [d]
@@ -284,21 +284,21 @@
      (pj/leaf-draft? d)
      (= 2 (count (:layers d)))
      (= [:point :line] (mapv :mark (:layers d)))))
-   v57_l373)))
+   v57_l399)))
 
 
 (def
- v60_l383
+ v60_l409
  (def
   multi-plan
   (pj/plan multi-pose {:title "Iris Petals with Regression"})))
 
 
-(def v61_l386 multi-plan)
+(def v61_l412 multi-plan)
 
 
 (deftest
- t62_l388
+ t62_l414
  (is
   ((fn
     [m]
@@ -311,26 +311,26 @@
        (= [:point :line] (mapv :mark layers))
        (= 3 (count (:groups (first layers))))
        (= 3 (count (:groups (second layers))))))))
-   v61_l386)))
+   v61_l412)))
 
 
 (def
- v64_l397
+ v64_l423
  (pj/options multi-pose {:title "Iris Petals with Regression"}))
 
 
 (deftest
- t65_l399
+ t65_l425
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v64_l397)))
+   v64_l423)))
 
 
 (def
- v67_l405
+ v67_l431
  (kind/mermaid
   "\ngraph TD\n  API[\"api.clj\"] --> POSE[\"impl/pose.clj\"]\n  API --> RES[\"impl/resolve.clj\"]\n  API --> PL[\"impl/plan.clj\"]\n  API --> COMP[\"impl/compositor.clj\"]\n  POSE --> RES\n  COMP --> POSE\n  COMP --> PL\n  PL --> RES\n  PL --> STAT[\"impl/stat.clj\"]\n  PL --> SCALE[\"impl/scale.clj\"]\n  PL --> DEFAULTS[\"impl/defaults.clj\"]\n  PL --> PS[\"impl/plan_schema.clj\"]\n  API --> RENDER[\"impl/render.clj\"]\n  RENDER --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  API --> RC[\"render/composite.clj\"]\n  RC --> MEMBRANE\n  style API fill:#c8e6c9\n  style COMP fill:#d1c4e9\n  style PL fill:#d1c4e9\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n  style RC fill:#f8bbd0\n"))
