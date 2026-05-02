@@ -26,7 +26,10 @@ Public additions:
 - `pj/->pose` -- lift raw input (data or pose) to a pose. Polymorphic
   on input; the first atomic step of the pipeline.
 - `pj/pose->draft` -- single-step transition from pose to draft.
-- `pj/leaf-draft?` -- predicate for the new `LeafDraft` record.
+- `pj/leaf-draft?`, `pj/composite-draft?` -- predicates for the
+  `LeafDraft` and `CompositeDraft` records returned by `pj/draft`.
+- `pj/leaf-plan?`, `pj/composite-plan?` -- predicates for the
+  `Plan` and `CompositePlan` records returned by `pj/plan`.
 - `pj/membrane` -- composition shortcut for the membrane stage:
   `(-> x ->pose pose->draft draft->plan (plan->membrane opts))`.
   Useful for exploring rendering targets beyond Plotje's current
