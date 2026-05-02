@@ -118,8 +118,8 @@
      (pos? (count v))
      (every?
       (fn*
-       [p1__90127#]
-       (.startsWith (.getName (class p1__90127#)) "membrane.ui."))
+       [p1__90492#]
+       (.startsWith (.getName (class p1__90492#)) "membrane.ui."))
       v)))
    v29_l228)))
 
@@ -203,7 +203,7 @@
        2
        (count
         (filter
-         (fn* [p1__90128#] (.startsWith p1__90128# "rgb"))
+         (fn* [p1__90493#] (.startsWith p1__90493# "rgb"))
          (:colors s)))))))
    v42_l401)))
 
@@ -286,7 +286,7 @@
 
 
 (def
- v61_l514
+ v61_l523
  (def
   multi-pose
   (->
@@ -296,28 +296,28 @@
    (pj/lay-smooth {:stat :linear-model}))))
 
 
-(def v62_l520 multi-pose)
+(def v62_l529 multi-pose)
 
 
 (deftest
- t63_l522
+ t63_l531
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v62_l520)))
+   v62_l529)))
 
 
-(def v65_l531 (def multi-draft (pj/draft multi-pose)))
+(def v65_l540 (def multi-draft (pj/draft multi-pose)))
 
 
-(def v66_l533 (kind/pprint multi-draft))
+(def v66_l542 (kind/pprint multi-draft))
 
 
 (deftest
- t67_l535
+ t67_l544
  (is
   ((fn
     [d]
@@ -325,21 +325,21 @@
      (pj/leaf-draft? d)
      (= 2 (count (:layers d)))
      (= [:point :line] (mapv :mark (:layers d)))))
-   v66_l533)))
+   v66_l542)))
 
 
 (def
- v69_l543
+ v69_l552
  (def
   multi-plan
   (pj/plan multi-pose {:title "Iris Petals with Regression"})))
 
 
-(def v70_l546 (kind/pprint multi-plan))
+(def v70_l555 (kind/pprint multi-plan))
 
 
 (deftest
- t71_l548
+ t71_l557
  (is
   ((fn
     [m]
@@ -353,21 +353,21 @@
        (= [:point :line] (mapv :mark layers))
        (= 3 (count (:groups (first layers))))
        (= 3 (count (:groups (second layers))))))))
-   v70_l546)))
+   v70_l555)))
 
 
 (def
- v73_l561
+ v73_l570
  (def
   multi-membrane
   (pj/membrane multi-pose {:title "Iris Petals with Regression"})))
 
 
-(def v74_l564 (kind/pprint multi-membrane))
+(def v74_l573 (kind/pprint multi-membrane))
 
 
 (deftest
- t75_l566
+ t75_l575
  (is
   ((fn
     [m]
@@ -375,33 +375,33 @@
      (vector? m)
      (pos? (count m))
      (= "Iris Petals with Regression" (:title (meta m)))))
-   v74_l564)))
+   v74_l573)))
 
 
 (def
- v77_l574
+ v77_l583
  (kind/pprint
   (pj/plot multi-pose {:title "Iris Petals with Regression"})))
 
 
 (deftest
- t78_l577
+ t78_l586
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v77_l574)))
+   v77_l583)))
 
 
 (def
- v80_l599
+ v80_l608
  (kind/mermaid
   "\ngraph LR\n  A[\"Pose + draft\"] -->|plan| P[\"Plan\"]\n  P --> R[\"membrane + plot\"]\n  style A fill:#e8f5e9\n  style P fill:#fff3e0\n  style R fill:#e3f2fd\n"))
 
 
 (def
- v82_l668
+ v82_l677
  (kind/mermaid
   "\ngraph TD\n  API[\"api.clj\"] --> POSE[\"impl/pose.clj\"]\n  API --> RES[\"impl/resolve.clj\"]\n  API --> PL[\"impl/plan.clj\"]\n  API --> COMP[\"impl/compositor.clj\"]\n  POSE --> RES\n  COMP --> POSE\n  COMP --> PL\n  PL --> RES\n  PL --> STAT[\"impl/stat.clj\"]\n  PL --> SCALE[\"impl/scale.clj\"]\n  PL --> DEFAULTS[\"impl/defaults.clj\"]\n  PL --> PS[\"impl/plan_schema.clj\"]\n  API --> RENDER[\"impl/render.clj\"]\n  RENDER --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  API --> RC[\"render/composite.clj\"]\n  RC --> MEMBRANE\n  style API fill:#c8e6c9\n  style COMP fill:#d1c4e9\n  style PL fill:#d1c4e9\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n  style RC fill:#f8bbd0\n"))

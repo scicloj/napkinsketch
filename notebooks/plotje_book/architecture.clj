@@ -504,6 +504,15 @@ composite-pose
 ;; either way -- because each atomic step dispatches on shape at
 ;; the bottom of its call.
 
+;; The composite path also does cross-leaf work the leaf path
+;; cannot. When the composite carries `{:share-scales #{:x :y}}`,
+;; `pj/pose->draft` computes domains across all leaves and injects
+;; them into each per-leaf draft before `pj/draft->plan` runs --
+;; so the resulting panels share axes. This is why shared-scale
+;; resolution belongs to the composite stage and not to per-leaf
+;; planning. See the [Composition](./plotje_book.composition.html)
+;; chapter for worked examples.
+
 ;; ## Multi-Layer Example
 ;;
 ;; A pose can hold multiple layers that share one mapping. Here,
