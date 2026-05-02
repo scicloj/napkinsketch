@@ -57,8 +57,11 @@ graph LR
 ;;   scope merged in -- `:data`, `:x`, `:y`, `:mark`, `:stat`, and
 ;;   aesthetic keys) and `:opts` (the pose-level options that flow
 ;;   into the plan stage). A composite pose produces a
-;;   `CompositeDraft` instead, carrying per-leaf drafts plus chrome
-;;   geometry. Produced by `pj/pose->draft`.
+;;   `CompositeDraft` instead, carrying per-leaf drafts
+;;   (`:sub-drafts`), the resolved chrome geometry (`:chrome-spec`),
+;;   the layout map from leaf path to rect (`:layout`), and the
+;;   composite's overall dimensions (`:width`, `:height`). Produced by
+;;   `pj/pose->draft`.
 ;;
 ;; - **Plan** -- fully resolved geometry in data space (domains,
 ;;   ticks, legends, computed shapes). A `Plan` record (composite
@@ -108,16 +111,18 @@ graph LR
 ;; - The **plot** is the format-specific output: SVG hiccup, a
 ;;   BufferedImage, or any other format a backend supports.
 ;;
-;; Two sources of leverage follow that this chapter demonstrates:
-;; each intermediate value can be inspected without running the
-;; rest, and each transition can be tested in isolation. A third
-;; -- extending the pipeline --
-;; is the subject of the Extensibility chapter.
+;; Two payoffs follow. Every intermediate value can be inspected
+;; with `kind/pprint`. And the same pipeline can be extended by
+;; registering new methods at any stage -- mark, stat, scale,
+;; coordinate system, output format -- without modifying the core.
+;; The Extensibility chapter walks each extension point.
 
 ;; ## The Atomic Steps
 ;;
 ;; Each transition is its own public function. Walk the example
-;; below to see what enters and what leaves at each step.
+;; below to see what enters and what leaves at each step. The
+;; per-function reference (arities, arguments, return types) lives
+;; in the [API Reference](./plotje_book.api_reference.html).
 
 (def trace-data
   {:x [1 2 3 4 5]
@@ -245,7 +250,7 @@ trace-pose
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; ## Compositions: pj/pose, pj/draft, pj/plan, pj/membrane, pj/plot
+;; ## Pipeline Shortcuts: pj/pose, pj/draft, pj/plan, pj/membrane, pj/plot
 ;;
 ;; Each pipeline stage has a user-facing convenience that runs the
 ;; chain from raw input up through that stage:
@@ -377,7 +382,7 @@ trace-pose
 ;; kind/pprint)` shows the draft; `(-> data ... pj/pose->draft
 ;; pj/draft->plan)` shows the plan; and so on.
 
-;; ## Inference
+;; ## Where Inference Happens
 ;;
 ;; A pipeline that only shuffled structure would be of little use.
 ;; Plotje's pipeline is interesting because each atomic step also
@@ -418,13 +423,16 @@ trace-pose
 ;;   values; legend entries are derived from the layers' aesthetic
 ;;   mappings; the coordinate system defaults to `:cartesian`.
 ;;
-;; The plan stage is where most inference happens: the draft is a
-;; specification with deliberate gaps, and the plan is the
-;; gap-filled, geometry-resolved snapshot ready to render. Every
-;; inferred default has an explicit override (`pj/scale`,
-;; `pj/coord`, `pj/options`, mapping keys like `:x-type`), so the
-;; user can opt out of any single inference without losing the
-;; others.
+;; All but mapping inference happens in the plan stage. Mapping
+;; inference runs at the front edge -- before any draft exists --
+;; so the rest of the pipeline always sees a pose with mappings.
+;; The plan stage is where the geometry, types, and layer choice
+;; get filled in: the draft is a specification with deliberate
+;; gaps, and the plan is the gap-filled, geometry-resolved snapshot
+;; ready to render. Every inferred default has an explicit override
+;; (`pj/scale`, `pj/coord`, `pj/options`, mapping keys like
+;; `:x-type`), so the user can opt out of any single inference
+;; without losing the others.
 
 ;; ## Composite Poses
 ;;
@@ -531,7 +539,8 @@ multi-pose
 
 (kind/pprint multi-plan)
 
-(kind/test-last [(fn [m] (and (= "Iris Petals with Regression" (:title m))
+(kind/test-last [(fn [m] (and (pj/leaf-plan? m)
+                              (= "Iris Petals with Regression" (:title m))
                               (= 3 (count (get-in m [:legend :entries])))
                               (let [layers (:layers (first (:panels m)))]
                                 (and (= [:point :line] (mapv :mark layers))
@@ -568,7 +577,7 @@ multi-pose
 ;; | Stage | Type | Coordinates |
 ;; |:------|:-----|:------------|
 ;; | Pose | Plain map (leaf or composite) | N/A (declarative) |
-;; | Draft | `LeafDraft` or `CompositeDraft` record | N/A (declarative) |
+;; | Draft | `LeafDraft` (`:layers`, `:opts`) or `CompositeDraft` (`:sub-drafts`, `:chrome-spec`, `:layout`, `:width`, `:height`) record | N/A (declarative) |
 ;; | Plan | `Plan` or `CompositePlan` record (with `PlanLayer` records and dtype buffers) | Data space |
 ;; | Membrane | Record tree (membrane.ui primitives in a vector) | Drawing units |
 ;; | Plot | Hiccup vector (`:svg`) or `BufferedImage` (`:bufimg`) | Drawing units |
@@ -605,7 +614,7 @@ graph LR
 ;; - Adding alternate backends that consume plans (SVG and raster
 ;;   are implemented today)
 
-;; ## The Membrane Layer
+;; ## The Membrane Stage
 ;;
 ;; The membrane is Plotje's second important boundary: it separates
 ;; data-space geometry from output-format bytes. Where the plan says

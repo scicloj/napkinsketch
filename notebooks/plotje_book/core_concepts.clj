@@ -479,7 +479,9 @@ two-panel
 ;; shorthand, not a separate rendering path. Every inferred
 ;; choice can be overridden -- see
 ;; [Inference Rules](./plotje_book.inference_rules.html) for the
-;; full decision logic and override knobs.
+;; full decision logic and override knobs, or
+;; [Architecture](./plotje_book.architecture.html) for where in
+;; the pipeline each kind of inference happens.
 
 ;; ---
 ;; ## Incremental Building
