@@ -177,6 +177,6 @@
                    (seq legend-tree) (into legend-tree)
                    title             (conj (title-drawable title width)))]
     (with-meta (vec composed)
-      {:total-width width
-       :total-height height
+      {:total-width (long width)
+       :total-height (long height)
        :title title})))

@@ -4,7 +4,6 @@
    to SVG, PNG, or any other format membrane supports."
   (:require [membrane.ui :as ui]
             [scicloj.plotje.impl.defaults :as defaults]
-            [scicloj.plotje.impl.resolve :as resolve]
             [scicloj.plotje.render.panel :as panel]))
 
 ;; ---- Legend ----
@@ -403,6 +402,6 @@
                          (ui/with-color [0.5 0.5 0.5 1.0]
                            (assoc (ui/label caption (ui/font nil 9))
                                   :text-anchor "end")))])))
-      {:total-width total-width
-       :total-height total-height
+      {:total-width (long total-width)
+       :total-height (long total-height)
        :title title})))
