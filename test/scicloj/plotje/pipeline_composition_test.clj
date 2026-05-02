@@ -6,7 +6,8 @@
    atomic steps (not via an internal bypass)."
   (:require [clojure.test :refer [deftest is testing]]
             [tablecloth.api :as tc]
-            [scicloj.plotje.api :as pj]))
+            [scicloj.plotje.api :as pj]
+            [scicloj.plotje.render.membrane :as membrane]))
 
 (def tiny (tc/dataset {:x [1 2 3] :y [4 5 6]}))
 
@@ -247,3 +248,26 @@
   (let [m (pj/membrane (pj/lay-point tiny :x :y))]
     (is (thrown-with-msg? Exception #"Membrane drawable tree"
                           (pj/plan m)))))
+
+;; ============================================================
+;; Multimethod dispatch invariants
+;; ============================================================
+;;
+;; `plan->membrane` must dispatch on a boolean derived from the
+;; plan, not on the plan's class. Class dispatch leaks defrecord
+;; classes across :reload of impl/resolve.clj (see the defmulti
+;; docstring at render/membrane.clj for the full story). This test
+;; catches a regression at CI time even if a contributor edits the
+;; defmulti without reading the warning.
+
+(deftest plan->membrane-uses-boolean-dispatch
+  (testing "plan->membrane methods are keyed by booleans only"
+    (let [ks (set (keys (methods membrane/plan->membrane)))]
+      (is (every? boolean? ks)
+          (str "plan->membrane multimethod must dispatch on booleans. "
+               "Class-based dispatch leaks defrecord classes across "
+               ":reload of impl/resolve.clj. See render/membrane.clj "
+               "defmulti docstring. Got non-boolean keys: "
+               (pr-str (remove boolean? ks))))
+      (is (= #{false true} ks)
+          "expected exactly two methods: leaf (false) and composite (true)"))))

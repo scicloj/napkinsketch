@@ -202,11 +202,26 @@
 (defmulti plan->membrane
   "Build a membrane drawable tree from a plan.
    Returns a vector of membrane drawables representing the complete plot.
-   Dispatches on `(boolean (:composite? plan))` so leaf and composite plans
-   can take different rendering paths. Boolean dispatch (rather than dispatch
-   on the defrecord class) avoids retaining stale defrecord classes across
-   `:reload` of `impl/resolve.clj` -- a class-dispatched multimethod would
-   pin every old class object in the dispatch table.
+
+   Dispatches on `(boolean (:composite? plan))` -- two methods only,
+   keyed `false` (leaf) and `true` (composite). The
+   `pipeline-composition-test` namespace asserts this invariant at
+   CI time.
+
+   ## DO NOT change this dispatch to class-based.
+
+   An earlier version dispatched on the defrecord class
+   (`(fn [plan _] (class plan))`). Reloading `impl/resolve.clj`
+   (which defines `Plan`/`CompositePlan`) replaced those classes,
+   but the multimethod retained the OLD class objects forever,
+   pinning their classloaders and causing persistent metaspace
+   growth across edit sessions (~70 sibling classes per record
+   reload). Fixed in commit 6a9ac87 (2026-04-28) by switching to
+   boolean dispatch, which has no class identity and so cannot leak
+   across reloads.
+
+   If you need a third dispatch case, add another boolean-derived
+   key (e.g. on a property of the plan), not a class.
 
    2-arity takes an opts map. Recognized keys:
      :tooltip -- when truthy, enables tooltip text generation on data marks."
