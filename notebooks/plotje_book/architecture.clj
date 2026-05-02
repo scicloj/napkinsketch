@@ -322,6 +322,53 @@ trace-pose
 ;; kind/pprint)` shows the draft; `(-> data ... pj/pose->draft
 ;; pj/draft->plan)` shows the plan; and so on.
 
+;; ## Inference
+;;
+;; A pipeline that only shuffled structure would be of little use.
+;; Plotje's pipeline is interesting because each atomic step also
+;; **infers**: it fills in choices the user did not bother to
+;; specify. Inference is what lets `(pj/pose trace-data)` -- the
+;; dataset alone, no mapping, no layers, no opts -- still produce
+;; a complete plot. Every one-line example in this book is the
+;; work of the inference engine baked into the pipeline.
+
+(pj/pose trace-data)
+
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 1 (:panels s))
+                                (= 5 (:points s))
+                                (= 2 (count (filter #(.startsWith % "rgb")
+                                                    (:colors s)))))))])
+
+;; Where each kind of inference lives:
+;;
+;; - **Mapping inference** lives in `pj/->pose` (and `pj/pose`).
+;;   With 1-3 columns, position is auto-mapped: 1 column to `:x`,
+;;   2 columns to `:x` and `:y`, 3 columns add `:color`.
+;; - **Layer-type inference** lives in `pj/draft->plan`. A pose
+;;   without an explicit `pj/lay-*` call drafts to a layer with
+;;   `:mark :infer`; the plan stage picks a concrete mark + stat
+;;   from the column types -- categorical x with numerical y
+;;   produces a boxplot, temporal x with numerical y produces a
+;;   time-series line, numerical x and y produce a scatter, and
+;;   so on.
+;; - **Column-type inference** lives in `pj/draft->plan`.
+;;   `:x-type`/`:y-type`/`:color-type` default from the data
+;;   (numerical / categorical / temporal); a user-supplied
+;;   `:x-type` overrides the default.
+;; - **Geometry inference** lives in `pj/draft->plan`. Domains
+;;   default to data ranges; ticks default to evenly-spaced
+;;   values; legend entries are derived from the layers' aesthetic
+;;   mappings; the coordinate system defaults to `:cartesian`.
+;;
+;; The plan stage is where most inference happens: the draft is a
+;; specification with deliberate gaps, and the plan is the
+;; gap-filled, geometry-resolved snapshot ready to render. Every
+;; inferred default has an explicit override (`pj/scale`,
+;; `pj/coord`, `pj/options`, mapping keys like `:x-type`), so the
+;; user can opt out of any single inference without losing the
+;; others.
+
 ;; ## Composite Poses
 ;;
 ;; A composite pose -- one with `:poses` inside --
