@@ -37,9 +37,9 @@
 
 ;; ## Construction
 ;;
-;; `pj/pose` is the asymmetric pipeline shortcut: where the other
-;; four shortcuts (`pj/draft`, `pj/plan`, `pj/membrane`, `pj/plot`)
-;; are literal compositions of the atomic steps, `pj/pose` adds
+;; `pj/pose` is not a literal composition of the atomic steps:
+;; where the other four shortcuts (`pj/draft`, `pj/plan`,
+;; `pj/membrane`, `pj/plot`) compose them directly, `pj/pose` adds
 ;; mapping inference, positional column-arg parsing, multi-pair
 ;; composite construction, and pose extend-or-promote on top of
 ;; `pj/->pose`. The examples below walk each shape.

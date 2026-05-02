@@ -8,8 +8,8 @@
 ;;   attributes on rendered shapes and ships the matching
 ;;   browser-side script automatically.
 ;; - **Custom wrappers**: wrap the SVG output with `kind/hiccup`
-;;   plus a small `[:script ...]` form for behaviours not
-;;   provided out of the box (e.g. save-as-PNG).
+;;   plus a small `[:script ...]` form for behaviours not built in
+;;   (e.g. save-as-PNG).
 ;;
 ;; The static GFM render of this notebook shows the SVGs as
 ;; flat images. Open the HTML rendering to see the interactions
