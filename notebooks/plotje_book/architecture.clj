@@ -159,7 +159,10 @@ trace-pose
 ;; Flatten a pose into a draft. For a leaf, returns a `LeafDraft`
 ;; record carrying the merged layer maps and the pose-level opts.
 ;; A draft renders awkwardly by default (each layer carries an
-;; embedded dataset), so wrap it in `kind/pprint` to inspect:
+;; embedded dataset), so wrap it in `kind/pprint` to inspect.
+;; Keys prefixed with double underscores (e.g. `:__panel-idx`) are
+;; internal markers; they ride along through the plan stage and
+;; follow the Clojure "do not consume" convention.
 
 (def trace-draft
   (pj/pose->draft trace-pose))

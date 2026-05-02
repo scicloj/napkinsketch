@@ -174,6 +174,10 @@ my-pose
 ;; `pj/draft` is useful for inspecting exactly what the plan stage
 ;; will consume before any domains, ticks, or coordinate math are
 ;; computed.
+;;
+;; Keys prefixed with double underscores (e.g. `:__panel-idx`) are
+;; internal markers used by later stages and follow the Clojure
+;; convention "do not consume." Ignore them when reading a draft.
 
 (-> my-pose pj/draft kind/pprint)
 
