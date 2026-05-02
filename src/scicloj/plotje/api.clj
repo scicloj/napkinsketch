@@ -1990,9 +1990,13 @@
   "Update the root :opts of a pose. Non-pose inputs are coerced via
    ->pose first. resolve-tree merges root :opts into every leaf,
    so root-level writes act as plot-level options across the whole
-   tree."
+   tree.
+
+   Skips the ->pose call when input is already a pose -- callers
+   (options, facet, facet-grid, scale, coord) typically lift first,
+   and ->pose is idempotent but not free."
   [sk-or-pose f & args]
-  (apply update (->pose sk-or-pose) :opts f args))
+  (apply update (if (pose? sk-or-pose) sk-or-pose (->pose sk-or-pose)) :opts f args))
 
 (def ^:private valid-legend-positions
   "Enum of values accepted by :legend-position; mirrors the
