@@ -250,6 +250,176 @@
                           (pj/plan m)))))
 
 ;; ============================================================
+;; Composite equivalence: shortcut equals literal chain
+;; ============================================================
+;;
+;; Composite poses go through `composite-pose->draft`, which does
+;; cross-leaf work (shared-scale domain injection, suppress-* flags,
+;; chrome geometry) before per-leaf draft->plan runs. The shortcut
+;; must call the public arrow steps for composites just as it does
+;; for leaves -- otherwise the boundaries the architecture chapter
+;; teaches would not hold across pose shapes.
+
+(def composite-pose
+  (pj/arrange [(pj/lay-point tiny :x :y)
+               (pj/lay-line  tiny :x :y)]))
+
+(deftest composite-plan-equals-arrow-composition
+  (testing "pj/plan on a composite pose agrees with the literal arrow chain"
+    (let [via-public (pj/plan composite-pose)
+          via-arrows (-> composite-pose pj/->pose pj/pose->draft pj/draft->plan)]
+      (is (pj/composite-plan? via-public))
+      (is (pj/composite-plan? via-arrows))
+      (is (= (count (:sub-plots via-public))
+             (count (:sub-plots via-arrows))))
+      (is (= (:total-width via-public)  (:total-width via-arrows)))
+      (is (= (:total-height via-public) (:total-height via-arrows))))))
+
+(deftest composite-shared-scale-plan-equivalence
+  (testing "shared-scale composite agrees through both routes"
+    (let [shared-pose (pj/arrange [(pj/lay-point tiny :x :y)
+                                   (pj/lay-point tiny :x :y)]
+                                  {:share-scales #{:x :y}})
+          via-public (pj/plan shared-pose)
+          via-arrows (-> shared-pose pj/->pose pj/pose->draft pj/draft->plan)]
+      (is (= (count (:sub-plots via-public))
+             (count (:sub-plots via-arrows))))
+      (let [domains-public (mapv (fn [sp] (-> sp :sub-plot :panels first
+                                              (select-keys [:x-domain :y-domain])))
+                                 (:sub-plots via-public))
+            domains-arrows (mapv (fn [sp] (-> sp :sub-plot :panels first
+                                              (select-keys [:x-domain :y-domain])))
+                                 (:sub-plots via-arrows))]
+        (is (= domains-public domains-arrows)
+            "shared-scale domains agree on both paths")))))
+
+(deftest composite-arrange-opts-flow-through
+  (testing "arrange opts (title, width, height) reach the composite plan via both paths"
+    (let [titled-pose (pj/arrange [(pj/lay-point tiny :x :y)
+                                   (pj/lay-line  tiny :x :y)]
+                                  {:title "Two panels" :width 800 :height 500})
+          via-public (pj/plan titled-pose)
+          via-arrows (-> titled-pose pj/->pose pj/pose->draft pj/draft->plan)]
+      (is (= "Two panels" (-> via-public :chrome :title)))
+      (is (= "Two panels" (-> via-arrows :chrome :title)))
+      (is (= 800 (:total-width via-public)))
+      (is (= 800 (:total-width via-arrows)))
+      (is (= 500 (:total-height via-public)))
+      (is (= 500 (:total-height via-arrows))))))
+
+(deftest composite-plan-calls-public-arrows
+  (testing "pj/plan on a composite calls each public arrow exactly once"
+    (let [pose-calls (atom 0)
+          draft-calls (atom 0)
+          plan-calls (atom 0)
+          orig-pose pj/->pose
+          orig-pose->draft pj/pose->draft
+          orig-draft->plan pj/draft->plan]
+      (with-redefs [pj/->pose (fn
+                                ([x] (swap! pose-calls inc) (orig-pose x))
+                                ([x caller] (swap! pose-calls inc) (orig-pose x caller)))
+                    pj/pose->draft (fn [p] (swap! draft-calls inc) (orig-pose->draft p))
+                    pj/draft->plan (fn [d] (swap! plan-calls inc) (orig-draft->plan d))]
+        (pj/plan composite-pose)
+        (is (= 1 @pose-calls)  "pj/plan calls pj/->pose once for a composite")
+        (is (= 1 @draft-calls) "pj/plan calls pj/pose->draft once for a composite")
+        (is (= 1 @plan-calls)  "pj/plan calls pj/draft->plan once for a composite")))))
+
+;; ============================================================
+;; Faceted leaf: shortcut equals literal chain
+;; ============================================================
+;;
+;; Facet expands a leaf into multiple panels at draft->plan time.
+;; The shortcut must call the public arrow steps the same way for
+;; faceted as for non-faceted leaves.
+
+(deftest faceted-plan-equals-arrow-composition
+  (testing "pj/plan on a faceted leaf agrees with the literal arrow chain"
+    (let [data (tc/dataset {:x [1 2 3 4 5 6]
+                            :y [1 2 3 4 5 6]
+                            :g [:a :a :b :b :c :c]})
+          pose (-> data
+                   (pj/lay-point :x :y)
+                   (pj/facet :g))
+          via-public (pj/plan pose)
+          via-arrows (-> pose pj/->pose pj/pose->draft pj/draft->plan)]
+      (is (= (count (:panels via-public))
+             (count (:panels via-arrows))))
+      (is (= (:total-width via-public)  (:total-width via-arrows)))
+      (is (= (:total-height via-public) (:total-height via-arrows))))))
+
+;; ============================================================
+;; ->pose lift is genuinely called by every shortcut
+;; ============================================================
+;;
+;; Earlier with-redefs tests cover pose->draft/draft->plan/etc. but
+;; not ->pose itself. If a shortcut bypassed the lift step, the
+;; idempotent + dataset-promotion guarantees would be invisible to
+;; users who rebind pj/->pose for testing.
+
+(deftest every-shortcut-calls-public-->pose
+  (let [shortcuts {pj/draft "pj/draft"
+                   pj/plan "pj/plan"
+                   pj/membrane "pj/membrane"
+                   pj/plot "pj/plot"}]
+    (doseq [[shortcut nm] shortcuts]
+      (testing (str nm " calls pj/->pose")
+        (let [calls (atom 0)
+              orig pj/->pose]
+          (with-redefs [pj/->pose (fn
+                                    ([x] (swap! calls inc) (orig x))
+                                    ([x caller] (swap! calls inc) (orig x caller)))]
+            (shortcut (pj/lay-point tiny :x :y))
+            (is (pos? @calls)
+                (str nm " calls pj/->pose at least once"))))))))
+
+;; ============================================================
+;; pj/plot SVG bytes equal the let-form chain
+;; ============================================================
+;;
+;; The end-to-end check: structural summary of the rendered SVG via
+;; the shortcut equals the summary via the explicit let-form chain.
+;; If pj/plot's body ever drifts from the chapter pseudocode, the
+;; output bytes drift too.
+
+(deftest plot-leaf-svg-equals-let-chain
+  (testing "pj/plot on a leaf agrees with the let-form chain at the SVG-summary level"
+    (let [pose (-> (pj/lay-point tiny :x :y)
+                   (pj/options {:title "T" :width 700}))
+          via-public (pj/plot pose)
+          via-arrows (let [p (pj/->pose pose)
+                           opts (:opts p {})
+                           fmt (or (:format opts) :svg)]
+                       (-> p
+                           pj/pose->draft
+                           pj/draft->plan
+                           (pj/plan->membrane opts)
+                           (pj/membrane->plot fmt opts)))
+          s-public (pj/svg-summary via-public)
+          s-arrows (pj/svg-summary via-arrows)]
+      (is (= (:width s-public)  (:width s-arrows)))
+      (is (= (:height s-public) (:height s-arrows)))
+      (is (= (:panels s-public) (:panels s-arrows)))
+      (is (= (:points s-public) (:points s-arrows))))))
+
+(deftest plot-composite-svg-equals-let-chain
+  (testing "pj/plot on a composite agrees with the let-form chain at the SVG-summary level"
+    (let [via-public (pj/plot composite-pose)
+          via-arrows (let [p (pj/->pose composite-pose)
+                           opts (:opts p {})
+                           fmt (or (:format opts) :svg)]
+                       (-> p
+                           pj/pose->draft
+                           pj/draft->plan
+                           (pj/plan->membrane opts)
+                           (pj/membrane->plot fmt opts)))
+          s-public (pj/svg-summary via-public)
+          s-arrows (pj/svg-summary via-arrows)]
+      (is (= (:width s-public)  (:width s-arrows)))
+      (is (= (:height s-public) (:height s-arrows)))
+      (is (= (:panels s-public) (:panels s-arrows))))))
+
+;; ============================================================
 ;; Multimethod dispatch invariants
 ;; ============================================================
 ;;
