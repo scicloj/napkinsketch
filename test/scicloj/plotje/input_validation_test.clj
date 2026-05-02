@@ -746,12 +746,19 @@
   (testing "(pj/plan (pj/pose nil :x :y)) throws clear error instead of cryptic 'Unknown mark: nil'"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
-         #"pj/plan got a pose with no data and no layers"
+         #"pj/pose->draft: got a pose with no data and no layers"
          (pj/plan (pj/pose nil :x :y))))
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
          #"Add a layer with pj/lay-\*"
          (pj/plan (pj/pose nil {:x :a :y :b})))))
+
+  (testing "every shortcut that threads through pose->draft surfaces the same error"
+    (doseq [shortcut [pj/draft pj/plan pj/membrane pj/plot pj/pose->draft]]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"pj/pose->draft: got a pose with no data and no layers"
+           (shortcut (pj/pose nil :x :y))))))
 
   (testing "zero-arity (pj/pose) is not a bare template -- still plannable"
     (is (some? (pj/plan (pj/pose)))))

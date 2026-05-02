@@ -479,7 +479,8 @@
   (pose/pose? x))
 
 (declare prepare-pose pose-kind validate-pose-shape
-         check-position-mapping check-column-ref-types)
+         check-position-mapping check-column-ref-types
+         check-pose-shape!)
 
 (defn ->pose
   "Lift the input to a pose. The first atomic step of the pipeline.
@@ -524,6 +525,7 @@
    - `(pose->draft (pj/lay-point data :x :y))`"
   [pose]
   (expect-type pose pose? "pose" "pj/pose->draft")
+  (check-pose-shape! pose)
   (if (pose/composite? pose)
     (compositor/composite-pose->draft pose)
     (resolve/->LeafDraft (pose/leaf->draft pose) (or (:opts pose) {}))))
@@ -2311,7 +2313,7 @@
       (when (seq unused)
         (let [strict-val (:strict (defaults/config))
               scope (if (= p root) "the root pose" "a sub-pose")
-              msg (str "pj/plan: pose-level mapping at " scope
+              msg (str "pose-level mapping at " scope
                        " carries key(s) " unused
                        " that no descendant layer accepts."
                        " Did you forget a consuming layer (e.g."
@@ -2325,25 +2327,26 @@
                             {:value strict-val})))
           (if strict-val
             (throw (ex-info msg
-                            {:caller "pj/plan"
+                            {:caller "pj/pose->draft"
                              :unused-keys unused
                              :scope (if (= p root) :root :sub-pose)}))
             (println (str "Warning: " msg))))))))
 
 (defn- check-pose-shape!
-  "Pre-flight checks shared by pj/plan and pj/plot. Surfaces the
-   bare-template footgun (mapping set but no data and no layers) and
-   warns on pose-level mappings that no layer would consume."
-  [fr caller]
+  "Precondition for pj/pose->draft (and so for every shortcut that
+   threads through it). Surfaces the bare-template footgun (mapping
+   set but no data and no layers) and warns on pose-level mappings
+   that no layer would consume."
+  [fr]
   (when (and (not (pose-has-data-anywhere? fr))
              (find-bare-template-leaf fr))
     (let [bare (find-bare-template-leaf fr)]
-      (throw (ex-info (str caller " got a pose with no data and no layers. "
+      (throw (ex-info (str "pj/pose->draft: got a pose with no data and no layers. "
                            "The mapping " (pr-str (:mapping bare))
-                           " is set, but nothing to plan from. "
+                           " is set, but nothing to draft from. "
                            "Add a layer with pj/lay-* (e.g. (pj/lay-point pose :x :y)) "
-                           "or attach data via pj/with-data before calling " caller ".")
-                      {:caller caller
+                           "or attach data via pj/with-data.")
+                      {:caller "pj/pose->draft"
                        :pose-shape :bare-template
                        :mapping (:mapping bare)}))))
   (check-pose-mappings-consumed! fr))
@@ -2373,9 +2376,7 @@
                           "by pj/draft; pass the original pose to "
                           "pj/plan, or call pj/draft->plan on the draft.")
                      {:got :draft})))
-   (let [fr (->pose pose "pj/plan")]
-     (check-pose-shape! fr "pj/plan")
-     (-> fr pose->draft draft->plan)))
+   (-> pose (->pose "pj/plan") pose->draft draft->plan))
   ([pose opts]
    (-> pose
        (->pose "pj/plan")
