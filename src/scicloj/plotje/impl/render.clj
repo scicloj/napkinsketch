@@ -18,6 +18,6 @@
   (fn [membrane-tree format opts] format))
 
 (defmethod membrane->plot :default [_ format _]
-  (throw (ex-info (str "Unknown membrane render format: " (pr-str format)
+  (throw (ex-info (str "Unknown render format: " (pr-str format)
                        ". Supported formats: " (vec (sort (remove #{:default} (keys (methods membrane->plot))))))
                   {:format format :supported (vec (sort (keys (methods membrane->plot))))})))

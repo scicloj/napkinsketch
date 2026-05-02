@@ -2355,17 +2355,37 @@
   (when (or (= fmt :bufimg) (= fmt :png))
     (require 'scicloj.plotje.render.bufimg)))
 
+(def ^:private shared-render-opt-keys
+  "Render-time options that flow into plan->membrane regardless of
+   output format -- canvas dimensions and visual config. Tooltip
+   drawables are added by plan->membrane only when `:tooltip true`
+   reaches it; raster formats omit this key so the static image
+   does not contain interaction elements as visible artifacts."
+  [:width :height :theme :palette :color-scale :color-midpoint])
+
+(defn- render-opts-for-format
+  "Per-format render-opts passed to plan->membrane. SVG keeps the
+   tooltip flag (the SVG renderer turns tooltip drawables into
+   interactive elements); other formats drop it."
+  [fmt opts]
+  (case fmt
+    :svg (select-keys opts (conj shared-render-opt-keys :tooltip))
+    (select-keys opts shared-render-opt-keys)))
+
 (defn plot
   "Render a pose to a figure. The format keyword in the pose's
    `:opts` (`{:format :svg}` -- default; `{:format :bufimg}` for
    raster PNG via Java2D; or any other registered backend) selects
-   which `plan->plot` / `membrane->plot` defmethod runs.
+   which `membrane->plot` defmethod runs.
 
    On a composite pose, leaves are rendered individually and tiled
    via the layout in the resolved chrome, in the same chosen format.
    The pose flows through the canonical
    `pose -> draft -> plan -> membrane -> plot` pipeline for both
-   leaf and composite shapes.
+   leaf and composite shapes -- pj/plot is a literal composition of
+   the public atomic steps (->pose, pose->draft, draft->plan,
+   plan->membrane, membrane->plot), with plan-derived dimensions
+   and title spliced into the opts that reach membrane->plot.
 
    - `(plot pose)`
    - `(plot pose {:width 800 :title \"My Plot\"})`
@@ -2384,16 +2404,19 @@
                           "pj/plot to render it end-to-end.")
                      {:got :draft})))
    (let [fr (->pose pose "pj/plot")
-         fmt (or (:format (:opts fr)) :svg)]
-     (ensure-renderer-loaded! fmt)
-     (-> fr pose->draft draft->plan
-         (render-impl/plan->plot fmt (:opts fr {})))))
+         opts (:opts fr {})
+         fmt (or (:format opts) :svg)
+         _ (ensure-renderer-loaded! fmt)
+         plan (-> fr pose->draft draft->plan)]
+     (-> plan
+         (plan->membrane (render-opts-for-format fmt opts))
+         (membrane->plot fmt
+                         (assoc opts
+                                :total-width (:total-width plan)
+                                :total-height (:total-height plan)
+                                :title (:title plan))))))
   ([pose opts]
-   (let [fr (-> pose (->pose "pj/plot") (options opts))
-         fmt (or (:format (:opts fr)) :svg)]
-     (ensure-renderer-loaded! fmt)
-     (-> fr pose->draft draft->plan
-         (render-impl/plan->plot fmt (:opts fr {}))))))
+   (plot (-> pose (->pose "pj/plot") (options opts)))))
 
 ;; ---- SVG Summary ----
 

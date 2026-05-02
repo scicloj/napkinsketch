@@ -155,23 +155,24 @@
       (is (= 1 @calls)
           "pj/draft calls pj/pose->draft once"))))
 
-(deftest plot-calls-the-pipeline
-  (testing "pj/plot literally calls the public pose->draft and draft->plan"
-    (let [pose-calls (atom 0)
-          draft-calls (atom 0)
-          original-pose->draft pj/pose->draft
-          original-draft->plan pj/draft->plan]
-      (with-redefs [pj/pose->draft (fn [p] (swap! pose-calls inc) (original-pose->draft p))
-                    pj/draft->plan (fn [d] (swap! draft-calls inc) (original-draft->plan d))]
+(deftest plot-calls-all-five-atomic-steps
+  (testing "pj/plot literally calls each of the five public atomic steps"
+    (let [pose-draft-calls (atom 0)
+          draft-plan-calls (atom 0)
+          plan-membrane-calls (atom 0)
+          membrane-plot-calls (atom 0)
+          orig-pose->draft pj/pose->draft
+          orig-draft->plan pj/draft->plan
+          orig-plan->membrane pj/plan->membrane
+          orig-membrane->plot pj/membrane->plot]
+      (with-redefs [pj/pose->draft   (fn [p] (swap! pose-draft-calls inc) (orig-pose->draft p))
+                    pj/draft->plan   (fn [d] (swap! draft-plan-calls inc) (orig-draft->plan d))
+                    pj/plan->membrane (fn
+                                        ([p] (swap! plan-membrane-calls inc) (orig-plan->membrane p))
+                                        ([p o] (swap! plan-membrane-calls inc) (orig-plan->membrane p o)))
+                    pj/membrane->plot (fn [m fmt o] (swap! membrane-plot-calls inc) (orig-membrane->plot m fmt o))]
         (pj/plot (pj/lay-point tiny :x :y))
-        (is (= 1 @pose-calls) "pj/plot calls pj/pose->draft once")
-        (is (= 1 @draft-calls) "pj/plot calls pj/draft->plan once"))))
-  (testing "the format dispatch step is render-impl/plan->plot, which is itself
-            a composition of plan->membrane and membrane->plot with
-            format-specific render-opts splicing"
-    ;; This is the one place where the chain visibly goes through a
-    ;; multimethod. pj/plan->plot wraps render-impl/plan->plot. The
-    ;; defmethod for each format calls plan->membrane and
-    ;; membrane->plot internally; this layered composition is the
-    ;; price of having renderers register independently.
-    (is true)))
+        (is (= 1 @pose-draft-calls) "pj/plot calls pj/pose->draft once")
+        (is (= 1 @draft-plan-calls) "pj/plot calls pj/draft->plan once")
+        (is (= 1 @plan-membrane-calls) "pj/plot calls pj/plan->membrane once")
+        (is (= 1 @membrane-plot-calls) "pj/plot calls pj/membrane->plot once")))))
