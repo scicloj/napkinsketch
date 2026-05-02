@@ -534,16 +534,6 @@ composite-pose
 ;; planning. See the [Composition](./plotje_book.composition.html)
 ;; chapter for worked examples.
 
-;; ## Pipeline Summary
-
-;; | Stage | Type | Coordinates |
-;; |:------|:-----|:------------|
-;; | Pose | Plain map (leaf or composite) | N/A (declarative) |
-;; | Draft | `LeafDraft` (`:layers`, `:opts`) or `CompositeDraft` (`:sub-drafts`, `:chrome-spec`, `:layout`, `:width`, `:height`) record | N/A (declarative) |
-;; | Plan | `Plan` or `CompositePlan` record (with `PlanLayer` records and dtype buffers) | Data space |
-;; | Membrane | Record tree (membrane.ui primitives in a vector) | Drawing units |
-;; | Plot | Hiccup vector (`:svg`) or `BufferedImage` (`:bufimg`) | Drawing units |
-
 ;; ## The Plan Boundary
 ;;
 ;; The plan is the boundary between description and rendering. The
@@ -618,6 +608,16 @@ graph LR
 ;; need to be worked out. The promise of this boundary is that as
 ;; Membrane grows, Plotje can grow with it without rethinking how
 ;; plots are described.
+
+;; ## Pipeline Summary
+
+;; | Stage | Type | Coordinates |
+;; |:------|:-----|:------------|
+;; | Pose | Plain map (leaf or composite) | N/A (declarative) |
+;; | Draft | `LeafDraft` (`:layers`, `:opts`) or `CompositeDraft` (`:sub-drafts`, `:chrome-spec`, `:layout`, `:width`, `:height`) record | N/A (declarative) |
+;; | Plan | `Plan` or `CompositePlan` record (with `PlanLayer` records and dtype buffers) | Data space |
+;; | Membrane | Record tree (membrane.ui primitives in a vector) | Drawing units |
+;; | Plot | Hiccup vector (`:svg`) or `BufferedImage` (`:bufimg`) | Drawing units |
 
 ;; ## Namespace Structure
 

@@ -76,13 +76,13 @@
       (and
        (= [:point :line] (mapv :mark layers))
        (every?
-        (fn* [p1__90857#] (= :petal-length (:x p1__90857#)))
+        (fn* [p1__91165#] (= :petal-length (:x p1__91165#)))
         layers)
        (every?
-        (fn* [p1__90858#] (= :petal-width (:y p1__90858#)))
+        (fn* [p1__91166#] (= :petal-width (:y p1__91166#)))
         layers)
        (every?
-        (fn* [p1__90859#] (= :species (:color p1__90859#)))
+        (fn* [p1__91167#] (= :species (:color p1__91167#)))
         layers)))
      (= {} (:opts d))))
    v14_l193)))
@@ -136,8 +136,8 @@
      (pos? (count v))
      (every?
       (fn*
-       [p1__90860#]
-       (.startsWith (.getName (class p1__90860#)) "membrane.ui."))
+       [p1__91168#]
+       (.startsWith (.getName (class p1__91168#)) "membrane.ui."))
       v)))
    v27_l247)))
 
@@ -221,7 +221,7 @@
        2
        (count
         (filter
-         (fn* [p1__90861#] (.startsWith p1__90861# "rgb"))
+         (fn* [p1__91169#] (.startsWith p1__91169# "rgb"))
          (:colors s)))))))
    v40_l422)))
 
@@ -304,7 +304,7 @@
 
 
 (def
- v59_l555
+ v59_l545
  (kind/mermaid
   "\ngraph LR\n  A[\"Pose + draft\"] -->|plan| P[\"Plan\"]\n  P --> R[\"membrane + plot\"]\n  style A fill:#e8f5e9\n  style P fill:#fff3e0\n  style R fill:#e3f2fd\n"))
 
