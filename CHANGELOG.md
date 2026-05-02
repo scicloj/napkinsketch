@@ -11,6 +11,45 @@ Staged for the upcoming first public alpha release. The API and
 visual defaults are still subject to change based on early adopter
 feedback.
 
+### Pipeline API is now truthfully compositional
+
+The user-facing functions `pj/draft`, `pj/plan`, and `pj/plot` are
+literal compositions of atomic single-step transitions. Previously
+`pj/plan` and `pj/plot` called an internal `compositor/pose->plan`
+shortcut that bypassed the public arrow functions; `pj/draft`
+returned a raw vector of layer maps that lost pose-level options on
+the way to `pj/draft->plan`, so `(pj/draft->plan (pj/draft pose))`
+disagreed with `(pj/plan pose)` on title, x-label, and dimensions.
+
+Public additions:
+
+- `pj/->pose` -- lift raw input (data or pose) to a pose. Polymorphic
+  on input; the first atomic step of the pipeline.
+- `pj/pose->draft` -- single-step transition from pose to draft.
+- `pj/leaf-draft?` -- predicate for the new `LeafDraft` record.
+
+Behavioral change:
+
+- `pj/draft` on a leaf pose now returns a `LeafDraft` record holding
+  `:layers` (a vector of one map per applicable layer with merged
+  scope) and `:opts` (the pose-level options that flow into the
+  plan stage). The raw vector shape is gone. Use `(:layers d)` to
+  reach the layer maps. `pj/draft->plan` reads `:opts` from the
+  record so the composition `pj/plan = pj/->pose ; pj/pose->draft ;
+  pj/draft->plan` holds. Composite poses already returned a
+  `CompositeDraft` record; that is unchanged.
+
+### Internal: composite plan->membrane defmethod moved out of `impl/`
+
+`impl/compositor.clj` previously required `membrane.ui` and
+`render.membrane`, making `impl/` not purely data-side. The
+composite `plan->membrane` defmethod and its membrane-drawable
+helpers (title, strip labels, shared legend) move to a new
+`render/composite.clj`. `impl/compositor.clj` keeps only the
+data-side logic: chrome layout, `composite-pose->draft`,
+`composite-draft->plan`. The `impl/` directory now has no membrane
+dependency.
+
 ### Fixed: four mark style options were silently stripped at the option gate
 
 A targeted audit of stat/extract code reading from `draft-layer`

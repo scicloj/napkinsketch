@@ -15,13 +15,13 @@
          #"requires data, but got nil"
          (pj/pose nil))))
 
-  (testing "(pj/lay-point nil :x :y) throws (via ensure-pose)"
+  (testing "(pj/lay-point nil :x :y) throws (via ->pose)"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
          #"requires data, but got nil"
          (pj/lay-point nil :x :y))))
 
-  (testing "(pj/options nil ...) throws (via ensure-pose)"
+  (testing "(pj/options nil ...) throws (via ->pose)"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
          #"requires data, but got nil"
@@ -531,7 +531,7 @@
          #"empty collection"
          (pj/pose {}))))
 
-  (testing "(pj/lay-point [] :x :y) also throws (via ensure-pose)"
+  (testing "(pj/lay-point [] :x :y) also throws (via ->pose)"
     (is (thrown-with-msg?
          clojure.lang.ExceptionInfo
          #"empty collection"

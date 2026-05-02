@@ -937,4 +937,4 @@
         nil)
       (is (re-find #":pose" (str warnings)))
       (is (= 1 (count (re-seq #"Warning: pose has unexpected" (str warnings))))
-          "validation fires once -- ensure-pose short-circuits on already-lifted maps"))))
+          "validation fires once -- ->pose short-circuits on already-lifted maps"))))

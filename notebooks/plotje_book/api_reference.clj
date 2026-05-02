@@ -608,9 +608,18 @@
 (kind/doc #'pj/draft?)
 
 ;; Check whether a value is a draft (from `pj/draft`). True for both
-;; leaf drafts (vectors of layer maps) and composite drafts:
+;; `LeafDraft` records and `CompositeDraft` records:
 
 (pj/draft? (pj/draft (pj/lay-point tiny :x :y)))
+
+(kind/test-last [true?])
+
+(kind/doc #'pj/leaf-draft?)
+
+;; Check whether a draft is a leaf (a `LeafDraft` record carrying
+;; `:layers` and `:opts`, returned by `pj/draft` on a leaf pose):
+
+(pj/leaf-draft? (pj/draft (pj/lay-point tiny :x :y)))
 
 (kind/test-last [true?])
 
@@ -694,6 +703,42 @@ plan1
 (kind/test-last [nil?])
 
 ;; ## Pipeline
+;;
+;; The pipeline is a composition of atomic single-step transitions.
+;; The user-facing functions (`pj/draft`, `pj/plan`, `pj/plot`) are
+;; literal compositions of these steps:
+;;
+;; ```
+;; (defn draft [x]  (-> x ->pose pose->draft))
+;; (defn plan  [x]  (-> x ->pose pose->draft draft->plan))
+;; (defn plot  [x]  (-> x ->pose pose->draft draft->plan
+;;                      (plan->plot fmt opts)))
+;; ```
+;;
+;; Each atomic step is independently callable, so you can stop the
+;; pipeline at any point to inspect the intermediate value.
+
+(kind/doc #'pj/->pose)
+
+;; Lift raw input to a pose. Raw data (datasets, vectors of row
+;; maps, column maps) becomes an empty leaf pose with `:data` set;
+;; an existing pose flows through unchanged (idempotent). The first
+;; atomic step of the pipeline.
+
+(pj/pose? (pj/->pose tiny))
+
+(kind/test-last [true?])
+
+(kind/doc #'pj/pose->draft)
+
+;; Single-step transition: pose to draft. Dispatches on shape --
+;; leaf poses produce `LeafDraft` records, composite poses produce
+;; `CompositeDraft` records.
+
+(pj/leaf-draft?
+ (pj/pose->draft (pj/lay-point tiny :x :y)))
+
+(kind/test-last [true?])
 
 (kind/doc #'pj/plan->membrane)
 
