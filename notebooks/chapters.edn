@@ -20,7 +20,8 @@
                      "polar"
                      "interactivity"
                      "troubleshooting"]
- "📖 Reference" ["api_reference"]
+ "📖 Reference" ["api_reference"
+                 "known_limitations"]
  "🖼 Gallery" ["gallery"]
  "🔬 Internals" ["architecture"
                  "exploring_plans"
