@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>32&nbsp; Development – Plotje</title>
+<title>25&nbsp; Known Limitations – Plotje</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -68,7 +68,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./plotje_book.edge_cases.html" rel="prev">
+<link href="./plotje_book.gallery.html" rel="next">
+<link href="./plotje_book.api_reference.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -119,7 +120,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./plotje_book.architecture.html">🔬 Internals</a></li><li class="breadcrumb-item"><a href="./plotje_book.development.html"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Development</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./plotje_book.api_reference.html">📖 Reference</a></li><li class="breadcrumb-item"><a href="./plotje_book.known_limitations.html"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Known Limitations</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -343,7 +344,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./plotje_book.known_limitations.html" class="sidebar-item-text sidebar-link">
+  <a href="./plotje_book.known_limitations.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Known Limitations</span></span></a>
   </div>
 </li>
@@ -407,7 +408,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./plotje_book.development.html" class="sidebar-item-text sidebar-link active">
+  <a href="./plotje_book.development.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Development</span></span></a>
   </div>
 </li>
@@ -423,24 +424,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#repl-setup" id="toc-repl-setup" class="nav-link active" data-scroll-target="#repl-setup">REPL Setup</a></li>
-  <li><a href="#running-tests" id="toc-running-tests" class="nav-link" data-scroll-target="#running-tests">Running Tests</a></li>
-  <li><a href="#notebook-authoring" id="toc-notebook-authoring" class="nav-link" data-scroll-target="#notebook-authoring">Notebook Authoring</a></li>
-  <li><a href="#regenerating-tests" id="toc-regenerating-tests" class="nav-link" data-scroll-target="#regenerating-tests">Regenerating Tests</a></li>
-  <li><a href="#building-the-book" id="toc-building-the-book" class="nav-link" data-scroll-target="#building-the-book">Building the Book</a></li>
-  <li><a href="#generating-the-readme" id="toc-generating-the-readme" class="nav-link" data-scroll-target="#generating-the-readme">Generating the README</a></li>
-  <li><a href="#building-a-jar" id="toc-building-a-jar" class="nav-link" data-scroll-target="#building-a-jar">Building a JAR</a></li>
-  <li><a href="#deploying-to-clojars" id="toc-deploying-to-clojars" class="nav-link" data-scroll-target="#deploying-to-clojars">Deploying to Clojars</a></li>
-  <li><a href="#continuous-integration" id="toc-continuous-integration" class="nav-link" data-scroll-target="#continuous-integration">Continuous Integration</a></li>
+  <li><a href="#layout-and-visuals" id="toc-layout-and-visuals" class="nav-link active" data-scroll-target="#layout-and-visuals">Layout and Visuals</a></li>
+  <li><a href="#marks" id="toc-marks" class="nav-link" data-scroll-target="#marks">Marks</a></li>
+  <li><a href="#options-and-configuration" id="toc-options-and-configuration" class="nav-link" data-scroll-target="#options-and-configuration">Options and Configuration</a></li>
+  <li><a href="#mixing-keyword-and-string-column-references" id="toc-mixing-keyword-and-string-column-references" class="nav-link" data-scroll-target="#mixing-keyword-and-string-column-references">Mixing Keyword and String Column References</a></li>
+  <li><a href="#ggplot2-features-not-yet-implemented" id="toc-ggplot2-features-not-yet-implemented" class="nav-link" data-scroll-target="#ggplot2-features-not-yet-implemented">ggplot2 Features Not Yet Implemented</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./plotje_book.architecture.html">🔬 Internals</a></li><li class="breadcrumb-item"><a href="./plotje_book.development.html"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Development</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./plotje_book.api_reference.html">📖 Reference</a></li><li class="breadcrumb-item"><a href="./plotje_book.known_limitations.html"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Known Limitations</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Development</span></h1>
+<h1 class="title"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Known Limitations</span></h1>
 </div>
 
 
@@ -469,89 +466,108 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" type="text/javascript"></script>
-<p>How to set up a development environment, run tests, author notebooks, and release new versions.</p>
-<section id="repl-setup" class="level2">
-<h2 class="anchored" data-anchor-id="repl-setup">REPL Setup</h2>
-<p>Start an nREPL server with the <code>:dev</code> alias, which adds notebooks, tests, Clay, and related dependencies to the classpath. One way to do it is the following:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">clojure</span> <span class="at">-M:dev</span> <span class="at">-m</span> nrepl.cmdline</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Connect to the REPL from your editor (Calva, CIDER, Cursive, etc.) using the port printed to the console (also written to <code>.nrepl-port</code>).</p>
-</section>
-<section id="running-tests" class="level2">
-<h2 class="anchored" data-anchor-id="running-tests">Running Tests</h2>
-<p>The test suite runs via <a href="https://github.com/cognitect-labs/test-runner">cognitect test-runner</a>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./run_tests.sh</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This is equivalent to:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">clojure</span> <span class="at">-M:dev:test</span> <span class="at">-m</span> cognitect.test-runner</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>There are two kinds of tests:</p>
+<p>Gaps in the current Plotje release. None produce crashes on canonical inputs; each is documented and tracked for post-alpha work.</p>
+<div class="sourceClojure">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> plotje-book.known-limitations</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Kindly -- notebook rendering protocol</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>   [scicloj.kindly.v4.kind <span class="at">:as</span> kind]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="layout-and-visuals" class="level2">
+<h2 class="anchored" data-anchor-id="layout-and-visuals">Layout and Visuals</h2>
 <ul>
-<li><p><strong>Hand-written tests</strong> in <code>test/scicloj/plotje/</code> – unit tests for core logic (pose resolution, plan resolution, rendering, etc.)</p></li>
-<li><p><strong>Generated tests</strong> in <code>test/plotje_book/</code> – produced from notebooks every time <a href="https://scicloj.github.io/clay/">Clay</a> renders notebooks using Clay’s <a href="https://scicloj.github.io/clay/clay_book.test_generation.html">test generation</a>. Every <code>kind/test-last</code> form in a notebook becomes an assertion in the corresponding <code>*_generated_test.clj</code> file.</p></li>
+<li><p>Multi-layer overlays like <code>(-&gt; data (pj/lay-point ...) (pj/lay-lm ...) (pj/lay-loess ...))</code> do not auto-generate a layer-kind legend to distinguish the two regression curves. Workaround: color each layer explicitly.</p></li>
+<li><p>Histograms, stacked bars, step plots, and other stat-derived marks do not default to a <code>"count"</code> or <code>"density"</code> y-label.</p></li>
+<li><p>Linear continuous color legends (numeric <code>:color</code> mapping with <code>:linear</code> scale) label only the endpoint tick marks on the gradient bar. Intermediate values are unlabeled, making it hard to map interior colors back to data values. Log-scaled continuous color and fill legends do carry intermediate ticks.</p></li>
+<li><p>SPLOMs with 6+ variables at the default 600x400 have tight panels. Bump <code>:width</code>/<code>:height</code> or pin <code>:panel-width</code>/<code>:panel-height</code>.</p></li>
+<li><p>Horizontal bars from <code>(pj/coord :flip)</code> render the first row of data at the bottom of the chart, so a dataset sorted descending (natural “top N” order) produces the biggest bar at the bottom. The behavior matches ggplot2’s <code>coord_flip()</code>. Workaround: sort the dataset ascending before plotting, e.g. <code>(tc/order-by data [:value] [:asc])</code>. A future opt-in flag such as <code>(pj/coord :flip {:reverse-categorical true})</code> would spare users the sort.</p></li>
 </ul>
 </section>
-<section id="notebook-authoring" class="level2">
-<h2 class="anchored" data-anchor-id="notebook-authoring">Notebook Authoring</h2>
-<p>Notebooks live in <code>notebooks/plotje_book/</code> and are Clojure source files with <code>;;</code> comment blocks for prose (rendered as Markdown by Clay).</p>
-<p>You can explore the data visualizations interactively with Clay.</p>
-<p>To add assertions that verify computed values, use <code>kind/test-last</code> with a function in a vector:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">+</span> <span class="dv">1</span> <span class="dv">2</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>(kind/test-last [(<span class="kw">fn</span> [v] (<span class="kw">=</span> <span class="dv">3</span> v))])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>You may also add arguments after the function:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">+</span> <span class="dv">1</span> <span class="dv">2</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>(kind/test-last [<span class="kw">=</span> <span class="dv">3</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>kind/test-last</code> forms are invisible in rendered output – they only generate test assertions. Do not add comments to them.</p>
-</section>
-<section id="regenerating-tests" class="level2">
-<h2 class="anchored" data-anchor-id="regenerating-tests">Regenerating Tests</h2>
-<p>After editing a notebook, you may regenerate its test file by rendering it:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> '[scicloj.clay.v2.api <span class="at">:as</span> clay])</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>(clay/make! {<span class="at">:source-path</span> <span class="st">"plotje_book/relationships.clj"</span>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This updates <code>test/plotje_book/relationships_generated_test.clj</code>. The generated test files are checked into version control.</p>
-<p>To regenerate all notebooks at once:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> <span class="at">'dev</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>(dev/make-gfm!) <span class="co">; in Github Flavored Markdown format</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">;; or:</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>(dev/make-book!) <span class="co">; as an HTML book</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="building-the-book" class="level2">
-<h2 class="anchored" data-anchor-id="building-the-book">Building the Book</h2>
-<p>The full HTML book is rendered through <a href="https://scicloj.github.io/clay/">Clay</a> and <a href="https://quarto.org/">Quarto</a>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> '[dev <span class="at">:as</span> dev])</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>(dev/make-book!)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Chapter ordering is defined in <code>notebooks/chapters.edn</code>. The output goes to the <code>docs/</code> directory and is published to <a href="https://scicloj.github.io/plotje/">scicloj.github.io/plotje</a>.</p>
-</section>
-<section id="generating-the-readme" class="level2">
-<h2 class="anchored" data-anchor-id="generating-the-readme">Generating the README</h2>
-<p>The <code>README.md</code> is generated from <code>notebooks/readme.clj</code> using Clay’s GFM (GitHub-Flavored Markdown) output. The notebook contains live code examples that produce SVG plots, so the README always shows current output.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">require</span> '[dev <span class="at">:as</span> dev])</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>(dev/make-readme!)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This produces:</p>
+<section id="marks" class="level2">
+<h2 class="anchored" data-anchor-id="marks">Marks</h2>
 <ul>
-<li><code>README.md</code> at the repo root</li>
-<li><code>readme_files/*.svg</code> – rendered plot images referenced by the README</li>
+<li><p><strong>Aesthetic-gate vs.&nbsp;mark-consumer asymmetry.</strong> Several aesthetics are accepted at the universal pose-mapping gate but consumed only by one or two mark extractors. Setting them on other marks is a silent no-op rather than an error.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 30%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Aesthetic</th>
+<th style="text-align: left;">Consumed on</th>
+<th style="text-align: left;">Silently no-op on</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>:size</code> (column ref)</td>
+<td style="text-align: left;"><code>lay-point</code></td>
+<td style="text-align: left;">every other lay-*</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>:alpha</code> (column ref)</td>
+<td style="text-align: left;"><code>lay-point</code></td>
+<td style="text-align: left;">every other lay-* (literal <code>:alpha N</code> works on most via <code>:fixed-alpha</code>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>:shape</code></td>
+<td style="text-align: left;"><code>lay-point</code></td>
+<td style="text-align: left;">text, label, lollipop, summary, …</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">numeric (continuous) <code>:color</code></td>
+<td style="text-align: left;"><code>lay-point</code>, <code>lay-interval-h</code></td>
+<td style="text-align: left;">every other lay-* (a numeric column on a categorical-color path produces banded palette colors instead of a gradient)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">tooltip / row-indices plumbing</td>
+<td style="text-align: left;"><code>lay-point</code>, <code>lay-interval-h</code></td>
+<td style="text-align: left;">every other lay-*</td>
+</tr>
+</tbody>
+</table>
+<p>Workaround: pre-bin or convert the numeric column into a discrete color column where appropriate, or use <code>lay-point</code> for the mark where the aesthetic must vary per row.</p></li>
+<li><p><code>:alpha</code> on <code>pj/lay-rule-h</code>/<code>pj/lay-rule-v</code> is silently dropped at render time (the rendering path reads <code>:color</code> only). Bands honor <code>:alpha</code>. Workaround: use a lighter <code>:color</code> to simulate the visual effect on rules.</p></li>
+<li><p><code>pj/lay-rule-h</code> rendered under <code>(pj/coord :flip)</code> becomes a vertical line; <code>pj/lay-rule-v</code> becomes a horizontal line. The mark name still reflects the unflipped semantics. Add a one-line note in the surrounding prose if the chart’s flipped state is non-obvious.</p></li>
+<li><p><code>:position :dodge</code> is ignored at render-time on nine marks including <code>summary</code> – on <code>lay-bar</code> and <code>lay-summary</code> the dodge request is dropped at construction; on <code>lay-point</code> and <code>lay-line</code> the dodge metadata reaches the plan but no geometric offset is applied. Workaround: pre-compute dodge offsets via <code>tc/group-by</code>.</p></li>
+<li><p>Polar plots for bar-family marks don’t auto-emit category labels – rose charts currently render with zero text.</p></li>
+<li><p>Stacked bars don’t split positive and negative values; all-positive data works, but mixed-sign data stacks incorrectly.</p></li>
+<li><p><code>pj/lay-tile</code> (and the underlying <code>:bin2d</code> stat) requires numeric x and y columns. Passing a categorical axis throws a clear “Stat :bin2d requires a numeric column” error at plan time. Workaround: bin externally and render with explicit numeric bin centers, or use <code>pj/lay-value-bar</code> with <code>{:color :value}</code> for a categorical-axis “heatmap” look.</p></li>
+<li><p><code>pj/lay-bar</code> with <code>:position :stack</code> (or <code>:fill</code>) is count-only and rejects a <code>y</code> column – there is no clean way to render a stacked bar chart of pre-aggregated values (e.g.&nbsp;a “messages per year broken down by tenure bucket” chart where the counts are already computed). <code>pj/lay-area</code> with <code>:position :stack</code> does accept pre-aggregated <code>y</code>, so the pattern works there. Workarounds: lift the aggregation (expand each row back into count-many duplicate rows so <code>:count</code> sums to the pre-aggregated value), or use <code>pj/lay-area</code> with <code>:position :stack</code> on a numeric x. A proper fix (lifting the count-only restriction when <code>y</code> is supplied) is planned.</p></li>
+<li><p>Stack order in <code>pj/lay-area</code> and <code>pj/lay-bar</code> (with <code>:position :stack</code>) follows the sort order of the <code>:color</code> column. There is no <code>:stack-order</code> / <code>:color-order</code> option yet, so forcing a specific bottom-to-top order requires prefixing category labels with sort-stable ordinal characters (<code>"01: ..."</code>, <code>"02: ..."</code>), which leaks into the legend.</p></li>
+<li><p>Annotations are silently skipped under <code>(pj/coord :polar)</code>. A polar rule would need to render as a circle (fixed radius) or spoke (fixed angle); those shapes are not implemented. Use Cartesian or flip coords for annotated plots.</p></li>
+<li><p>Large scatters produce large SVGs (~220 bytes/point). For &gt;10k points, use <code>:format :bufimg</code> for raster output.</p></li>
+<li><p><code>pj/save-png</code> (and the <code>:bufimg</code> raster path generally) truncates the rotated y-axis label after ~6 characters. The SVG path (<code>pj/plot</code> + Clay GFM, or <code>rsvg-convert</code> on the saved SVG) renders the full label. Root cause lives in Membrane’s Java2D backend (the rotated-text bounding box is clipped). Workaround: render to SVG and rasterize externally, or pad <code>:y-label</code> to stay short. Needs an upstream fix in Membrane.</p></li>
+<li><p>LOESS with confidence bands is O(n^2); subsample above ~5k rows.</p></li>
 </ul>
-<p>The book’s <code>index.clj</code> reads <code>README.md</code> and copies <code>readme_files/</code> into <code>notebooks/</code> so that the book’s front page shows the same images. Run <code>make-readme!</code> before <code>make-book!</code> when the README content changes.</p>
 </section>
-<section id="building-a-jar" class="level2">
-<h2 class="anchored" data-anchor-id="building-a-jar">Building a JAR</h2>
-<p>The build uses <a href="https://clojure.org/guides/tools_build">tools.build</a> with <a href="https://github.com/slipset/deps-deploy">deps-deploy</a>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">clojure</span> <span class="at">-T:build</span> ci                 <span class="co"># run tests + build JAR</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">clojure</span> <span class="at">-T:build</span> ci :snapshot true  <span class="co"># build snapshot JAR</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The JAR is written to <code>target/</code>.</p>
+<section id="options-and-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="options-and-configuration">Options and Configuration</h2>
+<ul>
+<li><p><code>:panel-size</code> is a legacy configuration key from the pre-total-first layout. It now emits a deprecation warning and is ignored. Use <code>:panel-width</code> / <code>:panel-height</code> (total-first escape hatches).</p></li>
+<li><p>The <code>:width</code> key on a <code>pj/plan</code> result preserves the user’s original request even when <code>:panel-width</code> pins the real size – inspect <code>:total-width</code>/<code>:total-height</code> for the rendered canvas.</p></li>
+<li><p><code>pj/plan</code> called on a plan or on a hiccup value now throws a clear error. Call <code>pj/plan</code> only on poses.</p></li>
+</ul>
 </section>
-<section id="deploying-to-clojars" class="level2">
-<h2 class="anchored" data-anchor-id="deploying-to-clojars">Deploying to Clojars</h2>
-<p>Two convenience scripts handle the full build-and-deploy workflow:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./release.sh</span>    <span class="co"># test + build + deploy release</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./snapshot.sh</span>   <span class="co"># test + build + deploy snapshot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Both run tests first, then build the JAR, then deploy to <a href="https://clojars.org/org.scicloj/plotje">Clojars</a>. Deployment requires <code>CLOJARS_USERNAME</code> and <code>CLOJARS_PASSWORD</code> environment variables (or a <code>~/.m2/settings.xml</code> with credentials).</p>
+<section id="mixing-keyword-and-string-column-references" class="level2">
+<h2 class="anchored" data-anchor-id="mixing-keyword-and-string-column-references">Mixing Keyword and String Column References</h2>
+<ul>
+<li>Mapping the same column with a keyword in one place and a string in another (e.g.&nbsp;<code>(pj/pose ds {:color :group})</code> then <code>(pj/lay-point :x :y {:color "group"})</code>) is not normalized: the scope hierarchy treats them as different keys and the result is a silent empty plot. Workaround: pick one form (keyword or string) and use it consistently within a pose.</li>
+</ul>
 </section>
-<section id="continuous-integration" class="level2">
-<h2 class="anchored" data-anchor-id="continuous-integration">Continuous Integration</h2>
-<p>GitHub Actions runs the test suite on every push and pull request to <code>main</code> (see <code>.github/workflows/tests.yml</code>). The workflow uses Java 21 (Temurin) and the latest Clojure CLI.</p>
+<section id="ggplot2-features-not-yet-implemented" class="level2">
+<h2 class="anchored" data-anchor-id="ggplot2-features-not-yet-implemented">ggplot2 Features Not Yet Implemented</h2>
+<ul>
+<li><p>The <code>:fill</code> aesthetic is currently consumed only by <code>lay-tile</code> (and the <code>:bin2d</code> output beneath <code>lay-density-2d</code>). On filled marks like <code>lay-bar</code>, <code>lay-area</code>, and <code>lay-violin</code>, <code>:color</code> paints the interior; there is no separate stroke channel.</p></li>
+<li><p>The <code>:linetype</code> aesthetic (ggplot2’s <code>aes(linetype=...)</code> for solid vs.&nbsp;dashed lines) is not implemented. Workaround: encode the same distinction via <code>:color</code> instead.</p></li>
+<li><p>No <code>after_stat()</code> analog. ggplot2 idioms like <code>geom_bar(aes(label=after_stat(count)))</code> and <code>geom_histogram(aes(y=after_stat(density)))</code> reference computed stat values inside aesthetic mappings; Plotje requires a pre-computed column. Workaround: aggregate the data first via <code>tc/group-by</code> + <code>tc/aggregate</code>, then map the count or density column directly.</p></li>
+<li><p>Theme support is shallow vs.&nbsp;ggplot2: today the theme map carries <code>:bg</code>, <code>:grid</code>, <code>:font-size</code>, and a small handful of other keys. Named theme presets (<code>theme_minimal</code>, <code>theme_bw</code>, <code>theme_classic</code>), axis text rotation, panel borders, strip text styling, and <code>legend.position</code> by coordinate are not yet exposed.</p></li>
+<li><p>Per-layer <code>data</code>, <code>guides()</code> for per-aesthetic legend control, <code>scale_*_sqrt</code>/<code>reverse</code>/<code>date</code>. All tracked in the backlog.</p></li>
+</ul>
 <div style="background-color:grey;height:2px;width:100%;"></div>
-<div><pre><small><small>source: <a href="https://github.com/scicloj/plotje/blob/main/notebooks/plotje_book/development.clj">notebooks/plotje_book/development.clj</a></small></small></pre></div>
+<div><pre><small><small>source: <a href="https://github.com/scicloj/plotje/blob/main/notebooks/plotje_book/known_limitations.clj">notebooks/plotje_book/known_limitations.clj</a></small></small></pre></div>
 
 
 </section>
@@ -959,11 +975,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./plotje_book.edge_cases.html" class="pagination-link" aria-label="Edge Cases">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Edge Cases</span></span>
+      <a href="./plotje_book.api_reference.html" class="pagination-link" aria-label="API Reference">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">API Reference</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="./plotje_book.gallery.html" class="pagination-link" aria-label="Gallery">
+        <span class="nav-page-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Gallery</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->
