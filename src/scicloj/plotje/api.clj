@@ -2435,23 +2435,6 @@
   (when (or (= fmt :bufimg) (= fmt :png))
     (require 'scicloj.plotje.render.bufimg)))
 
-(def ^:private shared-render-opt-keys
-  "Render-time options that flow into plan->membrane regardless of
-   output format -- canvas dimensions and visual config. Tooltip
-   drawables are added by plan->membrane only when `:tooltip true`
-   reaches it; raster formats omit this key so the static image
-   does not contain interaction elements as visible artifacts."
-  [:width :height :theme :palette :color-scale :color-midpoint])
-
-(defn- render-opts-for-format
-  "Per-format render-opts passed to plan->membrane. SVG keeps the
-   tooltip flag (the SVG renderer turns tooltip drawables into
-   interactive elements); other formats drop it."
-  [fmt opts]
-  (case fmt
-    :svg (select-keys opts (conj shared-render-opt-keys :tooltip))
-    (select-keys opts shared-render-opt-keys)))
-
 (defn plot
   "Render a pose to a figure. The format keyword in the pose's
    `:opts` (`{:format :svg}` -- default; `{:format :bufimg}` for
@@ -2490,7 +2473,7 @@
      (-> fr
          pose->draft
          draft->plan
-         (plan->membrane (render-opts-for-format fmt opts))
+         (plan->membrane opts)
          (membrane->plot fmt opts))))
   ([pose opts]
    (-> pose
