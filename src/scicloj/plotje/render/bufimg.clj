@@ -9,8 +9,9 @@
            [java.io File]))
 
 (defmethod render/membrane->plot :bufimg [membrane-tree _ opts]
-  (let [w (int (or (:total-width opts) 600))
-        h (int (or (:total-height opts) 400))]
+  (let [m (meta membrane-tree)
+        w (int (or (:total-width m) (:total-width opts) 600))
+        h (int (or (:total-height m) (:total-height opts) 400))]
     (java2d/draw-to-image membrane-tree [w h])))
 
 (defmethod render/plan->plot :bufimg [plan _ opts]

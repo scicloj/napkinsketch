@@ -2405,16 +2405,13 @@
                      {:got :draft})))
    (let [fr (->pose pose "pj/plot")
          opts (:opts fr {})
-         fmt (or (:format opts) :svg)
-         _ (ensure-renderer-loaded! fmt)
-         plan (-> fr pose->draft draft->plan)]
-     (-> plan
+         fmt (or (:format opts) :svg)]
+     (ensure-renderer-loaded! fmt)
+     (-> fr
+         pose->draft
+         draft->plan
          (plan->membrane (render-opts-for-format fmt opts))
-         (membrane->plot fmt
-                         (assoc opts
-                                :total-width (:total-width plan)
-                                :total-height (:total-height plan)
-                                :title (:title plan))))))
+         (membrane->plot fmt opts))))
   ([pose opts]
    (plot (-> pose (->pose "pj/plot") (options opts)))))
 

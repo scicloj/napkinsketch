@@ -268,27 +268,24 @@ trace-pose
 ;;
 ;; (defn plot
 ;;   ([x]
-;;    (let [plan (-> x ->pose pose->draft draft->plan)]
-;;      (-> plan
-;;          (plan->membrane render-opts)
-;;          (membrane->plot fmt plot-opts))))
+;;    (-> x
+;;        ->pose
+;;        pose->draft
+;;        draft->plan
+;;        (plan->membrane render-opts)
+;;        (membrane->plot fmt opts)))
 ;;   ([x opts] (plot (-> x ->pose (options opts)))))
 ;; ```
 ;;
-;; All five atomic steps appear in `plot`'s source: `->pose`,
-;; `pose->draft`, `draft->plan`, `plan->membrane`, `membrane->plot`.
-;; The `let` is needed because `plan->membrane` and `membrane->plot`
-;; both depend on the plan -- the membrane gets the plan's drawables;
-;; `membrane->plot` needs the plan's total dimensions and title to
-;; size and label the figure (these come along in `plot-opts`). The
-;; `render-opts` and `plot-opts` are derived from the pose's
-;; `:opts` plus a small format-specific filter (the SVG renderer
+;; All five atomic steps appear in `plot`'s source as a single
+;; left-to-right pipeline. The plan-derived dimensions and title
+;; ride along on the membrane tree as metadata, so `membrane->plot`
+;; can read them without needing the plan back. `render-opts` is
+;; the pose's `:opts` filtered by the format (the SVG renderer
 ;; consumes `:tooltip`, the bufimg renderer cannot).
 ;;
 ;; The 2-arity folds the options map into the pose using
-;; `pj/options` before dispatch. The transformation is otherwise
-;; a left-to-right pipeline in which each step's output feeds the
-;; next.
+;; `pj/options` before dispatch.
 ;;
 ;; Because the compositions actually call the atomic steps, swapping
 ;; an atomic step (with `with-redefs` for testing, or with a custom

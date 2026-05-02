@@ -140,7 +140,7 @@
 
 (defmethod membrane/plan->membrane true
   [composite-plan _opts]
-  (let [{:keys [width sub-plots chrome]} composite-plan
+  (let [{:keys [width height sub-plots chrome]} composite-plan
         {:keys [title title-band-h grid-rect strip-h strip-w
                 col-labels row-labels n-cols n-rows matrix?
                 shared-legend layout]} chrome
@@ -176,4 +176,7 @@
                    (seq row-strips) (into row-strips)
                    (seq legend-tree) (into legend-tree)
                    title             (conj (title-drawable title width)))]
-    (vec composed)))
+    (with-meta (vec composed)
+      {:total-width width
+       :total-height height
+       :title title})))

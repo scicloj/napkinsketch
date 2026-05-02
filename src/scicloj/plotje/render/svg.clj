@@ -286,7 +286,11 @@
                                                       (.setAttribute p "opacity" "0.15")))))))))))))
 
 (defmethod render/membrane->plot :svg [membrane-tree _ opts]
-  (let [{:keys [total-width total-height tooltip brush title]} opts
+  (let [m (meta membrane-tree)
+        total-width (or (:total-width m) (:total-width opts))
+        total-height (or (:total-height m) (:total-height opts))
+        title (or (:title m) (:title opts))
+        {:keys [tooltip brush]} opts
         svg-body (membrane->svg membrane-tree)
         svg (wrap-svg total-width total-height svg-body title)
         interactive? (or tooltip brush)]

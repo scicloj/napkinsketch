@@ -315,88 +315,94 @@
                                (ui/with-color strip-label-color
                                  (ui/label (:row-label p) (ui/font nil strip-fsize)))))))))]
 
-    ;; Build full membrane tree
-    (vec
-     (concat
-      ;; Title
-      (when title
-        (let [fsize title-fsize]
-          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) 14
-                         (ui/with-color text-color
-                           (assoc (ui/label title (ui/font nil fsize))
-                                  :text-anchor "middle")))]))
-      ;; Subtitle
-      (when subtitle
-        [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) 30
-                       (ui/with-color [0.4 0.4 0.4 1.0]
-                         (assoc (ui/label subtitle (ui/font nil (- title-fsize 2)))
-                                :text-anchor "middle")))])
-      ;; Y-axis label
-      (when y-label
-        (let [fsize label-fsize]
-          [(ui/translate 12 (+ title-pad strip-h (/ (* grid-rows ph) 2.0))
-                         (membrane.ui.Rotate. -90
-                                              (ui/with-color text-color
-                                                (assoc (ui/label y-label (ui/font nil fsize))
-                                                       :text-anchor "middle"))))]))
-      ;; X-axis label
-      (when x-label
-        (let [fsize label-fsize]
-          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) (- total-height x-label-pad -20)
-                         (ui/with-color text-color
-                           (assoc (ui/label x-label (ui/font nil fsize))
-                                  :text-anchor "middle")))]))
-      ;; Legends — stacked vertically on the right (or horizontal for top/bottom)
-      (let [any-legend? (or legend size-legend alpha-legend)]
-        (when (and any-legend? (not= legend-pos :none))
-          (let [legend-x (+ y-label-pad (* grid-cols pw) strip-w 10)
-                base-y (+ title-pad strip-h 20)]
-            (case legend-pos
-              :right
-              (let [;; Color legend
-                    color-elems (when legend
-                                  (render-legend-from-plan legend legend-x base-y cfg))
-                    ;; Compute y offset after color legend
-                    color-h (cond
-                              (nil? legend) 0
-                              (= :continuous (:type legend)) 160
-                              :else (+ 16 (* 16 (count (:entries legend)))))
-                    ;; Size legend
-                    size-y (+ base-y color-h (if legend 10 0))
-                    size-elems (when size-legend
-                                 (render-size-legend size-legend legend-x size-y))
-                    size-h (if size-legend (+ 16 (* 18 (count (:entries size-legend)))) 0)
-                    ;; Alpha legend
-                    alpha-y (+ size-y size-h (if size-legend 10 0))
-                    alpha-elems (when alpha-legend
-                                  (render-alpha-legend alpha-legend legend-x alpha-y))]
-                (concat (or color-elems []) (or size-elems []) (or alpha-elems [])))
-              :top
-              (let [plots-start-y title-pad
-                    legend-y (- plots-start-y (or legend-h 30) -5)]
-                (if legend
-                  (render-legend-horizontal legend (+ y-label-pad 10) legend-y cfg)
-                  []))
-              :bottom
-              (let [bottom-y (- total-height (or legend-h 30) -8)]
-                (if legend
-                  (render-legend-horizontal legend (+ y-label-pad 10) bottom-y cfg)
-                  []))
-              ;; Fallback to right
-              (when legend
-                (render-legend-from-plan legend legend-x base-y cfg))))))
-      ;; Panels: all backgrounds first, then foregrounds, so that
-      ;; x-tick labels that land in the cell below their panel are
-      ;; not overpainted by that cell's background.
-      panel-bgs
-      panel-elems
-      ;; Strip labels
-      (or col-strips [])
-      (or row-strips [])
-      ;; Caption
-      (when caption
-        [(ui/translate (+ y-label-pad (* grid-cols pw) -10)
-                       (- total-height 6)
-                       (ui/with-color [0.5 0.5 0.5 1.0]
-                         (assoc (ui/label caption (ui/font nil 9))
-                                :text-anchor "end")))])))))
+    ;; Build full membrane tree. Plan-derived dimensions and title
+    ;; ride along as metadata so membrane->plot can read them
+    ;; without needing the plan.
+    (with-meta
+      (vec
+       (concat
+        ;; Title
+        (when title
+          (let [fsize title-fsize]
+            [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) 14
+                           (ui/with-color text-color
+                             (assoc (ui/label title (ui/font nil fsize))
+                                    :text-anchor "middle")))]))
+        ;; Subtitle
+        (when subtitle
+          [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) 30
+                         (ui/with-color [0.4 0.4 0.4 1.0]
+                           (assoc (ui/label subtitle (ui/font nil (- title-fsize 2)))
+                                  :text-anchor "middle")))])
+        ;; Y-axis label
+        (when y-label
+          (let [fsize label-fsize]
+            [(ui/translate 12 (+ title-pad strip-h (/ (* grid-rows ph) 2.0))
+                           (membrane.ui.Rotate. -90
+                                                (ui/with-color text-color
+                                                  (assoc (ui/label y-label (ui/font nil fsize))
+                                                         :text-anchor "middle"))))]))
+        ;; X-axis label
+        (when x-label
+          (let [fsize label-fsize]
+            [(ui/translate (+ y-label-pad (/ (* grid-cols pw) 2.0)) (- total-height x-label-pad -20)
+                           (ui/with-color text-color
+                             (assoc (ui/label x-label (ui/font nil fsize))
+                                    :text-anchor "middle")))]))
+        ;; Legends — stacked vertically on the right (or horizontal for top/bottom)
+        (let [any-legend? (or legend size-legend alpha-legend)]
+          (when (and any-legend? (not= legend-pos :none))
+            (let [legend-x (+ y-label-pad (* grid-cols pw) strip-w 10)
+                  base-y (+ title-pad strip-h 20)]
+              (case legend-pos
+                :right
+                (let [;; Color legend
+                      color-elems (when legend
+                                    (render-legend-from-plan legend legend-x base-y cfg))
+                      ;; Compute y offset after color legend
+                      color-h (cond
+                                (nil? legend) 0
+                                (= :continuous (:type legend)) 160
+                                :else (+ 16 (* 16 (count (:entries legend)))))
+                      ;; Size legend
+                      size-y (+ base-y color-h (if legend 10 0))
+                      size-elems (when size-legend
+                                   (render-size-legend size-legend legend-x size-y))
+                      size-h (if size-legend (+ 16 (* 18 (count (:entries size-legend)))) 0)
+                      ;; Alpha legend
+                      alpha-y (+ size-y size-h (if size-legend 10 0))
+                      alpha-elems (when alpha-legend
+                                    (render-alpha-legend alpha-legend legend-x alpha-y))]
+                  (concat (or color-elems []) (or size-elems []) (or alpha-elems [])))
+                :top
+                (let [plots-start-y title-pad
+                      legend-y (- plots-start-y (or legend-h 30) -5)]
+                  (if legend
+                    (render-legend-horizontal legend (+ y-label-pad 10) legend-y cfg)
+                    []))
+                :bottom
+                (let [bottom-y (- total-height (or legend-h 30) -8)]
+                  (if legend
+                    (render-legend-horizontal legend (+ y-label-pad 10) bottom-y cfg)
+                    []))
+                ;; Fallback to right
+                (when legend
+                  (render-legend-from-plan legend legend-x base-y cfg))))))
+        ;; Panels: all backgrounds first, then foregrounds, so that
+        ;; x-tick labels that land in the cell below their panel are
+        ;; not overpainted by that cell's background.
+        panel-bgs
+        panel-elems
+        ;; Strip labels
+        (or col-strips [])
+        (or row-strips [])
+        ;; Caption
+        (when caption
+          [(ui/translate (+ y-label-pad (* grid-cols pw) -10)
+                         (- total-height 6)
+                         (ui/with-color [0.5 0.5 0.5 1.0]
+                           (assoc (ui/label caption (ui/font nil 9))
+                                  :text-anchor "end")))])))
+      {:total-width total-width
+       :total-height total-height
+       :title title})))
