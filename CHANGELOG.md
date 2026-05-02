@@ -30,10 +30,11 @@ Public additions:
   `LeafDraft` and `CompositeDraft` records returned by `pj/draft`.
 - `pj/leaf-plan?`, `pj/composite-plan?` -- predicates for the
   `Plan` and `CompositePlan` records returned by `pj/plan`.
-- `pj/membrane` -- composition shortcut for the membrane stage:
-  `(-> x ->pose pose->draft draft->plan (plan->membrane opts))`.
-  Useful for exploring rendering targets beyond Plotje's current
-  SVG and Java2D backends.
+- `pj/membrane` -- composition shortcut for the membrane stage.
+  Lifts the input via `pj/->pose`, then threads through
+  `pose->draft`, `draft->plan`, and `(plan->membrane opts)` so
+  pose-level opts reach the membrane stage. Useful for exploring
+  rendering targets beyond Plotje's current SVG and Java2D backends.
 
 Behavioral changes:
 
@@ -47,13 +48,37 @@ Behavioral changes:
   `CompositeDraft` record; that is unchanged.
 - `pj/plan->membrane` now attaches `:total-width`, `:total-height`,
   and `:title` as metadata on the returned vector. `pj/membrane->plot`
-  reads them from meta (with opts as fallback). This lets `pj/plot`
-  be a single `->` thread without re-passing plan-derived
+  reads them from meta, so `pj/plot` does not re-pass plan-derived
   dimensions through opts.
-- `pj/plot` is a literal five-step `->` chain over the public
-  atomic functions (no longer goes through `pj/plan->plot`).
-  `pj/plan->plot` is preserved as a separate composition shortcut
-  that `pj/save` uses internally.
+- `pj/plot` runs the public atomic functions explicitly: it lifts
+  the input via `pj/->pose`, plucks pose-level opts (so `:format`
+  and render options flow through), and threads `pose->draft`,
+  `draft->plan`, `(plan->membrane opts)`, and `(membrane->plot fmt
+  opts)`. No internal `pj/plan->plot` bypass remains. `pj/plan->plot`
+  is preserved as a separate composition shortcut that `pj/save`
+  uses internally.
+- The pose-shape pre-check (bare-template footgun and unused
+  pose-level mappings) moved from `pj/plan` into `pj/pose->draft`,
+  so every shortcut that threads through it -- `pj/draft`,
+  `pj/plan`, `pj/membrane`, `pj/plot` -- now surfaces the same
+  actionable error and the same `:strict`-mode warning. Direct
+  callers of `pj/pose->draft` get the check too. The error
+  message is now caller-neutral
+  (`pj/pose->draft: got a pose with no data and no layers ...`).
+- `pj/plot` no longer applies a per-format filter to opts before
+  `plan->membrane` -- both `pj/plot` and `pj/membrane` pass the
+  full opts map through. The previous filter was defensive;
+  `plan->membrane` and `resolve-config` ignore unrecognized keys,
+  and raster backends ignore the tooltip flag rather than emit
+  artifacts.
+- Renderer namespaces load on demand. The `:default` defmethods on
+  `plan->plot` and `membrane->plot` now look up the requested
+  format in a known-formats map, `require` the registering
+  namespace, and re-dispatch. SVG-only callers still pay no
+  bufimg/Java2D startup cost; a direct call like
+  `(pj/membrane->plot tree :bufimg opts)` from a fresh JVM now
+  works without a top-level `require` of
+  `scicloj.plotje.render.bufimg`.
 
 ### Internal: composite plan->membrane defmethod moved out of `impl/`
 

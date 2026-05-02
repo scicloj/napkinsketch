@@ -2212,7 +2212,7 @@
   "Resolve raw input into a draft. Literal composition of the atomic
    steps: `(-> x ->pose pose->draft)`. The 2-arity folds opts into
    the pose with `pj/options` first, mirroring `pj/plan` and `pj/plot`:
-   `(-> x ->pose (options opts) pose->draft)`.
+   `(-> x ->pose (options opts) draft)`.
 
    For a leaf pose, returns a `LeafDraft` record (`:layers` is a
    vector of flat maps, one per applicable layer with merged scope;
@@ -2355,7 +2355,7 @@
   "Convert a pose into a plan. Literal composition of the atomic
    steps: `(-> x ->pose pose->draft draft->plan)`. The 2-arity folds
    opts into the pose with `pj/options` first:
-   `(-> x ->pose (options opts) pose->draft draft->plan)`.
+   `(-> x ->pose (options opts) plan)`.
 
    For a leaf pose, returns a `Plan` record with one panel per facet
    variant. For a composite pose, returns a `CompositePlan` record
@@ -2385,8 +2385,14 @@
 
 (defn membrane
   "Resolve a pose into a membrane tree. Literal composition of the
-   atomic steps: `(-> x ->pose pose->draft draft->plan plan->membrane)`.
-   The 2-arity folds opts into the pose with `pj/options` first.
+   atomic steps: `(let [pose (->pose x), opts (:opts pose {})]
+                    (-> pose
+                        pose->draft
+                        draft->plan
+                        (plan->membrane opts)))`.
+   The let lifts the pose once so the chain can pluck pose-level
+   opts and pass them to `plan->membrane`. The 2-arity folds opts
+   into the pose with `pj/options` first.
 
    Returns a vector of `membrane.ui` drawing primitives carrying
    plan-derived `:total-width`, `:total-height`, and `:title` as
@@ -2435,10 +2441,21 @@
    via the layout in the resolved chrome, in the same chosen format.
    The pose flows through the canonical
    `pose -> draft -> plan -> membrane -> plot` pipeline for both
-   leaf and composite shapes -- pj/plot is a literal composition of
-   the public atomic steps (->pose, pose->draft, draft->plan,
-   plan->membrane, membrane->plot), with plan-derived dimensions
-   and title spliced into the opts that reach membrane->plot.
+   leaf and composite shapes. pj/plot is a literal composition of
+   the public atomic steps:
+
+   `(let [pose (->pose x)
+         opts (:opts pose {})
+         fmt  (or (:format opts) :svg)]
+     (-> pose
+         pose->draft
+         draft->plan
+         (plan->membrane opts)
+         (membrane->plot fmt opts)))`
+
+   Plan-derived dimensions and title ride on the membrane vector's
+   Clojure metadata; the `membrane->plot` defmethod reads them from
+   there.
 
    - `(plot pose)`
    - `(plot pose {:width 800 :title \"My Plot\"})`

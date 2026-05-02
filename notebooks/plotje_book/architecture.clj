@@ -312,7 +312,7 @@ trace-pose
 ;;      (-> pose
 ;;          pose->draft
 ;;          draft->plan
-;;          (plan->membrane (render-opts-for-format fmt opts))
+;;          (plan->membrane opts)
 ;;          (membrane->plot fmt opts))))
 ;;   ([x opts]
 ;;    (-> x
@@ -327,9 +327,7 @@ trace-pose
 ;; (`pose->draft`, `draft->plan`, `plan->membrane`, `membrane->plot`)
 ;; left to right. The plan-derived dimensions and title ride along
 ;; on the membrane tree as metadata, so `membrane->plot` can read
-;; them without needing the plan back. `render-opts-for-format`
-;; filters `opts` per format (the SVG renderer consumes `:tooltip`,
-;; the bufimg renderer cannot).
+;; them without needing the plan back.
 ;;
 ;; The 2-arity of each function folds the options map into the pose
 ;; using `pj/options` before recursing into the 1-arity.
