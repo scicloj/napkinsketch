@@ -36,6 +36,13 @@
                    :ci-hi [12.0 18.0 14.5 20.5]})
 
 ;; ## Construction
+;;
+;; `pj/pose` is the asymmetric pipeline shortcut: where the other
+;; four shortcuts (`pj/draft`, `pj/plan`, `pj/membrane`, `pj/plot`)
+;; are literal compositions of the atomic steps, `pj/pose` adds
+;; mapping inference, positional column-arg parsing, multi-pair
+;; composite construction, and pose extend-or-promote on top of
+;; `pj/->pose`. The examples below walk each shape.
 
 (kind/doc #'pj/pose)
 

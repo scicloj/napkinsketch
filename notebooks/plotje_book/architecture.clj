@@ -250,10 +250,12 @@ trace-pose
 ;; Each pipeline stage has a user-facing convenience that runs the
 ;; chain from raw input up through that stage:
 ;;
-;; - **pj/pose** -- raw input -> pose. Lifts via `pj/->pose` and
-;;   interprets positional column args plus an optional opts map.
-;;   (More than a pure composition: with 1-3 columns and no
-;;   explicit args, also infers a mapping -- see Inference below.)
+;; - **pj/pose** -- the asymmetric shortcut. Beyond `pj/->pose`,
+;;   it infers mappings from 1-3 column datasets, parses positional
+;;   column arguments (e.g. `(pj/pose data :x :y)`), builds
+;;   rectangular composites from `pj/cross` pair lists, and extends
+;;   or promotes existing poses. Use `pj/->pose` when you only need
+;;   to lift raw input to a pose without any of that.
 ;; - **pj/draft** -- raw input -> draft.
 ;; - **pj/plan** -- raw input -> plan.
 ;; - **pj/membrane** -- raw input -> membrane tree.
