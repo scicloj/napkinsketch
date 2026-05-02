@@ -400,12 +400,12 @@ trace-pose
 ;;   columns, position is auto-mapped: 1 column to `:x`, 2 columns
 ;;   to `:x` and `:y`, 3 columns add `:color`.
 ;; - **Layer-type inference** lives in `pj/draft->plan`. A pose
-;;   without an explicit `pj/lay-*` call drafts to a layer with
-;;   `:mark :infer`; the plan stage picks a concrete mark + stat
-;;   from the column types -- categorical x with numerical y
-;;   produces a boxplot, temporal x with numerical y produces a
-;;   time-series line, numerical x and y produce a scatter, and
-;;   so on.
+;;   without an explicit `pj/lay-*` call drafts to a layer with no
+;;   `:mark` set; the plan stage detects the missing mark, looks
+;;   at the column types, and picks a concrete mark + stat --
+;;   categorical x with numerical y produces a boxplot, temporal x
+;;   with numerical y produces a time-series line, numerical x and
+;;   y produce a scatter, and so on.
 ;; - **Column-type inference** lives in `pj/draft->plan`.
 ;;   `:x-type`/`:y-type`/`:color-type` default from the data
 ;;   (numerical / categorical / temporal); a user-supplied
@@ -526,7 +526,7 @@ multi-pose
 (def multi-plan
   (pj/plan multi-pose {:title "Iris Petals with Regression"}))
 
-multi-plan
+(kind/pprint multi-plan)
 
 (kind/test-last [(fn [m] (and (= "Iris Petals with Regression" (:title m))
                               (= 3 (count (get-in m [:legend :entries])))
