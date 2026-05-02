@@ -448,10 +448,10 @@ composite-pose
                                      (number? total-height)))))])
 
 ;; And `pj/plot` (the full pipeline) returns the SVG hiccup -- the
-;; same value `composite-pose` auto-renders to, just produced
-;; explicitly:
+;; same value `composite-pose` auto-renders to at the top of this
+;; section, just produced explicitly:
 
-(kind/hiccup (pj/plot composite-pose))
+(kind/pprint (pj/plot composite-pose))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 2 (:panels s))
@@ -604,9 +604,10 @@ multi-plan
                               (= "Iris Petals with Regression"
                                  (:title (meta m)))))])
 
-;; And the rendered result with the title:
+;; And the plot stage -- the SVG hiccup that the auto-render at
+;; the top of this section produced implicitly:
 
-(kind/hiccup
+(kind/pprint
  (pj/plot multi-pose {:title "Iris Petals with Regression"}))
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]

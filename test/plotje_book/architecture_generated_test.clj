@@ -118,8 +118,8 @@
      (pos? (count v))
      (every?
       (fn*
-       [p1__84357#]
-       (.startsWith (.getName (class p1__84357#)) "membrane.ui."))
+       [p1__81661#]
+       (.startsWith (.getName (class p1__81661#)) "membrane.ui."))
       v)))
    v29_l208)))
 
@@ -209,7 +209,7 @@
        2
        (count
         (filter
-         (fn* [p1__84358#] (.startsWith p1__84358# "rgb"))
+         (fn* [p1__81662#] (.startsWith p1__81662# "rgb"))
          (:colors s)))))))
    v42_l362)))
 
@@ -277,7 +277,7 @@
    v55_l442)))
 
 
-(def v58_l454 (kind/hiccup (pj/plot composite-pose)))
+(def v58_l454 (kind/pprint (pj/plot composite-pose)))
 
 
 (deftest
@@ -390,23 +390,23 @@
 
 
 (def
- v79_l609
- (kind/hiccup
+ v79_l610
+ (kind/pprint
   (pj/plot multi-pose {:title "Iris Petals with Regression"})))
 
 
 (deftest
- t80_l612
+ t80_l613
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v79_l609)))
+   v79_l610)))
 
 
 (def
- v82_l618
+ v82_l619
  (kind/mermaid
   "\ngraph TD\n  API[\"api.clj\"] --> POSE[\"impl/pose.clj\"]\n  API --> RES[\"impl/resolve.clj\"]\n  API --> PL[\"impl/plan.clj\"]\n  API --> COMP[\"impl/compositor.clj\"]\n  POSE --> RES\n  COMP --> POSE\n  COMP --> PL\n  PL --> RES\n  PL --> STAT[\"impl/stat.clj\"]\n  PL --> SCALE[\"impl/scale.clj\"]\n  PL --> DEFAULTS[\"impl/defaults.clj\"]\n  PL --> PS[\"impl/plan_schema.clj\"]\n  API --> RENDER[\"impl/render.clj\"]\n  RENDER --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  API --> RC[\"render/composite.clj\"]\n  RC --> MEMBRANE\n  style API fill:#c8e6c9\n  style COMP fill:#d1c4e9\n  style PL fill:#d1c4e9\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n  style RC fill:#f8bbd0\n"))
