@@ -30,10 +30,13 @@
 ^:kindly/hide-code
 (kind/mermaid "
 graph LR
-  B[\"Pose\"] -->|pj/pose->draft| D[\"Draft\"]
+  X[\"Raw data\"] -->|pj/->pose| B[\"Pose\"]
+  B -->|pj/options pj/lay-* ...| B
+  B -->|pj/pose->draft| D[\"Draft\"]
   D -->|pj/draft->plan| P[\"Plan\"]
   P -->|pj/plan->membrane| M[\"Membrane\"]
   M -->|pj/membrane->plot| F[\"Plot\"]
+  style X fill:#eee,stroke-dasharray:3 3
   style B fill:#d1c4e9
   style D fill:#e8f5e9
   style P fill:#fff3e0
@@ -239,9 +242,22 @@ trace-pose
                            (and (= 1 (:panels s))
                                 (= 5 (:points s)))))])
 
-;; ## Compositions: pj/draft, pj/plan, pj/plot
+;; ## Compositions: pj/pose, pj/draft, pj/plan, pj/membrane, pj/plot
 ;;
-;; The user-facing functions are literal compositions of the atomic
+;; Each pipeline stage has a user-facing convenience that runs the
+;; chain from raw input up through that stage:
+;;
+;; - **pj/pose** -- raw input -> pose. Lifts via `pj/->pose` and
+;;   interprets positional column args plus an optional opts map.
+;;   (More than a pure composition: with 1-3 columns and no
+;;   explicit args, also infers a mapping -- see Inference below.)
+;; - **pj/draft** -- raw input -> draft.
+;; - **pj/plan** -- raw input -> plan.
+;; - **pj/membrane** -- raw input -> membrane tree.
+;; - **pj/plot** -- raw input -> rendered figure.
+;;
+;; The four stage-after-pose shortcuts (`pj/draft`, `pj/plan`,
+;; `pj/membrane`, `pj/plot`) are literal compositions of the atomic
 ;; steps. Reading the source spells out the pipeline:
 ;;
 ;; Pseudocode:
