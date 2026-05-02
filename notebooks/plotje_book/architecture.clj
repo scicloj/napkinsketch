@@ -414,12 +414,14 @@ trace-pose
 ;; A pipeline that only shuffled structure would be of little use.
 ;; Plotje's pipeline is interesting because each atomic step also
 ;; **infers**: it fills in choices the user did not bother to
-;; specify. Inference is what lets `(pj/pose trace-data)` -- the
-;; dataset alone, no mapping, no layers, no opts -- still produce
-;; a complete plot. Every one-line example in this book is the
-;; work of the inference engine baked into the pipeline.
+;; specify. Inference is what lets a tiny dataset alone -- no
+;; mapping, no layers, no opts -- still produce a complete plot.
+;; Every one-line example in this book is the work of the
+;; inference engine baked into the pipeline.
 
-(pj/pose trace-data)
+(pj/pose {:x [1 2 3 4 5]
+          :y [2 4 3 5 4]
+          :g [:a :a :b :b :b]})
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
