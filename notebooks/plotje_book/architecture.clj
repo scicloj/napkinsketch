@@ -66,8 +66,9 @@ graph LR
 ;;   yet.
 ;;
 ;; - **Membrane** -- positioned drawing primitives (Translate,
-;;   WithColor, Path, Label, ...) in drawing space. Produced by
-;;   `pj/plan->membrane`.
+;;   WithColor, Path, Label, ...) in drawing space, from the
+;;   [Membrane](https://github.com/phronmophobic/membrane) library
+;;   that underpins this stage. Produced by `pj/plan->membrane`.
 ;;
 ;; - **Plot** -- rendered output (SVG hiccup or BufferedImage).
 ;;   Produced by `pj/membrane->plot`, dispatching on a `:format`
@@ -104,9 +105,7 @@ graph LR
 ;; Two sources of leverage follow that this chapter demonstrates:
 ;; each intermediate value can be inspected without running the
 ;; rest, and each transition can be tested in isolation. A third
-;; -- extending the pipeline through `defmethod` registration on
-;; its multimethod seams (`:stat` at the plan stage, `:mark` at
-;; the plan and membrane stages, `:format` at the plot stage) --
+;; -- extending the pipeline --
 ;; is the subject of the Extensibility chapter.
 
 ;; ## The Atomic Steps
