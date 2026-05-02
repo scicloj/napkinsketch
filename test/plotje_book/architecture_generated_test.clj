@@ -118,8 +118,8 @@
      (pos? (count v))
      (every?
       (fn*
-       [p1__82274#]
-       (.startsWith (.getName (class p1__82274#)) "membrane.ui."))
+       [p1__82625#]
+       (.startsWith (.getName (class p1__82625#)) "membrane.ui."))
       v)))
    v29_l208)))
 
@@ -209,7 +209,7 @@
        2
        (count
         (filter
-         (fn* [p1__82275#] (.startsWith p1__82275# "rgb"))
+         (fn* [p1__82626#] (.startsWith p1__82626# "rgb"))
          (:colors s)))))))
    v42_l328)))
 

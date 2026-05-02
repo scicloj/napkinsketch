@@ -2209,7 +2209,7 @@
                      {:got :plan})))
    (-> pose (->pose "pj/draft") pose->draft))
   ([pose opts]
-   (draft (-> pose (->pose "pj/draft") (options opts)))))
+   (-> pose (->pose "pj/draft") (options opts) draft)))
 
 (defn- pose-has-data-anywhere?
   "True if any node in the pose tree carries :data -- either on the
@@ -2341,7 +2341,7 @@
      (check-pose-shape! fr "pj/plan")
      (-> fr pose->draft draft->plan)))
   ([pose opts]
-   (plan (-> pose (->pose "pj/plan") (options opts)))))
+   (-> pose (->pose "pj/plan") (options opts) plan)))
 
 (defn- ensure-renderer-loaded!
   "Lazy-load the renderer namespace for non-default formats. The :svg
@@ -2411,7 +2411,7 @@
          (plan->membrane (render-opts-for-format fmt opts))
          (membrane->plot fmt opts))))
   ([pose opts]
-   (plot (-> pose (->pose "pj/plot") (options opts)))))
+   (-> pose (->pose "pj/plot") (options opts) plot)))
 
 ;; ---- SVG Summary ----
 

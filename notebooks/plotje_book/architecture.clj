@@ -247,7 +247,7 @@ trace-pose
 ;;    (-> x
 ;;        ->pose
 ;;        pose->draft))
-;;   ([x opts] (draft (-> x ->pose (options opts)))))
+;;   ([x opts] (-> x ->pose (options opts) draft)))
 ;;
 ;; (defn plan
 ;;   ([x]
@@ -255,7 +255,7 @@ trace-pose
 ;;        ->pose
 ;;        pose->draft
 ;;        draft->plan))
-;;   ([x opts] (plan (-> x ->pose (options opts)))))
+;;   ([x opts] (-> x ->pose (options opts) plan)))
 ;;
 ;; (defn plot
 ;;   ([x]
@@ -265,7 +265,7 @@ trace-pose
 ;;        draft->plan
 ;;        (plan->membrane render-opts)
 ;;        (membrane->plot fmt opts)))
-;;   ([x opts] (plot (-> x ->pose (options opts)))))
+;;   ([x opts] (-> x ->pose (options opts) plot)))
 ;; ```
 ;;
 ;; All five atomic steps appear in `plot`'s source as a single
