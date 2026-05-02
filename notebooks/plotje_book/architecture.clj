@@ -41,14 +41,13 @@ graph LR
   style F fill:#fce4ec
 ")
 
-;; The five stages, and what each atomic step adds:
+;; The five stages:
 ;;
 ;; - **Pose** -- the composable specification you write. Built by
 ;;   `pj/pose`, `pj/lay-*`, `pj/options`, `pj/facet`, `pj/arrange`,
-;;   `pj/scale`, and `pj/coord`. No computation has happened yet.
-;;   `pj/->pose` lifts raw data into an empty leaf pose, so a dataset
-;;   can flow through the pipeline without an explicit constructor
-;;   call.
+;;   `pj/scale`, and `pj/coord`. Lifted from raw data by `pj/->pose`,
+;;   so a dataset can flow through the pipeline without an explicit
+;;   constructor call. No computation has happened yet.
 ;;
 ;; - **Draft** -- the pose flattened. A `LeafDraft` record holds
 ;;   `:layers` (a vector of one map per applicable layer with all
@@ -73,6 +72,10 @@ graph LR
 ;; - **Plot** -- rendered output (SVG hiccup or BufferedImage).
 ;;   Produced by `pj/membrane->plot`, dispatching on a `:format`
 ;;   keyword.
+;;
+;; The composition shortcuts `pj/draft`, `pj/plan`, `pj/membrane`,
+;; and `pj/plot` run the chain from a pose up through the named
+;; stage. They are introduced one section down.
 
 ;; Most users only interact with the pose stage and never need to
 ;; think about the others. The stages below matter when you are
@@ -86,11 +89,11 @@ graph LR
 ;; a distinct concern, and each boundary between stages buys
 ;; something concrete:
 ;;
-;; - The **pose** is what the user specifies.
-;; - The **draft** is the
+;; - The **pose** is what the user composes; the **draft** is the
 ;;   same specification flattened, with scope merged in. This
-;;   boundary lets the layer engine run on a uniform input regardless
-;;   of how the pose was built.
+;;   boundary lets the layer engine run on a uniform input
+;;   regardless of how the pose was built (single layer, faceted
+;;   leaf, composite tree).
 ;; - The **plan** holds geometry in data space -- domains, ticks,
 ;;   computed shapes -- before any drawing. This boundary lets you
 ;;   inspect and validate plot structure with Malli, and it lets
@@ -217,11 +220,12 @@ trace-pose
 ;;
 ;; Convert the membrane tree into the rendered output for a chosen
 ;; format. Dispatches on the format keyword; `:svg` is built in.
+;; The membrane vector carries its plan-derived dimensions on
+;; metadata, so `pj/membrane->plot` does not need them respelled
+;; in opts:
 
 (def trace-plot
-  (pj/membrane->plot trace-membrane :svg
-                     {:total-width (:total-width trace-plan)
-                      :total-height (:total-height trace-plan)}))
+  (pj/membrane->plot trace-membrane :svg {}))
 
 (kind/pprint trace-plot)
 
@@ -296,13 +300,15 @@ trace-pose
 ;;        plot)))
 ;; ```
 ;;
-;; All five atomic steps appear in `plot`'s source as a single
-;; left-to-right pipeline. The plan-derived dimensions and title
-;; ride along on the membrane tree as metadata, so `membrane->plot`
-;; can read them without needing the plan back. The `let` binds
-;; `opts` and `fmt` from the lifted pose; `render-opts-for-format`
-;; filters `opts` per format (the SVG renderer consumes
-;; `:tooltip`, the bufimg renderer cannot).
+;; In `plot`, the `let` lifts the pose, extracts `opts`, and reads
+;; `:format` so the rest of the chain has what it needs; the
+;; subsequent `->` thread runs the four atomic transitions
+;; (`pose->draft`, `draft->plan`, `plan->membrane`, `membrane->plot`)
+;; left to right. The plan-derived dimensions and title ride along
+;; on the membrane tree as metadata, so `membrane->plot` can read
+;; them without needing the plan back. `render-opts-for-format`
+;; filters `opts` per format (the SVG renderer consumes `:tooltip`,
+;; the bufimg renderer cannot).
 ;;
 ;; The 2-arity of each function folds the options map into the pose
 ;; using `pj/options` before recursing into the 1-arity.
@@ -323,7 +329,10 @@ trace-pose
                          (pj/lay-point :x :y {:color :g})
                          (pj/options {:title "trace" :x-label "X" :width 700}))
       via-plan (pj/plan pose-with-opts)
-      via-arrows (-> pose-with-opts pj/pose->draft pj/draft->plan)]
+      via-arrows (-> pose-with-opts
+                     pj/->pose
+                     pj/pose->draft
+                     pj/draft->plan)]
   {:title-match (= (:title via-plan) (:title via-arrows))
    :x-label-match (= (:x-label via-plan) (:x-label via-arrows))
    :width-match (= (:width via-plan) (:width via-arrows))
@@ -457,89 +466,10 @@ composite-pose
                            (and (= 2 (:panels s))
                                 (= 300 (:points s)))))])
 
-;; The composition `pj/plan = pj/->pose ; pj/pose->draft ;
-;; pj/draft->plan` holds for both leaf and composite poses; the
-;; shape dispatch happens at the bottom of each atomic step.
-
-;; ## Pipeline Summary
-
-;; | Stage | Type | Coordinates |
-;; |:------|:-----|:------------|
-;; | Pose | Plain map (leaf or composite) | N/A (declarative) |
-;; | Draft | `LeafDraft` or `CompositeDraft` record | N/A (declarative) |
-;; | Plan | `Plan` or `CompositePlan` record (with `PlanLayer` records and dtype buffers) | Data space |
-;; | Membrane | Record tree (membrane.ui primitives in a vector) | Drawing units |
-;; | Plot | Hiccup vector (`:svg`) or `BufferedImage` (`:bufimg`) | Drawing units |
-
-;; ## The Plan Boundary
-;;
-;; The plan is the boundary between description and rendering. The
-;; pose and draft stages assemble the description. The plan resolves
-;; it into computed geometry, domains, ticks, and legend -- still as
-;; inspectable data, before any layout. The membrane and plot stages
-;; then produce the rendered output.
-
-^:kindly/hide-code
-(kind/mermaid "
-graph LR
-  A[\"Pose + draft\"] -->|plan| P[\"Plan\"]
-  P --> R[\"membrane + plot\"]
-  style A fill:#e8f5e9
-  style P fill:#fff3e0
-  style R fill:#e3f2fd
-")
-
-;; The plan is inspectable as data -- `Plan` and `PlanLayer` records
-;; (which behave as maps), plain maps, numbers, strings, keywords,
-;; and dtype-next buffers for numeric arrays. It validates against a
-;; Malli schema.
-;;
-;; This separation enables:
-;;
-;; - Inspecting the plan without rendering
-;;
-;; - Validating plot structure with Malli
-;;
-;; - Adding alternate backends that consume plans (SVG and raster
-;;   are implemented today)
-
-;; ## The Membrane Layer
-;;
-;; The membrane is Plotje's second important boundary: it separates
-;; data-space geometry from output-format bytes. Where the plan says
-;; "draw a point at data-coordinate (3.4, 7.1) in the color assigned
-;; to species `setosa`", the membrane says "translate to drawing
-;; coordinate (218, 134) and place a colored shape there." The plan
-;; is renderer-agnostic; the membrane is format-agnostic.
-;;
-;; This second boundary gives Plotje its **graphical modularity**:
-;; one membrane tree can be rendered to many output formats. A
-;; backend only has to know how to walk the membrane tree and emit
-;; bytes -- the pose, draft, plan, and membrane stages are reused
-;; unchanged. Adding a new format is a `defmethod plan->plot :foo`
-;; (and an accompanying `defmethod membrane->plot :foo`); everything
-;; upstream comes along for free.
-;;
-;; The membrane stage of Plotje is built on
-;; [Membrane](https://github.com/phronmophobic/membrane) -- the
-;; library that defines the primitive types Plotje uses
-;; (`Translate`, `WithColor`, `Path`, `Label`, `RoundedRectangle`,
-;; ...) and provides the rendering backends. Plotje constructs a
-;; membrane tree from a plan; Membrane renders it.
-;;
-;; Backends Plotje wires into Membrane today:
-;;
-;; - **SVG hiccup** -- the default. Renders in browsers, in
-;;   notebooks via Kindly/Clay, and writes to `.svg` files.
-;; - **Java2D / `BufferedImage`** -- raster output via
-;;   Membrane's Java2D backend. Used for `.png` files and any
-;;   consumer that wants a Java image.
-;;
-;; Membrane itself supports more rendering targets (terminal,
-;; native GUI, GL, ...) than Plotje currently exposes. Wiring a new
-;; target into Plotje is largely a `defmethod` away. The promise of
-;; this boundary is that as Membrane grows, Plotje can grow with it
-;; without rethinking how plots are described.
+;; The composition holds for both leaf and composite poses --
+;; `pj/plan` is `(-> pose pj/->pose pj/pose->draft pj/draft->plan)`
+;; either way -- because each atomic step dispatches on shape at
+;; the bottom of its call.
 
 ;; ## Multi-Layer Example
 ;;
@@ -614,6 +544,91 @@ multi-plan
                            (and (= 150 (:points s))
                                 (= 3 (:lines s)))))])
 
+;; ## Pipeline Summary
+
+;; | Stage | Type | Coordinates |
+;; |:------|:-----|:------------|
+;; | Pose | Plain map (leaf or composite) | N/A (declarative) |
+;; | Draft | `LeafDraft` or `CompositeDraft` record | N/A (declarative) |
+;; | Plan | `Plan` or `CompositePlan` record (with `PlanLayer` records and dtype buffers) | Data space |
+;; | Membrane | Record tree (membrane.ui primitives in a vector) | Drawing units |
+;; | Plot | Hiccup vector (`:svg`) or `BufferedImage` (`:bufimg`) | Drawing units |
+
+;; ## The Plan Boundary
+;;
+;; The plan is the boundary between description and rendering. The
+;; pose and draft stages assemble the description. The plan resolves
+;; it into computed geometry, domains, ticks, and legend -- still as
+;; inspectable data, before any layout. The membrane and plot stages
+;; then produce the rendered output.
+
+^:kindly/hide-code
+(kind/mermaid "
+graph LR
+  A[\"Pose + draft\"] -->|plan| P[\"Plan\"]
+  P --> R[\"membrane + plot\"]
+  style A fill:#e8f5e9
+  style P fill:#fff3e0
+  style R fill:#e3f2fd
+")
+
+;; The plan is inspectable as data -- `Plan` and `PlanLayer` records
+;; (which behave as maps), plain maps, numbers, strings, keywords,
+;; and dtype-next buffers for numeric arrays. It validates against a
+;; Malli schema.
+;;
+;; This separation enables:
+;;
+;; - Inspecting the plan without rendering
+;;
+;; - Validating plot structure with Malli
+;;
+;; - Adding alternate backends that consume plans (SVG and raster
+;;   are implemented today)
+
+;; ## The Membrane Layer
+;;
+;; The membrane is Plotje's second important boundary: it separates
+;; data-space geometry from output-format bytes. Where the plan says
+;; "draw a point at data-coordinate (3.4, 7.1) in the color assigned
+;; to species `setosa`", the membrane says "translate to drawing
+;; coordinate (218, 134) and place a colored shape there." The plan
+;; is renderer-agnostic; the membrane is format-agnostic.
+;;
+;; This second boundary gives Plotje its **graphical modularity**:
+;; one membrane tree can be rendered to many output formats. The
+;; pose, draft, plan, and membrane stages are reused unchanged
+;; across formats. A new format that consumes the membrane tree
+;; registers a `defmethod membrane->plot :foo` (the dispatch step
+;; `pj/plot` and `pj/membrane->plot` walk through). A new format
+;; that goes from a plan straight to bytes (skipping membrane
+;; entirely -- e.g., a Plotly-spec target) registers a
+;; `defmethod plan->plot :foo` instead.
+;;
+;; The membrane stage of Plotje is built on
+;; [Membrane](https://github.com/phronmophobic/membrane) -- the
+;; library that defines the primitive types Plotje uses
+;; (`Translate`, `WithColor`, `Path`, `Label`, `RoundedRectangle`,
+;; ...) and provides the rendering backends. Plotje constructs a
+;; membrane tree from a plan; Membrane renders it.
+;;
+;; Backends Plotje wires into Membrane today:
+;;
+;; - **SVG hiccup** -- the default. Renders in browsers, in
+;;   notebooks via Kindly/Clay, and writes to `.svg` files.
+;; - **Java2D / `BufferedImage`** -- raster output via
+;;   Membrane's Java2D backend. Used for `.png` files and any
+;;   consumer that wants a Java image.
+;;
+;; Membrane itself supports more rendering targets (terminal,
+;; native GUI, GL, ...) than Plotje currently exposes. Wiring a new
+;; target into Plotje has not been done end-to-end yet -- the
+;; defmethod registration is the architectural plug, but each
+;; backend has its own conventions for opts and interactivity that
+;; need to be worked out. The promise of this boundary is that as
+;; Membrane grows, Plotje can grow with it without rethinking how
+;; plots are described.
+
 ;; ## Namespace Structure
 
 ^:kindly/hide-code
@@ -652,14 +667,14 @@ graph TD
 ;; mappings/data/options down from root to every leaf), `leaf->draft`
 ;; (the leaf-pose flattening that the public `pj/pose->draft` calls),
 ;; and the multi-pair / grid composite utilities.
-
+;;
 ;; `impl/compositor.clj` handles composite chrome layout,
 ;; `composite-pose->draft`, and `composite-draft->plan` -- pure
 ;; data-side, no membrane dependency.
-
+;;
 ;; `impl/plan.clj` holds the leaf-plan computation (domains, ticks,
 ;; legends, layout) that the public `pj/draft->plan` calls.
-
+;;
 ;; `impl/resolve.clj` defines the `Plan`, `CompositePlan`,
 ;; `LeafDraft`, `CompositeDraft`, `PlanLayer`, and `LayerType`
 ;; records, and holds `resolve-draft-layer` (single draft layer
@@ -667,9 +682,7 @@ graph TD
 ;;
 ;; The `impl/` directory is pure data with no membrane dependency.
 ;; The `render/` directory uses membrane for layout and SVG/raster
-;; conversion. 
-
-;; `render/composite.clj` carries the composite
+;; conversion. `render/composite.clj` carries the composite
 ;; `plan->membrane` defmethod and the membrane drawables for
 ;; composite chrome (title, strip labels, shared legend).
 
