@@ -130,28 +130,32 @@ graph LR
 ;; per-function reference (arities, arguments, return types) lives
 ;; in the [API Reference](./plotje_book.api_reference.html).
 
-(def trace-data
-  {:x [1 2 3 4 5]
-   :y [2 4 3 5 4]
-   :g [:a :a :b :b :b]})
-
 ;; ### Step 1: pj/->pose
 ;;
 ;; Lift raw data (or a pose) to a pose. Polymorphic on input: a
 ;; dataset becomes a leaf pose with `:data` set; an existing pose
 ;; flows through unchanged (idempotent). This is what lets every
 ;; downstream function accept either raw data or a pose.
+;;
+;; The example we'll trace through every stage: iris petal
+;; measurements, with a scatter and per-species regression line.
+;; Pose-level `:x`, `:y`, and `:color` mappings; two layers stacked
+;; on top of that mapping. Layered enough that the flatten step has
+;; visible work to do, small enough to print.
 
 (def trace-pose
-  (-> trace-data
-      pj/->pose
-      (pj/lay-point :x :y {:color :g})))
+  (-> (rdatasets/datasets-iris)
+      (pj/pose :petal-length :petal-width {:color :species})
+      pj/lay-point
+      (pj/lay-smooth {:stat :linear-model})))
 
 ;; The pose auto-renders as the plot it specifies:
 
 trace-pose
 
-(kind/test-last [(fn [v] (= 5 (:points (pj/svg-summary v))))])
+(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
+                           (and (= 150 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; And the underlying value is a plain Clojure map -- `kind/pprint`
 ;; reveals the structure (without it, the auto-render would re-show
@@ -160,20 +164,28 @@ trace-pose
 (kind/pprint trace-pose)
 
 (kind/test-last [(fn [v] (and (pj/pose? v)
-                              (= [:x :y] [(:x (:mapping v)) (:y (:mapping v))])
-                              (= 1 (count (:layers v)))
-                              (= :point (:layer-type (first (:layers v))))
-                              (= :g (:color (:mapping (first (:layers v)))))))])
+                              (= [:petal-length :petal-width :species]
+                                 [(:x (:mapping v))
+                                  (:y (:mapping v))
+                                  (:color (:mapping v))])
+                              (= 2 (count (:layers v)))
+                              (= [:point :smooth]
+                                 (mapv :layer-type (:layers v)))))])
 
 ;; ### Step 2: pj/pose->draft
 ;;
 ;; Flatten a pose into a draft. For a leaf, returns a `LeafDraft`
 ;; record carrying the merged layer maps and the pose-level opts.
-;; A draft renders awkwardly by default (each layer carries an
-;; embedded dataset), so wrap it in `kind/pprint` to inspect.
-;; Keys prefixed with double underscores (e.g. `:__panel-idx`) are
-;; internal markers; they ride along through the plan stage and
-;; follow the Clojure "do not consume" convention.
+;; The pose-level mapping (`:x :petal-length`, `:y :petal-width`,
+;; `:color :species`) lands inside *each* of the two layer maps,
+;; alongside layer-specific keys (`:mark`, `:stat`). The layer
+;; engine downstream sees a uniform shape regardless of where each
+;; mapping was originally specified. A draft renders awkwardly by
+;; default (each layer carries an embedded dataset), so wrap it in
+;; `kind/pprint` to inspect. Keys prefixed with double underscores
+;; (e.g. `:__panel-idx`) are internal markers; they ride along
+;; through the plan stage and follow the Clojure "do not consume"
+;; convention.
 
 (def trace-draft
   (pj/pose->draft trace-pose))
@@ -181,18 +193,21 @@ trace-pose
 (kind/pprint trace-draft)
 
 (kind/test-last [(fn [d] (and (pj/leaf-draft? d)
-                              (= 1 (count (:layers d)))
-                              (let [l (first (:layers d))]
-                                (and (= :x (:x l))
-                                     (= :y (:y l))
-                                     (= :point (:mark l))
-                                     (= :g (:color l))))
+                              (= 2 (count (:layers d)))
+                              (let [layers (:layers d)]
+                                (and (= [:point :line] (mapv :mark layers))
+                                     (every? #(= :petal-length (:x %)) layers)
+                                     (every? #(= :petal-width (:y %)) layers)
+                                     (every? #(= :species (:color %)) layers)))
                               (= {} (:opts d))))])
 
 ;; ### Step 3: pj/draft->plan
 ;;
 ;; Resolve the draft into computed geometry. Reads `:opts` from the
-;; draft to apply title, dimensions, axis labels, and so on.
+;; draft to apply title, dimensions, axis labels, and so on. The
+;; smooth layer's `:linear-model` stat resolves into per-species
+;; line segments here; the point layer keeps the raw observations
+;; grouped by species. The legend gets one entry per species.
 
 (def trace-plan
   (pj/draft->plan trace-draft))
@@ -207,7 +222,11 @@ trace-pose
                               (= 1 (count (:panels v)))
                               (some? (:total-width v))
                               (some? (:total-height v))
-                              (some? (:legend v))))])
+                              (= 3 (count (get-in v [:legend :entries])))
+                              (let [layers (:layers (first (:panels v)))]
+                                (and (= [:point :line] (mapv :mark layers))
+                                     (= 3 (count (:groups (first layers))))
+                                     (= 3 (count (:groups (second layers))))))))])
 
 ;; The plan validates against a Malli schema:
 
@@ -254,7 +273,8 @@ trace-pose
 
 (kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
                            (and (= 1 (:panels s))
-                                (= 5 (:points s)))))])
+                                (= 150 (:points s))
+                                (= 3 (:lines s)))))])
 
 ;; ## Pipeline Shortcuts: pj/pose, pj/draft, pj/plan, pj/membrane, pj/plot
 ;;
@@ -355,9 +375,10 @@ trace-pose
 
 ;; The composition holds at runtime:
 
-(let [pose-with-opts (-> trace-data
-                         (pj/lay-point :x :y {:color :g})
-                         (pj/options {:title "trace" :x-label "X" :width 700}))
+(let [pose-with-opts (-> trace-pose
+                         (pj/options {:title "Iris Petals"
+                                      :x-label "Petal length"
+                                      :width 700}))
       via-plan (pj/plan pose-with-opts)
       via-arrows (-> pose-with-opts
                      pj/->pose
@@ -373,8 +394,8 @@ trace-pose
 (kind/test-last [(fn [m] (and (:title-match m)
                               (:x-label-match m)
                               (:width-match m)
-                              (= "trace" (:title m))
-                              (= "X" (:x-label m))
+                              (= "Iris Petals" (:title m))
+                              (= "Petal length" (:x-label m))
                               (= 700 (:width m))))])
 
 ;; Plot-level options (title, x-label, width, ...) live on the
@@ -512,80 +533,6 @@ composite-pose
 ;; resolution belongs to the composite stage and not to per-leaf
 ;; planning. See the [Composition](./plotje_book.composition.html)
 ;; chapter for worked examples.
-
-;; ## Multi-Layer Example
-;;
-;; A pose can hold multiple layers that share one mapping. Here,
-;; scatter points and per-species regression lines share the same
-;; panel because both `lay-point` and `lay-smooth` target the same
-;; `:petal-length`/`:petal-width` mapping.
-
-(def multi-pose
-  (-> (rdatasets/datasets-iris)
-      (pj/pose :petal-length :petal-width {:color :species})
-      pj/lay-point
-      (pj/lay-smooth {:stat :linear-model})))
-
-multi-pose
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s)))))])
-
-;; The draft has two layer maps -- one per applicable layer -- both
-;; sharing the same `:petal-length`/`:petal-width` mapping. The
-;; `:point` layer keeps its mark; the `:smooth` layer-type expands
-;; to `:line` after stat resolution:
-
-(def multi-draft (pj/draft multi-pose))
-
-(kind/pprint multi-draft)
-
-(kind/test-last [(fn [d] (and (pj/leaf-draft? d)
-                              (= 2 (count (:layers d)))
-                              (= [:point :line] (mapv :mark (:layers d)))))])
-
-;; The plan resolves the smooth layer into per-species regression
-;; geometry: three groups of computed line geometry, plus the
-;; original three groups of point data:
-
-(def multi-plan
-  (pj/plan multi-pose {:title "Iris Petals with Regression"}))
-
-(kind/pprint multi-plan)
-
-(kind/test-last [(fn [m] (and (pj/leaf-plan? m)
-                              (= "Iris Petals with Regression" (:title m))
-                              (= 3 (count (get-in m [:legend :entries])))
-                              (let [layers (:layers (first (:panels m)))]
-                                (and (= [:point :line] (mapv :mark layers))
-                                     (= 3 (count (:groups (first layers))))
-                                     (= 3 (count (:groups (second layers))))))))])
-
-;; The membrane is a vector of `Translate` records carrying the
-;; computed positions of every point and segment, plus chrome
-;; (axes, ticks, legend, title). Plan-derived dimensions ride on
-;; the vector as metadata.
-
-(def multi-membrane
-  (pj/membrane multi-pose {:title "Iris Petals with Regression"}))
-
-(kind/pprint multi-membrane)
-
-(kind/test-last [(fn [m] (and (vector? m)
-                              (pos? (count m))
-                              (= "Iris Petals with Regression"
-                                 (:title (meta m)))))])
-
-;; And the plot stage -- the SVG hiccup that the auto-render at
-;; the top of this section produced implicitly:
-
-(kind/pprint
- (pj/plot multi-pose {:title "Iris Petals with Regression"}))
-
-(kind/test-last [(fn [v] (let [s (pj/svg-summary v)]
-                           (and (= 150 (:points s))
-                                (= 3 (:lines s)))))])
 
 ;; ## Pipeline Summary
 
