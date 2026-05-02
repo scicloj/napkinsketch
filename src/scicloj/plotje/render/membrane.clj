@@ -6,6 +6,21 @@
             [scicloj.plotje.impl.defaults :as defaults]
             [scicloj.plotje.render.panel :as panel]))
 
+;; ---- Detection ----
+
+(defn membrane-tree?
+  "True if x looks like a Membrane drawable tree -- a non-empty
+   vector whose first element satisfies `membrane.ui/IOrigin`.
+   Borrows Membrane's own contract for 'is this a UI element?'
+   rather than inventing a Plotje-side predicate. Used by the
+   public-API input gate to distinguish a pose from an
+   already-rendered membrane vector that the user might pass
+   back in."
+  [x]
+  (and (vector? x)
+       (seq x)
+       (satisfies? ui/IOrigin (first x))))
+
 ;; ---- Legend ----
 
 (defn render-legend-from-plan

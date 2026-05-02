@@ -212,3 +212,38 @@
         (is (= 1 @draft-plan-calls) "pj/plot calls pj/draft->plan once")
         (is (= 1 @plan-membrane-calls) "pj/plot calls pj/plan->membrane once")
         (is (= 1 @membrane-plot-calls) "pj/plot calls pj/membrane->plot once")))))
+
+;; ============================================================
+;; Cross-stage misuse guards
+;; ============================================================
+;;
+;; Drafts and membrane vectors are user-observable but are not
+;; poses. The public shortcuts must reject them with clean
+;; "expects a pose, not a ..." messages -- not silently corrupt
+;; (the LeafDraft case before this fix) or produce degenerate
+;; output (the membrane case).
+
+(deftest draft-rejects-draft-input
+  (let [d (pj/draft (pj/lay-point tiny :x :y))]
+    (is (thrown-with-msg? Exception #"expects a pose, not a draft"
+                          (pj/draft d)))))
+
+(deftest plan-rejects-draft-input
+  (let [d (pj/draft (pj/lay-point tiny :x :y))]
+    (is (thrown-with-msg? Exception #"expects a pose, not a draft"
+                          (pj/plan d)))))
+
+(deftest membrane-rejects-membrane-input
+  (let [m (pj/membrane (pj/lay-point tiny :x :y))]
+    (is (thrown-with-msg? Exception #"Membrane drawable tree"
+                          (pj/membrane m)))))
+
+(deftest plot-rejects-membrane-input
+  (let [m (pj/membrane (pj/lay-point tiny :x :y))]
+    (is (thrown-with-msg? Exception #"Membrane drawable tree"
+                          (pj/plot m)))))
+
+(deftest plan-rejects-membrane-input
+  (let [m (pj/membrane (pj/lay-point tiny :x :y))]
+    (is (thrown-with-msg? Exception #"Membrane drawable tree"
+                          (pj/plan m)))))

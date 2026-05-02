@@ -285,6 +285,13 @@
    The 1-arity uses no rendering options. The 2-arity takes an
    opts map with optional `:tooltip`, `:theme`, `:palette`, etc.
 
+   The returned vector carries plan-derived `:total-width`,
+   `:total-height`, and `:title` as Clojure metadata. Backends
+   reading the membrane tree (e.g. via `pj/membrane->plot`) pick
+   these up via `(meta tree)` to size and label the canvas. The
+   contract is captured by the `MembraneMeta` schema in
+   `scicloj.plotje.impl.membrane-schema`.
+
    - `(plan->membrane (plan fr))`
    - `(plan->membrane (plan fr) {:tooltip true})`"
   ([plan-data] (plan->membrane plan-data {}))
@@ -295,6 +302,11 @@
 (defn membrane->plot
   "Convert a membrane drawable tree into a figure for the given format.
    Dispatches on format keyword; `:svg` is always available.
+
+   Reads `:total-width`, `:total-height`, and `:title` from
+   `(meta membrane-tree)` to size and label the canvas, falling back
+   to `opts` if metadata is absent. See the `MembraneMeta` schema in
+   `scicloj.plotje.impl.membrane-schema` for the metadata contract.
 
    - `(membrane->plot (plan->membrane (plan pose)) :svg {})`"
   [membrane-tree format opts]
@@ -377,6 +389,15 @@
                  "). If you're inspecting the rendered output via pj/plot,"
                  " pass the pose itself to " caller ", not the result of"
                  " pj/plot.")
+            {:caller caller :value-head (first x)}))
+
+    (membrane/membrane-tree? x)
+    (throw (ex-info
+            (str caller " expects a pose, but got what looks like a "
+                 "Membrane drawable tree (vector of membrane.ui elements)."
+                 " If you have a membrane and want to render it, call"
+                 " pj/membrane->plot directly; if you want to re-plan,"
+                 " pass the original pose to " caller ".")
             {:caller caller :value-head (first x)}))
 
     (or (and (or (sequential? x) (and (map? x) (not (tc/dataset? x))))
