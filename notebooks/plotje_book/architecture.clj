@@ -345,9 +345,11 @@ trace-pose
 
 ;; Where each kind of inference lives:
 ;;
-;; - **Mapping inference** lives in `pj/->pose` (and `pj/pose`).
-;;   With 1-3 columns, position is auto-mapped: 1 column to `:x`,
-;;   2 columns to `:x` and `:y`, 3 columns add `:color`.
+;; - **Mapping inference** lives in `pj/pose` (1-arity on raw data)
+;;   and in `pj/lay-*` (1-arity on raw data) -- not in `pj/->pose`,
+;;   which only lifts the data into a bare leaf pose. With 1-3
+;;   columns, position is auto-mapped: 1 column to `:x`, 2 columns
+;;   to `:x` and `:y`, 3 columns add `:color`.
 ;; - **Layer-type inference** lives in `pj/draft->plan`. A pose
 ;;   without an explicit `pj/lay-*` call drafts to a layer with
 ;;   `:mark :infer`; the plan stage picks a concrete mark + stat

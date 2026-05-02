@@ -118,8 +118,8 @@
      (pos? (count v))
      (every?
       (fn*
-       [p1__84879#]
-       (.startsWith (.getName (class p1__84879#)) "membrane.ui."))
+       [p1__85232#]
+       (.startsWith (.getName (class p1__85232#)) "membrane.ui."))
       v)))
    v29_l209)))
 
@@ -209,13 +209,13 @@
        2
        (count
         (filter
-         (fn* [p1__84880#] (.startsWith p1__84880# "rgb"))
+         (fn* [p1__85233#] (.startsWith p1__85233# "rgb"))
          (:colors s)))))))
    v42_l338)))
 
 
 (def
- v45_l383
+ v45_l385
  (def
   composite-pose
   (->
@@ -226,48 +226,48 @@
    pj/lay-point)))
 
 
-(def v46_l390 composite-pose)
+(def v46_l392 composite-pose)
 
 
 (deftest
- t47_l392
+ t47_l394
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 2 (:panels s)) (= 300 (:points s)))))
-   v46_l390)))
+   v46_l392)))
 
 
-(def v49_l399 (-> composite-pose pj/pose->draft kind/pprint))
+(def v49_l401 (-> composite-pose pj/pose->draft kind/pprint))
 
 
 (deftest
- t50_l401
+ t50_l403
  (is
   ((fn [d] (and (pj/composite-draft? d) (= 2 (count (:sub-drafts d)))))
-   v49_l399)))
+   v49_l401)))
 
 
-(def v52_l407 (-> composite-pose pj/pose->draft pj/draft->plan))
+(def v52_l409 (-> composite-pose pj/pose->draft pj/draft->plan))
 
 
 (deftest
- t53_l409
+ t53_l411
  (is
   ((fn [p] (and (pj/composite-plan? p) (= 2 (count (:sub-plots p)))))
-   v52_l407)))
+   v52_l409)))
 
 
 (def
- v55_l434
+ v55_l436
  (kind/mermaid
   "\ngraph LR\n  A[\"Pose + draft\"] -->|plan| P[\"Plan\"]\n  P --> R[\"membrane + plot\"]\n  style A fill:#e8f5e9\n  style P fill:#fff3e0\n  style R fill:#e3f2fd\n"))
 
 
 (def
- v57_l503
+ v57_l505
  (def
   multi-pose
   (->
@@ -277,28 +277,28 @@
    (pj/lay-smooth {:stat :linear-model}))))
 
 
-(def v58_l509 multi-pose)
+(def v58_l511 multi-pose)
 
 
 (deftest
- t59_l511
+ t59_l513
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v58_l509)))
+   v58_l511)))
 
 
-(def v61_l520 (def multi-draft (pj/pose->draft multi-pose)))
+(def v61_l522 (def multi-draft (pj/pose->draft multi-pose)))
 
 
-(def v62_l522 (kind/pprint multi-draft))
+(def v62_l524 (kind/pprint multi-draft))
 
 
 (deftest
- t63_l524
+ t63_l526
  (is
   ((fn
     [d]
@@ -306,21 +306,21 @@
      (pj/leaf-draft? d)
      (= 2 (count (:layers d)))
      (= [:point :line] (mapv :mark (:layers d)))))
-   v62_l522)))
+   v62_l524)))
 
 
 (def
- v65_l532
+ v65_l534
  (def
   multi-plan
   (pj/plan multi-pose {:title "Iris Petals with Regression"})))
 
 
-(def v66_l535 multi-plan)
+(def v66_l537 multi-plan)
 
 
 (deftest
- t67_l537
+ t67_l539
  (is
   ((fn
     [m]
@@ -333,26 +333,26 @@
        (= [:point :line] (mapv :mark layers))
        (= 3 (count (:groups (first layers))))
        (= 3 (count (:groups (second layers))))))))
-   v66_l535)))
+   v66_l537)))
 
 
 (def
- v69_l546
+ v69_l548
  (pj/options multi-pose {:title "Iris Petals with Regression"}))
 
 
 (deftest
- t70_l548
+ t70_l550
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 150 (:points s)) (= 3 (:lines s)))))
-   v69_l546)))
+   v69_l548)))
 
 
 (def
- v72_l554
+ v72_l556
  (kind/mermaid
   "\ngraph TD\n  API[\"api.clj\"] --> POSE[\"impl/pose.clj\"]\n  API --> RES[\"impl/resolve.clj\"]\n  API --> PL[\"impl/plan.clj\"]\n  API --> COMP[\"impl/compositor.clj\"]\n  POSE --> RES\n  COMP --> POSE\n  COMP --> PL\n  PL --> RES\n  PL --> STAT[\"impl/stat.clj\"]\n  PL --> SCALE[\"impl/scale.clj\"]\n  PL --> DEFAULTS[\"impl/defaults.clj\"]\n  PL --> PS[\"impl/plan_schema.clj\"]\n  API --> RENDER[\"impl/render.clj\"]\n  RENDER --> SVG[\"render/svg.clj\"]\n  SVG --> MEMBRANE[\"render/membrane.clj\"]\n  MEMBRANE --> PANEL[\"render/panel.clj\"]\n  PANEL --> MARK[\"render/mark.clj\"]\n  PANEL --> SCALE\n  PANEL --> COORD[\"impl/coord.clj\"]\n  API --> RC[\"render/composite.clj\"]\n  RC --> MEMBRANE\n  style API fill:#c8e6c9\n  style COMP fill:#d1c4e9\n  style PL fill:#d1c4e9\n  style SVG fill:#f8bbd0\n  style MEMBRANE fill:#f8bbd0\n  style RC fill:#f8bbd0\n"))
