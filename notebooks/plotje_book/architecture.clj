@@ -467,19 +467,23 @@ graph TD
   PANEL --> MARK[\"render/mark.clj\"]
   PANEL --> SCALE
   PANEL --> COORD[\"impl/coord.clj\"]
+  API --> RC[\"render/composite.clj\"]
+  RC --> MEMBRANE
   style API fill:#c8e6c9
   style COMP fill:#d1c4e9
   style PL fill:#d1c4e9
   style SVG fill:#f8bbd0
   style MEMBRANE fill:#f8bbd0
+  style RC fill:#f8bbd0
 ")
 
 ;; `impl/pose.clj` holds the pose substrate: `resolve-tree` (merges
 ;; mappings/data/options down from root to every leaf), `leaf->draft`
 ;; (the leaf-pose flattening that the public `pj/pose->draft` calls),
 ;; and the multi-pair / grid composite utilities.
-;; `impl/compositor.clj` handles composite rendering -- each leaf
-;; becomes a sub-plot, tiled via layout.
+;; `impl/compositor.clj` handles composite chrome layout,
+;; `composite-pose->draft`, and `composite-draft->plan` -- pure
+;; data-side, no membrane dependency.
 ;; `impl/plan.clj` holds the leaf-plan computation (domains, ticks,
 ;; legends, layout) that the public `pj/draft->plan` calls.
 ;; `impl/resolve.clj` defines the `Plan`, `CompositePlan`,
@@ -487,10 +491,11 @@ graph TD
 ;; records, and holds `resolve-draft-layer` (single draft layer
 ;; resolution, column type inference, grouping).
 ;;
-;; Most `impl/` namespaces are pure data with no membrane
-;; dependency. The exception is `impl/compositor.clj`, which bridges
-;; composite plans into membrane trees. The `render/` directory uses
-;; membrane for layout and SVG/raster conversion.
+;; The `impl/` directory is pure data with no membrane dependency.
+;; The `render/` directory uses membrane for layout and SVG/raster
+;; conversion. `render/composite.clj` carries the composite
+;; `plan->membrane` defmethod and the membrane drawables for
+;; composite chrome (title, strip labels, shared legend).
 
 ;; ## Dependencies
 ;;

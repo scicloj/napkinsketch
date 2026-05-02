@@ -13,6 +13,7 @@
             [scicloj.plotje.impl.scale :as scale]
             [scicloj.plotje.impl.coord :as coord]
             [scicloj.plotje.render.membrane :as membrane]
+            [scicloj.plotje.render.composite]
             [scicloj.plotje.render.mark :as mark]
             [scicloj.plotje.render.svg :as svg]
             [scicloj.plotje.layer-type :as layer-type]
