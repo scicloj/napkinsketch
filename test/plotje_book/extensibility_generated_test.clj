@@ -14,7 +14,13 @@
 
 
 (def
- v3_l74
+ v3_l37
+ (kind/mermaid
+  "\ngraph LR\n  B[\"Pose\"] -->|pj/pose->draft| D[\"Draft\"]\n  D -->|pj/draft->plan| P[\"Plan\"]\n  P -->|pj/plan->membrane| M[\"Membrane\"]\n  M -->|pj/membrane->plot| F[\"Plot\"]\n  P -.->|pj/plan->plot| F\n  style B fill:#d1c4e9\n  style D fill:#e8f5e9\n  style P fill:#fff3e0\n  style M fill:#e3f2fd\n  style F fill:#fce4ec\n"))
+
+
+(def
+ v5_l70
  (kind/table
   {:column-names ["Dispatch value" "What it does"],
    :row-maps
@@ -31,29 +37,29 @@
        "What it does" (pj/stat-doc k)})))}))
 
 
-(deftest t4_l85 (is ((fn [t] (= 11 (count (:row-maps t)))) v3_l74)))
+(deftest t6_l81 (is ((fn [t] (= 11 (count (:row-maps t)))) v5_l70)))
 
 
-(def v6_l91 (layer-type/lookup :histogram))
+(def v8_l87 (layer-type/lookup :histogram))
 
 
-(deftest t7_l93 (is ((fn [m] (= :bin (:stat m))) v6_l91)))
+(deftest t9_l89 (is ((fn [m] (= :bin (:stat m))) v8_l87)))
 
 
-(def v9_l97 (layer-type/lookup :bar))
+(def v11_l93 (layer-type/lookup :bar))
 
 
-(deftest t10_l99 (is ((fn [m] (= :count (:stat m))) v9_l97)))
+(deftest t12_l95 (is ((fn [m] (= :count (:stat m))) v11_l93)))
 
 
-(def v12_l103 (layer-type/lookup :point))
+(def v14_l99 (layer-type/lookup :point))
 
 
-(deftest t13_l105 (is ((fn [m] (= :identity (:stat m))) v12_l103)))
+(deftest t15_l101 (is ((fn [m] (= :identity (:stat m))) v14_l99)))
 
 
 (def
- v15_l138
+ v17_l134
  (kind/table
   {:column-names ["Dispatch value" "Output"],
    :row-maps
@@ -70,23 +76,23 @@
        "Output" (pj/mark-doc k)})))}))
 
 
-(deftest t16_l149 (is ((fn [t] (= 18 (count (:row-maps t)))) v15_l138)))
+(deftest t18_l145 (is ((fn [t] (= 18 (count (:row-maps t)))) v17_l134)))
 
 
 (def
- v18_l154
+ v20_l150
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width {:color :species})))
 
 
 (deftest
- t19_l157
- (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v18_l154)))
+ t21_l153
+ (is ((fn [v] (= 150 (:points (pj/svg-summary v)))) v20_l150)))
 
 
 (def
- v21_l161
+ v23_l157
  (let
   [s
    (->
@@ -99,16 +105,16 @@
 
 
 (deftest
- t22_l167
+ t24_l163
  (is
   ((fn
     [m]
     (and (= :point (:mark m)) (number? (get-in m [:style :opacity]))))
-   v21_l161)))
+   v23_l157)))
 
 
 (def
- v24_l178
+ v26_l174
  (kind/table
   {:column-names ["Dispatch value" "Membrane output"],
    :row-maps
@@ -125,11 +131,11 @@
        "Membrane output" (pj/membrane-mark-doc k)})))}))
 
 
-(deftest t25_l189 (is ((fn [t] (= 18 (count (:row-maps t)))) v24_l178)))
+(deftest t27_l185 (is ((fn [t] (= 18 (count (:row-maps t)))) v26_l174)))
 
 
 (def
- v27_l275
+ v29_l271
  (def
   my-plan
   (->
@@ -138,44 +144,44 @@
    pj/plan)))
 
 
-(def v28_l280 (first (pj/plan->plot my-plan :svg {})))
+(def v30_l276 (first (pj/plan->plot my-plan :svg {})))
 
 
-(deftest t29_l282 (is ((fn [v] (= :svg v)) v28_l280)))
+(deftest t31_l278 (is ((fn [v] (= :svg v)) v30_l276)))
 
 
-(def v31_l286 (def my-figure (pj/plan->plot my-plan :svg {})))
+(def v33_l282 (def my-figure (pj/plan->plot my-plan :svg {})))
 
 
-(def v32_l288 (vector? my-figure))
+(def v34_l284 (vector? my-figure))
 
 
-(deftest t33_l290 (is ((fn [v] (true? v)) v32_l288)))
+(deftest t35_l286 (is ((fn [v] (true? v)) v34_l284)))
 
 
-(def v35_l337 (def my-membrane (pj/plan->membrane my-plan)))
+(def v37_l333 (def my-membrane (pj/plan->membrane my-plan)))
 
 
-(def v36_l339 (vector? my-membrane))
+(def v38_l335 (vector? my-membrane))
 
 
-(deftest t37_l341 (is ((fn [v] (true? v)) v36_l339)))
+(deftest t39_l337 (is ((fn [v] (true? v)) v38_l335)))
 
 
-(def v38_l343 (:total-width (meta my-membrane)))
+(def v40_l339 (:total-width (meta my-membrane)))
 
 
-(deftest t39_l345 (is ((fn [v] (number? v)) v38_l343)))
+(deftest t41_l341 (is ((fn [v] (number? v)) v40_l339)))
 
 
-(def v40_l347 (first (pj/membrane->plot my-membrane :svg {})))
+(def v42_l343 (first (pj/membrane->plot my-membrane :svg {})))
 
 
-(deftest t41_l349 (is ((fn [v] (= :svg v)) v40_l347)))
+(deftest t43_l345 (is ((fn [v] (= :svg v)) v42_l343)))
 
 
 (def
- v43_l355
+ v45_l351
  (def
   shortcut-membrane
   (pj/membrane
@@ -184,14 +190,14 @@
     (pj/lay-point :sepal-length :sepal-width {:color :species})))))
 
 
-(def v44_l360 (vector? shortcut-membrane))
+(def v46_l356 (vector? shortcut-membrane))
 
 
-(deftest t45_l362 (is ((fn [v] (true? v)) v44_l360)))
+(deftest t47_l358 (is ((fn [v] (true? v)) v46_l356)))
 
 
 (def
- v47_l398
+ v49_l394
  (kind/table
   {:column-names ["Dispatch value" "Scale type"],
    :row-maps
@@ -207,11 +213,11 @@
        "Scale type" (pj/scale-doc k)})))}))
 
 
-(deftest t48_l408 (is ((fn [t] (= 3 (count (:row-maps t)))) v47_l398)))
+(deftest t50_l404 (is ((fn [t] (= 3 (count (:row-maps t)))) v49_l394)))
 
 
 (def
- v50_l419
+ v52_l415
  (kind/table
   {:column-names ["Dispatch value" "Behavior"],
    :row-maps
@@ -228,27 +234,27 @@
        "Behavior" (pj/coord-doc k)})))}))
 
 
-(deftest t51_l430 (is ((fn [t] (= 4 (count (:row-maps t)))) v50_l419)))
+(deftest t53_l426 (is ((fn [t] (= 4 (count (:row-maps t)))) v52_l415)))
 
 
 (def
- v53_l437
+ v55_l433
  (-> (rdatasets/datasets-iris) (pj/lay-bar :species) (pj/coord :flip)))
 
 
 (deftest
- t54_l441
+ t56_l437
  (is
   ((fn
     [v]
     (let
      [s (pj/svg-summary v)]
      (and (= 1 (:panels s)) (pos? (:polygons s)))))
-   v53_l437)))
+   v55_l433)))
 
 
 (def
- v56_l457
+ v58_l453
  (defmethod
   stat/compute-stat
   :quantile
@@ -257,7 +263,7 @@
 
 
 (def
- v57_l460
+ v59_l456
  (defmethod
   stat/compute-stat
   [:quantile :doc]
@@ -265,32 +271,32 @@
   "Quantile regression bands"))
 
 
-(def v59_l465 (pj/stat-doc :quantile))
+(def v61_l461 (pj/stat-doc :quantile))
 
 
 (deftest
- t60_l467
- (is ((fn [v] (= "Quantile regression bands" v)) v59_l465)))
+ t62_l463
+ (is ((fn [v] (= "Quantile regression bands" v)) v61_l461)))
 
 
-(def v62_l475 (remove-method stat/compute-stat [:quantile :doc]))
+(def v64_l471 (remove-method stat/compute-stat [:quantile :doc]))
 
 
-(def v63_l477 (pj/stat-doc :quantile))
+(def v65_l473 (pj/stat-doc :quantile))
 
 
-(deftest t64_l479 (is ((fn [v] (= "(no description)" v)) v63_l477)))
+(deftest t66_l475 (is ((fn [v] (= "(no description)" v)) v65_l473)))
 
 
-(def v66_l485 (remove-method stat/compute-stat :quantile))
+(def v68_l481 (remove-method stat/compute-stat :quantile))
 
 
 (def
- v67_l487
+ v69_l483
  (count
   (remove
    #{:default}
    (filter keyword? (keys (methods stat/compute-stat))))))
 
 
-(deftest t68_l489 (is ((fn [v] (= 11 v)) v67_l487)))
+(deftest t70_l485 (is ((fn [v] (= 11 v)) v69_l483)))
