@@ -14,6 +14,17 @@
   [v]
   (or (keyword? v) (string? v)))
 
+;; The fields declared on the records below are a minimal subset for
+;; ergonomic construction; instances carry many more keys, and the
+;; canonical contract for each record is a Malli schema. See:
+;;
+;; - Plan          -> `LeafPlanSchema` in `impl.plan-schema`
+;; - CompositePlan -> `CompositePlanSchema` in `impl.plan-schema`
+;; - PlanLayer     -> `PlanLayer` in `impl.plan-schema`
+;;
+;; LeafDraft and CompositeDraft do not have schemas yet; their public
+;; surface is the predicates `pj/leaf-draft?` and `pj/composite-draft?`.
+
 (defrecord Plan [panels width height])
 
 (defrecord CompositePlan [width height sub-plots chrome])

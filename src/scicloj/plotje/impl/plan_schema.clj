@@ -192,7 +192,8 @@
              [:alpha {:optional true} number?]]]])
 
 (def PlanLayer
-  "A plan-layer: a rendered mark with data-space geometry."
+  "A plan-layer: a rendered mark with data-space geometry. Canonical
+   contract for the `PlanLayer` defrecord in `impl/resolve.clj`."
   [:map
    [:mark keyword?]
    [:style MarkStyle]
@@ -208,7 +209,11 @@
    [:position {:optional true} keyword?]
    [:dodge-ctx {:optional true} any?]
    [:categories {:optional true} [:vector any?]]
-   [:side {:optional true} [:enum :x :y :both]]])
+   [:side {:optional true} [:enum :x :y :both]]
+   [:x-domain {:optional true} [:maybe [:sequential any?]]]
+   [:y-domain {:optional true} [:maybe [:sequential any?]]]
+   [:size-scale {:optional true} [:maybe any?]]
+   [:alpha-scale {:optional true} [:maybe any?]]])
 
 ;; ---- Panel ----
 
@@ -309,7 +314,8 @@
   "A fully resolved leaf plan -- the geometry for a single
    composable pose with one or more panels (one per facet variant).
    Data-space geometry, no membrane types, no datasets.
-   Numeric arrays (xs, ys, etc.) may be dtype-next buffers."
+   Numeric arrays (xs, ys, etc.) may be dtype-next buffers.
+   Canonical contract for the `Plan` defrecord in `impl/resolve.clj`."
   [:map
    [:width pos-int?]
    [:height pos-int?]
@@ -330,7 +336,8 @@
    [:alpha-legend {:optional true} [:maybe AlphaLegend]]
    [:legend-position [:enum :right :bottom :top :none]]
    [:panels [:vector Panel]]
-   [:layout Layout]])
+   [:layout Layout]
+   [:tooltip {:optional true} [:maybe boolean?]]])
 
 (def Rect
   "A pixel rectangle as `[x y w h]`."
@@ -370,12 +377,18 @@
 
 (def CompositePlanSchema
   "A fully resolved composite plan. Tiles per-leaf plans by rect with
-   shared chrome (title band, strip labels, shared legend) on top."
+   shared chrome (title band, strip labels, shared legend) on top.
+   Canonical contract for the `CompositePlan` defrecord in
+   `impl/resolve.clj`."
   [:map
    [:width pos-int?]
    [:height pos-int?]
    [:sub-plots [:vector SubPlot]]
-   [:chrome CompositeChrome]])
+   [:chrome CompositeChrome]
+   [:composite? boolean?]
+   [:total-width pos-int?]
+   [:total-height pos-int?]
+   [:title {:optional true} [:maybe string?]]])
 
 (def PlanSchema
   "Top-level plan schema -- accepts either shape."
