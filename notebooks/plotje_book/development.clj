@@ -123,9 +123,6 @@
 ;; The book's `index.clj` reads `README.md` and copies `readme_files/`
 ;; into `notebooks/` so that the book's front page shows the same images.
 ;; Run `make-readme!` before `make-book!` when the README content changes.
-;;
-;; Note: the readme notebook uses `pj/plot` (eager rendering) instead of
-;; auto-rendering the pose, because GFM mode requires materialized SVG values.
 
 ;; ## Building a JAR
 ;;
