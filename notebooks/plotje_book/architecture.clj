@@ -289,7 +289,7 @@ trace-membrane
 
 ;; ## Composite Poses
 ;;
-;; A composite pose -- one with `:poses` rather than `:layers` --
+;; A composite pose -- one with `:poses` --
 ;; flows through the same atomic steps. Each step dispatches
 ;; internally on shape: a leaf pose produces a `LeafDraft`; a
 ;; composite pose produces a `CompositeDraft`. The user-facing

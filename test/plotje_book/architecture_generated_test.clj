@@ -118,8 +118,8 @@
      (pos? (count v))
      (every?
       (fn*
-       [p1__82950#]
-       (.startsWith (.getName (class p1__82950#)) "membrane.ui."))
+       [p1__83271#]
+       (.startsWith (.getName (class p1__83271#)) "membrane.ui."))
       v)))
    v27_l171)))
 
