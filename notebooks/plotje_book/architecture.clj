@@ -247,11 +247,7 @@ trace-pose
 ;;    (-> x
 ;;        ->pose
 ;;        pose->draft))
-;;   ([x opts]
-;;    (-> x
-;;        ->pose
-;;        (options opts)
-;;        pose->draft)))
+;;   ([x opts] (draft (-> x ->pose (options opts)))))
 ;;
 ;; (defn plan
 ;;   ([x]
@@ -259,12 +255,7 @@ trace-pose
 ;;        ->pose
 ;;        pose->draft
 ;;        draft->plan))
-;;   ([x opts]
-;;    (-> x
-;;        ->pose
-;;        (options opts)
-;;        pose->draft
-;;        draft->plan)))
+;;   ([x opts] (plan (-> x ->pose (options opts)))))
 ;;
 ;; (defn plot
 ;;   ([x]
