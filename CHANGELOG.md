@@ -27,8 +27,12 @@ Public additions:
   on input; the first atomic step of the pipeline.
 - `pj/pose->draft` -- single-step transition from pose to draft.
 - `pj/leaf-draft?` -- predicate for the new `LeafDraft` record.
+- `pj/membrane` -- composition shortcut for the membrane stage:
+  `(-> x ->pose pose->draft draft->plan (plan->membrane opts))`.
+  Useful for exploring rendering targets beyond Plotje's current
+  SVG and Java2D backends.
 
-Behavioral change:
+Behavioral changes:
 
 - `pj/draft` on a leaf pose now returns a `LeafDraft` record holding
   `:layers` (a vector of one map per applicable layer with merged
@@ -38,6 +42,15 @@ Behavioral change:
   record so the composition `pj/plan = pj/->pose ; pj/pose->draft ;
   pj/draft->plan` holds. Composite poses already returned a
   `CompositeDraft` record; that is unchanged.
+- `pj/plan->membrane` now attaches `:total-width`, `:total-height`,
+  and `:title` as metadata on the returned vector. `pj/membrane->plot`
+  reads them from meta (with opts as fallback). This lets `pj/plot`
+  be a single `->` thread without re-passing plan-derived
+  dimensions through opts.
+- `pj/plot` is a literal five-step `->` chain over the public
+  atomic functions (no longer goes through `pj/plan->plot`).
+  `pj/plan->plot` is preserved as a separate composition shortcut
+  that `pj/save` uses internally.
 
 ### Internal: composite plan->membrane defmethod moved out of `impl/`
 

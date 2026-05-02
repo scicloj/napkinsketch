@@ -18,9 +18,12 @@
 ;;
 ;; A **pose** is the composable value in Plotje. A leaf pose
 ;; describes one plot panel; a composite pose contains other poses
-;; arranged together. Every function in the API (`pj/pose`,
-;; `pj/lay-*`, `pj/facet`, `pj/arrange`, `pj/options`, `pj/scale`,
-;; `pj/coord`) takes a pose and returns a pose.
+;; arranged together. Every pose-shaping function in the API
+;; (`pj/pose`, `pj/lay-*`, `pj/facet`, `pj/arrange`, `pj/options`,
+;; `pj/scale`, `pj/coord`) takes a pose and returns a pose.
+;; `pj/->pose` is the polymorphic lift -- it accepts raw data or a
+;; pose and returns a pose, so any of the output functions can
+;; start from a dataset directly.
 ;; Poses auto-render in
 ;; [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
 ;; tools like [Clay](https://scicloj.github.io/clay/).
@@ -643,8 +646,11 @@ annotated
 ;; a tree of layout and drawing primitives (`Translate`, `WithColor`,
 ;; `RoundedRectangle`, `Label`, etc.) that represents a complete plot.
 ;;
-;; The membrane is an intermediate step in the SVG rendering path:
-;; the plan becomes a membrane, which becomes SVG hiccup. Direct
+;; Plotje produces a membrane via `pj/plan->membrane` (single-step
+;; transition from a plan) or `pj/membrane` (composition shortcut
+;; from a pose). The vector carries plan-derived `:total-width`,
+;; `:total-height`, and `:title` as metadata, so the next stage can
+;; size and label the figure without re-deriving them. Direct
 ;; renderers (e.g., Plotly) skip the membrane entirely.
 
 (def my-membrane (pj/plan->membrane my-plan))

@@ -33,9 +33,11 @@
 ;; `pj/pose`, `pj/lay-*`, `pj/options`, `pj/scale`, `pj/coord`,
 ;; `pj/facet`, `pj/arrange` -- all take a pose and return a pose,
 ;; so plots build up through ordinary `->` threading. The output
-;; functions (`pj/plan`, `pj/plot`, `pj/save`, `pj/draft`) take a
-;; pose and return a different shape -- a plan, an SVG, a file
-;; path -- and so close the pipeline.
+;; functions (`pj/draft`, `pj/plan`, `pj/membrane`, `pj/plot`,
+;; `pj/save`) take a pose and return a different shape -- a draft,
+;; a plan, a membrane tree, an SVG, a file path -- and so close
+;; the pipeline. See the Architecture chapter for how the output
+;; functions are literal compositions of single-step transitions.
 ;;
 ;; The simplest pose carries some data and picks columns. With no
 ;; explicit chart type, the library infers one from the column

@@ -329,7 +329,10 @@
 ;; | `:svg` | SVG hiccup wrapped in `kind/hiccup` |
 ;; | `:bufimg` | Java BufferedImage wrapped in `kind/buffered-image` (raster) |
 
-;; `pj/plan->membrane` builds the tree, `pj/membrane->plot` converts it:
+;; `pj/plan->membrane` builds the tree, `pj/membrane->plot` converts
+;; it. The membrane tree carries plan-derived dimensions and title
+;; as metadata, so `pj/membrane->plot` does not need them spelled
+;; out in opts:
 
 (def my-membrane (pj/plan->membrane my-plan))
 
@@ -337,16 +340,33 @@
 
 (kind/test-last [(fn [v] (true? v))])
 
-(first (pj/membrane->plot my-membrane :svg
-                          {:total-width (:total-width my-plan)
-                           :total-height (:total-height my-plan)}))
+(:total-width (meta my-membrane))
+
+(kind/test-last [(fn [v] (number? v))])
+
+(first (pj/membrane->plot my-membrane :svg {}))
 
 (kind/test-last [(fn [v] (= :svg v))])
+
+;; The shorter shortcut `pj/membrane` runs the full chain from a
+;; pose to a membrane in one call -- the natural starting point for
+;; a custom backend that consumes membranes:
+
+(def shortcut-membrane
+  (pj/membrane (-> (rdatasets/datasets-iris)
+                   (pj/lay-point :sepal-length :sepal-width
+                                 {:color :species}))))
+
+(vector? shortcut-membrane)
+
+(kind/test-last [(fn [v] (true? v))])
 
 ;; ### How to extend: add a new membrane-based format
 ;;
 ;; To add a format that reuses the membrane tree (e.g., Canvas, PDF),
-;; register a `membrane->plot` defmethod.
+;; register a `membrane->plot` defmethod. The membrane tree carries
+;; the canvas dimensions in metadata, so the new defmethod can read
+;; them from `(meta membrane-tree)` without seeing the plan.
 ;;
 ;; Pseudocode:
 ;;
@@ -356,15 +376,19 @@
 ;;             [scicloj.plotje.render.membrane :as membrane]))
 ;;
 ;; (defmethod render/membrane->plot :canvas [membrane-tree _ opts]
-;;   ;; Walk the same drawable tree, emit canvas draw calls
-;;   (canvas-walk membrane-tree))
+;;   (let [{:keys [total-width total-height]} (meta membrane-tree)]
+;;     ;; Walk the drawable tree, emit canvas draw calls at the
+;;     ;; correct canvas size
+;;     (canvas-walk membrane-tree total-width total-height)))
 ;;
-;; ;; Also register plan->plot to orchestrate the full path:
+;; ;; Optionally register plan->plot for users who want a one-call
+;; ;; plan-to-figure path; pj/plot, pj/membrane, and pj/save do not
+;; ;; need it -- they go through plan->membrane and membrane->plot
+;; ;; directly.
 ;; (defmethod render/plan->plot :canvas [plan _ opts]
-;;   (let [mt (membrane/plan->membrane plan)]
-;;     (render/membrane->plot mt :canvas
-;;                               {:total-width (:total-width plan)
-;;                                :total-height (:total-height plan)})))
+;;   (-> plan
+;;       (membrane/plan->membrane opts)
+;;       (render/membrane->plot :canvas opts)))
 ;; ```
 
 ;; ## `make-scale`
