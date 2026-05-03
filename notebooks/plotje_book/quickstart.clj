@@ -206,6 +206,27 @@
 
 (kind/test-last [(fn [v] (pj/pose? v))])
 
+;; ## Getting the SVG
+;;
+;; The examples above auto-render in this notebook because
+;; [Clay](https://scicloj.github.io/clay/) recognizes Plotje poses
+;; and visualizes them. In an interactive workflow with Clay (or
+;; another [Kindly](https://scicloj.github.io/kindly-noted/)-compatible
+;; tool), you rarely need the SVG explicitly.
+;;
+;; When you do want it -- to inspect the hiccup or embed the plot
+;; in a webpage -- call `pj/plot`:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width)
+    pj/plot)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
+
+;; The result is a [hiccup](https://github.com/weavejester/hiccup)
+;; vector starting with `:svg` -- a Clojure data representation of
+;; the SVG markup.
+
 ;; ## Export
 
 ;; Save a plot to SVG with `pj/save`. It writes the file and returns the path:
