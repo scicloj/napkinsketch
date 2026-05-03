@@ -13,3 +13,7 @@ CLAUDE.md
 dev-notes/
 dev-tools/
 user-report-*.md
+# Regenerated at the repo root by dev/make-book! -- the source of
+# truth lives under notebooks/.
+/chapters.edn
+/custom.scss
