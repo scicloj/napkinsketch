@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>29&nbsp; Extensibility – Plotje</title>
+<title>30&nbsp; Extensibility – Plotje</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -69,7 +69,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./plotje_book.waterfall_extension.html" rel="next">
-<link href="./plotje_book.exploring_plans.html" rel="prev">
+<link href="./plotje_book.membranes.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -120,7 +120,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./plotje_book.architecture.html">🔬 Internals</a></li><li class="breadcrumb-item"><a href="./plotje_book.extensibility.html"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Extensibility</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./plotje_book.architecture.html">🔬 Internals</a></li><li class="breadcrumb-item"><a href="./plotje_book.extensibility.html"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Extensibility</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -390,26 +390,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./plotje_book.membranes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Membranes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./plotje_book.extensibility.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Extensibility</span></span></a>
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Extensibility</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./plotje_book.waterfall_extension.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Extension Example: Waterfall Chart</span></span></a>
+ <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Extension Example: Waterfall Chart</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./plotje_book.edge_cases.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Edge Cases</span></span></a>
+ <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Edge Cases</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./plotje_book.development.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Development</span></span></a>
+ <span class="menu-text"><span class="chapter-number">33</span>&nbsp; <span class="chapter-title">Development</span></span></a>
   </div>
 </li>
       </ul>
@@ -461,9 +467,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./plotje_book.architecture.html">🔬 Internals</a></li><li class="breadcrumb-item"><a href="./plotje_book.extensibility.html"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Extensibility</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./plotje_book.architecture.html">🔬 Internals</a></li><li class="breadcrumb-item"><a href="./plotje_book.extensibility.html"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Extensibility</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Extensibility</span></h1>
+<h1 class="title"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Extensibility</span></h1>
 </div>
 
 
@@ -511,7 +517,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>   [scicloj.plotje.impl.extract <span class="at">:as</span> extract]</span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>   [scicloj.plotje.render.mark <span class="at">:as</span> mark]</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>   [scicloj.plotje.render.svg <span class="at">:as</span> svg]</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>   [scicloj.plotje.impl.render <span class="at">:as</span> render]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>   [scicloj.plotje.impl.render <span class="at">:as</span> render]</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>   <span class="co">;; Membrane UI protocols -- read membrane width/height</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>   [membrane.ui]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
@@ -1200,7 +1208,7 @@ graph LR
 </section>
 <section id="membrane-plot" class="level2">
 <h2 class="anchored" data-anchor-id="membrane-plot"><code>membrane-&gt;plot</code></h2>
-<p>Converts a membrane drawable tree into a plot for a given format. This is the extensibility point for membrane-based output formats – formats that share the same drawable tree but walk it differently.</p>
+<p>Converts a <code>PlotjeMembrane</code> into a plot for a given format. This is the extensibility point for membrane-based output formats – formats that consume the same drawable tree but walk it differently. The <a href="./plotje_book.membranes.html">Membranes</a> chapter walks the <code>PlotjeMembrane</code> record itself and the Membrane UI protocols it implements.</p>
 <p>Dispatch function: <code>(fn [membrane-tree format opts] format)</code></p>
 <table class="caption-top table">
 <colgroup>
@@ -1224,18 +1232,18 @@ graph LR
 </tr>
 </tbody>
 </table>
-<p><code>pj/plan-&gt;membrane</code> builds the tree, <code>pj/membrane-&gt;plot</code> converts it. The membrane tree carries plan-derived dimensions and title as metadata, so <code>pj/membrane-&gt;plot</code> does not need them spelled out in opts:</p>
+<p><code>pj/plan-&gt;membrane</code> builds the membrane, <code>pj/membrane-&gt;plot</code> converts it. The record carries plan-derived dimensions as fields and the title as <code>:plotje/title</code>, so <code>pj/membrane-&gt;plot</code> reads them off the value directly:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb72"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">def</span><span class="fu"> my-membrane </span>(pj/plan-&gt;membrane my-plan))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">vector?</span> my-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>(pj/membrane? my-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb74"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb75"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">:total-width</span> (<span class="kw">meta</span> my-membrane))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb75"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>(membrane.ui/width my-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb76"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="dv">600</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1254,33 +1262,36 @@ graph LR
 <span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>                                 {<span class="at">:color</span> <span class="at">:species</span>}))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="sourceClojure">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb80"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">vector?</span> shortcut-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb80"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>(pj/membrane? shortcut-membrane)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="printedClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb81"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="va">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="how-to-extend-add-a-new-membrane-based-format" class="level3">
 <h3 class="anchored" data-anchor-id="how-to-extend-add-a-new-membrane-based-format">How to extend: add a new membrane-based format</h3>
-<p>To add a format that reuses the membrane tree (e.g., Canvas, PDF), register a <code>membrane-&gt;plot</code> defmethod. The membrane tree carries the canvas dimensions in metadata, so the new defmethod can read them from <code>(meta membrane-tree)</code> without seeing the plan.</p>
+<p>To add a format that reuses the membrane tree (e.g., Canvas, PDF), register a <code>membrane-&gt;plot</code> defmethod. The defmethod reads canvas dimensions via the Membrane UI protocols and the title via <code>:plotje/title</code>, so it never needs to see the plan:</p>
 <p>Pseudocode:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb82"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">ns</span> mylib.render.canvas</span>
-<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span> [scicloj.plotje.impl.render <span class="at">:as</span> render]</span>
-<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>            [scicloj.plotje.render.membrane <span class="at">:as</span> membrane]))</span>
-<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/membrane-&gt;plot </span><span class="at">:canvas</span> [membrane-tree _ opts]</span>
-<span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [{<span class="at">:keys</span> [total-width total-height]} (<span class="kw">meta</span> membrane-tree)]</span>
-<span id="cb82-7"><a href="#cb82-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">;; Walk the drawable tree, emit canvas draw calls at the</span></span>
-<span id="cb82-8"><a href="#cb82-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">;; correct canvas size</span></span>
-<span id="cb82-9"><a href="#cb82-9" aria-hidden="true" tabindex="-1"></a>    (canvas-walk membrane-tree total-width total-height)))</span>
-<span id="cb82-10"><a href="#cb82-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-11"><a href="#cb82-11" aria-hidden="true" tabindex="-1"></a><span class="co">;; Optionally register plan-&gt;plot for users who want a one-call</span></span>
-<span id="cb82-12"><a href="#cb82-12" aria-hidden="true" tabindex="-1"></a><span class="co">;; plan-to-figure path; pj/plot, pj/membrane, and pj/save do not</span></span>
-<span id="cb82-13"><a href="#cb82-13" aria-hidden="true" tabindex="-1"></a><span class="co">;; need it -- they go through plan-&gt;membrane and membrane-&gt;plot</span></span>
-<span id="cb82-14"><a href="#cb82-14" aria-hidden="true" tabindex="-1"></a><span class="co">;; directly.</span></span>
-<span id="cb82-15"><a href="#cb82-15" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/plan-&gt;plot </span><span class="at">:canvas</span> [plan _ opts]</span>
-<span id="cb82-16"><a href="#cb82-16" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> plan</span>
-<span id="cb82-17"><a href="#cb82-17" aria-hidden="true" tabindex="-1"></a>      (membrane/plan-&gt;membrane opts)</span>
-<span id="cb82-18"><a href="#cb82-18" aria-hidden="true" tabindex="-1"></a>      (render/membrane-&gt;plot <span class="at">:canvas</span> opts)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>  (<span class="at">:require</span> [membrane.ui <span class="at">:as</span> ui]</span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>            [scicloj.plotje.impl.render <span class="at">:as</span> render]</span>
+<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>            [scicloj.plotje.render.membrane <span class="at">:as</span> membrane]))</span>
+<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/membrane-&gt;plot </span><span class="at">:canvas</span> [membrane-tree _ opts]</span>
+<span id="cb82-7"><a href="#cb82-7" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [w     (ui/width membrane-tree)</span>
+<span id="cb82-8"><a href="#cb82-8" aria-hidden="true" tabindex="-1"></a>        h     (ui/height membrane-tree)</span>
+<span id="cb82-9"><a href="#cb82-9" aria-hidden="true" tabindex="-1"></a>        title (<span class="at">:plotje/title</span> membrane-tree)]</span>
+<span id="cb82-10"><a href="#cb82-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">;; Walk the drawable tree (via membrane.ui/children), emit</span></span>
+<span id="cb82-11"><a href="#cb82-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">;; canvas draw calls at the correct canvas size</span></span>
+<span id="cb82-12"><a href="#cb82-12" aria-hidden="true" tabindex="-1"></a>    (canvas-walk membrane-tree w h title)))</span>
+<span id="cb82-13"><a href="#cb82-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-14"><a href="#cb82-14" aria-hidden="true" tabindex="-1"></a><span class="co">;; Optionally register plan-&gt;plot for users who want a one-call</span></span>
+<span id="cb82-15"><a href="#cb82-15" aria-hidden="true" tabindex="-1"></a><span class="co">;; plan-to-figure path; pj/plot, pj/membrane, and pj/save do not</span></span>
+<span id="cb82-16"><a href="#cb82-16" aria-hidden="true" tabindex="-1"></a><span class="co">;; need it -- they go through plan-&gt;membrane and membrane-&gt;plot</span></span>
+<span id="cb82-17"><a href="#cb82-17" aria-hidden="true" tabindex="-1"></a><span class="co">;; directly.</span></span>
+<span id="cb82-18"><a href="#cb82-18" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defmethod</span><span class="fu"> render/plan-&gt;plot </span><span class="at">:canvas</span> [plan _ opts]</span>
+<span id="cb82-19"><a href="#cb82-19" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">-&gt;</span> plan</span>
+<span id="cb82-20"><a href="#cb82-20" aria-hidden="true" tabindex="-1"></a>      (membrane/plan-&gt;membrane opts)</span>
+<span id="cb82-21"><a href="#cb82-21" aria-hidden="true" tabindex="-1"></a>      (render/membrane-&gt;plot <span class="at">:canvas</span> opts)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="make-scale" class="level2">
@@ -1922,13 +1933,13 @@ graph LR
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./plotje_book.exploring_plans.html" class="pagination-link" aria-label="Exploring Plans">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Exploring Plans</span></span>
+      <a href="./plotje_book.membranes.html" class="pagination-link" aria-label="Membranes">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Membranes</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
       <a href="./plotje_book.waterfall_extension.html" class="pagination-link" aria-label="Extension Example: Waterfall Chart">
-        <span class="nav-page-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Extension Example: Waterfall Chart</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Extension Example: Waterfall Chart</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

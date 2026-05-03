@@ -25,6 +25,7 @@
  "🖼 Gallery" ["gallery"]
  "🔬 Internals" ["architecture"
                  "exploring_plans"
+                 "membranes"
                  "extensibility"
                  "waterfall_extension"
                  "edge_cases"

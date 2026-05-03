@@ -390,26 +390,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./plotje_book.membranes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Membranes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./plotje_book.extensibility.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Extensibility</span></span></a>
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Extensibility</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./plotje_book.waterfall_extension.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Extension Example: Waterfall Chart</span></span></a>
+ <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Extension Example: Waterfall Chart</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./plotje_book.edge_cases.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Edge Cases</span></span></a>
+ <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Edge Cases</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./plotje_book.development.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">Development</span></span></a>
+ <span class="menu-text"><span class="chapter-number">33</span>&nbsp; <span class="chapter-title">Development</span></span></a>
   </div>
 </li>
       </ul>
@@ -483,7 +489,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="a-pose-describes-a-plot" class="level2">
 <h2 class="anchored" data-anchor-id="a-pose-describes-a-plot">A pose describes a plot</h2>
-<p>A pose flows through the pipeline. The composition functions – <code>pj/pose</code>, <code>pj/lay-*</code>, <code>pj/options</code>, <code>pj/scale</code>, <code>pj/coord</code>, <code>pj/facet</code>, <code>pj/arrange</code> – all take a pose and return a pose, so plots build up through ordinary <code>-&gt;</code> threading. The output functions (<code>pj/draft</code>, <code>pj/plan</code>, <code>pj/membrane</code>, <code>pj/plot</code>, <code>pj/save</code>) take a pose and return a different shape – a draft, a plan, a membrane tree, an SVG, a file path – and so close the pipeline. See the Architecture chapter for how the output functions are literal compositions of single-step transitions.</p>
+<p>A pose flows through the pipeline. The composition functions – <code>pj/pose</code>, <code>pj/lay-*</code>, <code>pj/options</code>, <code>pj/scale</code>, <code>pj/coord</code>, <code>pj/facet</code>, <code>pj/arrange</code> – all take a pose and return a pose, so plots build up through ordinary <code>-&gt;</code> threading. The output functions (<code>pj/draft</code>, <code>pj/plan</code>, <code>pj/membrane</code>, <code>pj/plot</code>, <code>pj/save</code>) take a pose and return a different shape – a draft, a plan, a membrane, an SVG, a file path – and so close the pipeline. See the Architecture chapter for how the output functions are literal compositions of single-step transitions.</p>
 <p>The simplest pose carries some data and picks columns. With no explicit chart type, the library infers one from the column types:</p>
 <div class="sourceClojure">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(<span class="kw">-&gt;</span> (rdatasets/datasets-iris)</span>
