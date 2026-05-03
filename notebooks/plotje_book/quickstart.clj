@@ -225,7 +225,16 @@
 
 ;; The result is a [hiccup](https://github.com/weavejester/hiccup)
 ;; vector starting with `:svg` -- a Clojure data representation of
-;; the SVG markup.
+;; the SVG markup. The notebook auto-rendered it as a plot above
+;; because Clay knows how to draw hiccup. To see the hiccup value
+;; itself rather than its rendering, wrap with `kind/pprint`:
+
+(-> (rdatasets/datasets-iris)
+    (pj/lay-point :sepal-length :sepal-width)
+    pj/plot
+    kind/pprint)
+
+(kind/test-last [(fn [v] (and (vector? v) (= :svg (first v))))])
 
 ;; ## Export
 
