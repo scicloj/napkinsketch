@@ -8,7 +8,8 @@
             [scicloj.plotje.render.membrane :as membrane]
             [scicloj.plotje.impl.render :as render])
   (:import [membrane.ui Translate WithColor WithStyle WithStrokeWidth
-            Path RoundedRectangle Rectangle Label Rotate]))
+            Path RoundedRectangle Rectangle Label Rotate]
+           [scicloj.plotje.impl.membrane PlotjeMembrane]))
 
 ;; ---- Color helpers ----
 
@@ -151,6 +152,10 @@
                text-anchor (assoc :text-anchor text-anchor))
        text]))
 
+  PlotjeMembrane
+  (-to-svg [elem ctx]
+    (membrane->svg (ui/children elem) ctx))
+
   Object
   (-to-svg [_ _ctx] nil))
 
@@ -286,10 +291,9 @@
                                                       (.setAttribute p "opacity" "0.15")))))))))))))
 
 (defmethod render/membrane->plot :svg [membrane-tree _ opts]
-  (let [m (meta membrane-tree)
-        total-width (or (:total-width m) (:total-width opts))
-        total-height (or (:total-height m) (:total-height opts))
-        title (or (:title m) (:title opts))
+  (let [total-width (or (ui/width membrane-tree) (:total-width opts))
+        total-height (or (ui/height membrane-tree) (:total-height opts))
+        title (or (:plotje/title membrane-tree) (:title opts))
         {:keys [tooltip brush]} opts
         svg-body (membrane->svg membrane-tree)
         svg (wrap-svg total-width total-height svg-body title)

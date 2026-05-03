@@ -3,15 +3,15 @@
    membrane's Java2D backend. Faster than SVG for large plots and
    produces raster output that Clay renders automatically."
   (:require [membrane.java2d :as java2d]
+            [membrane.ui :as ui]
             [scicloj.plotje.render.membrane :as membrane]
             [scicloj.plotje.impl.render :as render])
   (:import [javax.imageio ImageIO]
            [java.io File]))
 
 (defmethod render/membrane->plot :bufimg [membrane-tree _ opts]
-  (let [m (meta membrane-tree)
-        w (int (or (:total-width m) (:total-width opts) 600))
-        h (int (or (:total-height m) (:total-height opts) 400))]
+  (let [w (int (or (ui/width membrane-tree) (:total-width opts) 600))
+        h (int (or (ui/height membrane-tree) (:total-height opts) 400))]
     (java2d/draw-to-image membrane-tree [w h])))
 
 (defmethod render/plan->plot :bufimg [plan _ opts]

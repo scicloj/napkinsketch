@@ -5,6 +5,7 @@
    tests prove the user-facing functions actually call through to the
    atomic steps (not via an internal bypass)."
   (:require [clojure.test :refer [deftest is testing]]
+            [membrane.ui]
             [tablecloth.api :as tc]
             [scicloj.plotje.api :as pj]
             [scicloj.plotje.render.membrane :as membrane]))
@@ -166,13 +167,13 @@
                          pj/pose->draft
                          pj/draft->plan
                          (pj/plan->membrane (:opts pose {})))]
-      (is (vector? via-public))
-      (is (vector? via-arrows))
-      (is (= (:total-width (meta via-public))
-             (:total-width (meta via-arrows)))
+      (is (pj/membrane? via-public))
+      (is (pj/membrane? via-arrows))
+      (is (= (membrane.ui/width via-public)
+             (membrane.ui/width via-arrows))
           "plan-derived dimensions agree on both paths")
-      (is (= "T" (:title (meta via-public)))
-          "title rides on the membrane meta from the pose's :opts"))))
+      (is (= "T" (:plotje/title via-public))
+          "title rides as :plotje/title from the pose's :opts"))))
 
 (deftest membrane-calls-the-pipeline
   (testing "pj/membrane literally calls the public atomic steps up through plan->membrane"
