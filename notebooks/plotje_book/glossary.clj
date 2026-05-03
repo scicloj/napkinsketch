@@ -645,23 +645,29 @@ annotated
 
 ;; ## Membrane
 ;;
-;; A **membrane** is a value of the
-;; [Membrane](https://github.com/phronmophobic/membrane) library --
-;; a tree of layout and drawing primitives (`Translate`, `WithColor`,
-;; `RoundedRectangle`, `Label`, etc.) that represents a complete plot.
+;; A **membrane** is a `PlotjeMembrane` -- a record carrying a tree
+;; of layout and drawing primitives (`Translate`, `WithColor`,
+;; `RoundedRectangle`, `Label`, etc.) sized to a complete plot
+;; canvas. The record itself implements the
+;; [Membrane](https://github.com/phronmophobic/membrane) library's
+;; UI protocols (`IOrigin`, `IBounds`, `IChildren`), so it composes
+;; with other Membrane elements and any Membrane consumer can use
+;; it without special-casing.
 ;;
 ;; Plotje produces a membrane via `pj/plan->membrane` (single-step
 ;; transition from a plan) or `pj/membrane` (composition shortcut
-;; from a pose). The vector carries plan-derived `:total-width`,
-;; `:total-height`, and `:title` as metadata, so the next stage can
-;; size and label the figure without re-deriving them. Direct
-;; renderers (e.g., Plotly) skip the membrane entirely.
+;; from a pose). The record carries `:width` and `:height` as
+;; fields (read via `(membrane.ui/width m)`/`(membrane.ui/height m)`),
+;; and the title as `:plotje/title`. Direct renderers (e.g., Plotly)
+;; skip the membrane entirely. The
+;; [Membranes](./plotje_book.membranes.html) chapter walks the stage
+;; in depth.
 
 (def my-membrane (pj/plan->membrane my-plan))
 
 ;; A complete membrane is large -- one drawable per data point on
-;; top of axes, gridlines, ticks, and labels. Here is the full
-;; tree for `my-plan`:
+;; top of axes, gridlines, ticks, and labels. The record's children
+;; (the underlying drawable tree) for `my-plan`:
 
 (kind/pprint my-membrane)
 
@@ -672,9 +678,10 @@ annotated
                         (string? (:text d)) (:text d)
                         (:drawable d) (walk (:drawable d))
                         (:drawables d) (some walk (:drawables d))))
-          texts (mapv walk-text m)]
-      (and (vector? m)
-           (= 9 (count m))
+          drawables (membrane.ui/children m)
+          texts (mapv walk-text drawables)]
+      (and (pj/membrane? m)
+           (= 9 (count drawables))
            ;; The first four top-level entries carry the title,
            ;; axis labels, and legend title.
            (= ["Iris" "sepal width" "sepal length" "species"]
@@ -874,6 +881,6 @@ annotated
 ;; | Palette | Ordered color set for categorical aesthetics | `:palette` in `pj/options` |
 ;; | Gradient | Continuous color ramp for numerical mappings | `:color-scale` in `pj/options` |
 ;; | Configuration | Global rendering defaults | `pj/config`, `pj/set-config!`, `pj/with-config` |
-;; | Membrane | Drawable tree (Membrane library) carrying plan-derived dimensions and title as Clojure metadata | `pj/membrane`, `pj/plan->membrane` |
+;; | Membrane | `PlotjeMembrane` record -- a Membrane UI component carrying the drawable tree, plan-derived dimensions, and `:plotje/title` | `pj/membrane`, `pj/plan->membrane` |
 ;; | Plot | Final output (SVG hiccup) | `pj/plot`, `pj/save` |
 ;; | Tooltip / Brush | JavaScript hover and selection interactions | `{:tooltip true}` in options |
