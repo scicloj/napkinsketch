@@ -4,11 +4,9 @@
 
 ;; ## Setup
 ;;
-;; Add Plotje to your `deps.edn`:
+;; Add Plotje to your `deps.edn`. Current release:
 ;;
-;; ```clojure
-;; {:deps {org.scicloj/plotje {:mvn/version "0.1.0-SNAPSHOT"}}}
-;; ```
+;; [![Clojars Project](https://img.shields.io/clojars/v/org.scicloj/plotje.svg)](https://clojars.org/org.scicloj/plotje)
 ;;
 ;; Then require the API:
 
