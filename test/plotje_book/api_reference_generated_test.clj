@@ -222,7 +222,7 @@
   {:x (range 30),
    :y
    (map
-    (fn* [p1__101468#] (Math/sin (* p1__101468# 0.3)))
+    (fn* [p1__115662#] (Math/sin (* p1__115662# 0.3)))
     (range 30))}))
 
 
@@ -332,9 +332,9 @@
     :y
     (mapv
      (fn*
-      [p1__101469#]
+      [p1__115663#]
       (+
-       (Math/sin (* p1__101469# 0.2))
+       (Math/sin (* p1__115663# 0.2))
        (* 0.3 (- (rng/drandom r) 0.5))))
      xs)})
   (pj/lay-point :x :y)
@@ -1375,7 +1375,7 @@
    (let
     [bs (byte-array 8)]
     (.read in bs)
-    (mapv (fn* [p1__101470#] (bit-and p1__101470# 255)) (vec bs))))))
+    (mapv (fn* [p1__115664#] (bit-and p1__115664# 255)) (vec bs))))))
 
 
 (deftest
@@ -1396,7 +1396,7 @@
    (let
     [bs (byte-array 4)]
     (.read in bs)
-    (mapv (fn* [p1__101471#] (bit-and p1__101471# 255)) (vec bs))))))
+    (mapv (fn* [p1__115665#] (bit-and p1__115665# 255)) (vec bs))))))
 
 
 (deftest t319_l946 (is ((fn [bs] (= [137 80 78 71] bs)) v318_l937)))

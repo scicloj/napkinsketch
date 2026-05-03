@@ -244,7 +244,21 @@
 
 
 (def
- v54_l234
+ v54_l232
+ (->
+  (rdatasets/datasets-iris)
+  (pj/lay-point :sepal-length :sepal-width)
+  pj/plot
+  kind/pprint))
+
+
+(deftest
+ t55_l237
+ (is ((fn [v] (and (vector? v) (= :svg (first v)))) v54_l232)))
+
+
+(def
+ v57_l243
  (->
   (rdatasets/datasets-iris)
   (pj/lay-point :sepal-length :sepal-width)
@@ -252,5 +266,5 @@
 
 
 (deftest
- t55_l238
- (is ((fn [p] (and (string? p) (.endsWith p ".svg"))) v54_l234)))
+ t58_l247
+ (is ((fn [p] (and (string? p) (.endsWith p ".svg"))) v57_l243)))
