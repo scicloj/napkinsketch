@@ -51,7 +51,7 @@
 (defn- default-position
   "Default position for marks that normally dodge.
    When :color is the same column as :x, dodge is suppressed — each x-band
-   already contains exactly one color group, so dodging just shrinks and
+   already contains exactly one color group, so dodging shrinks and
    offsets the mark unnecessarily."
   [draft-layer]
   (or (:position draft-layer)

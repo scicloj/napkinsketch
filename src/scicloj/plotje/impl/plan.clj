@@ -128,8 +128,8 @@
    numeric domain, the corresponding ticks render off-panel and the
    chart appears unlabelled. Print a warning naming the offending
    values and suggesting :domain (which extends the axis range) for
-   users who meant to broaden the visible scale rather than just pin
-   tick locations. Strict mode upgrades to ex-info."
+   users who meant to broaden the visible scale rather than pin
+   tick locations only. Strict mode upgrades to ex-info."
   [breaks domain]
   (let [[lo hi] domain]
     (when (and (number? lo) (number? hi))

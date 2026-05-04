@@ -386,7 +386,7 @@
             (catch Throwable _ nil)))))))
 
 (defn- effective-layers
-  "The layers that will actually render for a leaf. When the user
+  "The layers that render for a leaf. When the user
    provided layers, those. When :layers is empty but :mapping is
    non-empty, leaf->draft synthesizes one :infer placeholder, so
    we model that as a single empty {} layer."

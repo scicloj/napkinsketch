@@ -90,7 +90,7 @@
    in, so a cell whose color comes from a layer mapping participates
    in the unanimity check. When the result is non-empty, the
    compositor renders one shared legend at composite level and
-   per-channel suppresses just those aesthetics on each leaf --
+   per-channel suppresses only those aesthetics on each leaf --
    legends for non-unanimous aesthetics keep rendering per-leaf."
   [composite]
   (let [leaves (pose/resolve-tree composite)]

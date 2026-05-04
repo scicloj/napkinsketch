@@ -642,7 +642,7 @@
 (defn- reorder-pose-keys
   "Return a copy of fr with known keys in pose-print-order, followed
    by any unknown keys in their original order (so extensions survive,
-   they just print last)."
+   they print last)."
   [fr]
   (let [known (reduce (fn [acc k]
                         (if (contains? fr k) (assoc acc k (fr k)) acc))
@@ -2726,7 +2726,7 @@
    (`pj/plot`'s `:format`) names the JVM return type -- `:svg` for
    hiccup, `:bufimg` for a Java2D BufferedImage. A pose-level
    `:format` flows into both contexts; save reinterprets `:bufimg`
-   as `:png` because what hits the disk is a PNG file.
+   as `:png` because the file on disk is a PNG.
 
    Arguments:
 
@@ -2780,7 +2780,7 @@
                               (svg/hiccup->svg-str out))))
        :png (let [img (render-impl/plan->plot (plan fr) :bufimg (:opts fr {}))]
               ((resolve 'scicloj.plotje.render.bufimg/save-png) img path))
-       (throw (ex-info (str "pj/save does not know how to write format "
+       (throw (ex-info (str "pj/save cannot write format "
                             (pr-str resolved-fmt) " to a file. Supported: "
                             ":svg, :png.")
                        {:format resolved-fmt :path path-str})))
