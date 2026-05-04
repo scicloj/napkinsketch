@@ -657,6 +657,15 @@
 
 (kind/test-last [true?])
 
+(kind/doc #'pj/membrane?)
+
+;; Check whether a value is a `PlotjeMembrane` -- the value returned
+;; by `pj/plan->membrane` and `pj/membrane`:
+
+(pj/membrane? (pj/membrane (pj/lay-point tiny :x :y)))
+
+(kind/test-last [true?])
+
 ;; ## Inspection
 
 (kind/doc #'pj/draft)
@@ -721,18 +730,25 @@ plan1
 
 (kind/doc #'pj/membrane)
 
-;; Resolve a pose into a membrane tree -- the format-agnostic
-;; vector of `membrane.ui` drawing primitives. Useful for exploring
-;; rendering targets beyond the SVG and Java2D backends Plotje
-;; wires in today.
+;; Resolve a pose into a `PlotjeMembrane` -- a format-agnostic
+;; Membrane UI component (a record implementing `IOrigin`, `IBounds`,
+;; `IChildren`). Useful for exploring rendering targets beyond the
+;; SVG and Java2D backends Plotje wires in today, and for composing
+;; Plotje plots into larger Membrane interfaces. The
+;; [Membranes](./plotje_book.membranes.html) chapter walks the
+;; record's anatomy and the protocols.
 
 (let [m (pj/membrane (pj/lay-point tiny :x :y))]
-  {:vector? (vector? m)
-   :meta-keys (sort (keys (meta m)))})
+  {:membrane?    (pj/membrane? m)
+   :width        (membrane.ui/width m)
+   :height       (membrane.ui/height m)
+   :record-keys  (sort (filter keyword? (keys m)))})
 
-(kind/test-last [(fn [info] (and (:vector? info)
-                                 (= [:title :total-height :total-width]
-                                    (:meta-keys info))))])
+(kind/test-last [(fn [info] (and (:membrane? info)
+                                 (= 600 (:width info))
+                                 (= 400 (:height info))
+                                 (= [:drawables :height :width]
+                                    (:record-keys info))))])
 
 (kind/doc #'pj/->pose)
 
@@ -760,15 +776,13 @@ plan1
 
 (def m1 (pj/plan->membrane plan1))
 
-(vector? m1)
+(pj/membrane? m1)
 
 (kind/test-last [true?])
 
 (kind/doc #'pj/membrane->plot)
 
-(first (pj/membrane->plot m1 :svg
-                          {:total-width (:total-width plan1)
-                           :total-height (:total-height plan1)}))
+(first (pj/membrane->plot m1 :svg {}))
 
 (kind/test-last [(fn [v] (= :svg v))])
 
@@ -793,7 +807,7 @@ plan1
 
 (kind/doc #'pj/draft->membrane)
 
-(vector? (pj/draft->membrane draft1))
+(pj/membrane? (pj/draft->membrane draft1))
 
 (kind/test-last [true?])
 

@@ -35,7 +35,7 @@
 ;; so plots build up through ordinary `->` threading. The output
 ;; functions (`pj/draft`, `pj/plan`, `pj/membrane`, `pj/plot`,
 ;; `pj/save`) take a pose and return a different shape -- a draft,
-;; a plan, a membrane tree, an SVG, a file path -- and so close
+;; a plan, a membrane, an SVG, a file path -- and so close
 ;; the pipeline. See the Architecture chapter for how the output
 ;; functions are literal compositions of single-step transitions.
 ;;

@@ -10,6 +10,7 @@
    dependencies."
   (:require [membrane.ui :as ui]
             [scicloj.plotje.impl.defaults :as defaults]
+            [scicloj.plotje.impl.membrane :as mem]
             [scicloj.plotje.render.membrane :as membrane]))
 
 ;; ---- Drawing constants ----
@@ -176,7 +177,5 @@
                    (seq row-strips) (into row-strips)
                    (seq legend-tree) (into legend-tree)
                    title             (conj (title-drawable title width)))]
-    (with-meta (vec composed)
-      {:total-width (long width)
-       :total-height (long height)
-       :title title})))
+    (cond-> (mem/->PlotjeMembrane (vec composed) (long width) (long height))
+      title (assoc :plotje/title title))))

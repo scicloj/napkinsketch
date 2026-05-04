@@ -23,7 +23,9 @@
    ;; Plotje -- composable plotting
    [scicloj.plotje.api :as pj]
    ;; Malli schema validation
-   [scicloj.plotje.impl.plan-schema :as ss]))
+   [scicloj.plotje.impl.plan-schema :as ss]
+   ;; Membrane UI protocols
+   [membrane.ui]))
 
 ;; ## Pipeline Overview
 
@@ -76,10 +78,15 @@ graph LR
 ;;   buffers. Produced by `pj/draft->plan`. No rendering primitives
 ;;   yet.
 ;;
-;; - **Membrane** -- positioned drawing primitives (Translate,
-;;   WithColor, Path, Label, ...) in drawing space, from the
-;;   [Membrane](https://github.com/phronmophobic/membrane) library
-;;   that underpins this stage. Produced by `pj/plan->membrane`.
+;; - **Membrane** -- a `PlotjeMembrane` record carrying positioned
+;;   drawing primitives (Translate, WithColor, Path, Label, ...) in
+;;   drawing space, sized to the output canvas. The record itself
+;;   implements the
+;;   [Membrane](https://github.com/phronmophobic/membrane) library's
+;;   UI protocols, so it composes with other Membrane elements.
+;;   Produced by `pj/plan->membrane`. The
+;;   [Membranes](./plotje_book.membranes.html) chapter walks this
+;;   stage in depth.
 ;;
 ;; - **Plot** -- rendered output (SVG hiccup or BufferedImage).
 ;;   Produced by `pj/membrane->plot`, dispatching on a `:format`
@@ -236,29 +243,40 @@ trace-pose
 
 ;; ### Step 4: pj/plan->membrane
 ;;
-;; Convert the plan into a tree of membrane drawing primitives,
-;; positioned in drawing-space coordinates.
+;; Convert the plan into a `PlotjeMembrane` -- a tree of membrane
+;; drawing primitives positioned in drawing-space coordinates,
+;; wrapped in a record that itself implements the Membrane UI
+;; protocols (`IOrigin`, `IBounds`, `IChildren`).
 
 (def trace-membrane (pj/plan->membrane trace-plan))
 
-;; The membrane tree -- a vector of `membrane.ui` records, each
-;; carrying a position and a drawing primitive:
+;; The membrane carries the rendered drawables plus the canvas size
+;; and title. The drawables sit inside the record's `:drawables`
+;; field; record fields `:width` and `:height` give the canvas
+;; size; and `:plotje/title` carries the title (when set):
 
 (kind/pprint trace-membrane)
 
-(kind/test-last [(fn [v] (and (vector? v)
-                              (pos? (count v))
-                              (every? #(.startsWith (.getName (class %))
-                                                    "membrane.ui.")
-                                      v)))])
+(kind/test-last
+ [(fn [v]
+    (and (pj/membrane? v)
+         (pos? (count (:drawables v)))
+         (every? #(.startsWith (.getName (class %))
+                               "membrane.ui.")
+                 (:drawables v))))])
+
+;; The dedicated [Membranes](./plotje_book.membranes.html) chapter
+;; walks the record's protocols, the namespaced-attribute convention,
+;; and how a `PlotjeMembrane` composes with hand-built Membrane
+;; elements.
 
 ;; ### Step 5: pj/membrane->plot
 ;;
-;; Convert the membrane tree into the rendered output for a chosen
+;; Convert the membrane into the rendered output for a chosen
 ;; format. Dispatches on the format keyword; `:svg` is built in.
-;; The membrane vector carries its plan-derived dimensions on
-;; metadata, so `pj/membrane->plot` does not need them respelled
-;; in opts:
+;; The membrane carries its plan-derived dimensions as record
+;; fields (read via `(membrane.ui/width m)`/`(height m)`), so
+;; `pj/membrane->plot` does not need them respelled in opts:
 
 (def trace-plot
   (pj/membrane->plot trace-membrane :svg {}))
@@ -494,18 +512,17 @@ composite-pose
 (kind/test-last [(fn [p] (and (pj/composite-plan? p)
                               (= 2 (count (:sub-plots p)))))])
 
-;; `pj/membrane` returns the vector of drawing primitives -- one
-;; `Translate` per leaf plus chrome (column strip labels, shared
-;; legend, title if any). Plan-derived dimensions and title are
-;; attached to the vector as metadata.
+;; `pj/membrane` returns a `PlotjeMembrane` whose `:drawables` carry
+;; one `Translate` per leaf plus chrome (column strip labels, shared
+;; legend, title if any). Plan-derived width and height ride as
+;; record fields and the title as `:plotje/title`.
 
 (pj/membrane composite-pose)
 
-(kind/test-last [(fn [m] (and (vector? m)
-                              (pos? (count m))
-                              (let [{:keys [total-width total-height]} (meta m)]
-                                (and (number? total-width)
-                                     (number? total-height)))))])
+(kind/test-last [(fn [m] (and (pj/membrane? m)
+                              (pos? (count (:drawables m)))
+                              (number? (membrane.ui/width m))
+                              (number? (membrane.ui/height m))))])
 
 ;; `pj/plot` (the full pipeline) returns the SVG hiccup -- the
 ;; same value `composite-pose` auto-renders to at the top of this

@@ -68,5 +68,5 @@ book:
   - part: 🖼 Gallery
     chapters: [plotje_book.gallery.qmd]
   - part: 🔬 Internals
-    chapters: [plotje_book.architecture.qmd, plotje_book.exploring_plans.qmd, plotje_book.extensibility.qmd, plotje_book.waterfall_extension.qmd, plotje_book.edge_cases.qmd, plotje_book.development.qmd]
+    chapters: [plotje_book.architecture.qmd, plotje_book.exploring_plans.qmd, plotje_book.membranes.qmd, plotje_book.extensibility.qmd, plotje_book.waterfall_extension.qmd, plotje_book.edge_cases.qmd, plotje_book.development.qmd]
   title: Plotje

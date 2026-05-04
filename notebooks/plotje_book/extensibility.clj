@@ -23,7 +23,9 @@
    [scicloj.plotje.impl.extract :as extract]
    [scicloj.plotje.render.mark :as mark]
    [scicloj.plotje.render.svg :as svg]
-   [scicloj.plotje.impl.render :as render]))
+   [scicloj.plotje.impl.render :as render]
+   ;; Membrane UI protocols -- read membrane width/height
+   [membrane.ui]))
 
 ;; ## Overview
 ;;
@@ -314,9 +316,12 @@ graph LR
 
 ;; ## `membrane->plot`
 ;;
-;; Converts a membrane drawable tree into a plot for a given format.
-;; This is the extensibility point for membrane-based output formats --
-;; formats that share the same drawable tree but walk it differently.
+;; Converts a `PlotjeMembrane` into a plot for a given format. This
+;; is the extensibility point for membrane-based output formats --
+;; formats that consume the same drawable tree but walk it
+;; differently. The [Membranes](./plotje_book.membranes.html)
+;; chapter walks the `PlotjeMembrane` record itself and the Membrane
+;; UI protocols it implements.
 ;;
 ;; Dispatch function: `(fn [membrane-tree format opts] format)`
 ;;
@@ -325,18 +330,18 @@ graph LR
 ;; | `:svg` | SVG hiccup wrapped in `kind/hiccup` |
 ;; | `:bufimg` | Java BufferedImage wrapped in `kind/buffered-image` (raster) |
 
-;; `pj/plan->membrane` builds the tree, `pj/membrane->plot` converts
-;; it. The membrane tree carries plan-derived dimensions and title
-;; as metadata, so `pj/membrane->plot` does not need them spelled
-;; out in opts:
+;; `pj/plan->membrane` builds the membrane, `pj/membrane->plot`
+;; converts it. The record carries plan-derived dimensions as fields
+;; and the title as `:plotje/title`, so `pj/membrane->plot` reads
+;; them off the value directly:
 
 (def my-membrane (pj/plan->membrane my-plan))
 
-(vector? my-membrane)
+(pj/membrane? my-membrane)
 
 (kind/test-last [(fn [v] (true? v))])
 
-(:total-width (meta my-membrane))
+(membrane.ui/width my-membrane)
 
 (kind/test-last [(fn [v] (number? v))])
 
@@ -353,29 +358,32 @@ graph LR
                    (pj/lay-point :sepal-length :sepal-width
                                  {:color :species}))))
 
-(vector? shortcut-membrane)
+(pj/membrane? shortcut-membrane)
 
 (kind/test-last [(fn [v] (true? v))])
 
 ;; ### How to extend: add a new membrane-based format
 ;;
 ;; To add a format that reuses the membrane tree (e.g., Canvas, PDF),
-;; register a `membrane->plot` defmethod. The membrane tree carries
-;; the canvas dimensions in metadata, so the new defmethod can read
-;; them from `(meta membrane-tree)` without seeing the plan.
+;; register a `membrane->plot` defmethod. The defmethod reads
+;; canvas dimensions via the Membrane UI protocols and the title via
+;; `:plotje/title`, so it never needs to see the plan:
 ;;
 ;; Pseudocode:
 ;;
 ;; ```clojure
 ;; (ns mylib.render.canvas
-;;   (:require [scicloj.plotje.impl.render :as render]
+;;   (:require [membrane.ui :as ui]
+;;             [scicloj.plotje.impl.render :as render]
 ;;             [scicloj.plotje.render.membrane :as membrane]))
 ;;
 ;; (defmethod render/membrane->plot :canvas [membrane-tree _ opts]
-;;   (let [{:keys [total-width total-height]} (meta membrane-tree)]
-;;     ;; Walk the drawable tree, emit canvas draw calls at the
-;;     ;; correct canvas size
-;;     (canvas-walk membrane-tree total-width total-height)))
+;;   (let [w     (ui/width membrane-tree)
+;;         h     (ui/height membrane-tree)
+;;         title (:plotje/title membrane-tree)]
+;;     ;; Walk the drawable tree (via membrane.ui/children), emit
+;;     ;; canvas draw calls at the correct canvas size
+;;     (canvas-walk membrane-tree w h title)))
 ;;
 ;; ;; Optionally register plan->plot for users who want a one-call
 ;; ;; plan-to-figure path; pj/plot, pj/membrane, and pj/save do not

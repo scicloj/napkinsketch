@@ -74,6 +74,15 @@
   [x]
   (resolve/layer-type? x))
 
+(defn membrane?
+  "Return true if x is a `PlotjeMembrane` -- the value returned by
+   `pj/plan->membrane` and `pj/membrane`. A `PlotjeMembrane` is a
+   Membrane UI component (implements `IOrigin`, `IBounds`,
+   `IChildren`) carrying the rendered drawables and plan-derived
+   width/height; the plot title rides as `:plotje/title`."
+  [x]
+  (membrane/membrane? x))
+
 (defn- expect-type
   "Validate that x is of the expected type. Throws with helpful message if not."
   [x pred expected-name fn-name]
@@ -281,16 +290,20 @@
   (render-impl/plan->plot (draft->plan draft) format opts))
 
 (defn plan->membrane
-  "Convert a plan into a membrane drawable tree.
+  "Convert a plan into a `PlotjeMembrane` -- a Membrane UI component
+   carrying the rendered drawables, plan-derived width and height,
+   and the plot title.
+
    The 1-arity uses no rendering options. The 2-arity takes an
    opts map with optional `:tooltip`, `:theme`, `:palette`, etc.
 
-   The returned vector carries plan-derived `:total-width`,
-   `:total-height`, and `:title` as Clojure metadata. Backends
-   reading the membrane tree (e.g. via `pj/membrane->plot`) pick
-   these up via `(meta tree)` to size and label the canvas. The
-   contract is captured by the `MembraneMeta` schema in
-   `scicloj.plotje.impl.membrane-schema`.
+   The result implements `membrane.ui` `IOrigin`, `IBounds`, and
+   `IChildren`, so width and height are accessible via
+   `(membrane.ui/width m)` and `(membrane.ui/height m)`. The title,
+   when set, rides as `:plotje/title`. Future per-membrane
+   attributes use the same `:plotje/*` namespaced-keyword convention.
+   The shape is captured by the `PlotjeMembraneSchema` in
+   `scicloj.plotje.impl.membrane`.
 
    - `(plan->membrane (plan fr))`
    - `(plan->membrane (plan fr) {:tooltip true})`"
@@ -300,18 +313,18 @@
    (membrane/plan->membrane plan-data opts)))
 
 (defn membrane->plot
-  "Convert a membrane drawable tree into a figure for the given format.
+  "Convert a `PlotjeMembrane` into a figure for the given format.
    Dispatches on format keyword; `:svg` is always available.
 
-   Reads `:total-width`, `:total-height`, and `:title` from
-   `(meta membrane-tree)` to size and label the canvas, falling back
-   to `opts` if metadata is absent. See the `MembraneMeta` schema in
-   `scicloj.plotje.impl.membrane-schema` for the metadata contract.
+   Reads width and height from the membrane via
+   `(membrane.ui/width m)` / `(membrane.ui/height m)` (so any
+   Membrane backend can introspect the canvas size), and the title
+   from `(:plotje/title m)`.
 
    - `(membrane->plot (plan->membrane (plan pose)) :svg {})`"
   [membrane-tree format opts]
-  (expect-type membrane-tree vector?
-               "membrane drawable tree (a vector from pj/plan->membrane or pj/membrane)"
+  (expect-type membrane-tree membrane/membrane?
+               "PlotjeMembrane (from pj/plan->membrane or pj/membrane)"
                "pj/membrane->plot")
   (render-impl/membrane->plot membrane-tree format opts))
 
@@ -394,11 +407,14 @@
     (membrane/membrane-tree? x)
     (throw (ex-info
             (str caller " expects a pose, but got what looks like a "
-                 "Membrane drawable tree (vector of membrane.ui elements)."
-                 " If you have a membrane and want to render it, call"
+                 "Membrane drawable tree (a PlotjeMembrane or a"
+                 " hand-built vector of membrane.ui elements). If you"
+                 " have a membrane and want to render it, call"
                  " pj/membrane->plot directly; if you want to re-plan,"
                  " pass the original pose to " caller ".")
-            {:caller caller :value-head (first x)}))
+            {:caller caller :value-head (cond (membrane/membrane? x) :PlotjeMembrane
+                                              (vector? x) (first x)
+                                              :else (type x))}))
 
     (or (and (or (sequential? x) (and (map? x) (not (tc/dataset? x))))
              (zero? (count x)))
@@ -2384,7 +2400,7 @@
        plan)))
 
 (defn membrane
-  "Resolve a pose into a membrane tree. Literal composition of the
+  "Resolve a pose into a `PlotjeMembrane`. Literal composition of the
    atomic steps: `(let [pose (->pose x), opts (:opts pose {})]
                     (-> pose
                         pose->draft
@@ -2394,16 +2410,16 @@
    opts and pass them to `plan->membrane`. The 2-arity folds opts
    into the pose with `pj/options` first.
 
-   Returns a vector of `membrane.ui` drawing primitives carrying
-   plan-derived `:total-width`, `:total-height`, and `:title` as
-   metadata. Render-time options (`:tooltip`, `:theme`, `:palette`,
-   `:color-scale`, `:color-midpoint`) ride along on the pose's
-   `:opts` and reach `plan->membrane` through this call.
+   Returns a `PlotjeMembrane` -- a Membrane UI component (implements
+   `IOrigin`, `IBounds`, `IChildren`) carrying the rendered drawables
+   plus plan-derived width and height; the title, when set, rides as
+   `:plotje/title`. Render-time options (`:tooltip`, `:theme`,
+   `:palette`, `:color-scale`, `:color-midpoint`) ride along on the
+   pose's `:opts` and reach `plan->membrane` through this call.
 
    Useful for exploring rendering targets beyond the SVG and Java2D
-   backends Plotje wires in today: any consumer that walks a
-   membrane tree (a Membrane backend, a custom serializer) can take
-   the result of `pj/membrane` directly.
+   backends Plotje wires in today: any Membrane backend can consume
+   the result of `pj/membrane` via the standard Membrane protocols.
 
    - `(membrane pose)`
    - `(membrane pose {:tooltip true})`"
@@ -2453,8 +2469,9 @@
          (plan->membrane opts)
          (membrane->plot fmt opts)))`
 
-   Plan-derived dimensions and title ride on the membrane vector's
-   Clojure metadata; the `membrane->plot` defmethod reads them from
+   Plan-derived dimensions ride as record fields on the membrane
+   (accessed via `membrane.ui/width`/`membrane.ui/height`); the
+   title rides as `:plotje/title`. `membrane->plot` reads them from
    there.
 
    - `(plot pose)`
