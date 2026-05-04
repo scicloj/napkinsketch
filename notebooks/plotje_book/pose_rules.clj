@@ -74,9 +74,9 @@
 ;; ### Rule C1: `pj/pose` on raw data creates a leaf
 ;;
 ;; Called with a dataset as first argument, `pj/pose` returns a
-;; leaf pose. The arity decides what's in `:mapping`: a keyword is
-;; `:x`; two keywords are `:x` and `:y`; an options map contributes
-;; aesthetic keys.
+;; leaf pose. The arity determines what's in `:mapping`: a keyword
+;; is `:x`; two keywords are `:x` and `:y`; an options map
+;; contributes aesthetic keys.
 
 (-> iris
     (pj/pose :sepal-length :sepal-width))
@@ -437,7 +437,7 @@ composite-pose
 ;; ---
 ;; ## Layer Placement
 ;;
-;; How `lay-*` calls decide where the layer lands in the pose tree.
+;; Where `lay-*` calls place the layer in the pose tree.
 ;; Four rules covering the bare-vs-position and leaf-vs-composite
 ;; combinations, plus the raw-data convenience case.
 ;;

@@ -94,9 +94,9 @@ my-pose
 ;; Layers attach to poses in three ways, depending on what you
 ;; pass to `pj/lay-*`:
 ;;
-;; - **Bare** -- `pj/lay-*` without columns attaches the layer so it
-;;   sees the current pose's mapping (inherited from `pj/pose` or
-;;   a prior `pj/lay-*`).
+;; - **Bare** -- `pj/lay-*` without columns attaches the layer
+;;   using the current pose's mapping (inherited from `pj/pose`
+;;   or a prior `pj/lay-*`).
 ;; - **Matching columns** -- `pj/lay-*` with columns that match the
 ;;   most recent matching leaf reuses that leaf, so the new layer
 ;;   joins the existing panel.
@@ -330,7 +330,7 @@ my-pose
 ;; ## Inference
 ;;
 ;; **Inference** is the automatic selection of a layer type
-;; (mark + stat + position) when you bypass `pj/lay-*` and just pass
+;; (mark + stat + position) when you bypass `pj/lay-*` and pass
 ;; columns to `pj/pose`. Plotje picks a layer type based on
 ;; column types: numerical x and y defaults to `:point`, categorical
 ;; x with numerical y to `:boxplot`, a single numerical column to
@@ -632,7 +632,7 @@ annotated
 ;; | `:font-size` | Base font size in pixels |
 ;;
 ;; Passed as `{:theme {...}}` via `pj/options`, `pj/with-config`, or
-;; `pj/set-config!`. Other visual knobs (margins, legend width, tick
+;; `pj/set-config!`. Other visual settings (margins, legend width, tick
 ;; spacing) are top-level configuration keys, not theme entries --
 ;; see `pj/config-key-docs`.
 
@@ -727,7 +727,7 @@ annotated
 (kind/test-last
  [(fn [v] (= 150 (:points (pj/svg-summary v))))])
 
-;; clojure2d ships thousands of named palettes -- the count below
+;; clojure2d provides thousands of named palettes -- the count below
 ;; is the size of the catalogue:
 
 (count (c2d/find-palette #".*"))

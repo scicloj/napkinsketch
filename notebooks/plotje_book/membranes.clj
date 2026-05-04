@@ -96,7 +96,7 @@ iris-membrane
          (= 9 (:n-drawables info))))])
 
 ;; The width and height come from the plan -- the membrane stage does
-;; not recompute them; it just inherits the canvas size the plan
+;; not recompute them; it inherits the canvas size the plan
 ;; resolved. The origin is `[0 0]` because a `PlotjeMembrane` is the
 ;; full canvas; when it is embedded in a larger Membrane layout, the
 ;; layout's translation places it. The nine top-level drawables for
@@ -104,7 +104,7 @@ iris-membrane
 ;; label, the panel background, the panel grid plus marks, and the
 ;; three legend rows.
 
-;; The map keys, as the record presents them, are just three record
+;; The map keys, as the record presents them, are three record
 ;; fields plus the namespaced title:
 
 (sort (filter keyword? (keys iris-membrane)))
@@ -133,8 +133,8 @@ iris-membrane
 ;; is delegated to the children: when a Membrane backend draws our
 ;; record, the default `IDraw` impl walks `(children record)` and
 ;; draws each child individually -- the existing `Translate`,
-;; `WithColor`, `Path`, `Label` primitives already know how to draw
-;; themselves under each backend.
+;; `WithColor`, `Path`, `Label` primitives already have per-backend
+;; draw implementations.
 
 ;; ## Title and namespaced attributes
 ;;

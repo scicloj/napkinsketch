@@ -36,7 +36,7 @@
 ;; Five milestones in computing history. Each event is a point on
 ;; a single horizontal line, with a text label nudged above. The
 ;; vertical position is fixed (`y = 1`) because the y-axis here
-;; carries no meaning -- it just provides a baseline.
+;; carries no meaning -- it provides a baseline.
 ;;
 ;; Sources for the milestones:
 ;;

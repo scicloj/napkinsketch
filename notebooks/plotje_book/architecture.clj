@@ -526,7 +526,7 @@ composite-pose
 
 ;; `pj/plot` (the full pipeline) returns the SVG hiccup -- the
 ;; same value `composite-pose` auto-renders to at the top of this
-;; section, just produced explicitly:
+;; section, produced explicitly:
 
 (kind/pprint (pj/plot composite-pose))
 

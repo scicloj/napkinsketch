@@ -118,7 +118,7 @@ graph LR
 ;;
 ;; The return value must always include `:x-domain` and `:y-domain`.
 ;; The rest of the shape depends on what the paired `extract-layer`
-;; expects -- the stat and extractor are a matched pair. For
+;; requires -- the stat and extractor are a matched pair. For
 ;; point-like marks, return `:points` (groups of `:xs`, `:ys`).
 ;; For other marks, study a similar existing pair as a template:
 ;;
@@ -367,7 +367,7 @@ graph LR
 ;; To add a format that reuses the membrane tree (e.g., Canvas, PDF),
 ;; register a `membrane->plot` defmethod. The defmethod reads
 ;; canvas dimensions via the Membrane UI protocols and the title via
-;; `:plotje/title`, so it never needs to see the plan:
+;; `:plotje/title`, so it operates without the plan:
 ;;
 ;; Pseudocode:
 ;;

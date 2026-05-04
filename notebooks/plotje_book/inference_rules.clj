@@ -159,7 +159,7 @@ scatter-pose
 ;; runs the same column-selection rule. A 1-3 column dataset gets
 ;; its mapping filled in; the resulting pose carries the mapping
 ;; but has no layer attached yet, so layer type inference (covered
-;; below) chooses the mark when the pose renders.
+;; below) supplies the mark at render time.
 
 (def two-col-pose
   (pj/pose {:x [1.0 2.0 3.0 4.0 5.0]
@@ -461,10 +461,10 @@ numeric-color-pose
 ;; ### Overriding color type with `:color-type`
 ;;
 ;; Sometimes a numeric column is really a categorical identifier -- for
-;; example, subject IDs in a repeated-measures study. The inference
-;; system sees numbers and treats them as continuous, but you want
-;; discrete groups. The `:color-type :categorical` override tells the
-;; library to treat the column as categorical despite its numeric dtype.
+;; example, subject IDs in a repeated-measures study. Inference
+;; treats numeric columns as continuous, but you want discrete
+;; groups. Setting `:color-type :categorical` overrides this so
+;; the column is treated as categorical despite its numeric dtype.
 ;;
 ;; This is a core principle of the library: **inference provides good
 ;; defaults, but the user can always override**.

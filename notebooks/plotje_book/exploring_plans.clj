@@ -273,7 +273,7 @@ hist-plan
 
 (def bar-layer (first (:layers (first (:panels bar-plan)))))
 
-;; The mark type is `:rect` and the layer knows the categories:
+;; The mark type is `:rect` and the layer carries the categories:
 
 bar-layer
 
@@ -290,8 +290,8 @@ bar-layer
 
 (kind/test-last [(fn [gs] (= 3 (count gs)))])
 
-;; The `:position` field (`:dodge` or `:stack`) tells the renderer
-;; how to arrange multiple groups within each category.
+;; The `:position` field (`:dodge` or `:stack`) controls how
+;; multiple groups arrange within each category.
 
 ;; ## Stacked Bars
 ;;
@@ -308,7 +308,7 @@ bar-layer
 (kind/test-last [(fn [p] (= :stack p))])
 
 ;; The counts are the same -- only the rendering instruction differs.
-;; The plan describes *what* to draw; the renderer decides *how*.
+;; The plan describes *what* to draw; the rendering stage handles *how*.
 
 ;; ## Regression Lines
 ;;
@@ -449,8 +449,8 @@ bar-layer
 (kind/test-last [(fn [m] (and (= :numeric (:x-domain-type m))
                               (= :categorical (:y-domain-type m))))])
 
-;; The layer data is unchanged -- the coord type tells the renderer
-;; to swap axes during mapping.
+;; The layer data is unchanged -- the coord type signals an axis
+;; swap during mapping.
 
 ;; ## Options Affect the Plan
 ;;
@@ -525,7 +525,7 @@ final-plan
       (pj/facet :species)
       pj/plan))
 
-;; The grid tells us the layout:
+;; The grid records the layout:
 
 (:grid faceted-plan)
 

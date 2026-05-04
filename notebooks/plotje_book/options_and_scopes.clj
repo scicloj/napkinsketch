@@ -59,7 +59,7 @@
 ;;   jitter). The layer type is chosen by which `pj/lay-*` function
 ;;   you call; its constituents can be overridden via `:mark`,
 ;;   `:stat`, and `:position` keys in the options map.
-;; - **Layer-type parameters** -- knobs specific to the layer type,
+;; - **Layer-type parameters** -- settings specific to the layer type,
 ;;   like `:bandwidth` for `pj/lay-density` or `:bins` for
 ;;   `pj/lay-histogram`.
 ;; - **Aesthetics** -- how the layer maps data to visuals:
@@ -204,7 +204,7 @@
 ;; 2. **Thread-local overrides** via `pj/with-config`.
 ;; 3. **Global overrides** via `pj/set-config!`.
 ;; 4. **Project file** (`plotje.edn`), if present.
-;; 5. **Library defaults** -- the baseline shipped with
+;; 5. **Library defaults** -- the baseline included with
 ;;    Plotje.
 ;;
 ;; Sources 2-5 sit outside any specific pose and carry across

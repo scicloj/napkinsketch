@@ -5,7 +5,7 @@
 ;;
 ;; - **Built-in**: pass `:tooltip true` or `:brush true` in pose
 ;;   options. Plotje injects `data-tooltip` / `data-row-idx`
-;;   attributes on rendered shapes and ships the matching
+;;   attributes on rendered shapes and includes the matching
 ;;   browser-side script automatically.
 ;; - **Custom wrappers**: wrap the SVG output with `kind/hiccup`
 ;;   plus a small `[:script ...]` form for behaviours not built in
