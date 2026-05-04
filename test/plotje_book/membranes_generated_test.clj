@@ -16,7 +16,7 @@
   (->
    (rdatasets/datasets-iris)
    (pj/lay-point :sepal-length :sepal-width {:color :species})
-   (pj/options {:title "Iris"}))))
+   (pj/options {:title "Iris", :y-label "width"}))))
 
 
 (def v4_l43 iris-pose)
@@ -51,18 +51,20 @@
 (deftest t13_l69 (is (true? v12_l67)))
 
 
+(def v15_l80 iris-membrane)
+
+
 (def
- v15_l78
- (kind/pprint
-  {:width (ui/width iris-membrane),
-   :height (ui/height iris-membrane),
-   :origin (ui/origin iris-membrane),
-   :title (:plotje/title iris-membrane),
-   :n-drawables (count (ui/children iris-membrane))}))
+ v17_l84
+ {:width (ui/width iris-membrane),
+  :height (ui/height iris-membrane),
+  :origin (ui/origin iris-membrane),
+  :title (:plotje/title iris-membrane),
+  :n-drawables (count (ui/children iris-membrane))})
 
 
 (deftest
- t16_l85
+ t18_l90
  (is
   ((fn
     [info]
@@ -72,21 +74,21 @@
      (= [0 0] (:origin info))
      (= "Iris" (:title info))
      (= 9 (:n-drawables info))))
-   v15_l78)))
+   v17_l84)))
 
 
-(def v18_l105 (sort (filter keyword? (keys iris-membrane))))
+(def v20_l110 (sort (filter keyword? (keys iris-membrane))))
 
 
 (deftest
- t19_l107
+ t21_l112
  (is
   ((fn [ks] (= [:drawables :height :width :plotje/title] ks))
-   v18_l105)))
+   v20_l110)))
 
 
 (def
- v21_l142
+ v23_l147
  (:plotje/title
   (pj/membrane
    (->
@@ -94,11 +96,11 @@
     (pj/lay-point :sepal-length :sepal-width)))))
 
 
-(deftest t22_l145 (is (nil? v21_l142)))
+(deftest t24_l150 (is (nil? v23_l147)))
 
 
 (def
- v24_l160
+ v26_l165
  (def
   two-up
   (ui/horizontal-layout
@@ -106,28 +108,28 @@
     (->
      (rdatasets/datasets-iris)
      (pj/lay-point :sepal-length :sepal-width {:color :species})
-     (pj/options {:title "Sepal length vs sepal width"})))
+     (pj/options
+      {:title "Sepal length vs sepal width", :y-label "width"})))
    (pj/membrane
     (->
      (rdatasets/datasets-iris)
      (pj/lay-point :sepal-length :petal-length {:color :species})
-     (pj/options {:title "Sepal length vs petal length"}))))))
+     (pj/options
+      {:title "Sepal length vs petal length", :y-label "petal"}))))))
 
 
-(def
- v26_l175
- (kind/pprint {:width (ui/width two-up), :height (ui/height two-up)}))
+(def v28_l182 {:width (ui/width two-up), :height (ui/height two-up)})
 
 
 (deftest
- t27_l179
+ t29_l185
  (is
   ((fn [info] (and (= 1201 (:width info)) (= 400 (:height info))))
-   v26_l175)))
+   v28_l182)))
 
 
 (def
- v29_l191
+ v31_l197
  (def
   two-up-png
   ((requiring-resolve 'membrane.java2d/draw-to-image)
@@ -135,37 +137,36 @@
    [(ui/width two-up) (ui/height two-up)])))
 
 
-(def v30_l196 (instance? java.awt.image.BufferedImage two-up-png))
+(def v32_l202 (instance? java.awt.image.BufferedImage two-up-png))
 
 
-(deftest t31_l198 (is (true? v30_l196)))
+(deftest t33_l204 (is (true? v32_l202)))
 
 
-(def v33_l202 two-up-png)
+(def v35_l208 two-up-png)
 
 
-(def v35_l218 (first (pj/membrane->plot iris-membrane :svg {})))
+(def v37_l223 (pj/membrane->plot iris-membrane :svg {}))
 
 
-(deftest t36_l220 (is ((fn [v] (= :svg v)) v35_l218)))
+(deftest t38_l225 (is ((fn [v] (= :svg (first v))) v37_l223)))
 
 
-(def v37_l222 (class (pj/membrane->plot iris-membrane :bufimg {})))
+(def v40_l231 (pj/membrane->plot iris-membrane :bufimg {}))
 
 
 (deftest
- t38_l224
- (is
-  ((fn [c] (= "java.awt.image.BufferedImage" (.getName c))) v37_l222)))
+ t41_l233
+ (is ((fn [v] (instance? java.awt.image.BufferedImage v)) v40_l231)))
 
 
-(def v40_l240 (plotje-mem/valid? iris-membrane))
+(def v43_l249 (plotje-mem/valid? iris-membrane))
 
 
-(deftest t41_l242 (is (true? v40_l240)))
+(deftest t44_l251 (is (true? v43_l249)))
 
 
-(def v43_l246 (some? (plotje-mem/explain {:not :a-membrane})))
+(def v46_l255 (some? (plotje-mem/explain {:not :a-membrane})))
 
 
-(deftest t44_l248 (is (true? v43_l246)))
+(deftest t47_l257 (is (true? v46_l255)))

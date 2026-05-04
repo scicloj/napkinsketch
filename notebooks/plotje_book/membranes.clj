@@ -38,7 +38,7 @@
   (-> (rdatasets/datasets-iris)
       (pj/lay-point :sepal-length :sepal-width
                     {:color :species})
-      (pj/options {:title "Iris"})))
+      (pj/options {:title "Iris" :y-label "width"})))
 
 iris-pose
 
@@ -73,14 +73,19 @@ iris-pose
 ;; ## Anatomy
 ;;
 ;; The record carries three structural fields plus optional
-;; `:plotje/`-namespaced attributes:
+;; `:plotje/`-namespaced attributes. The full value prints with
+;; every drawable in `:drawables`, so it is long, but every part is
+;; visible:
 
-(kind/pprint
- {:width       (ui/width iris-membrane)
-  :height      (ui/height iris-membrane)
-  :origin      (ui/origin iris-membrane)
-  :title       (:plotje/title iris-membrane)
-  :n-drawables (count (ui/children iris-membrane))})
+iris-membrane
+
+;; A summary view of the structural pieces:
+
+{:width       (ui/width iris-membrane)
+ :height      (ui/height iris-membrane)
+ :origin      (ui/origin iris-membrane)
+ :title       (:plotje/title iris-membrane)
+ :n-drawables (count (ui/children iris-membrane))}
 
 (kind/test-last
  [(fn [info]
@@ -153,28 +158,29 @@ iris-pose
 
 ;; ## Composing with other Membrane components
 ;;
-;; The headline. Because a `PlotjeMembrane` is a Membrane UI
-;; component, you can drop it into any Membrane layout. Two Plotje
-;; plots side by side is one line:
+;; Because a `PlotjeMembrane` is a Membrane UI component, you can
+;; drop it into any Membrane layout. Two Plotje plots side by side
+;; is one line:
 
 (def two-up
   (ui/horizontal-layout
    (pj/membrane (-> (rdatasets/datasets-iris)
                     (pj/lay-point :sepal-length :sepal-width
                                   {:color :species})
-                    (pj/options {:title "Sepal length vs sepal width"})))
+                    (pj/options {:title "Sepal length vs sepal width"
+                                 :y-label "width"})))
    (pj/membrane (-> (rdatasets/datasets-iris)
                     (pj/lay-point :sepal-length :petal-length
                                   {:color :species})
-                    (pj/options {:title "Sepal length vs petal length"})))))
+                    (pj/options {:title "Sepal length vs petal length"
+                                 :y-label "petal"})))))
 
 ;; The result is itself a Membrane component with bounds derived from
 ;; its children. Two 600 by 400 plots side by side, with a 1-unit gap
 ;; that `horizontal-layout` inserts, give a 1201 by 400 canvas:
 
-(kind/pprint
- {:width  (ui/width two-up)
-  :height (ui/height two-up)})
+{:width  (ui/width two-up)
+ :height (ui/height two-up)}
 
 (kind/test-last
  [(fn [info]
@@ -209,19 +215,22 @@ two-up-png
 
 ;; ## Rendering through Plotje's backends
 ;;
-;; For the common case -- rendering a single Plotje plot to one of
-;; the built-in formats -- the `pj/membrane->plot` step dispatches on
-;; a format keyword and produces the figure. `:svg` is always
-;; available; `:bufimg` is registered when the
-;; `scicloj.plotje.render.bufimg` namespace is loaded:
+;; The composition shortcut `pj/plot` is the convenience case; the
+;; explicit step `pj/membrane->plot` dispatches on a format keyword.
+;; `:svg` is always available -- the path that auto-rendered
+;; `iris-pose` at the top of the chapter:
 
-(first (pj/membrane->plot iris-membrane :svg {}))
+(pj/membrane->plot iris-membrane :svg {})
 
-(kind/test-last [(fn [v] (= :svg v))])
+(kind/test-last [(fn [v] (= :svg (first v)))])
 
-(class (pj/membrane->plot iris-membrane :bufimg {}))
+;; `:bufimg` is registered when `scicloj.plotje.render.bufimg` is
+;; loaded; it produces a Java `BufferedImage`, the raster form used
+;; in the previous section's composition:
 
-(kind/test-last [(fn [c] (= "java.awt.image.BufferedImage" (.getName c)))])
+(pj/membrane->plot iris-membrane :bufimg {})
+
+(kind/test-last [(fn [v] (instance? java.awt.image.BufferedImage v))])
 
 ;; The membrane stage is format-agnostic: the same `iris-membrane`
 ;; produced one valid value, and that value renders to multiple
