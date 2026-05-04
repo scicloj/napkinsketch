@@ -1798,7 +1798,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="membrane-plot"><code>membrane-&gt;plot</code></h3>
 <p><code>[membrane-tree format opts]</code></p>
 <p>Convert a <code>PlotjeMembrane</code> into a figure for the given format. Dispatches on format keyword; <code>:svg</code> is always available.</p>
-<p>Reads width and height from the membrane via <code>(membrane.ui/width m)</code> / <code>(membrane.ui/height m)</code> (so any Membrane backend can introspect the canvas size), and the title from <code>(:plotje/title m)</code>. Falls back to <code>opts</code> keys (<code>:total-width</code>, <code>:total-height</code>, <code>:title</code>) if a hand-built bare-vector tree reaches an internal call.</p>
+<p>Reads width and height from the membrane via <code>(membrane.ui/width m)</code> / <code>(membrane.ui/height m)</code> (so any Membrane backend can introspect the canvas size), and the title from <code>(:plotje/title m)</code>.</p>
 <ul>
 <li><code>(membrane-&gt;plot (plan-&gt;membrane (plan pose)) :svg {})</code></li>
 </ul>
