@@ -17,7 +17,7 @@
    (:layers pose)
    (update
     :layers
-    (partial mapv (fn* [p1__84099#] (dissoc p1__84099# :data))))
+    (partial mapv (fn* [p1__82289#] (dissoc p1__82289# :data))))
    (:poses pose)
    (update :poses (partial mapv strip-data)))))
 
