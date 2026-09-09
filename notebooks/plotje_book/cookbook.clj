@@ -514,7 +514,7 @@
 ;; The simplest annotations have their own layer types. A rule draws a
 ;; line across the panel at one value; a band shades the region between
 ;; two. Both take their positions as values rather than columns, and
-;; `:alpha` controls a band's opacity.
+;; both take `:alpha` -- a band's fill opacity, a rule's line opacity.
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width {:color :species})

@@ -781,7 +781,9 @@ two-panel
 ;; Positions come from the options map (`:y-intercept` / `:x-intercept` for
 ;; rules; `:y-min`/`:y-max` or `:x-min`/`:x-max` for bands); appearance
 ;; aesthetics like `:color` and `:alpha` work the same way they do on
-;; any other layer.
+;; any other layer, and so does
+;; [layer order](./plotje_book.pose_model.html#layer-order-is-paint-order) --
+;; a rule added before the points is drawn under them.
 
 (-> (rdatasets/datasets-iris)
     (pj/lay-point :sepal-length :sepal-width {:color :species})
