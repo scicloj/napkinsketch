@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [Unreleased]
+
+### Plots that look different after upgrading
+
+- **Every plot drawing a filled shape under two drawing units across** -- a narrow bar, a thin interval, a small tile. A shape narrower than one device pixel is drawn at partial opacity rather than dropped, and a shape between one and two device pixels is drawn at its own width rather than rounded to a whole number of them. Wider shapes are unchanged.
+
+### Fixed
+
+- A filled shape narrower than a device pixel is drawn. The renderer paints the one or two device pixels the shape touches at an opacity totalling the shape's width, so a bar a third of a device pixel wide is drawn a third as dark as a solid one, and two bars of different widths no longer look identical. A shape at least two drawing units across in both directions is still snapped to the device pixel grid, so bars and histogram bins meet without a seam between them. The coordinates written to the SVG are unchanged. - thanks, @carstenbehring
+
 ## [0.12.0 - 2026-09-07]
 
 A column drawn as it stands does not group. `{:color {:column :c :scale false}}` says the column holds colors, and those values are drawn on the marks without splitting the rows. A column read through its scale is unchanged: each distinct value is still a category, and the rows are still split into a group per category.
