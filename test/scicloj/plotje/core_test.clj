@@ -3039,22 +3039,31 @@
 ;; ---- Annotations-as-layers (pj/lay-rule-*, pj/lay-band-*) ----
 
 (deftest lay-rule-band-test
-  ;; Reference lines and shaded bands are first-class layers; these
-  ;; tests cover root-scope vs layer-scope, facet interaction,
-  ;; color/alpha overrides, and annotation-only domain synthesis.
-  (let [ds (tc/dataset {:x [1 2 3 4 5] :y [2 4 3 5 4]})]
+  ;; Reference lines and shaded bands are ordinary layers: they are
+  ;; drawn through `layer->membrane` like every other mark and travel on
+  ;; a panel's `:layers`. These tests cover root-scope vs layer-scope,
+  ;; facet interaction, color/alpha overrides, and the extent a rule on
+  ;; a panel of its own gives its axes.
+  (let [ds (tc/dataset {:x [1 2 3 4 5] :y [2 4 3 5 4]})
+        marks-of (fn [panel] (mapv :mark (:layers panel)))
+        layer-of (fn [panel mark] (first (filter #(= mark (:mark %)) (:layers panel))))]
 
-    (testing "root-scope rule-h attaches a single annotation"
-      (let [p (pj/plan (-> ds
-                           (pj/lay-point :x :y)
-                           (pj/lay-rule-h {:y-intercept 3})))
-            panel (first (:panels p))]
-        (is (= 1 (count (:annotations panel))))
-        (is (= :rule-h (:mark (first (:annotations panel)))))
-        (is (= 3 (:y-intercept (first (:annotations panel)))))))
+    (testing "root-scope rule-h is a layer on the panel"
+      (let [panel (first (:panels (pj/plan (-> ds
+                                               (pj/lay-point :x :y)
+                                               (pj/lay-rule-h {:y-intercept 3})))))]
+        (is (= [:point :rule-h] (marks-of panel)))
+        (is (= 3 (:y-intercept (layer-of panel :rule-h))))))
 
-    (testing "root-scope rule applies to every facet panel (deduped)"
-      ;; Without dedupe the cross-product would emit N copies per panel.
+    (testing "a rule written before a mark is drawn under it"
+      ;; Draw order is layer order, which is what makes a rule a
+      ;; background reference rather than something drawn over the data.
+      (let [panel (first (:panels (pj/plan (-> ds
+                                               (pj/lay-rule-h {:y-intercept 3})
+                                               (pj/lay-point :x :y)))))]
+        (is (= [:rule-h :point] (marks-of panel)))))
+
+    (testing "root-scope rule applies to every facet panel"
       (let [iris (tc/dataset "https://vincentarelbundock.github.io/Rdatasets/csv/datasets/iris.csv"
                              {:key-fn keyword})
             p (pj/plan (-> iris
@@ -3063,45 +3072,41 @@
                            (pj/lay-rule-h {:y-intercept 3})))]
         (is (= 3 (count (:panels p))))
         (doseq [panel (:panels p)]
-          (is (= 1 (count (:annotations panel)))
+          (is (= 1 (count (filter #(= :rule-h (:mark %)) (:layers panel))))
               (str "panel " (:row panel) "/" (:col panel) " had "
-                   (count (:annotations panel)) " annotations")))))
+                   (count (filter #(= :rule-h (:mark %)) (:layers panel))) " rules")))))
 
     (testing "pj/lay-rule-v with :color and :alpha flows into the plan"
-      (let [p (pj/plan (-> ds
-                           (pj/lay-point :x :y)
-                           (pj/lay-rule-v {:x-intercept 2 :color "red" :alpha 0.5})))
-            a (first (:annotations (first (:panels p))))]
-        (is (= :rule-v (:mark a)))
-        (is (= 2 (:x-intercept a)))
-        (is (= "red" (:color a)))
-        (is (= 0.5 (:alpha a)))))
+      (let [panel (first (:panels (pj/plan (-> ds
+                                               (pj/lay-point :x :y)
+                                               (pj/lay-rule-v {:x-intercept 2 :color "red" :alpha 0.5})))))
+            l (layer-of panel :rule-v)]
+        (is (= 2 (:x-intercept l)))
+        (is (= [1.0 0.0 0.0 1.0] (:color l)))
+        ;; The opacity is the layer's style, as it is for every mark,
+        ;; and a rule honours it rather than always drawing solid.
+        (is (= 0.5 (:opacity (:style l))))))
 
     (testing "pj/lay-band-h / pj/lay-band-v carry their min/max bounds"
-      (let [p (pj/plan (-> ds
-                           (pj/lay-point :x :y)
-                           (pj/lay-band-h {:y-min 2 :y-max 4})
-                           (pj/lay-band-v {:x-min 1 :x-max 3})))
-            anns (:annotations (first (:panels p)))
-            band-h (first (filter #(= :band-h (:mark %)) anns))
-            band-v (first (filter #(= :band-v (:mark %)) anns))]
+      (let [panel (first (:panels (pj/plan (-> ds
+                                               (pj/lay-point :x :y)
+                                               (pj/lay-band-h {:y-min 2 :y-max 4})
+                                               (pj/lay-band-v {:x-min 1 :x-max 3})))))
+            band-h (layer-of panel :band-h)
+            band-v (layer-of panel :band-v)]
         (is (= 2 (:y-min band-h)))
         (is (= 4 (:y-max band-h)))
         (is (= 1 (:x-min band-v)))
         (is (= 3 (:x-max band-v)))))
 
     (testing "positioned rule with root-scope data layer renders both"
-      ;; Regression: data layer must coexist with a positioned annotation.
-      (let [p (pj/plan (-> ds
-                           (pj/pose :x :y)
-                           pj/lay-point
-                           (pj/lay-rule-h :x :y {:y-intercept 3})))
-            panel (first (:panels p))]
-        (is (= 1 (count (:layers panel))))
-        (is (= :point (:mark (first (:layers panel)))))
-        (is (= 1 (count (:annotations panel))))))
+      (let [panel (first (:panels (pj/plan (-> ds
+                                               (pj/pose :x :y)
+                                               pj/lay-point
+                                               (pj/lay-rule-h :x :y {:y-intercept 3})))))]
+        (is (= [:point :rule-h] (marks-of panel)))))
 
-    (testing "plan with annotation layer validates against schema"
+    (testing "plan with a rule and a band validates against schema"
       (let [p (pj/plan (-> ds
                            (pj/lay-point :x :y)
                            (pj/lay-rule-h {:y-intercept 3 :color "red" :alpha 0.5})
@@ -3120,30 +3125,53 @@
         (is (clojure.string/includes? svg-red "rgb(255,0,0)"))
         (is (not (clojure.string/includes? svg-default "rgb(255,0,0)")))))
 
-    (testing "annotation-only pose still produces a panel"
-      ;; Edge case: a pose with only a positioned annotation (no data
-      ;; layer) should still infer a panel and render the annotation.
-      ;; Domain comes from the pose's data columns plus the
-      ;; annotation's own position.
+    (testing "a rule draws at the opacity it was given"
+      ;; `:alpha` was accepted on these layers and drawn by nothing:
+      ;; every rule came out fully opaque.
+      (let [svg (pr-str (pj/plot (-> ds
+                                     (pj/lay-point :x :y)
+                                     (pj/lay-rule-h {:y-intercept 3
+                                                     :alpha 0.25 :color "#cc0000"}))))
+            drawn (re-find #"204,0,0.{0,60}" svg)]
+        (is (clojure.string/includes? drawn ":stroke-opacity 0.25"))))
+
+    (testing "a rule outside everything the data reaches widens the axis"
+      ;; A reference line asked for and then clipped away is a picture
+      ;; that answers no question. The rule reports its own extent, so
+      ;; the axis reaches it.
+      (let [panel (first (:panels (pj/plan (-> ds
+                                               (pj/lay-point :x :y)
+                                               (pj/lay-rule-h {:y-intercept 100})))))
+            [y-lo y-hi] (:y-domain panel)]
+        (is (<= y-lo 2))
+        (is (>= y-hi 100))))
+
+    (testing "a pose carrying only a rule still produces a panel"
+      ;; The pose's mapping gives the axes their extent; the rule adds
+      ;; its own value to the axis it names.
       (let [p (pj/plan (-> ds
                            (pj/pose :x :y)
                            (pj/lay-rule-h :x :y {:y-intercept 3})))
             panel (first (:panels p))]
         (is (= 1 (count (:panels p))))
-        (is (= 0 (count (:layers panel))))
-        (is (= 1 (count (:annotations panel))))
-        (is (= :rule-h (:mark (first (:annotations panel)))))
-        ;; Domain spans both the column data and the intercept.
+        (is (= [:rule-h] (marks-of panel)))
         (let [[y-lo y-hi] (:y-domain panel)]
           (is (<= y-lo 2))
           (is (>= y-hi 5)))))
 
-    (testing "annotation-only panel with band extends domain to include band"
-      (let [p (pj/plan (-> ds
-                           (pj/pose :x :y)
-                           (pj/lay-band-h :x :y {:y-min 10 :y-max 20})))
-            panel (first (:panels p))
+    (testing "a pose carrying only a band extends the domain to include it"
+      (let [panel (first (:panels (pj/plan (-> ds
+                                               (pj/pose :x :y)
+                                               (pj/lay-band-h :x :y {:y-min 10 :y-max 20})))))
             [y-lo y-hi] (:y-domain panel)]
         (is (<= y-lo 2))
-        (is (>= y-hi 20))))))
+        (is (>= y-hi 20))))
+
+    (testing "a rule on a pose with no data at all is still drawable"
+      (let [panel (first (:panels (pj/plan (-> (pj/pose)
+                                               (pj/lay-rule-h {:y-intercept 3})))))]
+        (is (= [:rule-h] (marks-of panel)))
+        ;; The rule spans x and no column names it, so the axis falls
+        ;; back to 0 to 1 and is padded like any other.
+        (is (= [-0.05 1.05] (mapv double (:x-domain panel))))))))
 

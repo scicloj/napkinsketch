@@ -813,15 +813,15 @@ my-pose
 ;; leader line, a caption. Their positions are given as values or
 ;; measured on the panel, not read from a column for every row.
 ;;
-;; Two ways to place one:
+;; Two ways to place one, and every one of the constructors below
+;; accepts both:
 ;;
-;; - **In data space**, so the annotation moves with the axis.
-;;   Reference lines and bands have their own layer types; a note is a
-;;   text layer whose `:x` and `:y` are values.
+;; - **In data space**, so the annotation moves with the axis, and the
+;;   axis reaches it: a rule written outside everything the data covers
+;;   widens the axis rather than being clipped away.
 ;; - **On the panel**, with `:in :drawing-area`, so the annotation is
-;;   positioned in drawing units from the corner of the panel
-;;   background and the axis domains are unaffected. See
-;;   **Drawing Area**.
+;;   placed in drawing units from the corner of the panel background
+;;   and the axis domains are unaffected. See **Drawing Area**.
 ;;
 ;; Annotations are regular layers, so they attach under the same
 ;; three cases as any `lay-*`: bare call sits on the pose, matching
@@ -846,11 +846,12 @@ my-pose
 ;; `geom_hline(aes(yintercept = ...))`, are planned but not yet
 ;; implemented.
 ;;
-;; Those four are also the only ones the plan keeps apart: a panel
-;; carries them in an `:annotations` slot of its own rather than among
-;; its `:layers`, which matters when walking a plan but not when
-;; writing a pose. A text note is an ordinary layer. See the
-;; [Extensibility](./plotje_book.extensibility.html#rule-and-band-marks-live-on-the-panels-annotations-not-layers) chapter.
+;; Annotation names a use rather than a kind of thing. Every one of
+;; those constructors builds an ordinary layer, and a panel carries them
+;; among its `:layers` in the order they were written -- so a rule
+;; written before a scatter is drawn under its points, and one written
+;; after is drawn over them. See the
+;; [Extensibility](./plotje_book.extensibility.html#a-mark-placed-at-a-written-value) chapter.
 
 (def annotated
   (-> (rdatasets/datasets-iris)

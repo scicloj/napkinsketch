@@ -8,12 +8,22 @@ All notable changes to this project will be documented in this file. This change
 
 - **Every plot on a date axis wide enough to have asked for more ticks than fit.** The axis carries fewer, larger-stepped ticks whose labels do not overlap.
 - **Every plot drawing a filled shape under two drawing units across** -- a narrow bar, a thin interval, a small tile. A shape narrower than one device pixel is drawn at partial opacity rather than dropped, and a shape between one and two device pixels is drawn at its own width rather than rounded to a whole number of them. Wider shapes are unchanged.
+- **Every plot whose rule or band was written before a data layer.** The rule is drawn under the marks written after it, where it used to be drawn over all of them.
+- **Every plot whose rule or band sits outside the extent its data covers.** The axis reaches the rule, where the rule used to be clipped away without a word. A `:domain` written with `pj/scale` still replaces what the data covers, so it pins the axis where the rule cannot widen it.
+- **Every rule given an `:alpha`.** The line is drawn at that opacity, where the number was accepted and ignored.
+- **Every plot combining a rule or a band with `(pj/coord :polar)`.** The plot is reported rather than drawn without the rule.
 
 ### Added
+
+- Rules and bands take `:in`, so `(pj/lay-rule-h {:y-intercept 40 :in :drawing-area})` draws a line forty drawing units below the top of the panel background rather than at the data value 40. They take `:alpha` too, which sets the line's opacity or the band's fill opacity.
 
 - `pj/arrange` accepts `:align-panels`, which gives every cell the same drawing area by reserving the widest y-label pad and legend column a cell needs on all of them. Two cells whose y axes label at different widths otherwise get different panel widths, so an axis shared with `:share-scales` covers a different extent in each. The pass itself already existed and was reachable only on a hand-written composite. - thanks, @timothypratley
 
 - `:circle-open` draws a point as a ring rather than a disc, so overlapping points stay countable where filled discs merge. Name it for a layer with `{:shape :circle-open}` or pass it among `:values` to a `:shape` scale. It is not handed out automatically, so no existing plot changes: `pj/shape-symbols` is now every symbol a mapping can draw, and `pj/shape-palette` is the shorter list categories are assigned from in order. - thanks, @carstenbehring
+
+### Changed
+
+- `:rule-h`, `:rule-v`, `:band-h` and `:band-v` are ordinary marks. Each travels among a panel's `:layers` in the order it was written and is drawn through `layer->membrane` like every other mark, so draw order is layer order and a rule written first sits under the data. Their extent reaches the axis, so a rule written outside everything the data covers widens the axis until the line is on the panel. A panel's `:annotations` slot is gone, along with the `Annotation` schema; code that walked a plan for these four reads `:layers` instead.
 
 ### Fixed
 

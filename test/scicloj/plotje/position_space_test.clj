@@ -239,6 +239,14 @@
       (is (pj/plan (pj/lay-area num-d :a :b drawn)))
       (is (pj/plan (pj/lay-text num-d :a :b (assoc drawn :text "x"))))))
 
+  (testing "and so do the rules and bands, which place a written value"
+    ;; Their intercept is the value being measured, so the same
+    ;; question is asked of one axis rather than of a column.
+    (is (pj/plan (pj/lay-rule-h {:a [1 2] :b [1 2]} :a :b
+                                {:y-intercept 40 :in :drawing-area})))
+    (is (pj/plan (pj/lay-band-v {:a [1 2] :b [1 2]} :a :b
+                                {:x-min 10 :x-max 40 :in :drawing-area}))))
+
   (testing "the marks that read the oriented scales refuse it by name"
     (let [cat-d {:k ["a" "b" "c" "d"] :v [40 80 20 60]}
           drawn {:y {:column :v :scale false}}]
@@ -272,17 +280,19 @@
       (is (pj/plan (pj/lay-text {:a [1 2] :b [1 2]}
                                 {:x 20 :y 20 :text "n" :in :drawing-area}))))))
 
-;; ---- Annotation colors ----
+;; ---- Rule colors ----
 
-(deftest an-annotation-takes-a-color-by-either-spelling
+(deftest a-rule-takes-a-color-by-either-spelling
   ;; The pose gate reads a keyword naming a color as that color now,
-  ;; but the annotation path kept `:color` only when it was a string --
-  ;; so `{:color :red}` was dropped in silence while
+  ;; and the draw path kept `:color` only when it was a string -- so
+  ;; `{:color :red}` was dropped in silence while
   ;; `{:color :notacolour}` was still reported. The gate and the draw
   ;; path have to agree about the same value.
   (let [color-of (fn [v] (-> scatter
                              (pj/lay-rule-h {:y-intercept 2 :color v})
-                             pj/plan :panels first :annotations first :color))]
+                             pj/plan :panels first :layers
+                             (->> (filter #(= :rule-h (:mark %))))
+                             first :color))]
     (is (= (color-of "red") (color-of :red)))
     (is (some? (color-of :red))))
 

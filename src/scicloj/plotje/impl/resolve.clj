@@ -106,8 +106,18 @@
 
 ;; ---- Layer ----
 
-(def annotation-marks
-  "Mark types that render as annotations (rules, bands) rather than data layers."
+(def written-position-marks
+  "The marks whose data-space extent is written on the layer rather
+   than read from its rows: the two rules and the two bands. A rule-h
+   covers its `:y-intercept` and nothing else; a band-v covers
+   `:x-min` to `:x-max`. Every other mark reads its extent from the
+   columns its mapping names, which is what `stat/prepare-points`
+   computes.
+
+   Read by `stat/compute-stat :identity`, which is the one place the
+   difference matters. Everything after it -- the extract, the plan
+   layer, the renderer -- treats these four as it treats any other
+   mark."
   #{:rule-h :rule-v :band-h :band-v})
 
 ;; ---- Cross ----

@@ -311,6 +311,10 @@
 (defmethod layer->membrane [:step :doc] [_ _] "Stroked step polylines")
 (defmethod layer->membrane [:pointrange :doc] [_ _] "Point at mean + vertical SE line")
 (defmethod layer->membrane [:contour :doc] [_ _] "Stroked iso-density polylines")
+(defmethod layer->membrane [:rule-h :doc] [_ _] "One stroked line across the panel at a written y")
+(defmethod layer->membrane [:rule-v :doc] [_ _] "One stroked line down the panel at a written x")
+(defmethod layer->membrane [:band-h :doc] [_ _] "One filled rectangle across the panel between two written y values")
+(defmethod layer->membrane [:band-v :doc] [_ _] "One filled rectangle down the panel between two written x values")
 (defmethod layer->membrane [:default :doc] [_ _] "Generic layer fallback")
 
 ;; ---- Clip region ----
@@ -954,6 +958,97 @@
                       (ui/with-color [cr cg cb op]
                         (ui/with-style ::ui/style-fill
                           (ui/rounded-rectangle (* 2 r) (* 2 r) r))))]))))
+
+;; ---- Rules and bands ----
+;;
+;; The four marks that draw one shape at values written on the layer
+;; rather than read from its rows. Each spans the panel on one axis and
+;; is placed on the other.
+
+(defn- written-place
+  "How a rule or a band puts a written value on the panel, as
+   `[place horizontal?]`: a function from the value to a drawing-unit
+   distance, and whether the shape it draws runs across the panel.
+
+   `:rule-h` and `:band-h` name a value on the y data axis, so they run
+   across the panel and are placed with `sy`. Under `:coord :flip` the y
+   data axis runs across the panel instead, so the value is placed with
+   `sx` and the shape is drawn down the panel. `:rule-v` and `:band-v`
+   name a value on the x data axis and are the mirror of that.
+
+   A layer in a drawing-space frame -- `{:in :drawing-area}`, or the one
+   axis under `{:scale false}` -- names no data value: the number is a
+   distance from the panel background's corner, so it is measured from
+   the margin rather than sent through a scale, and the shape keeps the
+   orientation the mark's own name gives it."
+  [layer ctx axis]
+  (let [{:keys [sx sy coord-type margin]} ctx
+        flip? (= coord-type :flip)
+        drawn? (or (= :drawing-area (:in layer))
+                   (if (= axis :y) (:y-drawn? layer) (:x-drawn? layer)))]
+    (if drawn?
+      [(fn [v] (+ (double margin) (double v))) (= axis :y)]
+      (if (= axis :y)
+        [(if flip? sx sy) (not flip?)]
+        [(if flip? sy sx) flip?]))))
+
+(defn- rule->membrane
+  "One stroked line at `value` on `axis`, spanning the drawing area on
+   the other axis.
+
+   `:coord :polar` never arrives here: a polar rule would have to be a
+   circle or a spoke, and `plan/validate-polar-marks` refuses these four
+   marks there by name, beside every other mark polar cannot draw."
+  [layer ctx axis value]
+  (let [{:keys [panel-width panel-height margin]} ctx
+        {:keys [dash stroke-width opacity]} (:style layer)
+        [r g b _] (:color layer)
+        [place horizontal?] (written-place layer ctx axis)
+        m (double margin)
+        pw (double panel-width)
+        ph (double panel-height)
+        pixel (place value)]
+    [(maybe-dash dash
+                 (ui/with-color [r g b opacity]
+                   (ui/with-stroke-width stroke-width
+                     (ui/with-style ::ui/style-stroke
+                       (if horizontal?
+                         (ui/path [m pixel] [(- pw m) pixel])
+                         (ui/path [pixel m] [pixel (- ph m)]))))))]))
+
+(defn- band->membrane
+  "One filled rectangle between `lo` and `hi` on `axis`, spanning the
+   drawing area on the other axis."
+  [layer ctx axis lo hi]
+  (let [{:keys [panel-width panel-height margin]} ctx
+        {:keys [opacity]} (:style layer)
+        [r g b _] (:color layer)
+        [place horizontal?] (written-place layer ctx axis)
+        m (double margin)
+        pw (double panel-width)
+        ph (double panel-height)
+        p1 (double (place lo))
+        p2 (double (place hi))
+        thickness (Math/abs (- p2 p1))]
+    [(ui/with-color [r g b opacity]
+       (ui/with-style ::ui/style-fill
+         (if horizontal?
+           (ui/translate m (min p1 p2)
+                         (ui/rectangle (- pw m m) thickness))
+           (ui/translate (min p1 p2) m
+                         (ui/rectangle thickness (- ph m m))))))]))
+
+(defmethod layer->membrane :rule-h [layer ctx]
+  (rule->membrane layer ctx :y (:y-intercept layer)))
+
+(defmethod layer->membrane :rule-v [layer ctx]
+  (rule->membrane layer ctx :x (:x-intercept layer)))
+
+(defmethod layer->membrane :band-h [layer ctx]
+  (band->membrane layer ctx :y (:y-min layer) (:y-max layer)))
+
+(defmethod layer->membrane :band-v [layer ctx]
+  (band->membrane layer ctx :x (:x-min layer) (:x-max layer)))
 
 (defmethod layer->membrane :default [layer ctx]
   (let [m (:mark layer)]

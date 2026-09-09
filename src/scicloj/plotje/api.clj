@@ -1783,7 +1783,8 @@
    mappings. Of the layer options documented in
    `layer-type/layer-option-docs`, fourteen are aesthetics and the rest
    are drawing options (:jitter, :in, :font-size), stat parameters
-   (:bandwidth, :bins) and annotation values (:x-intercept). Which of
+   (:bandwidth, :bins) and the values a rule or a band is drawn at
+   (:x-intercept). Which of
    them are aesthetics is answered by `defaults/aesthetic-registry`,
    not by the map they share."
   [layer-type-key opts]
@@ -2358,12 +2359,18 @@
   "Add `:rule-h` layer -- horizontal reference line at y = y-intercept.
    Position comes from opts (not data columns); `:y-intercept` is required.
    Accepts `:y-intercept` (numeric or temporal -- LocalDate, LocalDateTime,
-   Instant, java.util.Date), `:color` (literal string), and `:stroke-dash`
+   Instant, java.util.Date), `:color` (a written color), `:alpha` (the
+   line's opacity) and `:stroke-dash`
    (`:dashed`/`:dotted`/`:solid` or a raw `[dash gap]` vector).
    Temporal values are converted internally to match the y-axis scale
-   so date-axis annotations work without manual conversion.
-   The 4-arity finds or creates a sub-pose with these x/y columns
-   and attaches the rule there (only panels matching that leaf show it).
+   so a date-axis intercept needs no manual conversion.
+   `{:in :drawing-area}` reads the intercept as drawing units from the
+   top left of the panel background instead of as a data value.
+   The rule is drawn in the order its layer was written, so one written
+   before a scatter sits under its points and one written after sits
+   over them. The 4-arity finds or creates a sub-pose with these x/y
+   columns and attaches the rule there (only panels matching that leaf
+   show it).
 
    - `(lay-rule-h pose {:y-intercept 3})` -- root-level, flows to every panel.
    - `(lay-rule-h pose :x :y {:y-intercept 3})` -- panel-scope (columns pick
@@ -2380,12 +2387,18 @@
   "Add `:rule-v` layer -- vertical reference line at x = x-intercept.
    Position comes from opts (not data columns); `:x-intercept` is required.
    Accepts `:x-intercept` (numeric or temporal -- LocalDate, LocalDateTime,
-   Instant, java.util.Date), `:color` (literal string), and `:stroke-dash`
+   Instant, java.util.Date), `:color` (a written color), `:alpha` (the
+   line's opacity) and `:stroke-dash`
    (`:dashed`/`:dotted`/`:solid` or a raw `[dash gap]` vector).
    Temporal values are converted internally to match the x-axis scale
-   so date-axis annotations work without manual conversion.
-   The 4-arity finds or creates a sub-pose with these x/y columns
-   and attaches the rule there (only panels matching that leaf show it).
+   so a date-axis intercept needs no manual conversion.
+   `{:in :drawing-area}` reads the intercept as drawing units from the
+   top left of the panel background instead of as a data value.
+   The rule is drawn in the order its layer was written, so one written
+   before a scatter sits under its points and one written after sits
+   over them. The 4-arity finds or creates a sub-pose with these x/y
+   columns and attaches the rule there (only panels matching that leaf
+   show it).
 
    - `(lay-rule-v pose {:x-intercept 5})` -- root-level, flows to every panel.
    - `(lay-rule-v pose :x :y {:x-intercept 5})` -- panel-scope (columns pick
@@ -2402,12 +2415,16 @@
   "Add `:band-h` layer -- horizontal shaded band between y = y-min and y = y-max.
    Position comes from opts (not data columns); `:y-min` and `:y-max` are
    required and `:y-min` must be <= `:y-max`.
-   Accepts `:y-min` (required), `:y-max` (required), `:color` (literal
-   string), `:alpha`. Bounds may be numeric or temporal (LocalDate,
-   LocalDateTime, Instant, java.util.Date); temporal values are
-   converted internally to match the y-axis scale.
-   The 4-arity finds or creates a sub-pose with these x/y columns
-   and attaches the band there (only panels matching that leaf show it).
+   Accepts `:y-min` (required), `:y-max` (required), `:color` (a
+   written color) and `:alpha`. Bounds may be numeric or temporal
+   (LocalDate, LocalDateTime, Instant, java.util.Date); temporal values
+   are converted internally to match the y-axis scale.
+   `{:in :drawing-area}` reads the bounds as drawing units from the top
+   left of the panel background instead of as data values.
+   The band is drawn in the order its layer was written, so one written
+   before a scatter sits under its points. The 4-arity finds or creates
+   a sub-pose with these x/y columns and attaches the band there (only
+   panels matching that leaf show it).
 
    - `(lay-band-h pose {:y-min 2 :y-max 4})` -- root-level, flows to every panel.
    - `(lay-band-h pose :x :y {:y-min 2 :y-max 4})` -- panel-scope (columns pick
@@ -2423,12 +2440,16 @@
   "Add `:band-v` layer -- vertical shaded band between x = x-min and x = x-max.
    Position comes from opts (not data columns); `:x-min` and `:x-max` are
    required and `:x-min` must be <= `:x-max`.
-   Accepts `:x-min` (required), `:x-max` (required), `:color` (literal
-   string), `:alpha`. Bounds may be numeric or temporal (LocalDate,
-   LocalDateTime, Instant, java.util.Date); temporal values are
-   converted internally to match the x-axis scale.
-   The 4-arity finds or creates a sub-pose with these x/y columns
-   and attaches the band there (only panels matching that leaf show it).
+   Accepts `:x-min` (required), `:x-max` (required), `:color` (a
+   written color) and `:alpha`. Bounds may be numeric or temporal
+   (LocalDate, LocalDateTime, Instant, java.util.Date); temporal values
+   are converted internally to match the x-axis scale.
+   `{:in :drawing-area}` reads the bounds as drawing units from the top
+   left of the panel background instead of as data values.
+   The band is drawn in the order its layer was written, so one written
+   before a scatter sits under its points. The 4-arity finds or creates
+   a sub-pose with these x/y columns and attaches the band there (only
+   panels matching that leaf show it).
 
    - `(lay-band-v pose {:x-min 4 :x-max 6})` -- root-level, flows to every panel.
    - `(lay-band-v pose :x :y {:x-min 4 :x-max 6})` -- panel-scope (columns pick
@@ -3165,8 +3186,8 @@
       (some pose-has-data-anywhere? (:poses pose))))
 
 (defn- bare-template-leaf?
-  "True for a leaf pose carrying a mapping but no layers, no
-   annotations, and no own :data."
+  "True for a leaf pose carrying a mapping but no layers and no own
+   :data."
   [leaf]
   (and (not (:poses leaf))
        (seq (:mapping leaf))
