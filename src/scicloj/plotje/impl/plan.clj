@@ -627,6 +627,55 @@
                   " them to about that many, and :breaks names the ones"
                   " to keep."))))
 
+(defn- temporal-ticks-that-fit
+  "The most detailed set of date ticks whose labels fit across `width`.
+
+   A tick count comes from `:tick-spacing`, which reserves the same room
+   per tick whatever the labels say. That works on a numeric axis, where
+   `11` is a couple of characters, and fails on a date axis, where one
+   tick can be `Mar 2023` or `2024-01-01`. Measured 2026-09-09 on twelve
+   monthly dates: a 700-wide plot asked for twelve ticks whose labels
+   need about 660 units in 640 of room, and a 1200-wide one stepped down
+   to a fortnightly step and drew twenty-four `2024-01-01` labels needing
+   about 1600 in 1140.
+
+   `pick` is called with a count and answers `[ticks labels]`. It is
+   called with progressively smaller counts until the labels fit or the
+   count reaches two, and the first fitting answer is returned. Asking
+   for fewer date ticks moves to a coarser calendar step, whose labels
+   are the same length or shorter -- months to quarters keeps `Apr 2023`,
+   fortnights to months drops `2024-01-01` to `Jan 2024` -- so the search
+   terminates and never trades a long label for a longer one.
+
+   Two ticks are returned even where they do not fit: an axis has to be
+   labelled, and a label running past the panel is a smaller lie than an
+   axis with nothing on it.
+
+   The font size is read from the effective config rather than passed in,
+   which is what `layout/tick-font-size` does, and the gap is a margin
+   over an estimate -- this decides how many ticks to draw, not where to
+   draw them, so being a character out changes nothing."
+  [pick n width]
+  (let [font-size (get-in (defaults/config) [:theme :font-size]
+                          (get-in defaults/defaults [:theme :font-size]))
+        gap 6.0
+        fits? (fn [labels]
+                (or (< (count labels) 2)
+                    (<= (->> labels
+                             (map #(+ gap (text/text-width font-size (str %))))
+                             (reduce + 0.0))
+                        (double width))))]
+    (loop [n (long n)]
+      (let [[ticks labels :as answer] (pick n)]
+        (cond
+          (fits? labels) answer
+          (<= n 2) answer
+          ;; Step down rather than decrement: a calendar step is coarser
+          ;; by a factor, so walking one tick at a time would call `pick`
+          ;; twenty times to cross from fortnights to quarters and answer
+          ;; the same three times over.
+          :else (recur (max 2 (long (Math/floor (* 0.7 n))))))))))
+
 (defn compute-ticks
   "Compute tick values and labels for a domain+pixel range, using wadogo transiently.
    When temporal-extent is provided (a [min max] pair of temporal objects),
@@ -756,9 +805,14 @@
               :labels (format-temporal-ticks [(first ext)] (axis-span-ms domain))
               :categorical? false}
              (let [dt-scale (ws/scale :datetime {:domain ext :range [0.0 1.0]})
-                   dt-ticks (vec (or (scale/date-ticks (first ext) (second ext) n)
-                                     (ws/ticks dt-scale n)))
-                   labels (format-temporal-ticks dt-ticks (axis-span-ms domain))
+                   pick (fn [n]
+                          (let [ts (vec (or (scale/date-ticks (first ext) (second ext) n)
+                                            (ws/ticks dt-scale n)))]
+                            [ts (format-temporal-ticks ts (axis-span-ms domain))]))
+                   [dt-ticks labels] (temporal-ticks-that-fit
+                                      pick n
+                                      (Math/abs (double (- (second pixel-range)
+                                                           (first pixel-range)))))
                    values (mapv resolve/temporal->epoch-ms dt-ticks)]
                {:values values :labels labels :categorical? false})))
 

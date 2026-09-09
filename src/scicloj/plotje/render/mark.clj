@@ -162,13 +162,42 @@
                (+ cy (* k (+ dx dy)))]))
           pts)))
 
+(defn- open-stroke-width
+  "How thick to draw an unfilled symbol's outline, for a symbol of
+   radius `r`.
+
+   Proportional so the ring stays visible when `:size` scales a point
+   down and does not swell into a disc when it scales one up, with a
+   floor so the smallest points keep a drawable line. At the default
+   radius of 3 this is one drawing unit."
+  [r]
+  (max 1.0 (* 0.28 (double r))))
+
 (defn draw-shape
   "Draw a shape symbol on a 2r-by-2r box whose top-left corner is the
    origin. Public so the legend renderer draws the same symbol the
-   marks do. An unknown symbol draws a circle."
+   marks do. An unknown symbol draws a circle.
+
+   `:circle-open` is drawn as an outline rather than a disc, so
+   overlapping points stay countable -- each ring shows through the
+   ones on top of it, where filled discs merge into one blob. Requested
+   on the issue tracker (#46). It is inset by half its own stroke width
+   so it covers the same 2r-by-2r box a filled circle does: a stroke
+   straddles the path it is drawn on, so a ring drawn at radius r would
+   otherwise reach r plus half the stroke and read as the larger
+   symbol. It is deliberately not in the default palette
+   (`defaults/shape-syms`), which would change which symbol every
+   existing plot gives each category."
   [shape-kw r]
   (let [d (* 2 r)]
     (case shape-kw
+      :circle-open (let [w (open-stroke-width r)]
+                     (ui/translate
+                      (* 0.5 w) (* 0.5 w)
+                      (ui/with-style ::ui/style-stroke
+                        (ui/with-stroke-width w
+                          (ui/rounded-rectangle (- d w) (- d w)
+                                                (- r (* 0.5 w)))))))
       :square (ui/with-style ::ui/style-fill
                 (ui/rounded-rectangle d d 0))
       :triangle (let [h (* r 1.73)] ;; equilateral triangle height

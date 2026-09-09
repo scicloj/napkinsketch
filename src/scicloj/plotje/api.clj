@@ -152,11 +152,24 @@
   defaults/aesthetic-scales)
 
 (def shape-symbols
-  "The marker symbols a categorical `:shape` mapping draws with, in the
-   order they are assigned to categories. A plot with more categories
-   than this repeats a symbol, so two categories cannot be told apart;
-   that warns at plan time. Pass a selection of these as `:values` to
-   `(pj/scale pose :shape {:values [...]})` to choose them yourself."
+  "Every marker symbol a `:shape` mapping can draw.
+
+   The first seven are the assignment palette, in the order they are
+   given to categories: a plot with more categories than those repeats
+   a symbol, so two categories cannot be told apart, and that warns at
+   plan time. The rest are drawn only when named -- `:circle-open` is a
+   ring rather than a disc, which keeps overlapping points countable.
+
+   Pass a selection of these as `:values` to
+   `(pj/scale pose :shape {:values [...]})` to choose them yourself, or
+   name one for a whole layer with `{:shape :circle-open}`."
+  defaults/drawable-shape-syms)
+
+(def shape-palette
+  "The symbols assigned to categories automatically, in order -- the
+   first part of `pj/shape-symbols`. Published separately because the
+   two answer different questions: this is what a plot draws when you
+   say nothing, and `pj/shape-symbols` is what you may write."
   defaults/shape-syms)
 
 (defn set-config!
@@ -3600,14 +3613,23 @@
    - `:height` -- total composite height.
    - `:share-scales` -- subset of `#{:x :y}` shared across cells
      (default: `#{}`).
+   - `:align-panels` -- give every cell the same drawing area, by
+     reserving the widest y-label pad and legend column a cell needs on
+     all of them (and, for a row, the tallest x-label pad). Two cells
+     whose y axes label at different widths otherwise get different
+     panel widths, so a shared x axis covers a different extent in
+     each. Pair it with `:share-scales` where the cells are meant to be
+     read against one another.
 
+   - `(arrange [fr-a fr-b] {:cols 1 :share-scales #{:x} :align-panels true})`
+     -- a column of cells whose x axes line up.
    - `(arrange [fr-a fr-b])` -- 1x2 row.
    - `(arrange [fr-a fr-b fr-c] {:cols 2 :width 900})` -- 2x2 grid (wraps).
    - `(arrange [[fr-a fr-b] [fr-c fr-d]])` -- explicit 2x2 grid."
   ([plots] (arrange plots {}))
   ([plots opts]
    (let [cfg (defaults/config)
-         {:keys [cols title share-scales]
+         {:keys [cols title share-scales align-panels]
           :or {share-scales #{}}} opts
          _ (when-not (and (or (set? share-scales)
                               (sequential? share-scales))
@@ -3664,7 +3686,8 @@
          composite {:opts (cond-> {:width  (long (Math/round (double width)))
                                    :height (long (Math/round (double height)))}
                             title (assoc :title title)
-                            (seq share-scales) (assoc :share-scales (set share-scales)))
+                            (seq share-scales) (assoc :share-scales (set share-scales))
+                            align-panels (assoc :align-panels true))
                     :layout {:direction :vertical}
                     :poses row-poses}]
      (kind/fn composite

@@ -439,6 +439,23 @@
    plan time warns before that happens."
   [:circle :square :triangle :diamond :triangle-down :plus :cross])
 
+(def extra-shape-syms
+  "Symbols a caller may name that the assignment palette does not hand
+   out. `:circle-open` is drawn as a ring rather than a disc, so
+   overlapping points stay countable; a plot wanting it says so.
+
+   Kept apart from `shape-syms` because the two answer different
+   questions. `shape-syms` is the order categories are assigned in, so
+   adding to it changes which symbol every existing plot gives each
+   category. This is the set a caller may write, which only grows."
+  [:circle-open])
+
+(def drawable-shape-syms
+  "Every symbol `render.mark/draw-shape` can draw: the assignment
+   palette plus the ones a caller has to ask for by name. This is what
+   validates a written `:shape`, and what `pj/shape-symbols` publishes."
+  (into shape-syms extra-shape-syms))
+
 (def legend-swatch-size
   "Side length of the colored key drawn beside a legend entry (square)."
   8)

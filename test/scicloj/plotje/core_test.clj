@@ -1492,12 +1492,15 @@
       (is (seq (get-in pl [:panels 0 :x-ticks :labels]))))))
 
 (deftest a-whole-day-axis-names-its-month
-  (let [labels (fn [start n step]
-                 (-> {:d (vec (for [i (range n)]
-                                (jt/plus (jt/local-date start) (jt/days (* i step)))))
-                      :v (vec (repeat n 1.0))}
-                     (pj/lay-point :d :v)
-                     pj/plan :panels first :x-ticks :labels))]
+  (let [labels (fn labels
+                 ([start n step] (labels start n step 600))
+                 ([start n step width]
+                  (-> {:d (vec (for [i (range n)]
+                                 (jt/plus (jt/local-date start) (jt/days (* i step)))))
+                       :v (vec (repeat n 1.0))}
+                      (pj/lay-point :d :v)
+                      (pj/options {:width width})
+                      pj/plan :panels first :x-ticks :labels)))]
     (testing "a span inside one month is labelled with that month"
       ;; wadogo formats these as the bare day -- "02" "05" "08" -- which
       ;; reads the same over January as over March. ggplot2 4.0.0 names
@@ -1511,7 +1514,18 @@
       (is (every? #(re-find #"^[A-Z][a-z]{2}-\d{2}$" %) (labels "2024-01-01" 10 1))))
 
     (testing "ticks less than a day apart keep the hour that tells them apart"
-      (is (every? #(re-find #":" %) (labels "2024-03-04" 5 1))))
+      ;; Widened deliberately. This asserts on the formatter -- given
+      ;; sub-day ticks, the label says the hour -- and five daily dates
+      ;; stopped producing sub-day ticks at 600 wide once the temporal
+      ;; picker began rejecting a tick count whose labels do not fit
+      ;; (2026-09-09). At 600 the same span is now ticked once a day and
+      ;; labelled Mar-04 .. Mar-08, which is the right picture for daily
+      ;; data; at 1200 there is room to tick every six hours, which is
+      ;; the case this rule is about.
+      (is (every? #(re-find #":" %) (labels "2024-03-04" 5 1 1200)))
+      (is (= ["Mar-04" "Mar-05" "Mar-06" "Mar-07" "Mar-08"]
+             (labels "2024-03-04" 5 1))
+          "and at the default width the day is enough to tell them apart"))
 
     (testing "a span crossing a month boundary names both months"
       (is (= ["Jan-01" "Jan-08" "Jan-15" "Jan-22" "Jan-29"

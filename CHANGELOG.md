@@ -6,9 +6,18 @@ All notable changes to this project will be documented in this file. This change
 
 ### Plots that look different after upgrading
 
+- **Every plot on a date axis wide enough to have asked for more ticks than fit.** The axis carries fewer, larger-stepped ticks whose labels do not overlap.
 - **Every plot drawing a filled shape under two drawing units across** -- a narrow bar, a thin interval, a small tile. A shape narrower than one device pixel is drawn at partial opacity rather than dropped, and a shape between one and two device pixels is drawn at its own width rather than rounded to a whole number of them. Wider shapes are unchanged.
 
+### Added
+
+- `pj/arrange` accepts `:align-panels`, which gives every cell the same drawing area by reserving the widest y-label pad and legend column a cell needs on all of them. Two cells whose y axes label at different widths otherwise get different panel widths, so an axis shared with `:share-scales` covers a different extent in each. The pass itself already existed and was reachable only on a hand-written composite. - thanks, @timothypratley
+
+- `:circle-open` draws a point as a ring rather than a disc, so overlapping points stay countable where filled discs merge. Name it for a layer with `{:shape :circle-open}` or pass it among `:values` to a `:shape` scale. It is not handed out automatically, so no existing plot changes: `pj/shape-symbols` is now every symbol a mapping can draw, and `pj/shape-palette` is the shorter list categories are assigned from in order. - thanks, @carstenbehring
+
 ### Fixed
+
+- A date axis draws as many ticks as its labels have room for. A tick count comes from `:tick-spacing`, which reserves the same room per tick whatever the labels say; on a date axis one tick can read `Mar 2023` or `2024-01-01`, so the count was reached that no width could fit and labels ran together. The count now steps down until the labels fit, which also keeps a wider plot on a calendar step a reader counts in rather than moving it to a finer one with longer labels.
 
 - A filled shape narrower than a device pixel is drawn. The renderer paints the one or two device pixels the shape touches at an opacity totalling the shape's width, so a bar a third of a device pixel wide is drawn a third as dark as a solid one, and two bars of different widths no longer look identical. A shape at least two drawing units across in both directions is still snapped to the device pixel grid, so bars and histogram bins meet without a seam between them. The coordinates written to the SVG are unchanged. - thanks, @carstenbehring
 

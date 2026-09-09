@@ -390,13 +390,13 @@
   ;; legend that disagrees with its own marks.
   (when-let [values (:values spec)]
     (when (= channel :shape)
-      (when-let [unknown (seq (remove (set defaults/shape-syms) values))]
+      (when-let [unknown (seq (remove (set defaults/drawable-shape-syms) values))]
         (throw (ex-info (str where " " channel " :values does not recognize "
                              (vec unknown) ". Supported symbols: "
-                             defaults/shape-syms ".")
+                             defaults/drawable-shape-syms ".")
                         {:caller where :channel channel
                          :unknown (vec unknown)
-                         :supported defaults/shape-syms}))))))
+                         :supported defaults/drawable-shape-syms}))))))
 
 (defn numeric-color-domain
   "The `[lo hi]` a numeric colour or fill column is read against.

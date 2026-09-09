@@ -291,10 +291,13 @@
 ;; ---- More categories than symbols ----
 
 (deftest symbols-run-out-loudly
-  ;; One category past the end of the symbol list repeats the first symbol, so
+  ;; One category past the end of the palette repeats the first symbol, so
   ;; two categories become indistinguishable -- say so rather than draw a lie.
-  ;; Driven off pj/shape-symbols so growing the list does not break the test.
-  (let [available (count pj/shape-symbols)
+  ;; Driven off pj/shape-palette so growing it does not break the test. The
+  ;; palette, not pj/shape-symbols: what runs out is the list categories are
+  ;; assigned from, and a symbol a caller has to name by hand -- :circle-open --
+  ;; is never assigned, so it does not raise this ceiling.
+  (let [available (count pj/shape-palette)
         syms (fn [n]
                (capturing
                 #(mapv :shape
@@ -312,3 +315,58 @@
                                      available " available")))
     (is (= (first over) (last over))
         "one category past the end reuses the first symbol")))
+
+;; ---- An unfilled symbol ----
+
+(defn- ring-and-disc-counts
+  "How many circular marks the plot draws as an outline, and how many as
+   a solid disc. A circle is a rounded rect whose radius is half its
+   side, so both are `:rect` with an `:rx`; what tells them apart is
+   whether the fill or the stroke carries the colour."
+  [pose]
+  (let [rects (->> (tree-seq vector? seq (pj/plot pose {:format :svg}))
+                   (filter #(and (vector? %) (= :rect (first %))
+                                 (map? (second %)) (:rx (second %))))
+                   (map second))]
+    {:rings (count (filter #(= "none" (:fill %)) rects))
+     :discs (count (remove #(= "none" (:fill %)) rects))}))
+
+(deftest circle-open-draws-a-ring-test
+  ;; Requested on the issue tracker (#46): overlapping points are easier
+  ;; to count as rings than as discs, which merge into one blob.
+  (testing "a layer given :circle-open draws outlines, not discs"
+    (let [pose (-> {:x [1 2 3] :y [1 2 3]}
+                   (pj/lay-point :x :y {:shape :circle-open}))]
+      (is (= {:rings 3 :discs 0} (ring-and-disc-counts pose)))))
+
+  (testing "the legend draws the same symbol the marks do"
+    ;; `draw-shape` is shared with the legend renderer, so this is really
+    ;; a check that nothing routes around it.
+    (let [pose (-> {:x [1 2 3 4] :y [1 2 3 4] :g ["a" "b" "a" "b"]}
+                   (pj/lay-point :x :y {:shape :g})
+                   (pj/scale :shape {:values [:circle-open :circle]}))]
+      (is (= {:rings 3 :discs 3} (ring-and-disc-counts pose))
+          "two marks and one legend key of each")))
+
+  (testing "a ring covers the same box as the disc it replaces"
+    ;; A stroke straddles its path, so a ring drawn at radius r would
+    ;; reach r plus half the stroke and read as the larger symbol.
+    (let [side (fn [shape]
+                 (->> (tree-seq vector? seq
+                                (pj/plot (-> {:x [1] :y [1]}
+                                             (pj/lay-point :x :y (cond-> {:size 8}
+                                                                   shape (assoc :shape shape))))
+                                         {:format :svg}))
+                      (filter #(and (vector? %) (= :rect (first %))
+                                    (map? (second %)) (:rx (second %))))
+                      (map second)
+                      (map (fn [a] (+ (double (:width a))
+                                      (double (or (:stroke-width a) 0)))))
+                      first))]
+      (is (== (side nil) (side :circle-open)))))
+
+  (testing "the palette is unchanged, so no existing plot moves"
+    (is (= [:circle :square :triangle :diamond :triangle-down :plus :cross]
+           pj/shape-palette))
+    (is (= :circle-open (last pj/shape-symbols)))
+    (is (= pj/shape-palette (vec (butlast pj/shape-symbols))))))

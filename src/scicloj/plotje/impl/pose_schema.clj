@@ -94,7 +94,7 @@
 
 (def Shape
   "One of the marker symbols a `:shape` mapping draws with."
-  (into [:enum] defaults/shape-syms))
+  (into [:enum] defaults/drawable-shape-syms))
 
 (def ExplicitMapping
   "A mapping written out in full: which source it takes, and
