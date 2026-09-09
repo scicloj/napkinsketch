@@ -23,6 +23,10 @@ All notable changes to this project will be documented in this file. This change
 
 - `:circle-open` draws a point as a ring rather than a disc, so overlapping points stay countable where filled discs merge. Name it for a layer with `{:shape :circle-open}` or pass it among `:values` to a `:shape` scale. It is not handed out automatically, so no existing plot changes: `pj/shape-symbols` is now every symbol a mapping can draw, and `pj/shape-palette` is the shorter list categories are assigned from in order. - thanks, @carstenbehring
 
+### Removed
+
+- The `:annotation-dash` configuration key. It documented a dash pattern for reference lines and was read by nothing, so a project setting it drew solid lines and heard nothing about it. Written now, it is reported as an unrecognized configuration key. Rules take `:stroke-dash` on the layer, which is what draws a dashed one. The two keys that remain -- `:annotation-stroke` and `:band-opacity` -- are grouped under "Rules & Bands" in the configuration table, and `:band-opacity` is described as the fill opacity of a band rather than of a confidence ribbon, which is what it has always set.
+
 ### Changed
 
 - `:rule-h`, `:rule-v`, `:band-h` and `:band-v` are ordinary marks. Each travels among a panel's `:layers` in the order it was written and is drawn through `layer->membrane` like every other mark, so draw order is layer order and a rule written first sits under the data. Their extent reaches the axis, so a rule written outside everything the data covers widens the axis until the line is on the panel. A panel's `:annotations` slot is gone, along with the `Annotation` schema; code that walked a plan for these four reads `:layers` instead.

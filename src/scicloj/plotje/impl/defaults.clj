@@ -52,8 +52,8 @@
    :point-stroke "none" :point-stroke-width 0
    ;; Bars and lines
    :bar-opacity 0.85 :line-width 2.5 :grid-stroke-width 0.6
-   ;; Annotations
-   :annotation-stroke "#333" :annotation-dash [4 3] :band-opacity 0.15
+   ;; Rules and bands
+   :annotation-stroke "#333" :band-opacity 0.15
    ;; Statistics
    :bin-method :sturges
    :domain-padding 0.05
@@ -963,9 +963,8 @@
    :bar-opacity ["Bars & Lines" "Default bar fill opacity"]
    :line-width ["Bars & Lines" "Default line stroke width"]
    :grid-stroke-width ["Bars & Lines" "Grid line stroke width"]
-   :annotation-stroke ["Annotations" "Stroke color for annotation marks"]
-   :annotation-dash ["Annotations" "Dash pattern [dash gap] for annotation lines"]
-   :band-opacity ["Annotations" "Opacity for confidence bands"]
+   :annotation-stroke ["Rules & Bands" "Stroke color a rule draws in where its layer names none"]
+   :band-opacity ["Rules & Bands" "Fill opacity a band draws at where its layer names none"]
    :x-tick-spacing ["Ticks" "Target spacing, in drawing units, between ticks on the x axis"]
    :y-tick-spacing ["Ticks" "Target spacing, in drawing units, between ticks on the y axis"]
    :x-tick-angle ["Ticks" "Rotation angle for x-axis tick labels in degrees (0 = horizontal, -45 = common diagonal)"]

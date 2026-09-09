@@ -1199,7 +1199,7 @@ plan1
 
 (count pj/config-key-docs)
 
-(kind/test-last [(fn [n] (= 44 n))])
+(kind/test-last [(fn [n] (= 43 n))])
 
 (kind/doc #'pj/plot-option-docs)
 

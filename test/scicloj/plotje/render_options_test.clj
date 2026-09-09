@@ -123,7 +123,6 @@
    :annotation-stroke   "#0000ff"
    :default-color       "#0000ff"
    :point-stroke        "#00ff00"
-   :annotation-dash     [8 2]
    :x-tick-angle        45
    :x-tick-label-pad    8})
 
