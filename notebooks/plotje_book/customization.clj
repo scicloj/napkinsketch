@@ -630,6 +630,25 @@
                                 (= 1 (:dashed-lines s))
                                 (contains? (:dash-patterns s) "6.00 4.00"))))])
 
+;; A rule's width comes from `:size` and its opacity from `:alpha`, so a
+;; broad faint line can sit behind the data rather than cutting across
+;; it. The rule is written before the points here, so it is drawn under
+;; them -- layers paint in the order they are added, and these are
+;; layers. A rule written first needs the columns to come from
+;; somewhere, so the pose names them:
+
+(-> (rdatasets/datasets-iris)
+    (pj/pose :sepal-length :sepal-width)
+    (pj/lay-rule-h {:y-intercept 3.0 :size 8 :alpha 0.3 :color "#cc3311"})
+    (pj/lay-point {:color :species}))
+
+(kind/test-last
+ [(fn [fr]
+    (let [layers (:layers (first (:panels (pj/plan fr))))]
+      (and (= [:rule-h :point] (mapv :mark layers))
+           (= 8 (:stroke-width (:style (first layers))))
+           (= 0.3 (:opacity (:style (first layers)))))))])
+
 ;; ## Discovering Palettes and Gradients
 ;;
 ;; A `:color` or `:fill` scale spans a palette or a gradient, named with

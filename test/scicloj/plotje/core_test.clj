@@ -3125,14 +3125,16 @@
         (is (clojure.string/includes? svg-red "rgb(255,0,0)"))
         (is (not (clojure.string/includes? svg-default "rgb(255,0,0)")))))
 
-    (testing "a rule draws at the opacity it was given"
-      ;; `:alpha` was accepted on these layers and drawn by nothing:
-      ;; every rule came out fully opaque.
+    (testing "a rule draws at the width and opacity it was given"
+      ;; `:size` names the width, as it does on a line; `:alpha` was
+      ;; accepted on these layers and drawn by nothing, so every rule
+      ;; came out fully opaque.
       (let [svg (pr-str (pj/plot (-> ds
                                      (pj/lay-point :x :y)
-                                     (pj/lay-rule-h {:y-intercept 3
+                                     (pj/lay-rule-h {:y-intercept 3 :size 5
                                                      :alpha 0.25 :color "#cc0000"}))))
             drawn (re-find #"204,0,0.{0,60}" svg)]
+        (is (clojure.string/includes? drawn ":stroke-width 5"))
         (is (clojure.string/includes? drawn ":stroke-opacity 0.25"))))
 
     (testing "a rule outside everything the data reaches widens the axis"

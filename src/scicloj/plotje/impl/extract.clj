@@ -1054,12 +1054,12 @@
       fallback)))
 
 (defn- rule-style
-  "A rule's stroke: the layer's `:alpha` as the opacity, falling back to
-   what a reference line has always been drawn with, plus a dash
-   pattern where one was named."
+  "A rule's stroke: the layer's `:size` as the width and its `:alpha` as
+   the opacity, each falling back to what a reference line has always
+   been drawn with, plus a dash pattern where one was named."
   [draft-layer]
   (let [dash (resolve-dash (:stroke-dash draft-layer))]
-    (cond-> {:stroke-width 1.5
+    (cond-> {:stroke-width (or (:fixed-size draft-layer) 1.5)
              :opacity (or (:fixed-alpha draft-layer) 1.0)}
       dash (assoc :dash dash))))
 

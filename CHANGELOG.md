@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file. This change
 
 - Rules and bands take `:in`, so `(pj/lay-rule-h {:y-intercept 40 :in :drawing-area})` draws a line forty drawing units below the top of the panel background rather than at the data value 40. They take `:alpha` too, which sets the line's opacity or the band's fill opacity.
 
+- `:size` sets a rule's width, as it does a line's, so a reference line can be drawn heavier or lighter than the 1.5 drawing units it defaults to.
+
 - `pj/arrange` accepts `:align-panels`, which gives every cell the same drawing area by reserving the widest y-label pad and legend column a cell needs on all of them. Two cells whose y axes label at different widths otherwise get different panel widths, so an axis shared with `:share-scales` covers a different extent in each. The pass itself already existed and was reachable only on a hand-written composite. - thanks, @timothypratley
 
 - `:circle-open` draws a point as a ring rather than a disc, so overlapping points stay countable where filled discs merge. Name it for a layer with `{:shape :circle-open}` or pass it among `:values` to a `:shape` scale. It is not handed out automatically, so no existing plot changes: `pj/shape-symbols` is now every symbol a mapping can draw, and `pj/shape-palette` is the shorter list categories are assigned from in order. - thanks, @carstenbehring

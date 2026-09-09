@@ -2360,7 +2360,7 @@
    Position comes from opts (not data columns); `:y-intercept` is required.
    Accepts `:y-intercept` (numeric or temporal -- LocalDate, LocalDateTime,
    Instant, java.util.Date), `:color` (a written color), `:alpha` (the
-   line's opacity) and `:stroke-dash`
+   line's opacity), `:size` (its width) and `:stroke-dash`
    (`:dashed`/`:dotted`/`:solid` or a raw `[dash gap]` vector).
    Temporal values are converted internally to match the y-axis scale
    so a date-axis intercept needs no manual conversion.
@@ -2388,7 +2388,7 @@
    Position comes from opts (not data columns); `:x-intercept` is required.
    Accepts `:x-intercept` (numeric or temporal -- LocalDate, LocalDateTime,
    Instant, java.util.Date), `:color` (a written color), `:alpha` (the
-   line's opacity) and `:stroke-dash`
+   line's opacity), `:size` (its width) and `:stroke-dash`
    (`:dashed`/`:dotted`/`:solid` or a raw `[dash gap]` vector).
    Temporal values are converted internally to match the x-axis scale
    so a date-axis intercept needs no manual conversion.

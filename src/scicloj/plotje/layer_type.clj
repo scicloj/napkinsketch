@@ -398,8 +398,8 @@
 (def ^:private rule-band-rejects
   [:position :group :x-type :y-type :color-type :overlay])
 
-(register! :rule-h {:mark :rule-h :stat :identity :accepts [:y-intercept :stroke-dash] :rejects rule-band-rejects :doc "Horizontal reference line at y = y-intercept."})
-(register! :rule-v {:mark :rule-v :stat :identity :accepts [:x-intercept :stroke-dash] :rejects rule-band-rejects :doc "Vertical reference line at x = x-intercept."})
+(register! :rule-h {:mark :rule-h :stat :identity :accepts [:y-intercept :stroke-dash :size] :rejects rule-band-rejects :doc "Horizontal reference line at y = y-intercept."})
+(register! :rule-v {:mark :rule-v :stat :identity :accepts [:x-intercept :stroke-dash :size] :rejects rule-band-rejects :doc "Vertical reference line at x = x-intercept."})
 (register! :band-h {:mark :band-h :stat :identity :accepts [:y-min :y-max] :rejects rule-band-rejects :doc "Horizontal shaded band between y = y-min and y = y-max."})
 (register! :band-v {:mark :band-v :stat :identity :accepts [:x-min :x-max] :rejects rule-band-rejects :doc "Vertical shaded band between x = x-min and x = x-max."})
 
